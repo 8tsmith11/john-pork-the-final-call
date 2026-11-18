@@ -117,5 +117,29 @@ test('AI companions follow the human, fight, and never trigger exits', () => {
   assert.ok(!sim.allWaiting('nope') || true);
 });
 
+const Inv = await import('../src/engine/inventory.js');
+test('slot inventory: stacks, hotbar-first, remove, move/merge/swap, half', () => {
+  const c = { inventory: new Array(36).fill(null) };
+  assert.equal(Inv.add(c, 'item.mat_scrap', 150), 0);
+  assert.deepEqual([c.inventory[0].qty, c.inventory[1].qty], [99, 51]);
+  Inv.add(c, 'item.wooden_bat'); Inv.add(c, 'item.wooden_bat');
+  assert.equal(c.inventory[2].id, 'item.wooden_bat'); assert.equal(c.inventory[3].id, 'item.wooden_bat');   // gear doesn't stack
+  assert.ok(Inv.remove(c, 'item.mat_scrap', 60)); assert.equal(Inv.count(c, 'item.mat_scrap'), 90);
+  assert.equal(c.inventory[0].qty, 90 > 99 ? 99 : c.inventory[0].qty);   // hotbar stack kept, back stack used first
+  Inv.moveSlot(c, 0, 20); assert.equal(c.inventory[0], null); assert.equal(c.inventory[20].id, 'item.mat_scrap');
+  Inv.moveSlot(c, 2, 20); assert.equal(c.inventory[20].id, 'item.wooden_bat'); assert.equal(c.inventory[2].id, 'item.mat_scrap');   // swap
+  const before = c.inventory[2].qty; Inv.moveSlot(c, 2, 30, true); assert.equal(c.inventory[30].qty + c.inventory[2].qty, before);
+  assert.ok(!Inv.pay(c, { 'item.mat_wire': 1 })); assert.ok(Inv.pay(c, { 'item.mat_scrap': 5 }));
+});
+test('schema 1 -> 2 migration: scrap becomes money, list inventory becomes 36 slots', () => {
+  const old = newSave({ seed: 'm', rolls: {}, gameVersion: 't' });
+  old.schemaVersion = 1; old.world.scrap = 10; delete old.world.money;
+  old.party.trevor.inventory = [{ id: 'item.mate_flask', qty: 1 }, { id: 'item.wooden_bat', qty: 1 }];
+  const m = migrate(JSON.parse(JSON.stringify(old)));
+  assert.equal(m.schemaVersion, 2); assert.equal(m.world.money, 55); assert.ok(!('scrap' in m.world));
+  assert.equal(m.party.trevor.inventory.length, 36); assert.equal(m.party.trevor.inventory[1].id, 'item.wooden_bat');
+  assert.equal(m.party.manuel.inventory.length, 36);
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

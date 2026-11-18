@@ -14,13 +14,62 @@ export const ITEMS = {
 
 Object.assign(ITEMS, FISH);   // catches are items too
 
+// Materials (human request: "different materials"). They drop from coderot things, vending
+// machines, and the world; the fab prints from them. Money is the currency; these are not.
+export const MATERIALS = {
+  'item.mat_scrap':   { name: 'Scrap metal', slot: 'material', text: 'Bent brackets, bolts, a hinge. The fab eats it.' },
+  'item.mat_wire':    { name: 'Copper wire', slot: 'material', text: 'Stripped out of something that used to talk.' },
+  'item.mat_plastic': { name: 'Plastic pellets', slot: 'material', text: 'Ground-up packaging. Feedstock for the printer.' },
+  'item.mat_cloth':   { name: 'Cloth', slot: 'material', text: 'Ripstop, denim, a T-shirt from a 5K nobody remembers running.' },
+  'item.mat_circuit': { name: 'Circuit board', slot: 'material', text: 'Green, scorched at one corner. Some of the chips still answer.' },
+  'item.mat_cell':    { name: 'Battery cell', slot: 'material', text: 'A fat lithium cylinder. Keep it away from the shrimp.' },
+  'item.mat_gel':     { name: 'Coderot gel', slot: 'material', text: 'What\'s left when a coderot thing stops. It shimmers a frame behind itself.' },
+  'item.mat_glass':   { name: 'Glass shard', slot: 'material', text: 'Phone screen, mostly. Your face looks back, slightly late.' },
+};
+Object.assign(ITEMS, MATERIALS);
+
+// Bought, not printed.
+Object.assign(ITEMS, {
+  'item.scooter':       { name: 'Scooter', slot: 'key', text: 'Used, cracked deck. [Q] to ride outdoors. Rails are faster than they look.' },
+  'item.scooter_hicap': { name: 'Hi-cap battery', slot: 'key', text: 'Doubles your scooter\'s range. Bolts under the deck.' },
+  'item.energy_bar':    { name: 'Halfsmoke bar', slot: 'consumable', heal: 20, text: 'Protein, mustard, regret. Maryland in a wrapper.' },
+  'item.crab_chips':    { name: 'Old Bay crab chips', slot: 'consumable', heal: 30, text: 'The seasoning outlived the crabs.' },
+});
+
+// The fab prints from materials (cost = { materialId: qty }).
 export const RECIPES = [
-  { item: 'item.wooden_bat', scrap: 6 },
-  { item: 'item.fab_launcher', scrap: 10 },
-  { item: 'item.mesh_vest', scrap: 12 },
-  { item: 'item.sniffer', scrap: 4 },
-  { item: 'item.mate_flask', scrap: 3 },
+  { item: 'item.mate_flask',   cost: { 'item.mat_plastic': 2, 'item.mat_scrap': 1 } },
+  { item: 'item.wooden_bat',   cost: { 'item.mat_scrap': 3, 'item.mat_cloth': 1 } },
+  { item: 'item.sniffer',      cost: { 'item.mat_circuit': 1, 'item.mat_wire': 2 } },
+  { item: 'item.mesh_vest',    cost: { 'item.mat_plastic': 4, 'item.mat_cloth': 3, 'item.mat_wire': 1 } },
+  { item: 'item.fab_launcher', cost: { 'item.mat_scrap': 4, 'item.mat_circuit': 2, 'item.mat_cell': 1, 'item.mat_gel': 2 } },
 ];
+
+// What things drop. Money is shared by the party; materials go to whoever got the kill.
+export const DROPS = {
+  default: { money: [2, 5], mats: [['item.mat_gel', 40], ['item.mat_scrap', 25], ['item.mat_wire', 15], ['item.mat_plastic', 10], ['item.mat_glass', 10]] },
+  boss:    { money: [40, 60], mats: [['item.mat_gel', 100], ['item.mat_circuit', 100], ['item.mat_cell', 100]] },
+};
+
+// Shops: what's on the shelf and for how much ($).
+export const SHOPS = {
+  scooters: { title: 'DELROY\'S WHEELS', lines: ['Used scooters, fair prices, no questions.', 'Batteries charged while you wait. Mostly.'],
+    stock: [
+      { item: 'item.scooter', price: 90, once: true },
+      { item: 'item.scooter_hicap', price: 140, once: true, needs: 'item.scooter' },
+      { item: 'item.mat_cell', price: 12 },
+      { item: 'item.mat_wire', price: 4 },
+      { item: 'item.mat_circuit', price: 15 },
+    ] },
+  corner: { title: 'CORNER STORE', lines: ['Open twenty-four hours. The register is older than you.'],
+    stock: [
+      { item: 'item.energy_bar', price: 6 },
+      { item: 'item.crab_chips', price: 10 },
+      { item: 'item.mate_flask', price: 14 },
+      { item: 'item.mat_plastic', price: 3 },
+      { item: 'item.mat_cloth', price: 3 },
+    ] },
+};
 
 export const SKILLS = {
   michael: [

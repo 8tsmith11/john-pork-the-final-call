@@ -112,7 +112,9 @@ export const metroPlaza = makeMap({
     { id: 'obj.diner_door', art: 'obj.door', x: 72, y: 8, label: 'The diner', text: 'Open. It is always open. Through the glass, a cook calls an order to an empty room and plates it.' },
     { id: 'obj.diner_menu', art: 'obj.board', x: 69, y: 8, label: 'Menu', text: 'Chalk. One item has been crossed out and rewritten so many times the board is worn pale there.' },
     { id: 'npc.ray', art: PERSON[1], x: 70, y: 19, label: 'Big Ray', npc: true, text: '"Scooter\'s fine. You\'re running rich. Sleep, eat something that was alive, come back."' },
-    { id: 'obj.scooters', x: 74, y: 19, label: 'Scooter rack', text: 'Three scooters, chained. One of them is yours and you have not paid for the tyre.' },
+    { id: 'obj.scooters', x: 74, y: 19, label: 'Scooter rack', text: 'Three used scooters, chained, each with a price tag written on tape. Delroy\'s kiosk takes cash.' },
+    { id: 'obj.shop_scooters', art: 'obj.kiosk', x: 71, y: 18, label: 'Delroy\'s Wheels', action: 'shop', shop: 'scooters', light: 0.7 },
+    { id: 'obj.shop_corner', art: 'obj.vending', x: 77, y: 9, label: 'Corner store', action: 'shop', shop: 'corner', light: 0.6 },
     { id: 'obj.shop_window', art: 'obj.lobby_monitor', x: 66, y: 25, label: 'Shop window', light: 0.6, text: 'A window of dead screens, price tags still on. One comes on as you pass.\n\nA street camera, this street. A big man in a long coat, from behind, walking north with a bad knee. The timestamp is now.\n\nYou look north. Nobody.' },
     // The alley
     { id: 'obj.dumpster', x: 81, y: 12, label: 'Dumpster', text: 'Abatement tags on the lid. Inside, a hundred phones, screens up, all showing 19:01.' },

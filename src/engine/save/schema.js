@@ -4,11 +4,23 @@
 // - Unknown keys are preserved so older builds don't wipe newer data.
 
 export const FORMAT = 'jpfc-save';
-export const CURRENT_SCHEMA = 1;
+export const SLOTS = 36;   // inventory slots per character: 0..8 hotbar, 9..35 backpack
+export const CURRENT_SCHEMA = 2;
 
 /** migrations[n] upgrades a schema-n save to schema n+1. Append only. */
 export const migrations = {
-  // 1: (save) => { ...; save.schemaVersion = 2; return save; },
+  // 1 -> 2: money replaces scrap as the currency; inventories become 36 fixed slots (9 hotbar + 27).
+  1: (save) => {
+    save.world ??= {};
+    save.world.money = (save.world.money ?? 25) + (save.world.scrap ?? 0) * 3;
+    delete save.world.scrap;
+    for (const c of Object.values(save.party ?? {})) {
+      const list = Array.isArray(c.inventory) ? c.inventory.filter((x) => x && x.id) : [];
+      c.inventory = new Array(SLOTS).fill(null);
+      list.slice(0, SLOTS).forEach((it, i) => { c.inventory[i] = { id: it.id, qty: it.qty ?? 1 }; });
+    }
+    save.schemaVersion = 2; return save;
+  },
 };
 
 export function newCharacter(id) {
@@ -18,7 +30,7 @@ export function newCharacter(id) {
     skills: {},                 // { 'skill.id': rank }
     morph: { line: id, stage: 0 },
     hp: null,                   // null = full
-    inventory: [],              // [{ id: 'item.wooden_bat', qty: 1 }]
+    inventory: new Array(SLOTS).fill(null),   // fixed slots: { id, qty } | null (engine/inventory.js)
     equipped: { weapon: null, ranged: null, armor: null, gadget: null, charm: null },
   };
 }
@@ -29,7 +41,7 @@ export function newSave({ seed, rolls, gameVersion }) {
     schemaVersion: CURRENT_SCHEMA,
     savedAt: new Date().toISOString(),
     meta: { gameVersion, playtimeSec: 0, slotName: 'Room 631' },
-    world: { seed, act: 1, area: 'room631', rolls },
+    world: { seed, act: 1, area: 'room631', rolls, money: 25 },   // money: the party's shared wallet ($)
     flags: {},                  // namespaced: 'act1.balloon.ribbonInspected'
     standing: { continuity: 0, callers: 0, analogists: 0, archivists: 0 },
     // Multiplayer: the save lives on the HOST only. It remembers who played whom, so the lobby can

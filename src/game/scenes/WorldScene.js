@@ -11,13 +11,14 @@ import { ENEMIES } from '../../content/enemies.js';
 import { GAME_VERSION } from '../../version.js';
 import { loadScene, Conversation } from '../../engine/dialogue.js';
 import { babble, setArea, sfx, ring, speak, hush } from '../../audio/audio.js';
-import { ITEMS, RECIPES, SKILLS, playerMods } from '../../content/items.js';
+import { DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods } from '../../content/items.js';
 import { tileKey } from '../render/tiles.js';
 import { GameMenu, TABS } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
 import { rollCatch } from '../../content/fish.js';
 import { QUESTS, questState } from '../../content/quests.js';
 import { CompanionBrain, isAi } from '../../engine/companion.js';
+import * as Inv from '../../engine/inventory.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
 import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
@@ -73,7 +74,8 @@ export class WorldScene extends Phaser.Scene {
     this._pageIdx = {};
     this.vignette = this._makeVignette();
     if (this.mode !== 'client') for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
-    this.save.world.scrap ??= 0;
+    this.save.world.money ??= 25;
+    for (const c of Object.values(this.save.party)) Inv.normalize(c);
     this._makeMenu();
     this.input.keyboard.on('keydown-Q', () => { if (this.dlg || this.menu) return; if (this.mode === 'client') this.net.send({ t: 'scooter' }); else this._scooter(this.localId); });
     this.input.keyboard.on('keydown-M', () => { if (this.mode === 'client') this.net.send({ t: 'morph' }); else this._morph(this.localId); });
@@ -111,7 +113,7 @@ export class WorldScene extends Phaser.Scene {
     const present = [...new Set((this._lastRendered?.players || []).map((p) => p.c))];
     return {
       speaker: this.character, present: present.length ? present : [this.character], flags: this.save.flags,
-      inventory: me.inventory.map((i) => i.id), seed: this.save.world.rolls?.twistVariant ?? 'A',
+      inventory: Inv.ids(me), seed: this.save.world.rolls?.twistVariant ?? 'A',
       morph: me.morph.stage, standing: this.save.standing,
     };
   }
@@ -121,7 +123,7 @@ export class WorldScene extends Phaser.Scene {
     const scene = await loadScene(sceneName);
     const sink = {
       flag: (k, v) => this._flag(k, v),
-      item: (item) => { this.save.party[this.character].inventory.push({ id: `item.${item}`, qty: 1 }); if (this.mode === 'client') this.net.send({ t: 'item', who: this.character, item }); },
+      item: (item) => { Inv.add(this.save.party[this.character], `item.${item}`); if (this.mode === 'client') this.net.send({ t: 'item', who: this.character, item }); },
       standing: (f, n) => { if (f in this.save.standing) this.save.standing[f] += n; if (this.mode === 'client') this.net.send({ t: 'standing', faction: f, n }); },
     };
     this.dlg = new Conversation(scene, nodeId, this._dialogueCtx(), sink);
@@ -144,7 +146,11 @@ export class WorldScene extends Phaser.Scene {
       .on('pointerover', function () { this.setColor('#ffb347'); }).on('pointerout', function () { this.setColor('#9aa3c7'); })
       .on('pointerdown', () => this._choose(i)));
     this.input.keyboard.on('keydown', (ev) => {
-      if (!this.dlg) return;
+      if (!this.dlg) {
+        const n = parseInt(ev.key, 10);
+        if (n >= 1 && n <= 9 && !this.menu && !this.puzzle) this.menuUseSlot(n - 1);
+        return;
+      }
       if (ev.key === 'e' || ev.key === 'E' || ev.key === ' ' || ev.key === 'Enter') {
         if (!this.dlg.choices.length && (this._typeShown ?? 0) < (this._typeFull?.length ?? 0)) { this._typeShown = this._typeFull.length; this._drawDialogue(); return; }
         if (!this.dlg.choices.length && this.time.now - (this._lineAt ?? 0) > 220) this.dlg.advance();
@@ -303,7 +309,7 @@ export class WorldScene extends Phaser.Scene {
           this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, interact: false });
         }
         if (msg.t === 'flag' && typeof msg.key === 'string' && /^(act\d|dlg\.)/.test(msg.key)) this.save.flags[msg.key] = msg.value ?? true;
-        if (msg.t === 'item' && this.save.party[msg.who]) this.save.party[msg.who].inventory.push({ id: `item.${msg.item}`, qty: 1 });
+        if (msg.t === 'item' && this.save.party[msg.who]) Inv.add(this.save.party[msg.who], `item.${msg.item}`);
         if (msg.t === 'standing' && msg.faction in this.save.standing) this.save.standing[msg.faction] += Number(msg.n) || 0;
         if (msg.t === 'exit') this._tryExit(this.sim.map.objects.find((o) => o.id === msg.obj));
         if (msg.t === 'answer') this._answer();
@@ -314,6 +320,9 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'mate') this._mateBreak();
         if (msg.t === 'use') { this._useWhat = msg.id ?? null; this._use(this._charOf(peer), peer); }
         if (msg.t === 'morph') this._morph(peer);
+        if (msg.t === 'useSlot') { this._useSlot = msg.i | 0; this._use(this._charOf(peer), peer); }
+        if (msg.t === 'move' && this.save.party[this._charOf(peer)]) { Inv.moveSlot(this.save.party[this._charOf(peer)], msg.a | 0, msg.b | 0, !!msg.half); this._syncParty(); }
+        if (msg.t === 'buy') this._buy(this._charOf(peer), msg.shop, msg.idx);
         if (msg.t === 'scooter') this._scooter(peer);
       });
       this.net.on('leave', (peer) => {
@@ -326,7 +335,7 @@ export class WorldScene extends Phaser.Scene {
       this.net.on('msg', (msg) => {
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
         if (msg.t === 'say') this._say(msg.text);
-        if (msg.t === 'party') { this.save.party = msg.party; this.save.world.scrap = msg.scrap; this._refreshMenu(); }
+        if (msg.t === 'party') { this.save.party = msg.party; this.save.world.money = msg.money; this._refreshMenu(); }
       });
       this.net.on('close', () => this._say('The host closed the game.'));
     }
@@ -441,18 +450,17 @@ export class WorldScene extends Phaser.Scene {
 
   _syncParty() {
     for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
-    if (this.mode === 'host') this.net.broadcast({ t: 'party', party: this.save.party, scrap: this.save.world.scrap });
+    if (this.mode === 'host') this.net.broadcast({ t: 'party', party: this.save.party, money: this.save.world.money });
     this._refreshMenu();
   }
 
   _craft(who, idx) {
     const r = RECIPES[idx], c = this.save.party[who];
     if (!r || !c) return;
-    if (this.save.world.scrap < r.scrap) return this._announce(`Not enough scrap (${this.save.world.scrap}/${r.scrap}).`);
-    this.save.world.scrap -= r.scrap;
+    if (!Inv.pay(c, r.cost)) return this._announce('Not enough materials for that.');
     const item = ITEMS[r.item];
-    c.inventory.push({ id: r.item, qty: 1 });
-    if (item.slot !== 'consumable') c.equipped[item.slot] = r.item;
+    Inv.add(c, r.item);
+    if (item.slot !== 'consumable' && !c.equipped[item.slot]) c.equipped[item.slot] = r.item;
     this._announce(`The fab hums. ${who} gets: ${item.name}.`);
     this._syncParty();
   }
@@ -466,13 +474,12 @@ export class WorldScene extends Phaser.Scene {
 
   _use(who, peerId) {
     const c = this.save.party[who]; if (!c) return;
-    const pick = (id) => c.inventory.findIndex((x) => x.id === id);
-    let i = pick(this._useWhat ?? 'item.mate_flask');
-    if (i < 0 && !this._useWhat) i = c.inventory.findIndex((x) => ITEMS[x.id]?.heal);   // H falls back to any food
-    this._useWhat = null;
-    if (i < 0) return this._toast('Nothing to eat or drink. (Print a mate thermos at the fab, or go fishing.)');
-    const it = ITEMS[c.inventory[i].id];
-    c.inventory.splice(i, 1);
+    // _useSlot: a hotbar slot index; _useWhat: an item id; neither: H eats the first food found.
+    let i = this._useSlot ?? c.inventory.findIndex((x) => x && x.id === (this._useWhat ?? 'item.mate_flask'));
+    if (i < 0 && !this._useWhat) i = c.inventory.findIndex((x) => x && ITEMS[x.id]?.heal);
+    this._useWhat = null; this._useSlot = null;
+    if (i < 0 || !c.inventory[i] || !ITEMS[c.inventory[i].id]?.heal) return;
+    const it = ITEMS[Inv.takeSlot(c, i)];
     this.sim.heal(peerId, it.heal ?? 0);
     this._toast(`${who} has the ${it.name.toLowerCase()}. +${it.heal} HP`);
     this._syncParty();
@@ -483,7 +490,7 @@ export class WorldScene extends Phaser.Scene {
   _makeMenu() {
     this.gameMenu = new GameMenu(this);
     const kb = this.input.keyboard;
-    kb.on('keydown-ESC', () => { if (this.dlg) return; if (this.puzzle && !this.puzzle.closed) { this.puzzle.destroy(); this.puzzle = null; return; } this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
+    kb.on('keydown-ESC', () => { if (this.dlg) return; if (this.gameMenu?.held != null) { this.gameMenu.held = null; this.gameMenu.refresh(); return; } if (this.puzzle && !this.puzzle.closed) { this.puzzle.destroy(); this.puzzle = null; return; } this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
     kb.on('keydown-I', () => { if (!this.dlg) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
     kb.on('keydown-K', () => { if (!this.dlg) this.menu === 'skills' ? this._closeMenu() : this.gameMenu.show('skills'); });
     kb.on('keydown-TAB', (ev) => { ev.preventDefault?.(); if (!this.dlg) this.menu === 'map' ? this._closeMenu() : this.gameMenu.show('map'); });
@@ -502,6 +509,30 @@ export class WorldScene extends Phaser.Scene {
     if (def.slot === 'consumable') { if (this.mode === 'client') this.net.send({ t: 'use', id }); else { this._useWhat = id; this._use(this.character, this.localId); } return; }
     if (this.mode === 'client') this.net.send({ t: 'equip', id }); else this._equip(this.character, id);
   }
+  // Slot actions (inventory grid + hotbar). Host-authoritative like everything else.
+  menuUseSlot(i) {
+    const c = this.save.party[this.character], it = c?.inventory[i]; if (!it) return;
+    this._hotFlash = { i, at: this.time.now };
+    const def = ITEMS[it.id]; if (!def) return;
+    if (def.slot === 'consumable') {
+      if (this.mode === 'client') this.net.send({ t: 'useSlot', i }); else { this._useSlot = i; this._use(this.character, this.localId); }
+      return;
+    }
+    if (['weapon', 'ranged', 'armor', 'gadget', 'charm'].includes(def.slot)) return this.menuUse(it.id);
+    if (def.slot === 'junk' || def.slot === 'key') this._say(`${def.name}\n${def.text}`);
+  }
+  menuMove(a, b, half) { if (this.mode === 'client') this.net.send({ t: 'move', a, b, half }); else { Inv.moveSlot(this.save.party[this.character], a, b, half); this._syncParty(); } }
+  menuBuy(shop, idx) { if (this.mode === 'client') this.net.send({ t: 'buy', shop, idx }); else this._buy(this.character, shop, idx); }
+  _buy(who, shopId, idx) {
+    const st = SHOPS[shopId]?.stock[idx], c = this.save.party[who]; if (!st || !c) return;
+    if (st.once && Inv.has(c, st.item)) return;
+    if (st.needs && !Inv.has(c, st.needs)) return;
+    if ((this.save.world.money ?? 0) < st.price) return;
+    if (Inv.add(c, st.item) > 0) return this._toast('Your bag is full.');
+    this.save.world.money -= st.price;
+    sfx('pickup'); this._toast(`Bought: ${ITEMS[st.item].name} (-$${st.price})`);
+    this._syncParty();
+  }
   menuLearn(id) { if (this.mode === 'client') this.net.send({ t: 'skill', id }); else this._learn(this.character, id); }
   menuCraft(i) { if (this.mode === 'client') this.net.send({ t: 'craft', idx: i }); else this._craft(this.character, i); }
   menuExport() { exportFile(this.save); }
@@ -515,7 +546,7 @@ export class WorldScene extends Phaser.Scene {
 
   _equip(who, id) {
     const c = this.save.party[who], def = ITEMS[id];
-    if (!c || !def || !c.inventory.some((it) => it.id === id) || def.slot === 'consumable') return;
+    if (!c || !def || !Inv.has(c, id) || !['weapon', 'ranged', 'armor', 'gadget', 'charm'].includes(def.slot)) return;
     c.equipped[def.slot] = c.equipped[def.slot] === id ? null : id;   // click again to unequip
     this._syncParty();
   }
@@ -523,7 +554,9 @@ export class WorldScene extends Phaser.Scene {
   _scooter(peerId) {
     const p = this.sim.players.get(peerId); if (!p) return;
     const c = this.save.party[p.character];
+    if (!p.riding && !Inv.has(c, 'item.scooter')) return;   // you have to buy one first (Delroy's, on the plaza)
     p.battery = c.scooterBattery ??= 100;
+    p.hicap = Inv.has(c, 'item.scooter_hicap');
     if (!p.riding && !this.map.outdoor) return this._toast('No scooters indoors.');
     if (!p.riding && p.battery <= 0) return this._toast('Scooter battery is dead. Charge it at the dock in 631.');
     this.sim.toggleScooter(peerId, true);
@@ -549,9 +582,8 @@ export class WorldScene extends Phaser.Scene {
       const who = near.label.toUpperCase();
       if (!st.started && q.ask) { this._flag(q.ask, true); this._say(`${who}\n${q.pitch}`); this._tickQuests(true); return true; }
       if (q.give && !f[q.give.flag]) {
-        const c = this.save.party[this.character], i = c.inventory.findIndex((x) => x.id === q.give.item);
-        if (i < 0) { this._say(`${who}\n${q.give.refuse ?? '...'}`); return true; }
-        c.inventory.splice(i, 1); this._flag(q.give.flag, true); this._syncParty(); this._tickQuests(true); return true;
+        const c = this.save.party[this.character];
+        if (!Inv.remove(c, q.give.item)) { this._say(`${who}\n${q.give.refuse ?? '...'}`); return true; } this._flag(q.give.flag, true); this._syncParty(); this._tickQuests(true); return true;
       }
       if (q.report && f[q.report.needs] && !f[q.report.flag]) { this._flag(q.report.flag, true); this._tickQuests(true); return true; }
     }
@@ -572,7 +604,7 @@ export class WorldScene extends Phaser.Scene {
       }
       if (st.stage >= q.stages.length) {
         st.done = true;
-        if (this.mode !== 'client') { this.save.world.scrap = (this.save.world.scrap ?? 0) + (q.reward?.scrap ?? 0); for (const c of Object.values(this.save.party)) c.xp += q.reward?.xp ?? 0; this._partyDirty = true; }
+        if (this.mode !== 'client') { this.save.world.money = (this.save.world.money ?? 0) + (q.reward?.money ?? 0); for (const c of Object.values(this.save.party)) c.xp += q.reward?.xp ?? 0; this._partyDirty = true; }
         this._toast(`✓ Quest complete: ${q.title}`);
         if (q.reward?.line) this._say(q.reward.line);
       }
@@ -670,9 +702,15 @@ export class WorldScene extends Phaser.Scene {
     set('obj.clock_6f', !!f['puz.clocks.solved'], '#open');
   }
 
+  // Loot pop over the world (money and materials from a kill).
+  _fxPop(x, y, text) {
+    const t = this.add.text(x, y - 22, text, { ...FONT, fontSize: '7px', color: '#9be08a' }).setOrigin(0.5).setDepth(6050);
+    this.tweens.add({ targets: t, y: t.y - 14, alpha: 0, delay: 250, duration: 1100, onComplete: () => t.destroy() });
+  }
+
   _grant(itemId) {
     const c = this.save.party[this.character];
-    c.inventory.push({ id: itemId, qty: 1 });
+    Inv.add(c, itemId);
     if (this.mode === 'client') this.net.send({ t: 'item', who: this.character, item: itemId.replace(/^item\./, '') });
     else this._syncParty();
     this._toast(`★ ${ITEMS[itemId]?.name ?? itemId}`);
@@ -687,11 +725,11 @@ export class WorldScene extends Phaser.Scene {
     }
     const r = Math.random();
     if (r < 0.33) {
-      if (this.mode !== 'client') { this.save.world.scrap = (this.save.world.scrap ?? 0) + 2; this._partyDirty = true; }
-      return this._say('You kick it. Something rattles loose: a bent coil and a handful of scrap. (+2 scrap)');
+      if (this.mode !== 'client') { const c = this.save.party[this.character]; Inv.add(c, 'item.mat_wire'); Inv.add(c, 'item.mat_scrap'); this.save.world.money += 1; this._partyDirty = true; }
+      return this._say('You kick it. Something rattles loose: a bent coil, a bracket, and a coin. (+copper wire, +scrap metal, +$1)');
     }
     if (r < 0.45) {
-      if (this.mode !== 'client') { this.save.party[this.character].inventory.push({ id: 'item.mate_flask', qty: 1 }); this._partyDirty = true; }
+      if (this.mode !== 'client') { Inv.add(this.save.party[this.character], 'item.mate_flask'); this._partyDirty = true; }
       return this._say('You kick it. A can drops out. It\'s cold yerba mate, which this machine has never stocked. (Mate thermos)');
     }
     this._say(['You kick it. It hums at you, offended.', 'You kick it. Nothing. Row C stays empty.', 'You kick it. A light comes on inside, then thinks better of it.'][n % 3]);
@@ -762,7 +800,7 @@ export class WorldScene extends Phaser.Scene {
     for (const p of this.sim.players.values()) this.sim.heal(p.id, 999);
     for (const p of this.sim.players.values()) {
       const c = this.save.party[p.character];
-      if (c && !c.inventory.some((it) => it.id === 'item.mate_flask')) c.inventory.push({ id: 'item.mate_flask', qty: 1 });
+      if (c && !Inv.has(c, 'item.mate_flask')) Inv.add(c, 'item.mate_flask');
     }
     this._syncParty();
   }
@@ -873,11 +911,44 @@ export class WorldScene extends Phaser.Scene {
     this.mapLabel = this.add.text(6, 4, '', { ...FONT, color: '#9aa3c7' }).setScrollFactor(0).setDepth(9000);
     this.hud = this.add.graphics().setScrollFactor(0).setDepth(9000);
     this.hudText = this.add.text(W - 6, 4, '', { ...FONT, color: '#9aa3c7', align: 'right' }).setOrigin(1, 0).setScrollFactor(0).setDepth(9001);
+    this._makeHotbar();
+  }
+
+  // Hotbar: inventory slots 1-9 along the bottom. Number keys use / equip them.
+  _makeHotbar() {
+    const W = VIEW.w, H = VIEW.h, S = 18, x0 = Math.round(W / 2 - (9 * S + 8 * 2) / 2), y0 = H - S - 4;
+    this.hot = { g: this.add.graphics().setScrollFactor(0).setDepth(8990), icons: [], qty: [], nums: [], x0, y0, S, sig: '' };
+    for (let i = 0; i < 9; i++) {
+      const x = x0 + i * (S + 2);
+      this.hot.icons.push(this.add.image(x + S / 2, y0 + S / 2, 'icons', 'generic').setScrollFactor(0).setDepth(8991).setVisible(false));
+      this.hot.qty.push(this.add.text(x + S - 1, y0 + S, '', { ...FONT, fontSize: '6px', color: '#e8e8f0' }).setOrigin(1, 1).setScrollFactor(0).setDepth(8992));
+      this.hot.nums.push(this.add.text(x + 2, y0 + 1, `${i + 1}`, { ...FONT, fontSize: '5px', color: '#5d6487' }).setScrollFactor(0).setDepth(8992));
+    }
+  }
+
+  _drawHotbar() {
+    const h = this.hot, c = this.save.party[this.character]; if (!h || !c?.inventory) return;
+    const hide = !!(this.dlg || this.menu || this.box.visible);
+    const flash = this._hotFlash && this.time.now - this._hotFlash.at < 220 ? this._hotFlash.i : -1;
+    const sig = JSON.stringify([c.inventory.slice(0, 9), c.equipped, hide, flash]);
+    if (sig === h.sig) return;
+    h.sig = sig;
+    h.g.clear(); h.g.setVisible(!hide);
+    const eq = new Set(Object.values(c.equipped || {}));
+    for (let i = 0; i < 9; i++) {
+      const x = h.x0 + i * (h.S + 2), it = c.inventory[i];
+      h.g.fillStyle(i === flash ? 0x3a3150 : 0x0b0d16, 0.85).fillRect(x, h.y0, h.S, h.S);
+      h.g.lineStyle(1, it && eq.has(it.id) ? 0x7fb069 : 0x5d6487, 0.9).strokeRect(x + 0.5, h.y0 + 0.5, h.S - 1, h.S - 1);
+      const tex = it && this.textures.get('icons').has(it.id) ? it.id : 'generic';
+      h.icons[i].setFrame(tex).setVisible(!!it && !hide);
+      h.qty[i].setText(it && it.qty > 1 ? `${it.qty}` : '').setVisible(!hide);
+      h.nums[i].setVisible(!hide);
+    }
   }
 
   // Small corner notice (saving etc.). Never a dialogue box.
   _toast(text) {
-    this.toastText ??= this.add.text(VIEW.w - 6, VIEW.h - 10, '', { ...FONT, color: '#7fb069' }).setOrigin(1, 1).setScrollFactor(0).setDepth(9300);
+    this.toastText ??= this.add.text(VIEW.w - 6, VIEW.h - 26, '', { ...FONT, color: '#7fb069' }).setOrigin(1, 1).setScrollFactor(0).setDepth(9300);
     this.toastText.setText(text).setAlpha(1);
     this.tweens.killTweensOf(this.toastText);
     this.tweens.add({ targets: this.toastText, alpha: 0, delay: 1400, duration: 500 });
@@ -983,7 +1054,17 @@ export class WorldScene extends Phaser.Scene {
       }
       if (ev.t === 'kill') {
         if (ev.key && !this.save.world.killed.includes(ev.key)) this.save.world.killed.push(ev.key);
-        this.save.world.scrap = (this.save.world.scrap ?? 0) + (ev.boss ? 10 : 2);
+        // Drops: money to the shared wallet, a material to whoever landed the kill.
+        const drop = ev.boss ? DROPS.boss : DROPS.default;
+        const cash = drop.money[0] + Math.floor(Math.random() * (drop.money[1] - drop.money[0] + 1));
+        this.save.world.money = (this.save.world.money ?? 0) + cash;
+        const killer = this.sim.players.get(ev.by) ?? this.sim.players.get(this.localId), kc = killer && this.save.party[killer.character];
+        if (kc) {
+          const got = [];
+          if (ev.boss) for (const [id] of drop.mats) { Inv.add(kc, id, 2); got.push(ITEMS[id].name); }
+          else if (Math.random() < 0.7) { const tot = drop.mats.reduce((t, [, w]) => t + w, 0); let r = Math.random() * tot; const id = drop.mats.find(([, w]) => (r -= w) < 0)?.[0] ?? drop.mats[0][0]; Inv.add(kc, id); got.push(ITEMS[id].name); }
+          this._fxPop(ev.x, ev.y, `+$${cash}${got.length ? ' · ' + got.join(', ') : ''}`);
+        }
         this._partyDirty = true;
         // XP is shared by the party (co-op), levels grant skill points.
         for (const p of this.sim.players.values()) {
@@ -1054,6 +1135,7 @@ export class WorldScene extends Phaser.Scene {
       this._say((near.text ?? '') + '\n\nYou find the reset and lean on it. The pump coughs, catches, and starts pulling water. Somewhere south, a long gurgle. The flooded bay is draining.'); return;
     }
     if (near.action === 'tv') { this._say(this._newsLine()); return; }
+    if (near.action === 'shop') { this.gameMenu.show(`shop:${near.shop}`); return; }
     if (near.action === 'quests') { this.gameMenu.show('quests'); return; }
     if (near.action === 'pages') { const n = (this._pageIdx[near.id] = ((this._pageIdx[near.id] ?? -1) + 1) % near.pages.length); this._say(near.pages[n] + (near.pages.length > 1 ? `\n\n[E again: ${n + 1}/${near.pages.length}]` : '')); return; }
     if (near.id === 'obj.scooters') {
@@ -1457,9 +1539,10 @@ export class WorldScene extends Phaser.Scene {
       if (p.dn) g.fillStyle(0xffb347).fillRect(18, y + 4, (p.rv / 4) * 54, 1);
       g.fillStyle({ michael: 0xc8605a, trevor: 0x3f6fb5, manuel: 0x5f8f3a }[p.c] ?? 0x888888).fillRect(7, y, 8, 4);
     });
-    // Top-right: XP and scrap, compact.
-    const lines = [`xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `   ◆ ${c.skillPoints} skill pt [K]` : ''}`, `scrap ${this.save.world.scrap ?? 0}${snap.enemies?.length ? `   coderot ${snap.enemies.length}` : ''}`];
+    // Top-right: XP and money, compact.
+    const lines = [`xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `   ◆ ${c.skillPoints} skill pt [K]` : ''}`, `$${this.save.world.money ?? 0}${snap.enemies?.length ? `   coderot ${snap.enemies.length}` : ''}`];
     this.hudText.setText(lines.join('\n'));
+    this._drawHotbar();
     // Door gathering message overrides the prompt.
     const waiting = snap.players.filter((p) => p.w);
     if (waiting.length) {

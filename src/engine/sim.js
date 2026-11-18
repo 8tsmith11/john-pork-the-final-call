@@ -165,7 +165,7 @@ export class Sim {
           p.grinding = grinding;
           const top = grinding ? 270 : 165, acc = grinding ? 4 : 6;
           p.vx += (mx * top - p.vx) * Math.min(1, acc * dt); p.vy += (my * top - p.vy) * Math.min(1, acc * dt);
-          if (Math.hypot(p.vx, p.vy) > 2) { p.battery = Math.max(0, (p.battery ?? 100) - 2.2 * dt); if (p.battery <= 0) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, dead: true }); } }
+          if (Math.hypot(p.vx, p.vy) > 2) { p.battery = Math.max(0, (p.battery ?? 100) - (p.hicap ? 1.1 : 2.2) * dt); if (p.battery <= 0) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, dead: true }); } }
         } else {
           const spd = MOVE.speed * (p.morphed ? 1.15 : 1);
           p.vx = mx * spd; p.vy = my * spd;

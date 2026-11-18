@@ -28,7 +28,7 @@ export const QUESTS = [
     stages: [
       { text: 'Bring Four-oh-nine something hot (a mate thermos from the fab or the mate station).', done: (f) => f['q.soup.given'] },
     ],
-    reward: { scrap: 6, xp: 25, line: 'He wraps both hands around it and doesn\'t drink it for a while. "My wife used to do this." Then he tells you the stairwell door has been propped open at three a.m. twice this week, and he didn\'t prop it.' },
+    reward: { money: 15, xp: 25, line: 'He wraps both hands around it and doesn\'t drink it for a while. "My wife used to do this." Then he tells you the stairwell door has been propped open at three a.m. twice this week, and he didn\'t prop it.' },
   },
   {
     id: 'side.van', title: 'What the van wants', giver: 'npc.dez', act: 1,
@@ -40,7 +40,7 @@ export const QUESTS = [
       { text: 'Look at the abatement van in College Park.', done: (f) => f['q.van.seen'] },
       { text: 'Tell Dez what you saw.', done: (f) => f['q.van.reported'] },
     ],
-    reward: { scrap: 4, xp: 30, line: '"Helium sniffer. That\'s what the mast is." He finally sits up. "Somebody\'s looking for the same thing you are. And they get paid more."' },
+    reward: { money: 10, xp: 30, line: '"Helium sniffer. That\'s what the mast is." He finally sits up. "Somebody\'s looking for the same thing you are. And they get paid more."' },
   },
 ];
 
