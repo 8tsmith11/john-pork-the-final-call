@@ -101,6 +101,15 @@ export const QUESTS = [
   },
 ];
 
+QUESTS.push({
+  id: 'side.lantern', title: 'Something that glows', giver: 'npc.ozzie', act: 1,
+  ask: 'q.lantern.asked', start: (f) => f['q.lantern.asked'],
+  give: { item: 'item.fish_lantern', flag: 'q.lantern.given', refuse: '"Not that. The one with the light in it. You\'ll know."' },
+  pitch: 'Ozzie taps the notebook without looking up. "Forty-one years on this pier. Every fish in here, I\'ve had. Except one. Bass with a light in it. My wife saw one in \'61. I never have." He finally looks at you. "You got young eyes. Fish the lake."',
+  stages: [{ text: 'Catch a lantern bass in Lake Artemesia and bring it to Ozzie on the south pier.', done: (f) => f['q.lantern.given'] }],
+  reward: { money: 25, xp: 40, item: 'item.ozzie_lure', line: 'He holds it up to his face for a long time. The light moves under the scales. "Huh," he says. He writes in the notebook, one tally mark, very carefully. Then he lets it go off the end of the pier, and hands you a lure out of his hat.' },
+});
+
 export function questState(save) {
   const s = (save.world.quests ??= {});
   for (const q of QUESTS) s[q.id] ??= { stage: 0, started: !!q.main, done: false };

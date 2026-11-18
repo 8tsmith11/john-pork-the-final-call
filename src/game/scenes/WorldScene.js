@@ -633,7 +633,7 @@ export class WorldScene extends Phaser.Scene {
       }
       if (st.stage >= q.stages.length) {
         st.done = true;
-        if (this.mode !== 'client') { this.save.world.money = (this.save.world.money ?? 0) + (q.reward?.money ?? 0); for (const c of Object.values(this.save.party)) c.xp += q.reward?.xp ?? 0; this._partyDirty = true; }
+        if (this.mode !== 'client') { this.save.world.money = (this.save.world.money ?? 0) + (q.reward?.money ?? 0); for (const c of Object.values(this.save.party)) c.xp += q.reward?.xp ?? 0; if (q.reward?.item) Inv.add(this.save.party[this.character], q.reward.item); this._partyDirty = true; }
         this._toast(`✓ Quest complete: ${q.title}`);
         if (q.reward?.line) this._say(q.reward.line);
       }
@@ -868,7 +868,7 @@ export class WorldScene extends Phaser.Scene {
 
   // Ambient life per area: dust motes indoors, rain over the plaza, drips in the tunnels.
   _tickAmbient(dt) {
-    const kind = { metro_plaza: 'rain', tunnel_1: 'drip', platform: 'drip' }[this.map.id] ?? 'dust';
+    const kind = { metro_plaza: 'rain', lake: 'rain', tunnel_1: 'drip', platform: 'drip' }[this.map.id] ?? 'dust';
     this._ambAcc = (this._ambAcc ?? 0) + dt * (kind === 'rain' ? 70 : kind === 'drip' ? 3 : 6);
     const v = this.cameras.main.worldView;
     while (this._ambAcc > 1) {
@@ -1180,6 +1180,10 @@ export class WorldScene extends Phaser.Scene {
     if (near.action === 'ending') { this._playEnding(); return; }
     if (near.action === 'fab') { this._openFab(); return; }
     if (this._questInteract(near)) return;
+    if (near.grant) {
+      if (this.save.flags[near.grantFlag ?? `got.${near.id}`]) { this._say(near.doneText ?? near.text ?? ''); return; }
+      this._flag(near.grantFlag ?? `got.${near.id}`, true); this._grant(near.grant); this._say(near.text ?? ''); return;
+    }
     if (/^obj\.switch_[abc]$/.test(near.id)) { this._lever(near.id.slice(-1)); return; }
     if (near.id === 'obj.vending') { this._kickVending(near); return; }
     if (CLOCKS.includes(near.id)) { this._windClock(near); return; }

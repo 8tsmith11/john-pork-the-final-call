@@ -141,6 +141,6 @@ export const metroPlaza = makeMap({
     { id: 'obj.payphone', x: 53, y: 36, label: 'Payphone', text: 'A payphone, older than the building behind it. No power to it. It rings once while you are looking at it.' },
     // Paint Branch
     { id: 'obj.bridge_log', art: 'obj.board', x: 69, y: 39, label: 'Fishing log', text: 'A waterproof book on a chain. Fifty years of strangers: date, catch, weather. The last page is tomorrow\'s date, already filled in.' },
-    { id: 'obj.lake_trail', art: 'obj.purple_sign', x: 82, y: 39, label: 'Trail to Lake Artemesia', action: 'exit', text: 'The trail goes on into the trees toward the lake. Not in the dark. Not tonight.' },
+    { id: 'obj.lake_trail', art: 'obj.purple_sign', x: 82, y: 39, label: 'Trail to Lake Artemesia', action: 'exit', to: 'lake', text: 'The trail goes on into the trees toward the lake.' },
   ],
 });

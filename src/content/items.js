@@ -33,6 +33,8 @@ Object.assign(ITEMS, MATERIALS);
 Object.assign(ITEMS, {
   'item.scooter':       { name: 'Scooter', slot: 'key', text: 'Used, cracked deck. [Q] to ride outdoors. Rails are faster than they look.' },
   'item.scooter_hicap': { name: 'Hi-cap battery', slot: 'key', text: 'Doubles your scooter\'s range. Bolts under the deck.' },
+  'item.lake_bust':     { name: 'Little white bust', slot: 'charm', mods: { abilityPower: 0.15, markDmg: 0.1 }, text: 'John Pork, the size of a fist, carved from something white that is not stone. From the island. It is always slightly warmer than your hand.' },
+  'item.ozzie_lure':    { name: 'Ozzie\'s lure', slot: 'charm', analog: true, mods: { loot: 0.15, crit: 0.05 }, text: 'Hand-tied, red and white, forty years old. "It doesn\'t catch more fish. It catches better ones."' },
   'item.energy_bar':    { name: 'Halfsmoke bar', slot: 'consumable', heal: 20, text: 'Protein, mustard, regret. Maryland in a wrapper.' },
   'item.crab_chips':    { name: 'Old Bay crab chips', slot: 'consumable', heal: 30, text: 'The seasoning outlived the crabs.' },
 });

@@ -45,6 +45,13 @@ export const DRESSING = {
   aster_hall: {
     glow: [{ x: 4, y: 2, color: C.magenta, r: 0.8 }],
   },
+  lake: {
+    wet: true,
+    drones: 1,
+    neon: [{ x: 53, y: 3, text: 'BOATS · CLOSED', color: C.cyan, flicker: 0.1, size: 6 }],
+    holo: [{ x: 57, y: 4, w: 3, h: 2, color: C.red, lines: ['WATER', 'SAFETY', 'ZONE'] }],
+    glow: [{ x: 41, y: 30, color: C.cyan, r: 1.0 }, { x: 46, y: 18, color: C.lime, r: 0.7 }, { x: 58, y: 21, color: C.cyan, r: 0.8 }],
+  },
   room631: {
     glow: [{ x: 13, y: 8, color: C.cyan, r: 0.8 }, { x: 25, y: 6, color: C.magenta, r: 0.7 }],
   },

@@ -53,6 +53,7 @@ const MUSIC = {
   // 'synth:<name>' plays a song from music.js (composed in-repo, no file); anything else is a file path.
   room631: 'synth:apartment', aster_hall: null, aster_lobby: null,
   title: 'synth:title', lobby: 'synth:lobby',
+  lake: null,          // quiet: rain on water (gonman: a lake bed would be welcome)
   metro_plaza: null,   // the plaza gets a synthesized city soundscape instead of music
   tunnel_1: 'assets/audio/tunnel_claimed_by_the_void.ogg', platform: 'assets/audio/tunnel_claimed_by_the_void.ogg',
 };

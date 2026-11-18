@@ -133,6 +133,9 @@ ICONS = {
     "item.fish_perch": lambda: fish("concrete3", "steel"), "item.fish_bluegill": lambda: fish("tub1", "yerba1"),
     "item.fish_catfish": lambda: fish("warm1", "warm2"), "item.fish_striper": lambda: fish("bone", "night3"),
     "item.fish_glitch": lambda: fish("rot0", "rot1"), "item.fish_loopfin": lambda: fish("screen1", "screen2"),
+    "item.fish_lantern": lambda: fish("yerba0", "rot1").pts("screen2", (6, 8), (8, 8)),
+    "item.lake_bust": lambda: I().rect(5, 10, 6, 4, "concrete3").disc(8, 6, 4, "bone").pts("night2", (6, 5), (10, 5)).rect(6, 7, 5, 2, "concrete3").pts("bone", (4, 2), (12, 2)),
+    "item.ozzie_lure": lambda: I().line(8, 1, 8, 4, "steel").disc(8, 8, 3, "signal").rect(5, 8, 7, 3, "bone").line(8, 11, 6, 14, "steel").line(8, 11, 10, 14, "steel"),
     "item.relic_phone": phone, "item.relic_coin": coin, "item.relic_figure": figure,
     "generic": lambda: I().rect(4, 4, 8, 8, "concrete2").rect(4, 4, 8, 1, "concrete3").pts("night2", (7, 7), (8, 7), (7, 8), (8, 8)),
 }
