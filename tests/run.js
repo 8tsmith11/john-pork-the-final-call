@@ -4,12 +4,94 @@ import fs from 'node:fs';
 import { makeStreams, Rng } from '../src/engine/rng.js';
 import { rollWorld } from '../src/engine/worldRolls.js';
 import { newSave, migrate, CURRENT_SCHEMA } from '../src/engine/save/schema.js';
-import { Sim, MOVE, emptyInput } from '../src/engine/sim.js';
+import { Sim, MOVE, ROT, emptyInput } from '../src/engine/sim.js';
+import { ENEMIES } from '../src/content/enemies.js';
 import { room631 } from '../src/content/maps/room631.js';
 import { MAPS as MAPS_FOR_TEST } from '../src/content/maps/index.js';
 
 let failed = 0;
 const test = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}\n     ${e.message}`); } };
+
+const rotArena = () => ({ id: 'rot-test', w: 100, h: 100, objects: [], enemies: [],
+  spawns: [{ x: 160, y: 160 }], solid: () => false });
+
+test('schema 4 -> 5 adds infection without losing existing exposure or unknown data', () => {
+  const old = newSave({ seed: 'rot-save', rolls: {}, gameVersion: 'test' });
+  old.schemaVersion = 4; delete old.party.manuel.rot;
+  old.party.trevor.rot = 42.5; old.party.trevor.futureField = { keep: true };
+  const back = migrate(JSON.parse(JSON.stringify(old)));
+  assert.equal(back.schemaVersion, CURRENT_SCHEMA);
+  assert.equal(back.party.manuel.rot, 0);
+  assert.equal(back.party.trevor.rot, 42.5);
+  assert.deepEqual(back.party.trevor.futureField, { keep: true });
+  assert.deepEqual(migrate(JSON.parse(JSON.stringify(back))), back);
+});
+
+test('infection sources, charm range, caffeine and allies obey the disease rules', () => {
+  const sim = new Sim(rotArena()); sim.addPlayer('host', 'trevor');
+  const p = sim.players.get('host');
+  sim.hazards.push({ x: p.x, y: p.y, r: 20, ttl: 10, dps: 1 });
+  p.iframes = 100; sim._stepHazards(1);
+  assert.equal(p.rot, ROT.poolRate, 'environmental exposure still applies during dodge immunity');
+  const before = p.rot; sim.caffeinate('host', 45); assert.equal(p.rot, before);
+  sim.addPlayer('ward', 'manuel'); const q = sim.players.get('ward'); q.analogCharm = true;
+  sim.setRot('host', 50); sim.infect(p, 10); assert.equal(p.rot, 55);
+  sim._stepRot(1); assert.equal(p.rot, 55 - ROT.charmDecay);
+  q.x += ROT.charmRange + 1;
+  const far = p.rot; sim._stepRot(1); assert.equal(p.rot, far + ROT.growth);
+  sim.setRot('host', 0); sim.map.rotExposure = 999; sim._stepRot(1);
+  assert.equal(p.rot, ROT.maxHallRate + ROT.growth);
+  p.downed = true; const down = p.rot; sim._stepRot(1); assert.equal(p.rot, down);
+  const ally = { id: 'robot', rot: 0 }; sim.infect(ally, 100); assert.equal(ally.rot, 0);
+  sim.setRot('host', Infinity); assert.equal(p.rot, 0);
+  sim.setRot('host', 300); assert.equal(p.rot, 100);
+});
+
+test('rot-taken and puddler contact infect only when the hit lands', () => {
+  const sim = new Sim(rotArena()); sim.addPlayer('host', 'trevor');
+  const p = sim.players.get('host'), def = ENEMIES['enemy.rot_taken'];
+  const e = { id: 'e1', kind: 'enemy.rot_taken', def, x: p.x + 2, y: p.y, hp: def.hp, cd: 0, hurtT: 0 };
+  sim.enemies.set(e.id, e); sim._stepEnemies(1 / 60);
+  assert.equal(p.rot, def.infection); assert.ok(p.hp < 100);
+  e.cd = 0; sim._stepEnemies(1 / 60); assert.equal(p.rot, def.infection, 'iframes prevent a second infection hit');
+  p.iframes = 0; e.def = { ...def, ai: 'chase', trait: 'puddler' }; e.cd = 0;
+  sim._stepEnemies(1 / 60); assert.equal(p.rot, def.infection + ROT.puddlerHit);
+});
+
+test('heavy infection slows movement and stamina but permits escape, and survives map changes', () => {
+  const sim = new Sim(rotArena()); sim.addPlayer('host', 'trevor');
+  const p = sim.players.get('host'); sim.setRot('host', 100); p.sta = 0;
+  const start = p.x; sim.step(1 / 60, new Map([['host', { ...emptyInput(), mx: 1 }]]));
+  assert.ok(Math.abs(p.x - start - MOVE.speed * 0.65 / 60) < 1e-8);
+  assert.ok(Math.abs(p.sta - MOVE.staminaRegen * 0.5 / 60) < 1e-8);
+  assert.equal(sim.snapshot().players[0].rot, 100);
+  sim.setMap(rotArena()); assert.equal(p.rot, 100);
+  sim.setRot('host', 0); const clean = p.x;
+  sim.step(1 / 60, new Map([['host', { ...emptyInput(), mx: 1 }]]));
+  assert.ok(Math.abs(p.x - clean - MOVE.speed / 60) < 1e-8);
+});
+
+test('rot-taken packs stay slow, can be put to sleep, and the drum resets infection', () => {
+  const map = rotArena(); map.enemies = [120, 130, 140].map((x) => ({ kind: 'enemy.rot_taken', x, y: 120 }));
+  const sim = new Sim(map, { seed: 'rot-pack' }); sim.addPlayer('host', 'trevor');
+  const p = sim.players.get('host'); p.x = p.y = 200;
+  const starts = new Map([...sim.enemies.values()].map((e) => [e.id, { x: e.x, y: e.y }]));
+  sim._stepEnemies(1 / 60);
+  for (const e of sim.enemies.values()) {
+    assert.equal(e.def.speed, ENEMIES['enemy.rot_taken'].speed);
+    assert.ok(e.hp > ENEMIES['enemy.rotling'].hp);
+    const start = starts.get(e.id), distance = Math.hypot(e.x - start.x, e.y - start.y);
+    assert.ok(distance > 0 && distance <= e.def.speed / 60 + 1e-8);
+    assert.ok(Math.hypot(e.x - p.x, e.y - p.y) < Math.hypot(start.x - p.x, start.y - p.y));
+    starts.set(e.id, { x: e.x, y: e.y }); e.sleepT = 1;
+  }
+  sim._stepEnemies(1 / 60);
+  for (const e of sim.enemies.values()) assert.deepEqual({ x: e.x, y: e.y }, starts.get(e.id));
+  sim.setRot('host', 75);
+  const drum = { x: 120, y: 120, fightT: 0, cd: 0, cd2: 1, beat: 0, root: 0 };
+  sim._stepSahur(drum, { speed: 40, radius: 9 }, 1 / 60);
+  assert.equal(p.rot, 0);
+});
 
 test('rng streams are deterministic and independent', () => {
   const a = makeStreams('seed-1'), b = makeStreams('seed-1');

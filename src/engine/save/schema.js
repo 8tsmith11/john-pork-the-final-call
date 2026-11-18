@@ -7,7 +7,7 @@ import { BASE_SCORES } from '../../content/abilities.js';
 
 export const FORMAT = 'jpfc-save';
 export const SLOTS = 36;   // inventory slots per character: 0..8 hotbar, 9..35 backpack
-export const CURRENT_SCHEMA = 4;
+export const CURRENT_SCHEMA = 5;
 
 /** migrations[n] upgrades a schema-n save to schema n+1. Append only. */
 export const migrations = {
@@ -42,6 +42,11 @@ export const migrations = {
     }
     save.schemaVersion = 4; return save;
   },
+  // 4 -> 5: persistent per-roommate coderot exposure (0..100).
+  4: (save) => {
+    for (const c of Object.values(save.party ?? {})) c.rot ??= 0;
+    save.schemaVersion = 5; return save;
+  },
 };
 
 export function newCharacter(id) {
@@ -51,6 +56,7 @@ export function newCharacter(id) {
     skills: {},                 // { 'skill.id': rank }
     morph: { line: id, stage: 0 },
     hp: null,                   // null = full
+    rot: 0,
     inventory: new Array(SLOTS).fill(null),   // fixed slots: { id, qty } | null (engine/inventory.js)
     equipped: { weapon: null, ranged: null, gadget: null, charm: null,
       helmet: null, chestplate: null, leggings: null, boots: null,          // armor
