@@ -11,6 +11,7 @@ import { GAME_VERSION } from '../../version.js';
 import { loadScene, Conversation } from '../../engine/dialogue.js';
 import { babble, setArea, sfx } from '../../audio/audio.js';
 import { ITEMS, RECIPES, SKILLS, playerMods } from '../../content/items.js';
+import { tileKey } from '../render/tiles.js';
 
 const STEP = 1 / 60;
 const XP_PER_LEVEL = 30;
@@ -190,18 +191,19 @@ export class WorldScene extends Phaser.Scene {
   // ---------- map ----------
   _showMap(map) {
     this.map = map;
-    this.mapGfx?.destroy();
-    const g = this.mapGfx = this.add.graphics().setDepth(-10);
-    map.layout.forEach((row, ty) => [...row].forEach((ch, tx) => {
-      g.fillStyle(TILE_COLORS[ch] ?? 0x000000).fillRect(tx * TILE, ty * TILE, TILE, TILE);
-      if (ch === '#') g.fillStyle(0x262a45).fillRect(tx * TILE, ty * TILE, TILE, 3);
-      if (ch === 't') g.fillStyle(0x6b5d4d).fillRect(tx * TILE, ty * TILE + 5, TILE, 1).fillRect(tx * TILE, ty * TILE + 10, TILE, 1);
-    }));
+    this.mapGfx?.destroy(); this.mapRT?.destroy();
+    // Bake textured tiles into one render texture (cheap to draw every frame).
+    const rt = this.mapRT = this.add.renderTexture(0, 0, map.w * TILE, map.h * TILE).setOrigin(0, 0).setDepth(-10);
+    map.layout.forEach((row, ty) => [...row].forEach((ch, tx) => rt.draw(tileKey(ch, tx, ty), tx * TILE, ty * TILE)));
+    const g = this.mapGfx = this.add.graphics().setDepth(-9);
     for (const o of map.objects) {
       const warm = o.id === 'obj.printer_3' || o.id === 'obj.mate';
       const color = o.npc ? 0x8a8f6a : o.action === 'exit' ? 0xffb347 : o.id.includes('statue') || o.id.includes('flag') ? 0xf2a6b8 : warm ? 0xd98a4a : 0x6d7899;
-      g.fillStyle(color, o.action === 'exit' ? 0.5 : 1).fillRect(o.x * TILE + 3, o.y * TILE + 3, TILE - 6, TILE - 6);
+      g.fillStyle(0x000000, 0.35).fillRect(o.x * TILE + 3, o.y * TILE + 12, TILE - 6, 3);
+      g.fillStyle(color, o.action === 'exit' ? 0.55 : 1).fillRect(o.x * TILE + 3, o.y * TILE + 2, TILE - 6, TILE - 6);
+      g.fillStyle(0xffffff, 0.18).fillRect(o.x * TILE + 3, o.y * TILE + 2, TILE - 6, 2);
     }
+    this._setupLighting(map);
     const mw = map.w * TILE, mh = map.h * TILE, vw = this.scale.width, vh = this.scale.height;
     this.cameras.main.setBounds(Math.min(0, (mw - vw) / 2), Math.min(0, (mh - vh) / 2), Math.max(mw, vw), Math.max(mh, vh)).setRoundPixels(true);
     this.mapLabel.setText(map.name);
@@ -317,6 +319,31 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
+  // Semi-dark lighting: a dark layer with light pools around players and lit objects.
+  _setupLighting(map) {
+    const DARK = { room631: 0.35, aster_hall: 0.45, metro_plaza: 0.4, tunnel_1: 0.7, platform: 0.62 };
+    this.darkness = DARK[map.id] ?? 0.4;
+    this.lights?.destroy();
+    const W = this.scale.width, H = this.scale.height;
+    this.lights = this.add.renderTexture(0, 0, W, H).setOrigin(0, 0).setScrollFactor(0).setDepth(8000);
+    this.lightSpots = map.objects.filter((o) => o.npc || o.action === 'exit' || ['obj.printer_3', 'obj.mate', 'obj.pork_flag', 'obj.shrimp_tank', 'obj.billboard', 'obj.oscilloscope', 'obj.lobby_monitor'].includes(o.id));
+    this.rotEdge = map.id === 'tunnel_1' || map.id === 'platform';
+  }
+
+  _drawLighting(snap) {
+    if (!this.lights) return;
+    const cam = this.cameras.main, rt = this.lights;
+    rt.clear().fill(0x05060c, this.darkness);
+    const at = (x, y, scale) => rt.erase('light', x - cam.worldView.x - 64 * scale, y - cam.worldView.y - 64 * scale);
+    for (const p of snap.players) { this._lightImg ??= this.make.image({ key: 'light', add: false }); this._lightImg.setScale(1.3); rt.erase(this._lightImg, p.x - cam.worldView.x, p.y - 8 - cam.worldView.y); }
+    for (const o of this.lightSpots) { this._lightImg.setScale(0.7); rt.erase(this._lightImg, o.x * TILE + 8 - cam.worldView.x, o.y * TILE + 8 - cam.worldView.y); }
+    // Rot shows up as rendering errors at the screen edges.
+    if (this.rotEdge && Math.random() < 0.12) {
+      const W = this.scale.width, H = this.scale.height, y = Math.random() * H, h = 2 + Math.random() * 6, left = Math.random() < 0.5;
+      rt.fill(Math.random() < 0.5 ? 0x7fb069 : 0xd65db1, 0.35, left ? 0 : W - 40, y, 40, h);
+    }
+  }
+
   _tryExit(obj) {
     if (!obj || obj.action !== 'exit') return;
     if (obj.requiresClear && !this.sim.cleared) return this._announce('Something down here is still moving.');
@@ -402,7 +429,8 @@ export class WorldScene extends Phaser.Scene {
     } else {
       me = this.sim.players.get(this.localId);
       const inp = this._frozen(this.input2.read(me));
-      this.acc += Math.min(deltaMs / 1000, 0.1);
+      // Solo: the world pauses while you read or use a menu. (Co-op keeps running for the others.)
+      this.acc += this.mode === 'solo' && (this.dlg || this.menu) ? 0 : Math.min(deltaMs / 1000, 0.1);
       let first = true, events = [];
       while (this.acc >= STEP) {
         const inputs = new Map([[this.localId, first ? inp : { ...inp, dodge: false, interact: false }]]);
@@ -518,6 +546,7 @@ export class WorldScene extends Phaser.Scene {
     for (const sh of snap.shots || []) this.shotGfx.fillStyle(sh.f ? 0xffd27f : 0xd65db1).fillCircle(sh.x, sh.y, sh.f ? 2 : 2.5);
 
     for (const ev of snap.events || []) this._fx(ev, snap);
+    this._drawLighting(snap);
     this._drawHud(snap);
   }
 

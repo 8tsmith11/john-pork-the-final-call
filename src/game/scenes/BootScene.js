@@ -1,4 +1,6 @@
 // Loads assets. Missing art falls back to on-style placeholders so the game always boots.
+import { makeTiles } from '../render/tiles.js';
+
 export const ROOMMATES = {
   michael: { name: 'Michael', color: 0xc8605a, hair: 0x1a1a22, height: 23 },
   trevor:  { name: 'Trevor',  color: 0x3f6fb5, hair: 0x6b4a2e, height: 24 },
@@ -21,6 +23,7 @@ export class BootScene extends Phaser.Scene {
       this._placeholder(id, r);
     }
     this._makeAnims();
+    makeTiles(this);
     this.scene.start('Title');
   }
 
