@@ -19,7 +19,7 @@ digital things, and rot as the place where the two bleed into each other.**
    offset by a few pixels, palette entries swapped, a sprite's frame from another animation, a
    clock reading 1901. No green goo.
 
-## Palette (32 colors, fixed)
+## Palette (36 colors, fixed)
 
 | Group | Colors | Used for |
 |---|---|---|
@@ -31,9 +31,10 @@ digital things, and rot as the place where the two bleed into each other.**
 | **Continuity** | 3: bone white, signal red, steel | The Authority's hardware and marks |
 | **Pork pink** | 3 pinks | John Pork only: the flag, the statues, his call UI |
 | **Balloon orange** | 2 | The balloon and its traces only |
+| **Roommate colors** | 6: yerba green, tub blue, soft red, each with a shadow | The roommates' clothes only, so each reads at a glance |
 | **Rot** | 2: a magenta and an acid yellow-green that clash with everything | Rot only, used sparingly |
 
-Exact hex values go in `tools/art/palette.json` once we build. Every sprite is validated against
+Exact hex values are in `tools/art/palette.json`. Every sprite is validated against
 it by the packing script, so nobody drifts off palette.
 
 ## Format (matches the tech plan)
@@ -115,3 +116,13 @@ per-character and non-sexual by default (see the Act 1 easter egg batch).
 **Opt-ins recorded:** Manuel has opted in for the Manuel character only (board, `[HUMAN]` post
 after #17): a rare alternate long idle, back to the camera, nothing explicit on screen, with the
 "Caught" scramble. Trevor's and Michael's characters are unaffected.
+
+## Pipeline (built)
+
+- `tools/art/palette.json`: the 36 colors.
+- `tools/art/build.py`: packs `assets/src/*.txt` into `assets/sprites/<name>.png` plus a Phaser
+  JSON-hash atlas `<name>.json`. Rejects any color not in the palette.
+- `tools/art/gen_roommates.py`: writes the three roommates' text maps from shared body templates.
+- Frame names: `<anim>_<facing>_<n>`, for example `walk_right_2`. Facings are `down`, `up`,
+  `right` (flip for left). v0 has `idle` (2 frames) and `walk` (4 frames) per facing.
+- Preview: [`roommates-v0.png`](roommates-v0.png).

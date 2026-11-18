@@ -1,0 +1,15 @@
+{
+  "_note": "The only colors allowed in game art. build.py rejects anything else. See docs/art/DIRECTION.md.",
+  "night0": "#0d0b1a", "night1": "#17142b", "night2": "#231f3f", "night3": "#332e57",
+  "concrete0": "#2b3331", "concrete1": "#3f4a46", "concrete2": "#5b6862", "concrete3": "#7f8c84",
+  "warm0": "#3a2418", "warm1": "#5c3a22", "warm2": "#8a5a2e", "warm3": "#b9853f", "warm4": "#e0b866",
+  "skin0": "#6b3f2e", "skin1": "#a3674a", "skin2": "#d09a72", "skin3": "#f0c9a0",
+  "screen0": "#0f4a5c", "screen1": "#1a8a9c", "screen2": "#3fd0d6",
+  "bone": "#e8e2d0", "signal": "#d42a3c", "steel": "#7a8794",
+  "pork0": "#a8456a", "pork1": "#e87a9c", "pork2": "#f7b8c8",
+  "balloon0": "#f07818", "balloon1": "#ffa23a",
+  "rot0": "#d417c8", "rot1": "#c8e619",
+  "yerba0": "#3e5a34", "yerba1": "#6f9448",
+  "tub0": "#2c4a8a", "tub1": "#4f7fd0",
+  "soft0": "#7a2f38", "soft1": "#c05a5e"
+}
