@@ -82,7 +82,7 @@ export const metroPlaza = makeMap({
     { id: 'obj.purple_sign', x: 40, y: 27, label: 'Purple Line sign', text: 'PURPLE LINE: OPENING SOON.' },
     { id: 'obj.plaza_clock', art: 'obj.clock_6f', x: 46, y: 9, label: 'Station clock', text: '19:01. Under it, somebody has taped a paper clock with the right time and a note: USE THIS ONE.' },
     { id: 'obj.van', x: 45, y: 20, label: 'Abatement van', text: 'White, unmarked except for a mast on the roof. The mast is turning. It is pointed at the ground.' },
-    { id: 'npc.pruitt', x: 46, y: 19, label: 'Supervisor Pruitt', npc: true, text: '"Evening, folks. Routine abatement, nothing to see, which I am required to say." He looks at the regulation card and then, sorry about it, at you. "You live in the tower? You\'d tell me if you\'d seen anything light. Floating, I mean. Orange."' },
+    { id: 'npc.pruitt', x: 46, y: 19, label: 'Supervisor Pruitt', npc: true, talk: 'aster:pruitt_talk' },
     { id: 'npc.addo', art: PERSON[1], x: 47, y: 21, label: 'Addo', npc: true, text: '"Mast\'s reading light. Something light. Lighter than it should be down there." He seems pleased that somebody asked.' },
     { id: 'npc.del', art: PERSON[0], x: 44, y: 21, label: 'Del', npc: true, text: '"Fourteen hours. Fourteen. You know what the rate is after twelve? Same as before twelve."' },
     { id: 'npc.rotter_3', x: 49, y: 26, label: 'Rotter (looks at you differently)', npc: true, text: 'coderot. coderot. ...I used to be someone\'s favorite person. coderot.' },
