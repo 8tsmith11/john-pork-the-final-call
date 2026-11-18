@@ -57,7 +57,10 @@ export const lake = makeMap({
     lamp(39, 36, 'At the foot of the south pier. Someone has taped a fishing licence to it, expired 2091.'),
     { id: 'obj.lake_bench', art: 'obj.bench', x: 33, y: 35, label: 'Bench', text: 'IN MEMORY OF EVERYONE WHO FISHED HERE. No names. It\'s a long bench.' },
     // The south pier and its fisherman (side quest: "Something that glows")
-    { id: 'npc.ozzie', art: 'npc.seun', x: 41, y: 29, label: 'Ozzie', npc: true, text: 'An old man at the end of the pier with two rods, a bucket, and a notebook full of tally marks. He doesn\'t look up. "You\'re scaring them. Sit or go."' },
+    { id: 'npc.ozzie', art: 'npc.seun', x: 41, y: 29, label: 'Ozzie', npc: true, later: [
+      { if: 'q.lantern.given', text: '"Wrote it down twice," Ozzie says, "in case the first one doesn\'t take." His eyes are back on the water. The notebook is open on his knee at the same page.' },
+      { if: 'q.lantern.given && act1.complete', text: 'Ozzie offers you the second rod without a word. The two of you fish for a while. Nothing bites.' },
+    ], text: 'An old man at the end of the pier with two rods, a bucket, and a notebook full of tally marks. He doesn\'t look up. "You\'re scaring them. Sit or go."' },
     // The east pier
     { id: 'obj.east_pier_sign', art: 'obj.board', x: 61, y: 19, label: 'Pier rules', text: 'NO DIVING. NO NETS. CATCH AND RELEASE.\nAll three have been crossed out, and under them in marker: TAKE WHAT YOU NEED.' },
     // The boathouse

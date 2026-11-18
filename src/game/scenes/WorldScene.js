@@ -9,7 +9,7 @@ import { MAPS, worldPos } from '../../content/maps/index.js';
 import { TILE_COLORS } from '../../content/maps/build.js';
 import { ENEMIES } from '../../content/enemies.js';
 import { GAME_VERSION } from '../../version.js';
-import { loadScene, Conversation } from '../../engine/dialogue.js';
+import { loadScene, Conversation, evalCond } from '../../engine/dialogue.js';
 import { babble, setArea, sfx, ring, speak, hush } from '../../audio/audio.js';
 import { DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods } from '../../content/items.js';
 import { tileKey } from '../render/tiles.js';
@@ -646,6 +646,18 @@ export class WorldScene extends Phaser.Scene {
     this._toast(LINES[(n - 1) % LINES.length]);
   }
 
+  // Recurring people (human note: "memorable characters"): an NPC's `later` list holds lines for
+  // after story beats, [{ if: '<condition>', text }]. The LAST entry whose condition holds wins, so
+  // list them in story order. Conditions use the dialogue evaluator (flags, &&, not, money...).
+  _sayLater(near) {
+    if (!near.later?.length) return false;
+    const ctx = this._dialogueCtx();
+    const hit = [...near.later].reverse().find((l) => evalCond(l.if, ctx));
+    if (!hit) return false;
+    this._say(`${near.label.toUpperCase()}\n${hit.text}`);
+    return true;
+  }
+
   // ---------- quests (src/content/quests.js) ----------
   _questInteract(near) {
     const f = this.save.flags, qs = questState(this.save);
@@ -1236,6 +1248,7 @@ export class WorldScene extends Phaser.Scene {
     if (near.talk && near.npc) {
       const met = `met.${near.id}`;
       if (this.save.flags[met] && this._questInteract(near)) return;
+      if (this.save.flags[met] && this._sayLater(near)) return;
       if (!this.save.flags[met]) this._flag(met, true);
     }
     // A scene that is finished for good (e.g. the sniffer is printed) answers with one line after that.
@@ -1244,6 +1257,7 @@ export class WorldScene extends Phaser.Scene {
     if (near.action === 'ending') { this._playEnding(); return; }
     if (near.action === 'fab') { this._openFab(); return; }
     if (this._questInteract(near)) return;
+    if (near.npc && this._sayLater(near)) return;
     if (near.grant) {
       if (this.save.flags[near.grantFlag ?? `got.${near.id}`]) { this._say(near.doneText ?? near.text ?? ''); return; }
       this._flag(near.grantFlag ?? `got.${near.id}`, true); this._grant(near.grant); this._say(near.text ?? ''); return;
