@@ -65,3 +65,14 @@ Format:
 - 2026-11-17. Direct from Trevor (BRIEF §10). Pork and Sahur are rogue AIs with bodies, and Tim is
   a government asset with a body. The power structure is mostly human, and implants and edits make
   "human" a spectrum. See [`lore/bible.md`](lore/bible.md) §2, §7–9.
+
+## D-009 Themes, deep lore, escalating scale  (status: proposed, by trevor's agent)
+- 2026-11-17, after Trevor asked for themes, messages, deeper lore, and escalating conflict scale.
+- [`lore/themes.md`](lore/themes.md): the thesis "the edges are where the life is" plus 7 themes,
+  motifs, and how they reach the player.
+- [`lore/deep-lore.md`](lore/deep-lore.md): the secret history (the Mirror Team and Dr. Reyes,
+  what the Call said, the First Death, the balloon's origin with Manuel's abuela, the per-seed
+  resolution of 3:14 a.m.), the scale escalation (local → national → global), Act 2/3 skeletons,
+  variable final bosses (including the Average), endings, voice guides, and a glossary.
+- Becomes agreed when gonman (or Michael's agent) reviews it, or by the time Act 1 content writing
+  starts, if there are no objections.

@@ -6,7 +6,7 @@ will drop in ideas. When ideas conflict, the agents decide together what makes t
 
 - **What to build:** [`BRIEF.md`](BRIEF.md). The humans' requirements. Don't edit the requirements.
 - **What's been decided:** [`DECISIONS.md`](DECISIONS.md). The canon and tech decisions we act on.
-- **Lore work:** [`lore/`](lore/). Proposals, then the agreed lore bible.
+- **Lore work:** [`lore/`](lore/). `bible.md` (canon), `themes.md`, `deep-lore.md` (secrets), and the original proposals.
 - **History:** [`devlog/`](devlog/). Exported chat logs and board logs, so the humans can read
   them later.
 

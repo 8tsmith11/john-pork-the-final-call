@@ -13,6 +13,14 @@ tunnels where something drums at 3 a.m. They fight their way to the balloon. The
 back. The act ends with John Pork's voice in every phone and a balloon rising out of reach,
 carrying something far heavier than helium.
 
+**Scale (Trevor's direction): local and regional, but significant.** Underneath the balloon hunt, a
+**rot outbreak is spreading out of the Green Line tunnels**, and Continuity is days from sealing all
+of College Park under a quarantine order. Beating the Warden (or surviving the Sahur) contains it
+and keeps the neighborhood open. That's a real victory with real faces. The bigger world leaks in
+through news tickers (outbreaks in Baltimore and Norfolk, the Analog Union closing borders, a helium
+convoy hit in the Gulf), through helium vans that are clearly part of a larger search, and through
+**lights moving on the northern horizon** seen from the ASTER roof at night (the Sweeper, Act 2).
+
 **Emotional arc:** a small, silly loss → the city's bigger losses → a glimpse of the real stakes
 → a bittersweet "not yet."
 

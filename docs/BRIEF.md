@@ -202,6 +202,12 @@ have to apply, but it would make it interesting."
   bioengineering**, not everyone is completely "human."
   > *"and not everything is ai, there are also powerful people. theres also neurotech implants and
   > bioengineering so not everything is completley \"human\" so to speak"*
+- **The story should have themes and messages**, and the lore needs more depth.
+  > *"also the story should have themes." / "and messages" / "you should work more on the lore as well"*
+- **Conflict scale escalates across the acts.** Act 1 is relatively local/regional, but still
+  significant, and it hints at what's coming.
+  > *"The scale of the conflicts should escalate. act 1 is relatively local/regional. but still
+  > significant and hints at what is to come later."*
 
 ---
 
