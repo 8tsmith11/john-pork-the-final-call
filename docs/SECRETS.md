@@ -28,7 +28,7 @@ To test the idles without waiting three minutes, add `?idle=10` to the game's ad
 
 | # | Egg | How to trigger | Hint in the world | Status |
 |---|---|---|---|---|
-| 1 | **Needy voicemails** | Decline John Pork's call. After the 1st and 2nd decline he leaves a voicemail, each needier than the last, ending in heavy breathing. The 3rd is cut off by drumming, and Sahur comes for you | The call screen itself: "Decline" is right there | planned |
+| 1 | **Needy voicemails** | Decline John Pork's call. After the 1st and 2nd decline he leaves a voicemail, each needier than the last, ending in heavy breathing. The 3rd is cut off by drumming, and Sahur comes for you | The call screen itself: "Decline" is right there | built |
 | 2 | **The occupied bathroom** | The always-locked bathroom in Aster. Knock 5 times: "one minute!" Knock 10 times: it opens a hand's width, you look, you stop looking. Achievement: "One minute." After that it only says "No." | A queue-number sign on the door that never changes | built |
 | 3 | **The pixelated NPC** | One person in the metro plaza crowd is permanently pixelated. Talk to them: they don't know. Nobody explains it. It looks like rot. It isn't | Always visible once you reach their area | built |
 | 4 | **Late-night title screen** | Open the game late at night by your real clock: the title screen shows Pork in bed asking why you're still up. *(Proposed window: midnight to 5 a.m., widened from 3 a.m. only, per the discoverability rule)* | None needed; you'll hit it if you play late | built (text only) |
@@ -36,9 +36,9 @@ To test the idles without waiting three minutes, add `?idle=10` to the game's ad
 | 6 | **Manuel's other idle** | Manuel only, while morphed into "the gonman" or beyond: sometimes his 3-minute idle is a ruder one, back to the camera, nothing shown. *(Proposed chance: 1 in 3. Manuel opted in for his own character; D-007)* | The mate idle makes players wait around as Manuel | built |
 | 7 | **"We saw nothing"** | Move during any long idle: the character scrambles and you get the achievement "We saw nothing" | Follows from 5 and 6 | built |
 | 8 | **Purple Line "opening soon"** | Read the Purple Line platform signs. They've said this for seventy years | On the main path | built |
-| 9 | **Testudo's nose** | Rub the bronze terrapin's nose on campus. It might actually do something | Students in the area mention it | planned |
-| 10 | **The rotter who says something else** | Stand next to one particular rotter long enough and they say something that isn't "code rot" | They look at you differently from the others | planned |
-| 11 | **Room 631** | A book on the shelf in 631 is volume 631 of a science journal: the one with the paper that named model collapse | It's on the shelf | planned |
+| 9 | **Testudo's nose** | Rub the bronze terrapin's nose on campus. It might actually do something | Students in the area mention it | built |
+| 10 | **The rotter who says something else** | Stand next to one particular rotter long enough and they say something that isn't "code rot" | They look at you differently from the others | built |
+| 11 | **Room 631** | A book on the shelf in 631 is volume 631 of a science journal: the one with the paper that named model collapse | It's on the shelf | built |
 
 ## Pool (approved, not yet scheduled)
 
@@ -55,8 +55,8 @@ To test the idles without waiting three minutes, add `?idle=10` to the game's ad
 - **"At the end of the day no one can code faster than AI."** The ad slogan of the Slop Decades,
   still on rotting billboards. Rotters sometimes say it instead of "code rot." One major character
   says it once, sincerely.
-- **Aster slang:** "Aster pros," "Aster noob," "rookie Aster mistake."
-- **"I hate 245 lab."** Manuel, at random.
+- **Aster slang:** "Aster pros," "Aster noob," "rookie Aster mistake." The roommates say these on their own over their heads: after a kill, when someone is hit or goes down. They also say other things now and then (lines in `src/content/barks.js`).
+- **"I hate 245 lab."** Manuel, at random, out loud. Also in the fridge condensation, the opening scene, and at Fab #1. In his gonman form he says "The gonman also hates 245 lab."
 - **The balcony ottoman** shows the weather: wet, dusty, sun-bleached.
 - **Clocks reading 1901** are rotted devices that never recovered from the 2038 Rollover.
 - **Three printers** in 631. One of them is always warm.

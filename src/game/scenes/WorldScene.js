@@ -15,6 +15,7 @@ import { DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods } from '../../content/
 import { tileKey } from '../render/tiles.js';
 import { GameMenu, TABS } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
+import { BARKS, pickBark } from '../../content/barks.js';
 import { rollCatch } from '../../content/fish.js';
 import { QUESTS, questState } from '../../content/quests.js';
 import { CompanionBrain, isAi } from '../../engine/companion.js';
@@ -293,6 +294,8 @@ export class WorldScene extends Phaser.Scene {
     const once = (flag, fn) => { if (!this.save.flags[flag]) { this.save.flags[flag] = true; fn(); } };
     if (map.id === 'aster_hall') once('act1.beat.asterEnter', () => this.startDialogue('aster'));
     if (map.id === 'tunnel_1') once('act1.beat.call', () => this._hackCall(() => this.startDialogue('the_call')));
+    // A roommate says something on the way in.
+    if (BARKS.enter[map.id]) this.time.delayedCall(1400, () => { const snap = this._lastRendered; const ps = (snap?.players ?? []).filter((p) => !p.dn); const p = ps[Math.floor(Math.random() * ps.length)]; if (p && this.map.id === map.id) this._bark(p.id, pickBark(BARKS.enter[map.id], p.c)); });
   }
 
   _newGame() {
@@ -1311,6 +1314,7 @@ export class WorldScene extends Phaser.Scene {
     for (const sh of snap.shots || []) this.shotGfx.fillStyle(sh.f ? 0xffd27f : 0xd65db1).fillCircle(sh.x, sh.y, sh.f ? 2 : 2.5);
 
     for (const ev of snap.events || []) this._fx(ev, snap);
+    this._barkTick(snap);
     this._drawLighting(snap);
     this._tickAmbient(this.game.loop.delta / 1000);
     this.crowd?.update(this.game.loop.delta / 1000);
@@ -1457,9 +1461,44 @@ export class WorldScene extends Phaser.Scene {
     this.bossGfx.clear().fillStyle(0x1c1f33).fillRect(x, 30, w, 4).fillStyle(e.boss.ph === 3 ? 0xd65db1 : 0xf2a6b8).fillRect(x, 30, Math.max(0, e.hp / e.boss.max) * w, 4);
   }
 
+  // ---------- barks: short lines over the roommates' heads (content in src/content/barks.js) ----------
+  _bark(playerId, text) {
+    const s = this.sprites.get(playerId);
+    if (!s || !text || this.dlg || this.menu || this.time.now < (this._barkQuietUntil ?? 0)) return;
+    this._barkQuietUntil = this.time.now + 5000;                    // one voice at a time
+    const t = this.add.text(s.x, s.y - 30, text, { ...FONT, fontSize: '6px', color: '#e8e8f0', backgroundColor: '#0b0d16cc', padding: { x: 2, y: 1 } }).setOrigin(0.5, 1).setDepth(7000);
+    const follow = this.time.addEvent({ delay: 30, loop: true, callback: () => t.active && s.active && t.setPosition(s.x, s.y - 30) });
+    this.tweens.add({ targets: t, alpha: 0, delay: 2600, duration: 500, onComplete: () => { follow.remove(); t.destroy(); } });
+  }
+
+  _barkFrom(kind, snap, { not = null, by = null } = {}) {
+    const players = (snap?.players ?? []).filter((p) => !p.dn && p.id !== not);
+    const p = by ? players.find((x) => x.id === by) : players[Math.floor(Math.random() * players.length)];
+    if (p) this._bark(p.id, pickBark(BARKS[kind], p.c));
+  }
+
+  _barkTick(snap) {
+    // Somebody went down: one of the others says so.
+    for (const p of snap.players) {
+      const s = this.sprites.get(p.id);
+      if (s && p.dn && !s.wasDown) this._barkFrom('allyDown', snap, { not: p.id });
+      if (s) s.wasDown = p.dn;
+    }
+    // Now and then, out of nowhere.
+    this._nextIdleBark ??= this.time.now + 20000;
+    if (this.time.now > this._nextIdleBark) {
+      this._nextIdleBark = this.time.now + 28000 + Math.random() * 30000;
+      const up = snap.players.filter((p) => !p.dn);
+      const p = up[Math.floor(Math.random() * up.length)];
+      if (p) this._bark(p.id, pickBark(p.mo && BARKS.idleMorph[p.c] ? BARKS.idleMorph : BARKS.idle, p.c));
+    }
+  }
+
   _fx(ev, snap) {
     if (['hit', 'kill', 'shot', 'swing'].includes(ev.t) && (ev.by === this.localId || ev.id === this.localId)) sfx(ev.t);
     if (ev.t === 'hurt' && ev.id === this.localId) sfx('hurt');
+    if (ev.t === 'kill' && !ev.boss && Math.random() < 0.3) this._barkFrom('kill', snap, { by: ev.by });
+    if (ev.t === 'hurt' && Math.random() < 0.2) this._barkFrom('allyHurt', snap, { not: ev.id });
     if (ev.t === 'drum') { this.cameras.main.shake(40, ev.beat % 4 === 0 ? 0.006 : 0.002); sfx('hit'); }
     if (ev.t === 'boss' && !ev.sahur && this.mode !== 'client') this.save.flags['act1.boss.wardenName'] = ev.name;
     if (ev.t === 'kill' && ev.boss && this.mode !== 'client') this.save.flags['act1.boss.defeated'] = true;
