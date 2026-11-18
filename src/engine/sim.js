@@ -26,6 +26,7 @@ export class Sim {
     this.players = new Map(); // id -> player
     this.enemies = new Map(); // id -> enemy
     this.shots = [];          // projectiles
+    this.hazards = [];        // lingering rot pools: {x, y, r, ttl, dps}
     this.events = [];         // this tick's events for rendering: hits, deaths, shots
     this.tick = 0;
     this._nextId = 1;
@@ -35,7 +36,7 @@ export class Sim {
   /** Swap to another map, keeping players (placed at the map's spawns). */
   /** Swap maps. `fromId` = the map we came from: players arrive beside the exit that leads back there. */
   setMap(map, fromId = null) {
-    this.map = map; this.shots = []; this.enemies.clear();
+    this.map = map; this.shots = []; this.hazards = []; this.enemies.clear();
     const back = fromId && map.objects.find((o) => o.action === 'exit' && o.to === fromId);
     let arrivals = map.spawns;
     if (back) {
@@ -165,9 +166,21 @@ export class Sim {
   }
 
   _afterPlayers(dt) {
+    this._stepHazards(dt);
     this._stepEnemies(dt);
     this._stepShots(dt);
     this._stepRevives(dt);
+  }
+
+  _stepHazards(dt) {
+    for (const h of this.hazards) {
+      h.ttl -= dt;
+      for (const p of this.players.values()) {
+        if (p.downed || Math.hypot(p.x - h.x, p.y - h.y) > h.r) continue;
+        if ((p._hazT = (p._hazT ?? 0) - dt) <= 0) { p._hazT = 0.5; const keep = p.iframes; p.iframes = 0; this._hurtPlayer(p, Math.round(h.dps * 0.5)); if (keep > p.iframes) p.iframes = keep; }
+      }
+    }
+    this.hazards = this.hazards.filter((h) => h.ttl > 0);
   }
 
   _melee(p) {
@@ -194,6 +207,7 @@ export class Sim {
 
   _hurtEnemy(e, dmg, kx, ky, by) {
     if (e.sahur) { dmg = 1; this.events.push({ t: 'thunk', x: e.x, y: e.y }); }
+    else if (e.boss && e.state === 'vulnerable') dmg *= 2;
     e.hp -= dmg; e.hurtT = 0.12;
     if (e.boss) { kx *= 0.15; ky *= 0.15; const f = e.hp / e.def.hp; const ph = f < 0.33 ? 3 : f < 0.66 ? 2 : 1;
       if (ph !== e.phase) { e.phase = ph; this.events.push({ t: 'phase', phase: ph }); } }
@@ -249,28 +263,69 @@ export class Sim {
     }
   }
 
-  // Boss AI: authored phases around seeded behavior modules (src/content/rotVillains.js).
+  // Boss AI: a readable state machine around seeded behavior modules.
+  //   move → windup (telegraphed) → attack → [vulnerable after heavy attacks] → move
+  // Phase 2 adds the second module and starts pooling rot in the arena; phase 3 (overload)
+  // closes a rot ring around the arena and shortens windups.
   _stepBoss(e, def, dt) {
     e.cd2 = Math.max(0, e.cd2 - dt);
+    e.vulnT = Math.max(0, (e.vulnT ?? 0) - dt);
     if (e.kx || e.ky) { this._moveBody(e, e.kx * dt, e.ky * dt, def.radius); e.kx *= 0.8; e.ky *= 0.8; }
     const [target, d] = this._nearestPlayer(e.x, e.y);
     if (!target) return;
     const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
-    const rage = e.phase === 3 ? 1.6 : e.phase === 2 ? 1.25 : 1;
-    if (e.dash > 0) {
-      e.dash -= dt; this._moveBody(e, e.dx * 210 * dt, e.dy * 210 * dt, def.radius);
-    } else {
-      this._moveBody(e, ux * def.speed * rage * dt, uy * def.speed * rage * dt, def.radius);
+    const rage = e.phase === 3 ? 1.5 : e.phase === 2 ? 1.2 : 1;
+    if (d < def.radius + 7 && e.cd2 <= 0 && e.state !== 'vulnerable') { this._hurtPlayer(target, def.damage); e.cd2 = def.touchCooldown; }
+
+    // Phase-wide arena effects
+    if (e.phase >= 2 && (e.poolT = (e.poolT ?? 0) - dt) <= 0) {
+      e.poolT = e.phase === 3 ? 2.2 : 3.5;
+      const p = [...this.players.values()].filter((q) => !q.downed);
+      const victim = p[Math.floor(Math.random() * p.length)];
+      if (victim) this.hazards.push({ x: victim.x + (Math.random() * 20 - 10), y: victim.y + (Math.random() * 20 - 10), r: 14, ttl: 6, dps: 10 });
     }
-    if (d < def.radius + 7 && e.cd2 <= 0) { this._hurtPlayer(target, def.damage); e.cd2 = def.touchCooldown; }
+    if (e.phase === 3) {
+      if (e.ringR == null) { e.ringR = Math.max(this.map.w, this.map.h) * TILE * 0.6; e.cx = (this.map.w * TILE) / 2; e.cy = (this.map.h * TILE) / 2; this.events.push({ t: 'overload' }); }
+      e.ringR = Math.max(70, e.ringR - 6 * dt);
+      for (const p of this.players.values()) if (!p.downed && Math.hypot(p.x - e.cx, p.y - e.cy) > e.ringR && (p._ringT = (p._ringT ?? 0) - dt) <= 0) { p._ringT = 0.6; this._hurtPlayer(p, 6); }
+    }
+
+    if (e.state === 'vulnerable') { if (e.vulnT <= 0) e.state = 'move'; return; }       // reeling: stands still
+    if (e.state === 'windup') {
+      e.windT -= dt;
+      if (e.windT <= 0) this._bossAttack(e, def, target, ux, uy, rage);
+      return;
+    }
+    if (e.state === 'dash') {
+      e.dash -= dt; this._moveBody(e, e.dx * 220 * dt, e.dy * 220 * dt, def.radius);
+      if (e.dash <= 0) { e.state = 'vulnerable'; e.vulnT = 1.6; this.events.push({ t: 'vuln', x: e.x, y: e.y }); }
+      return;
+    }
+    if (e.state === 'beam') {
+      e.beamT -= dt; e.beamA += e.beamDir * 1.6 * dt;
+      if ((e.beamTick = (e.beamTick ?? 0) - dt) <= 0) { e.beamTick = 0.05; this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(e.beamA) * 220, vy: Math.sin(e.beamA) * 220, life: 1.2, dmg: 7, from: 'enemy' }); }
+      if (e.beamT <= 0) { e.state = 'vulnerable'; e.vulnT = 1.4; this.events.push({ t: 'vuln', x: e.x, y: e.y }); }
+      return;
+    }
+    // move
+    this._moveBody(e, ux * def.speed * rage * dt, uy * def.speed * rage * dt, def.radius);
     if (e.cd > 0) return;
     const mods = e.phase === 1 ? [def.modules[0]] : def.modules;
-    const mod = mods[Math.floor(Math.random() * mods.length)];
+    const extra = e.phase >= 2 ? ['beam', 'puddle'] : [];
+    e.next = [...mods, ...extra][Math.floor(Math.random() * (mods.length + extra.length))];
+    e.state = 'windup'; e.windT = e.phase === 3 ? 0.45 : 0.75;
+    e.aimA = Math.atan2(uy, ux);
+    this.events.push({ t: 'tell', x: e.x, y: e.y, kind: e.next, a: e.aimA, dur: e.windT });
+  }
+
+  _bossAttack(e, def, target, ux, uy, rage) {
     const shoot = (ang, spd = 85) => this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(ang) * spd * rage, vy: Math.sin(ang) * spd * rage, life: 3, dmg: 9, from: 'enemy' });
-    const aim = Math.atan2(uy, ux);
-    if (mod === 'ring') { const n = e.phase === 3 ? 16 : 12; for (let i = 0; i < n; i++) shoot((i / n) * Math.PI * 2 + this.tick * 0.01); }
-    if (mod === 'spray') { for (let i = -2; i <= 2; i++) shoot(aim + i * 0.18, 110); }
-    if (mod === 'charge') { e.dash = 0.45; e.dx = ux; e.dy = uy; this.events.push({ t: 'tell', x: e.x, y: e.y }); }
+    const mod = e.next; e.state = 'move';
+    if (mod === 'ring') { const n = e.phase === 3 ? 18 : 12; for (let i = 0; i < n; i++) shoot((i / n) * Math.PI * 2 + this.tick * 0.01); }
+    if (mod === 'spray') { for (let i = -2; i <= 2; i++) shoot(e.aimA + i * 0.18, 110); }
+    if (mod === 'charge') { e.state = 'dash'; e.dash = 0.5; e.dx = Math.cos(e.aimA); e.dy = Math.sin(e.aimA); }
+    if (mod === 'beam') { e.state = 'beam'; e.beamT = 1.4; e.beamA = e.aimA - 0.9; e.beamDir = 1; }
+    if (mod === 'puddle') { for (const p of this.players.values()) if (!p.downed) this.hazards.push({ x: p.x, y: p.y, r: 16, ttl: 5, dps: 12 }); }
     if (mod === 'summon' && this.enemies.size < 7) {
       for (let i = 0; i < 2; i++) { const id = `e${this._nextId++}`; this.enemies.set(id, { id, kind: 'enemy.rotling', x: e.x + (i ? 14 : -14), y: e.y + 10, hp: ENEMIES['enemy.rotling'].hp, cd: 1, hurtT: 0, kx: 0, ky: 0 }); }
     }
@@ -278,8 +333,7 @@ export class Sim {
       const ang = Math.random() * Math.PI * 2, nx = target.x + Math.cos(ang) * 60, ny = target.y + Math.sin(ang) * 60;
       if (!this._hitsBox(nx, ny, def.radius, def.radius * 0.7)) { this.events.push({ t: 'blink', x: e.x, y: e.y }); e.x = nx; e.y = ny; }
     }
-    if (e.phase === 3) shoot(aim, 130); // overload: always adds an aimed shot
-    e.cd = (e.phase === 3 ? 1.1 : e.phase === 2 ? 1.5 : 2.1);
+    e.cd = (e.phase === 3 ? 1.0 : e.phase === 2 ? 1.4 : 1.9);
   }
 
   // The watchdog fights to a drumbeat: walk, root, lunge, and a pulse every fourth beat.
@@ -390,7 +444,9 @@ export class Sim {
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
-        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, sahur: !!e.sahur, ring: !!e.sahur && e.fightT > 10 } } : {}) })),
+        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, ring: !!e.sahur && e.fightT > 10 } } : {}) })),
+      hazards: this.hazards.map((h) => ({ x: Math.round(h.x), y: Math.round(h.y), r: h.r, t: Math.round(h.ttl * 10) / 10 })),
+      ring: [...this.enemies.values()].find((e) => e.ringR != null)?.ringR ?? null,
       shots: this.shots.map((s) => ({ x: Math.round(s.x), y: Math.round(s.y), f: s.from === 'player' ? 1 : 0 })),
       events: this.events,
     };
