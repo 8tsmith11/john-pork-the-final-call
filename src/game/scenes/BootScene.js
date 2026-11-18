@@ -15,6 +15,8 @@ export class BootScene extends Phaser.Scene {
     for (const id of Object.keys(ROOMMATES)) {
       this.load.atlas(id, `assets/sprites/${id}.png`, `assets/sprites/${id}.json`);
     }
+    // Props/NPCs (frames named by map object id), enemies and the Warden. All optional.
+    for (const id of ['props', 'enemies', 'warden']) this.load.atlas(id, `assets/sprites/${id}.png`, `assets/sprites/${id}.json`);
   }
 
   create() {
@@ -23,6 +25,12 @@ export class BootScene extends Phaser.Scene {
       this._placeholder(id, r);
     }
     this._makeAnims();
+    // Two-frame loops for enemies and the Warden, when their art is present.
+    const has = (key, frame) => this.textures.exists(key) && this.textures.get(key).has(frame);
+    for (const k of ['enemy.rotling', 'enemy.spitter']) {
+      if (has('enemies', `${k}_0`)) this.anims.create({ key: k, frames: [0, 1].map((i) => ({ key: 'enemies', frame: `${k}_${i}` })), frameRate: 5, repeat: -1 });
+    }
+    if (has('warden', 'warden_0')) this.anims.create({ key: 'warden', frames: [0, 1].map((i) => ({ key: 'warden', frame: `warden_${i}` })), frameRate: 3, repeat: -1 });
     makeTiles(this);
     this.scene.start('Title');
   }

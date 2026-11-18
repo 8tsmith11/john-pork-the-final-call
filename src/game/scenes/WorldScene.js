@@ -196,7 +196,18 @@ export class WorldScene extends Phaser.Scene {
     const rt = this.mapRT = this.add.renderTexture(0, 0, map.w * TILE, map.h * TILE).setOrigin(0, 0).setDepth(-10);
     map.layout.forEach((row, ty) => [...row].forEach((ch, tx) => rt.draw(tileKey(ch, tx, ty), tx * TILE, ty * TILE)));
     const g = this.mapGfx = this.add.graphics().setDepth(-9);
+    for (const im of this.propSprites ?? []) im.destroy();
+    for (const t of this.propTimers ?? []) t.remove();
+    this.propSprites = []; this.propTimers = [];
+    const props = this.textures.exists('props') ? this.textures.get('props') : null;
     for (const o of map.objects) {
+      if (props?.has(o.id)) {
+        // Hand-drawn prop: 16x24, standing on its tile. A "#1" frame means a slow two-frame loop.
+        const im = this.add.image(o.x * TILE, o.y * TILE + TILE, 'props', o.id).setOrigin(0, 1).setDepth(o.y * TILE + TILE - 4);
+        if (props.has(`${o.id}#1`)) this.propTimers.push(this.time.addEvent({ delay: 420, loop: true, callback: () => im.active && im.setFrame(im.frame.name === o.id ? `${o.id}#1` : o.id) }));
+        this.propSprites.push(im);
+        continue;
+      }
       const warm = o.id === 'obj.printer_3' || o.id === 'obj.mate';
       const color = o.npc ? 0x8a8f6a : o.action === 'exit' ? 0xffb347 : o.id.includes('statue') || o.id.includes('flag') ? 0xf2a6b8 : warm ? 0xd98a4a : 0x6d7899;
       g.fillStyle(0x000000, 0.35).fillRect(o.x * TILE + 3, o.y * TILE + 12, TILE - 6, 3);
@@ -549,8 +560,15 @@ export class WorldScene extends Phaser.Scene {
       eseen.add(e.id);
       let s = this.enemySprites.get(e.id);
       const def = e.boss ? { radius: e.boss.r, color: e.boss.c } : ENEMIES[e.k];
-      if (!s) { s = this.add.rectangle(e.x, e.y, def.radius * 2, def.radius * (e.boss ? 3 : 2) + 2, def.color).setOrigin(0.5, 1); this.enemySprites.set(e.id, s); }
-      s.setPosition(e.x, e.y + 3).setDepth(e.y).setFillStyle(e.h ? 0xffffff : def.color);
+      if (!s) {
+        const anim = e.boss ? 'warden' : e.k;
+        if (this.anims.exists(anim)) { s = this.add.sprite(e.x, e.y, e.boss ? 'warden' : 'enemies').setOrigin(0.5, 1).play(anim); s.isArt = true; }
+        else s = this.add.rectangle(e.x, e.y, def.radius * 2, def.radius * (e.boss ? 3 : 2) + 2, def.color).setOrigin(0.5, 1);
+        this.enemySprites.set(e.id, s);
+      }
+      s.setPosition(e.x, e.y + 3).setDepth(e.y);
+      if (s.isArt) { if (e.h) s.setTintFill(0xffffff); else if (e.boss) s.setTint(def.color); else s.clearTint(); }
+      else s.setFillStyle(e.h ? 0xffffff : def.color);
       if (e.boss) this._bossBar(e);
       s.setScale(1 + Math.sin(this.time.now / 90 + e.x) * 0.06, 1);   // jittery rot wobble
     }
