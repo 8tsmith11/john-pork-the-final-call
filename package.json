@@ -1,0 +1,6 @@
+{
+  "name": "john-pork-the-final-call",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node tests/run.js" }
+}
