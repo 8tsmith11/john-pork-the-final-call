@@ -49,7 +49,7 @@
 | 41 | NPCs feel alive; interact with environment | 🟡 | both | Crowds ✅, ~57 apartment objects ✅. Needs schedules |
 | 42 | Coderot central; homeless NPCs say "code rot" | ✅ | | |
 | 43 | Don't introduce all important characters in Act 1 | ✅ | | |
-| 44 | **Characters get interesting abilities** | 🟡 | trevor | Forms are stat buffs. Each roommate needs signature abilities |
+| 44 | **Characters get interesting abilities** | 🟡 | trevor | Signature abilities on R ✅: Trevor Riff (guitar shockwave, knockback + stun), Manuel Decoy Bust (enemies attack it), Michael Ping (marks enemies for +50% damage). Morph stages 2+ add more in Act 2 |
 | 45 | Roommate looks/traits | ✅ | | |
 | 46 | Twist plan + early hints in several directions | ✅ | | Sealed |
 | 47 | Act 1 confusing/unclear at first | ✅ | | |

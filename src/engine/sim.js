@@ -15,7 +15,7 @@ export const COMBAT = {
 const HALF_W = 5, HALF_H = 4; // feet hitbox (characters are 16x24; collide at the feet)
 
 export function emptyInput() {
-  return { mx: 0, my: 0, aim: 0, dodge: false, attack: false, fire: false, interact: false };
+  return { mx: 0, my: 0, aim: 0, dodge: false, attack: false, fire: false, interact: false, skill: false };
 }
 
 export class Sim {
@@ -27,6 +27,7 @@ export class Sim {
     this.enemies = new Map(); // id -> enemy
     this.shots = [];          // projectiles
     this.hazards = [];        // lingering rot pools: {x, y, r, ttl, dps}
+    this.decoys = [];         // Manuel's decoy busts: {x, y, ttl, hp}
     this.events = [];         // this tick's events for rendering: hits, deaths, shots
     this.tick = 0;
     this._nextId = 1;
@@ -36,7 +37,7 @@ export class Sim {
   /** Swap to another map, keeping players (placed at the map's spawns). */
   /** Swap maps. `fromId` = the map we came from: players arrive beside the exit that leads back there. */
   setMap(map, fromId = null) {
-    this.map = map; this.shots = []; this.hazards = []; this.enemies.clear();
+    this.map = map; this.shots = []; this.hazards = []; this.decoys = []; this.enemies.clear();
     const back = fromId && map.objects.find((o) => o.action === 'exit' && o.to === fromId);
     let arrivals = map.spawns;
     if (back) {
@@ -173,6 +174,8 @@ export class Sim {
       this._moveAxis(p, p.vx * dt, 0);
       this._moveAxis(p, 0, p.vy * dt);
 
+      p.skillCd = Math.max(0, (p.skillCd ?? 0) - dt);
+      if (inp.skill && !p.riding && p.skillCd <= 0) this._ability(p);
       if (inp.attack && !p.riding && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
       if (inp.fire && !p.riding && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);   // no gun, no shooting
 
@@ -186,6 +189,7 @@ export class Sim {
   }
 
   _afterPlayers(dt) {
+    this._stepDecoys(dt);
     this._stepDoors(dt);
     this._stepHazards(dt);
     this._stepEnemies(dt);
@@ -204,6 +208,12 @@ export class Sim {
     }
   }
 
+  _stepDecoys(dt) {
+    for (const dc of this.decoys) dc.ttl -= dt;
+    this.decoys = this.decoys.filter((dc) => dc.ttl > 0 && dc.hp > 0);
+    for (const e of this.enemies.values()) if (e.marked > 0) e.marked -= dt;
+  }
+
   _stepHazards(dt) {
     for (const h of this.hazards) {
       h.ttl -= dt;
@@ -213,6 +223,28 @@ export class Sim {
       }
     }
     this.hazards = this.hazards.filter((h) => h.ttl > 0);
+  }
+
+  // Signature abilities (R). Trevor: Riff · Manuel: Decoy Bust · Michael: Ping.
+  _ability(p) {
+    if (p.character === 'trevor') {
+      p.skillCd = 6;
+      for (const e of this.enemies.values()) {
+        const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
+        if (d > 46) continue;
+        this._hurtEnemy(e, 6, (dx / (d || 1)) * 260, (dy / (d || 1)) * 260, p.id);
+        if (this.enemies.has(e.id)) e.hurtT = e.boss ? 0.3 : 0.9;             // stunned by the sound
+      }
+      this.events.push({ t: 'riff', id: p.id, x: p.x, y: p.y });
+    } else if (p.character === 'manuel') {
+      p.skillCd = 10;
+      this.decoys.push({ x: p.x + Math.cos(p.aim) * 14, y: p.y + Math.sin(p.aim) * 14, ttl: 6, hp: 40 });
+      this.events.push({ t: 'decoy', id: p.id });
+    } else {
+      p.skillCd = 8;
+      for (const e of this.enemies.values()) if (Math.hypot(e.x - p.x, e.y - p.y) < 150) e.marked = 5;
+      this.events.push({ t: 'ping', id: p.id, x: p.x, y: p.y });
+    }
   }
 
   _melee(p) {
@@ -241,6 +273,7 @@ export class Sim {
     if (e.sahur) { dmg = 1; this.events.push({ t: 'thunk', x: e.x, y: e.y }); }
     else if (e.boss && e.state === 'vulnerable') dmg *= 2;
     if (e.def?.armor) dmg = Math.max(1, Math.round(dmg * (1 - e.def.armor)));
+    if (e.marked > 0) dmg = Math.round(dmg * 1.5);
     if (e.def?.trait === 'blinker' && Math.random() < 0.35 && e.hp - dmg > 0) {
       const a = Math.random() * Math.PI * 2, nx = e.x + Math.cos(a) * 40, ny = e.y + Math.sin(a) * 40;
       if (!this._hitsBox(nx, ny, 6, 4)) { this.events.push({ t: 'blink', x: e.x, y: e.y }); e.x = nx; e.y = ny; }
@@ -260,6 +293,7 @@ export class Sim {
   }
 
   _hurtPlayer(p, dmg) {
+    if (p.ttl !== undefined && p.hp !== undefined && !p.id) { p.hp -= dmg; return; }   // a decoy bust soaking a hit
     if (p.downed || p.iframes > 0) return;
     dmg = Math.max(1, Math.round(dmg * (1 - (p.mods?.armor ?? 0)) * (p.morphed ? 1.2 : 1)));
     p.hp -= dmg; p.iframes = COMBAT.hurtIframes + (p.mods?.iframes ?? 0);
@@ -270,6 +304,8 @@ export class Sim {
 
   _nearestPlayer(x, y) {
     let best = null, bd = Infinity;
+    for (const dc of this.decoys) { const d = Math.hypot(dc.x - x, dc.y - y); if (d < 130 && d < bd) { bd = d; best = dc; } }
+    if (best) return [best, bd];
     for (const p of this.players.values()) {
       if (p.downed) continue;
       const d = Math.hypot(p.x - x, p.y - y);
@@ -480,12 +516,14 @@ export class Sim {
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
-        hp: Math.round(p.hp), mhp: this.maxHp(p), st: Math.round(p.sta ?? 100), w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed,
+        hp: Math.round(p.hp), mhp: this.maxHp(p), st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed,
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
+        mk: e.marked > 0,
         ...(e.def && !e.boss ? { vn: e.def.vname, tr: e.def.trait, c: e.def.color, mh: e.def.hp, r: e.def.radius } : {}),
         ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, ring: !!e.sahur && e.fightT > 10 } } : {}) })),
+      decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y) })),
       hazards: this.hazards.map((h) => ({ x: Math.round(h.x), y: Math.round(h.y), r: h.r, t: Math.round(h.ttl * 10) / 10 })),
       ring: [...this.enemies.values()].find((e) => e.ringR != null)?.ringR ?? null,
       shots: this.shots.map((s) => ({ x: Math.round(s.x), y: Math.round(s.y), f: s.from === 'player' ? 1 : 0 })),

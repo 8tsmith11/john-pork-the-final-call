@@ -1061,6 +1061,9 @@ export class WorldScene extends Phaser.Scene {
       else this._drawDoor(d.vis, d.o);
     }
     this.shotGfx.clear();
+    for (const d of snap.decoys || []) {   // decoy bust (placeholder: a little pink plaster figure)
+      this.shotGfx.fillStyle(0xe8d8d0).fillRect(d.x - 4, d.y - 10, 8, 9).fillStyle(0xf2a6b8).fillRect(d.x - 2, d.y - 7, 4, 3).fillStyle(0x5a4a44).fillRect(d.x - 5, d.y - 1, 10, 2);
+    }
     for (const h of snap.hazards || []) {
       const pulse = 0.25 + 0.12 * Math.sin(this.time.now / 120 + h.x);
       this.shotGfx.fillStyle(0xd65db1, pulse * Math.min(1, h.t)).fillCircle(h.x, h.y, h.r);
@@ -1237,6 +1240,9 @@ export class WorldScene extends Phaser.Scene {
       }
       this.tweens.add({ targets: g, alpha: { from: 0.4, to: 1 }, duration: dur, yoyo: false, onComplete: () => g.destroy() });
     }
+    if (ev.t === 'riff') { const r = this.add.circle(ev.x, ev.y - 6, 6, 0xffe08a, 0).setStrokeStyle(2, 0xffe08a, 0.9).setDepth(5600); this.tweens.add({ targets: r, scale: 7.5, alpha: 0, duration: 380, onComplete: () => r.destroy() }); this.cameras.main.shake(140, 0.006); sfx('kill'); }
+    if (ev.t === 'ping') { const r = this.add.circle(ev.x, ev.y - 6, 6, 0x6ff2ff, 0).setStrokeStyle(1, 0x6ff2ff, 0.9).setDepth(5600); this.tweens.add({ targets: r, scale: 25, alpha: 0, duration: 650, onComplete: () => r.destroy() }); sfx('shot'); }
+    if (ev.t === 'decoy') sfx('swing');
     if (ev.t === 'vuln') {
       const t = this.add.text(ev.x, ev.y - 30, 'OVERHEATED: hit it!', { ...FONT, color: '#ffb347' }).setOrigin(0.5).setDepth(6100);
       this.tweens.add({ targets: t, y: t.y - 10, alpha: 0, duration: 1300, onComplete: () => t.destroy() });
@@ -1290,6 +1296,12 @@ export class WorldScene extends Phaser.Scene {
       bar(19, me.hp / (me.mhp || 100), me.dn ? 0x777788 : me.hp / (me.mhp || 100) < 0.3 ? 0xd65db1 : 0x7fb069, 5);
       bar(27, (me.st ?? 100) / 100, 0x6ff2ff, 3);
     }
+    if (me) {   // ability (R): a pip under the card that fills as it recharges
+      const max = { trevor: 6, manuel: 10, michael: 8 }[me.c] ?? 8, frac = 1 - Math.min(1, (me.sk ?? 0) / max);
+      g.fillStyle(0x1c1f33).fillRect(34, 33, 30, 3).fillStyle(frac >= 1 ? 0xffb347 : 0x5d6487).fillRect(34, 33, 30 * frac, 3);
+    }
+    this.hudSkill ??= this.add.text(67, 31, '', { ...FONT, fontSize: '6px', color: '#9aa3c7' }).setScrollFactor(0).setDepth(9002);
+    this.hudSkill.setText(`[R] ${{ trevor: 'Riff', manuel: 'Decoy', michael: 'Ping' }[this.character]}`);
     g.fillStyle(0xffb347).fillRoundedRect(92, 6, 20, 9, 2);
     this.hudLv ??= this.add.text(102, 6.5, '', { ...FONT, fontSize: '7px', color: '#0b0d16' }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(9002);
     this.hudLv.setText(`LV${c.level}`);

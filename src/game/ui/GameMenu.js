@@ -139,7 +139,7 @@ export class GameMenu {
     const b = this.box;
     const rows = [['Move', 'WASD / arrows (diagonals work)'], ['Dash', 'SPACE / SHIFT (uses stamina)'], ['Hit', 'Left click'],
       ['Shoot', 'Right click, once you have a ranged weapon'], ['Use / talk', 'E when close; walk into doors'], ['Dialogue', 'E (or SPACE) to continue; click or 1-6 to choose'],
-      ['Menu', 'ESC   Inventory I   Skills K   Map TAB'], ['Heal / Morph', 'H (mate thermos)   M (when unlocked)'], ['Phone', 'F to answer when it rings']];
+      ['Menu', 'ESC   Inventory I   Skills K   Map TAB'], ['Ability', 'R: Trevor Riff · Manuel Decoy Bust · Michael Ping'], ['Heal / Morph', 'H (mate thermos)   M (when unlocked)'], ['Scooter', 'Q (outdoors)'], ['Phone', 'F to answer when it rings']];
     rows.forEach(([k, v], i) => { this._t(b.x + 14, b.y + 30 + i * 15, k, F(8, C.hi)); this._t(b.x + 110, b.y + 30 + i * 15, v, F(8)); });
   }
 
