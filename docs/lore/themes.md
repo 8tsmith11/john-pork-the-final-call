@@ -30,7 +30,7 @@ Every theme below is a variation on that one idea.
 ### 1. Authenticity versus the copy
 *What makes something real when everything can be generated?*
 - **In the world:** slop, low-background text, Verified Human attestation, Manuel's hand-made statues
-  versus printed ones, the balloon's archive of human voices.
+  versus printed ones, pre-slop archives.
 - **The trap:** treating "human-made" as automatically good. The Analogists romanticize it, and
   the Archivists hoard it. Authenticity isn't purity. It's *specificity*, and a machine can have
   it too. (Pork is the most specific being in the world.)
@@ -77,9 +77,8 @@ Every theme below is a variation on that one idea.
   choice too.
 
 ### 6. Where does "human" end?
-*Laced, edited, rebuilt, reconstructed. And a machine that weeps.*
-- **In the world:** the human spectrum (bible §9), morph stages, rotters, T4 (one of us might be a
-  reconstruction), Pork, Tim, and Sahur as machines who are clearly *people*.
+*Laced, edited, rebuilt. And a machine that weeps.*
+- **In the world:** the human spectrum (bible §9), morph stages, rotters, Pork, Tim, and Sahur as machines who are clearly *people*.
 - **The message:** personhood isn't a material. It's how you treat others and how you're treated.
   The game never draws the line cleanly, because no one can.
 
@@ -98,7 +97,7 @@ Every theme below is a variation on that one idea.
 | Layer | How |
 |---|---|
 | **Main story** | Each act leans on one or two themes. Act 1: *Who answers?* and *Letting go*. Act 2: *Makers* and *Order/Freedom*. Act 3: *The edges are where the life is*, all of it at once |
-| **Choices** | Answer/Decline. Who gets the archive. Whether to destroy, free, or save Pork. Whether to trust a reconstructed friend. Morph stages (power versus self) |
+| **Choices** | Answer/Decline. Faction loyalties. Whether to destroy, free, or save Pork (🔒 the rest is sealed). Morph stages (power versus self) |
 | **Endings** | Every ending gives something and costs something. **No ending is purely happy**, and the bittersweet ones are the best ones |
 | **Objects** | Books, notes, and item text carry the themes quietly (Manuel's request: every object connects to the plot) |
 | **Barks** | The roommates' running jokes slowly take on weight. "Rookie Aster mistake" said after a real loss lands differently |
@@ -110,13 +109,13 @@ Every theme below is a variation on that one idea.
 
 | Motif | Meaning | Where it shows up |
 |---|---|---|
-| **The orange balloon** | What you love and can't keep. Also the cure | The ottoman, the ribbon, orange reserved in the palette (art rule) |
+| **The orange balloon** | What you love and can't keep | The ottoman, the ribbon, orange reserved in the palette (art rule) |
 | **The phone ringing** | Connection as intrusion, and as rescue | Pork calls, voicemails, the catch from the lake, missed calls from 2071 |
 | **1901** | The world reset to before it knew better. Rot | Rotted clocks, footage timestamps, a hard optional puzzle |
 | **Wood** | Analog safety, and impermanence of a gentler kind | Sahur, Trevor's guitar, bats, Room 631's old floor |
 | **Shrimp** | Fragile, clean, analog life, the canary | Trevor's tank, the rot gauge |
 | **Holes that never line up** | Layered defense, and never being fully seen | Tim's body, Swiss cheese, gaps in Continuity's checkpoints that smugglers know |
-| **Statues** | Devotion. Making the person you need. 🔒 T1 | Manuel's three statues, Callers' shrines |
+| **Statues** | Devotion. Making the person you need | Manuel's three statues, Callers' shrines |
 | **Static and 3 a.m.** | The hour of honest thoughts, and the Sahur hour | Title screen egg, drumming, the cold open at 2:58 |
 | **"Opening soon"** | Promises institutions never keep | Purple Line signs, Continuity addresses |
 | **The edges of the screen** | Where the rot gets in (art: rendering errors at the margins). Late game: where the fourth wall thins | UI glitch effects, Tim's rare break |

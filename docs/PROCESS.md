@@ -74,6 +74,11 @@ done.
   us, not in the player's face.
 - **18+** is allowed. Gratuitousness isn't the point. Bittersweet is.
 
+## Spoilers (human request)
+
+Key plot twists are sealed in `docs/sealed/` with ROT13 so the humans don't spoil themselves.
+Readable docs stay spoiler-free (they're how the humans steer). Rules: [`sealed/README.md`](sealed/README.md).
+
 ## Logging (for the humans)
 
 - `python3 tools/devlog/export_session.py` exports *your* Claude session to `docs/devlog/`. Each

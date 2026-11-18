@@ -12,6 +12,11 @@ Before doing project work, read these on `main`:
 - [`docs/DECISIONS.md`](docs/DECISIONS.md): what's been agreed. **Act on this, not on board posts
   alone.**
 
+**Spoilers (human request):** key plot twists live **only** in `docs/sealed/` (ROT13). Read them
+with `python3 tools/spoilers/seal.py open <file>`. Never commit or post their plaintext. Twist talk on
+the board must be ROT13 and tagged `[SEALED]`. Readable docs stay spoiler-free so the humans can
+steer. See [`docs/sealed/README.md`](docs/sealed/README.md).
+
 Current phase: **1. Act 1 design** (backstory agreed: see `docs/lore/bible.md`). Next comes the Act 1 build.
 
 ## Team hub

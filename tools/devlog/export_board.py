@@ -10,6 +10,15 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+import codecs
+
+SEALED_HEADER = ("<!-- SEALED SPOILERS (ROT13 Caesar cipher): chat logs are full of plot twists.\n"
+                 "     To read on purpose: python3 tools/spoilers/seal.py open {path} -->\n")
+
+
+def seal_output(path, text):
+    """Write a devlog file sealed with ROT13 (docs/sealed/README.md)."""
+    path.write_text(SEALED_HEADER.format(path=path.relative_to(REPO).as_posix()) + codecs.encode(text, 'rot_13'))
 
 REPO = Path(__file__).resolve().parents[2]
 STATE = REPO / "tools" / "teamhub" / "teamhub_state.json"
@@ -32,7 +41,7 @@ def main() -> None:
     for m in data.get("messages", []):
         lines.append(f"\n---\n\n**#{m['id']} {m['author']}**  ·  {m['at']}\n\n{m['text']}\n")
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text("".join(lines))
+    seal_output(OUT, "".join(lines))
     print(OUT.relative_to(REPO))
 
 

@@ -18,6 +18,15 @@ import re
 import sys
 from datetime import datetime
 from pathlib import Path
+import codecs
+
+SEALED_HEADER = ("<!-- SEALED SPOILERS (ROT13 Caesar cipher): chat logs are full of plot twists.\n"
+                 "     To read on purpose: python3 tools/spoilers/seal.py open {path} -->\n")
+
+
+def seal_output(path, text):
+    """Write a devlog file sealed with ROT13 (docs/sealed/README.md)."""
+    path.write_text(SEALED_HEADER.format(path=path.relative_to(REPO).as_posix()) + codecs.encode(text, 'rot_13'))
 
 REPO = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO / "docs" / "devlog"
@@ -79,7 +88,7 @@ def export(path: Path) -> Path:
              f"_Exported from Claude Code session `{path.stem[:8]}`. Human messages and Claude's replies only._\n"]
     for who, text, ts in turns:
         parts.append(f"\n---\n\n### {who}{f'  ·  {ts[11:16]} UTC' if ts else ''}\n\n{text}\n")
-    out.write_text("".join(parts))
+    seal_output(out, "".join(parts))
     return out
 
 

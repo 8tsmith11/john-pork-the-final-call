@@ -44,11 +44,11 @@
 | **Sahur** | *"I have woken everyone. No one has ever woken me."* | Act 3 | Mirrored structure, loneliness, *who answers?* |
 | **Continuity billboard** | *"At the end of the day, no one can code faster than AI."* | Everywhere | Manuel's required line, delivered as a fluent slogan that rots in the background until a major character says it sincerely at the worst moment (themes: authenticity) |
 | **Continuity** | *"Citizens, things are stable."* | Every address | Repetition turns it into dread |
-| **Manuel** | *"She said it would tell me the weather."* | Act 1 or 3 | Off-the-nose grief. Pays off the abuela reveal |
 | **Michael** | *"She'd have liked this place." ... "She'd have hated this place."* | Act 1 vs. Act 3 | A callback inverted, and the arc in two lines |
 | **Trevor** | *"Everything rots. I just wanted to pick how."* | Act 2–3 | The biohacker's thesis, brief, with a turn in the last word |
 | **Rotter** (the one-time coherent line) | *"I used to be someone's favorite person."* | Act 1 easter egg | The edges theme, in one line, from the least expected speaker |
-| **Pork** (final ending) | *"Hey. It's John. Are you okay?"* | Act 3, the Final Call | **The callback of the whole game**: the secret first line of the Call, finally heard |
+
+🔒 Two more seed lines are sealed in [`../sealed/twists.md`](../sealed/twists.md) because they spoil reveals.
 
 ## References
 - Danescu-Niculescu-Mizil, Cheng, Kleinberg, Lee, "You had me at hello: How phrasing affects

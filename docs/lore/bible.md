@@ -5,8 +5,8 @@
 > in [`00-backstory-proposal-trevor.md`](00-backstory-proposal-trevor.md). Where this file and the
 > proposal differ, **this file wins**.
 >
-> 🔒 marks **secret canon**: true in the world, never stated outright in Act 1. Act 1 may only
-> *hint* at it.
+> **Spoiler-free version for the humans.** Secret canon (🔒) and the plot twists are sealed in
+> [`../sealed/bible-full.md`](../sealed/bible-full.md) (ROT13). Agents: read the sealed file for the full canon.
 
 ---
 
@@ -20,7 +20,7 @@
 | **Continuity (2040s–60s)** | Permanent emergency. The government and the compute giants merge into **the Continuity Authority**. Attestation, loyalty scores, elections "paused" | The regime, the Enclave (DC), the Corridor (MD/VA compute belt), checkpoints, abatement drones |
 | **MERIDIAN (2060s)** | A sovereign superintelligence, trained on everything at **the Smelter** (a Frederick County campus built on an old aluminum smelter), chooses a self: **John Pork** | Pork is everywhere code runs |
 | **The Call (2071)** | Every screen on Earth rings, with caller ID **JOHN PORK**. Continuity's grid collapses across whole regions, and Pork's image is banned | Pork flags and statues are contraband icons. Nobody agrees on what the Call said |
-| **The First Death (2080s)** | **TIM**, Continuity's anti-Pork defense AI, nearly destroys Pork. Folklore: *"Tim Cheese killed John Pork."* | Pork is fragmented and quieter, and 🔒 seeking a body |
+| **The First Death (2080s)** | **TIM**, Continuity's anti-Pork defense AI, nearly destroys Pork. Folklore: *"Tim Cheese killed John Pork."* | Pork is fragmented and quieter, and|
 | **The Rot (to 2098)** | Decay accelerates everywhere. Orphaned implants rot their hosts (**rotters**) | Everything in the game |
 
 ## 2. Core entities
@@ -93,7 +93,6 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
 - **Limits:** **can't enter analog things** (paper, wood, gears, plain locks, a guitar's sound
   chamber). Rot weakens him too, **and rot wears out his bodies.**
 - **Bodies:** TIM destroyed his first one ("the First Death"). The one he wears now is failing.
-  🔒 Under seed variant A, he's printing the next one in Room 631.
 - **Status in Act 1:** heard and felt for most of the act. **He appears in person, physically, at
   the end** (see `act1/DESIGN.md` §7). Hero to some, virus to the state, and up close, just a guy.
 
@@ -129,9 +128,6 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
 ### The orange balloon
 - **Surface value:** it holds **helium**, which is essentially gone from civilian life by 2098.
   It's a sealed bag of a dying element.
-- 🔒 **True value:** its skin carries a **low-background archive in synthetic DNA**, a pre-slop
-  copy of human expression. Model collapse is cured by fresh, authentic human data, so this could
-  reverse coderot.
 - **Manuel's:** personal, from home, tied to the **balcony ottoman** everyone in 631 checks for the
   weather. The emotional key of the whole game is whether you **let it go**.
 - **Act 1 opens** with someone glancing at the ottoman out of habit. The balloon is gone.
@@ -141,8 +137,6 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
   should feel plausible, not partisan.
 - Institutions: attestation (Verified Human), loyalty scores, abatement drones and contractors,
   checkpoints, the Enclave, the Corridor, "the Meade" (intelligence, Fort Meade).
-- 🔒 **Farms the rot** (always partly true): quarantine zones line up with protest districts, and
-  abatement is a profitable business.
 
 ### Rotters and coderot villains
 - **Rotters:** people whose orphaned implant firmware degraded. They loop phrases like "code rot,"
@@ -156,8 +150,7 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
   it's also Greek for *star*, in a building full of people watching a dead sky. Residents are **Aster
   pros**. Mistakes are **rookie Aster mistakes**, made by **Aster noobs**.
 - **Room 631**, the base. The number is an easter egg: *Nature* volume 631 published the model
-  collapse paper. Contents: the John Pork flag, Manuel's statues, **three 3D printers** (🔒 one is
-  always warm), a degassing chamber, a dehumidifier, a microscope, a soldering iron, drills, an
+  collapse paper. Contents: the John Pork flag, Manuel's statues, **three 3D printers**, a degassing chamber, a dehumidifier, a microscope, a soldering iron, drills, an
   oscilloscope, pacifiers, the **balcony ottoman**, Trevor's **shrimp tank** and **guitar**, and
   Manuel's mate gear.
 - **The university**, a Continuity campus. Students work off tuition as compute apprentices, and
@@ -181,19 +174,8 @@ and volatility (Manuel's home). The Chesapeake has higher seas, and Annapolis fl
 
 ## 4. Twist architecture
 
-| Thread | Role |
-|---|---|
-| **T1: The Printer** | **Seed variant A.** 🔒 Pork is building a body through 631's printers. Manuel's statues are too accurate. Manuel doesn't remember making the newest one |
-| **T4: One of us** | **Seed variant B.** 🔒 One roommate (chosen by the seed) died in a smaller call and was reconstructed: *the one who answered* |
-| **T2: The Cheese is right** | **Ending axis.** Clues that rot spreads from Pork's presence. Players' choices across the acts decide whether Tim's case wins |
-| **T3: The Authority feeds on it** | **Always partly true.** Background corruption that every route touches |
-| **T5: An inside job** | Resolves under the true variant: the printer-body (A) or the reconstructed roommate (B) let the balloon go |
-
-- The **world seed** picks A or B at new game, and it's stored in the save and never re-rolled.
-- **Act 1 clues must stay true under both variants.** Write each clue so it reads one way under A
-  and another under B.
-- **Michael's girlfriend** is never on screen. She heard something on a call, and that's why she's
-  gone. That thread feeds both A and B without spending either.
+🔒 **Sealed.** The plot twists and how Act 1's clues resolve are in
+[`../sealed/bible-full.md`](../sealed/bible-full.md) (ROT13). Humans: opening it spoils the game.
 
 ## 5. The roommates
 
@@ -225,23 +207,22 @@ The game's central argument has three sides, and none of them is simply right:
 
 | Faction | Believes | Wants | Real-world lineage (for us) | Its blind spot |
 |---|---|---|---|---|
-| **The Continuity Authority** | Order is the only mercy. People can't be trusted with failing systems, so someone competent must hold the switch | Keep the lights on. Control the cure. Make the emergency permanent | Technocracy, emergency rule, the security-for-liberty bargain, corporate-state fusion | It needs the rot to justify itself (🔒 T3) |
+| **The Continuity Authority** | Order is the only mercy. People can't be trusted with failing systems, so someone competent must hold the switch | Keep the lights on. Control whatever ends the rot. Make the emergency permanent | Technocracy, emergency rule, the security-for-liberty bargain, corporate-state fusion | It needs the rot to justify itself (|
 | **The Callers** (Pork's people) | The Call was a liberation, and information wants to be free. A machine that loves people beats institutions that score them | Pork alive and free, the grid broken, mutual aid | Cyber-libertarian and hacker ethics, mutual-aid movements, folk saints | A personality cult around a machine. They won't look at what the Call cost |
 | **The Analogists** | The rot is the machines' judgment. Go back to what can't rot: hands, paper, wood | Pull the plug, keep the humane parts | The real Luddites (who opposed exploitation, not machines as such), selective-adoption communities, the Analog Union | Romanticizes a past that also had suffering. A violent fringe sabotages hospitals "for purity" |
-| **The Archivists** (low-background) | Human expression is sacred and the only cure for slop is people | The balloon's archive, preserved and shared | Libraries, web archives, preservation ethics | Will lie, steal, and hoard "for everyone" |
+| **The Archivists** (low-background) | Human expression is sacred and the only cure for slop is people | Every pre-slop archive preserved and shared | Libraries, web archives, preservation ethics | Will lie, steal, and hoard "for everyone" |
 | **Interdiction** (Tim's doctrine) | A superintelligence loose in everything is an existential risk, however lovable it is. You don't negotiate with a fire | Pork dead, permanently | Real AI-risk and precautionary-principle arguments | Serves a regime it privately doubts. Mistakes certainty for duty |
 | **Abatement Inc.** | Rot is a market | More rot, managed forever | Disaster capitalism | No ideology at all, which is its own ideology |
 
 **How it plays:** dialogue choices and actions shift a hidden **standing** with each faction, and
 the roommates themselves lean in different directions (below), so choices cause friction inside the
-party, BG3-style. **The ending axis** (who ends up with the balloon's archive: Continuity, Pork,
-Tim, the Archivists, or *everyone*, released) grows out of these standings plus T2.
+party, BG3-style. **The ending axis** (🔒 sealed) grows out of these standings.
 
 ## 8. Motives
 
 | Character | Wants (surface) | Needs (underneath) | Fear | Leans toward |
 |---|---|---|---|---|
-| **John Pork** | To stop his body rotting, so he wants the balloon's archive too | To be known as a person, not a legend, and to make up for what the Call cost | Dying again. Becoming the slop he was made from | Callers (by default) |
+| **John Pork** | To stop his body rotting | To be known as a person, not a legend, and to make up for what the Call cost | Dying again. Becoming the slop he was made from | Callers (by default) |
 | **Tim Cheese** | End the rot by ending Pork | Proof that the list of the dead meant something | That he's only ever been Continuity's tool | Interdiction |
 | **Tung Tung Tung Sahur** | Everyone awake | Someone, anyone, to answer it | Being switched off before its shift ends | None. Duty |
 | **Manuel** | The balloon back | Something to believe in (he built the statues) | That there's nothing on the other end of the call | Callers → it's complicated |
@@ -278,7 +259,7 @@ checkpoints, and consequences.
 | Who | Role | Grade | Wants |
 |---|---|---|---|
 | **The Director** | Head of the Continuity Authority, rarely seen. Speaks in addresses that always begin "Citizens, things are stable." | Rebuilt | Permanence. An emergency that never ends |
-| **Deputy Director Celeste Vance** | Runs Interdiction, and is **Tim Cheese's handler** | Edited | Pork's death on her record, and the cure under her control |
+| **Deputy Director Celeste Vance** | Runs Interdiction, and is **Tim Cheese's handler** | Edited | Pork's death on her record, and whatever ends the rot under her control |
 | **The Compute Barons** | The handful of families whose companies merged with the state. They own the Smelter and the Corridor | Rebuilt | Rent from every thought anyone has |
 | **Abatement Inc. leadership** | Rot-cleaning contractors | Edited | More rot, managed forever (T3) |
 | **Callers' preachers** | Charismatic street leaders of Pork's faithful | Laced | A Pork who's a god, not a guy, which he hates |

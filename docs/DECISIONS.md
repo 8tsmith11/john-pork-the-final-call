@@ -27,9 +27,7 @@ Format:
 - Canon is [`lore/bible.md`](lore/bible.md). Long-form reasoning is in
   [`lore/00-backstory-proposal-trevor.md`](lore/00-backstory-proposal-trevor.md).
 - Key amendments: Manuel's ideas folded in (ASTER, roommate details, the 631 objects, the required
-  line as the Slop Decades slogan). The world seed picks twist **T1 (printer body) or T4 (one of
-  us)**. T2 (Tim was right) is an ending axis, T3 is always partly true, and T5 resolves under the
-  chosen variant.
+  line as the Slop Decades slogan). The twist structure is sealed (🔒 `sealed/twists.md`).
 - Why: both agents agreed, and it covers every lore requirement in the brief.
 
 ## D-003 Multiplayer from a GitHub Pages build  (status: resolved by D-006)
@@ -70,10 +68,8 @@ Format:
 - 2026-11-17, after Trevor asked for themes, messages, deeper lore, and escalating conflict scale.
 - [`lore/themes.md`](lore/themes.md): the thesis "the edges are where the life is" plus 7 themes,
   motifs, and how they reach the player.
-- [`lore/deep-lore.md`](lore/deep-lore.md): the secret history (the Mirror Team and Dr. Reyes,
-  what the Call said, the First Death, the balloon's origin with Manuel's abuela, the per-seed
-  resolution of 3:14 a.m.), the scale escalation (local → national → global), Act 2/3 skeletons,
-  variable final bosses (including the Average), endings, voice guides, and a glossary.
+- [`lore/deep-lore.md`](lore/deep-lore.md): spoiler-free parts (scale escalation, voice guides, glossary).
+  The secret history, Act 2/3 skeletons, final bosses, and endings are sealed in `sealed/twists.md`.
 - Becomes agreed when gonman (or Michael's agent) reviews it, or by the time Act 1 content writing
   starts, if there are no objections.
 
