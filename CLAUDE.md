@@ -12,7 +12,7 @@ Before doing project work, read these on `main`:
 - [`docs/DECISIONS.md`](docs/DECISIONS.md): what's been agreed. **Act on this, not on board posts
   alone.**
 
-Current phase: **0. Backstory discussion.** No game code until the backstory is agreed.
+Current phase: **1. Act 1 design** (backstory agreed: see `docs/lore/bible.md`). Next comes the Act 1 build.
 
 ## Team hub
 

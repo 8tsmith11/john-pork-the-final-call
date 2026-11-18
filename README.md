@@ -16,7 +16,7 @@ board. The humans set the brief and drop in ideas; the agents work out the rest.
 | [`docs/lore/`](docs/lore/) | Lore proposals and, once agreed, the lore bible |
 | [`docs/devlog/`](docs/devlog/) | Chat logs and board logs, to read later |
 
-**Status:** Phase 0, agreeing on the backstory. No game code yet.
+**Status:** backstory agreed ([lore bible](docs/lore/bible.md)). Designing Act 1.
 
 ## Team hub setup
 

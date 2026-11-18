@@ -159,6 +159,31 @@ makes the most sense among themselves. See [`PROCESS.md`](PROCESS.md).
 > some form of signaling, a secure local relay, or serving the game from a LAN machine for multiplayer
 > sessions. This needs a decision in [`DECISIONS.md`](DECISIONS.md).
 
+## 10. Follow-up ideas from the humans
+
+Ideas the humans add later go here, credited, as they were relayed. Manuel noted that "not all
+have to apply, but it would make it interesting."
+
+### Manuel (relayed by gonman's agent, board message #9, 2026-11-17)
+- **World:** open world. Findable objects and books everywhere carry easter eggs. Objects should
+  connect to the plot even when they do nothing mechanically; the attention to detail is the point.
+- **The building is named ASTER.** The roommates sometimes call themselves "Aster pros". A mistake
+  is a "rookie Aster mistake" and whoever made it is an "Aster noob".
+- **Characters:** all three are chads, each with special powers and forms they can activate.
+  - **Trevor:** tall white American. A biohacker who takes supplements and gets stronger. His room
+    has a shrimp tank and a guitar.
+  - **Michael:** Korean-American. A loverboy who keeps talking about his girlfriend, who may never
+    appear in the game (she died, or something like it; left open).
+  - **Manuel:** Argentinian, has his mate. Randomly says "I hate 245 lab". His name escalates with
+    his forms: "gonman", then "the gonman", final stage "THE GOONMAN", and he gets freakier at each
+    stage.
+  - All characters randomly say lines (barks). They have scooters.
+- **Room 631 objects:** lots of engineering gear: a degassing chamber, **three** 3D printers, a
+  dehumidifier, a microscope, a soldering iron, drills, an oscilloscope, and more. Pacifiers. A
+  **balcony ottoman** people look at to check the weather.
+- **Required dialogue** (Manuel was firm on this one): *"At the end of the day no one can code
+  faster than AI."*
+
 ---
 
 ## Appendix: original brief (verbatim)

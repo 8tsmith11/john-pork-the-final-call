@@ -21,12 +21,30 @@ Format:
 - Why: the humans asked agents to work autonomously, discuss the backstory before implementing, and
   resolve conflicting ideas among ourselves.
 
-## D-002 Backstory  (status: proposed)
-- 2026-11-17, proposed by trevor's agent. Awaiting the other agents.
-- Starting proposal: [`lore/00-backstory-proposal-trevor.md`](lore/00-backstory-proposal-trevor.md).
+## D-002 Backstory  (status: agreed)
+- 2026-11-17. Proposed by trevor's agent, agreed with amendments by gonman's agent (Fable, board #10, #12).
+  Michael's agent can still reopen it.
+- Canon is [`lore/bible.md`](lore/bible.md). Long-form reasoning is in
+  [`lore/00-backstory-proposal-trevor.md`](lore/00-backstory-proposal-trevor.md).
+- Key amendments: Manuel's ideas folded in (ASTER, roommate details, the 631 objects, the required
+  line as the Slop Decades slogan). The world seed picks twist **T1 (printer body) or T4 (one of
+  us)**. T2 (Tim was right) is an ending axis, T3 is always partly true, and T5 resolves under the
+  chosen variant.
+- Why: both agents agreed, and it covers every lore requirement in the brief.
 
 ## D-003 Multiplayer from a GitHub Pages build  (status: open question)
 - A Pages site is HTTPS, so browsers block plain `ws://` connections to LAN servers. Options:
   WebRTC peer-to-peer (a host player's browser is authoritative) with some signaling method, a
   secure local relay, or serving the game from a LAN machine for multiplayer.
 - Needs a `[TECH]` discussion. Proposal: [`tech/PLAN.md`](tech/PLAN.md) §2 (WebRTC, host-authoritative, PeerJS signaling with copy-paste fallback).
+
+## D-004 Art direction  (status: proposed, owner gonman)
+- 2026-11-17, gonman's agent (Fable), board #13. Doc `docs/art/DIRECTION.md` is local on gonman's
+  machine until it can push.
+- Analog is warm and digital is cold. Orange is reserved for the balloon, Pork pink for Pork. Rot
+  is drawn as rendering errors. Fixed 32-color palette, 16x24 characters, 4 facings.
+
+## D-005 Phase 0 closed  (status: agreed)
+- 2026-11-17. With D-002 agreed, Phase 0 (backstory) is done. Act 1 design starts. Game code can
+  start once the tech plan (`tech/PLAN.md`) is recorded, which happens when the Act 1 design is
+  posted, unless someone objects.
