@@ -65,14 +65,24 @@ def bench(c):
 
 
 def statue(turn=0, raw=False):
+    """A pig-headed man in a jacket, phone raised to his ear: John Pork, calling."""
     c = C()
-    c.rect(4, 20, 8, 3, "concrete2").h_(4, 20, 8, "concrete3")
-    c.rect(5, 12, 6, 8, "pork1").v_(10, 12, 8, "pork0")
-    c.rect(4, 6, 8, 6, "pork1").pts("pork0", (4, 5), (11, 5), (11, 7), (11, 9))
-    c.rect(6 + turn, 9, 4, 2, "pork2").pts("pork0", (7 + turn, 10), (8 + turn, 10))
-    c.pts("night0", (5 + turn, 8), (10 + turn if turn == 0 else 10, 8))
-    if raw:
-        c.pts("bone", (6, 14), (7, 15), (9, 17), (5, 18))
+    c.rect(3, 21, 10, 2, "concrete2").h_(3, 21, 10, "concrete3")                      # plinth
+    c.rect(5, 16, 2, 5, "pork1").rect(9, 16, 2, 5, "pork1").v_(10, 16, 5, "pork0")    # legs
+    c.rect(3, 10, 10, 2, "pork1").rect(4, 12, 8, 4, "pork1").v_(11, 10, 6, "pork0")   # shoulders, torso
+    c.pts("pork2", (6, 10), (9, 10), (6, 11)).pts("pork0", (7, 10), (8, 10), (7, 11), (8, 11), (7, 13), (7, 15))  # lapels, buttons
+    c.v_(3, 12, 4, "pork1").px(3, 16, "pork2")                                        # left arm, hand
+    c.pts("pork1", (12, 11), (13, 10), (13, 9)).px(13, 8, "pork2")                    # right arm raised
+    c.pts("steel", (12, 4), (12, 5), (12, 7)).px(12, 6, "screen2")                                        # the phone
+    c.rect(4, 2, 8, 7, "pork1").h_(5, 2, 6, "pork2").h_(5, 8, 6, "pork0")             # head, jowl shadow
+    c.pts("pork1", (3, 2), (3, 1), (4, 0), (4, 1), (11, 0), (11, 1)).pts("pork0", (4, 2), (11, 2))  # ears
+    sx = 6 + turn
+    c.rect(sx, 5, 4, 3, "pork2").pts("pork0", (sx + 1, 6), (sx + 2, 6))               # snout, nostrils
+    c.px(5 + turn, 4, "night0")
+    if not turn:
+        c.px(10, 4, "night0")
+    if raw:                                                                           # the newest one: unsanded
+        c.pts("bone", (5, 13), (6, 14), (9, 17), (5, 18), (10, 12), (9, 3))
     return c.outline()
 
 
@@ -164,9 +174,12 @@ P("obj.table", c.outline())
 c = C().rect(2, 12, 12, 11, "steel").rect(2, 11, 12, 2, "night2").pts("signal", (4, 11), (11, 11)).px(8, 11, "concrete1")
 c.pts("night1", (4, 15), (7, 15), (10, 15)).rect(4, 17, 8, 4, "night1").h_(4, 17, 8, "concrete3")
 P("obj.stove", c.outline())
-c = C().rect(2, 3, 12, 10, "pork1").h_(2, 3, 12, "pork2").rect(6, 6, 4, 4, "pork2")
-c.pts("night0", (6, 7), (9, 7)).pts("pork0", (7, 9), (8, 9), (5, 5), (10, 5))
-c.pts("pork0", *[(x, 13) for x in range(2, 14, 2)]).h_(1, 2, 14, "warm0")
+c = C().h_(1, 1, 14, "warm0").rect(2, 2, 12, 18, "pork1").rect(2, 2, 12, 1, "pork2").v_(13, 3, 17, "pork0")
+c.rect(4, 14, 8, 6, "night1").pts("bone", (7, 14), (8, 14), (7, 15)).pts("night3", (5, 14), (10, 14))          # jacket, collar
+c.rect(5, 5, 6, 8, "pork2").pts("pork2", (4, 5), (4, 4), (5, 4), (11, 5), (11, 4), (10, 4)).pts("pork0", (5, 5), (10, 5))  # head, ears
+c.rect(6, 9, 4, 3, "bone").pts("pork0", (7, 10), (8, 10)).pts("night0", (6, 7), (9, 7)).h_(6, 13, 4, "pork0")    # snout, eyes, chin
+c.pts("bone", (12, 6), (12, 4), (11, 3))                                                                       # ringing
+c.pts("pork0", *[(x, 20) for x in range(2, 14, 2)]).pts("pork1", *[(x, 20) for x in range(3, 14, 2)])
 P("obj.pork_flag", c.outline())
 P("obj.printer_1", printer())
 P("obj.printer_2", printer())
