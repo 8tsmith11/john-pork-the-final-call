@@ -237,6 +237,10 @@ have to apply, but it would make it interesting."
   > exit that menu or just click off of the descirption text. descirption shouldnt fade until you exit."*
 - **The lobby should look way cooler and have music.** (Assigned to gonman for later.)
 - **This should be a very good-looking game.** Visual quality is a top priority (relayed to Fable).
+- **Room 631 layout:** Trevor has a room and a bathroom. Michael and Manuel share a room and a bathroom.
+  The large middle room is a kitchen/dining room on one half and the engineering room on the other,
+  with the balcony coming off the engineering room. The John Pork statues are by the entrance on the
+  kitchen side, and the flag is on the engineering-room wall.
 
 ---
 

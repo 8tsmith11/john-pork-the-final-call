@@ -38,6 +38,12 @@ const PAINTERS = {
     ctx.fillStyle = 'rgb(70,52,38)'; ctx.fillRect(2, 0, 3, 16); ctx.fillRect(11, 0, 3, 16);
     ctx.fillStyle = 'rgb(150,140,128)'; ctx.fillRect(0, 5, 16, 1); ctx.fillRect(0, 10, 16, 1);
   },
+  // kitchen: checkerboard linoleum
+  'k': (ctx, base) => { ctx.fillStyle = css(base); ctx.fillRect(0, 0, 16, 16); ctx.fillStyle = css(base, 0.72); ctx.fillRect(0, 0, 8, 8); ctx.fillRect(8, 8, 8, 8); },
+  // engineering room: sealed epoxy floor, a few scuffs and a hazard line
+  'e': (ctx, base, r) => { ctx.fillStyle = css(base); ctx.fillRect(0, 0, 16, 16); for (let i = 0; i < 4; i++) { ctx.fillStyle = css(base, 1.25); ctx.fillRect(r.int(0, 12), r.int(0, 15), r.int(2, 4), 1); } },
+  // bathroom: small square tiles
+  'w': (ctx, base) => { ctx.fillStyle = css(base); ctx.fillRect(0, 0, 16, 16); ctx.fillStyle = css(base, 0.75); for (let i = 0; i < 16; i += 4) { ctx.fillRect(i, 0, 1, 16); ctx.fillRect(0, i, 16, 1); } },
   'g': (ctx, base, r) => { ctx.fillStyle = css(base); ctx.fillRect(0, 0, 16, 16); for (let i = 0; i < 20; i++) { ctx.fillStyle = css(base, 0.7 + r.next() * 0.8); ctx.fillRect(r.int(0, 15), r.int(0, 15), 1, r.int(1, 2)); } },
   'b': (ctx, base, r) => { ctx.fillStyle = css(base); ctx.fillRect(0, 0, 16, 16); ctx.fillStyle = css(base, 0.75); ctx.fillRect(0, 7, 16, 1); ctx.fillRect(7, 0, 1, 16); },
   '=': (ctx, base) => { ctx.fillStyle = css(base, 0.6); ctx.fillRect(0, 0, 16, 16); ctx.fillStyle = css(base, 1.3); ctx.fillRect(0, 2, 16, 2); for (let x = 1; x < 16; x += 4) ctx.fillRect(x, 4, 1, 12); },

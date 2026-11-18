@@ -1,6 +1,6 @@
 // Shared ASCII map builder. Legend (solid chars collide):
 //   # wall   = rail/window   ~ water   | pillar          (solid)
-//   . floor  b balcony  , asphalt  : tunnel floor  t track  g grass   (walkable)
+//   . floor  b balcony  , asphalt  : tunnel floor  t track  g grass  k kitchen tile  e epoxy  w bathroom tile  (walkable)
 import { TILE } from '../../engine/sim.js';
 
 const SOLID = new Set(['#', '=', '~', '|']);
@@ -8,6 +8,7 @@ const SOLID = new Set(['#', '=', '~', '|']);
 export const TILE_COLORS = {
   '#': 0x1c1f33, '=': 0x4a6080, '~': 0x1d3a4a, '|': 0x2b2f4a,
   '.': 0x3a2f2a, 'b': 0x2a3040, ',': 0x2c2c34, ':': 0x23262b, 't': 0x3b3530, 'g': 0x24341f,
+  'k': 0x4a4540, 'e': 0x2f3a40, 'w': 0x3e4a52,
 };
 
 /** Tile coords in, pixel coords out. Objects keep tile coords (renderer and proximity use tiles). */

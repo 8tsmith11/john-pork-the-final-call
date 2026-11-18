@@ -152,7 +152,9 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
 - **ASTER**, a tired student tower by the **College Park metro station**. "Aster" is a flower, and
   it's also Greek for *star*, in a building full of people watching a dead sky. Residents are **Aster
   pros**. Mistakes are **rookie Aster mistakes**, made by **Aster noobs**.
-- **Room 631**, the base. The number is an easter egg: *Nature* volume 631 published the model
+- **Room 631**, the base: Trevor's room and bathroom, Michael and Manuel's shared room and bathroom, and
+  one big middle room, a kitchen/dining half (the front door, guarded by the statues) and an
+  engineering half (fabs, bench gear, the flag on the wall) with the balcony off it. The number is an easter egg: *Nature* volume 631 published the model
   collapse paper. Contents: the John Pork flag, Manuel's statues, **three 3D printers**, a degassing chamber, a dehumidifier, a microscope, a soldering iron, drills, an
   oscilloscope, pacifiers, the **balcony ottoman**, Trevor's **shrimp tank** and **guitar**, and
   Manuel's mate gear.
