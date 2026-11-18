@@ -22,7 +22,7 @@ export const asterHall = makeMap({
   objects: [
     // North side
     { id: 'obj.door_631', art: DOOR, x: 6, y: 2, label: 'Room 631', action: 'exit', to: 'room631', text: 'Home.' },
-    { id: 'obj.door_633', art: DOOR, x: 11, y: 2, label: 'Mrs. Varga', npc: true, talk: 'aster:varga_talk' },
+    { id: 'obj.door_633', art: DOOR, x: 11, y: 2, label: 'Mrs. Varga', npc: true, age: 'adult', talk: 'aster:varga_talk' },
     { id: 'obj.graffiti', x: 15, y: 2, label: 'Graffiti', text: 'Three hands, three paints: FREE JOHN PORK. JUSTICE FOR JOHN PORK. TIM CHEESE WILL PAY. Someone has crossed out the first one, then uncrossed it.' },
     { id: 'obj.door_635', art: DOOR, x: 19, y: 2, label: '635', text: 'Six locks. Five are decorative. You have never worked out which.' },
     { id: 'obj.newsletter', art: 'obj.board', x: 23, y: 2, label: 'Tenant board', text: 'THE ASTER LETTER. Bake sale. Boiler schedule. Lost: one grey cat, answers to nothing. The issue for the month of the Call is missing. The next one starts mid-sentence.' },
@@ -36,8 +36,8 @@ export const asterHall = makeMap({
     { id: 'obj.door_636', art: DOOR, x: 27, y: 6, label: '636', text: 'A delivery box, unopened, addressed to the previous tenant. And the one before.' },
     { id: 'obj.door_638', art: DOOR, x: 31, y: 6, label: '638', text: 'Television through the door. "Citizens, things are stable." Then the same sentence again, slightly different.' },
     // People on six
-    { id: 'npc.pell', eggOk: true, later: [{ if: "act1.cordon.passed", text: "\"You went down. I can tell by your knees.\" Pell taps the wall with one knuckle. \"Tell me if the yard still smells of ozone. I'd like one thing down there to be the same.\"" }, { if: "act1.complete", text: "\"Was the east gate rolled open?\" He nods before you answer. \"Then somebody remembered how.\"" }], x: 19, y: 7, label: 'Arthur Pell', npc: true, talk: 'aster:pell_talk' },
-    { id: 'npc.409', eggOk: true, later: [{ if: "act1.beat.call", text: "His phone is face up on the step, dark. \"Mine rang too. I haven't paid for a plan since my wife. It rang anyway.\"" }, { if: "act1.complete", text: "\"Door stayed shut last night. First time this week.\" He has a fresh bowl. \"I sat here and watched it stay shut.\"" }], x: 2, y: 3, label: 'Four-oh-nine', npc: true, text: 'A man on the landing with a bowl of soup going cold beside him. "Please hold. Your call is. Please hold." He says it kindly, the way he must have said it for years.' },
+    { id: 'npc.pell', eggOk: true, later: [{ if: "act1.cordon.passed", text: "\"You went down. I can tell by your knees.\" Pell taps the wall with one knuckle. \"Tell me if the yard still smells of ozone. I'd like one thing down there to be the same.\"" }, { if: "act1.complete", text: "\"Was the east gate rolled open?\" He nods before you answer. \"Then somebody remembered how.\"" }], x: 19, y: 7, label: 'Arthur Pell', npc: true, age: 'adult', talk: 'aster:pell_talk' },
+    { id: 'npc.409', eggOk: true, later: [{ if: "act1.beat.call", text: "His phone is face up on the step, dark. \"Mine rang too. I haven't paid for a plan since my wife. It rang anyway.\"" }, { if: "act1.complete", text: "\"Door stayed shut last night. First time this week.\" He has a fresh bowl. \"I sat here and watched it stay shut.\"" }], x: 2, y: 3, label: 'Four-oh-nine', npc: true, age: 'adult', text: 'A man on the landing with a bowl of soup going cold beside him. "Please hold. Your call is. Please hold." He says it kindly, the way he must have said it for years.' },
     // Stairwell
     { id: 'obj.stairs_6f', art: 'obj.stairs', x: 2, y: 1, label: 'Stairs down', action: 'exit', to: 'aster_lobby', text: 'Six flights. Somebody has numbered the steps in chalk and lost count at 71.' },
     { id: 'obj.extinguisher', x: 1, y: 4, label: 'Fire extinguisher', text: 'Inspected 2071. The tag has been initialed every year since by the same hand.' },
@@ -84,17 +84,17 @@ export const asterLobby = makeMap({
     { id: 'obj.lobby_camera', x: 30, y: 0, label: 'Lobby camera', text: 'The red light is on. It is recording. Not tonight, by the look of the monitor, but it is recording.' },
     { id: 'obj.security_desk', x: 17, y: 6, label: 'Security desk', text: 'A sign-in book. The last forty entries are the same name in forty different hands.' },
     { id: 'obj.lobby_monitor', x: 18, y: 6, label: 'Security monitor (rotted)', talk: 'lead_c_footage', puzzle: 'pipes', solvedFlag: 'act1.leadC.repaired' },
-    { id: 'npc.kess', eggOk: true, x: 18, y: 2, label: 'Kess', npc: true, talk: 'aster:kess_talk', later: [
+    { id: 'npc.kess', eggOk: true, x: 18, y: 2, label: 'Kess', npc: true, age: 'adult', talk: 'aster:kess_talk', later: [
       { if: 'act1.beat.call', text: 'Kess has the lobby door off its hinges and laid across two chairs. "Your lock\'s a cheap one. When you\'re back I\'ll put a real one on. Bring me the old plate, I want to see the marks."' },
       { if: 'act1.complete', text: 'A new deadbolt in a paper bag, with 631 written on it in marker. "Tomorrow. I\'m off tonight." She is not off tonight.' },
     ] },
-    { id: 'npc.seun', eggOk: true, x: 30, y: 10, label: 'Seun', npc: true, text: '"Oh. I am early. I am sorry." She is in scrubs with her coat over her arm, a glyph at the collar. "Mrs. Varga asks about you three. I tell her you are eating. Are you eating?"' },
-    { id: 'npc.dez', eggOk: true, x: 9, y: 2, label: 'Dez', npc: true, talk: 'aster:dez_talk', later: [
+    { id: 'npc.seun', eggOk: true, x: 30, y: 10, label: 'Seun', npc: true, age: 'adult', text: '"Oh. I am early. I am sorry." She is in scrubs with her coat over her arm, a glyph at the collar. "Mrs. Varga asks about you three. I tell her you are eating. Are you eating?"' },
+    { id: 'npc.dez', eggOk: true, x: 9, y: 2, label: 'Dez', npc: true, age: 'adult', talk: 'aster:dez_talk', later: [
       { if: 'act1.beat.call', text: 'Still against the mailboxes. "Your phone did a thing earlier. Whole lobby heard it." A long pause. "I\'m not asking."' },
       { if: 'act1.cordon.passed', text: '"Somebody said you went down the grate." He looks at your shoes. "Huh. You did."' },
       { if: 'act1.complete', text: 'Dez sits up, which for Dez is a lot. "Drumming stopped about an hour ago. I noticed because I could hear the fridge again."' },
     ] },
-    { id: 'npc.doorman', eggOk: true, later: [{ if: "act1.beat.call", text: "\"Every screen in the lobby said one name for a minute. I wrote it in the book.\" Fenwick squares the pen to the page. \"It felt rude to leave it out.\"" }, { if: "act1.complete", text: "\"You three came up the stairs at dawn smelling like a pump room. I signed you in. All three.\" He turns the book so you can see. \"I counted twice.\"" }], x: 16, y: 5, label: 'Fenwick', npc: true, talk: 'aster:fenwick_talk' },
+    { id: 'npc.doorman', eggOk: true, later: [{ if: "act1.beat.call", text: "\"Every screen in the lobby said one name for a minute. I wrote it in the book.\" Fenwick squares the pen to the page. \"It felt rude to leave it out.\"" }, { if: "act1.complete", text: "\"You three came up the stairs at dawn smelling like a pump room. I signed you in. All three.\" He turns the book so you can see. \"I counted twice.\"" }], x: 16, y: 5, label: 'Fenwick', npc: true, age: 'adult', talk: 'aster:fenwick_talk' },
     // Second pass: what a lobby has. Each seat faces something; each light has a reason to be on.
     { id: 'obj.armchair_w1', art: 'obj.chair', x: 2, y: 11, label: 'Armchair', text: 'The one nearest the door. Whoever is waiting for someone sits here.' },
     { id: 'obj.table_w', art: 'obj.table', x: 4, y: 9, label: 'Low table', text: 'Three magazines, all the same issue. The crossword is done in every one, differently.' },
