@@ -538,7 +538,8 @@ export class WorldScene extends Phaser.Scene {
     this.lights?.destroy();
     const W = VIEW.w, H = VIEW.h;
     this.lights = this.add.renderTexture(0, 0, W, H).setOrigin(0, 0).setScrollFactor(0).setDepth(8000);
-    this.lightSpots = map.objects.filter((o) => o.npc || o.action === 'exit' || ['obj.printer_3', 'obj.mate', 'obj.pork_flag', 'obj.shrimp_tank', 'obj.billboard', 'obj.oscilloscope', 'obj.lobby_monitor'].includes(o.id));
+    // Light sources: anything with `light: <radius scale>` (lamps, neon, screens), plus NPCs, exits and a few named props.
+    this.lightSpots = map.objects.filter((o) => o.light || o.npc || o.action === 'exit' || ['obj.printer_3', 'obj.mate', 'obj.pork_flag', 'obj.shrimp_tank', 'obj.billboard', 'obj.oscilloscope', 'obj.lobby_monitor'].includes(o.id));
     this.rotEdge = map.id === 'tunnel_1' || map.id === 'platform';
   }
 
@@ -582,7 +583,7 @@ export class WorldScene extends Phaser.Scene {
     for (const p of snap.players) lit(p.x, p.y - 8, 1.3);
     // Rot things glow faintly, so enemies read in the dark.
     for (const e of snap.enemies || []) lit(e.x, e.y - 8, e.boss ? 0.9 : 0.4);
-    for (const o of this.lightSpots) lit(o.x * TILE + 8, o.y * TILE + 8, 0.7);
+    for (const o of this.lightSpots) lit(o.x * TILE + 8, o.y * TILE + 8, typeof o.light === 'number' ? o.light : 0.7);
     // Rot shows up as rendering errors at the screen edges.
     if (this.rotEdge && Math.random() < 0.12) {
       const W = VIEW.w, H = VIEW.h, y = Math.random() * H, h = 2 + Math.random() * 6, left = Math.random() < 0.5;
