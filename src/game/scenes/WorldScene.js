@@ -885,7 +885,7 @@ export class WorldScene extends Phaser.Scene {
     for (const q of QUESTS) {
       const st = qs[q.id];
       if (st.done) continue;
-      if (!st.started && q.start?.(f)) { st.started = true; this._questBanner('NEW QUEST', q.title, q.stages[0]?.text); this._trackedQuest = q.id; }
+      if (!st.started && q.start?.(f)) { st.started = true; this._questBanner('NEW QUEST', q.title, [q.stages[0]?.text, q.why].filter(Boolean).join('\n')); this._trackedQuest = q.id; }
       if (!st.started) continue;
       while (st.stage < q.stages.length && q.stages[st.stage].done(f, this.save)) {
         st.stage++;

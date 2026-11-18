@@ -183,7 +183,10 @@ export class GameMenu {
     for (const q of show) {
       const st = qs[q.id];
       this._t(b.x + 14, y, `${st.done ? '✓' : q.main ? '★' : '·'} ${q.title}${q.main ? '' : '  (side)'}`, F(9, st.done ? C.ok : q.main ? C.hi : C.text)); y += 12;
-      if (!st.done) { this._t(b.x + 26, y, q.stages[st.stage]?.text ?? '', { ...F(7, C.sub), wordWrap: { width: b.w - 50 } }); y += 18; }
+      if (!st.done) {
+        const obj = this._t(b.x + 26, y, `→ ${q.stages[st.stage]?.text ?? ''}`, { ...F(7, '#ffd27f'), wordWrap: { width: b.w - 50 } }); y += obj.height + 2;
+        if (q.why) { const why = this._t(b.x + 26, y, q.why, { ...F(7, C.sub), wordWrap: { width: b.w - 50 } }); y += why.height + 6; } else y += 4;
+      }
       if (y > b.y + b.h - 20) break;
     }
   }

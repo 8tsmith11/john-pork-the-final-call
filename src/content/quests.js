@@ -9,7 +9,7 @@
 
 export const QUESTS = [
   {
-    id: 'main.balloon', title: 'The balloon', main: true, act: 1,
+    id: 'main.balloon', why: "Someone forced the front door tonight and took Manuel's orange balloon from his closet. Find out who, and get it back.", title: 'The balloon', main: true, act: 1,
     stages: [
       { text: 'Check Manuel\'s closet.', done: (f) => f['act1.balloon.noticedGone'] },
       { text: 'Look at the front door.', done: (f) => f['act1.clue.lockForced'] },
@@ -21,7 +21,7 @@ export const QUESTS = [
     reward: { xp: 60 },
   },
   {
-    id: 'side.soup', title: 'Soup on the landing', giver: 'npc.409', act: 1,
+    id: 'side.soup', why: "He sits by the stairwell all night. If anyone heard the door at three a.m., it was him.", title: 'Soup on the landing', giver: 'npc.409', act: 1,
     ask: 'q.soup.asked', start: (f) => f['q.soup.asked'],
     give: { item: 'item.mate_flask', flag: 'q.soup.given', refuse: '"Still cold."' },
     pitch: 'Four-oh-nine has been sitting on the stairwell landing with a bowl of soup going cold for an hour. "Mine\'s cold. Everything up here goes cold. You got anything hot?"',
@@ -31,7 +31,7 @@ export const QUESTS = [
     reward: { money: 15, xp: 25, line: 'He wraps both hands around it and doesn\'t drink it for a while. "My wife used to do this." Then he tells you the stairwell door has been propped open at three a.m. twice this week, and he didn\'t prop it.' },
   },
   {
-    id: 'side.van', title: 'What the van wants', giver: 'npc.dez', act: 1,
+    id: 'side.van', why: "An abatement van with a sniffer mast, parked outside your building tonight. It might be looking for the same thing you are.", title: 'What the van wants', giver: 'npc.dez', act: 1,
     ask: 'q.van.asked', start: (f) => f['q.van.asked'],
     inspect: { obj: 'obj.van', flag: 'q.van.seen', text: 'The mast is turning slowly, like it\'s sniffing. Dez will want to hear about this.' },
     report: { needs: 'q.van.seen', flag: 'q.van.reported' },
@@ -44,7 +44,7 @@ export const QUESTS = [
   },
   // ---- Side quests around ASTER and College Park (level design / cast: docs/design/04-cast.md) ----
   {
-    id: 'side.signin', title: 'Forty names', giver: 'npc.doorman', act: 1,
+    id: 'side.signin', why: "Whoever came in at three a.m. might be in that book.", title: 'Forty names', giver: 'npc.doorman', act: 1,
     ask: 'q.signin.asked', start: (f) => f['q.signin.asked'],
     inspect: { obj: 'obj.security_desk', flag: 'q.signin.read', text: 'You read down the column. Forty entries, forty different hands, one name: FENWICK. He has been signing himself in.' },
     report: { needs: 'q.signin.read', flag: 'q.signin.told' },
@@ -56,7 +56,7 @@ export const QUESTS = [
     reward: { money: 10, xp: 30, line: '"I see." He is still for a while. "I do not have a room here. I have a desk. I believe I wanted to see how it looked."' },
   },
   {
-    id: 'side.yardline', title: 'A line that isn\'t his', giver: 'npc.pell', act: 1,
+    id: 'side.yardline', why: "You have to get through the switchyard anyway, and nobody alive knows it better than Pell.", title: 'A line that isn\'t his', giver: 'npc.pell', act: 1,
     ask: 'q.yard.asked', start: (f) => f['q.yard.asked'],
     inspect: { obj: 'obj.yard_map', flag: 'q.yard.seen', text: 'One line has been added in a different pen. It runs from the yard to a place the tunnel does not go.' },
     report: { needs: 'q.yard.seen', flag: 'q.yard.told' },
@@ -68,7 +68,7 @@ export const QUESTS = [
     reward: { money: 20, xp: 40, line: '"That isn\'t mine." He does the sum twice on the slide rule. "That\'s where track four went. They told us it was filled in."' },
   },
   {
-    id: 'side.chips', title: 'Not dinner', giver: 'npc.okafor', act: 1,
+    id: 'side.chips', why: "Mrs. Okafor has watched ASTER's doors longer than anyone. Worth being on her good side.", title: 'Not dinner', giver: 'npc.okafor', act: 1,
     ask: 'q.chips.asked', start: (f) => f['q.chips.asked'],
     give: { item: 'item.crab_chips', flag: 'q.chips.given', refuse: '"That is dinner. I said not dinner."' },
     pitch: '"Three generations upstairs arguing about dinner. Bring me something that is not dinner. The corner store has them. Red bag."',
@@ -78,7 +78,7 @@ export const QUESTS = [
     reward: { money: 12, xp: 20, line: 'She opens the bag, takes one, and hands you the rest. "My husband hated these. Forty years. I am only now finding out I like them."' },
   },
   {
-    id: 'side.glasses', title: 'The man on the bench', giver: 'npc.mina', act: 1,
+    id: 'side.glasses', why: "Mina notices who stops showing up. She might notice other things, too.", title: 'The man on the bench', giver: 'npc.mina', act: 1,
     ask: 'q.glasses.asked', start: (f) => f['q.glasses.asked'],
     inspect: { obj: 'obj.plaza_bench_b', flag: 'q.glasses.seen', text: 'The transit pass has a name and a door on it: PELL, A. ASTER 305.' },
     report: { needs: 'q.glasses.seen', flag: 'q.glasses.told' },
@@ -90,7 +90,7 @@ export const QUESTS = [
     reward: { money: 8, xp: 25, line: '"The engineer. Huh." She plays four bars of something slow. "Tell him I do requests. Tell him I\'d do that one."' },
   },
   {
-    id: 'side.board', title: 'The red one', giver: 'npc.ray', act: 1,
+    id: 'side.board', why: "Big Ray keeps the scooters running, and you'll want one that does.", title: 'The red one', giver: 'npc.ray', act: 1,
     ask: 'q.board.asked', start: (f) => f['q.board.asked'],
     give: { item: 'item.mat_circuit', flag: 'q.board.given', refuse: '"That\'s not a board. I\'ll know a board."' },
     pitch: '"Charger board\'s cooked on the red one. Bring me a circuit board and I\'ll make it worth the walk."',
@@ -102,7 +102,7 @@ export const QUESTS = [
 ];
 
 QUESTS.push({
-  id: 'side.lantern', title: 'Something that glows', giver: 'npc.ozzie', act: 1,
+  id: 'side.lantern', why: "Ozzie has fished this lake for forty-one years. Whatever goes into it, he's seen.", title: 'Something that glows', giver: 'npc.ozzie', act: 1,
   ask: 'q.lantern.asked', start: (f) => f['q.lantern.asked'],
   give: { item: 'item.fish_lantern', flag: 'q.lantern.given', refuse: '"Not that. The one with the light in it. You\'ll know."' },
   pitch: 'Ozzie taps the notebook without looking up. "Forty-one years on this pier. Every fish in here, I\'ve had. Except one. Bass with a light in it. My wife saw one in \'61. I never have." He finally looks at you. "You got young eyes. Fish the lake."',
