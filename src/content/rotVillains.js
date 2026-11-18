@@ -32,7 +32,7 @@ export const TRAITS = {
   sprinter: { label: 'fast', hp: 0.8, speed: 1.45 },
   armored:  { label: 'armored', hp: 1.6, speed: 0.8, armor: 0.3 },
   splitter: { label: 'splits', hp: 0.9, speed: 1 },
-  puddler:  { label: 'leaks rot', hp: 1, speed: 0.95 },
+  puddler:  { label: 'leaks coderot', hp: 1, speed: 0.95 },
   blinker:  { label: 'blinks', hp: 0.85, speed: 1.05 },
 };
 const TINTS = [0x7fb069, 0xb3589c, 0x5fb3b3, 0xc9a227, 0x8f6fd1, 0xd07a5a];

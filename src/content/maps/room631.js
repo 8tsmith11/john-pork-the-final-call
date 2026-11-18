@@ -68,7 +68,7 @@ export const room631 = makeMap({
     { id: 'obj.couch', x: 12, y: 10, label: 'Couch', text: 'The couch came with the apartment. Nobody has ever found the bottom of the cushions. Michael found a 2081 coin in there once and kept it.' },
     { id: 'obj.scooters', x: 1, y: 7, label: 'Scooter dock', text: 'Three scooters on the charging rail: blue, green, red. The red one\'s battery reads 61% and has read 61% for a month.' },
     { id: 'obj.shoes', x: 1, y: 9, label: 'Shoe rack', text: 'Six shoes, two of them matching. Somebody\'s cleats from a sport nobody here plays.' },
-    { id: 'obj.plant', x: 14, y: 11, label: 'Plant', text: 'A pothos that has survived three roommates, two rot scares and one week where everyone forgot it existed.' },
+    { id: 'obj.plant', x: 14, y: 11, label: 'Plant', text: 'A pothos that has survived three roommates, two coderot scares and one week where everyone forgot it existed.' },
     { id: 'obj.house_rules', x: 6, y: 5, label: 'House rules (taped up)', text: '631 HOUSE RULES: 1. Don\'t touch Manuel\'s statues. 2. Don\'t feed the shrimp, Trevor feeds the shrimp. 3. Whoever finishes the mate makes more. 4. No Continuity people in the apartment. 5. (scribbled out) 6. Rookie Aster mistakes are forgiven once.' },
     { id: 'obj.door', x: 0, y: 8, label: 'Front door (hallway)', action: 'exit', to: 'aster_hall', text: 'The sixth-floor hallway. It smells like someone else\'s dinner.' },
     { id: 'obj.statue_1', x: 2, y: 6, label: 'Statue', text: 'One of Manuel\'s John Pork statues, guarding the door. The eyes are very well done.' },
@@ -107,7 +107,7 @@ export const room631 = makeMap({
     { id: 'obj.trevor_mirror', x: 11, y: 1, label: 'Bathroom mirror', text: 'Your reflection. Tired. Normal. You watch it a second longer than you meant to.' },
     { id: 'obj.trevor_pc', x: 4, y: 1, label: 'Trevor\'s computer', action: 'pages', pages: [
       'INBOX (3 unread)\n\nFrom: 245 Lab TA\nSubject: Lab 7 regrade\n"Your oscilloscope traces are fine. Your report says the signal \'feels haunted.\' Please revise."',
-      'From: ASTER Building Management\nSubject: Rot abatement scheduled\n"Abatement crews will be on floors 4–7 this week. Please keep pets and unattested devices out of hallways."',
+      'From: ASTER Building Management\nSubject: Coderot abatement scheduled\n"Abatement crews will be on floors 4–7 this week. Please keep pets and unattested devices out of hallways."',
       'From: Mom\nSubject: (no subject)\n"Are you eating actual food? Not powders? Call me."' ] },
     { id: 'obj.dumbbells', x: 3, y: 4, label: 'Dumbbells', text: 'Two adjustable dumbbells and a printed log of every set since March. The log is more consistent than any of his lab reports.' },
     { id: 'obj.trevor_shower', x: 13, y: 2, label: 'Shower', text: 'The water comes out warm for exactly four minutes. Trevor has a timer on the wall.' },

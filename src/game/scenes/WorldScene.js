@@ -24,7 +24,7 @@ import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_OR
 
 const STEP = 1 / 60;
 const XP_PER_LEVEL = 30;
-const TRAIT_LABEL = { sprinter: 'fast', armored: 'armored', splitter: 'splits', puddler: 'leaks rot', blinker: 'blinks' };
+const TRAIT_LABEL = { sprinter: 'fast', armored: 'armored', splitter: 'splits', puddler: 'leaks coderot', blinker: 'blinks' };
 const MORPH_UNLOCK = {
   trevor: 'Trevor\'s supplement stack finally hits all at once. Morph stage 1 unlocked. [M]',
   manuel: 'Something in Manuel clicks into place. He is the gonman now. Morph stage 1 unlocked. [M]',
@@ -702,9 +702,9 @@ export class WorldScene extends Phaser.Scene {
     const f = this.save.flags, killed = new Set(this.save.world.killed || []);
     const tunnelLeft = (MAPS.tunnel_1?.enemies || []).filter((_, i) => !killed.has(`tunnel_1#${i}`)).length;
     if (f['act1.complete']) return 'The shrimp are spread out again, grazing. Whatever was in the water has eased.';
-    if (!f['act1.beat.call']) return 'They\'re clustered in the corner away from the window, very still. Trevor says they do that before a rot spike. Something under the street is bad.';
-    if (tunnelLeft > 6) return `They won't come out of the plants. (The tunnels are still crawling: about ${tunnelLeft} rot things down there.)`;
-    if (tunnelLeft > 0) return `A couple of them are moving again. (Fewer rot things under the street now: about ${tunnelLeft}.)`;
+    if (!f['act1.beat.call']) return 'They\'re clustered in the corner away from the window, very still. Trevor says they do that before a coderot spike. Something under the street is bad.';
+    if (tunnelLeft > 6) return `They won't come out of the plants. (The tunnels are still crawling: about ${tunnelLeft} coderot things down there.)`;
+    if (tunnelLeft > 0) return `A couple of them are moving again. (Fewer coderot things under the street now: about ${tunnelLeft}.)`;
     return 'They\'re out and grazing. The tunnels are quiet.';
   }
 
@@ -731,8 +731,8 @@ export class WorldScene extends Phaser.Scene {
   // ---------- apartment hub ----------
   _newsLine() {
     const NEWS = [
-      'CHANNEL 7 · CONTINUITY NEWS\n"Citizens, things are stable." Rot abatement completes ahead of schedule in Hyattsville. Residents may return Thursday.',
-      'CHANNEL 7 · "A rot outbreak at Baltimore\'s Inner Harbor has been contained, officials say. The harbor will remain closed." Footage shows a crane folding in half, slowly.',
+      'CHANNEL 7 · CONTINUITY NEWS\n"Citizens, things are stable." Coderot abatement completes ahead of schedule in Hyattsville. Residents may return Thursday.',
+      'CHANNEL 7 · "A coderot outbreak at Baltimore\'s Inner Harbor has been contained, officials say. The harbor will remain closed." Footage shows a crane folding in half, slowly.',
       'CHANNEL 7 · The Analog Union has closed its borders to "unattested data." Flights to Lisbon now require a paper ticket.',
       'CHANNEL 7 · Helium convoy attacked in the Gulf. Continuity reminds citizens that hoarding helium is a federal offense.',
       'CHANNEL 7 · Purple Line opening date: SOON. A reporter laughs and the feed cuts.',
@@ -1458,7 +1458,7 @@ export class WorldScene extends Phaser.Scene {
       g.fillStyle({ michael: 0xc8605a, trevor: 0x3f6fb5, manuel: 0x5f8f3a }[p.c] ?? 0x888888).fillRect(7, y, 8, 4);
     });
     // Top-right: XP and scrap, compact.
-    const lines = [`xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `   ◆ ${c.skillPoints} skill pt [K]` : ''}`, `scrap ${this.save.world.scrap ?? 0}${snap.enemies?.length ? `   rot ${snap.enemies.length}` : ''}`];
+    const lines = [`xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `   ◆ ${c.skillPoints} skill pt [K]` : ''}`, `scrap ${this.save.world.scrap ?? 0}${snap.enemies?.length ? `   coderot ${snap.enemies.length}` : ''}`];
     this.hudText.setText(lines.join('\n'));
     // Door gathering message overrides the prompt.
     const waiting = snap.players.filter((p) => p.w);

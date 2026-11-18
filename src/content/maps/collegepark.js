@@ -77,7 +77,7 @@ export const metroPlaza = makeMap({
     // The plaza
     { id: 'obj.station_entrance', art: 'obj.tunnel_on', x: 38, y: 8, label: 'Metro entrance', text: 'The gates are down for the night. The departure board behind them lists a train to a station that was never built.' },
     { id: 'npc.mina', art: PERSON[0], x: 41, y: 10, label: 'Mina', npc: true, text: '"I do requests. I don\'t do the one everybody asks for." She retunes something wooden that was not out of tune.' },
-    { id: 'npc.rotter_1', x: 30, y: 18, label: 'Rotter', npc: true, text: 'code rot. code rot. code rot.' },
+    { id: 'npc.rotter_1', x: 30, y: 18, label: 'Rotter', npc: true, text: 'coderot. coderot. coderot.' },
     { id: 'npc.halvard', x: 26, y: 26, label: 'Halvard', npc: true, talk: 'lead_b_halvard' },
     { id: 'obj.purple_sign', x: 40, y: 27, label: 'Purple Line sign', text: 'PURPLE LINE: OPENING SOON.' },
     { id: 'obj.plaza_clock', art: 'obj.clock_6f', x: 46, y: 9, label: 'Station clock', text: '19:01. Under it, somebody has taped a paper clock with the right time and a note: USE THIS ONE.' },
@@ -85,7 +85,7 @@ export const metroPlaza = makeMap({
     { id: 'npc.pruitt', x: 46, y: 19, label: 'Supervisor Pruitt', npc: true, text: '"Evening, folks. Routine abatement, nothing to see, which I am required to say." He looks at the regulation card and then, sorry about it, at you. "You live in the tower? You\'d tell me if you\'d seen anything light. Floating, I mean. Orange."' },
     { id: 'npc.addo', art: PERSON[1], x: 47, y: 21, label: 'Addo', npc: true, text: '"Mast\'s reading light. Something light. Lighter than it should be down there." He seems pleased that somebody asked.' },
     { id: 'npc.del', art: PERSON[0], x: 44, y: 21, label: 'Del', npc: true, text: '"Fourteen hours. Fourteen. You know what the rate is after twelve? Same as before twelve."' },
-    { id: 'npc.rotter_3', x: 49, y: 26, label: 'Rotter (looks at you differently)', npc: true, text: 'code rot. code rot. ...I used to be someone\'s favorite person. code rot.' },
+    { id: 'npc.rotter_3', x: 49, y: 26, label: 'Rotter (looks at you differently)', npc: true, text: 'coderot. coderot. ...I used to be someone\'s favorite person. coderot.' },
     { id: 'obj.grate', x: 51, y: 26, label: 'Storm grate', action: 'exit', floor: true, to: 'tunnel_1', text: 'The grate lifts. Somewhere below, very faintly, something is drumming.' },
     // Light: lamps along the streets, neon where somebody is selling something
     ...[[57, 5], [57, 17], [57, 27], [57, 38], [57, 47], [64, 11], [64, 22], [64, 37], [64, 46], [8, 30], [22, 30], [38, 30], [50, 30], [14, 35], [44, 35], [18, 15], [5, 16]]
@@ -104,7 +104,7 @@ export const metroPlaza = makeMap({
     { id: 'obj.station_light', art: 'obj.worklamp', x: 36, y: 8, label: 'Station light', light: 1.0, text: 'The entrance is lit all night. Nothing has come out of it since midnight.' },
     // Route 1
     { id: 'obj.billboard', x: 65, y: 20, label: 'Billboard', text: 'A Slop Decades billboard, peeling: "AT THE END OF THE DAY, NO ONE CAN CODE FASTER THAN AI."' },
-    { id: 'npc.rotter_2', x: 57, y: 8, label: 'Rotter', npc: true, text: 'code rot. no one can code faster than. code rot.' },
+    { id: 'npc.rotter_2', x: 57, y: 8, label: 'Rotter', npc: true, text: 'coderot. no one can code faster than. coderot.' },
     { id: 'obj.route1_north', art: 'obj.board', x: 61, y: 1, label: 'Route 1, north', action: 'exit', text: 'Abatement tape across both lanes, and a van with its lights off. North is closed tonight.' },
     { id: 'obj.route1_south', art: 'obj.board', x: 61, y: 50, label: 'Route 1, south', action: 'exit', text: 'South is the Beltway, and the wall. You don\'t have the papers. Nobody you know has the papers.' },
     { id: 'npc.ines', art: PERSON[2], x: 65, y: 14, label: 'Ines', npc: true, text: '"Lake\'s eleven minutes on foot. Campus is six. The Beltway is as far as you can get before somebody asks who you are."' },

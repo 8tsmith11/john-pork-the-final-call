@@ -3,7 +3,7 @@
 import { FISH } from './fish.js';
 
 export const ITEMS = {
-  'item.wooden_bat':   { name: 'Wooden bat', slot: 'weapon', analog: true, mods: { melee: 6 }, text: 'Ash wood. The rot slides off it.' },
+  'item.wooden_bat':   { name: 'Wooden bat', slot: 'weapon', analog: true, mods: { melee: 6 }, text: 'Ash wood. Coderot slides off it.' },
   'item.fab_launcher': { name: 'Fab launcher', slot: 'ranged', mods: { gun: 1, shot: 4, shotCd: -0.12 }, text: 'Printed at 3 a.m. Fires sintered pellets.' },
   'item.mesh_vest':    { name: 'Printed mesh vest', slot: 'armor', mods: { armor: 0.2 }, text: 'Hex lattice. Takes a fifth of the hurt.' },
   'item.sniffer':      { name: 'Helium sniffer', slot: 'gadget', mods: {}, text: 'Follows the lightest thing in the world.' },
