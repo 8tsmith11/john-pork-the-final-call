@@ -42,6 +42,63 @@ export const QUESTS = [
     ],
     reward: { money: 10, xp: 30, line: '"Helium sniffer. That\'s what the mast is." He finally sits up. "Somebody\'s looking for the same thing you are. And they get paid more."' },
   },
+  // ---- Side quests around ASTER and College Park (level design / cast: docs/design/04-cast.md) ----
+  {
+    id: 'side.signin', title: 'Forty names', giver: 'npc.doorman', act: 1,
+    ask: 'q.signin.asked', start: (f) => f['q.signin.asked'],
+    inspect: { obj: 'obj.security_desk', flag: 'q.signin.read', text: 'You read down the column. Forty entries, forty different hands, one name: FENWICK. He has been signing himself in.' },
+    report: { needs: 'q.signin.read', flag: 'q.signin.told' },
+    pitch: '"The sign-in book. The last forty entries are one name. I would like a resident to read it, because I am not certain I am permitted to notice."',
+    stages: [
+      { text: 'Read the sign-in book at the security desk.', done: (f) => f['q.signin.read'] },
+      { text: 'Tell Fenwick whose name it is.', done: (f) => f['q.signin.told'] },
+    ],
+    reward: { money: 10, xp: 30, line: '"I see." He is still for a while. "I do not have a room here. I have a desk. I believe I wanted to see how it looked."' },
+  },
+  {
+    id: 'side.yardline', title: 'A line that isn\'t his', giver: 'npc.pell', act: 1,
+    ask: 'q.yard.asked', start: (f) => f['q.yard.asked'],
+    inspect: { obj: 'obj.yard_map', flag: 'q.yard.seen', text: 'One line has been added in a different pen. It runs from the yard to a place the tunnel does not go.' },
+    report: { needs: 'q.yard.seen', flag: 'q.yard.told' },
+    pitch: '"There\'s a diagram of the yard down there with my corrections on it. Forty-one years of them. If you\'re going anyway, tell me whether anybody has added a line that isn\'t mine."',
+    stages: [
+      { text: 'Find the yard diagram in the Green Line switchyard.', done: (f) => f['q.yard.seen'] },
+      { text: 'Tell Arthur Pell about the extra line.', done: (f) => f['q.yard.told'] },
+    ],
+    reward: { money: 20, xp: 40, line: '"That isn\'t mine." He does the sum twice on the slide rule. "That\'s where track four went. They told us it was filled in."' },
+  },
+  {
+    id: 'side.chips', title: 'Not dinner', giver: 'npc.okafor', act: 1,
+    ask: 'q.chips.asked', start: (f) => f['q.chips.asked'],
+    give: { item: 'item.crab_chips', flag: 'q.chips.given', refuse: '"That is dinner. I said not dinner."' },
+    pitch: '"Three generations upstairs arguing about dinner. Bring me something that is not dinner. The corner store has them. Red bag."',
+    stages: [
+      { text: 'Bring Mrs. Okafor a bag of crab chips from the corner store.', done: (f) => f['q.chips.given'] },
+    ],
+    reward: { money: 12, xp: 20, line: 'She opens the bag, takes one, and hands you the rest. "My husband hated these. Forty years. I am only now finding out I like them."' },
+  },
+  {
+    id: 'side.glasses', title: 'The man on the bench', giver: 'npc.mina', act: 1,
+    ask: 'q.glasses.asked', start: (f) => f['q.glasses.asked'],
+    inspect: { obj: 'obj.plaza_bench_b', flag: 'q.glasses.seen', text: 'The transit pass has a name and a door on it: PELL, A. ASTER 305.' },
+    report: { needs: 'q.glasses.seen', flag: 'q.glasses.told' },
+    pitch: '"A man sat on that bench every night for a year and listened. He hasn\'t been in a week, and he left his glasses. Look for me. I can\'t leave the pitch."',
+    stages: [
+      { text: 'Look at what was left on the plaza bench.', done: (f) => f['q.glasses.seen'] },
+      { text: 'Tell Mina who he is.', done: (f) => f['q.glasses.told'] },
+    ],
+    reward: { money: 8, xp: 25, line: '"The engineer. Huh." She plays four bars of something slow. "Tell him I do requests. Tell him I\'d do that one."' },
+  },
+  {
+    id: 'side.board', title: 'The red one', giver: 'npc.ray', act: 1,
+    ask: 'q.board.asked', start: (f) => f['q.board.asked'],
+    give: { item: 'item.mat_circuit', flag: 'q.board.given', refuse: '"That\'s not a board. I\'ll know a board."' },
+    pitch: '"Charger board\'s cooked on the red one. Bring me a circuit board and I\'ll make it worth the walk."',
+    stages: [
+      { text: 'Bring Big Ray a circuit board.', done: (f) => f['q.board.given'] },
+    ],
+    reward: { money: 30, xp: 25, line: 'He turns it over under the lamp. "That\'s a 245 lab board. I can tell by the solder. Somebody was angry."' },
+  },
 ];
 
 export function questState(save) {
