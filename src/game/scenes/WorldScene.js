@@ -944,13 +944,18 @@ export class WorldScene extends Phaser.Scene {
     const head = this.add.text(0, 6, b.kind, { heading: true, fontSize: '7px', color: done ? '#7fb069' : '#ffb347' }).setOrigin(0.5, 0);
     const title = this.add.text(0, 15, b.title, { heading: true, fontSize: '11px', color: '#ffd27f' }).setOrigin(0.5, 0);
     const det = this.add.text(0, 30, b.detail ?? '', { ...FONT, fontSize: '8px', color: '#e8e8f0', align: 'center', wordWrap: { width: w - 16 } }).setOrigin(0.5, 0);
-    const h = 36 + (b.detail ? det.height + 4 : 0);
+    // New quests stay up until clicked (Trevor); updates and completions slide away on their own.
+    const sticky = b.kind === 'NEW QUEST';
+    const hint = sticky ? this.add.text(0, 30 + (b.detail ? det.height + 4 : 0), 'click to close', { ...FONT, fontSize: '7px', color: '#9aa3c7' }).setOrigin(0.5, 0) : null;
+    const h = 36 + (b.detail ? det.height + 4 : 0) + (sticky ? 10 : 0);
     const bg = this.add.graphics();
     bg.fillStyle(0x0b0d16, 0.92).fillRoundedRect(-w / 2, 0, w, h, 4).lineStyle(1, done ? 0x7fb069 : 0xffb347, 0.9).strokeRoundedRect(-w / 2, 0, w, h, 4);
-    c.add([bg, head, title, det]);
+    c.add([bg, head, title, det, ...(hint ? [hint] : [])]);
     sfx(done ? 'pickup' : 'swing');
     this.tweens.add({ targets: c, y: y1, duration: 260, ease: 'Back.out' });
-    this.time.delayedCall(3400, () => this.tweens.add({ targets: c, y: y0 - h, alpha: 0, duration: 260, onComplete: () => { c.destroy(); this._nextQuestBanner(); } }));
+    const leave = () => { this._qbSticky = null; this.tweens.add({ targets: c, y: y0 - h, alpha: 0, duration: 260, onComplete: () => { c.destroy(); this._nextQuestBanner(); } }); };
+    if (sticky) this._qbSticky = { x0: x - w / 2, x1: x + w / 2, y0: y1, y1: y1 + h, leave };
+    else this.time.delayedCall(3400, leave);
   }
 
   // The objective you're working on, always on screen (main quest unless a side quest just moved).
@@ -1352,6 +1357,8 @@ export class WorldScene extends Phaser.Scene {
   _onClick(ptr) {
     if (!this.ready || ptr.button !== 0) return;
     const { x: sx, y: sy } = toView(ptr);
+    const qb = this._qbSticky;
+    if (qb && sx >= qb.x0 && sx <= qb.x1 && sy >= qb.y0 && sy <= qb.y1) { this.input2.blockAttack = true; qb.leave(); return; }
     if (this.dlg) {
       this.input2.blockAttack = true;
       return;   // clicks never advance dialogue (E does); choices are clicked directly
