@@ -7,7 +7,7 @@
 //   vent:   { x, y }                                       street steam
 //   cables: [[x1, y1, x2, y2, sag]]                        overhead cable runs (drawn above everyone)
 //   drones: n                                              patrol drones crossing with searchlights (outdoor only)
-const C = { cyan: 0x3fd0d6, magenta: 0xd417c8, pink: 0xe87a9c, lime: 0xc8e619, amber: 0xffa23a, red: 0xd42a3c, blue: 0x4f7fd0 };
+const C = { cyan: 0x3fd0d6, magenta: 0xd417c8, pink: 0xe87a9c, lime: 0xc8e619, amber: 0xe0b866,   // kept off balloon orange (art direction: orange is the balloon's) red: 0xd42a3c, blue: 0x4f7fd0 };
 
 export const DRESSING = {
   metro_plaza: {
