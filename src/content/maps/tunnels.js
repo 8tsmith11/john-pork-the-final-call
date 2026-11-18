@@ -79,7 +79,7 @@ export const platform = makeMap({
   spawns: [[3, 7], [3, 8], [4, 7]],
   enemies: [['boss.warden', 30, 7]],
   objects: [
-    { id: 'obj.platform_back', x: 1, y: 7, label: 'Back into the tunnel', action: 'exit', to: 'tunnel_1', text: 'Back the way you came.' },
+    { id: 'obj.platform_back', art: 'obj.tunnel_on', x: 1, y: 7, label: 'Back into the tunnel', action: 'exit', to: 'tunnel_1', text: 'Back the way you came.' },
     { id: 'obj.platform_sign', art: 'obj.purple_sign', x: 11, y: 2, label: 'Station sign', text: 'COLLEGE PARK. Someone has scratched out U OF MD and written nothing in its place.' },
     { id: 'obj.platform_bench_w', art: 'obj.bench', x: 10, y: 11, label: 'Bench', text: 'A newspaper, folded to the crossword. Half done. The date is the morning of the Call.' },
     { id: 'obj.platform_bench_e', art: 'obj.bench', x: 33, y: 11, label: 'Bench', text: 'A coat, laid out as if for someone to come back to.' },
