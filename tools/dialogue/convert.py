@@ -28,6 +28,8 @@ LINE = re.compile(r"^\*\*([A-Z][A-Z .'\-]*?)(?:\s*\([^)]*\))?:\*\*\s*(.+)$")
 INSPECT = re.compile(r"^\**INSPECT:?\**:?\s*(.+)$")
 EFFECT = re.compile(r"^\*\s*(set|give|standing)\s+([^*]+)\*\s*$", re.I)
 GOTO = re.compile(r"Next:\**\s*->\s*`?([\w.\-]+)`?")
+BAREJUMP = re.compile(r"^->\s*`?([\w.\-]+)`?\s*$")
+CONDJUMP = re.compile(r"^-\s+((?:\[[^\]]*\]\s*)+)->\s*`?([\w.\-]+)`?\s*$")
 CHOICE = re.compile(r"^-\s+((?:\[[^\]]*\]\s*)*)(.+?)\s*->\s*`?([\w.\-]+)`?\s*$")
 COND = re.compile(r"\[([^\]]*)\]")
 
@@ -58,7 +60,18 @@ def parse(text):
             continue
         if line.lower().startswith("choices"):
             in_choices = True; continue
-        g = GOTO.search(line)
+        # Jumps without the "Next:" label, as the scenes mostly write them:
+        #   -> node_id                      (unconditional; honours an enclosing #### if block)
+        #   - [cond] -> node_id             (one of a list of conditional jumps; [else] is the fallback)
+        cj = CONDJUMP.match(line)
+        if cj:
+            conds = [x.strip() for x in COND.findall(cj.group(1)) if x.strip()]
+            if cond: conds.append(cond)
+            conds = [c for c in conds if c.lower() not in ("else", "otherwise", "always")]
+            if conds: node.setdefault("gos", []).append({"if": " && ".join(conds), "go": cj.group(2)})
+            else: node["go"] = node["go"] or cj.group(2)
+            continue
+        g = BAREJUMP.match(line) or GOTO.search(line)
         if g and not line.startswith("- "):
             if cond and node["go"] is None: node.setdefault("gos", []).append({"if": cond, "go": g.group(1)})
             else: node["go"] = node["go"] or g.group(1)

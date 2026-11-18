@@ -1092,6 +1092,17 @@ export class WorldScene extends Phaser.Scene {
 
   _handleInteract(me) {
     if (this.dlg || this.menu) { this.hint.setText(''); return; }
+    // John Pork calls back. If the party declined, he rings again deeper in the tunnels: once at the
+    // switchyard, once on the approach. A third decline is what brings the Sahur (the_call script).
+    if (this.map.id === 'tunnel_1' && this.mode !== 'client' && !this.save.flags['act1.call.answered']) {
+      const declines = Number(this.save.flags['act1.call.declines'] || 0), tx = me.x / TILE;
+      const ring = declines === 1 && tx > 33 ? 2 : declines === 2 && tx > 54 ? 3 : 0;
+      if (ring && !this.save.flags[`act1.beat.ring${ring}`]) {
+        this.save.flags[`act1.beat.ring${ring}`] = true;
+        this._hackCall(() => this.startDialogue('the_call', `call_ring_${ring}`));
+        return;
+      }
+    }
     const inReach = (o) => Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y) <= 34;
     let nearest = null, nd = 34;
     for (const o of this.map.objects) { const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y); if (d <= nd) { nd = d; nearest = o; } }
