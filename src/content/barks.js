@@ -46,13 +46,14 @@ export const BARKS = {
   },
   // When somebody else gets hit, or goes down.
   allyHurt: {
-    any: ['Rookie Aster mistake.', 'Dodge is space, by the way.'],
+    // "You're absolutely right to point that out" is a real joke of theirs: answering each other like a chatbot.
+    any: ['Rookie Aster mistake.', 'Dodge is space, by the way.', 'You\'re absolutely right to point that out. I did get hit.'],
     manuel: ['Che, move your feet.'],
     trevor: ['You\'re standing in it.'],
     michael: ['You good? You look not good.'],
   },
   allyDown: {
-    any: ['Aster noob down. I\'m coming.', 'Rookie Aster mistake. Hold on.'],
+    any: ['Aster noob down. I\'m coming.', 'Rookie Aster mistake. Hold on.', 'You\'re absolutely right to point that out. You are on the floor.'],
     manuel: ['Don\'t get comfortable down there.'],
     trevor: ['Stay there. Not that you have options.'],
     michael: ['I\'ve got you, I\'ve got you, where are you...'],

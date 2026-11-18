@@ -21,6 +21,8 @@ spoiler (see `PROCESS.md`).
     hidden around the apartment like the others. In the game it is only ever a plain purple
     cylinder and the joke is how people react to finding it (D-015: nothing graphic is drawn).
     *(Manuel)*
+- **"You're absolutely right to point that out."** We say it to each other, deadpan, to mimic how an
+  AI answers. It works best right after someone states the obvious or catches a mistake. *(Manuel)*
 - **Room 631, ASTER, College Park, "Aster pros," "rookie Aster mistake," 245 lab, the John Pork
   flag and statues:** these come from the brief (`docs/BRIEF.md` §3 and the appendix).
 

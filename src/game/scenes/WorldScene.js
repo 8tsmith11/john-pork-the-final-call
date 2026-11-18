@@ -693,11 +693,41 @@ export class WorldScene extends Phaser.Scene {
     } });
   }
 
+  // Easter egg (docs/SECRETS.md, real-life lore from Manuel): the purple cylinder. One searchable
+  // container in the world is hiding it. Whoever finds it hides it again somewhere else, so it is
+  // never in the same place twice, and it turns up even in a container that is already picked clean.
+  // Text only; it is a plain purple cylinder and nothing is drawn (D-015).
+  _cylinderSpots() {
+    return (this._cylSpots ??= Object.values(MAPS).flatMap((m) => m.objects.filter((x) => x.loot).map((x) => ({ map: m.id, id: x.id, where: m.name ?? m.id }))));
+  }
+  _cylinderSpot(n = Number(this.save.flags['secrets.cylinder.moves'] || 0)) {
+    const spots = this._cylinderSpots(); if (!spots.length) return null;
+    const pick = (k) => Math.floor(new Rng(`${this.save.world.seed}:cylinder:${k}`).next() * spots.length);
+    let i = pick(n);
+    if (n > 0 && i === pick(n - 1)) i = (i + 1) % spots.length;   // never hidden back in the place it was just found
+    return spots[i];
+  }
+  _cylinderHere(o) { const s = this._cylinderSpot(); return !!s && s.map === this.map.id && s.id === o.id; }
+  _findCylinder(who) {
+    const f = this.save.flags, n = Number(f['secrets.cylinder.moves'] || 0) + 1;
+    this._flag('secrets.cylinder.moves', n); this._flag('secrets.cylinder.found', true);
+    this._flag(`secrets.cylinder.by.${who}`, Number(f[`secrets.cylinder.by.${who}`] || 0) + 1);
+    const line = {
+      manuel: 'MANUEL: "I cast that. Two-part silicone. It came out of the mold perfect and I have regretted nothing."',
+      trevor: 'TREVOR: "Not mine." He looks at it a while. "It is never mine."',
+      michael: 'MICHAEL: "I\'m not touching it." He is already holding it.',
+    }[who] ?? '';
+    const next = this._cylinderSpot(n);
+    const tally = ['manuel', 'trevor', 'michael'].map((k) => `${k[0].toUpperCase()}${k.slice(1)} ${Number(f[`secrets.cylinder.by.${k}`] || 0)}`).join(' · ');
+    return `\n\nUnderneath everything else: the purple cylinder. Cast silicone, a little dusty, exactly the shape you remember.\n${line}\nHouse rule: whoever finds it hides it again. It goes somewhere worse${next ? `, out by ${next.where}` : ''}.\nFound so far: ${tally}`;
+  }
+
   // Procedural loot: search a container once; what's inside is seeded by the world seed + object id.
   _search(o, who = this.character) {
     if (this.mode === 'client') { this.net.send({ t: 'search', id: o.id }); return; }
     const key = `loot.${this.map.id}.${o.id}`, base = o.text ?? o.label;
-    if (this.save.flags[key]) return this._say(`${base}\n\nPicked clean.`);
+    const cyl = this._cylinderHere(o) ? this._findCylinder(who) : '';
+    if (this.save.flags[key]) return this._say(`${base}\n\nPicked clean.${cyl}`);
     const L = LOOT[o.loot]; if (!L) return this._say(base);
     this._flag(key, true);
     const rng = new Rng(`${this.save.world.seed}:${key}`);
@@ -712,7 +742,7 @@ export class WorldScene extends Phaser.Scene {
       else { Inv.add(c, id, n); parts.push(`${ITEMS[id]?.name ?? id}${n > 1 ? ' ×' + n : ''}`); }
     }
     this._partyDirty = true; this._syncParty?.(); sfx('pickup');
-    this._say(`${base}\n\nYou find: ${parts.join(', ')}.`);
+    this._say(`${base}\n\nYou find: ${parts.join(', ')}.${cyl}`);
   }
 
   // ---------- quests (src/content/quests.js) ----------
