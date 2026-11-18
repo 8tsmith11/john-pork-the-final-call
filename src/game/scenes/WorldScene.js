@@ -118,7 +118,7 @@ export class WorldScene extends Phaser.Scene {
     return {
       speaker: this.character, present: present.length ? present : [this.character], flags: this.save.flags,
       inventory: Inv.ids(me), seed: this.save.world.rolls?.twistVariant ?? 'A',
-      morph: me.morph.stage, standing: this.save.standing,
+      morph: me.morph.stage, standing: this.save.standing, money: this.save.world.money ?? 0,
     };
   }
 
@@ -128,6 +128,7 @@ export class WorldScene extends Phaser.Scene {
     const sink = {
       flag: (k, v) => this._flag(k, v),
       item: (item, n = 1) => { if (this.mode === 'client') this.net.send({ t: 'item', who: this.character, item, n }); else { Inv.add(this.save.party[this.character], `item.${item}`, n); this._syncParty(); } this._toast(`★ ${ITEMS[`item.${item}`]?.name ?? item}${n > 1 ? ' ×' + n : ''}`); },
+      pay: (n) => { this.save.world.money = Math.max(0, (this.save.world.money ?? 0) - n); this._partyDirty = true; this._toast(`-$${n}`); },
       standing: (f, n) => { if (f in this.save.standing) this.save.standing[f] += n; if (this.mode === 'client') this.net.send({ t: 'standing', faction: f, n }); },
     };
     this.dlg = new Conversation(scene, nodeId, this._dialogueCtx(), sink);
@@ -1207,7 +1208,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode !== 'client' && this.map.id === 'tunnel_1' && me.x / TILE > 40) this._maybeButtDial(true);
     const inReach = (o) => Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y) <= 34;
     let nearest = null, nd = 34;
-    for (const o of this.map.objects) { const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y); if (d <= nd) { nd = d; nearest = o; } }
+    for (const o of this.map.objects) { if (o.goneFlag && this.save.flags[o.goneFlag]) { this.propById?.[o.id]?.im.setVisible(false); continue; } const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y); if (d <= nd) { nd = d; nearest = o; } }
     const person = !nearest ? this.crowd?.nearest(me.x, me.y) : null;
     const verb = (o) => (o.npc || o.talk && o.id.startsWith('npc.') ? `Talk to ${o.label}` : o.label);
     this.hint.setText(nearest ? `[E] ${verb(nearest)}${nearest.door ? (nearest.open ? ' (close)' : ' (open)') : ''}` : person ? `[E] Talk to ${person.name}` : '');

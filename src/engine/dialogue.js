@@ -40,6 +40,7 @@ function evalAtom(a, ctx) {
   if ((m = a.match(/^morph\s*(>=|<|>|<=|==)\s*(\d+)/i))) return cmp(ctx.morph, m[1], +m[2]);
   if ((m = a.match(/^standing\s+(\w+)\s*(>=|<|>|<=|==)\s*(-?\d+)/i))) return cmp(ctx.standing[m[1]] ?? 0, m[2], +m[3]);
   if (/^once$/i.test(a)) return !ctx.flags[`dlg.once.${ctx.nodeId}`];
+  if ((m = a.match(/^money\s*(>=|<=|>|<|==)\s*(\d+)/i))) return cmp(ctx.money ?? 0, m[1], +m[2]);
   if ((m = a.match(/^flag\s+([\w.\-]+)(?:\s*=\s*(\w+))?/i))) {
     const v = lookup(m[1], ctx.flags);
     return m[2] ? String(v) === m[2] : !!v && v !== 'off';
@@ -73,6 +74,7 @@ export function applyEffects(effects, ctx, sink) {
       // give item sniffer · give item.sniffer · give item item.sniffer 2 · give sniffer x3
       else if ((m = p.match(/^give\s+(?:item\s+)?(?:item\.)?([\w\-]+)(?:\s*[x×]?\s*(\d+))?/i))) sink.item(m[1], m[2] ? +m[2] : 1);
       else if ((m = p.match(/^standing\s+(\w+)\s*([+-]\d+)/i))) sink.standing(m[1], +m[2]);
+      else if ((m = p.match(/^pay\s+\$?(\d+)/i))) sink.pay?.(+m[1]);
     }
   }
 }

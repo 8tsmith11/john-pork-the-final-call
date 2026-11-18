@@ -86,7 +86,8 @@ export const metroPlaza = makeMap({
     { id: 'npc.addo', art: PERSON[1], x: 47, y: 21, label: 'Addo', npc: true, text: '"Mast\'s reading light. Something light. Lighter than it should be down there." He seems pleased that somebody asked.' },
     { id: 'npc.del', art: PERSON[0], x: 44, y: 21, label: 'Del', npc: true, text: '"Fourteen hours. Fourteen. You know what the rate is after twelve? Same as before twelve."' },
     { id: 'npc.rotter_3', x: 49, y: 26, label: 'Rotter (looks at you differently)', npc: true, text: 'coderot. coderot. ...I used to be someone\'s favorite person. coderot.' },
-    { id: 'obj.grate', x: 51, y: 26, label: 'Storm grate', action: 'exit', floor: true, to: 'tunnel_1', text: 'The grate lifts. Somewhere below, very faintly, something is drumming.' },
+    { id: 'npc.abatement_tech', art: 'npc.pruitt', x: 52, y: 25, label: 'Abatement tech', npc: true, talk: 'checkpoint', goneFlag: 'act1.cordon.passed' },
+    { id: 'obj.grate', x: 51, y: 26, label: 'Storm grate', action: 'exit', floor: true, to: 'tunnel_1', requiresFlag: 'act1.cordon.passed', lockedText: 'Orange tape in a square round the grate, and a man in a white coat sitting on a cooler beside it.', text: 'The grate lifts. Somewhere below, very faintly, something is drumming.' },
     // Light: lamps along the streets, neon where somebody is selling something
     ...[[57, 5], [57, 17], [57, 27], [57, 38], [57, 47], [64, 11], [64, 22], [64, 37], [64, 46], [8, 30], [22, 30], [38, 30], [50, 30], [14, 35], [44, 35], [18, 15], [5, 16]]
       .map(([x, y]) => ({ id: `obj.lamp_${x}_${y}`, art: 'obj.streetlamp', x, y, label: 'Streetlamp', light: 0.9, text: 'Sodium orange. Moths, and something that is not a moth.' })),
