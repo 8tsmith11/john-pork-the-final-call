@@ -16,6 +16,7 @@
 | **Grand vague nouns** | weight, echo, silence, void, tapestry, testament, liminal, "something shifted" | They sound deep and mean nothing |
 | **Everyone equally articulate** | Rotters, cops, and roommates all speaking in polished prose | It flattens every voice into one |
 | **Scenes ending on a lesson** | A closing line that sums up what it meant | Let the image or action end it |
+| **Denial plus echo** | "It doesn't do this. It never did." / "He wasn't there. He never was." | A rhetorical drumbeat: deny, then repeat the denial for weight. Very common in machine prose. Say it once, or show it |
 | **Perfect comebacks** | Every exchange "won" with a zinger | People fumble, deflect, and change the subject |
 
 ## 2. What good lines do instead

@@ -27,6 +27,11 @@ RULES = {
     "grand-noun": re.compile(r"\b(?:weight|echo(?:es)?|silence|void|tapestry|testament|liminal|something shifted)\b", re.I),
     "aphorism": re.compile(r"^(?:Sometimes|Everyone|Everything|Nothing|People|Life|The truth is|In the end)\b[^?]*\.$"),
     "long-line": re.compile(r"^(?:\S+\s+){34,}\S+"),
+    # "It doesn't do this. It never did." A denial followed by a short reinforcing echo (Trevor flagged it).
+    "denial-echo": re.compile(r"\b(?:doesn't|don't|didn't|isn't|wasn't|won't|can't|never|no longer)\b[^.?!]{0,60}[.!]\s+(?:(?:It|He|She|They|That|This|You|We|I)\s+)?(?:never|didn't|doesn't|wasn't|isn't|won't|hasn't|hadn't|still doesn't|still isn't)\b[^.?!]{0,30}[.!]", re.I),
+    # The broader cadence: a statement, then a short sentence that turns it with a negation.
+    "negation-turn": re.compile(r"[.!]\s+(?:It|He|She|They|That|This|Nobody|No one|Nothing)(?:'s| is| was| has| had)?\s+(?:just\s+|still\s+|simply\s+)?(?:not|never|no|doesn't|didn't|isn't|wasn't|won't|hasn't)\b[^.?!]{0,40}[.!]", re.I),
+    "never-did": re.compile(r"\b(?:It|He|She|They|That)\s+never\s+(?:did|has|had|was|will|does)\.", re.I),
 }
 
 

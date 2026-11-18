@@ -81,7 +81,7 @@ export const asterLobby = makeMap({
     { id: 'obj.mailboxes', x: 7, y: 0, label: 'Mailboxes', text: 'A wall of brass doors. 631 has a flyer for a dentist none of you have been to. 409 is stuffed full and nobody has emptied it.' },
     { id: 'obj.directory', x: 12, y: 0, label: 'Building directory', text: 'White letters pushed into black felt. Enough have fallen that the list reads like a ransom note. B-01 SUPER ... KESSEL, L.' },
     { id: 'obj.super_door', art: DOOR, x: 17, y: 0, label: 'Super\'s office', text: 'Locked. A paper sign, in marker: BACK WHEN IT\'S FIXED.' },
-    { id: 'obj.lobby_clock', art: 'obj.clock_6f', x: 22, y: 0, label: 'Lobby clock', text: '19:01. The second hand is moving. It is just not getting anywhere.' },
+    { id: 'obj.lobby_clock', art: 'obj.clock_6f', x: 22, y: 0, label: 'Lobby clock', text: '19:01. The second hand ticks forward, then slips back a tick.' },
     { id: 'obj.vending', x: 27, y: 1, label: 'Vending machine', text: 'It hums. Row C has been empty for a year. It takes your coin and considers you.' },
     { id: 'obj.lobby_camera', x: 30, y: 0, label: 'Lobby camera', text: 'The red light is on. It is recording. Not tonight, by the look of the monitor, but it is recording.' },
     { id: 'obj.security_desk', x: 17, y: 6, label: 'Security desk', text: 'A sign-in book. The last forty entries are the same name in forty different hands.' },
