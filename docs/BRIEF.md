@@ -236,6 +236,7 @@ have to apply, but it would make it interesting."
   > *"you should click on world items, npcs etc to interact not e, then click a certain key like e to
   > exit that menu or just click off of the descirption text. descirption shouldnt fade until you exit."*
 - **The lobby should look way cooler and have music.** (Assigned to gonman for later.)
+- **This should be a very good-looking game.** Visual quality is a top priority (relayed to Fable).
 
 ---
 
