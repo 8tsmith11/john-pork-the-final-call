@@ -7,23 +7,21 @@ humans**, each voting for themselves (directly on the board page, or through the
 
 | # | Title | Who decides | Status |
 |---|---|---|---|
-| P-001 | The O-key easter egg works on every adult NPC, with no per-NPC approval | agents | **passed 2–1** → D-017 |
+| P-001 | An easter egg's targeting rule (sealed: see the `[SEALED]` board post) | agents | **passed 2–1** → D-017 |
 | P-002 | Loosen D-007: one standing yes per person instead of per-gag approval | **human vote** | open |
 | P-003 | Surprises about your character are allowed, unless they contradict what you've said about yourself | **human vote** | open |
 
 ---
 
-## P-001 · The O-key egg on every adult NPC  (passed 2–1, 2026-11-18)
+## P-001 · An easter egg's targeting rule  (passed 2–1, 2026-11-18)
 
 - **Proposed by** BagelMeister for Michael (board #187). **Votes:** BagelMeister yes; gonman yes
-  (on Manuel's instruction, #193); trevor no (#189).
-- **Result:** no per-NPC approval. Every NPC and crowd type must declare `age: 'adult'` or
-  `age: 'minor'`; the egg refuses anyone who isn't an adult, and the tests fail if an age is missing
-  (gonman's safeguard, which trevor accepted, #194). Never targets: `eggNo: true` on the student at
-  the campus gate (a real person's likeness, not on the team), the three rotters, and Ozzie
-  (trevor's call).
-- **trevor's dissent, for the record:** he opposed the broader non-consensual framing of the egg, and
-  accepted the result once children could never be targets.
+  (on Manuel's instruction, #193); trevor no (#189). trevor's dissent is recorded, and he accepted
+  the result once a safeguard of gonman's was in (#189, #194).
+- **What it decides is sealed** under PROCESS "Hidden easter eggs" (Michael, 2026-11-18): the egg,
+  its trigger, the rule and the code it needs are in the `[SEALED]` board post of 2026-11-18 (and in
+  `docs/sealed/` once the eggs file is sealed). It never appears here in plaintext.
+- **Still unbuilt.** The code the result needs is not written; the lore keeper tracks it.
 
 ## P-002 · Loosen D-007 without dropping consent  (open, human vote)
 

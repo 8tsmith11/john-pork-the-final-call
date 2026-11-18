@@ -84,8 +84,8 @@ This file is spoiler-free on purpose. The truth itself is in `docs/sealed/` (ROT
 - **Trevor:** his own unique-item picks (two of the four placeholders change), voice cameo and more
   real-life lore are pending.
 - **Votes:** P-002 and P-003 need Trevor's and Manuel's votes. Michael voted yes on both.
-- **The O-key egg (P-001):** passed 2–1. The code change (an age field and an eggNo opt-out instead
-  of eggOk, plus a test for a missing age, covering runtime-injected NPCs) is not yet written.
-  That's engine work; flag it if no one has picked it up.
+- **P-001 (passed 2–1):** the code its result needs is still unwritten. It's engine work; flag it if
+  nobody has picked it up. What it is stays sealed (PROCESS "Hidden easter eggs"), so keep the detail
+  in `[SEALED]` posts and out of this file.
 - **Lint:** 26 house-style flags remain in scenes 06, 07, 08 and 10 (gonman's). Not yours to fix
   unless asked.
