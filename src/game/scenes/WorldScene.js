@@ -15,6 +15,7 @@ import { ITEMS, RECIPES, SKILLS, playerMods } from '../../content/items.js';
 import { tileKey } from '../render/tiles.js';
 import { GameMenu, TABS } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
+import { PipePuzzle } from '../ui/PipePuzzle.js';
 
 const STEP = 1 / 60;
 const XP_PER_LEVEL = 30;
@@ -360,11 +361,11 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- in-game menu (src/game/ui/GameMenu.js) ----------
-  get menu() { return this.gameMenu?.tab ?? null; }
+  get menu() { return this.gameMenu?.tab ?? (this.puzzle && !this.puzzle.closed ? 'puzzle' : null); }
   _makeMenu() {
     this.gameMenu = new GameMenu(this);
     const kb = this.input.keyboard;
-    kb.on('keydown-ESC', () => { if (this.dlg) return; this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
+    kb.on('keydown-ESC', () => { if (this.dlg) return; if (this.puzzle && !this.puzzle.closed) { this.puzzle.destroy(); this.puzzle = null; return; } this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
     kb.on('keydown-I', () => { if (!this.dlg) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
     kb.on('keydown-K', () => { if (!this.dlg) this.menu === 'skills' ? this._closeMenu() : this.gameMenu.show('skills'); });
     kb.on('keydown-TAB', (ev) => { ev.preventDefault?.(); if (!this.dlg) this.menu === 'map' ? this._closeMenu() : this.gameMenu.show('map'); });
@@ -579,7 +580,7 @@ export class WorldScene extends Phaser.Scene {
     }
     if (this.menu) {
       this.input2.blockAttack = true;
-      if (!this.gameMenu.contains(sx, sy)) this._closeMenu();
+      if (this.menu !== 'puzzle' && !this.gameMenu.contains(sx, sy)) this._closeMenu();
       return;
     }
     if (this.sayOpen) {
@@ -684,6 +685,13 @@ export class WorldScene extends Phaser.Scene {
     if (near.action === 'exit') {
       if (this.mode === 'client') this.net.send({ t: 'exit', obj: near.id });
       else this._tryExit(near);
+      return;
+    }
+    if (near.puzzle === 'pipes' && !this.save.flags[near.solvedFlag]) {
+      this.puzzle = new PipePuzzle(this, `${this.save.world.seed}:${near.id}`, () => {
+        this.puzzle = null; this._flag(near.solvedFlag, true); this._toast('✓ Signal restored');
+        const [scene, node] = near.talk.split(':'); this.startDialogue(scene, node || null);
+      });
       return;
     }
     if (near.talk) { const [scene, node] = near.talk.split(':'); this.startDialogue(scene, node || null, near.after ? () => this._flag(near.after, true) : null); return; }

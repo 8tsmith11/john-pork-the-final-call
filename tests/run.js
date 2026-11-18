@@ -66,6 +66,18 @@ test('world is consistent: killed enemies stay dead on re-entry', () => {
   assert.equal(sim.enemies.size, n - 1);
 });
 
+const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
+test('pipe puzzle: every seed is solvable and starts unsolved', () => {
+  if (!PipePuzzle) return;
+  for (let i = 0; i < 300; i++) {
+    const p = new PipePuzzle(null, `seed-${i}`);
+    assert.ok(!p.solved(), `seed-${i} starts solved`);
+    for (const row of p.grid) for (const c of row) if (c.solution !== undefined) c.r = c.solution;
+    assert.ok(p.solved(), `seed-${i} solution doesn't solve`);
+    for (const row of p.grid) for (const c of row) if (c.solution !== undefined) assert.ok(!c.locked, 'path tile locked');
+  }
+});
+
 const SCENES = ['cold_open', 'aster', 'lead_a_helium', 'lead_b_halvard', 'lead_c_footage', 'the_call', 'descent_and_boss', 'ending', 'first_death'];
 const { loadScene, Conversation, evalCond } = await import('../src/engine/dialogue.js');
 await (async () => {

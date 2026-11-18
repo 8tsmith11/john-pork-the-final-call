@@ -16,7 +16,7 @@ export const asterHall = makeMap({
     { id: 'obj.door_631', x: 1, y: 1, label: 'Room 631', action: 'exit', to: 'room631', text: 'Home.' },
     { id: 'obj.bathroom', x: 10, y: 1, label: 'Bathroom (occupied)', text: '"One minute!"', knock: true },
     { id: 'obj.graffiti', x: 15, y: 1, label: 'Graffiti', text: 'Three hands, three paints: FREE JOHN PORK. JUSTICE FOR JOHN PORK. TIM CHEESE WILL PAY. Someone has crossed out the first one, then uncrossed it.' },
-    { id: 'obj.lobby_monitor', x: 24, y: 1, label: 'Security monitor (rotted)', talk: 'lead_c_footage' },
+    { id: 'obj.lobby_monitor', x: 24, y: 1, label: 'Security monitor (rotted)', talk: 'lead_c_footage', puzzle: 'pipes', solvedFlag: 'act1.leadC.repaired' },
     { id: 'obj.clock_6f', x: 20, y: 1, label: 'Hallway clock', text: 'It reads 19:01. It has read 19:01 since you moved in.' },
     { id: 'obj.elevator', x: 28, y: 2, label: 'Elevator', action: 'exit', to: 'metro_plaza', text: 'The elevator thinks about it, then goes down.' },
   ],
