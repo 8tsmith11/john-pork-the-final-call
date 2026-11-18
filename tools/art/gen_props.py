@@ -270,32 +270,35 @@ P("npc.halvard", c.outline())
 # Likeness notes: bald egg-shaped head with a wide jaw, ears that hang DOWN the sides of the head,
 # small human eyes under brows, a round snout, a wide closed smile, an open plaid shirt over a tee.
 BIG = {}
-HEAD_SPANS = {3: (13, 18), 4: (11, 20), 5: (10, 21), 20: (10, 21), 21: (11, 20), 22: (13, 18)}
+HEAD_SPANS = {2: (12, 19), 3: (10, 21), 4: (9, 22), 20: (9, 22), 21: (10, 21), 22: (12, 19)}
 
 
 def bust(turn=0, raw=False):
+    """Plaster bust with painted details: dark ears, pink snout, red plaid collar over a grey tee."""
     c = C(32, 40)
     c.rect(6, 32, 20, 8, "concrete2").h_(5, 32, 22, "concrete3").h_(5, 39, 22, "concrete1").rect(12, 35, 8, 2, "warm4")
-    for y, (a, b) in {26: (8, 23), 27: (6, 25), 28: (4, 27), 29: (4, 27), 30: (4, 27), 31: (4, 27)}.items():   # shoulders
+    for y, (a, b) in {26: (8, 23), 27: (6, 25), 28: (4, 27), 29: (4, 27), 30: (4, 27), 31: (4, 27)}.items():   # shoulders: plaid shirt
+        c.h_(a, y, b - a + 1, "soft1")
+        c.pts("soft0", *[(x, y) for x in range(a, b + 1) if (x % 4 == 1) or (y % 3 == 0)])
+    c.rect(13, 26, 6, 6, "steel").h_(13, 26, 6, "concrete3")                                                      # grey tee
+    c.pts("soft0", (12, 26), (12, 27), (12, 28), (13, 29), (13, 30), (19, 26), (19, 27), (19, 28), (18, 29), (18, 30))  # open collar
+    c.rect(12, 23, 8, 3, "bone").h_(12, 23, 8, "concrete3").v_(19, 24, 2, "concrete3")                            # thick neck
+    for y in range(2, 23):                                                                                       # wide dome of a head
+        a, b = HEAD_SPANS.get(y, (8, 23))
         c.h_(a, y, b - a + 1, "bone").h_(b - 1, y, 2, "concrete3")
-    c.pts("steel", (12, 26), (12, 27), (13, 28), (13, 29), (14, 30), (14, 31), (19, 26), (19, 27), (18, 28), (18, 29), (17, 30), (17, 31))
-    c.h_(5, 29, 6, "concrete3").v_(8, 27, 5, "concrete3").h_(21, 29, 6, "concrete3").v_(23, 27, 5, "concrete3")   # plaid, carved
-    c.rect(13, 23, 6, 3, "bone").h_(13, 23, 6, "concrete3")                                                       # neck
-    for y in range(3, 23):                                                                                       # head
-        a, b = HEAD_SPANS.get(y, (9, 22))
-        c.h_(a, y, b - a + 1, "bone").h_(b - 1, y, 2, "concrete3")
-    for x0, inner in ((6, 7), (23, 24)):                                                                          # hanging ears
-        c.rect(x0, 8, 3, 6, "concrete3").px(x0 + (2 if x0 == 6 else 0), 7, "concrete3")
-        c.rect(x0 + (1 if x0 == 6 else 0), 14, 2, 1, "concrete3").px(x0 + (2 if x0 == 6 else 0), 15, "concrete3")
-        c.v_(inner, 9, 4, "steel")
+    c.h_(11, 21, 10, "concrete3")                                                                                 # under the chin
+    for x0, inner in ((5, 7), (24, 24)):                                                                          # ears: dark flaps, high on the skull, hanging out and down
+        c.rect(x0, 6, 3, 6, "steel").rect(x0 + (1 if x0 == 5 else 0), 12, 2, 1, "steel").px(x0 + (2 if x0 == 5 else 0), 5, "steel")
+        c.v_(inner, 7, 4, "concrete1")
     t = turn
-    c.h_(11 + t, 9, 4, "concrete3").h_(17 + t, 9, 4, "concrete3")                                                 # brows
-    c.rect(12 + t, 11, 2, 1, "night2").rect(18 + t, 11, 2, 1, "night2").h_(12 + t, 12, 2, "concrete3").h_(18 + t, 12, 2, "concrete3")
-    c.h_(13 + t, 13, 6, "steel").v_(12 + t, 14, 3, "steel").v_(19 + t, 14, 3, "steel").h_(13 + t, 17, 6, "steel")  # snout
-    c.rect(14 + t, 15, 1, 2, "night2").rect(17 + t, 15, 1, 2, "night2")
-    c.h_(11 + t, 19, 10, "steel").pts("steel", (10 + t, 18), (21 + t, 18))                                        # the smile
-    if raw:
-        c.pts("warm3", (11, 5), (12, 5), (20, 7), (10, 16), (6, 30), (7, 30), (24, 28)).pts("steel", (15, 6), (16, 7), (20, 21), (10, 28))
+    c.rect(11 + t, 9, 2, 2, "night2").rect(19 + t, 9, 2, 2, "night2")                                           # small eyes, set wide
+    c.h_(13 + t, 11, 6, "pork2").rect(12 + t, 12, 8, 4, "pork2").h_(13 + t, 16, 6, "pork1")                       # the snout
+    c.pts("pork1", (12 + t, 15), (19 + t, 15), (19 + t, 12), (19 + t, 13), (19 + t, 14))
+    c.rect(14 + t, 13, 1, 2, "pork0").rect(17 + t, 13, 1, 2, "pork0")                                             # nostrils
+    c.h_(11 + t, 18, 10, "steel").pts("steel", (10 + t, 17), (21 + t, 17), (9 + t, 16), (22 + t, 16))             # the long smile
+    if raw:                                                                                                       # the newest: paint unfinished, clay showing
+        c.rect(12, 12, 8, 4, "bone").h_(13, 11, 6, "bone").h_(13, 16, 6, "concrete3").rect(14, 13, 1, 2, "steel").rect(17, 13, 1, 2, "steel")
+        c.pts("warm3", (10, 5), (11, 5), (21, 8), (9, 15), (6, 30), (7, 30)).pts("steel", (15, 6), (16, 7))
     return c.outline()
 
 
