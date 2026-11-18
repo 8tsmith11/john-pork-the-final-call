@@ -1280,7 +1280,7 @@
     "h": 16
    }
   },
-  "item.winged_boots": {
+  "item.stage_jacket": {
    "frame": {
     "x": 0,
     "y": 128,
@@ -1300,7 +1300,7 @@
     "h": 16
    }
   },
-  "item.cowboy_hat": {
+  "item.callus_gloves": {
    "frame": {
     "x": 16,
     "y": 128,
@@ -1320,7 +1320,7 @@
     "h": 16
    }
   },
-  "item.smoky_socks": {
+  "item.tank_goggles": {
    "frame": {
     "x": 32,
     "y": 128,
@@ -1340,7 +1340,7 @@
     "h": 16
    }
   },
-  "item.signal_gloves": {
+  "item.gig_bag": {
    "frame": {
     "x": 48,
     "y": 128,
@@ -1360,10 +1360,90 @@
     "h": 16
    }
   },
-  "generic": {
+  "item.winged_boots": {
    "frame": {
     "x": 64,
     "y": 128,
+    "w": 16,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 16
+   }
+  },
+  "item.cowboy_hat": {
+   "frame": {
+    "x": 80,
+    "y": 128,
+    "w": 16,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 16
+   }
+  },
+  "item.smoky_socks": {
+   "frame": {
+    "x": 96,
+    "y": 128,
+    "w": 16,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 16
+   }
+  },
+  "item.signal_gloves": {
+   "frame": {
+    "x": 112,
+    "y": 128,
+    "w": 16,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 16
+   }
+  },
+  "generic": {
+   "frame": {
+    "x": 0,
+    "y": 144,
     "w": 16,
     "h": 16
    },
@@ -1385,7 +1465,7 @@
   "image": "icons.png",
   "size": {
    "w": 128,
-   "h": 144
+   "h": 160
   },
   "scale": "1"
  }
