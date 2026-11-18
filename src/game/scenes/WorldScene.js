@@ -55,6 +55,7 @@ export class WorldScene extends Phaser.Scene {
     this._makeUi();
     this._wireNet();
     this._makeDialogueUi();
+    this._pageIdx = {};
     if (this.mode !== 'client') for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
     this.save.world.scrap ??= 0;
     this._makeMenu();
@@ -181,6 +182,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'craft') this._craft(this._charOf(peer), msg.idx);
         if (msg.t === 'skill') this._learn(this._charOf(peer), msg.id);
         if (msg.t === 'equip') this._equip(this._charOf(peer), msg.id);
+        if (msg.t === 'mate') this._mateBreak();
         if (msg.t === 'use') this._use(this._charOf(peer), peer);
         if (msg.t === 'morph') this._morph(peer);
       });
@@ -360,6 +362,42 @@ export class WorldScene extends Phaser.Scene {
     // Don't close a door on someone standing in the doorway.
     if (d.open && [...this.sim.players.values()].some((p) => Math.floor(p.x / TILE) === d.x && Math.floor(p.y / TILE) === d.y)) return;
     d.open = !d.open; sfx('swing');
+  }
+
+  // ---------- apartment hub ----------
+  _newsLine() {
+    const NEWS = [
+      'CHANNEL 7 · CONTINUITY NEWS\n"Citizens, things are stable." Rot abatement completes ahead of schedule in Hyattsville. Residents may return Thursday.',
+      'CHANNEL 7 · "A rot outbreak at Baltimore\'s Inner Harbor has been contained, officials say. The harbor will remain closed." Footage shows a crane folding in half, slowly.',
+      'CHANNEL 7 · The Analog Union has closed its borders to "unattested data." Flights to Lisbon now require a paper ticket.',
+      'CHANNEL 7 · Helium convoy attacked in the Gulf. Continuity reminds citizens that hoarding helium is a federal offense.',
+      'CHANNEL 7 · Purple Line opening date: SOON. A reporter laughs and the feed cuts.',
+      'CHANNEL 7 · Static, then two seconds of someone very familiar saying "hey—" before the channel corrects itself.',
+    ];
+    this._newsIdx = ((this._newsIdx ?? -1) + 1) % NEWS.length;
+    return NEWS[this._newsIdx];
+  }
+
+  _objectives() {
+    const f = this.save.flags, out = [];
+    const did = (k) => !!f[k];
+    out.push(did('act1.balloon.noticedGone') ? '✓ The balloon is gone from Manuel\'s closet.' : '· Check Manuel\'s closet.');
+    out.push(did('act1.clue.lockForced') ? '✓ Someone forced the front door.' : '· Look at the front door.');
+    out.push(Object.keys(f).some((k) => k.startsWith('act1.halvard')) ? '✓ Talked to the fence under the metro.' : '· Ask around the metro plaza.');
+    out.push(Object.keys(f).some((k) => k.startsWith('act1.leadA')) ? '✓ Followed the helium.' : '· Print a sniffer (Fab #1) and follow the helium.');
+    out.push(Object.keys(f).some((k) => k.startsWith('act1.leadC')) ? '✓ Watched the camera footage.' : '· Fix the hallway security monitor.');
+    out.push(did('act1.complete') ? '✓ Act 1 complete.' : did('act1.beat.call') ? '· Get through the tunnels.' : '· Find where it went.');
+    return 'WHAT WE\'RE DOING (whiteboard)\n\n' + out.join('\n');
+  }
+
+  _mateBreak() {
+    if (this.mode === 'client') { this.net.send({ t: 'mate' }); return; }
+    for (const p of this.sim.players.values()) this.sim.heal(p.id, 999);
+    for (const p of this.sim.players.values()) {
+      const c = this.save.party[p.character];
+      if (c && !c.inventory.some((it) => it.id === 'item.mate_flask')) c.inventory.push({ id: 'item.mate_flask', qty: 1 });
+    }
+    this._syncParty();
   }
 
   _answer() {
@@ -576,6 +614,10 @@ export class WorldScene extends Phaser.Scene {
     if (near.talk) { const [scene, node] = near.talk.split(':'); this.startDialogue(scene, node || null, near.after ? () => this._flag(near.after, true) : null); return; }
     if (near.action === 'ending') { this._playEnding(); return; }
     if (near.action === 'fab') { this._openFab(); return; }
+    if (near.action === 'tv') { this._say(this._newsLine()); return; }
+    if (near.action === 'quests') { this._say(this._objectives()); return; }
+    if (near.action === 'pages') { const n = (this._pageIdx[near.id] = ((this._pageIdx[near.id] ?? -1) + 1) % near.pages.length); this._say(near.pages[n] + (near.pages.length > 1 ? `\n\n[E again: ${n + 1}/${near.pages.length}]` : '')); return; }
+    if (near.action === 'mate') { this._mateBreak(); this._say(near.text + '\n\nEveryone has some. Better. (Thermos refilled.)'); return; }
     if (near.door) { if (this.mode === 'client') this.net.send({ t: 'door', id: near.id }); else this._toggleDoor(near.id); return; }
     this._say(near.text);
     if (near.flag) {
