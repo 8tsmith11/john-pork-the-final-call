@@ -196,18 +196,22 @@ Pubvprf:
 **CBEX:** Ab. Vg vfa'g.
 
 #### vs synt npg1.pyhr.ybpxSbeprq
-**CBEX:** Lbhe ybpx jnf sbeprq sebz gur unyyjnl. Lbh ybbxrq nyernql. V jngpurq lbh ybbx.
+**CBEX:** Lbh ybbxrq ng lbhe qbbe. Gur cyngr'f orag bhg. Cel one, sebz gur unyyjnl.
 
-**ZNAHRY:** Fb vg jnf bar bs hf.
+**ZNAHRY:** Fb fbzrobql oebxr va.
 
-**CBEX:** V fnvq sbeprq sebz gur unyyjnl. Lbh fnvq gur bgure guvat.
+**CBEX:** Fbzrobql fgnegrq gb. Pbhag gur znexf ba gur cyngr jura lbh'er ubzr. Vg gnxrf zber guna gung gb bcra gung qbbe.
+
+**ZNAHRY:** Jung qbrf gung zrna?
+
+**CBEX:** Vg zrnaf pbhag gurz.
 
 #### vs abg synt npg1.pyhr.ybpxSbeprq
 **CBEX:** Tb ubzr naq ybbx ng lbhe sebag qbbe. Gur cyngr. Gura nfx zr ntnva.
 
 **ZNAHRY:** Jung'f jebat jvgu gur qbbe?
 
-**CBEX:** Abguvat. Gung'f jung'f jebat jvgu vg.
+**CBEX:** Fbzrobql jnf va n uheel. Naq gura gurl jrera'g.
 
 -> nafjre_znahry_uho
 
@@ -338,17 +342,21 @@ Pubvprf:
 
 **GERIBE:** Gura jub?
 
-**CBEX:** Fbzrobql jub qvqa'g unir gb oernx va.
+**CBEX:** Gjb nafjref. Lbh'yy bayl yvxr bar.
 
 #### vs synt npg1.pyhr.ybpxSbeprq
 **CBEX:** Lbh fnj gur qbbe.
 
-**GERIBE:** V fnj gur qbbe. Orag bhg, ybpxrq nsgre. Gung'f fbzrobql jvgu gvzr.
+**GERIBE:** Orag bhg, ybpxrq nsgre. Jub ybpxf hc nsgre n ohetynel?
 
-**CBEX:** Vf vg?
+**CBEX:** Fbzrobql jub yvirf gurer. Be fbzrobql jub jnf nfxrq gb.
+
+**GERIBE:** Nfxrq ol jub?
+
+**CBEX:** Gung'f gur frpbaq nafjre.
 
 #### vs abg synt npg1.pyhr.ybpxSbeprq
-**CBEX:** Purpx lbhe jvaqbj jura lbh'er ubzr. Lbh'yy yvxr vg. Vg'f n pyrna yvggyr ceboyrz.
+**CBEX:** Purpx lbhe sebag qbbe jura lbh'er ubzr. Vg'f n pyrna yvggyr ceboyrz.
 
 **GERIBE:** V qba'g yvxr nal bs guvf.
 
@@ -491,21 +499,21 @@ Pubvprf:
 
 **ZVPUNRY:** Fb jub qvq?
 
-**CBEX:** Fbzrobql jub yvirf pybfre gb vg guna V qb.
+**CBEX:** Fbzrobql va n pbng gung jnfa'g gurvef.
 
 #### vs synt npg1.pyhr.ybpxSbeprq
-**ZVPUNRY:** Gur ybpx jnf qbar sebz bhgfvqr. Gura ybpxrq.
+**ZVPUNRY:** Gur ybpx jnf qbar sebz bhgfvqr. Gura ybpxrq ntnva. Geribe fnlf gung'f fb jr'q fyrrc.
 
-**CBEX:** Vg jnf.
+**CBEX:** Geribe'f evtug. Fbzrobql jnagrq gur guerr bs lbh nfyrrc.
 
-**ZVPUNRY:** Gung'f abg shaal.
+**ZVPUNRY:** Jul vf gung jbefr?
 
-**CBEX:** V qvqa'g ynhtu.
+**CBEX:** Vg'f pbafvqrengr. Ohetynef nera'g.
 
 #### vs abg synt npg1.pyhr.ybpxSbeprq
-**ZVPUNRY:** Pybfre yvxr n arvtuobe?
+**ZVPUNRY:** N pbng yvxr n havsbez?
 
-**CBEX:** Ybbx ng lbhe jvaqbj jura lbh trg ubzr. Gura lbh gryy zr ubj pybfr.
+**CBEX:** Ybbx ng lbhe sebag qbbe jura lbh trg ubzr. Gura ybbx ng gur inaf ba gur cynmn.
 
 -> nafjre_zvpunry_uho
 
