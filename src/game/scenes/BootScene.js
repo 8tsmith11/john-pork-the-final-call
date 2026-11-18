@@ -81,6 +81,10 @@ export class BootScene extends Phaser.Scene {
         const pick = (anim) => names.filter((n) => n.startsWith(`${anim}_${f}_`)).sort().map((frame) => ({ key: id, frame }));
         this.anims.create({ key: `${id}_idle_${f}`, frames: pick('idle'), frameRate: 2, repeat: -1 });
         this.anims.create({ key: `${id}_walk_${f}`, frames: pick('walk'), frameRate: 8, repeat: -1 });
+        // Combat frames (optional art): a two-frame swing, a two-frame dodge, a one-frame flinch.
+        if (pick('attack').length) this.anims.create({ key: `${id}_attack_${f}`, frames: pick('attack'), frameRate: 12, repeat: 0 });
+        if (pick('dodge').length) this.anims.create({ key: `${id}_dodge_${f}`, frames: pick('dodge'), frameRate: 10, repeat: 0 });
+        if (pick('hurt').length) this.anims.create({ key: `${id}_hurt_${f}`, frames: pick('hurt'), frameRate: 1, repeat: 0 });
       }
       // Long idles (easter eggs, docs/SECRETS.md): what each roommate does when left standing.
       const names = this.textures.get(id).getFrameNames();

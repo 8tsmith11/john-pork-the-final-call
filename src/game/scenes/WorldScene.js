@@ -878,6 +878,9 @@ export class WorldScene extends Phaser.Scene {
       const facing = p.f === 'left' ? 'right' : p.f;
       s.setFlipX(p.f === 'left');
       let key = `${p.c}_${p.m ? 'walk' : 'idle'}_${facing}`;
+      // Combat frames win over walk/idle: dodge, then the swing, then the flinch after a hit.
+      const act = p.d ? 'dodge' : p.sw ? 'attack' : (p.iv && !p.d) ? 'hurt' : null;
+      if (act && this.anims.exists(`${p.c}_${act}_${facing}`)) key = `${p.c}_${act}_${facing}`;
       // Long idle easter eggs: stand still for 3 minutes (?idle=<seconds> to test). Moving breaks it.
       const busy = p.m || p.d || p.sw || p.dn || p.iv;
       if (busy || s.idleSince === undefined) {
