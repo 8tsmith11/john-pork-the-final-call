@@ -31,6 +31,10 @@ export const tunnel1 = makeMap({
     ['enemy.rotling', 56, 12], ['enemy.spitter', 60, 14],                                    // the approach
   ],
   objects: [
+    // Seeded loot in the side branches (trevor): exploring off the main line pays.
+    { id: 'obj.crate_pump', art: 'obj.crate', x: 19, y: 5, label: 'Maintenance crate', loot: 'parts', text: 'A WMATA parts crate, lid wired shut with a twist tie.' },
+    { id: 'obj.crate_bay', art: 'obj.crate', x: 32, y: 22, label: 'Crate on a pallet', loot: 'tools', text: 'Up on a pallet, above the old waterline. Somebody meant to come back for it.' },
+    { id: 'obj.crate_signal', art: 'obj.toolbox', x: 56, y: 22, label: 'Signal tech\'s toolbox', loot: 'parts', text: 'A toolbox with a name stencilled on it and scraped off again.' },
     { id: 'obj.tunnel_up', x: 1, y: 12, label: 'Ladder up', action: 'exit', to: 'metro_plaza', text: 'Back up to the plaza.' },
     lamp(6, 11, 'A caged bulb on a hook. Somebody is still changing these.'),
     { id: 'obj.arrow_east', art: 'obj.graffiti', x: 9, y: 10, label: 'Chalk on the wall', text: 'An arrow pointing east: PLATFORM. Under it, newer: you\'ll hear it first.' },
