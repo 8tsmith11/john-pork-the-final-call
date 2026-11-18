@@ -363,6 +363,8 @@ export class WorldScene extends Phaser.Scene {
   get menu() { return this.gameMenu?.tab ?? null; }
   _makeMenu() {
     this.gameMenu = new GameMenu(this);
+    const cam = this.cameras.main, rawShake = cam.shake.bind(cam);
+    cam.shake = (...a) => { let on = true; try { on = localStorage.getItem('jpfc.screenshake') !== 'off'; } catch { /* default on */ } return on ? rawShake(...a) : cam; };
     const kb = this.input.keyboard;
     kb.on('keydown-ESC', () => { if (this.dlg) return; this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
     kb.on('keydown-I', () => { if (!this.dlg) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
@@ -708,7 +710,7 @@ export class WorldScene extends Phaser.Scene {
     if (s) this.tweens.add({ targets: s, angle: { from: -8, to: 8 }, duration: 60, yoyo: true, repeat: 2, onComplete: () => s.setAngle(0) });
     if (this.save?.flags && !this.save.flags['secrets.sawNothing.found']) {
       if (this.mode !== 'client') this.save.flags['secrets.sawNothing.found'] = true;
-      this._announce('Achievement: We saw nothing.');
+      this._toast('★ Achievement: We saw nothing.');
     }
   }
 
