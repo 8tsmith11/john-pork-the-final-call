@@ -124,6 +124,8 @@ Bar cre ebbzzngr ng zbfg, va nal beqre, fcnprq bhg. Gurl qb abg oybpx vachg.
 **CBEX:** Lbh unir ab vqrn jung lbh whfg qvqa'g qb.
 
 *Gura:*
+#### raq
+
 - [fcrnxre=znahry] -> nafjre_znahry
 - [fcrnxre=geribe] -> nafjre_geribe
 - [fcrnxre=zvpunry] -> nafjre_zvpunry
@@ -157,6 +159,8 @@ Bar cre ebbzzngr ng zbfg, va nal beqre, fcnprq bhg. Gurl qb abg oybpx vachg.
 
 **CBEX:** Ab, V urneq vg. Vg'f tbbq. Qba'g yrg vg trg njnl sebz lbh.
 
+#### raq
+
 -> nafjre_znahry_uho
 
 ### abqr: nafjre_znahry_uho
@@ -164,10 +168,10 @@ Bar cre ebbzzngr ng zbfg, va nal beqre, fcnprq bhg. Gurl qb abg oybpx vachg.
 *Gur cynlre znl nfx gjb guvatf. Nsgre gur frpbaq, be ba gur fvyrag bcgvba, tb gb nafjre_znahry_pybfr. Rnpu pubvpr qvfnccrnef bapr hfrq.*
 
 Pubvprf:
-- "Jurer'f zl onyybba?" -> nafjre_znahry_jurer
-- "Qvq lbh gnxr vg?" -> nafjre_znahry_gbbx
-- "Gur fgnghrf. Unir lbh frra gurz?" -> nafjre_znahry_fgnghrf
-- *(Fnl abguvat.)* -> nafjre_znahry_fvyrapr
+- [abg synt npg1.pnyy.nfxrq.jurer] "Jurer'f zl onyybba?" -> nafjre_znahry_jurer
+- [abg synt npg1.pnyy.nfxrq.gbbx] "Qvq lbh gnxr vg?" -> nafjre_znahry_gbbx
+- [abg synt npg1.pnyy.nfxrq.fgnghrf] "Gur fgnghrf. Unir lbh frra gurz?" -> nafjre_znahry_fgnghrf
+- "(Fnl abguvat.)" -> nafjre_znahry_fvyrapr
 
 ### abqr: nafjre_znahry_jurer
 
@@ -212,6 +216,8 @@ Pubvprf:
 **ZNAHRY:** Jung'f jebat jvgu gur qbbe?
 
 **CBEX:** Fbzrobql jnf va n uheel. Naq gura gurl jrera'g.
+
+#### raq
 
 -> nafjre_znahry_uho
 
@@ -308,6 +314,8 @@ Pubvprf:
 
 **CBEX:** Bxnl. Vg'f lbhe urneg.
 
+#### raq
+
 -> nafjre_geribe_uho
 
 ### abqr: nafjre_geribe_uho
@@ -315,10 +323,11 @@ Pubvprf:
 *Gur cynlre znl nfx gjb guvatf. Nsgre gur frpbaq, tb gb nafjre_geribe_pybfr. Rnpu pubvpr qvfnccrnef bapr hfrq.*
 
 Pubvprf:
-- "Jurer'f gur onyybba?" -> nafjre_geribe_jurer
-- "Qvq lbh gnxr vg?" -> nafjre_geribe_gbbx
-- "Lbh'ir orra yvfgravat gb hf." -> nafjre_geribe_yvfgravat
-- "Jung qb lbh jnag?" -> nafjre_geribe_jnag
+- [abg synt npg1.pnyy.nfxrq.jurer] "Jurer'f gur onyybba?" -> nafjre_geribe_jurer
+- [abg synt npg1.pnyy.nfxrq.gbbx] "Qvq lbh gnxr vg?" -> nafjre_geribe_gbbx
+- [abg synt npg1.pnyy.nfxrq.yvfgravat] "Lbh'ir orra yvfgravat gb hf." -> nafjre_geribe_yvfgravat
+- [abg synt npg1.pnyy.nfxrq.jnag] "Jung qb lbh jnag?" -> nafjre_geribe_jnag
+- "(Gung'f nyy.)" -> nafjre_geribe_pybfr
 
 ### abqr: nafjre_geribe_jurer
 
@@ -361,6 +370,8 @@ Pubvprf:
 **GERIBE:** V qba'g yvxr nal bs guvf.
 
 **CBEX:** Lbh yvxr vg n ovg.
+
+#### raq
 
 -> nafjre_geribe_uho
 
@@ -457,6 +468,8 @@ Pubvprf:
 
 **CBEX:** Vg fhvgf lbh. Pnershy jvgu vg.
 
+#### raq
+
 -> nafjre_zvpunry_uho
 
 ### abqr: nafjre_zvpunry_uho
@@ -464,10 +477,11 @@ Pubvprf:
 *Gur cynlre znl nfx gjb guvatf. Nsgre gur frpbaq, tb gb nafjre_zvpunry_pybfr. Rnpu pubvpr qvfnccrnef bapr hfrq.*
 
 Pubvprf:
-- "Jurer'f Znahry'f onyybba?" -> nafjre_zvpunry_jurer
-- "Qvq lbh gnxr vg?" -> nafjre_zvpunry_gbbx
-- "Qvq lbh pnyy ure?" -> nafjre_zvpunry_ure
-- "Jung qvq lbh fnl? Va '71?" -> nafjre_zvpunry_friraglbar
+- [abg synt npg1.pnyy.nfxrq.jurer] "Jurer'f Znahry'f onyybba?" -> nafjre_zvpunry_jurer
+- [abg synt npg1.pnyy.nfxrq.gbbx] "Qvq lbh gnxr vg?" -> nafjre_zvpunry_gbbx
+- [abg synt npg1.pnyy.nfxrq.ure] "Qvq lbh pnyy ure?" -> nafjre_zvpunry_ure
+- [abg synt npg1.pnyy.nfxrq.friraglBar] "Jung qvq lbh fnl? Va '71?" -> nafjre_zvpunry_friraglbar
+- "(Gung'f nyy.)" -> nafjre_zvpunry_pybfr
 
 ### abqr: nafjre_zvpunry_jurer
 
@@ -488,6 +502,8 @@ Pubvprf:
 **ZVPUNRY:** Ur'f tbvat gb jnag zber guna gung.
 
 **CBEX:** Ur'f tbvat gb jnag nyy bs vg. Fgneg uvz ba "va bar cvrpr."
+
+#### raq
 
 -> nafjre_zvpunry_uho
 
@@ -514,6 +530,8 @@ Pubvprf:
 **ZVPUNRY:** N pbng yvxr n havsbez?
 
 **CBEX:** Ybbx ng lbhe sebag qbbe jura lbh trg ubzr. Gura ybbx ng gur inaf ba gur cynmn.
+
+#### raq
 
 -> nafjre_zvpunry_uho
 
@@ -731,6 +749,8 @@ Pubvprf:
 
 *1 ARJ IBVPRZNVY. WBUA CBEX.*
 
+#### raq
+
 -> ibvprznvy_1
 
 ### abqr: ibvprznvy_1
@@ -762,6 +782,8 @@ Pubvprf:
 **CBEX:** V'yy pnyy lbh.
 
 *Ur qbrf abg unat hc evtug njnl. Sbhe frpbaqf bs ebbz gbar. Gura gur orrc.*
+
+#### raq
 
 -> ibvprznvy_1_ernpgvba
 
@@ -842,6 +864,8 @@ Pubvprf:
 
 *2 ARJ IBVPRZNVYF. WBUA CBEX.*
 
+#### raq
+
 -> ibvprznvy_2
 
 ### abqr: ibvprznvy_2
@@ -915,6 +939,8 @@ Pubvprf:
 **ZNVYOBK:** Zrffntr yratgu rkprrqrq. Gb fraq n ercyl, guvf pnyyre unf ab ahzore.
 
 *Orrc.*
+
+#### raq
 
 -> ibvprznvy_2_ernpgvba
 
