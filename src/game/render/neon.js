@@ -27,13 +27,20 @@ export class Neon {
     for (const n of d.neon ?? []) {
       const hex = '#' + n.color.toString(16).padStart(6, '0');
       // A hot white-ish core with a saturated outline and halo reads as neon tube, not printed text.
-      const t = s.add.text(n.x * TILE, n.y * TILE + 4, n.text, { fontFamily: '"Pixelify Sans", monospace', fontSize: `${n.size ?? 7}px`, color: '#fff6f0', stroke: hex, strokeThickness: 2, heading: true })
+      // Signs read from across the street: ~1.4x bigger than first drawn, coloured letters with a dark
+      // outline on a dark backing plate (pale neon like yellow and lime was unreadable white-on-yellow).
+      const size = Math.round((n.size ?? 7) * 1.4);
+      const t = s.add.text(n.x * TILE, n.y * TILE + 4, n.text, { fontFamily: '"Pixelify Sans", monospace', fontSize: `${size}px`, color: hex, stroke: '#0d0b1a', strokeThickness: 3, heading: true })
         .setOrigin(0, 0.5).setDepth(n.y * TILE + 30);
-      t.setShadow(0, 0, hex, 6, true, true);
+      t.setShadow(0, 0, hex, 6, true, false);
+      const plate = s.add.graphics().setDepth(t.depth - 1);
+      plate.fillStyle(0x0d0b1a, 0.78).fillRoundedRect(t.x - 3, t.y - t.height / 2 - 2, t.width + 6, t.height + 4, 2)
+        .lineStyle(1, n.color, 0.55).strokeRoundedRect(t.x - 3, t.y - t.height / 2 - 2, t.width + 6, t.height + 4, 2);
+      this.objs.push(plate);
       const sign = { t, n, on: true, cx: n.x * TILE + t.width / 2, cy: n.y * TILE + 4 };
       this.objs.push(t);
       if (d.wet) {   // a smeared reflection on the wet street below the sign
-        const r = s.add.text(n.x * TILE, n.y * TILE + 22, n.text, { fontFamily: '"Pixelify Sans", monospace', fontSize: `${n.size ?? 7}px`, color: hex, heading: true })
+        const r = s.add.text(n.x * TILE, n.y * TILE + 26, n.text, { fontFamily: '"Pixelify Sans", monospace', fontSize: `${size}px`, color: hex, heading: true })
           .setOrigin(0, 0.5).setAlpha(0.25).setScale(1, -1.6).setDepth(2).setBlendMode('ADD');
         sign.r = r; this.objs.push(r);
       }
@@ -42,7 +49,7 @@ export class Neon {
     for (const h of d.holo ?? []) {
       const x = h.x * TILE, y = h.y * TILE, w = h.w * TILE, hh = h.h * TILE;
       const g = s.add.graphics().setDepth(y + hh + 20).setBlendMode('ADD');
-      const t = s.add.text(x + w / 2, y + hh / 2, h.lines[0], { fontFamily: '"Pixelify Sans", monospace', fontSize: '6px', color: '#' + h.color.toString(16).padStart(6, '0'), align: 'center', heading: true })
+      const t = s.add.text(x + w / 2, y + hh / 2, h.lines[0], { fontFamily: '"Pixelify Sans", monospace', fontSize: '8px', color: '#' + h.color.toString(16).padStart(6, '0'), stroke: '#0d0b1a', strokeThickness: 2, align: 'center', heading: true })
         .setOrigin(0.5).setDepth(y + hh + 21);
       this.holos.push({ h, g, t, x, y, w, hh, i: 0, at: 0 }); this.objs.push(g, t);
     }
