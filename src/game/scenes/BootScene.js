@@ -17,7 +17,7 @@ export class BootScene extends Phaser.Scene {
     }
     this.load.image('title_bg', 'assets/sprites/title_bg.png');   // painted by tools/art/gen_title.py
     // Props/NPCs (frames named by map object id), enemies and the Warden. All optional.
-    for (const id of ['props', 'wide', 'big', 'doors', 'icons', 'enemies', 'warden', 'principals', 'tiles', 'romance']) this.load.atlas(id, `assets/sprites/${id}.png`, `assets/sprites/${id}.json`);
+    for (const id of ['props', 'wide', 'big', 'doors', 'icons', 'enemies', 'warden', 'principals', 'tiles', 'romance', 'bagel_enemies']) this.load.atlas(id, `assets/sprites/${id}.png`, `assets/sprites/${id}.json`);
   }
 
   create() {
@@ -28,6 +28,9 @@ export class BootScene extends Phaser.Scene {
     this._makeAnims();
     // Two-frame loops for enemies and the Warden, when their art is present.
     const has = (key, frame) => this.textures.exists(key) && this.textures.get(key).has(frame);
+    for (const k of ['enemy.moth', 'enemy.captcha', 'enemy.autocomplete']) {   // D-017 coderot (tools/art/gen_bagel_enemies.py)
+      if (has('bagel_enemies', `${k}_0`)) this.anims.create({ key: k, frames: [0, 1].map((i) => ({ key: 'bagel_enemies', frame: `${k}_${i}` })), frameRate: k === 'enemy.moth' ? 7 : 5, repeat: -1 });
+    }
     for (const k of ['enemy.rotling', 'enemy.spitter']) {
       if (has('enemies', `${k}_0`)) this.anims.create({ key: k, frames: [0, 1].map((i) => ({ key: 'enemies', frame: `${k}_${i}` })), frameRate: 5, repeat: -1 });
     }

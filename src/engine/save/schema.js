@@ -3,9 +3,11 @@
 // - Never reference content by index; always by stable string id.
 // - Unknown keys are preserved so older builds don't wipe newer data.
 
+import { BASE_SCORES } from '../../content/abilities.js';
+
 export const FORMAT = 'jpfc-save';
 export const SLOTS = 36;   // inventory slots per character: 0..8 hotbar, 9..35 backpack
-export const CURRENT_SCHEMA = 3;
+export const CURRENT_SCHEMA = 4;
 
 /** migrations[n] upgrades a schema-n save to schema n+1. Append only. */
 export const migrations = {
@@ -31,6 +33,15 @@ export const migrations = {
     }
     save.schemaVersion = 3; return save;
   },
+  // 3 -> 4 (D-017): ability scores. Everyone starts at their base spread with the points they'd have
+  // earned so far (2 per level above 1) unspent, to put where they like.
+  3: (save) => {
+    for (const [id, c] of Object.entries(save.party ?? {})) {
+      c.abilities ??= { ...(BASE_SCORES[id] ?? {}) };
+      c.abilityPoints ??= Math.max(0, ((c.level ?? 1) - 1) * 2);
+    }
+    save.schemaVersion = 4; return save;
+  },
 };
 
 export function newCharacter(id) {
@@ -45,6 +56,8 @@ export function newCharacter(id) {
       helmet: null, chestplate: null, leggings: null, boots: null,          // armor
       goggles: null, parka: null, gloves: null, socks: null, backpack: null }, // gear on top
     upgrades: {},               // { 'item.id': level } from the master armorer (0..5)
+    abilities: { ...(BASE_SCORES[id] ?? {}) },   // D&D-style scores (content/abilities.js)
+    abilityPoints: 0,
   };
 }
 

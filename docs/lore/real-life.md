@@ -23,6 +23,11 @@ spoiler (see `PROCESS.md`).
     *(Manuel)*
 - **"You're absolutely right to point that out."** We say it to each other, deadpan, to mimic how an
   AI answers. It works best right after someone states the obvious or catches a mistake. *(Manuel)*
+- **The smart pacifier.** Michael and Manuel are developing a smart pacifier for a children's
+  hospital. They hold a patent on it, and they work on it in the apartment. *(Michael)*
+- **The 3D printer and Juan el Porko.** They got a new 3D printer and mostly use it to print John
+  Pork figurines. That's what led the roommates (the "goonmates") to get a John Pork flag, and now
+  everything in the apartment centers around Juan el Porko. *(Michael)*
 - **Room 631, ASTER, College Park, "Aster pros," "rookie Aster mistake," 245 lab, the John Pork
   flag and statues:** these come from the brief (`docs/BRIEF.md` §3 and the appendix).
 

@@ -31,6 +31,9 @@ import { Gear } from '../gear.js';
 import { Cameos } from '../cameos.js';
 import { Eggs } from '../eggs.js';
 import { Crush } from '../crush.js';
+import { Approach } from '../approach.js';
+import { Pacifier } from '../pacifier.js';
+import { ABILITY_KEYS, BASE_SCORES, MAX_SCORE } from '../../content/abilities.js';
 import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
 
 const STEP = 1 / 60;
@@ -82,7 +85,7 @@ export class WorldScene extends Phaser.Scene {
     this._wireNet();
     this._makeDialogueUi();
     // D-014: shared events, instruments, romance (src/game/sharedEvent.js, performances.js, romance.js)
-    this.shared = new SharedEvents(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this);
+    this.shared = new SharedEvents(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this);
     this._pageIdx = {};
     this.vignette = this._makeVignette();
     if (this.mode !== 'client') for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
@@ -338,7 +341,7 @@ export class WorldScene extends Phaser.Scene {
   _wireNet() {
     if (this.mode === 'host') {
       this.net.on('msg', (peer, msg) => {
-        if (this.shared?.onMsg(msg, peer) || this.perf?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg)) return;
+        if (this.shared?.onMsg(msg, peer) || this.perf?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg)) return;
         if (msg.t === 'input') {
           const prev = this.remoteInputs.get(peer);
           this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, interact: false });
@@ -351,6 +354,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'door') this._toggleDoor(msg.id);
         if (msg.t === 'craft') this._craft(this._charOf(peer), msg.idx);
         if (msg.t === 'skill') this._learn(this._charOf(peer), msg.id);
+        if (msg.t === 'ability') this._raiseAbility(this._charOf(peer), msg.key);
         if (msg.t === 'equip') this._equip(this._charOf(peer), msg.id);
         if (msg.t === 'mate') this._mateBreak();
         if (msg.t === 'use') { this._useWhat = msg.id ?? null; this._use(this._charOf(peer), peer); }
@@ -526,9 +530,11 @@ export class WorldScene extends Phaser.Scene {
     let i = this._useSlot ?? c.inventory.findIndex((x) => x && x.id === (this._useWhat ?? 'item.mate_flask'));
     if (i < 0 && !this._useWhat) i = c.inventory.findIndex((x) => x && ITEMS[x.id]?.heal);
     this._useWhat = null; this._useSlot = null;
-    if (i < 0 || !c.inventory[i] || !ITEMS[c.inventory[i].id]?.heal) return;
+    if (i < 0 || !c.inventory[i] || !(ITEMS[c.inventory[i].id]?.heal || ITEMS[c.inventory[i].id]?.caffeine)) return;
+    const usedId = c.inventory[i].id;
     const it = ITEMS[Inv.takeSlot(c, i)];
-    const healAmt = Math.round((it.heal ?? 0) * (c.inventory[i]?.id === 'item.mate_flask' ? 1 + (playerMods(c, who).mateHeal ?? 0) : 1));   // mate holster
+    if (it.caffeine) { this.sim.caffeinate(peerId, it.caffeine); this._toast(`${who} slams the ${it.name.toLowerCase()}. Wide awake for ${it.caffeine}s.`); this._syncParty(); return; }   // D-017
+    const healAmt = Math.round((it.heal ?? 0) * (usedId === 'item.mate_flask' ? 1 + (playerMods(c, who).mateHeal ?? 0) : 1));   // mate holster
     this.sim.heal(peerId, healAmt);
     if (it.pill) {
       const p = this.sim.players.get(peerId);
@@ -562,6 +568,7 @@ export class WorldScene extends Phaser.Scene {
   menuUse(id) {
     const def = ITEMS[id]; if (!def) return;
     if (def.slot === 'instrument') return this.perf.use(id);
+    if (def.throwable) return this.perf.throwPotion(id);
     if (def.slot === 'gift') return this._say(`${def.name}\n${def.text}\n\n(A gift. Hand it over by talking to someone.)`);
     if (def.slot === 'junk') return this._say(`${def.name}\n${def.text}`);
     if (def.slot === 'consumable') { if (this.mode === 'client') this.net.send({ t: 'use', id }); else { this._useWhat = id; this._use(this.character, this.localId); } return; }
@@ -572,6 +579,7 @@ export class WorldScene extends Phaser.Scene {
     const c = this.save.party[this.character], it = c?.inventory[i]; if (!it) return;
     this._hotFlash = { i, at: this.time.now };
     const def = ITEMS[it.id]; if (!def) return;
+    if (def.throwable) return this.menuUse(it.id);
     if (def.slot === 'consumable') {
       if (this.mode === 'client') this.net.send({ t: 'useSlot', i }); else { this._useSlot = i; this._use(this.character, this.localId); }
       return;
@@ -592,6 +600,15 @@ export class WorldScene extends Phaser.Scene {
     if (Inv.add(c, st.item) > 0) return this._toast('Your bag is full.');
     this.save.world.money -= price;
     sfx('pickup'); this._toast(`Bought: ${ITEMS[st.item].name} (-$${price})`);
+    this._syncParty();
+  }
+  menuAbility(key) { if (this.mode === 'client') this.net.send({ t: 'ability', key }); else this._raiseAbility(this.character, key); }
+  _raiseAbility(who, key) {
+    const c = this.save.party[who];
+    if (!c || !(c.abilityPoints > 0) || !ABILITY_KEYS.includes(key)) return;
+    c.abilities ??= { ...(BASE_SCORES[who] ?? {}) };
+    if ((c.abilities[key] ?? 10) >= MAX_SCORE) return;
+    c.abilities[key] = (c.abilities[key] ?? 10) + 1; c.abilityPoints--;
     this._syncParty();
   }
   menuLearn(id) { if (this.mode === 'client') this.net.send({ t: 'skill', id }); else this._learn(this.character, id); }
@@ -1243,7 +1260,7 @@ export class WorldScene extends Phaser.Scene {
     this._lastRendered = snap;
     if (this.mode === 'client' && snap.doors) for (const d of this.map.doors.values()) d.open = snap.doors.includes(d.id);
     this._render(snap);
-    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap);
+    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.pacifier?.update(snap);
   }
 
   _frozen(inp) { return this.dlg || this.menu ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : inp; }
@@ -1284,7 +1301,7 @@ export class WorldScene extends Phaser.Scene {
           const c = this.save.party[p.character]; if (!c) continue;
           c.xp += ev.xp;
           while (c.xp >= c.level * XP_PER_LEVEL) {
-            c.xp -= c.level * XP_PER_LEVEL; c.level++; c.skillPoints++;
+            c.xp -= c.level * XP_PER_LEVEL; c.level++; c.skillPoints++; c.abilityPoints = (c.abilityPoints ?? 0) + 2;   // D-017
             this._announce(`${p.character} reached level ${c.level}. (+1 skill point)`);
             if (c.level >= 3 && c.morph.stage < 1) { c.morph.stage = 1; this._announce(MORPH_UNLOCK[p.character]); }
           }
@@ -1358,6 +1375,7 @@ export class WorldScene extends Phaser.Scene {
     }
     if (near.npc && this.perf?.asleep(near)) { this._say(`${near.label} is fast asleep.`); return; }
     if (this.romance?.interact(near) || this.gear?.interact(near)) return;
+    if (this.approach?.intercept(near)) return;   // D-017: choose how to approach an NPC
     // Story first, quest second: the first talk plays the scene; after that a quest step (pitch,
     // hand-in, report) takes the interaction if one is waiting, otherwise the scene replays.
     if (near.talk && near.npc) {
@@ -1757,7 +1775,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _fx(ev, snap) {
-    this.romance?.onEvent(ev, snap); this.gear?.onEvent(ev); this.eggs?.onEvent(ev);
+    this.romance?.onEvent(ev, snap); this.gear?.onEvent(ev); this.eggs?.onEvent(ev); this.perf?.onEvent(ev);
     if (['hit', 'kill', 'shot', 'swing'].includes(ev.t) && (ev.by === this.localId || ev.id === this.localId)) sfx(ev.t);
     if (ev.t === 'hurt' && ev.id === this.localId) sfx('hurt');
     if (ev.t === 'kill' && !ev.boss && Math.random() < 0.3) this._barkFrom('kill', snap, { by: ev.by });

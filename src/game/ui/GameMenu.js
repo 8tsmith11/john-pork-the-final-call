@@ -3,13 +3,14 @@
 import { VIEW } from '../../view.js';
 import { ITEMS, RECIPES, SKILLS, SHOPS, playerMods, ARMOR_SLOTS, GEAR_SLOTS, WEAPON_SLOTS, SLOT_NAMES, MAX_UPGRADE, upgradeCost, scaleMods, canWear } from '../../content/items.js';
 import { MAPS } from '../../content/maps/index.js';
+import { ABILITIES, ABILITY_KEYS, MAX_SCORE, modOf, fmtMod, scoresOf } from '../../content/abilities.js';
 import { canPay, count } from '../../engine/inventory.js';
 import { SKILL_TREE, skillOpen } from '../../content/skills.js';
 import { ROOMMATES } from '../scenes/BootScene.js';
 import { QUESTS, questState } from '../../content/quests.js';
 
-export const TABS = ['inventory', 'quests', 'phone', 'skills', 'map', 'controls', 'system'];
-const TAB_LABEL = { inventory: 'INVENTORY', quests: 'QUESTS', phone: 'PHONE', skills: 'SKILLS', map: 'MAP', controls: 'CONTROLS', system: 'SYSTEM' };
+export const TABS = ['inventory', 'quests', 'phone', 'skills', 'stats', 'map', 'controls', 'system'];
+const TAB_LABEL = { inventory: 'INVENTORY', quests: 'QUESTS', phone: 'PHONE', skills: 'SKILLS', stats: 'STATS', map: 'MAP', controls: 'CONTROLS', system: 'SYSTEM' };
 const C = { panel: 0x0b0d16, edge: 0xf2a6b8, dim: 0x5d6487, text: '#e8e8f0', sub: '#9aa3c7', hi: '#ffb347', ok: '#7fb069', bad: '#d65db1' };
 const F = (size = 8, color = C.text) => ({ fontFamily: 'monospace', fontSize: `${size}px`, color });
 // Shop row labels (any item kind). Equipment slots themselves come from items.js (SLOT_NAMES).
@@ -57,6 +58,7 @@ export class GameMenu {
     if (this.tab === 'fab') return this._fab(g);
     if (this.tab?.startsWith('shop:')) return this._shop(g, this.tab.slice(5));
     if (this.tab === 'armorer') return this._armorer(g);
+    if (this.tab?.startsWith('approach:')) return this.scene.approach?.draw(this, g);
     if (this.tab === 'travel') return this._travel(g);
     // tab bar
     let x = b.x + 8;
@@ -66,7 +68,7 @@ export class GameMenu {
       if (on) g.fillStyle(0xffb347).fillRect(x, b.y + 16, t.width, 1);
       x += t.width + 12;
     }
-    this._t(b.x + b.w - 8, b.y + 6, '[ESC] close  [A/D] tabs', F(7, C.sub)).setOrigin(1, 0);
+    this._t(b.x + b.w - 8, b.y + 7, '[ESC]', F(6, C.sub)).setOrigin(1, 0);   // A/D cycles tabs (CONTROLS)
     g.lineStyle(1, C.dim, 0.6).lineBetween(b.x + 6, b.y + 20, b.x + b.w - 6, b.y + 20);
     this[`_${this.tab}`](g);
   }
@@ -394,5 +396,23 @@ export class GameMenu {
       this._t(x + 8, y + 3, `${i + 1}. ${MAPS[id].name ?? id}`, F(8, C.text), () => { s.gear.travel(id); this.scene._closeMenu(); });
     });
     this._travelKeys = dests;
+  }
+
+  // STATS: D&D-style ability scores (D-017). Spend level-up points; each score's modifier feeds combat
+  // and the NPC approaches (Charm, Deceive, Intimidate, Insight, Investigate, Pickpocket).
+  _stats(g) {
+    const s = this.scene, b = this.box, who = s.character, c = s.save.party[who], sc = scoresOf(c, who), pts = c.abilityPoints ?? 0;
+    this._t(b.x + 14, b.y + 26, `${ROOMMATES[who].name} · level ${c.level}`, F(9, C.text));
+    this._t(b.x + b.w - 14, b.y + 26, pts ? `${pts} point${pts > 1 ? 's' : ''} to spend` : 'no points to spend (2 per level)', F(8, pts ? C.hi : C.sub)).setOrigin(1, 0);
+    ABILITY_KEYS.forEach((k, i) => {
+      const y = b.y + 44 + i * 28, x = b.x + 14, score = sc[k], m = modOf(score), can = pts > 0 && score < MAX_SCORE;
+      g.fillStyle(0x151827).fillRoundedRect(x, y, b.w - 28, 24, 3).lineStyle(1, can ? 0xffb347 : C.dim, can ? 0.7 : 0.4).strokeRoundedRect(x, y, b.w - 28, 24, 3);
+      this._t(x + 8, y + 4, ABILITIES[k].short, F(10, C.hi));
+      this._t(x + 40, y + 3, ABILITIES[k].name, F(8, C.text));
+      this._t(x + 40, y + 13, ABILITIES[k].does, F(6, C.sub));
+      this._t(x + b.w - 120, y + 5, `${score}`, F(11, C.text)).setOrigin(1, 0);
+      this._t(x + b.w - 112, y + 7, `(${fmtMod(m)})`, F(8, m > 0 ? C.ok : m < 0 ? C.bad : C.sub));
+      if (can) this._t(x + b.w - 40, y + 5, '+ 1', F(10, C.hi), () => s.menuAbility(k)).setOrigin(1, 0);
+    });
   }
 }

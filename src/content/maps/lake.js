@@ -58,10 +58,10 @@ export const lake = makeMap({
   layout: g.map((r) => r.join('')),
   spawns: [[2, 21], [2, 22], [3, 22]],
   enemies: [
-    ['enemy.rotling', 12, 21],                                     // on the trail in
-    ['enemy.rotling', 58, 12], ['enemy.spitter', 61, 16],          // north-east woods by the fence
+    ['enemy.captcha', 12, 21],                                     // on the trail in: a Captcha, checking who comes to the lake
+    ['enemy.autocomplete', 58, 12], ['enemy.spitter', 61, 16],     // north-east woods by the fence
     ['enemy.spitter', 21, 34], ['enemy.rotling', 29, 36],          // the marsh
-    ['enemy.rotling', 30, 7],                                      // north shore
+    ['enemy.moth', 30, 7],                                         // north shore: a Hold-Music Moth, alone, by the moth lamp
     ['enemy.spitter', 46, 19],                                     // on the island, with the thing it's sitting on
   ],
   objects: [

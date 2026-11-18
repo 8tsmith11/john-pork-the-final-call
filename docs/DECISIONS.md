@@ -129,3 +129,16 @@ Format:
 - 2026-11-18. Additions to Michael's character that he asked for, sealed so they stay a surprise
   (`src/content/crush.js`, `src/game/crush.js`). Anything in them that touches another roommate's
   likeness physically stays off until that roommate's own yes (D-007).
+
+## D-017 Ability scores, NPC approaches, sleep tools, new coderot  (status: agreed, direct from Michael)
+- 2026-11-18. **Ability scores** (D&D style): STR, DEX, CON, INT, WIS, CHA per roommate, modifier
+  = floor((score - 10) / 2), 2 points per level (STATS tab). They feed combat stats and checks.
+  Save schema 4. Rules: `src/content/abilities.js`.
+- **NPC approaches**: talking to an NPC offers Talk, Charm, Deceive, Intimidate, Insight,
+  Investigate or Pickpocket (d20 + modifier vs a DC by role). People carry pockets rolled once per
+  world. Coderot-impaired NPCs only allow Talk, Insight and Investigate. `src/content/approaches.js`.
+- **Sleeping potions** (thrown) and **caffeine** (wakes you, sleep-immune for 45 s). Lullabies put
+  Manuel out for 12 s instead of 8. Michael's lullaby reaches 8 tiles.
+- **New coderot**: the Hold-Music Moth (sings players to sleep), the Captcha (wind-up charge, dizzy
+  after) and Autocomplete (copies your dodge). Placed by swapping existing spawns on the lake and
+  tunnel maps.

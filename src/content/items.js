@@ -2,6 +2,7 @@
 // Analog gear resists rot (bible §4). Stats feed the sim through playerMods().
 import { FISH } from './fish.js';
 import { SKILL_TREE } from './skills.js';
+import { abilityModsFor } from './abilities.js';
 
 // Equipment slots (D-014, Michael). Armor points come from the four armor pieces; gear goes on top.
 export const WEAPON_SLOTS = ['weapon', 'ranged', 'gadget', 'charm'];
@@ -105,13 +106,25 @@ Object.assign(ITEMS, {
     mods: { armor: 0.1, dodgeCd: -0.12, killDodge: 1 }, text: 'Sky-blue and white stripes, a 10 on the back. Gambeta: every kill hands his dodge straight back to him.' },
   'item.hasbulla_tee':   { name: 'Hasbulla tee', slot: 'parka', owner: 'manuel', unique: true, src: 'act3',
     mods: { armor: 0.04, small: 2, knock: 0.4 }, text: 'White, oversized, "VS EVERYBODY", hangs past his waist. Small and unbothered: harder to hit, and his swings throw things further.' },
-  'item.sculptor_gloves': { name: 'Sculptor\'s gloves', slot: 'gloves', owner: 'manuel', unique: true, src: 'act3',
-    mods: { decoys: 1, abilityPower: 0.2 }, text: 'Plaster dust in every seam, a thumb worn shiny from shaping ears. His decoy busts come out two at a time and last longer.' },
+  // From real life: Manuel and Michael are building a smart pacifier for a children's hospital (they
+  // hold the patent and prototype it in 631). This is prototype #1, and Manuel won't give it back.
+  'item.smart_pacifier': { name: 'Smart pacifier (prototype)', slot: 'goggles', owner: 'manuel', unique: true, src: 'act3',
+    mods: { regen: 1.5, staRegen: 0.15, sleepGuard: 1 }, text: 'Patent granted. A blinking sensor in the shield. Manuel sucks on it constantly and slowly heals. It does not keep lullabies off him, but asleep with it in he can\'t be hurt, and his health and stamina pour back.' },
   'item.mate_holster':   { name: 'Mate holster', slot: 'backpack', owner: 'manuel', unique: true, src: 'act3',
     mods: { mateHeal: 0.6, staRegen: 0.25 }, text: 'A gourd, a bombilla and a steel thermos on a leather harness. Mate heals him far more, and he is never quite tired.' },
 });
 
-// Upgrades at the master armorer: each level (max 5) scales an item's positive bonuses by +15%.
+// Pocket finds (NPC approaches, D-017) and the sleeping potion.
+Object.assign(ITEMS, {
+  'item.keycard':        { name: 'Keycard', slot: 'junk', stack: 8, text: 'A Continuity contractor badge on a lanyard. The photo is of somebody else.' },
+  'item.hard_candy':     { name: 'Hard candy', slot: 'consumable', heal: 8, text: 'Butterscotch, wrapped in gold plastic, from a coat pocket that has had it since 2091.' },
+  'item.lighter':        { name: 'Lighter', slot: 'junk', stack: 8, text: 'Clear plastic, nearly out. It sparks more than it lights.' },
+  'item.lottery_ticket': { name: 'Lottery ticket', slot: 'junk', stack: 8, text: 'MARYLAND MEGA COMPUTE. Scratched. You did not win. Somebody kept it anyway.' },
+  'item.caffeine':       { name: 'Cold brew', slot: 'consumable', caffeine: 45, stack: 8, text: 'A can of 2098 cold brew, legally a controlled substance in three states. Drink it to wake up at once; for 45 seconds nothing can put you to sleep and you move faster.' },
+  'item.sleep_potion':   { name: 'Sleeping potion', slot: 'consumable', throwable: true, stack: 8, text: 'A blue vial that smells like a dentist\'s office. Use it to throw it where you\'re aiming: everyone in the splash sleeps for 8 seconds. Bosses shrug it off.' },
+});
+
+// Upgrades at the master armorer:// Upgrades at the master armorer: each level (max 5) scales an item's positive bonuses by +15%.
 export const MAX_UPGRADE = 5;
 export const upgradeCost = (level) => ({ money: 20 * (level + 1), mats: { 'item.mat_scrap': level + 1, ...(level ? { 'item.mat_circuit': level } : {}) } });
 export function scaleMods(mods, level = 0) {
@@ -133,6 +146,7 @@ export const RECIPES = [
   { item: 'item.rain_parka',     cost: { 'item.mat_plastic': 3, 'item.mat_cloth': 2 } },
   { item: 'item.pack_coolant',   cost: { 'item.mat_gel': 3, 'item.mat_cell': 1, 'item.mat_cloth': 2 } },
   { item: 'item.pack_capacitor', cost: { 'item.mat_cell': 2, 'item.mat_circuit': 1, 'item.mat_wire': 2 } },
+  { item: 'item.sleep_potion',   cost: { 'item.mat_gel': 2, 'item.mat_glass': 1 } },
   { item: 'item.fab_launcher', cost: { 'item.mat_scrap': 4, 'item.mat_circuit': 2, 'item.mat_cell': 1, 'item.mat_gel': 2 } },
 ];
 
@@ -190,6 +204,8 @@ export const SHOPS = {
       { item: 'item.mat_cloth', price: 3 },
       { item: 'item.work_gloves', price: 9 },
       { item: 'item.wool_socks', price: 7 },
+      { item: 'item.sleep_potion', price: 15 },
+      { item: 'item.caffeine', price: 8 },
     ] },
 };
 
@@ -200,7 +216,7 @@ export const SKILLS = Object.fromEntries(Object.entries(SKILL_TREE).map(([k, t])
 export function playerMods(char, charId) {
   const m = { melee: 0, shot: 0, shotCd: 0, armor: 0, maxHp: 0, iframes: 0, dodgeCd: 0, revive: 0, gun: 0,
     speed: 0, sta: 0, staRegen: 0, dashHit: 0, crit: 0, lifesteal: 0, loot: 0, haggle: 0, skillCd: 0, abilityPower: 0, markDmg: 0, secondWind: 0, decoys: 0, reviveHeal: 0,
-    small: 0, knock: 0, killDodge: 0, mateHeal: 0 };
+    small: 0, knock: 0, killDodge: 0, mateHeal: 0, sleepImmune: 0, regen: 0, sleepGuard: 0 };
   const add = (mods, k = 1) => { for (const [key, v] of Object.entries(mods || {})) m[key] = (m[key] ?? 0) + v * k; };
   for (const id of Object.values(char.equipped || {})) {
     const def = id && ITEMS[id];
@@ -211,6 +227,7 @@ export function playerMods(char, charId) {
   m.swing = ITEMS[char.equipped?.weapon]?.swing ?? null;   // weapon profiles replace the defaults, they don't add
   m.gunStats = ITEMS[char.equipped?.ranged]?.gun ?? null;
   for (const s of SKILLS[charId] || []) add(s.mods, char.skills?.[s.id] ?? 0);
+  add(abilityModsFor(char, charId));   // ability scores (D-017)
   m.armor = Math.min(0.6, m.armor); m.skillCd = Math.min(0.6, m.skillCd); m.haggle = Math.min(0.4, m.haggle);
   return m;
 }

@@ -11,7 +11,9 @@ export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown
 // before this the tunnel cleared in ~30 s with no knockdowns.
 export const PARTY_SCALE = { hp: 1.7, dmg: 1.3 };
 export const BLINK = { dist: 112, cooldown: 1.1 };   // winged boots (D-014)
-export const LULLABY = { range: 64, expose: 3, sleep: 8 };
+// Michael's lullaby reaches 8 tiles; a Hold-Music Moth's hum reaches 4. Manuel is a baby: a lullaby
+// puts him out for 12 s instead of 8. Caffeine (wiredT) makes anyone immune.
+export const LULLABY = { range: 128, mothRange: 64, expose: 3, sleep: 8, babySleep: 12 };
 export const COMBAT = {
   maxHp: 100, hurtIframes: 0.6, reviveTime: 4.0, reviveRange: 18, reviveHp: 40,
   melee: { cooldown: 0.38, range: 20, arc: Math.PI * 0.6, damage: 12, knockback: 120 },
@@ -127,19 +129,21 @@ export class Sim {
   // for LULLABY.expose seconds falls asleep for LULLABY.sleep seconds. Leaving the range resets it.
   // Sleepers still in range when a second passes get the full LULLABY.sleep again.
   _stepLullaby(dt) {
-    const singers = [...this.players.values()].filter((p) => p.playing?.song === 'lullaby' && !p.downed);
-    const targets = [...[...this.players.values()].filter((p) => !p.downed), ...[...this.enemies.values()].filter((e) => !e.boss && !e.sahur)];
+    const singers = [...[...this.players.values()].filter((p) => p.playing?.song === 'lullaby' && !p.downed), ...[...this.enemies.values()].filter((e) => this._def(e).lullaby && !(e.sleepT > 0))];
+    const targets = [...[...this.players.values()].filter((p) => !p.downed && !(p.wiredT > 0)), ...[...this.enemies.values()].filter((e) => !e.boss && !e.sahur && !e.def?.lullaby)];
+    const sleepFor = (t) => (t.character === 'manuel' ? LULLABY.babySleep : LULLABY.sleep);
     for (const t of targets) {
-      const near = singers.some((s) => s !== t && Math.hypot(s.x - t.x, s.y - t.y) <= LULLABY.range);
+      // enemy singers (moths) only sing players to sleep
+      const near = singers.some((s) => s !== t && (!this.enemies.has(s.id) || this.players.has(t.id)) && Math.hypot(s.x - t.x, s.y - t.y) <= (this.enemies.has(s.id) ? LULLABY.mothRange : LULLABY.range));
       // Already asleep: while Michael keeps playing nearby, the sleep timer resets every second.
       if (t.sleepT > 0) {
         t.lullRefresh = near ? (t.lullRefresh ?? 0) + dt : 0;
-        if (t.lullRefresh >= 1) { t.lullRefresh = 0; t.sleepT = LULLABY.sleep; }
+        if (t.lullRefresh >= 1) { t.lullRefresh = 0; t.sleepT = Math.max(t.sleepT, sleepFor(t)); }
         continue;
       }
       t.lullT = near ? (t.lullT ?? 0) + dt : 0;
       if (t.lullT >= LULLABY.expose) {
-        t.lullT = 0; t.sleepT = LULLABY.sleep;
+        t.lullT = 0; t.sleepT = sleepFor(t);
         if (t.playing) t.playing = null;
         this.events.push({ t: 'sleep', id: t.id, enemy: this.enemies.has(t.id), x: Math.round(t.x), y: Math.round(t.y) });
       }
@@ -165,6 +169,19 @@ export class Sim {
     this.emit({ t: 'blink', id, x0: Math.round(x0), y0: Math.round(y0), x1: Math.round(x), y1: Math.round(y) });
     return true;
   }
+  /** Sleeping potion (D-017): thrown up to 64 px along the aim; everyone in the splash sleeps. */
+  throwPotion(id) {
+    const p = this.players.get(id); if (!p || p.downed || p.sleepT > 0) return null;
+    let x = p.x, y = p.y;
+    for (let d = 4; d <= 64; d += 4) { const nx = p.x + Math.cos(p.aim) * d, ny = p.y + Math.sin(p.aim) * d; if (this.map.solid(Math.floor(nx / TILE), Math.floor(ny / TILE))) break; x = nx; y = ny; }
+    const r = 36;
+    for (const q of this.players.values()) if (q !== p && !q.downed && !(q.wiredT > 0) && Math.hypot(q.x - x, q.y - y) <= r) { q.sleepT = LULLABY.sleep; q.playing = null; }
+    for (const e of this.enemies.values()) if (!e.boss && !e.sahur && Math.hypot(e.x - x, e.y - y) <= r) e.sleepT = LULLABY.sleep;
+    this.emit({ t: 'potion', id, x: Math.round(x), y: Math.round(y), r });
+    return { x, y, r };
+  }
+  /** Caffeine (D-017): wakes you now; for `secs` nothing puts you to sleep and you move 15% faster. */
+  caffeinate(id, secs) { const p = this.players.get(id); if (!p || p.downed) return; p.sleepT = 0; p.lullT = 0; p.wiredT = secs; this.emit({ t: 'wired', id }); }
   heal(id, n) { const p = this.players.get(id); if (p && !p.downed) p.hp = Math.min(this.maxHp(p), p.hp + n); }
 
   removePlayer(id) { this.players.delete(id); }
@@ -189,7 +206,8 @@ export class Sim {
       const inp = inputs.get(p.id) || emptyInput();
       p.meleeCd = Math.max(0, p.meleeCd - dt); p.shotCd = Math.max(0, p.shotCd - dt); p.swingT = Math.max(0, p.swingT - dt);
       if (p.downed) { p.vx = p.vy = 0; p.moving = false; continue; }
-      if (p.sleepT > 0) { p.sleepT = Math.max(0, p.sleepT - dt); p.vx = p.vy = 0; p.moving = false; if (p.sleepT <= 0) this.events.push({ t: 'wake', id: p.id }); continue; }
+      if (p.sleepT > 0) { if (p.mods?.sleepGuard) { p.hp = Math.min(this.maxHp(p), p.hp + 15 * dt); p.sta = Math.min(MOVE.stamina + (p.mods.sta ?? 0), (p.sta ?? 0) + 40 * dt); }
+        p.sleepT = Math.max(0, p.sleepT - dt); p.vx = p.vy = 0; p.moving = false; if (p.sleepT <= 0) this.events.push({ t: 'wake', id: p.id }); continue; }
       if (p.waitExit) {
         // Parked inside a doorway, waiting for the party. Any movement that isn't into the door steps back out.
         p.vx = p.vy = 0; p.moving = false;
@@ -215,7 +233,7 @@ export class Sim {
         const dl = Math.hypot(dx, dy) || 1;
         p.dodgeDx = dx / dl; p.dodgeDy = dy / dl;
         p.dashHits = new Set();
-        p.dodgeT = MOVE.dodgeTime; p.dodgeCd = Math.max(0.2, MOVE.dodgeCooldown + (p.mods?.dodgeCd ?? 0)); p.iframes = MOVE.iframes;
+        p.dodgeStamp = this.tick; p.dodgeT = MOVE.dodgeTime; p.dodgeCd = Math.max(0.2, MOVE.dodgeCooldown + (p.mods?.dodgeCd ?? 0)); p.iframes = MOVE.iframes;
       }
 
       if (p.dodgeT > 0) {
@@ -236,7 +254,7 @@ export class Sim {
           p.vx += (mx * top - p.vx) * Math.min(1, acc * dt); p.vy += (my * top - p.vy) * Math.min(1, acc * dt);
           if (Math.hypot(p.vx, p.vy) > 2) { p.battery = Math.max(0, (p.battery ?? 100) - (p.hicap ? 1.1 : 2.2) * dt); if (p.battery <= 0) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, dead: true }); } }
         } else {
-          const spd = MOVE.speed * (p.morphed ? 1.15 : 1) * (1 + (p.mods?.speed ?? 0)) * (p.playing ? 0.5 : 1);
+          const spd = MOVE.speed * (p.morphed ? 1.15 : 1) * (1 + (p.mods?.speed ?? 0)) * (p.playing ? 0.5 : 1) * (p.wiredT > 0 ? 1.15 : 1);
           p.vx = mx * spd; p.vy = my * spd;
         }
       }
@@ -246,6 +264,8 @@ export class Sim {
 
       p.skillCd = Math.max(0, (p.skillCd ?? 0) - dt);
       p.blinkCd = Math.max(0, (p.blinkCd ?? 0) - dt);
+      if (p.wiredT > 0) p.wiredT = Math.max(0, p.wiredT - dt);
+      if (p.mods?.regen && p.hp < this.maxHp(p)) p.hp = Math.min(this.maxHp(p), p.hp + p.mods.regen * dt);   // smart pacifier
       if (inp.skill && !p.riding && !p.playing && p.skillCd <= 0) this._ability(p);
       if (inp.attack && !p.riding && !p.playing && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
       if (inp.fire && !p.riding && !p.playing && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);   // no gun, no shooting
@@ -355,7 +375,8 @@ export class Sim {
   _hurtEnemy(e, dmg, kx, ky, by) {
     if (e.sahur) { dmg = 1; this.events.push({ t: 'thunk', x: e.x, y: e.y }); }
     else if (e.boss && e.state === 'vulnerable') dmg *= 2;
-    if (e.def?.armor) dmg = Math.max(1, Math.round(dmg * (1 - e.def.armor)));
+    if (this._def(e).armor && e.st !== 'dizzy') dmg = Math.max(1, Math.round(dmg * (1 - this._def(e).armor)));
+    if (e.st === 'dizzy') dmg *= 2;   // a Captcha reeling after its charge
     if (e.marked > 0) dmg = Math.round(dmg * (1.5 + (this.players.get(by)?.mods?.markDmg ?? 0)));
     if (e.def?.trait === 'blinker' && Math.random() < 0.35 && e.hp - dmg > 0) {
       const a = Math.random() * Math.PI * 2, nx = e.x + Math.cos(a) * 40, ny = e.y + Math.sin(a) * 40;
@@ -380,6 +401,7 @@ export class Sim {
   _hurtPlayer(p, dmg) {
     if (p.ttl !== undefined && p.hp !== undefined && !p.id) { p.hp -= dmg; return; }   // a decoy bust soaking a hit
     if (p.downed || p.iframes > 0) return;
+    if (p.sleepT > 0 && p.mods?.sleepGuard) { this.events.push({ t: 'hit', x: p.x, y: p.y, dmg: 0, target: p.id }); return; }   // Manuel asleep on his pacifier: untouchable
     dmg = Math.max(1, Math.round(dmg * (1 - (p.mods?.armor ?? 0)) * (p.morphed ? 1.2 : 1)));
     p.hp -= dmg; p.iframes = COMBAT.hurtIframes + (p.mods?.iframes ?? 0);
     if (p.riding) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, knocked: true }); }
@@ -412,6 +434,36 @@ export class Sim {
       const [target, d] = this._nearestPlayer(e.x, e.y);
       if (!target || d > 220) continue;
       const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
+      if (def.ai === 'lullaby') {        // hover just out of reach, humming
+        const [lo, hi] = def.keepAway ?? [44, 70], dir = d < lo ? -1 : d > hi ? 1 : 0;
+        if (e.hurtT <= 0) this._moveBody(e, (ux * dir + uy * Math.sin(this.tick / 40) * 0.6) * def.speed * dt, (uy * dir - ux * Math.sin(this.tick / 40) * 0.6) * def.speed * dt, def.radius);
+        if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) { this._hurtPlayer(target, def.damage); e.cd = def.touchCooldown; }
+        continue;
+      }
+      if (def.ai === 'charge') {         // walk in, wind up, dash in a straight line, then reel
+        e.st ??= 'walk'; e.stT = (e.stT ?? 0) - dt;
+        if (e.st === 'walk') { if (e.hurtT <= 0) this._moveBody(e, ux * def.speed * dt, uy * def.speed * dt, def.radius); if (d < 80) { e.st = 'windup'; e.stT = def.windup; e.dx = ux; e.dy = uy; } }
+        else if (e.st === 'windup') { if (e.stT <= 0) { e.st = 'dash'; e.stT = def.dashTime; e.hitOnce = false; } }
+        else if (e.st === 'dash') {
+          const blocked = this._moveBody(e, e.dx * def.dashSpeed * dt, e.dy * def.dashSpeed * dt, def.radius) === false;
+          if (!e.hitOnce && d < def.radius + 7) { this._hurtPlayer(target, def.damage); e.hitOnce = true; }
+          if (e.stT <= 0 || blocked) { e.st = 'dizzy'; e.stT = def.dizzy; }
+        } else if (e.st === 'dizzy') { if (e.stT <= 0) e.st = 'walk'; }
+        continue;
+      }
+      if (def.ai === 'mirror') {         // chase; when a player dodges nearby, dash the same way at them
+        e.dashT = Math.max(0, (e.dashT ?? 0) - dt);
+        const dodger = [...this.players.values()].find((p) => p.dodgeT > 0 && Math.hypot(p.x - e.x, p.y - e.y) < def.mirrorRange);
+        if (dodger && !e.dashT && !e.mirrored?.has(dodger.dodgeStamp)) {
+          (e.mirrored ??= new Set()).add(dodger.dodgeStamp);
+          const tx = dodger.x + dodger.dodgeDx * 40, ty = dodger.y + dodger.dodgeDy * 40, dd = Math.hypot(tx - e.x, ty - e.y) || 1;
+          e.dashT = def.dashTime; e.dx = (tx - e.x) / dd; e.dy = (ty - e.y) / dd;
+        }
+        if (e.dashT > 0) this._moveBody(e, e.dx * def.dashSpeed * dt, e.dy * def.dashSpeed * dt, def.radius);
+        else if (e.hurtT <= 0) this._moveBody(e, ux * def.speed * dt, uy * def.speed * dt, def.radius);
+        if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) { this._hurtPlayer(target, def.damage); e.cd = def.touchCooldown; }
+        continue;
+      }
       if (def.ai === 'chase') {
         if (e.hurtT <= 0) this._moveBody(e, ux * def.speed * dt, uy * def.speed * dt, def.radius);
         if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) { this._hurtPlayer(target, def.damage); e.cd = def.touchCooldown; }
@@ -563,8 +615,10 @@ export class Sim {
 
   _moveBody(b, dx, dy, r) {
     const fits = (x, y) => !this._hitsBox(x, y, r, r * 0.7);
-    if (fits(b.x + dx, b.y)) b.x += dx;
-    if (fits(b.x, b.y + dy)) b.y += dy;
+    let ok = true;
+    if (fits(b.x + dx, b.y)) b.x += dx; else ok = false;
+    if (fits(b.x, b.y + dy)) b.y += dy; else ok = false;
+    return ok;   // false if a wall stopped it (a Captcha's charge ends there)
   }
 
   _hitsBox(x, y, hw, hh) {
@@ -614,11 +668,11 @@ export class Sim {
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
-        hp: Math.round(p.hp), mhp: this.maxHp(p), st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0,
+        hp: Math.round(p.hp), mhp: this.maxHp(p), st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0,
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
-        mk: e.marked > 0, zz: e.sleepT > 0,
+        mk: e.marked > 0, zz: e.sleepT > 0, sg: !!this._def(e).lullaby && !(e.sleepT > 0), st: e.st ?? null,
         ...(e.def && !e.boss ? { vn: e.def.vname, tr: e.def.trait, c: e.def.color, mh: e.def.hp, r: e.def.radius } : {}),
         ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, ring: !!e.sahur && e.fightT > 10 } } : {}) })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y) })),

@@ -178,7 +178,15 @@ test('unique gear only works for its owner; upgrades scale bonuses (D-014)', () 
   assert.ok(mine.blink && mine.speed >= 0.6, 'Michael gets the boots');
   assert.ok(!theirs.blink && theirs.speed < 0.6, 'Trevor gets nothing from them');
   const up = pmods(wearing({ upgrades: { 'item.winged_boots': 2 } }), 'michael');
-  assert.ok(up.speed > mine.speed && Math.abs(up.speed - 0.6 * 1.3) < 1e-6, 'two armorer levels = +30%');
+  assert.ok(Math.abs((up.speed - mine.speed) - 0.6 * 0.3) < 1e-6, 'two armorer levels = +30% of the boots');
+});
+
+test('ability scores: modifiers, level points, checks (D-017)', async () => {
+  const { modOf, abilityModsFor, check } = await import('../src/content/abilities.js');
+  assert.equal(modOf(10), 0); assert.equal(modOf(11), 0); assert.equal(modOf(14), 2); assert.equal(modOf(8), -1); assert.equal(modOf(1), -5); assert.equal(modOf(30), 10);
+  assert.equal(abilityModsFor({ abilities: { str: 16 } }, 'trevor').melee, 6);
+  const r = check({ abilities: { cha: 14 } }, 'michael', 'cha', 15, { rand: () => 0.6 });   // d20 = 13, +2
+  assert.equal(r.total, 15); assert.ok(r.success);
 });
 test('skill trees: valid links, capstone needs all three branches, mods sum, old skills refunded', () => {
   for (const [who, t] of Object.entries(SKILL_TREE)) {

@@ -26,7 +26,8 @@ export function generateWarden(seed, playerCount = 1) {
 // ---- Regular coderot villains: every spawn gets a seeded variant (brief: "randomly created coderot
 // villains"). Bounded tables keep them fair: stats move within safe ranges, traits are telegraphed.
 const V_PREFIX = ['Stale', 'Forked', 'Leaky', 'Null', 'Looping', 'Orphan', 'Verbose', 'Deprecated', 'Cached', 'Unsigned', 'Zombie', 'Ghost'];
-const V_NOUN = { 'enemy.rotling': ['Process', 'Daemon', 'Worker', 'Courier', 'Crawler'], 'enemy.spitter': ['Logger', 'Broadcaster', 'Echo', 'Spammer', 'Beacon'] };
+const V_NOUN = { 'enemy.rotling': ['Process', 'Daemon', 'Worker', 'Courier', 'Crawler'], 'enemy.spitter': ['Logger', 'Broadcaster', 'Echo', 'Spammer', 'Beacon'],
+  'enemy.moth': ['Hold Queue', 'Lullaby', 'Muzak', 'Jingle', 'Waiting Room'], 'enemy.captcha': ['Verifier', 'Gatekeeper', 'Grid', 'Checkbox', 'Turnstile'], 'enemy.autocomplete': ['Suggestion', 'Predictor', 'Guess', 'Draft', 'Completion'] };
 export const TRAITS = {
   plain:    { label: '', hp: 1, speed: 1 },
   sprinter: { label: 'fast', hp: 0.8, speed: 1.45 },

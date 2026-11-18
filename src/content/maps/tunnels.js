@@ -27,8 +27,8 @@ export const tunnel1 = makeMap({
     ['enemy.rotling', 30, 22],                                                               // the flooded bay
     ['enemy.rotling', 38, 9], ['enemy.spitter', 44, 17], ['enemy.rotling', 40, 19],          // the switchyard
     ['enemy.spitter', 50, 3],                                                                // the bypass
-    ['enemy.rotling', 53, 23],                                                               // the signal room
-    ['enemy.rotling', 56, 12], ['enemy.spitter', 60, 14],                                    // the approach
+    ['enemy.moth', 53, 23],                                                                  // the signal room: a Hold-Music Moth on its own
+    ['enemy.autocomplete', 56, 12], ['enemy.spitter', 60, 14],                               // the approach
   ],
   objects: [
     // Seeded loot in the side branches (trevor): exploring off the main line pays.
