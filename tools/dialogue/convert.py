@@ -26,7 +26,7 @@ NODE = re.compile(r"^###\s+node:\s*`?([\w.\-]+)`?")
 BLOCK = re.compile(r"^####\s+(if|else|otherwise|always|end|then)\b[,:]?\s*(.*)$", re.I)
 LINE = re.compile(r"^\*\*([A-Z][A-Z .'\-]*?)(?:\s*\([^)]*\))?:\*\*\s*(.+)$")
 INSPECT = re.compile(r"^\**INSPECT:?\**:?\s*(.+)$")
-EFFECT = re.compile(r"^\*\s*(set|give|standing)\s+([^*]+)\*\s*$", re.I)
+EFFECT = re.compile(r"^\*\s*(sets?|gives?|standing)\s+([^*]+)\*\s*$", re.I)   # "*Set x*" and "*Sets x.*" both apply
 GOTO = re.compile(r"Next:\**\s*->\s*`?([\w.\-]+)`?")
 BAREJUMP = re.compile(r"^->\s*`?([\w.\-]+)`?\s*$")
 CONDJUMP = re.compile(r"^-\s+((?:\[[^\]]*\]\s*)+)->\s*`?([\w.\-]+)`?\s*$")
@@ -59,7 +59,9 @@ def parse(text):
             in_choices = False
             continue
         if line.lower().startswith("choices"):
-            in_choices = True; continue
+            # A choice list closes any open "#### if speaker=..." block: the drafts write per-speaker
+            # reactions, then one shared list. (Per-choice conditions go in [brackets].)
+            in_choices = True; cond = None; continue
         # Jumps without the "Next:" label, as the scenes mostly write them:
         #   -> node_id                      (unconditional; honours an enclosing #### if block)
         #   - [cond] -> node_id             (one of a list of conditional jumps; [else] is the fallback)
@@ -84,9 +86,14 @@ def parse(text):
                 text_ = c.group(2).strip().strip('"').strip()
                 node["choices"].append({"text": text_, "go": c.group(3), "if": " && ".join(conds) or None})
             continue
+        # A long italic note that STARTS with "Sets `a`, `b = 2`." and runs on over several lines:
+        # apply the backticked flags, skip the prose.
+        ms = re.match(r"^\*\s*sets?\s+((?:`[^`]+`(?:,\s*(?:and\s+)?)?)+)", line, re.I)
+        if ms and not line.rstrip().endswith("*"):
+            node["effects"].append({"op": "set", "arg": ms.group(1).strip(), "if": cond}); continue
         e = EFFECT.match(line)
         if e:
-            node["effects"].append({"op": e.group(1).lower(), "arg": e.group(2).strip().strip("`"), "if": cond}); continue
+            node["effects"].append({"op": e.group(1).lower().rstrip("s") if e.group(1).lower() != "standing" else "standing", "arg": e.group(2).strip().strip("`"), "if": cond}); continue
         m = LINE.match(line)
         if m:
             node["lines"].append({"who": m.group(1).title(), "text": m.group(2).strip(), "if": cond}); in_choices = False; continue
@@ -125,7 +132,7 @@ def main():
             "// ROT13-encoded so the source doesn't spoil the story; decoded by src/engine/dialogue.js.\n"
             f"export default {json.dumps(payload, ensure_ascii=False)};\n")
         lines = sum(len(n["lines"]) for n in nodes.values()); total += len(nodes)
-        dead = sorted({c["go"] for n in nodes.values() for c in n["choices"] if c["go"] not in nodes} |
+        dead = sorted({c["go"] for n in nodes.values() for c in n["choices"] if c["go"] not in nodes and c["go"] != "END"} |
                       {n["go"] for n in nodes.values() if n["go"] and n["go"] not in nodes})
         print(f"{scene:22s} nodes={len(nodes):3d} lines={lines:4d} dangling={len(dead)}")
     print(f"total nodes: {total}")
