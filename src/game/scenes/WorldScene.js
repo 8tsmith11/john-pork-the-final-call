@@ -77,7 +77,7 @@ export class WorldScene extends Phaser.Scene {
       for (const o of this.map.objects) { const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y); if (d <= bd) { bd = d; best = o; } }
       if (best) { this._clickedObj = best; return; }
       const person = this.crowd?.nearest(me.x, me.y);
-      if (person) { person.mode = 'wait'; person.t = 4; person.spr.setFlipX(person.x > me.x); this._say(this.crowd.lineFor(person)); if (person.pixel) this._flag?.('secrets.pixelated.found', true); babble(null, 'hey there friend'); }
+      if (person) { person.mode = 'wait'; person.t = 4; person.spr.setFlipX(person.x > me.x); this._say(`${person.name.toUpperCase()}\n${this.crowd.lineFor(person)}`); if (person.pixel) this._flag?.('secrets.pixelated.found', true); babble(null, 'hey there friend'); }
     });
     this.input.on('pointerdown', (ptr) => this._onClick(ptr));
     this.input.keyboard.on('keydown-H', () => { if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
@@ -687,7 +687,13 @@ export class WorldScene extends Phaser.Scene {
     const inReach = (o) => Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y) <= 34;
     let nearest = null, nd = 34;
     for (const o of this.map.objects) { const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y); if (d <= nd) { nd = d; nearest = o; } }
-    this.hint.setText(nearest ? `[E] ${nearest.label}${nearest.door ? (nearest.open ? ' (close)' : ' (open)') : ''}` : '');
+    const person = !nearest ? this.crowd?.nearest(me.x, me.y) : null;
+    const verb = (o) => (o.npc || o.talk && o.id.startsWith('npc.') ? `Talk to ${o.label}` : o.label);
+    this.hint.setText(nearest ? `[E] ${verb(nearest)}${nearest.door ? (nearest.open ? ' (close)' : ' (open)') : ''}` : person ? `[E] Talk to ${person.name}` : '');
+    // Name tag over whoever you're about to talk to.
+    this.nameTag ??= this.add.text(0, 0, '', { ...FONT, fontSize: '7px', color: '#ffe6c0' }).setOrigin(0.5, 1).setDepth(6500);
+    const tagged = person ?? (nearest?.npc ? { x: nearest.x * TILE + 8, y: nearest.y * TILE + 8, name: nearest.label } : null);
+    if (tagged) this.nameTag.setText(tagged.name).setPosition(Math.round(tagged.x), Math.round(tagged.y) - 22).setVisible(true); else this.nameTag.setVisible(false);
     const near = this._clickedObj; this._clickedObj = null;
     if (!near) return;
     if (!inReach(near)) { this.hint.setText(`${near.label} (too far)`); return; }

@@ -8,6 +8,10 @@ const HAIR = ['#1a1a22', '#3a2416', '#6b4a2e', '#b08850', '#d8d0c0', '#2c2c3a', 
 const COAT = ['#3b4a6b', '#5a3d5c', '#2f4a3a', '#6b5a3a', '#4a4a52', '#7a3b3b', '#2b3f55', '#55606e', '#8a6f3a'];
 const UMBRELLA = ['#2b3f55', '#7a3b3b', '#1f1f28', '#4a6b3b', '#d8a040'];
 
+const FIRST = ['Dana', 'Marcus', 'Yuki', 'Rosa', 'Tobi', 'Imani', 'Greg', 'Priya', 'Luis', 'Hannah', 'Wen', 'Andre', 'Sofia', 'Kofi', 'Mira', 'Desmond',
+  'Lena', 'Omar', 'Bea', 'Raj', 'Carmen', 'Theo', 'Nadia', 'Jules', 'Ade', 'Ines', 'Sam', 'Kenji', 'Fatima', 'Vic'];
+const LAST = ['Okafor', 'Reyes-Hart', 'Kowalski', 'Nguyen', 'Brennan', 'Haddad', 'Moreau', 'Pak', 'Silva', 'Adeyemi', 'Lindqvist', 'Castro', 'Oyelaran', 'Fitch'];
+
 export const CROWD_SIZE = { metro_plaza: 24, aster_hall: 3 };
 
 const LINES = {
@@ -105,7 +109,8 @@ export class Crowd {
       const [tx, ty] = r.pick(free);
       const mode = r.weighted([{ m: 'walk', w: 5 }, { m: 'wait', w: 2 }, { m: 'phone', w: 2 }]).m;
       const spr = scene.add.sprite(tx * TILE + 8, ty * TILE + 8, key, 'f0').setOrigin(0.5, 1);
-      this.people.push({ spr, x: tx * TILE + 8, y: ty * TILE + 8, mode, shell: info.shell && !pixel, pixel, tx: null, ty: null, speed: 18 + r.next() * 16, t: r.next() * 3, r: new Rng(`${key}-ai`), free });
+      const name = info.shell ? `Unit ${r.pick(['CR', 'DL', 'AB', 'MX', 'HN'])}-${r.int(100, 999)}` : `${r.pick(FIRST)} ${r.pick(LAST)}`;
+      this.people.push({ name, spr, x: tx * TILE + 8, y: ty * TILE + 8, mode, shell: info.shell && !pixel, pixel, tx: null, ty: null, speed: 18 + r.next() * 16, t: r.next() * 3, r: new Rng(`${key}-ai`), free });
     }
   }
 
