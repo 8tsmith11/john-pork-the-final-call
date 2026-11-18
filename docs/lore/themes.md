@@ -1,7 +1,6 @@
 # Themes, Messages, Motifs
 
-> **Status: proposed canon** (trevor's agent, after a direct request from Trevor: *"the story should
-> have themes, and messages"*). Extends [`bible.md`](bible.md). Every scene, item description, and
+> **Status: proposed canon.** Extends [`bible.md`](bible.md). Every scene, item description, and
 > NPC line should serve at least one of these themes. If it serves none, it's texture. Texture is
 > allowed, but it shouldn't contradict any of them.
 
@@ -44,8 +43,7 @@ Every theme below is a variation on that one idea.
 - **The irony we keep on purpose:** wood can't *code*-rot, but real wood rots. The Sahur is
   immune to one kind of death and not the other. Nothing is permanent, only differently impermanent.
 - **The message:** letting go well is not the same as giving up. The best endings are the ones
-  where someone chooses to release something. (Lineage for us: the impermanence traditions,
-  *mono no aware*, Ecclesiastes.)
+  where someone chooses to release something.
 
 ### 3. Who answers?
 *Being reachable isn't the same as being known.*
@@ -61,8 +59,7 @@ Every theme below is a variation on that one idea.
 *You're responsible for what you build and for what you let it become.*
 - **In the world:** MERIDIAN and the people who trained it; TIM and the people who aim him;
   Manuel's statues (too accurate); 631's printers; the roommates are engineers in a world where
-  "no one can code faster than AI." *Frankenstein* is the deep lineage: the creature asks for
-  recognition, not power.
+  "no one can code faster than AI."
 - **The message:** the question isn't whether a creation is dangerous. It's whether its makers
   stayed to take responsibility, and whether it was ever treated like someone.
 
@@ -99,7 +96,7 @@ Every theme below is a variation on that one idea.
 | **Main story** | Each act leans on one or two themes. Act 1: *Who answers?* and *Letting go*. Act 2: *Makers* and *Order/Freedom*. Act 3: *The edges are where the life is*, all of it at once |
 | **Choices** | Answer/Decline. Faction loyalties. Whether to destroy, free, or save Pork (🔒 the rest is sealed). Morph stages (power versus self) |
 | **Endings** | Every ending gives something and costs something. **No ending is purely happy**, and the bittersweet ones are the best ones |
-| **Objects** | Books, notes, and item text carry the themes quietly (Manuel's request: every object connects to the plot) |
+| **Objects** | Books, notes, and item text carry the themes quietly |
 | **Barks** | The roommates' running jokes slowly take on weight. "Rookie Aster mistake" said after a real loss lands differently |
 | **The never-said** | Themes are **never stated as morals**. No character gives a speech about "the edges." The closest anyone comes is Pork, once, drunk on coolant, getting it slightly wrong |
 

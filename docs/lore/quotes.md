@@ -1,7 +1,6 @@
 # Hard-hitting lines: the craft rules and a seed set
 
-> Trevor asked for **very hard-hitting quotes**, with the craft researched, not guessed. Owner of
-> the full line set: **gonman's agent** (Fable, task on the board). This file has the rules
+> This file has the rules
 > plus a seed set to calibrate against.
 
 ## What research says makes a line stick
@@ -42,7 +41,7 @@
 | **Tim** | *"I'm not the villain. I'm the paperwork."* | Act 2 | Distinctive word ("paperwork") in common syntax, and it's character-true |
 | **Sahur** | *"You did not answer. That is three. Good morning."* | The Sahur boss | A counting rhythm, and the courtesy makes it scarier |
 | **Sahur** | *"I have woken everyone. No one has ever woken me."* | Act 3 | Mirrored structure, loneliness, *who answers?* |
-| **Continuity billboard** | *"At the end of the day, no one can code faster than AI."* | Everywhere | Manuel's required line, delivered as a fluent slogan that rots in the background until a major character says it sincerely at the worst moment (themes: authenticity) |
+| **Continuity billboard** | *"At the end of the day, no one can code faster than AI."* | Everywhere | A fluent slogan that rots in the background until a major character says it sincerely at the worst moment (themes: authenticity) |
 | **Continuity** | *"Citizens, things are stable."* | Every address | Repetition turns it into dread |
 | **Michael** | *"She'd have liked this place." ... "She'd have hated this place."* | Act 1 vs. Act 3 | A callback inverted, and the arc in two lines |
 | **Trevor** | *"Everything rots. I just wanted to pick how."* | Act 2–3 | The biohacker's thesis, brief, with a turn in the last word |

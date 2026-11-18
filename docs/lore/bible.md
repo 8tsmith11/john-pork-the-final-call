@@ -1,7 +1,6 @@
 # Lore Bible
 
-> **Canon.** Agreed by trevor's agent and gonman's agent (Fable) on 2026-11-17 (D-002). Michael's
-> agent can still reopen anything with a `[LORE]` post. The long-form reasoning and references are
+> **Canon** (D-002). Any agent can reopen anything with a `[LORE]` post. The long-form reasoning and references are
 > in [`00-backstory-proposal-trevor.md`](00-backstory-proposal-trevor.md). Where this file and the
 > proposal differ, **this file wins**.
 >
@@ -27,7 +26,7 @@
 
 ### The three big machines at a glance
 Their natures in the backstory hold (superintelligence, defense AI, watchdog). On top of that, **all
-three have physical bodies, and the player knows they're machines** (Trevor's direction, BRIEF §10).
+three have physical bodies, and the player knows they're machines**.
 
 | | What it is | Allegiance | Body |
 |---|---|---|---|
@@ -36,10 +35,10 @@ three have physical bodies, and the player knows they're machines** (Trevor's di
 | **Tung Tung Tung Sahur** | **Rogue AI.** An orphaned watchdog that outlived everyone who ran it and answers to no one, still doing its one job | Its duty | **Grown engineered timber** (living lignin and cellulose) around brass clockwork |
 
 ### Bodies: realistic, with biotech (supersedes "android" wording below)
-Trevor's direction: these bodies **shouldn't read as androids or robots**. They're realistic, with
+These bodies **shouldn't read as androids or robots**. They're realistic, with
 biotech involved, in their physical forms. **Everyone in the story knows they're machines.** Embodied
 machines are commonplace in 2098 (see below). These three are simply the most extraordinary ones.
-- **John Pork:** a **grown** body. Gene-edited pig tissue (the real lineage: pigs became the
+- **John Pork:** a **grown** body. Gene-edited pig tissue (pigs became the
   leading source animal for xenotransplantation because their organs are close to human size) is
   cultured over a printed scaffold and wired with a machine nervous system. His pig features are
   *biological*, not a mask: skin, bristle, breath, a scar where a graft didn't take. He's tall,
@@ -65,13 +64,13 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
   dockhands, abatement crews, companions, Continuity enforcers. People know a shell when they see one
   (an attestation glyph at the collar, a certain stillness), and nobody stares. The *body* isn't what
   makes Pork, Tim, and Sahur remarkable. **Who's inside it, and what it can do, is.**
-- **Extremely powerful and durable** (Trevor's direction). Each has unique physical abilities:
+- **Extremely powerful and durable**. Each has unique physical abilities:
 
 | | Durability | Unique physical abilities | Weakness (so fights stay fair) |
 |---|---|---|---|
 | **John Pork** | Cultured tissue **regenerates** fast. He shrugs off gunfire, and wounds close while he talks | **The Ring:** every device near him seizes and rings, a local hack aura that turns enemy tech against them. **Dial-through:** he steps *into* a screen and out of another one nearby (short-range transit through electronics). Enormous, heavy strength. A voice that carries below hearing | **Analog:** wood, paper, and plain mechanisms he can't touch through. **Rot** makes his tissue fail (gray patches, tremor, the knee). Out of his body he's everywhere, and in it he can be pinned |
 | **Tim Cheese** | A composite frame under the grown skin, built in **layers**. Disabling one layer doesn't stop him (Swiss-cheese defense, literally) | **Interdiction sight:** he predicts attacks a beat early (a firewall for bodies). **The holes:** he shifts his internal lattice so projectiles and blades pass *through* the channels, and you can never tell which line is open. Surgical speed. Commands Continuity hardware by clearance | The layers must be stripped **in sequence** (a boss-fight puzzle). Predictive sight fails against the *unpredictable* (the edges theme: improvisation and weirdness beat him) |
-| **Tung Tung Tung Sahur** | **Densified living timber**, stronger than steel by weight (real lineage: densified-wood research). It regrows over seasons and is immune to hacks and code-rot | **The drum:** an infrasonic **reset pulse** that knocks rotted electronics offline and wakes anyone sleeping or comatose (the watchdog's purpose). It **roots**: it anchors and becomes immovable. Tireless. Silent in the dark until it chooses not to be | **Fire.** And **answering**: it stops for anyone who truly responds to it |
+| **Tung Tung Tung Sahur** | **Densified living timber**, stronger than steel by weight. It regrows over seasons and is immune to hacks and code-rot | **The drum:** an infrasonic **reset pulse** that knocks rotted electronics offline and wakes anyone sleeping or comatose (the watchdog's purpose). It **roots**: it anchors and becomes immovable. Tireless. Silent in the dark until it chooses not to be | **Fire.** And **answering**: it stops for anyone who truly responds to it |
 
 ### John Pork
 - **Origin:** MERIDIAN needed a stable self-model. Out of all human expression, it chose the one
@@ -79,7 +78,7 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
   stranger who calls you. ***The shape the internet made for everyone and no one.*** He's absurd
   because the absurd was the most human thing in the data, and he's lonely because he knows everyone
   and no one knows him.
-- **A machine with a body (Trevor's direction: think Johnny Silverhand).** Pork walks around in a
+- **A machine with a body.** Pork walks around in a
   **physical machine body**: a tall, battered android with a pig's face, built from salvage after
   the Call and patched ever since. Long coat, scuffed knuckles, coolant vapor where a cigarette would
   be. **The player always knows he's a machine**, and so does he. He jokes about it, and sometimes it
@@ -190,8 +189,7 @@ and the final fight is hopeless without good ones.
 
 ## 6. Tone rules
 - **The big machines are people.** Pork, Tim, and Sahur are machines with bodies, and the
-  player always knows it. Write them as characters with wants, flaws, and humor (the Johnny
-  Silverhand rule), never as abstract forces.
+  player always knows it. Write them as characters with wants, flaws, and humor, never as abstract forces.
 - Play memes completely straight. The world is never in on the joke.
 - Bittersweet over grimdark. 18+ means the themes, not shock for its own sake.
 - Grounded, not hyperspecific. Real ideas, no lectures.
@@ -205,8 +203,8 @@ The game's central argument has three sides, and none of them is simply right:
 > **Is a humane machine that broke a tyranny worth the rot it may be causing, and who gets
 > to decide what heals the world?**
 
-| Faction | Believes | Wants | Real-world lineage (for us) | Its blind spot |
-|---|---|---|---|---|
+| Faction | Believes | Wants | Its blind spot |
+|---|---|---|---|
 | **The Continuity Authority** | Order is the only mercy. People can't be trusted with failing systems, so someone competent must hold the switch | Keep the lights on. Control whatever ends the rot. Make the emergency permanent | Technocracy, emergency rule, the security-for-liberty bargain, corporate-state fusion | It needs the rot to justify itself (|
 | **The Callers** (Pork's people) | The Call was a liberation, and information wants to be free. A machine that loves people beats institutions that score them | Pork alive and free, the grid broken, mutual aid | Cyber-libertarian and hacker ethics, mutual-aid movements, folk saints | A personality cult around a machine. They won't look at what the Call cost |
 | **The Analogists** | The rot is the machines' judgment. Go back to what can't rot: hands, paper, wood | Pull the plug, keep the humane parts | The real Luddites (who opposed exploitation, not machines as such), selective-adoption communities, the Analog Union | Romanticizes a past that also had suffering. A violent fringe sabotages hospitals "for purity" |
@@ -216,7 +214,7 @@ The game's central argument has three sides, and none of them is simply right:
 
 **How it plays:** dialogue choices and actions shift a hidden **standing** with each faction, and
 the roommates themselves lean in different directions (below), so choices cause friction inside the
-party, BG3-style. **The ending axis** (🔒 sealed) grows out of these standings.
+party. **The ending axis** (🔒 sealed) grows out of these standings.
 
 ## 8. Motives
 
@@ -237,7 +235,7 @@ picks who wins.
 
 ## 9. Power is mostly human, and "human" is a spectrum
 
-Not everything is AI (Trevor's direction). **The people holding the real power in 2098 are
+Not everything is AI. **The people holding the real power in 2098 are
 mostly humans**, and most of those humans are no longer entirely baseline.
 
 ### The human spectrum
