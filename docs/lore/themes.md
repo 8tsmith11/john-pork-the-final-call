@@ -39,7 +39,7 @@ Every theme below is a variation on that one idea.
 ### 2. Letting go
 *Everything decays. What do you do while you're holding it?*
 - **In the world:** the balloon (an object whose whole nature is to leave you), rot, failing bodies,
-  Pork's bodies wearing out, Trevor's war against his own limits, Michael's girlfriend.
+  Pork's bodies wearing out, Trevor's war against his own limits.
 - **The irony we keep on purpose:** wood can't *code*-rot, but real wood rots. The Sahur is
   immune to one kind of death and not the other. Nothing is permanent, only differently impermanent.
 - **The message:** letting go well is not the same as giving up. The best endings are the ones
