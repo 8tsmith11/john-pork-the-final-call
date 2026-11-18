@@ -14,6 +14,12 @@ import { ITEMS, RECIPES, SKILLS, playerMods } from '../../content/items.js';
 
 const STEP = 1 / 60;
 const XP_PER_LEVEL = 30;
+const MORPH_UNLOCK = {
+  trevor: 'Trevor\'s supplement stack finally hits all at once. Morph stage 1 unlocked. [M]',
+  manuel: 'Something in Manuel clicks into place. He is the gonman now. Morph stage 1 unlocked. [M]',
+  michael: 'Michael\'s lace catches a signal it shouldn\'t. Morph stage 1 unlocked. [M]',
+};
+const MORPH_LOOK = { trevor: [0xb8d8ff, 'Trevor (stacked)'], manuel: [0xb6e07a, 'the gonman'], michael: [0xffb0a8, 'Michael (signal)'] };
 const FONT = { fontFamily: 'monospace', fontSize: '8px', color: '#e8e8f0' };
 
 export class WorldScene extends Phaser.Scene {
@@ -48,6 +54,7 @@ export class WorldScene extends Phaser.Scene {
     this.save.world.scrap ??= 0;
     this._makeMenu();
     this.input.keyboard.on('keydown-K', () => this.menu ? this._closeMenu() : this._openSkills());
+    this.input.keyboard.on('keydown-M', () => { if (this.mode === 'client') this.net.send({ t: 'morph' }); else this._morph(this.localId); });
     this.input.keyboard.on('keydown-E', () => { if (this.menu) this._closeMenu(); else if (!this.dlg) this._closeSay(); });
     this.input.on('pointerdown', (ptr) => this._onClick(ptr));
     this.input.keyboard.on('keydown-H', () => { if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
@@ -152,6 +159,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'craft') this._craft(this._charOf(peer), msg.idx);
         if (msg.t === 'skill') this._learn(this._charOf(peer), msg.id);
         if (msg.t === 'use') this._use(this._charOf(peer), peer);
+        if (msg.t === 'morph') this._morph(peer);
       });
       this.net.on('leave', (peer) => this.sim.removePlayer(peer));
       this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
@@ -294,6 +302,13 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
+  _morph(peerId) {
+    const p = this.sim.players.get(peerId); if (!p) return;
+    const stage = this.save.party[p.character]?.morph.stage ?? 0;
+    if (stage < 1) return this._announce('No morph yet. (Stage 1 unlocks at level 3.)');
+    this.sim.toggleMorph(peerId, true);
+  }
+
   _answer() {
     if (this.sim.answerSahur()) {
       this.save.flags['act1.call.answered'] = true;
@@ -419,7 +434,11 @@ export class WorldScene extends Phaser.Scene {
         for (const p of this.sim.players.values()) {
           const c = this.save.party[p.character]; if (!c) continue;
           c.xp += ev.xp;
-          while (c.xp >= c.level * XP_PER_LEVEL) { c.xp -= c.level * XP_PER_LEVEL; c.level++; c.skillPoints++; this._announce(`${p.character} reached level ${c.level}. (+1 skill point)`); }
+          while (c.xp >= c.level * XP_PER_LEVEL) {
+            c.xp -= c.level * XP_PER_LEVEL; c.level++; c.skillPoints++;
+            this._announce(`${p.character} reached level ${c.level}. (+1 skill point)`);
+            if (c.level >= 3 && c.morph.stage < 1) { c.morph.stage = 1; this._announce(MORPH_UNLOCK[p.character]); }
+          }
         }
       }
     }
@@ -478,7 +497,7 @@ export class WorldScene extends Phaser.Scene {
       const key = `${p.c}_${p.m ? 'walk' : 'idle'}_${facing}`;
       if (s.anims.currentAnim?.key !== key) s.play(key);
       s.setAlpha(p.d ? 0.55 : p.iv ? (Math.floor(this.time.now / 60) % 2 ? 0.4 : 1) : 1);
-      s.setAngle(p.dn ? 90 : 0).setTint(p.dn ? 0x777788 : 0xffffff);
+      s.setAngle(p.dn ? 90 : 0).setTint(p.dn ? 0x777788 : p.mo ? MORPH_LOOK[p.c][0] : 0xffffff).setScale(p.mo ? 1.12 : 1);
     }
     for (const [id, s] of this.sprites) if (!seen.has(id)) { s.destroy(); this.sprites.delete(id); }
 
@@ -538,6 +557,7 @@ export class WorldScene extends Phaser.Scene {
       g.lineStyle(2, 0xe8e8f0, 0.8).beginPath().arc(p.x, p.y - 8, 16, ev.a - 0.9, ev.a + 0.9).strokePath();
       this.tweens.add({ targets: g, alpha: 0, duration: 140, onComplete: () => g.destroy() });
     }
+    if (ev.t === 'morph') { const p = snap.players.find((q) => q.id === ev.id); if (p) { this.cameras.main.flash(120, 180, 255, 160); if (ev.id === this.localId) this._say(ev.on ? `${MORPH_LOOK[p.c][1]}. Stronger. Faster. Softer in the wrong places.` : 'You come back to yourself. Mostly.'); } }
     if (ev.t === 'down' && ev.id === this.localId) this._say('You\'re down. A roommate can pick you up: they just have to stand next to you.');
   }
 

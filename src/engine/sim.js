@@ -82,6 +82,8 @@ export class Sim {
   /** Gear/skill modifiers from the save (src/content/items.js playerMods). */
   setMods(id, mods) { const p = this.players.get(id); if (p) { const full = p.hp >= this.maxHp(p); p.mods = mods; if (full) p.hp = this.maxHp(p); } }
   maxHp(p) { return COMBAT.maxHp + (p.mods?.maxHp ?? 0); }
+  /** Morph stage 1 (biohack form): stronger and faster, but takes more damage. */
+  toggleMorph(id, allowed) { const p = this.players.get(id); if (p && allowed && !p.downed) { p.morphed = !p.morphed; this.events.push({ t: 'morph', id, on: p.morphed }); } }
   heal(id, n) { const p = this.players.get(id); if (p && !p.downed) p.hp = Math.min(this.maxHp(p), p.hp + n); }
 
   removePlayer(id) { this.players.delete(id); }
@@ -112,7 +114,8 @@ export class Sim {
         p.dodgeT -= dt;
         p.vx = p.dodgeDx * MOVE.dodgeSpeed; p.vy = p.dodgeDy * MOVE.dodgeSpeed;
       } else {
-        p.vx = mx * MOVE.speed; p.vy = my * MOVE.speed;
+        const spd = MOVE.speed * (p.morphed ? 1.15 : 1);
+        p.vx = mx * spd; p.vy = my * spd;
       }
       p.moving = Math.hypot(p.vx, p.vy) > 1;
       this._moveAxis(p, p.vx * dt, 0);
@@ -146,7 +149,7 @@ export class Sim {
       if (d > m.range + def.radius) continue;
       let da = Math.atan2(dy, dx) - p.aim; da = Math.atan2(Math.sin(da), Math.cos(da));
       if (Math.abs(da) > m.arc / 2 && d > def.radius + 4) continue;
-      this._hurtEnemy(e, m.damage + (p.mods?.melee ?? 0), dx / (d || 1) * m.knockback, dy / (d || 1) * m.knockback, p.id);
+      this._hurtEnemy(e, Math.round((m.damage + (p.mods?.melee ?? 0)) * (p.morphed ? 1.3 : 1)), dx / (d || 1) * m.knockback, dy / (d || 1) * m.knockback, p.id);
     }
   }
 
@@ -154,7 +157,7 @@ export class Sim {
     const c = COMBAT.shot;
     p.shotCd = Math.max(0.15, c.cooldown + (p.mods?.shotCd ?? 0));
     this.shots.push({ x: p.x + Math.cos(p.aim) * 8, y: p.y - 6 + Math.sin(p.aim) * 8, vx: Math.cos(p.aim) * c.speed, vy: Math.sin(p.aim) * c.speed,
-      life: c.life, dmg: c.damage + (p.mods?.shot ?? 0), from: 'player', owner: p.id });
+      life: c.life, dmg: Math.round((c.damage + (p.mods?.shot ?? 0)) * (p.morphed ? 1.3 : 1)), from: 'player', owner: p.id });
     this.events.push({ t: 'shot', id: p.id });
   }
 
@@ -173,7 +176,7 @@ export class Sim {
 
   _hurtPlayer(p, dmg) {
     if (p.downed || p.iframes > 0) return;
-    dmg = Math.max(1, Math.round(dmg * (1 - (p.mods?.armor ?? 0))));
+    dmg = Math.max(1, Math.round(dmg * (1 - (p.mods?.armor ?? 0)) * (p.morphed ? 1.2 : 1)));
     p.hp -= dmg; p.iframes = COMBAT.hurtIframes + (p.mods?.iframes ?? 0);
     this.events.push({ t: 'hurt', id: p.id, x: p.x, y: p.y, dmg });
     if (p.hp <= 0) { p.hp = 0; p.downed = true; p.reviveT = 0; this.events.push({ t: 'down', id: p.id }); }
@@ -341,7 +344,7 @@ export class Sim {
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
-        hp: Math.round(p.hp), mhp: this.maxHp(p), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0,
+        hp: Math.round(p.hp), mhp: this.maxHp(p), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed,
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
