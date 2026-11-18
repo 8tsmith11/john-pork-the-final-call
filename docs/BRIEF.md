@@ -227,6 +227,10 @@ have to apply, but it would make it interesting."
   > physical abilities"*
   > *"all of them"*: applies to every major machine character (Pork, Tim, Sahur, and any added
   > later).
+- **Facing follows the walking direction.** It only turns toward the cursor when using something like a
+  gun (aiming).
+  > *"direciton facing should be based on walking direction, only change with aiming later when using
+  > something like a gun which isnt implemetned yet"*
 
 ---
 

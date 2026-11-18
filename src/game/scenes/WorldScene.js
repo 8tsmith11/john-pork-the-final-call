@@ -252,9 +252,9 @@ export class WorldScene extends Phaser.Scene {
 
   _makeMenu() {
     const W = this.scale.width;
-    this.menuBg = this.add.rectangle(W / 2, 120, 300, 170, 0x0b0d16, 0.95).setStrokeStyle(1, 0xffb347).setScrollFactor(0).setDepth(9600).setVisible(false);
+    this.menuBg = this.add.rectangle(W / 2, 128, 300, 196, 0x0b0d16, 0.95).setStrokeStyle(1, 0xffb347).setScrollFactor(0).setDepth(9600).setVisible(false);
     this.menuTitle = this.add.text(W / 2 - 140, 42, '', { ...FONT, color: '#ffb347' }).setScrollFactor(0).setDepth(9601);
-    this.menuRows = [0, 1, 2, 3, 4, 5, 6].map((i) => this.add.text(W / 2 - 136, 58 + i * 18, '', { ...FONT, wordWrap: { width: 270 } })
+    this.menuRows = [0, 1, 2, 3, 4, 5, 6].map((i) => this.add.text(W / 2 - 136, 58 + i * 25, '', { ...FONT, wordWrap: { width: 270 } })
       .setScrollFactor(0).setDepth(9601).setInteractive({ useHandCursor: true }).on('pointerdown', () => this._pickMenu(i)));
     this.input.keyboard.on('keydown', (ev) => {
       if (!this.menu) return;
