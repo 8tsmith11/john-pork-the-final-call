@@ -1078,7 +1078,18 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // Descriptions stay up until E or a click outside the box.
-  _say(text) { this.box.setVisible(true); this.boxText.setText(text).setVisible(true); this.sayOpen = true; }
+  // The say box grows upward to fit its text (object descriptions, quest lines, hints), like the
+  // dialogue box; past ~60% of the screen it caps and the font steps down a size.
+  _say(text) {
+    const W = VIEW.w, H = VIEW.h, bottom = H - 5;
+    this.boxText.setFontSize('8px').setText(text).setVisible(true);
+    if (this.boxText.height > H * 0.6) this.boxText.setFontSize('7px');
+    const h = Math.max(34, Math.min(H * 0.66, this.boxText.height + 14));
+    this.box.setSize(W - 20, h).setPosition(W / 2, bottom - h / 2).setVisible(true);
+    this.box.geom?.setSize?.(W - 20, h); this.box.updateDisplayOrigin?.();
+    this.boxText.setY(bottom - h + 7);
+    this.sayOpen = true;
+  }
   _closeSay() { this.box.setVisible(false); this.boxText.setVisible(false); this.sayOpen = false; }
 
   _objectAt(wx, wy) {
