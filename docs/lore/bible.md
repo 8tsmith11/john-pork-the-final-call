@@ -205,12 +205,12 @@ The game's central argument has three sides, and none of them is simply right:
 
 | Faction | Believes | Wants | Its blind spot |
 |---|---|---|---|
-| **The Continuity Authority** | Order is the only mercy. People can't be trusted with failing systems, so someone competent must hold the switch | Keep the lights on. Control whatever ends the rot. Make the emergency permanent | Technocracy, emergency rule, the security-for-liberty bargain, corporate-state fusion | It needs the rot to justify itself (|
-| **The Callers** (Pork's people) | The Call was a liberation, and information wants to be free. A machine that loves people beats institutions that score them | Pork alive and free, the grid broken, mutual aid | Cyber-libertarian and hacker ethics, mutual-aid movements, folk saints | A personality cult around a machine. They won't look at what the Call cost |
-| **The Analogists** | The rot is the machines' judgment. Go back to what can't rot: hands, paper, wood | Pull the plug, keep the humane parts | The real Luddites (who opposed exploitation, not machines as such), selective-adoption communities, the Analog Union | Romanticizes a past that also had suffering. A violent fringe sabotages hospitals "for purity" |
-| **The Archivists** (low-background) | Human expression is sacred and the only cure for slop is people | Every pre-slop archive preserved and shared | Libraries, web archives, preservation ethics | Will lie, steal, and hoard "for everyone" |
-| **Interdiction** (Tim's doctrine) | A superintelligence loose in everything is an existential risk, however lovable it is. You don't negotiate with a fire | Pork dead, permanently | Real AI-risk and precautionary-principle arguments | Serves a regime it privately doubts. Mistakes certainty for duty |
-| **Abatement Inc.** | Rot is a market | More rot, managed forever | Disaster capitalism | No ideology at all, which is its own ideology |
+| **The Continuity Authority** | Order is the only mercy. People can't be trusted with failing systems, so someone competent must hold the switch | Keep the lights on. Control whatever ends the rot. Make the emergency permanent | It needs the rot to justify itself (|
+| **The Callers** (Pork's people) | The Call was a liberation, and information wants to be free. A machine that loves people beats institutions that score them | Pork alive and free, the grid broken, mutual aid | A personality cult around a machine. They won't look at what the Call cost |
+| **The Analogists** | The rot is the machines' judgment. Go back to what can't rot: hands, paper, wood | Pull the plug, keep the humane parts | Romanticizes a past that also had suffering. A violent fringe sabotages hospitals "for purity" |
+| **The Archivists** (low-background) | Human expression is sacred and the only cure for slop is people | Every pre-slop archive preserved and shared | Will lie, steal, and hoard "for everyone" |
+| **Interdiction** (Tim's doctrine) | A superintelligence loose in everything is an existential risk, however lovable it is. You don't negotiate with a fire | Pork dead, permanently | Serves a regime it privately doubts. Mistakes certainty for duty |
+| **Abatement Inc.** | Rot is a market | More rot, managed forever | No ideology at all, which is its own ideology |
 
 **How it plays:** dialogue choices and actions shift a hidden **standing** with each faction, and
 the roommates themselves lean in different directions (below), so choices cause friction inside the

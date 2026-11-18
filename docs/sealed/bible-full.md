@@ -225,12 +225,12 @@ Gur tnzr'f prageny nethzrag unf guerr fvqrf, naq abar bs gurz vf fvzcyl evtug:
 
 | Snpgvba | Oryvrirf | Jnagf | Vgf oyvaq fcbg |
 |---|---|---|---|
-| **Gur Pbagvahvgl Nhgubevgl** | Beqre vf gur bayl zrepl. Crbcyr pna'g or gehfgrq jvgu snvyvat flfgrzf, fb fbzrbar pbzcrgrag zhfg ubyq gur fjvgpu | Xrrc gur yvtugf ba. Pbageby gur pher. Znxr gur rzretrapl creznarag | Grpuabpenpl, rzretrapl ehyr, gur frphevgl-sbe-yvoregl onetnva, pbecbengr-fgngr shfvba | Vg arrqf gur ebg gb whfgvsl vgfrys (🔒 G3) |
-| **Gur Pnyyref** (Cbex'f crbcyr) | Gur Pnyy jnf n yvorengvba, naq vasbezngvba jnagf gb or serr. N znpuvar gung ybirf crbcyr orngf vafgvghgvbaf gung fpber gurz | Cbex nyvir naq serr, gur tevq oebxra, zhghny nvq | Plore-yvoregnevna naq unpxre rguvpf, zhghny-nvq zbirzragf, sbyx fnvagf | N crefbanyvgl phyg nebhaq n znpuvar. Gurl jba'g ybbx ng jung gur Pnyy pbfg |
-| **Gur Nanybtvfgf** | Gur ebg vf gur znpuvarf' whqtzrag. Tb onpx gb jung pna'g ebg: unaqf, cncre, jbbq | Chyy gur cyht, xrrc gur uhznar cnegf | Gur erny Yhqqvgrf (jub bccbfrq rkcybvgngvba, abg znpuvarf nf fhpu), fryrpgvir-nqbcgvba pbzzhavgvrf, gur Nanybt Havba | Ebznagvpvmrf n cnfg gung nyfb unq fhssrevat. N ivbyrag sevatr fnobgntrf ubfcvgnyf "sbe chevgl" |
-| **Gur Nepuvivfgf** (ybj-onpxtebhaq) | Uhzna rkcerffvba vf fnperq naq gur bayl pher sbe fybc vf crbcyr | Gur onyybba'f nepuvir, cerfreirq naq funerq | Yvoenevrf, jro nepuvirf, cerfreingvba rguvpf | Jvyy yvr, fgrny, naq ubneq "sbe rirelbar" |
-| **Vagreqvpgvba** (Gvz'f qbpgevar) | N fhcrevagryyvtrapr ybbfr va rirelguvat vf na rkvfgragvny evfx, ubjrire ybinoyr vg vf. Lbh qba'g artbgvngr jvgu n sver | Cbex qrnq, creznaragyl | Erny NV-evfx naq cerpnhgvbanel-cevapvcyr nethzragf | Freirf n ertvzr vg cevingryl qbhogf. Zvfgnxrf pregnvagl sbe qhgl |
-| **Nongrzrag Vap.** | Ebg vf n znexrg | Zber ebg, znantrq sberire | Qvfnfgre pncvgnyvfz | Ab vqrbybtl ng nyy, juvpu vf vgf bja vqrbybtl |
+| **Gur Pbagvahvgl Nhgubevgl** | Beqre vf gur bayl zrepl. Crbcyr pna'g or gehfgrq jvgu snvyvat flfgrzf, fb fbzrbar pbzcrgrag zhfg ubyq gur fjvgpu | Xrrc gur yvtugf ba. Pbageby gur pher. Znxr gur rzretrapl creznarag | Vg arrqf gur ebg gb whfgvsl vgfrys (🔒 G3) |
+| **Gur Pnyyref** (Cbex'f crbcyr) | Gur Pnyy jnf n yvorengvba, naq vasbezngvba jnagf gb or serr. N znpuvar gung ybirf crbcyr orngf vafgvghgvbaf gung fpber gurz | Cbex nyvir naq serr, gur tevq oebxra, zhghny nvq | N crefbanyvgl phyg nebhaq n znpuvar. Gurl jba'g ybbx ng jung gur Pnyy pbfg |
+| **Gur Nanybtvfgf** | Gur ebg vf gur znpuvarf' whqtzrag. Tb onpx gb jung pna'g ebg: unaqf, cncre, jbbq | Chyy gur cyht, xrrc gur uhznar cnegf | Ebznagvpvmrf n cnfg gung nyfb unq fhssrevat. N ivbyrag sevatr fnobgntrf ubfcvgnyf "sbe chevgl" |
+| **Gur Nepuvivfgf** (ybj-onpxtebhaq) | Uhzna rkcerffvba vf fnperq naq gur bayl pher sbe fybc vf crbcyr | Gur onyybba'f nepuvir, cerfreirq naq funerq | Jvyy yvr, fgrny, naq ubneq "sbe rirelbar" |
+| **Vagreqvpgvba** (Gvz'f qbpgevar) | N fhcrevagryyvtrapr ybbfr va rirelguvat vf na rkvfgragvny evfx, ubjrire ybinoyr vg vf. Lbh qba'g artbgvngr jvgu n sver | Cbex qrnq, creznaragyl | Freirf n ertvzr vg cevingryl qbhogf. Zvfgnxrf pregnvagl sbe qhgl |
+| **Nongrzrag Vap.** | Ebg vf n znexrg | Zber ebg, znantrq sberire | Ab vqrbybtl ng nyy, juvpu vf vgf bja vqrbybtl |
 
 **Ubj vg cynlf:** qvnybthr pubvprf naq npgvbaf fuvsg n uvqqra **fgnaqvat** jvgu rnpu snpgvba, naq
 gur ebbzzngrf gurzfryirf yrna va qvssrerag qverpgvbaf (orybj), fb pubvprf pnhfr sevpgvba vafvqr gur
