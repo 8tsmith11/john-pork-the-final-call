@@ -119,3 +119,8 @@ Format:
   instruments only. Instruments are 8-bit except Trevor's (real-sounding rock); the soundtrack is
   NOT changed. Owner: BagelMeister (task 11).
 
+
+## D-015 No graphic penises  (status: agreed, direct from Michael)
+- 2026-11-18. No graphic depiction of a penis anywhere in the game: art, sprites, animations, UI or
+  icons. Crude humor can still imply it (dialogue, reactions, off-screen, cutaways), but nothing is
+  drawn. This applies to every character, NPCs included, and to hidden easter eggs.
