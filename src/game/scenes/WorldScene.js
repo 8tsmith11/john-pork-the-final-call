@@ -20,6 +20,7 @@ import { rollCatch } from '../../content/fish.js';
 import { QUESTS, questState } from '../../content/quests.js';
 import { CompanionBrain, isAi } from '../../engine/companion.js';
 import * as Inv from '../../engine/inventory.js';
+import { CallCard } from '../ui/CallCard.js';
 import { Neon } from '../render/neon.js';
 import { skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
@@ -263,6 +264,7 @@ export class WorldScene extends Phaser.Scene {
 
   _drawDialogue() {
     const d = this.dlg, on = !!d && !d.done;
+    if (this._callCard && !this._callCard.closed && (!on || this._callCardFor !== d.nodeId || !d.choices.length)) this._callCard.destroy();
     [this.dlgBg, this.dlgWho, ...this.dlgChoices].forEach((o) => o.setVisible(on));
     this.dlgText.setVisible(false);   // body text is drawn by _renderDlgText (pages + highlights)
     if (!on || d.choices.length) this._hideRich();
@@ -286,6 +288,16 @@ export class WorldScene extends Phaser.Scene {
       this.dlgPortrait.setVisible(false); this.dlgPortraitBg.setVisible(false); this.dlgInitial.setText('');
       this.dlgText.setText(''); this._hideRich(); this.dlgMore?.setVisible(false);
       this.dlgChoices.forEach((t, i) => t.setText(choices[i] ? `${i + 1}. ${choices[i].text.replace(/\*/g, '')}` : '').setVisible(!!choices[i]));
+      // John Pork's call: the ANSWER / DECLINE choice is shown as a full phone takeover (CallCard).
+      const label = (c) => c.text.replace(/[*"]/g, '').trim().toUpperCase();
+      const ai = choices.findIndex((c) => label(c) === 'ANSWER'), di = choices.findIndex((c) => label(c) === 'DECLINE');
+      if (ai >= 0 && di >= 0) {
+        if (!this._callCard || this._callCard.closed || this._callCardFor !== d.nodeId) {
+          this._callCard?.destroy(); this._callCardFor = d.nodeId;
+          this._callCard = new CallCard(this, { name: 'John Pork', onAnswer: () => this._choose(ai), onDecline: () => this._choose(di) });
+        }
+        this.dlgChoices.forEach((t) => t.setVisible(false));
+      }
     } else {
       const line = d.line;
       this.dlgWho.setText(line?.who ? line.who.toUpperCase() : '').setColor('#ffb347');
