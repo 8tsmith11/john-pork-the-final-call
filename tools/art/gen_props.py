@@ -211,6 +211,12 @@ def mirror():
     return c.rect(3, 16, 10, 4, "bone").rect(5, 17, 6, 2, "concrete3").px(8, 15, "steel").rect(7, 20, 2, 3, "concrete3").outline()
 P("obj.trevor_mirror", mirror())
 P("obj.mm_mirror", mirror())
+c = C().rect(2, 2, 12, 21, "warm1").v_(8, 3, 19, "warm0").h_(2, 2, 12, "warm3").pts("warm4", (7, 12), (9, 12))
+c.rect(9, 3, 4, 19, "night1").pts("yerba1", (10, 6), (11, 7)).pts("bone", (10, 10)).px(11, 20, "balloon0")        # one door ajar, a scrap of orange
+P("obj.manuel_closet", c.outline())
+c = C().rect(5, 9, 6, 9, "steel").h_(5, 9, 6, "bone").rect(7, 12, 2, 3, "night0").pts("warm4", (6, 16), (9, 10))
+c.pts("concrete3", (4, 11), (3, 12), (11, 14), (12, 15)).pts("warm2", (4, 17), (5, 18), (10, 18))                  # pry marks, splinters
+P("obj.front_lock", c.outline())
 P("obj.door", door())
 P("obj.door_631", door())
 P("obj.bathroom", door("concrete2", "concrete1", occupied=True, num=False))

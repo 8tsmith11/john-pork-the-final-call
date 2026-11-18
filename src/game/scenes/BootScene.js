@@ -16,7 +16,7 @@ export class BootScene extends Phaser.Scene {
       this.load.atlas(id, `assets/sprites/${id}.png`, `assets/sprites/${id}.json`);
     }
     // Props/NPCs (frames named by map object id), enemies and the Warden. All optional.
-    for (const id of ['props', 'wide', 'big', 'enemies', 'warden']) this.load.atlas(id, `assets/sprites/${id}.png`, `assets/sprites/${id}.json`);
+    for (const id of ['props', 'wide', 'big', 'enemies', 'warden', 'tiles']) this.load.atlas(id, `assets/sprites/${id}.png`, `assets/sprites/${id}.json`);
   }
 
   create() {
@@ -31,6 +31,18 @@ export class BootScene extends Phaser.Scene {
       if (has('enemies', `${k}_0`)) this.anims.create({ key: k, frames: [0, 1].map((i) => ({ key: 'enemies', frame: `${k}_${i}` })), frameRate: 5, repeat: -1 });
     }
     if (has('warden', 'warden_0')) this.anims.create({ key: 'warden', frames: [0, 1].map((i) => ({ key: 'warden', frame: `warden_${i}` })), frameRate: 3, repeat: -1 });
+    // Hand-drawn tiles: each frame of the 'tiles' atlas becomes its own texture under the key the
+    // map renderer already uses (tile_<charCode>_<variant>). makeTiles() then only fills gaps.
+    if (this.textures.exists('tiles')) {
+      const atlas = this.textures.get('tiles');
+      for (const name of atlas.getFrameNames()) {
+        if (this.textures.exists(name)) continue;
+        const f = atlas.get(name);
+        const t = this.textures.createCanvas(name, f.width, f.height);
+        t.getContext().drawImage(f.source.image, f.cutX, f.cutY, f.width, f.height, 0, 0, f.width, f.height);
+        t.refresh();
+      }
+    }
     makeTiles(this);
     this.scene.start('Title');
   }
