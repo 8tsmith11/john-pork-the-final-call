@@ -8,7 +8,7 @@ import { generateWarden } from '../content/rotVillains.js';
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.35, iframes: 0.22,
   stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
 export const COMBAT = {
-  maxHp: 100, hurtIframes: 0.6, reviveTime: 2.0, reviveRange: 18, reviveHp: 40,
+  maxHp: 100, hurtIframes: 0.6, reviveTime: 4.0, reviveRange: 18, reviveHp: 40,
   melee: { cooldown: 0.38, range: 20, arc: Math.PI * 0.6, damage: 12, knockback: 120 },
   shot: { cooldown: 0.5, speed: 210, damage: 8, life: 0.9 },
 };

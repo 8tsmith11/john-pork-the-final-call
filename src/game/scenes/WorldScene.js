@@ -536,6 +536,7 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.fadeOut(140, 5, 6, 12);
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.sim.setMap(to, from);
+      this.enteredFrom = from;
       this.save.world.area = to.id;
       this._showMap(to); this._onEnterMap(to);
       this._save();
@@ -674,11 +675,14 @@ export class WorldScene extends Phaser.Scene {
       }
     }
     if (this._partyDirty) { this._partyDirty = false; this._syncParty(); }
-    if (this.sim.wiped && !this._wipeAt) this._wipeAt = this.time.now + 2500;
+    // Party wipe: a short beat, then everyone wakes at the start of this area (the entrance you came
+    // in by). Dead enemies stay dead; survivors and bosses reset.
+    if (this.sim.wiped && !this._wipeAt) { this._wipeAt = this.time.now + 1200; this.cameras.main.fadeOut(1000, 5, 6, 12); }
     if (this._wipeAt && this.time.now > this._wipeAt) {
       this._wipeAt = 0;
-      this.sim.setMap(this.sim.map);
-      this._announce('Everything goes dark. You come to where you came in, aching. (The rot doesn\'t forget.)');
+      this.sim.setMap(this.sim.map, this.enteredFrom ?? null);
+      this.cameras.main.fadeIn(500, 5, 6, 12);
+      this._toast('You come to at the start of the area.');
     }
   }
 
@@ -763,6 +767,7 @@ export class WorldScene extends Phaser.Scene {
   // ---------- rendering ----------
   _render(snap) {
     const seen = new Set();
+    this._reviveCleared = false; if (!snap.players.some((p) => p.dn)) this.reviveGfx?.clear();
     for (const p of snap.players) {
       seen.add(p.id);
       let s = this.sprites.get(p.id);
@@ -796,6 +801,12 @@ export class WorldScene extends Phaser.Scene {
       if (p.d && (this._ghostTick = (this._ghostTick ?? 0) + 1) % 2 === 0) this._dashGhost(s, p);
       s.setAlpha(p.d ? 0.55 : p.iv ? (Math.floor(this.time.now / 60) % 2 ? 0.4 : 1) : 1);
       s.setVisible(!p.w);
+      if (p.dn) {
+        const g = (this.reviveGfx ??= this.add.graphics().setDepth(6400));
+        if (!this._reviveCleared) { g.clear(); this._reviveCleared = true; }
+        g.lineStyle(2, 0x1c1f33, 0.9).strokeCircle(p.x, p.y - 20, 6);
+        if (p.rv > 0) g.lineStyle(2, 0xffb347, 1).beginPath().arc(p.x, p.y - 20, 6, -Math.PI / 2, -Math.PI / 2 + (p.rv / 4) * Math.PI * 2).strokePath();
+      }
       s.setAngle(p.dn ? 90 : 0).setTint(p.dn ? 0x777788 : p.mo ? MORPH_LOOK[p.c][0] : 0xffffff).setScale(p.mo ? 1.12 : 1);
     }
     for (const [id, s] of this.sprites) if (!seen.has(id)) { s.destroy(); this.sprites.delete(id); }
@@ -1038,7 +1049,7 @@ export class WorldScene extends Phaser.Scene {
       this.tweens.add({ targets: g, alpha: 0, duration: 140, onComplete: () => g.destroy() });
     }
     if (ev.t === 'morph') { const p = snap.players.find((q) => q.id === ev.id); if (p) { this.cameras.main.flash(120, 180, 255, 160); if (ev.id === this.localId) this._say(ev.on ? `${MORPH_LOOK[p.c][1]}. Stronger. Faster. Softer in the wrong places.` : 'You come back to yourself. Mostly.'); } }
-    if (ev.t === 'down' && ev.id === this.localId) this._say('You\'re down. A roommate can pick you up: they just have to stand next to you.');
+    if (ev.t === 'down' && ev.id === this.localId) this._say('You\'re down. A roommate can pick you up by staying next to you for a few seconds.');
   }
 
   _drawHud(snap) {
@@ -1066,7 +1077,7 @@ export class WorldScene extends Phaser.Scene {
       const y = 42 + i * 7;
       g.fillStyle(0x0b0d16, 0.7).fillRect(4, y - 1, 70, 6);
       g.fillStyle(p.dn ? 0x777788 : 0x5f8fbf).fillRect(18, y, Math.max(0, (p.hp / (p.mhp || 100)) * 54), 4);
-      if (p.dn) g.fillStyle(0xffb347).fillRect(18, y + 4, (p.rv / 2) * 54, 1);
+      if (p.dn) g.fillStyle(0xffb347).fillRect(18, y + 4, (p.rv / 4) * 54, 1);
       g.fillStyle({ michael: 0xc8605a, trevor: 0x3f6fb5, manuel: 0x5f8f3a }[p.c] ?? 0x888888).fillRect(7, y, 8, 4);
     });
     // Top-right: XP and scrap, compact.
