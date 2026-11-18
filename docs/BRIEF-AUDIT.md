@@ -21,7 +21,7 @@
 | 13 | 4-direction sprites | ✅ | | |
 | 14 | Different weapons / gear / armor | 🟡 | trevor | 5 items. Needs weapon families with move sets (06 systems) |
 | 15 | WASD/arrows + cursor aim | ✅ | | |
-| 16 | **Cool animations** | ❌ | gonman | Attack, dodge, and hurt frames are missing |
+| 16 | **Cool animations** | 🟡 | gonman | Roommate attack, dodge, and hurt ✅. Enemy frames, Pork limp still to come |
 | 17 | Fable can own art | ✅ | | |
 | 18 | Cool boss fights | 🟡 | trevor | Warden reworked, Sahur variant ✅. Each act's boss needs a signature mechanic |
 | 19 | Fitting soundtracks | 🟡 | gonman | See #6 |
@@ -56,9 +56,9 @@
 | 48 | Biohacking forms, multiple stages, gating the finale | 🟡 | | Stage 1 ✅ |
 | 49 | Final boss not constant | 🟡 | | Planned (sealed) |
 | 50 | **Each act ends with a fight + post-fight cutscene WITH VOICES** | 🟡 | trevor | Fight ✅, cutscene ✅, voices are babble. Explore real TTS |
-| 51 | **Start with electric scooters** and a 3D printer | 🟡 | trevor | Fabs ✅. Scooters are flavor only, so make them rideable |
-| 52 | **Hidden mechanics: fun / progression / fast travel** | ❌ | trevor | Vending kick, shrimp rot gauge, ziplines, rail grind |
-| 53 | **Required puzzles + hard optional puzzles with boons** | 🟡 | both | Lead C puzzle ✅. 1901 clock, statue alignment, switchyard |
+| 51 | **Start with electric scooters** and a 3D printer | ✅ | trevor | Rideable outdoors (Q), battery + dock, rail grind |
+| 52 | **Hidden mechanics: fun / progression / fast travel** | 🟡 | trevor | Vending kick (+ a 7-kick secret), shrimp canary, scooter rail-grind ✅. More per region to come (ziplines, roofs) |
+| 53 | **Required puzzles + hard optional puzzles with boons** | 🟡 | both | Required: Lead C signal routing ✅, switchyard + sump pump ✅. Hard optional (boons): 1901 clock, statue alignment, still to build |
 | 54 | Geopolitics lore | ✅ | | |
 | 55 | Backstory discussed first | ✅ | | |
 | 56 | Fourth wall: rare, principal characters only | ✅ | | Planned for Act 3 |

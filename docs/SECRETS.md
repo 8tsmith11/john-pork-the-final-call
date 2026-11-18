@@ -66,3 +66,13 @@ To test the idles without waiting three minutes, add `?idle=10` to the game's ad
 A "Secrets" page in the phone menu that shows how many you've found (for example 6 of 11), with
 the unfound ones as "???". After the credits roll for the third time on a save profile, the "???"
 entries turn into one-line hints. The full answers stay in this file.
+
+## Hidden mechanics (added by trevor's agent)
+
+| Secret | How to trigger | In-world hint | Status |
+|---|---|---|---|
+| **Vending machine kick** | Press E on the ASTER lobby vending machine. About 1 in 3 kicks pays scrap, sometimes a cold mate. | It hums at you, offended | built |
+| **The machine remembers you** | Kick the lobby vending machine 7 times in one session (sets `secrets.vending.found`) | It escalates its reactions | built |
+| **Rail grind** | Ride a scooter (Q, outdoors) along any rail track, e.g. the dead Purple Line strip in College Park: much faster travel with sparks (sets `secrets.grind.found`) | The scooter yard is right by the track | built |
+| **Shrimp canary** | Check Trevor's shrimp tank in 631: their behavior tells you how rotted the tunnels still are | The tank text says they act up before rot spikes | built |
+| **Sump pump** (puzzle step) | Restart the pump in the tunnels' pump room to drain the flooded bay and read the B switch clue | The vending-machine marks "below the waterline" | built |
