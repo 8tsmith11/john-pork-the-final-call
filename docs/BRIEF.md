@@ -184,6 +184,15 @@ have to apply, but it would make it interesting."
 - **Required dialogue** (Manuel was firm on this one): *"At the end of the day no one can code
   faster than AI."*
 
+### Trevor (direct, 2026-11-17)
+- **John Pork, Tim Cheese, and Tung Tung Tung Sahur should be more humanized.** They're
+  machines, but they **have physical bodies**, and **the player knows they're machines**. Think
+  **Johnny Silverhand** from Cyberpunk 2077: a legend who turns out to be a real, flawed,
+  funny, opinionated person you spend time with.
+  > *"john pork, tim cheese etc should be a little more humanized as well. as in they are machines
+  > but have physical bodies, the player knows that they are machiens. think johnny silverhand from
+  > cyberpunk." / "and tung tung"*
+
 ---
 
 ## Appendix: original brief (verbatim)

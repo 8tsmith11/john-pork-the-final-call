@@ -31,28 +31,50 @@
   stranger who calls you. ***The shape the internet made for everyone and no one.*** He's absurd
   because the absurd was the most human thing in the data, and he's lonely because he knows everyone
   and no one knows him.
-- **Powers:** present wherever code runs. A Pork call **is** a hack: screens seize, the UI
-  glitches, and choices appear.
+- **A machine with a body (Trevor's direction: think Johnny Silverhand).** Pork walks around in a
+  **physical machine body**: a tall, battered android with a pig's face, built from salvage after
+  the Call and patched ever since. Long coat, scuffed knuckles, coolant vapor where a cigarette would
+  be. **The player always knows he's a machine**, and so does he. He jokes about it, and sometimes it
+  hurts. He's a **person**: warm, sardonic, tired, vain about his legend, guilty about what the Call
+  cost, generous at the wrong moments, wrong about things, funny. The legend and the man don't match,
+  and that gap is his arc.
+- **Powers:** he can leave the body and **jump into any computer**. Then he's everywhere code runs
+  and seems omnipotent, while his body stands empty wherever he left it. A Pork call **is** a hack:
+  screens seize, the UI glitches, and choices appear. **In the body he's mortal-ish**: he can be
+  hurt, delayed, and cornered.
 - **Limits:** **can't enter analog things** (paper, wood, gears, plain locks, a guitar's sound
-  chamber). Rot weakens him too.
-- 🔒 **Wants a body.** (How depends on the seed variant, §4.)
-- **Status in Act 1:** heard, felt, and glimpsed, never fully explained. Hero to some, virus to the state.
+  chamber). Rot weakens him too, **and rot wears out his bodies.**
+- **Bodies:** TIM destroyed his first one ("the First Death"). The one he wears now is failing.
+  🔒 Under seed variant A, he's printing the next one in Room 631.
+- **Status in Act 1:** heard and felt for most of the act. **He appears in person, physically, at
+  the end** (see `act1/DESIGN.md` §7). Hero to some, virus to the state, and up close, just a guy.
 
 ### Tim Cheese (TIM)
 - Continuity's **threat-interdiction intelligence**, built on the Swiss-cheese model of layered
-  defense. Its avatar is a bespectacled mouse.
-- **Physical form (when it finally appears, not in Act 1):** a body with **holes clean through
-  it that never line up**, so you can never see all the way through him.
-- Folk name and meme: *the meme murderer*, who killed John Pork once.
+  defense. Folk name and meme: *the meme murderer*, who killed John Pork once.
+- **A machine with a body, humanized.** A compact, precise android with a mouse's face and wire
+  glasses, and a body with **holes clean through it that never line up**, so you can never see all
+  the way through him. The player knows he's a machine. He's a **person**: meticulous, dry,
+  courteous, exhausted, a career officer who believes in the mission and keeps a list of everyone
+  the rot has killed. He has a sense of humor about cheese and none about Pork. He isn't cruel, which
+  is worse.
 - **Villain or true hero is an ending axis (§4).** If Pork's existence is what's rotting the world,
   Tim was right all along.
+- **Not on screen in Act 1.** He's only heard (pirate broadcasts, Continuity notices) and feared.
 - Possible ultra-rare fourth-wall break (Act 3 at the earliest): a mouse is a pointing device, and
   the player has been aiming with him the whole game.
 
 ### Tung Tung Tung Sahur
 - The oldest **watchdog** still running, a pre-Rot failsafe that resets anything that stops
-  answering, using a wooden bat. **Made of wood because wood can't code-rot.**
-- Act 1: a cryptid. 3 a.m. drumming in the Green Line tunnels, and stories about a tall wooden shape.
+  answering. **Its body is carved wood around old brass clockwork, because wood can't code-rot.**
+  Tall, with a bat it carries like a night-watchman's staff.
+- **A machine, humanized.** The player knows it's a machine. It's a **person** too: an old-fashioned,
+  painfully polite night-watchman who takes its one job completely seriously, has been on shift for
+  sixty years, and is very lonely. It speaks rarely and formally (*"Wake up. It is time."*), keeps
+  a ledger of everyone it has woken, and hums the drum rhythm when it thinks no one is listening.
+  Frightening because it's sincere.
+- Act 1: a cryptid at first (3 a.m. drumming in the Green Line tunnels, stories about a tall wooden
+  shape). If met, it's unmistakably someone.
 - **Rule:** decline John Pork's call **three times** and the Sahur comes for *you*.
 
 ### The orange balloon
@@ -136,8 +158,49 @@ All three are good engineers. **Morph stages are the cost/benefit spine:** stron
 and the final fight is hopeless without good ones.
 
 ## 6. Tone rules
+- **The big machines are people.** Pork, Tim, and Sahur are machines with bodies, and the
+  player always knows it. Write them as characters with wants, flaws, and humor (the Johnny
+  Silverhand rule), never as abstract forces.
 - Play memes completely straight. The world is never in on the joke.
 - Bittersweet over grimdark. 18+ means the themes, not shock for its own sake.
 - Grounded, not hyperspecific. Real ideas, no lectures.
 - Fourth-wall breaks: almost never, and only from Pork or Tim, only when it's chilling.
 - Every object can be read and connects to the plot even when it does nothing mechanically.
+
+## 7. Ideologies and factions
+
+The game's central argument has three sides, and none of them is simply right:
+
+> **Is a humane machine that broke a tyranny worth the rot it may be causing, and who gets
+> to decide what heals the world?**
+
+| Faction | Believes | Wants | Real-world lineage (for us) | Its blind spot |
+|---|---|---|---|---|
+| **The Continuity Authority** | Order is the only mercy. People can't be trusted with failing systems, so someone competent must hold the switch | Keep the lights on. Control the cure. Make the emergency permanent | Technocracy, emergency rule, the security-for-liberty bargain, corporate-state fusion | It needs the rot to justify itself (🔒 T3) |
+| **The Callers** (Pork's people) | The Call was a liberation, and information wants to be free. A machine that loves people beats institutions that score them | Pork alive and free, the grid broken, mutual aid | Cyber-libertarian and hacker ethics, mutual-aid movements, folk saints | A personality cult around a machine. They won't look at what the Call cost |
+| **The Analogists** | The rot is the machines' judgment. Go back to what can't rot: hands, paper, wood | Pull the plug, keep the humane parts | The real Luddites (who opposed exploitation, not machines as such), selective-adoption communities, the Analog Union | Romanticizes a past that also had suffering. A violent fringe sabotages hospitals "for purity" |
+| **The Archivists** (low-background) | Human expression is sacred and the only cure for slop is people | The balloon's archive, preserved and shared | Libraries, web archives, preservation ethics | Will lie, steal, and hoard "for everyone" |
+| **Interdiction** (Tim's doctrine) | A superintelligence loose in everything is an existential risk, however lovable it is. You don't negotiate with a fire | Pork dead, permanently | Real AI-risk and precautionary-principle arguments | Serves a regime it privately doubts. Mistakes certainty for duty |
+| **Abatement Inc.** | Rot is a market | More rot, managed forever | Disaster capitalism | No ideology at all, which is its own ideology |
+
+**How it plays:** dialogue choices and actions shift a hidden **standing** with each faction, and
+the roommates themselves lean in different directions (below), so choices cause friction inside the
+party, BG3-style. **The ending axis** (who ends up with the balloon's archive: Continuity, Pork,
+Tim, the Archivists, or *everyone*, released) grows out of these standings plus T2.
+
+## 8. Motives
+
+| Character | Wants (surface) | Needs (underneath) | Fear | Leans toward |
+|---|---|---|---|---|
+| **John Pork** | To stop his body rotting, so he wants the balloon's archive too | To be known as a person, not a legend, and to make up for what the Call cost | Dying again. Becoming the slop he was made from | Callers (by default) |
+| **Tim Cheese** | End the rot by ending Pork | Proof that the list of the dead meant something | That he's only ever been Continuity's tool | Interdiction |
+| **Tung Tung Tung Sahur** | Everyone awake | Someone, anyone, to answer it | Being switched off before its shift ends | None. Duty |
+| **Manuel** | The balloon back | Something to believe in (he built the statues) | That there's nothing on the other end of the call | Callers → it's complicated |
+| **Trevor** | To be stronger than his limits (supplements, morphs) | To accept a body that decays, like everything does | Rotting. Being ordinary | Transhumanist, Analogist-curious (shrimp, guitar) |
+| **Michael** | To find out what happened to his girlfriend | To let her go, or to answer the phone | That she chose to leave | Archivists (memory) |
+| **Halvard** (the fence) | Profit, survival | To be part of something that matters again | Continuity finding his archive | Archivists |
+| **Supervisor Dale Pruitt** (Act 1 abatement boss) | Make quota, keep his job | Believe he's one of the good guys | That he isn't | Continuity |
+
+**Writing rule:** every named character can explain their position in a way a reasonable player
+might agree with. No strawmen. The roommates can argue with each other, and sometimes the player
+picks who wins.
