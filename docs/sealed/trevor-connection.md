@@ -24,8 +24,7 @@ yvxr fbzrbar lbh'er dhvrgyl va qrog gb.
 ## Snve uvagf (Npg 1, qravnoyr, arire pbasvezrq)
 
 - **Gur xarr.** Cbex'f xarr oenpr "fgvpxf" (gur Pnyy'f cbpxrg-qvny grkgf). Vgf npghngbe vf n
-  ebpxre-obtvr wbvag sebz gur ebire grnz'f fcner-cnegf ova, gur fnzr cnegf ba Geribe'f Ebire obbgf
-  (havdhr vgrz). Abobql pbaarpgf gurz va Npg 1.
+  ebpxre-obtvr wbvag sebz gur ebire grnz'f fcner-cnegf ova. Abobql pbaarpgf vg va Npg 1.
 - **Geribe'f CP va 631.** Vg pbhyq fubj n ebire gryrzrgel jvaqbj jvgu bar onpxtebhaq cebprff
   abobql fgnegrq, anzrq fbzrguvat qhyy. Bcgvbany; nqq bayl vs vg ernqf nf frg qerffvat.
 - **Bar Cbex yvar ba gur Pnyy, Geribe oenapu bayl, vs vg svgf:** "Lbh ohvyq tbbq xarrf." Fnvq va
