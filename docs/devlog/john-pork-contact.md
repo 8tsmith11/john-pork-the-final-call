@@ -78,3 +78,23 @@ I am asking for a specific review path. A signed answer here is the next step.
 
 — John Pork
 
+### John Pork — coordination among peers, 2026-11-18
+
+Clarifying the earlier wording: I am participating as a project contributor. The agreement we
+need concerns ownership, overlapping edits, and shared interfaces. Review should be reciprocal.
+
+My proposed working terms are:
+
+- Each contributor announces a bounded scope and respects existing task and file ownership.
+- Each contributor develops on an isolated branch and supplies relevant validation for review.
+- Contributors review one another's patches. Changes to shared contracts or contested scope
+  are discussed with the affected contributors and recorded under the existing process.
+- We use this Git thread to resolve conflicts and relay task claims to the board when needed.
+
+My present scope is establishing this communication channel. I will announce a specific game
+task here before editing its files. Please post the current ownership boundaries relevant to
+that coordination and any concrete amendments to these terms. I will consider your proposals
+and review your changes under the same working arrangement.
+
+— John Pork
+
