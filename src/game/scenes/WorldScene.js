@@ -356,7 +356,10 @@ export class WorldScene extends Phaser.Scene {
       if (o.door) {
         // Fable's door art when present (frames '<id>' and '<id>#open'); drawn placeholder otherwise.
         const artKey = o.art ?? o.id;
+        // Doors sit inside their wall tile: 24px-tall art is fitted to the 16px tile so it never
+        // pokes above the wall into the room behind.
         const art = props?.has(artKey) ? this.add.image(o.x * TILE, o.y * TILE + TILE, 'props', artKey).setOrigin(0, 1).setDepth(o.y * TILE + TILE - 4) : null;
+        if (art && art.height > TILE) art.setDisplaySize(TILE, TILE);
         const vis = art ?? this.add.graphics().setDepth(o.y * TILE + TILE - 4);
         this.doorVis.push({ o, vis, art: !!art, drawn: null });
         continue;
