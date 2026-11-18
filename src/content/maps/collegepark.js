@@ -85,6 +85,21 @@ export const metroPlaza = makeMap({
     { id: 'npc.del', art: PERSON[0], x: 44, y: 21, label: 'Del', npc: true, text: '"Fourteen hours. Fourteen. You know what the rate is after twelve? Same as before twelve."' },
     { id: 'npc.rotter_3', x: 49, y: 26, label: 'Rotter (looks at you differently)', npc: true, text: 'code rot. code rot. ...I used to be someone\'s favorite person. code rot.' },
     { id: 'obj.grate', x: 51, y: 26, label: 'Storm grate', action: 'exit', floor: true, to: 'tunnel_1', text: 'The grate lifts. Somewhere below, very faintly, something is drumming.' },
+    // Light: lamps along the streets, neon where somebody is selling something
+    ...[[57, 5], [57, 17], [57, 27], [57, 38], [57, 47], [64, 11], [64, 22], [64, 37], [64, 46], [8, 30], [22, 30], [38, 30], [50, 30], [14, 35], [44, 35], [18, 15], [5, 16]]
+      .map(([x, y]) => ({ id: `obj.lamp_${x}_${y}`, art: 'obj.streetlamp', x, y, label: 'Streetlamp', light: 0.9, text: 'Sodium orange. Moths, and something that is not a moth.' })),
+    { id: 'obj.neon_diner', art: 'obj.neon', x: 74, y: 8, label: 'Neon sign', light: 1.2, text: 'EAT. The A has been out so long the regulars call it the Et.' },
+    { id: 'obj.neon_stalls', art: 'obj.neon', x: 29, y: 25, label: 'Neon sign', light: 1.1, text: 'PHONES FIXED · UNLOCKED · FORGOTTEN. The last word was added by hand.' },
+    { id: 'obj.neon_yard', art: 'obj.neon', x: 67, y: 17, label: 'Neon sign', light: 1.0, text: 'RAY\'S. The apostrophe is a different colour. It was a gift.' },
+    // The plaza's furniture: where people wait, and what they wait under
+    { id: 'obj.shelter', x: 30, y: 12, label: 'Bus shelter', light: 0.6, text: 'A timetable behind cracked plastic. Every bus is listed as DUE.' },
+    { id: 'obj.plaza_bench_a', art: 'obj.bench', x: 37, y: 17, label: 'Bench', text: 'Two benches facing each other across four metres of paving, like an argument nobody finished.' },
+    { id: 'obj.plaza_bench_b', art: 'obj.bench', x: 37, y: 20, label: 'Bench', text: 'A paper cup, a transit pass, a pair of reading glasses. Whoever it was meant to come back.' },
+    { id: 'obj.planter_a', art: 'obj.planter', x: 30, y: 18, label: 'Planter', text: 'The city stopped planting these. Somebody else started.' },
+    { id: 'obj.planter_b', art: 'obj.planter', x: 46, y: 16, label: 'Planter', text: 'Tomatoes. In a metro plaza. They are doing very well.' },
+    { id: 'obj.planter_c', art: 'obj.planter', x: 24, y: 20, label: 'Planter', text: 'Empty except for a single orange ribbon, tied to a stake.' },
+    { id: 'obj.kiosk', x: 48, y: 11, label: 'News kiosk', light: 0.8, action: 'tv', text: 'Headlines.' },
+    { id: 'obj.station_light', art: 'obj.worklamp', x: 36, y: 8, label: 'Station light', light: 1.0, text: 'The entrance is lit all night. Nothing has come out of it since midnight.' },
     // Route 1
     { id: 'obj.billboard', x: 65, y: 20, label: 'Billboard', text: 'A Slop Decades billboard, peeling: "AT THE END OF THE DAY, NO ONE CAN CODE FASTER THAN AI."' },
     { id: 'npc.rotter_2', x: 57, y: 8, label: 'Rotter', npc: true, text: 'code rot. no one can code faster than. code rot.' },

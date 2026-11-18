@@ -2,7 +2,7 @@
 import { room631 } from './room631.js';
 import { asterHall, asterLobby } from './aster.js';
 import { metroPlaza } from './collegepark.js';
-import { tunnel1, platform } from './act1.js';
+import { tunnel1, platform } from './tunnels.js';
 
 export const MAPS = Object.fromEntries([room631, asterHall, asterLobby, metroPlaza, tunnel1, platform].map((m) => [m.id, m]));
 
