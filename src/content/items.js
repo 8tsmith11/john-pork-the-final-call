@@ -109,7 +109,7 @@ Object.assign(ITEMS, {
   // From real life: Manuel and Michael are building a smart pacifier for a children's hospital (they
   // hold the patent and prototype it in 631). This is prototype #1, and Manuel won't give it back.
   'item.smart_pacifier': { name: 'Smart pacifier (prototype)', slot: 'goggles', owner: 'manuel', unique: true, src: 'act3',
-    mods: { regen: 1.5, staRegen: 0.15, sleepGuard: 1 }, text: 'Patent granted. A blinking sensor in the shield. Manuel sucks on it constantly and slowly heals. It does not keep lullabies off him, but asleep with it in he can\'t be hurt, and his health and stamina pour back.' },
+    mods: { regen: 1.5, staRegen: 0.15, sleepGuard: 1 }, text: 'Patent granted. A blinking sensor in the shield. Manuel sucks on it constantly and slowly heals. With it in, a lullaby puts him out longer (12 s, not 8), but asleep like that he can\'t be hurt, and his health and stamina pour back.' },
   'item.mate_holster':   { name: 'Mate holster', slot: 'backpack', owner: 'manuel', unique: true, src: 'act3',
     mods: { mateHeal: 0.6, staRegen: 0.25 }, text: 'A gourd, a bombilla and a steel thermos on a leather harness. Mate heals him far more, and he is never quite tired.' },
 });

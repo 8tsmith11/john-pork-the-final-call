@@ -13,7 +13,7 @@ export const PARTY_SCALE = { hp: 1.7, dmg: 1.3 };
 export const BLINK = { dist: 112, cooldown: 1.1 };   // winged boots (D-014)
 // Michael's lullaby reaches 8 tiles; a Hold-Music Moth's hum reaches 4. Manuel is a baby: a lullaby
 // puts him out for 12 s instead of 8. Caffeine (wiredT) makes anyone immune.
-export const LULLABY = { range: 128, mothRange: 64, expose: 3, sleep: 8, babySleep: 12 };
+export const LULLABY = { range: 128, mothRange: 64, expose: 3, sleep: 8, babySleep: 12 };   // babySleep: Manuel with the smart pacifier in
 export const COMBAT = {
   maxHp: 100, hurtIframes: 0.6, reviveTime: 4.0, reviveRange: 18, reviveHp: 40,
   melee: { cooldown: 0.38, range: 20, arc: Math.PI * 0.6, damage: 12, knockback: 120 },
@@ -131,7 +131,8 @@ export class Sim {
   _stepLullaby(dt) {
     const singers = [...[...this.players.values()].filter((p) => p.playing?.song === 'lullaby' && !p.downed), ...[...this.enemies.values()].filter((e) => this._def(e).lullaby && !(e.sleepT > 0))];
     const targets = [...[...this.players.values()].filter((p) => !p.downed && !(p.wiredT > 0)), ...[...this.enemies.values()].filter((e) => !e.boss && !e.sahur && !e.def?.lullaby)];
-    const sleepFor = (t) => (t.character === 'manuel' ? LULLABY.babySleep : LULLABY.sleep);
+    // Manuel sleeps the longer LULLABY.babySleep only while wearing the smart pacifier (sleepGuard).
+    const sleepFor = (t) => (t.character === 'manuel' && t.mods?.sleepGuard ? LULLABY.babySleep : LULLABY.sleep);
     for (const t of targets) {
       // enemy singers (moths) only sing players to sleep
       const near = singers.some((s) => s !== t && (!this.enemies.has(s.id) || this.players.has(t.id)) && Math.hypot(s.x - t.x, s.y - t.y) <= (this.enemies.has(s.id) ? LULLABY.mothRange : LULLABY.range));
