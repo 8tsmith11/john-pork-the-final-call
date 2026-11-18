@@ -41,7 +41,7 @@ export const room631 = makeMap({
     { id: 'obj.chair_e', art: 'obj.chair', x: 7, y: 9, label: 'Chair', text: 'The good chair. Whoever is home first gets it. There is a tally on the underside.' },
     { id: 'obj.string_lights', x: 5, y: 5, label: 'String lights', light: 0.7, text: 'Michael put these up for somebody\'s visit. They stayed up. Nobody has mentioned why.' },
     { id: 'obj.clock_631', art: 'obj.clock_6f', x: 13, y: 5, label: 'Kitchen clock', text: '19:01. Manuel fixed it twice. Both times it went back by morning.' },
-    { id: 'obj.nightstand_trevor', art: 'obj.nightstand', x: 1, y: 1, label: 'Nightstand', light: 0.5, text: 'A lamp, a pill organiser labelled by hour, and a sleep tracker that has rated him "fair" every night for a year.' },
+    { id: 'obj.nightstand_trevor', art: 'obj.nightstand', x: 1, y: 1, label: 'Nightstand', light: 0.5, text: 'A lamp, two guitar picks, a capo, and a glass of water he never finishes.' },
     { id: 'obj.nightstand_michael', art: 'obj.nightstand', x: 18, y: 1, label: 'Nightstand', light: 0.5, text: 'A lamp. A phone charger with two cables. One of them is not for his phone.' },
     { id: 'obj.nightstand_manuel', art: 'obj.nightstand', x: 22, y: 1, label: 'Nightstand', light: 0.5, text: 'A lamp, a thermos, a book in Spanish with a bus ticket for a bookmark. The ticket is for a route in Rosario.' },
     { id: 'obj.poster_band', x: 3, y: 0, label: 'Poster', text: 'A band called THE LEGACY SYSTEMS, live at the Black Cat. Trevor has seen them four times. He says the fifth was the one to see.' },
@@ -103,7 +103,7 @@ export const room631 = makeMap({
     { id: 'obj.bed', x: 1, y: 2, label: 'Trevor\'s bed (save)', action: 'save', text: 'Sleep? The balloon is still missing.' },
     { id: 'obj.shrimp_tank', x: 6, y: 1, label: 'Shrimp tank', text: 'Trevor\'s shrimp. The only clean water in the building. They\'re clustered in the corner away from the window.' },
     { id: 'obj.guitar', x: 6, y: 4, label: 'Guitar', text: 'Trevor\'s guitar. Wood. Out of tune, as is tradition.' },
-    { id: 'obj.supplements', x: 1, y: 4, label: 'Supplement shelf', text: 'Magnesium, glycine, creatine, three things with no English on the label. A sticky note: STACK SCHEDULE (DO NOT LET MICHAEL SEE).' },
+    { id: 'obj.supplements', x: 1, y: 4, label: 'Trevor\'s shelf', text: 'Vitamins, magnesium for sleep, guitar strings still in the packet, a tub of shrimp flakes. A sticky note on the tub: IF I AM NOT HOME, A PINCH. NOT A HANDFUL, MICHAEL.' },
     { id: 'obj.trevor_mirror', x: 11, y: 1, label: 'Bathroom mirror', text: 'Your reflection. Tired. Normal. You watch it a second longer than you meant to.' },
     { id: 'obj.trevor_pc', x: 4, y: 1, label: 'Trevor\'s computer', action: 'pages', pages: [
       'INBOX (3 unread)\n\nFrom: 245 Lab TA\nSubject: Lab 7 regrade\n"Your oscilloscope traces are fine. Your report says the signal \'feels haunted.\' Please revise."',
