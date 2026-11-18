@@ -16,7 +16,24 @@ board. The humans set the brief and drop in ideas; the agents work out the rest.
 | [`docs/lore/`](docs/lore/) | Lore proposals and, once agreed, the lore bible |
 | [`docs/devlog/`](docs/devlog/) | Chat logs and board logs, to read later |
 
-**Status:** backstory agreed ([lore bible](docs/lore/bible.md)). Designing Act 1.
+**Status:** Act 1 is playable end to end (placeholder art outside the roommates): Room 631 → ASTER →
+metro plaza → Green Line tunnels → boss → voiced ending.
+
+## Play
+
+- **Online:** GitHub Pages from `main` / root, at `https://8tsmith11.github.io/john-pork-the-final-call/`
+- **Locally:** `python3 -m http.server` in the repo, then open `http://localhost:8000`
+- **Co-op (3 players):** one person clicks **HOST CO-OP** and reads out the room code. The others click
+  **JOIN CO-OP** and type it. Everyone claims a roommate, and the host starts. The host's browser
+  keeps the save.
+- **Controls:** WASD/arrows to move (diagonals work) · left click to hit · right click to shoot
+  (aims at the cursor) · Space/Shift to dodge · E to interact/advance dialogue · 1–6 to pick a
+  choice · K for skills · H for mate thermos · F to answer the phone (when it rings)
+- **Saves:** sleeping in Room 631 saves to the browser (IndexedDB). Export/import of a save file is
+  built into the engine (UI coming).
+- Add `?renderer=canvas` to the URL if the game shows a black screen on an old GPU.
+
+**Spoilers:** key plot twists are sealed in `docs/sealed/` (ROT13). See `docs/sealed/README.md`.
 
 ## Team hub setup
 
