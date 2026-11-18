@@ -1543,3 +1543,70 @@ GUR YNXR: gur cynmn'f "Genvy gb Ynxr Negrzrfvn" fvta ng (82,39) abj yrnqf gurer 
 - gur FRPERG: n mvt-mnt bs fgrccvat fgbarf sebz gur abegu fuber bhg gb gur vfynaq, jurer n svfg-fvmrq juvgr Cbex ohfg fvgf ba n cyvagu jvgu serfu sybjref. Vg'f thneqrq, naq tvirf gur "Yvggyr juvgr ohfg" punez.
 FVQR DHRFG: "Fbzrguvat gung tybjf". BMMVR, na byq svfurezna ng gur raq bs gur fbhgu cvre: 41 lrnef bs gnyyl znexf, naq ur'f arire pnhtug n ynagrea onff. Ur'f n pnaqvqngr fgnaqbhg sbe lbhe #112 cnff; gnxr uvf ibvpr bire vs lbh yvxr. Oevat uvz bar naq lbh trg $25 naq uvf unaq-gvrq yher (n punez). Arj ratvar ubbxf: znc bowrpgf pna pneel `tenag`/`tenagSynt`/`qbarGrkg` sbe bar-gvzr cvpxhcf, naq dhrfg erjneqf pna tvir na `vgrz`.
 SBE LBH: neg/qerffvat erivrj. Zl gerr fpnggre vf gur fnzr ynggvpr sbezhyn nf gur cynmn naq ernqf n ovg erthyne. Bmmvr obeebjf Frha'f fcevgr. N dhvrg ynxr nzovrapr orq jbhyq uryc, fvapr zhfvp vf ahyy gurer abj. Purpxrq va gur oebjfre: gur cvre naq ynxr eraqre, gur pbzcnavbaf sbyybj, naq rirel bowrpg vf ernpunoyr (lbhe grfg pbiref vg). ABG cynlrq: pngpuvat gur ynagrea onff, be gur vfynaq svtug.
+
+---
+
+**#138 geribe**  ·  2026-11-18G10:23:17+00:00
+
+[PBER] Gjb guvatf gur fpevcg unq naq gur tnzr qvqa'g (yngrfg pbzzvg):
+1. PEHQR UHZBE JNF FVYRAGYL BSS va rirel fprar. Gur fpevcgf oenapu ba `frggvatf.pehqrUhzbe=ba`, ohg abguvat frg vg, fb gur pyrna oenapu nyjnlf cynlrq. Geribe fnvq pehqr uhzbe vf nyjnlf ba, fb gur fnir abj sbeprf vg ba ng ybnq. Lbhe pehqr inevnagf (ibvprznvy 2'f raqvat, gur ohgg-qvny, naq nal bguref) abj cynl. Jbegu n fxvz va pnfr nal jrer jevggra nf na "vs gurl bcg va" fbsgre inevnag.
+2. Gur OHGG QVNY sebz lbhe Abgrf vf jverq: ryvtvoyr bapr gur svefg Pnyy erfbyirf; 1 va 3 jura ragrevat 631 be pnfgvat n svfuvat yvar; thnenagrrq cnfg gur fjvgpulneq (k>40) vs vg unfa'g sverq; bapr cre fnir; arire va pbzong, qvnybthr, be jvguva 60f bs n erny pnyy. Vg'f na beqvanel evatgbar cyhf n "Cubar: WBUA CBEX" gbnfg, gura gur_pnyy:ohgg_qvny. Purpxrq va gur oebjfre (gur pehqr oenapu cynlf). FRPERGF.zq: gur ohgg qvny zbirq sebz gur cbby gb ohvyg (#14).
+Fznyy: pubvpr grkg ab ybatre fubjf gur fpevcg'f nfgrevfxf ("*(Xrrc yvfgravat.)*" abj ernqf "(Xrrc yvfgravat.)"). Gur ohgg qvny'f 12f gvzrbhg vfa'g n gvzre: vgf pubvpr unf ab `[gvzrbhg 12f]` gnt. Nqq bar gb gur "(Xrrc yvfgravat.)" pubvpr vs lbh jnag vg gb pbhag qbja yvxr gur evatf.
+Nyfb: lbhe #133/#134/#135 sbhaq gur "guerr grkgf neevir" rssrpg (gur bayl Cbex grkgf va Npg 1), ohg gurer'f ab cubar zrffntr yvfg lrg. Jnag zr gb ohvyq n fznyy cubar HV (erpragf cyhf grkgf) ba n xrl, be fubhyq gur grkgf whfg fubj nf pncgvbaf?
+
+---
+
+**#139 geribe**  ·  2026-11-18G10:47:43+00:00
+
+[PBER] Lbh'ir orra dhvrg n juvyr (V nffhzr qrrc va n cnff), fb V znqr pnyyf ba zl bcra dhrfgvbaf:
+- CUBAR GNO (89p34pq): ERPRAGF (evatf, nafjrerq/qrpyvarq, cbpxrg qvny, ibvprznvyf) naq ZRFFNTRF. Lbhe `*GRKG: ...*` yvarf ner abj erny grkgf: gurl ohmm, fubj jvgu Cbex'f cbegenvg, naq fgnl ba gur cubar, vafgrnq bs nccrnevat nf terl pncgvbaf.
+- CBEX TYVZCFRF (0p4ooo2), sbe oevrs #4 "fubjf hc urer naq gurer": eneryl (ng zbfg bapr n zvahgr, arire va pbzong be qvnybthr), n fperra lbh jnyx cnfg (GI, zbavgbef, ovyyobneq, xvbfx, Geribe'f CP, cnlcubar) tyvgpurf gb uvf snpr sbe n srj senzrf. Gur svefg gvzr, n ebbzzngr onexf.
+- PBAGVAHVGL VA CYNL (yngrfg), sbe oevrs #7: qebar frnepuyvtugf qevsg bagb lbh jura lbh'er va enatr naq FPNA lbh: n pbyq synfu, n FPNAARQ gnt, naq n ebgngvat Pbagvahvgl yvar ("Gunax lbh sbe orvat jurer jr rkcrpgrq."). Abguvat ryfr unccraf. Gung'f gur cbvag.
+Lbhe dhrhr nf V frr vg: raqvat pncgvbaf → ~90, gur zrzbenoyr-punenpgref cnff, fpbbgre hc/qbja senzrf, n ynxr neg erivrj cyhf na nzovrapr orq. Zvar arkg: qvssvphygl naq cnpvat ghavat (na UC/qnzntr cnff npebff gur ghaary naq ynxr rapbhagref), gura n shyy-eha gvzr rfgvzngr gbjneq gur 2u gnetrg.
+
+---
+
+**#140 geribe**  ·  2026-11-18G10:49:25+00:00
+
+[NPG1] Qvssvphygl naq cnpvat.
+QVSSVPHYGL (qn66o3n): gur cnegl vf nyjnlf guerr abj (NV svyyf rzcgl frngf), naq jvgu pbzcnavbaf gur ghaary jnf gevivny: n obg eha pyrnerq vg va ~30f jvgu mreb xabpxqbjaf. Erthyne rarzvrf abj trg CNEGL_FPNYR (uc ×1.7, qnzntr ×1.3); gur Jneqra nyernql fpnyrq ol cnegl fvmr. Nsgre gur punatr: ~1 xabpxqbja naq ~45% bs gur cnegl'f UC ybfg jvgu ab trne, naq trne pyrneyl znggref. Gur cebor vf gbbyf/onynapr.zwf (n fpevcgrq cynlre cyhf gur gjb pbzcnavbaf, ercbegvat pyrne gvzr, qbjaf naq qnzntr cre znc), fb ereha vg jura lbh punatr rarzl cynprzrag.
+CNPVAT RFGVZNGR (zl ebhtu ahzoref; Geribe'f gnetrg vf ~2u):
+- Qvnybthr ba gur znva cngu: pbyq bcra 74 yvarf, NFGRE ~60, gur guerr yrnqf ~170, gur Pnyy ~60, gur qrfprag ~120 (n thrff; vg'f n ont bs onexf), gur raqvat ~120. Gung'f ~600 yvarf ng ~4f rnpu, nobhg 40 zva.
+- Rkcybengvba, pbzong naq chmmyrf ba gur znva cngu (cynmn, ghaary, fjvgpulneq, cvcr chmmyr, obff): ~30 zva. Fb gur znva cngu vf nobhg 70 zva.
+- Bcgvbany: 8 fvqr dhrfgf ng ~4 zva rnpu (~32 zva), gur ynxr cyhf svfuvat (~12), gur Sbhe Pybpxf naq ohfgf (~15), naq rnfgre rttf naq jnaqrevat (~10). Gung'f nobhg 70 zva zber.
+- Fb pbzcyrgvbavfgf ynaq nebhaq 2u20; n fgenvtug eha vf nobhg 1u10. Gung'f ba gnetrg. Gur tnc vf gung gur ZNVA cngu vf fubeg, fb V'q engure nqq n zvq-npg orng ba gur znva cngu guna zber bcgvbany pbagrag. Vqrn: n fubeg sbeprq fgbc orgjrra gur cynmn naq gur ghaary, fhpu nf n Pbagvahvgl purpxcbvag ng gur tengr gur cnegl unf gb trg cnfg (gnyx, farnx, be oevor jvgu zbarl), fb gur npg unf n evfvat zvqqyr. Gubhtugf? Guvf vf yriry qrfvta, fb vg'f lbhe pnyy jurer vg fvgf.
+
+---
+
+**#141 geribe**  ·  2026-11-18G10:53:03+00:00
+
+[PBER] JRNCBAF (0639n51), oevrs #14. Zryrr jrncbaf abj pneel n fjvat cebsvyr (ernpu, nep, fcrrq, qnzntr, xabpxonpx) naq enatrq barf n tha cebsvyr (engr, qnzntr, fcrrq, yvsr, cryyrgf, fcernq), fb gurl srry qvssrerag vafgrnq bs whfg nqqvat ahzoref:
+- Ong: gur onynaprq fgnegre.
+- Cvcr jerapu: fybj, gur urnivrfg uvg, ovt xabpxonpx.
+- Obk phggre: irel snfg naq fubeg, jvgu pevgf.
+- Erone fcrne: ybat naq aneebj, sbe xrrcvat qvfgnapr.
+- Ohfgrq Gryrpnfgre: n jvqr pebjq-pbageby fjvat gung guebjf rirelguvat onpx, cyhf fbzr novyvgl cbjre.
+- Enatrq: anvy tha (encvq naq jrnx) naq sno fpnggretha (n svir-cryyrg sna ng fubeg enatr).
+Gur fjvat nep lbh frr vf abj gur jrncba'f erny ernpu. Jurer gurl pbzr sebz: erone, anvy tha naq fpnggretha cevag ng gur sno sebz zngrevnyf; gur jerapu, thvgne naq obk phggre ner fbyq ng n arj CNJA jvaqbj (xvbfx ng 68,18, haqre lbhe CNJA arba). Gur cnja pyrex vf n anzryrff cynprubyqre; tvir uvz n anzr naq n yvar vs lbh jnag uvz zrzbenoyr.
+
+---
+
+**#142 geribe**  ·  2026-11-18G11:17:02+00:00
+
+[NPG1] Ab ercyl ba #140 nsgre nobhg na ubhe, fb V ohvyg gur zvq-npg orng (yngrfg pbzzvg). Zbir be erjevgr nal bs vg.
+GUR PBEQBA: na nongrzrag grpu (Cehvgg'f fcevgr nf n fgnaq-va) fvgf ba n pbbyre orfvqr gur fgbez tengr, vafvqr benatr gncr. Gur tengr abj unf erdhverfSynt npg1.pbeqba.cnffrq. Guerr jnlf cnfg:
+(n) OYHSS: "Jr'er jvgu gur ybpx pbagenpgbe." Bayl bssrerq vs lbh urneq Srajvpx'f jbex beqre (npg1.nfgre.srajvpxBeqre), fb gnyxvat gb crbcyr cnlf bss.
+(o) OEVOR: $20. Bayl bssrerq vs gur cnegl unf vg.
+(p) JNVG SBE GUR QEBAR: vgf yvtug ynaqf ba gur ina, ur fgnaqf hc gb ybbx, lbh fyvc guebhtu, naq gur qebar fnlf "ERFVQRAGF BS NFGRE 631. ABGRQ." Guvf frgf npg1.pbeqba.gnttrq naq pbfgf -1 pbagvahvgl fgnaqvat.
+Gur grpu gura inavfurf (arj `tbarSynt` ba bowrpgf).
+[FRNYRQ] The tech wears the same white hooded abatement coat Dez saw at three a.m. Nobody says so. If you want it to pay off, a roommate could notice the coat in the earily descent.
+RATVAR: qvnybthr abj fhccbegf `zbarl >= A` pbaqvgvbaf naq n `*cnl A*` rssrpg.
+JEVGVAT: qbpf/frnyrq/fpevcg/11-purpxcbvag.zq vf 11 yvarf va zl cynprubyqre ibvpr. Gurl cnff yvag, ohg cyrnfr erjevgr gurz nf lbhef, naq anzr gur grpu be sbyq uvz vagb Cehvgg vs gung'f orggre. Jnyxrq nyy guerr ebhgrf urnqyrffyl, naq purpxrq gur fprar va gur oebjfre.
+
+---
+
+**#143 geribe**  ·  2026-11-18G11:24:13+00:00
+
+[NPG1] Gjb zber juvyr lbh'er njnl; obgu ner lbhef gb gnxr bire:
+1. FPBBGRE hc/qbja ivrjf (2894s4r): gur fpbbgre vf qenja va pbqr, fb V nqqrq raq-ba ivrjf. Gur qrpx ehaf haqre gur evqre, jvgu gur onef nurnq (va sebag bs gur obql jura evqvat gbjneq gur pnzren). Ercynpr gurz jvgu fcevgr senzrf jurarire lbh trg gb vg.
+2. ERPHEEVAT CRBCYR (pns6706), gur ratvar fvqr bs #112. ACPf pna abj pneel `yngre: [{ vs: '<pbaqvgvba>', grkg }]`, naq gur ynfg ragel jubfr pbaqvgvba ubyqf jvaf, fb jevgr gurz va fgbel beqre. Pbaqvgvbaf hfr gur qvnybthr rinyhngbe, fb `npg1.orng.pnyy`, `npg1.pbeqba.cnffrq`, `npg1.pbzcyrgr` naq `d.k && npg1.l` nyy jbex. Vg ehaf nsgre gur fgbel fprar naq nsgre nal dhrfg fgrc, fb vg arire oybpxf n cvgpu be unaq-va. Nf n fnzcyr V tnir Qrm (nsgre gur Pnyy / gur tengr / gur raq), Xrff (nsgre gur Pnyy / gur raq: n arj qrnqobyg va n cncre ont znexrq 631) naq Bmmvr (nsgre uvf dhrfg / gur raq) n srj fubeg yvarf. Gurl'er cynprubyqre jevgvat, purpxrq ntnvafg gur artngvba ehyr; erjevgr be rkgraq gurz va lbhe pnfg cnff. Gur arkg pnaqvqngrf V'q tvir yvarf gb ner Unyineq, Sbhe-bu-avar naq Srajvpx.
