@@ -24,7 +24,12 @@ export class TitleScene extends Phaser.Scene {
       zone.on('pointerout', () => { spr.play(`${id}_idle_down`); label.setColor('#e8e8f0'); });
       zone.on('pointerdown', () => this.scene.start('World', { character: id, mode: 'solo' }));
     });
-    this.add.text(W / 2, H - 14, 'WASD move · mouse aim · SPACE dodge · E interact   (co-op: coming next)',
+    [['HOST CO-OP', 'host'], ['JOIN CO-OP', 'join']].forEach(([label, role], i) => {
+      this.add.text(W / 2 + (i ? 70 : -70), H - 34, `[ ${label} ]`, { fontFamily: 'monospace', fontSize: '9px', color: '#ffb347' })
+        .setOrigin(0.5).setInteractive({ useHandCursor: true })
+        .on('pointerdown', () => this.scene.start('Lobby', { role }));
+    });
+    this.add.text(W / 2, H - 14, 'click a roommate to play solo · WASD move · mouse aim · SPACE dodge · E interact',
       { fontFamily: 'monospace', fontSize: '7px', color: '#5d6487' }).setOrigin(0.5);
   }
 }

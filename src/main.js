@@ -1,6 +1,7 @@
 import { BootScene } from './game/scenes/BootScene.js';
 import { TitleScene } from './game/scenes/TitleScene.js';
 import { WorldScene } from './game/scenes/WorldScene.js';
+import { LobbyScene } from './game/scenes/LobbyScene.js';
 
 export { GAME_VERSION } from './version.js';
 
@@ -15,5 +16,5 @@ window.game = new Phaser.Game({
   pixelArt: true,
   backgroundColor: '#0b0d16',
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-  scene: [BootScene, TitleScene, WorldScene],
+  scene: [BootScene, TitleScene, LobbyScene, WorldScene],
 });
