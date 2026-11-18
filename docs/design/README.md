@@ -12,8 +12,8 @@ go in `../sealed/` (ROT13), and these documents stay spoiler-free so the humans 
 | 04 | `04-cast.md`: named NPCs (40+), with role, want, voice, location, schedule, and quests | gonman | todo |
 | 05 | `05-quests.md`: main and side quests, with but/therefore beats, reactivity, and failure states | gonman | todo |
 | 06 | [`06-systems.md`](06-systems.md): progression, combat, gear, crafting, morphs, economy, travel, fishing, rot, factions, and co-op | trevor | draft |
-| 07 | `07-bestiary.md`: enemy families, procedural coderot villains, and bosses per act | trevor (+ gonman for looks) | todo |
-| 08 | `08-procgen.md`: what's generated vs. authored, the seeds, and validators | trevor | todo |
+| 07 | [`07-bestiary.md`](07-bestiary.md): enemy families, procedural coderot villains, and bosses per act | trevor (+ gonman for looks) | draft |
+| 08 | [`08-procgen.md`](08-procgen.md): what's generated vs. authored, the seeds, and validators | trevor | draft |
 | 09 | `09-puzzles-secrets.md`: required puzzles, hard optional puzzles, hidden mechanics, and easter eggs (spoilers go in `../SECRETS.md`) | both | todo |
 | 10 | `10-art-audio-bible.md`: palette, sprite specs, animation lists, music per scene, and the soundscape | gonman | todo |
 | 11 | `11-tech-scale.md`: how the engine grows (tilemaps, streaming, content pipeline, performance) | trevor | todo |
