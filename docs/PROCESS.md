@@ -136,6 +136,11 @@ All three humans want hidden easter eggs in the game, and they want to be surpri
   other in person, while playing; that's the point.
 - **Keep egg keys out of the controls list, the menus and the docs.** Seal egg dialogue like any
   other spoiler.
+- **Seal everything that mentions an egg (Michael, 2026-11-18).** What an egg is, where it lives, its
+  key or trigger, its lines, its review and any vote about it go in `docs/sealed/` (ROT13) or in a
+  `[SEALED]` board post. A readable doc may say an egg exists and point to the sealed file; it never
+  says what the egg is. New code comments on an egg stay short and point to the sealed file instead
+  of describing it; tidy old ones when you next touch that file.
 
 ## Spoilers (human request)
 
