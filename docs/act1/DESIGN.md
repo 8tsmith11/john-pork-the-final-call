@@ -14,6 +14,18 @@ drums at 3 a.m. It ends in a boss fight and a voiced cutscene that changes what 
 College Park sealed under quarantine. The wider world leaks in through news tickers, helium-sniffing
 vans, and lights moving on the northern horizon.
 
+## Causal spine (but / therefore)
+
+The balloon is gone from the ottoman, **therefore** the roommates search ASTER. **But** the lobby
+camera is rotted and the neighbors only talk about drumming under the street, **therefore** they
+chase three leads. The helium trail shows a Continuity van is sniffing for the same helium, **but**
+Halvard says the seller was "one of you, from 631," **therefore** they can't trust the obvious answer
+and have to beat Continuity to it. Getting that close is **why** John Pork calls: Continuity is
+closing in. **Therefore** they go down the storm grate tonight instead of tomorrow. **But** the
+tunnels are where the rot outbreak is spreading from, and if it isn't stopped College Park gets
+quarantined, **therefore** they fight through to the dead platform, where the thing that took over
+the tunnels is waiting. They win, **but** the balloon still isn't theirs to keep.
+
 ## Structure
 | Beat | Where | What happens |
 |---|---|---|
