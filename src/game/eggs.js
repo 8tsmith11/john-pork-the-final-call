@@ -25,12 +25,14 @@ export class Eggs {
     if (!me || me.downed || me.riding) return;
     let target = null, best = RANGE;
     for (const o of s.map.objects) {
-      if (!o.npc) continue;
+      // Opt-in only: whoever owns a character tags it `eggOk: true` on purpose. Untagged people are
+      // never targets (gonman's and trevor's review, board #158/#166), and neither is the crowd.
+      if (!o.npc || o.eggOk !== true) continue;
       const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y);
       if (d <= best) { best = d; target = { key: o.id, x: o.x * TILE + 8, y: o.y * TILE + 8, name: o.label, npc: true }; }
     }
     const walker = s.crowd?.nearest?.(me.x, me.y);
-    if (walker && Math.hypot(walker.x - me.x, walker.y - me.y) <= best) target = { key: `crowd:${walker.name}`, x: walker.x, y: walker.y, name: walker.name, npc: true };
+    if (walker && walker.eggOk === true && Math.hypot(walker.x - me.x, walker.y - me.y) <= best) target = { key: `crowd:${walker.name}`, x: walker.x, y: walker.y, name: walker.name, npc: true };
     if (!target) return;
     if ((this.cool.get(target.key) ?? 0) > s.time.now) { this._tell(playerId, `${target.name} needs a minute.`); return; }
     this.cool.set(target.key, s.time.now + PER_TARGET_COOLDOWN);
