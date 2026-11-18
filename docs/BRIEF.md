@@ -215,6 +215,10 @@ have to apply, but it would make it interesting."
 - **Multiplayer saves:** the save is local to the host and stores which player is which character.
   In the lobby before resuming, joining players claim their character and receive the save data
   from the host. (D-010)
+- **Bodies shouldn't seem like androids.** John Pork, Tim Cheese, and Tung Tung Tung Sahur should be
+  realistic androids, possibly with biotech involved.
+  > *"john pork shouldnt seem like an android, same with tim cheese and tung tung. think realistic
+  > androids or maybe even some biotech involved."*
 
 ---
 

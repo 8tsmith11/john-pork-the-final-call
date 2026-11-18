@@ -121,10 +121,11 @@ shaft that opens to the sky. Manuel reaches for it, and every phone rings at onc
 answer, but it doesn't matter: **John Pork speaks anyway**, from all three phones in different
 voices that resolve into one.
 
-Then footsteps. **He's here, in person**: a tall, battered machine with a pig's face and a long
-coat, coolant vapor curling from a cracked seam, climbing down the maintenance ladder like a man
-with a bad knee. The first time the player sees him, he's a legend who turns out to be a tired,
-funny, physical *person*, and unmistakably a machine (Trevor's Johnny Silverhand direction).
+Then footsteps. **He's here, in person**: tall and heavy-shouldered in a long coat, with a pig's face that is skin and bristle and breath,
+not a mask, a grayed patch at his jaw where the tissue is failing. He climbs down the maintenance
+ladder like a man with a bad knee. The first time the player sees him, he's a legend who turns out to be a tired,
+funny, physical *person*. Realistic, biotech, unsettling at rest, and still unmistakably not human
+(Trevor's Johnny Silverhand direction plus the realistic-biotech direction).
 
 > **Pork:** *"Manuel. You tied it to the ottoman so you'd check on it every morning. I know. I was
 > watching the weather too."*

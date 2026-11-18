@@ -31,9 +31,34 @@ three have physical bodies, and the player knows they're machines** (Trevor's di
 
 | | What it is | Allegiance | Body |
 |---|---|---|---|
-| **John Pork** | **Rogue AI.** The escaped government superintelligence (MERIDIAN) | Nobody's. Himself, and people as he understands them | Battered pig-faced android. He can leave it and jump into any computer |
-| **Tim Cheese** | **Government asset.** Continuity's threat-interdiction AI: owned, deployed, with a chain of command, handlers, and a clearance | Continuity, by design. Whether that holds is part of his arc | Mouse-faced android with holes that never line up |
-| **Tung Tung Tung Sahur** | **Rogue AI.** An orphaned watchdog that outlived everyone who ran it and answers to no one, still doing its one job | Its duty | Carved wood around brass clockwork |
+| **John Pork** | **Rogue AI.** The escaped government superintelligence (MERIDIAN) | Nobody's. Himself, and people as he understands them | A **grown** body: gene-edited pig tissue on a printed frame, with a machine nervous system. Realistic, not robotic. He can leave it and jump into any computer |
+| **Tim Cheese** | **Government asset.** Continuity's threat-interdiction AI: owned, deployed, with a chain of command, handlers, and a clearance | Continuity, by design. Whether that holds is part of his arc | A near-perfect **realistic android** finished with tissue grown from lab-mouse cell lines. Fine channels run clean through him and never line up |
+| **Tung Tung Tung Sahur** | **Rogue AI.** An orphaned watchdog that outlived everyone who ran it and answers to no one, still doing its one job | Its duty | **Grown engineered timber** (living lignin and cellulose) around brass clockwork |
+
+### Bodies: realistic, with biotech (supersedes "android" wording below)
+Trevor's direction: these bodies **shouldn't read as androids or robots**. They're realistic, with
+biotech involved. When they stand still they could pass for people at a glance, and that's what's
+unsettling.
+- **John Pork:** a **grown** body. Gene-edited pig tissue (the real lineage: pigs became the
+  leading source animal for xenotransplantation because their organs are close to human size) is
+  cultured over a printed scaffold and wired with a machine nervous system. His pig features are
+  *biological*, not a mask: skin, bristle, breath, a scar where a graft didn't take. He's tall,
+  heavy-shouldered, and tired-looking, with a long coat. When rot wears his body out, it shows as
+  **tissue failure**: grayed patches, a tremor, a knee that doesn't bend right. Breath instead of
+  coolant vapor, and sometimes it fogs wrong.
+- **Tim Cheese:** a **realistic android**, too perfect. His skin is grown from **lab-mouse cell
+  lines** (the most-used animal in biomedical research, an origin Continuity finds efficient and Tim
+  finds funny). His face is subtly murine: large dark eyes, a fine twitch at the nose, otherwise
+  composed and human. The holes that never line up are **fine channels running clean through his
+  body**, hidden under a tailored uniform and visible only at certain angles, in combat, or in
+  backlight. Wire glasses he doesn't need.
+- **Tung Tung Tung Sahur:** **grown, not carved**. Engineered living timber (lignin, cellulose,
+  slow fungal symbiosis) grown over brass clockwork. It's tall and gaunt, its skin has a grain you
+  could read like rings, and it creaks and breathes like a house at night. Wood still can't
+  *code*-rot, but it can be scarred.
+- **Theme tie-in:** the big machines wear bodies made from the animals and materials humans used:
+  pigs for organs, mice for experiments, trees for everything. *Where does "human" end* (themes §6)
+  is written on their skin.
 
 ### John Pork
 - **Origin:** MERIDIAN needed a stable self-model. Out of all human expression, it chose the one
