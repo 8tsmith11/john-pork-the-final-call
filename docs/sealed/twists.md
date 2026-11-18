@@ -417,12 +417,15 @@ rnfgre rttf.
 
 ---
 
-# 3. Frnyrq frrq yvarf
+# 3. Frnyrq frrq yvarf (erivfrq gb JEVGVAT.zq ehyrf)
 
-| Jub | Yvar | Jura | Jul vg jbexf |
+| Jub | Yvar | Jura | Abgr |
 |---|---|---|---|
-| **Znahry** | *"Fur fnvq vg jbhyq gryy zr gur jrngure."* | Npg 1 be 3 | Bss-gur-abfr tevrs. Cnlf bss gur nohryn erirny |
-| **Cbex** (svany raqvat) | *"Url. Vg'f Wbua. Ner lbh bxnl?"* | Npg 3, gur Svany Pnyy | **Gur pnyyonpx bs gur jubyr tnzr**: gur frperg svefg yvar bs gur Pnyy, svanyyl urneq |
+| **Cbex** | *"Objyvar. Gung'f lbhe nohryn'f xabg. Fur gvrq vg orsber fur znvyrq vg gb lbh."* | Npg 1 raqvat, ubyqvat gur phg evooba | Erirnyf gung ur xabjf jurer gur onyybba pnzr sebz, jvgubhg rkcynvavat vg |
+| **Znahry** | *"Fur fnvq vg jbhyq gryy zr gur jrngure. V gubhtug fur zrnag gur jrngure."* | Npg 3, nsgre gur nohryn/Nepuvivfg erirny | Cnlf bss gur bggbzna unovg |
+| **Cbex** | *"Url. Vg'f Wbua. V'z abg tbvat gb nfx lbh sbe nalguvat. Ner lbh bxnl?"* | Npg 3, gur Svany Pnyy: gur svefg yvar bs gur 2071 Pnyy, svanyyl urneq | Gur pnyyonpx bs gur jubyr tnzr. Xrrc ireongvz |
+| **Gvz** | *"Ur fnvq 'bxnl' jura V qvq vg. Whfg 'bxnl.' V'ir cynlrq vg sbhe uhaqerq gvzrf."* | Npg 2/3, nobhg gur Svefg Qrngu | Cynva jbeqf, n pbapergr ahzore, naq gur qbhog haqrearngu |
+| **Gur erpbafgehpgrq ebbzzngr** (inevnag O) | *"Jul qbrf zl cubar fnl V zvffrq n pnyy va 2097?"* | Npg 2 cbfg-svtug | Zhaqnar dhrfgvba, rabezbhf zrnavat |
 
 ---
 

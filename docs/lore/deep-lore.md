@@ -20,6 +20,8 @@ under lockdown.
 
 ## 3. Voice guides
 
+> Sample lines below are older. Write new lines to [`WRITING.md`](WRITING.md).
+
 | Character | Sounds like | Never | Sample |
 |---|---|---|---|
 | **John Pork** | Warm, wry, casual, internet-native diction aged seventy years. Calls people by name. Deflects with jokes that are secretly true. Pauses before sincerity | Speeches. Prophecy. ALL CAPS (except when glitching) | *"I have been inside every phone on Earth and I still don't know what to say to you, Manuel."* |

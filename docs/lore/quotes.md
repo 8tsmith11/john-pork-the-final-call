@@ -30,24 +30,11 @@
   says it.
 - **Earn the quote.** Most great lines are callbacks or reversals of something said hours earlier.
 
-## Seed set (calibration, not final)
+## Seed set
 
-| Who | Line | When | Why it works |
-|---|---|---|---|
-| **Pork** | *"I have been inside every phone on Earth, and nobody ever called me back."* | Act 1–2, a quiet moment | Plain grammar, a strange first clause, and the theme (*who answers?*) without saying it |
-| **Pork** | *"You lost something. So did I."* | The Call | Short, a reversal, and it sets up the whole game |
-| **Pork** | *"It was never only yours."* | Act 1 ending | General, quotable, devastating in context (calls back to the ottoman ritual) |
-| **Tim** | *"I keep a list of everyone the rot has killed. You'd be surprised how short it was before he called."* | Act 2 | Bureaucratic syntax with a moral gut-punch in the last clause (T2) |
-| **Tim** | *"I'm not the villain. I'm the paperwork."* | Act 2 | Distinctive word ("paperwork") in common syntax, and it's character-true |
-| **Sahur** | *"You did not answer. That is three. Good morning."* | The Sahur boss | A counting rhythm, and the courtesy makes it scarier |
-| **Sahur** | *"I have woken everyone. No one has ever woken me."* | Act 3 | Mirrored structure, loneliness, *who answers?* |
-| **Continuity billboard** | *"At the end of the day, no one can code faster than AI."* | Everywhere | A fluent slogan that rots in the background until a major character says it sincerely at the worst moment (themes: authenticity) |
-| **Continuity** | *"Citizens, things are stable."* | Every address | Repetition turns it into dread |
-| **Michael** | *"She'd have liked this place." ... "She'd have hated this place."* | Act 1 vs. Act 3 | A callback inverted, and the arc in two lines |
-| **Trevor** | *"Everything rots. I just wanted to pick how."* | Act 2–3 | The biohacker's thesis, brief, with a turn in the last word |
-| **Rotter** (the one-time coherent line) | *"I used to be someone's favorite person."* | Act 1 easter egg | The edges theme, in one line, from the least expected speaker |
-
-🔒 Two more seed lines are sealed in [`../sealed/twists.md`](../sealed/twists.md) because they spoil reveals.
+Superseded. The first seed set leaned on machine-sounding patterns (mirrored lines, "not X, it's
+Y"). The revised lines and the anti-AI checklist are in [`WRITING.md`](WRITING.md) §4–5.
+🔒 Reveal-adjacent lines are sealed in [`../sealed/twists.md`](../sealed/twists.md) §3.
 
 ## References
 - Danescu-Niculescu-Mizil, Cheng, Kleinberg, Lee, "You had me at hello: How phrasing affects
