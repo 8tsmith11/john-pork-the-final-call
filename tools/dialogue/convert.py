@@ -80,6 +80,14 @@ def parse(text):
         m = INSPECT.match(line)
         if m and line.upper().lstrip("*").startswith("INSPECT"):
             node["lines"].append({"who": None, "text": m.group(1).strip(), "if": cond}); continue
+        # Stage directions (*His breath.*) become narration captions, never spoken. Writer notes
+        # (*Trigger: ...*, *Returning ...*, anything with backticks or a jump) are skipped.
+        sd = re.match(r"^\*([^*].*?)\*$", line)
+        if sd:
+            body = sd.group(1).strip()
+            if not re.match(r"^(Trigger|Returning|Note|After|If |When the|Sets|Reads|Conditions|Effect)", body) and "`" not in body and "->" not in body and len(body) < 260:
+                node["lines"].append({"who": None, "text": body, "if": cond, "narr": True})
+            continue
     for n in nodes.values():
         n["effects"] = n["effects"] or None
         if not n.get("gos"): n.pop("gos", None)

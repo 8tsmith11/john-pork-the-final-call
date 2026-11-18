@@ -240,9 +240,10 @@ export class WorldScene extends Phaser.Scene {
     } else {
       const line = d.line;
       this.dlgWho.setText(line?.who ? line.who.toUpperCase() : '');
+      this.dlgText.setColor(line && !line.who ? '#9aa3c7' : '#e8e8f0');
       if (line && line !== this._lastLine) {
         this._lastLine = line; this._lineAt = this.time.now;
-        if (!(this.dlgVoiced && line.who && speak(line.who, line.text))) babble(line.who, line.text);
+        if (line.who && !(this.dlgVoiced && speak(line.who, line.text))) babble(line.who, line.text);
         this._typeFull = (line.text ?? '').replace(/\*([^*]+)\*/g, '$1'); this._typeShown = 0;
         this._setPortrait(line.who);
       }
