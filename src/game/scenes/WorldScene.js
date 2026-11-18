@@ -117,13 +117,19 @@ export class WorldScene extends Phaser.Scene {
       .on('pointerdown', () => this._choose(i)));
     this.input.keyboard.on('keydown', (ev) => {
       if (!this.dlg) return;
-      if (ev.key === 'e' || ev.key === 'E' || ev.key === ' ' || ev.key === 'Enter') { this.dlg.choices.length ? null : this.dlg.advance(); this._drawDialogue(); }
+      if (ev.key === 'e' || ev.key === 'E' || ev.key === ' ' || ev.key === 'Enter') {
+        if (!this.dlg.choices.length && this.time.now - (this._lineAt ?? 0) > 220) this.dlg.advance();
+        this._drawDialogue();
+      }
       const n = parseInt(ev.key, 10); if (n >= 1 && n <= 6) this._choose(n - 1);
     });
     this._drawDialogue();
   }
 
-  _choose(i) { if (!this.dlg?.choices[i]) return; this.dlg.choose(i); this._drawDialogue(); }
+  // Minimum time a line stays up before a click can skip it: base + reading time, capped.
+  _minLineMs() { return Math.min(1600, 650 + (this.dlg?.line?.text?.length ?? 0) * 12); }
+
+  _choose(i) { if (!this.dlg?.choices[i] || this.time.now - (this._lineAt ?? 0) < 450) return; this.dlg.choose(i); this._drawDialogue(); }
 
   _drawDialogue() {
     const d = this.dlg, on = !!d && !d.done;
@@ -132,13 +138,14 @@ export class WorldScene extends Phaser.Scene {
     if (!on) return;
     const choices = d.choices;
     if (choices.length) {
+      if (this._choicesFor !== d.nodeId) { this._choicesFor = d.nodeId; this._lineAt = this.time.now; }
       this.dlgWho.setText('');
       this.dlgText.setText('');
       this.dlgChoices.forEach((t, i) => t.setText(choices[i] ? `${i + 1}. ${choices[i].text}` : '').setVisible(!!choices[i]));
     } else {
       const line = d.line;
       this.dlgWho.setText(line?.who ? line.who.toUpperCase() : '');
-      if (line && line !== this._lastLine) { this._lastLine = line; babble(line.who, line.text); }
+      if (line && line !== this._lastLine) { this._lastLine = line; this._lineAt = this.time.now; babble(line.who, line.text); }
       this.dlgText.setText(line?.text?.replace(/\*([^*]+)\*/g, '$1') ?? '');
       this.dlgChoices.forEach((t) => t.setVisible(false));
     }
@@ -452,9 +459,9 @@ export class WorldScene extends Phaser.Scene {
   _onClick(ptr) {
     if (!this.ready || ptr.button !== 0) return;
     const { x: sx, y: sy } = toView(ptr);
-    if (this.dlg) {   // any click advances a line (choices are clicked directly)
+    if (this.dlg) {   // clicks advance a line only after it has been readable for a moment
       this.input2.blockAttack = true;
-      if (!this.dlg.choices.length) { this.dlg.advance(); this._drawDialogue(); }
+      if (!this.dlg.choices.length && this.time.now - (this._lineAt ?? 0) > this._minLineMs()) { this.dlg.advance(); this._drawDialogue(); }
       return;
     }
     if (this.menu) {
