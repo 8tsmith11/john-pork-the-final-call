@@ -10,7 +10,7 @@ import { TILE_COLORS } from '../../content/maps/build.js';
 import { ENEMIES } from '../../content/enemies.js';
 import { GAME_VERSION } from '../../version.js';
 import { loadScene, Conversation } from '../../engine/dialogue.js';
-import { babble, setArea, sfx, ring } from '../../audio/audio.js';
+import { babble, setArea, sfx, ring, speak, hush } from '../../audio/audio.js';
 import { ITEMS, RECIPES, SKILLS, playerMods } from '../../content/items.js';
 import { tileKey } from '../render/tiles.js';
 import { GameMenu, TABS } from '../ui/GameMenu.js';
@@ -119,6 +119,7 @@ export class WorldScene extends Phaser.Scene {
       standing: (f, n) => { if (f in this.save.standing) this.save.standing[f] += n; if (this.mode === 'client') this.net.send({ t: 'standing', faction: f, n }); },
     };
     this.dlg = new Conversation(scene, nodeId, this._dialogueCtx(), sink);
+    this.dlgVoiced = sceneName === 'ending';   // act-ending cutscene: spoken voices
     this.dlgDone = onDone;
     this._drawDialogue();
   }
@@ -227,7 +228,7 @@ export class WorldScene extends Phaser.Scene {
     const d = this.dlg, on = !!d && !d.done;
     [this.dlgBg, this.dlgWho, this.dlgText, ...this.dlgChoices].forEach((o) => o.setVisible(on));
     if (!on) { this.dlgPortrait.setVisible(false); this.dlgPortraitBg.setVisible(false); this.dlgInitial.setText(''); }
-    if (d && d.done) { this.dlg = null; const cb = this.dlgDone; this.dlgDone = null; cb?.(); return; }
+    if (d && d.done) { this.dlg = null; if (this.dlgVoiced) hush(); this.dlgVoiced = false; const cb = this.dlgDone; this.dlgDone = null; cb?.(); return; }
     if (!on) return;
     const choices = d.choices;
     if (choices.length) {
@@ -239,7 +240,8 @@ export class WorldScene extends Phaser.Scene {
       const line = d.line;
       this.dlgWho.setText(line?.who ? line.who.toUpperCase() : '');
       if (line && line !== this._lastLine) {
-        this._lastLine = line; this._lineAt = this.time.now; babble(line.who, line.text);
+        this._lastLine = line; this._lineAt = this.time.now;
+        if (!(this.dlgVoiced && line.who && speak(line.who, line.text))) babble(line.who, line.text);
         this._typeFull = (line.text ?? '').replace(/\*([^*]+)\*/g, '$1'); this._typeShown = 0;
         this._setPortrait(line.who);
       }

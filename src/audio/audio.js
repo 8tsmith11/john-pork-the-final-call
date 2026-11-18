@@ -190,3 +190,27 @@ export function ring(times = 2) {
     }
   }
 }
+
+// Spoken voices for act-ending cutscenes (brief: "a post fight cutscene with voices"), using the
+// browser's built-in speech synthesis. Each character gets a stable voice, pitch and pace.
+const VOICE_STYLE = {
+  pork: { pitch: 0.55, rate: 0.82, pref: /male|daniel|fred|alex|david|en-gb/i },
+  'john pork': { pitch: 0.55, rate: 0.82, pref: /male|daniel|fred|alex|david|en-gb/i },
+  trevor: { pitch: 0.95, rate: 1.0, pref: /male|tom|aaron|en-us/i },
+  michael: { pitch: 1.1, rate: 1.05, pref: /male|en-us/i },
+  manuel: { pitch: 1.0, rate: 1.02, pref: /es|spanish|diego|jorge|male/i },
+  sahur: { pitch: 0.3, rate: 0.7, pref: /male/i },
+};
+export function canSpeak() { return typeof window !== 'undefined' && 'speechSynthesis' in window; }
+export function speak(who, text) {
+  if (!canSpeak() || !text) return false;
+  const synth = window.speechSynthesis; synth.cancel();
+  const st = VOICE_STYLE[(who || '').toLowerCase()] ?? { pitch: 1, rate: 1, pref: /en/i };
+  const u = new SpeechSynthesisUtterance(text.replace(/\*[^*]+\*/g, ''));
+  const voices = synth.getVoices();
+  u.voice = voices.find((v) => st.pref.test(`${v.name} ${v.lang}`) && /en|es/i.test(v.lang)) ?? voices.find((v) => /en/i.test(v.lang)) ?? null;
+  u.pitch = st.pitch; u.rate = st.rate; u.volume = 0.9;
+  synth.speak(u);
+  return true;
+}
+export function hush() { if (canSpeak()) window.speechSynthesis.cancel(); }

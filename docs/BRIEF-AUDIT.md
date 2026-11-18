@@ -55,7 +55,7 @@
 | 47 | Act 1 confusing/unclear at first | ✅ | | |
 | 48 | Biohacking forms, multiple stages, gating the finale | 🟡 | | Stage 1 ✅ |
 | 49 | Final boss not constant | 🟡 | | Planned (sealed) |
-| 50 | **Each act ends with a fight + post-fight cutscene WITH VOICES** | 🟡 | trevor | Fight ✅, cutscene ✅, voices are babble. Explore real TTS |
+| 50 | **Each act ends with a fight + post-fight cutscene WITH VOICES** | 🟡 | trevor | Fight ✅, cutscene ✅, spoken voices via browser speech synthesis (per-character pitch/pace/voice), babble fallback. Recorded voice acting would be better still |
 | 51 | **Start with electric scooters** and a 3D printer | ✅ | trevor | Rideable outdoors (Q), battery + dock, rail grind |
 | 52 | **Hidden mechanics: fun / progression / fast travel** | 🟡 | trevor | Vending kick (+ a 7-kick secret), shrimp canary, scooter rail-grind ✅. More per region to come (ziplines, roofs) |
 | 53 | **Required puzzles + hard optional puzzles with boons** | 🟡 | both | Required: Lead C signal routing ✅, switchyard + sump pump ✅. Hard optional (boons): the Four Clocks ✅, Manuel's busts ✅ |
