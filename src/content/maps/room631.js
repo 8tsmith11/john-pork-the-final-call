@@ -43,7 +43,7 @@ export const room631 = {
     { id: 'obj.statue_1', x: 4, y: 8, label: 'Statue', text: 'One of Manuel\'s John Pork statues. The eyes are very well done.' },
     { id: 'obj.statue_2', x: 20, y: 8, label: 'Statue', text: 'Another statue. Its head is turned slightly toward the window. Was it always?' },
     { id: 'obj.statue_3', x: 13, y: 11, label: 'Statue', text: 'The newest statue. Manuel says he finished it last week. He doesn\'t remember sanding it.' },
-    { id: 'obj.printer_1', x: 2, y: 2, label: 'Fab #1', text: 'Fab #1. Cold. A failed print of a yerba mate gourd.' },
+    { id: 'obj.printer_1', x: 2, y: 2, label: 'Fab #1 (print a helium sniffer)', talk: 'lead_a_helium' },
     { id: 'obj.printer_2', x: 4, y: 2, label: 'Fab #2', text: 'Fab #2. Cold. The bed is clean.' },
     { id: 'obj.printer_3', x: 6, y: 2, label: 'Fab #3', flag: 'act1.clue.printer3Warm',
       text: 'Fab #3. Warm. The job queue lists one print. Nobody here submitted it.' },

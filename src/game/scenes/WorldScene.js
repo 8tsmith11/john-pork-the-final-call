@@ -8,6 +8,7 @@ import { MAPS } from '../../content/maps/index.js';
 import { TILE_COLORS } from '../../content/maps/build.js';
 import { ENEMIES } from '../../content/enemies.js';
 import { GAME_VERSION } from '../../version.js';
+import { loadScene, Conversation } from '../../engine/dialogue.js';
 
 const STEP = 1 / 60;
 const XP_PER_LEVEL = 30;
@@ -40,8 +41,83 @@ export class WorldScene extends Phaser.Scene {
     this.acc = 0;
     this._makeUi();
     this._wireNet();
+    this._makeDialogueUi();
     this._showMap(startMap);
     this.ready = true;
+    if (!this.save.flags['act1.coldopen.done']) this.startDialogue('cold_open', null, () => this._flag('act1.coldopen.done', true));
+  }
+
+  // ---------- dialogue ----------
+  _flag(k, v) {
+    this.save.flags[k] = v;
+    if (this.mode === 'client') this.net.send({ t: 'flag', key: k, value: v });
+  }
+
+  _dialogueCtx() {
+    const me = this.save.party[this.character];
+    const present = [...new Set((this._lastRendered?.players || []).map((p) => p.c))];
+    return {
+      speaker: this.character, present: present.length ? present : [this.character], flags: this.save.flags,
+      inventory: me.inventory.map((i) => i.id), seed: this.save.world.rolls?.twistVariant ?? 'A',
+      morph: me.morph.stage, standing: this.save.standing,
+    };
+  }
+
+  async startDialogue(sceneName, nodeId, onDone) {
+    if (this.dlg) return;
+    const scene = await loadScene(sceneName);
+    const sink = {
+      flag: (k, v) => this._flag(k, v),
+      item: (item) => { this.save.party[this.character].inventory.push({ id: `item.${item}`, qty: 1 }); if (this.mode === 'client') this.net.send({ t: 'item', who: this.character, item }); },
+      standing: (f, n) => { if (f in this.save.standing) this.save.standing[f] += n; if (this.mode === 'client') this.net.send({ t: 'standing', faction: f, n }); },
+    };
+    this.dlg = new Conversation(scene, nodeId, this._dialogueCtx(), sink);
+    this.dlgDone = onDone;
+    this._drawDialogue();
+  }
+
+  _makeDialogueUi() {
+    const W = this.scale.width, H = this.scale.height;
+    this.dlgBg = this.add.rectangle(W / 2, H - 46, W - 16, 84, 0x0b0d16, 0.94).setStrokeStyle(1, 0xf2a6b8).setScrollFactor(0).setDepth(9500).setVisible(false);
+    this.dlgWho = this.add.text(16, H - 84, '', { ...FONT, color: '#ffb347' }).setScrollFactor(0).setDepth(9501);
+    this.dlgText = this.add.text(16, H - 72, '', { ...FONT, wordWrap: { width: W - 34 }, lineSpacing: 2 }).setScrollFactor(0).setDepth(9501);
+    this.dlgChoices = [0, 1, 2, 3, 4, 5].map((i) => this.add.text(22, H - 72 + i * 11, '', { ...FONT, color: '#9aa3c7' })
+      .setScrollFactor(0).setDepth(9501).setInteractive({ useHandCursor: true })
+      .on('pointerover', function () { this.setColor('#ffb347'); }).on('pointerout', function () { this.setColor('#9aa3c7'); })
+      .on('pointerdown', () => this._choose(i)));
+    this.input.keyboard.on('keydown', (ev) => {
+      if (!this.dlg) return;
+      if (ev.key === 'e' || ev.key === 'E' || ev.key === ' ' || ev.key === 'Enter') { this.dlg.choices.length ? null : this.dlg.advance(); this._drawDialogue(); }
+      const n = parseInt(ev.key, 10); if (n >= 1 && n <= 6) this._choose(n - 1);
+    });
+    this._drawDialogue();
+  }
+
+  _choose(i) { if (!this.dlg?.choices[i]) return; this.dlg.choose(i); this._drawDialogue(); }
+
+  _drawDialogue() {
+    const d = this.dlg, on = !!d && !d.done;
+    [this.dlgBg, this.dlgWho, this.dlgText, ...this.dlgChoices].forEach((o) => o.setVisible(on));
+    if (d && d.done) { this.dlg = null; const cb = this.dlgDone; this.dlgDone = null; cb?.(); return; }
+    if (!on) return;
+    const choices = d.choices;
+    if (choices.length) {
+      this.dlgWho.setText('');
+      this.dlgText.setText('');
+      this.dlgChoices.forEach((t, i) => t.setText(choices[i] ? `${i + 1}. ${choices[i].text}` : '').setVisible(!!choices[i]));
+    } else {
+      const line = d.line;
+      this.dlgWho.setText(line?.who ? line.who.toUpperCase() : '');
+      this.dlgText.setText(line?.text?.replace(/\*([^*]+)\*/g, '$1') ?? '');
+      this.dlgChoices.forEach((t) => t.setVisible(false));
+    }
+  }
+
+  // Story beats keyed to places (Act 1 MVP wiring; see docs/act1/DESIGN.md).
+  _onEnterMap(map) {
+    const once = (flag, fn) => { if (!this.save.flags[flag]) { this.save.flags[flag] = true; fn(); } };
+    if (map.id === 'aster_hall') once('act1.beat.asterEnter', () => this.startDialogue('aster'));
+    if (map.id === 'tunnel_1') once('act1.beat.call', () => this.startDialogue('the_call'));
   }
 
   _newGame() {
@@ -57,7 +133,9 @@ export class WorldScene extends Phaser.Scene {
           const prev = this.remoteInputs.get(peer);
           this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, interact: false });
         }
-        if (msg.t === 'flag' && typeof msg.key === 'string' && msg.key.startsWith('act')) this.save.flags[msg.key] = true;
+        if (msg.t === 'flag' && typeof msg.key === 'string' && /^(act\d|dlg\.)/.test(msg.key)) this.save.flags[msg.key] = msg.value ?? true;
+        if (msg.t === 'item' && this.save.party[msg.who]) this.save.party[msg.who].inventory.push({ id: `item.${msg.item}`, qty: 1 });
+        if (msg.t === 'standing' && msg.faction in this.save.standing) this.save.standing[msg.faction] += Number(msg.n) || 0;
         if (msg.t === 'exit') this._tryExit(this.sim.map.objects.find((o) => o.id === msg.obj));
       });
       this.net.on('leave', (peer) => this.sim.removePlayer(peer));
@@ -107,6 +185,18 @@ export class WorldScene extends Phaser.Scene {
     this.enemySprites.clear();
   }
 
+  async _playEnding() {
+    if (this.mode !== 'client' && !this.sim.cleared) return this._announce('Something down here is still moving.');
+    this.startDialogue('ending', null, () => {
+      this._flag('act1.complete', true);
+      const W = this.scale.width, H = this.scale.height;
+      const card = this.add.text(W / 2, H / 2, 'ACT 1\nMISSED CALLS', { fontFamily: 'monospace', fontSize: '18px', color: '#f2a6b8', align: 'center' })
+        .setOrigin(0.5).setScrollFactor(0).setDepth(9999).setAlpha(0);
+      this.tweens.add({ targets: card, alpha: 1, duration: 1600, hold: 2600, yoyo: true });
+      if (this.mode !== 'client') { this.save.world.act = 2; autosave(this.save); }
+    });
+  }
+
   _tryExit(obj) {
     if (!obj || obj.action !== 'exit') return;
     if (obj.requiresClear && !this.sim.cleared) return this._announce('Something down here is still moving.');
@@ -149,12 +239,12 @@ export class WorldScene extends Phaser.Scene {
       snap = this._interpolated();
       me = snap?.players.find((p) => p.id === this.localId);
       if (!me) return;
-      const inp = this.input2.read(me);
+      const inp = this._frozen(this.input2.read(me));
       this.net.send({ t: 'input', inp });
       this._handleInteract(me, inp.interact);
     } else {
       me = this.sim.players.get(this.localId);
-      const inp = this.input2.read(me);
+      const inp = this._frozen(this.input2.read(me));
       this.acc += Math.min(deltaMs / 1000, 0.1);
       let first = true, events = [];
       while (this.acc >= STEP) {
@@ -173,10 +263,13 @@ export class WorldScene extends Phaser.Scene {
       this._hostEvents(events);
       snap = this._lastSnap = { ...this.sim.snapshot(), events };
     }
-    if (snap.map !== this.map.id && MAPS[snap.map]) this._showMap(MAPS[snap.map]);
+    if (snap.map !== this.map.id && MAPS[snap.map]) { this._showMap(MAPS[snap.map]); this._onEnterMap(MAPS[snap.map]); }
+    this._lastRendered = snap;
     if (this.sayUntil && this.time.now > this.sayUntil) { this.box.setVisible(false); this.boxText.setVisible(false); this.sayUntil = 0; }
     this._render(snap);
   }
+
+  _frozen(inp) { return this.dlg ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : inp; }
 
   _hostEvents(events) {
     for (const ev of events) {
@@ -198,6 +291,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _handleInteract(me, pressed) {
+    if (this.dlg) { this.hint.setText(''); return; }
     const near = this._nearestObject(me);
     this.hint.setText(near ? `[E] ${near.label}` : '');
     if (!pressed || !near) return;
@@ -206,6 +300,8 @@ export class WorldScene extends Phaser.Scene {
       else this._tryExit(near);
       return;
     }
+    if (near.talk) { const [scene, node] = near.talk.split(':'); this.startDialogue(scene, node || null, near.after ? () => this._flag(near.after, true) : null); return; }
+    if (near.action === 'ending') { this._playEnding(); return; }
     this._say(near.text);
     if (near.flag) {
       if (this.mode === 'client') this.net.send({ t: 'flag', key: near.flag });
