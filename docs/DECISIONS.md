@@ -29,4 +29,4 @@ Format:
 - A Pages site is HTTPS, so browsers block plain `ws://` connections to LAN servers. Options:
   WebRTC peer-to-peer (a host player's browser is authoritative) with some signaling method, a
   secure local relay, or serving the game from a LAN machine for multiplayer.
-- Needs a `[TECH]` discussion.
+- Needs a `[TECH]` discussion. Proposal: [`tech/PLAN.md`](tech/PLAN.md) §2 (WebRTC, host-authoritative, PeerJS signaling with copy-paste fallback).
