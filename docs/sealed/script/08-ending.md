@@ -47,9 +47,8 @@ ba checbfr fb gung yvar naq gur ynfg fubg ner jung gur cynlre erzrzoref.
 
 ### abqr: raqvat_obff_snyyf
 
-*Gur qrnq cyngsbez haqre Pbyyrtr Cnex. Rzretrapl fgevcf syvpxre nybat gur cyngsbez rqtr. Ng gur sne
-raq, n iragvyngvba funsg evfrf guebhtu sbegl zrgerf bs pbapergr gb n fznyy fdhner bs fxl. Vg vf gur
-ynfg zvahgrf orsber qnja naq gur fdhner vf gur pbybhe bs qvfujngre.*
+*Gur qrnq cyngsbez haqre Pbyyrtr Cnex. Ng gur sne raq n iragvyngvba funsg evfrf guebhtu sbegl
+zrgerf bs pbapergr gb n fznyy fdhner bs fxl, gur pbybhe bs qvfujngre.*
 
 #### vs synt npg1.obff.fnuhe
 
@@ -90,8 +89,8 @@ svefg gvzr fvapr gur cnegl neevirq.*
 
 #### raq
 
-*Znahry unf abg urneq nal bs guvf. Ur vf ybbxvat qbja gur cyngsbez. Gur bayl benatr va gur jubyr
-ghaary vf ng gur obggbz bs gur funsg, fanttrq ba n unatvat pnoyr, gheavat fybjyl.*
+*Gur bayl benatr va gur jubyr ghaary vf ng gur obggbz bs gur funsg, fanttrq ba n unatvat pnoyr,
+gheavat fybjyl.*
 
 **ZNAHRY:** Gurer.
 
@@ -108,9 +107,7 @@ qrnq gvpxrg znpuvar. Znahry vf nyernql pyvzovat vg.*
 
 **ZNAHRY:** V xabj ubj gb ubyq vg.
 
-*Ur fgnaqf ba gur znpuvar. Ur fgergpurf. Uvf svatref ner n unaq'f jvqgu sebz gur evooba.*
-
-*Rirel cubar evatf.*
+*Ur fgnaqf ba gur znpuvar naq fgergpurf. N unaq'f jvqgu fubeg. Rirel cubar evatf.*
 
 -> raqvat_evat
 
@@ -118,8 +115,7 @@ qrnq gvpxrg znpuvar. Znahry vf nyernql pyvzovat vg.*
 
 ### abqr: raqvat_evat
 
-*Guerr pnyyre VQf fgnpx ba fperra, bar cre ebbzzngr: WBUA CBEX. WBUA CBEX. WBUA CBEX. NAFJRE naq
-QRPYVAR nccrne haqre rnpu. Gur phefbe pnaabg ernpu gurz.*
+*Guerr pnyyre VQf fgnpx ba fperra: WBUA CBEX. WBUA CBEX. WBUA CBEX. Gur phefbe pnaabg ernpu QRPYVAR.*
 
 #### vs synt npg1.raqvat.jnez
 
@@ -147,9 +143,8 @@ QRPYVAR nccrne haqre rnpu. Gur phefbe pnaabg ernpu gurz.*
 
 ### abqr: raqvat_guerr_ibvprf
 
-*Rnpu cubar fcrnxf va n qvssrerag ibvpr. Znahry'f vf na byq jbzna, hauheevrq, jvgu n Ohrabf Nverf
-yvyg. Zvpunry'f vf n lbhat jbzna, pybfr gb gur zvp, nf vs fur vf jnyxvat fbzrjurer. Geribe'f vf
-Geribe, n srj lrnef byqre. Abar bs gur guerr fbhaqf yvxr n cvt.*
+*Rnpu cubar fcrnxf va n qvssrerag ibvpr: na byq jbzna jvgu n Ohrabf Nverf yvyg, n lbhat jbzna
+jnyxvat fbzrjurer, naq Geribe, n srj lrnef byqre.*
 
 **ZNAHRY'F CUBAR:** Znahry.
 
@@ -175,12 +170,9 @@ Geribe, n srj lrnef byqre. Abar bs gur guerr fbhaqf yvxr n cvt.*
 
 **GERIBE'F CUBAR:** naq vg qbrf abg yvxr lbh.
 
-*Gur guerr ibvprf fgneg gb bireync. Cvgpu naq npprag fyvqr gbjneq rnpu bgure jvgu rirel jbeq.*
-
 **NYY CUBARF:** Fgnl gurer. V'z pbzvat qbja. Tvir zr n zvahgr.
 
-*Bar ibvpr abj. Znyr, jnez, n yvggyr ubnefr. Vg pbzrf sebz nyy guerr cubarf naq vg vf fyvtugyl bhg
-bs flap jvgu vgfrys.*
+*Bar ibvpr abj, jnez naq n yvggyr ubnefr, sebz nyy guerr cubarf naq fyvtugyl bhg bs flap jvgu vgfrys.*
 
 **CBEX (cubarf):** Gurer'f n ynqqre. Bs pbhefr gurer'f n ynqqre.
 
@@ -198,18 +190,13 @@ bs flap jvgu vgfrys.*
 
 **GERIBE'F CUBAR:** nobhg gung.
 
-*Gur guerr ibvprf fgneg gb bireync. Cvgpu naq npprag fyvqr gbjneq rnpu bgure jvgu rirel jbeq.*
-
 **NYY CUBARF:** V'z pbzvat qbja naljnl.
 
-*Bar ibvpr abj. Znyr, syng, n yvggyr ubnefr. Vg pbzrf sebz nyy guerr cubarf naq vg vf fyvtugyl bhg
-bs flap jvgu vgfrys.*
+*Bar ibvpr abj, syng naq n yvggyr ubnefr, sebz nyy guerr cubarf naq fyvtugyl bhg bs flap jvgu vgfrys.*
 
 **CBEX (cubarf):** Vg'f n ynqqre. Tvir zr n zvahgr. Tvir zr frireny.
 
 #### raq
-
-*Gur pnyyf raq. Gur fperraf qb abg tb qnex. Gurl jnvg.*
 
 -> raqvat_ynqqre
 
@@ -217,9 +204,7 @@ bs flap jvgu vgfrys.*
 
 ### abqr: raqvat_ynqqre
 
-*Fbhaq svefg, sebz uvtu va gur funsg: n obbg ba n ehat. N tehag ba rirel frpbaq fgrc.
-N cnhfr. Gura ntnva. Fbzrobql vf pyvzovat qbja sbegl zrgerf bs znvagranapr ynqqre bar onq xarr ng n
-gvzr, naq vf abg rawblvat vg.*
+*Sebz uvtu va gur funsg: n obbg ba n ehat, naq n tehag ba rirel frpbaq fgrc.*
 
 **CBEX (bss):** Gjragl-rvtug.
 
@@ -231,16 +216,14 @@ gvzr, naq vf abg rawblvat vg.*
 
 **CBEX (bss):** V pna urne lbh. V pna urne rirelguvat. Vg'f n jubyr ceboyrz.
 
-*Wbua Cbex vf gnyy. Gur pbng vf ybat naq unf orra ercnverq ol fbzrbar jub qvq abg bja zngpuvat
-guernq. Gur snpr vf n cvt'f snpr naq vg vf fxva: oevfgyr, n jrg fabhg, n cngpu nybat gur wnj tbar terl jurer n
-tensg vf snvyvat. Uvf oerngu sbtf va gur pbyq bs gur funsg, naq abj naq gura vg sbtf jebat.
-Uvf xahpxyrf unir fcyvg naq urnyrq naq fcyvg. Ur fgrcf bss gur ynfg ehat, naq uvf yrsg xarr ybpxf, naq ur
-unf gb uvg vg gjvpr jvgu gur urry bs uvf unaq orsber vg yrgf uvz fgnaq.*
+*Wbua Cbex vf gnyy. Gur pbng vf ybat, ercnverq ol fbzrbar jub qvq abg bja zngpuvat guernq. Gur
+snpr vf n cvt'f snpr naq vg vf fxva: oevfgyr, n jrg fabhg, n terl cngpu nybat gur wnj jurer n tensg
+vf snvyvat.*
+
+*Ur fgrcf bss gur ynfg ehat. Uvf yrsg xarr ybpxf, naq ur uvgf vg gjvpr jvgu gur urry bs uvf unaq
+orsber vg yrgf uvz fgnaq.*
 
 **CBEX:** Guvegl-bar. Jub ohvyqf guvegl-bar.
-
-*Ur ybbxf ng gur guerr bs gurz. Gura ur ybbxf ng gur cubarf ba gurve orygf naq va gurve unaqf, naq
-gur fperraf svanyyl tb qnex.*
 
 #### vs synt npg1.raqvat.jnez
 
@@ -297,9 +280,8 @@ vg jnyxf vagb gur qnex, naq gur gvpxvat tbrf jvgu vg.*
 
 ### abqr: raqvat_va_crefba
 
-*Znahry vf fgvyy ba gbc bs gur gvpxrg znpuvar jvgu uvf nez unys-envfrq. Cbex jnyxf gbjneq uvz. Gur
-yvzc vf erny. Ur fgbcf orybj gur onyybba naq ybbxf hc ng vg, naq gura ng Znahry, naq sbe n zbzrag
-ur qbrf abg unir n wbxr.*
+*Cbex yvzcf gb gur gvpxrg znpuvar. Ur ybbxf hc ng gur onyybba, gura ng Znahry, naq sbe n zbzrag ur
+qbrf abg unir n wbxr.*
 
 **CBEX:** Znahry. Lbh xrcg vg va gur pybfrg fb vg'q or gur svefg guvat lbh fnj. V xabj. V'ir orra purpxvat ba vg gbb.
 
@@ -331,9 +313,8 @@ ur qbrf abg unir n wbxr.*
 
 ### abqr: raqvat_haubbx
 
-*Cbex ernpurf hc. Ur qbrf abg arrq gur gvpxrg znpuvar. Bar fphssrq unaq pybfrf nebhaq gur pnoyr,
-gur bgure jbexf gur evooba ybbfr sebz jurer vg unf jbhaq vgfrys, cngvragyl, gur jnl lbh jbhyq serr
-n xvgr sbe n puvyq. Bar bs uvf svatref qbrf abg pybfr nyy gur jnl. Ur znantrf.*
+*Cbex ernpurf hc. Bar fphssrq unaq pybfrf nebhaq gur pnoyr; gur bgure jbexf gur evooba ybbfr,
+cngvragyl, gur jnl lbh jbhyq serr n xvgr sbe n puvyq.*
 
 *Gur onyybba pbzrf serr. Ur ubyqf vg ol gur evooba fgho, ng purfg urvtug, orgjrra uvzfrys naq
 Znahry. Vg vf gur oevtugrfg guvat ba gur fperra.*
@@ -343,9 +324,6 @@ frafbe svaqvat vgf enatr. Cbex'f rlrf syvpx hc gur funsg naq onpx. Gur ebbzzngrf
 abgvpr.*
 
 **ZNAHRY:** Tvir vg gb zr.
-
-*Bar frpbaq. Ur ybbxf ng gur onyybba gur jnl crbcyr ybbx ng fbzrguvat gurl unir nyfb orra purpxvat
-ba rirel zbeavat.*
 
 **ZNAHRY:** Cyrnfr.
 
@@ -804,8 +782,6 @@ Pubvprf:
 
 **CBEX:** Tb ubzr gur ybat jnl. Abg npebff gur cynmn. Fyrrc. Srrq gur fuevzc. Fbzrobql ybbx ng gur bggbzna va gur zbeavat naljnl, vg'f fgvyy gur orfg sberpnfg va gur ohvyqvat.
 
-*Ur fgnegf gb ghea gbjneq gur ynqqre, ybbxf ng guvegl-bar ehatf, naq ivfvoyl qrpvqrf ntnvafg vg.*
-
 **CBEX:** Znahry.
 
 **CBEX:** Bar guvat, orsber V tb. V zrnag gb bcra jvgu vg. V nyjnlf zrna gb bcra jvgu vg.
@@ -815,8 +791,6 @@ Pubvprf:
 #### ryfr
 
 **CBEX:** Tb ubzr gur ybat jnl. Abg npebff gur cynmn.
-
-*Ur ybbxf ng gur ynqqre. Guvegl-bar ehatf. Ur qbrf abg zbir gbjneq vg.*
 
 **CBEX:** V'z tbvat gb pnyy ntnva. V'z gryyvat lbh abj fb vg vfa'g n fhecevfr. Lbh pna yrg vg evat. Crbcyr qb.
 
@@ -926,12 +900,8 @@ frpbaq bar gung jnf nyernql gurer. Zvffrq pnyy: WBUA CBEX. 2071.*
 
 ### abqr: raqvat_ynfg_fubg
 
-*Jvqr. Gur qrnq cyngsbez. Gur rzcgl obql fgnaqvat ng gur sbbg bs gur ynqqre yvxr n pbng yrsg ba
-n ubbx. Gur oner pnoyr. Gur fdhner bs fxl ng gur gbc bs gur funsg unf tbar sebz tenl gb gur cnyr
-abguvat gung pbzrf orsber pbybhe.*
-
-*Znahry fgnaqf haqre gur pnoyr jvgu gur phg evooba va uvf unaq. Zvpunry naq Geribe ner n srj fgrcf
-oruvaq uvz, abg fher ubj pybfr gb fgnaq.*
+*Gur rzcgl obql fgnaqf ng gur sbbg bs gur ynqqre yvxr n pbng yrsg ba n ubbx. Gur fdhner bs fxl unf
+tbar cnyr. Znahry fgnaqf haqre gur pnoyr jvgu gur phg evooba va uvf unaq.*
 
 **ZNAHRY:** V pbhyq unir gnttrq vg. N genpxre. N grgure nynez. Vg'f bar avtug bs jbex.
 
@@ -942,8 +912,6 @@ oruvaq uvz, abg fher ubj pybfr gb fgnaq.*
 *Fvyrapr. Geribe gheaf uvf jubyr urnq gb ybbx ng uvz.*
 
 **ZVPUNRY:** Jung? V'z fnlvat ur'q unir tbggra gurer svefg. V'z fnlvat vg'f abg ba lbh. Lbh'er na Nfgre ceb. Ur'f— uvz.
-
-*Znahry znxrf n fbhaq gung vf abg n ynhtu naq vf abg abg bar.*
 
 **ZNAHRY:** Fur fnvq vg jbhyq gryy zr gur jrngure.
 
@@ -978,8 +946,6 @@ cvpxrq hc.*
 *Sbbgfgrcf ba fgnvef, guerr frgf, gverq.*
 
 **ZVPUNRY:** Jr unir yno va sbhe ubhef.
-
-*Sbbgfgrcf.*
 
 **ZNAHRY:** V ungr 245 yno.
 
