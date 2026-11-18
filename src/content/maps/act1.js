@@ -3,7 +3,7 @@
 import { makeMap } from './build.js';
 
 export const metroPlaza = makeMap({
-  id: 'metro_plaza', name: 'College Park metro plaza',
+  id: 'metro_plaza', name: 'College Park metro plaza', outdoor: true,
   // Who's here, and why (see src/game/crowd.js). Thoughtful, not scattered.
   crowd: [
     { mode: 'wait', at: [18, 2], n: 3, face: [20, 1] },            // a queue under the train board

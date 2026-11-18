@@ -65,6 +65,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode !== 'client') for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
     this.save.world.scrap ??= 0;
     this._makeMenu();
+    this.input.keyboard.on('keydown-Q', () => { if (this.dlg || this.menu) return; if (this.mode === 'client') this.net.send({ t: 'scooter' }); else this._scooter(this.localId); });
     this.input.keyboard.on('keydown-M', () => { if (this.mode === 'client') this.net.send({ t: 'morph' }); else this._morph(this.localId); });
     // E: close an open panel/description, otherwise interact with the nearest thing in reach.
     this.input.keyboard.on('keydown-E', () => {
@@ -273,6 +274,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'mate') this._mateBreak();
         if (msg.t === 'use') this._use(this._charOf(peer), peer);
         if (msg.t === 'morph') this._morph(peer);
+        if (msg.t === 'scooter') this._scooter(peer);
       });
       this.net.on('leave', (peer) => this.sim.removePlayer(peer));
       this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
@@ -454,6 +456,15 @@ export class WorldScene extends Phaser.Scene {
     if (!c || !def || !c.inventory.some((it) => it.id === id) || def.slot === 'consumable') return;
     c.equipped[def.slot] = c.equipped[def.slot] === id ? null : id;   // click again to unequip
     this._syncParty();
+  }
+
+  _scooter(peerId) {
+    const p = this.sim.players.get(peerId); if (!p) return;
+    const c = this.save.party[p.character];
+    p.battery = c.scooterBattery ??= 100;
+    if (!p.riding && !this.map.outdoor) return this._toast('No scooters indoors.');
+    if (!p.riding && p.battery <= 0) return this._toast('Scooter battery is dead. Charge it at the dock in 631.');
+    this.sim.toggleScooter(peerId, true);
   }
 
   _morph(peerId) {
@@ -709,6 +720,10 @@ export class WorldScene extends Phaser.Scene {
         if (this.sim.players.size <= 1 || this.sim.waitAtExit(ev.by, ev.id, ev.dx, ev.dy)) { this.sim.clearWaiting(); this._tryExit(exit); }
       }
       if (ev.t === 'door' || ev.t === 'doorClose') sfx('swing');
+      if (ev.t === 'scooter') {
+        const p = this.sim.players.get(ev.id); if (p) this.save.party[p.character].scooterBattery = Math.round(p.battery ?? 100);
+        if (ev.id === this.localId) this._toast(ev.dead ? 'Battery dead.' : ev.knocked ? 'Knocked off your scooter!' : ev.on ? 'On the scooter. [Q] to hop off' : 'Off the scooter.');
+      }
       if (ev.t === 'kill') {
         if (ev.key && !this.save.world.killed.includes(ev.key)) this.save.world.killed.push(ev.key);
         this.save.world.scrap = (this.save.world.scrap ?? 0) + (ev.boss ? 10 : 2);
@@ -770,6 +785,10 @@ export class WorldScene extends Phaser.Scene {
     if (near.action === 'tv') { this._say(this._newsLine()); return; }
     if (near.action === 'quests') { this._say(this._objectives()); return; }
     if (near.action === 'pages') { const n = (this._pageIdx[near.id] = ((this._pageIdx[near.id] ?? -1) + 1) % near.pages.length); this._say(near.pages[n] + (near.pages.length > 1 ? `\n\n[E again: ${n + 1}/${near.pages.length}]` : '')); return; }
+    if (near.id === 'obj.scooters') {
+      if (this.mode !== 'client') { for (const c of Object.values(this.save.party)) c.scooterBattery = 100; for (const p of this.sim.players.values()) p.battery = 100; }
+      this._say(near.text + '\n\nAll three scooters are charged to 100%. Ride outdoors with [Q].'); return;
+    }
     if (near.action === 'mate') { this._mateBreak(); this._say(near.text + '\n\nEveryone has some. Better. (Thermos refilled.)'); return; }
     if (near.door) { if (this.mode === 'client') this.net.send({ t: 'door', id: near.id }); else this._toggleDoor(near.id); return; }
     if (near.knock) { this._knock(near); return; }
@@ -852,6 +871,17 @@ export class WorldScene extends Phaser.Scene {
       if (p.d && (this._ghostTick = (this._ghostTick ?? 0) + 1) % 2 === 0) this._dashGhost(s, p);
       s.setAlpha(p.d ? 0.55 : p.iv ? (Math.floor(this.time.now / 60) % 2 ? 0.4 : 1) : 1);
       s.setVisible(!p.w);
+      const sg = (s.scooterGfx ??= this.add.graphics());
+      sg.clear();
+      if (p.ri) {
+        const col = { michael: 0xc8605a, trevor: 0x3f6fb5, manuel: 0x5f8f3a }[p.c] ?? 0x888888, fx = p.f === 'left' ? -1 : 1;
+        sg.fillStyle(0x1a1a22).fillRect(p.x - 7, p.y + 3, 14, 2);                       // deck
+        sg.fillStyle(col).fillRect(p.x - 7, p.y + 2, 14, 1);
+        sg.fillStyle(0x2b2b33).fillCircle(p.x - 6, p.y + 5, 1.5).fillCircle(p.x + 6, p.y + 5, 1.5); // wheels
+        sg.lineStyle(1, 0x9aa3c7).lineBetween(p.x + 6 * fx, p.y + 3, p.x + 6 * fx, p.y - 9);       // stem
+        sg.setDepth(p.y + 1);
+        s.setY(Math.round(p.y + 1));
+      }
       if (p.dn) {
         const g = (this.reviveGfx ??= this.add.graphics().setDepth(6400));
         if (!this._reviveCleared) { g.clear(); this._reviveCleared = true; }

@@ -47,7 +47,7 @@ export class Sim {
     let i = 0;
     for (const p of this.players.values()) {
       const sp = arrivals[i++ % arrivals.length];
-      Object.assign(p, { x: sp.x, y: sp.y, vx: 0, vy: 0, dodgeT: 0, downed: false, waitExit: null, hp: Math.max(p.hp, COMBAT.reviveHp) });
+      Object.assign(p, { x: sp.x, y: sp.y, vx: 0, vy: 0, dodgeT: 0, downed: false, waitExit: null, riding: map.outdoor ? p.riding : false, hp: Math.max(p.hp, COMBAT.reviveHp) });
     }
     this.spawnEnemies();
   }
@@ -95,6 +95,14 @@ export class Sim {
   /** Gear/skill modifiers from the save (src/content/items.js playerMods). */
   setMods(id, mods) { const p = this.players.get(id); if (p) { const full = p.hp >= this.maxHp(p); p.mods = mods; if (full) p.hp = this.maxHp(p); } }
   maxHp(p) { return COMBAT.maxHp + (p.mods?.maxHp ?? 0); }
+  /** Electric scooter: fast travel outdoors. Can't fight or dash while riding; a hit knocks you off. */
+  toggleScooter(id, allowed) {
+    const p = this.players.get(id); if (!p || p.downed) return false;
+    if (p.riding) { p.riding = false; this.events.push({ t: 'scooter', id, on: false }); return true; }
+    if (!allowed) return false;
+    p.riding = true; this.events.push({ t: 'scooter', id, on: true }); return true;
+  }
+
   /** Morph stage 1 (biohack form): stronger and faster, but takes more damage. */
   toggleMorph(id, allowed) { const p = this.players.get(id); if (p && allowed && !p.downed) { p.morphed = !p.morphed; this.events.push({ t: 'morph', id, on: p.morphed }); } }
   heal(id, n) { const p = this.players.get(id); if (p && !p.downed) p.hp = Math.min(this.maxHp(p), p.hp + n); }
@@ -133,7 +141,7 @@ export class Sim {
 
       p.staT = Math.max(0, (p.staT ?? 0) - dt);
       if (p.staT <= 0) p.sta = Math.min(MOVE.stamina, (p.sta ?? MOVE.stamina) + MOVE.staminaRegen * dt);
-      if (inp.dodge && p.dodgeT <= 0 && p.dodgeCd <= 0 && p.sta >= MOVE.dashCost) {
+      if (inp.dodge && !p.riding && p.dodgeT <= 0 && p.dodgeCd <= 0 && p.sta >= MOVE.dashCost) {
         p.sta -= MOVE.dashCost; p.staT = MOVE.regenDelay;
         // Dodge toward movement, or toward the aim if standing still.
         const dx = len > 0.1 ? mx : Math.cos(p.aim), dy = len > 0.1 ? my : Math.sin(p.aim);
@@ -146,15 +154,22 @@ export class Sim {
         p.dodgeT -= dt;
         p.vx = p.dodgeDx * MOVE.dodgeSpeed; p.vy = p.dodgeDy * MOVE.dodgeSpeed;
       } else {
-        const spd = MOVE.speed * (p.morphed ? 1.15 : 1);
-        p.vx = mx * spd; p.vy = my * spd;
+        if (p.riding) {
+          // Scooter: faster, with a little momentum so it drifts into turns.
+          const top = 165, acc = 6;
+          p.vx += (mx * top - p.vx) * Math.min(1, acc * dt); p.vy += (my * top - p.vy) * Math.min(1, acc * dt);
+          if (Math.hypot(p.vx, p.vy) > 2) { p.battery = Math.max(0, (p.battery ?? 100) - 2.2 * dt); if (p.battery <= 0) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, dead: true }); } }
+        } else {
+          const spd = MOVE.speed * (p.morphed ? 1.15 : 1);
+          p.vx = mx * spd; p.vy = my * spd;
+        }
       }
       p.moving = Math.hypot(p.vx, p.vy) > 1;
       this._moveAxis(p, p.vx * dt, 0);
       this._moveAxis(p, 0, p.vy * dt);
 
-      if (inp.attack && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
-      if (inp.fire && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);   // no gun, no shooting
+      if (inp.attack && !p.riding && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
+      if (inp.fire && !p.riding && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);   // no gun, no shooting
 
       // Facing follows the walking direction; it only turns toward the cursor while firing a ranged
       // weapon. Standing still keeps the last facing.
@@ -236,6 +251,7 @@ export class Sim {
     if (p.downed || p.iframes > 0) return;
     dmg = Math.max(1, Math.round(dmg * (1 - (p.mods?.armor ?? 0)) * (p.morphed ? 1.2 : 1)));
     p.hp -= dmg; p.iframes = COMBAT.hurtIframes + (p.mods?.iframes ?? 0);
+    if (p.riding) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, knocked: true }); }
     this.events.push({ t: 'hurt', id: p.id, x: p.x, y: p.y, dmg });
     if (p.hp <= 0) { p.hp = 0; p.downed = true; p.reviveT = 0; this.events.push({ t: 'down', id: p.id }); }
   }
@@ -452,7 +468,7 @@ export class Sim {
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
-        hp: Math.round(p.hp), mhp: this.maxHp(p), st: Math.round(p.sta ?? 100), w: p.waitExit || null, dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed,
+        hp: Math.round(p.hp), mhp: this.maxHp(p), st: Math.round(p.sta ?? 100), w: p.waitExit || null, ri: !!p.riding, bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed,
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
