@@ -362,6 +362,8 @@ export class WorldScene extends Phaser.Scene {
     rt.clear().fill(0x05060c, this.darkness);
     const at = (x, y, scale) => rt.erase('light', x - cam.worldView.x - 64 * scale, y - cam.worldView.y - 64 * scale);
     for (const p of snap.players) { this._lightImg ??= this.make.image({ key: 'light', add: false }); this._lightImg.setScale(1.3); rt.erase(this._lightImg, p.x - cam.worldView.x, p.y - 8 - cam.worldView.y); }
+    // Rot things glow faintly, so enemies read in the dark.
+    for (const e of snap.enemies || []) { this._lightImg.setScale(e.boss ? 0.9 : 0.4); rt.erase(this._lightImg, e.x - cam.worldView.x, e.y - 8 - cam.worldView.y); }
     for (const o of this.lightSpots) { this._lightImg.setScale(0.7); rt.erase(this._lightImg, o.x * TILE + 8 - cam.worldView.x, o.y * TILE + 8 - cam.worldView.y); }
     // Rot shows up as rendering errors at the screen edges.
     if (this.rotEdge && Math.random() < 0.12) {
