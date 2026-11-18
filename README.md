@@ -28,7 +28,7 @@ metro plaza → Green Line tunnels → boss → voiced ending.
   **JOIN CO-OP** and type it. Everyone claims a roommate, and the host starts. The host's browser
   keeps the save.
 - **Controls:** WASD/arrows to move (diagonals work) · **walk into doors; press E near objects and people to interact** · left click to hit · right
-  click to shoot (aims at the cursor) · Space/Shift to dash (uses stamina) · E or click outside to close text · 1–6 to pick a
+  click to shoot (aims at the cursor) · Space/Shift to dash (uses stamina) · E to continue dialogue / close text · 1–6 to pick a
   choice · TAB for the map · K for skills · H for mate thermos · F to answer the phone (when it rings)
 - **Saves:** sleeping in Room 631 saves to the browser (IndexedDB). Export/import of a save file is
   built into the engine (UI coming).

@@ -459,10 +459,9 @@ export class WorldScene extends Phaser.Scene {
   _onClick(ptr) {
     if (!this.ready || ptr.button !== 0) return;
     const { x: sx, y: sy } = toView(ptr);
-    if (this.dlg) {   // clicks advance a line only after it has been readable for a moment
+    if (this.dlg) {
       this.input2.blockAttack = true;
-      if (!this.dlg.choices.length && this.time.now - (this._lineAt ?? 0) > this._minLineMs()) { this.dlg.advance(); this._drawDialogue(); }
-      return;
+      return;   // clicks never advance dialogue (E does); choices are clicked directly
     }
     if (this.menu) {
       this.input2.blockAttack = true;
