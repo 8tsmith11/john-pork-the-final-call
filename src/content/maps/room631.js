@@ -56,6 +56,6 @@ export const room631 = {
     { id: 'obj.mate', x: 10, y: 7, label: 'Mate station', text: 'Manuel\'s mate. Still warm. Someone was up at 3 a.m.' },
     { id: 'obj.oscilloscope', x: 8, y: 2, label: 'Oscilloscope', text: 'A live trace, faint and regular. Like a heartbeat. Or a drum.' },
     { id: 'obj.bed', x: 19, y: 2, label: 'Bed (save)', action: 'save', text: 'Sleep? The balloon is still missing. (Game saved.)' },
-    { id: 'obj.door', x: 0, y: 9, label: 'Door to hallway', action: 'exit', text: 'The hallway. (Not built yet.)' },
+    { id: 'obj.door', x: 0, y: 9, label: 'Door to hallway', action: 'exit', to: 'aster_hall', text: 'The sixth-floor hallway. It smells like someone else\'s dinner.' },
   ],
 };

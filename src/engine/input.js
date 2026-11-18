@@ -25,6 +25,7 @@ export class InputReader {
     const wp = this.scene.cameras.main.getWorldPoint(ptr.x, ptr.y);
     inp.aim = Math.atan2(wp.y - from.y, wp.x - from.x);
     inp.attack = ptr.leftButtonDown();
+    inp.fire = ptr.rightButtonDown();
     inp.dodge = this._dodgeQueued; this._dodgeQueued = false;
     inp.interact = this._interactQueued; this._interactQueued = false;
     return inp;
