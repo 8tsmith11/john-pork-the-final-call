@@ -246,7 +246,7 @@ Gvz, gur Nepuvivfgf, be *rirelbar*, eryrnfrq) tebjf bhg bs gurfr fgnaqvatf cyhf 
 | **Ghat Ghat Ghat Fnuhe** | Rirelbar njnxr | Fbzrbar, nalbar, gb nafjre vg | Orvat fjvgpurq bss orsber vgf fuvsg raqf | Abar. Qhgl |
 | **Znahry** | Gur onyybba onpx | Fbzrguvat gb oryvrir va (ur ohvyg gur fgnghrf) | Gung gurer'f abguvat ba gur bgure raq bs gur pnyy | Pnyyref → vg'f pbzcyvpngrq |
 | **Geribe** | Gb or fgebatre guna uvf yvzvgf (fhccyrzragf, zbecuf) | Gb npprcg n obql gung qrpnlf, yvxr rirelguvat qbrf | Ebggvat. Orvat beqvanel | Genafuhznavfg, Nanybtvfg-phevbhf (fuevzc, thvgne) |
-| **Zvpunry** | Gb svaq bhg jung unccrarq gb uvf tveysevraq | Gb yrg ure tb, be gb nafjre gur cubar | Gung fur pubfr gb yrnir | Nepuvivfgf (zrzbel) |
+| **Zvpunry** | Gb svaq bhg jung unccrarq gb uvf tveysevraq | Gb nafjre gur cubar jura vg evatf | Gung fur pubfr gb yrnir | Nepuvivfgf (zrzbel) |
 | **Unyineq** (gur srapr) | Cebsvg, fheiviny | Gb or cneg bs fbzrguvat gung znggref ntnva | Pbagvahvgl svaqvat uvf nepuvir | Nepuvivfgf |
 | **Fhcreivfbe Qnyr Cehvgg** (Npg 1 nongrzrag obff) | Znxr dhbgn, xrrc uvf wbo | Oryvrir ur'f bar bs gur tbbq thlf | Gung ur vfa'g | Pbagvahvgl |
 

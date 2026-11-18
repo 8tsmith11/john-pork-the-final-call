@@ -225,7 +225,7 @@ party. **The ending axis** (🔒 sealed) grows out of these standings.
 | **Tung Tung Tung Sahur** | Everyone awake | Someone, anyone, to answer it | Being switched off before its shift ends | None. Duty |
 | **Manuel** | The balloon back | Something to believe in (he built the statues) | That there's nothing on the other end of the call | Callers → it's complicated |
 | **Trevor** | To be stronger than his limits (supplements, morphs) | To accept a body that decays, like everything does | Rotting. Being ordinary | Transhumanist, Analogist-curious (shrimp, guitar) |
-| **Michael** | To find out what happened to his girlfriend | To let her go, or to answer the phone | That she chose to leave | Archivists (memory) |
+| **Michael** | To find out what happened to his girlfriend | To answer the phone when it rings | That she chose to leave | Archivists (memory) |
 | **Halvard** (the fence) | Profit, survival | To be part of something that matters again | Continuity finding his archive | Archivists |
 | **Supervisor Dale Pruitt** (Act 1 abatement boss) | Make quota, keep his job | Believe he's one of the good guys | That he isn't | Continuity |
 
