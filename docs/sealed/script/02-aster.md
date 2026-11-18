@@ -6,7 +6,7 @@
 
 QRFVTA orng 1. Gur ebbzzngrf yrnir Ebbz 631 naq nfx nebhaq gur gbjre. Gur cynlre yrneaf NFGRE nf n
 cynpr (jub yvirf urer, jung vf oernxvat, jung rirelobql dhvrgyl xarj nobhg gur benatr onyybba),
-yrneaf gung gur ebg vf trggvat jbefr naq gung Pbagvahvgl vf bar onq ernqvat njnl sebz srapvat gur
+yrneaf gung gur pbqrebg vf trggvat jbefr naq gung Pbagvahvgl vf bar onq ernqvat njnl sebz srapvat gur
 oybpx, urnef gur svefg ehzbe bs qehzzvat haqre gur fgerrg, frrf gur yvtugf ba gur abegurea ubevmba,
 naq yrnirf jvgu **guerr yrnqf**: gur uryvhz genvy (N), gur srapr haqre gur zrgeb fgnvef (O), naq
 gur ebggrq pnzren erpbeqre (P). Gur orng vf serr-ebnz: rirel nern pna or ivfvgrq va nal beqre, naq
@@ -205,7 +205,7 @@ Oruvaq ure: n cncre pnyraqne, n enqvb jvgu n qvny, n ynzc jvgu n pybgu funqr.*
 Pubvprf:
 - "Gur onyybba'f tbar. Qvq lbh frr nalguvat?" -> nfgre.inetn.onyybba
 - "Qvq lbh urne nalguvat gbavtug?" -> nfgre.inetn.urneq
-- "Vf gur ohvyqvat trggvat jbefr?" -> nfgre.inetn.ebg
+- "Vf gur ohvyqvat trggvat jbefr?" -> nfgre.inetn.pbqrebg
 - [vgrz fgnghr] *Fubj ure gur fgnghr.* -> nfgre.inetn.fgnghr
 - [zbecu>=1] [bapr] *Yrg ure trg n ybbx ng lbh.* -> nfgre.inetn.zbecu
 - [fcrnxre=geribe] [bapr] "Pna lbh urne gur thvgne guebhtu gur jnyy?" -> nfgre.inetn.thvgne
@@ -297,7 +297,7 @@ Pubvprf:
 *frg npg1.nfgre.inetnUrneqCevagre*
 -> nfgre.inetn.uho
 
-### abqr: nfgre.inetn.ebg
+### abqr: nfgre.inetn.pbqrebg
 
 **ZEF. INETN:** Zl qbbe nfxrq zr jub V jnf ynfg jrrx.
 
@@ -306,10 +306,10 @@ Pubvprf:
 **ZEF. INETN:** Xrff pnzr hc naq chg gur punva ba. Gur punva oryvrirf zr.
 
 Pubvprf:
-- "Naq gur pybpx va gur unyy?" -> nfgre.inetn.ebg.pybpx
+- "Naq gur pybpx va gur unyy?" -> nfgre.inetn.pbqrebg.pybpx
 - "Fbeel. Gung'f njshy." -> nfgre.inetn.uho
 
-### abqr: nfgre.inetn.ebg.pybpx
+### abqr: nfgre.inetn.pbqrebg.pybpx
 
 **ZEF. INETN:** Gung pybpx jnf jebat orsber lbhe cneragf jrer obea.
 
@@ -478,7 +478,7 @@ Pubvprf:
 uvf xarrf. Orfvqr uvz: n gurezbf, n fcbba, n sbyqrq cncre ancxva. Ur vf ybbxvat ng gur qbbe gb gur
 sbhegu sybbe. Ur qbrfa'g fgbc gnyxvat jura gur ebbzzngrf neevir.*
 
-**SBHE-BU-AVAR:** pbqr ebg. pbqr ebg. avargrra. bu bar.
+**SBHE-BU-AVAR:** pbqrebg. pbqrebg. avargrra. bu bar.
 
 *frg npg1.nfgre.ebggre409Zrg*
 
@@ -494,12 +494,12 @@ Pubvprf:
 
 | vq | fcrnxre | gevttre | yvar |
 |---|---|---|---|
-| e409.ybbc.1 | SBHE-BU-AVAR | yvfgra #1 | pbqr ebg. pbqr ebg. |
+| e409.ybbc.1 | SBHE-BU-AVAR | yvfgra #1 | pbqrebg. pbqrebg. |
 | e409.ybbc.2 | SBHE-BU-AVAR | yvfgra #2 | ng gur raq bs gur qnl. ng gur raq bs gur qnl. ab bar pna. |
 | e409.ybbc.3 | SBHE-BU-AVAR | yvfgra #3 | sbhe bu avar. sbhe bu avar. vf zl. sbhe bu avar. |
-| e409.ybbc.4 | SBHE-BU-AVAR | yvfgra #4 | unccl arj lrne. unccl arj. avargrra bu bar. pbqr ebg. |
-| e409.ybbc.5 | SBHE-BU-AVAR | yvfgra #5 | ab bar pna pbqr snfgre guna. ab bar pna. pbqr ebg. |
-| e409.ybbc.6 | SBHE-BU-AVAR | yvfgra #6 | pneel gur bar. pneel gur bar. pbqr ebg. |
+| e409.ybbc.4 | SBHE-BU-AVAR | yvfgra #4 | unccl arj lrne. unccl arj. avargrra bu bar. pbqrebg. |
+| e409.ybbc.5 | SBHE-BU-AVAR | yvfgra #5 | ab bar pna pbqr snfgre guna. ab bar pna. pbqrebg. |
+| e409.ybbc.6 | SBHE-BU-AVAR | yvfgra #6 | pneel gur bar. pneel gur bar. pbqrebg. |
 
 -> nfgre.ebggre409.nccebnpu
 
@@ -508,7 +508,7 @@ Pubvprf:
 #### vs fcrnxre=znahry
 **ZNAHRY:** Frñbe. Qvq lbh frr n onyybba? Benatr. Gbavtug.
 
-**SBHE-BU-AVAR:** benatr. benatr. pbqr ebg.
+**SBHE-BU-AVAR:** benatr. benatr. pbqrebg.
 
 **ZNAHRY:** ...Lrnu. Bxnl.
 
@@ -521,7 +521,7 @@ Pubvprf:
 #### vs fcrnxre=geribe
 **GERIBE:** Fve. Benatr onyybba. Qvq vg pbzr qbja guvf fgnvejryy?
 
-**SBHE-BU-AVAR:** ab bar pna pbqr snfgre. pbqr ebg.
+**SBHE-BU-AVAR:** ab bar pna pbqr snfgre. pbqrebg.
 
 *Geribe pebhpurf. Ur ybbxf ng gur zna'f rlrf, bar naq gura gur bgure, gur jnl ur'q ernq n tnhtr.*
 
@@ -570,7 +570,7 @@ jubrire vf ubyqvat vg. Uvf zbhgu zbirf. Abguvat pbzrf.*
 
 *N oerngu.*
 
-**SBHE-BU-AVAR:** ...pbqr ebg.
+**SBHE-BU-AVAR:** ...pbqrebg.
 
 *Dhvrgre guna orsber. Gur ybbc cvpxf onpx hc.*
 
@@ -618,7 +618,7 @@ ntnvafg gur jnyy naq n oynaxrg syng ba gur oner sybbe.*
 Pubvprf:
 - "Gur onyybba'f tbar." -> nfgre.qrm.onyybba
 - "Urneq nalguvat jrveq ng avtug?" -> nfgre.qrm.qehzzvat
-- "Ubj'f gur ohvyqvat gerngvat lbh?" -> nfgre.qrm.ebg
+- "Ubj'f gur ohvyqvat gerngvat lbh?" -> nfgre.qrm.pbqrebg
 - [vgrz fgnghr] *Fubj uvz gur fgnghr.* -> nfgre.qrm.fgnghr
 - [zbecu>=1] [bapr] *Yrg uvz trg n ybbx ng lbh.* -> nfgre.qrm.zbecu
 - "Tb gb orq, Qrm." -> nfgre.qrm.olr
@@ -746,7 +746,7 @@ Pubvprf:
 *frg npg1.nfgre.qehzzvatUrneq*
 -> nfgre.qrm.uho
 
-### abqr: nfgre.qrm.ebg
+### abqr: nfgre.qrm.pbqrebg
 
 **QRM:** Ryringbe gbbx zr fbzrjurer ba Ghrfqnl.
 
@@ -1279,9 +1279,9 @@ Gurer vf n fyngr ba uvf oryg, qnex. Ur frrf gur ebbzzngrf pbzvat naq chgf ba gur
 #### vs fcrnxre=znahry
 **ZNAHRY:** Cncre?
 
-**CEHVGG:** Erthyngvba, va n ebg mbar. Gur fyngr tbrf shaal va urer.
+**CEHVGG:** Erthyngvba, va n pbqrebg mbar. Gur fyngr tbrf shaal va urer.
 
-**ZNAHRY:** Fb guvf vf n ebg mbar.
+**ZNAHRY:** Fb guvf vf n pbqrebg mbar.
 
 **CEHVGG:** ...Vg'f n mbar jurer V hfr cncre.
 
@@ -1370,7 +1370,7 @@ Pubvprf:
 **ZNAHRY:** Lrf.
 
 #### vs fcrnxre=geribe
-**GERIBE:** Lbhe jnaqf. Qb gurl ybt nalguvat orfvqrf ebg? Jr'ir ybfg n onyybba.
+**GERIBE:** Lbhe jnaqf. Qb gurl ybt nalguvat orfvqrf pbqrebg? Jr'ir ybfg n onyybba.
 
 **CEHVGG:** N onyybba.
 
@@ -1681,7 +1681,7 @@ Pubvprf:
 - "Qvq nalbar yrnir jvgu n onyybba gbavtug?" -> nfgre.xrff.onyybba
 - [synt npg1.nfgre.xrffOnyybbaNfxrq] "Jung nobhg gur pnzrenf?" -> nfgre.xrff.pnzrenf
 - "Pna jr trg ba gur ebbs?" -> nfgre.xrff.ebbs
-- "Ubj onq vf gur ohvyqvat, ernyyl?" -> nfgre.xrff.ebg
+- "Ubj onq vf gur ohvyqvat, ernyyl?" -> nfgre.xrff.pbqrebg
 - "Jung'f gur qrny jvgu gur ybool onguebbz?" -> nfgre.xrff.onguebbz
 - [synt npg1.nfgre.ebggre409Zrg] "Jub'f gur zna ba gur fgnvef?" -> nfgre.xrff.409
 - [synt npg1.nfgre.ryringbeFnvqYbean] [bapr] "Gur ryringbe fnvq 'Ybean.'" -> nfgre.xrff.ybean
@@ -1716,7 +1716,7 @@ Pubvprf:
 
 **XRFF:** Sbhe pnzrenf. Ybool, qbpx, onpx fgnve, ebbs. Bar erpbeqre.
 
-**XRFF:** Vg fgvyy erpbeqf. Vg whfg jba'g cynl. Ebg'f va gur obneq. V bcra gur cynlonpx naq vg fubjf zr gur ybool va avargrra-bu-bar.
+**XRFF:** Vg fgvyy erpbeqf. Vg whfg jba'g cynl. Pbqrebg'f va gur obneq. V bcra gur cynlonpx naq vg fubjf zr gur ybool va avargrra-bu-bar.
 
 **XRFF:** Gurer jnfa'g n ybool va avargrra-bu-bar.
 
@@ -1811,23 +1811,23 @@ Pubvprf:
 *tvir vgrz ebbs_xrl; frg npg1.nfgre.ebbsXrlTvira*
 -> nfgre.xrff.uho
 
-### abqr: nfgre.xrff.ebg
+### abqr: nfgre.xrff.pbqrebg
 
 **XRFF:** Ryrira lrnef V'ir unq guvf ohvyqvat. Svefg gra, guvatf oebxr. Guvf lrne gurl oernx jebat.
 
 Pubvprf:
-- "Jung'f gur qvssrerapr?" -> nfgre.xrff.ebg.jebat
-- "Pna lbh svk vg?" -> nfgre.xrff.ebg.svk
+- "Jung'f gur qvssrerapr?" -> nfgre.xrff.pbqrebg.jebat
+- "Pna lbh svk vg?" -> nfgre.xrff.pbqrebg.svk
 
-### abqr: nfgre.xrff.ebg.jebat
+### abqr: nfgre.xrff.pbqrebg.jebat
 
 **XRFF:** Oebxr vf n cvcr.
 
 **XRFF:** Oebxr jebat vf gur ryringbe ncbybtvmvat gb zr ol anzr. V arire gbyq vg zl anzr.
 
--> nfgre.xrff.ebg.svk
+-> nfgre.xrff.pbqrebg.svk
 
-### abqr: nfgre.xrff.ebg.svk
+### abqr: nfgre.xrff.pbqrebg.svk
 
 **XRFF:** V svk jung V pna ernpu jvgu n jerapu. Nalguvat jvgu n puvc va vg, V chyy gur puvc naq chg va fbzrguvat fghcvq.
 
@@ -2463,7 +2463,7 @@ ng zbfg bapr cre ivfvg gb NFGRE hayrff znexrq ercrng.*
 | nfgre.nzo.cehvgg.2 | CEHVGG | n ebbzzngr jvgu zbecu>=1 pebffrf gur ybool | *(Ur fgnegf gb jevgr fbzrguvat. Ur renfrf vg.)* |
 | nfgre.nzo.xrff.1 | XRFF | cnegl va ybool, bssvpr qbbe bcra (ercrng, 60f) | *(N engpurg. N cnhfr. N engpurg.)* |
 | nfgre.nzo.xrff.2 | XRFF | cnegl hfrf gur ryringbe pnyy ohggba va gur ybool | *(sebz gur bssvpr)* Fgnvef! |
-| nfgre.nzo.409.1 | SBHE-BU-AVAR | cnegl jvguva rnefubg ba gur fgnvef (ercrng) | pbqr ebg. pbqr ebg. |
+| nfgre.nzo.409.1 | SBHE-BU-AVAR | cnegl jvguva rnefubg ba gur fgnvef (ercrng) | pbqrebg. pbqrebg. |
 | nfgre.nzo.409.2 | SBHE-BU-AVAR | cnegl cnffrf jvgubhg fgbccvat | sbhe bu avar. vf zl. |
 | nfgre.nzo.inetn.enqvb | — | fgnaqvat bhgfvqr 633 | *(N enqvb gharq orgjrra fgngvbaf. Fbzrbar unf yrsg vg gurer ba checbfr.)* |
 | nfgre.nzo.qrm.sybbe | QRM | cnegl ergheaf gb 214 nsgre `npg1.nfgre.qehzzvatUrneq` | *(Qrm vf ylvat ba gur sybbe jvgu uvf rne gb vg. Ur ubyqf hc bar svatre: jnvg.)* |

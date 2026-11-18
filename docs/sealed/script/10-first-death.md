@@ -170,7 +170,7 @@ sbhaq, fb gur svefg cvrpr tvirf ab uvag bs jurer vg fvgf.
 |---|---|---|---|---|
 | 5 | `yvtugf` | 00:31 gb 00:40 | Na nongrzrag ina'f qvntabfgvp ohssre. Npg 1 fgergpu: gur ina ba gur zrgeb cynmn (Yrnq N). Bgurejvfr gur svefg ina gur cnegl bcraf va Npg 2 | 1fg |
 | 1 | `fzbxr` | 00:00 gb 00:13 | N Pbagvahvgl purpxcbvag'f genvavat xvbfx, svyrq haqre "Rkrzcynel Pbaqhpg." Gur bssvpvny pyvc fgbcf ng avar frpbaqf. Gur xvbfx'f ohssre ehaf sbhe frpbaqf ybatre guna gur pyvc | 2aq |
-| 4 | `ab` | 00:26 gb 00:31 | N ebggre bhgfvqr n ebg jneq jub ybbcf vg. Fvg jvgu gurz (fnzr ehyr nf Yrnq N'f ebggre) naq gurve ynpr tvirf hc gur nhqvb | 3eq |
+| 4 | `ab` | 00:26 gb 00:31 | N ebggre bhgfvqr n pbqrebg jneq jub ybbcf vg. Fvg jvgu gurz (fnzr ehyr nf Yrnq N'f ebggre) naq gurve ynpr tvirf hc gur nhqvb | 3eq |
 | 2 | `ryrira` | 00:13 gb 00:17 | Gur Terraoryg qvfurf, neenl pbagebyyre, fgvyy cbjrerq. Bayl vs `npg2.terraoryg.ivfvgrq` | 4gu |
 | 3 | `nsgre` | 00:17 gb 00:22, cyhf gur gbar | Sebz Gvz, Npg 3. Tvira, gnxra, be yrsg ba n gnoyr sbe gur cnegl, qrcraqvat ba gur ebhgr | ynfg |
 | 6 | (abar) | 00:22 gb 00:26 | Ab fbhepr. Gur fybg vf gurer, ynoryyrq jvgu vgf gvzrfgnzcf, rzcgl | arire, be Cneg 6 |
@@ -394,7 +394,7 @@ Pubvprf:
 
 *Frg `yber.svefgQrngu.sent.ab`.*
 
-*Bhgfvqr gur ebg jneq, ba gur ybj jnyy jurer gur fzbxref hfrq gb fvg. N ebggre va n pbagenpgbe'f wnpxrg jvgu gur ybtb cvpxrq bss. Gurl unir orra fnlvat vg sbe n juvyr orsber gur cnegl vf pybfr rabhtu gb urne.*
+*Bhgfvqr gur pbqrebg jneq, ba gur ybj jnyy jurer gur fzbxref hfrq gb fvg. N ebggre va n pbagenpgbe'f wnpxrg jvgu gur ybtb cvpxrq bss. Gurl unir orra fnlvat vg sbe n juvyr orsber gur cnegl vf pybfr rabhtu gb urne.*
 
 **EBGGRE:** ab. bxnl. gunaxf sbe gryyvat zr. ab. bxnl. gunaxf sbe gryyvat zr.
 
@@ -472,9 +472,9 @@ Pubvprf:
 
 **ZVPUNRY:** Fb fbzrobql cynlrq vg. Arne gurz. Ybhq rabhtu sbe n onq ynpr gb pngpu.
 
-**GERIBE:** Ng n ebg jneq.
+**GERIBE:** Ng n pbqrebg jneq.
 
-**GERIBE:** Jub pbzrf gb n ebg jneq gb yvfgra gb guvf?
+**GERIBE:** Jub pbzrf gb n pbqrebg jneq gb yvfgra gb guvf?
 
 *Abobql fnlf gur anzr. Vs `npg2.gvz.zrg`, gur pnzren ubyqf ba gur jneq'f ivfvgbe ybt sbe n zbzrag: bar ragel, jrrxyl, jvgu n pyrnenapr jurer gur anzr fubhyq or.*
 
@@ -956,7 +956,7 @@ unir pbzr sebz. Ab ubyr va gur gncr; abguvat nobhg gur Pnyy ng nyy.
 *[00:40] Erpbeqvat raqf.*
 
 **Sentzragf, vs guvf gnxr jrer hfrq:** QNGR (00:00 gb 00:12: ernqf nf Cbex pbeehcgvat Gvz'f pybpx,
-juvpu vf gur ebg nethzrag va avar frpbaqf), ANZR (00:12 gb 00:19: ernqf nf qrsvnapr), FGNGRZRAG
+juvpu vf gur pbqrebg nethzrag va avar frpbaqf), ANZR (00:12 gb 00:19: ernqf nf qrsvnapr), FGNGRZRAG
 (00:19 gb 00:28: ernqf nf fnepnfz), PRFFNGVBA (00:28 gb 00:40: ernqf nf n znpuvar fghpx va n ybbc,
 yvxr n ebggre). Gbtrgure: n zna orvat urycrq guebhtu gur jbefg sbez bs uvf pnerre ol gur crefba
 vg'f nobhg.

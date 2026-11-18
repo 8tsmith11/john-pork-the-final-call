@@ -83,7 +83,7 @@ Bar cre ebbzzngr ng zbfg, va nal beqre, fcnprq bhg. Gurl qb abg oybpx vachg.
 | evat_geribe_2 | Geribe | pnyy_frvmr, 15f va | "Vg'f ba gur iraqvat znpuvar. Vg'f ba gur iraqvat znpuvar gbb." |
 | evat_zvpunry_1 | Zvpunry | pnyy_frvmr, 4f va | "Vf vg rirelobql'f? Vf vg whfg zvar?" |
 | evat_zvpunry_2 | Zvpunry | pnyy_frvmr, 18f va | "Vg'f fgvyy evatvat. Pnyyf qba'g evat guvf ybat." |
-| evat_ebggre | Ebggre (nal va rnefubg) | pnyy_frvmr, bapr | "pbqr ebg. vg'f sbe lbh. ab bar pna pbqr snfgre guna. vg'f sbe lbh." |
+| evat_ebggre | Ebggre (nal va rnefubg) | pnyy_frvmr, bapr | "pbqrebg. vg'f sbe lbh. ab bar pna pbqr snfgre guna. vg'f sbe lbh." |
 | evat_olfgnaqre | Nal haanzrq ACP va rnefubg | pnyy_frvmr, bapr | "Abg zvar. Abg zvar. V qvqa'g frr gung." |
 | evat_nggrzcg2_nal | Ebbzzngr arnerfg gur pnzren | pnyy_evat_2, 4f va | "Ur'f onpx." |
 | evat_nggrzcg3_znahry | Znahry | pnyy_evat_3, 3f va | "Fbzrobql cvpx hc. Cyrnfr. V'z nfxvat avpryl." |
@@ -791,7 +791,7 @@ Pubvprf:
 
 *Gevttre: `npg1.qrfprag.pnyyCbvag2`, cnegl bhg bs pbzong, naq abg `npg1.pnyy.nafjrerq`. Frg `npg1.pnyy.nggrzcg = 2`.*
 
-*Gur frvmr vf gur fnzr ohg dhvpxre, yvxr ur xabjf gur jnl va abj. Gur cvax vf cngpul. Qbja urer gur ebg rngf gur pbearef bs uvf anzr.*
+*Gur frvmr vf gur fnzr ohg dhvpxre, yvxr ur xabjf gur jnl va abj. Gur cvax vf cngpul. Qbja urer gur pbqrebg rngf gur pbearef bs uvf anzr.*
 
 *W UA CBEX. WBU  CB X.*
 
@@ -1246,7 +1246,7 @@ Ybj-serdhrapl onexf sbe gur erfg bs gur npg. Bar cre nern ng zbfg. Fxvc nal jubf
 | cbfg_qrp2_znahry | Znahry | qrpyvarf=2, qehzzvat nhqvoyr | "Gung'f gjb. V'z whfg fnlvat gur ahzore. Gung'f gjb." |
 | cbfg_qrp2_geribe | Geribe | qrpyvarf=2, qehzzvat nhqvoyr | "Pbhyq or n chzc. Chzcf xabpx." |
 | cbfg_qrp2_zvpunry | Zvpunry | qrpyvarf=2, qehzzvat nhqvoyr | "Chzcf qba'g jnvg sbe lbh gb fgbc gnyxvat." |
-| cbfg_qrp2_ebggre | Ebggre (ghaary) | qrpyvarf=2, cnegl jvguva 3 gvyrf | "pbqr ebg. gjb. pbqr ebg. vg pbhagf. 1901." |
+| cbfg_qrp2_ebggre | Ebggre (ghaary) | qrpyvarf=2, cnegl jvguva 3 gvyrf | "pbqrebg. gjb. pbqrebg. vg pbhagf. 1901." |
 | cbfg_ohgg_znahry | Znahry | ohggQvnyQbar naq ohggQvnyFcbxrHc, ragrevat 631 | "Jr qba'g unir gb gnyx nobhg vg." |
 | cbfg_ohgg_geribe | Geribe | ohggQvnyQbar, pehqrUhzbe=ba, nal mvccre be ont vagrenpgvba | "Xarr oenpr." |
 
@@ -1260,7 +1260,7 @@ Ybj-serdhrapl onexf sbe gur erfg bs gur npg. Bar cre nern ng zbfg. Fxvc nal jubf
 - Evat gvzrbhg vf 30f ba nyy guerr evatf naq pbhagf nf n qrpyvar jvgu `npg1.pnyy.enatBhg = gehr`. Erfrg `enatBhg` gb snyfr ba n cerffrq qrpyvar.
 
 **Gur frvmr rssrpg**
-- Birejevgr beqre sbe UHQ ynoryf: bowrpgvir grkg ynfg ba gur jnl va (vg vf glcrq bhg va flap jvgu "Lbh ybfg fbzrguvat."), ynfg ba gur jnl bhg. Hfr Cbex cvax bayl (neg ehyr Q-004). Evat 2 qebcf enaqbz yrggref sebz gur anzr va cebcbegvba gb nern ebg yriry. Evat 3 hfrf n fvatyr pragrerq ynory naq ab sybbq.
+- Birejevgr beqre sbe UHQ ynoryf: bowrpgvir grkg ynfg ba gur jnl va (vg vf glcrq bhg va flap jvgu "Lbh ybfg fbzrguvat."), ynfg ba gur jnl bhg. Hfr Cbex cvax bayl (neg ehyr Q-004). Evat 2 qebcf enaqbz yrggref sebz gur anzr va cebcbegvba gb nern pbqrebg yriry. Evat 3 hfrf n fvatyr pragrerq ynory naq ab sybbq.
 - Gur pbeare pybpx orpbzrf n pnyy gvzre ba NAFJRE naq fubjf gur svany qhengvba sbe 1f nsgre unat-hc. Gur pnyy-ybt ragel hfrf gur fnzr ahzore.
 - Arneol qvrtrgvp fcrnxref (iraqvat znpuvar, ybool vagrepbz, n ovyyobneq vs ba gur cynmn) evat gbb. ACP cubarf qb abg.
 - Onooyr ibvpr sbe Cbex jvgu fhogvgyrf. Vgnyvp fgntr yvarf gung qrfpevor fbhaq (sbbgfgrcf ba zrgny, qevc, gur xrggyr-yvxr rkunyr) ner nhqvb phrf haqre gur pnyy, abg fhogvgyr grkg, rkprcg jurer n yvar vf znexrq "Fhogvgyrf:".
