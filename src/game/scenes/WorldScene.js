@@ -601,6 +601,28 @@ export class WorldScene extends Phaser.Scene {
     this.sim.toggleMorph(peerId, true);
   }
 
+  // John Pork "shows up here and there" (brief): a screen you walk past glitches to his face for a
+  // few frames. Rare (a check every ~1.5 s at 5%, at most once a minute), never in dialogue or combat.
+  _tickGlimpse() {
+    if (this.dlg || this.menu || this._transitioning) return;
+    if ((this._glT = (this._glT ?? 0) + 1) % 90) return;
+    if (this.time.now - (this._glAt ?? -1e9) < 60000 || Math.random() > 0.05) return;
+    const me = this._lastRendered?.players.find((p) => p.id === this.localId); if (!me) return;
+    if ((this._lastRendered.enemies ?? []).some((e) => Math.hypot(e.x - me.x, e.y - me.y) < 160)) return;
+    const SCREENS = ['obj.tv', 'obj.lobby_monitor', 'obj.billboard', 'obj.kiosk', 'obj.trevor_pc', 'obj.payphone'];
+    const scr = this.map.objects.filter((o) => SCREENS.includes(o.art ?? o.id)).find((o) => Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y) < 80);
+    if (!scr) return;
+    this._glAt = this.time.now;
+    const x = scr.x * TILE + 8, y = scr.y * TILE + 4, d = scr.y * TILE + 40;
+    const face = this.add.image(x, y, 'principals', 'pork_0').setDisplaySize(10, 13).setDepth(d).setAlpha(0.9);
+    const flash = this.add.rectangle(x, y, 14, 12, 0xe87a9c, 0.35).setDepth(d + 1).setBlendMode('ADD');
+    sfx('hit');
+    let n = 0;
+    this.time.addEvent({ delay: 60, repeat: 5, callback: () => { n++; face.setVisible(n % 2 === 0 || n > 3).setX(x + (Math.random() * 2 - 1)); flash.setAlpha(n > 3 ? 0 : 0.35); } });
+    this.time.delayedCall(420, () => { face.destroy(); flash.destroy(); });
+    if (!this.save.flags['seen.porkGlimpse']) { this.save.flags['seen.porkGlimpse'] = true; this.time.delayedCall(500, () => this._bark?.(this.localId, ['Did that screen just...', 'Was that him?', 'Anyone else see that?'][Math.floor(Math.random() * 3)])); }
+  }
+
   // ---------- quests (src/content/quests.js) ----------
   _questInteract(near) {
     const f = this.save.flags, qs = questState(this.save);
@@ -1390,6 +1412,7 @@ export class WorldScene extends Phaser.Scene {
     this._tickTypewriter(this.game.loop.delta / 1000);
     this._tickFishing();
     this._tickQuests();
+    this._tickGlimpse();
     if (this.fishing) { const k = this.input2.keys; if (k.w.isDown || k.a.isDown || k.s.isDown || k.d.isDown || k.up.isDown || k.down.isDown || k.left.isDown || k.right.isDown) this._endFishing(false); }
     this._tickPorkGlitch();
     this._updateExplored(snap);

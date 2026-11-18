@@ -9,7 +9,7 @@
 | 1 | Top-down 2D multiplayer adventure RPG, JS, browser | ✅ | | |
 | 2 | Progress can be saved; a few hours to beat | 🟡 | both | Saves ✅. 8 side quests + quest journal ✅, Lake Artemesia (optional area) ✅, economy/inventory/skill trees ✅. Needs pacing measured in a real run toward ~2 h |
 | 3 | 18+ | ✅ | | Crude humor always on |
-| 4 | John Pork: key, very powerful, **shows up here and there** | 🟡 | gonman (script) + trevor | Only appears in person at the end. Add calls, glimpses, and cameos through Act 1 |
+| 4 | John Pork: key, very powerful, **shows up here and there** | 🟡 | gonman (script) + trevor | The Call (3 rings, voicemails), butt dial, screen glimpses (TVs/monitors/billboards flash his face), ending ✅. Could still use one in-person sighting mid-act |
 | 5 | Tim Cheese: villain or true hero by ending | 🟡 | | Lore ✅, appears from Act 2 |
 | 6 | Animated pixel art; music; free assets OK | 🟡 | gonman | Walk/idle only. Music: 3 CC0 tracks + soundscapes; apartment and lobby songs being replaced |
 | 7 | Post-AI, coderot, cyberpunk, technofascism | 🟡 | both | Cyberpunk layer ✅ (neon, holo ads, drones + searchlights, steam, cables, coloured light). Continuity presence in play still thin (checkpoints, notices) |
