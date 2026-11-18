@@ -86,7 +86,7 @@ export const metroPlaza = makeMap({
     { id: 'npc.addo', art: PERSON[1], x: 47, y: 21, label: 'Addo', npc: true, text: '"Mast\'s reading light. Something light. Lighter than it should be down there." He seems pleased that somebody asked.' },
     { id: 'npc.del', art: PERSON[0], x: 44, y: 21, label: 'Del', npc: true, text: '"Fourteen hours. Fourteen. You know what the rate is after twelve? Same as before twelve."' },
     { id: 'npc.rotter_3', x: 49, y: 26, label: 'Rotter (looks at you differently)', npc: true, text: 'coderot. coderot. ...I used to be someone\'s favorite person. coderot.' },
-    { id: 'npc.abatement_tech', art: 'npc.pruitt', x: 52, y: 25, label: 'Abatement tech', npc: true, talk: 'checkpoint', goneFlag: 'act1.cordon.passed' },
+    { id: 'npc.abatement_tech', art: 'npc.pruitt', x: 52, y: 25, label: 'Tobin (abatement, nights)', npc: true, talk: 'checkpoint', goneFlag: 'act1.cordon.passed' },
     // Hidden fast travel: a maintenance zipline from ASTER's forecourt to the Paint Branch trailhead.
     { id: 'obj.zip_aster', art: 'obj.streetlamp', x: 16, y: 14, label: 'Cable anchor', zip: [78, 40], text: 'A steel cable bolted to the lamp post, running off over the plaza.' },
     { id: 'obj.zip_trail', art: 'obj.streetlamp', x: 79, y: 40, label: 'Cable anchor', zip: [15, 15], text: 'The other end of the cable, bolted to a post by the trailhead.' },

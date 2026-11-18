@@ -2,51 +2,52 @@
      To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/script/11-checkpoint.md -->
 # Fprar 11: Gur pbeqba ng gur tengr
 
-Zvq-npg orng (geribe'f ntrag, cynprubyqre jevgvat sbe tbazna gb erjevgr va uvf ibvpr). Orgjrra gur
-yrnqf naq gur ghaary: na nongrzrag grpu vf cbfgrq ba gur fgbez tengr. Guerr jnlf cnfg. Gur pbng vf
-gur fnzr juvgr ubbqrq nongrzrag pbng Qrm fnj ng guerr n.z.; abobql fnlf fb.
+Zvq-npg orng (ohvyg ol geribe'f ntrag, jevggra ol tbazna'f). Orgjrra gur yrnqf naq gur ghaary: na
+nongrzrag grpu vf cbfgrq ba gur fgbez tengr. Guerr jnlf cnfg. Gur pbng vf gur fnzr juvgr ubbqrq
+nongrzrag pbng Qrm fnj ng guerr n.z.; abobql fnlf fb. Rirelguvat Gbova fnlf vf gehr haqre obgu frrqf:
+ur vf n avtug-fuvsg grpu jub jnf unaqrq n pbng naq n wne.
 
 Syntf: frgf `npg1.pbeqba.cnffrq`, `npg1.pbeqba.ubj` (oyhss / oevor / qebar), `npg1.pbeqba.gnttrq`.
 
 ### abqr: pbeqba_fgneg
 
-*N juvgr nongrzrag pbng, ubbq qbja, ba n pbbyre orfvqr gur tengr. Benatr gncr va n fdhner nebhaq vg. N gnoyrg va uvf ync.*
+*N zna va n juvgr nongrzrag pbng fvgf ba n pbbyre orfvqr gur fgbez tengr, ubbq qbja, vafvqr n fdhner bs benatr gncr. Uvf ynalneq fnlf GBOVA, AVTUGF. Gur gnoyrg va uvf ync vf fubjvat n onyy tnzr sebz 2061.*
 
-**GRPU:** Tengr'f pybfrq. Fnzcyvat.
+**GBOVA:** Tengr'f fuhg. V'z fnzcyvat.
 
 #### vs fcrnxre=znahry
 
 **ZNAHRY:** Fnzcyvat jung?
 
-**GRPU:** Nve. Jngre. Jungrire'f qbja gurer.
+**GBOVA:** V ubyq gur wne bire gur ubyr. Fbzrobql ryfr svaqf bhg jung.
 
 #### vs fcrnxre=geribe
 
-**GERIBE:** Ubj ybat?
+**GERIBE:** Ubj ybat ner lbh cbfgrq?
 
-**GRPU:** Gvyy gurl gryy zr. Gura n ovg ybatre.
+**GBOVA:** Gvyy gur ina fnlf. Gur ina unfa'g fnvq nalguvat fvapr sbhe.
 
 #### vs fcrnxre=zvpunry
 
 **ZVPUNRY:** Avpr pbng.
 
-**GRPU:** Gurl unaq gurz bhg.
+**GBOVA:** Pbzrf bhg bs n ova. Guvf bar'f n ynetr. V'z n zrqvhz.
 
 #### raq
 
 Pubvprf:
 - [synt npg1.nfgre.srajvpxBeqre] "Jr'er jvgu gur ybpx pbagenpgbe. Jbex beqre ba fvk." -> pbeqba_oyhss
-- [zbarl >= 20] "Gjragl ohpxf sbe lbhe biregvzr?" -> pbeqba_oevor
+- [zbarl >= 20] "Gjragl sbe lbhe biregvzr?" -> pbeqba_oevor
 - "Jnvg sbe gur qebar gb pbzr ebhaq." -> pbeqba_qebar
 - "Arire zvaq." -> RAQ
 
 ### abqr: pbeqba_oyhss
 
-**GRPU:** Srajvpx'f jbex beqre?
+**GBOVA:** Srajvpx'f beqre.
 
-*Ur fpebyyf. Svaqf vg. Qbrfa'g yvxr gung ur sbhaq vg.*
+*Ur fpebyyf. Vg vf gurer. Ur ybbxf ng vg gur jnl lbh ybbx ng n cnexvat gvpxrg.*
 
-**GRPU:** Gra zvahgrf. V jnf ba zl oernx.
+**GBOVA:** V'z ba zl oernx nf bs abj. Gra zvahgrf. V qvqa'g frr n pbagenpgbe.
 
 *Frg `npg1.pbeqba.cnffrq`, `npg1.pbeqba.ubj = oyhss`.*
 
@@ -54,7 +55,9 @@ Pubvprf:
 
 *cnl 20*
 
-**GRPU:** V'z trggvat n pbssrr. Gur yvar'f ybat.
+*Ur pbhagf vg bapr, jvgu uvf guhzo.*
+
+**GBOVA:** V'z tbvat sbe n pbssrr. Gurer'f n yvar. Gurer'f nyjnlf n yvar.
 
 *Ur gnxrf gur pbbyre jvgu uvz.*
 
@@ -62,9 +65,9 @@ Pubvprf:
 
 ### abqr: pbeqba_qebar
 
-*Gur cngeby qebar pbzrf bire gur fgngvba ebbs. Vgf yvtug ynaqf ba gur ina, naq gur grpu fgnaqf hc gb frr jung vg sbhaq.*
+*Gur cngeby qebar pbzrf bire gur fgngvba ebbs. Vgf yvtug ynaqf ba gur ina, naq Gbova fgnaqf hc gb frr jung vg sbhaq.*
 
-*Ol gur gvzr ur fvgf onpx qbja, gur tengr vf bcra naq lbh ner ba gur ynqqre.*
+*Jura ur fvgf onpx qbja gur tengr vf bcra naq lbh ner sbhe ehatf vagb gur qnex.*
 
 **QEBAR:** ERFVQRAGF BS NFGRE 631. ABGRQ.
 
