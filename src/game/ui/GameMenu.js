@@ -200,10 +200,11 @@ export class GameMenu {
     if (f['act1.beat.buttDial']) calls.push(['John Pork', f['act1.call.buttDialSpokeUp'] ? 'pocket dial (you spoke)' : 'pocket dial']);
     const vm = Number(f['act1.call.declines'] || 0);
     if (vm >= 1) calls.push(['Voicemail', `${Math.min(vm, 2)} from John Pork`]);
+    for (const v of s.save.world.phone?.voicemails ?? []) calls.push([`Voicemail · ${v.from}`, '▶ play', () => s.cameos?.replay(v.id)]);   // voice cameos
     if (!calls.length) this._t(px + 8, py + 18, 'No calls.', F(7, '#4a5175'));
-    calls.slice(-8).reverse().forEach(([who, what], i) => {
+    calls.slice(-8).reverse().forEach(([who, what, onClick], i) => {
       this._t(px + 8, py + 18 + i * 18, who, F(8, who === 'John Pork' ? '#e87a9c' : C.text));
-      this._t(px + 8, py + 27 + i * 18, what, F(6, C.sub));
+      this._t(px + 8, py + 27 + i * 18, what, F(6, onClick ? C.hi : C.sub), onClick);
     });
     // messages
     const mx = px + pw + 12, mw = b.x + b.w - mx - 14;

@@ -168,6 +168,13 @@ export function setArea(id) {
   track = el;
 }
 
+/** Duck the game's music and ambience under a voice recording (voice cameos), and bring it back. */
+export function setMusicDuck(on) {
+  const a = ac();
+  if (a && master) master.gain.setTargetAtTime(on ? 0.06 : 0.25, a.currentTime, 0.25);
+  if (track) fade(track, on ? MUSIC_VOL * 0.2 : MUSIC_VOL, 400);
+}
+
 /** The shared AudioContext and master bus, for other modules that make sound (instruments). */
 export function audioOut() { const a = ac(); return a ? { ctx: a, dest: master } : null; }
 

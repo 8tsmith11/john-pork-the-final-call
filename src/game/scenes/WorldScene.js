@@ -28,6 +28,7 @@ import { SharedEvents } from '../sharedEvent.js';
 import { Performances } from '../performances.js';
 import { Romance } from '../romance.js';
 import { Gear } from '../gear.js';
+import { Cameos } from '../cameos.js';
 import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
 
 const STEP = 1 / 60;
@@ -79,7 +80,7 @@ export class WorldScene extends Phaser.Scene {
     this._wireNet();
     this._makeDialogueUi();
     // D-014: shared events, instruments, romance (src/game/sharedEvent.js, performances.js, romance.js)
-    this.shared = new SharedEvents(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this);
+    this.shared = new SharedEvents(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this);
     this._pageIdx = {};
     this.vignette = this._makeVignette();
     if (this.mode !== 'client') for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
@@ -367,7 +368,7 @@ export class WorldScene extends Phaser.Scene {
       this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
     } else if (this.mode === 'client') {
       this.net.on('msg', (msg) => {
-        if (this.shared?.onMsg(msg) || this.romance?.onClientMsg(msg)) return;
+        if (this.shared?.onMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg)) return;
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
         if (msg.t === 'say') this._say(msg.text);
         if (msg.t === 'party') { this.save.party = msg.party; this.save.world.money = msg.money; this._refreshMenu(); }

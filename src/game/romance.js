@@ -200,6 +200,7 @@ export class Romance {
   _reunion() {
     const s = this.s, f = this.flags;
     if (!f[REUNITED_FLAG] || f[flagOf('manuelita', 'met')] || s.dlg || this._reunionStarted) return;
+    if (s.cameos && !s.cameos.finished('zvpunry')) return;   // Michael's voicemail plays first
     const humanMichael = s.mode === 'client' ? s.character === 'michael' : [...(s.sim?.players.values() ?? [])].some((p) => p.character === 'michael' && !String(p.id).startsWith('ai:'));
     const mine = s.character === 'michael' || (s.mode !== 'client' && !humanMichael);
     if (!mine) return;
