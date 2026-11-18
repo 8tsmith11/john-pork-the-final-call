@@ -861,6 +861,12 @@ export class WorldScene extends Phaser.Scene {
         this.tweens.add({ targets: sp, x: ev.x + Math.cos(a) * d, y: ev.y - 6 + Math.sin(a) * d, alpha: 0, duration: 220, onComplete: () => sp.destroy() });
       }
     }
+    if (ev.t === 'kill') {
+      for (let i = 0; i < 14; i++) {
+        const sq = this.add.rectangle(ev.x + (Math.random() * 12 - 6), ev.y - 4 - Math.random() * 12, 2, 2, Math.random() < 0.5 ? 0x7fb069 : 0xd65db1).setDepth(6000);
+        this.tweens.add({ targets: sq, y: sq.y - 8 - Math.random() * 10, x: sq.x + (Math.random() * 10 - 5), alpha: 0, duration: 380 + Math.random() * 300, onComplete: () => sq.destroy() });
+      }
+    }
     if (ev.t === 'hit' || ev.t === 'kill') {
       const t = this.add.text(ev.x, ev.y - 14, ev.t === 'kill' ? '✕' : `${ev.dmg}`, { ...FONT, color: ev.t === 'kill' ? '#7fb069' : '#ffd27f' }).setOrigin(0.5).setDepth(6000);
       this.tweens.add({ targets: t, y: t.y - 10, alpha: 0, duration: 450, onComplete: () => t.destroy() });
@@ -879,23 +885,44 @@ export class WorldScene extends Phaser.Scene {
 
   _drawHud(snap) {
     const g = this.hud.clear();
-    const lines = [];
-    snap.players.forEach((p, i) => {
-      const y = 16 + i * 9, w = 60;
-      g.fillStyle(0x1c1f33).fillRect(6, y, w, 5);
-      g.fillStyle(p.dn ? 0x777788 : p.id === this.localId ? 0x7fb069 : 0x5f8fbf).fillRect(6, y, Math.max(0, (p.hp / (p.mhp || 100)) * w), 5);
-      if (p.dn) g.fillStyle(0xffb347).fillRect(6, y + 5, (p.rv / 2) * w, 1);
-      else if (p.id === this.localId) g.fillStyle(0x6ff2ff, 0.85).fillRect(6, y + 5, ((p.st ?? 100) / 100) * w, 1);
+    const me = snap.players.find((p) => p.id === this.localId);
+    const c = this.save.party[this.character];
+    // Local player card: portrait, name, level badge, framed HP and stamina bars.
+    if (!this.hudPortrait && this.textures.exists(this.character)) {
+      this.hudPortrait = this.add.image(19, 22, this.character, 'idle_down_0').setCrop(0, 0, 16, 13).setScale(1.5).setOrigin(0.5, 0.3).setScrollFactor(0).setDepth(9001);
+      this.hudName = this.add.text(34, 6, this.character[0].toUpperCase() + this.character.slice(1), { heading: true, fontSize: '8px', color: '#e8e8f0' }).setScrollFactor(0).setDepth(9001);
+      this.mapLabel.setPosition(VIEW.w / 2, 5).setOrigin(0.5, 0);
+    }
+    g.fillStyle(0x0b0d16, 0.82).fillRoundedRect(4, 4, 112, 34, 3).lineStyle(1, 0x5d6487, 0.8).strokeRoundedRect(4, 4, 112, 34, 3);
+    g.fillStyle(0x151827).fillRect(8, 8, 22, 26).lineStyle(1, 0x2b2f4a).strokeRect(8, 8, 22, 26);
+    const bar = (y, frac, col, h) => { g.fillStyle(0x1c1f33).fillRect(34, y, 76, h); g.fillStyle(col).fillRect(34, y, Math.max(0, Math.min(1, frac)) * 76, h); g.lineStyle(1, 0x2b2f4a).strokeRect(34, y, 76, h); };
+    if (me) {
+      bar(19, me.hp / (me.mhp || 100), me.dn ? 0x777788 : me.hp / (me.mhp || 100) < 0.3 ? 0xd65db1 : 0x7fb069, 5);
+      bar(27, (me.st ?? 100) / 100, 0x6ff2ff, 3);
+    }
+    g.fillStyle(0xffb347).fillRoundedRect(92, 6, 20, 9, 2);
+    this.hudLv ??= this.add.text(102, 6.5, '', { ...FONT, fontSize: '7px', color: '#0b0d16' }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(9002);
+    this.hudLv.setText(`LV${c.level}`);
+    // Teammates: small bars under the card.
+    snap.players.filter((p) => p.id !== this.localId).forEach((p, i) => {
+      const y = 42 + i * 7;
+      g.fillStyle(0x0b0d16, 0.7).fillRect(4, y - 1, 70, 6);
+      g.fillStyle(p.dn ? 0x777788 : 0x5f8fbf).fillRect(18, y, Math.max(0, (p.hp / (p.mhp || 100)) * 54), 4);
+      if (p.dn) g.fillStyle(0xffb347).fillRect(18, y + 4, (p.rv / 2) * 54, 1);
+      g.fillStyle({ michael: 0xc8605a, trevor: 0x3f6fb5, manuel: 0x5f8f3a }[p.c] ?? 0x888888).fillRect(7, y, 8, 4);
     });
-    if (snap.enemies?.length) lines.push(`rot: ${snap.enemies.length}`);
-    const waiting = snap.players.filter((p) => p.w), me = snap.players.find((p) => p.id === this.localId);
+    // Top-right: XP and scrap, compact.
+    const lines = [`xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `   ◆ ${c.skillPoints} skill pt [K]` : ''}`, `scrap ${this.save.world.scrap ?? 0}${snap.enemies?.length ? `   rot ${snap.enemies.length}` : ''}`];
+    this.hudText.setText(lines.join('\n'));
+    // Door gathering message overrides the prompt.
+    const waiting = snap.players.filter((p) => p.w);
     if (waiting.length) {
       const up = snap.players.filter((p) => !p.dn).length;
       this.hint.setText(me?.w ? `Waiting at the door for the others (${waiting.length}/${up}). Move away to step back.` : `${waiting.length}/${up} waiting at a door. Walk into it to go through together.`);
     }
-    const c = this.save.party[this.character];
-    lines.push(`lv ${c.level}  xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `  [K] ${c.skillPoints} pt` : ''}`);
-    lines.push(`scrap ${this.save.world.scrap ?? 0}`);
-    this.hudText.setText(lines.join('\n'));
+    // Prompt pill behind the hint text.
+    const ht = this.hint.text;
+    (this.hintBg ??= this.add.graphics().setScrollFactor(0).setDepth(8999)).clear();
+    if (ht) { const wdt = this.hint.width + 12; this.hintBg.fillStyle(0x0b0d16, 0.85).fillRoundedRect(VIEW.w / 2 - wdt / 2, this.hint.y - 7, wdt, 14, 4).lineStyle(1, 0xffb347, 0.6).strokeRoundedRect(VIEW.w / 2 - wdt / 2, this.hint.y - 7, wdt, 14, 4); }
   }
 }
