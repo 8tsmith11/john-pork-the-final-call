@@ -72,6 +72,7 @@ export const metroPlaza = makeMap({
     // ASTER
     { id: 'obj.aster_door', art: 'obj.street_doors', x: 10, y: 12, label: 'ASTER lobby', action: 'exit', to: 'aster_lobby', text: 'Back into the lobby.' },
     { id: 'obj.aster_sign', art: 'obj.purple_sign', x: 5, y: 13, label: 'ASTER', text: 'A S T E R, in letters a metre high. The T flickers. Residents have stopped seeing it.' },
+    { id: 'npc.okafor', x: 9, y: 23, label: 'Mrs. Okafor', npc: true, text: 'Three generations are arguing on the third floor and she has come down here to let them. "Sit." You sit. "Your friend with the hair. He is making those heads again?" She nods as if you answered. "Good. Somebody should."' },
     { id: 'obj.garden_bench', art: 'obj.bench', x: 8, y: 22, label: 'Bench', text: 'A brass plate: FOR THE NIGHT SHIFT. No name. Somebody polishes it.' },
     // The plaza
     { id: 'obj.station_entrance', art: 'obj.tunnel_on', x: 38, y: 8, label: 'Metro entrance', text: 'The gates are down for the night. The departure board behind them lists a train to a station that was never built.' },
@@ -81,6 +82,7 @@ export const metroPlaza = makeMap({
     { id: 'obj.purple_sign', x: 40, y: 27, label: 'Purple Line sign', text: 'PURPLE LINE: OPENING SOON.' },
     { id: 'obj.plaza_clock', art: 'obj.clock_6f', x: 46, y: 9, label: 'Station clock', text: '19:01. Under it, somebody has taped a paper clock with the right time and a note: USE THIS ONE.' },
     { id: 'obj.van', x: 45, y: 20, label: 'Abatement van', text: 'White, unmarked except for a mast on the roof. The mast is turning. It is pointed at the ground.' },
+    { id: 'npc.pruitt', x: 46, y: 19, label: 'Supervisor Pruitt', npc: true, text: '"Evening, folks. Routine abatement, nothing to see, which I am required to say." He looks at the regulation card and then, sorry about it, at you. "You live in the tower? You\'d tell me if you\'d seen anything light. Floating, I mean. Orange."' },
     { id: 'npc.addo', art: PERSON[1], x: 47, y: 21, label: 'Addo', npc: true, text: '"Mast\'s reading light. Something light. Lighter than it should be down there." He seems pleased that somebody asked.' },
     { id: 'npc.del', art: PERSON[0], x: 44, y: 21, label: 'Del', npc: true, text: '"Fourteen hours. Fourteen. You know what the rate is after twelve? Same as before twelve."' },
     { id: 'npc.rotter_3', x: 49, y: 26, label: 'Rotter (looks at you differently)', npc: true, text: 'code rot. code rot. ...I used to be someone\'s favorite person. code rot.' },

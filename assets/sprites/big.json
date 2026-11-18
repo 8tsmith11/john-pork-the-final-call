@@ -59,13 +59,73 @@
     "w": 32,
     "h": 40
    }
+  },
+  "obj.statue_1#flag": {
+   "frame": {
+    "x": 96,
+    "y": 0,
+    "w": 32,
+    "h": 40
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 40
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 40
+   }
+  },
+  "obj.statue_2#flag": {
+   "frame": {
+    "x": 128,
+    "y": 0,
+    "w": 32,
+    "h": 40
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 40
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 40
+   }
+  },
+  "obj.statue_3#flag": {
+   "frame": {
+    "x": 160,
+    "y": 0,
+    "w": 32,
+    "h": 40
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 40
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 40
+   }
   }
  },
  "meta": {
   "image": "big.png",
   "format": "RGBA8888",
   "size": {
-   "w": 96,
+   "w": 192,
    "h": 40
   },
   "scale": "1"

@@ -1740,7 +1740,7 @@
     "h": 24
    }
   },
-  "obj.door": {
+  "npc.kess": {
    "frame": {
     "x": 112,
     "y": 240,
@@ -1760,10 +1760,170 @@
     "h": 24
    }
   },
-  "obj.door_631": {
+  "npc.pell": {
    "frame": {
     "x": 0,
     "y": 264,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.409": {
+   "frame": {
+    "x": 16,
+    "y": 264,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.seun": {
+   "frame": {
+    "x": 32,
+    "y": 264,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.dez": {
+   "frame": {
+    "x": 48,
+    "y": 264,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.pruitt": {
+   "frame": {
+    "x": 64,
+    "y": 264,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.okafor": {
+   "frame": {
+    "x": 80,
+    "y": 264,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.clock_6f#open": {
+   "frame": {
+    "x": 96,
+    "y": 264,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.door": {
+   "frame": {
+    "x": 112,
+    "y": 264,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.door_631": {
+   "frame": {
+    "x": 0,
+    "y": 288,
     "w": 16,
     "h": 24
    },
@@ -1783,7 +1943,7 @@
   "obj.bathroom": {
    "frame": {
     "x": 16,
-    "y": 264,
+    "y": 288,
     "w": 16,
     "h": 24
    },
@@ -1803,7 +1963,7 @@
   "obj.graffiti": {
    "frame": {
     "x": 32,
-    "y": 264,
+    "y": 288,
     "w": 16,
     "h": 24
    },
@@ -1823,7 +1983,7 @@
   "obj.lobby_monitor": {
    "frame": {
     "x": 48,
-    "y": 264,
+    "y": 288,
     "w": 16,
     "h": 24
    },
@@ -1843,7 +2003,7 @@
   "obj.lobby_monitor#1": {
    "frame": {
     "x": 64,
-    "y": 264,
+    "y": 288,
     "w": 16,
     "h": 24
    },
@@ -1863,7 +2023,7 @@
   "obj.clock_6f": {
    "frame": {
     "x": 80,
-    "y": 264,
+    "y": 288,
     "w": 16,
     "h": 24
    },
@@ -1883,7 +2043,7 @@
   "obj.elevator": {
    "frame": {
     "x": 96,
-    "y": 264,
+    "y": 288,
     "w": 16,
     "h": 24
    },
@@ -1903,7 +2063,7 @@
   "obj.aster_door": {
    "frame": {
     "x": 112,
-    "y": 264,
+    "y": 288,
     "w": 16,
     "h": 24
    },
@@ -1923,7 +2083,7 @@
   "obj.billboard": {
    "frame": {
     "x": 0,
-    "y": 288,
+    "y": 312,
     "w": 16,
     "h": 24
    },
@@ -1943,7 +2103,7 @@
   "obj.billboard#1": {
    "frame": {
     "x": 16,
-    "y": 288,
+    "y": 312,
     "w": 16,
     "h": 24
    },
@@ -1963,7 +2123,7 @@
   "obj.purple_sign": {
    "frame": {
     "x": 32,
-    "y": 288,
+    "y": 312,
     "w": 16,
     "h": 24
    },
@@ -1983,7 +2143,7 @@
   "obj.grate": {
    "frame": {
     "x": 48,
-    "y": 288,
+    "y": 312,
     "w": 16,
     "h": 24
    },
@@ -2003,7 +2163,7 @@
   "obj.tunnel_up": {
    "frame": {
     "x": 64,
-    "y": 288,
+    "y": 312,
     "w": 16,
     "h": 24
    },
@@ -2023,7 +2183,7 @@
   "obj.tunnel_on": {
    "frame": {
     "x": 80,
-    "y": 288,
+    "y": 312,
     "w": 16,
     "h": 24
    },
@@ -2043,7 +2203,7 @@
   "npc.rotter_1": {
    "frame": {
     "x": 96,
-    "y": 288,
+    "y": 312,
     "w": 16,
     "h": 24
    },
@@ -2063,7 +2223,7 @@
   "npc.rotter_2": {
    "frame": {
     "x": 112,
-    "y": 288,
+    "y": 312,
     "w": 16,
     "h": 24
    },
@@ -2083,7 +2243,7 @@
   "npc.rotter_3": {
    "frame": {
     "x": 0,
-    "y": 312,
+    "y": 336,
     "w": 16,
     "h": 24
    },
@@ -2103,7 +2263,7 @@
   "npc.halvard": {
    "frame": {
     "x": 16,
-    "y": 312,
+    "y": 336,
     "w": 16,
     "h": 24
    },
@@ -2126,7 +2286,7 @@
   "format": "RGBA8888",
   "size": {
    "w": 128,
-   "h": 336
+   "h": 360
   },
   "scale": "1"
  }

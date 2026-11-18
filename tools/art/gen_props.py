@@ -373,6 +373,17 @@ for y0, cols in ((3, ("soft1", "tub1", "bone", "yerba1", "warm4", "night3")), (1
         c.rect(2 + i * 2, y0, 2, 5, col).px(2 + i * 2, y0, "night0")
 c.rect(10, 16, 4, 1, "pork1")
 P("obj.bookshelf", c.outline())
+# ---- the ring-one cast (each drawn as themselves) ----
+P("npc.kess", person("yerba0", "night2", "skin1", "concrete3", hunch=False))            # the super: work jacket, grey hair
+P("npc.pell", person("warm2", "warm1", "skin2", "bone"))                                # the retired engineer: cardigan, white hair
+P("npc.409", person("concrete1", "concrete0", "skin2", "night2", lace="rot0", look_up=False))
+P("npc.seun", person("tub1", "tub0", "bone", "night1", lace="screen2", hunch=False))    # a care-worker shell in scrubs
+P("npc.dez", person("night3", "night2", "skin1", "warm0"))                              # the night courier, half asleep
+P("npc.pruitt", person("bone", "concrete3", "skin3", "warm1", hunch=False))             # the supervisor: white abatement coat
+P("npc.okafor", person("soft1", "soft0", "skin0", "bone"))                              # the grandmother
+c = C().rect(4, 5, 8, 8, "bone").pts(None, (4, 5), (11, 5), (4, 12), (11, 12)).pts("night0", (8, 6), (8, 7), (8, 8), (9, 9))
+c.rect(12, 6, 4, 8, "bone").pts("night0", (13, 8), (14, 10)).rect(5, 7, 5, 4, "night1").pts("warm4", (6, 8), (8, 9))    # the face swung open on its hinge
+P("obj.clock_6f#open", c.outline())
 P("obj.door", door())
 P("obj.door_631", door())
 P("obj.bathroom", door("concrete2", "concrete1", occupied=True, num=False))
@@ -461,6 +472,10 @@ def bust(turn=0, raw=False):
 BIG["obj.statue_1"] = bust().rows()
 BIG["obj.statue_2"] = bust(turn=2).rows()
 BIG["obj.statue_3"] = bust(raw=True).rows()
+# Turned toward the flag (the busts puzzle swaps these in)
+BIG["obj.statue_1#flag"] = bust(turn=3).rows()
+BIG["obj.statue_2#flag"] = bust(turn=3).rows()
+BIG["obj.statue_3#flag"] = bust(turn=3, raw=True).rows()
 
 # ---- wide wall pieces (32x16, hung on a wall tile and the one to its right) ----
 WIDE = {}

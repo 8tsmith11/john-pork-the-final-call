@@ -37,6 +37,9 @@ export const asterHall = makeMap({
     { id: 'obj.door_634', art: DOOR, x: 11, y: 6, label: '634', text: 'Vacant since spring. The peephole has been painted over from the inside.' },
     { id: 'obj.door_636', art: DOOR, x: 27, y: 6, label: '636', text: 'A delivery box, unopened, addressed to the previous tenant. And the one before.' },
     { id: 'obj.door_638', art: DOOR, x: 31, y: 6, label: '638', text: 'Television through the door. "Citizens, things are stable." Then the same sentence again, slightly different.' },
+    // People on six
+    { id: 'npc.pell', x: 19, y: 7, label: 'Arthur Pell', npc: true, text: '"Track two feeds the yard. Track four used to." He does not look up from the slide rule. "Forty-one years on the Green Line. If the sums are right the trains are right. Check that for me, would you? No. Not you. The tall one."' },
+    { id: 'npc.409', x: 2, y: 3, label: 'Four-oh-nine', npc: true, text: 'A man on the landing with a bowl of soup going cold beside him. "Please hold. Your call is. Please hold." He says it kindly, the way he must have said it for years.' },
     // Stairwell
     { id: 'obj.stairs_6f', art: 'obj.stairs', x: 2, y: 1, label: 'Stairs down', action: 'exit', to: 'aster_lobby', text: 'Six flights. Somebody has numbered the steps in chalk and lost count at 71.' },
     { id: 'obj.extinguisher', x: 1, y: 4, label: 'Fire extinguisher', text: 'Inspected 2071. The tag has been initialed every year since by the same hand.' },
@@ -83,6 +86,9 @@ export const asterLobby = makeMap({
     { id: 'obj.lobby_camera', x: 30, y: 0, label: 'Lobby camera', text: 'The red light is on. It is recording. Not tonight, by the look of the monitor, but it is recording.' },
     { id: 'obj.security_desk', x: 17, y: 6, label: 'Security desk', text: 'A sign-in book. The last forty entries are the same name in forty different hands.' },
     { id: 'obj.lobby_monitor', x: 18, y: 6, label: 'Security monitor (rotted)', talk: 'lead_c_footage', puzzle: 'pipes', solvedFlag: 'act1.leadC.repaired' },
+    { id: 'npc.kess', x: 18, y: 2, label: 'Kess', npc: true, text: '"Lock on 631? I saw it." She has a screwdriver in one hand and a hinge in the other and puts down neither. "Forced from outside, with a tool, by somebody who has done it before. I\'ll have a new one on by morning. Don\'t touch the old one."' },
+    { id: 'npc.seun', x: 30, y: 10, label: 'Seun', npc: true, text: '"Oh. I am early. I am sorry." She is in scrubs with her coat over her arm, a glyph at the collar. "Mrs. Varga asks about you three. I tell her you are eating. Are you eating?"' },
+    { id: 'npc.dez', x: 9, y: 2, label: 'Dez', npc: true, text: 'He has his forehead on the mailboxes. "Mm. Van on the plaza since four. Two guys. One of them keeps looking down, like at the ground." A yawn that takes the rest of the sentence with it.' },
     { id: 'npc.doorman', x: 16, y: 5, label: 'Fenwick', npc: true, text: '"Good evening. You are residents. I am glad." A glyph at his collar, a certain stillness. "I did not see anyone come in. I would like to have."' },
     { id: 'obj.plant_w', art: 'obj.plant', x: 1, y: 9, label: 'Plant', text: 'Real, this one. It leans toward the street doors.' },
     { id: 'obj.bench_w', art: 'obj.bench', x: 3, y: 10, label: 'Bench', text: 'Somebody has carved ASTER PROS into the armrest. Somebody else has carved NOOBS under it. Same knife.' },
