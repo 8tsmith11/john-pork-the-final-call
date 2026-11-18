@@ -111,7 +111,7 @@ Format:
   bible. Rules are in [`PROCESS.md`](PROCESS.md) under "A third each".
 - **Michael's girlfriend is Manuelita** (renamed from Nari Seo). She is on screen once Michael is
   reunited with her (the reunion is wherever the sealed plot puts it, flag
-  `romance.manuelita.reunited`). Michael doesn't have to court her, and she gives the strongest
+  `act1.romance.manuelita.reunited`). Michael doesn't have to court her, and she gives the strongest
   party buffs. This replaces "never on screen" in D-013.
 - **Romance and instruments:** courtable girlfriends for Trevor and Manuel (weaker buffs). Shared
   events play on every roommate's screen; the main player can't skip them, the others can. Guitars
