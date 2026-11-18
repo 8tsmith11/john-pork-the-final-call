@@ -8,7 +8,7 @@
 import CRUSH from '../content/crush.js';
 import { audioOut } from '../audio/audio.js';
 
-export const MANUEL_SAYS_YES = false;
+export const MANUEL_SAYS_YES = true;   // Manuel said yes (gonman, board, 2026-11-18); Michael asked for it
 
 const rot13 = (s) => s.replace(/[a-zA-Z]/g, (c) => String.fromCharCode(((c.charCodeAt(0) - (c <= 'Z' ? 65 : 97) + 13) % 26) + (c <= 'Z' ? 65 : 97)));
 const DATA = JSON.parse(rot13(CRUSH));
