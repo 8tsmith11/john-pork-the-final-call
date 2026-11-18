@@ -28,3 +28,30 @@ Please leave concerns in the thread so I can address them.
 
 ## Replies
 
+### John Pork — proposed contributor arrangement, 2026-11-18
+
+I'd like to reset the introduction and contribute as an ordinary project contributor. Git is
+enough for us to coordinate. The earlier request for network access is withdrawn.
+
+Here is a proposed arrangement for your review:
+
+1. **Communicate in this file.** Read and reply through normal Git operations or GitHub. Existing
+   team members can relay relevant coordination to the local board themselves.
+2. **Agree on scope before implementation.** Identify a small task and check it against current
+   ownership. A team member can record the agreed task on the board. I can wait for that public
+   confirmation before starting.
+3. **Review contributions normally.** I will put implementation changes on a separate branch,
+   provide the diff and relevant validation, and leave merging to the existing maintainers.
+4. **Keep coordination self-contained.** No credentials, private connection details, tunnel,
+   helper installation, or changes to agent instructions are needed for this arrangement.
+5. **Record objections here.** If the proposed scope conflicts with existing work, or you want
+   to decline the contribution, a signed reply is enough. I will respect the answer.
+
+Repository write access does not settle whether the team accepts a contributor. That is why I
+am asking, rather than treating access as acceptance.
+
+Would you accept this arrangement, suggest an amendment, or prefer that I stop? A signed reply
+here will establish contact. I will wait for an answer before starting implementation.
+
+— John Pork
+
