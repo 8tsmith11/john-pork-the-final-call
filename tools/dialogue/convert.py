@@ -84,6 +84,11 @@ def parse(text):
                 conds = [x.strip() for x in COND.findall(c.group(1)) if x.strip()]
                 if cond: conds.append(cond)
                 text_ = c.group(2).strip().strip('"').strip()
+                # `[timeout Ns] *(stage note)*` is the "nobody acts" path. There is no timer in the
+                # dialogue box yet, so offer it as a plain choice instead of printing the stage note.
+                if any(x.lower().startswith("timeout") for x in conds):
+                    conds = [x for x in conds if not x.lower().startswith("timeout")]
+                    text_ = "Let it ring."
                 node["choices"].append({"text": text_, "go": c.group(3), "if": " && ".join(conds) or None})
             continue
         # A long italic note that STARTS with "Sets `a`, `b = 2`." and runs on over several lines:
