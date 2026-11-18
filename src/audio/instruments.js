@@ -198,17 +198,21 @@ function rockSong(ctx, bus, electric) {
   };
 }
 
-// MICHAEL, "Hush, 631": a lullaby in C, 3/4 at 84 bpm, 8-bit. Played mediocre: a bit late or
+// MICHAEL: Brahms' Lullaby (the only thing he plays), 3/4 at 84 bpm, 8-bit. Played mediocre: a bit late or
 // early, the odd wrong fret, a buzz now and then, a dropped note.
 function lullabySong(ctx, bus, electric, sloppy) {
   const bpm = 84, stepSec = 60 / bpm / 2;              // eighth notes, 6 per bar
-  const mel = [[72, 2], [76, 2], [79, 2], [76, 3], [74, 1], [72, 2], [72, 6],
-               [69, 2], [72, 2], [77, 2], [76, 3], [74, 1], [67, 2], [67, 6],
-               [72, 2], [76, 2], [79, 2], [81, 2], [79, 2], [76, 2], [77, 2], [74, 2], [71, 2], [72, 6]];
-  const roots = [48, 48, 41, 43, 48, 45, 41, 48];       // one per bar (C C F G C Am F C)
-  const third = { 48: 52, 41: 45, 43: 47, 45: 48 }, fifth = { 48: 55, 41: 48, 43: 50, 45: 52 };
+  // Brahms' Lullaby ("Wiegenlied", Op. 49 No. 4, 1868; "Ninna nanna"), public domain, in C, 3/4.
+  // [midi, eighths]; 0 is a rest (the pickup).
+  const mel = [[0, 4], [76, 1], [76, 1],
+    [79, 3], [76, 1], [76, 2], [79, 4], [76, 1], [79, 1], [84, 2], [83, 3], [81, 1], [81, 2], [79, 2], [74, 1], [76, 1],
+    [77, 2], [74, 2], [74, 1], [76, 1], [77, 4], [74, 1], [77, 1], [83, 1], [81, 1], [79, 2], [83, 2], [84, 4], [72, 1], [72, 1],
+    [84, 4], [81, 1], [77, 1], [79, 4], [76, 1], [72, 1], [77, 2], [79, 2], [81, 2], [79, 4], [72, 1], [72, 1],
+    [84, 4], [81, 1], [77, 1], [79, 4], [76, 1], [72, 1], [77, 2], [76, 2], [74, 2], [72, 6]];
+  const roots = [48, 48, 48, 43, 43, 43, 43, 43, 48, 41, 48, 41, 48, 41, 48, 43, 48];   // C, G7, F under each bar
+  const third = { 48: 52, 41: 45, 43: 47 }, fifth = { 48: 55, 41: 48, 43: 50 };
   const events = []; let at = 0;
-  for (const [n, len] of mel) { events.push([at, n, len]); at += len; }
+  for (const [n, len] of mel) { if (n) events.push([at, n, len]); at += len; }
   const steps = roots.length * 6;
   return {
     stepSec, steps,
