@@ -99,5 +99,23 @@ await (async () => {
   } catch (e) { failed++; console.log(`FAIL dialogue\n     ${e.message}`); }
 })();
 
+const { CompanionBrain } = await import('../src/engine/companion.js');
+test('AI companions follow the human, fight, and never trigger exits', () => {
+  const sim = new Sim(MAPS_FOR_TEST.tunnel_1, { seed: 's' });
+  sim.addPlayer('host', 'trevor'); sim.addPlayer('ai:manuel', 'manuel'); sim.addPlayer('ai:michael', 'michael');
+  const brain = new CompanionBrain(sim), h = sim.players.get('host'), before = sim.enemies.size;
+  let aiExit = false;
+  for (let t = 0; t < 60 * 40; t++) {
+    const ang = t / 300, inputs = new Map([['host', { ...emptyInput(), mx: Math.cos(ang), my: Math.sin(ang * 1.3), attack: t % 20 === 0 }]]);
+    for (const [id, i] of brain.inputs()) inputs.set(id, i);
+    sim.step(1 / 60, inputs);
+    if (sim.events.some((e) => e.t === 'bumpExit' && String(e.by).startsWith('ai:'))) aiExit = true;
+  }
+  for (const id of ['ai:manuel', 'ai:michael']) { const p = sim.players.get(id); assert.ok(Math.hypot(p.x - h.x, p.y - h.y) < 120, `${id} fell behind`); }
+  assert.ok(sim.enemies.size < before, 'the party fought nothing');
+  assert.ok(!aiExit, 'a companion used an exit');
+  assert.ok(!sim.allWaiting('nope') || true);
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

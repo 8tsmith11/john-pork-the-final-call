@@ -117,7 +117,8 @@ export class Sim {
     Object.assign(p, { waitExit: exitId, waitDx: dx, waitDy: dy, waitTick: this.tick });
     return this.allWaiting(exitId);
   }
-  allWaiting(exitId) { const up = [...this.players.values()].filter((p) => !p.downed); return up.length > 0 && up.every((p) => p.waitExit === exitId); }
+  // AI companions (ids 'ai:*') don't vote at doors; they're carried along with the party.
+  allWaiting(exitId) { const up = [...this.players.values()].filter((p) => !p.downed && !String(p.id).startsWith('ai:')); return up.length > 0 && up.every((p) => p.waitExit === exitId); }
   clearWaiting() { for (const p of this.players.values()) p.waitExit = null; }
 
   step(dt, inputs) {
@@ -498,7 +499,7 @@ export class Sim {
     if (door && !door.open) { door.open = true; this.events.push({ t: 'door', id: door.id }); return; }
     if (this.map.blocked?.has(k)) {
       const ex = this.map.objects.find((o) => o.x === tx && o.y === ty && o.action === 'exit');
-      if (ex) this.events.push({ t: 'bumpExit', id: ex.id, by: p.id, dx: Math.sign(dx), dy: Math.sign(dy) });
+      if (ex && !String(p.id).startsWith('ai:')) this.events.push({ t: 'bumpExit', id: ex.id, by: p.id, dx: Math.sign(dx), dy: Math.sign(dy) });
     }
   }
 

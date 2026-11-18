@@ -17,6 +17,7 @@ import { GameMenu, TABS } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
 import { rollCatch } from '../../content/fish.js';
 import { QUESTS, questState } from '../../content/quests.js';
+import { CompanionBrain, isAi } from '../../engine/companion.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
 import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
@@ -56,6 +57,10 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode !== 'client') {
       this.sim.addPlayer(this.localId, this.character);
       for (const [peer, ch] of Object.entries(this.assignments || {})) if (peer !== 'host') this.sim.addPlayer(peer, ch);
+      // Task 9: roommates nobody is playing are still here, run by the companion brain.
+      const taken = new Set([...this.sim.players.values()].map((p) => p.character));
+      for (const ch of ['trevor', 'manuel', 'michael']) if (!taken.has(ch)) this.sim.addPlayer(`ai:${ch}`, ch);
+      this.brain = new CompanionBrain(this.sim);
     }
     this.input.mouse?.disableContextMenu();
     this.sprites = new Map(); this.enemySprites = new Map(); this.shotGfx = this.add.graphics().setDepth(5000);
@@ -311,7 +316,11 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'morph') this._morph(peer);
         if (msg.t === 'scooter') this._scooter(peer);
       });
-      this.net.on('leave', (peer) => this.sim.removePlayer(peer));
+      this.net.on('leave', (peer) => {
+        // A roommate who drops out keeps walking with the party as a companion.
+        const p = this.sim.players.get(peer); this.sim.removePlayer(peer);
+        if (p) { this.sim.addPlayer(`ai:${p.character}`, p.character); const a = this.sim.players.get(`ai:${p.character}`); Object.assign(a, { x: p.x, y: p.y, hp: p.hp }); this.sim.setMods(a.id, playerMods(this.save.party[p.character], p.character)); }
+      });
       this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
     } else if (this.mode === 'client') {
       this.net.on('msg', (msg) => {
@@ -523,7 +532,7 @@ export class WorldScene extends Phaser.Scene {
   _morph(peerId) {
     const p = this.sim.players.get(peerId); if (!p) return;
     const stage = this.save.party[p.character]?.morph.stage ?? 0;
-    if (stage < 1) return this._announce('No morph yet. (Stage 1 unlocks at level 3.)');
+    if (stage < 1) return;   // nothing until it's unlocked (human request: no 'not yet' message)
     this.sim.toggleMorph(peerId, true);
   }
 
@@ -936,6 +945,7 @@ export class WorldScene extends Phaser.Scene {
       let first = true, events = [];
       while (this.acc >= STEP) {
         const inputs = new Map([[this.localId, first ? inp : { ...inp, dodge: false, interact: false }]]);
+        if (this.brain && !(this.dlg && this.mode === 'solo')) for (const [id, ai] of this.brain.inputs()) inputs.set(id, ai);
         for (const [peer, rinp] of this.remoteInputs) {
           inputs.set(peer, rinp);
           if (rinp.dodge) this.remoteInputs.set(peer, { ...rinp, dodge: false });
@@ -963,7 +973,7 @@ export class WorldScene extends Phaser.Scene {
         if (exit?.requiresClear && !this.sim.cleared) { this._announce('Something down here is still moving.'); continue; }
         if (exit?.requiresFlag && !this.save.flags[exit.requiresFlag]) { if (!this._lockedSaid || this.time.now - this._lockedSaid > 3000) { this._lockedSaid = this.time.now; this._toast(exit.lockedText ?? 'It won\'t open.'); } continue; }
         // Solo goes straight through. In co-op the party gathers at the door first.
-        if (this.sim.players.size <= 1 || this.sim.waitAtExit(ev.by, ev.id, ev.dx, ev.dy)) { this.sim.clearWaiting(); this._tryExit(exit); }
+        if ([...this.sim.players.keys()].filter((id) => !isAi(id)).length <= 1 || this.sim.waitAtExit(ev.by, ev.id, ev.dx, ev.dy)) { this.sim.clearWaiting(); this._tryExit(exit); }
       }
       if (ev.t === 'door' || ev.t === 'doorClose') sfx('swing');
       if (ev.t === 'grind' && ev.id === this.localId && !this.save.flags['secrets.grind.found']) { this._flag('secrets.grind.found', true); this._toast('★ Rail grind! (scooters fly along the tracks)'); }

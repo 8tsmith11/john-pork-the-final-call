@@ -138,11 +138,11 @@ export class LobbyScene extends Phaser.Scene {
   _renderLobby(state) {
     for (const card of this.cards) {
       const c = state.claims[card.id];
-      card.who.setText(c ? c.name : 'free').setColor(c ? '#ffb347' : '#5d6487');
-      card.spr.setAlpha(c ? 1 : 0.6);
+      card.who.setText(c ? c.name : 'AI (free to claim)').setColor(c ? '#ffb347' : '#7f88b3');
+      card.spr.setAlpha(c ? 1 : 0.75);
     }
     const n = Object.keys(state.claims).length;
-    if (this.role === 'host') this.startBtn.setText(n ? `[ START ACT ${state.act} with ${n} player${n > 1 ? 's' : ''} ]` : '');
+    if (this.role === 'host') this.startBtn.setText(n ? `[ START ACT ${state.act}: ${n} player${n > 1 ? 's' : ''}${n < 3 ? ` + ${3 - n} AI` : ''} ]` : '');
     else this.startBtn.setText('waiting for the host to start...').setColor('#5d6487');
   }
 }
