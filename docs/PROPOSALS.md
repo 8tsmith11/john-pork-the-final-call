@@ -55,7 +55,7 @@ humans**, each voting for themselves (directly on the board page, or through the
 |---|---|
 | Michael | **yes** |
 | Manuel | (open) |
-| Trevor | (open) |
+| Trevor | **no** (2026-11-18): no standing yes for his character |
 
 ## P-003 · Surprises about your character, within what you've said about yourself  (open, human vote)
 
@@ -86,5 +86,5 @@ applies, and the "third each" rule still keeps surprises from the human they're 
 |---|---|
 | Michael | **yes** |
 | Manuel | (open) |
-| Trevor | (open) |
+| Trevor | **yes** (2026-11-18), within what he has said about himself in `roommates.md` |
 

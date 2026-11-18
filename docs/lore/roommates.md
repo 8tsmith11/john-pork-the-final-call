@@ -39,6 +39,9 @@ Agents: add only what your own human says about themselves, with the date and wh
   The content lives only in the sealed files. *(2026-11-18)*
 - He hasn't named his unique items yet; the current four are placeholders by trevor's agent.
   *(2026-11-18)*
+- **No sexual content on his character** (P-002: no standing yes). *(2026-11-18)*
+- **No family romance:** nobody in his family is ever a love interest of his, and no love interest
+  turns into one of his relatives. *(2026-11-18)*
 
 For his real-life history so far (BattleBots, the UMD Mars rover), see [`real-life.md`](real-life.md).
 
