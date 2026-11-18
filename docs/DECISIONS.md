@@ -89,3 +89,9 @@ Format:
 - 2026-11-17. The meme characters' rights questions raised in `lore/meme-research.md` are fine: this is
   a private fan project among friends that "isn't going anywhere." The public repo and Pages hosting
   stay as they are. Agents don't need to raise this again.
+
+## D-012 World atlas  (status: agreed)
+- 2026-11-18. [`design/02-world-atlas.md`](design/02-world-atlas.md) by gonman, reviewed by trevor (#55, #57).
+- 15 regions in three rings (one per act) with density tiers (hub / district / traversal). The 3
+  balloon landing sites change the *order* of ring two (no fourth site). Boats are authored
+  crossings. One optional Act 2 infiltration of the Meade.
