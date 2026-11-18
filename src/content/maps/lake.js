@@ -15,7 +15,22 @@ const ELL = (cx, cy, rx, ry, ch, inner = 0) => {
 };
 
 // Trees first, scattered, then everything else is painted over them.
-for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) if ((x * 11 + y * 7) % 13 === 0) g[y][x] = 'T';
+// Level design (gonman): groves, not a lattice. Trees bunch in named stands with open grass between
+// them, so the lake reads as a park that grew and the eye gets somewhere to rest. `hash` is a fixed
+// per-tile value, so the layout is the same on every machine.
+const hash = (x, y) => { const v = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return v - Math.floor(v); };
+const GROVES = [   // [cx, cy, rx, ry]
+  [8, 6, 7, 4], [7, 14, 5, 3], [6, 29, 5, 4], [9, 37, 7, 4],          // the west woods, either side of the trail in
+  [30, 3, 8, 2], [47, 2, 4, 1],                                        // along the north edge
+  [47, 40, 10, 3], [35, 41, 4, 2],                                     // the south edge, behind the marsh
+  [61, 13, 2.5, 5], [61, 31, 2.5, 6],                                  // the strip between the loop and the fence
+];
+for (let y = 1; y < H - 1; y++) for (let x = 1; x < 64; x++) {
+  const inGrove = GROVES.some(([cx, cy, rx, ry]) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1);
+  if (hash(x, y) < (inGrove ? 0.42 : 0.025)) g[y][x] = 'T';
+}
+for (let y = 2; y < H - 2; y++) if (hash(69, y) < 0.18) g[y][69] = 'T';
+const CLEAR = [[29, 36]];                                         // enemy spawns must stand on grass; painted back after the groves   // a ragged line beyond the tracks
 
 ELL(40, 21, 21, 15, 's', 0.8);                                   // the loop trail around the lake
 ELL(40, 21, 19.5, 13.5, 'g');                                    // the bank inside the loop
@@ -32,6 +47,7 @@ R(52, 3, 9, 4, '#'); R(53, 7, 7, 1, 'p');                        // the boathous
 R(64, 1, 1, H - 2, '=');                                         // the fence
 R(66, 1, 2, H - 2, 't');                                         // the Green Line, at grade here
 R(0, 0, W, 1, 'T'); R(0, H - 1, W, 1, 'T'); R(0, 0, 1, H, 'T'); R(W - 1, 0, 1, H, 'T');
+for (const [x, y] of CLEAR) g[y][x] = 'g';
 R(0, 21, 1, 2, 's');                                             // the way back out
 
 const lamp = (x, y, text) => ({ id: `obj.lakelamp_${x}_${y}`, art: 'obj.streetlamp', x, y, label: 'Trail lamp', light: 0.8, text });

@@ -225,6 +225,7 @@ test('every map object is reachable on foot', () => {
         seen.add(k); q.push([nx, ny]);
       }
     }
+    for (const e of m.enemies ?? []) if (m.solid(Math.floor(e.x / 16), Math.floor(e.y / 16))) bad.push(`${m.id}: ${e.kind} spawns inside a wall or tree at ${Math.floor(e.x / 16)},${Math.floor(e.y / 16)}`);
     for (const o of m.objects) if (![[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${o.x + dx},${o.y + dy}`))) bad.push(`${m.id}: ${o.id} at ${o.x},${o.y}`);
   }
   assert.equal(bad.length, 0, bad.join('; '));
