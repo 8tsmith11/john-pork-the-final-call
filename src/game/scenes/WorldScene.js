@@ -9,6 +9,7 @@ import { TILE_COLORS } from '../../content/maps/build.js';
 import { ENEMIES } from '../../content/enemies.js';
 import { GAME_VERSION } from '../../version.js';
 import { loadScene, Conversation } from '../../engine/dialogue.js';
+import { babble, setArea, sfx } from '../../audio/audio.js';
 
 const STEP = 1 / 60;
 const XP_PER_LEVEL = 30;
@@ -108,6 +109,7 @@ export class WorldScene extends Phaser.Scene {
     } else {
       const line = d.line;
       this.dlgWho.setText(line?.who ? line.who.toUpperCase() : '');
+      if (line && line !== this._lastLine) { this._lastLine = line; babble(line.who, line.text); }
       this.dlgText.setText(line?.text?.replace(/\*([^*]+)\*/g, '$1') ?? '');
       this.dlgChoices.forEach((t) => t.setVisible(false));
     }
@@ -181,6 +183,7 @@ export class WorldScene extends Phaser.Scene {
     const mw = map.w * TILE, mh = map.h * TILE, vw = this.scale.width, vh = this.scale.height;
     this.cameras.main.setBounds(Math.min(0, (mw - vw) / 2), Math.min(0, (mh - vh) / 2), Math.max(mw, vw), Math.max(mh, vh)).setRoundPixels(true);
     this.mapLabel.setText(map.name);
+    setArea(map.id);
     for (const s of this.enemySprites.values()) s.destroy();
     this.enemySprites.clear();
   }
@@ -369,6 +372,8 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _fx(ev, snap) {
+    if (['hit', 'kill', 'shot', 'swing'].includes(ev.t) && (ev.by === this.localId || ev.id === this.localId)) sfx(ev.t);
+    if (ev.t === 'hurt' && ev.id === this.localId) sfx('hurt');
     if (ev.t === 'kill' && ev.boss && !this._endingPlayed) { this._endingPlayed = true; this.time.delayedCall(900, () => this._playEnding(true)); }
     if (ev.t === 'phase') { this.cameras.main.shake(300, 0.01); this._say(ev.phase === 3 ? 'The Warden overloads. The platform starts rendering wrong.' : 'It changes how it moves.'); }
     if (ev.t === 'tell') { const g = this.add.circle(ev.x, ev.y - 8, 14, 0xd65db1, 0.35).setDepth(6000); this.tweens.add({ targets: g, scale: 2, alpha: 0, duration: 380, onComplete: () => g.destroy() }); }
