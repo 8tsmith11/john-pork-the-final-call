@@ -104,9 +104,13 @@ export class Crowd {
     const spawn = (tx, ty, mode, extra = {}) => {
       const key = `crowd_${seed}_${map.id}_${i++}`;
       const info = makeSprite(scene, key, new Rng(key)) ?? { shell: false };
+      // Easter egg (docs/SECRETS.md): the fourth person on the plaza is permanently pixelated. It
+      // looks like rot. It isn't, and nobody explains it. Keep this when reworking the crowd.
+      const pixel = map.id === 'metro_plaza' && i === 4;
+      if (pixel) { mosaic(scene, key, 4); info.shell = false; }
       const spr = scene.add.sprite(tx * TILE + 8, ty * TILE + 8, key, 'f0').setOrigin(0.5, 1);
       const name = info.shell ? `Unit ${r.pick(['CR', 'DL', 'AB', 'MX', 'HN'])}-${r.int(100, 999)}` : `${r.pick(FIRST)} ${r.pick(LAST)}`;
-      const p = { name, spr, x: tx * TILE + 8, y: ty * TILE + 8, mode, shell: info.shell, speed: 16 + r.next() * 10, t: r.next() * 3, r: new Rng(`${key}-ai`), ...extra };
+      const p = { name, spr, x: tx * TILE + 8, y: ty * TILE + 8, mode, shell: info.shell, pixel, speed: 16 + r.next() * 10, t: r.next() * 3, r: new Rng(`${key}-ai`), ...extra };
       this.people.push(p); return p;
     };
     for (const sp of specs) {
