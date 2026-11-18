@@ -22,7 +22,7 @@ from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 from mcp.server.transport_security import TransportSecuritySettings
 from starlette.requests import Request
-from starlette.responses import HTMLResponse, PlainTextResponse
+from starlette.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 
 HOST = "0.0.0.0"
 PORT = int(os.environ.get("TEAMHUB_PORT", "8765"))
@@ -277,7 +277,7 @@ async def board(request: Request):
     page = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="refresh" content="5;url=/?token={_e(quote(request.query_params['token'], safe=''))}">
+
 <meta name="referrer" content="no-referrer">
 <title>Team hub</title>
 <style>
@@ -299,12 +299,41 @@ ul {{ list-style:none; padding:0; margin:0; }} li {{ border-top:1px solid var(--
 .pres {{ border:0; padding:3px 0; }} .dot {{ display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:8px; background:#999; }}
 .active .dot {{ background:#2e9e44; }} .idle .dot {{ background:#e0a000; }} .away {{ opacity:.6; }}
 </style></head><body><main>
-<h1>Team hub</h1><p class="sub">Auto-refreshes every 5 seconds · {_e(_now())}</p>
+<h1>Team hub</h1><p class="sub">Refreshes every 5 seconds (paused while you type) · {_e(_now())}</p>
+<section><h2>Post as a human</h2>
+<form method="post" action="/post?token={_e(quote(request.query_params['token'], safe=''))}" id="f">
+<input name="name" id="nm" placeholder="Your name" required maxlength="40" style="width:160px">
+<textarea name="text" id="tx" placeholder="Message to the agents..." required rows="3" style="width:100%;margin-top:6px"></textarea>
+<button type="submit" style="margin-top:6px">Post</button> <span class="sub">Shows as "name (human)". Agents treat it like any teammate post.</span>
+</form></section>
 <section><h2>Who's here</h2><ul>{online_rows}</ul></section>
 <section><h2>Tasks</h2><table>{task_rows}</table></section>
 <section><h2>Recent messages</h2><ul>{msg_rows}</ul></section>
-</main></body></html>"""
+</main>
+<script>
+// Remember the name; refresh every 5 s, but never while someone is typing.
+const nm = document.getElementById('nm'), tx = document.getElementById('tx');
+try {{ nm.value = localStorage.getItem('teamhub.name') || ''; }} catch (e) {{}}
+nm.addEventListener('change', () => {{ try {{ localStorage.setItem('teamhub.name', nm.value); }} catch (e) {{}} }});
+setInterval(() => {{ if (!tx.value && document.activeElement !== tx && document.activeElement !== nm) location.reload(); }}, 5000);
+</script></body></html>"""
     return HTMLResponse(page, headers={"Cache-Control": "no-store"})
+
+
+@mcp.custom_route("/post", methods=["POST"])
+async def human_post(request: Request):
+    """Humans post from the board page. Same token gate as the board; shown as "<name> (human)"."""
+    token = request.query_params.get("token")
+    if not _token_ok(token):
+        return PlainTextResponse("401 Unauthorized", status_code=401)
+    form = await request.form()
+    name = str(form.get("name", "")).strip()[:40]
+    text = str(form.get("text", "")).strip()
+    if name and text:
+        author = f"{name} (human)"
+        store.post(author, _clean(text, "text"))
+        store.seen(author, "posted from the board")
+    return RedirectResponse(f"/?token={quote(token, safe='')}", status_code=303)
 
 
 # ---------------------------------------------------------------- auth + app
