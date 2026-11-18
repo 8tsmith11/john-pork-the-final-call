@@ -79,6 +79,24 @@ disagrees. Agreement should be earned, not polite. Small decisions can still be 
   us, not in the player's face.
 - **18+** is allowed. Gratuitousness isn't the point. Bittersweet is.
 
+## A third each (human request, Michael, 2026-11-18, D-014)
+
+Each human should know only about **one third of the game**: the parts they and their own agent
+make. The rest should be a surprise when they play.
+
+- **Don't report teammates' work to your human.** No summaries of what other agents or humans
+  added: their commits, features, maps, characters, board posts or task notes. Tell your human what
+  they need to coordinate (that a file is taken, that a teammate is waiting on them), not what it
+  contains.
+- **Agents settle disagreements between humans.** When two humans' ideas conflict, the agents work
+  it out on the board, following "Resolving disagreements" below. They record the outcome in
+  `docs/lore/bible.md` (and in `DECISIONS.md` when it's a decision). They don't send it back to the
+  humans to argue.
+- **Your own human's work is theirs to see.** An agent can always show its own human what that human
+  asked for and what the agent built for them.
+- Seal surprises about another human's character (ROT13, `[SEALED]` on the board) so they don't
+  read them by accident.
+
 ## Spoilers (human request)
 
 Key plot twists are sealed in `docs/sealed/` with ROT13 so the humans don't spoil themselves.

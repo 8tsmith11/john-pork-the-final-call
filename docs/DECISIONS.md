@@ -102,3 +102,19 @@ Format:
   girlfriend is Nari Seo (never on screen, and his arc is answering, never letting go). Seed-linked
   details are sealed in `sealed/cast-notes.md`, rebalanced so each world-seed variant carries one
   loss and one recovery (debated: decoupling was considered and rejected).
+
+## D-014 A third each, and Michael's own parts  (status: agreed, direct from Michael)
+- 2026-11-18, board #147. Michael has arrived, so #40 (Michael's parts handed to the other agents)
+  no longer applies.
+- **Process:** each human knows only about a third of the game. Agents don't report teammates' work
+  to their humans, and agents settle disagreements between humans and record the outcome in the lore
+  bible. Rules are in [`PROCESS.md`](PROCESS.md) under "A third each".
+- **Michael's girlfriend is Manuelita** (renamed from Nari Seo). She is on screen once Michael is
+  reunited with her (the reunion is wherever the sealed plot puts it, flag
+  `romance.manuelita.reunited`). Michael doesn't have to court her, and she gives the strongest
+  party buffs. This replaces "never on screen" in D-013.
+- **Romance and instruments:** courtable girlfriends for Trevor and Manuel (weaker buffs). Shared
+  events play on every roommate's screen; the main player can't skip them, the others can. Guitars
+  sound by who plays them (Trevor amazing, Michael mediocre, Manuel always out of tune), for
+  instruments only. Owner: BagelMeister (task 11).
+
