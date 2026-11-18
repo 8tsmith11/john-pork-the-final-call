@@ -1,11 +1,13 @@
 import { ROOMMATES } from './BootScene.js';
+import { VIEW, setupCameras, toView } from '../../view.js';
 import { loadAutosave, clearAutosave, importFile, autosave } from '../../engine/save/storage.js';
 
 export class TitleScene extends Phaser.Scene {
   constructor() { super('Title'); }
 
   create() {
-    const { width: W, height: H } = this.scale;
+    setupCameras(this);
+    const W = VIEW.w, H = VIEW.h;
     this.cameras.main.setBackgroundColor('#0b0d16');
     const hour = new Date().getHours();
     this.add.text(W / 2, 40, 'JOHN PORK', { fontFamily: 'monospace', fontSize: '28px', color: '#f2a6b8' }).setOrigin(0.5);

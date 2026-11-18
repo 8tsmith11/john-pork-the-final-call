@@ -1,4 +1,5 @@
 import { Sim, TILE } from '../../engine/sim.js';
+import { VIEW, setupCameras, toView } from '../../view.js';
 import { InputReader } from '../../engine/input.js';
 import { newSave } from '../../engine/save/schema.js';
 import { autosave, loadAutosave, exportFile } from '../../engine/save/storage.js';
@@ -33,6 +34,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   async create() {
+    setupCameras(this, { world: true });
     this.save = this.passedSave ?? (await loadAutosave().catch(() => null)) ?? this._newGame();
     const startMap = MAPS[this.save.world.area] ?? MAPS.room631;
     this.sim = new Sim(startMap, { seed: this.save.world.seed });
@@ -105,7 +107,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _makeDialogueUi() {
-    const W = this.scale.width, H = this.scale.height;
+    const W = VIEW.w, H = VIEW.h;
     this.dlgBg = this.add.rectangle(W / 2, H - 46, W - 16, 84, 0x0b0d16, 0.94).setStrokeStyle(1, 0xf2a6b8).setScrollFactor(0).setDepth(9500).setVisible(false);
     this.dlgWho = this.add.text(16, H - 84, '', { ...FONT, color: '#ffb347' }).setScrollFactor(0).setDepth(9501);
     this.dlgText = this.add.text(16, H - 72, '', { ...FONT, wordWrap: { width: W - 34 }, lineSpacing: 2 }).setScrollFactor(0).setDepth(9501);
@@ -225,7 +227,7 @@ export class WorldScene extends Phaser.Scene {
       g.fillStyle(0xffffff, 0.18).fillRect(o.x * TILE + 3, o.y * TILE + 2, TILE - 6, 2);
     }
     this._setupLighting(map);
-    const mw = map.w * TILE, mh = map.h * TILE, vw = this.scale.width, vh = this.scale.height;
+    const mw = map.w * TILE, mh = map.h * TILE, vw = VIEW.w, vh = VIEW.h;
     this.cameras.main.setBounds(Math.min(0, (mw - vw) / 2), Math.min(0, (mh - vh) / 2), Math.max(mw, vw), Math.max(mh, vh)).setRoundPixels(true);
     this.mapLabel.setText(map.name);
     setArea(map.id);
@@ -237,7 +239,7 @@ export class WorldScene extends Phaser.Scene {
     if (!fromBoss && this.mode !== 'client' && !this.sim.cleared) return this._announce('Something down here is still moving.');
     this.startDialogue('ending', null, () => {
       this._flag('act1.complete', true);
-      const W = this.scale.width, H = this.scale.height;
+      const W = VIEW.w, H = VIEW.h;
       const card = this.add.text(W / 2, H / 2, 'ACT 1\nMISSED CALLS', { fontFamily: 'monospace', fontSize: '18px', color: '#f2a6b8', align: 'center' })
         .setOrigin(0.5).setScrollFactor(0).setDepth(9999).setAlpha(0);
       this.tweens.add({ targets: card, alpha: 1, duration: 1600, hold: 2600, yoyo: true });
@@ -284,7 +286,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _makeMenu() {
-    const W = this.scale.width;
+    const W = VIEW.w;
     this.menuBg = this.add.rectangle(W / 2, 128, 300, 196, 0x0b0d16, 0.95).setStrokeStyle(1, 0xffb347).setScrollFactor(0).setDepth(9600).setVisible(false);
     this.menuTitle = this.add.text(W / 2 - 140, 42, '', { ...FONT, color: '#ffb347' }).setScrollFactor(0).setDepth(9601);
     this.menuRows = [0, 1, 2, 3, 4, 5, 6].map((i) => this.add.text(W / 2 - 136, 58 + i * 25, '', { ...FONT, wordWrap: { width: 270 } })
@@ -360,7 +362,7 @@ export class WorldScene extends Phaser.Scene {
     const DARK = { room631: 0.35, aster_hall: 0.45, metro_plaza: 0.4, tunnel_1: 0.7, platform: 0.62 };
     this.darkness = DARK[map.id] ?? 0.4;
     this.lights?.destroy();
-    const W = this.scale.width, H = this.scale.height;
+    const W = VIEW.w, H = VIEW.h;
     this.lights = this.add.renderTexture(0, 0, W, H).setOrigin(0, 0).setScrollFactor(0).setDepth(8000);
     this.lightSpots = map.objects.filter((o) => o.npc || o.action === 'exit' || ['obj.printer_3', 'obj.mate', 'obj.pork_flag', 'obj.shrimp_tank', 'obj.billboard', 'obj.oscilloscope', 'obj.lobby_monitor'].includes(o.id));
     this.rotEdge = map.id === 'tunnel_1' || map.id === 'platform';
@@ -377,7 +379,7 @@ export class WorldScene extends Phaser.Scene {
     for (const o of this.lightSpots) { this._lightImg.setScale(0.7); rt.erase(this._lightImg, o.x * TILE + 8 - cam.worldView.x, o.y * TILE + 8 - cam.worldView.y); }
     // Rot shows up as rendering errors at the screen edges.
     if (this.rotEdge && Math.random() < 0.12) {
-      const W = this.scale.width, H = this.scale.height, y = Math.random() * H, h = 2 + Math.random() * 6, left = Math.random() < 0.5;
+      const W = VIEW.w, H = VIEW.h, y = Math.random() * H, h = 2 + Math.random() * 6, left = Math.random() < 0.5;
       rt.fill(Math.random() < 0.5 ? 0x7fb069 : 0xd65db1, 0.35, left ? 0 : W - 40, y, 40, h);
     }
   }
@@ -401,7 +403,7 @@ export class WorldScene extends Phaser.Scene {
 
   // ---------- UI ----------
   _makeUi() {
-    const W = this.scale.width, H = this.scale.height;
+    const W = VIEW.w, H = VIEW.h;
     this.hint = this.add.text(W / 2, H - 46, '', { ...FONT, color: '#ffb347' }).setOrigin(0.5).setScrollFactor(0).setDepth(9000);
     this.box = this.add.rectangle(W / 2, H - 22, W - 20, 34, 0x0b0d16, 0.9).setStrokeStyle(1, 0x5d6487).setScrollFactor(0).setDepth(9000).setVisible(false);
     this.boxText = this.add.text(18, H - 36, '', { ...FONT, wordWrap: { width: W - 36 } }).setScrollFactor(0).setDepth(9001).setVisible(false);
@@ -420,7 +422,7 @@ export class WorldScene extends Phaser.Scene {
 
   _onClick(ptr) {
     if (!this.ready || ptr.button !== 0) return;
-    const sx = ptr.x, sy = ptr.y;
+    const { x: sx, y: sy } = toView(ptr);
     if (this.dlg) {   // any click advances a line (choices are clicked directly)
       this.input2.blockAttack = true;
       if (!this.dlg.choices.length) { this.dlg.advance(); this._drawDialogue(); }
@@ -598,7 +600,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _bossBar(e) {
-    const W = this.scale.width;
+    const W = VIEW.w;
     if (!this.bossUi) {
       this.bossUi = this.add.container(0, 0).setScrollFactor(0).setDepth(9100);
       this.bossName = this.add.text(W / 2, 22, '', { ...FONT, color: '#f2a6b8' }).setOrigin(0.5);
