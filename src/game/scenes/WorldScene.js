@@ -26,6 +26,9 @@ const MORPH_UNLOCK = {
 const MORPH_LOOK = { trevor: [0xb8d8ff, 'Trevor (stacked)'], manuel: [0xb6e07a, 'the gonman'], michael: [0xffb0a8, 'Michael (signal)'] };
 const FONT = { fontFamily: 'monospace', fontSize: '8px', color: '#e8e8f0' };
 
+// Seconds of standing still before a roommate's long idle starts (?idle=10 to test).
+const IDLE_MS = (Number(new URLSearchParams(globalThis.location?.search ?? '').get('idle')) || 180) * 1000;
+
 export class WorldScene extends Phaser.Scene {
   constructor() { super('World'); }
 
@@ -699,6 +702,16 @@ export class WorldScene extends Phaser.Scene {
     if (near.action === 'save') this._save();
   }
 
+  // A roommate was interrupted mid long-idle: they scramble, and the party "saw nothing".
+  _caught(p) {
+    const s = this.sprites.get(p.id);
+    if (s) this.tweens.add({ targets: s, angle: { from: -8, to: 8 }, duration: 60, yoyo: true, repeat: 2, onComplete: () => s.setAngle(0) });
+    if (this.save?.flags && !this.save.flags['secrets.sawNothing.found']) {
+      if (this.mode !== 'client') this.save.flags['secrets.sawNothing.found'] = true;
+      this._announce('Achievement: We saw nothing.');
+    }
+  }
+
   // ---------- rendering ----------
   _render(snap) {
     const seen = new Set();
@@ -713,7 +726,19 @@ export class WorldScene extends Phaser.Scene {
       s.setPosition(Math.round(p.x), Math.round(p.y + 4)).setDepth(p.y);
       const facing = p.f === 'left' ? 'right' : p.f;
       s.setFlipX(p.f === 'left');
-      const key = `${p.c}_${p.m ? 'walk' : 'idle'}_${facing}`;
+      let key = `${p.c}_${p.m ? 'walk' : 'idle'}_${facing}`;
+      // Long idle easter eggs: stand still for 3 minutes (?idle=<seconds> to test). Moving breaks it.
+      const busy = p.m || p.d || p.sw || p.dn || p.iv;
+      if (busy || s.idleSince === undefined) {
+        if (s.longIdle && busy && !p.dn) this._caught(p);
+        s.idleSince = this.time.now; s.longIdle = null;
+      } else if (!s.longIdle && this.time.now - s.idleSince > IDLE_MS && this.anims.exists(`${p.c}_long`)) {
+        const crude = (() => { try { return localStorage.getItem('jpfc.crudeHumor') !== 'off'; } catch { return true; } })();
+        // Manuel's other idle: only in his morph ("the gonman" and up), one time in three, crude humor on.
+        const alt = p.c === 'manuel' && p.mo && crude && this.anims.exists('manuel_alt') && ((Math.floor(this.time.now / 1000) + p.id.length) % 3 === 0);
+        s.longIdle = alt ? 'manuel_alt' : `${p.c}_long`;
+      }
+      if (s.longIdle) { key = s.longIdle; s.setFlipX(false); }
       if (s.anims.currentAnim?.key !== key) s.play(key);
       if (!p.d) p._dashFx = false;
       if (p.m && !p.d && (this._stepTick = (this._stepTick ?? 0) + 1) % 16 === 0) {

@@ -82,6 +82,11 @@ export class BootScene extends Phaser.Scene {
         this.anims.create({ key: `${id}_idle_${f}`, frames: pick('idle'), frameRate: 2, repeat: -1 });
         this.anims.create({ key: `${id}_walk_${f}`, frames: pick('walk'), frameRate: 8, repeat: -1 });
       }
+      // Long idles (easter eggs, docs/SECRETS.md): what each roommate does when left standing.
+      const names = this.textures.get(id).getFrameNames();
+      const seq = (prefix) => names.filter((n) => n.startsWith(prefix)).sort().map((frame) => ({ key: id, frame }));
+      if (seq('long_down_').length) this.anims.create({ key: `${id}_long`, frames: seq('long_down_'), frameRate: 2, repeat: -1 });
+      if (seq('alt_up_').length) this.anims.create({ key: `${id}_alt`, frames: seq('alt_up_'), frameRate: 7, repeat: -1 });
     }
   }
 }
