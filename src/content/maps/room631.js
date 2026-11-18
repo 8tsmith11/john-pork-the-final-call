@@ -130,6 +130,8 @@ export const room631 = makeMap({
     { id: 'obj.bunk', art: 'obj.bed', x: 18, y: 2, label: 'Triple bunk (save)', action: 'save',
       text: 'The triple bunk. Three mattresses high, and every rung of the ladder creaks.\n\nTop: Trevor, two guitar picks and a glass of water he never finishes. Middle: Michael, a phone charger and a sweatshirt that isn\'t his size. Bottom: Manuel, a carved gourd and a postcard from Buenos Aires tucked into the slats above him.\n\nSleep? The balloon is still missing.' },
     { id: 'obj.arg_flag', x: 22, y: 0, label: 'Argentine flag', text: 'The Argentine flag, sky blue and white with the sun in the middle, tacked up over Manuel\'s end of the room. It is bigger than the window.' },
+    { id: 'obj.michael_closet', art: 'obj.manuel_closet', loot: 'michael_closet', x: 16, y: 4, label: 'Michael\'s closet',
+      text: 'Michael\'s closet. Hoodies, a few shirts, and a hook by the door that only ever holds one thing.' },
     { id: 'obj.manuel_closet', x: 22, y: 4, label: 'Manuel\'s closet', flag: 'act1.balloon.noticedGone',
       text: 'Manuel\'s closet. His orange balloon, the one his abuela sent him, the one he checks on every morning, is gone. Someone took it. A length of orange ribbon is still knotted around the clothes rail, cut clean. On the shelf above, his white hat with the blue brim. Taped inside the door, a card in her handwriting: "Tenelo al sol. Miralo cada mañana. Te va a decir el tiempo." (Keep it in the sun. Check on it every morning. It will tell you the weather.)' },
     { id: 'obj.front_lock', x: 1, y: 8, label: 'Front-door lock', flag: 'act1.clue.lockForced',

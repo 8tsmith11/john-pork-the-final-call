@@ -206,6 +206,8 @@ ICONS = {
     "item.blue_pill": lambda: I().rect(3, 4, 10, 9, "steel").rect(4, 5, 8, 7, "bone").pts("screen1", (8, 6), (7, 7), (8, 7), (9, 7), (6, 8), (7, 8), (8, 8), (9, 8), (10, 8), (7, 9), (8, 9), (9, 9), (8, 10)).pts("screen2", (8, 7), (7, 8)).pts("concrete3", (4, 5), (11, 11)),
     "item.relic_phone": phone, "item.relic_coin": coin, "item.relic_figure": figure,
     **D014,
+    # Michael's brown rain parka: his exact color (Michael, 2026-11-18).
+    "item.brown_parka": lambda: I().disc(8, 4, 3, "parka").rect(3, 6, 10, 9, "parka").rect(6, 4, 4, 3, "night2").line(8, 7, 8, 14, "warm1").rect(2, 7, 2, 6, "warm2").rect(12, 7, 2, 6, "warm2"),
     "generic": lambda: I().rect(4, 4, 8, 8, "concrete2").rect(4, 4, 8, 1, "concrete3").pts("night2", (7, 7), (8, 7), (7, 8), (8, 8)),
 }
 

@@ -76,6 +76,7 @@ Object.assign(ITEMS, {
   'item.sneakers':      { name: 'Running sneakers', slot: 'boots', mods: { speed: 0.07 }, text: 'Bright soles, no armor at all. You will get places.' },
   'item.welding_goggles': { name: 'Welding goggles', slot: 'goggles', mods: { crit: 0.05 }, text: 'Everything looks dimmer except the weak spots.' },
   'item.rain_parka':    { name: 'Yellow rain parka', slot: 'parka', mods: { armor: 0.03, staRegen: 0.1 }, text: 'Dry is a kind of stamina.' },
+  'item.brown_parka':   { name: 'Brown rain parka', slot: 'parka', mods: { armor: 0.03, staRegen: 0.1 }, text: 'Michael\'s. Broken in at the elbows and completely waterproof. He will not hear a word against it.' },
   'item.work_gloves':   { name: 'Work gloves', slot: 'gloves', analog: true, mods: { melee: 2 }, text: 'Leather palms, split at one thumb.' },
   'item.wool_socks':    { name: 'Wool socks', slot: 'socks', analog: true, mods: { sta: 10 }, text: 'Thick enough to change your shoe size.' },
   // Backpacks: futuristic, and every one costs you something.
@@ -178,6 +179,8 @@ export const LOOT = {
   prints:  { rolls: 1, table: [['item.mat_plastic', 80, 2, 4], ['item.mat_scrap', 20, 1, 1]] },
   trash:   { rolls: 2, table: [['item.mat_glass', 30, 1, 3], ['item.mat_circuit', 15, 1, 1], ['item.mat_plastic', 25, 1, 2], ['money', 25, 1, 5], ['item.relic_coin', 5, 1, 1]] },
   lost:    { rolls: 2, table: [['item.mat_cloth', 45, 1, 2], ['money', 35, 3, 9], ['item.crab_chips', 15, 1, 1], ['item.relic_figure', 5, 1, 1]] },
+  // Michael's closet in 631: his brown rain parka, once per save, into Michael's bag whoever opens it.
+  michael_closet: { rolls: 1, to: 'michael', table: [['item.brown_parka', 1, 1, 1]] },
   tackle:  { rolls: 2, table: [['item.mat_wire', 35, 1, 2], ['item.energy_bar', 25, 1, 1], ['money', 25, 2, 8], ['item.ozzie_lure', 3, 1, 1], ['item.mat_scrap', 12, 1, 2]] },
 };
 

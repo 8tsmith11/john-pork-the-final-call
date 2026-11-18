@@ -856,13 +856,14 @@ export class WorldScene extends Phaser.Scene {
       let r = rng.next() * total; const [id, , lo, hi] = L.table.find((e) => (r -= e[1]) < 0) ?? L.table[0];
       got.set(id, (got.get(id) ?? 0) + lo + Math.floor(rng.next() * (hi - lo + 1)));
     }
-    const c = this.save.party[who], parts = [];
+    const c = this.save.party[L.to ?? who], parts = [];   // L.to: it belongs to one roommate, whoever opens it
     for (const [id, n] of got) {
       if (id === 'money') { this.save.world.money = (this.save.world.money ?? 0) + n; parts.push(`$${n}`); }
       else { Inv.add(c, id, n); parts.push(`${ITEMS[id]?.name ?? id}${n > 1 ? ' ×' + n : ''}`); }
     }
     this._partyDirty = true; this._syncParty?.(); sfx('pickup');
-    this._say(`${base}\n\nYou find: ${parts.join(', ')}.${cyl}`);
+    const into = L.to && L.to !== who ? `Into ${L.to[0].toUpperCase()}${L.to.slice(1)}'s bag` : 'You find';
+    this._say(`${base}\n\n${into}: ${parts.join(', ')}.${cyl}`);
   }
 
   // ---------- quests (src/content/quests.js) ----------
