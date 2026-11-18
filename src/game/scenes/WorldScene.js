@@ -766,7 +766,13 @@ export class WorldScene extends Phaser.Scene {
       if (!st.started && q.ask) { this._flag(q.ask, true); this._say(`${who}\n${q.pitch}`); this._tickQuests(true); return true; }
       if (q.give && !f[q.give.flag]) {
         const c = this.save.party[this.character];
-        if (!Inv.remove(c, q.give.item)) { this._say(`${who}\n${q.give.refuse ?? '...'}`); return true; } this._flag(q.give.flag, true); this._syncParty(); this._tickQuests(true); return true;
+        if (!Inv.remove(c, q.give.item)) {
+          // Empty-handed: the reminder, then on the next press whatever they have to say about the story
+          // so far (`later`), alternating. Otherwise an open hand-in quest silences the giver for good.
+          const turn = ((this._refuseTurn ??= {})[near.id] = !this._refuseTurn[near.id]);
+          if (!turn && this._sayLater(near)) return true;
+          this._say(`${who}\n${q.give.refuse ?? '...'}`); return true;
+        } this._flag(q.give.flag, true); this._syncParty(); this._tickQuests(true); return true;
       }
       if (q.report && f[q.report.needs] && !f[q.report.flag]) { this._flag(q.report.flag, true); this._tickQuests(true); return true; }
     }
