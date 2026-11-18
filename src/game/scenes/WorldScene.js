@@ -15,6 +15,7 @@ import { ITEMS, RECIPES, SKILLS, playerMods } from '../../content/items.js';
 import { tileKey } from '../render/tiles.js';
 import { GameMenu, TABS } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
+import { rollCatch } from '../../content/fish.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
 import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
@@ -73,6 +74,7 @@ export class WorldScene extends Phaser.Scene {
     // E: close an open panel/description, otherwise interact with the nearest thing in reach.
     this.input.keyboard.on('keydown-E', () => {
       if (this.dlg) return;                       // dialogue handles E itself (advance)
+      if (this.fishing) { this._reel(); return; }
       if (this.menu) return this._closeMenu();
       if (this.sayOpen) return this._closeSay();
       const me = this.mode === 'client' ? this._lastRendered?.players.find((p) => p.id === this.localId) : this.sim.players.get(this.localId);
@@ -80,6 +82,7 @@ export class WorldScene extends Phaser.Scene {
       let best = null, bd = 34;
       for (const o of this.map.objects) { const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y); if (d <= bd) { bd = d; best = o; } }
       if (best) { this._clickedObj = best; return; }
+      if (this._nearWater(me)) { this._startFishing(me); return; }
       const person = this.crowd?.nearest(me.x, me.y);
       if (person) { person.mode = 'wait'; person.t = 4; person.spr.setFlipX(person.x > me.x); this._say(`${person.name.toUpperCase()}\n${this.crowd.lineFor(person)}`); if (person.pixel) this._flag?.('secrets.pixelated.found', true); babble(null, 'hey there friend'); }
     });
@@ -275,7 +278,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'skill') this._learn(this._charOf(peer), msg.id);
         if (msg.t === 'equip') this._equip(this._charOf(peer), msg.id);
         if (msg.t === 'mate') this._mateBreak();
-        if (msg.t === 'use') this._use(this._charOf(peer), peer);
+        if (msg.t === 'use') { this._useWhat = msg.id ?? null; this._use(this._charOf(peer), peer); }
         if (msg.t === 'morph') this._morph(peer);
         if (msg.t === 'scooter') this._scooter(peer);
       });
@@ -420,11 +423,15 @@ export class WorldScene extends Phaser.Scene {
 
   _use(who, peerId) {
     const c = this.save.party[who]; if (!c) return;
-    const i = c.inventory.findIndex((x) => x.id === 'item.mate_flask');
-    if (i < 0) return this._announce('No mate thermos. (Print one at the fab.)');
+    const pick = (id) => c.inventory.findIndex((x) => x.id === id);
+    let i = pick(this._useWhat ?? 'item.mate_flask');
+    if (i < 0 && !this._useWhat) i = c.inventory.findIndex((x) => ITEMS[x.id]?.heal);   // H falls back to any food
+    this._useWhat = null;
+    if (i < 0) return this._toast('Nothing to eat or drink. (Print a mate thermos at the fab, or go fishing.)');
+    const it = ITEMS[c.inventory[i].id];
     c.inventory.splice(i, 1);
-    this.sim.heal(peerId, ITEMS['item.mate_flask'].heal);
-    this._announce(`${who} drinks some mate. Better.`);
+    this.sim.heal(peerId, it.heal ?? 0);
+    this._toast(`${who} has the ${it.name.toLowerCase()}. +${it.heal} HP`);
     this._syncParty();
   }
 
@@ -448,7 +455,8 @@ export class WorldScene extends Phaser.Scene {
   // Menu actions (host-authoritative; clients ask the host).
   menuUse(id) {
     const def = ITEMS[id]; if (!def) return;
-    if (def.slot === 'consumable') { if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); return; }
+    if (def.slot === 'junk') return this._say(`${def.name}\n${def.text}`);
+    if (def.slot === 'consumable') { if (this.mode === 'client') this.net.send({ t: 'use', id }); else { this._useWhat = id; this._use(this.character, this.localId); } return; }
     if (this.mode === 'client') this.net.send({ t: 'equip', id }); else this._equip(this.character, id);
   }
   menuLearn(id) { if (this.mode === 'client') this.net.send({ t: 'skill', id }); else this._learn(this.character, id); }
@@ -483,6 +491,51 @@ export class WorldScene extends Phaser.Scene {
     const stage = this.save.party[p.character]?.morph.stage ?? 0;
     if (stage < 1) return this._announce('No morph yet. (Stage 1 unlocks at level 3.)');
     this.sim.toggleMorph(peerId, true);
+  }
+
+  // ---------- fishing ----------
+  _nearWater(me) {
+    const cx = Math.floor(me.x / TILE), cy = Math.floor(me.y / TILE);
+    for (const [dx, dy] of [[0, 1], [1, 0], [-1, 0], [0, -1], [1, 1], [-1, 1], [1, -1], [-1, -1], [0, 2], [2, 0], [-2, 0]])
+      if (this.map.layout[cy + dy]?.[cx + dx] === '~') return { x: (cx + dx) * TILE + 8, y: (cy + dy) * TILE + 8 };
+    return null;
+  }
+
+  _startFishing(me) {
+    if (this.fishing) return;
+    const spot = this._nearWater(me);
+    const bob = this.add.circle(spot.x, spot.y, 2, 0xf2f2f2).setDepth(spot.y + 1).setStrokeStyle(1, 0xd65db1);
+    const line = this.add.graphics().setDepth(spot.y);
+    line.lineStyle(1, 0xc8c0b0, 0.7).lineBetween(me.x, me.y - 14, spot.x, spot.y);
+    const bite = this.time.now + 1500 + Math.random() * 3500;
+    this.fishing = { bob, line, bite, window: bite + 650, spot };
+    this._toast('Cast. Wait for the bite… [E] to reel when it dips');
+    sfx('swing');
+  }
+
+  _tickFishing() {
+    const f = this.fishing; if (!f) return;
+    const now = this.time.now;
+    f.bob.setY(f.spot.y + Math.sin(now / 300) * 0.8 + (now > f.bite && now < f.window ? 2 : 0));
+    if (now > f.bite && !f.alerted) { f.alerted = true; f.mark = this.add.text(f.spot.x, f.spot.y - 10, '!', { heading: true, fontSize: '10px', color: '#ffb347' }).setOrigin(0.5).setDepth(6000); sfx('hit'); }
+    if (now > f.window) this._endFishing(false);
+  }
+
+  _reel() {
+    const f = this.fishing; if (!f) return false;
+    const now = this.time.now;
+    this._endFishing(now > f.bite && now <= f.window);
+    return true;
+  }
+
+  _endFishing(caught) {
+    const f = this.fishing; this.fishing = null;
+    f.bob.destroy(); f.line.destroy(); f.mark?.destroy();
+    if (!caught) return this._toast(f.alerted ? 'It got away.' : 'Too early. Nothing on the line.');
+    const id = rollCatch(this.map.id), def = ITEMS[id];
+    const log = (this.save.world.fishLog ??= {}); const first = !log[id]; log[id] = (log[id] ?? 0) + 1;
+    this._grant(id);
+    this._say(`${def.name}${first ? '  (new in your fishing log)' : ''}\n${def.text}`);
   }
 
   // Hidden mechanic (fun): kick the vending machine. Sometimes it pays. Keep kicking and it talks back.
@@ -1081,6 +1134,8 @@ export class WorldScene extends Phaser.Scene {
     this._tickAmbient(this.game.loop.delta / 1000);
     this.crowd?.update(this.game.loop.delta / 1000);
     this._tickTypewriter(this.game.loop.delta / 1000);
+    this._tickFishing();
+    if (this.fishing) { const k = this.input2.keys; if (k.w.isDown || k.a.isDown || k.s.isDown || k.d.isDown || k.up.isDown || k.down.isDown || k.left.isDown || k.right.isDown) this._endFishing(false); }
     this._tickPorkGlitch();
     this._updateExplored(snap);
     this._drawMinimap(snap);

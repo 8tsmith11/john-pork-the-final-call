@@ -1,5 +1,6 @@
 // Items, fab recipes, and skills (stable ids; saves reference these).
 // Analog gear resists rot (bible §4). Stats feed the sim through playerMods().
+import { FISH } from './fish.js';
 
 export const ITEMS = {
   'item.wooden_bat':   { name: 'Wooden bat', slot: 'weapon', analog: true, mods: { melee: 6 }, text: 'Ash wood. The rot slides off it.' },
@@ -10,6 +11,8 @@ export const ITEMS = {
   'item.pork_pin':     { name: 'Porcelain Pork pin', slot: 'charm', mods: { melee: 3, shot: 3 }, text: 'Three busts looked at the flag at once and this was on the floor afterwards. Warm to the touch.' },
   'item.mate_flask':   { name: 'Mate thermos', slot: 'consumable', heal: 45, text: 'Manuel would want you to have it. He would also want it back.' },
 };
+
+Object.assign(ITEMS, FISH);   // catches are items too
 
 export const RECIPES = [
   { item: 'item.wooden_bat', scrap: 6 },

@@ -41,7 +41,7 @@
 | 33 | Interesting NPC interactions, unexpected things | 🟡 | gonman | Script reactivity exists. The cast has 45 NPCs, mostly not yet placed |
 | 34 | **Randomly created coderot villains** | ✅ | trevor | Boss: seeded name, epithet, modules, phases. Regular enemies: every spawn gets a seeded variant (name, tint, stat tweaks, a trait: fast, armored, splits, leaks rot, blinks). A name tag shows on the nearest one |
 | 35 | Diagonal walk, dodge, skill points | ✅ | | |
-| 36 | **Fishing** | ❌ | trevor | Lake Artemesia (needs the College Park hub) |
+| 36 | **Fishing** | 🟡 | trevor | Built: press E at water (Paint Branch, flooded bay), bite timing, Chesapeake species + glitch-fish + oddities, food heals, fishing log. Lake Artemesia map still to come |
 | 37 | Apartment base, Room 631 | ✅ | | Being re-dressed |
 | 38 | Bittersweet, moving, epic fights | 🟡 | gonman | Writing revision |
 | 39 | Large-scale enemy | ❌ | | Act 2 (the Sweeper) |
