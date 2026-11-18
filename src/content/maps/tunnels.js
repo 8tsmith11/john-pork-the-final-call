@@ -59,7 +59,7 @@ export const tunnel1 = makeMap({
     { id: 'obj.signal_chair', art: 'obj.bench', x: 49, y: 24, label: 'A chair', text: 'Wooden. Far too tall for anyone you know. The seat is worn.' },
     // The approach
     lamp(60, 11, 'The last lamp. Past it, the dark has a shape.'),
-    { id: 'obj.tunnel_on', x: 64, y: 13, label: 'Toward the platform', action: 'exit', to: 'platform', requiresClear: true,
+    { id: 'obj.tunnel_on', x: 64, y: 13, label: 'Toward the platform', action: 'exit', to: 'platform', requiresFlag: 'act1.switchyard.solved', lockedText: 'A rolling gate across the line, locked from somewhere upstream. The switchyard is set wrong.',
       text: 'The tunnel opens onto a platform nobody has used in decades. The drumming stops. Something else is here.' },
   ],
 });

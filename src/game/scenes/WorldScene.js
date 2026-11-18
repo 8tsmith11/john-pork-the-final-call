@@ -16,6 +16,7 @@ import { tileKey } from '../render/tiles.js';
 import { GameMenu, TABS } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
+import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
 
 const STEP = 1 / 60;
 const XP_PER_LEVEL = 30;
@@ -480,6 +481,19 @@ export class WorldScene extends Phaser.Scene {
     this.sim.toggleMorph(peerId, true);
   }
 
+  _lever(k) {
+    const key = `act1.switch.${k}`, now = (this.save.flags[key] ?? 'left') === 'left' ? 'right' : 'left';
+    this._flag(key, now); sfx('hit'); this.cameras.main.shake(80, 0.003);
+    this._toast(`Lever ${k.toUpperCase()}: ${now.toUpperCase()}`);
+    const sol = yardSolution(this.save.world.seed);
+    const solved = LEVERS.every((x) => (this.save.flags[`act1.switch.${x}`] ?? 'left') === sol[x]);
+    if (solved && !this.save.flags['act1.switchyard.solved']) {
+      this._flag('act1.switchyard.solved', true);
+      this.cameras.main.shake(500, 0.01); sfx('kill');
+      this._say('Somewhere east, something heavy unlocks and rolls. The lines agree now. The gate to the platform is open.');
+    }
+  }
+
   _toggleDoor(id) {
     const d = [...this.map.doors.values()].find((x) => x.id === id); if (!d) return;
     // Don't close a door on someone standing in the doorway.
@@ -594,6 +608,7 @@ export class WorldScene extends Phaser.Scene {
   _tryExit(obj) {
     if (!obj || obj.action !== 'exit' || this._transitioning) return;
     if (obj.requiresClear && !this.sim.cleared) return this._announce('Something down here is still moving.');
+    if (obj.requiresFlag && !this.save.flags[obj.requiresFlag]) return this._announce(obj.lockedText ?? 'It won\'t open.');
     const to = MAPS[obj.to];
     if (!to) return this._announce(obj.text);
     if (to.id === 'platform') {
@@ -725,6 +740,7 @@ export class WorldScene extends Phaser.Scene {
       if (ev.t === 'bumpExit' && !this.dlg) {
         const exit = this.map.objects.find((o) => o.id === ev.id);
         if (exit?.requiresClear && !this.sim.cleared) { this._announce('Something down here is still moving.'); continue; }
+        if (exit?.requiresFlag && !this.save.flags[exit.requiresFlag]) { if (!this._lockedSaid || this.time.now - this._lockedSaid > 3000) { this._lockedSaid = this.time.now; this._toast(exit.lockedText ?? 'It won\'t open.'); } continue; }
         // Solo goes straight through. In co-op the party gathers at the door first.
         if (this.sim.players.size <= 1 || this.sim.waitAtExit(ev.by, ev.id, ev.dx, ev.dy)) { this.sim.clearWaiting(); this._tryExit(exit); }
       }
@@ -791,6 +807,9 @@ export class WorldScene extends Phaser.Scene {
     if (near.talk) { const [scene, node] = near.talk.split(':'); this.startDialogue(scene, node || null, near.after ? () => this._flag(near.after, true) : null); return; }
     if (near.action === 'ending') { this._playEnding(); return; }
     if (near.action === 'fab') { this._openFab(); return; }
+    if (/^obj\.switch_[abc]$/.test(near.id)) { this._lever(near.id.slice(-1)); return; }
+    if (near.id === 'obj.yard_map') { this._say(`${YARD_MAP_TEXT}\n\nCurrent: ${LEVERS.map((k) => `${k.toUpperCase()} ${(this.save.flags[`act1.switch.${k}`] ?? 'left').toUpperCase()}`).join(' · ')}${this.save.flags['act1.switchyard.solved'] ? '\nThe east gate is open.' : ''}`); return; }
+    if (['obj.work_order', 'obj.sunk_vending', 'obj.ledger'].includes(near.id)) { this._say((near.text ?? '') + clueFor(near.id, yardSolution(this.save.world.seed))); return; }
     if (near.action === 'tv') { this._say(this._newsLine()); return; }
     if (near.action === 'quests') { this._say(this._objectives()); return; }
     if (near.action === 'pages') { const n = (this._pageIdx[near.id] = ((this._pageIdx[near.id] ?? -1) + 1) % near.pages.length); this._say(near.pages[n] + (near.pages.length > 1 ? `\n\n[E again: ${n + 1}/${near.pages.length}]` : '')); return; }
