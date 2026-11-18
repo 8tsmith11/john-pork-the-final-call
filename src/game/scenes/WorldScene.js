@@ -352,7 +352,13 @@ export class WorldScene extends Phaser.Scene {
     this.crowd?.destroy();
     this.crowd = new Crowd(this, map, this.save.world.seed);
     this._setupLighting(map);
-    const mw = map.w * TILE, mh = map.h * TILE, vw = VIEW.w, vh = VIEW.h;
+    // Fill the screen: small/short maps get a bigger whole-number zoom (pixel-perfect), so play
+    // isn't a thin strip in the middle. Base is 4 (a 480x270 view); up to 7.
+    const SW = VIEW.w * VIEW.zoom, SH = VIEW.h * VIEW.zoom;
+    const fit = Math.floor(SH / (map.h * TILE));   // height decides; the camera follows sideways
+    this.worldZoom = Math.max(VIEW.zoom, Math.min(7, fit));
+    this.cameras.main.setZoom(this.worldZoom);
+    const mw = map.w * TILE, mh = map.h * TILE, vw = SW / this.worldZoom, vh = SH / this.worldZoom;
     this.cameras.main.setBounds(Math.min(0, (mw - vw) / 2), Math.min(0, (mh - vh) / 2), Math.max(mw, vw), Math.max(mh, vh)).setRoundPixels(true);
     this.mapLabel.setText(map.name);
     setArea(map.id);
@@ -570,11 +576,13 @@ export class WorldScene extends Phaser.Scene {
     if (!this.lights) return;
     const cam = this.cameras.main, rt = this.lights;
     rt.clear().fill(0x05060c, this.darkness);
-    const at = (x, y, scale) => rt.erase('light', x - cam.worldView.x - 64 * scale, y - cam.worldView.y - 64 * scale);
-    for (const p of snap.players) { this._lightImg ??= this.make.image({ key: 'light', add: false }); this._lightImg.setScale(1.3); rt.erase(this._lightImg, p.x - cam.worldView.x, p.y - 8 - cam.worldView.y); }
+    const k = (this.worldZoom ?? VIEW.zoom) / VIEW.zoom;          // world px → light-layer px
+    const L = (this._lightImg ??= this.make.image({ key: 'light', add: false }));
+    const lit = (x, y, sc) => { L.setScale(sc * k); rt.erase(L, (x - cam.worldView.x) * k, (y - cam.worldView.y) * k); };
+    for (const p of snap.players) lit(p.x, p.y - 8, 1.3);
     // Rot things glow faintly, so enemies read in the dark.
-    for (const e of snap.enemies || []) { this._lightImg.setScale(e.boss ? 0.9 : 0.4); rt.erase(this._lightImg, e.x - cam.worldView.x, e.y - 8 - cam.worldView.y); }
-    for (const o of this.lightSpots) { this._lightImg.setScale(0.7); rt.erase(this._lightImg, o.x * TILE + 8 - cam.worldView.x, o.y * TILE + 8 - cam.worldView.y); }
+    for (const e of snap.enemies || []) lit(e.x, e.y - 8, e.boss ? 0.9 : 0.4);
+    for (const o of this.lightSpots) lit(o.x * TILE + 8, o.y * TILE + 8, 0.7);
     // Rot shows up as rendering errors at the screen edges.
     if (this.rotEdge && Math.random() < 0.12) {
       const W = VIEW.w, H = VIEW.h, y = Math.random() * H, h = 2 + Math.random() * 6, left = Math.random() < 0.5;
