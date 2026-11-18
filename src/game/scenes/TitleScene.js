@@ -11,6 +11,7 @@ export class TitleScene extends Phaser.Scene {
     setupCameras(this);
     const W = VIEW.w, H = VIEW.h;
     this.cameras.main.setBackgroundColor('#0b0d16');
+    paintNight(this);
     const hour = new Date().getHours();
     this.add.text(W / 2, 40, 'JOHN PORK', { heading: true, fontSize: '30px', color: '#f2a6b8' }).setOrigin(0.5);
     this.add.text(W / 2, 66, 'THE FINAL CALL', { heading: true, fontSize: '12px', color: '#9aa3c7' }).setOrigin(0.5);
@@ -50,3 +51,35 @@ export class TitleScene extends Phaser.Scene {
     this.add.text(W / 2, H - 12, 'controls: ESC in game', { fontFamily: 'monospace', fontSize: '7px', color: '#3d4467' }).setOrigin(0.5);
   }
 }
+
+/**
+ * The night behind the menus: the painted view north from ASTER's roof, with the things that move.
+ * Shared by the title and the co-op lobby (`dim` darkens it so lobby text reads).
+ */
+export function paintNight(scene, dim = 0) {
+  const W = VIEW.w, H = VIEW.h;
+  if (!scene.textures.exists('title_bg')) return;
+  scene.add.image(0, 0, 'title_bg').setOrigin(0, 0).setDepth(-20);
+  // The lights on the northern horizon: slow, low, all moving the same way.
+  for (let i = 0; i < 6; i++) {
+    const l = scene.add.rectangle(150 + i * 34, 108 + (i % 2), 2, 1, 0xe0b866).setDepth(-19).setAlpha(0.9);
+    scene.tweens.add({ targets: l, x: l.x + 90, duration: 60000 + i * 4000, repeat: -1, yoyo: false, onRepeat: () => { l.x = 150 + i * 34; } });
+    scene.tweens.add({ targets: l, alpha: 0.35, duration: 900 + i * 170, yoyo: true, repeat: -1 });
+  }
+  // The antenna's lamp.
+  const lamp = scene.add.rectangle(31, 95, 2, 2, 0xd42a3c).setDepth(-19);
+  scene.tweens.add({ targets: lamp, alpha: 0.1, duration: 1100, yoyo: true, repeat: -1, hold: 300 });
+  // A window or two that goes dark and comes back.
+  for (const [x, y] of [[214, 158], [286, 150], [372, 166], [58, 160]]) {
+    const w = scene.add.rectangle(x, y, 2, 2, 0xe0b866).setDepth(-19).setAlpha(0);
+    scene.tweens.add({ targets: w, alpha: 1, duration: 200, delay: 2000 + x * 23, hold: 5000 + y * 31, yoyo: true, repeat: -1, repeatDelay: 7000 });
+  }
+  // Rain: thin streaks falling a little off vertical, drawn as plain rectangles so it works in Canvas too.
+  for (let i = 0; i < 70; i++) {
+    const x0 = (i * 37) % (W + 40) - 20, len = 3 + (i % 3);
+    const drop = scene.add.rectangle(x0, -10, 1, len, 0x7a8794).setDepth(-18).setAlpha(0.28 + (i % 4) * 0.06).setAngle(8);
+    scene.tweens.add({ targets: drop, y: H + 10, x: x0 - 26, duration: 900 + (i % 7) * 110, delay: (i * 53) % 1400, repeat: -1 });
+  }
+  if (dim) scene.add.rectangle(0, 0, W, H, 0x0b0d16, dim).setOrigin(0, 0).setDepth(-17);
+}
+

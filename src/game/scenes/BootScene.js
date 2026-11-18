@@ -15,6 +15,7 @@ export class BootScene extends Phaser.Scene {
     for (const id of Object.keys(ROOMMATES)) {
       this.load.atlas(id, `assets/sprites/${id}.png`, `assets/sprites/${id}.json`);
     }
+    this.load.image('title_bg', 'assets/sprites/title_bg.png');   // painted by tools/art/gen_title.py
     // Props/NPCs (frames named by map object id), enemies and the Warden. All optional.
     for (const id of ['props', 'wide', 'big', 'enemies', 'warden', 'principals', 'tiles']) this.load.atlas(id, `assets/sprites/${id}.png`, `assets/sprites/${id}.json`);
   }
