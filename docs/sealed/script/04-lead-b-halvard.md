@@ -260,7 +260,7 @@ Oevat zr gurve obneqf.
 
 ### abqr: unyineq_genqr_nfx
 
-**UNYINEQ:** Gurer'f n synt ba n fvkgu-sybbe onypbal ng NFGRE. Cvax. Rirelbar ba guvf cynmn unf
+**UNYINEQ:** Gurer'f n synt va n fvkgu-sybbe jvaqbj ng NFGRE. Cvax. Rirelbar ba guvf cynmn unf
 frra vg naq rirelbar ba guvf cynmn unf nterrq abg gb.
 
 **UNYINEQ:** Xvq ba sbhe gryyf zr gurer ner fgnghrf gbb. Pneirq. Ol unaq.
@@ -498,7 +498,7 @@ Pubvprf:
 
 **GERIBE:** Nsgre vg jbexrq.
 
-**ZNAHRY:** Gung'f abg gryyvat zr. Gung'f n ercbeg.
+**ZNAHRY:** Gung'f n ercbeg.
 
 #### vs fcrnxre=zvpunry
 **ZVPUNRY:** V jnf xrrcvat vg jnez.
@@ -832,7 +832,7 @@ bcra naq Unyineq'f ibvpr pbzrf nebhaq gur pbeare.*
 
 **UNYINEQ:** Fgbc. Fgbc. Gurer'f n ina ba gur cynmn jvgu rnef. Lbh'yy oevat vg qbja ba obgu bs hf.
 
-**UNYINEQ:** V'yy bcra gur sebag. Abg orpnhfr lbh rnearq vg. Orpnhfr lbh'er n unmneq.
+**UNYINEQ:** V'yy bcra gur sebag. Lbh'er n unmneq bhg gurer.
 
 *Frgf `npg1.unyineq.ragel = qevyy`. Ab enccbeg punatr. Gur fvqr qbbe xrrcf n ivfvoyr qevyy fpne
 sbe gur erfg bs gur tnzr.*
@@ -1250,7 +1250,7 @@ qvavat unyy sbe gjb lrnef. Ur bjrf fbzrobql zbarl. V trg lryyrq ng.
 *Jubrire jngpurq gur ybool sbbgntr qbrf abg fnl jung gurl ner guvaxvat. Gur bguref pna frr gurz
 abg fnlvat vg.*
 
-**UNYINEQ:** V'z abg npphfvat. V'z qrfpevovat. V'ir orra jebat nobhg snprf orsber. V'ir arire orra
+**UNYINEQ:** V'z qrfpevovat jung V fnj. V'ir orra jebat nobhg snprf orsber. V'ir arire orra
 jebat nobhg n sbo.
 
 Pubvprf:
@@ -1611,7 +1611,7 @@ ur'f arire fnvq nalguvat fghcvq. Vg'f gur jbefg guvat nobhg uvz.
 #### vs fcrnxre=geribe
 **GERIBE:** Gvz Purrfr vf n fgerrg fgbel.
 
-**UNYINEQ:** Fb'f gur bgure bar. Naq lbh'ir tbg uvf synt ba lbhe onypbal.
+**UNYINEQ:** Fb'f gur bgure bar. Naq lbh'ir tbg uvf synt va lbhe jvaqbj.
 
 #### vs fcrnxre=zvpunry
 **ZVPUNRY:** Gur purrfr thl? V gubhtug gung jnf, yvxr, n guvat xvqf fnl.

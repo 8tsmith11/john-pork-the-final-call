@@ -61,8 +61,8 @@ gur fnzr haqre frrq inevnagf N naq O.
 
 ### abqr: n_sno_fgneg
 
-*Ebbz 631. Gur guerr cevagref va n ebj. Cevagre #3'f orq yvtug vf ba. Gur onypbal qbbe vf bcra n
-unaq'f jvqgu naq gur bggbzna vf bhg gurer jvgu n evooba ba vg naq abguvat ba gur evooba.*
+*Ebbz 631. Gur guerr cevagref va n ebj. Cevagre #3'f orq yvtug vf ba. Gur pybfrg qbbe vf bcra
+naq gur envy unf n evooba ba vg naq abguvat ba gur evooba.*
 
 *Frgf `npg1.yrnqN.fgnegrq`.*
 
@@ -236,7 +236,7 @@ Pubvprf:
 
 **ZVPUNRY:** Naq vs vg ernqf fbzrguvat?
 
-*Geribe qbrfa'g nafjre. Znahry vf ybbxvat ng gur onypbal.*
+*Geribe qbrfa'g nafjre. Znahry vf ybbxvat ng gur orqebbz qbbe.*
 
 **ZNAHRY:** Gura vg qvqa'g tb hc.
 
@@ -669,7 +669,7 @@ gvzr gur cnegl fgnaqf urer, gur arkg gvpxre yvar vf sbeprq gb `gvpx_thys`.*
 
 **GERIBE:** Gurer vfa'g nal zber. Jung'f va gur tebhaq vf jung gurer vf.
 
-**ZNAHRY:** Naq jung'f ba bhe onypbal.
+**ZNAHRY:** Naq jung jnf va bhe pybfrg.
 
 **GERIBE:** Jnf.
 

@@ -14,7 +14,7 @@ nafjref?* Gur tnzr arire fnlf juvpu ohggba jnf evtug.
 
 Ernqf:
 - `npg1.yrnqf.qbarPbhag` (gur Pnyy sverf jura guvf ernpurf 2)
-- `npg1.pbyqbcra.yngpuVafcrpgrq` (haybpxf bar yvar va rnpu "qvq lbh gnxr vg" oenapu)
+- `npg1.pyhr.ybpxSbeprq` (haybpxf bar yvar va rnpu "qvq lbh gnxr vg" oenapu)
 - `npg1.qrfprag.pnyyCbvag2`, `npg1.qrfprag.pnyyCbvag3` (frg ol gur qrfprag jura gur cnegl pebffrf gur gjb gevttre cbvagf)
 - `frggvatf.pehqrUhzbe` (ibvprznvy 2 raqvat, ohgg-qvny inevnag)
 - `cnegl.cerfrag.znahry`, `cnegl.cerfrag.geribe`, `cnegl.cerfrag.zvpunry` (ernpgvba yvarf sebz nofrag ebbzzngrf ner fxvccrq)
@@ -195,17 +195,17 @@ Pubvprf:
 
 **CBEX:** Ab. Vg vfa'g.
 
-#### vs synt npg1.pbyqbcra.yngpuVafcrpgrq
-**CBEX:** Lbhe jvaqbj yngpurf sebz gur vafvqr. Lbh ybbxrq nyernql. V jngpurq lbh ybbx.
+#### vs synt npg1.pyhr.ybpxSbeprq
+**CBEX:** Lbhe ybpx jnf sbeprq sebz gur unyyjnl. Lbh ybbxrq nyernql. V jngpurq lbh ybbx.
 
 **ZNAHRY:** Fb vg jnf bar bs hf.
 
-**CBEX:** V fnvq vg yngpurf sebz gur vafvqr. Lbh fnvq gur bgure guvat.
+**CBEX:** V fnvq sbeprq sebz gur unyyjnl. Lbh fnvq gur bgure guvat.
 
-#### vs abg synt npg1.pbyqbcra.yngpuVafcrpgrq
-**CBEX:** Tb ubzr naq ybbx ng lbhe jvaqbj. Gur yngpu. Gura nfx zr ntnva.
+#### vs abg synt npg1.pyhr.ybpxSbeprq
+**CBEX:** Tb ubzr naq ybbx ng lbhe sebag qbbe. Gur cyngr. Gura nfx zr ntnva.
 
-**ZNAHRY:** Jung'f jebat jvgu gur yngpu?
+**ZNAHRY:** Jung'f jebat jvgu gur qbbe?
 
 **CBEX:** Abguvat. Gung'f jung'f jebat jvgu vg.
 
@@ -340,14 +340,14 @@ Pubvprf:
 
 **CBEX:** Fbzrobql jub qvqa'g unir gb oernx va.
 
-#### vs synt npg1.pbyqbcra.yngpuVafcrpgrq
-**CBEX:** Lbh fnj gur yngpu.
+#### vs synt npg1.pyhr.ybpxSbeprq
+**CBEX:** Lbh fnj gur qbbe.
 
-**GERIBE:** V fnj gur yngpu. Gung'f guerr crbcyr.
+**GERIBE:** V fnj gur qbbe. Orag bhg, ybpxrq nsgre. Gung'f fbzrobql jvgu gvzr.
 
 **CBEX:** Vf vg?
 
-#### vs abg synt npg1.pbyqbcra.yngpuVafcrpgrq
+#### vs abg synt npg1.pyhr.ybpxSbeprq
 **CBEX:** Purpx lbhe jvaqbj jura lbh'er ubzr. Lbh'yy yvxr vg. Vg'f n pyrna yvggyr ceboyrz.
 
 **GERIBE:** V qba'g yvxr nal bs guvf.
@@ -493,8 +493,8 @@ Pubvprf:
 
 **CBEX:** Fbzrobql jub yvirf pybfre gb vg guna V qb.
 
-#### vs synt npg1.pbyqbcra.yngpuVafcrpgrq
-**ZVPUNRY:** Gur yngpu jnf ba gur vafvqr.
+#### vs synt npg1.pyhr.ybpxSbeprq
+**ZVPUNRY:** Gur ybpx jnf qbar sebz bhgfvqr. Gura ybpxrq.
 
 **CBEX:** Vg jnf.
 
@@ -502,7 +502,7 @@ Pubvprf:
 
 **CBEX:** V qvqa'g ynhtu.
 
-#### vs abg synt npg1.pbyqbcra.yngpuVafcrpgrq
+#### vs abg synt npg1.pyhr.ybpxSbeprq
 **ZVPUNRY:** Pybfre yvxr n arvtuobe?
 
 **CBEX:** Ybbx ng lbhe jvaqbj jura lbh trg ubzr. Gura lbh gryy zr ubj pybfr.
@@ -1167,7 +1167,7 @@ Pubvprf:
 
 *GRKG: gung jnf znvagranapr*
 
-*GRKG: n pbbynag yvar. vg fgvpxf*
+*GRKG: n xarr oenpr. vg fgvpxf*
 
 *GRKG: jr qba'g unir gb gnyx nobhg vg*
 
@@ -1183,7 +1183,7 @@ Pubvprf:
 
 #### vs frggvatf.pehqrUhzbe=ba
 
-**ZVPUNRY:** Pbbynag yvar.
+**ZVPUNRY:** Xarr oenpr.
 
 **GERIBE:** V'z pubbfvat gb oryvrir gung.
 
@@ -1240,7 +1240,7 @@ Ybj-serdhrapl onexf sbe gur erfg bs gur npg. Bar cre nern ng zbfg. Fxvc nal jubf
 | cbfg_qrp2_zvpunry | Zvpunry | qrpyvarf=2, qehzzvat nhqvoyr | "Chzcf qba'g jnvg sbe lbh gb fgbc gnyxvat." |
 | cbfg_qrp2_ebggre | Ebggre (ghaary) | qrpyvarf=2, cnegl jvguva 3 gvyrf | "pbqr ebg. gjb. pbqr ebg. vg pbhagf. 1901." |
 | cbfg_ohgg_znahry | Znahry | ohggQvnyQbar naq ohggQvnyFcbxrHc, ragrevat 631 | "Jr qba'g unir gb gnyx nobhg vg." |
-| cbfg_ohgg_geribe | Geribe | ohggQvnyQbar, pehqrUhzbe=ba, nal mvccre be ont vagrenpgvba | "Pbbynag yvar." |
+| cbfg_ohgg_geribe | Geribe | ohggQvnyQbar, pehqrUhzbe=ba, nal mvccre be ont vagrenpgvba | "Xarr oenpr." |
 
 ---
 
@@ -1260,7 +1260,7 @@ Ybj-serdhrapl onexf sbe gur erfg bs gur npg. Bar cre nern ng zbfg. Fxvc nal jubf
 **Nafjre uhof**
 - Rnpu ebbzzngr'f uho nyybjf gjb cvpxf, gura ebhgrf gb gung ebbzzngr'f pybfr. Hfrq pubvprf ner erzbirq. Znahry'f fvyrag bcgvba tbrf fgenvtug gb uvf pybfr naq pbhagf nf uvf bayl cvpx.
 - `[zbecu>=1]` oybpxf purpx gur fcrnxvat ebbzzngr'f bja fgntr.
-- Gur `nfxrq.*` syntf ner sbe yngre fprarf (gur raqvat pna npxabjyrqtr jung jnf nyernql nfxrq). `npg1.pnyy.nfxrq.gbbx` va cnegvphyne fubhyq punatr gur jbeqvat bs gur "qvq lbh gnxr vg sebz gur bggbzna" bcgvba va gur raqvat fb gur cynlre vf abg nfxvat gur vqragvpny dhrfgvba gjvpr.
+- Gur `nfxrq.*` syntf ner sbe yngre fprarf (gur raqvat pna npxabjyrqtr jung jnf nyernql nfxrq). `npg1.pnyy.nfxrq.gbbx` va cnegvphyne fubhyq punatr gur jbeqvat bs gur "qvq lbh gnxr vg bhg bs zl pybfrg" bcgvba va gur raqvat fb gur cynlre vf abg nfxvat gur vqragvpny dhrfgvba gjvpr.
 - Vs `npg1.pnyy.nfxrq.jurer` vf frg, be ibvprznvy 1 unf orra urneq, gur bowrpgvir anzrf gur ghaaryf qverpgyl. Bgurejvfr gur yrnqf fgvyy unir gb trg gur cnegl gurer.
 
 **Qrpyvar punva**

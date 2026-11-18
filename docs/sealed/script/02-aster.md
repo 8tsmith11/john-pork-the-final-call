@@ -20,7 +20,7 @@ bggbzna rirel zbeavat.
 **Ernqf**
 
 - `npg1.pbyqbcra.qbar` (fprar vf ybpxrq hagvy gur pbyq bcra raqf; anzr nffhzrq, frr abgrf)
-- `npg1.pbyqbcra.yngpuVafcrpgrq`, `npg1.pbyqbcra.cevagreJnezFrra` (bcgvbany pbybhe bayl; anzrf nffhzrq)
+- `npg1.pyhr.ybpxSbeprq`, `npg1.pbyqbcra.cevagreJnezFrra` (bcgvbany pbybhe bayl; anzrf nffhzrq)
 - pbaqvgvbaf hfrq: `fcrnxre=`, `vgrz fgnghr`, `vgrz ebbs_xrl`, `vgrz pybfrg_xrl`, `zbecu>=1`, `synt`, `bapr`, `pbhag`
 
 **Frgf**
@@ -215,7 +215,7 @@ Pubvprf:
 ### abqr: nfgre.inetn.onyybba
 
 #### vs fcrnxre=znahry
-**ZNAHRY:** Gur onyybba'f tbar. Sebz gur bggbzna.
+**ZNAHRY:** Gur onyybba'f tbar. Bhg bs zl pybfrg. Fbzrobql sbeprq bhe qbbe.
 
 **ZEF. INETN:** V xabj.
 
@@ -227,7 +227,7 @@ Pubvprf:
 
 **ZNAHRY:** Qvq lbh frr jub —
 
-**ZEF. INETN:** V pbhyqa'g fyrrc. V jrag bhg ba zl onypbal naq ybbxrq bire, fnzr nf nyjnlf, naq vg jnfa'g gurer.
+**ZEF. INETN:** V pbhyqa'g fyrrc. V urneq lbhe qbbe. Abg n xrl. Gur bgure fbhaq.
 
 **ZEF. INETN:** Gung'f nyy n crefba frrf ng zl ntr. Jung vfa'g gurer.
 
@@ -244,7 +244,7 @@ Pubvprf:
 
 **GERIBE:** ...Qvq lbh frr nalguvat?
 
-**ZEF. INETN:** V jrag bhg ba zl onypbal naq ybbxrq ng lbhe bggbzna, fnzr nf rirel qnl. Vg jnfa'g gurer. Gung'f jung V fnj.
+**ZEF. INETN:** V urneq n qbbe orvat znqr gb bcra. Gura lbhe ybpx gheavat, sebz gur jebat fvqr. Gung'f jung V urneq.
 
 #### vs fcrnxre=zvpunry
 **ZVPUNRY:** Fb, jrveq dhrfgvba. Lbh unira'g frra n onyybba?
@@ -628,7 +628,7 @@ Pubvprf:
 #### vs fcrnxre=znahry
 **ZNAHRY:** Qrm. Zl onyybba'f tbar.
 
-**QRM:** Gur benatr bar? Bss gur bggbzna?
+**QRM:** Gur benatr bar? Lbh xrrc gung vafvqr, gubhtu.
 
 **ZNAHRY:** Lbh xabj vg gbb?
 
@@ -672,7 +672,7 @@ Pubvprf:
 
 ### abqr: nfgre.qrm.uryvhz
 
-**QRM:** Bxnl, fb lbh unq, yvxr, n pne hc gurer. Ba n fgevat. Ba n onypbal.
+**QRM:** Bxnl, fb lbh unq, yvxr, n pne hc gurer. Ba n fgevat. Va n pybfrg.
 
 #### vs fcrnxre=znahry
 **ZNAHRY:** Vg'f abg nobhg gur zbarl.
@@ -1363,7 +1363,7 @@ Pubvprf:
 ### abqr: nfgre.cehvgg.onyybba
 
 #### vs fcrnxre=znahry
-**ZNAHRY:** Qvq lbhe crbcyr frr n onyybba? Benatr. Vg jnf ba bhe onypbal.
+**ZNAHRY:** Qvq lbhe crbcyr frr n onyybba? Benatr. Vg jnf va bhe ncnegzrag.
 
 **CEHVGG:** N onyybba.
 
@@ -2439,7 +2439,7 @@ ng zbfg bapr cre ivfvg gb NFGRE hayrff znexrq ercrng.*
 | nfgre.onex.znahry.fxl | ZNAHRY | vqyr 20f ba gur ebbs | Vg'f gur jebat pbybe hc gurer jvgubhg vg. |
 | nfgre.onex.znahry.zngr | ZNAHRY | vqyr 30f va gur ybool | V yrsg gur xrggyr ba. V qvqa'g. V jnag gb unir yrsg gur xrggyr ba. |
 | nfgre.onex.znahry.abbo | ZNAHRY | nabgure ebbzzngr evqrf gur ryringbe gb n jebat sybbe | Nfgre abbo. |
-| nfgre.onex.znahry.unyy | ZNAHRY | cnffvat 631'f qbbe jvgubhg ragrevat | Qba'g ybbx ng gur onypbal. Whfg jnyx. |
+| nfgre.onex.znahry.unyy | ZNAHRY | cnffvat 631'f qbbe jvgubhg ragrevat | Qba'g ybbx ng gur pybfrg. Whfg jnyx. |
 | nfgre.onex.geribe.fgnvef | GERIBE | pyvzovat 3+ syvtugf | Mbar gjb. Guvf vf tbbq sbe hf. |
 | nfgre.onex.geribe.yvtug | GERIBE | haqre n syvpxrevat unyy fgevc | Gung'f n eraqrevat reebe. Ba n prvyvat. |
 | nfgre.onex.geribe.fuevzc | GERIBE | vqyr 30f ba nal sybbe | Gurl jrer uvqvat guvf zbeavat. Nyy bs gurz. Fuevzc qba'g nyy uvqr. |

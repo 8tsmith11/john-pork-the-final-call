@@ -19,7 +19,7 @@ Ernqf:
 - `[fcrnxre=...]`: gur ebbzzngr jub vf vagrenpgvat. `[fcrnxre=fhowrpg]` / `[fcrnxre!=fhowrpg]` pbzcner gur gjb
 - `[vgrz fbyqrevat_veba]` (cvpxrq hc sebz gur orapu va 631)
 - `[zbecu>=1]` (gur fcrnxre'f zbecu fgntr)
-- `npg1.pbyqbcra.yngpuVafcrpgrq`, `npg1.pbyqbcra.cevagreVafcrpgrq` (bcgvbany pnyyonpxf)
+- `npg1.pyhr.ybpxSbeprq`, `npg1.pbyqbcra.cevagreVafcrpgrq` (bcgvbany pnyyonpxf)
 - `npg1.pnyy.unccrarq` (bcgvbany onex)
 - `npg1.unyineq.fryyreQrfpevorq` (bcgvbany onex: "bar bs lbh, be jrnevat lbhe snpr")
 
@@ -1370,7 +1370,7 @@ cvcrf.*
 | nsgre.fybtna.ercyl | znahry | sbyybjf nsgre.fybtna | Snfg. Abobql fnvq tbbq. |
 | nsgre.unyineq.N | zvpunry | [frrq=N] [synt npg1.unyineq.fryyreQrfpevorq] bapr, yrnivat gur ybool | "Be jrnevat lbhe snpr." Vg qvqa'g unir bar gb jrne. Abg n jubyr bar. |
 | nsgre.unyineq.O | bgure (svefg) | [frrq=O] [synt npg1.unyineq.fryyreQrfpevorq] bapr, yrnivat gur ybool | "Bar bs lbh." Gung'f jung gur thl haqre gur fgnvef fnvq. V qvqa'g ybir vg gura rvgure. |
-| nsgre.yngpu | geribe | [synt npg1.pbyqbcra.yngpuVafcrpgrq] bapr, va gur ryringbe be fgnvejryy | Gur yngpu jnf ba gur vafvqr. Naq jubrire gung jnf pnzr hc bhe fgnvef, abg bire n jnyy. |
+| nsgre.yngpu | geribe | [synt npg1.pyhr.ybpxSbeprq] bapr, va gur ryringbe be fgnvejryy | Gur ybpx jnf qbar sebz gur unyyjnl. Jubrire gung jnf pnzr hc bhe fgnvef. |
 | nsgre.cevagre | znahry | [synt npg1.pbyqbcra.cevagreVafcrpgrq] bapr, onpx va 631, arne gur snof | Guerr jnf jnez gung avtug. V xrrc pbzvat onpx gb vg. V qba'g xabj jul V xrrc pbzvat onpx gb vg. |
 
 **Ebbs, nsgre gur yrnq vf qbar** (bcgvbany ivfvg)
