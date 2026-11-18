@@ -49,13 +49,14 @@ export const DRESSING = {
     glow: [{ x: 13, y: 8, color: C.cyan, r: 0.8 }, { x: 25, y: 6, color: C.magenta, r: 0.7 }],
   },
   tunnel_1: {
-    neon: [{ x: 6, y: 2, text: 'GREEN LINE', color: C.lime, flicker: 0.12 }, { x: 40, y: 2, text: 'NO ENTRY · CONTINUITY', color: C.red, flicker: 0.1, size: 6 }],
-    holo: [{ x: 20, y: 1, w: 5, h: 2, color: C.lime, lines: ['NEXT TRAIN', '-- MIN', 'NEXT TRAIN', 'NEXT TRAIN'] }],
-    glow: [{ x: 33, y: 10, color: C.magenta, r: 1.2 }, { x: 54, y: 12, color: C.lime, r: 0.9 }],
-    cables: [[2, 3, 30, 3, 0.8], [32, 3, 64, 3, 0.8]],
+    // On the wall faces above the main corridor (rows 11-15), checked against the 66x28 layout.
+    neon: [{ x: 2, y: 10, text: 'GREEN LINE', color: C.lime, flicker: 0.12 }, { x: 47, y: 10, text: 'NO ENTRY · CONTINUITY', color: C.red, flicker: 0.1, size: 6 }],
+    holo: [{ x: 24, y: 9, w: 5, h: 2, color: C.lime, lines: ['NEXT TRAIN', '-- MIN', 'NEXT TRAIN', 'NEXT TRAIN'] }],
+    glow: [{ x: 33, y: 10, color: C.magenta, r: 1.2 }, { x: 54, y: 12, color: C.lime, r: 0.9 }, { x: 24, y: 23, color: C.magenta, r: 0.9 }],
+    cables: [[1, 11, 32, 11, 0.6], [33, 11, 64, 11, 0.6]],
   },
   platform: {
-    neon: [{ x: 18, y: 1, text: 'COLLEGE PARK', color: C.lime, flicker: 0.2 }],
+    neon: [{ x: 4, y: 1, text: 'COLLEGE PARK', color: C.lime, flicker: 0.2 }, { x: 30, y: 1, text: 'NO SERVICE', color: C.red, flicker: 0.15, size: 6 }],
     glow: [{ x: 22, y: 8, color: C.magenta, r: 1.6 }],
   },
 };
