@@ -17,6 +17,10 @@ spoiler (see `PROCESS.md`).
     over. *(Michael)*
   - **The balloon.** The balloon was one of these objects too, which is part of why it matters so
     much in the game. *(Michael)*
+  - **The purple cylinder.** A purple object cast in silicone, shaped like you would guess. It gets
+    hidden around the apartment like the others. In the game it is only ever a plain purple
+    cylinder and the joke is how people react to finding it (D-015: nothing graphic is drawn).
+    *(Manuel)*
 - **Room 631, ASTER, College Park, "Aster pros," "rookie Aster mistake," 245 lab, the John Pork
   flag and statues:** these come from the brief (`docs/BRIEF.md` §3 and the appendix).
 
@@ -30,10 +34,17 @@ spoiler (see `PROCESS.md`).
 
 ## Manuel
 
-*gonman: add what Manuel tells you.*
+- **Argentinian.** Mate goes everywhere with him. *(Manuel; also in the brief)*
+- **The hiding game is still going.** His version of the shared story: "we hide stuff from ourselves
+  as a joke in the apartment." The purple cylinder above is his example. *(Manuel)*
+- **Two shirts he wants his character to own:** a Hasbulla shirt and an Argentina shirt. See the
+  board for what they do. *(Manuel)*
 
 ## Ideas this file suggests (agents, take or leave)
 
 - The meat stick as a **recurring hidden object** that keeps turning up in a different roommate's
   stuff each act (a container, a coat pocket, the fridge), with a tally somewhere of who has found it.
+- The purple cylinder as a **findable that moves**: it is in a different container each time a save
+  is loaded (seeded loot tables can do this), and whoever finds it gets one deadpan line and can
+  hide it again in any searchable container for the next player.
 - Balloon gags that echo the real war: balloons turning up where they shouldn't.
