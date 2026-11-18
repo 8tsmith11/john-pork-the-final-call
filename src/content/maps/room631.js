@@ -1,5 +1,6 @@
 // Room 631, ASTER (the base).
-//   Top-left: Trevor's room + his bathroom.  Top-right: Michael & Manuel's shared room + bathroom.
+//   Top-left: Trevor's room (the storage room: boxes and all his things) + his bathroom.
+//   Top-right: Michael & Manuel's room, where all three sleep on a triple bunk, + bathroom.
 //   Middle: one big room. West half = kitchen/dining (the apartment entrance and the statues),
 //   east half = the engineering room (fabs, bench gear, the flag on the wall), with the balcony
 //   opening off it to the south.
@@ -41,11 +42,10 @@ export const room631 = makeMap({
     { id: 'obj.chair_e', art: 'obj.chair', x: 7, y: 9, label: 'Chair', text: 'The good chair. Whoever is home first gets it. There is a tally on the underside.' },
     { id: 'obj.string_lights', x: 5, y: 5, label: 'String lights', light: 0.7, text: 'Michael put these up for somebody\'s visit. They stayed up. Nobody has mentioned why.' },
     { id: 'obj.clock_631', art: 'obj.clock_6f', x: 13, y: 5, label: 'Kitchen clock', text: '19:01. Manuel fixed it twice. Both times it went back by morning.' },
-    { id: 'obj.nightstand_trevor', art: 'obj.nightstand', x: 1, y: 1, label: 'Nightstand', light: 0.5, text: 'A lamp, two guitar picks, a capo, and a glass of water he never finishes.' },
-    { id: 'obj.nightstand_michael', art: 'obj.nightstand', x: 18, y: 1, label: 'Nightstand', light: 0.5, text: 'A lamp. A phone charger with two cables. One of them is not for his phone.' },
-    { id: 'obj.nightstand_manuel', art: 'obj.nightstand', x: 22, y: 1, label: 'Nightstand', light: 0.5, text: 'A lamp, a thermos, a book in Spanish with a bus ticket for a bookmark. The ticket is for a route in Rosario.' },
+    { id: 'obj.nightstand_michael', art: 'obj.nightstand', x: 16, y: 1, label: 'Nightstand', light: 0.5, text: 'A lamp. A phone charger with two cables. One of them is not for his phone.' },
+    { id: 'obj.nightstand_manuel', art: 'obj.nightstand', x: 20, y: 1, label: 'Nightstand', light: 0.5, text: 'A lamp, a thermos, a book in Spanish with a bus ticket for a bookmark. The ticket is for a route in Rosario.' },
     { id: 'obj.poster_band', x: 3, y: 0, label: 'Poster', text: 'A band called THE LEGACY SYSTEMS, live at the Black Cat. Trevor has seen them four times. He says the fifth was the one to see.' },
-    { id: 'obj.photo_wall', x: 17, y: 0, label: 'Photos', text: 'Printed photos, pinned in a grid. The same yellow raincoat is in most of them. There is a gap in the bottom row, the size of one print.' },
+    { id: 'obj.photo_wall', x: 16, y: 0, label: 'Photos', text: 'Printed photos, pinned in a grid. The same yellow raincoat is in most of them. There is a gap in the bottom row, the size of one print.' },
     { id: 'obj.pennant', x: 21, y: 0, label: 'Pennant', text: 'Celeste y blanca, from a match Manuel\'s grandmother took him to. She kept the score in the margin of the programme. She kept everything.' },
     { id: 'obj.toolbox', loot: 'tools', x: 20, y: 10, label: 'Toolbox', text: 'Everyone\'s tools, in nobody\'s order. A label on the lid: IF YOU BORROW IT YOU ARE AN ASTER NOOB UNTIL IT COMES BACK.' },
     { id: 'obj.crate', x: 23, y: 10, label: 'Filament crate', text: 'Spools for the fabs. Eleven colours. The pink is nearly gone and none of you remember printing in pink.' },
@@ -57,7 +57,7 @@ export const room631 = makeMap({
       'A cookbook. The cover is a cookbook. Inside it is WHAT WE HEARD: FORTY ACCOUNTS OF THE CALL.\n\nNo two of the forty agree on what he said. Thirty-one agree on how long they stayed on the line.',
       'A coursework folder, Manuel\'s. A sketch of a head, front and side, with measurements. Under it: "ears lower than you think." Under that, much later, in the same hand: "how do I know that".' ] },
     // Interior doors (closed until opened)
-    { id: 'door.trevor_room', art: 'door.wall', x: 4, y: 5, label: 'Trevor\'s door', door: true },
+    { id: 'door.trevor_room', art: 'door.wall', x: 4, y: 5, label: 'Trevor\'s room (storage)', door: true },
     { id: 'door.mm_room', art: 'door.wall', x: 22, y: 5, label: 'Michael & Manuel\'s door', door: true },
     { id: 'door.trevor_bath', art: 'door.side', x: 8, y: 3, label: 'Bathroom door', door: true },
     { id: 'door.mm_bath', art: 'door.side', x: 23, y: 3, label: 'Bathroom door', door: true },
@@ -100,9 +100,12 @@ export const room631 = makeMap({
     { id: 'obj.ottoman', x: 22, y: 13, label: 'Balcony ottoman', flag: 'act1.balloon.noticedGone',
       text: 'The ottoman everyone glances at to check the weather. Dry. Clear. A normal night, apparently. The balcony door\'s latch behind you is dusty: nobody came in this way.' },
     // Trevor's room + bathroom
-    { id: 'obj.bed', x: 1, y: 2, label: 'Trevor\'s bed (save)', action: 'save', text: 'Sleep? The balloon is still missing.' },
+    // Placeholder art until gonman draws obj.boxes (hub task).
+    { id: 'obj.boxes_1', art: 'obj.crate', x: 1, y: 1, label: 'Boxes', text: 'Moving boxes, stacked to the ceiling. TREVOR: WINTER. TREVOR: MISC. TREVOR: MISC 2. He has lived here two years and never unpacked MISC 2.' },
+    { id: 'obj.boxes_2', art: 'obj.crate', x: 1, y: 2, label: 'Boxes', text: 'A box marked BOT PARTS, DO NOT STACK, with three boxes stacked on it.' },
+    { id: 'obj.boxes_3', art: 'obj.crate', x: 2, y: 1, label: 'Boxes', text: 'Amp cables, a pedal board, a spare mattress cover still in the plastic. Everything Trevor owns lives in here. Trevor sleeps next door.' },
     { id: 'obj.shrimp_tank', x: 6, y: 1, label: 'Shrimp tank', text: 'Trevor\'s shrimp. The only clean water in the building. They\'re clustered in the corner away from the window.' },
-    { id: 'obj.guitar', x: 6, y: 4, label: 'Guitar', text: 'Trevor\'s guitar. Wood. Out of tune, as is tradition.' },
+    { id: 'obj.guitar', x: 6, y: 4, label: 'Guitar', text: 'Trevor\'s electric guitar, plugged into a little practice amp. He only plays rock, and he plays it annoyingly well.' },
     { id: 'obj.battlebot', x: 7, y: 4, label: 'Combat robot', text: 'A wedge bot. A strip of tape over the power switch reads: NO HALLWAY TESTS.' },
     { id: 'obj.supplements', x: 1, y: 4, label: 'Trevor\'s shelf', text: 'Vitamins, magnesium for sleep, guitar strings still in the packet, a tub of shrimp flakes. A sticky note on the tub: IF I AM NOT HOME, A PINCH. NOT A HANDFUL, MICHAEL.' },
     { id: 'obj.trevor_mirror', x: 11, y: 1, label: 'Bathroom mirror', text: 'Your reflection. Tired. Normal. You watch it a second longer than you meant to.' },
@@ -116,16 +119,19 @@ export const room631 = makeMap({
       'A framed photo on the desk, turned so it faces the bed. Michael and a girl in a yellow raincoat, both laughing at something outside the frame.',
       'DRAFTS (1)\nTo: her\n"saw a guy on the metro with your exact umbrella. almost said something. anyway. call me back when you can."\n\n(Unsent. Dated four months ago.)' ] },
     { id: 'obj.manuel_table', x: 20, y: 4, label: 'Manuel\'s sculpting table', text: 'Clay, wire loops, a mate gourd full of water for wetting the clay. A half-finished hand, very well made. Manuel says it\'s for a statue. He hasn\'t said whose.' },
-    { id: 'obj.mate_shelf', x: 19, y: 1, label: 'Mate shelf', text: 'Seven gourds, three bombillas, a bag of yerba with a hand-written label from Buenos Aires. One gourd is old and carved. Nobody drinks from that one.' },
+    { id: 'obj.mate_shelf', x: 21, y: 1, label: 'Mate shelf', text: 'Seven gourds, three bombillas, a bag of yerba with a hand-written label from Buenos Aires. One gourd is old and carved. Nobody drinks from that one.' },
     { id: 'obj.mm_shower', x: 28, y: 2, label: 'Shower', text: 'Two shampoo bottles, one of them clearly Michael\'s, one of them clearly also Michael\'s.' },
     { id: 'obj.hamper', x: 25, y: 4, label: 'Laundry hamper', text: 'Overflowing. A sock has achieved independence and is living on the tile.' },
     { id: 'obj.balcony_plants', x: 16, y: 13, label: 'Balcony planters', text: 'Basil, mint, and something Manuel calls "the herb" that is definitely just a weed.' },
     { id: 'obj.balcony_view', x: 27, y: 13, label: 'View of the metro', text: 'From up here you can see the College Park station, the dead Purple Line platform, and Route 1 running north into the dark. Sometimes, late, lights move out there that aren\'t trains.' },
     // Michael & Manuel's room + bathroom
-    { id: 'obj.bed_michael', x: 17, y: 1, label: 'Michael\'s bed', text: 'Michael\'s side. A phone charger, a photo turned face-down, a sweatshirt that isn\'t his size.' },
-    { id: 'obj.bed_manuel', x: 21, y: 1, label: 'Manuel\'s bed', text: 'Manuel\'s side. Sculpting tools, a carved gourd, a postcard from Buenos Aires pinned above the pillow.' },
+    // The triple bunk: all three sleep here (bible §3). Placeholder art until gonman draws obj.bunk
+    // (a 32x40 'big' sprite); then drop the art line.
+    { id: 'obj.bunk', art: 'obj.bed', x: 18, y: 2, label: 'Triple bunk (save)', action: 'save',
+      text: 'The triple bunk. Three mattresses high, and every rung of the ladder creaks.\n\nTop: Trevor, two guitar picks and a glass of water he never finishes. Middle: Michael, a phone charger and a sweatshirt that isn\'t his size. Bottom: Manuel, a carved gourd and a postcard from Buenos Aires tucked into the slats above him.\n\nSleep? The balloon is still missing.' },
+    { id: 'obj.arg_flag', x: 22, y: 0, label: 'Argentine flag', text: 'The Argentine flag, sky blue and white with the sun in the middle, tacked up over Manuel\'s end of the room. It is bigger than the window.' },
     { id: 'obj.manuel_closet', x: 22, y: 4, label: 'Manuel\'s closet', flag: 'act1.balloon.noticedGone',
-      text: 'Manuel\'s closet. His orange balloon, the one his abuela sent him, the one he checks on every morning, is gone. Someone took it. A length of orange ribbon is still knotted around the clothes rail, cut clean. Taped inside the door, a card in her handwriting: "Tenelo al sol. Miralo cada mañana. Te va a decir el tiempo." (Keep it in the sun. Check on it every morning. It will tell you the weather.)' },
+      text: 'Manuel\'s closet. His orange balloon, the one his abuela sent him, the one he checks on every morning, is gone. Someone took it. A length of orange ribbon is still knotted around the clothes rail, cut clean. On the shelf above, his white hat with the blue brim. Taped inside the door, a card in her handwriting: "Tenelo al sol. Miralo cada mañana. Te va a decir el tiempo." (Keep it in the sun. Check on it every morning. It will tell you the weather.)' },
     { id: 'obj.front_lock', x: 1, y: 8, label: 'Front-door lock', flag: 'act1.clue.lockForced',
       text: 'The deadbolt plate is bent and the strike is splintered. Someone forced it from the hallway side, quietly, and pulled the door shut behind them.' },
     { id: 'obj.mm_mirror', x: 26, y: 1, label: 'Bathroom mirror', text: 'Two toothbrushes and a third one nobody claims.' },
