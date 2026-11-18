@@ -75,8 +75,14 @@ export class Sim {
       facing: 'down', aim: 0, moving: false,
       dodgeT: 0, dodgeCd: 0, dodgeDx: 0, dodgeDy: 0, iframes: 0,
       hp: COMBAT.maxHp, downed: false, reviveT: 0, meleeCd: 0, shotCd: 0, swingT: 0,
+      mods: { melee: 0, shot: 0, shotCd: 0, armor: 0, maxHp: 0, iframes: 0, dodgeCd: 0, revive: 0 },
     });
   }
+
+  /** Gear/skill modifiers from the save (src/content/items.js playerMods). */
+  setMods(id, mods) { const p = this.players.get(id); if (p) { const full = p.hp >= this.maxHp(p); p.mods = mods; if (full) p.hp = this.maxHp(p); } }
+  maxHp(p) { return COMBAT.maxHp + (p.mods?.maxHp ?? 0); }
+  heal(id, n) { const p = this.players.get(id); if (p && !p.downed) p.hp = Math.min(this.maxHp(p), p.hp + n); }
 
   removePlayer(id) { this.players.delete(id); }
 
@@ -99,7 +105,7 @@ export class Sim {
         const dx = len > 0.1 ? mx : Math.cos(p.aim), dy = len > 0.1 ? my : Math.sin(p.aim);
         const dl = Math.hypot(dx, dy) || 1;
         p.dodgeDx = dx / dl; p.dodgeDy = dy / dl;
-        p.dodgeT = MOVE.dodgeTime; p.dodgeCd = MOVE.dodgeCooldown; p.iframes = MOVE.iframes;
+        p.dodgeT = MOVE.dodgeTime; p.dodgeCd = Math.max(0.2, MOVE.dodgeCooldown + (p.mods?.dodgeCd ?? 0)); p.iframes = MOVE.iframes;
       }
 
       if (p.dodgeT > 0) {
@@ -115,9 +121,11 @@ export class Sim {
       if (inp.attack && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
       if (inp.fire && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);
 
-      // Facing follows the aim (4 directions), so sprites face where you point.
-      const a = p.aim;
-      p.facing = Math.abs(Math.cos(a)) > Math.abs(Math.sin(a)) ? (Math.cos(a) > 0 ? 'right' : 'left') : (Math.sin(a) > 0 ? 'down' : 'up');
+      // Facing follows the walking direction; it only turns toward the cursor while firing a ranged
+      // weapon. Standing still keeps the last facing.
+      const toFacing = (x, y) => (Math.abs(x) > Math.abs(y) ? (x > 0 ? 'right' : 'left') : (y > 0 ? 'down' : 'up'));
+      if (inp.fire) p.facing = toFacing(Math.cos(p.aim), Math.sin(p.aim));
+      else if (p.moving) p.facing = toFacing(p.vx, p.vy);
     }
     this._afterPlayers(dt);
   }
@@ -138,15 +146,15 @@ export class Sim {
       if (d > m.range + def.radius) continue;
       let da = Math.atan2(dy, dx) - p.aim; da = Math.atan2(Math.sin(da), Math.cos(da));
       if (Math.abs(da) > m.arc / 2 && d > def.radius + 4) continue;
-      this._hurtEnemy(e, m.damage, dx / (d || 1) * m.knockback, dy / (d || 1) * m.knockback, p.id);
+      this._hurtEnemy(e, m.damage + (p.mods?.melee ?? 0), dx / (d || 1) * m.knockback, dy / (d || 1) * m.knockback, p.id);
     }
   }
 
   _fire(p) {
     const c = COMBAT.shot;
-    p.shotCd = c.cooldown;
+    p.shotCd = Math.max(0.15, c.cooldown + (p.mods?.shotCd ?? 0));
     this.shots.push({ x: p.x + Math.cos(p.aim) * 8, y: p.y - 6 + Math.sin(p.aim) * 8, vx: Math.cos(p.aim) * c.speed, vy: Math.sin(p.aim) * c.speed,
-      life: c.life, dmg: c.damage, from: 'player', owner: p.id });
+      life: c.life, dmg: c.damage + (p.mods?.shot ?? 0), from: 'player', owner: p.id });
     this.events.push({ t: 'shot', id: p.id });
   }
 
@@ -165,7 +173,8 @@ export class Sim {
 
   _hurtPlayer(p, dmg) {
     if (p.downed || p.iframes > 0) return;
-    p.hp -= dmg; p.iframes = COMBAT.hurtIframes;
+    dmg = Math.max(1, Math.round(dmg * (1 - (p.mods?.armor ?? 0))));
+    p.hp -= dmg; p.iframes = COMBAT.hurtIframes + (p.mods?.iframes ?? 0);
     this.events.push({ t: 'hurt', id: p.id, x: p.x, y: p.y, dmg });
     if (p.hp <= 0) { p.hp = 0; p.downed = true; p.reviveT = 0; this.events.push({ t: 'down', id: p.id }); }
   }
@@ -293,7 +302,7 @@ export class Sim {
     for (const p of this.players.values()) {
       if (!p.downed) continue;
       const helper = [...this.players.values()].find((q) => !q.downed && Math.hypot(q.x - p.x, q.y - p.y) < COMBAT.reviveRange);
-      p.reviveT = helper ? p.reviveT + dt : Math.max(0, p.reviveT - dt);
+      p.reviveT = helper ? p.reviveT + dt * (1 + (helper.mods?.revive ?? 0)) : Math.max(0, p.reviveT - dt);
       if (p.reviveT >= COMBAT.reviveTime) { p.downed = false; p.hp = COMBAT.reviveHp; p.iframes = 1; this.events.push({ t: 'revive', id: p.id }); }
     }
   }
@@ -332,7 +341,7 @@ export class Sim {
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
-        hp: Math.round(p.hp), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0,
+        hp: Math.round(p.hp), mhp: this.maxHp(p), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0,
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,

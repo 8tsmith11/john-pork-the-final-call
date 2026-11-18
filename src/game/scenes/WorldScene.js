@@ -10,6 +10,7 @@ import { ENEMIES } from '../../content/enemies.js';
 import { GAME_VERSION } from '../../version.js';
 import { loadScene, Conversation } from '../../engine/dialogue.js';
 import { babble, setArea, sfx } from '../../audio/audio.js';
+import { ITEMS, RECIPES, SKILLS, playerMods } from '../../content/items.js';
 
 const STEP = 1 / 60;
 const XP_PER_LEVEL = 30;
@@ -43,6 +44,11 @@ export class WorldScene extends Phaser.Scene {
     this._makeUi();
     this._wireNet();
     this._makeDialogueUi();
+    if (this.mode !== 'client') for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
+    this.save.world.scrap ??= 0;
+    this._makeMenu();
+    this.input.keyboard.on('keydown-K', () => this.menu ? this._closeMenu() : this._openSkills());
+    this.input.keyboard.on('keydown-H', () => { if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
     this.input.keyboard.on('keydown-F', () => { if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
     this._showMap(startMap);
     this.ready = true;
@@ -141,6 +147,9 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'standing' && msg.faction in this.save.standing) this.save.standing[msg.faction] += Number(msg.n) || 0;
         if (msg.t === 'exit') this._tryExit(this.sim.map.objects.find((o) => o.id === msg.obj));
         if (msg.t === 'answer') this._answer();
+        if (msg.t === 'craft') this._craft(this._charOf(peer), msg.idx);
+        if (msg.t === 'skill') this._learn(this._charOf(peer), msg.id);
+        if (msg.t === 'use') this._use(this._charOf(peer), peer);
       });
       this.net.on('leave', (peer) => this.sim.removePlayer(peer));
       this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
@@ -148,6 +157,7 @@ export class WorldScene extends Phaser.Scene {
       this.net.on('msg', (msg) => {
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
         if (msg.t === 'say') this._say(msg.text);
+        if (msg.t === 'party') { this.save.party = msg.party; this.save.world.scrap = msg.scrap; this._refreshMenu(); }
       });
       this.net.on('close', () => this._say('The host closed the game.'));
     }
@@ -200,6 +210,86 @@ export class WorldScene extends Phaser.Scene {
       this.tweens.add({ targets: card, alpha: 1, duration: 1600, hold: 2600, yoyo: true });
       if (this.mode !== 'client') { this.save.world.act = 2; autosave(this.save); }
     });
+  }
+
+  // ---------- crafting, skills, items (host-authoritative) ----------
+  _charOf(peer) { return this.sim.players.get(peer)?.character; }
+
+  _syncParty() {
+    for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
+    if (this.mode === 'host') this.net.broadcast({ t: 'party', party: this.save.party, scrap: this.save.world.scrap });
+    this._refreshMenu();
+  }
+
+  _craft(who, idx) {
+    const r = RECIPES[idx], c = this.save.party[who];
+    if (!r || !c) return;
+    if (this.save.world.scrap < r.scrap) return this._announce(`Not enough scrap (${this.save.world.scrap}/${r.scrap}).`);
+    this.save.world.scrap -= r.scrap;
+    const item = ITEMS[r.item];
+    c.inventory.push({ id: r.item, qty: 1 });
+    if (item.slot !== 'consumable') c.equipped[item.slot] = r.item;
+    this._announce(`The fab hums. ${who} gets: ${item.name}.`);
+    this._syncParty();
+  }
+
+  _learn(who, id) {
+    const c = this.save.party[who], s = (SKILLS[who] || []).find((x) => x.id === id);
+    if (!c || !s || c.skillPoints < 1 || (c.skills[id] ?? 0) >= s.max) return;
+    c.skillPoints--; c.skills[id] = (c.skills[id] ?? 0) + 1;
+    this._syncParty();
+  }
+
+  _use(who, peerId) {
+    const c = this.save.party[who]; if (!c) return;
+    const i = c.inventory.findIndex((x) => x.id === 'item.mate_flask');
+    if (i < 0) return this._announce('No mate thermos. (Print one at the fab.)');
+    c.inventory.splice(i, 1);
+    this.sim.heal(peerId, ITEMS['item.mate_flask'].heal);
+    this._announce(`${who} drinks some mate. Better.`);
+    this._syncParty();
+  }
+
+  _makeMenu() {
+    const W = this.scale.width;
+    this.menuBg = this.add.rectangle(W / 2, 120, 300, 170, 0x0b0d16, 0.95).setStrokeStyle(1, 0xffb347).setScrollFactor(0).setDepth(9600).setVisible(false);
+    this.menuTitle = this.add.text(W / 2 - 140, 42, '', { ...FONT, color: '#ffb347' }).setScrollFactor(0).setDepth(9601);
+    this.menuRows = [0, 1, 2, 3, 4, 5, 6].map((i) => this.add.text(W / 2 - 136, 58 + i * 18, '', { ...FONT, wordWrap: { width: 270 } })
+      .setScrollFactor(0).setDepth(9601).setInteractive({ useHandCursor: true }).on('pointerdown', () => this._pickMenu(i)));
+    this.input.keyboard.on('keydown', (ev) => {
+      if (!this.menu) return;
+      if (ev.key === 'Escape') return this._closeMenu();
+      const n = parseInt(ev.key, 10); if (n >= 1 && n <= 7) this._pickMenu(n - 1);
+    });
+    this._closeMenu();
+  }
+
+  _openFab() { this.menu = 'fab'; this._refreshMenu(); }
+  _openSkills() { this.menu = 'skills'; this._refreshMenu(); }
+  _closeMenu() { this.menu = null; [this.menuBg, this.menuTitle, ...this.menuRows].forEach((o) => o.setVisible(false)); }
+
+  _refreshMenu() {
+    if (!this.menu) return;
+    const c = this.save.party[this.character];
+    let title, rows;
+    if (this.menu === 'fab') {
+      title = `FAB #2 · scrap: ${this.save.world.scrap}   [1-5] print  [ESC] close`;
+      rows = RECIPES.map((r, i) => `${i + 1}. ${ITEMS[r.item].name} (${r.scrap} scrap): ${ITEMS[r.item].text}`);
+    } else {
+      title = `${this.character.toUpperCase()} · level ${c.level} · skill points: ${c.skillPoints}   [K] close`;
+      rows = (SKILLS[this.character] || []).map((s, i) => `${i + 1}. ${s.name} [${c.skills[s.id] ?? 0}/${s.max}]: ${s.text}`);
+    }
+    [this.menuBg, this.menuTitle].forEach((o) => o.setVisible(true));
+    this.menuTitle.setText(title);
+    this.menuRows.forEach((t, i) => t.setText(rows[i] ?? '').setVisible(!!rows[i]));
+  }
+
+  _pickMenu(i) {
+    if (this.menu === 'fab') { if (this.mode === 'client') this.net.send({ t: 'craft', idx: i }); else this._craft(this.character, i); }
+    if (this.menu === 'skills') {
+      const s = (SKILLS[this.character] || [])[i]; if (!s) return;
+      if (this.mode === 'client') this.net.send({ t: 'skill', id: s.id }); else this._learn(this.character, s.id);
+    }
   }
 
   _answer() {
@@ -287,11 +377,13 @@ export class WorldScene extends Phaser.Scene {
     this._render(snap);
   }
 
-  _frozen(inp) { return this.dlg ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : inp; }
+  _frozen(inp) { return this.dlg || this.menu ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : inp; }
 
   _hostEvents(events) {
     for (const ev of events) {
       if (ev.t === 'kill') {
+        this.save.world.scrap = (this.save.world.scrap ?? 0) + (ev.boss ? 10 : 2);
+        this._partyDirty = true;
         // XP is shared by the party (co-op), levels grant skill points.
         for (const p of this.sim.players.values()) {
           const c = this.save.party[p.character]; if (!c) continue;
@@ -300,6 +392,7 @@ export class WorldScene extends Phaser.Scene {
         }
       }
     }
+    if (this._partyDirty) { this._partyDirty = false; this._syncParty(); }
     if (this.sim.wiped && !this._wipeAt) this._wipeAt = this.time.now + 2500;
     if (this._wipeAt && this.time.now > this._wipeAt) {
       this._wipeAt = 0;
@@ -320,6 +413,7 @@ export class WorldScene extends Phaser.Scene {
     }
     if (near.talk) { const [scene, node] = near.talk.split(':'); this.startDialogue(scene, node || null, near.after ? () => this._flag(near.after, true) : null); return; }
     if (near.action === 'ending') { this._playEnding(); return; }
+    if (near.action === 'fab') { this._openFab(); return; }
     this._say(near.text);
     if (near.flag) {
       if (this.mode === 'client') this.net.send({ t: 'flag', key: near.flag });
@@ -417,11 +511,13 @@ export class WorldScene extends Phaser.Scene {
     snap.players.forEach((p, i) => {
       const y = 16 + i * 9, w = 60;
       g.fillStyle(0x1c1f33).fillRect(6, y, w, 5);
-      g.fillStyle(p.dn ? 0x777788 : p.id === this.localId ? 0x7fb069 : 0x5f8fbf).fillRect(6, y, Math.max(0, (p.hp / 100) * w), 5);
+      g.fillStyle(p.dn ? 0x777788 : p.id === this.localId ? 0x7fb069 : 0x5f8fbf).fillRect(6, y, Math.max(0, (p.hp / (p.mhp || 100)) * w), 5);
       if (p.dn) g.fillStyle(0xffb347).fillRect(6, y + 5, (p.rv / 2) * w, 1);
     });
     if (snap.enemies?.length) lines.push(`rot: ${snap.enemies.length}`);
-    if (this.mode !== 'client') { const c = this.save.party[this.character]; lines.push(`lv ${c.level}  xp ${c.xp}/${c.level * XP_PER_LEVEL}`); }
+    const c = this.save.party[this.character];
+    lines.push(`lv ${c.level}  xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `  [K] ${c.skillPoints} pt` : ''}`);
+    lines.push(`scrap ${this.save.world.scrap ?? 0}`);
     this.hudText.setText(lines.join('\n'));
   }
 }
