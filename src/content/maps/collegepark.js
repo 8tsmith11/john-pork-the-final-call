@@ -78,7 +78,7 @@ export const metroPlaza = makeMap({
     { id: 'obj.station_entrance', art: 'obj.tunnel_on', x: 38, y: 8, label: 'Metro entrance', text: 'The gates are down for the night. The departure board behind them lists a train to a station that was never built.' },
     { id: 'npc.mina', art: PERSON[0], x: 41, y: 10, label: 'Mina', npc: true, text: '"I do requests. I don\'t do the one everybody asks for." She retunes something wooden that was not out of tune.' },
     { id: 'npc.rotter_1', x: 30, y: 18, label: 'Rotter', npc: true, text: 'coderot. coderot. coderot.' },
-    { id: 'npc.halvard', x: 26, y: 26, label: 'Halvard', npc: true, talk: 'lead_b_halvard' },
+    { id: 'npc.halvard', x: 26, y: 26, label: 'Halvard', npc: true, talk: 'lead_b_halvard', doneFlag: 'act1.halvard.sellerDescribed', doneText: 'The shutter comes up two inches. Halvard\'s eye, then the television behind him, then the shutter again.\n\n"You paid for one rumor. That was it."' },
     { id: 'obj.purple_sign', x: 40, y: 27, label: 'Purple Line sign', text: 'PURPLE LINE: OPENING SOON.' },
     { id: 'obj.plaza_clock', art: 'obj.clock_6f', x: 46, y: 9, label: 'Station clock', text: '19:01. Under it, somebody has taped a paper clock with the right time and a note: USE THIS ONE.' },
     { id: 'obj.van', x: 45, y: 20, label: 'Abatement van', text: 'White, unmarked except for a mast on the roof. The mast is turning. It is pointed at the ground.' },
