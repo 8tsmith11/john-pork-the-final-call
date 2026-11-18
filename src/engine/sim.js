@@ -16,7 +16,7 @@ export const BLINK = { dist: 112, cooldown: 1.1 };   // winged boots (D-014)
 export const LULLABY = { range: 128, mothRange: 64, expose: 3, sleep: 8, babySleep: 12 };   // babySleep: Manuel with the smart pacifier in
 // Infection stops at a heavy debuff in this pass. Transformation needs a separate design review.
 export const ROT = { max: 100, poolRate: 4, growth: 0.08, puddlerHit: 6,
-  charmRange: 64, charmDecay: 0.6, charmShield: 0.5, maxHallRate: 4 };
+  lightDecay: 0.1, quietTime: 5, charmRange: 64, charmDecay: 0.6, charmShield: 0.5, maxHallRate: 4 };
 export const COMBAT = {
   maxHp: 100, hurtIframes: 0.6, reviveTime: 4.0, reviveRange: 18, reviveHp: 40,
   melee: { cooldown: 0.38, range: 20, arc: Math.PI * 0.6, damage: 12, knockback: 120 },
@@ -102,7 +102,7 @@ export class Sim {
       id, character, x: spawn.x, y: spawn.y, vx: 0, vy: 0,
       facing: 'down', aim: 0, moving: false,
       dodgeT: 0, dodgeCd: 0, dodgeDx: 0, dodgeDy: 0, iframes: 0,
-      hp: COMBAT.maxHp, rot: 0, downed: false, reviveT: 0, meleeCd: 0, shotCd: 0, swingT: 0, sta: MOVE.stamina, staT: 0,
+      hp: COMBAT.maxHp, rot: 0, rotQuiet: 0, downed: false, reviveT: 0, meleeCd: 0, shotCd: 0, swingT: 0, sta: MOVE.stamina, staT: 0,
       mods: { melee: 0, shot: 0, shotCd: 0, armor: 0, maxHp: 0, iframes: 0, dodgeCd: 0, revive: 0, gun: 0 },
     });
   }
@@ -120,18 +120,35 @@ export class Sim {
   }
   infect(p, amount) {
     if (!this.players.has(p.id) || p.downed || !(amount > 0) || !Number.isFinite(amount)) return;
+    p.rotQuiet = 0;
     this.setRot(p.id, (p.rot ?? 0) + amount * (this._rotWard(p) ? ROT.charmShield : 1));
   }
   _stepRot(dt) {
     for (const p of this.players.values()) {
       if (p.downed) continue;
+      p.rotQuiet = (p.rotQuiet ?? 0) + dt;
       // Authored sealed halls may set rotExposure in points/second; ordinary halls stay safe.
       const hall = Number.isFinite(this.map.rotExposure) ? Math.max(0, Math.min(ROT.maxHallRate, this.map.rotExposure)) : 0;
       this.infect(p, hall * dt);
       if (!(p.rot > 0)) continue;
-      const rate = this._rotWard(p) ? -ROT.charmDecay : ROT.growth;
-      this.setRot(p.id, p.rot + rate * dt);
+      const lightTime = Math.min(dt, Math.max(0, p.rotQuiet - ROT.quietTime));
+      const change = this._rotWard(p) ? -ROT.charmDecay * dt : p.rot >= 60 ? ROT.growth * dt
+        : p.rot < 25 ? -ROT.lightDecay * lightTime : 0;
+      this.setRot(p.id, p.rot + change);
     }
+  }
+  /** An actual rest at the apartment save point; ordinary autosaves do not treat disease.
+   * Nearby companions and roommates rest together. Validate the actor on the host, too.
+   */
+  restAtSave(id, objectId) {
+    const p = this.players.get(id), bed = this.map.objects.find((o) => o.id === objectId && o.action === 'save');
+    if (this.map.id !== 'room631' || !p || p.downed || !bed) return false;
+    const x = bed.x * TILE + 8, y = bed.y * TILE + 8;
+    if (Math.hypot(p.x - x, p.y - y) > 24) return false;
+    for (const q of this.players.values()) if (Math.hypot(q.x - x, q.y - y) <= 64) {
+      this.setRot(q.id, (q.rot ?? 0) / 2); q.rotQuiet = 0;
+    }
+    return true;
   }
   /** Electric scooter: fast travel outdoors. Can't fight or dash while riding; a hit knocks you off. */
   toggleScooter(id, allowed) {

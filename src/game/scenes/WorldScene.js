@@ -457,6 +457,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'ability') this._raiseAbility(this._charOf(peer), msg.key);
         if (msg.t === 'equip') this._equip(this._charOf(peer), msg.id);
         if (msg.t === 'mate') this._mateBreak();
+        if (msg.t === 'rest') this._restAtSave(peer, msg.obj);
         if (msg.t === 'use') { this._useWhat = msg.id ?? null; this._use(this._charOf(peer), peer); }
         if (msg.t === 'morph') this._morph(peer);
         if (msg.t === 'search') { const o = this.map.objects.find((x) => x.id === msg.id && x.loot); if (o) this._search(o, this._charOf(peer)); }
@@ -470,7 +471,7 @@ export class WorldScene extends Phaser.Scene {
       this.net.on('leave', (peer) => {
         // A roommate who drops out keeps walking with the party as a companion.
         const p = this.sim.players.get(peer); this.sim.removePlayer(peer);
-        if (p) { this.sim.addPlayer(`ai:${p.character}`, p.character); const a = this.sim.players.get(`ai:${p.character}`); Object.assign(a, { x: p.x, y: p.y, hp: p.hp }); this.sim.setMods(a.id, playerMods(this.save.party[p.character], p.character)); }
+        if (p) { this.sim.addPlayer(`ai:${p.character}`, p.character); const a = this.sim.players.get(`ai:${p.character}`); Object.assign(a, { x: p.x, y: p.y, hp: p.hp, rot: p.rot ?? 0, rotQuiet: p.rotQuiet ?? 0, analogCharm: p.analogCharm }); this.sim.setMods(a.id, playerMods(this.save.party[p.character], p.character)); }
       });
       this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
     } else if (this.mode === 'client') {
@@ -1326,10 +1327,17 @@ export class WorldScene extends Phaser.Scene {
     this.tweens.add({ targets: this.toastText, alpha: 0, delay: 1400, duration: 500 });
   }
 
-  _save() {
+  _save(message = '✓ saved') {
     if (this.mode === 'client') return;
     this._toast('saving…');
-    autosave(this.save).then(() => this._toast('✓ saved'));
+    autosave(this.save).then(() => this._toast(message));
+  }
+
+  _restAtSave(peer, objectId) {
+    if (this.mode === 'client' || !this.sim.restAtSave(peer, objectId)) return;
+    for (const p of this.sim.players.values()) this.save.party[p.character].rot = p.rot ?? 0;
+    this._save('✓ saved · rest eased the coderot');
+    if (peer !== this.localId) this.net?.send(peer, { t: 'say', text: 'Rested. Coderot exposure halved.' });
   }
 
   // Descriptions stay up until E or a click outside the box.
@@ -1617,7 +1625,10 @@ export class WorldScene extends Phaser.Scene {
       if (this.mode === 'client') this.net.send({ t: 'flag', key: near.flag });
       else this.save.flags[near.flag] = true;
     }
-    if (near.action === 'save') this._save();
+    if (near.action === 'save') {
+      if (this.mode === 'client') this.net.send({ t: 'rest', obj: near.id });
+      else this._restAtSave(this.localId, near.id);
+    }
   }
 
   // Hidden: see the sealed docs.

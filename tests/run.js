@@ -38,13 +38,38 @@ test('infection sources, charm range, caffeine and allies obey the disease rules
   sim.setRot('host', 50); sim.infect(p, 10); assert.equal(p.rot, 55);
   sim._stepRot(1); assert.equal(p.rot, 55 - ROT.charmDecay);
   q.x += ROT.charmRange + 1;
-  const far = p.rot; sim._stepRot(1); assert.equal(p.rot, far + ROT.growth);
+  const far = p.rot; sim._stepRot(1); assert.equal(p.rot, far, 'moderate exposure holds without a charm');
   sim.setRot('host', 0); sim.map.rotExposure = 999; sim._stepRot(1);
-  assert.equal(p.rot, ROT.maxHallRate + ROT.growth);
+  assert.equal(p.rot, ROT.maxHallRate);
   p.downed = true; const down = p.rot; sim._stepRot(1); assert.equal(p.rot, down);
   const ally = { id: 'robot', rot: 0 }; sim.infect(ally, 100); assert.equal(ally.rot, 0);
   sim.setRot('host', Infinity); assert.equal(p.rot, 0);
   sim.setRot('host', 300); assert.equal(p.rot, 100);
+});
+
+test('light exposure decays after five quiet seconds, moderate holds, serious grows', () => {
+  const sim = new Sim(rotArena()); sim.addPlayer('host', 'trevor'); const p = sim.players.get('host');
+  sim.infect(p, 10); sim._stepRot(5); assert.equal(p.rot, 10);
+  sim._stepRot(1); assert.equal(p.rot, 9.9);
+  sim.infect(p, 1); const fresh = p.rot; sim._stepRot(4); assert.equal(p.rot, fresh, 'new exposure restarts quiet time');
+  sim.setRot('host', 25); sim._stepRot(100); assert.equal(p.rot, 25);
+  sim.setRot('host', 59.9); sim._stepRot(100); assert.equal(p.rot, 59.9);
+  sim.setRot('host', 60); sim._stepRot(10); assert.equal(p.rot, 60.8);
+  sim.setRot('host', 0.01); p.rotQuiet = 5; sim._stepRot(1); assert.equal(p.rot, 0);
+});
+
+test('apartment rest halves nearby exposure and rejects distant or forged requests', () => {
+  const map = rotArena(); map.id = 'room631'; map.objects = [{ id: 'bed', action: 'save', x: 10, y: 10 }];
+  const sim = new Sim(map); sim.addPlayer('host', 'trevor'); sim.addPlayer('ai:manuel', 'manuel'); sim.addPlayer('far', 'michael');
+  const p = sim.players.get('host'), q = sim.players.get('ai:manuel'), far = sim.players.get('far');
+  p.x = p.y = q.x = q.y = 168; far.x = far.y = 300;
+  sim.setRot(p.id, 80); sim.setRot(q.id, 40); sim.setRot(far.id, 60);
+  assert.equal(sim.restAtSave('host', 'missing'), false);
+  assert.equal(sim.restAtSave('far', 'bed'), false);
+  assert.equal(sim.restAtSave('host', 'bed'), true);
+  assert.equal(p.rot, 40); assert.equal(q.rot, 20); assert.equal(far.rot, 60);
+  map.id = 'tunnel_1'; assert.equal(sim.restAtSave('host', 'bed'), false); assert.equal(p.rot, 40);
+  map.id = 'room631'; p.downed = true; assert.equal(sim.restAtSave('host', 'bed'), false);
 });
 
 test('rot-taken and puddler contact infect only when the hit lands', () => {
