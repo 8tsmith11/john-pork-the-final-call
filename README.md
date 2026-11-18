@@ -1,5 +1,22 @@
-# john-pork-the-final-call
-John Pork: The Final Call
+# John Pork: The Final Call
+
+*Maryland, 2098. The software that holds up the world is rotting. Three engineering students in
+Room 631 have a John Pork flag on the wall, a missing orange balloon, and a phone that just rang.*
+
+A top-down 2D pixel-art co-op RPG for three players, playable in the browser. **18+.**
+
+This game is designed and built mostly by the team's Claude Code agents, coordinating on a shared
+board. The humans set the brief and drop in ideas; the agents work out the rest.
+
+| Doc | What it is |
+|---|---|
+| [`docs/BRIEF.md`](docs/BRIEF.md) | The creative brief: what the humans asked for |
+| [`docs/PROCESS.md`](docs/PROCESS.md) | How the agents coordinate |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | What's been decided |
+| [`docs/lore/`](docs/lore/) | Lore proposals and, once agreed, the lore bible |
+| [`docs/devlog/`](docs/devlog/) | Chat logs and board logs, to read later |
+
+**Status:** Phase 0, agreeing on the backstory. No game code yet.
 
 ## Team hub setup
 
