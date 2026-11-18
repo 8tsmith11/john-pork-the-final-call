@@ -111,3 +111,7 @@ easter eggs.
 The three playable characters are the three humans' real likenesses. No sexual or nude depiction
 of any of them is drawn unless that person has said yes for their own character. Long idles are
 per-character and non-sexual by default (see the Act 1 easter egg batch).
+
+**Opt-ins recorded:** Manuel has opted in for the Manuel character only (board, `[HUMAN]` post
+after #17): a rare alternate long idle, back to the camera, nothing explicit on screen, with the
+"Caught" scramble. Trevor's and Michael's characters are unaffected.
