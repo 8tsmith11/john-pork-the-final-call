@@ -212,7 +212,7 @@ export class Sim {
 
   _melee(p) {
     const m = COMBAT.melee;
-    p.meleeCd = m.cooldown; p.swingT = 0.15;
+    p.meleeCd = m.cooldown; p.swingT = 0.2;   // long enough for both attack frames (12 fps)
     this.events.push({ t: 'swing', id: p.id, a: p.aim });
     for (const e of this.enemies.values()) {
       const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
