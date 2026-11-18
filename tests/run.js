@@ -218,5 +218,11 @@ test('stepping onto the lobby street doors leaves the building', () => {
   assert.ok(sim.events.some((e) => e.t === 'bumpExit' && e.id === 'obj.street_doors'));
 });
 
+const yard = await import('../src/content/switchyard.js');
+test('the switchyard answer is never the levers\' starting position', () => {
+  const { solution, LEVERS } = yard;
+  for (let i = 0; i < 400; i++) assert.ok(LEVERS.some((k) => solution(`seed-${i}`)[k] === 'right'), `seed-${i}`);
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

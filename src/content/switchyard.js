@@ -7,7 +7,11 @@ export const LEVERS = ['a', 'b', 'c'];
 
 export function solution(seed) {
   const r = makeStreams(seed)('switchyard');
-  return Object.fromEntries(LEVERS.map((k) => [k, r.pick(['left', 'right'])]));
+  const sol = Object.fromEntries(LEVERS.map((k) => [k, r.pick(['left', 'right'])]));
+  // The levers start all LEFT and the gate only re-checks when one is pulled, so an all-left answer
+  // (1 seed in 8) left the gate locked with every clue already satisfied. Never roll that one.
+  if (LEVERS.every((k) => sol[k] === 'left')) sol[r.pick(LEVERS)] = 'right';
+  return sol;
 }
 
 // Clue text appended to existing objects, in three different hands.

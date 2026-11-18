@@ -86,7 +86,7 @@ export const room631 = makeMap({
     { id: 'obj.router', x: 28, y: 6, label: 'Router', text: 'Its lights blink in a pattern that\'s almost regular. Every few minutes it reboots for no reason and comes back with a slightly different name.' },
     { id: 'obj.drill_press', x: 28, y: 10, label: 'Drill press', text: 'Bolted to the floor, which the lease definitely does not allow.' },
     { id: 'obj.pork_flag', x: 26, y: 5, label: 'John Pork flag', text: 'The flag on the engineering-room wall. Contraband since 2071. Someone ironed it once, which is the most domestic thing anyone in 631 has ever done.' },
-    { id: 'obj.printer_1', x: 16, y: 6, label: 'Fab #1 (print a helium sniffer)', talk: 'lead_a_helium' },
+    { id: 'obj.printer_1', x: 16, y: 6, label: 'Fab #1 (print a helium sniffer)', talk: 'lead_a_helium', doneFlag: 'act1.leadA.done', doneText: 'Fab #1, still warm. The sniffer is printed and the reading has not changed: light, and down. Under the plaza.' },
     { id: 'obj.printer_2', x: 17, y: 6, label: 'Fab #2 (print gear)', action: 'fab', text: '' },
     { id: 'obj.printer_3', x: 18, y: 6, label: 'Fab #3', flag: 'act1.clue.printer3Warm',
       text: 'Fab #3. Warm. The job queue lists one print. Nobody here submitted it.' },

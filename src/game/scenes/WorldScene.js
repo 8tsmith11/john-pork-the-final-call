@@ -1162,6 +1162,8 @@ export class WorldScene extends Phaser.Scene {
       if (this.save.flags[met] && this._questInteract(near)) return;
       if (!this.save.flags[met]) this._flag(met, true);
     }
+    // A scene that is finished for good (e.g. the sniffer is printed) answers with one line after that.
+    if (near.talk && near.doneFlag && this.save.flags[near.doneFlag]) { this._say(near.doneText ?? near.text ?? ''); return; }
     if (near.talk) { const [scene, node] = near.talk.split(':'); this.startDialogue(scene, node || null, near.after ? () => this._flag(near.after, true) : null); return; }
     if (near.action === 'ending') { this._playEnding(); return; }
     if (near.action === 'fab') { this._openFab(); return; }
