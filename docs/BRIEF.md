@@ -231,6 +231,11 @@ have to apply, but it would make it interesting."
   gun (aiming).
   > *"direciton facing should be based on walking direction, only change with aiming later when using
   > something like a gun which isnt implemetned yet"*
+- **Click to interact.** Click world items and NPCs to interact (not E). E, or a click outside the
+  text, closes the description or menu. Descriptions don't fade until you close them.
+  > *"you should click on world items, npcs etc to interact not e, then click a certain key like e to
+  > exit that menu or just click off of the descirption text. descirption shouldnt fade until you exit."*
+- **The lobby should look way cooler and have music.** (Assigned to gonman for later.)
 
 ---
 

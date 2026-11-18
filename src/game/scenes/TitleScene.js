@@ -29,7 +29,7 @@ export class TitleScene extends Phaser.Scene {
         .setOrigin(0.5).setInteractive({ useHandCursor: true })
         .on('pointerdown', () => this.scene.start('Lobby', { role }));
     });
-    this.add.text(W / 2, H - 14, 'click a roommate: solo · WASD move · L-click hit · R-click shoot · SPACE dodge · E use · K skills · H heal',
+    this.add.text(W / 2, H - 14, 'click a roommate: solo · WASD move · click things to use · L-click hit · R-click shoot · SPACE dodge · E close · K skills',
       { fontFamily: 'monospace', fontSize: '7px', color: '#5d6487' }).setOrigin(0.5);
   }
 }

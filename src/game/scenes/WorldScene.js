@@ -48,6 +48,8 @@ export class WorldScene extends Phaser.Scene {
     this.save.world.scrap ??= 0;
     this._makeMenu();
     this.input.keyboard.on('keydown-K', () => this.menu ? this._closeMenu() : this._openSkills());
+    this.input.keyboard.on('keydown-E', () => { if (this.menu) this._closeMenu(); else if (!this.dlg) this._closeSay(); });
+    this.input.on('pointerdown', (ptr) => this._onClick(ptr));
     this.input.keyboard.on('keydown-H', () => { if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
     this.input.keyboard.on('keydown-F', () => { if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
     this._showMap(startMap);
@@ -328,7 +330,39 @@ export class WorldScene extends Phaser.Scene {
     this.hudText = this.add.text(W - 6, 4, '', { ...FONT, color: '#9aa3c7', align: 'right' }).setOrigin(1, 0).setScrollFactor(0).setDepth(9001);
   }
 
-  _say(text) { this.box.setVisible(true); this.boxText.setText(text).setVisible(true); this.sayUntil = this.time.now + 4500; }
+  // Descriptions stay up until E or a click outside the box.
+  _say(text) { this.box.setVisible(true); this.boxText.setText(text).setVisible(true); this.sayOpen = true; }
+  _closeSay() { this.box.setVisible(false); this.boxText.setVisible(false); this.sayOpen = false; }
+
+  _objectAt(wx, wy) {
+    return this.map.objects.find((o) => wx >= o.x * TILE - 2 && wx < o.x * TILE + TILE + 2 && wy >= o.y * TILE - 2 && wy < o.y * TILE + TILE + 2);
+  }
+
+  _onClick(ptr) {
+    if (!this.ready || ptr.button !== 0) return;
+    const sx = ptr.x, sy = ptr.y;
+    if (this.dlg) {   // any click advances a line (choices are clicked directly)
+      this.input2.blockAttack = true;
+      if (!this.dlg.choices.length) { this.dlg.advance(); this._drawDialogue(); }
+      return;
+    }
+    if (this.menu) {
+      this.input2.blockAttack = true;
+      const b = this.menuBg.getBounds();
+      if (!b.contains(sx, sy)) this._closeMenu();
+      return;
+    }
+    if (this.sayOpen) {
+      this.input2.blockAttack = true;
+      if (!this.box.getBounds().contains(sx, sy)) this._closeSay();
+      return;
+    }
+    const wp = this.cameras.main.getWorldPoint(sx, sy);
+    const obj = this._objectAt(wp.x, wp.y);
+    if (!obj) return;   // not an object: this click is an attack
+    this.input2.blockAttack = true;
+    this._clickedObj = obj;
+  }
 
   _nearestObject(p) {
     let best = null, bd = 22;
@@ -349,7 +383,7 @@ export class WorldScene extends Phaser.Scene {
       if (!me) return;
       const inp = this._frozen(this.input2.read(me));
       this.net.send({ t: 'input', inp });
-      this._handleInteract(me, inp.interact);
+      this._handleInteract(me);
     } else {
       me = this.sim.players.get(this.localId);
       const inp = this._frozen(this.input2.read(me));
@@ -365,15 +399,12 @@ export class WorldScene extends Phaser.Scene {
         events = events.concat(this.sim.events);
         this.acc -= STEP; first = false;
       }
-      if (first) this._pendingInteract ||= inp.interact;
-      this._handleInteract(me, inp.interact || this._pendingInteract);
-      this._pendingInteract = false;
+      this._handleInteract(me);
       this._hostEvents(events);
       snap = this._lastSnap = { ...this.sim.snapshot(), events };
     }
     if (snap.map !== this.map.id && MAPS[snap.map]) { this._showMap(MAPS[snap.map]); this._onEnterMap(MAPS[snap.map]); }
     this._lastRendered = snap;
-    if (this.sayUntil && this.time.now > this.sayUntil) { this.box.setVisible(false); this.boxText.setVisible(false); this.sayUntil = 0; }
     this._render(snap);
   }
 
@@ -401,11 +432,16 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
-  _handleInteract(me, pressed) {
-    if (this.dlg) { this.hint.setText(''); return; }
-    const near = this._nearestObject(me);
-    this.hint.setText(near ? `[E] ${near.label}` : '');
-    if (!pressed || !near) return;
+  _handleInteract(me) {
+    if (this.dlg || this.menu) { this.hint.setText(''); return; }
+    const ptr = this.input.activePointer, wp = this.cameras.main.getWorldPoint(ptr.x, ptr.y);
+    const hover = this._objectAt(wp.x, wp.y);
+    const inReach = (o) => Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y) <= 34;
+    this.hint.setText(hover ? (inReach(hover) ? hover.label : `${hover.label} (too far)`) : '');
+    this.input.setDefaultCursor(hover && inReach(hover) ? 'pointer' : 'crosshair');
+    const near = this._clickedObj; this._clickedObj = null;
+    if (!near) return;
+    if (!inReach(near)) { this.hint.setText(`${near.label} (too far)`); return; }
     if (near.action === 'exit') {
       if (this.mode === 'client') this.net.send({ t: 'exit', obj: near.id });
       else this._tryExit(near);

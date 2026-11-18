@@ -13,7 +13,9 @@ export class InputReader {
     this._interactQueued = false;
     scene.input.keyboard.on('keydown-SPACE', () => { this._dodgeQueued = true; });
     scene.input.keyboard.on('keydown-SHIFT', () => { this._dodgeQueued = true; });
-    scene.input.keyboard.on('keydown-E', () => { this._interactQueued = true; });
+    // Interaction is by clicking objects (WorldScene). E closes panels / advances dialogue there.
+    this.blockAttack = false;   // set while a click was consumed by an object or UI; clears on release
+    scene.input.on('pointerup', () => { this.blockAttack = false; });
   }
 
   /** @param {{x:number,y:number}} from  world position the aim is measured from */
@@ -24,7 +26,7 @@ export class InputReader {
     const ptr = this.scene.input.activePointer;
     const wp = this.scene.cameras.main.getWorldPoint(ptr.x, ptr.y);
     inp.aim = Math.atan2(wp.y - from.y, wp.x - from.x);
-    inp.attack = ptr.leftButtonDown();
+    inp.attack = ptr.leftButtonDown() && !this.blockAttack;
     inp.fire = ptr.rightButtonDown();
     inp.dodge = this._dodgeQueued; this._dodgeQueued = false;
     inp.interact = this._interactQueued; this._interactQueued = false;
