@@ -170,6 +170,9 @@ export class WorldScene extends Phaser.Scene {
       }
       if (ev.key === 'e' || ev.key === 'E' || ev.key === ' ' || ev.key === 'Enter') {
         if (!this.dlg.choices.length && (this._typeShown ?? 0) < (this._typeFull?.length ?? 0)) { this._typeShown = this._typeFull.length; this._drawDialogue(); return; }
+        if (!this.dlg.choices.length && this._pages && this._page < this._pages.length - 1) {   // long line: next page first
+          this._page++; this._typeFull = this._pages[this._page]; this._typeShown = 0; this._lineAt = this.time.now; this._drawDialogue(); return;
+        }
         if (!this.dlg.choices.length && this.time.now - (this._lineAt ?? 0) > 220) this.dlg.advance();
         this._drawDialogue();
       }
@@ -221,6 +224,7 @@ export class WorldScene extends Phaser.Scene {
     const id = (who || '').toLowerCase();
     const isRoommate = ['michael', 'trevor', 'manuel'].includes(id) && this.textures.exists(id);
     const isPork = (id === 'pork' || id === 'john pork' || id === 'text: john pork') && this.textures.exists('principals');
+    if (!who) { this.dlgPortraitBg.setVisible(false); this.dlgPortrait.setVisible(false); this.dlgInitial.setText(''); this._porkTalking = false; this.dlgBg.setStrokeStyle(1, 0xf2a6b8); return; }   // narration: no portrait
     this.dlgPortraitBg.setVisible(true);
     this._porkTalking = isPork;
     this.dlgBg.setStrokeStyle(1, isPork ? 0xd65db1 : 0xf2a6b8);
@@ -241,13 +245,14 @@ export class WorldScene extends Phaser.Scene {
     if (!this.dlg || !this._porkTalking) { if (this.dlgBg && this.dlgBg.x !== VIEW.w / 2) this.dlgBg.setX(VIEW.w / 2); return; }
     const j = Math.random() < 0.15 ? (Math.random() * 4 - 2) : 0;
     this.dlgBg.setX(VIEW.w / 2 + j); this.dlgText.setX(76 + j);
+    if (j) this._renderDlgText();
     if (Math.random() < 0.04) this.cameras.main.shake(60, 0.002);
   }
 
   _tickTypewriter(dt) {
     if (!this.dlg || this._typeFull == null || this._typeShown >= this._typeFull.length) return;
     this._typeShown = Math.min(this._typeFull.length, this._typeShown + dt * 55);
-    this.dlgText.setText(this._typeFull.slice(0, Math.floor(this._typeShown)));
+    this._renderDlgText();
   }
 
   // Minimum time a line stays up before a click can skip it: base + reading time, capped.
@@ -257,7 +262,9 @@ export class WorldScene extends Phaser.Scene {
 
   _drawDialogue() {
     const d = this.dlg, on = !!d && !d.done;
-    [this.dlgBg, this.dlgWho, this.dlgText, ...this.dlgChoices].forEach((o) => o.setVisible(on));
+    [this.dlgBg, this.dlgWho, ...this.dlgChoices].forEach((o) => o.setVisible(on));
+    this.dlgText.setVisible(false);   // body text is drawn by _renderDlgText (pages + highlights)
+    if (!on || d.choices.length) this._hideRich();
     if (!on) { this.dlgTimer?.setVisible(false); this.dlgPortrait.setVisible(false); this.dlgPortraitBg.setVisible(false); this.dlgInitial.setText(''); }
     if (d && d.done) { this.dlg = null; if (this.dlgVoiced) hush(); this.dlgVoiced = false; const cb = this.dlgDone; this.dlgDone = null; cb?.(); return; }
     if (!on) return;
@@ -276,7 +283,7 @@ export class WorldScene extends Phaser.Scene {
         this._choiceTick ??= this.time.addEvent({ delay: 250, loop: true, callback: () => { if (this.dlg?.choices.some((c) => c.timeout)) this._drawDialogue(); } });
       } else this.dlgWho.setText('');
       this.dlgPortrait.setVisible(false); this.dlgPortraitBg.setVisible(false); this.dlgInitial.setText('');
-      this.dlgText.setText('');
+      this.dlgText.setText(''); this._hideRich(); this.dlgMore?.setVisible(false);
       this.dlgChoices.forEach((t, i) => t.setText(choices[i] ? `${i + 1}. ${choices[i].text.replace(/\*/g, '')}` : '').setVisible(!!choices[i]));
     } else {
       const line = d.line;
@@ -289,13 +296,86 @@ export class WorldScene extends Phaser.Scene {
           const texts = (this.save.world.phone ??= { texts: [] }).texts;
           if (!texts.some((t) => t.text === line.text)) texts.push({ from: 'John Pork', text: line.text, at: new Date().toISOString() });
         } else if (line.who && !(this.dlgVoiced && speak(line.who, line.text))) babble(line.who, line.text);
-        this._typeFull = (line.text ?? '').replace(/\*([^*]+)\*/g, '$1'); this._typeShown = 0;
+        this._pages = this._paginate((line.text ?? '').replace(/\*([^*]+)\*/g, '$1'), this.dlgMeasure, 4);
+        this._page = 0; this._typeFull = this._pages[0]; this._typeShown = 0;
         this._setPortrait(line.who);
       }
-      this.dlgText.setText((this._typeFull ?? '').slice(0, Math.floor(this._typeShown ?? 0)));
+      this._dlgBase = line && !line.who ? '#9aa3c7' : '#e8e8f0';
+      this._renderDlgText();
       this.dlgChoices.forEach((t) => t.setVisible(false));
     }
     this._layoutDialogue(choices.length > 0);
+  }
+
+  // Split text into pages of `maxLines` wrapped lines, measured with the box's own font and width.
+  _paginate(text, measure, maxLines) {
+    const lines = measure.getWrappedText(text).map((l) => l.replace(/\s+$/, ''));
+    const pages = [];
+    for (let i = 0; i < lines.length; i += maxLines) pages.push(lines.slice(i, i + maxLines).join('\n'));
+    return pages.length ? pages : [''];
+  }
+
+  // Quest-important words in gold: anything a writer wraps in {braces}, plus names of people and
+  // places, and the plot's key objects. Built once from the maps.
+  _hiWords() {
+    if (this._hiRx !== undefined) return this._hiRx;
+    const words = new Set(['orange balloon', 'the balloon', 'balloon', 'helium', 'sniffer', 'switchyard', 'storm grate', 'grate', 'the platform', 'Green Line', 'John Pork', 'Pork', 'Fab #1', 'Fab #2', 'Room 631', '631']);
+    for (const m of Object.values(MAPS)) {
+      if (m.name) words.add(m.name.split(',')[0]);
+      for (const o of m.objects) if (o.npc && o.label) words.add(o.label.replace(/\s*\(.*\)\s*/g, '').trim());
+    }
+    const list = [...words].filter((w) => w.length > 2 && !/^(Rotter|Student)/.test(w)).sort((a, b) => b.length - a.length)
+      .map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    this._hiRx = list.length ? new RegExp(`(^|[^A-Za-z])(${list.join('|')})(?![A-Za-z])`, 'g') : null;
+    return this._hiRx;
+  }
+
+  _hiMask(text) {
+    // {marked} spans first (braces removed), then the keyword list.
+    let plain = '', mask = [];
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] === '{') { const j = text.indexOf('}', i); if (j > i) { const inner = text.slice(i + 1, j); plain += inner; mask.push(...Array(inner.length).fill(true)); i = j; continue; } }
+      plain += text[i]; mask.push(false);
+    }
+    const rx = this._hiWords();
+    if (rx) { rx.lastIndex = 0; let m; while ((m = rx.exec(plain))) { const st = m.index + m[1].length; for (let k = st; k < st + m[2].length; k++) mask[k] = true; } }
+    return { plain, mask };
+  }
+
+  _hideRich() { for (const t of this._rich ?? []) t.setVisible(false); }
+
+  // Draw the current page with the typewriter cut-off: runs of normal and highlighted text as
+  // separate Text objects laid out left to right, line by line.
+  _renderDlgText() {
+    if (!this.dlg || this.dlg.choices.length) return this._hideRich();
+    const full = this._typeFull ?? '', shown = Math.floor(this._typeShown ?? 0);
+    const { plain, mask } = this._hiMask(full);
+    const style = { ...FONT, fontSize: '9px' };
+    this._rich ??= [];
+    let used = 0;
+    const seg = (str, color, x, y) => {
+      let t = this._rich[used];
+      if (!t) { t = this.add.text(0, 0, '', style).setScrollFactor(0).setDepth(9501); this._rich.push(t); }
+      used++;
+      t.setText(str).setColor(color).setPosition(x, y).setVisible(true);
+      return t.width;
+    };
+    this._lineH ??= (() => { this.dlgMeasure.setText('A\nA'); const h2 = this.dlgMeasure.height; this.dlgMeasure.setText('A'); return h2 - this.dlgMeasure.height; })();
+    const x0 = this.dlgText.x, y0 = this._dlgTop ?? this.dlgText.y, base = this._dlgBase ?? '#e8e8f0', hi = '#ffd27f';
+    let i = 0, line = 0, x = x0, run = '', runHi = null;
+    const flush = () => { if (run) x += seg(run, runHi ? hi : base, x, y0 + line * this._lineH); run = ''; };
+    for (; i < plain.length && i < shown; i++) {
+      const ch = plain[i];
+      if (ch === '\n') { flush(); line++; x = x0; runHi = null; continue; }
+      if (runHi !== null && mask[i] !== runHi) flush();
+      runHi = mask[i]; run += ch;
+    }
+    flush();
+    for (let k = used; k < this._rich.length; k++) this._rich[k].setVisible(false);
+    // "more" marker when this line has another page
+    this.dlgMore ??= this.add.text(0, 0, '▼', { ...FONT, fontSize: '8px', color: '#ffb347' }).setOrigin(1, 0).setScrollFactor(0).setDepth(9502);
+    const more = this._pages && this._page < this._pages.length - 1 && shown >= full.length;
+    this.dlgMore.setVisible(!!more).setAlpha(0.6 + 0.4 * Math.sin(this.time.now / 150));
   }
 
   // The box grows upward to fit its content (measured against the FULL line, so the typewriter
@@ -306,7 +386,7 @@ export class WorldScene extends Phaser.Scene {
     if (isChoices) {
       h = 14 + this.dlgChoices.filter((t) => t.visible).reduce((sum, t) => sum + t.height + 3, 0);
     } else {
-      this.dlgMeasure.setText(this._typeFull ?? '');
+      this.dlgMeasure.setText('A\nA\nA\nA');   // a full 4-line page: the box never jumps between lines
       h = 24 + this.dlgMeasure.height;
     }
     h = Math.max(60, Math.min(H - 40, Math.ceil(h)));
@@ -315,7 +395,8 @@ export class WorldScene extends Phaser.Scene {
     this.dlgBg.geom.setSize?.(W - 40, h); this.dlgBg.updateDisplayOrigin?.();
     this.dlgWho.setY(top + 6);
     this.dlgTimer?.setPosition(W - 30, top + 6);
-    this.dlgText.setY(top + 17);
+    this.dlgText.setY(top + 17); this._dlgTop = top + 17;
+    this.dlgMore?.setPosition(W - 30, top + h - 12);
     let y = top + 7;
     for (const t of this.dlgChoices) { if (!t.visible) continue; t.setY(y); y += t.height + 3; }
     const py = top + 30;
@@ -555,6 +636,7 @@ export class WorldScene extends Phaser.Scene {
     kb.on('keydown-ESC', () => { if (this.dlg) return; if (this.gameMenu?.held != null) { this.gameMenu.held = null; this.gameMenu.refresh(); return; } if (this.puzzle && !this.puzzle.closed) { this.puzzle.destroy(); this.puzzle = null; return; } this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
     kb.on('keydown-I', () => { if (!this.dlg) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
     kb.on('keydown-K', () => { if (!this.dlg) this.menu === 'skills' ? this._closeMenu() : this.gameMenu.show('skills'); });
+    kb.on('keydown-J', () => { if (!this.dlg) this.menu === 'quests' ? this._closeMenu() : this.gameMenu.show('quests'); });
     kb.on('keydown-TAB', (ev) => { ev.preventDefault?.(); if (!this.dlg) this.menu === 'map' ? this._closeMenu() : this.gameMenu.show('map'); });
     kb.addCapture('TAB');
     for (const [key, dir] of [['A', -1], ['LEFT', -1], ['D', 1], ['RIGHT', 1]]) kb.on(`keydown-${key}`, () => { if (TABS.includes(this.menu)) this.gameMenu.cycle(dir); });
@@ -803,19 +885,51 @@ export class WorldScene extends Phaser.Scene {
     for (const q of QUESTS) {
       const st = qs[q.id];
       if (st.done) continue;
-      if (!st.started && q.start?.(f)) { st.started = true; this._toast(`New quest: ${q.title}`); }
+      if (!st.started && q.start?.(f)) { st.started = true; this._questBanner('NEW QUEST', q.title, q.stages[0]?.text); this._trackedQuest = q.id; }
       if (!st.started) continue;
       while (st.stage < q.stages.length && q.stages[st.stage].done(f, this.save)) {
         st.stage++;
-        if (st.stage < q.stages.length) this._toast(`${q.title}: ${q.stages[st.stage].text}`);
+        if (st.stage < q.stages.length) { this._questBanner('QUEST UPDATED', q.title, q.stages[st.stage].text); this._trackedQuest = q.id; }
       }
       if (st.stage >= q.stages.length) {
         st.done = true;
         if (this.mode !== 'client') { this.save.world.money = (this.save.world.money ?? 0) + (q.reward?.money ?? 0); for (const c of Object.values(this.save.party)) c.xp += q.reward?.xp ?? 0; if (q.reward?.item) Inv.add(this.save.party[this.character], q.reward.item); this._partyDirty = true; }
-        this._toast(`✓ Quest complete: ${q.title}`);
+        this._questBanner('QUEST COMPLETE', q.title, [q.reward?.money ? `+$${q.reward.money}` : '', q.reward?.xp ? `+${q.reward.xp} xp` : '', q.reward?.item ? ITEMS[q.reward.item]?.name : ''].filter(Boolean).join('   '));
+        if (this._trackedQuest === q.id) this._trackedQuest = null;
         if (q.reward?.line) this._say(q.reward.line);
       }
     }
+  }
+
+  // Quest banners: top centre, slide in, queued so none are lost. Gold heading, plain detail.
+  _questBanner(kind, title, detail) {
+    (this._qbQueue ??= []).push({ kind, title, detail });
+    if (!this._qbBusy) this._nextQuestBanner();
+  }
+
+  _nextQuestBanner() {
+    const b = this._qbQueue?.shift(); if (!b) { this._qbBusy = false; return; }
+    this._qbBusy = true;
+    const W = VIEW.w, w = 230, x = W / 2, y0 = -40, y1 = 26;
+    const done = b.kind === 'QUEST COMPLETE';
+    const c = this.add.container(x, y0).setScrollFactor(0).setDepth(9400);
+    const head = this.add.text(0, 6, b.kind, { heading: true, fontSize: '7px', color: done ? '#7fb069' : '#ffb347' }).setOrigin(0.5, 0);
+    const title = this.add.text(0, 15, b.title, { heading: true, fontSize: '11px', color: '#ffd27f' }).setOrigin(0.5, 0);
+    const det = this.add.text(0, 30, b.detail ?? '', { ...FONT, fontSize: '8px', color: '#e8e8f0', align: 'center', wordWrap: { width: w - 16 } }).setOrigin(0.5, 0);
+    const h = 36 + (b.detail ? det.height + 4 : 0);
+    const bg = this.add.graphics();
+    bg.fillStyle(0x0b0d16, 0.92).fillRoundedRect(-w / 2, 0, w, h, 4).lineStyle(1, done ? 0x7fb069 : 0xffb347, 0.9).strokeRoundedRect(-w / 2, 0, w, h, 4);
+    c.add([bg, head, title, det]);
+    sfx(done ? 'pickup' : 'swing');
+    this.tweens.add({ targets: c, y: y1, duration: 260, ease: 'Back.out' });
+    this.time.delayedCall(3400, () => this.tweens.add({ targets: c, y: y0 - h, alpha: 0, duration: 260, onComplete: () => { c.destroy(); this._nextQuestBanner(); } }));
+  }
+
+  // The objective you're working on, always on screen (main quest unless a side quest just moved).
+  _trackedObjective() {
+    const qs = questState(this.save);
+    const pick = (id) => { const q = QUESTS.find((x) => x.id === id), st = q && qs[q.id]; return q && st?.started && !st.done ? `${q.main ? '★' : '·'} ${q.stages[st.stage]?.text ?? ''}` : null; };
+    return pick(this._trackedQuest) ?? pick(QUESTS.find((q) => q.main)?.id) ?? '';
   }
 
   // ---------- fishing ----------
@@ -1020,7 +1134,7 @@ export class WorldScene extends Phaser.Scene {
       this._announce('You answer. The drumming stops mid-beat. The tall wooden figure tilts its head, listening to something only it can hear, and walks back into the dark.');
       // The sim clears its event list at the start of every step, so the 'kill' event answerSahur()
       // pushes from this key handler never reaches _fx. Start the ending from here instead.
-      if (!this._endingPlayed) { this._endingPlayed = true; this.time.delayedCall(2600, () => { this._closeSay(); this._playEnding(true); }); }
+      if (!this._endingPlayed) { this._endingPlayed = true; this.time.delayedCall(2600, () => { this._closeSayAll(); this._playEnding(true); }); }
     }
   }
 
@@ -1179,17 +1293,29 @@ export class WorldScene extends Phaser.Scene {
   // Descriptions stay up until E or a click outside the box.
   // The say box grows upward to fit its text (object descriptions, quest lines, hints), like the
   // dialogue box; past ~60% of the screen it caps and the font steps down a size.
+  // The say box (object text, quest pitches, hints): same text size always, paged at 6 lines;
+  // E or a click turns the page, and closes it after the last one.
   _say(text) {
     const W = VIEW.w, H = VIEW.h, bottom = H - 5;
-    this.boxText.setFontSize('8px').setText(text).setVisible(true);
-    if (this.boxText.height > H * 0.6) this.boxText.setFontSize('7px');
-    const h = Math.max(34, Math.min(H * 0.66, this.boxText.height + 14));
+    this.boxText.setFontSize('8px');
+    this._sayPages = this._paginate(String(text ?? ''), this.boxText, 6); this._sayPage = 0;
+    this.boxText.setText(this._sayPages[0] + (this._sayPages.length > 1 ? `   ▼ 1/${this._sayPages.length}` : '')).setVisible(true);
+    const h = Math.max(34, this.boxText.height + 14);
     this.box.setSize(W - 20, h).setPosition(W / 2, bottom - h / 2).setVisible(true);
     this.box.geom?.setSize?.(W - 20, h); this.box.updateDisplayOrigin?.();
     this.boxText.setY(bottom - h + 7);
     this.sayOpen = true;
   }
-  _closeSay() { this.box.setVisible(false); this.boxText.setVisible(false); this.sayOpen = false; }
+  _closeSayAll() { this._sayPages = null; this.box.setVisible(false); this.boxText.setVisible(false); this.sayOpen = false; }
+  _closeSay() {
+    if (this._sayPages && this._sayPage < this._sayPages.length - 1) {   // next page first
+      this._sayPage++;
+      const n = this._sayPages.length, last = this._sayPage === n - 1;
+      this.boxText.setText(this._sayPages[this._sayPage] + (last ? '' : `   ▼ ${this._sayPage + 1}/${n}`));
+      return;
+    }
+    this._closeSayAll();
+  }
 
   _objectAt(wx, wy) {
     return this.map.objects.find((o) => wx >= o.x * TILE - 2 && wx < o.x * TILE + TILE + 2 && wy >= o.y * TILE - 2 && wy < o.y * TILE + TILE + 2);
@@ -1712,6 +1838,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.menu || this.dlg) return;
     const w = Math.min(100, this.map.w * 2), h = Math.min(40, this.map.h * 2);
     this.drawAreaMap(g, VIEW.w - w - 6, 44, w, h, snap);
+    this.minimapBottom = 44 + h;
   }
 
   // Boss name card: big, centered, then it gets out of the way.
@@ -1879,6 +2006,9 @@ export class WorldScene extends Phaser.Scene {
     // Top-right: XP and money, compact.
     const lines = [`xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `   ◆ ${c.skillPoints} skill pt [K]` : ''}`, `$${this.save.world.money ?? 0}${snap.enemies?.length ? `   coderot ${snap.enemies.length}` : ''}`];
     this.hudText.setText(lines.join('\n'));
+    this.objText ??= this.add.text(VIEW.w - 6, 60, '', { ...FONT, fontSize: '7px', color: '#ffd27f', align: 'right', wordWrap: { width: 130 } }).setOrigin(1, 0).setScrollFactor(0).setDepth(9001);
+    const obj = this._trackedObjective();
+    this.objText.setText(obj ? `${obj}\n[J] quests` : '').setY((this.minimapBottom ?? 56) + 4).setVisible(!this.menu && !this.dlg);
     this._drawHotbar();
     // Door gathering message overrides the prompt.
     const waiting = snap.players.filter((p) => p.w);
