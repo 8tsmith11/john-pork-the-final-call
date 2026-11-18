@@ -124,6 +124,50 @@ def coin():
 def figure():
     return I().disc(8, 5, 3, "pork1").pts("night0", (7, 4), (9, 4)).pts("pork0", (7, 6), (8, 6), (9, 6)).rect(6, 8, 5, 5, "night3").rect(6, 13, 2, 2, "night2").rect(9, 13, 2, 2, "night2")
 
+# D-014 items (BagelMeister): instruments, gifts, the new armor/gear slots, backpacks, uniques.
+def guitar(body, edge, center):
+    return I().disc(5, 11, 3, edge).disc(5, 11, 2, body).disc(8, 8, 2, edge).disc(8, 8, 1, body).px(5, 11, center).line(9, 7, 13, 2, "warm1").rect(12, 1, 3, 2, "warm0").line(9, 8, 13, 3, "bone")
+
+def boot(top, toe, sole="night2"):
+    return I().rect(5, 3, 4, 8, top).rect(5, 10, 8, 3, top).rect(10, 10, 3, 3, toe).rect(5, 13, 8, 1, sole)
+
+def pack(body, flap):
+    return I().rect(4, 4, 8, 10, body).rect(4, 4, 8, 3, flap).rect(6, 9, 4, 3, flap).pts("night2", (7, 7), (8, 7))
+
+def glove(c, cuff, tip=None):
+    g = I().rect(4, 7, 7, 6, c).rect(4, 13, 7, 2, cuff)
+    for x in (4, 6, 8, 10): g.rect(x, 3 if x in (6, 8) else 4, 1, 4, c)
+    g.rect(11, 8, 2, 3, c)
+    if tip: g.pts(tip, (4, 4), (6, 3), (8, 3), (10, 4), (12, 8))
+    return g
+
+def sock(c, stripe, heel):
+    return I().rect(6, 2, 4, 9, c).rect(6, 10, 7, 4, c).rect(11, 11, 2, 3, heel).rect(6, 3, 4, 1, stripe).rect(6, 5, 4, 1, stripe)
+
+D014 = {
+    "item.guitar_electric": lambda: guitar("warm3", "warm1", "warm4").pts("steel", (6, 12), (4, 10)),
+    "item.guitar_acoustic": lambda: guitar("warm2", "warm1", "night0"),
+    "item.flowers": lambda: I().line(6, 6, 7, 13, "yerba1").line(9, 6, 8, 13, "yerba1").line(11, 7, 9, 13, "yerba0").disc(6, 5, 2, "signal").disc(9, 4, 2, "pork1").disc(11, 6, 2, "balloon1").rect(5, 11, 6, 4, "bone").pts("concrete3", (6, 12), (9, 13)),
+    "item.chocolates": lambda: I().disc(6, 7, 3, "signal").disc(10, 7, 3, "signal").line(3, 8, 8, 13, "signal").line(13, 8, 8, 13, "signal").rect(5, 8, 7, 3, "signal").rect(7, 9, 3, 3, "signal").line(8, 4, 8, 12, "bone").line(4, 8, 12, 8, "bone"),
+    "item.bike_helmet": lambda: I().disc(8, 10, 6, "tub1").rect(1, 11, 15, 5, None).rect(2, 10, 12, 1, "tub0").rect(11, 9, 4, 2, "night3").pts("night2", (5, 7), (8, 5), (11, 7)).pts("bone", (4, 8), (5, 6)),
+    "item.hardhat": lambda: I().disc(8, 9, 5, "warm4").rect(2, 10, 13, 5, None).rect(2, 9, 12, 2, "warm3").line(8, 4, 8, 8, "warm3"),
+    "item.work_pants": lambda: I().rect(4, 2, 8, 3, "warm2").rect(4, 5, 3, 10, "warm2").rect(9, 5, 3, 10, "warm2").rect(4, 9, 3, 2, "warm1").rect(9, 9, 3, 2, "warm1").rect(4, 2, 8, 1, "warm1"),
+    "item.steel_toes": lambda: boot("warm1", "steel"),
+    "item.sneakers": lambda: boot("bone", "bone", "tub1").line(5, 11, 9, 11, "tub0").pts("signal", (6, 5), (7, 7)),
+    "item.welding_goggles": lambda: I().rect(1, 7, 14, 2, "night3").disc(5, 8, 3, "steel").disc(11, 8, 3, "steel").disc(5, 8, 2, "screen0").disc(11, 8, 2, "screen0").pts("screen2", (4, 7), (10, 7)),
+    "item.rain_parka": lambda: I().disc(8, 4, 3, "warm4").rect(3, 6, 10, 9, "warm4").rect(6, 4, 4, 3, "night2").line(8, 7, 8, 14, "warm3").rect(2, 7, 2, 6, "warm3").rect(12, 7, 2, 6, "warm3"),
+    "item.work_gloves": lambda: glove("warm3", "warm1"),
+    "item.wool_socks": lambda: sock("soft1", "bone", "soft0"),
+    "item.pack_coolant": lambda: pack("concrete2", "concrete1").line(3, 5, 3, 13, "screen1").line(12, 5, 12, 13, "screen2").pts("screen2", (8, 10)),
+    "item.pack_drone": lambda: pack("night3", "night2").rect(5, 1, 6, 2, "steel").pts("steel", (4, 1), (11, 1)).px(8, 2, "signal"),
+    "item.pack_capacitor": lambda: pack("concrete1", "night3").rect(5, 8, 6, 5, "rot1").line(9, 8, 7, 11, "night0").line(7, 11, 9, 11, "night0").line(9, 11, 7, 13, "night0"),
+    # Michael's uniques
+    "item.winged_boots": lambda: boot("bone", "bone", "balloon0").pts("bone", (3, 4), (2, 5), (3, 6), (2, 7), (4, 5), (4, 6)).pts("balloon1", (13, 13), (14, 12), (12, 14)).rect(5, 8, 4, 1, "warm4"),
+    "item.cowboy_hat": lambda: I().rect(1, 10, 14, 2, "warm4").rect(4, 5, 8, 6, "warm4").rect(4, 9, 8, 1, "warm1").pts("warm3", (7, 5), (8, 5), (6, 6), (9, 6)).pts("warm3", (1, 10), (14, 10)),
+    "item.smoky_socks": lambda: sock("concrete3", "concrete2", "concrete2").pts("yerba0", (6, 8), (7, 7), (8, 8), (9, 7)).pts("bone", (7, 6)),
+    "item.signal_gloves": lambda: glove("night3", "night2", "screen2").pts("screen1", (6, 9), (7, 10), (8, 9)),
+}
+
 ICONS = {
     "item.wooden_bat": bat, "item.fab_launcher": launcher, "item.mesh_vest": vest, "item.sniffer": sniffer,
     "item.charm_1901": charm, "item.pork_pin": pin, "item.mate_flask": mate,
@@ -143,6 +187,7 @@ ICONS = {
     "item.nail_gun": lambda: I().rect(3, 5, 9, 4, "warm3").rect(11, 6, 3, 2, "steel").rect(5, 9, 3, 4, "night3").pts("night2", (4, 6), (6, 6)).pts("steel", (14, 7)),
     "item.scattergun": lambda: I().rect(2, 6, 12, 3, "night3").rect(2, 6, 12, 1, "concrete2").rect(4, 9, 3, 4, "warm1").pts("rot0", (12, 7), (13, 7), (10, 5)),
     "item.relic_phone": phone, "item.relic_coin": coin, "item.relic_figure": figure,
+    **D014,
     "generic": lambda: I().rect(4, 4, 8, 8, "concrete2").rect(4, 4, 8, 1, "concrete3").pts("night2", (7, 7), (8, 7), (7, 8), (8, 8)),
 }
 
