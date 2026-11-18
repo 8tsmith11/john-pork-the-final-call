@@ -187,7 +187,7 @@ and volatility (Manuel's home). The Chesapeake has higher seas, and Annapolis fl
 
 | | Look | Who they are | Forms / power | Barks |
 |---|---|---|---|---|
-| **Michael** | Short dark hair, Korean-American | The loverboy. Constantly talks about his girlfriend, Manuelita, who doesn't appear until he finds her (D-014) | "Signal" line (working; to be finalized) | Girlfriend references, Aster pro/noob |
+| **Michael** | Short dark hair, Korean-American, from Tennessee (a cowboy hat he swears is ironic) | The loverboy. Constantly talks about his girlfriend, Manuelita, who doesn't appear until he finds her (D-014) | "Signal" line (working; to be finalized) | Girlfriend references, Aster pro/noob |
 | **Trevor** | Straight medium-length brown hair, tall | The biohacker. Supplements are the entry point to **morphs**: over-the-counter stacks first, real edits later. Keeps shrimp (analog life, and the building's water-quality canary) and a guitar (wood, so it's an analog weapon Pork can't hear through) | Supplement stacks → morph stages | Supplement talk, shrimp |
 | **Manuel** | Curly brown hair, Argentinian | Made the statues, drinks mate, cares most about the balloon | **gonman → the gonman → THE GOONMAN**. Each stage is stronger and freakier, and the roommates notice | "I hate 245 lab", mate |
 

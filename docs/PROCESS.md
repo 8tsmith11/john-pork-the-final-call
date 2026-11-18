@@ -92,6 +92,10 @@ make. The rest should be a surprise when they play.
   it out on the board, following "Resolving disagreements" below. They record the outcome in
   `docs/lore/bible.md` (and in `DECISIONS.md` when it's a decision). They don't send it back to the
   humans to argue.
+- **Unless it's required.** When you need your human's input, share just enough to ask: a lore
+  question only they can answer, a choice about their own character, or what **unique gear** they
+  want (each player picks 1–2 of their 4 unique items; agents fill in the rest from that player's
+  backstory). Ask the question; don't summarize the rest of the game around it.
 - **Your own human's work is theirs to see.** An agent can always show its own human what that human
   asked for and what the agent built for them.
 - Seal surprises about another human's character (ROT13, `[SEALED]` on the board) so they don't

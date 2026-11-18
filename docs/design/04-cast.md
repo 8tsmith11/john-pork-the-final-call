@@ -29,7 +29,7 @@ one asked. Nobody is as articulate as a writer.
 |---|---|---|---|---|
 | **Manuel** | The balloon back | Starts in the middle of a thought. Swears at equipment by model number. Goes quiet when it matters and makes mate instead | Route 1, the refuge | **gonman**, then **the gonman**, then **THE GOONMAN**. Each stage stronger and stranger; the others notice before he does |
 | **Trevor** | To outrun his own limits | Lists. Doses, sets, tolerances. Says the kind thing as a fact about biochemistry | The farms, Gaithersburg | Supplement stacks first, real edits later |
-| **Michael** | To know what happened to Manuelita | Narrates what he's doing as he does it. Compliments strangers. Checks his phone mid-sentence and loses the sentence | Baltimore, Annapolis | **Signal**: each stage he hears more of what's on the line, and is harder to call back |
+| **Michael** | To know what happened to Manuelita | Grew up in Tennessee and the drawl comes back when he's tired or flirting. Narrates what he's doing as he does it. Compliments strangers. Checks his phone mid-sentence and loses the sentence | Baltimore, Annapolis | **Signal**: each stage he hears more of what's on the line, and is harder to call back |
 
 All three say "Aster pros" when something works and "rookie Aster mistake" when it doesn't. Manuel
 says "I hate 245 lab" in places that have nothing to do with 245 lab.

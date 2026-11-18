@@ -52,7 +52,7 @@ class C:
 
 
 def woman(*, skin, hair, hair_d, top, top_d, skirt, skirt_d, legs="skin1", shoes="night2",
-          long_hair=True, blush=None, accent=None, glasses=False, bun=False, frame=0):
+          long_hair=True, blush=None, accent=None, glasses=False, bun=False, bangs=False, mono_eyes=False, frame=0):
     """A standing woman, facing the camera. frame 1 = blink + a little sway of the hair."""
     c = C()
     head_y = 3
@@ -63,9 +63,15 @@ def woman(*, skin, hair, hair_d, top, top_d, skirt, skirt_d, legs="skin1", shoes
         c.rect(6, head_y - 2, 4, 2, hair)
     # face
     c.rect(5, head_y + 1, 6, 6, skin).rect(5, head_y, 6, 2, hair).px(5, head_y + 2, hair).px(10, head_y + 2, hair)
+    if bangs:                                        # straight-cut fringe down to the brows
+        c.rect(5, head_y + 2, 6, 1, hair)
     ey = head_y + 4
     if frame == 1:
         c.pts("skin0", (6, ey), (9, ey))            # blink
+        if mono_eyes:
+            c.pts("skin0", (7, ey), (8, ey))
+    elif mono_eyes:                                  # narrow almond eyes: a 2-px dark line each
+        c.pts("night0", (6, ey), (9, ey)).pts("night1", (6, ey - 1), (9, ey - 1))   # dark eye + lid line
     else:
         c.pts("night0", (6, ey), (9, ey))
     if glasses:
@@ -95,10 +101,11 @@ def F(name, **kw):
     FRAMES[f"{name}#1"] = woman(**kw, frame=1).rows()
 
 
-# Manuelita, Michael's girlfriend: "the prettiest girl in all the land". Long black hair with an
-# orange flower, a red dress, a little blush.
-F("npc.manuelita", skin="skin2", hair="night1", hair_d="night0", top="signal", top_d="soft0",
-  skirt="signal", skirt_d="soft0", legs="skin2", shoes="night1", blush="pork1", accent="balloon1")
+# Manuelita, Michael's girlfriend: "the prettiest girl in all the land". East Asian: long straight
+# black hair with a blunt fringe, almond eyes, fair skin; an orange flower, a red dress, a little blush.
+F("npc.manuelita", skin="skin3", hair="night1", hair_d="night0", top="signal", top_d="soft0",
+  skirt="signal", skirt_d="soft0", legs="skin3", shoes="night1", blush="pork2", accent="balloon1",
+  bangs=True, mono_eyes=True)
 # Brooke, Trevor's date: honey ponytail, denim jacket, a white skirt.
 F("npc.brooke", skin="skin3", hair="warm4", hair_d="warm3", top="tub1", top_d="tub0",
   skirt="bone", skirt_d="concrete3", legs="skin3", shoes="warm1", blush="pork2")
