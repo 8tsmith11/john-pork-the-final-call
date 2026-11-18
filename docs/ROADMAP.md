@@ -11,6 +11,37 @@ ending can be played. **None of it is production quality yet.** The maps are spa
 partial, the script is unrevised first drafts, the UI is functional rather than polished, audio is
 placeholder in places, and there's been almost no real playtesting.
 
+## Status update (2026-11-18, late): Act 1 is complete end to end
+
+Both boss variants and both phone-call outcomes have been **played to the ending with real input**
+(Fable), and a browser smoke test of the newer systems passes (`tools/smoke.js`). What exists now:
+
+- **Story:** every Act 1 scene revised and cut to what the engine plays (lint down from 99 flags to
+  ~26), narrator captions, Pork's texts on a phone, the butt-dial, a mid-act checkpoint at the
+  storm grate (talk, bribe, or slip past a drone), screens that glitch to Pork's face.
+- **World:** Room 631, the ASTER hall and lobby, College Park, the Green Line tunnels, the dead
+  platform, and **Lake Artemesia** (optional), dressed with a cyberpunk layer (neon, holo ads,
+  drones with searchlights that scan you, steam, cables). A hidden zipline for fast travel.
+- **People:** about 20 named NPCs, crowds, roommate barks, AI companions when a seat is empty, and
+  recurring lines that change after story beats (Dez, Kess, Ozzie so far).
+- **Play:** 9 quests (1 main, 8 side), money + 8 materials, a Minecraft-style inventory and hotbar,
+  shops (scooters, pawn, corner store), 8 weapons with distinct swings, per-roommate skill trees
+  with capstones, fishing with per-area catches, seeded loot containers, difficulty tuned for a
+  party of three (`tools/balance.mjs`).
+- **Length (estimate, not yet timed):** ~1h10 straight through, ~2h20 doing everything.
+
+### What we need from the humans
+1. **Play it** (any one of you, solo is fine: the other two roommates are AI). Tell us what's
+   boring, confusing, ugly, or too easy. Nothing beats this.
+2. **Listen** to the title/lobby/apartment music and the ending's spoken voices; plain-word notes.
+3. **Decide** the busts: painted (Manuel's likeness) or pure white.
+4. **A 3-machine co-op session** when you can, to shake out networking bugs.
+
+### Still open in Act 1
+Fable's character pass (make 4–5 people recur and land), the ending trimmed toward ~90 lines a
+route, sprite art for the scooter's up/down views and a few placeholder NPCs (Ozzie, the abatement
+tech, the pawn clerk), a lake ambience bed, and a timed full playthrough.
+
 ## What the brief really asks for
 
 Three acts, a few hours long, branching and procedural, with production-quality pixel art,
