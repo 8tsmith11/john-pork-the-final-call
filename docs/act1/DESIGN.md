@@ -11,7 +11,8 @@ every device rings: **JOHN PORK**. The trail leads into the Green Line tunnels, 
 drums at 3 a.m. It ends in a boss fight and a voiced cutscene that changes what the balloon means.
 
 **Scale:** local and regional, but significant. A rot outbreak in the tunnels threatens to get
-College Park sealed under quarantine. The wider world leaks in through news tickers, helium-sniffing
+College Park sealed under quarantine. The player hears it from Supervisor Pruitt in ASTER and from the
+notice at the cordon, and hears it's over after the boss. The wider world leaks in through news tickers, helium-sniffing
 vans, and lights moving on the northern horizon.
 
 ## Causal spine (but / therefore)
@@ -33,6 +34,7 @@ the tunnels is waiting. They win, **but** the balloon still isn't theirs to keep
 | 1. The building | ASTER floors, lobby, roof | Neighbors, the occupied bathroom, the super, the roof |
 | 2. Three leads (any order) | Metro plaza, Route 1, campus edge | **A.** The helium trail (print a sniffer at the fab). **B.** Halvard the fence (talk, trade, intimidate, or pick his lock). **C.** The lobby camera footage (a repair puzzle) |
 | 3. The Call | Anywhere | Every screen seizes. **Answer or Decline**, and it matters |
+| 3½. The cordon | The storm grate | An abatement tech is posted on the grate. Bluff, bribe, or wait for the drone |
 | 4. The descent | Green Line tunnels | Rot villains, puzzles, drumming getting closer |
 | 5. Boss | The dead platform | It **varies** with what you did |
 | 6. Ending | Platform → sky | A voiced cutscene, then the save |

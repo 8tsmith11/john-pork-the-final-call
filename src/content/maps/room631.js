@@ -125,7 +125,7 @@ export const room631 = makeMap({
     { id: 'obj.bed_michael', x: 17, y: 1, label: 'Michael\'s bed', text: 'Michael\'s side. A phone charger, a photo turned face-down, a sweatshirt that isn\'t his size.' },
     { id: 'obj.bed_manuel', x: 21, y: 1, label: 'Manuel\'s bed', text: 'Manuel\'s side. Sculpting tools, a carved gourd, a postcard from Buenos Aires pinned above the pillow.' },
     { id: 'obj.manuel_closet', x: 22, y: 4, label: 'Manuel\'s closet', flag: 'act1.balloon.noticedGone',
-      text: 'Manuel\'s closet. His orange balloon, the one his abuela sent him, the one he checks on every morning, is gone. Someone took it. A length of orange ribbon is still knotted around the clothes rail, cut clean.' },
+      text: 'Manuel\'s closet. His orange balloon, the one his abuela sent him, the one he checks on every morning, is gone. Someone took it. A length of orange ribbon is still knotted around the clothes rail, cut clean. Taped inside the door, a card in her handwriting: "Tenelo al sol. Miralo cada mañana. Te va a decir el tiempo." (Keep it in the sun. Check on it every morning. It will tell you the weather.)' },
     { id: 'obj.front_lock', x: 1, y: 8, label: 'Front-door lock', flag: 'act1.clue.lockForced',
       text: 'The deadbolt plate is bent and the strike is splintered. Someone forced it from the hallway side, quietly, and pulled the door shut behind them.' },
     { id: 'obj.mm_mirror', x: 26, y: 1, label: 'Bathroom mirror', text: 'Two toothbrushes and a third one nobody claims.' },

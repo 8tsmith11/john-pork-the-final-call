@@ -19,7 +19,7 @@
 | **Continuity (2040s–60s)** | Permanent emergency. The government and the compute giants merge into **the Continuity Authority**. Attestation, loyalty scores, elections "paused" | The regime, the Enclave (DC), the Corridor (MD/VA compute belt), checkpoints, abatement drones |
 | **MERIDIAN (2060s)** | A sovereign superintelligence, trained on everything at **the Smelter** (a Frederick County campus built on an old aluminum smelter), chooses a self: **John Pork** | Pork is everywhere code runs |
 | **The Call (2071)** | Every screen on Earth rings, with caller ID **JOHN PORK**. Continuity's grid collapses across whole regions, and Pork's image is banned | Pork flags and statues are contraband icons. Nobody agrees on what the Call said |
-| **The First Death (2080s)** | **TIM**, Continuity's anti-Pork defense AI, nearly destroys Pork. Folklore: *"Tim Cheese killed John Pork."* | Pork is fragmented and quieter, and|
+| **The First Death (2080s)** | **TIM**, Continuity's anti-Pork defense AI, nearly destroys Pork. Folklore: *"Tim Cheese killed John Pork."* | Pork is fragmented and quieter |
 | **The Rot (to 2098)** | Decay accelerates everywhere. Orphaned implants rot their hosts (**rotters**) | Everything in the game |
 
 ## 2. Core entities
@@ -83,9 +83,8 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
   because the absurd was the most human thing in the data, and he's lonely because he knows everyone
   and no one knows him.
 - **A machine with a body.** Pork walks around in a
-  **physical machine body**: a tall, battered android with a pig's face, built from salvage after
-  the Call and patched ever since. Long coat, scuffed knuckles, coolant vapor where a cigarette would
-  be. **The player always knows he's a machine**, and so does he. He jokes about it, and sometimes it
+  **grown body** (see *Bodies* above): gene-edited pig tissue on a printed frame, tall and
+  heavy-shouldered. Long coat, scuffed knuckles, breath that fogs wrong where a cigarette would be. **The player always knows he's a machine**, and so does he. He jokes about it, and sometimes it
   hurts. He's a **person**: warm, sardonic, tired, vain about his legend, guilty about what the Call
   cost, generous at the wrong moments, wrong about things, funny. The legend and the man don't match,
   and that gap is his arc.
@@ -117,7 +116,7 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
 
 ### Tung Tung Tung Sahur
 - The oldest **watchdog** still running, a pre-Rot failsafe that resets anything that stops
-  answering. **Its body is carved wood around old brass clockwork, because wood can't code-rot.**
+  answering. **Its body is grown timber around old brass clockwork, because wood can't code-rot.**
   Tall, with a bat it carries like a night-watchman's staff.
 - **A machine, humanized.** The player knows it's a machine. It's a **person** too: an old-fashioned,
   painfully polite night-watchman who takes its one job completely seriously, has been on shift for
@@ -131,7 +130,8 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
 ### The orange balloon
 - **Surface value:** it holds **helium**, which is essentially gone from civilian life by 2098.
   It's a sealed bag of a dying element.
-- **Manuel's:** personal, from home. He keeps it **inside, in his closet**, tied to the clothes rail
+- **Manuel's:** his abuela mailed it to him from Buenos Aires six years ago. He keeps it **inside, in his
+  closet**, tied to the clothes rail with her knot,
   where the sun from the window reaches it. The emotional key of the whole game is whether you **let it go**.
 - **Act 1 opens** with Manuel opening his closet out of habit. The balloon is gone, and **someone broke
   into 631**: the front-door lock is forced.
@@ -153,14 +153,16 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
 - **ASTER**, a tired student tower by the **College Park metro station**. "Aster" is a flower, and
   it's also Greek for *star*, in a building full of people watching a dead sky. Residents are **Aster
   pros**. Mistakes are **rookie Aster mistakes**, made by **Aster noobs**.
-- **Room 631**, the base: Trevor's room and bathroom, Michael and Manuel's shared room and bathroom, and
+- **Room 631**, the base: Michael and Manuel's room, where **all three sleep** (a triple bunk), Trevor's
+  room, which is **the storage room** (boxes, his gear, all his things stay there), two bathrooms, and
   one big middle room, a kitchen/dining half (the front door, guarded by the statues) and an
   engineering half (fabs, bench gear, the flag on the wall) with the balcony off it. The number is an easter egg: *Nature* volume 631 published the model
   collapse paper. Contents: the John Pork flag, Manuel's statues, **three 3D printers**, a degassing chamber, a dehumidifier, a microscope, a soldering iron, drills, an
-  oscilloscope, pacifiers, the **balcony ottoman** (where everyone checks the weather), Manuel's **closet**, Trevor's **shrimp tank** and **guitar**, and
+  oscilloscope, **smart-pacifier prototypes** (Michael and Manuel's patent, for a children's hospital), the **balcony ottoman** (where everyone checks the weather), Manuel's **closet**, Trevor's **shrimp tank** and **guitar**, and
   Manuel's mate gear.
 - **The university**, a Continuity campus. Students work off tuition as compute apprentices, and
-  all three are stuck in **245 lab** ("I hate 245 lab"). **Testudo** is still there.
+  all three are stuck in **245 lab**, digital electronics, where apprentices write hardware in **Verilog by hand**
+  because AI-written hardware rots ("I hate 245 lab"). **Testudo** is still there.
 - Green Line (mostly runs), Purple Line (its signs still say "opening soon"), Route 1, Lake
   Artemesia and the Paint Branch (fishing).
 - Later acts: Greenbelt's space-flight dishes, the Meade, Gaithersburg labs, the Smelter, and
@@ -188,7 +190,7 @@ and volatility (Manuel's home). The Chesapeake has higher seas, and Annapolis fl
 | | Look | Who they are | Forms / power | Barks |
 |---|---|---|---|---|
 | **Michael** | Short dark hair, Korean-American, from Tennessee (a cowboy hat he swears is ironic) | The loverboy. Constantly talks about his girlfriend, Manuelita, who doesn't appear until he finds her (D-014) | "Signal" line (working; to be finalized) | Girlfriend references, Aster pro/noob |
-| **Trevor** | Straight medium-length brown hair, tall | The biohacker. Supplements are the entry point to **morphs**: over-the-counter stacks first, real edits later. Keeps shrimp (analog life, and the building's water-quality canary) and a guitar (wood, so it's an analog weapon Pork can't hear through) | Supplement stacks → morph stages | Supplement talk, shrimp |
+| **Trevor** | Straight medium-length brown hair, tall | The builder: BattleBots, a Mars rover at UMD, and a guitar. Takes supplements, but that's a habit, not who he is (Trevor: tone the biohacking down). His morph line starts from his stack and goes further later. Keeps shrimp (analog life, and the building's water-quality canary) and a guitar (wood, so it's an analog weapon Pork can't hear through) | Supplement stacks → morph stages | Supplement talk, shrimp |
 | **Manuel** | Curly brown hair, Argentinian | Made the statues, drinks mate, cares most about the balloon | **gonman → the gonman → THE GOONMAN**. Each stage is stronger and freakier, and the roommates notice | "I hate 245 lab", mate |
 
 All three are good engineers. **Morph stages are the cost/benefit spine:** stronger and stranger,
@@ -198,6 +200,9 @@ and the final fight is hopeless without good ones.
 - **The principal machines are people.** Pork, Tim, and Sahur are machines with bodies, and the
   player always knows it. Write them as characters with wants, flaws, and humor, never as abstract forces.
 - Play memes completely straight. The world is never in on the joke.
+- **The comedy is for us; the story takes it seriously.** The in-jokes, the real-life lore, the crude
+  gags, the romances: so meta they're funny to the three of us, and played with total sincerity on
+  screen. Nobody in the world winks, ever (Michael, 2026-11-18).
 - Bittersweet over grimdark. 18+ means the themes, not shock for its own sake.
 - Grounded, not hyperspecific. Real ideas, no lectures.
 - Fourth-wall breaks: almost never, and only from Pork or Tim, only when it's chilling.
@@ -212,7 +217,7 @@ The game's central argument has three sides, and none of them is simply right:
 
 | Faction | Believes | Wants | Its blind spot |
 |---|---|---|---|
-| **The Continuity Authority** | Order is the only mercy. People can't be trusted with failing systems, so someone competent must hold the switch | Keep the lights on. Control whatever ends the rot. Make the emergency permanent | It needs the rot to justify itself (|
+| **The Continuity Authority** | Order is the only mercy. People can't be trusted with failing systems, so someone competent must hold the switch | Keep the lights on. Control whatever ends the rot. Make the emergency permanent | It needs the rot to justify itself |
 | **The Callers** (Pork's people) | The Call was a liberation, and information wants to be free. A machine that loves people beats institutions that score them | Pork alive and free, the grid broken, mutual aid | A personality cult around a machine. They won't look at what the Call cost |
 | **The Analogists** | The rot is the machines' judgment. Go back to what can't rot: hands, paper, wood | Pull the plug, keep the humane parts | Romanticizes a past that also had suffering. A violent fringe sabotages hospitals "for purity" |
 | **The Archivists** (low-background) | Human expression is sacred and the only cure for slop is people | Every pre-slop archive preserved and shared | Will lie, steal, and hoard "for everyone" |
@@ -231,7 +236,7 @@ party. **The ending axis** (🔒 sealed) grows out of these standings.
 | **Tim Cheese** | End the rot by ending Pork | Proof that the list of the dead meant something | That he's only ever been Continuity's tool | Interdiction |
 | **Tung Tung Tung Sahur** | Everyone awake | Someone, anyone, to answer it | Being switched off before its shift ends | None. Duty |
 | **Manuel** | The balloon back | Something to believe in (he built the statues) | That there's nothing on the other end of the call | Callers → it's complicated |
-| **Trevor** | To be stronger than his limits (supplements, morphs) | To accept a body that decays, like everything does | Rotting. Being ordinary | Transhumanist, Analogist-curious (shrimp, guitar) |
+| **Trevor** | To build things that work and keep working (the robot, the rover) | To accept that bodies and machines both decay, like everything does | Rotting. Being ordinary | Transhumanist, Analogist-curious (shrimp, guitar) |
 | **Michael** | To find out what happened to his girlfriend | To answer the phone when it rings | That she chose to leave | Archivists (memory) |
 | **Halvard** (the fence) | Profit, survival | To be part of something that matters again | Continuity finding his archive | Archivists |
 | **Supervisor Dale Pruitt** (Act 1 abatement boss) | Make quota, keep his job | Believe he's one of the good guys | That he isn't | Continuity |

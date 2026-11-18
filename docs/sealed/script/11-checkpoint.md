@@ -35,6 +35,10 @@ Syntf: frgf `npg1.pbeqba.cnffrq`, `npg1.pbeqba.ubj` (oyhss / oevor / qebar), `np
 
 #### raq
 
+*Gncrq gb gur pbbyre, n ynzvangrq abgvpr: DHNENAGVAR BEQRE CRAQVAT. PBYYRTR CNEX. ERNQVATF HAQRE ERIVRJ.*
+
+**GBOVA:** Vs gur wne pbzrf hc jebat, gung tbrf ba rirel qbbe va gur cbfgpbqr, naq gurl fgneg gur jnyy. Zl zbz'f ba Xabk Ebnq.
+
 Pubvprf:
 - [synt npg1.nfgre.srajvpxBeqre] "Jr'er jvgu gur ybpx pbagenpgbe. Jbex beqre ba fvk." -> pbeqba_oyhss
 - [zbarl >= 20] "Gjragl sbe lbhe biregvzr?" -> pbeqba_oevor

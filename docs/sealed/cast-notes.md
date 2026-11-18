@@ -4,7 +4,7 @@
 
 Pbzcnavba gb `qbpf/qrfvta/04-pnfg.zq`. Cebcbfrq, abg pnaba hagvy erivrjrq.
 
-## Znahryvgn Frb: jung fur urneq naq jurer fur vf
+## Znahryvgn Frb: jung fur urneq naq jurer fur vf (nyvtarq, gnfx #19)
 
 **Jung fur urneq.** Rvtug zbaguf orsber gur tnzr, Znahryvgn gbbx n pnyy ng ubzr. Vg jnf Wbua Cbex. Ur
 qvq abg fcrnx gb ure. Ur cynlrq ure n erpbeqvat: sbegl frpbaqf bs n ebbz, jvgu ibvprf va vg. Ur
@@ -16,18 +16,23 @@ unaq jnf n gvzr pbqr.
 cnegvphyne sna. Fur unq erfgberq gncr znqr va gung ohvyqvat. Fur jrag gb jbex, chyyrq gur
 ersrerapr, naq pbasvezrq vg. Gura fur jrag gb svaq gur ebbz.
 
-**Jurer fur vf (gjb nhguberq fgngrf, pubfra ol gur jbeyq frrq, obgu pbafvfgrag jvgu rirel Npg 1
-yvar):**
-- **Frrq N.** Fur vf nyvir naq vafvqr gur Zrnqr, uryq nf n jvgarff ol Inapr, jub arrqf gur fnzr
-  rne sbe gur fnzr ernfba. Zvpunry pna ernpu ure va Npg 3. Fur vf abg jnvgvat gb or erfphrq; fur
-  vf jbexvat, naq fur unf sbhaq fbzrguvat.
-- **Frrq O.** Fur vf qrnq, rvtug zbaguf ntb, ng gur fvgr. Ure ibvpr vf ba gur gncr fur jnf
-  pneelvat: gur ynfg guvat fur erpbeqrq vf ure fnlvat gur gvzr pbqr nybhq naq gura, bss-zvp,
-  "Zvpunry'f tbvat gb jnag gb urne guvf." Gur hacynlrq ibvprznvy ba uvf cubar vf sebz gung avtug.
+**Jurer fur vf (gjb nhguberq fgngrf, pubfra ol gur jbeyq frrq; fur vf NYVIR naq ernpunoyr va obgu,
+cre Zvpunry, Q-014 naq gnfx #19).** Obgu ner pbafvfgrag jvgu rirel Npg 1 yvar. Rvgure jnl Zvpunry
+svaqf ure qhevat **Npg 2** naq fur jnyxf jvgu gur cnegl sebz gura ba (`npg1.ebznapr.znahryvgn.erhavgrq`).
+- **Frrq N.** Fur vf vafvqr gur Zrnqr, uryq nf n jvgarff ol Inapr, jub arrqf gur fnzr rne sbe gur fnzr
+  ernfba. Fur vf abg jnvgvat gb or erfphrq: fur vf jbexvat, naq fur unf sbhaq fbzrguvat. Gur cnegl
+  ernpurf ure qhevat gur Npg 2 Zrnqr vasvygengvba; fur jnyxf bhg jvgu gurz.
+- **Frrq O.** Fur ernpurq gur fvgr naq arneyl qvqa'g yrnir vg. Rirelbar oryvrirf fur qvrq gurer rvtug
+  zbaguf ntb, Zvpunry vapyhqrq, unys gur gvzr. Fur vf uvqvat jvgu gur Nepuvivfgf va unys-qebjarq
+  Naancbyvf haqre nabgure anzr, orpnhfr gur crbcyr jub jnagrq gur Svefg Qrngu ohevrq nyfb jnag gur
+  bar rne gung pbhyq cebir vg. Ure ibvpr vf ba gur gncr fur yrsg oruvaq: gur gvzr pbqr, naq gura,
+  bss-zvp, "Zvpunry'f tbvat gb jnag gb urne guvf." Gung vf gur hacynlrq ibvprznvy ba uvf cubar. Jura
+  Zvpunry svanyyl cynlf vg va Npg 2, gur gvzr pbqr yrnqf uvz gb ure.
 
-**Jung qbrf abg unccra haqre rvgure frrq:** Zvpunry vf arire nfxrq gb fgbc ybivat ure, sbetrg
-ure, be "zbir ba" nf n yrffba. Haqre N ur svaqf ure punatrq naq unf gb zrrg gur crefba fur vf
-abj. Haqre O ur cynlf gur ibvprznvy. Rvgure jnl gur orng vf gung ur nafjref.
+**Jung qbrf abg unccra haqre rvgure frrq:** Zvpunry vf arire nfxrq gb fgbc ybivat ure, sbetrg ure,
+be "zbir ba" nf n yrffba. Haqre N ur svaqf ure punatrq naq unf gb zrrg gur crefba fur vf abj. Haqre
+O ur cynlf gur ibvprznvy, naq vg yrnqf uvz gb ure. Rvgure jnl gur orng vf gung **ur nafjref**, naq
+gur fgbel gerngf gurve erhavba jvgu pbzcyrgr frevbhfarff, ohssf naq nyy.
 
 **Npg 1 yvarf guvf fhccbegf (nyy gehr haqre obgu):** "Fur urneq fbzrguvat ba n pnyy." "Ure onqtr
 ybttrq va." "Fur jebgr fbzrguvat ba ure unaq." Gur snpr-qbja cubgb. Gur fjrngfuveg.

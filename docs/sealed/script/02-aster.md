@@ -174,4 +174,10 @@ abobql fnlf fb. Gehr haqre obgu frrq inevnagf.
 
 **CEHVGG:** Sbe jung vg'f jbegu, gur ebg'f pbzvat hc sebz haqre gur fgngvba. V chg gung va gur ercbeg. Gurl frag gur ercbeg onpx.
 
+**CEHVGG:** Vs vg xrrcf pyvzovat, gur beqre pbzrf qbja sbe nyy bs Pbyyrtr Cnex. Dhnenagvar. N jnyy ebhaq gur jubyr cbfgpbqr, abobql va be bhg.
+
+**ZVPUNRY:** Jura?
+
+**CEHVGG:** Gur ercbeg fnlf n jrrx. V jebgr gur ercbeg.
+
 *frg npg1.nfgre.cehvggJnearq*
