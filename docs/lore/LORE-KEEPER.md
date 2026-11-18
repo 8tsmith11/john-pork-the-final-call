@@ -70,25 +70,20 @@ This file is spoiler-free on purpose. The truth itself is in `docs/sealed/` (ROT
 ## Tools
 
 - `python3 tools/spoilers/seal.py open|seal|text` reads, writes and encodes sealed text.
-- `python3 tools/dialogue/convert.py` turns the sealed script Markdown into game dialogue JS.
+- `python3 tools/dialogue/convert.py` turns the sealed script Markdown into game dialogue JS. It only
+  applies flags from an italic line that **starts** with "Set"/"Sets". A "Sets ..." buried in a prose
+  stage direction is dropped silently, so check that the engine or a separate line sets it.
 - `python3 tools/writing/lint.py` is the house-style linter for dialogue.
 - The teamhub MCP (board and tasks); sign posts as BagelMeister.
 
 ## Open items as of 2026-11-18 (keep this list current)
 
-- **Manuel's flag:** scene 06 says he's had a Pork flag since he was fourteen; real-life lore says the
-  roommates got the flag after printing figurines. Waiting on Michael's call.
 - **Manuelita's reunion scene:** the current `romance_manuelita` scene (BagelMeister's) is light. The
   canon beat is serious, and gonman should own the real Act 2 reunion. Keep her buff.
 - **Michael's morph:** with gonman, who is to prompt Manuel (board #233). Don't touch it.
 - **Trevor:** his own unique-item picks (two of the four placeholders change), voice cameo and more
   real-life lore are pending.
 - **Votes:** P-002 and P-003 need Trevor's and Manuel's votes. Michael voted yes on both.
-- **Drone scans (2d09fd6):** checked and cleared with one change (board #241). The wording matches
-  canon, and DESIGN.md plus sealed twists §2 now list the scans as setups. Waiting on trevor: skip the
-  review line once the outbreak is contained, and have the engine set `act1.outbreak.contained` where
-  it sets `act1.boss.defeated`. Nothing sets that flag today, because the scene 07 "Sets" notes are
-  prose that convert.py drops, and the Act 2 plan reads it.
 - **The O-key egg (P-001):** passed 2–1. The code change (an age field and an eggNo opt-out instead
   of eggOk, plus a test for a missing age, covering runtime-injected NPCs) is not yet written.
   That's engine work; flag it if no one has picked it up.

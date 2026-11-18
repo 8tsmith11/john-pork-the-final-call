@@ -838,7 +838,7 @@ Pubvprf:
 
 **GERIBE:** "Uryyb" vf genqvgvbany.
 
-**ZNAHRY:** V'ir unq n synt bs uvz fvapr V jnf sbhegrra. "Uryyb" vfa'g rabhtu.
+**ZNAHRY:** Uvf synt vf ba bhe jnyy. "Uryyb" vfa'g rabhtu.
 
 #### vs fcrnxre=geribe
 
@@ -1332,4 +1332,4 @@ Ybj-serdhrapl onexf sbe gur erfg bs gur npg. Bar cre nern ng zbfg. Fxvc nal jubf
 - Cbex'f obql vf bayl uvagrq (sbbgfgrcf ba zrgny, "gur bar tbbq xarr," "n frnz," gur rkunyr). Abobql va gur cnegl pbapyhqrf nalguvat. Gur va-crefba erirny fgnlf jvgu gur raqvat.
 - Ab Gvz Purrfr. Ab Fnuhe ba fperra. Ab sbhegu-jnyy oernxf: gur UHQ birejevgr vf Cbex unpxvat gur cnegl'f ynpr naq cubarf, juvpu vf va-svpgvba.
 - Gur fybtna nccrnef bapr, oebxra, sebz n ebggre onex (`evat_ebggre`). Gur fvaprer qryvirel ol n znwbe punenpgre vf abg fcrag urer.
-- Vairagrq qrgnvyf gb pbasvez: Geribe'f cvyy pbhag (ur fnlf avar, Cbex fnlf ryrira, gjb ner qhcyvpngrf), Znahry unf unq n Cbex synt fvapr ur jnf sbhegrra, Cbex'f "frnz bcra fvapr Znepu," gur ZNVYOBK flfgrz ibvpr, gur ubyq ghar, naq Cbex'f guerr ybjrepnfr grkgf.
+- Vairagrq qrgnvyf gb pbasvez: Geribe'f cvyy pbhag (ur fnlf avar, Cbex fnlf ryrira, gjb ner qhcyvpngrf), Cbex'f "frnz bcra fvapr Znepu," gur ZNVYOBK flfgrz ibvpr, gur ubyq ghar, naq Cbex'f guerr ybjrepnfr grkgf. (Erfbyirq, Zvpunry 2026-11-18: gur Cbex synt vf gur ebbzzngrf' funerq bar ba gur ratvarrevat-ebbz jnyy, obhtug nsgre gurl fgnegrq cevagvat svthevarf; Znahry'f bja synt, va uvf ebbz, vf Netragvan'f. Gur byq "synt bs uvz fvapr V jnf sbhegrra" yvar vf tbar.)

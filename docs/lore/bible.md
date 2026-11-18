@@ -157,7 +157,7 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
   room, which is **the storage room** (boxes, his gear, all his things stay there), two bathrooms, and
   one big middle room, a kitchen/dining half (the front door, guarded by the statues) and an
   engineering half (fabs, bench gear, the flag on the wall) with the balcony off it. The number is an easter egg: *Nature* volume 631 published the model
-  collapse paper. Contents: the John Pork flag, Manuel's statues, **three 3D printers**, a degassing chamber, a dehumidifier, a microscope, a soldering iron, drills, an
+  collapse paper. Contents: the John Pork flag (the roommates' shared one, on the engineering-room wall), Manuel's own **Argentine flag** over his end of the room he shares with Michael, Manuel's statues, **three 3D printers**, a degassing chamber, a dehumidifier, a microscope, a soldering iron, drills, an
   oscilloscope, **smart-pacifier prototypes** (Michael and Manuel's patent, for a children's hospital), the **balcony ottoman** (where everyone checks the weather), Manuel's **closet**, Trevor's **shrimp tank** and **guitar**, and
   Manuel's mate gear.
 - **The university**, a Continuity campus. Students work off tuition as compute apprentices, and

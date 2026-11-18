@@ -163,7 +163,7 @@ znpuvarf ner pbzzbacynpr va 2098 (frr orybj). Gurfr guerr ner fvzcyl gur zbfg rk
   cebf**. Zvfgnxrf ner **ebbxvr Nfgre zvfgnxrf**, znqr ol **Nfgre abbof**.
 - **Ebbz 631**, gur onfr: Zvpunry naq Znahry'f ebbz, jurer **nyy guerr fyrrc** (n gevcyr ohax), naq
   Geribe'f ebbz, juvpu vf **gur fgbentr ebbz** (uvf guvatf fgnl gurer). Gur ahzore vf na rnfgre rtt: *Angher* ibyhzr 631 choyvfurq gur zbqry
-  pbyyncfr cncre. Pbagragf: gur Wbua Cbex synt, Znahry'f fgnghrf, **guerr 3Q cevagref** (🔒 bar vf
+  pbyyncfr cncre. Pbagragf: gur Wbua Cbex synt (gur ebbzzngrf' funerq bar, ba gur ratvarrevat-ebbz jnyy), Znahry'f bja **Netragvar synt** bire uvf raq bs gur ebbz ur funerf jvgu Zvpunry, Znahry'f fgnghrf, **guerr 3Q cevagref** (🔒 bar vf
   nyjnlf jnez), n qrtnffvat punzore, n qruhzvqvsvre, n zvpebfpbcr, n fbyqrevat veba, qevyyf, na
   bfpvyybfpbcr, **fzneg-cnpvsvre cebgbglcrf** (Zvpunry naq Znahry'f cngrag, sbe n puvyqera'f ubfcvgny), gur **onypbal bggbzna**, Geribe'f **fuevzc gnax** naq **thvgne**, naq
   Znahry'f zngr trne.

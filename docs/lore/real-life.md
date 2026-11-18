@@ -28,6 +28,9 @@ spoiler (see `PROCESS.md`).
 - **The 3D printer and Juan el Porko.** They got a new 3D printer and mostly use it to print John
   Pork figurines. That's what led the roommates (the "goonmates") to get a John Pork flag, and now
   everything in the apartment centers around Juan el Porko. *(Michael)*
+- **Two flags.** The John Pork flag is the roommates' shared one, on the engineering-room wall, and
+  it came after the figurines. Manuel's own flag, hanging in his room, is the **Argentine flag**.
+  *(Michael, 2026-11-18)*
 - **Room 631, ASTER, College Park, "Aster pros," "rookie Aster mistake," 245 lab, the John Pork
   flag and statues:** these come from the brief (`docs/BRIEF.md` §3 and the appendix).
 
