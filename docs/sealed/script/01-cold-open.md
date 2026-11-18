@@ -120,7 +120,7 @@ Arkg: -> pbyqbcra_qbbe
 
 **ZVPUNRY:** Bxnl. V'z jnyxvat gb gur qbbe. V'z whfg tbvat gb ybbx ng gur qbbe.
 
-*Gur sebag qbbe vf fuhg naq gur qrnqobyg vf guebja. Gur cyngr nebhaq vg vf orag bhg gbjneq gur unyyjnl, naq gurer vf oevtug zrgny jurer gur cnvag jnf.*
+*Gur sebag qbbe vf fuhg naq gur qrnqobyg vf guebja. Gur cyngr nebhaq vg vf orag bhg gbjneq gur unyyjnl, naq gurer vf oevtug zrgny jurer gur cnvag jnf. Ba gur orag rqtr, n fzrne bs benatr, gur benatr gurl cnvag nongrzrag inaf.*
 
 **ZVPUNRY:** Geri. Gung'f sebz bhgfvqr. Fbzrobql qvq gung sebz bhgfvqr.
 

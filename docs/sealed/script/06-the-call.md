@@ -816,7 +816,7 @@ Pubvprf:
 
 **GERIBE:** Jr'er va n ebggrq ghaary. V'z abg unaqvat zl vagresnpr gb n pnyyre va n ebggrq ghaary.
 
-**ZNAHRY:** Ur'f abg n pnyyre, ur'f gur pnyyre.
+**ZNAHRY:** Gung'f uvz. Gung'f gur bar jub pnyyf.
 
 **GERIBE:** Gung'f jbefr.
 
@@ -852,7 +852,7 @@ Pubvprf:
 
 **CBEX:** Gung fbhaqrq jbefr guna V zrnag vg.
 
-**CBEX:** Yvfgra. Gurer'f fbzrguvat qbja gurer gung xrrcf pbhag. V'z abg vg. V'z gur bar jub pnyyf.
+**CBEX:** Yvfgra. Gurer'f fbzrguvat qbja gurer gung xrrcf pbhag. Cvpx hc naq vg fgbcf pbhagvat.
 
 **CBEX:** Vg'f gur bar jub pbzrf jura lbh qba'g... ybbx. V'q cvpx hc. Vs V jrer lbh. Juvpu V'z abg. V purpxrq.
 
