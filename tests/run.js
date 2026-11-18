@@ -5,6 +5,7 @@ import { rollWorld } from '../src/engine/worldRolls.js';
 import { newSave, migrate, CURRENT_SCHEMA } from '../src/engine/save/schema.js';
 import { Sim, MOVE, emptyInput } from '../src/engine/sim.js';
 import { room631 } from '../src/content/maps/room631.js';
+import { MAPS as MAPS_FOR_TEST } from '../src/content/maps/index.js';
 
 let failed = 0;
 const test = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}\n     ${e.message}`); } };
@@ -55,6 +56,14 @@ test('sim: diagonal is not faster, walls block, dodge bursts', () => {
   assert.ok(p.x > 16, `went through wall: x=${p.x}`);
   const before = p.x; run({ mx: 1, dodge: true }, 1); run({ mx: 1 }, 12);
   assert.ok(p.x - before > MOVE.speed * 0.2 + 10, 'dodge should burst further than walking');
+});
+
+test('world is consistent: killed enemies stay dead on re-entry', () => {
+  const sim = new Sim(MAPS_FOR_TEST.tunnel_1, { seed: 's' }); sim.addPlayer('a', 'trevor');
+  const n = sim.enemies.size; const first = [...sim.enemies.values()][0];
+  sim._hurtEnemy(first, 999, 0, 0, 'a');
+  sim.setMap(MAPS_FOR_TEST.metro_plaza, 'tunnel_1'); sim.setMap(MAPS_FOR_TEST.tunnel_1, 'metro_plaza');
+  assert.equal(sim.enemies.size, n - 1);
 });
 
 const SCENES = ['cold_open', 'aster', 'lead_a_helium', 'lead_b_halvard', 'lead_c_footage', 'the_call', 'descent_and_boss', 'ending', 'first_death'];

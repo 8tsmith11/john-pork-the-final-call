@@ -21,6 +21,7 @@ export function emptyInput() {
 export class Sim {
   constructor(map, opts = {}) {
     this.seed = opts.seed ?? 'default';
+    this.killed = opts.killed ?? new Set();   // spawn keys of enemies already dead in this world
     this.map = map;          // { w, h, solid(tx, ty) -> bool, spawns: [{x,y}] }
     this.players = new Map(); // id -> player
     this.enemies = new Map(); // id -> enemy
@@ -51,25 +52,27 @@ export class Sim {
   }
 
   spawnEnemies() {
-    for (const e of this.map.enemies || []) {
+    for (const [i, e] of (this.map.enemies || []).entries()) {
+      const spawnKey = `${this.map.id}#${i}`;               // stable: the world remembers who you killed
+      if (this.killed?.has(spawnKey)) continue;
       const id = `e${this._nextId++}`;
       if (e.kind === 'boss.warden' && this.bossVariant === 'sahur') {
         // Tung Tung Tung Sahur: cannot be beaten by force. Answering the phone ends it (WorldScene).
         const def = { name: 'TUNG TUNG TUNG SAHUR', epithet: 'the Watchdog', color: 0xa0703c, radius: 9, hp: 99999, speed: 40, damage: 16,
           ai: 'sahur', xp: 80, touchCooldown: 0.9, modules: [] };
-        this.enemies.set(id, { id, kind: 'boss.sahur', def, boss: true, sahur: true, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 0.75, cd2: 2, beat: 0, hurtT: 0, kx: 0, ky: 0, dash: 0, root: 0, fightT: 0 });
+        this.enemies.set(id, { id, spawnKey, kind: 'boss.sahur', def, boss: true, sahur: true, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 0.75, cd2: 2, beat: 0, hurtT: 0, kx: 0, ky: 0, dash: 0, root: 0, fightT: 0 });
         this.events.push({ t: 'boss', name: def.name, epithet: def.epithet, sahur: true });
         continue;
       }
       if (e.kind === 'boss.warden') {
         const w = generateWarden(this.seed, Math.max(1, this.players.size));
         const def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
-        this.enemies.set(id, { id, kind: e.kind, def, boss: true, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 2, cd2: 3, hurtT: 0, kx: 0, ky: 0, dash: 0 });
+        this.enemies.set(id, { id, spawnKey, kind: e.kind, def, boss: true, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 2, cd2: 3, hurtT: 0, kx: 0, ky: 0, dash: 0 });
         this.events.push({ t: 'boss', name: w.name, epithet: w.epithet });
         continue;
       }
       const def = ENEMIES[e.kind];
-      this.enemies.set(id, { id, kind: e.kind, x: e.x, y: e.y, hp: def.hp, cd: Math.random(), hurtT: 0, kx: 0, ky: 0 });
+      this.enemies.set(id, { id, spawnKey, kind: e.kind, x: e.x, y: e.y, hp: def.hp, cd: Math.random(), hurtT: 0, kx: 0, ky: 0 });
     }
   }
 
@@ -198,7 +201,8 @@ export class Sim {
     this.events.push({ t: 'hit', x: e.x, y: e.y, dmg, target: e.id, by });
     if (e.hp <= 0) {
       this.enemies.delete(e.id);
-      this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss });
+      if (e.spawnKey) this.killed?.add(e.spawnKey);
+      this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss, key: e.spawnKey });
     }
   }
 
@@ -299,7 +303,7 @@ export class Sim {
   /** The party answers the phone mid-fight: the Sahur stops, tilts its head, and leaves. */
   answerSahur() {
     for (const e of this.enemies.values()) {
-      if (e.sahur && e.fightT > 10) { this.enemies.delete(e.id); this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, xp: 80, boss: true, sahurLeft: true }); return true; }
+      if (e.sahur && e.fightT > 10) { this.enemies.delete(e.id); if (e.spawnKey) this.killed?.add(e.spawnKey); this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, xp: 80, boss: true, sahurLeft: true }); return true; }
     }
     return false;
   }

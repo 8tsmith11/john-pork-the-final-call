@@ -38,7 +38,8 @@ export class WorldScene extends Phaser.Scene {
     setupCameras(this, { world: true });
     this.save = this.passedSave ?? (await loadAutosave().catch(() => null)) ?? this._newGame();
     const startMap = MAPS[this.save.world.area] ?? MAPS.room631;
-    this.sim = new Sim(startMap, { seed: this.save.world.seed });
+    this.save.world.killed ??= [];
+    this.sim = new Sim(startMap, { seed: this.save.world.seed, killed: new Set(this.save.world.killed) });
     this.localId = this.mode === 'client' ? this.net.id : 'host';
     this.remoteInputs = new Map();
     this.snapBuf = [];
@@ -534,6 +535,7 @@ export class WorldScene extends Phaser.Scene {
       }
       if (ev.t === 'door') sfx('swing');
       if (ev.t === 'kill') {
+        if (ev.key && !this.save.world.killed.includes(ev.key)) this.save.world.killed.push(ev.key);
         this.save.world.scrap = (this.save.world.scrap ?? 0) + (ev.boss ? 10 : 2);
         this._partyDirty = true;
         // XP is shared by the party (co-op), levels grant skill points.
