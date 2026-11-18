@@ -181,6 +181,20 @@ export const LOOT = {
   tackle:  { rolls: 2, table: [['item.mat_wire', 35, 1, 2], ['item.energy_bar', 25, 1, 1], ['money', 25, 2, 8], ['item.ozzie_lure', 3, 1, 1], ['item.mat_scrap', 12, 1, 2]] },
 };
 
+// What the pawn pays: 40% of the best shelf price, else a flat rate by kind. Uniques, key items and
+// anything you're wearing can't be sold.
+export function sellPrice(id) {
+  const def = ITEMS[id]; if (!def || def.unique || def.slot === 'key') return 0;
+  let best = 0;
+  for (const shop of Object.values(SHOPS)) for (const st of shop.stock) if (st.item === id) best = Math.max(best, st.price);
+  if (best) return Math.max(1, Math.round(best * 0.4));
+  if (def.slot === 'material') return 1;
+  if (id.startsWith('item.fish_')) return { 'item.fish_striper': 6, 'item.fish_lantern': 12, 'item.fish_catfish': 4 }[id] ?? 2;
+  if (def.slot === 'junk') return 6;
+  if (def.slot === 'consumable') return 2;
+  return 8;
+}
+
 // Shops: what's on the shelf and for how much ($).
 export const SHOPS = {
   scooters: { title: 'DELROY\'S WHEELS', lines: ['Used scooters, fair prices, no questions.', 'Batteries charged while you wait. Mostly.'],

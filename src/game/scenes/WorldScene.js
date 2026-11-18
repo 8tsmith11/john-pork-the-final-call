@@ -11,7 +11,7 @@ import { ENEMIES } from '../../content/enemies.js';
 import { GAME_VERSION } from '../../version.js';
 import { loadScene, Conversation, evalCond } from '../../engine/dialogue.js';
 import { babble, setArea, sfx, ring, speak, hush } from '../../audio/audio.js';
-import { LOOT, DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods, EQUIP_SLOTS, canWear } from '../../content/items.js';
+import { sellPrice, LOOT, DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods, EQUIP_SLOTS, canWear } from '../../content/items.js';
 import { tileKey } from '../render/tiles.js';
 import { GameMenu, TABS } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
@@ -445,6 +445,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'useSlot') { this._useSlot = msg.i | 0; this._use(this._charOf(peer), peer); }
         if (msg.t === 'move' && this.save.party[this._charOf(peer)]) { Inv.moveSlot(this.save.party[this._charOf(peer)], msg.a | 0, msg.b | 0, !!msg.half); this._syncParty(); }
         if (msg.t === 'buy') this._buy(this._charOf(peer), msg.shop, msg.idx);
+        if (msg.t === 'sell') this._sell(this._charOf(peer), msg.slot | 0);
         if (msg.t === 'scooter') this._scooter(peer);
       });
       this.net.on('leave', (peer) => {
@@ -672,7 +673,15 @@ export class WorldScene extends Phaser.Scene {
   menuMove(a, b, half) { if (this.mode === 'client') this.net.send({ t: 'move', a, b, half }); else { Inv.moveSlot(this.save.party[this.character], a, b, half); this._syncParty(); } }
   // Manuel's Haggler's Eye: the best haggler in the party gets everyone the discount.
   priceFor(who, base) { const h = Math.max(0, ...Object.entries(this.save.party).map(([k, c]) => playerMods(c, k).haggle ?? 0)); return Math.max(1, Math.round(base * (1 - h))); }
-  menuBuy(shop, idx) { if (this.mode === 'client') this.net.send({ t: 'buy', shop, idx }); else this._buy(this.character, shop, idx); }
+  menuSell(slot) { if (this.mode === 'client') this.net.send({ t: 'sell', slot }); else this._sell(this.character, slot); }
+  _sell(who, slot) {
+    const c = this.save.party[who], it = c?.inventory[slot]; if (!it) return;
+    if (Object.values(c.equipped || {}).includes(it.id) && Inv.count(c, it.id) <= 1) return this._toast('Take it off first.');
+    const price = sellPrice(it.id); if (!price) return this._toast('Wick won\'t take that.');
+    Inv.takeSlot(c, slot); this.save.world.money = (this.save.world.money ?? 0) + price;
+    sfx('pickup'); this._toast(`Sold: ${ITEMS[it.id]?.name} (+$${price})`); this._syncParty();
+  }
+    menuBuy(shop, idx) { if (this.mode === 'client') this.net.send({ t: 'buy', shop, idx }); else this._buy(this.character, shop, idx); }
   _buy(who, shopId, idx) {
     const st = SHOPS[shopId]?.stock[idx], c = this.save.party[who]; if (!st || !c) return;
     if (st.once && Inv.has(c, st.item)) return;
@@ -1794,6 +1803,7 @@ export class WorldScene extends Phaser.Scene {
     const k = Math.max(1, Math.min(6, Math.floor(maxW / m.w), Math.floor(maxH / m.h)));
     const mw = m.w * k, mh = m.h * k, ox = bx + Math.floor((maxW - mw) / 2), oy = by;
     g.fillStyle(0x070912, 0.85).fillRect(ox - 2, oy - 2, mw + 4, mh + 4).lineStyle(1, 0x5d6487, 0.8).strokeRect(ox - 2, oy - 2, mw + 4, mh + 4);
+    this._areaFrameBottom = oy + mh + 2;   // where the drawn frame ends (the objective tracker sits under it)
     for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) {
       if (ex[y * m.w + x] !== '1') continue;
       g.fillStyle(m.solid(x, y) && !m.doors.get(`${x},${y}`) ? 0x3a3f66 : 0x1f2236).fillRect(ox + x * k, oy + y * k, k, k);
@@ -1838,7 +1848,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.menu || this.dlg) return;
     const w = Math.min(100, this.map.w * 2), h = Math.min(40, this.map.h * 2);
     this.drawAreaMap(g, VIEW.w - w - 6, 44, w, h, snap);
-    this.minimapBottom = 44 + h;
+    this.minimapBottom = this._areaFrameBottom ?? 44 + h;
   }
 
   // Boss name card: big, centered, then it gets out of the way.
@@ -2006,7 +2016,7 @@ export class WorldScene extends Phaser.Scene {
     // Top-right: XP and money, compact.
     const lines = [`xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `   ◆ ${c.skillPoints} skill pt [K]` : ''}`, `$${this.save.world.money ?? 0}${snap.enemies?.length ? `   coderot ${snap.enemies.length}` : ''}`];
     this.hudText.setText(lines.join('\n'));
-    this.objText ??= this.add.text(VIEW.w - 6, 60, '', { ...FONT, fontSize: '7px', color: '#ffd27f', align: 'right', wordWrap: { width: 130 } }).setOrigin(1, 0).setScrollFactor(0).setDepth(9001);
+    this.objText ??= this.add.text(VIEW.w - 6, 60, '', { ...FONT, fontSize: '7px', color: '#ffd27f', align: 'right', stroke: '#0b0d16', strokeThickness: 2, wordWrap: { width: 130 } }).setOrigin(1, 0).setScrollFactor(0).setDepth(9001);
     const obj = this._trackedObjective();
     this.objText.setText(obj ? `${obj}\n[J] quests` : '').setY((this.minimapBottom ?? 56) + 4).setVisible(!this.menu && !this.dlg);
     this._drawHotbar();

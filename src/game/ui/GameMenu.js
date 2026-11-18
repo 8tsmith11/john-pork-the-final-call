@@ -1,7 +1,7 @@
 // In-game menu: tabbed panel (INVENTORY · SKILLS · MAP · CONTROLS · SYSTEM) plus the FAB printer.
 // Rebuilt from scratch on every refresh (cheap, and never shows stale state).
 import { VIEW } from '../../view.js';
-import { ITEMS, RECIPES, SKILLS, SHOPS, playerMods, ARMOR_SLOTS, GEAR_SLOTS, WEAPON_SLOTS, SLOT_NAMES, MAX_UPGRADE, upgradeCost, scaleMods, canWear } from '../../content/items.js';
+import { sellPrice, ITEMS, RECIPES, SKILLS, SHOPS, playerMods, ARMOR_SLOTS, GEAR_SLOTS, WEAPON_SLOTS, SLOT_NAMES, MAX_UPGRADE, upgradeCost, scaleMods, canWear } from '../../content/items.js';
 import { MAPS } from '../../content/maps/index.js';
 import { ABILITIES, ABILITY_KEYS, MAX_SCORE, modOf, fmtMod, scoresOf } from '../../content/abilities.js';
 import { canPay, count } from '../../engine/inventory.js';
@@ -17,7 +17,7 @@ const F = (size = 8, color = C.text) => ({ fontFamily: 'monospace', fontSize: `$
 const SLOT_LABEL = { ...SLOT_NAMES, instrument: 'Instrument', gift: 'Gift', material: 'Material' };
 // Cut a line to fit `px` view pixels at monospace `size` (Text crops don't work at the 4x text resolution).
 const fit = (str, px, size) => { const n = Math.floor(px / (size * 0.62)); return str.length > n ? str.slice(0, n - 1) + '…' : str; };
-const SLOT_ABBR = { weapon: 'Me', ranged: 'Ra', gadget: 'Ga', charm: 'Cm', helmet: 'Hd', chestplate: 'Ch', leggings: 'Lg', boots: 'Bt', goggles: 'Gg', parka: 'Pk', gloves: 'Gl', socks: 'Sk', backpack: 'Bp' };
+const SLOT_ABBR = { weapon: 'melee', ranged: 'ranged', gadget: 'gadget', charm: 'charm', helmet: 'head', chestplate: 'chest', leggings: 'legs', boots: 'boots', goggles: 'eyes', parka: 'coat', gloves: 'hands', socks: 'socks', backpack: 'pack' };
 const MOD_NAME = { melee: 'melee', shot: 'shot dmg', shotCd: 'fire rate', armor: 'armor', maxHp: 'max HP', speed: 'speed', sta: 'stamina', staRegen: 'stamina regen', crit: 'crit', markDmg: 'marked dmg', abilityPower: 'ability', skillCd: 'ability cooldown', dodgeCd: 'dodge cooldown', haggle: 'prices', dashHit: 'dash hit', revive: 'revive speed', loot: 'loot' };
 const PCT = new Set(['armor', 'speed', 'staRegen', 'crit', 'markDmg', 'abilityPower', 'skillCd', 'haggle', 'revive', 'loot']);
 export const modText = (mods) => Object.entries(mods || {}).filter(([k]) => k !== 'gun').map(([k, v]) => `${MOD_NAME[k] ?? k} ${PCT.has(k) ? (v > 0 ? '+' : '') + Math.round(v * 100) + '%' : (v > 0 ? '+' : '') + (Math.abs(v) >= 1 ? Math.round(v) : v)}`).join('  ');
@@ -90,7 +90,7 @@ export class GameMenu {
       const id = c.equipped[slot], def = id && ITEMS[id], uniq = def?.unique, lvl = id ? c.upgrades?.[id] ?? 0 : 0;
       g.fillStyle(0x151827).fillRect(x, y, S, S).lineStyle(1, uniq ? 0xffd27f : id ? 0x7fb069 : C.dim, 0.9).strokeRect(x + 0.5, y + 0.5, S - 1, S - 1);
       if (id) { this._icon(x + S / 2, y + S / 2, id); if (lvl) this._t(x + S - 1, y + 1, `+${lvl}`, F(5, C.hi)).setOrigin(1, 0); }
-      else this._t(x + S / 2, y + S / 2, SLOT_ABBR[slot], F(6, '#3a4060')).setOrigin(0.5);
+      else this._t(x + S / 2, y + S / 2, SLOT_ABBR[slot], F(5, '#4a5175')).setOrigin(0.5);
       const z = s.add.zone(x, y, S, S).setOrigin(0).setInteractive({ useHandCursor: true });
       z.on('pointerdown', () => {
         if (this.held != null) { const it = inv[this.held]; if (it && ITEMS[it.id]?.slot === slot) s.menuUse(it.id); this.held = null; return this.refresh(); }
@@ -344,25 +344,94 @@ export class GameMenu {
   }
 
   // ---- shops: buy with money ----
+  // Two panes: a compact list on the left, everything about the selected item on the right (full
+  // text, what it does, how it compares with what you're wearing). The pawn also buys.
   _shop(g, id) {
-    const s = this.scene, b = this.box, c = s.save.party[s.character], shop = SHOPS[id]; if (!shop) return;
-    const money = s.save.world.money ?? 0;
-    this._t(b.x + 10, b.y + 7, shop.title, F(10, C.hi));
-    this._t(b.x + b.w - 10, b.y + 7, `$${money}   [ESC] close`, F(8, C.hi)).setOrigin(1, 0);
-    this._t(b.x + 10, b.y + 20, shop.lines.join(' '), { ...F(7, C.sub), wordWrap: { width: b.w - 20 } });
-    shop.stock.forEach((st, i) => {
-      const rowH = Math.min(30, Math.floor((b.h - 44) / shop.stock.length)), def = ITEMS[st.item], y = b.y + 40 + i * rowH, x = b.x + 12;
-      const owned = st.once && count(c, st.item) > 0, locked = st.needs && !count(c, st.needs);
-      const price = s.priceFor(s.character, st.price), can = !owned && !locked && money >= price;
-      g.fillStyle(can ? 0x1a2030 : 0x121521).fillRoundedRect(x, y, b.w - 24, rowH - 4, 2).lineStyle(1, can ? 0xffb347 : C.dim, can ? 0.8 : 0.4).strokeRoundedRect(x, y, b.w - 24, rowH - 4, 2);
-      g.fillStyle(0x0b0d16).fillRect(x + 3, y + 2, rowH - 8, rowH - 8);
-      this._icon(x + 3 + (rowH - 8) / 2, y + 2 + (rowH - 8) / 2, st.item).setScale(Math.min(1, (rowH - 8) / 18));
-      this._t(x + 28, y + 2, def.name, F(8, can ? C.text : C.sub));
-      if (rowH >= 26) this._t(x + 28, y + 13, def.text, { ...F(6, C.sub), wordWrap: { width: b.w - 140 }, maxLines: 1 });
-      else this._t(x + 120, y + 4, fit(def.text, b.w - 260, 6), F(6, C.sub));
-      const right = owned ? 'owned' : locked ? `needs ${ITEMS[st.needs].name.toLowerCase()}` : `${price < st.price ? `($${st.price}) ` : ''}$${price}  › BUY`;
-      this._t(x + b.w - 30, y + 8, right, F(8, owned ? C.ok : can ? C.hi : C.bad), can ? () => s.menuBuy(id, i) : null).setOrigin(1, 0);
+    const s = this.scene, b = this.box, who = s.character, c = s.save.party[who], shop = SHOPS[id]; if (!shop) return;
+    const money = s.save.world.money ?? 0, canSell = id === 'pawn';
+    if (this._shopFor !== id) { this._shopFor = id; this.shopMode = 'buy'; this.shopSel = 0; }
+    this._t(b.x + 10, b.y + 6, shop.title, F(10, C.hi));
+    this._t(b.x + b.w - 10, b.y + 6, `$${money}   [ESC] close`, F(9, C.hi)).setOrigin(1, 0);
+    this._t(b.x + 10, b.y + 19, shop.lines.join(' '), { ...F(7, C.sub), wordWrap: { width: b.w - 20 }, maxLines: 2 });
+    let ty = b.y + 40;
+    if (canSell) {
+      for (const [mode, label] of [['buy', 'BUY'], ['sell', 'SELL']]) {
+        const on = this.shopMode === mode, tx = b.x + 12 + (mode === 'sell' ? 44 : 0);
+        const t = this._t(tx, ty, label, F(8, on ? C.hi : C.sub), () => { this.shopMode = mode; this.shopSel = 0; this.refresh(); });
+        if (on) g.fillStyle(0xffb347).fillRect(tx, ty + 10, t.width, 1);
+      }
+      ty += 14;
+    }
+    // rows: buy = the shelf; sell = your bag (one row per stack)
+    const rows = this.shopMode === 'sell'
+      ? c.inventory.map((it, slot) => it && { id: it.id, qty: it.qty, slot, price: sellPrice(it.id) }).filter(Boolean)
+      : shop.stock.map((st, i) => ({ id: st.item, i, st, price: s.priceFor(who, st.price), owned: st.once && count(c, st.item) > 0, locked: st.needs && !count(c, st.needs) }));
+    const listW = 190, rowH = 15, maxRows = Math.floor((b.y + b.h - 8 - ty) / rowH);
+    this.shopSel = Math.max(0, Math.min(this.shopSel ?? 0, rows.length - 1));
+    if (!rows.length) this._t(b.x + 14, ty + 4, this.shopMode === 'sell' ? 'Nothing to sell.' : 'Sold out.', F(8, C.sub));
+    rows.slice(0, maxRows).forEach((r, k) => {
+      const def = ITEMS[r.id], y = ty + k * rowH, x = b.x + 10, sel = k === this.shopSel;
+      const ok = this.shopMode === 'sell' ? r.price > 0 : !r.owned && !r.locked && money >= r.price;
+      g.fillStyle(sel ? 0x23293f : 0x121521, 1).fillRoundedRect(x, y, listW, rowH - 2, 2);
+      if (sel) g.lineStyle(1, 0xffb347, 0.9).strokeRoundedRect(x + 0.5, y + 0.5, listW - 1, rowH - 3, 2);
+      this._icon(x + 8, y + 6, r.id).setScale(0.62);
+      this._t(x + 17, y + 2, fit(`${def?.name ?? r.id}${r.qty > 1 ? ' ×' + r.qty : ''}`, listW - 64, 7), F(7, ok ? C.text : C.sub));
+      const right = this.shopMode === 'sell' ? (r.price ? `$${r.price}` : '-') : r.owned ? 'owned' : `$${r.price}`;
+      this._t(x + listW - 4, y + 2, right, F(7, this.shopMode === 'sell' ? C.ok : r.owned ? C.ok : money >= r.price ? C.hi : C.bad)).setOrigin(1, 0);
+      const z = s.add.zone(x, y, listW, rowH - 2).setOrigin(0).setInteractive({ useHandCursor: true });
+      z.on('pointerdown', () => { this.shopSel = k; this.refresh(); });
+      this.root.add(z);
     });
+    // detail pane
+    const r = rows[this.shopSel]; if (!r) return;
+    const def = ITEMS[r.id], px = b.x + 10 + listW + 10, pw = b.x + b.w - 10 - px, py = ty;
+    g.fillStyle(0x10121e, 1).fillRoundedRect(px, py, pw, b.y + b.h - 8 - py, 4).lineStyle(1, 0x3a4060).strokeRoundedRect(px, py, pw, b.y + b.h - 8 - py, 4);
+    g.fillStyle(0x0b0d16).fillRect(px + 8, py + 8, 36, 36);
+    this._icon(px + 26, py + 26, r.id).setScale(2);
+    this._t(px + 52, py + 8, def.name, F(10, C.hi));
+    const kind = { weapon: 'Melee weapon', ranged: 'Ranged weapon', consumable: 'Food', material: 'Material', junk: 'Curio', key: 'Key item', instrument: 'Instrument', gift: 'Gift' }[def.slot] ?? `${SLOT_LABEL[def.slot] ?? def.slot}`;
+    this._t(px + 52, py + 22, `${kind}${def.heal ? ` · heals ${def.heal}` : ''}`, F(7, C.ok));
+    const desc = this._t(px + 8, py + 50, def.text ?? '', { ...F(7, C.text), wordWrap: { width: pw - 16 } });
+    let dy = py + 56 + desc.height;
+    // compare with what's worn in that slot
+    const gearSlot = def.slot && c.equipped && def.slot in c.equipped ? def.slot : null;
+    if (gearSlot && (def.mods || def.swing || def.gun)) {
+      const now = playerMods(c, who), next = playerMods({ ...c, equipped: { ...c.equipped, [gearSlot]: r.id } }, who);
+      const KEYS = { melee: ['melee', 1], shot: ['shot dmg', 1], armor: ['armor', 100], maxHp: ['max HP', 1], speed: ['speed', 100], crit: ['crit', 100], sta: ['stamina', 1], abilityPower: ['ability', 100], markDmg: ['vs marked', 100], loot: ['loot', 100] };
+      const parts = [];
+      if (gearSlot === 'weapon') {   // weapons: compare what a hit actually does, not the flat bonus
+        const hit = (m) => (m.swing?.damage ?? 12) + (m.melee ?? 0), rate = (m) => m.swing?.cooldown ?? 0.38;
+        const h0 = hit(now), h1 = hit(next), d0 = h0 / rate(now), d1 = h1 / rate(next);
+        parts.push({ txt: `hit ${h1} (now ${h0})`, up: h1 >= h0 }, { txt: `${d1.toFixed(0)} dmg/s (now ${d0.toFixed(0)})`, up: d1 >= d0 });
+        if (next.swing) parts.push({ txt: `reach ${next.swing.range ?? 20}, ${next.swing.arc >= 0.7 ? 'wide' : next.swing.arc <= 0.35 ? 'narrow' : 'normal'} arc`, up: true });
+      }
+      for (const [k, [label, mul]] of Object.entries(KEYS)) {
+        if (gearSlot === 'weapon' && k === 'melee') continue;
+        const dv = ((next[k] ?? 0) - (now[k] ?? 0)) * mul;
+        if (Math.abs(dv) >= 0.5) parts.push({ txt: `${dv > 0 ? '+' : ''}${Math.round(dv)}${mul === 100 ? '%' : ''} ${label}`, up: dv > 0 });
+      }
+      const wornName = c.equipped[gearSlot] ? ITEMS[c.equipped[gearSlot]]?.name : 'nothing';
+      this._t(px + 8, dy, `vs. ${wornName}:`, F(7, C.sub)); dy += 11;
+      if (!parts.length) { this._t(px + 8, dy, 'no change', F(7, C.sub)); dy += 11; }
+      parts.forEach((p) => { this._t(px + 8, dy, p.txt, F(7, p.up ? C.ok : C.bad)); dy += 10; });
+      if (def.owner && def.owner !== who) { this._t(px + 8, dy, `Only ${def.owner[0].toUpperCase() + def.owner.slice(1)} can use this.`, F(7, C.bad)); dy += 11; }
+    }
+    // action button
+    const by = b.y + b.h - 30;
+    if (this.shopMode === 'sell') {
+      const ok = r.price > 0;
+      this._button(g, px + 8, by, pw - 16, ok ? `SELL FOR $${r.price}` : 'Wick won\'t take that', ok, () => s.menuSell(r.slot));
+    } else {
+      const ok = !r.owned && !r.locked && money >= r.price;
+      const label = r.owned ? 'Already owned' : r.locked ? `Needs ${ITEMS[r.st.needs].name.toLowerCase()}` : money < r.price ? `Need $${r.price - money} more` : `BUY FOR $${r.price}${r.price < r.st.price ? `  (was $${r.st.price})` : ''}`;
+      this._button(g, px + 8, by, pw - 16, label, ok, () => s.menuBuy(id, r.i));
+    }
+  }
+
+  _button(g, x, y, w, label, enabled, fn) {
+    g.fillStyle(enabled ? 0x2b2240 : 0x15172a).fillRoundedRect(x, y, w, 20, 3).lineStyle(1, enabled ? 0xffb347 : 0x3a4060).strokeRoundedRect(x, y, w, 20, 3);
+    this._t(x + w / 2, y + 5, label, F(8, enabled ? C.hi : C.sub)).setOrigin(0.5, 0);
+    if (enabled) { const z = this.scene.add.zone(x, y, w, 20).setOrigin(0).setInteractive({ useHandCursor: true }); z.on('pointerdown', fn); this.root.add(z); }
   }
 
   // MASTER ARMORER: upgrade anything you're wearing, +1 to +5. Each level is +15% of its bonuses.
