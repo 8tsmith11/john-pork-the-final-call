@@ -67,6 +67,26 @@ test('world is consistent: killed enemies stay dead on re-entry', () => {
   assert.equal(sim.enemies.size, n - 1);
 });
 
+test('combat robot: follows its owner, rams coderot, goes down and reboots', () => {
+  const sim = new Sim(MAPS_FOR_TEST.tunnel_1, { seed: 's' }); sim.addPlayer('a', 'trevor');
+  const p = sim.players.get('a');
+  sim.enemies.clear();
+  sim.addAlly({ owner: 'a', x: p.x, y: p.y });
+  const a = sim.allies[0];
+  const e = { id: 't', kind: 'enemy.rotling', x: p.x + 40, y: p.y, hp: 500, cd: 99, hurtT: 0, kx: 0, ky: 0, sleepT: 99 };
+  sim.enemies.set('t', e);
+  for (let i = 0; i < 120; i++) { sim.events = []; sim._stepAllies(1 / 30); }
+  assert.ok(e.hp < 500, `robot never hit the rotling (hp ${e.hp}, robot at ${a.x | 0},${a.y | 0}, st ${a.st})`);
+  for (let i = 0; i < 900 && !(a.down > 0); i++) { e.x = a.x; e.y = a.y; sim._stepAllies(1 / 30); }
+  assert.ok(a.down > 0, 'robot never goes down when chewed on');
+  sim.enemies.clear();
+  for (let i = 0; i < 30 * 21; i++) sim._stepAllies(1 / 30);
+  assert.equal(a.hp, a.maxHp);
+  sim.setMap(MAPS_FOR_TEST.metro_plaza, 'tunnel_1'); sim._stepAllies(1 / 30);
+  assert.ok(Math.hypot(a.x - p.x, a.y - p.y) < 30, 'robot comes along through exits');
+  assert.equal(sim.snapshot().allies.length, 1);
+});
+
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
 test('pipe puzzle: every seed is solvable and starts unsolved', () => {
   if (!PipePuzzle) return;

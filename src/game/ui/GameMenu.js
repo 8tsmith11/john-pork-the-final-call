@@ -323,8 +323,11 @@ export class GameMenu {
     this._t(b.x + 10, b.y + 7, 'FAB #2 · PRINT', F(9, C.hi));
     this._t(b.x + b.w - 10, b.y + 7, '[ESC] close', F(8, C.sub)).setOrigin(1, 0);
     const cw = 120, ch = 92, cols = 3;
+    let k = -1;
     RECIPES.forEach((r, i) => {
-      const def = ITEMS[r.item], x = b.x + 12 + (i % cols) * (cw + 8), y = b.y + 24 + Math.floor(i / cols) * (ch + 6);
+      if (r.req && !s.save.flags[r.req]) return;
+      k++;
+      const def = ITEMS[r.item], x = b.x + 12 + (k % cols) * (cw + 8), y = b.y + 24 + Math.floor(k / cols) * (ch + 6);
       const can = canPay(c, r.cost), owned = count(c, r.item);
       g.fillStyle(can ? 0x1a2030 : 0x121521).fillRoundedRect(x, y, cw, ch, 3).lineStyle(1, can ? 0xffb347 : C.dim, can ? 0.9 : 0.5).strokeRoundedRect(x, y, cw, ch, 3);
       g.fillStyle(0x0b0d16).fillRect(x + 5, y + 5, 20, 20);

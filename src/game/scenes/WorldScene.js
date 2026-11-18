@@ -89,6 +89,7 @@ export class WorldScene extends Phaser.Scene {
     this._pageIdx = {};
     this.vignette = this._makeVignette();
     if (this.mode !== 'client') for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
+    this.time.delayedCall(500, () => this._spawnBot());
     this.save.world.money ??= 25;
     this.save.flags['settings.crudeHumor'] = 'on';   // always on (Trevor); scripts branch on it
     for (const [who, c] of Object.entries(this.save.party)) { Inv.normalize(c); migrateSkills(c, who); }
@@ -1474,6 +1475,12 @@ export class WorldScene extends Phaser.Scene {
     this.time.delayedCall(2600, () => this.startDialogue('the_call', 'butt_dial'));
   }
 
+  _spawnBot() {
+    if (this.mode === 'client' || !this.save.flags['q.bot.built'] || this.sim.allies?.length) return;
+    const owner = [...this.sim.players.values()].find((p) => p.character === 'trevor') ?? this.sim.players.get(this.localId);
+    if (owner) this.sim.addAlly({ owner: owner.id, x: owner.x - 12, y: owner.y + 10, kind: 'bot' });
+  }
+
   _handleInteract(me) {
     if (this.dlg || this.menu) { this.hint.setText(''); return; }
     // John Pork calls back. If the party declined, he rings again deeper in the tunnels: once at the
@@ -1561,6 +1568,19 @@ export class WorldScene extends Phaser.Scene {
     if (near.action === 'mate') { this._mateBreak(); this._say(near.text + '\n\nEveryone has some. Better. (Thermos refilled.)'); return; }
     if (near.door) { if (this.mode === 'client') this.net.send({ t: 'door', id: near.id }); else this._toggleDoor(near.id); return; }
     if (near.knock) { this._knock(near); return; }
+    if (near.botInstall && this.mode !== 'client' && this.save.flags['q.bot.looked'] && !this.save.flags['q.bot.built']) {
+      const PARTS = ['item.bot_drive', 'item.bot_weapon', 'item.bot_brain'];
+      const holder = (id) => Object.values(this.save.party).find((c) => Inv.has(c, id));
+      if (PARTS.every(holder)) {
+        for (const id of PARTS) Inv.remove(holder(id), id);
+        this._flag('q.bot.built', true); this._syncParty(); this._spawnBot(); this._tickQuests(true);
+        this.cameras.main.shake(120, 0.004); sfx('pickup');
+        return;
+      }
+      const missing = PARTS.filter((id) => !holder(id)).map((id) => ITEMS[id].name.toLowerCase());
+      this._say(`${near.text}\n\nStill needs: ${missing.join(', ')}. (Print them at the fab.)`);
+      return;
+    }
     this._say(near.text);
     if (near.flag) {
       if (this.mode === 'client') this.net.send({ t: 'flag', key: near.flag });
@@ -1569,7 +1589,7 @@ export class WorldScene extends Phaser.Scene {
     if (near.action === 'save') this._save();
   }
 
-  // Easter egg (docs/SECRETS.md): the always-occupied bathroom. Knock 5 times, then 10.
+  // Hidden: see the sealed docs.
   _knock(obj) {
     const done = !!this.save?.flags?.['secrets.bathroom.found'];
     const n = this._knocks = done ? 11 : (this._knocks ?? 0) + 1;
@@ -1718,6 +1738,14 @@ export class WorldScene extends Phaser.Scene {
     for (const d of snap.decoys || []) {   // decoy bust (placeholder: a little pink plaster figure)
       this.shotGfx.fillStyle(0xe8d8d0).fillRect(d.x - 4, d.y - 10, 8, 9).fillStyle(0xf2a6b8).fillRect(d.x - 2, d.y - 7, 4, 3).fillStyle(0x5a4a44).fillRect(d.x - 5, d.y - 1, 10, 2);
     }
+    for (const a of snap.allies || []) {   // Trevor's combat robot (prop art, small), hp bar when hurt
+      this.allySpr ??= [];
+      const i = (snap.allies || []).indexOf(a);
+      const spr = (this.allySpr[i] ??= this.add.image(0, 0, 'props', 'obj.battlebot').setOrigin(0.5, 1).setScale(0.75));
+      spr.setPosition(a.x, a.y + 3).setDepth(a.y).setAlpha(a.dn ? 0.4 : 1).setAngle(a.st === 'ram' ? Math.sin(this.time.now / 30) * 8 : 0);
+      if (a.hp < a.mhp && !a.dn) this.shotGfx.fillStyle(0x1c1f33).fillRect(a.x - 6, a.y - 12, 12, 2).fillStyle(0x7fb069).fillRect(a.x - 6, a.y - 12, 12 * (a.hp / a.mhp), 2);
+    }
+    for (const s of (this.allySpr ?? []).slice((snap.allies || []).length)) s.setVisible(false);
     for (const h of snap.hazards || []) {
       const pulse = 0.25 + 0.12 * Math.sin(this.time.now / 120 + h.x);
       this.shotGfx.fillStyle(0xd65db1, pulse * Math.min(1, h.t)).fillCircle(h.x, h.y, h.r);

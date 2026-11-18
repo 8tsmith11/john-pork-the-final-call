@@ -147,8 +147,18 @@ export function scaleMods(mods, level = 0) {
 }
 export const canWear = (def, charId) => !!def && (!def.owner || def.owner === charId);
 
-// The fab prints from materials (cost = { materialId: qty }).
+// Trevor's combat robot: three printed parts bring it back (quest side.bot, Trevor's real-life BattleBots).
+Object.assign(ITEMS, {
+  'item.bot_drive':  { name: 'Drive module', slot: 'key', text: 'Two brushless motors and a gearbox, printed housings. For the wedge bot in Trevor\'s room.' },
+  'item.bot_weapon': { name: 'Spinner bar', slot: 'key', text: 'A balanced steel bar on a hub. Coderot gel in the bearing, which is either genius or a problem.' },
+  'item.bot_brain':  { name: 'Control board', slot: 'key', text: 'A receiver, a gyro and a chip that answers to Trevor\'s phone. Mostly.' },
+});
+
+// The fab prints from materials (cost = { materialId: qty }). `req` hides a recipe until a flag is set.
 export const RECIPES = [
+  { item: 'item.bot_drive',  req: 'q.bot.looked', cost: { 'item.mat_scrap': 4, 'item.mat_wire': 2, 'item.mat_cell': 1 } },
+  { item: 'item.bot_weapon', req: 'q.bot.looked', cost: { 'item.mat_scrap': 3, 'item.mat_gel': 3 } },
+  { item: 'item.bot_brain',  req: 'q.bot.looked', cost: { 'item.mat_circuit': 2, 'item.mat_wire': 2 } },
   { item: 'item.mate_flask',   cost: { 'item.mat_plastic': 2, 'item.mat_scrap': 1 } },
   { item: 'item.wooden_bat',   cost: { 'item.mat_scrap': 3, 'item.mat_cloth': 1 } },
   { item: 'item.sniffer',      cost: { 'item.mat_circuit': 1, 'item.mat_wire': 2 } },

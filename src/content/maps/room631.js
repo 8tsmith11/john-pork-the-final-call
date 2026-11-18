@@ -106,7 +106,7 @@ export const room631 = makeMap({
     { id: 'obj.boxes_3', art: 'obj.crate', x: 2, y: 1, label: 'Boxes', text: 'Amp cables, a pedal board, a spare mattress cover still in the plastic. Everything Trevor owns lives in here. Trevor sleeps next door.' },
     { id: 'obj.shrimp_tank', x: 6, y: 1, label: 'Shrimp tank', text: 'Trevor\'s shrimp. The only clean water in the building. They\'re clustered in the corner away from the window.' },
     { id: 'obj.guitar', x: 6, y: 4, label: 'Guitar', text: 'Trevor\'s electric guitar, plugged into a little practice amp. He only plays rock, and he plays it annoyingly well.' },
-    { id: 'obj.battlebot', x: 7, y: 4, label: 'Combat robot', text: 'A wedge bot. A strip of tape over the power switch reads: NO HALLWAY TESTS.' },
+    { id: 'obj.battlebot', x: 7, y: 4, label: 'Combat robot', flag: 'q.bot.looked', goneFlag: 'q.bot.built', botInstall: true, text: 'A wedge bot. A strip of tape over the power switch reads: NO HALLWAY TESTS.' },
     { id: 'obj.supplements', x: 1, y: 4, label: 'Trevor\'s shelf', text: 'Vitamins, magnesium for sleep, guitar strings still in the packet, a tub of shrimp flakes. A sticky note on the tub: IF I AM NOT HOME, A PINCH. NOT A HANDFUL, MICHAEL.' },
     { id: 'obj.trevor_mirror', x: 11, y: 1, label: 'Bathroom mirror', text: 'Your reflection. Tired. Normal. You watch it a second longer than you meant to.' },
     { id: 'obj.trevor_pc', x: 4, y: 1, label: 'Trevor\'s computer', action: 'pages', pages: [

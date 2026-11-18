@@ -110,6 +110,17 @@ QUESTS.push({
   reward: { money: 25, xp: 40, item: 'item.ozzie_lure', line: 'He holds it up to his face for a long time. The light moves under the scales. "Huh," he says. He writes in the notebook, one tally mark, very carefully. Then he lets it go off the end of the pier, and hands you a lure out of his hat.' },
 });
 
+QUESTS.push({
+  id: 'side.bot', title: 'Get it running', act: 1,
+  why: "Trevor builds combat robots. The wedge bot in his room just needs parts, and a robot that rams coderot on its own is worth a lot tonight.",
+  start: (f) => f['q.bot.looked'],
+  stages: [
+    { text: 'Print a drive module, a spinner bar and a control board at the fab.', done: (f, save) => ['item.bot_drive', 'item.bot_weapon', 'item.bot_brain'].every((id) => Object.values(save.party).some((c) => (c.inventory || []).some((x) => x && x.id === id))) || f['q.bot.built'] },
+    { text: 'Install the parts on the combat robot in Trevor\'s room.', done: (f) => f['q.bot.built'] },
+  ],
+  reward: { xp: 40, line: 'The bot twitches, spins its bar up to a whine, and rolls off the desk on its own. It parks itself at your heel and waits.' },
+});
+
 export function questState(save) {
   const s = (save.world.quests ??= {});
   for (const q of QUESTS) s[q.id] ??= { stage: 0, started: !!q.main, done: false };
