@@ -90,27 +90,27 @@ Object.assign(ITEMS, {
 // for level design, not code). ?gear=debug hands them out for testing.
 // Trevor's and Manuel's come from what their players ask for (board #150); the rest from backstory.
 Object.assign(ITEMS, {
-  'item.winged_boots':  { name: 'Winged boots', slot: 'boots', owner: 'michael', unique: true, special: true, src: 'late-act2', blink: true,
+  'item.winged_boots':  { name: 'Winged boots', slot: 'boots', owner: 'michael', unique: true, special: true, src: 'late-act2 (The Dead Drop)', blink: true,
     mods: { armor: 0.1, speed: 0.6 }, text: 'Little white wings at the ankles that never stop twitching. Incredibly fast. [B] blinks you forward in a line of fire; hold [B] to fast travel.' },
-  'item.cowboy_hat':    { name: 'Cowboy hat', slot: 'goggles', owner: 'michael', unique: true, src: 'act3',
+  'item.cowboy_hat':    { name: 'Cowboy hat', slot: 'goggles', owner: 'michael', unique: true, src: 'late-act2 (Manuelita, reunion)',
     mods: { crit: 0.1, markDmg: 0.2, haggle: 0.15 }, text: 'Tennessee straw, sweat-stained, ironic until it isn\'t. Michael squints under it and hits what he pings. Shopkeepers trust it.' },
-  'item.smoky_socks':   { name: 'Smoky Mountain socks', slot: 'socks', owner: 'michael', unique: true, src: 'act3',
+  'item.smoky_socks':   { name: 'Smoky Mountain socks', slot: 'socks', owner: 'michael', unique: true, src: 'act3 (Corridor mail sorting)',
     mods: { sta: 30, staRegen: 0.3, dodgeCd: -0.1 }, text: 'Hand-knit by somebody\'s grandmother back home. You could hike to Gatlinburg in these. More stamina, faster dodges.' },
-  'item.signal_gloves': { name: 'Signal gloves', slot: 'gloves', owner: 'michael', unique: true, src: 'act3',
+  'item.signal_gloves': { name: 'Signal gloves', slot: 'gloves', owner: 'michael', unique: true, src: 'act3 (Manuelita builds them)',
     mods: { abilityPower: 0.25, skillCd: 0.15 }, text: 'His lace runs out to his fingertips through these. Ping reaches further and comes back sooner.' },
 });
 
 // Manuel's four (his two picks via gonman, board #178/#181; the other two from his backstory).
 Object.assign(ITEMS, {
-  'item.arg_shirt':      { name: 'Argentina shirt', slot: 'chestplate', owner: 'manuel', unique: true, special: true, src: 'late-act2',
+  'item.arg_shirt':      { name: 'Argentina shirt', slot: 'chestplate', owner: 'manuel', unique: true, special: true, src: 'late-act2 (Baltimore sealed cargo)',
     mods: { armor: 0.1, dodgeCd: -0.12, killDodge: 1 }, text: 'Sky-blue and white stripes, a 10 on the back. Gambeta: every kill hands his dodge straight back to him.' },
-  'item.hasbulla_tee':   { name: 'Hasbulla tee', slot: 'parka', owner: 'manuel', unique: true, src: 'act3',
+  'item.hasbulla_tee':   { name: 'Hasbulla tee', slot: 'parka', owner: 'manuel', unique: true, src: 'act3 (the Corridor)',
     mods: { armor: 0.04, small: 2, knock: 0.4 }, text: 'White, oversized, "VS EVERYBODY", hangs past his waist. Small and unbothered: harder to hit, and his swings throw things further.' },
   // From real life: Manuel and Michael are building a smart pacifier for a children's hospital (they
   // hold the patent and prototype it in 631). This is prototype #1, and Manuel won't give it back.
-  'item.smart_pacifier': { name: 'Smart pacifier (prototype)', slot: 'goggles', owner: 'manuel', unique: true, src: 'act3',
+  'item.smart_pacifier': { name: 'Smart pacifier (prototype)', slot: 'goggles', owner: 'manuel', unique: true, src: 'late-act2 (Baltimore children\'s hospital)',
     mods: { regen: 1.5, staRegen: 0.15, sleepGuard: 1 }, text: 'Patent granted. A blinking sensor in the shield. Manuel sucks on it constantly and slowly heals. With it in, a lullaby puts him out longer (12 s, not 8), but asleep like that he can\'t be hurt, and his health and stamina pour back.' },
-  'item.mate_holster':   { name: 'Mate holster', slot: 'backpack', owner: 'manuel', unique: true, src: 'act3',
+  'item.mate_holster':   { name: 'Mate holster', slot: 'backpack', owner: 'manuel', unique: true, src: 'late-act2 (the refuge)',
     mods: { mateHeal: 0.6, staRegen: 0.25 }, text: 'A gourd, a bombilla and a steel thermos on a leather harness. Mate heals him far more, and he is never quite tired.' },
 });
 
