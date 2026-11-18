@@ -627,6 +627,24 @@ export class WorldScene extends Phaser.Scene {
     if (!this.save.flags['seen.porkGlimpse']) { this.save.flags['seen.porkGlimpse'] = true; this.time.delayedCall(500, () => this._bark?.(this.localId, ['Did that screen just...', 'Was that him?', 'Anyone else see that?'][Math.floor(Math.random() * 3)])); }
   }
 
+  // Continuity, in play: a patrol drone's searchlight that passes over you scans you. Nothing
+  // happens. That's the point. (A cold flash, a tag over your head, one line from the city.)
+  _tickScan() {
+    if (this.dlg || this.menu || !this.neon) return;
+    const me = this._lastRendered?.players.find((p) => p.id === this.localId); if (!me) return;
+    if (this.time.now - (this._scanAt ?? -1e9) < 25000) return;
+    const hit = this.neon.lightPoints().find((p) => Math.hypot(p.x - me.x, p.y - (me.y - 6)) < 10);
+    if (!hit) return;
+    this._scanAt = this.time.now;
+    const n = (this.save.world.scans = (this.save.world.scans ?? 0) + 1);
+    this.cameras.main.flash(120, 150, 210, 255);
+    const tag = this.add.text(me.x, me.y - 30, 'SCANNED', { ...FONT, fontSize: '6px', color: '#bfe8ff' }).setOrigin(0.5).setDepth(6200);
+    this.tweens.add({ targets: tag, y: tag.y - 8, alpha: 0, delay: 600, duration: 900, onComplete: () => tag.destroy() });
+    const LINES = ['CONTINUITY: Citizen, things are stable.', 'CONTINUITY: Identity confirmed. Enjoy your evening.', 'CONTINUITY: Thank you for being where we expected.',
+      'CONTINUITY: Resident of ASTER 631. Noted.', 'CONTINUITY: Please do not look directly at the light.', 'CONTINUITY: Your curfew is a suggestion. For now.'];
+    this._toast(LINES[(n - 1) % LINES.length]);
+  }
+
   // ---------- quests (src/content/quests.js) ----------
   _questInteract(near) {
     const f = this.save.flags, qs = questState(this.save);
@@ -1417,6 +1435,7 @@ export class WorldScene extends Phaser.Scene {
     this._tickFishing();
     this._tickQuests();
     this._tickGlimpse();
+    this._tickScan();
     if (this.fishing) { const k = this.input2.keys; if (k.w.isDown || k.a.isDown || k.s.isDown || k.d.isDown || k.up.isDown || k.down.isDown || k.left.isDown || k.right.isDown) this._endFishing(false); }
     this._tickPorkGlitch();
     this._updateExplored(snap);

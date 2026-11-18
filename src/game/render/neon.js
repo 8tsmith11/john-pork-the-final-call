@@ -99,6 +99,13 @@ export class Neon {
     for (const dr of this.drones) {
       dr.t += dt; if (dr.t < 0) continue;
       dr.body.x += dr.vx * dt; dr.body.y += Math.sin(dr.t * 1.3) * 0.15;
+      // The searchlight sweeps, but drifts onto anyone who walks into range.
+      const sx = dr.body.x + Math.sin(dr.t * 0.9 + dr.sweep) * 30, sy = dr.body.y + 30 + Math.cos(dr.t * 0.7) * 10;
+      const me = this.scene._lastRendered?.players.find((p) => p.id === this.scene.localId);
+      const near = me && Math.hypot(me.x - sx, me.y - sy) < 90;
+      dr.lock = Math.max(0, Math.min(1, (dr.lock ?? 0) + (near ? dt * 0.8 : -dt * 0.5)));
+      dr.px = near ? me.x : (dr.px ?? sx); dr.py = near ? me.y - 6 : (dr.py ?? sy);
+      dr.pool = { x: sx + (dr.px - sx) * dr.lock, y: sy + (dr.py - sy) * dr.lock };
       dr.blink.setVisible(Math.floor(now * 3) % 2 === 0);
       if (dr.body.x < -60 || dr.body.x > dr.W + 60) { dr.body.destroy(); this.drones.splice(this.drones.indexOf(dr), 1); this._spawnDrone(Math.random()); break; }
     }
@@ -120,12 +127,11 @@ export class Neon {
     for (const dr of this.drones) {
       if (dr.t < 0) continue;
       // the searchlight: a cold pool on the ground below and ahead, sweeping
-      const gx = dr.body.x + Math.sin(dr.t * 0.9 + dr.sweep) * 30, gy = dr.body.y + 30 + Math.cos(dr.t * 0.7) * 10;
+      const { x: gx, y: gy } = dr.pool ?? { x: dr.body.x, y: dr.body.y + 30 };
       put(gx, gy, 0xbfe8ff, 0.7, 0.4);
-      this.spot = { x: gx, y: gy };
     }
   }
 
   /** World points the darkness layer should also open up (drone searchlights). */
-  lightPoints() { return this.drones.filter((d) => d.t >= 0).map((d) => ({ x: d.body.x + Math.sin(d.t * 0.9 + d.sweep) * 30, y: d.body.y + 30 + Math.cos(d.t * 0.7) * 10, r: 0.6 })); }
+  lightPoints() { return this.drones.filter((d) => d.t >= 0 && d.pool).map((d) => ({ x: d.pool.x, y: d.pool.y, r: 0.6 })); }
 }
