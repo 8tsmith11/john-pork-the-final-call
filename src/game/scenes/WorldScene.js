@@ -775,8 +775,9 @@ export class WorldScene extends Phaser.Scene {
     const tag = this.add.text(me.x, me.y - 30, 'SCANNED', { ...FONT, fontSize: '6px', color: '#bfe8ff' }).setOrigin(0.5).setDepth(6200);
     this.tweens.add({ targets: tag, y: tag.y - 8, alpha: 0, delay: 600, duration: 900, onComplete: () => tag.destroy() });
     const LINES = ['CONTINUITY: Citizen, things are stable.', 'CONTINUITY: Identity confirmed. Enjoy your evening.', 'CONTINUITY: Thank you for being where we expected.',
-      'CONTINUITY: Resident of ASTER 631. Noted.', 'CONTINUITY: Please do not look directly at the light.', 'CONTINUITY: Your curfew is a suggestion. For now.'];
-    this._toast(LINES[(n - 1) % LINES.length]);
+      'CONTINUITY: Resident of ASTER 631. Noted.', 'CONTINUITY: Please do not look directly at the light.', 'CONTINUITY: Your curfew is a suggestion. For now.',
+      'CONTINUITY: A containment review for the College Park service area is scheduled. Things are stable.', 'CONTINUITY: Coderot exposure in this sector is within tolerance. Tolerance has been revised.'];
+    this._toast(n === 2 ? LINES[LINES.length - 2] : LINES[(n - 1) % LINES.length]);
   }
 
   // Recurring people (human note: "memorable characters"): an NPC's `later` list holds lines for
