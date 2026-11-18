@@ -18,3 +18,20 @@ eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 0ttttttttEFEFEssssFEFEFtttttttt0
 0t0t0t0t0t0t0t0t0t0t0t0t0t0t0t0.
 .0.0.0.0.0.0.0.0.0.0.0.0.0.0.0..
+@frame obj.mailboxes
+00000000000000000000000000000000
+iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
+gggggggggggggggggggggggggggggggg
+giiiigiiiigiiiigiiiigiiiigiiiigg
+ghhhhghhhhghhhhghhhhghqhhghhhhgg
+ghhh0ghhh0ghhh0ghhh0ghhh0ghhh0gg
+ghhhhghhhhghhhhghhhhghhhhghhhhgg
+gggggggggggggggggggggggggggggggg
+gggggggggggggggggggggggggggggggg
+giiiigiiiigiiiigiiiigiiiigiiiigg
+ghhhhghqhhghhhhghhhhghhhhghqhhgg
+ghhh0ghhh0ghhh0ghhh0ghhh0ghhh0gg
+ghhhhghhhhghhhhghhhhghhhhghhhhgg
+gggggggggggggggggggggggggggggggg
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+00000000000000000000000000000000

@@ -2,26 +2,6 @@
 // Object text here is placeholder world text; the script (task #6) replaces it.
 import { makeMap } from './build.js';
 
-export const asterHall = makeMap({
-  id: 'aster_hall', name: 'ASTER, 6th floor',
-  layout: [
-    '##############################',
-    '#............................#',
-    '#............................#',
-    '#............................#',
-    '##############################',
-  ],
-  spawns: [[2, 2], [3, 2], [2, 3]],
-  objects: [
-    { id: 'obj.door_631', x: 1, y: 1, label: 'Room 631', action: 'exit', to: 'room631', text: 'Home.' },
-    { id: 'obj.bathroom', x: 10, y: 1, label: 'Bathroom (occupied)', text: '"One minute!"', knock: true },
-    { id: 'obj.graffiti', x: 15, y: 1, label: 'Graffiti', text: 'Three hands, three paints: FREE JOHN PORK. JUSTICE FOR JOHN PORK. TIM CHEESE WILL PAY. Someone has crossed out the first one, then uncrossed it.' },
-    { id: 'obj.lobby_monitor', x: 24, y: 1, label: 'Security monitor (rotted)', talk: 'lead_c_footage', puzzle: 'pipes', solvedFlag: 'act1.leadC.repaired' },
-    { id: 'obj.clock_6f', x: 20, y: 1, label: 'Hallway clock', text: 'It reads 19:01. It has read 19:01 since you moved in.' },
-    { id: 'obj.elevator', x: 28, y: 2, label: 'Elevator', action: 'exit', to: 'metro_plaza', text: 'The elevator thinks about it, then goes down.' },
-  ],
-});
-
 export const metroPlaza = makeMap({
   id: 'metro_plaza', name: 'College Park metro plaza',
   layout: [
@@ -39,7 +19,7 @@ export const metroPlaza = makeMap({
   ],
   spawns: [[3, 2], [4, 2], [3, 3]],
   objects: [
-    { id: 'obj.aster_door', x: 2, y: 1, label: 'ASTER lobby', action: 'exit', to: 'aster_hall', text: 'Back up to the sixth floor.' },
+    { id: 'obj.aster_door', x: 2, y: 1, label: 'ASTER lobby', action: 'exit', to: 'aster_lobby', text: 'Back into the lobby.' },
     { id: 'npc.rotter_1', x: 12, y: 6, label: 'Rotter', npc: true, text: 'code rot. code rot. code rot.' },
     { id: 'npc.rotter_2', x: 25, y: 2, label: 'Rotter', npc: true, text: 'code rot. no one can code faster than. code rot.' },
     { id: 'npc.rotter_3', x: 33, y: 8, label: 'Rotter (looks at you differently)', npc: true,

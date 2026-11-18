@@ -264,6 +264,7 @@ export class WorldScene extends Phaser.Scene {
     for (const s of this.doorVis ?? []) s.vis.destroy();
     this.doorVis = [];
     for (const o of map.objects) {
+      const art = o.art ?? o.id;   // several objects can share one drawing
       if (o.door) {
         // Fable's door art when present (frames '<id>' and '<id>#open'); drawn placeholder otherwise.
         const artKey = o.art ?? o.id;
@@ -272,20 +273,20 @@ export class WorldScene extends Phaser.Scene {
         this.doorVis.push({ o, vis, art: !!art, drawn: null });
         continue;
       }
-      if (this.textures.exists('wide') && this.textures.get('wide').has(o.id)) {
+      if (this.textures.exists('wide') && this.textures.get('wide').has(art)) {
         // Wall piece: 32x16, covering this wall tile and the one to its right.
-        this.propSprites.push(this.add.image(o.x * TILE, o.y * TILE + TILE + 7, 'wide', o.id).setOrigin(0, 1).setDepth(o.y * TILE + TILE + 2));
+        this.propSprites.push(this.add.image(o.x * TILE, o.y * TILE + TILE + 7, 'wide', art).setOrigin(0, 1).setDepth(o.y * TILE + TILE + 2));
         continue;
       }
-      if (this.textures.exists('big') && this.textures.get('big').has(o.id)) {
+      if (this.textures.exists('big') && this.textures.get('big').has(art)) {
         // Big piece: 32x40, centred on its tile and standing on the tile's bottom edge.
-        this.propSprites.push(this.add.image(o.x * TILE + TILE / 2, o.y * TILE + TILE, 'big', o.id).setOrigin(0.5, 1).setDepth(o.y * TILE + TILE - 4));
+        this.propSprites.push(this.add.image(o.x * TILE + TILE / 2, o.y * TILE + TILE, 'big', art).setOrigin(0.5, 1).setDepth(o.y * TILE + TILE - 4));
         continue;
       }
-      if (props?.has(o.id)) {
+      if (props?.has(art)) {
         // Hand-drawn prop: 16x24, standing on its tile. A "#1" frame means a slow two-frame loop.
-        const im = this.add.image(o.x * TILE, o.y * TILE + TILE, 'props', o.id).setOrigin(0, 1).setDepth(o.y * TILE + TILE - 4);
-        if (props.has(`${o.id}#1`)) this.propTimers.push(this.time.addEvent({ delay: 420, loop: true, callback: () => im.active && im.setFrame(im.frame.name === o.id ? `${o.id}#1` : o.id) }));
+        const im = this.add.image(o.x * TILE, o.y * TILE + TILE, 'props', art).setOrigin(0, 1).setDepth(o.y * TILE + TILE - 4);
+        if (props.has(`${art}#1`)) this.propTimers.push(this.time.addEvent({ delay: 420, loop: true, callback: () => im.active && im.setFrame(im.frame.name === art ? `${art}#1` : art) }));
         this.propSprites.push(im);
         continue;
       }

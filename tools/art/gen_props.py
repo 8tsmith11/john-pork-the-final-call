@@ -217,6 +217,50 @@ P("obj.manuel_closet", c.outline())
 c = C().rect(5, 9, 6, 9, "steel").h_(5, 9, 6, "bone").rect(7, 12, 2, 3, "night0").pts("warm4", (6, 16), (9, 10))
 c.pts("concrete3", (4, 11), (3, 12), (11, 14), (12, 15)).pts("warm2", (4, 17), (5, 18), (10, 18))                  # pry marks, splinters
 P("obj.front_lock", c.outline())
+# ---- ASTER lobby and sixth floor ----
+c = C().rect(1, 4, 14, 19, "night1")
+for i, y in enumerate(range(6, 22, 3)):
+    c.h_(2 + i, y, 12 - i, "concrete2").h_(2 + i, y + 1, 12 - i, "concrete0")
+c.v_(2, 3, 18, "steel").h_(2, 3, 11, "steel")
+P("obj.stairs", c.outline())
+c = C().rect(2, 6, 12, 17, "bone").rect(2, 6, 12, 3, "concrete3").pts("signal", (4, 7)).pts("screen2", (6, 7), (8, 7))
+c.rect(4, 11, 8, 8, "steel").rect(5, 12, 6, 6, "screen0").pts("screen1", (6, 13), (7, 14), (9, 15)).h_(2, 22, 12, "concrete2")
+P("obj.washer", c.outline())
+c = C().rect(1, 4, 14, 11, "warm1").rect(2, 5, 12, 9, "warm2").rect(3, 6, 4, 3, "bone").rect(8, 6, 5, 2, "warm4").rect(4, 10, 3, 3, "bone").rect(9, 9, 3, 4, "screen2")
+c.pts("signal", (4, 6), (9, 6), (5, 10))
+P("obj.board", c.outline())
+c = C().rect(5, 17, 6, 6, "warm1").h_(5, 17, 6, "warm3").rect(7, 9, 2, 8, "yerba0")
+c.pts("yerba1", (4, 8), (5, 7), (6, 6), (9, 6), (10, 7), (11, 8), (3, 11), (4, 12), (12, 11), (11, 12), (6, 10), (9, 10), (7, 5), (8, 4))
+c.pts("yerba0", (5, 9), (10, 9), (6, 12), (9, 12))
+P("obj.plant", c.outline())
+c = C().rect(0, 14, 16, 3, "warm2").h_(0, 14, 16, "warm3").rect(0, 9, 16, 5, "warm1").h_(0, 9, 16, "warm2").rect(1, 17, 2, 6, "warm0").rect(13, 17, 2, 6, "warm0").v_(5, 10, 4, "warm0").v_(10, 10, 4, "warm0")
+P("obj.bench", c.outline())
+c = C().rect(2, 2, 12, 21, "night3").rect(3, 3, 7, 13, "screen0")
+for y in (4, 7, 10, 13):
+    c.pts("soft1", (4, y)).pts("warm4", (6, y)).pts("yerba1", (8, y)).h_(3, y + 2, 7, "night2")
+c.rect(11, 4, 2, 6, "steel").px(11, 5, "signal").rect(3, 18, 10, 3, "night1").h_(2, 22, 12, "night2")
+P("obj.vending", c.outline())
+c = C().rect(2, 3, 12, 14, "night1").rect(3, 4, 10, 12, "night0")
+for y in range(5, 15, 2):
+    c.pts("bone", *[(x, y) for x in range(4, 12) if (x * 7 + y * 3) % 5 != 0])
+c.h_(2, 2, 12, "warm4")
+P("obj.directory", c.outline())
+c = C().rect(5, 5, 6, 4, "night2").rect(7, 9, 2, 2, "steel").px(6, 7, "signal").rect(9, 6, 3, 2, "night0").px(11, 7, "screen2").h_(4, 4, 8, "steel")
+P("obj.lobby_camera", c.outline())
+c = C().rect(0, 12, 16, 11, "warm1").h_(0, 12, 16, "warm3").rect(1, 15, 14, 7, "warm0").rect(3, 10, 6, 2, "bone").pts("night0", (4, 10), (6, 11)).rect(11, 9, 2, 3, "warm4")
+P("obj.security_desk", c.outline())
+P("npc.doorman", person("night3", "night2", "bone", "steel", lace="screen2", hunch=False))
+c = C().rect(4, 6, 8, 12, "steel").rect(5, 8, 6, 5, "night0").h_(5, 7, 6, "bone").rect(6, 14, 4, 2, "concrete1").px(11, 10, "warm4")
+P("obj.chute", c.outline())
+c = C().rect(6, 8, 4, 11, "signal").rect(7, 5, 2, 3, "steel").pts("night0", (9, 6), (10, 7), (11, 8)).rect(6, 12, 4, 2, "bone").h_(5, 19, 6, "night2")
+P("obj.extinguisher", c.outline())
+c = C().rect(2, 3, 12, 14, "steel").rect(3, 4, 10, 12, "night1").v_(8, 4, 12, "steel").h_(3, 10, 10, "steel")
+c.pts("warm4", (5, 13), (6, 13), (10, 12), (11, 12), (12, 13)).pts("signal", (5, 7)).pts("bone", (10, 6))
+P("obj.window_6f", c.outline())
+c = C().rect(2, 14, 12, 8, "warm2").h_(2, 14, 12, "warm3").v_(2, 15, 7, "warm1").pts("bone", (5, 13), (6, 12)).pts("pork1", (9, 13)).pts("night1", (11, 13), (12, 13)).pts("tub1", (4, 13))
+P("obj.lost_found", c.outline())
+c = C().rect(0, 2, 16, 21, "steel").rect(1, 3, 6, 19, "night2").rect(9, 3, 6, 19, "night2").pts("screen0", (2, 5), (3, 6), (10, 5), (11, 6)).rect(7, 11, 2, 3, "warm4")
+P("obj.street_doors", c.outline())
 P("obj.door", door())
 P("obj.door_631", door())
 P("obj.bathroom", door("concrete2", "concrete1", occupied=True, num=False))
@@ -368,6 +412,13 @@ def pork(f):
 for f in (0, 1):
     PRINCIPALS[f"sahur_{f}"] = sahur(f).rows()
     PRINCIPALS[f"pork_{f}"] = pork(f).rows()
+
+c = C(32, 16).rect(0, 1, 32, 14, "warm2").h_(0, 1, 32, "warm4").h_(0, 14, 32, "warm0")
+for x in range(1, 31, 5):
+    for y in (3, 9):
+        c.rect(x, y, 4, 4, "warm3").px(x + 3, y + 2, "night0").h_(x, y, 4, "warm4")
+c.pts("bone", (7, 10), (22, 4), (27, 10))
+WIDE["obj.mailboxes"] = c.outline().rows()
 
 # ---- enemies (16x16) ----
 ENEMIES = {}
