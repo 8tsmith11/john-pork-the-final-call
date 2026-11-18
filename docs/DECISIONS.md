@@ -124,3 +124,8 @@ Format:
 - 2026-11-18. No graphic depiction of a penis anywhere in the game: art, sprites, animations, UI or
   icons. Crude humor can still imply it (dialogue, reactions, off-screen, cutaways), but nothing is
   drawn. This applies to every character, NPCs included, and to hidden easter eggs.
+
+## D-016 Michael's own character arc  (status: agreed, direct from Michael)
+- 2026-11-18. Additions to Michael's character that he asked for, sealed so they stay a surprise
+  (`src/content/crush.js`, `src/game/crush.js`). Anything in them that touches another roommate's
+  likeness physically stays off until that roommate's own yes (D-007).
