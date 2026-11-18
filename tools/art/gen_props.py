@@ -347,6 +347,32 @@ c.pts("soft1", (7, 6), (12, 10))
 P("obj.balcony_plants", c.outline())
 c = C().rect(7, 10, 2, 12, "steel").rect(3, 5, 10, 4, "night2").rect(12, 6, 3, 2, "steel").px(2, 6, "screen2").rect(5, 22, 6, 1, "steel").pts("steel", (5, 20), (10, 20))
 P("obj.balcony_view", c.outline())
+# ---- Room 631, second pass: the things that make it lived in ----
+c = C().rect(4, 13, 8, 2, "warm2").h_(4, 13, 8, "warm3").rect(4, 7, 8, 6, "warm1").rect(5, 8, 6, 4, "warm0").rect(4, 15, 2, 7, "warm0").rect(10, 15, 2, 7, "warm0")
+P("obj.chair", c.outline())
+c = C().rect(3, 14, 10, 8, "warm1").h_(3, 14, 10, "warm3").rect(5, 17, 6, 2, "warm0").px(8, 18, "warm4").rect(7, 9, 2, 5, "steel").rect(5, 5, 6, 4, "warm4").h_(5, 5, 6, "bone")
+P("obj.nightstand", c.outline())
+c = C().rect(2, 2, 12, 16, "night1").rect(3, 3, 10, 9, "soft0").pts("warm4", (6, 5), (7, 4), (8, 5), (9, 6), (7, 7), (8, 8)).pts("bone", (5, 9), (10, 9)).h_(4, 14, 8, "bone").h_(5, 16, 6, "signal")
+P("obj.poster_band", c.outline())
+c = C()
+for x0, y0, col in ((2, 3, "screen1"), (7, 2, "soft1"), (11, 4, "warm4"), (3, 9, "bone"), (8, 8, "balloon1"), (12, 10, "yerba1")):
+    c.rect(x0, y0, 4, 5, "bone").rect(x0 + 1, y0 + 1, 2, 2, col)
+c.pts("signal", (4, 2), (9, 1), (13, 3))
+P("obj.photo_wall", c.outline())
+c = C().rect(2, 4, 3, 10, "screen2").rect(5, 5, 3, 8, "bone").rect(8, 6, 3, 6, "screen2").rect(11, 7, 2, 4, "bone").px(6, 8, "warm4").px(7, 9, "warm4").v_(1, 3, 13, "warm0")
+P("obj.pennant", c.outline())
+c = C().rect(2, 14, 12, 8, "signal").h_(2, 14, 12, "soft1").rect(6, 12, 4, 2, "steel").rect(4, 17, 8, 1, "night0").pts("steel", (7, 18))
+P("obj.toolbox", c.outline())
+c = C().rect(1, 10, 14, 12, "warm2").h_(1, 10, 14, "warm3").h_(1, 16, 14, "warm0").v_(8, 10, 12, "warm0").pts("night0", (3, 13), (4, 13), (5, 13), (11, 19), (12, 19)).rect(3, 6, 6, 4, "warm1")
+P("obj.crate", c.outline())
+c = C().pts("night0", *[(x, 18 + (x // 3) % 2) for x in range(0, 16)]).pts("signal", *[(x, 20 - (x // 4) % 2) for x in range(2, 14)]).pts("screen1", (3, 21), (4, 22), (5, 21), (9, 22), (10, 21))
+PROPS["obj.cables"] = c.rows()
+c = C().rect(1, 2, 14, 21, "warm0").h_(1, 8, 14, "warm2").h_(1, 15, 14, "warm2").h_(1, 22, 14, "warm2")
+for y0, cols in ((3, ("soft1", "tub1", "bone", "yerba1", "warm4", "night3")), (10, ("tub0", "bone", "soft0", "warm3", "screen1", "bone")), (17, ("yerba0", "warm4", "night3", "soft1", "bone", "tub1"))):
+    for i, col in enumerate(cols):
+        c.rect(2 + i * 2, y0, 2, 5, col).px(2 + i * 2, y0, "night0")
+c.rect(10, 16, 4, 1, "pork1")
+P("obj.bookshelf", c.outline())
 P("obj.door", door())
 P("obj.door_631", door())
 P("obj.bathroom", door("concrete2", "concrete1", occupied=True, num=False))
@@ -518,6 +544,12 @@ WIDE["obj.van"] = c.outline().rows()
 c = C(32, 16).rect(3, 7, 26, 6, "tub0").rect(8, 3, 14, 5, "tub0").rect(9, 4, 5, 3, "night1").rect(16, 4, 5, 3, "night1").h_(3, 7, 26, "tub1")
 c.rect(6, 12, 4, 3, "night0").rect(22, 12, 4, 3, "night0").pts("warm4", (28, 9)).pts("signal", (3, 9)).pts("rot0", (11, 5), (18, 5))
 WIDE["obj.car"] = c.outline().rows()
+
+c = C(32, 16).pts("night1", *[(x, 3 + (2 if 6 < x % 16 < 10 else 1 if 3 < x % 16 < 13 else 0)) for x in range(32)])
+for i, x in enumerate(range(2, 31, 4)):
+    yy = 5 + (2 if 6 < x % 16 < 10 else 1 if 3 < x % 16 < 13 else 0)
+    c.rect(x, yy, 2, 2, ("warm4", "soft1", "screen2", "yerba1")[i % 4])
+WIDE["obj.string_lights"] = c.rows()
 
 # ---- enemies (16x16) ----
 ENEMIES = {}

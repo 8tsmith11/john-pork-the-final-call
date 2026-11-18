@@ -541,6 +541,9 @@ export class WorldScene extends Phaser.Scene {
       'CHANNEL 7 · Helium convoy attacked in the Gulf. Continuity reminds citizens that hoarding helium is a federal offense.',
       'CHANNEL 7 · Purple Line opening date: SOON. A reporter laughs and the feed cuts.',
       'CHANNEL 7 · Static, then two seconds of someone very familiar saying "hey—" before the channel corrects itself.',
+      'CHANNEL 7 · "Tonight marks twenty-seven years since the incident of 2071." The likeness is not shown. The anchor describes it instead, from memory, for some time, and has to be stopped.',
+      'ARCHIVE HOUR · A lecture hall, decades old. A woman at a lectern: "We did not build a personality. We built a mind and asked it to pick one. I want to be clear about who picked." The feed is withdrawn for stability.',
+      'CHANNEL 7 · Interdiction confirms the entity "has not been observed in a body since the eighties." A man in the background of the shot, in a long coat, waits for the light to change and crosses.',
     ];
     this._newsIdx = ((this._newsIdx ?? -1) + 1) % NEWS.length;
     return NEWS[this._newsIdx];

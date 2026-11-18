@@ -22,7 +22,9 @@ export const asterHall = makeMap({
   objects: [
     // North side
     { id: 'obj.door_631', art: DOOR, x: 6, y: 2, label: 'Room 631', action: 'exit', to: 'room631', text: 'Home.' },
-    { id: 'obj.door_633', art: DOOR, x: 11, y: 2, label: '633: Varga', text: 'Mrs. Varga\'s door. A mat that says WIPE. A strip of light underneath; she doesn\'t sleep.' },
+    { id: 'obj.door_633', art: DOOR, x: 11, y: 2, label: '633: Varga', action: 'pages', pages: [
+      'Mrs. Varga\'s door. A mat that says WIPE. A strip of light underneath; she doesn\'t sleep.',
+      'Through the door: "Is that 631? The ones with the pig?" A pause. "I am not complaining. He rang here once. I was washing up. I let it ring, and then I didn\'t." The chain goes on. "Wipe your feet."' ] },
     { id: 'obj.graffiti', x: 15, y: 2, label: 'Graffiti', text: 'Three hands, three paints: FREE JOHN PORK. JUSTICE FOR JOHN PORK. TIM CHEESE WILL PAY. Someone has crossed out the first one, then uncrossed it.' },
     { id: 'obj.door_635', art: DOOR, x: 19, y: 2, label: '635', text: 'Six locks. Five are decorative. You have never worked out which.' },
     { id: 'obj.newsletter', art: 'obj.board', x: 23, y: 2, label: 'Tenant board', text: 'THE ASTER LETTER. Bake sale. Boiler schedule. Lost: one grey cat, answers to nothing. The issue for the month of the Call is missing. The next one starts mid-sentence.' },
@@ -87,7 +89,10 @@ export const asterLobby = makeMap({
     { id: 'obj.lost_found', x: 5, y: 11, label: 'Lost and found', text: 'A box that is never emptied. One glove. A pacifier. A phone, face down, that you decide not to turn over.' },
     { id: 'obj.plant_e', art: 'obj.plant', x: 34, y: 9, label: 'Plant', text: 'Dead for years. Still in the watering rota.' },
     { id: 'obj.bench_e', art: 'obj.bench', x: 31, y: 10, label: 'Bench', text: 'Warm, as if someone just stood up.' },
-    { id: 'obj.notice', art: 'obj.board', x: 34, y: 5, label: 'Abatement notice', text: 'CONTINUITY AUTHORITY: ROUTINE ABATEMENT IN YOUR AREA. Residents may notice vans. Residents need not notice anything else.' },
+    { id: 'obj.notice', art: 'obj.board', x: 34, y: 5, label: 'Abatement notice', action: 'pages', pages: [
+      'CONTINUITY AUTHORITY: ROUTINE ABATEMENT IN YOUR AREA. Residents may notice vans. Residents need not notice anything else.',
+      'REMINDER. Display of the designated likeness (JP-1) in any medium is an offence: flags, figures, drawings, and descriptions sufficient to identify.\n\nThe notice then describes him, for four lines, so that you will know what not to display.',
+      'Somebody has added, in biro, at the bottom: he called my mother in \'71. she still sets a place.' ] },
     { id: 'obj.street_doors', x: 17, y: 13, label: 'Street doors', action: 'exit', floor: true, to: 'metro_plaza', text: 'Out into the plaza. Sodium light and wet concrete.' },
   ],
 });

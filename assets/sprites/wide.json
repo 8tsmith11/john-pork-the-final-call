@@ -79,13 +79,33 @@
     "w": 32,
     "h": 16
    }
+  },
+  "obj.string_lights": {
+   "frame": {
+    "x": 128,
+    "y": 0,
+    "w": 32,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 16
+   }
   }
  },
  "meta": {
   "image": "wide.png",
   "format": "RGBA8888",
   "size": {
-   "w": 128,
+   "w": 160,
    "h": 16
   },
   "scale": "1"

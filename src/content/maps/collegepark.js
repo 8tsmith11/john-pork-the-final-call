@@ -95,7 +95,7 @@ export const metroPlaza = makeMap({
     { id: 'obj.shelter', x: 30, y: 12, label: 'Bus shelter', light: 0.6, text: 'A timetable behind cracked plastic. Every bus is listed as DUE.' },
     { id: 'obj.plaza_bench_a', art: 'obj.bench', x: 37, y: 17, label: 'Bench', text: 'Two benches facing each other across four metres of paving, like an argument nobody finished.' },
     { id: 'obj.plaza_bench_b', art: 'obj.bench', x: 37, y: 20, label: 'Bench', text: 'A paper cup, a transit pass, a pair of reading glasses. Whoever it was meant to come back.' },
-    { id: 'obj.planter_a', art: 'obj.planter', x: 30, y: 18, label: 'Planter', text: 'The city stopped planting these. Somebody else started.' },
+    { id: 'obj.planter_a', art: 'obj.planter', x: 31, y: 19, label: 'Planter', text: 'The city stopped planting these. Somebody else started.' },
     { id: 'obj.planter_b', art: 'obj.planter', x: 46, y: 16, label: 'Planter', text: 'Tomatoes. In a metro plaza. They are doing very well.' },
     { id: 'obj.planter_c', art: 'obj.planter', x: 24, y: 20, label: 'Planter', text: 'Empty except for a single orange ribbon, tied to a stake.' },
     { id: 'obj.kiosk', x: 48, y: 11, label: 'News kiosk', light: 0.8, action: 'tv', text: 'Headlines.' },
@@ -111,6 +111,7 @@ export const metroPlaza = makeMap({
     { id: 'obj.diner_menu', art: 'obj.board', x: 69, y: 8, label: 'Menu', text: 'Chalk. One item has been crossed out and rewritten so many times the board is worn pale there.' },
     { id: 'npc.ray', art: PERSON[1], x: 70, y: 19, label: 'Big Ray', npc: true, text: '"Scooter\'s fine. You\'re running rich. Sleep, eat something that was alive, come back."' },
     { id: 'obj.scooters', x: 74, y: 19, label: 'Scooter rack', text: 'Three scooters, chained. One of them is yours and you have not paid for the tyre.' },
+    { id: 'obj.shop_window', art: 'obj.lobby_monitor', x: 66, y: 25, label: 'Shop window', light: 0.6, text: 'A window of dead screens, price tags still on. One comes on as you pass.\n\nA street camera, this street. A big man in a long coat, from behind, walking north with a bad knee. The timestamp is now.\n\nYou look north. Nobody.' },
     // The alley
     { id: 'obj.dumpster', x: 81, y: 12, label: 'Dumpster', text: 'Abatement tags on the lid. Inside, a hundred phones, screens up, all showing 19:01.' },
     { id: 'obj.alley_graffiti', art: 'obj.graffiti', x: 80, y: 20, label: 'Scratched into the brick', text: 'FOR A GOOD TIME DIAL 6969. Under it, in a different hand: he does pick up.' },

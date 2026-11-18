@@ -25,6 +25,10 @@ const LAYOUT = [
 // Row 3: doorways between each bedroom and its bathroom; the two suites are separate.
 LAYOUT[3] = '#' + '.'.repeat(7) + 'w'.repeat(6) + '##' + '.'.repeat(7) + 'w'.repeat(6) + '#';
 LAYOUT[5] = '####.#################.#######';
+// Rugs: one under the dining table, one between the couch and the TV.
+for (const [x0, y0, w, h] of [[4, 8, 5, 3], [10, 8, 4, 3]]) {
+  for (let y = y0; y < y0 + h; y++) LAYOUT[y] = LAYOUT[y].slice(0, x0) + 'u'.repeat(w) + LAYOUT[y].slice(x0 + w);
+}
 
 export const room631 = makeMap({
   id: 'room631',
@@ -32,6 +36,26 @@ export const room631 = makeMap({
   layout: LAYOUT,
   spawns: [[5, 8], [7, 9], [9, 8]],
   objects: [
+    // Second pass: chairs, light, things on the walls
+    { id: 'obj.chair_w', art: 'obj.chair', x: 5, y: 9, label: 'Chair', text: 'Trevor\'s chair. He sits on it backwards. He thinks nobody has noticed that it is a choice.' },
+    { id: 'obj.chair_e', art: 'obj.chair', x: 7, y: 9, label: 'Chair', text: 'The good chair. Whoever is home first gets it. There is a tally on the underside.' },
+    { id: 'obj.string_lights', x: 5, y: 5, label: 'String lights', light: 0.7, text: 'Michael put these up for somebody\'s visit. They stayed up. Nobody has mentioned why.' },
+    { id: 'obj.clock_631', art: 'obj.clock_6f', x: 13, y: 5, label: 'Kitchen clock', text: '19:01. Manuel fixed it twice. Both times it went back by morning.' },
+    { id: 'obj.nightstand_trevor', art: 'obj.nightstand', x: 1, y: 1, label: 'Nightstand', light: 0.5, text: 'A lamp, a pill organiser labelled by hour, and a sleep tracker that has rated him "fair" every night for a year.' },
+    { id: 'obj.nightstand_michael', art: 'obj.nightstand', x: 18, y: 1, label: 'Nightstand', light: 0.5, text: 'A lamp. A phone charger with two cables. One of them is not for his phone.' },
+    { id: 'obj.nightstand_manuel', art: 'obj.nightstand', x: 22, y: 1, label: 'Nightstand', light: 0.5, text: 'A lamp, a thermos, a book in Spanish with a bus ticket for a bookmark. The ticket is for a route in Rosario.' },
+    { id: 'obj.poster_band', x: 3, y: 0, label: 'Poster', text: 'A band called THE LEGACY SYSTEMS, live at the Black Cat. Trevor has seen them four times. He says the fifth was the one to see.' },
+    { id: 'obj.photo_wall', x: 17, y: 0, label: 'Photos', text: 'Printed photos, pinned in a grid. The same yellow raincoat is in most of them. There is a gap in the bottom row, the size of one print.' },
+    { id: 'obj.pennant', x: 21, y: 0, label: 'Pennant', text: 'Celeste y blanca, from a match Manuel\'s grandmother took him to. She kept the score in the margin of the programme. She kept everything.' },
+    { id: 'obj.toolbox', x: 20, y: 10, label: 'Toolbox', text: 'Everyone\'s tools, in nobody\'s order. A label on the lid: IF YOU BORROW IT YOU ARE AN ASTER NOOB UNTIL IT COMES BACK.' },
+    { id: 'obj.crate', x: 23, y: 10, label: 'Filament crate', text: 'Spools for the fabs. Eleven colours. The pink is nearly gone and none of you remember printing in pink.' },
+    { id: 'obj.cables', x: 17, y: 7, label: 'Cables', text: 'Three power leads for three fabs. A fourth runs under the bench and you have never followed it.' },
+    // What the apartment knows about him
+    { id: 'obj.bookshelf', x: 14, y: 7, label: 'Bookshelf', action: 'pages', pages: [
+      'The 245 lab textbook. PERSONA CONVERGENCE AND THE STABLE SELF, fourth edition, I. Reyes.\n\nChapter 1 has been underlined in three inks by three previous owners:\n"A mind trained on everything a species ever said has every self at once. We asked it to choose one it could hold. We expected a statesman."\n\nSomebody has drawn a pig in the margin. Somebody else has written: ON THE EXAM.',
+      'A bound journal, volume 631, cracked open at one paper: models trained on their own output forget the rare things first, then everything else.\n\nThe page is soft from being read. The volume number is circled, and an arrow points at your front door.',
+      'A cookbook. The cover is a cookbook. Inside it is WHAT WE HEARD: FORTY ACCOUNTS OF THE CALL.\n\nNo two of the forty agree on what he said. Thirty-one agree on how long they stayed on the line.',
+      'A coursework folder, Manuel\'s. A sketch of a head, front and side, with measurements. Under it: "ears lower than you think." Under that, much later, in the same hand: "how do I know that".' ] },
     // Interior doors (closed until opened)
     { id: 'door.trevor_room', x: 4, y: 5, label: 'Trevor\'s door', door: true },
     { id: 'door.mm_room', x: 22, y: 5, label: 'Michael & Manuel\'s door', door: true },
