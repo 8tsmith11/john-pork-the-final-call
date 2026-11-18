@@ -24,7 +24,7 @@
 
 ## 2. Core entities
 
-### The three big machines at a glance
+### The three principal machines at a glance
 Their natures in the backstory hold (superintelligence, defense AI, watchdog). On top of that, **all
 three have physical bodies, and the player knows they're machines**.
 
@@ -55,7 +55,11 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
   slow fungal symbiosis) grown over brass clockwork. It's tall and gaunt, its skin has a grain you
   could read like rings, and it creaks and breathes like a house at night. Wood still can't
   *code*-rot, but it can be scarred.
-- **Theme tie-in:** the big machines wear bodies made from the animals and materials humans used:
+- **Size: human-scale, not giants.** Pork stands about 2 m (6'7"), broad and heavy-set, the size of a
+  big man. Sahur is about 2.1 m (6'11"), gaunt and long-limbed. **Tim is ordinary human height**,
+  slight, and easy to lose in a crowd. Their power comes from what they're made of and what they can
+  do, not from bulk.
+- **Theme tie-in:** the principal machines wear bodies made from the animals and materials humans used:
   pigs for organs, mice for experiments, trees for everything. *Where does "human" end* (themes §6)
   is written on their skin.
 
@@ -99,7 +103,7 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
 - **A government asset**: Continuity's **threat-interdiction intelligence**, owned and deployed by
   the state, with handlers and a chain of command. Built on the Swiss-cheese model of layered
   defense. Folk name and meme: *the meme murderer*, who killed John Pork once.
-- **A machine with a body, humanized.** A compact, precise android with a mouse's face and wire
+- **A machine with a body, humanized.** An ordinary-height, precise android with a mouse's face and wire
   glasses, and a body with **holes clean through it that never line up**, so you can never see all
   the way through him. The player knows he's a machine. He's a **person**: meticulous, dry,
   courteous, exhausted, a career officer who believes in the mission and keeps a list of everyone
@@ -188,7 +192,7 @@ All three are good engineers. **Morph stages are the cost/benefit spine:** stron
 and the final fight is hopeless without good ones.
 
 ## 6. Tone rules
-- **The big machines are people.** Pork, Tim, and Sahur are machines with bodies, and the
+- **The principal machines are people.** Pork, Tim, and Sahur are machines with bodies, and the
   player always knows it. Write them as characters with wants, flaws, and humor, never as abstract forces.
 - Play memes completely straight. The world is never in on the joke.
 - Bittersweet over grimdark. 18+ means the themes, not shock for its own sake.

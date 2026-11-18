@@ -2,19 +2,52 @@
 // The host steps the Sim with every player's latest input; clients render snapshots.
 
 export const TILE = 16;
+import { ENEMIES } from '../content/enemies.js';
+
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.55, iframes: 0.22 };
+export const COMBAT = {
+  maxHp: 100, hurtIframes: 0.6, reviveTime: 2.0, reviveRange: 18, reviveHp: 40,
+  melee: { cooldown: 0.38, range: 20, arc: Math.PI * 0.6, damage: 12, knockback: 120 },
+  shot: { cooldown: 0.5, speed: 210, damage: 8, life: 0.9 },
+};
 const HALF_W = 5, HALF_H = 4; // feet hitbox (characters are 16x24; collide at the feet)
 
 export function emptyInput() {
-  return { mx: 0, my: 0, aim: 0, dodge: false, attack: false, interact: false };
+  return { mx: 0, my: 0, aim: 0, dodge: false, attack: false, fire: false, interact: false };
 }
 
 export class Sim {
   constructor(map) {
     this.map = map;          // { w, h, solid(tx, ty) -> bool, spawns: [{x,y}] }
     this.players = new Map(); // id -> player
+    this.enemies = new Map(); // id -> enemy
+    this.shots = [];          // projectiles
+    this.events = [];         // this tick's events for rendering: hits, deaths, shots
     this.tick = 0;
+    this._nextId = 1;
+    this.spawnEnemies();
   }
+
+  /** Swap to another map, keeping players (placed at the map's spawns). */
+  setMap(map) {
+    this.map = map; this.shots = []; this.enemies.clear();
+    let i = 0;
+    for (const p of this.players.values()) {
+      const sp = map.spawns[i++ % map.spawns.length];
+      Object.assign(p, { x: sp.x, y: sp.y, vx: 0, vy: 0, dodgeT: 0, downed: false, hp: Math.max(p.hp, COMBAT.reviveHp) });
+    }
+    this.spawnEnemies();
+  }
+
+  spawnEnemies() {
+    for (const e of this.map.enemies || []) {
+      const def = ENEMIES[e.kind];
+      const id = `e${this._nextId++}`;
+      this.enemies.set(id, { id, kind: e.kind, x: e.x, y: e.y, hp: def.hp, cd: Math.random(), hurtT: 0, kx: 0, ky: 0 });
+    }
+  }
+
+  get cleared() { return this.enemies.size === 0; }
 
   addPlayer(id, character) {
     const spawn = this.map.spawns[this.players.size % this.map.spawns.length];
@@ -22,6 +55,7 @@ export class Sim {
       id, character, x: spawn.x, y: spawn.y, vx: 0, vy: 0,
       facing: 'down', aim: 0, moving: false,
       dodgeT: 0, dodgeCd: 0, dodgeDx: 0, dodgeDy: 0, iframes: 0,
+      hp: COMBAT.maxHp, downed: false, reviveT: 0, meleeCd: 0, shotCd: 0, swingT: 0,
     });
   }
 
@@ -29,8 +63,11 @@ export class Sim {
 
   step(dt, inputs) {
     this.tick++;
+    this.events = [];
     for (const p of this.players.values()) {
       const inp = inputs.get(p.id) || emptyInput();
+      p.meleeCd = Math.max(0, p.meleeCd - dt); p.shotCd = Math.max(0, p.shotCd - dt); p.swingT = Math.max(0, p.swingT - dt);
+      if (p.downed) { p.vx = p.vy = 0; p.moving = false; continue; }
       let { mx, my } = inp;
       const len = Math.hypot(mx, my);
       if (len > 1) { mx /= len; my /= len; } // diagonals aren't faster
@@ -56,10 +93,138 @@ export class Sim {
       this._moveAxis(p, p.vx * dt, 0);
       this._moveAxis(p, 0, p.vy * dt);
 
+      if (inp.attack && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
+      if (inp.fire && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);
+
       // Facing follows the aim (4 directions), so sprites face where you point.
       const a = p.aim;
       p.facing = Math.abs(Math.cos(a)) > Math.abs(Math.sin(a)) ? (Math.cos(a) > 0 ? 'right' : 'left') : (Math.sin(a) > 0 ? 'down' : 'up');
     }
+    this._afterPlayers(dt);
+  }
+
+  _afterPlayers(dt) {
+    this._stepEnemies(dt);
+    this._stepShots(dt);
+    this._stepRevives(dt);
+  }
+
+  _melee(p) {
+    const m = COMBAT.melee;
+    p.meleeCd = m.cooldown; p.swingT = 0.15;
+    this.events.push({ t: 'swing', id: p.id, a: p.aim });
+    for (const e of this.enemies.values()) {
+      const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
+      const def = ENEMIES[e.kind];
+      if (d > m.range + def.radius) continue;
+      let da = Math.atan2(dy, dx) - p.aim; da = Math.atan2(Math.sin(da), Math.cos(da));
+      if (Math.abs(da) > m.arc / 2 && d > def.radius + 4) continue;
+      this._hurtEnemy(e, m.damage, dx / (d || 1) * m.knockback, dy / (d || 1) * m.knockback, p.id);
+    }
+  }
+
+  _fire(p) {
+    const c = COMBAT.shot;
+    p.shotCd = c.cooldown;
+    this.shots.push({ x: p.x + Math.cos(p.aim) * 8, y: p.y - 6 + Math.sin(p.aim) * 8, vx: Math.cos(p.aim) * c.speed, vy: Math.sin(p.aim) * c.speed,
+      life: c.life, dmg: c.damage, from: 'player', owner: p.id });
+    this.events.push({ t: 'shot', id: p.id });
+  }
+
+  _hurtEnemy(e, dmg, kx, ky, by) {
+    e.hp -= dmg; e.hurtT = 0.12; e.kx = kx; e.ky = ky;
+    this.events.push({ t: 'hit', x: e.x, y: e.y, dmg, target: e.id, by });
+    if (e.hp <= 0) {
+      this.enemies.delete(e.id);
+      this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: ENEMIES[e.kind].xp });
+    }
+  }
+
+  _hurtPlayer(p, dmg) {
+    if (p.downed || p.iframes > 0) return;
+    p.hp -= dmg; p.iframes = COMBAT.hurtIframes;
+    this.events.push({ t: 'hurt', id: p.id, x: p.x, y: p.y, dmg });
+    if (p.hp <= 0) { p.hp = 0; p.downed = true; p.reviveT = 0; this.events.push({ t: 'down', id: p.id }); }
+  }
+
+  _nearestPlayer(x, y) {
+    let best = null, bd = Infinity;
+    for (const p of this.players.values()) {
+      if (p.downed) continue;
+      const d = Math.hypot(p.x - x, p.y - y);
+      if (d < bd) { bd = d; best = p; }
+    }
+    return [best, bd];
+  }
+
+  _stepEnemies(dt) {
+    for (const e of this.enemies.values()) {
+      const def = ENEMIES[e.kind];
+      e.cd = Math.max(0, e.cd - dt); e.hurtT = Math.max(0, e.hurtT - dt);
+      // knockback decays
+      if (e.kx || e.ky) { this._moveBody(e, e.kx * dt, e.ky * dt, def.radius); e.kx *= 0.82; e.ky *= 0.82; if (Math.hypot(e.kx, e.ky) < 5) e.kx = e.ky = 0; }
+      const [target, d] = this._nearestPlayer(e.x, e.y);
+      if (!target || d > 220) continue;
+      const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
+      if (def.ai === 'chase') {
+        if (e.hurtT <= 0) this._moveBody(e, ux * def.speed * dt, uy * def.speed * dt, def.radius);
+        if (d < def.radius + 6 && e.cd <= 0) { this._hurtPlayer(target, def.damage); e.cd = def.touchCooldown; }
+      } else if (def.ai === 'kite') {
+        const dir = d < def.range * 0.7 ? -1 : d > def.range ? 1 : 0;
+        if (e.hurtT <= 0) this._moveBody(e, ux * def.speed * dir * dt, uy * def.speed * dir * dt, def.radius);
+        if (d <= def.range * 1.2 && e.cd <= 0) {
+          e.cd = def.fireCooldown;
+          this.shots.push({ x: e.x, y: e.y - 4, vx: ux * def.shotSpeed, vy: uy * def.shotSpeed, life: 2.2, dmg: def.damage, from: 'enemy' });
+        }
+      }
+    }
+  }
+
+  _stepShots(dt) {
+    const keep = [];
+    for (const s of this.shots) {
+      s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt;
+      if (s.life <= 0 || this.map.solid(Math.floor(s.x / TILE), Math.floor(s.y / TILE))) continue;
+      let hit = false;
+      if (s.from === 'player') {
+        for (const e of this.enemies.values()) {
+          if (Math.hypot(e.x - s.x, e.y - 4 - s.y) < ENEMIES[e.kind].radius + 3) {
+            this._hurtEnemy(e, s.dmg, s.vx * 0.4, s.vy * 0.4, s.owner); hit = true; break;
+          }
+        }
+      } else {
+        for (const p of this.players.values()) {
+          if (!p.downed && Math.hypot(p.x - s.x, p.y - 6 - s.y) < 7) { this._hurtPlayer(p, s.dmg); hit = true; break; }
+        }
+      }
+      if (!hit) keep.push(s);
+    }
+    this.shots = keep;
+  }
+
+  // Co-op: stand next to a downed roommate to pick them up.
+  _stepRevives(dt) {
+    for (const p of this.players.values()) {
+      if (!p.downed) continue;
+      const helper = [...this.players.values()].find((q) => !q.downed && Math.hypot(q.x - p.x, q.y - p.y) < COMBAT.reviveRange);
+      p.reviveT = helper ? p.reviveT + dt : Math.max(0, p.reviveT - dt);
+      if (p.reviveT >= COMBAT.reviveTime) { p.downed = false; p.hp = COMBAT.reviveHp; p.iframes = 1; this.events.push({ t: 'revive', id: p.id }); }
+    }
+  }
+
+  get wiped() { return this.players.size > 0 && [...this.players.values()].every((p) => p.downed); }
+
+  _moveBody(b, dx, dy, r) {
+    const fits = (x, y) => !this._hitsBox(x, y, r, r * 0.7);
+    if (fits(b.x + dx, b.y)) b.x += dx;
+    if (fits(b.x, b.y + dy)) b.y += dy;
+  }
+
+  _hitsBox(x, y, hw, hh) {
+    const x0 = Math.floor((x - hw) / TILE), x1 = Math.floor((x + hw - 0.01) / TILE);
+    const y0 = Math.floor((y - hh) / TILE), y1 = Math.floor((y + hh - 0.01) / TILE);
+    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.map.solid(tx, ty)) return true;
+    return false;
   }
 
   _moveAxis(p, dx, dy) {
@@ -81,7 +246,12 @@ export class Sim {
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
+        hp: Math.round(p.hp), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0,
       })),
+      map: this.map.id,
+      enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0 })),
+      shots: this.shots.map((s) => ({ x: Math.round(s.x), y: Math.round(s.y), f: s.from === 'player' ? 1 : 0 })),
+      events: this.events,
     };
   }
 }
