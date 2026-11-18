@@ -12,7 +12,6 @@ const FIRST = ['Dana', 'Marcus', 'Yuki', 'Rosa', 'Tobi', 'Imani', 'Greg', 'Priya
   'Lena', 'Omar', 'Bea', 'Raj', 'Carmen', 'Theo', 'Nadia', 'Jules', 'Ade', 'Ines', 'Sam', 'Kenji', 'Fatima', 'Vic'];
 const LAST = ['Okafor', 'Reyes-Hart', 'Kowalski', 'Nguyen', 'Brennan', 'Haddad', 'Moreau', 'Pak', 'Silva', 'Adeyemi', 'Lindqvist', 'Castro', 'Oyelaran', 'Fitch'];
 
-export const CROWD_SIZE = { metro_plaza: 24, aster_hall: 3 };
 
 const LINES = {
   any: [
@@ -92,43 +91,61 @@ function mosaic(scene, key, size) {
 }
 
 export class Crowd {
+  // Placement is authored per map (map.crowd), never scattered randomly:
+  //   { mode: 'walk', path: [[x,y],[x,y],...], n }   people walking a route back and forth
+  //   { mode: 'wait', at: [x,y], n, face: [x,y] }     a queue or a cluster waiting for something
+  //   { mode: 'talk', at: [x,y] }                     two people facing each other, chatting
   constructor(scene, map, seed) {
     this.scene = scene; this.map = map; this.people = [];
-    const n = CROWD_SIZE[map.id] ?? 0;
-    if (!n) return;
+    const specs = map.crowd || [];
+    if (!specs.length) return;
     const r = new Rng(`${seed}::crowd::${map.id}`);
-    const free = [];
-    for (let y = 1; y < map.h - 1; y++) for (let x = 1; x < map.w - 1; x++) if (!map.solid(x, y) && !map.objects.some((o) => o.x === x && o.y === y)) free.push([x, y]);
-    for (let i = 0; i < n && free.length; i++) {
-      const key = `crowd_${seed}_${map.id}_${i}`;
+    let i = 0;
+    const spawn = (tx, ty, mode, extra = {}) => {
+      const key = `crowd_${seed}_${map.id}_${i++}`;
       const info = makeSprite(scene, key, new Rng(key)) ?? { shell: false };
-      // Easter egg (docs/SECRETS.md): one person on the plaza is permanently pixelated. It looks
-      // like rot. It isn't, and nobody explains it.
-      const pixel = map.id === 'metro_plaza' && i === 3;
-      if (pixel) mosaic(scene, key, 4);
-      const [tx, ty] = r.pick(free);
-      const mode = r.weighted([{ m: 'walk', w: 5 }, { m: 'wait', w: 2 }, { m: 'phone', w: 2 }]).m;
       const spr = scene.add.sprite(tx * TILE + 8, ty * TILE + 8, key, 'f0').setOrigin(0.5, 1);
       const name = info.shell ? `Unit ${r.pick(['CR', 'DL', 'AB', 'MX', 'HN'])}-${r.int(100, 999)}` : `${r.pick(FIRST)} ${r.pick(LAST)}`;
-      this.people.push({ name, spr, x: tx * TILE + 8, y: ty * TILE + 8, mode, shell: info.shell && !pixel, pixel, tx: null, ty: null, speed: 18 + r.next() * 16, t: r.next() * 3, r: new Rng(`${key}-ai`), free });
+      const p = { name, spr, x: tx * TILE + 8, y: ty * TILE + 8, mode, shell: info.shell, speed: 16 + r.next() * 10, t: r.next() * 3, r: new Rng(`${key}-ai`), ...extra };
+      this.people.push(p); return p;
+    };
+    for (const sp of specs) {
+      if (sp.mode === 'walk') {
+        for (let k = 0; k < (sp.n ?? 1); k++) {
+          const leg = r.int(0, sp.path.length - 2), f = r.next();
+          const [ax, ay] = sp.path[leg], [bx, by] = sp.path[leg + 1];
+          spawn(ax + (bx - ax) * f, ay + (by - ay) * f + (k % 2 ? 0.6 : 0), 'walk', { path: sp.path, leg: leg + 1, dir: r.chance(0.5) ? 1 : -1 });
+        }
+      } else if (sp.mode === 'wait') {
+        for (let k = 0; k < (sp.n ?? 1); k++) spawn(sp.at[0] + k * 0.9, sp.at[1] + (k % 2) * 0.3, 'wait', { face: sp.face });
+      } else if (sp.mode === 'talk') {
+        const a = spawn(sp.at[0], sp.at[1], 'talk'), b = spawn(sp.at[0] + 1.2, sp.at[1], 'talk');
+        a.spr.setFlipX(false); b.spr.setFlipX(true);
+      }
     }
   }
 
   update(dt) {
     for (const p of this.people) {
       p.t -= dt;
-      if (p.mode === 'walk') {
-        if (p.tx == null || Math.hypot(p.tx - p.x, p.ty - p.y) < 3 || p.t < -12) {
-          const [x, y] = p.r.pick(p.free); p.tx = x * TILE + 8; p.ty = y * TILE + 8; p.t = 0;
+      if (p.mode === 'walk' && p.path) {
+        const [tx, ty] = p.path[p.leg], gx = tx * TILE + 8, gy = ty * TILE + 8;
+        const d = Math.hypot(gx - p.x, gy - p.y);
+        if (d < 2) {                                   // reached a waypoint: continue, turning at the ends
+          if (p.leg + p.dir < 0 || p.leg + p.dir >= p.path.length) p.dir *= -1;
+          p.leg += p.dir;
+        } else {
+          p.x += ((gx - p.x) / d) * p.speed * dt; p.y += ((gy - p.y) / d) * p.speed * dt;
+          p.spr.setFlipX(gx < p.x);
         }
-        const d = Math.hypot(p.tx - p.x, p.ty - p.y) || 1, nx = p.x + ((p.tx - p.x) / d) * p.speed * dt, ny = p.y + ((p.ty - p.y) / d) * p.speed * dt;
-        if (!this.map.solid(Math.floor(nx / TILE), Math.floor(ny / TILE))) { p.x = nx; p.y = ny; } else p.tx = null;
-        p.spr.setFlipX(p.tx < p.x).setFrame(Math.floor(this.scene.time.now / 180 + p.speed) % 2 ? 'f1' : 'f0');
+        p.spr.setFrame(Math.floor(this.scene.time.now / 200 + p.speed) % 2 ? 'f1' : 'f0');
       } else {
         p.spr.setFrame('f0');
-        if (p.t < 0) { p.t = 4 + p.r.next() * 8; if (p.r.chance(0.3)) p.mode = 'walk'; }
+        if (p.mode === 'wait' && p.face) p.spr.setFlipX(p.face[0] * TILE < p.x);
+        if (p.mode === 'talk') p.spr.setY(Math.round(p.y + 4 - (Math.sin(this.scene.time.now / 300 + p.x) > 0.7 ? 1 : 0)));
       }
-      p.spr.setPosition(Math.round(p.x), Math.round(p.y + 4)).setDepth(p.y);
+      if (p.mode !== 'talk') p.spr.setPosition(Math.round(p.x), Math.round(p.y + 4));
+      p.spr.setDepth(p.y);
     }
   }
 

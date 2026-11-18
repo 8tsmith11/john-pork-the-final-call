@@ -4,6 +4,13 @@ import { makeMap } from './build.js';
 
 export const metroPlaza = makeMap({
   id: 'metro_plaza', name: 'College Park metro plaza',
+  // Who's here, and why (see src/game/crowd.js). Thoughtful, not scattered.
+  crowd: [
+    { mode: 'wait', at: [18, 2], n: 3, face: [20, 1] },            // a queue under the train board
+    { mode: 'talk', at: [12, 4] },                                // two people talking by a pillar
+    { mode: 'walk', path: [[4, 7], [20, 7], [35, 7]], n: 2 },      // commuters along the south lane
+    { mode: 'walk', path: [[35, 3], [24, 3], [8, 3]], n: 2 },      // and the north lane
+  ],
   layout: [
     '########################################',
     '#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#',

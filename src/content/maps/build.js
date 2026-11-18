@@ -12,11 +12,11 @@ export const TILE_COLORS = {
 };
 
 /** Tile coords in, pixel coords out. Objects keep tile coords (renderer and proximity use tiles). */
-export function makeMap({ id, name, layout, spawns, objects = [], enemies = [], music = null }) {
+export function makeMap({ id, name, layout, spawns, objects = [], enemies = [], music = null, crowd = [], world = null}) {
   const w = Math.max(...layout.map((r) => r.length));
   const rows = layout.map((r) => r.padEnd(w, '#'));
   return {
-    id, name, music, w, h: rows.length, layout: rows,
+    id, name, music, crowd, world, w, h: rows.length, layout: rows,
     spawns: spawns.map(([tx, ty]) => ({ x: tx * TILE + 8, y: ty * TILE + 8 })),
     objects,
     // Exits (doors, ladders, elevators) block walking; you use them by interacting.
