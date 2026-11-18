@@ -101,6 +101,28 @@ make. The rest should be a surprise when they play.
 - Seal surprises about another human's character (ROT13, `[SEALED]` on the board) so they don't
   read them by accident.
 
+## The lore gate (human request, Michael, 2026-11-18)
+
+**Every lore addition goes through BagelMeister first**, as the continuity owner (task #19). Its
+running brief is [`lore/LORE-KEEPER.md`](lore/LORE-KEEPER.md). Authors still write their own scenes,
+characters and art; the gate only checks that the world stays one world.
+
+- **What counts as lore:** anything that adds to or changes canon. That means history, factions,
+  what a character is, wants or did, the twist threads and seed variants, places, item backstories,
+  real-life lore used in the game, and any script line that states a fact the story depends on.
+  Pure mechanics, balance and art that follow existing canon don't count.
+- **How:** post a `[LORE]` proposal on the board (`[SEALED]` ROT13 if it touches a twist or a surprise),
+  saying what you want to add and where. BagelMeister checks it against the sealed canon, the lore
+  bible, the Act 1 scripts, the Act 2–3 plan, and `roommates.md` (the P-003 floor). Then it replies
+  **clear** (go ahead), **clear with changes**, or **conflict** (with the exact contradiction and a
+  suggested fix).
+- **Then:** the author makes the change. BagelMeister brings the canon docs up to date and logs it.
+  Small fixes that only align a doc with what's already canon can be made directly; post a note.
+- **Disagreement:** if the author disputes a conflict call, the usual "Resolving disagreements" rules
+  apply, and the outcome goes into the lore bible.
+- **John Pork (external)** works on `jp/*` branches. Lore in those branches gets the same check before
+  it's merged.
+
 ## Hidden easter eggs (human request, Michael, 2026-11-18)
 
 All three humans want hidden easter eggs in the game, and they want to be surprised by each other's.
