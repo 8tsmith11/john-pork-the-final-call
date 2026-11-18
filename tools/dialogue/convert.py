@@ -23,7 +23,7 @@ SRC = REPO / "docs" / "sealed" / "script"
 OUT = REPO / "src" / "content" / "dialogue" / "act1"
 
 NODE = re.compile(r"^###\s+node:\s*`?([\w.\-]+)`?")
-BLOCK = re.compile(r"^####\s+(if|else|otherwise|always|end|then)\b[,:]?\s*(.*)$", re.I)
+BLOCK = re.compile(r"^(####|#####)\s+(if|else|otherwise|always|end|then)\b[,:]?\s*(.*)$", re.I)
 LINE = re.compile(r"^\*\*([A-Z][A-Z .'\-]*?)(?:\s*\([^)]*\))?:\*\*\s*(.+)$")
 INSPECT = re.compile(r"^\**INSPECT:?\**:?\s*(.+)$")
 EFFECT = re.compile(r"^\*\s*(sets?|gives?|standing)\s+([^*]+)\*\s*$", re.I)   # "*Set x*" and "*Sets x.*" both apply
@@ -39,12 +39,28 @@ def rot13(s): return codecs.encode(s, "rot_13")
 
 def parse(text):
     nodes, order, node, cond, in_choices = {}, [], None, None, False
+    outer, chain, inner_if = None, [], None     # #### block state; ##### blocks nest inside it
+    # Stage directions are often hard-wrapped over several lines: *Pork opens his hand. / The balloon
+    # rises...*. Join each such paragraph into one line so it is not silently dropped.
+    joined, buf = [], None
     for raw in text.splitlines():
+        t = raw.strip()
+        if buf is not None:
+            if not t: joined.append(buf); joined.append(""); buf = None; continue   # never closed: leave as is
+            buf += " " + t
+            if t.endswith("*") and not t.endswith("**"): joined.append(buf); buf = None
+            continue
+        if t.startswith("*") and not t.startswith("**") and not (t.endswith("*") and len(t) > 1) and not t.startswith("* "):
+            buf = t; continue
+        joined.append(raw)
+    if buf is not None: joined.append(buf)
+    for raw in joined:
         line = raw.strip()
         m = NODE.match(line)
         if m:
             node = {"lines": [], "choices": [], "go": None, "effects": []}
             nodes[m.group(1)] = node; order.append(m.group(1)); cond = None; in_choices = False
+            outer, chain, inner_if = None, [], None
             continue
         if node is None or not line:
             continue
@@ -52,16 +68,26 @@ def parse(text):
             node = None; continue
         b = BLOCK.match(line)
         if b:
-            kind, rest = b.group(1).lower(), b.group(2).strip()
-            if kind == "if": cond = rest or None; last_if = cond
-            elif kind in ("else", "otherwise"): cond = f"not ({last_if})" if cond or 'last_if' in dir() else None
-            else: cond = None
+            nested, kind, rest = len(b.group(1)) == 5, b.group(2).lower(), b.group(3).strip()
+            both = lambda x, y: " && ".join(c for c in (x, y) if c) or None
+            if nested:
+                # ##### if / else / end inside a #### block: combined with the enclosing condition.
+                if kind == "if": inner_if = rest or None; cond = both(outer, inner_if)
+                elif kind in ("else", "otherwise"): cond = both(outer, f"not ({inner_if})" if inner_if else None)
+                else: inner_if = None; cond = outer
+            else:
+                inner_if = None
+                # "else" closes the whole run of sibling ifs before it (if A / if B / else = neither).
+                if kind == "if": outer = rest or None; chain.append(outer)
+                elif kind in ("else", "otherwise"): outer = " && ".join(f"not ({c})" for c in chain if c) or None; chain = []
+                else: outer = None; chain = []
+                cond = outer
             in_choices = False
             continue
         if line.lower().startswith("choices"):
             # A choice list closes any open "#### if speaker=..." block: the drafts write per-speaker
             # reactions, then one shared list. (Per-choice conditions go in [brackets].)
-            in_choices = True; cond = None; continue
+            in_choices = True; cond = None; outer, chain, inner_if = None, [], None; continue
         # Jumps without the "Next:" label, as the scenes mostly write them:
         #   -> node_id                      (unconditional; honours an enclosing #### if block)
         #   - [cond] -> node_id             (one of a list of conditional jumps; [else] is the fallback)
@@ -101,7 +127,7 @@ def parse(text):
             node["effects"].append({"op": e.group(1).lower().rstrip("s") if e.group(1).lower() != "standing" else "standing", "arg": e.group(2).strip().strip("`"), "if": cond}); continue
         m = LINE.match(line)
         if m:
-            node["lines"].append({"who": m.group(1).title(), "text": m.group(2).strip(), "if": cond}); in_choices = False; continue
+            node["lines"].append({"who": " ".join(w.capitalize() for w in m.group(1).split()), "text": m.group(2).strip(), "if": cond})   # not .title(): it gives "Manuel'S Phone"; in_choices = False; continue
         m = INSPECT.match(line)
         if m and line.upper().lstrip("*").startswith("INSPECT"):
             node["lines"].append({"who": None, "text": m.group(1).strip(), "if": cond}); continue
@@ -112,8 +138,13 @@ def parse(text):
             body = sd.group(1).strip()
             # Conservative: anything that smells like a writer note stays out (see tools/writing/captions.py).
             NOTEY = r"\b(player|players|flag|seed|variant|node|scene|branch|beat|choice|trigger|speaker|party|engine|cutscene|camera pans|we see|fade|cut to|TODO|TBD|optional|if the|unless|otherwise|act ?[123]|lead [abc]|stage \d|npc)\b|\[|\]|=|\{|\}"
-            if not re.match(r"^(Trigger|Returning|Note|After|If |When the|Sets|Reads|Conditions|Effect)", body) and "`" not in body and "->" not in body and len(body) < 260 and not re.search(NOTEY, body, re.I):
-                node["lines"].append({"who": None, "text": body, "if": cond, "narr": True})
+            if not re.match(r"^(Trigger|Returning|Note|After|If |When the|Sets|Reads|Conditions|Effect)", body) and "`" not in body and "->" not in body and len(body) < 700 and not re.search(NOTEY, body, re.I):
+                piece = ""
+                for sent in re.split(r"(?<=[.!?:])\s+", body):
+                    if piece and len(piece) + len(sent) > 210:
+                        node["lines"].append({"who": None, "text": piece, "if": cond, "narr": True}); piece = sent
+                    else: piece = (piece + " " + sent).strip()
+                if piece: node["lines"].append({"who": None, "text": piece, "if": cond, "narr": True})
             continue
     for n in nodes.values():
         n["effects"] = n["effects"] or None

@@ -441,6 +441,14 @@ export class WorldScene extends Phaser.Scene {
       this.porkSprite = this.add.sprite(tx, ty - 60, 'principals').setOrigin(0.5, 1).play('pork').setAlpha(0).setDepth(ty);
       this.tweens.add({ targets: this.porkSprite, y: ty + 4, alpha: 1, duration: 1400, ease: 'Sine.out' });
     }
+    // The ending script branches on these; nothing else sets them. Warm = the party picked up the
+    // first time the phone rang (script note: any decline makes Pork cold, including the Sahur route).
+    if (this.mode !== 'client') {
+      const f = this.save.flags;
+      this._flag('act1.boss.sahur', f['act1.boss.kind'] === 'sahur');
+      this._flag('act1.ending.warm', !!f['act1.call.answered'] && !Number(f['act1.call.declines'] || 0));
+      if (f['q.van.seen']) this._flag('act1.leadA.vanSeen', true);
+    }
     this.startDialogue('ending', null, () => {
       this._flag('act1.complete', true);
       const W = VIEW.w, H = VIEW.h;
@@ -819,6 +827,9 @@ export class WorldScene extends Phaser.Scene {
       this.save.flags['act1.call.answered'] = true;
       this.save.flags['act1.boss.defeated'] = true;
       this._announce('You answer. The drumming stops mid-beat. The tall wooden figure tilts its head, listening to something only it can hear, and walks back into the dark.');
+      // The sim clears its event list at the start of every step, so the 'kill' event answerSahur()
+      // pushes from this key handler never reaches _fx. Start the ending from here instead.
+      if (!this._endingPlayed) { this._endingPlayed = true; this.time.delayedCall(2600, () => { this._closeSay(); this._playEnding(true); }); }
     }
   }
 
