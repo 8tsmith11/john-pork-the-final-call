@@ -132,10 +132,8 @@ export class GameMenu {
     const set = (k, v) => { try { localStorage.setItem(k, v); } catch { /* storage blocked */ } this.refresh(); };
     const sy = b.y + 32 + items.length * 18 + 10;
     this._t(b.x + 14, sy, 'SETTINGS', F(7, C.sub));
-    const crude = get('jpfc.crudeHumor', 'on') !== 'off';
-    this._t(b.x + 14, sy + 12, `Crude humor: ${crude ? 'ON' : 'OFF'}   (click to toggle)`, F(8), () => set('jpfc.crudeHumor', crude ? 'off' : 'on'));
     const shake = get('jpfc.screenshake', 'on') !== 'off';
-    this._t(b.x + 14, sy + 24, `Screen shake: ${shake ? 'ON' : 'OFF'}   (click to toggle)`, F(8), () => { set('jpfc.screenshake', shake ? 'off' : 'on'); this.scene.cameras.main.shakeEnabled = !shake; });
+    this._t(b.x + 14, sy + 12, `Screen shake: ${shake ? 'ON' : 'OFF'}   (click to toggle)`, F(8), () => { set('jpfc.screenshake', shake ? 'off' : 'on'); this.scene.cameras.main.shakeEnabled = !shake; });
     this._t(b.x + 14, b.y + b.h - 18, s.mode === 'client' ? 'The host keeps the save for everyone.' : `World "${s.save.world.seed}" · saved in this browser`, F(7, C.sub));
   }
 

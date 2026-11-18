@@ -735,7 +735,7 @@ export class WorldScene extends Phaser.Scene {
         if (s.longIdle && busy && !p.dn) this._caught(p);
         s.idleSince = this.time.now; s.longIdle = null;
       } else if (!s.longIdle && this.time.now - s.idleSince > IDLE_MS && this.anims.exists(`${p.c}_long`)) {
-        const crude = (() => { try { return localStorage.getItem('jpfc.crudeHumor') !== 'off'; } catch { return true; } })();
+        const crude = true;   // crude humor is always on (Trevor)
         // Manuel's other idle: only in his morph ("the gonman" and up), one time in three, crude humor on.
         const alt = p.c === 'manuel' && p.mo && crude && this.anims.exists('manuel_alt') && ((Math.floor(this.time.now / 1000) + p.id.length) % 3 === 0);
         s.longIdle = alt ? 'manuel_alt' : `${p.c}_long`;
