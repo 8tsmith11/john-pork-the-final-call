@@ -76,17 +76,17 @@ export const metroPlaza = makeMap({
     { id: 'obj.garden_bench', art: 'obj.bench', x: 8, y: 22, label: 'Bench', text: 'A brass plate: FOR THE NIGHT SHIFT. No name. Somebody polishes it.' },
     // The plaza
     { id: 'obj.station_entrance', art: 'obj.tunnel_on', x: 38, y: 8, label: 'Metro entrance', text: 'The gates are down for the night. The departure board behind them lists a train to a station that was never built.' },
-    { id: 'npc.mina', art: PERSON[0], x: 41, y: 10, label: 'Mina', npc: true, text: '"I do requests. I don\'t do the one everybody asks for." She retunes something wooden that was not out of tune.' },
+    { id: 'npc.mina', eggOk: true, art: PERSON[0], x: 41, y: 10, label: 'Mina', npc: true, text: '"I do requests. I don\'t do the one everybody asks for." She retunes something wooden that was not out of tune.' },
     { id: 'npc.rotter_1', x: 30, y: 18, label: 'Rotter', npc: true, text: 'coderot. coderot. coderot.' },
     { id: 'npc.halvard', x: 26, y: 26, label: 'Halvard', npc: true, talk: 'lead_b_halvard', doneFlag: 'act1.halvard.sellerDescribed', doneText: 'The shutter comes up two inches. Halvard\'s eye, then the television behind him, then the shutter again.\n\n"You paid for one rumor. That was it."' },
     { id: 'obj.purple_sign', x: 40, y: 27, label: 'Purple Line sign', text: 'PURPLE LINE: OPENING SOON.' },
     { id: 'obj.plaza_clock', art: 'obj.clock_6f', x: 46, y: 9, label: 'Station clock', text: '19:01. Under it, somebody has taped a paper clock with the right time and a note: USE THIS ONE.' },
     { id: 'obj.van', x: 45, y: 20, label: 'Abatement van', text: 'White, unmarked except for a mast on the roof. The mast is turning. It is pointed at the ground.' },
-    { id: 'npc.pruitt', x: 46, y: 19, label: 'Supervisor Pruitt', npc: true, talk: 'aster:pruitt_talk' },
-    { id: 'npc.addo', art: PERSON[1], x: 47, y: 21, label: 'Addo', npc: true, text: '"Mast\'s reading light. Something light. Lighter than it should be down there." He seems pleased that somebody asked.' },
-    { id: 'npc.del', art: PERSON[0], x: 44, y: 21, label: 'Del', npc: true, text: '"Fourteen hours. Fourteen. You know what the rate is after twelve? Same as before twelve."' },
+    { id: 'npc.pruitt', eggOk: true, x: 46, y: 19, label: 'Supervisor Pruitt', npc: true, talk: 'aster:pruitt_talk' },
+    { id: 'npc.addo', eggOk: true, art: PERSON[1], x: 47, y: 21, label: 'Addo', npc: true, text: '"Mast\'s reading light. Something light. Lighter than it should be down there." He seems pleased that somebody asked.' },
+    { id: 'npc.del', eggOk: true, art: PERSON[0], x: 44, y: 21, label: 'Del', npc: true, text: '"Fourteen hours. Fourteen. You know what the rate is after twelve? Same as before twelve."' },
     { id: 'npc.rotter_3', x: 49, y: 26, label: 'Rotter (looks at you differently)', npc: true, text: 'coderot. coderot. ...I used to be someone\'s favorite person. coderot.' },
-    { id: 'npc.abatement_tech', art: 'npc.tobin', x: 52, y: 25, label: 'Tobin (abatement, nights)', npc: true, talk: 'checkpoint', goneFlag: 'act1.cordon.passed' },
+    { id: 'npc.abatement_tech', eggOk: true, art: 'npc.tobin', x: 52, y: 25, label: 'Tobin (abatement, nights)', npc: true, talk: 'checkpoint', goneFlag: 'act1.cordon.passed' },
     // Hidden fast travel: a maintenance zipline from ASTER's forecourt to the Paint Branch trailhead.
     { id: 'obj.zip_aster', art: 'obj.zip_anchor', x: 16, y: 14, label: 'Cable anchor', zip: [78, 40], text: 'A steel cable bolted to the lamp post, running off over the plaza.' },
     { id: 'obj.zip_trail', art: 'obj.zip_anchor', x: 79, y: 40, label: 'Cable anchor', zip: [15, 15], text: 'The other end of the cable, bolted to a post by the trailhead.' },
@@ -115,7 +115,7 @@ export const metroPlaza = makeMap({
     { id: 'obj.map_cart', art: 'obj.cart', x: 65, y: 15, label: 'Map cart', text: 'Paper maps, hand-corrected. A sign: IF YOU FIND AN ERROR I WILL PAY YOU FOR IT.' },
     { id: 'obj.diner_door', art: 'obj.door', x: 72, y: 8, label: 'The diner', text: 'Open. It is always open. Through the glass, a cook calls an order to an empty room and plates it.' },
     { id: 'obj.diner_menu', art: 'obj.board', x: 69, y: 8, label: 'Menu', text: 'Chalk. One item has been crossed out and rewritten so many times the board is worn pale there.' },
-    { id: 'npc.ray', art: PERSON[1], x: 70, y: 19, label: 'Big Ray', npc: true, text: '"Scooter\'s fine. You\'re running rich. Sleep, eat something that was alive, come back."' },
+    { id: 'npc.ray', eggOk: true, art: PERSON[1], x: 70, y: 19, label: 'Big Ray', npc: true, text: '"Scooter\'s fine. You\'re running rich. Sleep, eat something that was alive, come back."' },
     { id: 'obj.scooters', x: 74, y: 19, label: 'Scooter rack', text: 'Three used scooters, chained, each with a price tag written on tape. Delroy\'s kiosk takes cash.' },
     { id: 'obj.shop_scooters', art: 'obj.kiosk', x: 71, y: 18, label: 'Delroy\'s Wheels', action: 'shop', shop: 'scooters', light: 0.7 },
     { id: 'obj.shop_pawn', art: 'obj.kiosk', x: 68, y: 18, label: 'Pawn window', action: 'shop', shop: 'pawn', light: 0.5 },
@@ -128,7 +128,7 @@ export const metroPlaza = makeMap({
     // The campus edge
     { id: 'obj.campus_gate', art: 'obj.purple_sign', x: 11, y: 36, label: 'Campus gate', text: 'UNIVERSITY OF MARYLAND, A CAMPUS OF THE CONTINUITY AUTHORITY. Compute apprentices: your hours have been adjusted.' },
     { id: 'obj.testudo', x: 13, y: 41, label: 'Testudo', flag: 'secrets.testudo.found', text: 'The bronze terrapin. Its nose is worn gold by a century of hands. You rub it.\n\nNothing happens. Then your lace reports full signal for one second, for the first time this year.' },
-    { id: 'npc.cal', art: PERSON[0], x: 16, y: 39, label: 'Cal Rourke', npc: true, text: '"Engineering, right? All three of you. I never forget a major." He has a table, a banner, and a pen he would like you to hold.' },
+    { id: 'npc.cal', eggOk: true, art: PERSON[0], x: 16, y: 39, label: 'Cal Rourke', npc: true, text: '"Engineering, right? All three of you. I never forget a major." He has a table, a banner, and a pen he would like you to hold.' },
     // Easter egg (docs/SECRETS.md): he sings a different country's anthem every time you talk to him. He has no name, on purpose.
     { id: 'npc.anthem', x: 18, y: 42, label: 'Student at attention', npc: true, action: 'pages', flag: 'secrets.anthem.found', pages: [
       'A big second-year in a compute hoodie stands at attention by the gate, bowl cut, glasses, one hand on his chest, a stuffed squirrel under the other arm. He is singing the anthem of Uruguay. He does all eleven verses.\n\n"Greatest nation on earth," he says after. He has never been.',

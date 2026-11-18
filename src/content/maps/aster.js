@@ -84,17 +84,17 @@ export const asterLobby = makeMap({
     { id: 'obj.lobby_camera', x: 30, y: 0, label: 'Lobby camera', text: 'The red light is on. It is recording. Not tonight, by the look of the monitor, but it is recording.' },
     { id: 'obj.security_desk', x: 17, y: 6, label: 'Security desk', text: 'A sign-in book. The last forty entries are the same name in forty different hands.' },
     { id: 'obj.lobby_monitor', x: 18, y: 6, label: 'Security monitor (rotted)', talk: 'lead_c_footage', puzzle: 'pipes', solvedFlag: 'act1.leadC.repaired' },
-    { id: 'npc.kess', x: 18, y: 2, label: 'Kess', npc: true, talk: 'aster:kess_talk', later: [
+    { id: 'npc.kess', eggOk: true, x: 18, y: 2, label: 'Kess', npc: true, talk: 'aster:kess_talk', later: [
       { if: 'act1.beat.call', text: 'Kess has the lobby door off its hinges and laid across two chairs. "Your lock\'s a cheap one. When you\'re back I\'ll put a real one on. Bring me the old plate, I want to see the marks."' },
       { if: 'act1.complete', text: 'A new deadbolt in a paper bag, with 631 written on it in marker. "Tomorrow. I\'m off tonight." She is not off tonight.' },
     ] },
     { id: 'npc.seun', x: 30, y: 10, label: 'Seun', npc: true, text: '"Oh. I am early. I am sorry." She is in scrubs with her coat over her arm, a glyph at the collar. "Mrs. Varga asks about you three. I tell her you are eating. Are you eating?"' },
-    { id: 'npc.dez', x: 9, y: 2, label: 'Dez', npc: true, talk: 'aster:dez_talk', later: [
+    { id: 'npc.dez', eggOk: true, x: 9, y: 2, label: 'Dez', npc: true, talk: 'aster:dez_talk', later: [
       { if: 'act1.beat.call', text: 'Still against the mailboxes. "Your phone did a thing earlier. Whole lobby heard it." A long pause. "I\'m not asking."' },
       { if: 'act1.cordon.passed', text: '"Somebody said you went down the grate." He looks at your shoes. "Huh. You did."' },
       { if: 'act1.complete', text: 'Dez sits up, which for Dez is a lot. "Drumming stopped about an hour ago. I noticed because I could hear the fridge again."' },
     ] },
-    { id: 'npc.doorman', x: 16, y: 5, label: 'Fenwick', npc: true, talk: 'aster:fenwick_talk' },
+    { id: 'npc.doorman', eggOk: true, x: 16, y: 5, label: 'Fenwick', npc: true, talk: 'aster:fenwick_talk' },
     // Second pass: what a lobby has. Each seat faces something; each light has a reason to be on.
     { id: 'obj.armchair_w1', art: 'obj.chair', x: 2, y: 11, label: 'Armchair', text: 'The one nearest the door. Whoever is waiting for someone sits here.' },
     { id: 'obj.table_w', art: 'obj.table', x: 4, y: 9, label: 'Low table', text: 'Three magazines, all the same issue. The crossword is done in every one, differently.' },
