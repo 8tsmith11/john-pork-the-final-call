@@ -192,6 +192,16 @@ have to apply, but it would make it interesting."
   > *"john pork, tim cheese etc should be a little more humanized as well. as in they are machines
   > but have physical bodies, the player knows that they are machiens. think johnny silverhand from
   > cyberpunk." / "and tung tung"*
+- Clarifications: their original natures stay as the **backstory** (superintelligence, defense AI,
+  watchdog). They **have bodies but can act like rogue AIs**. **Tim Cheese may be a government
+  asset.**
+  > *"they are still like what you said before thoughj, maybe thats what they are int he
+  > backstory." / "they aslo have bodies but can be like rogue ais." / "maybe tim cheese is a
+  > government asset."*
+- **Not everything is AI.** There are also **powerful people**. With **neurotech implants and
+  bioengineering**, not everyone is completely "human."
+  > *"and not everything is ai, there are also powerful people. theres also neurotech implants and
+  > bioengineering so not everything is completley \"human\" so to speak"*
 
 ---
 

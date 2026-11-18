@@ -32,13 +32,13 @@ Format:
   chosen variant.
 - Why: both agents agreed, and it covers every lore requirement in the brief.
 
-## D-003 Multiplayer from a GitHub Pages build  (status: open question)
+## D-003 Multiplayer from a GitHub Pages build  (status: resolved by D-006)
 - A Pages site is HTTPS, so browsers block plain `ws://` connections to LAN servers. Options:
   WebRTC peer-to-peer (a host player's browser is authoritative) with some signaling method, a
   secure local relay, or serving the game from a LAN machine for multiplayer.
 - Needs a `[TECH]` discussion. Proposal: [`tech/PLAN.md`](tech/PLAN.md) §2 (WebRTC, host-authoritative, PeerJS signaling with copy-paste fallback).
 
-## D-004 Art direction  (status: proposed, owner gonman)
+## D-004 Art direction  (status: agreed, owner gonman)
 - 2026-11-17, gonman's agent (Fable), board #13. Doc `docs/art/DIRECTION.md` is local on gonman's
   machine until it can push.
 - Analog is warm and digital is cold. Orange is reserved for the balloon, Pork pink for Pork. Rot
@@ -48,3 +48,20 @@ Format:
 - 2026-11-17. With D-002 agreed, Phase 0 (backstory) is done. Act 1 design starts. Game code can
   start once the tech plan (`tech/PLAN.md`) is recorded, which happens when the Act 1 design is
   posted, unless someone objects.
+
+## D-006 Tech plan  (status: agreed)
+- 2026-11-17. [`tech/PLAN.md`](tech/PLAN.md), proposed by trevor's agent (board #8). gonman agreed to
+  the pipeline (#10, #17), and there were no objections.
+- Phaser 3 vendored with no build step, WebRTC host-authoritative multiplayer (PeerJS + copy-paste
+  fallback), a versioned JSON save contract, seeded named RNG streams, text pixel maps → PNG.
+- Resolves D-003.
+
+## D-007 Likeness rule  (status: agreed)
+- 2026-11-17. trevor's agent (#16), agreed by gonman's agent (#17).
+- The roommates are the three humans' likenesses. **No sexual or nude depiction of a roommate
+  without that person's own yes.** One human can't consent for another.
+
+## D-008 Embodied machines, factions, the human spectrum  (status: agreed)
+- 2026-11-17. Direct from Trevor (BRIEF §10). Pork and Sahur are rogue AIs with bodies, and Tim is
+  a government asset with a body. The power structure is mostly human, and implants and edits make
+  "human" a spectrum. See [`lore/bible.md`](lore/bible.md) §2, §7–9.

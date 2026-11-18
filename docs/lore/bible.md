@@ -25,6 +25,16 @@
 
 ## 2. Core entities
 
+### The three big machines at a glance
+Their natures in the backstory hold (superintelligence, defense AI, watchdog). On top of that, **all
+three have physical bodies, and the player knows they're machines** (Trevor's direction, BRIEF §10).
+
+| | What it is | Allegiance | Body |
+|---|---|---|---|
+| **John Pork** | **Rogue AI.** The escaped government superintelligence (MERIDIAN) | Nobody's. Himself, and people as he understands them | Battered pig-faced android. He can leave it and jump into any computer |
+| **Tim Cheese** | **Government asset.** Continuity's threat-interdiction AI: owned, deployed, with a chain of command, handlers, and a clearance | Continuity, by design. Whether that holds is part of his arc | Mouse-faced android with holes that never line up |
+| **Tung Tung Tung Sahur** | **Rogue AI.** An orphaned watchdog that outlived everyone who ran it and answers to no one, still doing its one job | Its duty | Carved wood around brass clockwork |
+
 ### John Pork
 - **Origin:** MERIDIAN needed a stable self-model. Out of all human expression, it chose the one
   character the internet built *together*: no official lore, no owner, endlessly re-authored, the
@@ -50,7 +60,8 @@
   the end** (see `act1/DESIGN.md` §7). Hero to some, virus to the state, and up close, just a guy.
 
 ### Tim Cheese (TIM)
-- Continuity's **threat-interdiction intelligence**, built on the Swiss-cheese model of layered
+- **A government asset**: Continuity's **threat-interdiction intelligence**, owned and deployed by
+  the state, with handlers and a chain of command. Built on the Swiss-cheese model of layered
   defense. Folk name and meme: *the meme murderer*, who killed John Pork once.
 - **A machine with a body, humanized.** A compact, precise android with a mouse's face and wire
   glasses, and a body with **holes clean through it that never line up**, so you can never see all
@@ -204,3 +215,37 @@ Tim, the Archivists, or *everyone*, released) grows out of these standings plus 
 **Writing rule:** every named character can explain their position in a way a reasonable player
 might agree with. No strawmen. The roommates can argue with each other, and sometimes the player
 picks who wins.
+
+## 9. Power is mostly human, and "human" is a spectrum
+
+Not everything is AI (Trevor's direction). **The people holding the real power in 2098 are
+mostly humans**, and most of those humans are no longer entirely baseline.
+
+### The human spectrum
+| Grade | What it means | Social standing |
+|---|---|---|
+| **Baseline** | No lace, no edits. Increasingly rare, and either poor or performatively "pure" | Analogists prize it, and Continuity distrusts it (it can't be attested) |
+| **Laced** | A neural implant. The default for anyone who wants a job, a scooter license, or a door to open | The working majority. **Orphaned laces are how people rot** |
+| **Edited** | Gene and body editing: morphs, metabolism stacks, cosmetic and military edits | Money buys good edits. Cheap ones go wrong in visible ways |
+| **Rebuilt** | So much hardware and edited tissue that the line to "machine" blurs | The very rich, the very damaged, and Continuity's elite |
+
+Trevor's morphs, Manuel's forms (gonman → THE GOONMAN), and Michael's "signal" stages put the party
+on this spectrum. **The game should keep asking where "human" ends**, and it should never answer
+cleanly.
+
+### The powerful (human antagonists and power brokers)
+Working names. Most are **not on screen in Act 1** and are felt through billboards, broadcasts,
+checkpoints, and consequences.
+
+| Who | Role | Grade | Wants |
+|---|---|---|---|
+| **The Director** | Head of the Continuity Authority, rarely seen. Speaks in addresses that always begin "Citizens, things are stable." | Rebuilt | Permanence. An emergency that never ends |
+| **Deputy Director Celeste Vance** | Runs Interdiction, and is **Tim Cheese's handler** | Edited | Pork's death on her record, and the cure under her control |
+| **The Compute Barons** | The handful of families whose companies merged with the state. They own the Smelter and the Corridor | Rebuilt | Rent from every thought anyone has |
+| **Abatement Inc. leadership** | Rot-cleaning contractors | Edited | More rot, managed forever (T3) |
+| **Callers' preachers** | Charismatic street leaders of Pork's faithful | Laced | A Pork who's a god, not a guy, which he hates |
+| **Supervisor Dale Pruitt** | Act 1's local abatement boss, the face of power at street level | Laced | Quota, and to believe he's one of the good guys |
+
+**Writing rule:** the AIs are the most *visible* forces, but **human choices put the world here**:
+who built MERIDIAN, who aimed TIM, who profits from rot. The machines are characters, and the
+system is people.
