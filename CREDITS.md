@@ -14,3 +14,10 @@ Third-party code and assets, with licenses. Add every new asset here (PROCESS.md
 | "Chill Lofi (inspired)" (`assets/audio/apartment_chill_lofi.ogg`) | Room 631, ASTER | omfgdude | https://opengameart.org/content/chill-lofi-inspired |
 | "Calm Ambient 1 (Synthwave 4k)" (`assets/audio/city_synthwave_4k.mp3`) | Metro plaza | cynicmusic (The Cynic Project) | https://opengameart.org/content/calm-ambient-1-synthwave-4k |
 | "Claimed by the Void" (`assets/audio/tunnel_claimed_by_the_void.ogg`) | Green Line tunnels, the dead platform | glitchart (vitalezzz vs Tricksntraps) | https://opengameart.org/content/claimed-by-the-void-new-factory-ai-fight-and-simulation-unknown-vitalezzz-vs-tricksntraps |
+
+## Fonts (SIL Open Font License 1.1; license texts in `assets/fonts/`)
+
+| Font | Used for | Authors | Source |
+|---|---|---|---|
+| VT323 | Body text, dialogue, UI | The VT323 Project Authors (Peter Hull) | https://github.com/google/fonts/tree/main/ofl/vt323 |
+| Pixelify Sans | Headings, titles | The Pixelify Sans Project Authors | https://github.com/google/fonts/tree/main/ofl/pixelifysans |

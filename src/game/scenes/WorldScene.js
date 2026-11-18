@@ -108,10 +108,10 @@ export class WorldScene extends Phaser.Scene {
 
   _makeDialogueUi() {
     const W = VIEW.w, H = VIEW.h;
-    this.dlgBg = this.add.rectangle(W / 2, H - 46, W - 16, 84, 0x0b0d16, 0.94).setStrokeStyle(1, 0xf2a6b8).setScrollFactor(0).setDepth(9500).setVisible(false);
-    this.dlgWho = this.add.text(16, H - 84, '', { ...FONT, color: '#ffb347' }).setScrollFactor(0).setDepth(9501);
-    this.dlgText = this.add.text(16, H - 72, '', { ...FONT, wordWrap: { width: W - 34 }, lineSpacing: 2 }).setScrollFactor(0).setDepth(9501);
-    this.dlgChoices = [0, 1, 2, 3, 4, 5].map((i) => this.add.text(22, H - 72 + i * 11, '', { ...FONT, color: '#9aa3c7' })
+    this.dlgBg = this.add.rectangle(W / 2, H - 36, W - 40, 60, 0x0b0d16, 0.94).setStrokeStyle(1, 0xf2a6b8).setScrollFactor(0).setDepth(9500).setVisible(false);
+    this.dlgWho = this.add.text(30, H - 62, '', { ...FONT, fontSize: '9px', color: '#ffb347' }).setScrollFactor(0).setDepth(9501);
+    this.dlgText = this.add.text(30, H - 51, '', { ...FONT, fontSize: '9px', wordWrap: { width: W - 64 }, lineSpacing: 1 }).setScrollFactor(0).setDepth(9501);
+    this.dlgChoices = [0, 1, 2, 3, 4, 5].map((i) => this.add.text(34, H - 62 + i * 9.5, '', { ...FONT, fontSize: '8.5px', color: '#9aa3c7' })
       .setScrollFactor(0).setDepth(9501).setInteractive({ useHandCursor: true })
       .on('pointerover', function () { this.setColor('#ffb347'); }).on('pointerout', function () { this.setColor('#9aa3c7'); })
       .on('pointerdown', () => this._choose(i)));

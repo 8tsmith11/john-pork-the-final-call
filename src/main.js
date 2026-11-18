@@ -6,13 +6,22 @@ import { LobbyScene } from './game/scenes/LobbyScene.js';
 export { GAME_VERSION } from './version.js';
 import { VIEW } from './view.js';
 
-// Crisp text: every Text renders at the canvas zoom (see src/view.js).
+// Crisp text: every Text renders at the canvas zoom (see src/view.js), in the game's pixel fonts.
+// 'monospace' in a style means body text (VT323); `heading: true` uses Pixelify Sans. VT323 runs
+// small for its pixel size, so body sizes are scaled up to stay readable.
 const _text = Phaser.GameObjects.GameObjectFactory.prototype.text;
-Phaser.GameObjects.GameObjectFactory.prototype.text = function (x, y, t, style) {
-  return _text.call(this, x, y, t, { resolution: VIEW.zoom, ...(style || {}) });
+Phaser.GameObjects.GameObjectFactory.prototype.text = function (x, y, t, style = {}) {
+  const st = { resolution: VIEW.zoom, ...style };
+  const px = parseFloat(st.fontSize ?? '8') || 8;
+  if (st.heading) { st.fontFamily = "'Pixelify Sans', monospace"; }
+  else if (!st.fontFamily || st.fontFamily === 'monospace') { st.fontFamily = "'VT323', monospace"; st.fontSize = `${Math.round(px * 1.45)}px`; }
+  delete st.heading;
+  return _text.call(this, x, y, t, st);
 };
 
 const params = new URLSearchParams(location.search);
+
+await Promise.all([document.fonts.load("16px 'VT323'"), document.fonts.load("16px 'Pixelify Sans'")]).catch(() => {});
 
 window.game = new Phaser.Game({
   // ?renderer=canvas forces the Canvas renderer (old GPUs, headless tests).

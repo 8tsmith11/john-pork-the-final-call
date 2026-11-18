@@ -10,8 +10,8 @@ export class TitleScene extends Phaser.Scene {
     const W = VIEW.w, H = VIEW.h;
     this.cameras.main.setBackgroundColor('#0b0d16');
     const hour = new Date().getHours();
-    this.add.text(W / 2, 40, 'JOHN PORK', { fontFamily: 'monospace', fontSize: '28px', color: '#f2a6b8' }).setOrigin(0.5);
-    this.add.text(W / 2, 66, 'THE FINAL CALL', { fontFamily: 'monospace', fontSize: '12px', color: '#9aa3c7' }).setOrigin(0.5);
+    this.add.text(W / 2, 40, 'JOHN PORK', { heading: true, fontSize: '30px', color: '#f2a6b8' }).setOrigin(0.5);
+    this.add.text(W / 2, 66, 'THE FINAL CALL', { heading: true, fontSize: '12px', color: '#9aa3c7' }).setOrigin(0.5);
     // Easter egg (batch 1, #10): playing at 3 a.m. real local time.
     const sub = hour >= 0 && hour < 5 ? '"why are you still up?"  - J.P.' : 'Maryland, 2098';
     this.add.text(W / 2, 84, sub, { fontFamily: 'monospace', fontSize: '8px', color: '#5d6487' }).setOrigin(0.5);
