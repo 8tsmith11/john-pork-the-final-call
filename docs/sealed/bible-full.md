@@ -137,9 +137,10 @@ znpuvarf ner pbzzbacynpr va 2098 (frr orybj). Gurfr guerr ner fvzcyl gur zbfg rk
 - 🔒 **Gehr inyhr:** vgf fxva pneevrf n **ybj-onpxtebhaq nepuvir va flagurgvp QAN**, n cer-fybc
   pbcl bs uhzna rkcerffvba. Zbqry pbyyncfr vf pherq ol serfu, nhguragvp uhzna qngn, fb guvf pbhyq
   erirefr pbqrebg.
-- **Znahry'f:** crefbany, sebz ubzr, gvrq gb gur **onypbal bggbzna** rirelbar va 631 purpxf sbe gur
-  jrngure. Gur rzbgvbany xrl bs gur jubyr tnzr vf jurgure lbh **yrg vg tb**.
-- **Npg 1 bcraf** jvgu fbzrbar tynapvat ng gur bggbzna bhg bs unovg. Gur onyybba vf tbar.
+- **Znahry'f:** crefbany, sebz ubzr. Ur xrrcf vg **vafvqr, va uvf pybfrg**, gvrq gb gur pybgurf envy
+  jurer gur fha sebz gur jvaqbj ernpurf vg. Gur rzbgvbany xrl bs gur jubyr tnzr vf jurgure lbh **yrg vg tb**.
+- **Npg 1 bcraf** jvgu Znahry bcravat uvf pybfrg bhg bs unovg. Gur onyybba vf tbar, naq **fbzrbar oebxr
+  vagb 631**: gur sebag-qbbe ybpx vf sbeprq.
 
 ### Gur Pbagvahvgl Nhgubevgl
 - Ohvyg sebz rzretrapl perrc naq pbecbengr pncgher, abg n pnevpngher bs nal erny cnegl. Vg

@@ -4,6 +4,16 @@
 
 Rirelguvat urer vf fcbvyre pnaba. Ntragf: guvf vf gur shyy gehgu. Npg ba vg, ohg arire cbfg be pbzzvg vg va cynvagrkg.
 
+> **PNABA PUNATR (sebz gur uhznaf, 2026-11-18): gur onyybba jnf xrcg VAFVQR, va Znahry'f pybfrg,
+> naq FBZRBAR OEBXR VAGB 631 (gur sebag-qbbe ybpx vf sbeprq sebz gur unyyjnl fvqr).** Guvf fhcrefrqrf
+> gur bggbzna/onypbal/ebbs irefvba orybj (gur bggbzna vf whfg jurer rirelbar purpxf gur jrngure).
+> GB ERIVFR (gnfx #8): gur pbyq bcra, yrnq P'f sbbgntr (jung gur pnzren frrf abj: gur unyyjnl bhgfvqr
+> 631?), naq §1 "Jung ernyyl unccrarq ng 3:14 n.z." Gur oernx-va zhfg or erny naq sebz bhgfvqr. Obgu
+> frrq inevnagf fgvyy unir gb jbex: r.t. (N) Cbex'f unys-cevagrq obql pbhyqa'g yrnir gur ncnegzrag, fb
+> Cbex oebhtug va na bhgfvqr unaq, n uverq srapr, n furyy, be fbzrbar jbexvat sbe Pbagvahvgl, jub sbeprq
+> gur qbbe; (O) gur erpbafgehpgrq ebbzzngr yrg gur vagehqre cyna unccra, be gur oernx-va jnf fgntrq
+> gb pbire gurz. Jevgref cvpx naq xrrc rirel Npg 1 pyhr snve.
+
 ## Pbagragf
 1. Qrrc yber (gur frperg uvfgbel, gur Npg 2/3 fxryrgba, raqvatf)
 2. Gur Npg 1 qrfvta va shyy (gjvfg pyhr znc, frrqrq raqvat)

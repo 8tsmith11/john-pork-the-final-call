@@ -5,7 +5,7 @@
 > **Target:** 60–90 minutes for 3 players.
 
 ## The act in one breath
-The orange balloon is gone from the balcony ottoman. The roommates of Room 631 search ASTER, the
+The orange balloon is gone from Manuel's closet, and someone broke into 631 to take it. The roommates of Room 631 search ASTER, the
 metro plaza, and Route 1, and find a city coming apart in small, telling ways. Halfway through,
 every device rings: **JOHN PORK**. The trail leads into the Green Line tunnels, where something
 drums at 3 a.m. It ends in a boss fight and a voiced cutscene that changes what the balloon means.
@@ -16,7 +16,7 @@ vans, and lights moving on the northern horizon.
 
 ## Causal spine (but / therefore)
 
-The balloon is gone from the ottoman, **therefore** the roommates search ASTER. **But** the lobby
+The balloon is gone from Manuel's closet and the front-door lock is forced, **therefore** the roommates search ASTER for whoever broke in. **But** the lobby
 camera is rotted and the neighbors only talk about drumming under the street, **therefore** they
 chase three leads. The helium trail shows a Continuity van is sniffing for the same helium, **but**
 Halvard says the seller was "one of you, from 631," **therefore** they can't trust the obvious answer
@@ -29,7 +29,7 @@ the tunnels is waiting. They win, **but** the balloon still isn't theirs to keep
 ## Structure
 | Beat | Where | What happens |
 |---|---|---|
-| 0. Cold open | Room 631, 2:58 a.m. | The balloon is gone. A tutorial by doing: move, interact, notice things |
+| 0. Cold open | Room 631, 2:58 a.m. | Manuel's closet is open and the balloon is gone. The front-door lock is forced: a break-in. A tutorial by doing: move, interact, notice things |
 | 1. The building | ASTER floors, lobby, roof | Neighbors, the occupied bathroom, the super, the roof |
 | 2. Three leads (any order) | Metro plaza, Route 1, campus edge | **A.** The helium trail (print a sniffer at the fab). **B.** Halvard the fence (talk, trade, intimidate, or pick his lock). **C.** The lobby camera footage (a repair puzzle) |
 | 3. The Call | Anywhere | Every screen seizes. **Answer or Decline**, and it matters |

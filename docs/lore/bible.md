@@ -131,9 +131,10 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
 ### The orange balloon
 - **Surface value:** it holds **helium**, which is essentially gone from civilian life by 2098.
   It's a sealed bag of a dying element.
-- **Manuel's:** personal, from home, tied to the **balcony ottoman** everyone in 631 checks for the
-  weather. The emotional key of the whole game is whether you **let it go**.
-- **Act 1 opens** with someone glancing at the ottoman out of habit. The balloon is gone.
+- **Manuel's:** personal, from home. He keeps it **inside, in his closet**, tied to the clothes rail
+  where the sun from the window reaches it. The emotional key of the whole game is whether you **let it go**.
+- **Act 1 opens** with Manuel opening his closet out of habit. The balloon is gone, and **someone broke
+  into 631**: the front-door lock is forced.
 
 ### The Continuity Authority
 - Built from emergency creep and corporate capture, not a caricature of any real party. It
@@ -156,7 +157,7 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
   one big middle room, a kitchen/dining half (the front door, guarded by the statues) and an
   engineering half (fabs, bench gear, the flag on the wall) with the balcony off it. The number is an easter egg: *Nature* volume 631 published the model
   collapse paper. Contents: the John Pork flag, Manuel's statues, **three 3D printers**, a degassing chamber, a dehumidifier, a microscope, a soldering iron, drills, an
-  oscilloscope, pacifiers, the **balcony ottoman**, Trevor's **shrimp tank** and **guitar**, and
+  oscilloscope, pacifiers, the **balcony ottoman** (where everyone checks the weather), Manuel's **closet**, Trevor's **shrimp tank** and **guitar**, and
   Manuel's mate gear.
 - **The university**, a Continuity campus. Students work off tuition as compute apprentices, and
   all three are stuck in **245 lab** ("I hate 245 lab"). **Testudo** is still there.

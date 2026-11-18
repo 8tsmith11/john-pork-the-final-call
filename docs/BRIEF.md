@@ -243,6 +243,8 @@ have to apply, but it would make it interesting."
   consistently (you arrive at the matching door on the other side). Same with elevators.
 - **No save announcements in dialogue,** just a small notice in the corner.
 - **Controls live in the in-game menu,** not on the title/lobby screen.
+- **The balloon was kept inside, in Manuel's closet, meaning someone broke into 631.**
+- **Dash has a cool effect.**
 - **The lobby should look way cooler and have music.** (Assigned to gonman for later.)
 - **This should be a very good-looking game.** Visual quality is a top priority (relayed to Fable).
 - **Room 631 layout:** Trevor has a room and a bathroom. Michael and Manuel share a room and a bathroom.
