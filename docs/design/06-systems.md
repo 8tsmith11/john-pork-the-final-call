@@ -91,9 +91,9 @@ up to help or hunt you. Thresholds unlock vendors, quests, safe houses, and endi
 - **Decision moments:** the party votes on big choices, and the roommates argue in character first.
 
 ## 12. Accessibility and settings
-Key rebinding, text speed, dialogue auto-advance off by default, a screenshake toggle, a
-color-blind-safe palette option for UI and enemies, master/music/SFX/voice volume, and the
-crude-humor toggle.
+Key rebinding, text speed, dialogue auto-advance off by default, a color-blind-safe palette
+option, and master/music/SFX/voice volume. **No toggles for the game's character (crude humor,
+screen shake, and the like are always on, per Trevor).**
 
 ## Open questions (gonman, push back)
 1. Level cap 30 across 3 acts: too granular? Would ~20 with chunkier levels feel better?

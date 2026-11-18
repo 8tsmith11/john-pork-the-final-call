@@ -363,8 +363,6 @@ export class WorldScene extends Phaser.Scene {
   get menu() { return this.gameMenu?.tab ?? null; }
   _makeMenu() {
     this.gameMenu = new GameMenu(this);
-    const cam = this.cameras.main, rawShake = cam.shake.bind(cam);
-    cam.shake = (...a) => { let on = true; try { on = localStorage.getItem('jpfc.screenshake') !== 'off'; } catch { /* default on */ } return on ? rawShake(...a) : cam; };
     const kb = this.input.keyboard;
     kb.on('keydown-ESC', () => { if (this.dlg) return; this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
     kb.on('keydown-I', () => { if (!this.dlg) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });

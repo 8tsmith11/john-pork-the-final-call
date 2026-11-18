@@ -127,13 +127,6 @@ export class GameMenu {
       ? [['Resume', () => this.close()], ['Leave the game', () => s.menuQuit(false)]]
       : [['Resume', () => this.close()], ['Save now', () => { s._save(); this.close(); }], ['Export save file (.jpfc.json)', () => s.menuExport()], ['Save and quit to title', () => s.menuQuit(true)]];
     items.forEach(([label, fn], i) => this._t(b.x + 14, b.y + 32 + i * 18, `› ${label}`, F(9, i === 0 ? C.hi : C.text), fn));
-    // Settings (per browser).
-    const get = (k, d) => { try { return localStorage.getItem(k) ?? d; } catch { return d; } };
-    const set = (k, v) => { try { localStorage.setItem(k, v); } catch { /* storage blocked */ } this.refresh(); };
-    const sy = b.y + 32 + items.length * 18 + 10;
-    this._t(b.x + 14, sy, 'SETTINGS', F(7, C.sub));
-    const shake = get('jpfc.screenshake', 'on') !== 'off';
-    this._t(b.x + 14, sy + 12, `Screen shake: ${shake ? 'ON' : 'OFF'}   (click to toggle)`, F(8), () => { set('jpfc.screenshake', shake ? 'off' : 'on'); this.scene.cameras.main.shakeEnabled = !shake; });
     this._t(b.x + 14, b.y + b.h - 18, s.mode === 'client' ? 'The host keeps the save for everyone.' : `World "${s.save.world.seed}" · saved in this browser`, F(7, C.sub));
   }
 
