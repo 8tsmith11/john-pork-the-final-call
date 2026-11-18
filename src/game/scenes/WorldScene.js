@@ -29,6 +29,7 @@ import { Performances } from '../performances.js';
 import { Romance } from '../romance.js';
 import { Gear } from '../gear.js';
 import { Cameos } from '../cameos.js';
+import { Eggs } from '../eggs.js';
 import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
 
 const STEP = 1 / 60;
@@ -80,7 +81,7 @@ export class WorldScene extends Phaser.Scene {
     this._wireNet();
     this._makeDialogueUi();
     // D-014: shared events, instruments, romance (src/game/sharedEvent.js, performances.js, romance.js)
-    this.shared = new SharedEvents(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this);
+    this.shared = new SharedEvents(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this);
     this._pageIdx = {};
     this.vignette = this._makeVignette();
     if (this.mode !== 'client') for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
@@ -336,7 +337,7 @@ export class WorldScene extends Phaser.Scene {
   _wireNet() {
     if (this.mode === 'host') {
       this.net.on('msg', (peer, msg) => {
-        if (this.shared?.onMsg(msg, peer) || this.perf?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg)) return;
+        if (this.shared?.onMsg(msg, peer) || this.perf?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg)) return;
         if (msg.t === 'input') {
           const prev = this.remoteInputs.get(peer);
           this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, interact: false });
@@ -1197,7 +1198,7 @@ export class WorldScene extends Phaser.Scene {
     this._lastRendered = snap;
     if (this.mode === 'client' && snap.doors) for (const d of this.map.doors.values()) d.open = snap.doors.includes(d.id);
     this._render(snap);
-    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap);
+    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update();
   }
 
   _frozen(inp) { return this.dlg || this.menu ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : inp; }
@@ -1711,7 +1712,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _fx(ev, snap) {
-    this.romance?.onEvent(ev, snap); this.gear?.onEvent(ev);
+    this.romance?.onEvent(ev, snap); this.gear?.onEvent(ev); this.eggs?.onEvent(ev);
     if (['hit', 'kill', 'shot', 'swing'].includes(ev.t) && (ev.by === this.localId || ev.id === this.localId)) sfx(ev.t);
     if (ev.t === 'hurt' && ev.id === this.localId) sfx('hurt');
     if (ev.t === 'kill' && !ev.boss && Math.random() < 0.3) this._barkFrom('kill', snap, { by: ev.by });
