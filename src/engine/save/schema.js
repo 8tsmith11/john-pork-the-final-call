@@ -32,6 +32,10 @@ export function newSave({ seed, rolls, gameVersion }) {
     world: { seed, act: 1, area: 'room631', rolls },
     flags: {},                  // namespaced: 'act1.balloon.ribbonInspected'
     standing: { continuity: 0, callers: 0, analogists: 0, archivists: 0 },
+    // Multiplayer: the save lives on the HOST only. It remembers who played whom, so the lobby can
+    // suggest the same character to returning players. Joiners claim a character in the lobby and
+    // receive the save from the host (docs/DECISIONS.md D-010).
+    session: { hostCharacter: null, claims: {} },   // claims: { michael: { playerName, lastSeen } }
     party: { michael: newCharacter('michael'), trevor: newCharacter('trevor'), manuel: newCharacter('manuel') },
     codex: { seen: [] },
   };

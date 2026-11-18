@@ -212,6 +212,9 @@ have to apply, but it would make it interesting."
   `lore/quotes.md`.
   > *"also there should be some very hard hitting quotes. again dont just rely on your weights,
   > reserahc what goes into this."*
+- **Multiplayer saves:** the save is local to the host and stores which player is which character.
+  In the lobby before resuming, joining players claim their character and receive the save data
+  from the host. (D-010)
 
 ---
 

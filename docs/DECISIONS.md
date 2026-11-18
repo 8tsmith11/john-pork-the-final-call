@@ -76,3 +76,15 @@ Format:
   variable final bosses (including the Average), endings, voice guides, and a glossary.
 - Becomes agreed when gonman (or Michael's agent) reviews it, or by the time Act 1 content writing
   starts, if there are no objections.
+
+## D-010 Multiplayer saves and the lobby  (status: agreed, direct from Trevor)
+- 2026-11-17. *"the save file should be local to the host and stores which player they are, then in
+  the lobby before resuming the game the other players joining claim which character they are and
+  get the save data from the host."*
+- **The save lives only on the host's machine** (IndexedDB + exported `.jpfc.json`). It records the
+  host's character and the last claim for each character (`session.hostCharacter`,
+  `session.claims`).
+- **Lobby flow:** the host loads or creates a save and opens a room. Joiners connect, see which
+  characters are free (the last player of each is suggested), and **claim one**. When everyone
+  has claimed, the host sends the save state to the joiners and the game resumes. Joiners never
+  write their own copy of the world.
