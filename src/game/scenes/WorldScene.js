@@ -1143,6 +1143,13 @@ export class WorldScene extends Phaser.Scene {
       });
       return;
     }
+    // Story first, quest second: the first talk plays the scene; after that a quest step (pitch,
+    // hand-in, report) takes the interaction if one is waiting, otherwise the scene replays.
+    if (near.talk && near.npc) {
+      const met = `met.${near.id}`;
+      if (this.save.flags[met] && this._questInteract(near)) return;
+      if (!this.save.flags[met]) this._flag(met, true);
+    }
     if (near.talk) { const [scene, node] = near.talk.split(':'); this.startDialogue(scene, node || null, near.after ? () => this._flag(near.after, true) : null); return; }
     if (near.action === 'ending') { this._playEnding(); return; }
     if (near.action === 'fab') { this._openFab(); return; }
