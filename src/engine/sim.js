@@ -156,7 +156,11 @@ export class Sim {
       } else {
         if (p.riding) {
           // Scooter: faster, with a little momentum so it drifts into turns.
-          const top = 165, acc = 6;
+          const under = this.map.layout?.[Math.floor(p.y / TILE)]?.[Math.floor(p.x / TILE)];
+          const grinding = under === 't' || under === 'h';          // rails: a hidden fast lane
+          if (grinding && !p.grinding) this.events.push({ t: 'grind', id: p.id });
+          p.grinding = grinding;
+          const top = grinding ? 270 : 165, acc = grinding ? 4 : 6;
           p.vx += (mx * top - p.vx) * Math.min(1, acc * dt); p.vy += (my * top - p.vy) * Math.min(1, acc * dt);
           if (Math.hypot(p.vx, p.vy) > 2) { p.battery = Math.max(0, (p.battery ?? 100) - 2.2 * dt); if (p.battery <= 0) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, dead: true }); } }
         } else {
@@ -468,7 +472,7 @@ export class Sim {
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
-        hp: Math.round(p.hp), mhp: this.maxHp(p), st: Math.round(p.sta ?? 100), w: p.waitExit || null, ri: !!p.riding, bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed,
+        hp: Math.round(p.hp), mhp: this.maxHp(p), st: Math.round(p.sta ?? 100), w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed,
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,

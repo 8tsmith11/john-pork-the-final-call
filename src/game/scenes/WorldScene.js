@@ -481,6 +481,37 @@ export class WorldScene extends Phaser.Scene {
     this.sim.toggleMorph(peerId, true);
   }
 
+  // Hidden mechanic (fun): kick the vending machine. Sometimes it pays. Keep kicking and it talks back.
+  _kickVending(o) {
+    const n = (this._kicks = (this._kicks ?? 0) + 1);
+    sfx('hit'); this.cameras.main.shake(90, 0.004);
+    if (n === 7 && !this.save.flags['secrets.vending.found']) {
+      this._flag('secrets.vending.found', true); this._toast('★ Secret: the machine remembers you');
+      return this._say('You kick it a seventh time. The display flickers, and for a second it reads, in perfect letters: "PLEASE STOP. I WAS A CHILDREN\'S TOY ONCE."\nThen: ROW C EMPTY.');
+    }
+    const r = Math.random();
+    if (r < 0.33) {
+      if (this.mode !== 'client') { this.save.world.scrap = (this.save.world.scrap ?? 0) + 2; this._partyDirty = true; }
+      return this._say('You kick it. Something rattles loose: a bent coil and a handful of scrap. (+2 scrap)');
+    }
+    if (r < 0.45) {
+      if (this.mode !== 'client') { this.save.party[this.character].inventory.push({ id: 'item.mate_flask', qty: 1 }); this._partyDirty = true; }
+      return this._say('You kick it. A can drops out. It\'s cold yerba mate, which this machine has never stocked. (Mate thermos)');
+    }
+    this._say(['You kick it. It hums at you, offended.', 'You kick it. Nothing. Row C stays empty.', 'You kick it. A light comes on inside, then thinks better of it.'][n % 3]);
+  }
+
+  // Hidden mechanic (progression): the shrimp are a canary. Their behaviour tells you how rotted the next place is.
+  _shrimpReading() {
+    const f = this.save.flags, killed = new Set(this.save.world.killed || []);
+    const tunnelLeft = (MAPS.tunnel_1?.enemies || []).filter((_, i) => !killed.has(`tunnel_1#${i}`)).length;
+    if (f['act1.complete']) return 'The shrimp are spread out again, grazing. Whatever was in the water has eased.';
+    if (!f['act1.beat.call']) return 'They\'re clustered in the corner away from the window, very still. Trevor says they do that before a rot spike. Something under the street is bad.';
+    if (tunnelLeft > 6) return `They won't come out of the plants. (The tunnels are still crawling: about ${tunnelLeft} rot things down there.)`;
+    if (tunnelLeft > 0) return `A couple of them are moving again. (Fewer rot things under the street now: about ${tunnelLeft}.)`;
+    return 'They\'re out and grazing. The tunnels are quiet.';
+  }
+
   _lever(k) {
     const key = `act1.switch.${k}`, now = (this.save.flags[key] ?? 'left') === 'left' ? 'right' : 'left';
     this._flag(key, now); sfx('hit'); this.cameras.main.shake(80, 0.003);
@@ -745,6 +776,7 @@ export class WorldScene extends Phaser.Scene {
         if (this.sim.players.size <= 1 || this.sim.waitAtExit(ev.by, ev.id, ev.dx, ev.dy)) { this.sim.clearWaiting(); this._tryExit(exit); }
       }
       if (ev.t === 'door' || ev.t === 'doorClose') sfx('swing');
+      if (ev.t === 'grind' && ev.id === this.localId && !this.save.flags['secrets.grind.found']) { this._flag('secrets.grind.found', true); this._toast('★ Rail grind! (scooters fly along the tracks)'); }
       if (ev.t === 'scooter') {
         const p = this.sim.players.get(ev.id); if (p) this.save.party[p.character].scooterBattery = Math.round(p.battery ?? 100);
         if (ev.id === this.localId) this._toast(ev.dead ? 'Battery dead.' : ev.knocked ? 'Knocked off your scooter!' : ev.on ? 'On the scooter. [Q] to hop off' : 'Off the scooter.');
@@ -808,6 +840,8 @@ export class WorldScene extends Phaser.Scene {
     if (near.action === 'ending') { this._playEnding(); return; }
     if (near.action === 'fab') { this._openFab(); return; }
     if (/^obj\.switch_[abc]$/.test(near.id)) { this._lever(near.id.slice(-1)); return; }
+    if (near.id === 'obj.vending') { this._kickVending(near); return; }
+    if (near.id === 'obj.shrimp_tank') { this._say(near.text + '\n\n' + this._shrimpReading()); return; }
     if (near.id === 'obj.yard_map') { this._say(`${YARD_MAP_TEXT}\n\nCurrent: ${LEVERS.map((k) => `${k.toUpperCase()} ${(this.save.flags[`act1.switch.${k}`] ?? 'left').toUpperCase()}`).join(' · ')}${this.save.flags['act1.switchyard.solved'] ? '\nThe east gate is open.' : ''}`); return; }
     if (['obj.work_order', 'obj.sunk_vending', 'obj.ledger'].includes(near.id)) { this._say((near.text ?? '') + clueFor(near.id, yardSolution(this.save.world.seed), !!this.save.flags['act1.bay.drained'])); return; }
     if (near.id === 'obj.pump') {
@@ -917,6 +951,7 @@ export class WorldScene extends Phaser.Scene {
         sg.lineStyle(1, 0x9aa3c7).lineBetween(p.x + 6 * fx, p.y + 3, p.x + 6 * fx, p.y - 9);       // stem
         sg.setDepth(p.y + 1);
         s.setY(Math.round(p.y + 1));
+        if (p.gr && Math.random() < 0.6) { const sp = this.add.rectangle(p.x - 6 * fx, p.y + 5, 1.5, 1.5, 0xffd27f).setDepth(p.y + 2); this.tweens.add({ targets: sp, x: sp.x - fx * (6 + Math.random() * 8), y: sp.y - Math.random() * 4, alpha: 0, duration: 220, onComplete: () => sp.destroy() }); }
       }
       if (p.dn) {
         const g = (this.reviveGfx ??= this.add.graphics().setDepth(6400));
