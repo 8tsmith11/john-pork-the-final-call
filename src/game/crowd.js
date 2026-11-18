@@ -57,6 +57,36 @@ function makeSprite(scene, key, r) {
   return { shell };
 }
 
+const PIXEL_LINES = [
+  'People keep squinting at me. Is there something on my face?',
+  'I had my photo taken for the attestation office. They sent it back. Twice.',
+  'My mother says I look just like my father. I don\'t know how she can tell.',
+  'You\'re staring. It\'s fine. Everyone does. Nobody says why.',
+];
+
+// Replace a generated sprite sheet with a blocky mosaic of itself (works in Canvas and WebGL).
+function mosaic(scene, key, size) {
+  const tex = scene.textures.get(key);
+  const canvas = tex?.getSourceImage?.();
+  const ctx = canvas?.getContext?.('2d');
+  if (!ctx) return;
+  const { width: w, height: h } = canvas;
+  const img = ctx.getImageData(0, 0, w, h), d = img.data;
+  for (let by = 0; by < h; by += size) for (let bx = 0; bx < w; bx += size) {
+    let r = 0, g = 0, b = 0, a = 0, n = 0;
+    for (let y = by; y < Math.min(h, by + size); y++) for (let x = bx; x < Math.min(w, bx + size); x++) {
+      const i = (y * w + x) * 4; if (d[i + 3] > 0) { r += d[i]; g += d[i + 1]; b += d[i + 2]; n++; } a += d[i + 3];
+    }
+    const cells = Math.min(h, by + size) - by, cols = Math.min(w, bx + size) - bx, solid = n * 2 >= cells * cols;
+    for (let y = by; y < by + cells; y++) for (let x = bx; x < bx + cols; x++) {
+      const i = (y * w + x) * 4;
+      if (solid) { d[i] = r / n; d[i + 1] = g / n; d[i + 2] = b / n; d[i + 3] = 255; } else d[i + 3] = 0;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  tex.refresh?.();
+}
+
 export class Crowd {
   constructor(scene, map, seed) {
     this.scene = scene; this.map = map; this.people = [];
@@ -68,10 +98,14 @@ export class Crowd {
     for (let i = 0; i < n && free.length; i++) {
       const key = `crowd_${seed}_${map.id}_${i}`;
       const info = makeSprite(scene, key, new Rng(key)) ?? { shell: false };
+      // Easter egg (docs/SECRETS.md): one person on the plaza is permanently pixelated. It looks
+      // like rot. It isn't, and nobody explains it.
+      const pixel = map.id === 'metro_plaza' && i === 3;
+      if (pixel) mosaic(scene, key, 4);
       const [tx, ty] = r.pick(free);
       const mode = r.weighted([{ m: 'walk', w: 5 }, { m: 'wait', w: 2 }, { m: 'phone', w: 2 }]).m;
       const spr = scene.add.sprite(tx * TILE + 8, ty * TILE + 8, key, 'f0').setOrigin(0.5, 1);
-      this.people.push({ spr, x: tx * TILE + 8, y: ty * TILE + 8, mode, shell: info.shell, tx: null, ty: null, speed: 18 + r.next() * 16, t: r.next() * 3, r: new Rng(`${key}-ai`), free });
+      this.people.push({ spr, x: tx * TILE + 8, y: ty * TILE + 8, mode, shell: info.shell && !pixel, pixel, tx: null, ty: null, speed: 18 + r.next() * 16, t: r.next() * 3, r: new Rng(`${key}-ai`), free });
     }
   }
 
@@ -100,6 +134,7 @@ export class Crowd {
   }
 
   lineFor(p) {
+    if (p.pixel) return p.r.pick(PIXEL_LINES);
     const pool = p.shell ? LINES.shell : (LINES[this.map.id] ?? LINES.any);
     return p.r.pick(pool);
   }

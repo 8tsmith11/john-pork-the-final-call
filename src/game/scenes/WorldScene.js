@@ -76,7 +76,7 @@ export class WorldScene extends Phaser.Scene {
       for (const o of this.map.objects) { const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y); if (d <= bd) { bd = d; best = o; } }
       if (best) { this._clickedObj = best; return; }
       const person = this.crowd?.nearest(me.x, me.y);
-      if (person) { person.mode = 'wait'; person.t = 4; person.spr.setFlipX(person.x > me.x); this._say(this.crowd.lineFor(person)); babble(null, 'hey there friend'); }
+      if (person) { person.mode = 'wait'; person.t = 4; person.spr.setFlipX(person.x > me.x); this._say(this.crowd.lineFor(person)); if (person.pixel) this._flag?.('secrets.pixelated.found', true); babble(null, 'hey there friend'); }
     });
     this.input.on('pointerdown', (ptr) => this._onClick(ptr));
     this.input.keyboard.on('keydown-H', () => { if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
@@ -694,12 +694,37 @@ export class WorldScene extends Phaser.Scene {
     if (near.action === 'pages') { const n = (this._pageIdx[near.id] = ((this._pageIdx[near.id] ?? -1) + 1) % near.pages.length); this._say(near.pages[n] + (near.pages.length > 1 ? `\n\n[E again: ${n + 1}/${near.pages.length}]` : '')); return; }
     if (near.action === 'mate') { this._mateBreak(); this._say(near.text + '\n\nEveryone has some. Better. (Thermos refilled.)'); return; }
     if (near.door) { if (this.mode === 'client') this.net.send({ t: 'door', id: near.id }); else this._toggleDoor(near.id); return; }
+    if (near.knock) { this._knock(near); return; }
     this._say(near.text);
     if (near.flag) {
       if (this.mode === 'client') this.net.send({ t: 'flag', key: near.flag });
       else this.save.flags[near.flag] = true;
     }
     if (near.action === 'save') this._save();
+  }
+
+  // Easter egg (docs/SECRETS.md): the always-occupied bathroom. Knock 5 times, then 10.
+  _knock(obj) {
+    const done = !!this.save?.flags?.['secrets.bathroom.found'];
+    const n = this._knocks = done ? 11 : (this._knocks ?? 0) + 1;
+    const lines = [
+      '"Occupied."',
+      '"Still occupied."',
+      '"It\'s a door. It\'s locked. You\'ve met doors."',
+      'A tap runs. It stops. It runs again.',
+      '"ONE MINUTE!"',
+      '"I said one minute. I didn\'t say which one."',
+      'Something heavy is set down on tile. A long breath out.',
+      '"Do you want me to rush this? Nobody wants me to rush this."',
+      '"Fine. FINE."',
+      'The lock turns. The door opens a hand\'s width.\n\nYou look. You stop looking.\n\nThe door closes itself, gently, like a book you weren\'t ready for. The queue sign still says 1.',
+    ];
+    this._say(n > 10 ? '"No."' : lines[n - 1]);
+    if (n === 10) {
+      if (this.mode === 'client') this.net.send({ t: 'flag', key: 'secrets.bathroom.found' });
+      else this.save.flags['secrets.bathroom.found'] = true;
+      this._toast('Achievement: One minute.');
+    }
   }
 
   // A roommate was interrupted mid long-idle: they scramble, and the party "saw nothing".
