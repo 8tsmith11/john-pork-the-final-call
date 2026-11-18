@@ -2,42 +2,6 @@
 // Object text here is placeholder world text; the script (task #6) replaces it.
 import { makeMap } from './build.js';
 
-export const metroPlaza = makeMap({
-  id: 'metro_plaza', name: 'College Park metro plaza', outdoor: true,
-  // Who's here, and why (see src/game/crowd.js). Thoughtful, not scattered.
-  crowd: [
-    { mode: 'wait', at: [18, 2], n: 3, face: [20, 1] },            // a queue under the train board
-    { mode: 'talk', at: [12, 4] },                                // two people talking by a pillar
-    { mode: 'walk', path: [[4, 7], [20, 7], [35, 7]], n: 2 },      // commuters along the south lane
-    { mode: 'walk', path: [[35, 3], [24, 3], [8, 3]], n: 2 },      // and the north lane
-  ],
-  layout: [
-    '########################################',
-    '#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#',
-    '#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#',
-    '#,,,,,|,,,,,,,,,,,|,,,,,,,,,,,|,,,,,,,,#',
-    '#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#',
-    '#gggg,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,gggg#',
-    '#gggg,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,gggg#',
-    '#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#',
-    '#,,,,,|,,,,,,,,,,,|,,,,,,,,,,,|,,,,,,,,#',
-    '#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#',
-    '########################################',
-  ],
-  spawns: [[3, 2], [4, 2], [3, 3]],
-  objects: [
-    { id: 'obj.aster_door', x: 2, y: 1, label: 'ASTER lobby', action: 'exit', to: 'aster_lobby', text: 'Back into the lobby.' },
-    { id: 'npc.rotter_1', x: 12, y: 6, label: 'Rotter', npc: true, text: 'code rot. code rot. code rot.' },
-    { id: 'npc.rotter_2', x: 25, y: 2, label: 'Rotter', npc: true, text: 'code rot. no one can code faster than. code rot.' },
-    { id: 'npc.rotter_3', x: 33, y: 8, label: 'Rotter (looks at you differently)', npc: true,
-      text: 'code rot. code rot. ...I used to be someone\'s favorite person. code rot.' },
-    { id: 'npc.halvard', x: 6, y: 8, label: 'Halvard', npc: true, talk: 'lead_b_halvard' },
-    { id: 'obj.billboard', x: 20, y: 1, label: 'Billboard', text: 'A Slop Decades billboard, peeling: "AT THE END OF THE DAY, NO ONE CAN CODE FASTER THAN AI."' },
-    { id: 'obj.purple_sign', x: 30, y: 1, label: 'Purple Line sign', text: 'PURPLE LINE: OPENING SOON.' },
-    { id: 'obj.grate', x: 36, y: 9, label: 'Storm grate', action: 'exit', floor: true, to: 'tunnel_1', text: 'The grate lifts. Somewhere below, very faintly, something is drumming.' },
-  ],
-});
-
 export const tunnel1 = makeMap({
   id: 'tunnel_1', name: 'Green Line maintenance tunnel',
   layout: [

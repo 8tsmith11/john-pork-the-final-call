@@ -261,6 +261,22 @@ c = C().rect(2, 14, 12, 8, "warm2").h_(2, 14, 12, "warm3").v_(2, 15, 7, "warm1")
 P("obj.lost_found", c.outline())
 c = C().rect(0, 2, 16, 21, "steel").rect(1, 3, 6, 19, "night2").rect(9, 3, 6, 19, "night2").pts("screen0", (2, 5), (3, 6), (10, 5), (11, 6)).rect(7, 11, 2, 3, "warm4")
 P("obj.street_doors", c.outline())
+# ---- College Park, outdoors ----
+c = C().rect(3, 15, 10, 5, "warm2").rect(2, 20, 12, 2, "warm1").rect(5, 11, 6, 4, "warm2").rect(11, 12, 3, 3, "warm3").px(13, 13, "warm4").px(12, 12, "night0")
+c.pts("warm1", (4, 16), (6, 17), (8, 16), (10, 17), (7, 13)).rect(3, 21, 2, 2, "warm1").rect(11, 21, 2, 2, "warm1").rect(1, 22, 14, 1, "concrete2")
+P("obj.testudo", c.outline())
+c = C().rect(1, 10, 14, 12, "yerba0").rect(1, 9, 14, 2, "night2").h_(1, 15, 14, "night2").pts("bone", (4, 12), (5, 12), (10, 18)).rect(2, 22, 2, 1, "night0").rect(12, 22, 2, 1, "night0")
+P("obj.dumpster", c.outline())
+c = C().rect(4, 3, 8, 14, "tub0").rect(5, 4, 6, 5, "night1").rect(6, 10, 4, 4, "steel").pts("bone", (6, 10), (8, 11), (7, 12)).rect(10, 9, 1, 5, "night0").rect(7, 17, 2, 6, "steel")
+P("obj.payphone", c.outline())
+c = C()
+for x0, col in ((1, "tub1"), (6, "soft1"), (11, "yerba1")):
+    c.v_(x0 + 2, 9, 9, "steel").h_(x0, 18, 4, col).rect(x0, 19, 1, 2, "night0").rect(x0 + 3, 19, 1, 2, "night0").h_(x0 + 1, 9, 3, "night2")
+c.h_(0, 21, 16, "concrete3")
+P("obj.scooters", c.outline())
+c = C().rect(1, 12, 14, 6, "warm1").h_(1, 12, 14, "warm3").rect(2, 8, 4, 4, "bone").rect(7, 9, 3, 3, "warm4").rect(11, 8, 3, 4, "bone").pts("signal", (3, 9), (12, 10))
+c.rect(2, 18, 3, 4, "night0").rect(11, 18, 3, 4, "night0").v_(15, 6, 12, "warm0").rect(9, 4, 7, 2, "soft1")
+P("obj.cart", c.outline())
 P("obj.door", door())
 P("obj.door_631", door())
 P("obj.bathroom", door("concrete2", "concrete1", occupied=True, num=False))
@@ -425,6 +441,13 @@ for x in range(1, 31, 5):
         c.rect(x, y, 4, 4, "warm3").px(x + 3, y + 2, "night0").h_(x, y, 4, "warm4")
 c.pts("bone", (7, 10), (22, 4), (27, 10))
 WIDE["obj.mailboxes"] = c.outline().rows()
+
+c = C(32, 16).rect(2, 4, 28, 9, "bone").rect(22, 6, 8, 7, "bone").rect(23, 6, 6, 3, "night1").h_(2, 4, 28, "concrete3").rect(2, 12, 28, 1, "concrete2")
+c.rect(5, 12, 4, 3, "night0").rect(22, 12, 4, 3, "night0").v_(12, 0, 4, "steel").h_(10, 0, 5, "steel").px(12, 1, "signal").pts("screen2", (30, 10)).pts("signal", (2, 10))
+WIDE["obj.van"] = c.outline().rows()
+c = C(32, 16).rect(3, 7, 26, 6, "tub0").rect(8, 3, 14, 5, "tub0").rect(9, 4, 5, 3, "night1").rect(16, 4, 5, 3, "night1").h_(3, 7, 26, "tub1")
+c.rect(6, 12, 4, 3, "night0").rect(22, 12, 4, 3, "night0").pts("warm4", (28, 9)).pts("signal", (3, 9)).pts("rot0", (11, 5), (18, 5))
+WIDE["obj.car"] = c.outline().rows()
 
 # ---- enemies (16x16) ----
 ENEMIES = {}

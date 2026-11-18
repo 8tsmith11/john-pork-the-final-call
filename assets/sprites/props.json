@@ -880,7 +880,7 @@
     "h": 24
    }
   },
-  "obj.door": {
+  "obj.testudo": {
    "frame": {
     "x": 64,
     "y": 120,
@@ -900,7 +900,7 @@
     "h": 24
    }
   },
-  "obj.door_631": {
+  "obj.dumpster": {
    "frame": {
     "x": 80,
     "y": 120,
@@ -920,7 +920,7 @@
     "h": 24
    }
   },
-  "obj.bathroom": {
+  "obj.payphone": {
    "frame": {
     "x": 96,
     "y": 120,
@@ -940,7 +940,7 @@
     "h": 24
    }
   },
-  "obj.graffiti": {
+  "obj.scooters": {
    "frame": {
     "x": 112,
     "y": 120,
@@ -960,9 +960,109 @@
     "h": 24
    }
   },
-  "obj.lobby_monitor": {
+  "obj.cart": {
    "frame": {
     "x": 0,
+    "y": 144,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.door": {
+   "frame": {
+    "x": 16,
+    "y": 144,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.door_631": {
+   "frame": {
+    "x": 32,
+    "y": 144,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.bathroom": {
+   "frame": {
+    "x": 48,
+    "y": 144,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.graffiti": {
+   "frame": {
+    "x": 64,
+    "y": 144,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.lobby_monitor": {
+   "frame": {
+    "x": 80,
     "y": 144,
     "w": 16,
     "h": 24
@@ -982,7 +1082,7 @@
   },
   "obj.lobby_monitor#1": {
    "frame": {
-    "x": 16,
+    "x": 96,
     "y": 144,
     "w": 16,
     "h": 24
@@ -1002,7 +1102,7 @@
   },
   "obj.clock_6f": {
    "frame": {
-    "x": 32,
+    "x": 112,
     "y": 144,
     "w": 16,
     "h": 24
@@ -1022,106 +1122,6 @@
   },
   "obj.elevator": {
    "frame": {
-    "x": 48,
-    "y": 144,
-    "w": 16,
-    "h": 24
-   },
-   "rotated": false,
-   "trimmed": false,
-   "spriteSourceSize": {
-    "x": 0,
-    "y": 0,
-    "w": 16,
-    "h": 24
-   },
-   "sourceSize": {
-    "w": 16,
-    "h": 24
-   }
-  },
-  "obj.aster_door": {
-   "frame": {
-    "x": 64,
-    "y": 144,
-    "w": 16,
-    "h": 24
-   },
-   "rotated": false,
-   "trimmed": false,
-   "spriteSourceSize": {
-    "x": 0,
-    "y": 0,
-    "w": 16,
-    "h": 24
-   },
-   "sourceSize": {
-    "w": 16,
-    "h": 24
-   }
-  },
-  "obj.billboard": {
-   "frame": {
-    "x": 80,
-    "y": 144,
-    "w": 16,
-    "h": 24
-   },
-   "rotated": false,
-   "trimmed": false,
-   "spriteSourceSize": {
-    "x": 0,
-    "y": 0,
-    "w": 16,
-    "h": 24
-   },
-   "sourceSize": {
-    "w": 16,
-    "h": 24
-   }
-  },
-  "obj.billboard#1": {
-   "frame": {
-    "x": 96,
-    "y": 144,
-    "w": 16,
-    "h": 24
-   },
-   "rotated": false,
-   "trimmed": false,
-   "spriteSourceSize": {
-    "x": 0,
-    "y": 0,
-    "w": 16,
-    "h": 24
-   },
-   "sourceSize": {
-    "w": 16,
-    "h": 24
-   }
-  },
-  "obj.purple_sign": {
-   "frame": {
-    "x": 112,
-    "y": 144,
-    "w": 16,
-    "h": 24
-   },
-   "rotated": false,
-   "trimmed": false,
-   "spriteSourceSize": {
-    "x": 0,
-    "y": 0,
-    "w": 16,
-    "h": 24
-   },
-   "sourceSize": {
-    "w": 16,
-    "h": 24
-   }
-  },
-  "obj.grate": {
-   "frame": {
     "x": 0,
     "y": 168,
     "w": 16,
@@ -1140,7 +1140,7 @@
     "h": 24
    }
   },
-  "obj.tunnel_up": {
+  "obj.aster_door": {
    "frame": {
     "x": 16,
     "y": 168,
@@ -1160,7 +1160,7 @@
     "h": 24
    }
   },
-  "obj.tunnel_on": {
+  "obj.billboard": {
    "frame": {
     "x": 32,
     "y": 168,
@@ -1180,7 +1180,7 @@
     "h": 24
    }
   },
-  "npc.rotter_1": {
+  "obj.billboard#1": {
    "frame": {
     "x": 48,
     "y": 168,
@@ -1200,7 +1200,7 @@
     "h": 24
    }
   },
-  "npc.rotter_2": {
+  "obj.purple_sign": {
    "frame": {
     "x": 64,
     "y": 168,
@@ -1220,7 +1220,7 @@
     "h": 24
    }
   },
-  "npc.rotter_3": {
+  "obj.grate": {
    "frame": {
     "x": 80,
     "y": 168,
@@ -1240,10 +1240,110 @@
     "h": 24
    }
   },
-  "npc.halvard": {
+  "obj.tunnel_up": {
    "frame": {
     "x": 96,
     "y": 168,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.tunnel_on": {
+   "frame": {
+    "x": 112,
+    "y": 168,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.rotter_1": {
+   "frame": {
+    "x": 0,
+    "y": 192,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.rotter_2": {
+   "frame": {
+    "x": 16,
+    "y": 192,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.rotter_3": {
+   "frame": {
+    "x": 32,
+    "y": 192,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.halvard": {
+   "frame": {
+    "x": 48,
+    "y": 192,
     "w": 16,
     "h": 24
    },
@@ -1266,7 +1366,7 @@
   "format": "RGBA8888",
   "size": {
    "w": 128,
-   "h": 192
+   "h": 216
   },
   "scale": "1"
  }

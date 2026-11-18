@@ -1,14 +1,15 @@
 // Shared ASCII map builder. Legend (solid chars collide):
 //   # wall   = rail/window   ~ water   | pillar          (solid)
-//   . floor  b balcony  , asphalt  : tunnel floor  t track  g grass  k kitchen tile  e epoxy  w bathroom tile  c carpet  m lobby stone  (walkable)
+//   . floor  b balcony  , asphalt  : tunnel floor  t track  g grass  k kitchen tile  e epoxy  w bathroom tile  c carpet  m lobby stone  p pavers  s sidewalk  h track running east-west  (walkable)
+//   T tree (solid)
 import { TILE } from '../../engine/sim.js';
 
-const SOLID = new Set(['#', '=', '~', '|']);
+const SOLID = new Set(['#', '=', '~', '|', 'T']);
 
 export const TILE_COLORS = {
   '#': 0x1c1f33, '=': 0x4a6080, '~': 0x1d3a4a, '|': 0x2b2f4a,
   '.': 0x3a2f2a, 'b': 0x2a3040, ',': 0x2c2c34, ':': 0x23262b, 't': 0x3b3530, 'g': 0x24341f,
-  'k': 0x4a4540, 'e': 0x2f3a40, 'w': 0x3e4a52, 'c': 0x4a2f38, 'm': 0x4a4f52,
+  'k': 0x4a4540, 'e': 0x2f3a40, 'w': 0x3e4a52, 'c': 0x4a2f38, 'm': 0x4a4f52, 'h': 0x3b3530, 'p': 0x3f4446, 's': 0x55595a, 'T': 0x1f3a22,
 };
 
 /** Tile coords in, pixel coords out. Objects keep tile coords (renderer and proximity use tiles). */
