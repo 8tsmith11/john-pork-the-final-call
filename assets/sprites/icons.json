@@ -1080,7 +1080,7 @@
     "h": 16
    }
   },
-  "item.winged_boots": {
+  "item.arg_shirt": {
    "frame": {
     "x": 96,
     "y": 96,
@@ -1100,7 +1100,7 @@
     "h": 16
    }
   },
-  "item.cowboy_hat": {
+  "item.hasbulla_tee": {
    "frame": {
     "x": 112,
     "y": 96,
@@ -1120,7 +1120,7 @@
     "h": 16
    }
   },
-  "item.smoky_socks": {
+  "item.sculptor_gloves": {
    "frame": {
     "x": 0,
     "y": 112,
@@ -1140,7 +1140,7 @@
     "h": 16
    }
   },
-  "item.signal_gloves": {
+  "item.mate_holster": {
    "frame": {
     "x": 16,
     "y": 112,
@@ -1160,9 +1160,89 @@
     "h": 16
    }
   },
-  "generic": {
+  "item.winged_boots": {
    "frame": {
     "x": 32,
+    "y": 112,
+    "w": 16,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 16
+   }
+  },
+  "item.cowboy_hat": {
+   "frame": {
+    "x": 48,
+    "y": 112,
+    "w": 16,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 16
+   }
+  },
+  "item.smoky_socks": {
+   "frame": {
+    "x": 64,
+    "y": 112,
+    "w": 16,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 16
+   }
+  },
+  "item.signal_gloves": {
+   "frame": {
+    "x": 80,
+    "y": 112,
+    "w": 16,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 16
+   }
+  },
+  "generic": {
+   "frame": {
+    "x": 96,
     "y": 112,
     "w": 16,
     "h": 16

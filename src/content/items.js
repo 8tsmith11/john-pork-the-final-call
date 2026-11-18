@@ -99,6 +99,18 @@ Object.assign(ITEMS, {
     mods: { abilityPower: 0.25, skillCd: 0.15 }, text: 'His lace runs out to his fingertips through these. Ping reaches further and comes back sooner.' },
 });
 
+// Manuel's four (his two picks via gonman, board #178/#181; the other two from his backstory).
+Object.assign(ITEMS, {
+  'item.arg_shirt':      { name: 'Argentina shirt', slot: 'chestplate', owner: 'manuel', unique: true, special: true, src: 'late-act2',
+    mods: { armor: 0.1, dodgeCd: -0.12, killDodge: 1 }, text: 'Sky-blue and white stripes, a 10 on the back. Gambeta: every kill hands his dodge straight back to him.' },
+  'item.hasbulla_tee':   { name: 'Hasbulla tee', slot: 'parka', owner: 'manuel', unique: true, src: 'act3',
+    mods: { armor: 0.04, small: 2, knock: 0.4 }, text: 'White, oversized, "VS EVERYBODY", hangs past his waist. Small and unbothered: harder to hit, and his swings throw things further.' },
+  'item.sculptor_gloves': { name: 'Sculptor\'s gloves', slot: 'gloves', owner: 'manuel', unique: true, src: 'act3',
+    mods: { decoys: 1, abilityPower: 0.2 }, text: 'Plaster dust in every seam, a thumb worn shiny from shaping ears. His decoy busts come out two at a time and last longer.' },
+  'item.mate_holster':   { name: 'Mate holster', slot: 'backpack', owner: 'manuel', unique: true, src: 'act3',
+    mods: { mateHeal: 0.6, staRegen: 0.25 }, text: 'A gourd, a bombilla and a steel thermos on a leather harness. Mate heals him far more, and he is never quite tired.' },
+});
+
 // Upgrades at the master armorer: each level (max 5) scales an item's positive bonuses by +15%.
 export const MAX_UPGRADE = 5;
 export const upgradeCost = (level) => ({ money: 20 * (level + 1), mats: { 'item.mat_scrap': level + 1, ...(level ? { 'item.mat_circuit': level } : {}) } });
@@ -187,7 +199,8 @@ export const SKILLS = Object.fromEntries(Object.entries(SKILL_TREE).map(([k, t])
 /** Sum gear + skill modifiers for one character in the save. */
 export function playerMods(char, charId) {
   const m = { melee: 0, shot: 0, shotCd: 0, armor: 0, maxHp: 0, iframes: 0, dodgeCd: 0, revive: 0, gun: 0,
-    speed: 0, sta: 0, staRegen: 0, dashHit: 0, crit: 0, lifesteal: 0, loot: 0, haggle: 0, skillCd: 0, abilityPower: 0, markDmg: 0, secondWind: 0, decoys: 0, reviveHeal: 0 };
+    speed: 0, sta: 0, staRegen: 0, dashHit: 0, crit: 0, lifesteal: 0, loot: 0, haggle: 0, skillCd: 0, abilityPower: 0, markDmg: 0, secondWind: 0, decoys: 0, reviveHeal: 0,
+    small: 0, knock: 0, killDodge: 0, mateHeal: 0 };
   const add = (mods, k = 1) => { for (const [key, v] of Object.entries(mods || {})) m[key] = (m[key] ?? 0) + v * k; };
   for (const id of Object.values(char.equipped || {})) {
     const def = id && ITEMS[id];

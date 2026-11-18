@@ -528,7 +528,8 @@ export class WorldScene extends Phaser.Scene {
     this._useWhat = null; this._useSlot = null;
     if (i < 0 || !c.inventory[i] || !ITEMS[c.inventory[i].id]?.heal) return;
     const it = ITEMS[Inv.takeSlot(c, i)];
-    this.sim.heal(peerId, it.heal ?? 0);
+    const healAmt = Math.round((it.heal ?? 0) * (c.inventory[i]?.id === 'item.mate_flask' ? 1 + (playerMods(c, who).mateHeal ?? 0) : 1));   // mate holster
+    this.sim.heal(peerId, healAmt);
     if (it.pill) {
       const p = this.sim.players.get(peerId);
       if (p) { p.pillT = it.pill; p.sta = 999; p.staT = 0; }   // the sim clamps stamina to its max on the next step
@@ -536,7 +537,7 @@ export class WorldScene extends Phaser.Scene {
       this._toast(`${line} Dodges are free for ${it.pill}s.`);
       this._syncParty(); return;
     }
-    this._toast(`${who} has the ${it.name.toLowerCase()}. +${it.heal} HP`);
+    this._toast(`${who} has the ${it.name.toLowerCase()}. +${healAmt} HP`);
     this._syncParty();
   }
 

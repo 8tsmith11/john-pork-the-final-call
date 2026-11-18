@@ -161,6 +161,11 @@ D014 = {
     "item.pack_coolant": lambda: pack("concrete2", "concrete1").line(3, 5, 3, 13, "screen1").line(12, 5, 12, 13, "screen2").pts("screen2", (8, 10)),
     "item.pack_drone": lambda: pack("night3", "night2").rect(5, 1, 6, 2, "steel").pts("steel", (4, 1), (11, 1)).px(8, 2, "signal"),
     "item.pack_capacitor": lambda: pack("concrete1", "night3").rect(5, 8, 6, 5, "rot1").line(9, 8, 7, 11, "night0").line(7, 11, 9, 11, "night0").line(9, 11, 7, 13, "night0"),
+    # Manuel's uniques
+    "item.arg_shirt": lambda: I().rect(3, 3, 10, 11, "bone").rect(1, 3, 3, 4, "bone").rect(12, 3, 3, 4, "bone").rect(4, 3, 2, 11, "tub1").rect(8, 3, 2, 11, "tub1").rect(12, 3, 1, 11, "tub1").rect(6, 3, 4, 1, "night2").pts("night2", (7, 4), (8, 4)),
+    "item.hasbulla_tee": lambda: I().rect(2, 2, 12, 13, "bone").rect(0, 2, 3, 5, "bone").rect(13, 2, 3, 5, "bone").rect(6, 2, 4, 1, "concrete3").disc(8, 7, 1, "night2").rect(7, 8, 3, 3, "night2").pts("concrete3", (3, 14), (12, 14)),
+    "item.sculptor_gloves": lambda: glove("bone", "concrete2").pts("concrete3", (5, 9), (8, 11), (10, 8), (6, 4)),
+    "item.mate_holster": lambda: I().rect(3, 3, 2, 11, "warm1").rect(11, 3, 2, 11, "warm1").disc(8, 10, 3, "warm2").rect(6, 6, 5, 2, "warm1").line(9, 3, 9, 8, "steel").rect(3, 5, 2, 7, "steel"),
     # Michael's uniques
     "item.winged_boots": lambda: boot("bone", "bone", "balloon0").pts("bone", (3, 4), (2, 5), (3, 6), (2, 7), (4, 5), (4, 6)).pts("balloon1", (13, 13), (14, 12), (12, 14)).rect(5, 8, 4, 1, "warm4"),
     "item.cowboy_hat": lambda: I().rect(1, 10, 14, 2, "warm4").rect(4, 5, 8, 6, "warm4").rect(4, 9, 8, 1, "warm1").pts("warm3", (7, 5), (8, 5), (6, 6), (9, 6)).pts("warm3", (1, 10), (14, 10)),

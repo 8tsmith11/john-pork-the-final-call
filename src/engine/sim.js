@@ -337,7 +337,7 @@ export class Sim {
       if (Math.abs(da) > m.arc / 2 && d > def.radius + 4) continue;
       const crit = Math.random() < (p.mods?.crit ?? 0);
       if (crit) this.events.push({ t: 'crit', x: e.x, y: e.y });
-      this._hurtEnemy(e, Math.round((m.damage + (p.mods?.melee ?? 0)) * (p.morphed ? 1.3 : 1) * (crit ? 2 : 1)), dx / (d || 1) * m.knockback, dy / (d || 1) * m.knockback, p.id);
+      this._hurtEnemy(e, Math.round((m.damage + (p.mods?.melee ?? 0)) * (p.morphed ? 1.3 : 1) * (crit ? 2 : 1)), dx / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), dy / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), p.id);
     }
   }
 
@@ -372,6 +372,8 @@ export class Sim {
       if (e.def?.trait === 'splitter') for (let i = 0; i < 2; i++) { const nid = `e${this._nextId++}`; this.enemies.set(nid, { id: nid, kind: 'enemy.rotling', def: { ...ENEMIES['enemy.rotling'], hp: 8, speed: 60, radius: 4, color: e.def.color, vname: 'Fragment', trait: 'plain', xp: 2 }, x: e.x + (i ? 6 : -6), y: e.y, hp: 8, cd: 0.6, hurtT: 0, kx: 0, ky: 0 }); }
       if (e.def?.trait === 'puddler') this.hazards.push({ x: e.x, y: e.y, r: 14, ttl: 5, dps: 8 });
       this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss, key: e.spawnKey });
+      const k = this.players.get(by);   // Argentina shirt (gambeta): a kill hands the dodge straight back
+      if (k?.mods?.killDodge) { k.dodgeCd = 0; k.sta = Math.min(MOVE.stamina + (k.mods.sta ?? 0), (k.sta ?? 0) + MOVE.dashCost); }
     }
   }
 
@@ -412,7 +414,7 @@ export class Sim {
       const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
       if (def.ai === 'chase') {
         if (e.hurtT <= 0) this._moveBody(e, ux * def.speed * dt, uy * def.speed * dt, def.radius);
-        if (d < def.radius + 6 && e.cd <= 0) { this._hurtPlayer(target, def.damage); e.cd = def.touchCooldown; }
+        if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) { this._hurtPlayer(target, def.damage); e.cd = def.touchCooldown; }
       } else if (def.ai === 'kite') {
         const dir = d < def.range * 0.7 ? -1 : d > def.range ? 1 : 0;
         if (e.hurtT <= 0) this._moveBody(e, ux * def.speed * dir * dt, uy * def.speed * dir * dt, def.radius);
@@ -539,7 +541,7 @@ export class Sim {
         }
       } else {
         for (const p of this.players.values()) {
-          if (!p.downed && Math.hypot(p.x - s.x, p.y - 6 - s.y) < 7) { this._hurtPlayer(p, s.dmg); hit = true; break; }
+          if (!p.downed && Math.hypot(p.x - s.x, p.y - 6 - s.y) < 7 - (p.mods?.small ?? 0)) { this._hurtPlayer(p, s.dmg); hit = true; break; }
         }
       }
       if (!hit) keep.push(s);
