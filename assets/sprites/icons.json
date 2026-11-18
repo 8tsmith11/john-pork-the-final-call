@@ -560,7 +560,7 @@
     "h": 16
    }
   },
-  "item.relic_phone": {
+  "item.pipe_wrench": {
    "frame": {
     "x": 64,
     "y": 48,
@@ -580,7 +580,7 @@
     "h": 16
    }
   },
-  "item.relic_coin": {
+  "item.box_cutter": {
    "frame": {
     "x": 80,
     "y": 48,
@@ -600,7 +600,7 @@
     "h": 16
    }
   },
-  "item.relic_figure": {
+  "item.rebar": {
    "frame": {
     "x": 96,
     "y": 48,
@@ -620,10 +620,130 @@
     "h": 16
    }
   },
-  "generic": {
+  "item.busted_guitar": {
    "frame": {
     "x": 112,
     "y": 48,
+    "w": 16,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 16
+   }
+  },
+  "item.nail_gun": {
+   "frame": {
+    "x": 0,
+    "y": 64,
+    "w": 16,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 16
+   }
+  },
+  "item.scattergun": {
+   "frame": {
+    "x": 16,
+    "y": 64,
+    "w": 16,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 16
+   }
+  },
+  "item.relic_phone": {
+   "frame": {
+    "x": 32,
+    "y": 64,
+    "w": 16,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 16
+   }
+  },
+  "item.relic_coin": {
+   "frame": {
+    "x": 48,
+    "y": 64,
+    "w": 16,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 16
+   }
+  },
+  "item.relic_figure": {
+   "frame": {
+    "x": 64,
+    "y": 64,
+    "w": 16,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 16
+   }
+  },
+  "generic": {
+   "frame": {
+    "x": 80,
+    "y": 64,
     "w": 16,
     "h": 16
    },
@@ -645,7 +765,7 @@
   "image": "icons.png",
   "size": {
    "w": 128,
-   "h": 64
+   "h": 80
   },
   "scale": "1"
  }

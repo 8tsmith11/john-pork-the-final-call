@@ -136,6 +136,12 @@ ICONS = {
     "item.fish_lantern": lambda: fish("yerba0", "rot1").pts("screen2", (6, 8), (8, 8)),
     "item.lake_bust": lambda: I().rect(5, 10, 6, 4, "concrete3").disc(8, 6, 4, "bone").pts("night2", (6, 5), (10, 5)).rect(6, 7, 5, 2, "concrete3").pts("bone", (4, 2), (12, 2)),
     "item.ozzie_lure": lambda: I().line(8, 1, 8, 4, "steel").disc(8, 8, 3, "signal").rect(5, 8, 7, 3, "bone").line(8, 11, 6, 14, "steel").line(8, 11, 10, 14, "steel"),
+    "item.pipe_wrench": lambda: I().line(4, 13, 10, 7, "steel").line(5, 13, 11, 7, "concrete3").rect(9, 3, 4, 3, "steel").rect(12, 5, 2, 3, "steel").pts("night2", (11, 6)),
+    "item.box_cutter": lambda: I().line(3, 12, 9, 6, "tub1").line(4, 12, 10, 6, "tub0").line(10, 5, 13, 3, "bone").pts("steel", (11, 4)),
+    "item.rebar": lambda: I().line(2, 14, 13, 3, "warm1").line(3, 14, 14, 3, "warm2").pts("steel", (13, 2), (14, 2), (14, 3)).pts("warm0", (5, 11), (8, 8), (11, 5)),
+    "item.busted_guitar": lambda: I().disc(5, 11, 3, "signal").disc(7, 9, 2, "signal").line(8, 8, 13, 2, "warm2").rect(12, 1, 3, 2, "warm1").pts("bone", (5, 11), (6, 10)).line(9, 8, 13, 3, "bone"),
+    "item.nail_gun": lambda: I().rect(3, 5, 9, 4, "warm3").rect(11, 6, 3, 2, "steel").rect(5, 9, 3, 4, "night3").pts("night2", (4, 6), (6, 6)).pts("steel", (14, 7)),
+    "item.scattergun": lambda: I().rect(2, 6, 12, 3, "night3").rect(2, 6, 12, 1, "concrete2").rect(4, 9, 3, 4, "warm1").pts("rot0", (12, 7), (13, 7), (10, 5)),
     "item.relic_phone": phone, "item.relic_coin": coin, "item.relic_figure": figure,
     "generic": lambda: I().rect(4, 4, 8, 8, "concrete2").rect(4, 4, 8, 1, "concrete3").pts("night2", (7, 7), (8, 7), (7, 8), (8, 8)),
 }

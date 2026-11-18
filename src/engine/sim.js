@@ -265,9 +265,9 @@ export class Sim {
   }
 
   _melee(p) {
-    const m = COMBAT.melee;
+    const w = p.mods?.swing, m = w ? { ...COMBAT.melee, ...w, arc: Math.PI * (w.arc ?? 0.6) } : COMBAT.melee;
     p.meleeCd = m.cooldown; p.swingT = 0.2;   // long enough for both attack frames (12 fps)
-    this.events.push({ t: 'swing', id: p.id, a: p.aim });
+    this.events.push({ t: 'swing', id: p.id, a: p.aim, r: m.range, arc: m.arc });
     for (const e of this.enemies.values()) {
       const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
       const def = this._def(e);
@@ -281,10 +281,13 @@ export class Sim {
   }
 
   _fire(p) {
-    const c = COMBAT.shot;
-    p.shotCd = Math.max(0.15, c.cooldown + (p.mods?.shotCd ?? 0));
-    this.shots.push({ x: p.x + Math.cos(p.aim) * 8, y: p.y - 6 + Math.sin(p.aim) * 8, vx: Math.cos(p.aim) * c.speed, vy: Math.sin(p.aim) * c.speed,
-      life: c.life, dmg: Math.round((c.damage + (p.mods?.shot ?? 0)) * (p.morphed ? 1.3 : 1)), from: 'player', owner: p.id });
+    const c = { ...COMBAT.shot, ...(p.mods?.gunStats ?? {}) }, n = c.pellets ?? 1;
+    p.shotCd = Math.max(0.12, c.cooldown + (p.mods?.shotCd ?? 0));
+    for (let i = 0; i < n; i++) {
+      const a = p.aim + (n > 1 ? (i / (n - 1) - 0.5) * (c.spread ?? 0.4) : 0);
+      this.shots.push({ x: p.x + Math.cos(a) * 8, y: p.y - 6 + Math.sin(a) * 8, vx: Math.cos(a) * c.speed, vy: Math.sin(a) * c.speed,
+        life: c.life, dmg: Math.round((c.damage + (p.mods?.shot ?? 0)) * (p.morphed ? 1.3 : 1)), from: 'player', owner: p.id });
+    }
     this.events.push({ t: 'shot', id: p.id });
   }
 

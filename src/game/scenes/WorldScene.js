@@ -1668,7 +1668,8 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'swing') {
       const p = snap.players.find((q) => q.id === ev.id); if (!p) return;
       const g = this.add.graphics().setDepth(p.y + 1);
-      g.lineStyle(2, 0xe8e8f0, 0.8).beginPath().arc(p.x, p.y - 8, 16, ev.a - 0.9, ev.a + 0.9).strokePath();
+      const r = Math.max(12, (ev.r ?? 20) - 4), half = (ev.arc ?? 1.8) / 2;   // the weapon's real reach and arc
+      g.lineStyle(2, 0xe8e8f0, 0.8).beginPath().arc(p.x, p.y - 8, r, ev.a - half, ev.a + half).strokePath();
       this.tweens.add({ targets: g, alpha: 0, duration: 140, onComplete: () => g.destroy() });
     }
     if (ev.t === 'morph') { const p = snap.players.find((q) => q.id === ev.id); if (p) { this.cameras.main.flash(120, 180, 255, 160); if (ev.id === this.localId) this._say(ev.on ? `${MORPH_LOOK[p.c][1]}. Stronger. Faster. Softer in the wrong places.` : 'You come back to yourself. Mostly.'); } }
