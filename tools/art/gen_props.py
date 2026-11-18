@@ -319,6 +319,53 @@ for x0 in (3, 24):                                                              
 c.pts("pork0", *[(x, 14) for x in range(1, 31, 2)])
 WIDE["obj.pork_flag"] = c.outline().rows()
 
+
+# ---- the principal machines (24x32, standing, facing the camera) ----
+PRINCIPALS = {}
+
+
+def sahur(f):
+    """Grown timber over brass clockwork: a gaunt night-watchman with a bat carried like a staff."""
+    c = C(24, 32)
+    b = f                                                                    # the bat taps on frame 1
+    c.rect(17, 3 + b, 3, 6, "warm3").v_(18, 9 + b, 19, "warm3").v_(19, 4 + b, 4, "warm4")   # the bat
+    c.rect(8, 1, 8, 9, "warm2").h_(8, 1, 8, "warm3").v_(15, 2, 8, "warm1")                 # head: a section of trunk
+    c.pts("warm1", (10, 6), (10, 7), (10, 8), (13, 2), (13, 3))                             # grain
+    c.rect(9, 4, 2, 2, "bone").rect(13, 4, 2, 2, "bone").pts("night0", (10, 5), (13, 5))    # wide eyes
+    c.h_(11, 8, 2, "night0")
+    c.rect(11, 10, 2, 1, "warm1")
+    c.rect(9, 11, 6, 10, "warm1").v_(14, 11, 10, "warm0").v_(10, 13, 7, "warm0")            # narrow trunk of a body
+    c.rect(11, 13, 2, 2, "night1").px(11 + f, 13, "warm4")                                  # the clockwork, turning
+    c.pts("warm4", (8, 11), (15, 11), (10, 25), (13, 25))                                   # brass at the joints
+    c.v_(7, 12, 10, "warm2").px(7, 22, "warm3").v_(16, 12, 7, "warm2").px(17, 18 + b, "warm2")
+    c.v_(10, 21, 9, "warm2").v_(13, 21, 9, "warm2").h_(9, 30, 3, "warm0").h_(12, 30, 3, "warm0")
+    return c.outline()
+
+
+def pork(f):
+    """John Pork in his grown body: bald head, hanging ears, long coat over plaid, a bad knee."""
+    c = C(24, 32)
+    c.rect(5, 10, 14, 3, "night3").rect(6, 13, 12, 12, "night3").v_(17, 11, 14, "night2")   # the long coat
+    c.rect(4, 12, 2, 9, "night3").rect(18, 12, 2, 9, "night2").h_(4, 21, 2, "skin3").h_(18, 21, 2, "skin2")
+    c.rect(10, 10, 4, 10, "soft1").pts("soft0", *[(x, y) for x in (10, 13) for y in range(11, 20, 2)])   # plaid shirt, open
+    c.rect(11, 10, 2, 6, "steel")                                                           # grey tee
+    c.v_(9, 10, 14, "night2").v_(14, 10, 14, "night2")                                      # lapels
+    c.rect(8, 2, 8, 7, "skin3").h_(9, 1, 6, "skin3").v_(15, 3, 6, "skin2")                  # bald egg of a head
+    c.v_(7, 3, 4, "skin1").v_(16, 3, 4, "skin1")                                            # ears hang down
+    c.pts("night0", (10, 4), (13, 4)).rect(10, 5, 4, 3, "pork2").pts("pork0", (11, 6), (12, 6))
+    c.h_(10, 8, 4, "skin1").pts("concrete3", (14, 8), (15, 7))                              # the smile; a grey patch at the jaw
+    c.rect(11, 9, 2, 1, "skin2")
+    c.rect(8, 25, 3, 5, "night1").rect(13, 25, 3, 3, "night1").rect(14, 28, 3, 2, "night1")  # the knee that doesn't bend right
+    c.h_(7, 30, 4, "warm0").h_(14, 30, 4, "warm0")
+    if f:
+        c.pts("bone", (18, 6), (19, 5))                                                     # breath, fogging
+    return c.outline()
+
+
+for f in (0, 1):
+    PRINCIPALS[f"sahur_{f}"] = sahur(f).rows()
+    PRINCIPALS[f"pork_{f}"] = pork(f).rows()
+
 # ---- enemies (16x16) ----
 ENEMIES = {}
 def rotling(f):
@@ -364,5 +411,6 @@ def write(name, w, h, frames):
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)
 write("big", 32, 40, BIG)
+write("principals", 24, 32, PRINCIPALS)
 write("enemies", 16, 16, ENEMIES)
 write("warden", 32, 40, WARDEN)

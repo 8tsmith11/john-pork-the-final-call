@@ -726,13 +726,13 @@ export class WorldScene extends Phaser.Scene {
       let s = this.enemySprites.get(e.id);
       const def = e.boss ? { radius: e.boss.r, color: e.boss.c } : ENEMIES[e.k];
       if (!s) {
-        const anim = e.boss ? 'warden' : e.k;
-        if (this.anims.exists(anim)) { s = this.add.sprite(e.x, e.y, e.boss ? 'warden' : 'enemies').setOrigin(0.5, 1).play(anim); s.isArt = true; }
+        const anim = e.boss ? (e.boss.sahur ? 'sahur' : 'warden') : e.k;
+        if (this.anims.exists(anim)) { s = this.add.sprite(e.x, e.y, e.boss ? (e.boss.sahur ? 'principals' : 'warden') : 'enemies').setOrigin(0.5, 1).play(anim); s.isArt = true; s.noTint = !!e.boss?.sahur; }
         else s = this.add.rectangle(e.x, e.y, def.radius * 2, def.radius * (e.boss ? 3 : 2) + 2, def.color).setOrigin(0.5, 1);
         this.enemySprites.set(e.id, s);
       }
       s.setPosition(e.x, e.y + 3).setDepth(e.y);
-      if (s.isArt) { if (e.h) s.setTintFill(0xffffff); else if (e.boss) s.setTint(def.color); else s.clearTint(); }
+      if (s.isArt) { if (e.h) s.setTintFill(0xffffff); else if (e.boss && !s.noTint) s.setTint(def.color); else s.clearTint(); }
       else s.setFillStyle(e.h ? 0xffffff : def.color);
       if (e.boss) this._bossBar(e);
       s.setScale(1 + Math.sin(this.time.now / 90 + e.x) * 0.06, 1);   // jittery rot wobble
