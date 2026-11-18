@@ -56,6 +56,7 @@ export class WorldScene extends Phaser.Scene {
     this._wireNet();
     this._makeDialogueUi();
     this._pageIdx = {};
+    this.vignette = this._makeVignette();
     if (this.mode !== 'client') for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
     this.save.world.scrap ??= 0;
     this._makeMenu();
@@ -111,8 +112,11 @@ export class WorldScene extends Phaser.Scene {
   _makeDialogueUi() {
     const W = VIEW.w, H = VIEW.h;
     this.dlgBg = this.add.rectangle(W / 2, H - 36, W - 40, 60, 0x0b0d16, 0.94).setStrokeStyle(1, 0xf2a6b8).setScrollFactor(0).setDepth(9500).setVisible(false);
-    this.dlgWho = this.add.text(30, H - 62, '', { ...FONT, fontSize: '9px', color: '#ffb347' }).setScrollFactor(0).setDepth(9501);
-    this.dlgText = this.add.text(30, H - 51, '', { ...FONT, fontSize: '9px', wordWrap: { width: W - 64 }, lineSpacing: 1 }).setScrollFactor(0).setDepth(9501);
+    this.dlgPortraitBg = this.add.rectangle(46, H - 36, 44, 48, 0x151827).setStrokeStyle(1, 0x5d6487).setScrollFactor(0).setDepth(9501).setVisible(false);
+    this.dlgPortrait = this.add.image(46, H - 36, 'light').setScrollFactor(0).setDepth(9502).setVisible(false);
+    this.dlgInitial = this.add.text(46, H - 36, '', { heading: true, fontSize: '18px', color: '#5d6487' }).setOrigin(0.5).setScrollFactor(0).setDepth(9502);
+    this.dlgWho = this.add.text(76, H - 62, '', { ...FONT, fontSize: '9px', color: '#ffb347' }).setScrollFactor(0).setDepth(9501);
+    this.dlgText = this.add.text(76, H - 51, '', { ...FONT, fontSize: '9px', wordWrap: { width: W - 110 }, lineSpacing: 1 }).setScrollFactor(0).setDepth(9501);
     this.dlgChoices = [0, 1, 2, 3, 4, 5].map((i) => this.add.text(34, H - 62 + i * 9.5, '', { ...FONT, fontSize: '8.5px', color: '#9aa3c7' })
       .setScrollFactor(0).setDepth(9501).setInteractive({ useHandCursor: true })
       .on('pointerover', function () { this.setColor('#ffb347'); }).on('pointerout', function () { this.setColor('#9aa3c7'); })
@@ -120,12 +124,33 @@ export class WorldScene extends Phaser.Scene {
     this.input.keyboard.on('keydown', (ev) => {
       if (!this.dlg) return;
       if (ev.key === 'e' || ev.key === 'E' || ev.key === ' ' || ev.key === 'Enter') {
+        if (!this.dlg.choices.length && (this._typeShown ?? 0) < (this._typeFull?.length ?? 0)) { this._typeShown = this._typeFull.length; this._drawDialogue(); return; }
         if (!this.dlg.choices.length && this.time.now - (this._lineAt ?? 0) > 220) this.dlg.advance();
         this._drawDialogue();
       }
       const n = parseInt(ev.key, 10); if (n >= 1 && n <= 6) this._choose(n - 1);
     });
     this._drawDialogue();
+  }
+
+  _setPortrait(who) {
+    const id = (who || '').toLowerCase();
+    const isRoommate = ['michael', 'trevor', 'manuel'].includes(id) && this.textures.exists(id);
+    this.dlgPortraitBg.setVisible(true);
+    if (isRoommate) {
+      // Head-and-shoulders crop of the roommate's sprite, scaled up.
+      this.dlgPortrait.setTexture(id, 'idle_down_0').setCrop(0, 0, 16, 14).setScale(3).setOrigin(0.5, 0.25).setVisible(true);
+      this.dlgInitial.setText('');
+    } else {
+      this.dlgPortrait.setVisible(false);
+      this.dlgInitial.setText(who ? who[0].toUpperCase() : '');
+    }
+  }
+
+  _tickTypewriter(dt) {
+    if (!this.dlg || this._typeFull == null || this._typeShown >= this._typeFull.length) return;
+    this._typeShown = Math.min(this._typeFull.length, this._typeShown + dt * 55);
+    this.dlgText.setText(this._typeFull.slice(0, Math.floor(this._typeShown)));
   }
 
   // Minimum time a line stays up before a click can skip it: base + reading time, capped.
@@ -136,6 +161,7 @@ export class WorldScene extends Phaser.Scene {
   _drawDialogue() {
     const d = this.dlg, on = !!d && !d.done;
     [this.dlgBg, this.dlgWho, this.dlgText, ...this.dlgChoices].forEach((o) => o.setVisible(on));
+    if (!on) { this.dlgPortrait.setVisible(false); this.dlgPortraitBg.setVisible(false); this.dlgInitial.setText(''); }
     if (d && d.done) { this.dlg = null; const cb = this.dlgDone; this.dlgDone = null; cb?.(); return; }
     if (!on) return;
     const choices = d.choices;
@@ -147,8 +173,12 @@ export class WorldScene extends Phaser.Scene {
     } else {
       const line = d.line;
       this.dlgWho.setText(line?.who ? line.who.toUpperCase() : '');
-      if (line && line !== this._lastLine) { this._lastLine = line; this._lineAt = this.time.now; babble(line.who, line.text); }
-      this.dlgText.setText(line?.text?.replace(/\*([^*]+)\*/g, '$1') ?? '');
+      if (line && line !== this._lastLine) {
+        this._lastLine = line; this._lineAt = this.time.now; babble(line.who, line.text);
+        this._typeFull = (line.text ?? '').replace(/\*([^*]+)\*/g, '$1'); this._typeShown = 0;
+        this._setPortrait(line.who);
+      }
+      this.dlgText.setText((this._typeFull ?? '').slice(0, Math.floor(this._typeShown ?? 0)));
       this.dlgChoices.forEach((t) => t.setVisible(false));
     }
   }
@@ -419,6 +449,36 @@ export class WorldScene extends Phaser.Scene {
     this.rotEdge = map.id === 'tunnel_1' || map.id === 'platform';
   }
 
+  _makeVignette() {
+    if (this.textures.exists('vignette')) return this.add.image(0, 0, 'vignette').setOrigin(0, 0).setScrollFactor(0).setDepth(8500);
+    const tex = this.textures.createCanvas('vignette', VIEW.w, VIEW.h), c = tex.getContext();
+    const g = c.createRadialGradient(VIEW.w / 2, VIEW.h / 2, VIEW.h * 0.35, VIEW.w / 2, VIEW.h / 2, VIEW.w * 0.62);
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(4,4,10,0.55)');
+    c.fillStyle = g; c.fillRect(0, 0, VIEW.w, VIEW.h); tex.refresh();
+    return this.add.image(0, 0, 'vignette').setOrigin(0, 0).setScrollFactor(0).setDepth(8500);
+  }
+
+  // Ambient life per area: dust motes indoors, rain over the plaza, drips in the tunnels.
+  _tickAmbient(dt) {
+    const kind = { metro_plaza: 'rain', tunnel_1: 'drip', platform: 'drip' }[this.map.id] ?? 'dust';
+    this._ambAcc = (this._ambAcc ?? 0) + dt * (kind === 'rain' ? 70 : kind === 'drip' ? 3 : 6);
+    const v = this.cameras.main.worldView;
+    while (this._ambAcc > 1) {
+      this._ambAcc -= 1;
+      const x = v.x + Math.random() * v.width, y = v.y + Math.random() * v.height;
+      if (kind === 'rain') {
+        const r = this.add.rectangle(x, v.y - 4, 1, 6, 0x9ab8d8, 0.35).setDepth(7000);
+        this.tweens.add({ targets: r, y: v.y + v.height * (0.4 + Math.random() * 0.6), x: x - 8, duration: 420, onComplete: () => r.destroy() });
+      } else if (kind === 'drip') {
+        const r = this.add.rectangle(x, y - 30, 1, 2, 0x7fb069, 0.6).setDepth(7000);
+        this.tweens.add({ targets: r, y, duration: 600, ease: 'Quad.in', onComplete: () => { r.destroy(); const sp = this.add.circle(x, y, 2, 0x7fb069, 0.4).setDepth(7000); this.tweens.add({ targets: sp, scale: 2.5, alpha: 0, duration: 300, onComplete: () => sp.destroy() }); } });
+      } else {
+        const d = this.add.rectangle(x, y, 1, 1, 0xffe6c0, 0.45).setDepth(7000);
+        this.tweens.add({ targets: d, x: x + (Math.random() * 16 - 8), y: y - 10 - Math.random() * 10, alpha: 0, duration: 2600 + Math.random() * 1600, onComplete: () => d.destroy() });
+      }
+    }
+  }
+
   _drawLighting(snap) {
     if (!this.lights) return;
     const cam = this.cameras.main, rt = this.lights;
@@ -644,6 +704,10 @@ export class WorldScene extends Phaser.Scene {
       const key = `${p.c}_${p.m ? 'walk' : 'idle'}_${facing}`;
       if (s.anims.currentAnim?.key !== key) s.play(key);
       if (!p.d) p._dashFx = false;
+      if (p.m && !p.d && (this._stepTick = (this._stepTick ?? 0) + 1) % 16 === 0) {
+        const puff = this.add.circle(p.x + (Math.random() * 4 - 2), p.y + 3, 1.5, 0xc8c0b0, 0.35).setDepth(p.y - 1);
+        this.tweens.add({ targets: puff, scale: 2.2, alpha: 0, y: puff.y - 2, duration: 380, onComplete: () => puff.destroy() });
+      }
       if (p.d && (this._ghostTick = (this._ghostTick ?? 0) + 1) % 2 === 0) this._dashGhost(s, p);
       s.setAlpha(p.d ? 0.55 : p.iv ? (Math.floor(this.time.now / 60) % 2 ? 0.4 : 1) : 1);
       s.setVisible(!p.w);
@@ -677,6 +741,8 @@ export class WorldScene extends Phaser.Scene {
 
     for (const ev of snap.events || []) this._fx(ev, snap);
     this._drawLighting(snap);
+    this._tickAmbient(this.game.loop.delta / 1000);
+    this._tickTypewriter(this.game.loop.delta / 1000);
     this._updateExplored(snap);
     this._drawMinimap(snap);
     this._drawHud(snap);
@@ -782,6 +848,13 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'kill' && ev.boss && !this._endingPlayed) { this._endingPlayed = true; this.time.delayedCall(900, () => this._playEnding(true)); }
     if (ev.t === 'phase') { this.cameras.main.shake(300, 0.01); this._say(ev.phase === 3 ? 'The Warden overloads. The platform starts rendering wrong.' : 'It changes how it moves.'); }
     if (ev.t === 'tell') { const g = this.add.circle(ev.x, ev.y - 8, 14, 0xd65db1, 0.35).setDepth(6000); this.tweens.add({ targets: g, scale: 2, alpha: 0, duration: 380, onComplete: () => g.destroy() }); }
+    if (ev.t === 'hit') {
+      for (let i = 0; i < 5; i++) {
+        const sp = this.add.rectangle(ev.x, ev.y - 6, 1.5, 1.5, 0xffe08a).setDepth(6000);
+        const a = Math.random() * Math.PI * 2, d = 6 + Math.random() * 10;
+        this.tweens.add({ targets: sp, x: ev.x + Math.cos(a) * d, y: ev.y - 6 + Math.sin(a) * d, alpha: 0, duration: 220, onComplete: () => sp.destroy() });
+      }
+    }
     if (ev.t === 'hit' || ev.t === 'kill') {
       const t = this.add.text(ev.x, ev.y - 14, ev.t === 'kill' ? '✕' : `${ev.dmg}`, { ...FONT, color: ev.t === 'kill' ? '#7fb069' : '#ffd27f' }).setOrigin(0.5).setDepth(6000);
       this.tweens.add({ targets: t, y: t.y - 10, alpha: 0, duration: 450, onComplete: () => t.destroy() });

@@ -20,7 +20,10 @@ export class GameMenu {
 
   get open() { return !!this.tab; }
   contains(x, y) { const b = this.box; return x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h; }
-  show(tab) { this.tab = tab; this.refresh(); }
+  show(tab) {
+    const wasOpen = !!this.tab; this.tab = tab; this.refresh();
+    if (!wasOpen) { this.root.setAlpha(0); this.scene.tweens.add({ targets: this.root, alpha: 1, duration: 140 }); }
+  }
   close() { this.tab = null; this.root.removeAll(true); this.root.setVisible(false); }
   cycle(dir) { if (!TABS.includes(this.tab)) return; this.show(TABS[(TABS.indexOf(this.tab) + dir + TABS.length) % TABS.length]); }
 
