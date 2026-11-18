@@ -84,7 +84,7 @@ export class Sim {
       facing: 'down', aim: 0, moving: false,
       dodgeT: 0, dodgeCd: 0, dodgeDx: 0, dodgeDy: 0, iframes: 0,
       hp: COMBAT.maxHp, downed: false, reviveT: 0, meleeCd: 0, shotCd: 0, swingT: 0, sta: MOVE.stamina, staT: 0,
-      mods: { melee: 0, shot: 0, shotCd: 0, armor: 0, maxHp: 0, iframes: 0, dodgeCd: 0, revive: 0 },
+      mods: { melee: 0, shot: 0, shotCd: 0, armor: 0, maxHp: 0, iframes: 0, dodgeCd: 0, revive: 0, gun: 0 },
     });
   }
 
@@ -134,12 +134,12 @@ export class Sim {
       this._moveAxis(p, 0, p.vy * dt);
 
       if (inp.attack && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
-      if (inp.fire && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);
+      if (inp.fire && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);   // no gun, no shooting
 
       // Facing follows the walking direction; it only turns toward the cursor while firing a ranged
       // weapon. Standing still keeps the last facing.
       const toFacing = (x, y) => (Math.abs(x) > Math.abs(y) ? (x > 0 ? 'right' : 'left') : (y > 0 ? 'down' : 'up'));
-      if (inp.fire) p.facing = toFacing(Math.cos(p.aim), Math.sin(p.aim));
+      if (inp.fire && p.mods?.gun) p.facing = toFacing(Math.cos(p.aim), Math.sin(p.aim));
       else if (p.moving) p.facing = toFacing(p.vx, p.vy);
     }
     this._afterPlayers(dt);

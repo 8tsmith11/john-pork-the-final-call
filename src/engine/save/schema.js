@@ -19,7 +19,7 @@ export function newCharacter(id) {
     morph: { line: id, stage: 0 },
     hp: null,                   // null = full
     inventory: [],              // [{ id: 'item.wooden_bat', qty: 1 }]
-    equipped: { weapon: null, armor: null, gadget: null },
+    equipped: { weapon: null, ranged: null, armor: null, gadget: null },
   };
 }
 

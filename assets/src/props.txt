@@ -446,11 +446,11 @@ gggggggggggggggg
 ..0gggggggggg0..
 ..0gggggggggg0..
 ..0gggggggggg0..
-..0gggggggggw0..
-..0ggggggggggw0.
-...0e000000e0w0.
-...0e0....0e00x0
-....0......0..0.
+..0gggggggggg0..
+..0gggggggggg0..
+...0e000000e0...
+...0e0....0e0...
+....0......0....
 @frame obj.bed
 ................
 ................

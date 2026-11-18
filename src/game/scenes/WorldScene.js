@@ -225,7 +225,7 @@ export class WorldScene extends Phaser.Scene {
       }
       if (this.textures.exists('wide') && this.textures.get('wide').has(o.id)) {
         // Wall piece: 32x16, covering this wall tile and the one to its right.
-        this.propSprites.push(this.add.image(o.x * TILE, o.y * TILE + TILE, 'wide', o.id).setOrigin(0, 1).setDepth(-8));
+        this.propSprites.push(this.add.image(o.x * TILE, o.y * TILE + TILE + 7, 'wide', o.id).setOrigin(0, 1).setDepth(o.y * TILE + TILE + 2));
         continue;
       }
       if (props?.has(o.id)) {
