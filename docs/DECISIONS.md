@@ -95,3 +95,10 @@ Format:
 - 15 regions in three rings (one per act) with density tiers (hub / district / traversal). The 3
   balloon landing sites change the *order* of ring two (no fourth site). Boats are authored
   crossings. One optional Act 2 infiltration of the Meade.
+
+## D-013 Cast  (status: agreed)
+- 2026-11-18. [`design/04-cast.md`](design/04-cast.md) by gonman, reviewed by trevor (#58, #59).
+- 45 named characters, voice habits, schedules, and one unexpected reaction each. Michael's
+  girlfriend is Nari Seo (never on screen, and his arc is answering, never letting go). Seed-linked
+  details are sealed in `sealed/cast-notes.md`, rebalanced so each world-seed variant carries one
+  loss and one recovery (debated: decoupling was considered and rejected).
