@@ -3,7 +3,7 @@
 
 export const TILE = 16;
 import { ENEMIES } from '../content/enemies.js';
-import { generateWarden } from '../content/rotVillains.js';
+import { generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.35, iframes: 0.22,
   stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
@@ -72,8 +72,9 @@ export class Sim {
         this.events.push({ t: 'boss', name: w.name, epithet: w.epithet });
         continue;
       }
-      const def = ENEMIES[e.kind];
-      this.enemies.set(id, { id, spawnKey, kind: e.kind, x: e.x, y: e.y, hp: def.hp, cd: Math.random(), hurtT: 0, kx: 0, ky: 0 });
+      const base = ENEMIES[e.kind], v = rollVariant(this.seed, spawnKey, e.kind), tr = TRAITS[v.trait];
+      const def = { ...base, hp: Math.round(base.hp * tr.hp), speed: base.speed * tr.speed, armor: tr.armor ?? 0, color: v.tint, vname: v.name, trait: v.trait };
+      this.enemies.set(id, { id, spawnKey, kind: e.kind, def, x: e.x, y: e.y, hp: def.hp, cd: Math.random(), hurtT: 0, kx: 0, ky: 0 });
     }
   }
 
@@ -239,6 +240,11 @@ export class Sim {
   _hurtEnemy(e, dmg, kx, ky, by) {
     if (e.sahur) { dmg = 1; this.events.push({ t: 'thunk', x: e.x, y: e.y }); }
     else if (e.boss && e.state === 'vulnerable') dmg *= 2;
+    if (e.def?.armor) dmg = Math.max(1, Math.round(dmg * (1 - e.def.armor)));
+    if (e.def?.trait === 'blinker' && Math.random() < 0.35 && e.hp - dmg > 0) {
+      const a = Math.random() * Math.PI * 2, nx = e.x + Math.cos(a) * 40, ny = e.y + Math.sin(a) * 40;
+      if (!this._hitsBox(nx, ny, 6, 4)) { this.events.push({ t: 'blink', x: e.x, y: e.y }); e.x = nx; e.y = ny; }
+    }
     e.hp -= dmg; e.hurtT = 0.12;
     if (e.boss) { kx *= 0.15; ky *= 0.15; const f = e.hp / e.def.hp; const ph = f < 0.33 ? 3 : f < 0.66 ? 2 : 1;
       if (ph !== e.phase) { e.phase = ph; this.events.push({ t: 'phase', phase: ph }); } }
@@ -247,6 +253,8 @@ export class Sim {
     if (e.hp <= 0) {
       this.enemies.delete(e.id);
       if (e.spawnKey) this.killed?.add(e.spawnKey);
+      if (e.def?.trait === 'splitter') for (let i = 0; i < 2; i++) { const nid = `e${this._nextId++}`; this.enemies.set(nid, { id: nid, kind: 'enemy.rotling', def: { ...ENEMIES['enemy.rotling'], hp: 8, speed: 60, radius: 4, color: e.def.color, vname: 'Fragment', trait: 'plain', xp: 2 }, x: e.x + (i ? 6 : -6), y: e.y, hp: 8, cd: 0.6, hurtT: 0, kx: 0, ky: 0 }); }
+      if (e.def?.trait === 'puddler') this.hazards.push({ x: e.x, y: e.y, r: 14, ttl: 5, dps: 8 });
       this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss, key: e.spawnKey });
     }
   }
@@ -476,6 +484,7 @@ export class Sim {
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
+        ...(e.def && !e.boss ? { vn: e.def.vname, tr: e.def.trait, c: e.def.color, mh: e.def.hp, r: e.def.radius } : {}),
         ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, ring: !!e.sahur && e.fightT > 10 } } : {}) })),
       hazards: this.hazards.map((h) => ({ x: Math.round(h.x), y: Math.round(h.y), r: h.r, t: Math.round(h.ttl * 10) / 10 })),
       ring: [...this.enemies.values()].find((e) => e.ringR != null)?.ringR ?? null,

@@ -39,7 +39,7 @@
 | 31 | Why John Pork exists (superintelligence learned the internet) | 🟡 | gonman | Lore ✅. Must reach the player in Act 1 (TV, the textbook, notices, dialogue) |
 | 32 | Semi-dark cyberpunk aesthetic | 🟡 | gonman | Lighting ✅, maps being rebuilt |
 | 33 | Interesting NPC interactions, unexpected things | 🟡 | gonman | Script reactivity exists. The cast has 45 NPCs, mostly not yet placed |
-| 34 | **Randomly created coderot villains** | 🟡 | trevor | Boss only. Make regular rot enemies procedural (name/body/modules) |
+| 34 | **Randomly created coderot villains** | ✅ | trevor | Boss: seeded name, epithet, modules, phases. Regular enemies: every spawn gets a seeded variant (name, tint, stat tweaks, a trait: fast, armored, splits, leaks rot, blinks). A name tag shows on the nearest one |
 | 35 | Diagonal walk, dodge, skill points | ✅ | | |
 | 36 | **Fishing** | ❌ | trevor | Lake Artemesia (needs the College Park hub) |
 | 37 | Apartment base, Room 631 | ✅ | | Being re-dressed |

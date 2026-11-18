@@ -21,6 +21,7 @@ import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_OR
 
 const STEP = 1 / 60;
 const XP_PER_LEVEL = 30;
+const TRAIT_LABEL = { sprinter: 'fast', armored: 'armored', splitter: 'splits', puddler: 'leaks rot', blinker: 'blinks' };
 const MORPH_UNLOCK = {
   trevor: 'Trevor\'s supplement stack finally hits all at once. Morph stage 1 unlocked. [M]',
   manuel: 'Something in Manuel clicks into place. He is the gonman now. Morph stage 1 unlocked. [M]',
@@ -1047,6 +1048,11 @@ export class WorldScene extends Phaser.Scene {
       s.setScale(1 + Math.sin(this.time.now / 90 + e.x) * 0.06, 1);   // jittery rot wobble
     }
     for (const [id, s] of this.enemySprites) if (!eseen.has(id)) { s.destroy(); this.enemySprites.delete(id); }
+    const meP = snap.players.find((p) => p.id === this.localId);
+    let tgt = null, td = 70;
+    for (const e of snap.enemies || []) { if (e.boss || !e.vn || !meP) continue; const d = Math.hypot(e.x - meP.x, e.y - meP.y); if (d < td) { td = d; tgt = e; } }
+    this.enemyTag ??= this.add.text(0, 0, '', { ...FONT, fontSize: '6.5px', color: '#d6c0e8' }).setOrigin(0.5, 1).setDepth(6500);
+    if (tgt) this.enemyTag.setText(`${tgt.vn}${tgt.tr && tgt.tr !== 'plain' ? ` · ${TRAIT_LABEL[tgt.tr]}` : ''}`).setPosition(tgt.x, tgt.y - 16).setVisible(true); else this.enemyTag.setVisible(false);
     if (!(snap.enemies || []).some((e) => e.boss)) this.bossUi?.setVisible(false);
 
     for (const d of this.doorVis ?? []) if (d.drawn !== !!d.o.open) {
