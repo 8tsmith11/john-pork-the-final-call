@@ -11,7 +11,7 @@ export const TABS = ['inventory', 'quests', 'phone', 'skills', 'map', 'controls'
 const TAB_LABEL = { inventory: 'INVENTORY', quests: 'QUESTS', phone: 'PHONE', skills: 'SKILLS', map: 'MAP', controls: 'CONTROLS', system: 'SYSTEM' };
 const C = { panel: 0x0b0d16, edge: 0xf2a6b8, dim: 0x5d6487, text: '#e8e8f0', sub: '#9aa3c7', hi: '#ffb347', ok: '#7fb069', bad: '#d65db1' };
 const F = (size = 8, color = C.text) => ({ fontFamily: 'monospace', fontSize: `${size}px`, color });
-const SLOT_LABEL = { weapon: 'Melee', ranged: 'Ranged', armor: 'Armor', gadget: 'Gadget', charm: 'Charm' };
+const SLOT_LABEL = { weapon: 'Melee', ranged: 'Ranged', armor: 'Armor', gadget: 'Gadget', charm: 'Charm', instrument: 'Instrument', gift: 'Gift', material: 'Material' };
 
 export class GameMenu {
   constructor(scene) {
@@ -143,7 +143,7 @@ export class GameMenu {
     if (!h) return;
     if (h.label) { this.tip.push(this._t(x, y, h.label, F(8, C.sub))); return; }
     const def = ITEMS[h.id]; if (!def) return;
-    const kind = { weapon: 'Melee weapon', ranged: 'Ranged weapon', armor: 'Armor', gadget: 'Gadget', charm: 'Charm', consumable: 'Food', material: 'Material', junk: 'Curio', key: 'Key item' }[def.slot] ?? '';
+    const kind = { weapon: 'Melee weapon', ranged: 'Ranged weapon', armor: 'Armor', gadget: 'Gadget', charm: 'Charm', consumable: 'Food', material: 'Material', junk: 'Curio', key: 'Key item', instrument: 'Instrument (use to play)', gift: 'Gift' }[def.slot] ?? '';
     const stats = Object.entries(def.mods || {}).filter(([k]) => k !== 'gun').map(([k, v]) => `${{ melee: 'melee', shot: 'shot dmg', shotCd: 'fire rate', armor: 'armor', maxHp: 'max HP' }[k] ?? k} ${k === 'armor' ? Math.round(v * 100) + '%' : (v > 0 ? '+' : '') + v}`).join('  ');
     this.tip.push(this._t(x, y, `${def.name}${h.qty > 1 ? ' ×' + h.qty : ''}`, F(9, C.hi)));
     this.tip.push(this._t(x, y + 11, `${kind}${def.heal ? `  · heals ${def.heal}` : ''}${stats ? '  · ' + stats : ''}`, F(6, C.ok)));

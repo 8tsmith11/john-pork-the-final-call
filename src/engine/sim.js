@@ -10,6 +10,7 @@ export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown
 // Regular-enemy tuning for a party of three (see spawnEnemies). Measured with a headless bot run:
 // before this the tunnel cleared in ~30 s with no knockdowns.
 export const PARTY_SCALE = { hp: 1.7, dmg: 1.3 };
+export const LULLABY = { range: 64, expose: 3, sleep: 8 };
 export const COMBAT = {
   maxHp: 100, hurtIframes: 0.6, reviveTime: 4.0, reviveRange: 18, reviveHp: 40,
   melee: { cooldown: 0.38, range: 20, arc: Math.PI * 0.6, damage: 12, knockback: 120 },
@@ -106,11 +107,43 @@ export class Sim {
     const p = this.players.get(id); if (!p || p.downed) return false;
     if (p.riding) { p.riding = false; this.events.push({ t: 'scooter', id, on: false }); return true; }
     if (!allowed) return false;
-    p.riding = true; this.events.push({ t: 'scooter', id, on: true }); return true;
+    p.riding = true; p.playing = null; this.events.push({ t: 'scooter', id, on: true }); return true;
   }
 
   /** Morph stage 1 (biohack form): stronger and faster, but takes more damage. */
   toggleMorph(id, allowed) { const p = this.players.get(id); if (p && allowed && !p.downed) { p.morphed = !p.morphed; this.events.push({ t: 'morph', id, on: p.morphed }); } }
+  /**
+   * Instruments (D-014). song: 'rock' | 'lullaby' | 'mate', or null to stop. The sound is made on
+   * every client from the snapshot; the sim only tracks who is playing and what it does.
+   */
+  setPlaying(id, song, instrument = 'acoustic') {
+    const p = this.players.get(id); if (!p) return;
+    if (!song || p.downed || p.riding || p.sleepT > 0) { if (p.playing) this.events.push({ t: 'play', id, on: false }); p.playing = null; return; }
+    p.playing = { song, instrument }; this.events.push({ t: 'play', id, on: true, song, instrument });
+  }
+
+  // Michael's lullaby: any other player or (non-boss) enemy that stays within LULLABY.range of him
+  // for LULLABY.expose seconds falls asleep for LULLABY.sleep seconds. Leaving the range resets it.
+  // Sleepers still in range when a second passes get the full LULLABY.sleep again.
+  _stepLullaby(dt) {
+    const singers = [...this.players.values()].filter((p) => p.playing?.song === 'lullaby' && !p.downed);
+    const targets = [...[...this.players.values()].filter((p) => !p.downed), ...[...this.enemies.values()].filter((e) => !e.boss && !e.sahur)];
+    for (const t of targets) {
+      const near = singers.some((s) => s !== t && Math.hypot(s.x - t.x, s.y - t.y) <= LULLABY.range);
+      // Already asleep: while Michael keeps playing nearby, the sleep timer resets every second.
+      if (t.sleepT > 0) {
+        t.lullRefresh = near ? (t.lullRefresh ?? 0) + dt : 0;
+        if (t.lullRefresh >= 1) { t.lullRefresh = 0; t.sleepT = LULLABY.sleep; }
+        continue;
+      }
+      t.lullT = near ? (t.lullT ?? 0) + dt : 0;
+      if (t.lullT >= LULLABY.expose) {
+        t.lullT = 0; t.sleepT = LULLABY.sleep;
+        if (t.playing) t.playing = null;
+        this.events.push({ t: 'sleep', id: t.id, enemy: this.enemies.has(t.id), x: Math.round(t.x), y: Math.round(t.y) });
+      }
+    }
+  }
   heal(id, n) { const p = this.players.get(id); if (p && !p.downed) p.hp = Math.min(this.maxHp(p), p.hp + n); }
 
   removePlayer(id) { this.players.delete(id); }
@@ -132,6 +165,7 @@ export class Sim {
       const inp = inputs.get(p.id) || emptyInput();
       p.meleeCd = Math.max(0, p.meleeCd - dt); p.shotCd = Math.max(0, p.shotCd - dt); p.swingT = Math.max(0, p.swingT - dt);
       if (p.downed) { p.vx = p.vy = 0; p.moving = false; continue; }
+      if (p.sleepT > 0) { p.sleepT = Math.max(0, p.sleepT - dt); p.vx = p.vy = 0; p.moving = false; if (p.sleepT <= 0) this.events.push({ t: 'wake', id: p.id }); continue; }
       if (p.waitExit) {
         // Parked inside a doorway, waiting for the party. Any movement that isn't into the door steps back out.
         p.vx = p.vy = 0; p.moving = false;
@@ -177,7 +211,7 @@ export class Sim {
           p.vx += (mx * top - p.vx) * Math.min(1, acc * dt); p.vy += (my * top - p.vy) * Math.min(1, acc * dt);
           if (Math.hypot(p.vx, p.vy) > 2) { p.battery = Math.max(0, (p.battery ?? 100) - (p.hicap ? 1.1 : 2.2) * dt); if (p.battery <= 0) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, dead: true }); } }
         } else {
-          const spd = MOVE.speed * (p.morphed ? 1.15 : 1) * (1 + (p.mods?.speed ?? 0));
+          const spd = MOVE.speed * (p.morphed ? 1.15 : 1) * (1 + (p.mods?.speed ?? 0)) * (p.playing ? 0.5 : 1);
           p.vx = mx * spd; p.vy = my * spd;
         }
       }
@@ -186,9 +220,9 @@ export class Sim {
       this._moveAxis(p, 0, p.vy * dt);
 
       p.skillCd = Math.max(0, (p.skillCd ?? 0) - dt);
-      if (inp.skill && !p.riding && p.skillCd <= 0) this._ability(p);
-      if (inp.attack && !p.riding && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
-      if (inp.fire && !p.riding && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);   // no gun, no shooting
+      if (inp.skill && !p.riding && !p.playing && p.skillCd <= 0) this._ability(p);
+      if (inp.attack && !p.riding && !p.playing && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
+      if (inp.fire && !p.riding && !p.playing && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);   // no gun, no shooting
 
       // Facing follows the walking direction; it only turns toward the cursor while firing a ranged
       // weapon. Standing still keeps the last facing.
@@ -200,6 +234,7 @@ export class Sim {
   }
 
   _afterPlayers(dt) {
+    this._stepLullaby(dt);
     this._stepDecoys(dt);
     this._stepDoors(dt);
     this._stepHazards(dt);
@@ -343,6 +378,7 @@ export class Sim {
       e.cd = Math.max(0, e.cd - dt); e.hurtT = Math.max(0, e.hurtT - dt);
       if (e.sahur) { this._stepSahur(e, def, dt); continue; }
       if (e.boss) { this._stepBoss(e, def, dt); continue; }
+      if (e.sleepT > 0) { e.sleepT = Math.max(0, e.sleepT - dt); continue; }
       // knockback decays
       if (e.kx || e.ky) { this._moveBody(e, e.kx * dt, e.ky * dt, def.radius); e.kx *= 0.82; e.ky *= 0.82; if (Math.hypot(e.kx, e.ky) < 5) e.kx = e.ky = 0; }
       const [target, d] = this._nearestPlayer(e.x, e.y);
@@ -550,11 +586,11 @@ export class Sim {
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
-        hp: Math.round(p.hp), mhp: this.maxHp(p), st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed,
+        hp: Math.round(p.hp), mhp: this.maxHp(p), st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0,
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
-        mk: e.marked > 0,
+        mk: e.marked > 0, zz: e.sleepT > 0,
         ...(e.def && !e.boss ? { vn: e.def.vname, tr: e.def.trait, c: e.def.color, mh: e.def.hp, r: e.def.radius } : {}),
         ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, ring: !!e.sahur && e.fightT > 10 } } : {}) })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y) })),

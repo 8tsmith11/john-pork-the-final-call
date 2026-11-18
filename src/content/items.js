@@ -47,6 +47,15 @@ Object.assign(ITEMS, {
   'item.crab_chips':    { name: 'Old Bay crab chips', slot: 'consumable', heal: 30, text: 'The seasoning outlived the crabs.' },
 });
 
+// Instruments and gifts (D-014, Michael). Use an instrument from the hotbar to play it; how it
+// sounds depends on who plays (src/audio/instruments.js). Gifts are for courting (src/content/romance.js).
+Object.assign(ITEMS, {
+  'item.guitar_electric': { name: 'Electric guitar', slot: 'instrument', instrument: 'electric', text: 'A sunburst solid-body with a coiled cable and a battery amp the size of a lunchbox. Use it to play. It sounds like whoever is holding it.' },
+  'item.guitar_acoustic': { name: 'Acoustic guitar', slot: 'instrument', instrument: 'acoustic', analog: true, text: 'Spruce top, a crack under the bridge that someone glued with care. Use it to play. It sounds like whoever is holding it.' },
+  'item.flowers':         { name: 'Flowers', slot: 'gift', stack: 8, text: 'Grocery-store tulips in cellophane. A little wilted, which is the most honest a flower gets in 2098.' },
+  'item.chocolates':      { name: 'Chocolates', slot: 'gift', stack: 8, text: 'A heart-shaped box. Real cocoa, the label says, in a font that is trying very hard.' },
+});
+
 // The fab prints from materials (cost = { materialId: qty }).
 export const RECIPES = [
   { item: 'item.mate_flask',   cost: { 'item.mat_plastic': 2, 'item.mat_scrap': 1 } },
@@ -91,6 +100,8 @@ export const SHOPS = {
     stock: [
       { item: 'item.pipe_wrench', price: 30, once: true },
       { item: 'item.busted_guitar', price: 45, once: true },
+      { item: 'item.guitar_acoustic', price: 60 },
+      { item: 'item.guitar_electric', price: 85 },
       { item: 'item.box_cutter', price: 12, once: true },
       { item: 'item.mat_glass', price: 2 },
     ] },
@@ -99,6 +110,8 @@ export const SHOPS = {
       { item: 'item.energy_bar', price: 6 },
       { item: 'item.crab_chips', price: 10 },
       { item: 'item.mate_flask', price: 14 },
+      { item: 'item.flowers', price: 8 },
+      { item: 'item.chocolates', price: 12 },
       { item: 'item.mat_plastic', price: 3 },
       { item: 'item.mat_cloth', price: 3 },
     ] },

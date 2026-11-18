@@ -168,6 +168,9 @@ export function setArea(id) {
   track = el;
 }
 
+/** The shared AudioContext and master bus, for other modules that make sound (instruments). */
+export function audioOut() { const a = ac(); return a ? { ctx: a, dest: master } : null; }
+
 export function sfx(kind) {
   const a = ac(); if (!a) return;
   const o = a.createOscillator(), g = a.createGain(), t = a.currentTime;

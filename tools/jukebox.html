@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jukebox</title>
+<style>
+  :root { --bg: #0b0d16; --panel: #151827; --edge: #3a4060; --text: #e8e8f0; --dim: #9aa3c7; --hot: #ffb347; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 ui-monospace, Menlo, monospace; }
+  main { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 20px; margin: 0 0 4px; } h2 { font-size: 14px; color: var(--dim); margin: 28px 0 8px; text-transform: uppercase; letter-spacing: .08em; }
+  p { color: var(--dim); margin: 0 0 8px; }
+  .row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--edge); border-radius: 6px; margin-bottom: 8px; }
+  .row b { flex: 1; font-weight: 600; } .row small { color: var(--dim); display: block; font-weight: 400; }
+  button { font: inherit; background: #1a2030; color: var(--text); border: 1px solid var(--edge); border-radius: 4px; padding: 6px 12px; cursor: pointer; min-width: 72px; }
+  button.on { border-color: var(--hot); color: var(--hot); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Jukebox</h1>
+  <p>Every piece of music in the game, plus the guitars. Serve the repo with <code>python3 -m http.server</code> and open <code>localhost:8000/tools/jukebox.html</code>.</p>
+  <h2>Soundtrack</h2>
+  <div id="songs"></div>
+  <h2>Guitars (sound depends on who plays)</h2>
+  <div id="guitars"></div>
+</main>
+<script type="module">
+  import { SONGS, startSong, stopSong } from '../src/audio/music.js';
+  import { startInstrument } from '../src/audio/instruments.js';
+  let ctx, master, cur = null, curBtn = null;
+  const ac = () => { if (!ctx) { ctx = new AudioContext(); master = ctx.createGain(); master.gain.value = 0.5; master.connect(ctx.destination); } ctx.resume(); return ctx; };
+  const stopAll = () => { cur?.stop(); cur = null; stopSong(); curBtn?.classList.remove('on'); if (curBtn) curBtn.textContent = 'Play'; curBtn = null; };
+  function row(parent, title, note, start) {
+    const r = document.createElement('div'); r.className = 'row';
+    r.innerHTML = `<b>${title}<small>${note}</small></b>`;
+    const b = document.createElement('button'); b.textContent = 'Play'; r.append(b); parent.append(r);
+    b.onclick = () => { const was = curBtn === b; stopAll(); if (was) return; cur = start(); curBtn = b; b.classList.add('on'); b.textContent = 'Stop'; };
+  }
+  const songs = document.getElementById('songs');
+  const where = { apartment: 'Room 631 (synth, in-repo)', title: 'Title screen (synth)', lobby: 'Co-op lobby (synth)' };
+  for (const name of Object.keys(SONGS)) row(songs, name, where[name] ?? 'synth', () => { startSong(ac(), master, name, 1.4); return { stop: stopSong }; });
+  const files = [['assets/audio/tunnel_claimed_by_the_void.ogg', 'Green Line tunnels + dead platform (CC0 file)'],
+                 ['assets/audio/apartment_chill_lofi.ogg', 'In the repo, not currently used (CC0 file)'],
+                 ['assets/audio/city_synthwave_4k.mp3', 'In the repo, not currently used (CC0 file)']];
+  for (const [src, note] of files) row(songs, src.split('/').pop(), note, () => { const el = new Audio('../' + src); el.loop = true; el.volume = 0.6; el.play(); return { stop: () => el.pause() }; });
+  const g = document.getElementById('guitars');
+  for (const who of ['trevor', 'michael', 'manuel']) for (const instrument of ['electric', 'acoustic'])
+    row(g, `${who} · ${instrument}`, { trevor: 'amazing: rock, real-sounding', michael: 'mediocre: 8-bit lullaby (puts listeners to sleep in game)', manuel: 'always out of tune: 8-bit' }[who],
+      () => startInstrument(ac(), master, { who, instrument }));
+</script>
+</body>
+</html>

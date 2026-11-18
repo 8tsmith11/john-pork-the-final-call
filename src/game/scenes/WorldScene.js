@@ -24,6 +24,9 @@ import { Neon } from '../render/neon.js';
 import { skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
+import { SharedEvents } from '../sharedEvent.js';
+import { Performances } from '../performances.js';
+import { Romance } from '../romance.js';
 import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
 
 const STEP = 1 / 60;
@@ -74,6 +77,8 @@ export class WorldScene extends Phaser.Scene {
     this._makeUi();
     this._wireNet();
     this._makeDialogueUi();
+    // D-014: shared events, instruments, romance (src/game/sharedEvent.js, performances.js, romance.js)
+    this.shared = new SharedEvents(this); this.perf = new Performances(this); this.romance = new Romance(this);
     this._pageIdx = {};
     this.vignette = this._makeVignette();
     if (this.mode !== 'client') for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
@@ -329,6 +334,7 @@ export class WorldScene extends Phaser.Scene {
   _wireNet() {
     if (this.mode === 'host') {
       this.net.on('msg', (peer, msg) => {
+        if (this.shared?.onMsg(msg, peer) || this.perf?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg)) return;
         if (msg.t === 'input') {
           const prev = this.remoteInputs.get(peer);
           this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, interact: false });
@@ -360,6 +366,7 @@ export class WorldScene extends Phaser.Scene {
       this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
     } else if (this.mode === 'client') {
       this.net.on('msg', (msg) => {
+        if (this.shared?.onMsg(msg) || this.romance?.onClientMsg(msg)) return;
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
         if (msg.t === 'say') this._say(msg.text);
         if (msg.t === 'party') { this.save.party = msg.party; this.save.world.money = msg.money; this._refreshMenu(); }
@@ -397,6 +404,7 @@ export class WorldScene extends Phaser.Scene {
     for (const s of this.doorVis ?? []) s.vis.destroy();
     this.doorVis = [];
     for (const o of map.objects) {
+      if (o.romance) continue;     // drawn by src/game/romance.js
       const art = o.art ?? o.id;   // several objects can share one drawing
       if (o.door) {
         // Fable's door art when present (frames '<id>' and '<id>#open'); drawn placeholder otherwise.
@@ -541,6 +549,8 @@ export class WorldScene extends Phaser.Scene {
   // Menu actions (host-authoritative; clients ask the host).
   menuUse(id) {
     const def = ITEMS[id]; if (!def) return;
+    if (def.slot === 'instrument') return this.perf.use(id);
+    if (def.slot === 'gift') return this._say(`${def.name}\n${def.text}\n\n(A gift. Hand it over by talking to someone.)`);
     if (def.slot === 'junk') return this._say(`${def.name}\n${def.text}`);
     if (def.slot === 'consumable') { if (this.mode === 'client') this.net.send({ t: 'use', id }); else { this._useWhat = id; this._use(this.character, this.localId); } return; }
     if (this.mode === 'client') this.net.send({ t: 'equip', id }); else this._equip(this.character, id);
@@ -554,7 +564,7 @@ export class WorldScene extends Phaser.Scene {
       if (this.mode === 'client') this.net.send({ t: 'useSlot', i }); else { this._useSlot = i; this._use(this.character, this.localId); }
       return;
     }
-    if (['weapon', 'ranged', 'armor', 'gadget', 'charm'].includes(def.slot)) return this.menuUse(it.id);
+    if (['weapon', 'ranged', 'armor', 'gadget', 'charm', 'instrument', 'gift'].includes(def.slot)) return this.menuUse(it.id);
     if (def.slot === 'junk' || def.slot === 'key') this._say(`${def.name}\n${def.text}`);
   }
   menuMove(a, b, half) { if (this.mode === 'client') this.net.send({ t: 'move', a, b, half }); else { Inv.moveSlot(this.save.party[this.character], a, b, half); this._syncParty(); } }
@@ -1184,6 +1194,7 @@ export class WorldScene extends Phaser.Scene {
     this._lastRendered = snap;
     if (this.mode === 'client' && snap.doors) for (const d of this.map.doors.values()) d.open = snap.doors.includes(d.id);
     this._render(snap);
+    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000);
   }
 
   _frozen(inp) { return this.dlg || this.menu ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : inp; }
@@ -1296,6 +1307,8 @@ export class WorldScene extends Phaser.Scene {
       });
       return;
     }
+    if (near.npc && this.perf?.asleep(near)) { this._say(`${near.label} is fast asleep.`); return; }
+    if (this.romance?.interact(near)) return;
     // Story first, quest second: the first talk plays the scene; after that a quest step (pitch,
     // hand-in, report) takes the interaction if one is waiting, otherwise the scene replays.
     if (near.talk && near.npc) {
@@ -1695,6 +1708,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _fx(ev, snap) {
+    this.romance?.onEvent(ev, snap);
     if (['hit', 'kill', 'shot', 'swing'].includes(ev.t) && (ev.by === this.localId || ev.id === this.localId)) sfx(ev.t);
     if (ev.t === 'hurt' && ev.id === this.localId) sfx('hurt');
     if (ev.t === 'kill' && !ev.boss && Math.random() < 0.3) this._barkFrom('kill', snap, { by: ev.by });

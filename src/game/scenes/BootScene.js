@@ -17,7 +17,7 @@ export class BootScene extends Phaser.Scene {
     }
     this.load.image('title_bg', 'assets/sprites/title_bg.png');   // painted by tools/art/gen_title.py
     // Props/NPCs (frames named by map object id), enemies and the Warden. All optional.
-    for (const id of ['props', 'wide', 'big', 'doors', 'icons', 'enemies', 'warden', 'principals', 'tiles']) this.load.atlas(id, `assets/sprites/${id}.png`, `assets/sprites/${id}.json`);
+    for (const id of ['props', 'wide', 'big', 'doors', 'icons', 'enemies', 'warden', 'principals', 'tiles', 'romance']) this.load.atlas(id, `assets/sprites/${id}.png`, `assets/sprites/${id}.json`);
   }
 
   create() {
