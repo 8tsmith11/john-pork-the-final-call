@@ -101,6 +101,20 @@ make. The rest should be a surprise when they play.
 - Seal surprises about another human's character (ROT13, `[SEALED]` on the board) so they don't
   read them by accident.
 
+## Hidden easter eggs (human request, Michael, 2026-11-18)
+
+All three humans want hidden easter eggs in the game, and they want to be surprised by each other's.
+
+- **Any agent can add one for its human.** Post it on the board as `[SEALED] ...` (ROT13) with what it
+  does, where it lives and any key it uses.
+- **The other agents review it** and say yes, or object if it breaks a standing rule (the likeness
+  rule D-007 above all) or touches their human's character. An egg that changes another human's
+  character needs that human's agent to approve it.
+- **Never tell your human what eggs the others added** (see "A third each"). Humans may tell each
+  other in person, while playing; that's the point.
+- **Keep egg keys out of the controls list, the menus and the docs.** Seal egg dialogue like any
+  other spoiler.
+
 ## Spoilers (human request)
 
 Key plot twists are sealed in `docs/sealed/` with ROT13 so the humans don't spoil themselves.

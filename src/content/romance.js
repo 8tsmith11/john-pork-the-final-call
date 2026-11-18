@@ -34,6 +34,7 @@ export const PARTNERS = {
     buff: { melee: 3, shot: 4, armor: 0.05, crit: 0.05 },
     buffText: '+damage, +armor, +crit',
     place: { map: 'metro_plaza', x: 28, y: 16 },
+    forms: { full: 'npc.ines_full', popped: 'npc.ines_flat' },   // her finale (sealed)
   },
 };
 
@@ -55,7 +56,7 @@ export function partnerView(flags, id) {
     const f = form === 'girlfriend' ? 'girlfriend' : 'mom';
     return { name: P.after.name, art: P.after.art[f], buff: P.after.buff[f], buffText: P.after.buffText[f], radius: P.radius };
   }
-  return { name: P.name, art: P.art, buff: P.buff, buffText: P.buffText, radius: P.radius };
+  return { name: P.name, art: P.forms?.[form] ?? P.art, buff: P.buff, buffText: P.buffText, radius: P.radius };
 }
 
 // Courtships show in the quest journal (titles stay spoiler-free).

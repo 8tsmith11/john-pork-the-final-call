@@ -1,14 +1,10 @@
 // Hidden easter egg (Michael's request; 18+, crude humor is always on). NOT in the controls list on
-// purpose. [O] next to an NPC: your roommate gives them a hand job, it makes a mess on the floor,
-// and the NPC pays you $1.
-//
-// Roommates as targets follow D-007 (a roommate's likeness in anything sexual needs that person's own
-// yes): a roommate can be the target only if their player opted in. Each player's own agent adds
-// their character to OPT_IN only after that player says yes. Michael opted in.
+// purpose: the humans tell each other about it in person. [O] next to an NPC or a crowd person: your
+// roommate gives them a hand job, it makes a mess on the floor, and the NPC pays you $1.
+// NPCs only. Roommates are never targets (D-007, and Michael's call).
 import { TILE } from '../engine/sim.js';
 import { audioOut } from '../audio/audio.js';
 
-export const OPT_IN = new Set(['michael']);
 const RANGE = 18, PER_TARGET_COOLDOWN = 20000, ANIM_MS = 1400, PUDDLE_S = 25;
 
 export class Eggs {
@@ -23,7 +19,7 @@ export class Eggs {
     });
   }
 
-  /** Host: player `playerId` pressed O. Picks the overlapping NPC, crowd person or opted-in roommate. */
+  /** Host: player `playerId` pressed O. Picks the overlapping NPC or crowd person. */
   act(playerId) {
     const s = this.s, me = s.sim.players.get(playerId);
     if (!me || me.downed || me.riding) return;
@@ -35,11 +31,6 @@ export class Eggs {
     }
     const walker = s.crowd?.nearest?.(me.x, me.y);
     if (walker && Math.hypot(walker.x - me.x, walker.y - me.y) <= best) target = { key: `crowd:${walker.name}`, x: walker.x, y: walker.y, name: walker.name, npc: true };
-    for (const p of s.sim.players.values()) {
-      if (p.id === playerId || p.downed || !OPT_IN.has(p.character)) continue;
-      const d = Math.hypot(p.x - me.x, p.y - me.y);
-      if (d <= best) { best = d; target = { key: `player:${p.character}`, x: p.x, y: p.y, name: p.character[0].toUpperCase() + p.character.slice(1) }; }
-    }
     if (!target) return;
     if ((this.cool.get(target.key) ?? 0) > s.time.now) { this._tell(playerId, `${target.name} needs a minute.`); return; }
     this.cool.set(target.key, s.time.now + PER_TARGET_COOLDOWN);
@@ -70,7 +61,7 @@ export class Eggs {
   // The doer leans in and pumps; the target shudders. Sprites are the scene's own player/prop images.
   _animate(ev) {
     const s = this.s, spr = s.sprites?.get(ev.id);
-    const target = s.propById?.[ev.tk]?.im ?? s.sprites?.get([...(s.sim?.players.values() ?? [])].find((p) => `player:${p.character}` === ev.tk)?.id);
+    const target = s.propById?.[ev.tk]?.im;
     const lean = Math.sign(ev.tx - ev.x) || 1;
     if (spr) s.tweens.add({ targets: spr, x: `+=${lean}`, yoyo: true, repeat: 9, duration: ANIM_MS / 20, ease: 'Sine.easeInOut' });
     if (target) s.tweens.add({ targets: target, y: '-=1', yoyo: true, repeat: 4, duration: ANIM_MS / 10, delay: ANIM_MS * 0.5 });

@@ -13,6 +13,7 @@ import { ITEMS } from '../content/items.js';
 import * as Inv from '../engine/inventory.js';
 import { playerMods } from '../content/items.js';
 import { TILE } from '../engine/sim.js';
+import { audioOut } from '../audio/audio.js';
 import { PARTNERS, REUNITED_FLAG, STAGE, FIGHT_KILLS, SONG_SECONDS, SONG_RANGE, flagOf, stageOf, together, partnerView } from '../content/romance.js';
 
 // Put the dates on their maps (once per page load).
@@ -132,6 +133,9 @@ export class Romance {
 
     for (const [id, P] of Object.entries(PARTNERS)) {
       const view = partnerView(f, id);
+      const form = f[flagOf(id, 'form')] ?? null;
+      if ((this._forms ??= {})[id] !== undefined && this._forms[id] !== form && form === 'popped') this._pop();
+      this._forms[id] = form;
       // At her spot on the map, until she's with the party.
       if (P.place && !together(f, id) && P.place.map === s.map.id && tex) {
         let im = this.spots.get(id);
@@ -166,6 +170,17 @@ export class Romance {
 
   /** Partner buffs on the local player right now (shown in the inventory panel). */
   activeBuffs() { return this._me ? this._near(this._me) : []; }
+
+  // A balloon popping: a sharp crack of noise and a rubbery slap.
+  _pop() {
+    const out = audioOut(); if (!out) return;
+    const { ctx, dest } = out, t = ctx.currentTime, n = ctx.createBufferSource(), b = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.15), ctx.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length) ** 3;
+    n.buffer = b; const g = ctx.createGain(); g.gain.value = 0.9; n.connect(g); g.connect(dest); n.start(t);
+    const o = ctx.createOscillator(), og = ctx.createGain(); o.frequency.setValueAtTime(180, t); o.frequency.exponentialRampToValueAtTime(60, t + 0.12);
+    og.gain.setValueAtTime(0.4, t); og.gain.exponentialRampToValueAtTime(0.001, t + 0.15); o.connect(og); og.connect(dest); o.start(t); o.stop(t + 0.16);
+    this.s.cameras.main.shake(120, 0.004);
+  }
 
   _near(p) {
     const out = [];

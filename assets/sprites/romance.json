@@ -199,6 +199,86 @@
     "w": 16,
     "h": 24
    }
+  },
+  "npc.ines_full": {
+   "frame": {
+    "x": 32,
+    "y": 24,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.ines_full#1": {
+   "frame": {
+    "x": 48,
+    "y": 24,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.ines_flat": {
+   "frame": {
+    "x": 64,
+    "y": 24,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.ines_flat#1": {
+   "frame": {
+    "x": 80,
+    "y": 24,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
   }
  },
  "meta": {
