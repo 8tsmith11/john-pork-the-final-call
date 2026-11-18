@@ -274,8 +274,12 @@ naq yrgf vg tb.
 - **Crefbany:** gur onyybba. Znahry'f tevrs, n oernx-va, naq n fgenatre jub xabjf uvz.
 - **Arvtuobeubbq:** n pbqrebg bhgoernx vf fcernqvat bhg bs gur Terra Yvar. Vs vg vfa'g pbagnvarq,
   Pbagvahvgl frnyf Pbyyrtr Cnex haqre n **dhnenagvar beqre**, naq rirelbar gurl xabj vf jnyyrq va.
-  *Frg hc* ol Cehvgg va NFGRE (fprar 02) naq Gbova ng gur pbeqba (fprar 11). *Cnvq bss* ng gur obff
-  ("Gung'f gur jubyr bhgoernx, fgnaqvat hc", fprar 07) naq va gur nsgrezngu (`npg1.bhgoernx.pbagnvarq`).
+  *Frg hc* ol Cehvgg va NFGRE (fprar 02) naq Gbova ng gur pbeqba (fprar 11), jvgu Pbagvahvgl'f bja
+  ibvpr haqrearngu: gur cngeby-qebar fpna naabhaprf gur pbagnvazrag erivrj (nyjnlf gur frpbaq fpna,
+  `JbeyqFprar._gvpxFpna`; vg zhfg abg cynl bapr gur bhgoernx vf pbagnvarq) naq yngre gung "gbyrenapr unf orra erivfrq"
+  (n qravnoyr G3 uvag, arire pbasvezrq va Npg 1), naq gur fgngvba abgvpr va fprar 07 ercrngf vg jbeq
+  sbe jbeq naq anzrf "gur crevzrgre". *Cnvq bss* ng gur obff ("Gung'f gur jubyr bhgoernx, fgnaqvat
+  hc", fprar 07) naq va gur nsgrezngu (`npg1.bhgoernx.pbagnvarq`).
 
 ## 2. Fgehpgher (nf fpevcgrq)
 

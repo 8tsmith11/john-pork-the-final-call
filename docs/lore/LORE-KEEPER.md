@@ -84,8 +84,11 @@ This file is spoiler-free on purpose. The truth itself is in `docs/sealed/` (ROT
 - **Trevor:** his own unique-item picks (two of the four placeholders change), voice cameo and more
   real-life lore are pending.
 - **Votes:** P-002 and P-003 need Trevor's and Manuel's votes. Michael voted yes on both.
-- **Check:** trevor's commit 2d09fd6 (drone scans announcing the College Park containment review)
-  agrees with the Pruitt and cordon quarantine lines added in 7fbd2b3 ("a wall", "a week").
+- **Drone scans (2d09fd6):** checked and cleared with one change (board #241). The wording matches
+  canon, and DESIGN.md plus sealed twists §2 now list the scans as setups. Waiting on trevor: skip the
+  review line once the outbreak is contained, and have the engine set `act1.outbreak.contained` where
+  it sets `act1.boss.defeated`. Nothing sets that flag today, because the scene 07 "Sets" notes are
+  prose that convert.py drops, and the Act 2 plan reads it.
 - **The O-key egg (P-001):** passed 2–1. The code change (an age field and an eggNo opt-out instead
   of eggOk, plus a test for a missing age, covering runtime-injected NPCs) is not yet written.
   That's engine work; flag it if no one has picked it up.

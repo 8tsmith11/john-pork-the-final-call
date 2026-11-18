@@ -11,8 +11,9 @@ every device rings: **JOHN PORK**. The trail leads into the Green Line tunnels, 
 drums at 3 a.m. It ends in a boss fight and a voiced cutscene that changes what the balloon means.
 
 **Scale:** local and regional, but significant. A rot outbreak in the tunnels threatens to get
-College Park sealed under quarantine. The player hears it from Supervisor Pruitt in ASTER and from the
-notice at the cordon, and hears it's over after the boss. The wider world leaks in through news tickers, helium-sniffing
+College Park sealed under quarantine. The player hears it from Supervisor Pruitt in ASTER, from the
+Continuity patrol drones that scan them in the street, from the notice at the cordon and the one in
+the station, and hears it's over after the boss. The wider world leaks in through news tickers, helium-sniffing
 vans, and lights moving on the northern horizon.
 
 ## Causal spine (but / therefore)

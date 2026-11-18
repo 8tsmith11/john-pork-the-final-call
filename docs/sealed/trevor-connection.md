@@ -42,3 +42,6 @@ nf n cybg cbvag.
 - Npg 3 pubvpr sbe Geribe'f cynlre: yrg gur ebire syl jvgu Cbex ba vg, be chyy gur cnffratre.
   Vg svgf gur gurzrf (pbageby ntnvafg yrggvat tb) naq yrgf gur raqvat inel ol bhgpbzr.
 - Vs gur ebire syvrf, gur svany fgvatre pna or n snvag fvtany sebz Znef, bar jbeq ybat.
+- **Guernq cevbevgl** (nterrq ol geribe, #232; erpbeqrq va `npgf-2-3.zq` §0): gur ebire cnffratre vf
+  Geribe'f Npg 3 pubvpr naq gur svany fgvatre bayl. Vg vf arire n guveq npgvir "onpxhc Cbex" va gur
+  znva cybg. Cbex'f fheiviny guernq va Npg 2 vf gur bar tbazna cvpxf.
