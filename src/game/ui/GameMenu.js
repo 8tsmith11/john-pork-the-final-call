@@ -106,12 +106,34 @@ export class GameMenu {
   }
 
   _map(g) {
-    const b = this.box;
-    this.scene.drawAreaMap(g, b.x + 12, b.y + 28, b.w - 150, b.h - 40);
-    const visited = this.scene.save.world.visited || [];
-    this._t(b.x + b.w - 130, b.y + 28, 'AREAS FOUND', F(7, C.sub));
-    visited.forEach((id, i) => this._t(b.x + b.w - 130, b.y + 40 + i * 11, this.scene.mapName(id) + (id === this.scene.map.id ? '  ◀' : ''), F(7, id === this.scene.map.id ? C.hi : C.text)));
+    const s = this.scene, b = this.box;
+    const vx = b.x + 10, vy = b.y + 26, vw = b.w - 20, vh = b.h - 44;
+    if (!this.mapView) {
+      const { x, y } = s.playerWorldTile();
+      this.mapView = { cx: x, cy: y, zoom: 3 };
+    }
+    const labels = s.drawWorldMap(g, vx, vy, vw, vh, this.mapView);
+    for (const l of labels) this._t(l.x, l.y, l.text, F(6, l.here ? C.hi : C.sub)).setOrigin(0.5, 1);
+    this._t(vx, vy + vh + 4, 'drag to pan · wheel to zoom · C to center on you', F(7, C.sub));
+    // Drag to pan
+    const z = s.add.zone(vx, vy, vw, vh).setOrigin(0, 0).setInteractive({ draggable: false });
+    z.on('pointerdown', (p) => { this._drag = { x: p.x, y: p.y, cx: this.mapView.cx, cy: this.mapView.cy }; });
+    z.on('pointermove', (p) => {
+      if (!this._drag || !p.isDown) return;
+      const k = this.mapView.zoom * 4;   // screen px per tile (view zoom 4)
+      this.mapView.cx = this._drag.cx - (p.x - this._drag.x) / k; this.mapView.cy = this._drag.cy - (p.y - this._drag.y) / k;
+      this._redrawSoon();
+    });
+    z.on('pointerup', () => { this._drag = null; });
+    this.root.add(z);
+    if (!this._wheelHooked) {
+      this._wheelHooked = true;
+      s.input.on('wheel', (p, objs, dx, dy) => { if (this.tab !== 'map') return; this.mapView.zoom = Math.max(1, Math.min(8, this.mapView.zoom * (dy > 0 ? 0.8 : 1.25))); this.refresh(); });
+      s.input.keyboard.on('keydown-C', () => { if (this.tab !== 'map') return; const { x, y } = s.playerWorldTile(); Object.assign(this.mapView, { cx: x, cy: y }); this.refresh(); });
+    }
   }
+
+  _redrawSoon() { if (this._raf) return; this._raf = requestAnimationFrame(() => { this._raf = null; if (this.tab === 'map') this.refresh(); }); }
 
   _controls() {
     const b = this.box;

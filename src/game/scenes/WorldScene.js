@@ -5,7 +5,7 @@ import { newSave } from '../../engine/save/schema.js';
 import { autosave, loadAutosave, exportFile } from '../../engine/save/storage.js';
 import { rollWorld } from '../../engine/worldRolls.js';
 import { newSeed } from '../../engine/rng.js';
-import { MAPS } from '../../content/maps/index.js';
+import { MAPS, worldPos } from '../../content/maps/index.js';
 import { TILE_COLORS } from '../../content/maps/build.js';
 import { ENEMIES } from '../../content/enemies.js';
 import { GAME_VERSION } from '../../version.js';
@@ -390,6 +390,11 @@ export class WorldScene extends Phaser.Scene {
   menuExport() { exportFile(this.save); }
   menuQuit(save) { const quit = () => { this.net?.close?.(); this.scene.start('Title'); }; save && this.mode !== 'client' ? autosave(this.save).then(quit) : quit(); }
   mapName(id) { return MAPS[id]?.name ?? id; }
+  playerWorldTile() {
+    const me = this.mode === 'client' ? this._lastRendered?.players.find((p) => p.id === this.localId) : this.sim.players.get(this.localId);
+    const wp = worldPos(this.map);
+    return { x: wp.x + (me ? me.x / TILE : this.map.w / 2), y: wp.y + (me ? me.y / TILE : this.map.h / 2) };
+  }
 
   _equip(who, id) {
     const c = this.save.party[who], def = ITEMS[id];
@@ -906,6 +911,36 @@ export class WorldScene extends Phaser.Scene {
     for (const o of m.objects) if (ex[o.y * m.w + o.x] === '1' && (o.action === 'exit' || o.door)) g.fillStyle(o.door ? 0x8a6a4a : 0xffb347).fillRect(ox + o.x * k, oy + o.y * k, k, k);
     for (const e of snap?.enemies || []) { const tx = Math.floor(e.x / TILE), ty = Math.floor(e.y / TILE); if (ex[ty * m.w + tx] === '1') g.fillStyle(0xd65db1).fillRect(ox + tx * k, oy + ty * k, k, k); }
     for (const p of snap?.players || []) { const d = k > 2 ? 1 : 0; g.fillStyle(p.id === this.localId ? 0x7fff9a : 0x6fb6ff).fillRect(ox + Math.floor(p.x / TILE) * k - d, oy + Math.floor(p.y / TILE) * k - d, k + 2 * d, k + 2 * d); }
+  }
+
+  /** The whole world: every explored area at its world position, panned/zoomed inside a viewport. */
+  drawWorldMap(g, vx, vy, vw, vh, view, snap = this._lastRendered) {
+    const k = view.zoom, here = this.map.id;
+    g.fillStyle(0x070912, 0.92).fillRect(vx, vy, vw, vh).lineStyle(1, 0x5d6487, 0.8).strokeRect(vx, vy, vw, vh);
+    const ex = this.save.world.explored || {};
+    const labels = [];
+    for (const id of Object.keys(ex)) {
+      const m = MAPS[id]; if (!m) continue;
+      const wp = worldPos(m), bits = ex[id];
+      const ox = vx + vw / 2 + (wp.x - view.cx) * k, oy = vy + vh / 2 + (wp.y - view.cy) * k;
+      if (ox > vx + vw || oy > vy + vh || ox + m.w * k < vx || oy + m.h * k < vy) continue;
+      for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) {
+        if (bits[y * m.w + x] !== '1') continue;
+        const px = ox + x * k, py = oy + y * k;
+        if (px < vx || py < vy || px + k > vx + vw || py + k > vy + vh) continue;
+        g.fillStyle(m.solid(x, y) && !m.doors.get(`${x},${y}`) ? (id === here ? 0x4a5080 : 0x353a5c) : (id === here ? 0x262a44 : 0x1a1d30)).fillRect(px, py, Math.ceil(k), Math.ceil(k));
+      }
+      for (const o of m.objects) if (bits[o.y * m.w + o.x] === '1' && o.action === 'exit') {
+        const px = ox + o.x * k, py = oy + o.y * k;
+        if (px >= vx && py >= vy && px < vx + vw && py < vy + vh) g.fillStyle(0xffb347).fillRect(px, py, Math.max(2, k), Math.max(2, k));
+      }
+      labels.push({ text: m.name, x: ox + (m.w * k) / 2, y: oy - 2, here: id === here });
+    }
+    if (snap) for (const p of snap.players) {
+      const wp = worldPos(this.map), px = vx + vw / 2 + (wp.x + p.x / TILE - view.cx) * k, py = vy + vh / 2 + (wp.y + p.y / TILE - view.cy) * k;
+      if (px >= vx && py >= vy && px < vx + vw && py < vy + vh) g.fillStyle(p.id === this.localId ? 0x7fff9a : 0x6fb6ff).fillRect(px - 2, py - 2, 4, 4);
+    }
+    return labels.filter((l) => l.x > vx && l.x < vx + vw && l.y > vy + 6 && l.y < vy + vh);
   }
 
   _drawMinimap(snap) {
