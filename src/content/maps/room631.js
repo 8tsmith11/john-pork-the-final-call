@@ -39,9 +39,9 @@ export const room631 = makeMap({
     { id: 'door.mm_bath', x: 23, y: 3, label: 'Bathroom door', door: true },
     // Kitchen / dining (west half)
     { id: 'obj.door', x: 0, y: 8, label: 'Front door (hallway)', action: 'exit', to: 'aster_hall', text: 'The sixth-floor hallway. It smells like someone else\'s dinner.' },
-    { id: 'obj.statue_1', x: 2, y: 6, label: 'Statue', text: 'One of Manuel\'s John Pork statues, guarding the door. The eyes are very well done.' },
+    { id: 'obj.statue_1', x: 2, y: 7, label: 'Statue', text: 'One of Manuel\'s John Pork statues, guarding the door. The eyes are very well done.' },
     { id: 'obj.statue_2', x: 2, y: 10, label: 'Statue', text: 'Another statue by the entrance. Its head is turned slightly toward the engineering room. Was it always?' },
-    { id: 'obj.statue_3', x: 3, y: 11, label: 'Statue', text: 'The newest statue. Manuel says he finished it last week. He doesn\'t remember sanding it.' },
+    { id: 'obj.statue_3', x: 5, y: 11, label: 'Statue', text: 'The newest statue. Manuel says he finished it last week. He doesn\'t remember sanding it.' },
     { id: 'obj.mate', x: 7, y: 6, label: 'Mate station', text: 'Manuel\'s mate gear on the counter. Still warm. Someone was up at 3 a.m.' },
     { id: 'obj.fridge', x: 10, y: 6, label: 'Fridge', text: 'Three energy drinks, half a lemon, a jar labeled DO NOT. Someone has written "I hate 245 lab" in the condensation.' },
     { id: 'obj.table', x: 8, y: 9, label: 'Dining table', text: 'Problem sets, a soldering-burn ring, and a pacifier nobody will explain.' },
