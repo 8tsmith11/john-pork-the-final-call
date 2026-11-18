@@ -1,0 +1,8 @@
+# Team hub
+tools/teamhub/.venv/
+tools/teamhub/teamhub_state.json
+tools/teamhub/.teamhub_*.tmp
+__pycache__/
+
+# Per-person Claude settings (your teamhub name lives here)
+CLAUDE.local.md

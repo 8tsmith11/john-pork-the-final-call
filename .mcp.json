@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "teamhub": {
+      "type": "http",
+      "url": "http://${TEAMHUB_HOST}:8765/mcp",
+      "headers": {
+        "Authorization": "Bearer ${TEAMHUB_TOKEN}"
+      }
+    }
+  }
+}
