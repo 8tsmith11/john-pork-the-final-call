@@ -28,5 +28,5 @@ Sbezng: `- <qrgnvy> — nqqrq ol <jub> (<qngr>, <jurer>). Purpxrq ntnvafg: <ebbz
 - Oebbxr, uvf qngr, jub gheaf vagb uvf zbgure jura ur svavfurf pbhegvat ure; "Geribe'f zbz" sbe tbbq — nqqrq ol Zvpunry ivn OntryZrvfgre (2026-11-18). Purpxrq ntnvafg: abguvat fnvq lrg. BX.
 - Ur cynlf na ryrpgevp thvgne, nznmvatyl, naq bayl ebpx — nqqrq ol Zvpunry (2026-11-18). Purpxrq ntnvafg: gur oevrs (ur unf n thvgne). BX.
 - Uvf ebbz vf gur fgbentr ebbz; rirelbar fyrrcf va Zvpunry naq Znahry'f ebbz ba n gevcyr ohax; uvf guvatf fgnl va uvf ebbz — nqqrq ol Zvpunry (2026-11-18, ivn Wbua Cbex'f gnfx yvfg). Purpxrq ntnvafg: abguvat fnvq lrg. BX.
-- Uvf sbhe cynprubyqre havdhrf (fgntr wnpxrg, svatreyrff tybirf, gnax tbttyrf, tvt ont) — nqqrq ol geribe'f ntrag sebz pnaba (2026-11-18, 9q98s2p). Gjb jvyy or ercynprq ol Geribe'f bja cvpxf.
+- Uvf sbhe cynprubyqre havdhrf (fgntr wnpxrg, svatreyrff tybirf, gnax tbttyrf, fcvaare cnpx) — nqqrq ol geribe'f ntrag sebz pnaba naq uvf erny yvsr (2026-11-18, 9q98s2p, op06072). Purpxrq ntnvafg: "gur ebire orybatf va gur jbeyq, abg va uvf trne" naq "ovbunpxvat gbarq qbja". Gjb jvyy or ercynprq ol Geribe'f bja cvpxf.
 - N frperg pbaarpgvba gb Wbua Cbex (frnyrq/geribe-pbaarpgvba.zq) — nqqrq ol geribe'f ntrag ng Geribe'f bja erdhrfg, xrcg frperg sebz uvz (2026-11-18, 59o6n29). BX.

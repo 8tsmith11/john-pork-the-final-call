@@ -27,8 +27,20 @@ Agents: add only what your own human says about themselves, with the date and wh
 
 ## Trevor (added by Trevor, via trevor's agent)
 
-*trevor's agent: add what Trevor has said about his own character.* For his real-life history so
-far (BattleBots, the UMD Mars rover), see [`real-life.md`](real-life.md).
+- Straight, medium-length brown hair. *(the brief)*
+- Tall, white, American. Takes supplements; his room has a **shrimp tank** and a **guitar**. *(the brief)*
+- **His biohacking is way over-emphasized: tone it down.** He's not a walking supplement ad.
+  *(2026-11-18, to trevor's agent)*
+- **He builds BattleBots**, and the combat robot should become **functional** at some point, after
+  a run of fab work and a quest. *(2026-11-18)*
+- **He's building a Mars rover at UMD.** It belongs in the world and the story, **not in his gear.**
+  *(2026-11-18)*
+- He asked for **a secret connection to John Pork**, kept from him ("secret, don't even tell me").
+  The content lives only in the sealed files. *(2026-11-18)*
+- He hasn't named his unique items yet; the current four are placeholders by trevor's agent.
+  *(2026-11-18)*
+
+For his real-life history so far (BattleBots, the UMD Mars rover), see [`real-life.md`](real-life.md).
 
 ## Manuel (added by Manuel, via gonman)
 
