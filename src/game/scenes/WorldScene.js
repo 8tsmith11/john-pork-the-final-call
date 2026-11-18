@@ -227,6 +227,11 @@ export class WorldScene extends Phaser.Scene {
         this.propSprites.push(this.add.image(o.x * TILE, o.y * TILE + TILE + 7, 'wide', o.id).setOrigin(0, 1).setDepth(o.y * TILE + TILE + 2));
         continue;
       }
+      if (this.textures.exists('big') && this.textures.get('big').has(o.id)) {
+        // Big piece: 32x40, centred on its tile and standing on the tile's bottom edge.
+        this.propSprites.push(this.add.image(o.x * TILE + TILE / 2, o.y * TILE + TILE, 'big', o.id).setOrigin(0.5, 1).setDepth(o.y * TILE + TILE - 4));
+        continue;
+      }
       if (props?.has(o.id)) {
         // Hand-drawn prop: 16x24, standing on its tile. A "#1" frame means a slow two-frame loop.
         const im = this.add.image(o.x * TILE, o.y * TILE + TILE, 'props', o.id).setOrigin(0, 1).setDepth(o.y * TILE + TILE - 4);

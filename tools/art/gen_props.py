@@ -259,12 +259,54 @@ c.rect(1, 13, 14, 2, "warm1").rect(4, 8, 6, 5, "night0").rect(5, 9, 3, 2, "scree
 P("npc.halvard", c.outline())
 
 
+
+# ---- big pieces (32x40): the John Pork busts, centred on their tile ----
+# Likeness notes: bald egg-shaped head with a wide jaw, ears that hang DOWN the sides of the head,
+# small human eyes under brows, a round snout, a wide closed smile, an open plaid shirt over a tee.
+BIG = {}
+HEAD_SPANS = {3: (13, 18), 4: (11, 20), 5: (10, 21), 20: (10, 21), 21: (11, 20), 22: (13, 18)}
+
+
+def bust(turn=0, raw=False):
+    c = C(32, 40)
+    c.rect(6, 32, 20, 8, "concrete2").h_(5, 32, 22, "concrete3").h_(5, 39, 22, "concrete1").rect(12, 35, 8, 2, "warm4")
+    for y, (a, b) in {26: (8, 23), 27: (6, 25), 28: (4, 27), 29: (4, 27), 30: (4, 27), 31: (4, 27)}.items():   # shoulders
+        c.h_(a, y, b - a + 1, "bone").h_(b - 1, y, 2, "concrete3")
+    c.pts("steel", (12, 26), (12, 27), (13, 28), (13, 29), (14, 30), (14, 31), (19, 26), (19, 27), (18, 28), (18, 29), (17, 30), (17, 31))
+    c.h_(5, 29, 6, "concrete3").v_(8, 27, 5, "concrete3").h_(21, 29, 6, "concrete3").v_(23, 27, 5, "concrete3")   # plaid, carved
+    c.rect(13, 23, 6, 3, "bone").h_(13, 23, 6, "concrete3")                                                       # neck
+    for y in range(3, 23):                                                                                       # head
+        a, b = HEAD_SPANS.get(y, (9, 22))
+        c.h_(a, y, b - a + 1, "bone").h_(b - 1, y, 2, "concrete3")
+    for x0, inner in ((6, 7), (23, 24)):                                                                          # hanging ears
+        c.rect(x0, 8, 3, 6, "concrete3").px(x0 + (2 if x0 == 6 else 0), 7, "concrete3")
+        c.rect(x0 + (1 if x0 == 6 else 0), 14, 2, 1, "concrete3").px(x0 + (2 if x0 == 6 else 0), 15, "concrete3")
+        c.v_(inner, 9, 4, "steel")
+    t = turn
+    c.h_(11 + t, 9, 4, "concrete3").h_(17 + t, 9, 4, "concrete3")                                                 # brows
+    c.rect(12 + t, 11, 2, 1, "night2").rect(18 + t, 11, 2, 1, "night2").h_(12 + t, 12, 2, "concrete3").h_(18 + t, 12, 2, "concrete3")
+    c.h_(13 + t, 13, 6, "steel").v_(12 + t, 14, 3, "steel").v_(19 + t, 14, 3, "steel").h_(13 + t, 17, 6, "steel")  # snout
+    c.rect(14 + t, 15, 1, 2, "night2").rect(17 + t, 15, 1, 2, "night2")
+    c.h_(11 + t, 19, 10, "steel").pts("steel", (10 + t, 18), (21 + t, 18))                                        # the smile
+    if raw:
+        c.pts("warm3", (11, 5), (12, 5), (20, 7), (10, 16), (6, 30), (7, 30), (24, 28)).pts("steel", (15, 6), (16, 7), (20, 21), (10, 28))
+    return c.outline()
+
+
+BIG["obj.statue_1"] = bust().rows()
+BIG["obj.statue_2"] = bust(turn=2).rows()
+BIG["obj.statue_3"] = bust(raw=True).rows()
+
 # ---- wide wall pieces (32x16, hung on a wall tile and the one to its right) ----
 WIDE = {}
 c = C(32, 16).h_(0, 0, 32, "warm0").rect(1, 1, 30, 13, "pork1").h_(1, 1, 30, "pork2").h_(1, 13, 30, "pork0")
-c.rect(11, 9, 10, 5, "night1").pts("bone", (15, 9), (16, 9), (15, 10)).pts("night3", (13, 9), (18, 9))            # jacket, collar
-c.rect(12, 2, 8, 7, "pork2").pts("pork2", (11, 2), (11, 1), (12, 1), (20, 2), (20, 1), (19, 1)).pts("pork0", (12, 2), (19, 2))  # head, ears
-c.rect(14, 5, 4, 3, "bone").pts("pork0", (15, 6), (16, 6)).pts("night0", (13, 4), (18, 4)).h_(14, 8, 4, "pork0")     # snout, eyes
+c.rect(9, 10, 14, 4, "soft1").pts("soft0", *[(x, y) for x in range(9, 23) for y in range(10, 14) if (x + y) % 2 == 0 and not 14 <= x <= 17])
+c.rect(14, 10, 4, 4, "steel").pts("concrete3", (14, 10), (17, 10))                                    # grey tee under the plaid
+c.rect(12, 2, 8, 8, "skin3").pts(None, (12, 2), (19, 2)).pts("skin2", (19, 4), (19, 5), (19, 6), (19, 7), (19, 8))  # bald egg head
+c.rect(11, 3, 1, 4, "skin1").rect(20, 3, 1, 4, "skin1")                                               # ears hanging down
+c.pts("night0", (13, 4), (18, 4)).pts("skin2", (13, 3), (18, 3))                                      # eyes, brows
+c.rect(14, 5, 4, 3, "pork2").pts("pork0", (15, 6), (16, 6))                                           # snout
+c.h_(13, 8, 6, "skin1").pts("skin1", (12, 7), (19, 7))                                                # the smile
 for x0 in (3, 24):                                                                                                # a ringing phone each side
     c.rect(x0, 4, 4, 6, "night1").rect(x0 + 1, 5, 2, 3, "screen2").px(x0 + 1, 8, "bone")
     c.pts("bone", (x0 - 1, 3), (x0 + 4, 3), (x0 - 1, 10), (x0 + 4, 10))
@@ -315,5 +357,6 @@ def write(name, w, h, frames):
 
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)
+write("big", 32, 40, BIG)
 write("enemies", 16, 16, ENEMIES)
 write("warden", 32, 40, WARDEN)

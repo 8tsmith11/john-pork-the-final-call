@@ -16,7 +16,7 @@ export class BootScene extends Phaser.Scene {
       this.load.atlas(id, `assets/sprites/${id}.png`, `assets/sprites/${id}.json`);
     }
     // Props/NPCs (frames named by map object id), enemies and the Warden. All optional.
-    for (const id of ['props', 'wide', 'enemies', 'warden']) this.load.atlas(id, `assets/sprites/${id}.png`, `assets/sprites/${id}.json`);
+    for (const id of ['props', 'wide', 'big', 'enemies', 'warden']) this.load.atlas(id, `assets/sprites/${id}.png`, `assets/sprites/${id}.json`);
   }
 
   create() {
