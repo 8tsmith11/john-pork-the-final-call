@@ -18,7 +18,7 @@ const LAYOUT = [
   '#kkkkkkkkkkkkkkeeeeeeeeeeeeee#',   // 9
   '#kkkkkkkkkkkkkkeeeeeeeeeeeeee#',   // 10
   '#kkkkkkkkkkkkkkeeeeeeeeeeeeee#',   // 11
-  '################===....===####',   // 12 balcony opening off the engineering room
+  '################=====.=====###',   // 12 windows + the balcony door, off the engineering room
   '###############bbbbbbbbbbbbbb#',   // 13 balcony
   '##############################',   // 14
 ];
@@ -96,9 +96,9 @@ export const room631 = makeMap({
     { id: 'obj.solder', x: 22, y: 9, label: 'Soldering station', text: 'Iron still in its stand. Drills, flux, a half-built sensor board.' },
     { id: 'obj.dehumidifier', x: 16, y: 11, label: 'Dehumidifier', text: 'Running full blast. The printers hate humidity. So does Manuel.' },
     // Balcony
-    { id: 'obj.window_latch', x: 19, y: 12, label: 'Balcony door latch', text: 'Locked, and dusty. Nobody came in this way.' },
+    { id: 'door.balcony', art: 'obj.window_latch', x: 21, y: 12, label: 'Balcony door', door: true },
     { id: 'obj.ottoman', x: 22, y: 13, label: 'Balcony ottoman', flag: 'act1.balloon.noticedGone',
-      text: 'The ottoman everyone glances at to check the weather. Dry. Clear. A normal night, apparently.' },
+      text: 'The ottoman everyone glances at to check the weather. Dry. Clear. A normal night, apparently. The balcony door\'s latch behind you is dusty: nobody came in this way.' },
     // Trevor's room + bathroom
     { id: 'obj.bed', x: 1, y: 2, label: 'Trevor\'s bed (save)', action: 'save', text: 'Sleep? The balloon is still missing.' },
     { id: 'obj.shrimp_tank', x: 6, y: 1, label: 'Shrimp tank', text: 'Trevor\'s shrimp. The only clean water in the building. They\'re clustered in the corner away from the window.' },
@@ -124,7 +124,7 @@ export const room631 = makeMap({
     { id: 'obj.bed_michael', x: 17, y: 1, label: 'Michael\'s bed', text: 'Michael\'s side. A phone charger, a photo turned face-down, a sweatshirt that isn\'t his size.' },
     { id: 'obj.bed_manuel', x: 21, y: 1, label: 'Manuel\'s bed', text: 'Manuel\'s side. Sculpting tools, a carved gourd, a postcard from Buenos Aires pinned above the pillow.' },
     { id: 'obj.manuel_closet', x: 22, y: 4, label: 'Manuel\'s closet', flag: 'act1.balloon.noticedGone',
-      text: 'Manuel\'s closet, door open. A length of orange ribbon still knotted around the clothes rail. Cut clean. The balloon is gone.' },
+      text: 'Manuel\'s closet. His orange balloon, the one his abuela sent him, the one he checks on every morning, is gone. Someone took it. A length of orange ribbon is still knotted around the clothes rail, cut clean.' },
     { id: 'obj.front_lock', x: 1, y: 8, label: 'Front-door lock', flag: 'act1.clue.lockForced',
       text: 'The deadbolt plate is bent and the strike is splintered. Someone forced it from the hallway side, quietly, and pulled the door shut behind them.' },
     { id: 'obj.mm_mirror', x: 26, y: 1, label: 'Bathroom mirror', text: 'Two toothbrushes and a third one nobody claims.' },

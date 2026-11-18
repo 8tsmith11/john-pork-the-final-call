@@ -133,7 +133,8 @@ export class WorldScene extends Phaser.Scene {
     this.dlgInitial = this.add.text(46, H - 36, '', { heading: true, fontSize: '18px', color: '#5d6487' }).setOrigin(0.5).setScrollFactor(0).setDepth(9502);
     this.dlgWho = this.add.text(76, H - 62, '', { ...FONT, fontSize: '9px', color: '#ffb347' }).setScrollFactor(0).setDepth(9501);
     this.dlgText = this.add.text(76, H - 51, '', { ...FONT, fontSize: '9px', wordWrap: { width: W - 110 }, lineSpacing: 1 }).setScrollFactor(0).setDepth(9501);
-    this.dlgChoices = [0, 1, 2, 3, 4, 5].map((i) => this.add.text(34, H - 62 + i * 9.5, '', { ...FONT, fontSize: '8.5px', color: '#9aa3c7' })
+    this.dlgMeasure = this.add.text(0, -999, '', { ...FONT, fontSize: '9px', wordWrap: { width: W - 110 }, lineSpacing: 1 }).setVisible(false);
+    this.dlgChoices = [0, 1, 2, 3, 4, 5].map((i) => this.add.text(34, H - 62 + i * 9.5, '', { ...FONT, fontSize: '8.5px', color: '#9aa3c7', wordWrap: { width: W - 80 } })
       .setScrollFactor(0).setDepth(9501).setInteractive({ useHandCursor: true })
       .on('pointerover', function () { this.setColor('#ffb347'); }).on('pointerout', function () { this.setColor('#9aa3c7'); })
       .on('pointerdown', () => this._choose(i)));
@@ -250,6 +251,30 @@ export class WorldScene extends Phaser.Scene {
       this.dlgText.setText((this._typeFull ?? '').slice(0, Math.floor(this._typeShown ?? 0)));
       this.dlgChoices.forEach((t) => t.setVisible(false));
     }
+    this._layoutDialogue(choices.length > 0);
+  }
+
+  // The box grows upward to fit its content (measured against the FULL line, so the typewriter
+  // never spills out), and choices stack inside it.
+  _layoutDialogue(isChoices) {
+    const W = VIEW.w, H = VIEW.h, bottom = H - 6;
+    let h;
+    if (isChoices) {
+      h = 14 + this.dlgChoices.filter((t) => t.visible).reduce((sum, t) => sum + t.height + 3, 0);
+    } else {
+      this.dlgMeasure.setText(this._typeFull ?? '');
+      h = 24 + this.dlgMeasure.height;
+    }
+    h = Math.max(60, Math.min(H - 40, Math.ceil(h)));
+    const top = bottom - h;
+    this.dlgBg.setSize(W - 40, h).setPosition(W / 2, top + h / 2);
+    this.dlgBg.geom.setSize?.(W - 40, h); this.dlgBg.updateDisplayOrigin?.();
+    this.dlgWho.setY(top + 6);
+    this.dlgText.setY(top + 17);
+    let y = top + 7;
+    for (const t of this.dlgChoices) { if (!t.visible) continue; t.setY(y); y += t.height + 3; }
+    const py = top + 30;
+    this.dlgPortraitBg.setY(py); this.dlgPortrait.setY(py); this.dlgInitial.setY(py);
   }
 
   // Story beats keyed to places (Act 1 MVP wiring; see docs/act1/DESIGN.md).
