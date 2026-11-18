@@ -59,3 +59,8 @@ export function importFile() {
     input.click();
   });
 }
+
+export async function clearAutosave() {
+  try { await idbOp('readwrite', (s) => s.delete(KEY)); } catch { /* none */ }
+  try { localStorage.removeItem(`${DB}:${KEY}`); } catch { /* none */ }
+}

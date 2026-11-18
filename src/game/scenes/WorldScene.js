@@ -1,7 +1,7 @@
 import { Sim, TILE } from '../../engine/sim.js';
 import { InputReader } from '../../engine/input.js';
 import { newSave } from '../../engine/save/schema.js';
-import { autosave, loadAutosave } from '../../engine/save/storage.js';
+import { autosave, loadAutosave, exportFile } from '../../engine/save/storage.js';
 import { rollWorld } from '../../engine/worldRolls.js';
 import { newSeed } from '../../engine/rng.js';
 import { MAPS } from '../../content/maps/index.js';
@@ -268,6 +268,7 @@ export class WorldScene extends Phaser.Scene {
     this.menuTitle = this.add.text(W / 2 - 140, 42, '', { ...FONT, color: '#ffb347' }).setScrollFactor(0).setDepth(9601);
     this.menuRows = [0, 1, 2, 3, 4, 5, 6].map((i) => this.add.text(W / 2 - 136, 58 + i * 25, '', { ...FONT, wordWrap: { width: 270 } })
       .setScrollFactor(0).setDepth(9601).setInteractive({ useHandCursor: true }).on('pointerdown', () => this._pickMenu(i)));
+    this.input.keyboard.on('keydown-ESC', () => { if (!this.menu && !this.dlg) { this.menu = 'pause'; this._refreshMenu(); } });
     this.input.keyboard.on('keydown', (ev) => {
       if (!this.menu) return;
       if (ev.key === 'Escape') return this._closeMenu();
@@ -287,6 +288,11 @@ export class WorldScene extends Phaser.Scene {
     if (this.menu === 'fab') {
       title = `FAB #2 · scrap: ${this.save.world.scrap}   [1-5] print  [ESC] close`;
       rows = RECIPES.map((r, i) => `${i + 1}. ${ITEMS[r.item].name} (${r.scrap} scrap): ${ITEMS[r.item].text}`);
+    } else if (this.menu === 'pause') {
+      title = 'PAUSED   [ESC] resume';
+      rows = this.mode === 'client'
+        ? ['1. Resume', '2. Leave the game (back to title)']
+        : ['1. Resume', '2. Save now', '3. Export save file (.jpfc.json)', '4. Save and quit to title'];
     } else {
       title = `${this.character.toUpperCase()} · level ${c.level} · skill points: ${c.skillPoints}   [K] close`;
       rows = (SKILLS[this.character] || []).map((s, i) => `${i + 1}. ${s.name} [${c.skills[s.id] ?? 0}/${s.max}]: ${s.text}`);
@@ -297,6 +303,15 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _pickMenu(i) {
+    if (this.menu === 'pause') {
+      const quit = () => { this.net?.close?.(); this.scene.start('Title'); };
+      if (i === 0) return this._closeMenu();
+      if (this.mode === 'client') { if (i === 1) quit(); return; }
+      if (i === 1) { autosave(this.save); this._closeMenu(); return this._say('Saved.'); }
+      if (i === 2) { exportFile(this.save); return; }
+      if (i === 3) { autosave(this.save).then(quit); return; }
+      return;
+    }
     if (this.menu === 'fab') { if (this.mode === 'client') this.net.send({ t: 'craft', idx: i }); else this._craft(this.character, i); }
     if (this.menu === 'skills') {
       const s = (SKILLS[this.character] || [])[i]; if (!s) return;

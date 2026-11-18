@@ -1,4 +1,5 @@
 import { ROOMMATES } from './BootScene.js';
+import { loadAutosave, clearAutosave, importFile, autosave } from '../../engine/save/storage.js';
 
 export class TitleScene extends Phaser.Scene {
   constructor() { super('Title'); }
@@ -24,12 +25,25 @@ export class TitleScene extends Phaser.Scene {
       zone.on('pointerout', () => { spr.play(`${id}_idle_down`); label.setColor('#e8e8f0'); });
       zone.on('pointerdown', () => this.scene.start('World', { character: id, mode: 'solo' }));
     });
+    // Save controls: the save lives in this browser (and in exported .jpfc.json files).
+    const saveInfo = this.add.text(W / 2, 98, '', { fontFamily: 'monospace', fontSize: '7px', color: '#5d6487' }).setOrigin(0.5);
+    const refresh = async () => {
+      const s = await loadAutosave().catch(() => null);
+      saveInfo.setText(s ? `save found: act ${s.world.act} · world "${s.world.seed}" · click a roommate to continue` : 'no save yet: clicking a roommate starts a new game');
+    };
+    refresh();
+    const small = (x, label, fn) => this.add.text(x, H - 52, label, { fontFamily: 'monospace', fontSize: '7px', color: '#9aa3c7' })
+      .setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', fn);
+    small(W / 2 - 60, '[ new game ]', async () => { if (confirm('Start a new game? This browser\'s save will be erased (export it first if you want to keep it).')) { await clearAutosave(); refresh(); } });
+    small(W / 2 + 60, '[ import save file ]', async () => {
+      try { const s = await importFile(); await autosave(s); refresh(); } catch (e) { saveInfo.setText(`couldn't import: ${e.message}`); }
+    });
     [['HOST CO-OP', 'host'], ['JOIN CO-OP', 'join']].forEach(([label, role], i) => {
       this.add.text(W / 2 + (i ? 70 : -70), H - 34, `[ ${label} ]`, { fontFamily: 'monospace', fontSize: '9px', color: '#ffb347' })
         .setOrigin(0.5).setInteractive({ useHandCursor: true })
         .on('pointerdown', () => this.scene.start('Lobby', { role }));
     });
-    this.add.text(W / 2, H - 14, 'click a roommate: solo · WASD move · click things to use · L-click hit · R-click shoot · SPACE dodge · E close · K skills',
+    this.add.text(W / 2, H - 16, 'WASD move · click things to use · L-click hit · R-click shoot · SPACE dodge\nE close · K skills · H heal · M morph · F answer · ESC pause/save',
       { fontFamily: 'monospace', fontSize: '7px', color: '#5d6487' }).setOrigin(0.5);
   }
 }
