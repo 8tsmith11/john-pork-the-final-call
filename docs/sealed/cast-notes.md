@@ -4,9 +4,9 @@
 
 Pbzcnavba gb `qbpf/qrfvta/04-pnfg.zq`. Cebcbfrq, abg pnaba hagvy erivrjrq.
 
-## Anev Frb: jung fur urneq naq jurer fur vf
+## Znahryvgn Frb: jung fur urneq naq jurer fur vf
 
-**Jung fur urneq.** Rvtug zbaguf orsber gur tnzr, Anev gbbx n pnyy ng ubzr. Vg jnf Wbua Cbex. Ur
+**Jung fur urneq.** Rvtug zbaguf orsber gur tnzr, Znahryvgn gbbx n pnyy ng ubzr. Vg jnf Wbua Cbex. Ur
 qvq abg fcrnx gb ure. Ur cynlrq ure n erpbeqvat: sbegl frpbaqf bs n ebbz, jvgu ibvprf va vg. Ur
 pnyyrq n fbhaq ratvarre orpnhfr ur pbhyq abg gryy, uvzfrys, jurgure gur erpbeqvat jnf erny, naq
 ur arrqrq n uhzna rne gung pbhyq. Vg jnf gur erpbeqvat bs gur Svefg Qrngu. Jung fur jebgr ba ure
