@@ -59,7 +59,25 @@ const lobby = (() => {
   ] };
 })();
 
-export const SONGS = { apartment, title, lobby };
+// LAKE ARTEMESIA, at night: barely music. Long held chords in G that swell and go, a low G that never
+// moves, and single high notes dropped at uneven distances like rain landing on flat water. Nothing
+// repeats inside the eight bars, so the loop point is hard to hear.
+const lake = (() => {
+  const prog = ['Gmaj7', 'Em', 'C', 'Gmaj7', 'Gmaj7', 'Em', 'C', 'A7sus'].map((k) => CH[k]);
+  const hold = [], drone = [];
+  prog.forEach((c, b) => { hold.push(...pad(b, c)); if (b % 2 === 0) drone.push([b, 0, 31, 32]); });
+  const drops = [[0, 6, 83, 2], [1, 1, 79, 2], [1, 11, 86, 2], [2, 9, 76, 2], [3, 4, 81, 2], [3, 14, 74, 2],
+                 [4, 7, 86, 2], [5, 2, 83, 2], [5, 13, 79, 2], [6, 10, 88, 2], [7, 5, 81, 2]];
+  const answer = [[2, 0, 67, 12], [3, 0, 62, 14], [6, 0, 64, 12], [7, 0, 62, 16]];
+  return { bpm: 50, bars: 8, tracks: [
+    { wave: 'sine', gain: 0.04, attack: 1.4, release: 2.4, notes: hold },
+    { wave: 'sine', gain: 0.10, attack: 1.0, release: 2.0, notes: drone },
+    { wave: 'triangle', gain: 0.035, attack: 0.004, release: 0.9, notes: drops },
+    { wave: 'sine', gain: 0.045, attack: 0.5, release: 1.8, notes: answer },
+  ] };
+})();
+
+export const SONGS = { apartment, title, lobby, lake };
 
 let playing = null;
 
