@@ -7,6 +7,9 @@ import { generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.35, iframes: 0.22,
   stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
+// Regular-enemy tuning for a party of three (see spawnEnemies). Measured with a headless bot run:
+// before this the tunnel cleared in ~30 s with no knockdowns.
+export const PARTY_SCALE = { hp: 1.7, dmg: 1.3 };
 export const COMBAT = {
   maxHp: 100, hurtIframes: 0.6, reviveTime: 4.0, reviveRange: 18, reviveHp: 40,
   melee: { cooldown: 0.38, range: 20, arc: Math.PI * 0.6, damage: 12, knockback: 120 },
@@ -74,7 +77,8 @@ export class Sim {
         continue;
       }
       const base = ENEMIES[e.kind], v = rollVariant(this.seed, spawnKey, e.kind), tr = TRAITS[v.trait];
-      const def = { ...base, hp: Math.round(base.hp * tr.hp), speed: base.speed * tr.speed, armor: tr.armor ?? 0, color: v.tint, vname: v.name, trait: v.trait };
+      // The party is always three (AI companions fill empty seats), so regular enemies are tuned for three.
+      const def = { ...base, hp: Math.round(base.hp * tr.hp * PARTY_SCALE.hp), damage: Math.round((base.damage ?? 0) * PARTY_SCALE.dmg), speed: base.speed * tr.speed, armor: tr.armor ?? 0, color: v.tint, vname: v.name, trait: v.trait };
       this.enemies.set(id, { id, spawnKey, kind: e.kind, def, x: e.x, y: e.y, hp: def.hp, cd: Math.random(), hurtT: 0, kx: 0, ky: 0 });
     }
   }
