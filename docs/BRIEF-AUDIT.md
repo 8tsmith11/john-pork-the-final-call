@@ -27,7 +27,7 @@
 | 19 | Fitting soundtracks | 🟡 | gonman | See #6 |
 | 20 | Moderately difficult for 3 players | ❓ | both | Untested with 3 humans |
 | 21 | Deep, researched lore; twists; arcs | ✅ | | Sealed canon. The script needs a revision pass (task #8) |
-| 22 | Procedural generation, safe | 🟡 | trevor | Bosses, crowds, puzzles, and world rolls ✅. Needs the Route 1 street and loot |
+| 22 | Procedural generation, safe | 🟡 | trevor | Bosses, crowds, puzzles, world rolls ✅. Loot: seeded per-world container searches (LOOT tables) ✅, enemy drops ✅. Still: a procedural street/area |
 | 23 | 3 acts, progress carries over, acts differ by outcome | 🟡 | | Act 1 only |
 | 24 | Save to a local file, modular, versioned | ✅ | | Export/import ✅ |
 | 25 | Plot changes by decisions + RNG; gated items/endings/characters | 🟡 | both | Seed variants + the Sahur boss ✅. Needs more Act 1 gates |

@@ -47,7 +47,7 @@ export const room631 = makeMap({
     { id: 'obj.poster_band', x: 3, y: 0, label: 'Poster', text: 'A band called THE LEGACY SYSTEMS, live at the Black Cat. Trevor has seen them four times. He says the fifth was the one to see.' },
     { id: 'obj.photo_wall', x: 17, y: 0, label: 'Photos', text: 'Printed photos, pinned in a grid. The same yellow raincoat is in most of them. There is a gap in the bottom row, the size of one print.' },
     { id: 'obj.pennant', x: 21, y: 0, label: 'Pennant', text: 'Celeste y blanca, from a match Manuel\'s grandmother took him to. She kept the score in the margin of the programme. She kept everything.' },
-    { id: 'obj.toolbox', x: 20, y: 10, label: 'Toolbox', text: 'Everyone\'s tools, in nobody\'s order. A label on the lid: IF YOU BORROW IT YOU ARE AN ASTER NOOB UNTIL IT COMES BACK.' },
+    { id: 'obj.toolbox', loot: 'tools', x: 20, y: 10, label: 'Toolbox', text: 'Everyone\'s tools, in nobody\'s order. A label on the lid: IF YOU BORROW IT YOU ARE AN ASTER NOOB UNTIL IT COMES BACK.' },
     { id: 'obj.crate', x: 23, y: 10, label: 'Filament crate', text: 'Spools for the fabs. Eleven colours. The pink is nearly gone and none of you remember printing in pink.' },
     { id: 'obj.cables', x: 17, y: 7, label: 'Cables', text: 'Three power leads for three fabs. A fourth runs under the bench and you have never followed it.' },
     // What the apartment knows about him
@@ -79,10 +79,10 @@ export const room631 = makeMap({
     { id: 'obj.table', x: 6, y: 9, label: 'Dining table', text: 'Problem sets, a soldering-burn ring, and a pacifier nobody will explain.' },
     { id: 'obj.stove', x: 9, y: 6, label: 'Stove', text: 'Two burners work. The third one only works if you believe in it.' },
     // Engineering room (east half)
-    { id: 'obj.parts_bins', x: 20, y: 6, label: 'Parts bins', text: 'Forty little drawers labeled in three handwritings. One drawer just says "DO NOT" and has been taped shut.' },
+    { id: 'obj.parts_bins', loot: 'parts', x: 20, y: 6, label: 'Parts bins', text: 'Forty little drawers labeled in three handwritings. One drawer just says "DO NOT" and has been taped shut.' },
     { id: 'obj.lab_board', x: 21, y: 5, label: '245 lab whiteboard', text: 'A half-erased circuit and, in Manuel\'s handwriting: I HATE 245 LAB. Below it, in Trevor\'s: same. Below that, in Michael\'s: she says hi.' },
     { id: 'obj.workbench', x: 21, y: 9, label: 'Workbench', text: 'Calipers, a magnifier lamp, a half-built drone with no rotors, and a cold slice of pizza holding down a schematic.' },
-    { id: 'obj.failed_prints', x: 19, y: 11, label: 'Failed prints bin', text: 'Spaghetti plastic, a warped mate gourd, eleven tiny Pork heads at different stages of being wrong.' },
+    { id: 'obj.failed_prints', loot: 'prints', x: 19, y: 11, label: 'Failed prints bin', text: 'Spaghetti plastic, a warped mate gourd, eleven tiny Pork heads at different stages of being wrong.' },
     { id: 'obj.router', x: 28, y: 6, label: 'Router', text: 'Its lights blink in a pattern that\'s almost regular. Every few minutes it reboots for no reason and comes back with a slightly different name.' },
     { id: 'obj.drill_press', x: 28, y: 10, label: 'Drill press', text: 'Bolted to the floor, which the lease definitely does not allow.' },
     { id: 'obj.pork_flag', x: 26, y: 5, label: 'John Pork flag', text: 'The flag on the engineering-room wall. Contraband since 2071. Someone ironed it once, which is the most domestic thing anyone in 631 has ever done.' },

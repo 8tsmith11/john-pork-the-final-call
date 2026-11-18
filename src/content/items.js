@@ -65,6 +65,18 @@ export const DROPS = {
   boss:    { money: [40, 60], mats: [['item.mat_gel', 100], ['item.mat_circuit', 100], ['item.mat_cell', 100]] },
 };
 
+// Searchable containers (procedural loot, seeded per world: the same save always finds the same
+// things, a new world finds different ones). Each entry: [itemId | 'money', weight, min, max].
+// A container rolls `rolls` times and is picked clean after.
+export const LOOT = {
+  tools:   { rolls: 2, table: [['item.mat_scrap', 40, 1, 3], ['item.mat_wire', 30, 1, 2], ['item.box_cutter', 4, 1, 1], ['money', 26, 2, 6]] },
+  parts:   { rolls: 2, table: [['item.mat_circuit', 35, 1, 1], ['item.mat_wire', 35, 1, 3], ['item.mat_cell', 15, 1, 1], ['item.mat_glass', 15, 1, 2]] },
+  prints:  { rolls: 1, table: [['item.mat_plastic', 80, 2, 4], ['item.mat_scrap', 20, 1, 1]] },
+  trash:   { rolls: 2, table: [['item.mat_glass', 30, 1, 3], ['item.mat_circuit', 15, 1, 1], ['item.mat_plastic', 25, 1, 2], ['money', 25, 1, 5], ['item.relic_coin', 5, 1, 1]] },
+  lost:    { rolls: 2, table: [['item.mat_cloth', 45, 1, 2], ['money', 35, 3, 9], ['item.crab_chips', 15, 1, 1], ['item.relic_figure', 5, 1, 1]] },
+  tackle:  { rolls: 2, table: [['item.mat_wire', 35, 1, 2], ['item.energy_bar', 25, 1, 1], ['money', 25, 2, 8], ['item.ozzie_lure', 3, 1, 1], ['item.mat_scrap', 12, 1, 2]] },
+};
+
 // Shops: what's on the shelf and for how much ($).
 export const SHOPS = {
   scooters: { title: 'DELROY\'S WHEELS', lines: ['Used scooters, fair prices, no questions.', 'Batteries charged while you wait. Mostly.'],

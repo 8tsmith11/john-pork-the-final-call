@@ -4,14 +4,14 @@ import { InputReader } from '../../engine/input.js';
 import { newSave } from '../../engine/save/schema.js';
 import { autosave, loadAutosave, exportFile } from '../../engine/save/storage.js';
 import { rollWorld } from '../../engine/worldRolls.js';
-import { newSeed } from '../../engine/rng.js';
+import { newSeed, Rng } from '../../engine/rng.js';
 import { MAPS, worldPos } from '../../content/maps/index.js';
 import { TILE_COLORS } from '../../content/maps/build.js';
 import { ENEMIES } from '../../content/enemies.js';
 import { GAME_VERSION } from '../../version.js';
 import { loadScene, Conversation, evalCond } from '../../engine/dialogue.js';
 import { babble, setArea, sfx, ring, speak, hush } from '../../audio/audio.js';
-import { DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods } from '../../content/items.js';
+import { LOOT, DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods } from '../../content/items.js';
 import { tileKey } from '../render/tiles.js';
 import { GameMenu, TABS } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
@@ -345,6 +345,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'mate') this._mateBreak();
         if (msg.t === 'use') { this._useWhat = msg.id ?? null; this._use(this._charOf(peer), peer); }
         if (msg.t === 'morph') this._morph(peer);
+        if (msg.t === 'search') { const o = this.map.objects.find((x) => x.id === msg.id && x.loot); if (o) this._search(o, this._charOf(peer)); }
         if (msg.t === 'zip') { const o = this.map.objects.find((x) => x.id === msg.id && x.zip); if (o) this._zip(o); }
         if (msg.t === 'useSlot') { this._useSlot = msg.i | 0; this._use(this._charOf(peer), peer); }
         if (msg.t === 'move' && this.save.party[this._charOf(peer)]) { Inv.moveSlot(this.save.party[this._charOf(peer)], msg.a | 0, msg.b | 0, !!msg.half); this._syncParty(); }
@@ -675,6 +676,28 @@ export class WorldScene extends Phaser.Scene {
       from.forEach(({ p, x, y }, i) => { p.x = x + (x1 + (i - 1) * 10 - x) * e; p.y = y + (y1 - y) * e - Math.sin(Math.PI * k) * 6; p.vx = p.vy = 0; });
       if (k >= 1) { tick.remove(); this._zipping = false; }
     } });
+  }
+
+  // Procedural loot: search a container once; what's inside is seeded by the world seed + object id.
+  _search(o, who = this.character) {
+    if (this.mode === 'client') { this.net.send({ t: 'search', id: o.id }); return; }
+    const key = `loot.${this.map.id}.${o.id}`, base = o.text ?? o.label;
+    if (this.save.flags[key]) return this._say(`${base}\n\nPicked clean.`);
+    const L = LOOT[o.loot]; if (!L) return this._say(base);
+    this._flag(key, true);
+    const rng = new Rng(`${this.save.world.seed}:${key}`);
+    const total = L.table.reduce((t, e) => t + e[1], 0), got = new Map();
+    for (let i = 0; i < L.rolls; i++) {
+      let r = rng.next() * total; const [id, , lo, hi] = L.table.find((e) => (r -= e[1]) < 0) ?? L.table[0];
+      got.set(id, (got.get(id) ?? 0) + lo + Math.floor(rng.next() * (hi - lo + 1)));
+    }
+    const c = this.save.party[who], parts = [];
+    for (const [id, n] of got) {
+      if (id === 'money') { this.save.world.money = (this.save.world.money ?? 0) + n; parts.push(`$${n}`); }
+      else { Inv.add(c, id, n); parts.push(`${ITEMS[id]?.name ?? id}${n > 1 ? ' ×' + n : ''}`); }
+    }
+    this._partyDirty = true; this._syncParty?.(); sfx('pickup');
+    this._say(`${base}\n\nYou find: ${parts.join(', ')}.`);
   }
 
   // ---------- quests (src/content/quests.js) ----------
@@ -1289,6 +1312,7 @@ export class WorldScene extends Phaser.Scene {
     if (this._questInteract(near)) return;
     if (near.npc && this._sayLater(near)) return;
     if (near.zip) { this._zip(near); return; }
+    if (near.loot) { this._search(near); return; }
     if (near.grant) {
       if (this.save.flags[near.grantFlag ?? `got.${near.id}`]) { this._say(near.doneText ?? near.text ?? ''); return; }
       this._flag(near.grantFlag ?? `got.${near.id}`, true); this._grant(near.grant); this._say(near.text ?? ''); return;

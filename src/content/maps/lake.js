@@ -61,6 +61,8 @@ export const lake = makeMap({
       { if: 'q.lantern.given', text: '"Wrote it down twice," Ozzie says, "in case the first one doesn\'t take." His eyes are back on the water. The notebook is open on his knee at the same page.' },
       { if: 'q.lantern.given && act1.complete', text: 'Ozzie offers you the second rod without a word. The two of you fish for a while. Nothing bites.' },
     ], text: 'An old man at the end of the pier with two rods, a bucket, and a notebook full of tally marks. He doesn\'t look up. "You\'re scaring them. Sit or go."' },
+    { id: 'obj.tackle_box', art: 'obj.toolbox', x: 39, y: 34, label: 'Tackle box', loot: 'tackle', text: 'A tackle box left open on the bench end of the pier, lures in neat rows. Ozzie\'s spare.' },
+    { id: 'obj.marsh_debris', art: 'obj.crate', x: 26, y: 35, label: 'Washed-up crate', loot: 'trash', text: 'A crate the marsh has been working on for a while. The label says PERISHABLE.' },
     // The east pier
     { id: 'obj.east_pier_sign', art: 'obj.board', x: 61, y: 19, label: 'Pier rules', text: 'NO DIVING. NO NETS. CATCH AND RELEASE.\nAll three have been crossed out, and under them in marker: TAKE WHAT YOU NEED.' },
     // The boathouse

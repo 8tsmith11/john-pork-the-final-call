@@ -122,7 +122,7 @@ export const metroPlaza = makeMap({
     { id: 'obj.shop_corner', art: 'obj.vending', x: 77, y: 9, label: 'Corner store', action: 'shop', shop: 'corner', light: 0.6 },
     { id: 'obj.shop_window', art: 'obj.lobby_monitor', x: 66, y: 25, label: 'Shop window', light: 0.6, text: 'A window of dead screens, price tags still on. One comes on as you pass.\n\nA street camera, this street. A big man in a long coat, from behind, walking north with a bad knee. The timestamp is now.\n\nYou look north. Nobody.' },
     // The alley
-    { id: 'obj.dumpster', x: 81, y: 12, label: 'Dumpster', text: 'Abatement tags on the lid. Inside, a hundred phones, screens up, all showing 19:01.' },
+    { id: 'obj.dumpster', loot: 'trash', x: 81, y: 12, label: 'Dumpster', text: 'Abatement tags on the lid. Inside, a hundred phones, screens up, all showing 19:01.' },
     { id: 'obj.alley_graffiti', art: 'obj.graffiti', x: 80, y: 20, label: 'Scratched into the brick', text: 'FOR A GOOD TIME DIAL 6969. Under it, in a different hand: he does pick up.' },
     { id: 'obj.alley_door', art: 'obj.door', x: 79, y: 5, label: 'Steel door', text: 'No handle on this side. A paper sign: DELIVERIES RING TWICE. There is no bell.' },
     // The campus edge
