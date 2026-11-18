@@ -106,13 +106,13 @@ export class Sim {
   /** Electric scooter: fast travel outdoors. Can't fight or dash while riding; a hit knocks you off. */
   toggleScooter(id, allowed) {
     const p = this.players.get(id); if (!p || p.downed) return false;
-    if (p.riding) { p.riding = false; this.events.push({ t: 'scooter', id, on: false }); return true; }
+    if (p.riding) { p.riding = false; this.emit({ t: 'scooter', id, on: false }); return true; }
     if (!allowed) return false;
-    p.riding = true; p.playing = null; this.events.push({ t: 'scooter', id, on: true }); return true;
+    p.riding = true; p.playing = null; this.emit({ t: 'scooter', id, on: true }); return true;
   }
 
   /** Morph stage 1 (biohack form): stronger and faster, but takes more damage. */
-  toggleMorph(id, allowed) { const p = this.players.get(id); if (p && allowed && !p.downed) { p.morphed = !p.morphed; this.events.push({ t: 'morph', id, on: p.morphed }); } }
+  toggleMorph(id, allowed) { const p = this.players.get(id); if (p && allowed && !p.downed) { p.morphed = !p.morphed; this.emit({ t: 'morph', id, on: p.morphed }); } }
   /**
    * Instruments (D-014). song: 'rock' | 'lullaby' | 'mate', or null to stop. The sound is made on
    * every client from the snapshot; the sim only tracks who is playing and what it does.
