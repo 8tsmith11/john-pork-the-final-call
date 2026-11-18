@@ -43,6 +43,7 @@ export class WorldScene extends Phaser.Scene {
     this._makeUi();
     this._wireNet();
     this._makeDialogueUi();
+    this.input.keyboard.on('keydown-F', () => { if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
     this._showMap(startMap);
     this.ready = true;
     if (!this.save.flags['act1.coldopen.done']) this.startDialogue('cold_open', null, () => this._flag('act1.coldopen.done', true));
@@ -139,6 +140,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'item' && this.save.party[msg.who]) this.save.party[msg.who].inventory.push({ id: `item.${msg.item}`, qty: 1 });
         if (msg.t === 'standing' && msg.faction in this.save.standing) this.save.standing[msg.faction] += Number(msg.n) || 0;
         if (msg.t === 'exit') this._tryExit(this.sim.map.objects.find((o) => o.id === msg.obj));
+        if (msg.t === 'answer') this._answer();
       });
       this.net.on('leave', (peer) => this.sim.removePlayer(peer));
       this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
@@ -200,11 +202,24 @@ export class WorldScene extends Phaser.Scene {
     });
   }
 
+  _answer() {
+    if (this.sim.answerSahur()) {
+      this.save.flags['act1.call.answered'] = true;
+      this.save.flags['act1.boss.defeated'] = true;
+      this._announce('You answer. The drumming stops mid-beat. The tall wooden figure tilts its head, listening to something only it can hear, and walks back into the dark.');
+    }
+  }
+
   _tryExit(obj) {
     if (!obj || obj.action !== 'exit') return;
     if (obj.requiresClear && !this.sim.cleared) return this._announce('Something down here is still moving.');
     const to = MAPS[obj.to];
     if (!to) return this._announce(obj.text);
+    if (to.id === 'platform') {
+      const sahur = Number(this.save.flags['act1.call.declines'] || 0) >= 3;
+      this.sim.bossVariant = sahur ? 'sahur' : 'warden';
+      this.save.flags['act1.boss.kind'] = this.sim.bossVariant;
+    }
     this.sim.setMap(to);
     this.save.world.area = to.id;
     this._announce(obj.text);
@@ -366,14 +381,18 @@ export class WorldScene extends Phaser.Scene {
       this.bossUi.add([this.bossGfx, this.bossName]);
     }
     this.bossUi.setVisible(true);
-    this.bossName.setText(`${e.boss.name}, ${e.boss.ep}${e.boss.ph === 3 ? '  [OVERLOAD]' : ''}`);
+    this.bossName.setText(`${e.boss.name}, ${e.boss.ep}${e.boss.ph === 3 ? '  [OVERLOAD]' : ''}${e.boss.ring ? '\n☎ YOUR PHONE IS RINGING. [F] ANSWER' : ''}`);
     const w = 200, x = W / 2 - w / 2;
+    if (e.boss.sahur) { this.bossGfx.clear().fillStyle(0xa0703c).fillRect(x, 30, w, 4); return; }
     this.bossGfx.clear().fillStyle(0x1c1f33).fillRect(x, 30, w, 4).fillStyle(e.boss.ph === 3 ? 0xd65db1 : 0xf2a6b8).fillRect(x, 30, Math.max(0, e.hp / e.boss.max) * w, 4);
   }
 
   _fx(ev, snap) {
     if (['hit', 'kill', 'shot', 'swing'].includes(ev.t) && (ev.by === this.localId || ev.id === this.localId)) sfx(ev.t);
     if (ev.t === 'hurt' && ev.id === this.localId) sfx('hurt');
+    if (ev.t === 'drum') { this.cameras.main.shake(40, ev.beat % 4 === 0 ? 0.006 : 0.002); sfx('hit'); }
+    if (ev.t === 'boss' && !ev.sahur && this.mode !== 'client') this.save.flags['act1.boss.wardenName'] = ev.name;
+    if (ev.t === 'kill' && ev.boss && this.mode !== 'client') this.save.flags['act1.boss.defeated'] = true;
     if (ev.t === 'kill' && ev.boss && !this._endingPlayed) { this._endingPlayed = true; this.time.delayedCall(900, () => this._playEnding(true)); }
     if (ev.t === 'phase') { this.cameras.main.shake(300, 0.01); this._say(ev.phase === 3 ? 'The Warden overloads. The platform starts rendering wrong.' : 'It changes how it moves.'); }
     if (ev.t === 'tell') { const g = this.add.circle(ev.x, ev.y - 8, 14, 0xd65db1, 0.35).setDepth(6000); this.tweens.add({ targets: g, scale: 2, alpha: 0, duration: 380, onComplete: () => g.destroy() }); }

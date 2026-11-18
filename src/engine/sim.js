@@ -44,6 +44,14 @@ export class Sim {
   spawnEnemies() {
     for (const e of this.map.enemies || []) {
       const id = `e${this._nextId++}`;
+      if (e.kind === 'boss.warden' && this.bossVariant === 'sahur') {
+        // Tung Tung Tung Sahur: cannot be beaten by force. Answering the phone ends it (WorldScene).
+        const def = { name: 'TUNG TUNG TUNG SAHUR', epithet: 'the Watchdog', color: 0xa0703c, radius: 9, hp: 99999, speed: 40, damage: 16,
+          ai: 'sahur', xp: 80, touchCooldown: 0.9, modules: [] };
+        this.enemies.set(id, { id, kind: 'boss.sahur', def, boss: true, sahur: true, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 0.75, cd2: 2, beat: 0, hurtT: 0, kx: 0, ky: 0, dash: 0, root: 0, fightT: 0 });
+        this.events.push({ t: 'boss', name: def.name, epithet: def.epithet, sahur: true });
+        continue;
+      }
       if (e.kind === 'boss.warden') {
         const w = generateWarden(this.seed, Math.max(1, this.players.size));
         const def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
@@ -143,6 +151,7 @@ export class Sim {
   }
 
   _hurtEnemy(e, dmg, kx, ky, by) {
+    if (e.sahur) { dmg = 1; this.events.push({ t: 'thunk', x: e.x, y: e.y }); }
     e.hp -= dmg; e.hurtT = 0.12;
     if (e.boss) { kx *= 0.15; ky *= 0.15; const f = e.hp / e.def.hp; const ph = f < 0.33 ? 3 : f < 0.66 ? 2 : 1;
       if (ph !== e.phase) { e.phase = ph; this.events.push({ t: 'phase', phase: ph }); } }
@@ -175,6 +184,7 @@ export class Sim {
     for (const e of this.enemies.values()) {
       const def = this._def(e);
       e.cd = Math.max(0, e.cd - dt); e.hurtT = Math.max(0, e.hurtT - dt);
+      if (e.sahur) { this._stepSahur(e, def, dt); continue; }
       if (e.boss) { this._stepBoss(e, def, dt); continue; }
       // knockback decays
       if (e.kx || e.ky) { this._moveBody(e, e.kx * dt, e.ky * dt, def.radius); e.kx *= 0.82; e.ky *= 0.82; if (Math.hypot(e.kx, e.ky) < 5) e.kx = e.ky = 0; }
@@ -227,6 +237,34 @@ export class Sim {
     if (e.phase === 3) shoot(aim, 130); // overload: always adds an aimed shot
     e.cd = (e.phase === 3 ? 1.1 : e.phase === 2 ? 1.5 : 2.1);
   }
+
+  // The watchdog fights to a drumbeat: walk, root, lunge, and a pulse every fourth beat.
+  _stepSahur(e, def, dt) {
+    e.fightT += dt; e.cd2 = Math.max(0, e.cd2 - dt);
+    const [target, d] = this._nearestPlayer(e.x, e.y);
+    if (!target) return;
+    const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
+    if (e.dash > 0) { e.dash -= dt; this._moveBody(e, e.dx * 190 * dt, e.dy * 190 * dt, def.radius); }
+    else if (e.root <= 0) this._moveBody(e, ux * def.speed * dt, uy * def.speed * dt, def.radius);
+    if (d < def.radius + 7 && e.cd2 <= 0) { this._hurtPlayer(target, def.damage); e.cd2 = def.touchCooldown; }
+    if (e.cd > 0) return;
+    e.cd = 0.75; e.beat++;
+    this.events.push({ t: 'drum', beat: e.beat });
+    if (e.root > 0) { e.root--; if (e.root === 0) { e.dash = 0.35; e.dx = ux; e.dy = uy; this.events.push({ t: 'tell', x: e.x, y: e.y }); } return; }
+    if (e.beat % 4 === 0) {
+      for (let i = 0; i < 18; i++) { const a = (i / 18) * Math.PI * 2; this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(a) * 70, vy: Math.sin(a) * 70, life: 3.2, dmg: 10, from: 'enemy' }); }
+    } else if (e.beat % 7 === 0) e.root = 2;
+  }
+
+  /** The party answers the phone mid-fight: the Sahur stops, tilts its head, and leaves. */
+  answerSahur() {
+    for (const e of this.enemies.values()) {
+      if (e.sahur && e.fightT > 10) { this.enemies.delete(e.id); this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, xp: 80, boss: true, sahurLeft: true }); return true; }
+    }
+    return false;
+  }
+
+  get sahurRinging() { return [...this.enemies.values()].some((e) => e.sahur && e.fightT > 10); }
 
   _stepShots(dt) {
     const keep = [];
@@ -298,7 +336,7 @@ export class Sim {
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
-        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase } } : {}) })),
+        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, sahur: !!e.sahur, ring: !!e.sahur && e.fightT > 10 } } : {}) })),
       shots: this.shots.map((s) => ({ x: Math.round(s.x), y: Math.round(s.y), f: s.from === 'player' ? 1 : 0 })),
       events: this.events,
     };

@@ -62,9 +62,11 @@ function cmp(a, op, b) {
 export function applyEffects(effects, ctx, sink) {
   for (const eff of effects || []) {
     if (!evalCond(eff.if, ctx)) continue;
-    const parts = `${eff.op} ${eff.arg}`.split(/;\s*/);
+    // "Set `a = 1`, `b`. If the timeout fired..." → ["set a = 1", "set b"]; prose sentences are dropped.
+    const body = `${eff.op} ${eff.arg}`.replace(/`/g, '').split(/\.\s+(?=[A-Z])/)[0];
+    const parts = body.split(/;\s*|,\s*(?:and\s+)?/).map((x, i) => (i === 0 || /^(set|give|standing)\b/i.test(x.trim()) || !/^[\w.\-]+(\s*(=|\+)|$)/.test(x.trim()) ? x : `set ${x}`));
     for (let p of parts) {
-      p = p.replace(/[`*.]+$/g, '').replace(/\(.*?\)/g, '').trim();
+      p = p.replace(/[*.]+$/g, '').replace(/\(.*?\)/g, '').replace(/\s+(true|on)$/i, '').trim();
       let m;
       if ((m = p.match(/^(?:set\s+)?([\w.\-]+)\s*\+\s*(\d+)/i))) sink.flag(m[1], (Number(ctx.flags[m[1]] ?? 0) + +m[2]));
       else if ((m = p.match(/^set\s+([\w.\-]+)(?:\s*=\s*([\w\-]+))?/i))) sink.flag(m[1], m[2] ?? true);
