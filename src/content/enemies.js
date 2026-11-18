@@ -2,13 +2,15 @@
 // these bases plus seeded tables (src/content/rotVillains.js, later).
 export const ENEMIES = {
   'enemy.rotling': {
-    name: 'Rotling', hp: 26, speed: 46, damage: 9, radius: 6, xp: 6,
-    ai: 'chase', touchCooldown: 0.8, color: 0x7fb069,
+    name: 'Rotling', hp: 26, speed: 46, damage: 11, radius: 6, xp: 6,
+    // Circles you with the pack, flashes, then lunges in a straight line (dodge it), then stands open.
+    ai: 'lunge', orbit: 34, windup: 0.45, lungeSpeed: 200, lungeTime: 0.26, recover: 0.55, touchCooldown: 1.1, color: 0x7fb069,
     lore: 'A knot of rotted firmware that found a body in the trash. It still thinks it is a delivery drone.',
   },
   'enemy.spitter': {
     name: 'Glitch Spitter', hp: 20, speed: 30, damage: 7, radius: 6, xp: 8,
-    ai: 'kite', range: 90, fireCooldown: 1.6, shotSpeed: 95, color: 0xb3589c,
+    // Strafes at range, backs off if you close in, telegraphs a 3-shot fan aimed where you're going.
+    ai: 'kite', range: 90, fireCooldown: 2.0, shotSpeed: 105, burst: 3, spread: 0.22, telegraph: 0.4, lead: true, color: 0xb3589c,
     lore: 'It spits corrupted packets. They sting like static and smell like burnt sugar.',
   },
   // D-017 (BagelMeister). Sprites: assets/sprites/bagel_enemies (tools/art/gen_bagel_enemies.py).

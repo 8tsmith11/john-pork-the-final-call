@@ -465,15 +465,51 @@ export class Sim {
         if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) { this._hurtPlayer(target, def.damage); e.cd = def.touchCooldown; }
         continue;
       }
+      if (def.ai === 'lunge') {
+        // Pack fighter: hold an orbit slot around the target, then take a turn (at most 2 at once).
+        e.tgt = target.id; e.st ??= 'stalk'; e.stT = (e.stT ?? 0) - dt;
+        if (e.st === 'stalk') {
+          const slot = ((parseInt(String(e.id).replace(/\D/g, ''), 10) || 0) % 6) / 6 * Math.PI * 2 + this.tick / 400;
+          const ox = target.x + Math.cos(slot) * def.orbit, oy = target.y + Math.sin(slot) * def.orbit;
+          const mx = ox - e.x, my = oy - e.y, ml = Math.hypot(mx, my) || 1;
+          if (e.hurtT <= 0 && ml > 3) this._moveBody(e, (mx / ml) * def.speed * dt, (my / ml) * def.speed * dt, def.radius);
+          let busy = 0;
+          for (const o of this.enemies.values()) if (o !== e && o.tgt === target.id && (o.st === 'windup' || o.st === 'lunge')) busy++;
+          if (d < def.orbit + 16 && e.cd <= 0 && busy < 2 && e.hurtT <= 0) {
+            e.st = 'windup'; e.stT = def.windup; e.dx = ux; e.dy = uy;
+            this.events.push({ t: 'tell', x: e.x, y: e.y });
+          }
+        } else if (e.st === 'windup') {
+          this._moveBody(e, -e.dx * 12 * dt, -e.dy * 12 * dt, def.radius);   // a small crouch back
+          if (e.stT <= 0) { e.st = 'lunge'; e.stT = def.lungeTime; e.hitOnce = false; }
+        } else if (e.st === 'lunge') {
+          this._moveBody(e, e.dx * def.lungeSpeed * dt, e.dy * def.lungeSpeed * dt, def.radius);
+          if (!e.hitOnce && d < def.radius + 7 - (target.mods?.small ?? 0)) { this._hurtPlayer(target, def.damage); e.hitOnce = true; }
+          if (e.stT <= 0) { e.st = 'recover'; e.stT = def.recover; e.cd = def.touchCooldown + Math.random() * 0.6; }
+        } else if (e.st === 'recover') {
+          if (e.stT <= 0) e.st = 'stalk';
+        }
+        continue;
+      }
       if (def.ai === 'chase') {
         if (e.hurtT <= 0) this._moveBody(e, ux * def.speed * dt, uy * def.speed * dt, def.radius);
         if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) { this._hurtPlayer(target, def.damage); e.cd = def.touchCooldown; }
       } else if (def.ai === 'kite') {
-        const dir = d < def.range * 0.7 ? -1 : d > def.range ? 1 : 0;
-        if (e.hurtT <= 0) this._moveBody(e, ux * def.speed * dir * dt, uy * def.speed * dir * dt, def.radius);
-        if (d <= def.range * 1.2 && e.cd <= 0) {
-          e.cd = def.fireCooldown;
-          this.shots.push({ x: e.x, y: e.y - 4, vx: ux * def.shotSpeed, vy: uy * def.shotSpeed, life: 2.2, dmg: def.damage, from: 'enemy' });
+        // Keep the band: back off when you close in, close in when you're far, strafe sideways between.
+        const dir = d < def.range * 0.6 ? -1 : d > def.range ? 1 : 0;
+        const side = ((parseInt(String(e.id).replace(/\D/g, ''), 10) || 0) % 2 ? 1 : -1) * (Math.sin(this.tick / 90) > 0 ? 1 : -1);
+        const sx = dir === 0 ? -uy * side * 0.8 : 0, sy = dir === 0 ? ux * side * 0.8 : 0;
+        if (e.hurtT <= 0 && !(e.aimT > 0)) this._moveBody(e, (ux * dir + sx) * def.speed * dt, (uy * dir + sy) * def.speed * dt, def.radius);
+        if (d <= def.range * 1.2 && e.cd <= 0 && !(e.aimT > 0)) { e.aimT = def.telegraph ?? 0.01; this.events.push({ t: 'tell', x: e.x, y: e.y }); }
+        if (e.aimT > 0 && (e.aimT -= dt) <= 0) {
+          e.aimT = 0; e.cd = def.fireCooldown;
+          // Lead the target: aim where it will be when the shot arrives.
+          const tt = d / def.shotSpeed, px = target.x + (def.lead ? (target.vx ?? 0) * tt : 0), py = target.y + (def.lead ? (target.vy ?? 0) * tt : 0);
+          const base = Math.atan2(py - e.y, px - e.x), n = def.burst ?? 1;
+          for (let i = 0; i < n; i++) {
+            const a = base + (n > 1 ? (i - (n - 1) / 2) * (def.spread ?? 0.2) : 0);
+            this.shots.push({ x: e.x, y: e.y - 4, vx: Math.cos(a) * def.shotSpeed, vy: Math.sin(a) * def.shotSpeed, life: 2.2, dmg: def.damage, from: 'enemy' });
+          }
         }
       }
     }
