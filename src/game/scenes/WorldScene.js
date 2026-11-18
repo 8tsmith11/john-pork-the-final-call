@@ -78,6 +78,7 @@ export class WorldScene extends Phaser.Scene {
     this.vignette = this._makeVignette();
     if (this.mode !== 'client') for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
     this.save.world.money ??= 25;
+    this.save.flags['settings.crudeHumor'] = 'on';   // always on (Trevor); scripts branch on it
     for (const [who, c] of Object.entries(this.save.party)) { Inv.normalize(c); migrateSkills(c, who); }
     this._makeMenu();
     this.input.keyboard.on('keydown-Q', () => { if (this.dlg || this.menu) return; if (this.mode === 'client') this.net.send({ t: 'scooter' }); else this._scooter(this.localId); });
@@ -166,6 +167,7 @@ export class WorldScene extends Phaser.Scene {
 
   // "Him calling you is like getting hacked": the game itself is taken over before the call connects.
   _hackCall(onDone) {
+    this._lastCallAt = this.time.now;
     if (this._hacking) return; this._hacking = true;
     const W = VIEW.w, H = VIEW.h, root = this.add.container(0, 0).setScrollFactor(0).setDepth(9800);
     const noise = this.add.graphics(); root.add(noise);
@@ -262,7 +264,7 @@ export class WorldScene extends Phaser.Scene {
       } else this.dlgWho.setText('');
       this.dlgPortrait.setVisible(false); this.dlgPortraitBg.setVisible(false); this.dlgInitial.setText('');
       this.dlgText.setText('');
-      this.dlgChoices.forEach((t, i) => t.setText(choices[i] ? `${i + 1}. ${choices[i].text}` : '').setVisible(!!choices[i]));
+      this.dlgChoices.forEach((t, i) => t.setText(choices[i] ? `${i + 1}. ${choices[i].text.replace(/\*/g, '')}` : '').setVisible(!!choices[i]));
     } else {
       const line = d.line;
       this.dlgWho.setText(line?.who ? line.who.toUpperCase() : '').setColor('#ffb347');
@@ -306,6 +308,7 @@ export class WorldScene extends Phaser.Scene {
   // Story beats keyed to places (Act 1 MVP wiring; see docs/act1/DESIGN.md).
   _onEnterMap(map) {
     const once = (flag, fn) => { if (!this.save.flags[flag]) { this.save.flags[flag] = true; fn(); } };
+    if (map.id === 'room631' && this.mode !== 'client') this.time.delayedCall(4000, () => this._maybeButtDial());
     if (map.id === 'aster_hall') once('act1.beat.asterEnter', () => this.startDialogue('aster'));
     if (map.id === 'tunnel_1') once('act1.beat.call', () => this._hackCall(() => this.startDialogue('the_call')));
     // A roommate says something on the way in.
@@ -657,6 +660,7 @@ export class WorldScene extends Phaser.Scene {
     const bite = this.time.now + 1500 + Math.random() * 3500;
     this.fishing = { bob, line, bite, window: bite + 650, spot };
     this._toast('Cast. Wait for the bite… [E] to reel when it dips');
+    if (this.mode !== 'client') this.time.delayedCall(9000, () => { if (!this.fishing) this._maybeButtDial(); });
     sfx('swing');
   }
 
@@ -1129,6 +1133,20 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
+  // Pork's butt dial (the_call: butt_dial). Not a hack: an ordinary ringtone, ordinary caller ID.
+  _maybeButtDial(force = false) {
+    const f = this.save.flags;
+    if (f['act1.call.buttDialDone'] || f['act1.beat.buttDial'] || f['act1.call.sahurSummoned']) return;
+    if (!(f['act1.call.answered'] || Number(f['act1.call.declines'] || 0) >= 1)) return;
+    if (this.dlg || this.menu || this._transitioning || this.time.now - (this._lastCallAt ?? -1e9) < 60000) return;
+    const me = this.sim.players.get(this.localId);
+    if (me && [...this.sim.enemies.values()].some((e) => Math.hypot(e.x - me.x, e.y - me.y) < 140)) return;
+    if (!force && Math.random() > 1 / 3) return;
+    f['act1.beat.buttDial'] = true;
+    ring(2); this._toast('Phone: JOHN PORK');
+    this.time.delayedCall(2600, () => this.startDialogue('the_call', 'butt_dial'));
+  }
+
   _handleInteract(me) {
     if (this.dlg || this.menu) { this.hint.setText(''); return; }
     // John Pork calls back. If the party declined, he rings again deeper in the tunnels: once at the
@@ -1142,6 +1160,7 @@ export class WorldScene extends Phaser.Scene {
         return;
       }
     }
+    if (this.mode !== 'client' && this.map.id === 'tunnel_1' && me.x / TILE > 40) this._maybeButtDial(true);
     const inReach = (o) => Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y) <= 34;
     let nearest = null, nd = 34;
     for (const o of this.map.objects) { const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y); if (d <= nd) { nd = d; nearest = o; } }

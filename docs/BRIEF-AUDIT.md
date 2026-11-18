@@ -7,12 +7,12 @@
 | # | The prompt asks for | Status | Owner | Notes |
 |---|---|---|---|---|
 | 1 | Top-down 2D multiplayer adventure RPG, JS, browser | ✅ | | |
-| 2 | Progress can be saved; a few hours to beat | 🟡 | both | Saves ✅. Act 1 runs ~30–45 min now, target ~2 h (Trevor). Quest framework + journal ✅ (2 side quests); needs many more side quests (05-quests) |
+| 2 | Progress can be saved; a few hours to beat | 🟡 | both | Saves ✅. 8 side quests + quest journal ✅, Lake Artemesia (optional area) ✅, economy/inventory/skill trees ✅. Needs pacing measured in a real run toward ~2 h |
 | 3 | 18+ | ✅ | | Crude humor always on |
 | 4 | John Pork: key, very powerful, **shows up here and there** | 🟡 | gonman (script) + trevor | Only appears in person at the end. Add calls, glimpses, and cameos through Act 1 |
 | 5 | Tim Cheese: villain or true hero by ending | 🟡 | | Lore ✅, appears from Act 2 |
 | 6 | Animated pixel art; music; free assets OK | 🟡 | gonman | Walk/idle only. Music: 3 CC0 tracks + soundscapes; apartment and lobby songs being replaced |
-| 7 | Post-AI, coderot, cyberpunk, technofascism | 🟡 | both | Strong in lore, thin in play: needs Continuity presence (checkpoints, drones, notices) in the world |
+| 7 | Post-AI, coderot, cyberpunk, technofascism | 🟡 | both | Cyberpunk layer ✅ (neon, holo ads, drones + searchlights, steam, cables, coloured light). Continuity presence in play still thin (checkpoints, notices) |
 | 8 | Pork jumps between computers, gains a body | 🟡 | | Lore ✅, body in the ending ✅ |
 | 9 | **"Him calling you is like getting hacked"** | ✅ | trevor | The hack takeover: torn scanlines, garbled HUD, an incoming-call screen with his face, a ring, "ANSWERED. You did not press anything." His lines glitch the dialogue box |
 | 10 | Orange balloon, lost, important | ✅ | | Closet + break-in canon |
@@ -41,7 +41,7 @@
 | 33 | Interesting NPC interactions, unexpected things | 🟡 | gonman | Script reactivity exists. The cast has 45 NPCs, mostly not yet placed |
 | 34 | **Randomly created coderot villains** | ✅ | trevor | Boss: seeded name, epithet, modules, phases. Regular enemies: every spawn gets a seeded variant (name, tint, stat tweaks, a trait: fast, armored, splits, leaks rot, blinks). A name tag shows on the nearest one |
 | 35 | Diagonal walk, dodge, skill points | ✅ | | |
-| 36 | **Fishing** | 🟡 | trevor | Built: press E at water (Paint Branch, flooded bay), bite timing, Chesapeake species + glitch-fish + oddities, food heals, fishing log. Lake Artemesia map still to come |
+| 36 | **Fishing** | ✅ | trevor | Fishing at any water (E), bite timing, per-area catch tables incl. Lake Artemesia's lantern bass, fishing log, Ozzie's quest |
 | 37 | Apartment base, Room 631 | ✅ | | Being re-dressed |
 | 38 | Bittersweet, moving, epic fights | 🟡 | gonman | Writing revision |
 | 39 | Large-scale enemy | ❌ | | Act 2 (the Sweeper) |
