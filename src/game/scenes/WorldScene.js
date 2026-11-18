@@ -654,7 +654,7 @@ export class WorldScene extends Phaser.Scene {
         // Solo goes straight through. In co-op the party gathers at the door first.
         if (this.sim.players.size <= 1 || this.sim.waitAtExit(ev.by, ev.id, ev.dx, ev.dy)) { this.sim.clearWaiting(); this._tryExit(exit); }
       }
-      if (ev.t === 'door') sfx('swing');
+      if (ev.t === 'door' || ev.t === 'doorClose') sfx('swing');
       if (ev.t === 'kill') {
         if (ev.key && !this.save.world.killed.includes(ev.key)) this.save.world.killed.push(ev.key);
         this.save.world.scrap = (this.save.world.scrap ?? 0) + (ev.boss ? 10 : 2);

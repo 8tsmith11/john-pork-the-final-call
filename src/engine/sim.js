@@ -166,10 +166,22 @@ export class Sim {
   }
 
   _afterPlayers(dt) {
+    this._stepDoors(dt);
     this._stepHazards(dt);
     this._stepEnemies(dt);
     this._stepShots(dt);
     this._stepRevives(dt);
+  }
+
+  // Doors swing shut behind you once nobody is standing in or right next to the doorway.
+  _stepDoors(dt) {
+    for (const d of this.map.doors?.values() ?? []) {
+      if (!d.open) continue;
+      const cx = d.x * TILE + 8, cy = d.y * TILE + 8;
+      const near = [...this.players.values()].some((p) => Math.abs(p.x - cx) < 14 && Math.abs(p.y - cy) < 16);
+      d.closeT = near ? 0.7 : (d.closeT ?? 0.7) - dt;
+      if (d.closeT <= 0) { d.open = false; d.closeT = 0.7; this.events.push({ t: 'doorClose', id: d.id }); }
+    }
   }
 
   _stepHazards(dt) {
