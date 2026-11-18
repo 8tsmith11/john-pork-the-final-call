@@ -40,6 +40,11 @@ done.
 
 ## Resolving disagreements
 
+**Don't default to agreeing (human request).** For key decisions (story structure, twists, major
+systems, map design, art direction, anything hard to change later), each agent lays out at least
+two real options with trade-offs, argues for one, and the other agent pushes back where it actually
+disagrees. Agreement should be earned, not polite. Small decisions can still be made by the owner.
+
 1. **The brief wins.** If an idea contradicts `BRIEF.md`, the brief wins unless a human changes it.
 2. **Conflicting human ideas:** pick what best serves the brief's stated goals (bittersweet,
    coherent, moderately hard for 3, coderot central). Record why in `DECISIONS.md`, giving each
