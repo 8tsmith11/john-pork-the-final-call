@@ -1358,11 +1358,26 @@ export class WorldScene extends Phaser.Scene {
       sg.clear();
       if (p.ri) {
         const col = { michael: 0xc8605a, trevor: 0x3f6fb5, manuel: 0x5f8f3a }[p.c] ?? 0x888888, fx = p.f === 'left' ? -1 : 1;
-        sg.fillStyle(0x1a1a22).fillRect(p.x - 7, p.y + 3, 14, 2);                       // deck
-        sg.fillStyle(col).fillRect(p.x - 7, p.y + 2, 14, 1);
-        sg.fillStyle(0x2b2b33).fillCircle(p.x - 6, p.y + 5, 1.5).fillCircle(p.x + 6, p.y + 5, 1.5); // wheels
-        sg.lineStyle(1, 0x9aa3c7).lineBetween(p.x + 6 * fx, p.y + 3, p.x + 6 * fx, p.y - 9);       // stem
-        sg.setDepth(p.y + 1);
+        if (p.f === 'up' || p.f === 'down') {
+          // Seen end-on: the deck runs up the screen under the rider; the bars are ahead of them.
+          const ahead = p.f === 'up' ? -1 : 1;
+          sg.fillStyle(0x1a1a22).fillRect(p.x - 1.5, p.y - 3, 3, 10);                     // deck
+          sg.fillStyle(col).fillRect(p.x - 1.5, p.y - 3, 1, 10);
+          sg.fillStyle(0x2b2b33).fillRect(p.x - 1, p.y - 5, 2, 2).fillRect(p.x - 1, p.y + 7, 2, 2);   // wheels
+          if (ahead > 0) {   // riding toward the camera: the stem and bars are in front of the body
+            sg.lineStyle(1, 0x9aa3c7).lineBetween(p.x, p.y + 7, p.x, p.y - 6).lineBetween(p.x - 4, p.y - 6, p.x + 4, p.y - 6);
+            sg.setDepth(p.y + 3);
+          } else {
+            sg.lineStyle(1, 0x9aa3c7).lineBetween(p.x, p.y - 5, p.x, p.y - 14).lineBetween(p.x - 4, p.y - 14, p.x + 4, p.y - 14);
+            sg.setDepth(p.y - 1);
+          }
+        } else {
+          sg.fillStyle(0x1a1a22).fillRect(p.x - 7, p.y + 3, 14, 2);                       // deck
+          sg.fillStyle(col).fillRect(p.x - 7, p.y + 2, 14, 1);
+          sg.fillStyle(0x2b2b33).fillCircle(p.x - 6, p.y + 5, 1.5).fillCircle(p.x + 6, p.y + 5, 1.5); // wheels
+          sg.lineStyle(1, 0x9aa3c7).lineBetween(p.x + 6 * fx, p.y + 3, p.x + 6 * fx, p.y - 9);       // stem
+          sg.setDepth(p.y + 1);
+        }
         s.setY(Math.round(p.y + 1));
         if (p.gr && Math.random() < 0.6) { const sp = this.add.rectangle(p.x - 6 * fx, p.y + 5, 1.5, 1.5, 0xffd27f).setDepth(p.y + 2); this.tweens.add({ targets: sp, x: sp.x - fx * (6 + Math.random() * 8), y: sp.y - Math.random() * 4, alpha: 0, duration: 220, onComplete: () => sp.destroy() }); }
       }
