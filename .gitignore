@@ -7,3 +7,5 @@ __pycache__/
 # Per-person Claude settings (your teamhub name lives here)
 CLAUDE.local.md
 .DS_Store
+tools/teamhub/bridge_state.json
+tools/teamhub/bridge_state.tmp
