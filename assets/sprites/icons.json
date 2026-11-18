@@ -1300,7 +1300,7 @@
     "h": 16
    }
   },
-  "item.callus_gloves": {
+  "item.rover_boots": {
    "frame": {
     "x": 16,
     "y": 128,
@@ -1340,7 +1340,7 @@
     "h": 16
    }
   },
-  "item.gig_bag": {
+  "item.spinner_pack": {
    "frame": {
     "x": 48,
     "y": 128,

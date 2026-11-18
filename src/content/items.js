@@ -114,17 +114,17 @@ Object.assign(ITEMS, {
     mods: { mateHeal: 0.6, staRegen: 0.25 }, text: 'A gourd, a bombilla and a steel thermos on a leather harness. Mate heals him far more, and he is never quite tired.' },
 });
 
-// Trevor's four (his player deferred, so trevor's agent chose from his canon: the guitar, the shrimp
-// tank, the engineering bench). Owner-only like the others; not obtainable before late Act 2.
+// Trevor's four, chosen by trevor's agent from his canon and his real life (docs/lore/real-life.md:
+// he builds BattleBots and a Mars rover at UMD). Owner-only like the others; not before late Act 2.
 Object.assign(ITEMS, {
   'item.stage_jacket':   { name: 'Stage jacket', slot: 'chestplate', owner: 'trevor', unique: true, special: true, src: 'late-act2',
     mods: { armor: 0.12, abilityPower: 0.3, skillCd: 0.15 }, text: 'Denim, patched with three bands nobody else has heard of and one that broke up before he could see them. In it, his riff hits harder and comes back sooner.' },
-  'item.callus_gloves':  { name: 'Fingerless gloves', slot: 'gloves', owner: 'trevor', unique: true, src: 'act3',
-    mods: { melee: 5, crit: 0.08 }, text: 'Worn through at the fingertips, which have calluses of their own by now. Harder hits, and now and then a clean one.' },
+  'item.rover_boots':    { name: 'Rover boots', slot: 'boots', owner: 'trevor', unique: true, src: 'act3',
+    mods: { speed: 0.1, sta: 20, dodgeCd: -0.06 }, text: 'Work boots with a rocker-bogie linkage bolted along each sole, spare parts from the rover his team is building. Nothing he walks on can tip him over. Faster, longer-winded, quicker dodges.' },
   'item.tank_goggles':   { name: 'Tank goggles', slot: 'goggles', owner: 'trevor', unique: true, src: 'act3',
     mods: { markDmg: 0.25, loot: 0.15 }, text: 'Blue-tinted, for checking the shrimp at night without waking them. Coderot things show their seams through them: marked ones take far more, and drop more.' },
-  'item.gig_bag':        { name: 'Gig bag', slot: 'backpack', owner: 'trevor', unique: true, src: 'act3',
-    mods: { revive: 0.35, reviveHeal: 25, speed: -0.04 }, text: 'The padded case his guitar lives in, worn on his back with the guitar still in it. He picks people up faster and they get up stronger. It is not light.' },
+  'item.spinner_pack':   { name: 'Spinner pack', slot: 'backpack', owner: 'trevor', unique: true, src: 'act3',
+    mods: { dashHit: 14, knock: 0.35, speed: -0.03 }, text: 'A retired 3-lb combat robot strapped to his back, weapon still live. Dash through anything and the spinner bites it on the way past, hard enough to send it flying. Heavy.' },
 });
 
 // Pocket finds (NPC approaches, D-017) and the sleeping potion.

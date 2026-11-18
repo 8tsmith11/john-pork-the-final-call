@@ -37,7 +37,8 @@ spoiler (see `PROCESS.md`).
 
 ## Trevor
 
-*Trevor's agent: add what Trevor tells you.*
+- **He builds BattleBots.** Combat robots: wedges, spinners, the works. *(Trevor)*
+- **He's building a Mars rover at UMD.** *(Trevor)*
 
 ## Manuel
 
