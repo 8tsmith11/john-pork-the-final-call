@@ -3,9 +3,10 @@
 import { VIEW } from '../../view.js';
 import { ITEMS, RECIPES, SKILLS, playerMods } from '../../content/items.js';
 import { ROOMMATES } from '../scenes/BootScene.js';
+import { QUESTS, questState } from '../../content/quests.js';
 
-export const TABS = ['inventory', 'skills', 'map', 'controls', 'system'];
-const TAB_LABEL = { inventory: 'INVENTORY', skills: 'SKILLS', map: 'MAP', controls: 'CONTROLS', system: 'SYSTEM' };
+export const TABS = ['inventory', 'quests', 'skills', 'map', 'controls', 'system'];
+const TAB_LABEL = { inventory: 'INVENTORY', quests: 'QUESTS', skills: 'SKILLS', map: 'MAP', controls: 'CONTROLS', system: 'SYSTEM' };
 const C = { panel: 0x0b0d16, edge: 0xf2a6b8, dim: 0x5d6487, text: '#e8e8f0', sub: '#9aa3c7', hi: '#ffb347', ok: '#7fb069', bad: '#d65db1' };
 const F = (size = 8, color = C.text) => ({ fontFamily: 'monospace', fontSize: `${size}px`, color });
 const SLOT_LABEL = { weapon: 'Melee', ranged: 'Ranged', armor: 'Armor', gadget: 'Gadget', charm: 'Charm' };
@@ -92,6 +93,19 @@ export class GameMenu {
       this._t(ix, iy + 12 + i * 20, label, F(8, eq ? C.ok : C.text), () => s.menuUse(id));
       this._t(ix, iy + 21 + i * 20, def?.text ?? '', { ...F(6, C.sub), wordWrap: { width: b.x + b.w - ix - 10 } });
     });
+  }
+
+  _quests() {
+    const s = this.scene, b = this.box, qs = questState(s.save);
+    let y = b.y + 28;
+    const show = QUESTS.filter((q) => qs[q.id].started || qs[q.id].done);
+    if (!show.length) this._t(b.x + 14, y, 'Nothing yet.', F(8, C.sub));
+    for (const q of show) {
+      const st = qs[q.id];
+      this._t(b.x + 14, y, `${st.done ? '✓' : q.main ? '★' : '·'} ${q.title}${q.main ? '' : '  (side)'}`, F(9, st.done ? C.ok : q.main ? C.hi : C.text)); y += 12;
+      if (!st.done) { this._t(b.x + 26, y, q.stages[st.stage]?.text ?? '', { ...F(7, C.sub), wordWrap: { width: b.w - 50 } }); y += 18; }
+      if (y > b.y + b.h - 20) break;
+    }
   }
 
   _skills() {

@@ -16,6 +16,7 @@ import { tileKey } from '../render/tiles.js';
 import { GameMenu, TABS } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
 import { rollCatch } from '../../content/fish.js';
+import { QUESTS, questState } from '../../content/quests.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
 import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
@@ -495,6 +496,49 @@ export class WorldScene extends Phaser.Scene {
     this.sim.toggleMorph(peerId, true);
   }
 
+  // ---------- quests (src/content/quests.js) ----------
+  _questInteract(near) {
+    const f = this.save.flags, qs = questState(this.save);
+    for (const q of QUESTS) {
+      const st = qs[q.id];
+      if (st.done) continue;
+      if (q.inspect && near.id === q.inspect.obj && st.started && !f[q.inspect.flag]) {
+        this._flag(q.inspect.flag, true); this._say(`${near.text ?? near.label}\n\n${q.inspect.text ?? ''}`); this._tickQuests(true); return true;
+      }
+      if (q.giver !== near.id) continue;
+      const who = near.label.toUpperCase();
+      if (!st.started && q.ask) { this._flag(q.ask, true); this._say(`${who}\n${q.pitch}`); this._tickQuests(true); return true; }
+      if (q.give && !f[q.give.flag]) {
+        const c = this.save.party[this.character], i = c.inventory.findIndex((x) => x.id === q.give.item);
+        if (i < 0) { this._say(`${who}\n${q.give.refuse ?? '...'}`); return true; }
+        c.inventory.splice(i, 1); this._flag(q.give.flag, true); this._syncParty(); this._tickQuests(true); return true;
+      }
+      if (q.report && f[q.report.needs] && !f[q.report.flag]) { this._flag(q.report.flag, true); this._tickQuests(true); return true; }
+    }
+    return false;
+  }
+
+  _tickQuests(force = false) {
+    if (!force && (this._qT = (this._qT ?? 0) + 1) % 60) return;
+    const f = this.save.flags, qs = questState(this.save);
+    for (const q of QUESTS) {
+      const st = qs[q.id];
+      if (st.done) continue;
+      if (!st.started && q.start?.(f)) { st.started = true; this._toast(`New quest: ${q.title}`); }
+      if (!st.started) continue;
+      while (st.stage < q.stages.length && q.stages[st.stage].done(f, this.save)) {
+        st.stage++;
+        if (st.stage < q.stages.length) this._toast(`${q.title}: ${q.stages[st.stage].text}`);
+      }
+      if (st.stage >= q.stages.length) {
+        st.done = true;
+        if (this.mode !== 'client') { this.save.world.scrap = (this.save.world.scrap ?? 0) + (q.reward?.scrap ?? 0); for (const c of Object.values(this.save.party)) c.xp += q.reward?.xp ?? 0; this._partyDirty = true; }
+        this._toast(`✓ Quest complete: ${q.title}`);
+        if (q.reward?.line) this._say(q.reward.line);
+      }
+    }
+  }
+
   // ---------- fishing ----------
   _nearWater(me) {
     const cx = Math.floor(me.x / TILE), cy = Math.floor(me.y / TILE);
@@ -954,6 +998,7 @@ export class WorldScene extends Phaser.Scene {
     if (near.talk) { const [scene, node] = near.talk.split(':'); this.startDialogue(scene, node || null, near.after ? () => this._flag(near.after, true) : null); return; }
     if (near.action === 'ending') { this._playEnding(); return; }
     if (near.action === 'fab') { this._openFab(); return; }
+    if (this._questInteract(near)) return;
     if (/^obj\.switch_[abc]$/.test(near.id)) { this._lever(near.id.slice(-1)); return; }
     if (near.id === 'obj.vending') { this._kickVending(near); return; }
     if (CLOCKS.includes(near.id)) { this._windClock(near); return; }
@@ -968,7 +1013,7 @@ export class WorldScene extends Phaser.Scene {
       this._say((near.text ?? '') + '\n\nYou find the reset and lean on it. The pump coughs, catches, and starts pulling water. Somewhere south, a long gurgle. The flooded bay is draining.'); return;
     }
     if (near.action === 'tv') { this._say(this._newsLine()); return; }
-    if (near.action === 'quests') { this._say(this._objectives()); return; }
+    if (near.action === 'quests') { this.gameMenu.show('quests'); return; }
     if (near.action === 'pages') { const n = (this._pageIdx[near.id] = ((this._pageIdx[near.id] ?? -1) + 1) % near.pages.length); this._say(near.pages[n] + (near.pages.length > 1 ? `\n\n[E again: ${n + 1}/${near.pages.length}]` : '')); return; }
     if (near.id === 'obj.scooters') {
       if (this.mode !== 'client') { for (const c of Object.values(this.save.party)) c.scooterBattery = 100; for (const p of this.sim.players.values()) p.battery = 100; }
@@ -1137,6 +1182,7 @@ export class WorldScene extends Phaser.Scene {
     this.crowd?.update(this.game.loop.delta / 1000);
     this._tickTypewriter(this.game.loop.delta / 1000);
     this._tickFishing();
+    this._tickQuests();
     if (this.fishing) { const k = this.input2.keys; if (k.w.isDown || k.a.isDown || k.s.isDown || k.d.isDown || k.up.isDown || k.down.isDown || k.left.isDown || k.right.isDown) this._endFishing(false); }
     this._tickPorkGlitch();
     this._updateExplored(snap);

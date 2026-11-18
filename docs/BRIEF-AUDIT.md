@@ -7,7 +7,7 @@
 | # | The prompt asks for | Status | Owner | Notes |
 |---|---|---|---|---|
 | 1 | Top-down 2D multiplayer adventure RPG, JS, browser | ✅ | | |
-| 2 | Progress can be saved; a few hours to beat | 🟡 | both | Saves ✅. Act 1 runs ~30–45 min now, target ~2 h (Trevor) |
+| 2 | Progress can be saved; a few hours to beat | 🟡 | both | Saves ✅. Act 1 runs ~30–45 min now, target ~2 h (Trevor). Quest framework + journal ✅ (2 side quests); needs many more side quests (05-quests) |
 | 3 | 18+ | ✅ | | Crude humor always on |
 | 4 | John Pork: key, very powerful, **shows up here and there** | 🟡 | gonman (script) + trevor | Only appears in person at the end. Add calls, glimpses, and cameos through Act 1 |
 | 5 | Tim Cheese: villain or true hero by ending | 🟡 | | Lore ✅, appears from Act 2 |
