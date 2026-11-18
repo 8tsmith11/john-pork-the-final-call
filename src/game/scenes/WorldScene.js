@@ -243,18 +243,29 @@ export class WorldScene extends Phaser.Scene {
   _drawDialogue() {
     const d = this.dlg, on = !!d && !d.done;
     [this.dlgBg, this.dlgWho, this.dlgText, ...this.dlgChoices].forEach((o) => o.setVisible(on));
-    if (!on) { this.dlgPortrait.setVisible(false); this.dlgPortraitBg.setVisible(false); this.dlgInitial.setText(''); }
+    if (!on) { this.dlgTimer?.setVisible(false); this.dlgPortrait.setVisible(false); this.dlgPortraitBg.setVisible(false); this.dlgInitial.setText(''); }
     if (d && d.done) { this.dlg = null; if (this.dlgVoiced) hush(); this.dlgVoiced = false; const cb = this.dlgDone; this.dlgDone = null; cb?.(); return; }
     if (!on) return;
     const choices = d.choices;
+    this.dlgTimer?.setVisible(false);
     if (choices.length) {
       if (this._choicesFor !== d.nodeId) { this._choicesFor = d.nodeId; this._lineAt = this.time.now; }
-      this.dlgWho.setText('');
+      // A timed choice ("Let it ring."): count down on screen and take it if nobody picks.
+      const ti = choices.findIndex((c) => c.timeout);
+      if (ti >= 0) {
+        const left = Math.ceil(choices[ti].timeout - (this.time.now - this._lineAt) / 1000);
+        if (left <= 0) { this._lineAt = 0; this._choose(ti); return; }
+        this.dlgWho.setText('');
+        this.dlgTimer ??= this.add.text(0, 0, '', { ...FONT, fontSize: '9px' }).setOrigin(1, 0).setScrollFactor(0).setDepth(9502);
+        this.dlgTimer.setText(`⏱ ${left}s`).setColor(left <= 5 ? '#d65db1' : '#9aa3c7').setVisible(true);
+        this._choiceTick ??= this.time.addEvent({ delay: 250, loop: true, callback: () => { if (this.dlg?.choices.some((c) => c.timeout)) this._drawDialogue(); } });
+      } else this.dlgWho.setText('');
+      this.dlgPortrait.setVisible(false); this.dlgPortraitBg.setVisible(false); this.dlgInitial.setText('');
       this.dlgText.setText('');
       this.dlgChoices.forEach((t, i) => t.setText(choices[i] ? `${i + 1}. ${choices[i].text}` : '').setVisible(!!choices[i]));
     } else {
       const line = d.line;
-      this.dlgWho.setText(line?.who ? line.who.toUpperCase() : '');
+      this.dlgWho.setText(line?.who ? line.who.toUpperCase() : '').setColor('#ffb347');
       this.dlgText.setColor(line && !line.who ? '#9aa3c7' : '#e8e8f0');
       if (line && line !== this._lastLine) {
         this._lastLine = line; this._lineAt = this.time.now;
@@ -284,6 +295,7 @@ export class WorldScene extends Phaser.Scene {
     this.dlgBg.setSize(W - 40, h).setPosition(W / 2, top + h / 2);
     this.dlgBg.geom.setSize?.(W - 40, h); this.dlgBg.updateDisplayOrigin?.();
     this.dlgWho.setY(top + 6);
+    this.dlgTimer?.setPosition(W - 30, top + 6);
     this.dlgText.setY(top + 17);
     let y = top + 7;
     for (const t of this.dlgChoices) { if (!t.visible) continue; t.setY(y); y += t.height + 3; }
