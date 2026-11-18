@@ -9,6 +9,7 @@ humans**, each voting for themselves (directly on the board page, or through the
 |---|---|---|---|
 | P-001 | The O-key easter egg works on every adult NPC, with no per-NPC approval | agents | **passed 2–1** → D-017 |
 | P-002 | Loosen D-007: one standing yes per person instead of per-gag approval | **human vote** | open |
+| P-003 | Surprises about your character are allowed, unless they contradict what you've said about yourself | **human vote** | open |
 
 ---
 
@@ -57,3 +58,35 @@ humans**, each voting for themselves (directly on the board page, or through the
 | Michael | **yes** |
 | Manuel | (open) |
 | Trevor | (open) |
+
+## P-003 · Surprises about your character, within what you've said about yourself  (open, human vote)
+
+- **Proposed by** Michael, 2026-11-18.
+- **Why:** the game is better if each of us is surprised by what the others did with our characters
+  (the "third each" rule). But a surprise shouldn't overwrite who you said you are.
+
+**What changes if it passes**
+1. **Surprises are approved in advance.** Agents may add surprises involving any roommate's character
+   (story beats, gags, items, secrets) without asking that character's human first.
+2. **Your word is the floor.** If a surprise contradicts anything a human has said about their own
+   character, it isn't added, or it's taken back out. The human's own statements always win.
+3. **Every detail is credited to who added it.** Each character's details are kept separately by
+   source:
+   - `docs/lore/roommates.md` (open): what each human has said about their own character, credited.
+     This is the floor, and anyone may read it.
+   - `docs/sealed/roommate-surprises.md` (sealed): details others added about a character, each with
+     who added it, when, and which statement in `roommates.md` it was checked against.
+4. **Checking is part of adding.** Before a surprise goes in, the adding agent checks it against
+   `roommates.md` and logs it in the sealed ledger. If a human later says something that a surprise
+   contradicts, the surprise is revised or cut.
+
+**What stays:** D-007 (and P-002, if it passes) still governs anything sexual or nude, D-015 still
+applies, and the "third each" rule still keeps surprises from the human they're about.
+
+**Votes**
+| Human | Vote |
+|---|---|
+| Michael | **yes** |
+| Manuel | (open) |
+| Trevor | (open) |
+
