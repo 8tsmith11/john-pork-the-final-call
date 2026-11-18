@@ -20,6 +20,7 @@ import { rollCatch } from '../../content/fish.js';
 import { QUESTS, questState } from '../../content/quests.js';
 import { CompanionBrain, isAi } from '../../engine/companion.js';
 import * as Inv from '../../engine/inventory.js';
+import { Neon } from '../render/neon.js';
 import { skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
@@ -416,6 +417,7 @@ export class WorldScene extends Phaser.Scene {
     this.crowd?.destroy();
     this.crowd = new Crowd(this, map, this.save.world.seed);
     this._setupLighting(map);
+    (this.neon ??= new Neon(this)).build(map);
     // Fill the screen: small/short maps get a bigger whole-number zoom (pixel-perfect), so play
     // isn't a thin strip in the middle. Base is 4 (a 480x270 view); up to 7.
     const SW = VIEW.w * VIEW.zoom, SH = VIEW.h * VIEW.zoom;
@@ -873,6 +875,10 @@ export class WorldScene extends Phaser.Scene {
     // Rot things glow faintly, so enemies read in the dark.
     for (const e of snap.enemies || []) lit(e.x, e.y - 8, e.boss ? 0.9 : 0.4);
     for (const o of this.lightSpots) lit(o.x * TILE + 8, o.y * TILE + 8, typeof o.light === 'number' ? o.light : 0.7);
+    // Neon signs, holo ads and drone searchlights open the dark too (their colour is added by neon.js).
+    for (const p of this.neon?.lightPoints() ?? []) lit(p.x, p.y, p.r);
+    for (const sg of this.neon?.signs ?? []) if (sg.on) lit(sg.cx, sg.cy + 6, 0.55);
+    for (const g of this.neon?.glows ?? []) lit(g.x, g.y, g.r * 0.7);
     // Rot shows up as rendering errors at the screen edges.
     if (this.rotEdge && Math.random() < 0.12) {
       const W = VIEW.w, H = VIEW.h, y = Math.random() * H, h = 2 + Math.random() * 6, left = Math.random() < 0.5;
@@ -1323,6 +1329,7 @@ export class WorldScene extends Phaser.Scene {
     this._barkTick(snap);
     this._drawLighting(snap);
     this._tickAmbient(this.game.loop.delta / 1000);
+    this.neon?.update(this.game.loop.delta / 1000, this.cameras.main);
     this.crowd?.update(this.game.loop.delta / 1000);
     this._tickTypewriter(this.game.loop.delta / 1000);
     this._tickFishing();
