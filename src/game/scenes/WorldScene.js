@@ -26,7 +26,7 @@ export class WorldScene extends Phaser.Scene {
   async create() {
     this.save = this.passedSave ?? (await loadAutosave().catch(() => null)) ?? this._newGame();
     const startMap = MAPS[this.save.world.area] ?? MAPS.room631;
-    this.sim = new Sim(startMap);
+    this.sim = new Sim(startMap, { seed: this.save.world.seed });
     this.localId = this.mode === 'client' ? this.net.id : 'host';
     this.remoteInputs = new Map();
     this.snapBuf = [];
@@ -185,8 +185,8 @@ export class WorldScene extends Phaser.Scene {
     this.enemySprites.clear();
   }
 
-  async _playEnding() {
-    if (this.mode !== 'client' && !this.sim.cleared) return this._announce('Something down here is still moving.');
+  async _playEnding(fromBoss = false) {
+    if (!fromBoss && this.mode !== 'client' && !this.sim.cleared) return this._announce('Something down here is still moving.');
     this.startDialogue('ending', null, () => {
       this._flag('act1.complete', true);
       const W = this.scale.width, H = this.scale.height;
@@ -338,12 +338,14 @@ export class WorldScene extends Phaser.Scene {
     for (const e of snap.enemies || []) {
       eseen.add(e.id);
       let s = this.enemySprites.get(e.id);
-      const def = ENEMIES[e.k];
-      if (!s) { s = this.add.rectangle(e.x, e.y, def.radius * 2, def.radius * 2 + 2, def.color).setOrigin(0.5, 1); this.enemySprites.set(e.id, s); }
+      const def = e.boss ? { radius: e.boss.r, color: e.boss.c } : ENEMIES[e.k];
+      if (!s) { s = this.add.rectangle(e.x, e.y, def.radius * 2, def.radius * (e.boss ? 3 : 2) + 2, def.color).setOrigin(0.5, 1); this.enemySprites.set(e.id, s); }
       s.setPosition(e.x, e.y + 3).setDepth(e.y).setFillStyle(e.h ? 0xffffff : def.color);
+      if (e.boss) this._bossBar(e);
       s.setScale(1 + Math.sin(this.time.now / 90 + e.x) * 0.06, 1);   // jittery rot wobble
     }
     for (const [id, s] of this.enemySprites) if (!eseen.has(id)) { s.destroy(); this.enemySprites.delete(id); }
+    if (!(snap.enemies || []).some((e) => e.boss)) this.bossUi?.setVisible(false);
 
     this.shotGfx.clear();
     for (const sh of snap.shots || []) this.shotGfx.fillStyle(sh.f ? 0xffd27f : 0xd65db1).fillCircle(sh.x, sh.y, sh.f ? 2 : 2.5);
@@ -352,7 +354,24 @@ export class WorldScene extends Phaser.Scene {
     this._drawHud(snap);
   }
 
+  _bossBar(e) {
+    const W = this.scale.width;
+    if (!this.bossUi) {
+      this.bossUi = this.add.container(0, 0).setScrollFactor(0).setDepth(9100);
+      this.bossName = this.add.text(W / 2, 22, '', { ...FONT, color: '#f2a6b8' }).setOrigin(0.5);
+      this.bossGfx = this.add.graphics();
+      this.bossUi.add([this.bossGfx, this.bossName]);
+    }
+    this.bossUi.setVisible(true);
+    this.bossName.setText(`${e.boss.name}, ${e.boss.ep}${e.boss.ph === 3 ? '  [OVERLOAD]' : ''}`);
+    const w = 200, x = W / 2 - w / 2;
+    this.bossGfx.clear().fillStyle(0x1c1f33).fillRect(x, 30, w, 4).fillStyle(e.boss.ph === 3 ? 0xd65db1 : 0xf2a6b8).fillRect(x, 30, Math.max(0, e.hp / e.boss.max) * w, 4);
+  }
+
   _fx(ev, snap) {
+    if (ev.t === 'kill' && ev.boss && !this._endingPlayed) { this._endingPlayed = true; this.time.delayedCall(900, () => this._playEnding(true)); }
+    if (ev.t === 'phase') { this.cameras.main.shake(300, 0.01); this._say(ev.phase === 3 ? 'The Warden overloads. The platform starts rendering wrong.' : 'It changes how it moves.'); }
+    if (ev.t === 'tell') { const g = this.add.circle(ev.x, ev.y - 8, 14, 0xd65db1, 0.35).setDepth(6000); this.tweens.add({ targets: g, scale: 2, alpha: 0, duration: 380, onComplete: () => g.destroy() }); }
     if (ev.t === 'hit' || ev.t === 'kill') {
       const t = this.add.text(ev.x, ev.y - 14, ev.t === 'kill' ? '✕' : `${ev.dmg}`, { ...FONT, color: ev.t === 'kill' ? '#7fb069' : '#ffd27f' }).setOrigin(0.5).setDepth(6000);
       this.tweens.add({ targets: t, y: t.y - 10, alpha: 0, duration: 450, onComplete: () => t.destroy() });

@@ -70,7 +70,26 @@ export const tunnel1 = makeMap({
   ],
   objects: [
     { id: 'obj.tunnel_up', x: 1, y: 4, label: 'Ladder up', action: 'exit', to: 'metro_plaza', text: 'Back to the plaza.' },
-    { id: 'obj.tunnel_on', x: 48, y: 4, label: 'Toward the platform', action: 'ending', requiresClear: true,
-      text: 'The dead platform.' },
+    { id: 'obj.tunnel_on', x: 48, y: 4, label: 'Toward the platform', action: 'exit', to: 'platform', requiresClear: true,
+      text: 'The tunnel opens onto a platform nobody has used in decades. The drumming stops. Something else is here.' },
   ],
+});
+
+export const platform = makeMap({
+  id: 'platform', name: 'The dead platform beneath College Park',
+  layout: [
+    '##############################',
+    '#::::::::::::::::::::::::::::#',
+    '#::::|::::::::::::::::::|::::#',
+    '#::::::::::::::::::::::::::::#',
+    '#::::::::::::::::::::::::::::#',
+    '#::::::::::::::::::::::::::::#',
+    '#::::|::::::::::::::::::|::::#',
+    '#::::::::::::::::::::::::::::#',
+    '#tttttttttttttttttttttttttttt#',
+    '##############################',
+  ],
+  spawns: [[3, 4], [3, 5], [4, 4]],
+  enemies: [['boss.warden', 20, 4]],
+  objects: [],
 });

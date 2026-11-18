@@ -3,6 +3,7 @@
 
 export const TILE = 16;
 import { ENEMIES } from '../content/enemies.js';
+import { generateWarden } from '../content/rotVillains.js';
 
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.55, iframes: 0.22 };
 export const COMBAT = {
@@ -17,7 +18,8 @@ export function emptyInput() {
 }
 
 export class Sim {
-  constructor(map) {
+  constructor(map, opts = {}) {
+    this.seed = opts.seed ?? 'default';
     this.map = map;          // { w, h, solid(tx, ty) -> bool, spawns: [{x,y}] }
     this.players = new Map(); // id -> player
     this.enemies = new Map(); // id -> enemy
@@ -41,11 +43,20 @@ export class Sim {
 
   spawnEnemies() {
     for (const e of this.map.enemies || []) {
-      const def = ENEMIES[e.kind];
       const id = `e${this._nextId++}`;
+      if (e.kind === 'boss.warden') {
+        const w = generateWarden(this.seed, Math.max(1, this.players.size));
+        const def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
+        this.enemies.set(id, { id, kind: e.kind, def, boss: true, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 2, cd2: 3, hurtT: 0, kx: 0, ky: 0, dash: 0 });
+        this.events.push({ t: 'boss', name: w.name, epithet: w.epithet });
+        continue;
+      }
+      const def = ENEMIES[e.kind];
       this.enemies.set(id, { id, kind: e.kind, x: e.x, y: e.y, hp: def.hp, cd: Math.random(), hurtT: 0, kx: 0, ky: 0 });
     }
   }
+
+  _def(e) { return e.def ?? ENEMIES[e.kind]; }
 
   get cleared() { return this.enemies.size === 0; }
 
@@ -115,7 +126,7 @@ export class Sim {
     this.events.push({ t: 'swing', id: p.id, a: p.aim });
     for (const e of this.enemies.values()) {
       const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
-      const def = ENEMIES[e.kind];
+      const def = this._def(e);
       if (d > m.range + def.radius) continue;
       let da = Math.atan2(dy, dx) - p.aim; da = Math.atan2(Math.sin(da), Math.cos(da));
       if (Math.abs(da) > m.arc / 2 && d > def.radius + 4) continue;
@@ -132,11 +143,14 @@ export class Sim {
   }
 
   _hurtEnemy(e, dmg, kx, ky, by) {
-    e.hp -= dmg; e.hurtT = 0.12; e.kx = kx; e.ky = ky;
+    e.hp -= dmg; e.hurtT = 0.12;
+    if (e.boss) { kx *= 0.15; ky *= 0.15; const f = e.hp / e.def.hp; const ph = f < 0.33 ? 3 : f < 0.66 ? 2 : 1;
+      if (ph !== e.phase) { e.phase = ph; this.events.push({ t: 'phase', phase: ph }); } }
+    e.kx = kx; e.ky = ky;
     this.events.push({ t: 'hit', x: e.x, y: e.y, dmg, target: e.id, by });
     if (e.hp <= 0) {
       this.enemies.delete(e.id);
-      this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: ENEMIES[e.kind].xp });
+      this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss });
     }
   }
 
@@ -159,8 +173,9 @@ export class Sim {
 
   _stepEnemies(dt) {
     for (const e of this.enemies.values()) {
-      const def = ENEMIES[e.kind];
+      const def = this._def(e);
       e.cd = Math.max(0, e.cd - dt); e.hurtT = Math.max(0, e.hurtT - dt);
+      if (e.boss) { this._stepBoss(e, def, dt); continue; }
       // knockback decays
       if (e.kx || e.ky) { this._moveBody(e, e.kx * dt, e.ky * dt, def.radius); e.kx *= 0.82; e.ky *= 0.82; if (Math.hypot(e.kx, e.ky) < 5) e.kx = e.ky = 0; }
       const [target, d] = this._nearestPlayer(e.x, e.y);
@@ -180,6 +195,39 @@ export class Sim {
     }
   }
 
+  // Boss AI: authored phases around seeded behavior modules (src/content/rotVillains.js).
+  _stepBoss(e, def, dt) {
+    e.cd2 = Math.max(0, e.cd2 - dt);
+    if (e.kx || e.ky) { this._moveBody(e, e.kx * dt, e.ky * dt, def.radius); e.kx *= 0.8; e.ky *= 0.8; }
+    const [target, d] = this._nearestPlayer(e.x, e.y);
+    if (!target) return;
+    const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
+    const rage = e.phase === 3 ? 1.6 : e.phase === 2 ? 1.25 : 1;
+    if (e.dash > 0) {
+      e.dash -= dt; this._moveBody(e, e.dx * 210 * dt, e.dy * 210 * dt, def.radius);
+    } else {
+      this._moveBody(e, ux * def.speed * rage * dt, uy * def.speed * rage * dt, def.radius);
+    }
+    if (d < def.radius + 7 && e.cd2 <= 0) { this._hurtPlayer(target, def.damage); e.cd2 = def.touchCooldown; }
+    if (e.cd > 0) return;
+    const mods = e.phase === 1 ? [def.modules[0]] : def.modules;
+    const mod = mods[Math.floor(Math.random() * mods.length)];
+    const shoot = (ang, spd = 85) => this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(ang) * spd * rage, vy: Math.sin(ang) * spd * rage, life: 3, dmg: 9, from: 'enemy' });
+    const aim = Math.atan2(uy, ux);
+    if (mod === 'ring') { const n = e.phase === 3 ? 16 : 12; for (let i = 0; i < n; i++) shoot((i / n) * Math.PI * 2 + this.tick * 0.01); }
+    if (mod === 'spray') { for (let i = -2; i <= 2; i++) shoot(aim + i * 0.18, 110); }
+    if (mod === 'charge') { e.dash = 0.45; e.dx = ux; e.dy = uy; this.events.push({ t: 'tell', x: e.x, y: e.y }); }
+    if (mod === 'summon' && this.enemies.size < 7) {
+      for (let i = 0; i < 2; i++) { const id = `e${this._nextId++}`; this.enemies.set(id, { id, kind: 'enemy.rotling', x: e.x + (i ? 14 : -14), y: e.y + 10, hp: ENEMIES['enemy.rotling'].hp, cd: 1, hurtT: 0, kx: 0, ky: 0 }); }
+    }
+    if (mod === 'blink') {
+      const ang = Math.random() * Math.PI * 2, nx = target.x + Math.cos(ang) * 60, ny = target.y + Math.sin(ang) * 60;
+      if (!this._hitsBox(nx, ny, def.radius, def.radius * 0.7)) { this.events.push({ t: 'blink', x: e.x, y: e.y }); e.x = nx; e.y = ny; }
+    }
+    if (e.phase === 3) shoot(aim, 130); // overload: always adds an aimed shot
+    e.cd = (e.phase === 3 ? 1.1 : e.phase === 2 ? 1.5 : 2.1);
+  }
+
   _stepShots(dt) {
     const keep = [];
     for (const s of this.shots) {
@@ -188,7 +236,7 @@ export class Sim {
       let hit = false;
       if (s.from === 'player') {
         for (const e of this.enemies.values()) {
-          if (Math.hypot(e.x - s.x, e.y - 4 - s.y) < ENEMIES[e.kind].radius + 3) {
+          if (Math.hypot(e.x - s.x, e.y - 4 - s.y) < this._def(e).radius + 3) {
             this._hurtEnemy(e, s.dmg, s.vx * 0.4, s.vy * 0.4, s.owner); hit = true; break;
           }
         }
@@ -249,7 +297,8 @@ export class Sim {
         hp: Math.round(p.hp), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0,
       })),
       map: this.map.id,
-      enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0 })),
+      enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
+        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase } } : {}) })),
       shots: this.shots.map((s) => ({ x: Math.round(s.x), y: Math.round(s.y), f: s.from === 'player' ? 1 : 0 })),
       events: this.events,
     };
