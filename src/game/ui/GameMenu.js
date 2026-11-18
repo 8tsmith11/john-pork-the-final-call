@@ -3,6 +3,7 @@
 import { VIEW } from '../../view.js';
 import { ITEMS, RECIPES, SKILLS, SHOPS, playerMods } from '../../content/items.js';
 import { canPay, count } from '../../engine/inventory.js';
+import { SKILL_TREE, skillOpen } from '../../content/skills.js';
 import { ROOMMATES } from '../scenes/BootScene.js';
 import { QUESTS, questState } from '../../content/quests.js';
 
@@ -26,7 +27,7 @@ export class GameMenu {
     const wasOpen = !!this.tab; this.tab = tab; this.refresh();
     if (!wasOpen) { this.root.setAlpha(0); this.scene.tweens.add({ targets: this.root, alpha: 1, duration: 140 }); }
   }
-  close() { this.held = null; this.hover = null; this.tab = null; this.root.removeAll(true); this.root.setVisible(false); }
+  close() { this.held = null; this.hover = null; this.skillHover = null; this.tab = null; this.root.removeAll(true); this.root.setVisible(false); }
   cycle(dir) { if (!TABS.includes(this.tab)) return; this.show(TABS[(TABS.indexOf(this.tab) + dir + TABS.length) % TABS.length]); }
 
   // ---- helpers ----
@@ -162,15 +163,48 @@ export class GameMenu {
     }
   }
 
-  _skills() {
-    const s = this.scene, who = s.character, c = s.save.party[who], b = this.box;
-    this._t(b.x + 12, b.y + 28, `${ROOMMATES[who].name}: ${c.skillPoints} skill point${c.skillPoints === 1 ? '' : 's'} to spend`, F(8, c.skillPoints ? C.hi : C.sub));
-    (SKILLS[who] || []).forEach((sk, i) => {
-      const r = c.skills[sk.id] ?? 0, y = b.y + 46 + i * 34;
-      const pips = '■'.repeat(r) + '□'.repeat(sk.max - r);
-      this._t(b.x + 12, y, `${sk.name}   ${pips}`, F(9, r >= sk.max ? C.ok : C.text), () => s.menuLearn(sk.id));
-      this._t(b.x + 12, y + 12, sk.text + (r < sk.max && c.skillPoints ? '   · click to learn' : ''), F(7, C.sub));
-    });
+  // Skill tree: three branches of four tiers meeting at a capstone. Hover for details, click to learn.
+  _skills(g) {
+    const s = this.scene, who = s.character, c = s.save.party[who], b = this.box, tree = SKILL_TREE[who];
+    if (!tree) return;
+    const tx = b.x + 10, colW = 92, nodeW = 84, nodeH = 22, rowY = (r) => b.y + 44 + r * 34, colX = (k) => tx + k * colW;
+    const pts = c.skillPoints ?? 0;
+    this._t(b.x + b.w - 10, b.y + 26, pts ? `◆ ${pts} point${pts === 1 ? '' : 's'} to spend` : 'level up for points', F(8, pts ? C.hi : C.sub)).setOrigin(1, 0);
+    tree.branches.forEach((name, k) => this._t(colX(k) + nodeW / 2, b.y + 27, name, F(7, C.sub)).setOrigin(0.5, 0));
+    const pos = (n) => ({ x: colX(n.col), y: rowY(n.row) });
+    for (const n of tree.nodes) for (const r of n.req || []) {
+      const p = tree.nodes.find((x) => x.id === r); if (!p) continue;
+      const a = pos(p), z = pos(n), on = (c.skills[r] ?? 0) > 0;
+      g.lineStyle(1, on ? 0xffb347 : 0x3a4060, on ? 0.9 : 0.8).lineBetween(a.x + nodeW / 2, a.y + nodeH, z.x + nodeW / 2, z.y);
+    }
+    for (const n of tree.nodes) {
+      const { x, y } = pos(n), r = c.skills[n.id] ?? 0, open = skillOpen(who, c, n), maxed = r >= n.max;
+      const canLearn = open && !maxed && pts > 0, cap = n.row === 4;
+      const edge = maxed ? 0x7fb069 : r > 0 ? 0xffb347 : canLearn ? 0xe8e8f0 : 0x3a4060;
+      g.fillStyle(r > 0 ? 0x1f2438 : open ? 0x171a2b : 0x0f111c).fillRoundedRect(x, y, nodeW, nodeH, cap ? 5 : 2);
+      g.lineStyle(cap ? 2 : 1, edge, open ? 1 : 0.7).strokeRoundedRect(x, y, nodeW, nodeH, cap ? 5 : 2);
+      this._t(x + 4, y + 2, n.name, F(n.name.length > 15 ? 6 : 7, open ? (maxed ? C.ok : C.text) : '#4a5175'));
+      this._t(x + 4, y + 12, '■'.repeat(r) + '□'.repeat(n.max - r), F(6, r ? C.hi : '#4a5175'));
+      const z = s.add.zone(x, y, nodeW, nodeH).setOrigin(0).setInteractive({ useHandCursor: canLearn });
+      z.on('pointerover', () => { this.skillHover = n.id; this._skillTip(); });
+      z.on('pointerdown', () => { if (canLearn) s.menuLearn(n.id); });
+      this.root.add(z);
+    }
+    this.skillTip = { x: colX(3) + 4, y: b.y + 44, w: b.x + b.w - colX(3) - 14 };
+    this._skillTip();
+  }
+
+  _skillTip() {
+    this.tip?.forEach((o) => o.destroy()); this.tip = [];
+    const s = this.scene, who = s.character, c = s.save.party[who], t = this.skillTip;
+    const n = SKILL_TREE[who]?.nodes.find((x) => x.id === this.skillHover); if (!n || !t) return;
+    const r = c.skills[n.id] ?? 0, open = skillOpen(who, c, n);
+    const need = (n.req || []).filter((q) => !(c.skills[q] > 0)).map((q) => SKILL_TREE[who].nodes.find((x) => x.id === q)?.name);
+    this.tip.push(this._t(t.x, t.y, n.name, { ...F(9, C.hi), wordWrap: { width: t.w } }));
+    this.tip.push(this._t(t.x, t.y + 12, `rank ${r}/${n.max}`, F(7, r >= n.max ? C.ok : C.sub)));
+    this.tip.push(this._t(t.x, t.y + 24, n.text, { ...F(7, C.text), wordWrap: { width: t.w } }));
+    const foot = r >= n.max ? 'Maxed.' : !open ? `Needs: ${need.join(', ')}` : (c.skillPoints ?? 0) > 0 ? 'Click to learn (1 point).' : 'No points. Level up.';
+    this.tip.push(this._t(t.x, t.y + 92, foot, { ...F(7, !open ? C.bad : C.ok), wordWrap: { width: t.w } }));
   }
 
   _map(g) {
@@ -256,13 +290,13 @@ export class GameMenu {
     shop.stock.forEach((st, i) => {
       const def = ITEMS[st.item], y = b.y + 40 + i * 30, x = b.x + 12;
       const owned = st.once && count(c, st.item) > 0, locked = st.needs && !count(c, st.needs);
-      const can = !owned && !locked && money >= st.price;
+      const price = s.priceFor(s.character, st.price), can = !owned && !locked && money >= price;
       g.fillStyle(can ? 0x1a2030 : 0x121521).fillRoundedRect(x, y, b.w - 24, 26, 2).lineStyle(1, can ? 0xffb347 : C.dim, can ? 0.8 : 0.4).strokeRoundedRect(x, y, b.w - 24, 26, 2);
       g.fillStyle(0x0b0d16).fillRect(x + 3, y + 3, 20, 20);
       this._icon(x + 13, y + 13, st.item);
       this._t(x + 28, y + 3, def.name, F(8, can ? C.text : C.sub));
       this._t(x + 28, y + 14, def.text, { ...F(6, C.sub), wordWrap: { width: b.w - 140 } });
-      const right = owned ? 'owned' : locked ? `needs ${ITEMS[st.needs].name.toLowerCase()}` : `$${st.price}  › BUY`;
+      const right = owned ? 'owned' : locked ? `needs ${ITEMS[st.needs].name.toLowerCase()}` : `${price < st.price ? `($${st.price}) ` : ''}$${price}  › BUY`;
       this._t(x + b.w - 30, y + 8, right, F(8, owned ? C.ok : can ? C.hi : C.bad), can ? () => s.menuBuy(id, i) : null).setOrigin(1, 0);
     });
   }

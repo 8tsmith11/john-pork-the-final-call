@@ -48,7 +48,7 @@ export class Sim {
     let i = 0;
     for (const p of this.players.values()) {
       const sp = arrivals[i++ % arrivals.length];
-      Object.assign(p, { x: sp.x, y: sp.y, vx: 0, vy: 0, dodgeT: 0, downed: false, waitExit: null, riding: map.outdoor ? p.riding : false, hp: Math.max(p.hp, COMBAT.reviveHp) });
+      Object.assign(p, { x: sp.x, y: sp.y, vx: 0, vy: 0, dodgeT: 0, downed: false, swUsed: false, waitExit: null, riding: map.outdoor ? p.riding : false, hp: Math.max(p.hp, COMBAT.reviveHp) });
     }
     this.spawnEnemies();
   }
@@ -143,19 +143,25 @@ export class Sim {
       p.iframes = Math.max(0, p.iframes - dt);
 
       p.staT = Math.max(0, (p.staT ?? 0) - dt);
-      if (p.staT <= 0) p.sta = Math.min(MOVE.stamina, (p.sta ?? MOVE.stamina) + MOVE.staminaRegen * dt);
+      const staMax = MOVE.stamina + (p.mods?.sta ?? 0);
+      if (p.staT <= 0) p.sta = Math.min(staMax, (p.sta ?? staMax) + MOVE.staminaRegen * (1 + (p.mods?.staRegen ?? 0)) * dt);
       if (inp.dodge && !p.riding && p.dodgeT <= 0 && p.dodgeCd <= 0 && p.sta >= MOVE.dashCost) {
         p.sta -= MOVE.dashCost; p.staT = MOVE.regenDelay;
         // Dodge toward movement, or toward the aim if standing still.
         const dx = len > 0.1 ? mx : Math.cos(p.aim), dy = len > 0.1 ? my : Math.sin(p.aim);
         const dl = Math.hypot(dx, dy) || 1;
         p.dodgeDx = dx / dl; p.dodgeDy = dy / dl;
+        p.dashHits = new Set();
         p.dodgeT = MOVE.dodgeTime; p.dodgeCd = Math.max(0.2, MOVE.dodgeCooldown + (p.mods?.dodgeCd ?? 0)); p.iframes = MOVE.iframes;
       }
 
       if (p.dodgeT > 0) {
         p.dodgeT -= dt;
         p.vx = p.dodgeDx * MOVE.dodgeSpeed; p.vy = p.dodgeDy * MOVE.dodgeSpeed;
+        if (p.mods?.dashHit) for (const e of this.enemies.values()) {
+          if (p.dashHits?.has(e.id) || Math.hypot(e.x - p.x, e.y - p.y) > 12 + this._def(e).radius) continue;
+          p.dashHits?.add(e.id); this._hurtEnemy(e, p.mods.dashHit, p.dodgeDx * 160, p.dodgeDy * 160, p.id);
+        }
       } else {
         if (p.riding) {
           // Scooter: faster, with a little momentum so it drifts into turns.
@@ -167,7 +173,7 @@ export class Sim {
           p.vx += (mx * top - p.vx) * Math.min(1, acc * dt); p.vy += (my * top - p.vy) * Math.min(1, acc * dt);
           if (Math.hypot(p.vx, p.vy) > 2) { p.battery = Math.max(0, (p.battery ?? 100) - (p.hicap ? 1.1 : 2.2) * dt); if (p.battery <= 0) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, dead: true }); } }
         } else {
-          const spd = MOVE.speed * (p.morphed ? 1.15 : 1);
+          const spd = MOVE.speed * (p.morphed ? 1.15 : 1) * (1 + (p.mods?.speed ?? 0));
           p.vx = mx * spd; p.vy = my * spd;
         }
       }
@@ -228,22 +234,28 @@ export class Sim {
 
   // Signature abilities (R). Trevor: Riff · Manuel: Decoy Bust · Michael: Ping.
   _ability(p) {
+    const ap = 1 + (p.mods?.abilityPower ?? 0), cdk = 1 - (p.mods?.skillCd ?? 0);
     if (p.character === 'trevor') {
-      p.skillCd = 6;
+      p.skillCd = 6 * cdk;
+      const r = 46 * Math.min(1.8, Math.sqrt(ap));
       for (const e of this.enemies.values()) {
         const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
-        if (d > 46) continue;
-        this._hurtEnemy(e, 6, (dx / (d || 1)) * 260, (dy / (d || 1)) * 260, p.id);
-        if (this.enemies.has(e.id)) e.hurtT = e.boss ? 0.3 : 0.9;             // stunned by the sound
+        if (d > r) continue;
+        this._hurtEnemy(e, Math.round(6 * ap), (dx / (d || 1)) * 260 * Math.min(1.6, ap), (dy / (d || 1)) * 260 * Math.min(1.6, ap), p.id);
+        if (this.enemies.has(e.id)) { e.hurtT = (e.boss ? 0.3 : 0.9) * Math.min(2.2, ap); if (p.mods?.markDmg) e.marked = Math.max(e.marked ?? 0, 3); }   // stunned (and rattled)
       }
-      this.events.push({ t: 'riff', id: p.id, x: p.x, y: p.y });
+      this.events.push({ t: 'riff', id: p.id, x: p.x, y: p.y, r });
     } else if (p.character === 'manuel') {
-      p.skillCd = 10;
-      this.decoys.push({ x: p.x + Math.cos(p.aim) * 14, y: p.y + Math.sin(p.aim) * 14, ttl: 6, hp: 40 });
+      p.skillCd = 10 * cdk;
+      const n = 1 + (p.mods?.decoys ?? 0);
+      for (let i = 0; i < n; i++) {
+        const a = p.aim + (i - (n - 1) / 2) * 0.9;
+        this.decoys.push({ x: p.x + Math.cos(a) * 14, y: p.y + Math.sin(a) * 14, ttl: 6 * ap, hp: Math.round(40 * ap) });
+      }
       this.events.push({ t: 'decoy', id: p.id });
     } else {
-      p.skillCd = 8;
-      for (const e of this.enemies.values()) if (Math.hypot(e.x - p.x, e.y - p.y) < 150) e.marked = 5;
+      p.skillCd = 8 * cdk;
+      for (const e of this.enemies.values()) if (Math.hypot(e.x - p.x, e.y - p.y) < 150 * Math.min(1.8, ap)) e.marked = 5 * ap;
       this.events.push({ t: 'ping', id: p.id, x: p.x, y: p.y });
     }
   }
@@ -258,7 +270,9 @@ export class Sim {
       if (d > m.range + def.radius) continue;
       let da = Math.atan2(dy, dx) - p.aim; da = Math.atan2(Math.sin(da), Math.cos(da));
       if (Math.abs(da) > m.arc / 2 && d > def.radius + 4) continue;
-      this._hurtEnemy(e, Math.round((m.damage + (p.mods?.melee ?? 0)) * (p.morphed ? 1.3 : 1)), dx / (d || 1) * m.knockback, dy / (d || 1) * m.knockback, p.id);
+      const crit = Math.random() < (p.mods?.crit ?? 0);
+      if (crit) this.events.push({ t: 'crit', x: e.x, y: e.y });
+      this._hurtEnemy(e, Math.round((m.damage + (p.mods?.melee ?? 0)) * (p.morphed ? 1.3 : 1) * (crit ? 2 : 1)), dx / (d || 1) * m.knockback, dy / (d || 1) * m.knockback, p.id);
     }
   }
 
@@ -274,7 +288,7 @@ export class Sim {
     if (e.sahur) { dmg = 1; this.events.push({ t: 'thunk', x: e.x, y: e.y }); }
     else if (e.boss && e.state === 'vulnerable') dmg *= 2;
     if (e.def?.armor) dmg = Math.max(1, Math.round(dmg * (1 - e.def.armor)));
-    if (e.marked > 0) dmg = Math.round(dmg * 1.5);
+    if (e.marked > 0) dmg = Math.round(dmg * (1.5 + (this.players.get(by)?.mods?.markDmg ?? 0)));
     if (e.def?.trait === 'blinker' && Math.random() < 0.35 && e.hp - dmg > 0) {
       const a = Math.random() * Math.PI * 2, nx = e.x + Math.cos(a) * 40, ny = e.y + Math.sin(a) * 40;
       if (!this._hitsBox(nx, ny, 6, 4)) { this.events.push({ t: 'blink', x: e.x, y: e.y }); e.x = nx; e.y = ny; }
@@ -300,6 +314,7 @@ export class Sim {
     p.hp -= dmg; p.iframes = COMBAT.hurtIframes + (p.mods?.iframes ?? 0);
     if (p.riding) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, knocked: true }); }
     this.events.push({ t: 'hurt', id: p.id, x: p.x, y: p.y, dmg });
+    if (p.hp <= 0 && p.mods?.secondWind && !p.swUsed) { p.swUsed = true; p.hp = Math.round(this.maxHp(p) * 0.3); p.iframes = 1.5; this.events.push({ t: 'secondwind', id: p.id, x: p.x, y: p.y }); return; }
     if (p.hp <= 0) { p.hp = 0; p.downed = true; p.reviveT = 0; this.events.push({ t: 'down', id: p.id }); }
   }
 
@@ -469,7 +484,7 @@ export class Sim {
       if (!p.downed) continue;
       const helper = [...this.players.values()].find((q) => !q.downed && Math.hypot(q.x - p.x, q.y - p.y) < COMBAT.reviveRange);
       p.reviveT = helper ? p.reviveT + dt * (1 + (helper.mods?.revive ?? 0)) : Math.max(0, p.reviveT - dt);
-      if (p.reviveT >= COMBAT.reviveTime) { p.downed = false; p.hp = COMBAT.reviveHp; p.iframes = 1; this.events.push({ t: 'revive', id: p.id }); }
+      if (p.reviveT >= COMBAT.reviveTime) { p.downed = false; p.hp = Math.min(this.maxHp(p), COMBAT.reviveHp + (helper?.mods?.reviveHeal ?? 0)); p.iframes = 1; this.events.push({ t: 'revive', id: p.id }); }
     }
   }
 

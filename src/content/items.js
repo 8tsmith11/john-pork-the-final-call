@@ -1,6 +1,7 @@
 // Items, fab recipes, and skills (stable ids; saves reference these).
 // Analog gear resists rot (bible §4). Stats feed the sim through playerMods().
 import { FISH } from './fish.js';
+import { SKILL_TREE } from './skills.js';
 
 export const ITEMS = {
   'item.wooden_bat':   { name: 'Wooden bat', slot: 'weapon', analog: true, mods: { melee: 6 }, text: 'Ash wood. Coderot slides off it.' },
@@ -71,30 +72,16 @@ export const SHOPS = {
     ] },
 };
 
-export const SKILLS = {
-  michael: [
-    { id: 'skill.michael.signal', name: 'Signal', text: '+3 shot damage per rank', max: 3, mods: { shot: 3 } },
-    { id: 'skill.michael.luck', name: 'Lover\'s Luck', text: '+0.15 s hurt invulnerability per rank', max: 3, mods: { iframes: 0.15 } },
-    { id: 'skill.michael.hands', name: 'Quick Hands', text: 'Fire 10% faster per rank', max: 3, mods: { shotCd: -0.05 } },
-  ],
-  trevor: [
-    { id: 'skill.trevor.stack', name: 'Stack', text: '+15 max HP per rank (supplements)', max: 3, mods: { maxHp: 15 } },
-    { id: 'skill.trevor.lungs', name: 'Iron Lungs', text: 'Dodge recovers 12% faster per rank', max: 3, mods: { dodgeCd: -0.07 } },
-    { id: 'skill.trevor.riff', name: 'Riff', text: '+3 melee damage per rank', max: 3, mods: { melee: 3 } },
-  ],
-  manuel: [
-    { id: 'skill.manuel.break', name: 'Mate Break', text: 'Revive teammates 25% faster per rank', max: 3, mods: { revive: 0.25 } },
-    { id: 'skill.manuel.eye', name: 'Sculptor\'s Eye', text: '+4 melee damage per rank', max: 3, mods: { melee: 4 } },
-    { id: 'skill.manuel.gon', name: 'gonman', text: 'Toughen up: -8% damage taken per rank', max: 3, mods: { armor: 0.08 } },
-  ],
-};
+// Skill trees live in ./skills.js (SKILL_TREE). SKILLS is kept as an alias of each tree's node list.
+export const SKILLS = Object.fromEntries(Object.entries(SKILL_TREE).map(([k, t]) => [k, t.nodes]));
 
 /** Sum gear + skill modifiers for one character in the save. */
 export function playerMods(char, charId) {
-  const m = { melee: 0, shot: 0, shotCd: 0, armor: 0, maxHp: 0, iframes: 0, dodgeCd: 0, revive: 0, gun: 0 };
+  const m = { melee: 0, shot: 0, shotCd: 0, armor: 0, maxHp: 0, iframes: 0, dodgeCd: 0, revive: 0, gun: 0,
+    speed: 0, sta: 0, staRegen: 0, dashHit: 0, crit: 0, lifesteal: 0, loot: 0, haggle: 0, skillCd: 0, abilityPower: 0, markDmg: 0, secondWind: 0, decoys: 0, reviveHeal: 0 };
   const add = (mods, k = 1) => { for (const [key, v] of Object.entries(mods || {})) m[key] = (m[key] ?? 0) + v * k; };
   for (const id of Object.values(char.equipped || {})) if (id) add(ITEMS[id]?.mods);
   for (const s of SKILLS[charId] || []) add(s.mods, char.skills?.[s.id] ?? 0);
-  m.armor = Math.min(0.6, m.armor);
+  m.armor = Math.min(0.6, m.armor); m.skillCd = Math.min(0.6, m.skillCd); m.haggle = Math.min(0.4, m.haggle);
   return m;
 }

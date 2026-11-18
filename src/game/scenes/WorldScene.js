@@ -20,6 +20,7 @@ import { rollCatch } from '../../content/fish.js';
 import { QUESTS, questState } from '../../content/quests.js';
 import { CompanionBrain, isAi } from '../../engine/companion.js';
 import * as Inv from '../../engine/inventory.js';
+import { skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
 import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
@@ -76,7 +77,7 @@ export class WorldScene extends Phaser.Scene {
     this.vignette = this._makeVignette();
     if (this.mode !== 'client') for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
     this.save.world.money ??= 25;
-    for (const c of Object.values(this.save.party)) Inv.normalize(c);
+    for (const [who, c] of Object.entries(this.save.party)) { Inv.normalize(c); migrateSkills(c, who); }
     this._makeMenu();
     this.input.keyboard.on('keydown-Q', () => { if (this.dlg || this.menu) return; if (this.mode === 'client') this.net.send({ t: 'scooter' }); else this._scooter(this.localId); });
     this.input.keyboard.on('keydown-M', () => { if (this.mode === 'client') this.net.send({ t: 'morph' }); else this._morph(this.localId); });
@@ -469,8 +470,8 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _learn(who, id) {
-    const c = this.save.party[who], s = (SKILLS[who] || []).find((x) => x.id === id);
-    if (!c || !s || c.skillPoints < 1 || (c.skills[id] ?? 0) >= s.max) return;
+    const c = this.save.party[who], s = skillNode(who, id);
+    if (!c || !s || c.skillPoints < 1 || (c.skills[id] ?? 0) >= s.max || !skillOpen(who, c, s)) return;
     c.skillPoints--; c.skills[id] = (c.skills[id] ?? 0) + 1;
     this._syncParty();
   }
@@ -525,15 +526,18 @@ export class WorldScene extends Phaser.Scene {
     if (def.slot === 'junk' || def.slot === 'key') this._say(`${def.name}\n${def.text}`);
   }
   menuMove(a, b, half) { if (this.mode === 'client') this.net.send({ t: 'move', a, b, half }); else { Inv.moveSlot(this.save.party[this.character], a, b, half); this._syncParty(); } }
+  // Manuel's Haggler's Eye: the best haggler in the party gets everyone the discount.
+  priceFor(who, base) { const h = Math.max(0, ...Object.entries(this.save.party).map(([k, c]) => playerMods(c, k).haggle ?? 0)); return Math.max(1, Math.round(base * (1 - h))); }
   menuBuy(shop, idx) { if (this.mode === 'client') this.net.send({ t: 'buy', shop, idx }); else this._buy(this.character, shop, idx); }
   _buy(who, shopId, idx) {
     const st = SHOPS[shopId]?.stock[idx], c = this.save.party[who]; if (!st || !c) return;
     if (st.once && Inv.has(c, st.item)) return;
     if (st.needs && !Inv.has(c, st.needs)) return;
-    if ((this.save.world.money ?? 0) < st.price) return;
+    const price = this.priceFor(who, st.price);
+    if ((this.save.world.money ?? 0) < price) return;
     if (Inv.add(c, st.item) > 0) return this._toast('Your bag is full.');
-    this.save.world.money -= st.price;
-    sfx('pickup'); this._toast(`Bought: ${ITEMS[st.item].name} (-$${st.price})`);
+    this.save.world.money -= price;
+    sfx('pickup'); this._toast(`Bought: ${ITEMS[st.item].name} (-$${price})`);
     this._syncParty();
   }
   menuLearn(id) { if (this.mode === 'client') this.net.send({ t: 'skill', id }); else this._learn(this.character, id); }
@@ -1062,8 +1066,10 @@ export class WorldScene extends Phaser.Scene {
         const cash = drop.money[0] + Math.floor(Math.random() * (drop.money[1] - drop.money[0] + 1));
         this.save.world.money = (this.save.world.money ?? 0) + cash;
         const killer = this.sim.players.get(ev.by) ?? this.sim.players.get(this.localId), kc = killer && this.save.party[killer.character];
+        if (killer?.mods?.lifesteal) this.sim.heal(killer.id, killer.mods.lifesteal);
         if (kc) {
           const got = [];
+          if (!ev.boss && Math.random() < (killer.mods?.loot ?? 0)) { const id = drop.mats[Math.floor(Math.random() * drop.mats.length)][0]; Inv.add(kc, id); got.push(ITEMS[id].name); }
           if (ev.boss) for (const [id] of drop.mats) { Inv.add(kc, id, 2); got.push(ITEMS[id].name); }
           else if (Math.random() < 0.7) { const tot = drop.mats.reduce((t, [, w]) => t + w, 0); let r = Math.random() * tot; const id = drop.mats.find(([, w]) => (r -= w) < 0)?.[0] ?? drop.mats[0][0]; Inv.add(kc, id); got.push(ITEMS[id].name); }
           this._fxPop(ev.x, ev.y, `+$${cash}${got.length ? ' · ' + got.join(', ') : ''}`);
@@ -1525,6 +1531,11 @@ export class WorldScene extends Phaser.Scene {
     }
     if (ev.t === 'overload') { this.cameras.main.shake(500, 0.012); this.cameras.main.flash(250, 214, 93, 177); }
     if (ev.t === 'boss') this._bossIntro(ev);
+    if (ev.t === 'crit') { const t = this.add.text(ev.x, ev.y - 24, 'CRIT', { ...FONT, fontSize: '7px', color: '#ff6b6b' }).setOrigin(0.5).setDepth(6060); this.tweens.add({ targets: t, y: t.y - 8, alpha: 0, duration: 600, onComplete: () => t.destroy() }); }
+    if (ev.t === 'secondwind') {
+      const g = this.add.circle(ev.x, ev.y - 8, 10, 0x7fd0c0, 0.5).setDepth(6000); this.tweens.add({ targets: g, scale: 3, alpha: 0, duration: 600, onComplete: () => g.destroy() });
+      if (ev.id === this.localId) { this.cameras.main.flash(160, 120, 220, 200); this._toast('Second wind.'); }
+    }
     if (ev.t === 'tell') { const g = this.add.circle(ev.x, ev.y - 8, 14, 0xd65db1, 0.35).setDepth(6000); this.tweens.add({ targets: g, scale: 2, alpha: 0, duration: 380, onComplete: () => g.destroy() }); }
     if (ev.t === 'hit') {
       for (let i = 0; i < 5; i++) {

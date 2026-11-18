@@ -159,5 +159,23 @@ test('dialogue graphs: no dangling jumps, and the big scenes are not secretly de
   }
 });
 
+const { SKILL_TREE, skillOpen, migrateSkills } = await import('../src/content/skills.js');
+const { playerMods: pmods } = await import('../src/content/items.js');
+test('skill trees: valid links, capstone needs all three branches, mods sum, old skills refunded', () => {
+  for (const [who, t] of Object.entries(SKILL_TREE)) {
+    const ids = new Set(t.nodes.map((n) => n.id));
+    assert.equal(ids.size, t.nodes.length, `${who}: duplicate ids`);
+    for (const n of t.nodes) for (const r of n.req || []) assert.ok(ids.has(r), `${who}:${n.id} needs missing ${r}`);
+    const cap = t.nodes.find((n) => n.row === 4); assert.equal(cap.req.length, 3, `${who}: capstone`);
+    const c = { skills: {}, skillPoints: 0, equipped: {} };
+    assert.ok(!skillOpen(who, c, cap));
+    for (const n of t.nodes) c.skills[n.id] = n.max;
+    assert.ok(skillOpen(who, c, cap));
+    const m = pmods(c, who); assert.ok(m.abilityPower > 0 && m.armor <= 0.6);
+  }
+  const old = { skills: { 'skill.trevor.stack': 2, 'tr.amp': 1 }, skillPoints: 1 };
+  assert.equal(migrateSkills(old, 'trevor'), 2); assert.equal(old.skillPoints, 3); assert.deepEqual(Object.keys(old.skills), ['tr.amp']);
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
