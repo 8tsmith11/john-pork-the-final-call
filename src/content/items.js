@@ -52,6 +52,8 @@ Object.assign(ITEMS, {
   'item.lake_bust':     { name: 'Little white bust', slot: 'charm', mods: { abilityPower: 0.15, markDmg: 0.1 }, text: 'John Pork, the size of a fist, carved from something white that is not stone. From the island. It is always slightly warmer than your hand.' },
   'item.ozzie_lure':    { name: 'Ozzie\'s lure', slot: 'charm', analog: true, mods: { loot: 0.15, crit: 0.05 }, text: 'Hand-tied, red and white, forty years old. "It doesn\'t catch more fish. It catches better ones."' },
   'item.energy_bar':    { name: 'Halfsmoke bar', slot: 'consumable', heal: 20, text: 'Protein, mustard, regret. Maryland in a wrapper.' },
+  // Supplement (Manuel's idea): a little heal, full stamina, and dodges cost nothing for 45 seconds. Text only (D-015).
+  'item.blue_pill':     { name: 'Blue pill', slot: 'consumable', heal: 5, pill: 45, text: 'One diamond-shaped blue tablet in a blister marked FOR STAMINA. The corner store keeps them behind the crab chips and does not make eye contact.' },
   'item.crab_chips':    { name: 'Old Bay crab chips', slot: 'consumable', heal: 30, text: 'The seasoning outlived the crabs.' },
 });
 
@@ -168,6 +170,7 @@ export const SHOPS = {
     stock: [
       { item: 'item.energy_bar', price: 6 },
       { item: 'item.crab_chips', price: 10 },
+      { item: 'item.blue_pill', price: 9 },
       { item: 'item.mate_flask', price: 14 },
       { item: 'item.flowers', price: 8 },
       { item: 'item.chocolates', price: 12 },

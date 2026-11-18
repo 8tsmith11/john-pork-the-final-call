@@ -244,5 +244,14 @@ test('the switchyard answer is never the levers\' starting position', () => {
   for (let i = 0; i < 400; i++) assert.ok(LEVERS.some((k) => solution(`seed-${i}`)[k] === 'right'), `seed-${i}`);
 });
 
+test('the blue pill makes dodges free while it lasts', () => {
+  const sim = new Sim(MAPS_FOR_TEST.room631, { seed: 's' }); sim.addPlayer('a', 'manuel');
+  const p = sim.players.get('a'); p.x = 14 * 16 + 8; p.y = 9 * 16 + 8;
+  const dodge = () => { p.dodgeT = 0; p.dodgeCd = 0; sim.step(1 / 60, new Map([['a', { ...emptyInput(), dodge: true, mx: 1 }]])); };
+  dodge(); const spent = MOVE.stamina - p.sta; assert.ok(spent > 0, 'a normal dodge costs stamina');
+  p.sta = MOVE.stamina; p.staT = 0; p.pillT = 45; dodge();
+  assert.equal(p.sta, MOVE.stamina);
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

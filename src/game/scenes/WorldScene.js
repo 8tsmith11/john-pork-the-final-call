@@ -529,6 +529,13 @@ export class WorldScene extends Phaser.Scene {
     if (i < 0 || !c.inventory[i] || !ITEMS[c.inventory[i].id]?.heal) return;
     const it = ITEMS[Inv.takeSlot(c, i)];
     this.sim.heal(peerId, it.heal ?? 0);
+    if (it.pill) {
+      const p = this.sim.players.get(peerId);
+      if (p) { p.pillT = it.pill; p.sta = 999; p.staT = 0; }   // the sim clamps stamina to its max on the next step
+      const line = { manuel: 'Manuel takes the blue pill. "For stamina. It says so on the box."', trevor: 'Trevor takes the blue pill and logs it in a spreadsheet.', michael: 'Michael takes the blue pill. "Nobody tell her."' }[who] ?? `${who} takes the blue pill.`;
+      this._toast(`${line} Dodges are free for ${it.pill}s.`);
+      this._syncParty(); return;
+    }
     this._toast(`${who} has the ${it.name.toLowerCase()}. +${it.heal} HP`);
     this._syncParty();
   }

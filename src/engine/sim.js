@@ -205,10 +205,11 @@ export class Sim {
       p.iframes = Math.max(0, p.iframes - dt);
 
       p.staT = Math.max(0, (p.staT ?? 0) - dt);
+      p.pillT = Math.max(0, (p.pillT ?? 0) - dt);   // blue pill: dodges are free while this runs
       const staMax = MOVE.stamina + (p.mods?.sta ?? 0);
       if (p.staT <= 0) p.sta = Math.min(staMax, (p.sta ?? staMax) + MOVE.staminaRegen * (1 + (p.mods?.staRegen ?? 0)) * dt);
       if (inp.dodge && !p.riding && p.dodgeT <= 0 && p.dodgeCd <= 0 && p.sta >= MOVE.dashCost) {
-        p.sta -= MOVE.dashCost; p.staT = MOVE.regenDelay;
+        if (!(p.pillT > 0)) { p.sta -= MOVE.dashCost; p.staT = MOVE.regenDelay; }
         // Dodge toward movement, or toward the aim if standing still.
         const dx = len > 0.1 ? mx : Math.cos(p.aim), dy = len > 0.1 ? my : Math.sin(p.aim);
         const dl = Math.hypot(dx, dy) || 1;
