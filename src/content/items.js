@@ -6,6 +6,8 @@ export const ITEMS = {
   'item.fab_launcher': { name: 'Fab launcher', slot: 'ranged', mods: { gun: 1, shot: 4, shotCd: -0.12 }, text: 'Printed at 3 a.m. Fires sintered pellets.' },
   'item.mesh_vest':    { name: 'Printed mesh vest', slot: 'armor', mods: { armor: 0.2 }, text: 'Hex lattice. Takes a fifth of the hurt.' },
   'item.sniffer':      { name: 'Helium sniffer', slot: 'gadget', mods: {}, text: 'Follows the lightest thing in the world.' },
+  'item.charm_1901':   { name: 'Rollover charm', slot: 'charm', analog: true, mods: { armor: 0.12 }, text: 'A brass clock hand on a cord, stopped at 3:14. Takes the edge off whatever hits you.' },
+  'item.pork_pin':     { name: 'Porcelain Pork pin', slot: 'charm', mods: { melee: 3, shot: 3 }, text: 'Three busts looked at the flag at once and this was on the floor afterwards. Warm to the touch.' },
   'item.mate_flask':   { name: 'Mate thermos', slot: 'consumable', heal: 45, text: 'Manuel would want you to have it. He would also want it back.' },
 };
 

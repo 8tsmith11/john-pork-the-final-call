@@ -76,3 +76,10 @@ entries turn into one-line hints. The full answers stay in this file.
 | **Rail grind** | Ride a scooter (Q, outdoors) along any rail track, e.g. the dead Purple Line strip in College Park: much faster travel with sparks (sets `secrets.grind.found`) | The scooter yard is right by the track | built |
 | **Shrimp canary** | Check Trevor's shrimp tank in 631: their behavior tells you how rotted the tunnels still are | The tank text says they act up before rot spikes | built |
 | **Sump pump** (puzzle step) | Restart the pump in the tunnels' pump room to drain the flooded bay and read the B switch clue | The vending-machine marks "below the waterline" | built |
+
+## Hard optional puzzles (boons)
+
+| Puzzle | Solution | Hints in the world | Boon | Status |
+|---|---|---|---|---|
+| **The Four Clocks** | Four rotted clocks are stuck at 19:01: the 6th-floor hallway, the ASTER lobby, the College Park station, and the dead platform. Press E to wind each one (each wind steps 19:01 → 21:30 → 00:00 → **03:14** → 06:45 → 12:00). Set all four to **03:14** | The paper clock taped under the station clock ("USE THIS ONE") has its hands at 3:14 | **Rollover charm** (charm slot, −12% damage taken). The hallway clock's face swings open | built |
+| **Manuel's busts** | Turn the three busts to face the flag in the order **newest (#3), then the first (#1), then the second (#2)**. A wrong turn resets them | A scrap at Manuel's sculpting table: "la última primero, después la primera". (House rule #1 says don't touch them.) | **Porcelain Pork pin** (charm, +3 melee/+3 ranged) and a strange moment | built |

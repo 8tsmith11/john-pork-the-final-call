@@ -58,7 +58,7 @@
 | 50 | **Each act ends with a fight + post-fight cutscene WITH VOICES** | 🟡 | trevor | Fight ✅, cutscene ✅, voices are babble. Explore real TTS |
 | 51 | **Start with electric scooters** and a 3D printer | ✅ | trevor | Rideable outdoors (Q), battery + dock, rail grind |
 | 52 | **Hidden mechanics: fun / progression / fast travel** | 🟡 | trevor | Vending kick (+ a 7-kick secret), shrimp canary, scooter rail-grind ✅. More per region to come (ziplines, roofs) |
-| 53 | **Required puzzles + hard optional puzzles with boons** | 🟡 | both | Required: Lead C signal routing ✅, switchyard + sump pump ✅. Hard optional (boons): 1901 clock, statue alignment, still to build |
+| 53 | **Required puzzles + hard optional puzzles with boons** | 🟡 | both | Required: Lead C signal routing ✅, switchyard + sump pump ✅. Hard optional (boons): the Four Clocks ✅, Manuel's busts ✅ |
 | 54 | Geopolitics lore | ✅ | | |
 | 55 | Backstory discussed first | ✅ | | |
 | 56 | Fourth wall: rare, principal characters only | ✅ | | Planned for Act 3 |

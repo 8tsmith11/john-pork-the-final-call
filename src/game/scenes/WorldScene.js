@@ -17,6 +17,7 @@ import { GameMenu, TABS } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
+import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
 
 const STEP = 1 / 60;
 const XP_PER_LEVEL = 30;
@@ -482,6 +483,47 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // Hidden mechanic (fun): kick the vending machine. Sometimes it pays. Keep kicking and it talks back.
+  // Hard optional: wind the four stuck clocks to the paper clock's time.
+  _windClock(o) {
+    const key = `puz.clock.${o.id}`, n = ((this.save.flags[key] ?? 0) + 1) % CLOCK_TIMES.length;
+    this._flag(key, n); sfx('swing');
+    const now = clockTime(this.save.flags, o.id);
+    const note = o.id === 'obj.plaza_clock' ? PAPER_CLOCK_NOTE : '';
+    if (clocksSolved(this.save.flags) && !this.save.flags['puz.clocks.solved']) {
+      this._flag('puz.clocks.solved', true);
+      this._grant('item.charm_1901');
+      this.cameras.main.shake(400, 0.006);
+      return this._say(`You wind it to ${now}. Somewhere in ASTER, four clocks tick at once. When you're back on the sixth floor, the hallway clock's face is hanging open on a hinge. Inside, a brass clock hand on a cord. (Rollover charm)`);
+    }
+    this._say(`You open the face and wind it. It now reads ${now}.${note}`);
+  }
+
+  // Hard optional: turn Manuel's busts to face the flag, in the right order.
+  _turnBust(o) {
+    if (this.save.flags['puz.busts.solved']) return this._say(o.text + '\n\nAll three are looking at the flag. You don\'t want to turn them back.');
+    const seq = (this.save.flags['puz.busts.seq'] ?? '').split(',').filter(Boolean);
+    const expected = BUST_ORDER[seq.length];
+    if (o.id !== expected) { this._flag('puz.busts.seq', ''); this._bustsFacing = {}; sfx('hit'); return this._say('You turn it toward the flag. Then the others turn back to the door on their own. Or you misremembered which way they faced.'); }
+    seq.push(o.id); this._flag('puz.busts.seq', seq.join(','));
+    (this._bustsFacing ??= {})[o.id] = true;
+    sfx('swing');
+    if (seq.length === BUST_ORDER.length) {
+      this._flag('puz.busts.solved', true);
+      this._grant('item.pork_pin');
+      this.cameras.main.flash(300, 242, 166, 184);
+      return this._say('The third bust turns to face the flag. For a second the whole room feels like it\'s being looked at, from three directions, kindly. Something small and porcelain is lying on the floor that wasn\'t there before. (Porcelain Pork pin)');
+    }
+    this._say(`You turn it to face the flag. (${seq.length} of 3)`);
+  }
+
+  _grant(itemId) {
+    const c = this.save.party[this.character];
+    c.inventory.push({ id: itemId, qty: 1 });
+    if (this.mode === 'client') this.net.send({ t: 'item', who: this.character, item: itemId.replace(/^item\./, '') });
+    else this._syncParty();
+    this._toast(`★ ${ITEMS[itemId]?.name ?? itemId}`);
+  }
+
   _kickVending(o) {
     const n = (this._kicks = (this._kicks ?? 0) + 1);
     sfx('hit'); this.cameras.main.shake(90, 0.004);
@@ -844,6 +886,9 @@ export class WorldScene extends Phaser.Scene {
     if (near.action === 'fab') { this._openFab(); return; }
     if (/^obj\.switch_[abc]$/.test(near.id)) { this._lever(near.id.slice(-1)); return; }
     if (near.id === 'obj.vending') { this._kickVending(near); return; }
+    if (CLOCKS.includes(near.id)) { this._windClock(near); return; }
+    if (BUST_ORDER.includes(near.id)) { this._turnBust(near); return; }
+    if (near.id === 'obj.manuel_table') { this._say(near.text + BUST_HINT); return; }
     if (near.id === 'obj.shrimp_tank') { this._say(near.text + '\n\n' + this._shrimpReading()); return; }
     if (near.id === 'obj.yard_map') { this._say(`${YARD_MAP_TEXT}\n\nCurrent: ${LEVERS.map((k) => `${k.toUpperCase()} ${(this.save.flags[`act1.switch.${k}`] ?? 'left').toUpperCase()}`).join(' · ')}${this.save.flags['act1.switchyard.solved'] ? '\nThe east gate is open.' : ''}`); return; }
     if (['obj.work_order', 'obj.sunk_vending', 'obj.ledger'].includes(near.id)) { this._say((near.text ?? '') + clueFor(near.id, yardSolution(this.save.world.seed), !!this.save.flags['act1.bay.drained'])); return; }

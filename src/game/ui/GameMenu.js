@@ -8,7 +8,7 @@ export const TABS = ['inventory', 'skills', 'map', 'controls', 'system'];
 const TAB_LABEL = { inventory: 'INVENTORY', skills: 'SKILLS', map: 'MAP', controls: 'CONTROLS', system: 'SYSTEM' };
 const C = { panel: 0x0b0d16, edge: 0xf2a6b8, dim: 0x5d6487, text: '#e8e8f0', sub: '#9aa3c7', hi: '#ffb347', ok: '#7fb069', bad: '#d65db1' };
 const F = (size = 8, color = C.text) => ({ fontFamily: 'monospace', fontSize: `${size}px`, color });
-const SLOT_LABEL = { weapon: 'Melee', ranged: 'Ranged', armor: 'Armor', gadget: 'Gadget' };
+const SLOT_LABEL = { weapon: 'Melee', ranged: 'Ranged', armor: 'Armor', gadget: 'Gadget', charm: 'Charm' };
 
 export class GameMenu {
   constructor(scene) {
