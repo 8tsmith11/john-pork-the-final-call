@@ -13,6 +13,7 @@ import { loadScene, Conversation } from '../../engine/dialogue.js';
 import { babble, setArea, sfx } from '../../audio/audio.js';
 import { ITEMS, RECIPES, SKILLS, playerMods } from '../../content/items.js';
 import { tileKey } from '../render/tiles.js';
+import { GameMenu, TABS } from '../ui/GameMenu.js';
 
 const STEP = 1 / 60;
 const XP_PER_LEVEL = 30;
@@ -56,9 +57,6 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode !== 'client') for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
     this.save.world.scrap ??= 0;
     this._makeMenu();
-    this.input.keyboard.on('keydown-TAB', (ev) => { ev.preventDefault?.(); this.bigMap = !this.bigMap; });
-    this.input.keyboard.addCapture('TAB');
-    this.input.keyboard.on('keydown-K', () => this.menu ? this._closeMenu() : this._openSkills());
     this.input.keyboard.on('keydown-M', () => { if (this.mode === 'client') this.net.send({ t: 'morph' }); else this._morph(this.localId); });
     // E: close an open panel/description, otherwise interact with the nearest thing in reach.
     this.input.keyboard.on('keydown-E', () => {
@@ -174,6 +172,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'door') this._toggleDoor(msg.id);
         if (msg.t === 'craft') this._craft(this._charOf(peer), msg.idx);
         if (msg.t === 'skill') this._learn(this._charOf(peer), msg.id);
+        if (msg.t === 'equip') this._equip(this._charOf(peer), msg.id);
         if (msg.t === 'use') this._use(this._charOf(peer), peer);
         if (msg.t === 'morph') this._morph(peer);
       });
@@ -300,72 +299,40 @@ export class WorldScene extends Phaser.Scene {
     this._syncParty();
   }
 
+  // ---------- in-game menu (src/game/ui/GameMenu.js) ----------
+  get menu() { return this.gameMenu?.tab ?? null; }
   _makeMenu() {
-    const W = VIEW.w;
-    this.menuBg = this.add.rectangle(W / 2, 128, 300, 196, 0x0b0d16, 0.95).setStrokeStyle(1, 0xffb347).setScrollFactor(0).setDepth(9600).setVisible(false);
-    this.menuTitle = this.add.text(W / 2 - 140, 42, '', { ...FONT, color: '#ffb347' }).setScrollFactor(0).setDepth(9601);
-    this.menuRows = [0, 1, 2, 3, 4, 5, 6].map((i) => this.add.text(W / 2 - 136, 58 + i * 25, '', { ...FONT, wordWrap: { width: 270 } })
-      .setScrollFactor(0).setDepth(9601).setInteractive({ useHandCursor: true }).on('pointerdown', () => this._pickMenu(i)));
-    this.input.keyboard.on('keydown-ESC', () => { if (!this.menu && !this.dlg) { this.menu = 'pause'; this._refreshMenu(); } });
-    this.input.keyboard.on('keydown', (ev) => {
-      if (!this.menu) return;
-      if (ev.key === 'Escape') return this._closeMenu();
-      const n = parseInt(ev.key, 10); if (n >= 1 && n <= 7) this._pickMenu(n - 1);
-    });
-    this._closeMenu();
+    this.gameMenu = new GameMenu(this);
+    const kb = this.input.keyboard;
+    kb.on('keydown-ESC', () => { if (this.dlg) return; this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
+    kb.on('keydown-I', () => { if (!this.dlg) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
+    kb.on('keydown-K', () => { if (!this.dlg) this.menu === 'skills' ? this._closeMenu() : this.gameMenu.show('skills'); });
+    kb.on('keydown-TAB', (ev) => { ev.preventDefault?.(); if (!this.dlg) this.menu === 'map' ? this._closeMenu() : this.gameMenu.show('map'); });
+    kb.addCapture('TAB');
+    for (const [key, dir] of [['A', -1], ['LEFT', -1], ['D', 1], ['RIGHT', 1]]) kb.on(`keydown-${key}`, () => { if (TABS.includes(this.menu)) this.gameMenu.cycle(dir); });
   }
+  _openFab() { this.gameMenu.show('fab'); }
+  _openSkills() { this.gameMenu.show('skills'); }
+  _closeMenu() { this.gameMenu.close(); }
+  _refreshMenu() { this.gameMenu?.refresh(); }
 
-  _openFab() { this.menu = 'fab'; this._refreshMenu(); }
-  _openSkills() { this.menu = 'skills'; this._refreshMenu(); }
-  _closeMenu() { this.menu = null; [this.menuBg, this.menuTitle, ...this.menuRows].forEach((o) => o.setVisible(false)); }
-
-  _refreshMenu() {
-    if (!this.menu) return;
-    const c = this.save.party[this.character];
-    let title, rows;
-    if (this.menu === 'fab') {
-      title = `FAB #2 · scrap: ${this.save.world.scrap}   [1-5] print  [ESC] close`;
-      rows = RECIPES.map((r, i) => `${i + 1}. ${ITEMS[r.item].name} (${r.scrap} scrap): ${ITEMS[r.item].text}`);
-    } else if (this.menu === 'pause') {
-      title = 'PAUSED   [ESC] resume';
-      rows = this.mode === 'client'
-        ? ['1. Resume', '2. Leave the game (back to title)']
-        : ['1. Resume', '2. Save now', '3. Export save file (.jpfc.json)', '4. Save and quit to title'];
-      rows.push(`${rows.length + 1}. Controls`);
-    } else if (this.menu === 'controls') {
-      title = 'CONTROLS   [ESC] back';
-      rows = ['Move: WASD / arrows (diagonals work)   Dash: SPACE / SHIFT (uses stamina)',
-        'Hit: left click   Shoot: right click (aims at the cursor)',
-        'Use / open / talk: walk into doors, or press E when close',
-        'Dialogue: click, E, or SPACE to continue; 1-6 or click to choose',
-        'Skills: K   Heal (mate thermos): H   Morph: M   Answer the phone: F',
-        'Map: TAB   Pause / save / export: ESC'];
-    } else {
-      title = `${this.character.toUpperCase()} · level ${c.level} · skill points: ${c.skillPoints}   [K] close`;
-      rows = (SKILLS[this.character] || []).map((s, i) => `${i + 1}. ${s.name} [${c.skills[s.id] ?? 0}/${s.max}]: ${s.text}`);
-    }
-    [this.menuBg, this.menuTitle].forEach((o) => o.setVisible(true));
-    this.menuTitle.setText(title);
-    this.menuRows.forEach((t, i) => t.setText(rows[i] ?? '').setVisible(!!rows[i]));
+  // Menu actions (host-authoritative; clients ask the host).
+  menuUse(id) {
+    const def = ITEMS[id]; if (!def) return;
+    if (def.slot === 'consumable') { if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); return; }
+    if (this.mode === 'client') this.net.send({ t: 'equip', id }); else this._equip(this.character, id);
   }
+  menuLearn(id) { if (this.mode === 'client') this.net.send({ t: 'skill', id }); else this._learn(this.character, id); }
+  menuCraft(i) { if (this.mode === 'client') this.net.send({ t: 'craft', idx: i }); else this._craft(this.character, i); }
+  menuExport() { exportFile(this.save); }
+  menuQuit(save) { const quit = () => { this.net?.close?.(); this.scene.start('Title'); }; save && this.mode !== 'client' ? autosave(this.save).then(quit) : quit(); }
+  mapName(id) { return MAPS[id]?.name ?? id; }
 
-  _pickMenu(i) {
-    if (this.menu === 'controls') return;
-    if (this.menu === 'pause') {
-      if (i === (this.mode === 'client' ? 2 : 4)) { this.menu = 'controls'; return this._refreshMenu(); }
-      const quit = () => { this.net?.close?.(); this.scene.start('Title'); };
-      if (i === 0) return this._closeMenu();
-      if (this.mode === 'client') { if (i === 1) quit(); return; }
-      if (i === 1) { this._save(); this._closeMenu(); return; }
-      if (i === 2) { exportFile(this.save); return; }
-      if (i === 3) { autosave(this.save).then(quit); return; }
-      return;
-    }
-    if (this.menu === 'fab') { if (this.mode === 'client') this.net.send({ t: 'craft', idx: i }); else this._craft(this.character, i); }
-    if (this.menu === 'skills') {
-      const s = (SKILLS[this.character] || [])[i]; if (!s) return;
-      if (this.mode === 'client') this.net.send({ t: 'skill', id: s.id }); else this._learn(this.character, s.id);
-    }
+  _equip(who, id) {
+    const c = this.save.party[who], def = ITEMS[id];
+    if (!c || !def || !c.inventory.some((it) => it.id === id) || def.slot === 'consumable') return;
+    c.equipped[def.slot] = c.equipped[def.slot] === id ? null : id;   // click again to unequip
+    this._syncParty();
   }
 
   _morph(peerId) {
@@ -487,8 +454,7 @@ export class WorldScene extends Phaser.Scene {
     }
     if (this.menu) {
       this.input2.blockAttack = true;
-      const b = this.menuBg.getBounds();
-      if (!b.contains(sx, sy)) this._closeMenu();
+      if (!this.gameMenu.contains(sx, sy)) this._closeMenu();
       return;
     }
     if (this.sayOpen) {
@@ -549,7 +515,12 @@ export class WorldScene extends Phaser.Scene {
 
   _hostEvents(events) {
     for (const ev of events) {
-      if (ev.t === 'bumpExit' && !this.dlg) this._tryExit(this.map.objects.find((o) => o.id === ev.id));
+      if (ev.t === 'bumpExit' && !this.dlg) {
+        const exit = this.map.objects.find((o) => o.id === ev.id);
+        if (exit?.requiresClear && !this.sim.cleared) { this._announce('Something down here is still moving.'); continue; }
+        // Solo goes straight through. In co-op the party gathers at the door first.
+        if (this.sim.players.size <= 1 || this.sim.waitAtExit(ev.by, ev.id, ev.dx, ev.dy)) { this.sim.clearWaiting(); this._tryExit(exit); }
+      }
       if (ev.t === 'door') sfx('swing');
       if (ev.t === 'kill') {
         this.save.world.scrap = (this.save.world.scrap ?? 0) + (ev.boss ? 10 : 2);
@@ -620,6 +591,7 @@ export class WorldScene extends Phaser.Scene {
       if (!p.d) p._dashFx = false;
       if (p.d && (this._ghostTick = (this._ghostTick ?? 0) + 1) % 2 === 0) this._dashGhost(s, p);
       s.setAlpha(p.d ? 0.55 : p.iv ? (Math.floor(this.time.now / 60) % 2 ? 0.4 : 1) : 1);
+      s.setVisible(!p.w);
       s.setAngle(p.dn ? 90 : 0).setTint(p.dn ? 0x777788 : p.mo ? MORPH_LOOK[p.c][0] : 0xffffff).setScale(p.mo ? 1.12 : 1);
     }
     for (const [id, s] of this.sprites) if (!seen.has(id)) { s.destroy(); this.sprites.delete(id); }
@@ -709,27 +681,26 @@ export class WorldScene extends Phaser.Scene {
     (this.save.world.visited ??= []).includes(m.id) || this.save.world.visited.push(m.id);
   }
 
-  _drawMinimap(snap) {
-    const big = !!this.bigMap && !this.dlg && !this.menu;
+  /** Draw the current area's explored map into graphics `g`, fitted to a box. Used by the minimap and the MAP tab. */
+  drawAreaMap(g, bx, by, maxW, maxH, snap = this._lastRendered) {
     const m = this.map, ex = this._explored(m.id);
-    const k = big ? Math.min(6, Math.floor(380 / m.w), Math.floor(170 / m.h)) : Math.min(2, Math.floor(70 / m.w)) || 1;
-    const W = VIEW.w, mw = m.w * k, mh = m.h * k;
-    const ox = big ? Math.floor((W - mw) / 2) : W - mw - 6, oy = big ? 40 : 44;
-    const g = (this.mini ??= this.add.graphics().setScrollFactor(0).setDepth(9050)).clear();
-    this.miniText ??= this.add.text(0, 0, '', { ...FONT, color: '#9aa3c7' }).setScrollFactor(0).setDepth(9051);
-    if (big) g.fillStyle(0x05060c, 0.88).fillRect(0, 0, W, VIEW.h);
-    g.fillStyle(0x0b0d16, 0.75).fillRect(ox - 2, oy - 2, mw + 4, mh + 4).lineStyle(1, 0x5d6487, 0.8).strokeRect(ox - 2, oy - 2, mw + 4, mh + 4);
+    const k = Math.max(1, Math.min(6, Math.floor(maxW / m.w), Math.floor(maxH / m.h)));
+    const mw = m.w * k, mh = m.h * k, ox = bx + Math.floor((maxW - mw) / 2), oy = by;
+    g.fillStyle(0x070912, 0.85).fillRect(ox - 2, oy - 2, mw + 4, mh + 4).lineStyle(1, 0x5d6487, 0.8).strokeRect(ox - 2, oy - 2, mw + 4, mh + 4);
     for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) {
       if (ex[y * m.w + x] !== '1') continue;
       g.fillStyle(m.solid(x, y) && !m.doors.get(`${x},${y}`) ? 0x3a3f66 : 0x1f2236).fillRect(ox + x * k, oy + y * k, k, k);
     }
     for (const o of m.objects) if (ex[o.y * m.w + o.x] === '1' && (o.action === 'exit' || o.door)) g.fillStyle(o.door ? 0x8a6a4a : 0xffb347).fillRect(ox + o.x * k, oy + o.y * k, k, k);
-    for (const e of snap.enemies || []) { const tx = Math.floor(e.x / TILE), ty = Math.floor(e.y / TILE); if (ex[ty * m.w + tx] === '1') g.fillStyle(0xd65db1).fillRect(ox + tx * k, oy + ty * k, k, k); }
-    for (const p of snap.players) g.fillStyle(p.id === this.localId ? 0x7fff9a : 0x6fb6ff).fillRect(ox + Math.floor(p.x / TILE) * k - (big ? 1 : 0), oy + Math.floor(p.y / TILE) * k - (big ? 1 : 0), k + (big ? 2 : 0), k + (big ? 2 : 0));
-    if (big) {
-      const names = (this.save.world.visited || []).map((id) => (MAPS[id]?.name ?? id) + (id === m.id ? '  ◀ you are here' : ''));
-      this.miniText.setPosition(ox, oy + mh + 10).setText(`MAP  [TAB] close\n${m.name}\n\nAreas found:\n  ${names.join('\n  ')}`).setVisible(true);
-    } else this.miniText.setVisible(false);
+    for (const e of snap?.enemies || []) { const tx = Math.floor(e.x / TILE), ty = Math.floor(e.y / TILE); if (ex[ty * m.w + tx] === '1') g.fillStyle(0xd65db1).fillRect(ox + tx * k, oy + ty * k, k, k); }
+    for (const p of snap?.players || []) { const d = k > 2 ? 1 : 0; g.fillStyle(p.id === this.localId ? 0x7fff9a : 0x6fb6ff).fillRect(ox + Math.floor(p.x / TILE) * k - d, oy + Math.floor(p.y / TILE) * k - d, k + 2 * d, k + 2 * d); }
+  }
+
+  _drawMinimap(snap) {
+    const g = (this.mini ??= this.add.graphics().setScrollFactor(0).setDepth(9050)).clear();
+    if (this.menu || this.dlg) return;
+    const w = Math.min(100, this.map.w * 2), h = Math.min(40, this.map.h * 2);
+    this.drawAreaMap(g, VIEW.w - w - 6, 44, w, h, snap);
   }
 
   _bossBar(e) {
@@ -783,6 +754,11 @@ export class WorldScene extends Phaser.Scene {
       else if (p.id === this.localId) g.fillStyle(0x6ff2ff, 0.85).fillRect(6, y + 5, ((p.st ?? 100) / 100) * w, 1);
     });
     if (snap.enemies?.length) lines.push(`rot: ${snap.enemies.length}`);
+    const waiting = snap.players.filter((p) => p.w), me = snap.players.find((p) => p.id === this.localId);
+    if (waiting.length) {
+      const up = snap.players.filter((p) => !p.dn).length;
+      this.hint.setText(me?.w ? `Waiting at the door for the others (${waiting.length}/${up}). Move away to step back.` : `${waiting.length}/${up} waiting at a door. Walk into it to go through together.`);
+    }
     const c = this.save.party[this.character];
     lines.push(`lv ${c.level}  xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `  [K] ${c.skillPoints} pt` : ''}`);
     lines.push(`scrap ${this.save.world.scrap ?? 0}`);

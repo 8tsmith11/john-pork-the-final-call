@@ -45,7 +45,7 @@ export class Sim {
     let i = 0;
     for (const p of this.players.values()) {
       const sp = arrivals[i++ % arrivals.length];
-      Object.assign(p, { x: sp.x, y: sp.y, vx: 0, vy: 0, dodgeT: 0, downed: false, hp: Math.max(p.hp, COMBAT.reviveHp) });
+      Object.assign(p, { x: sp.x, y: sp.y, vx: 0, vy: 0, dodgeT: 0, downed: false, waitExit: null, hp: Math.max(p.hp, COMBAT.reviveHp) });
     }
     this.spawnEnemies();
   }
@@ -97,6 +97,15 @@ export class Sim {
 
   removePlayer(id) { this.players.delete(id); }
 
+  /** Co-op doors: park a player at an exit. Returns true when every standing player is parked at it. */
+  waitAtExit(id, exitId, dx, dy) {
+    const p = this.players.get(id); if (!p || p.waitExit === exitId) return this.allWaiting(exitId);
+    Object.assign(p, { waitExit: exitId, waitDx: dx, waitDy: dy, waitTick: this.tick });
+    return this.allWaiting(exitId);
+  }
+  allWaiting(exitId) { const up = [...this.players.values()].filter((p) => !p.downed); return up.length > 0 && up.every((p) => p.waitExit === exitId); }
+  clearWaiting() { for (const p of this.players.values()) p.waitExit = null; }
+
   step(dt, inputs) {
     this.tick++;
     this.events = [];
@@ -104,6 +113,13 @@ export class Sim {
       const inp = inputs.get(p.id) || emptyInput();
       p.meleeCd = Math.max(0, p.meleeCd - dt); p.shotCd = Math.max(0, p.shotCd - dt); p.swingT = Math.max(0, p.swingT - dt);
       if (p.downed) { p.vx = p.vy = 0; p.moving = false; continue; }
+      if (p.waitExit) {
+        // Parked inside a doorway, waiting for the party. Any movement that isn't into the door steps back out.
+        p.vx = p.vy = 0; p.moving = false;
+        const intoDoor = (inp.mx || 0) * p.waitDx + (inp.my || 0) * p.waitDy > 0;
+        if ((inp.mx || inp.my) && !intoDoor && this.tick - p.waitTick > 12) { p.waitExit = null; this.events.push({ t: 'unwait', id: p.id }); }
+        continue;
+      }
       let { mx, my } = inp;
       const len = Math.hypot(mx, my);
       if (len > 1) { mx /= len; my /= len; } // diagonals aren't faster
@@ -348,7 +364,7 @@ export class Sim {
     if (door && !door.open) { door.open = true; this.events.push({ t: 'door', id: door.id }); return; }
     if (this.map.blocked?.has(k)) {
       const ex = this.map.objects.find((o) => o.x === tx && o.y === ty && o.action === 'exit');
-      if (ex) this.events.push({ t: 'bumpExit', id: ex.id, by: p.id });
+      if (ex) this.events.push({ t: 'bumpExit', id: ex.id, by: p.id, dx: Math.sign(dx), dy: Math.sign(dy) });
     }
   }
 
@@ -366,7 +382,7 @@ export class Sim {
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
-        hp: Math.round(p.hp), mhp: this.maxHp(p), st: Math.round(p.sta ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed,
+        hp: Math.round(p.hp), mhp: this.maxHp(p), st: Math.round(p.sta ?? 100), w: p.waitExit || null, dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed,
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
