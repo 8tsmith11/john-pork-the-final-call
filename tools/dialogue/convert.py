@@ -85,7 +85,9 @@ def parse(text):
         sd = re.match(r"^\*([^*].*?)\*$", line)
         if sd:
             body = sd.group(1).strip()
-            if not re.match(r"^(Trigger|Returning|Note|After|If |When the|Sets|Reads|Conditions|Effect)", body) and "`" not in body and "->" not in body and len(body) < 260:
+            # Conservative: anything that smells like a writer note stays out (see tools/writing/captions.py).
+            NOTEY = r"\b(player|players|flag|seed|variant|node|scene|branch|beat|choice|trigger|speaker|party|engine|cutscene|camera pans|we see|fade|cut to|TODO|TBD|optional|if the|unless|otherwise|act ?[123]|lead [abc]|stage \d|npc)\b|\[|\]|=|\{|\}"
+            if not re.match(r"^(Trigger|Returning|Note|After|If |When the|Sets|Reads|Conditions|Effect)", body) and "`" not in body and "->" not in body and len(body) < 260 and not re.search(NOTEY, body, re.I):
                 node["lines"].append({"who": None, "text": body, "if": cond, "narr": True})
             continue
     for n in nodes.values():
