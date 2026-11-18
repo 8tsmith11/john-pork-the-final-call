@@ -225,6 +225,8 @@ have to apply, but it would make it interesting."
   > *"in their physical forms." / "however the players still know they are machines, this is
   > commonplace" / "in the story" / "they should be extremely powerful and durable and have unique
   > physical abilities"*
+  > *"all of them"*: applies to every major machine character (Pork, Tim, Sahur, and any added
+  > later).
 
 ---
 
