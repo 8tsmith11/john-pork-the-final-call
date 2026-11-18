@@ -112,7 +112,28 @@ function startCity() {
   timers.push(setTimeout(event, 1500));
   return { stop() { bus.gain.linearRampToValueAtTime(0, a.currentTime + 1); timers.forEach(clearTimeout); setTimeout(() => parts.forEach((p) => p.src.stop()), 1200); } };
 }
-const AMBIENCE = { metro_plaza: startCity };
+// Quieter beds under the music: the building's hum, the tunnels' drips and electrical drone.
+function startBed(kind) {
+  const a = ac(); if (!a) return null;
+  const bus = a.createGain(); bus.gain.value = 0; bus.connect(master);
+  const parts = [];
+  const hum = a.createOscillator(); hum.type = 'sine'; hum.frequency.value = kind === 'tunnel' ? 50 : 60;
+  const hg = a.createGain(); hg.gain.value = kind === 'tunnel' ? 0.05 : 0.025; hum.connect(hg); hg.connect(bus); hum.start();
+  parts.push({ src: hum });
+  parts.push(loopNoise(a, 'brown', 'lowpass', kind === 'tunnel' ? 120 : 300, kind === 'tunnel' ? 0.25 : 0.08, bus));
+  bus.gain.linearRampToValueAtTime(0.8, a.currentTime + 2);
+  const timers = [];
+  const drip = () => {
+    const t = a.currentTime, o = a.createOscillator(), g = a.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(1400 + Math.random() * 900, t); o.frequency.exponentialRampToValueAtTime(400, t + 0.08);
+    g.gain.setValueAtTime(0.05, t); g.gain.exponentialRampToValueAtTime(0.0005, t + 0.25);
+    o.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.3);
+    timers.push(setTimeout(drip, 700 + Math.random() * 2600));
+  };
+  if (kind === 'tunnel') timers.push(setTimeout(drip, 800));
+  return { stop() { bus.gain.linearRampToValueAtTime(0, a.currentTime + 1); timers.forEach(clearTimeout); setTimeout(() => parts.forEach((x) => x.src.stop()), 1200); } };
+}
+const AMBIENCE = { metro_plaza: startCity, aster_hall: () => startBed('building'), tunnel_1: () => startBed('tunnel'), platform: () => startBed('tunnel') };
 
 export function setArea(id) {
   if (amb && amb.id !== id) { amb.handle?.stop(); amb = null; }
