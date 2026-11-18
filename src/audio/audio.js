@@ -2,14 +2,18 @@
 // No audio files needed. Real recorded/TTS voices can replace babble for act-ending cutscenes later.
 
 import { startSong, stopSong, currentSong, SONGS } from './music.js';
+import { performanceMix } from './performanceMix.js';
 
-let ctx = null, master = null, drone = null;
+let ctx = null, master = null, background = null, drone = null;
+let mix = { nearby: false, boss: false, background: 1 }, voiceDucked = false;
+const mediaVolumes = new Map();
 
 function ac() {
   if (!ctx) {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
     ctx = new AC(); master = ctx.createGain(); master.gain.value = 0.25; master.connect(ctx.destination);
+    background = ctx.createGain(); background.gain.value = mix.background; background.connect(master);
   }
   if (ctx.state === 'suspended') ctx.resume();
   return ctx;
@@ -61,10 +65,11 @@ const MUSIC_VOL = 0.35;
 let track = null, trackSrc = null;
 
 function fade(el, to, ms, done) {
-  const from = el.volume, t0 = performance.now();
+  const from = mediaVolumes.get(el) ?? el.volume, t0 = performance.now();
   const step = () => {
     const k = Math.min(1, (performance.now() - t0) / ms);
-    el.volume = from + (to - from) * k;
+    mediaVolumes.set(el, from + (to - from) * k);
+    el.volume = mediaVolumes.get(el) * mix.background * (voiceDucked ? 0.2 : 1);
     if (k < 1) requestAnimationFrame(step); else done?.();
   };
   step();
@@ -87,7 +92,7 @@ function loopNoise(a, kind, filterType, freq, gain, dest) {
 }
 function startCity() {
   const a = ac(); if (!a) return null;
-  const bus = a.createGain(); bus.gain.value = 0; bus.connect(master);
+  const bus = a.createGain(); bus.gain.value = 0; bus.connect(background);
   const parts = [
     loopNoise(a, 'brown', 'lowpass', 180, 0.5, bus),     // traffic rumble
     loopNoise(a, 'white', 'highpass', 4500, 0.06, bus),  // rain hiss
@@ -120,7 +125,7 @@ function startCity() {
 // Quieter beds under the music: the building's hum, the tunnels' drips and electrical drone.
 function startBed(kind) {
   const a = ac(); if (!a) return null;
-  const bus = a.createGain(); bus.gain.value = 0; bus.connect(master);
+  const bus = a.createGain(); bus.gain.value = 0; bus.connect(background);
   const parts = [];
   const hum = a.createOscillator(); hum.type = 'sine'; hum.frequency.value = kind === 'tunnel' ? 50 : 60;
   const hg = a.createGain(); hg.gain.value = kind === 'tunnel' ? 0.05 : 0.025; hum.connect(hg); hg.connect(bus); hum.start();
@@ -141,17 +146,18 @@ function startBed(kind) {
 const AMBIENCE = { metro_plaza: startCity, aster_hall: () => startBed('building'), tunnel_1: () => startBed('tunnel'), platform: () => startBed('tunnel') };
 
 export function setArea(id) {
+  setInstrumentFocus(null, null); // do not carry a previous map's performers into another scene
   if (amb && amb.id !== id) { amb.handle?.stop(); amb = null; }
   if (AMBIENCE[id] && !amb) amb = { id, handle: AMBIENCE[id]() };
   const src = MUSIC[id];
   if (src === trackSrc) return;
-  if (track) { const old = track; fade(old, 0, 1200, () => old.pause()); }
+  if (track) { const old = track; fade(old, 0, 1200, () => { old.pause(); mediaVolumes.delete(old); }); }
   track = null; trackSrc = src ?? null;
   if (!src?.startsWith('synth:')) stopSong();
   if (!src) return;
   if (src.startsWith('synth:')) {
     const name = src.slice(6);
-    const begin = () => { const a = ac(); if (a && currentSong() !== name && trackSrc === src) startSong(a, master, name, 1.4); };
+    const begin = () => { const a = ac(); if (a && currentSong() !== name && trackSrc === src) startSong(a, background, name, 1.4); };
     begin();
     // Browsers hold audio until the first click or key; start then if we couldn't start now.
     if (!ctx || ctx.state !== 'running') { window.addEventListener('pointerdown', begin, { once: true }); window.addEventListener('keydown', begin, { once: true }); }
@@ -159,6 +165,7 @@ export function setArea(id) {
   }
   const el = new Audio(src);
   el.loop = true; el.volume = 0;
+  mediaVolumes.set(el, 0);
   el.play().then(() => fade(el, MUSIC_VOL, 1500)).catch(() => {
     // Autoplay blocked until the player interacts: start on the next click/key.
     const resume = () => { el.play().then(() => fade(el, MUSIC_VOL, 1500)).catch(() => {}); };
@@ -170,9 +177,26 @@ export function setArea(id) {
 
 /** Duck the game's music and ambience under a voice recording (voice cameos), and bring it back. */
 export function setMusicDuck(on) {
+  voiceDucked = !!on;
   const a = ac();
   if (a && master) master.gain.setTargetAtTime(on ? 0.06 : 0.25, a.currentTime, 0.25);
-  if (track) fade(track, on ? MUSIC_VOL * 0.2 : MUSIC_VOL, 400);
+  applyMediaMix();
+}
+
+function applyMediaMix() {
+  for (const [el, volume] of mediaVolumes) el.volume = volume * mix.background * (voiceDucked ? 0.2 : 1);
+}
+
+/** Nearby performances take over the score/ambience, while a live boss keeps its score audible.
+ * Instruments and combat/voice cues stay on the master bus and are never muted here.
+ * Performances already gives every overlapping performer within 80 px the same 1.6 gain.
+ */
+export function setInstrumentFocus(snap, localId) {
+  const next = performanceMix(snap, localId);
+  if (next.background === mix.background) { mix = next; return; }
+  mix = next;
+  if (ctx && background) background.gain.setTargetAtTime(mix.background, ctx.currentTime, 0.04);
+  applyMediaMix();
 }
 
 /** The shared AudioContext and master bus, for other modules that make sound (instruments). */

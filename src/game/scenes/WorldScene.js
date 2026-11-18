@@ -10,7 +10,7 @@ import { TILE_COLORS } from '../../content/maps/build.js';
 import { ENEMIES } from '../../content/enemies.js';
 import { GAME_VERSION } from '../../version.js';
 import { loadScene, Conversation, evalCond } from '../../engine/dialogue.js';
-import { babble, setArea, sfx, ring, speak, hush } from '../../audio/audio.js';
+import { babble, setArea, sfx, ring, speak, hush, setInstrumentFocus } from '../../audio/audio.js';
 import { sellPrice, LOOT, DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods, EQUIP_SLOTS, canWear } from '../../content/items.js';
 import { tileKey } from '../render/tiles.js';
 import { GameMenu, TABS } from '../ui/GameMenu.js';
@@ -81,6 +81,7 @@ export class WorldScene extends Phaser.Scene {
     this.sprites = new Map(); this.enemySprites = new Map(); this.shotGfx = this.add.graphics().setDepth(5000);
     this.fxGfx = this.add.graphics().setDepth(5001);
     this.input2 = new InputReader(this);
+    this.events.once('shutdown', () => setInstrumentFocus(null, null));
     this.acc = 0;
     this._makeUi();
     this._wireNet();
@@ -1413,6 +1414,7 @@ export class WorldScene extends Phaser.Scene {
     this._lastRendered = snap;
     if (this.mode === 'client' && snap.doors) for (const d of this.map.doors.values()) d.open = snap.doors.includes(d.id);
     this._render(snap);
+    setInstrumentFocus(snap, this.localId);
     this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.pacifier?.update(snap);
   }
 
