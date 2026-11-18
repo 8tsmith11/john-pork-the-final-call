@@ -1,7 +1,8 @@
 // In-game menu: tabbed panel (INVENTORY · SKILLS · MAP · CONTROLS · SYSTEM) plus the FAB printer.
 // Rebuilt from scratch on every refresh (cheap, and never shows stale state).
 import { VIEW } from '../../view.js';
-import { ITEMS, RECIPES, SKILLS, SHOPS, playerMods } from '../../content/items.js';
+import { ITEMS, RECIPES, SKILLS, SHOPS, playerMods, ARMOR_SLOTS, GEAR_SLOTS, WEAPON_SLOTS, SLOT_NAMES, MAX_UPGRADE, upgradeCost, scaleMods, canWear } from '../../content/items.js';
+import { MAPS } from '../../content/maps/index.js';
 import { canPay, count } from '../../engine/inventory.js';
 import { SKILL_TREE, skillOpen } from '../../content/skills.js';
 import { ROOMMATES } from '../scenes/BootScene.js';
@@ -11,7 +12,14 @@ export const TABS = ['inventory', 'quests', 'phone', 'skills', 'map', 'controls'
 const TAB_LABEL = { inventory: 'INVENTORY', quests: 'QUESTS', phone: 'PHONE', skills: 'SKILLS', map: 'MAP', controls: 'CONTROLS', system: 'SYSTEM' };
 const C = { panel: 0x0b0d16, edge: 0xf2a6b8, dim: 0x5d6487, text: '#e8e8f0', sub: '#9aa3c7', hi: '#ffb347', ok: '#7fb069', bad: '#d65db1' };
 const F = (size = 8, color = C.text) => ({ fontFamily: 'monospace', fontSize: `${size}px`, color });
-const SLOT_LABEL = { weapon: 'Melee', ranged: 'Ranged', armor: 'Armor', gadget: 'Gadget', charm: 'Charm', instrument: 'Instrument', gift: 'Gift', material: 'Material' };
+// Shop row labels (any item kind). Equipment slots themselves come from items.js (SLOT_NAMES).
+const SLOT_LABEL = { ...SLOT_NAMES, instrument: 'Instrument', gift: 'Gift', material: 'Material' };
+// Cut a line to fit `px` view pixels at monospace `size` (Text crops don't work at the 4x text resolution).
+const fit = (str, px, size) => { const n = Math.floor(px / (size * 0.62)); return str.length > n ? str.slice(0, n - 1) + '…' : str; };
+const SLOT_ABBR = { weapon: 'Me', ranged: 'Ra', gadget: 'Ga', charm: 'Cm', helmet: 'Hd', chestplate: 'Ch', leggings: 'Lg', boots: 'Bt', goggles: 'Gg', parka: 'Pk', gloves: 'Gl', socks: 'Sk', backpack: 'Bp' };
+const MOD_NAME = { melee: 'melee', shot: 'shot dmg', shotCd: 'fire rate', armor: 'armor', maxHp: 'max HP', speed: 'speed', sta: 'stamina', staRegen: 'stamina regen', crit: 'crit', markDmg: 'marked dmg', abilityPower: 'ability', skillCd: 'ability cooldown', dodgeCd: 'dodge cooldown', haggle: 'prices', dashHit: 'dash hit', revive: 'revive speed', loot: 'loot' };
+const PCT = new Set(['armor', 'speed', 'staRegen', 'crit', 'markDmg', 'abilityPower', 'skillCd', 'haggle', 'revive', 'loot']);
+export const modText = (mods) => Object.entries(mods || {}).filter(([k]) => k !== 'gun').map(([k, v]) => `${MOD_NAME[k] ?? k} ${PCT.has(k) ? (v > 0 ? '+' : '') + Math.round(v * 100) + '%' : (v > 0 ? '+' : '') + (Math.abs(v) >= 1 ? Math.round(v) : v)}`).join('  ');
 
 export class GameMenu {
   constructor(scene) {
@@ -48,6 +56,8 @@ export class GameMenu {
     g.fillStyle(C.panel, 0.97).fillRoundedRect(b.x, b.y, b.w, b.h, 3).lineStyle(1, C.edge, 0.9).strokeRoundedRect(b.x, b.y, b.w, b.h, 3);
     if (this.tab === 'fab') return this._fab(g);
     if (this.tab?.startsWith('shop:')) return this._shop(g, this.tab.slice(5));
+    if (this.tab === 'armorer') return this._armorer(g);
+    if (this.tab === 'travel') return this._travel(g);
     // tab bar
     let x = b.x + 8;
     for (const tab of TABS) {
@@ -69,31 +79,42 @@ export class GameMenu {
     const s = this.scene, who = s.character, c = s.save.party[who], b = this.box;
     const mods = playerMods(c, who), inv = c.inventory ?? [];
     const S = 20, GAP = 2;
-    // character preview
-    g.fillStyle(0x151827).fillRoundedRect(b.x + 10, b.y + 28, 84, 118, 3);
-    const spr = s.add.sprite(b.x + 52, b.y + 128, who).setOrigin(0.5, 1).setScale(4).play(`${who}_idle_down`);
+    // Paper doll: armor (left), the character (middle), gear and weapons (right). Unique items glow gold.
+    g.fillStyle(0x151827).fillRoundedRect(b.x + 32, b.y + 28, 52, 108, 3);
+    const spr = s.add.sprite(b.x + 58, b.y + 124, who).setOrigin(0.5, 1).setScale(3).play(`${who}_idle_down`);
     this.root.add(spr);
-    this._t(b.x + 52, b.y + 132, `${ROOMMATES[who].name} · lv ${c.level}`, F(8, C.text)).setOrigin(0.5, 0);
-    // equipment column
-    const ex = b.x + 100, ey = b.y + 28;
-    Object.keys(SLOT_LABEL).forEach((slot, k) => {
-      const y = ey + k * (S + GAP), id = c.equipped[slot];
-      g.fillStyle(0x151827).fillRect(ex, y, S, S).lineStyle(1, id ? 0x7fb069 : C.dim, 0.9).strokeRect(ex + 0.5, y + 0.5, S - 1, S - 1);
-      if (id) this._icon(ex + S / 2, y + S / 2, id);
-      else this._t(ex + S / 2, y + S / 2, SLOT_LABEL[slot][0], F(7, '#3a4060')).setOrigin(0.5);
-      const z = s.add.zone(ex, y, S, S).setOrigin(0).setInteractive({ useHandCursor: true });
+    this._t(b.x + 58, b.y + 126, `${ROOMMATES[who].name}`, F(7, C.text)).setOrigin(0.5, 0);
+    const slotBox = (slot, x, y) => {
+      const id = c.equipped[slot], def = id && ITEMS[id], uniq = def?.unique, lvl = id ? c.upgrades?.[id] ?? 0 : 0;
+      g.fillStyle(0x151827).fillRect(x, y, S, S).lineStyle(1, uniq ? 0xffd27f : id ? 0x7fb069 : C.dim, 0.9).strokeRect(x + 0.5, y + 0.5, S - 1, S - 1);
+      if (id) { this._icon(x + S / 2, y + S / 2, id); if (lvl) this._t(x + S - 1, y + 1, `+${lvl}`, F(5, C.hi)).setOrigin(1, 0); }
+      else this._t(x + S / 2, y + S / 2, SLOT_ABBR[slot], F(6, '#3a4060')).setOrigin(0.5);
+      const z = s.add.zone(x, y, S, S).setOrigin(0).setInteractive({ useHandCursor: true });
       z.on('pointerdown', () => {
         if (this.held != null) { const it = inv[this.held]; if (it && ITEMS[it.id]?.slot === slot) s.menuUse(it.id); this.held = null; return this.refresh(); }
         if (id) s.menuUse(id);   // click a worn item to take it off
       });
-      z.on('pointerover', () => { this.hover = id ? { id } : { label: `${SLOT_LABEL[slot]} slot` }; this._drawTip(); });
+      z.on('pointerover', () => { this.hover = id ? { id } : { label: `${SLOT_NAMES[slot]} slot` }; this._drawTip(); });
       this.root.add(z);
-    });
-    // stats under the preview
-    const stat = [`HP ${100 + (mods.maxHp || 0)}   Armor ${Math.round((mods.armor || 0) * 100)}%`, `Melee +${mods.melee}   Ranged ${mods.gun ? '+' + mods.shot : '-'}`, `$${s.save.world.money ?? 0}   XP ${c.xp}/${c.level * 30}`];
-    stat.forEach((line, k) => this._t(b.x + 10, b.y + 152 + k * 10, line, F(7, k === 2 ? C.hi : C.sub)));
+    };
+    const col = (slots, x, label) => { this._t(x + S / 2, b.y + 25, label, F(5, C.sub)).setOrigin(0.5, 1); slots.forEach((slot, k) => slotBox(slot, x, b.y + 28 + k * (S + GAP))); };
+    col(ARMOR_SLOTS, b.x + 8, 'ARMOR');
+    col(GEAR_SLOTS, b.x + 88, 'GEAR');
+    col(WEAPON_SLOTS, b.x + 110, 'HANDS');
+    // stats: armor points come from the four armor pieces
+    const armorPts = Math.round(ARMOR_SLOTS.reduce((t, sl) => { const d = ITEMS[c.equipped[sl]]; return t + (canWear(d, who) ? scaleMods(d.mods, c.upgrades?.[d.id ?? c.equipped[sl]] ?? 0).armor ?? 0 : 0); }, 0) * 100);
+    const stat = [`HP ${100 + (mods.maxHp || 0)}   Armor ${armorPts} pts (${Math.round((mods.armor || 0) * 100)}%)`, `Melee +${mods.melee}   Ranged ${mods.gun ? '+' + mods.shot : '-'}   Speed ${mods.speed >= 0 ? '+' : ''}${Math.round((mods.speed || 0) * 100)}%`, `$${s.save.world.money ?? 0}   XP ${c.xp}/${c.level * 30}   lv ${c.level}`];
+    stat.forEach((line, k) => this._t(b.x + 8, b.y + 142 + k * 9, line, F(6, k === 2 ? C.hi : C.sub)));
+    // BUFFS: what is boosting you right now beyond plain gear (partners nearby, unique items)
+    const buffs = [...(s.romance?.activeBuffs?.() ?? []).map((v) => `♥ ${v.name}: ${v.buffText}`),
+      ...Object.values(c.equipped).filter((id) => ITEMS[id]?.unique && canWear(ITEMS[id], who)).map((id) => `★ ${ITEMS[id].name}: ${modText(scaleMods(ITEMS[id].mods, c.upgrades?.[id] ?? 0))}`)];
+    this._t(b.x + 8, b.y + 172, 'BUFFS  (hover gear for details)', F(6, C.sub));
+    const rows = Math.floor((b.h - 182) / 7);
+    if (!buffs.length) this._t(b.x + 8, b.y + 180, 'none right now', F(6, '#4a5175'));
+    buffs.slice(0, rows).forEach((line, k) => this._t(b.x + 8, b.y + 180 + k * 7, fit(line, 128, 5), F(5, '#f2a6b8')));
+    if (buffs.length > rows) this._t(b.x + 136, b.y + 180 + (rows - 1) * 7, `+${buffs.length - rows}`, F(5, C.sub));
     // grid + hotbar
-    const gx = b.x + 132, gy = b.y + 36;
+    const gx = b.x + 140, gy = b.y + 36;
     this._t(gx, gy - 4, 'BACKPACK', F(6, C.sub)).setOrigin(0, 1);
     const slotXY = (i) => i < 9 ? [gx + i * (S + GAP), gy + 3 * (S + GAP) + 10] : [gx + ((i - 9) % 9) * (S + GAP), gy + Math.floor((i - 9) / 9) * (S + GAP)];
     this._t(gx, gy + 3 * (S + GAP) + 6, 'HOTBAR  (keys 1-9)', F(6, C.sub)).setOrigin(0, 1);
@@ -143,9 +164,11 @@ export class GameMenu {
     if (!h) return;
     if (h.label) { this.tip.push(this._t(x, y, h.label, F(8, C.sub))); return; }
     const def = ITEMS[h.id]; if (!def) return;
-    const kind = { weapon: 'Melee weapon', ranged: 'Ranged weapon', armor: 'Armor', gadget: 'Gadget', charm: 'Charm', consumable: 'Food', material: 'Material', junk: 'Curio', key: 'Key item', instrument: 'Instrument (use to play)', gift: 'Gift' }[def.slot] ?? '';
-    const stats = Object.entries(def.mods || {}).filter(([k]) => k !== 'gun').map(([k, v]) => `${{ melee: 'melee', shot: 'shot dmg', shotCd: 'fire rate', armor: 'armor', maxHp: 'max HP' }[k] ?? k} ${k === 'armor' ? Math.round(v * 100) + '%' : (v > 0 ? '+' : '') + v}`).join('  ');
-    this.tip.push(this._t(x, y, `${def.name}${h.qty > 1 ? ' ×' + h.qty : ''}`, F(9, C.hi)));
+    const kind = ({ weapon: 'Melee weapon', ranged: 'Ranged weapon', consumable: 'Food', material: 'Material', junk: 'Curio', key: 'Key item', instrument: 'Instrument (use to play)', gift: 'Gift' }[def.slot]
+      ?? (ARMOR_SLOTS.includes(def.slot) ? `Armor · ${SLOT_NAMES[def.slot]}` : GEAR_SLOTS.includes(def.slot) ? `Gear · ${SLOT_NAMES[def.slot]}` : SLOT_NAMES[def.slot] ?? '')) + (def.unique ? ` · ${def.owner[0].toUpperCase() + def.owner.slice(1)} only${def.special ? ' · special armor' : ''}` : '');
+    const lvl = this.scene.save.party[this.scene.character]?.upgrades?.[h.id] ?? 0;
+    const stats = modText(scaleMods(def.mods, lvl));
+    this.tip.push(this._t(x, y, `${def.name}${lvl ? ` +${lvl}` : ''}${h.qty > 1 ? ' ×' + h.qty : ''}`, F(9, def.unique ? '#ffd27f' : C.hi)));
     this.tip.push(this._t(x, y + 11, `${kind}${def.heal ? `  · heals ${def.heal}` : ''}${stats ? '  · ' + stats : ''}`, F(6, C.ok)));
     this.tip.push(this._t(x, y + 20, def.text ?? '', { ...F(7, C.sub), wordWrap: { width: this.tipW } }));
   }
@@ -322,16 +345,53 @@ export class GameMenu {
     this._t(b.x + b.w - 10, b.y + 7, `$${money}   [ESC] close`, F(8, C.hi)).setOrigin(1, 0);
     this._t(b.x + 10, b.y + 20, shop.lines.join(' '), { ...F(7, C.sub), wordWrap: { width: b.w - 20 } });
     shop.stock.forEach((st, i) => {
-      const def = ITEMS[st.item], y = b.y + 40 + i * 30, x = b.x + 12;
+      const rowH = Math.min(30, Math.floor((b.h - 44) / shop.stock.length)), def = ITEMS[st.item], y = b.y + 40 + i * rowH, x = b.x + 12;
       const owned = st.once && count(c, st.item) > 0, locked = st.needs && !count(c, st.needs);
       const price = s.priceFor(s.character, st.price), can = !owned && !locked && money >= price;
-      g.fillStyle(can ? 0x1a2030 : 0x121521).fillRoundedRect(x, y, b.w - 24, 26, 2).lineStyle(1, can ? 0xffb347 : C.dim, can ? 0.8 : 0.4).strokeRoundedRect(x, y, b.w - 24, 26, 2);
-      g.fillStyle(0x0b0d16).fillRect(x + 3, y + 3, 20, 20);
-      this._icon(x + 13, y + 13, st.item);
-      this._t(x + 28, y + 3, def.name, F(8, can ? C.text : C.sub));
-      this._t(x + 28, y + 14, def.text, { ...F(6, C.sub), wordWrap: { width: b.w - 140 } });
+      g.fillStyle(can ? 0x1a2030 : 0x121521).fillRoundedRect(x, y, b.w - 24, rowH - 4, 2).lineStyle(1, can ? 0xffb347 : C.dim, can ? 0.8 : 0.4).strokeRoundedRect(x, y, b.w - 24, rowH - 4, 2);
+      g.fillStyle(0x0b0d16).fillRect(x + 3, y + 2, rowH - 8, rowH - 8);
+      this._icon(x + 3 + (rowH - 8) / 2, y + 2 + (rowH - 8) / 2, st.item).setScale(Math.min(1, (rowH - 8) / 18));
+      this._t(x + 28, y + 2, def.name, F(8, can ? C.text : C.sub));
+      if (rowH >= 26) this._t(x + 28, y + 13, def.text, { ...F(6, C.sub), wordWrap: { width: b.w - 140 }, maxLines: 1 });
+      else this._t(x + 120, y + 4, fit(def.text, b.w - 260, 6), F(6, C.sub));
       const right = owned ? 'owned' : locked ? `needs ${ITEMS[st.needs].name.toLowerCase()}` : `${price < st.price ? `($${st.price}) ` : ''}$${price}  › BUY`;
       this._t(x + b.w - 30, y + 8, right, F(8, owned ? C.ok : can ? C.hi : C.bad), can ? () => s.menuBuy(id, i) : null).setOrigin(1, 0);
     });
+  }
+
+  // MASTER ARMORER: upgrade anything you're wearing, +1 to +5. Each level is +15% of its bonuses.
+  _armorer(g) {
+    const s = this.scene, b = this.box, who = s.character, c = s.save.party[who], money = s.save.world.money ?? 0;
+    this._t(b.x + 10, b.y + 7, 'OTTOLINE BRACK · MASTER ARMORER', F(10, C.hi));
+    this._t(b.x + b.w - 10, b.y + 7, `$${money}   [ESC] close`, F(8, C.hi)).setOrigin(1, 0);
+    this._t(b.x + 10, b.y + 20, '"Bring it here. I don\'t make new things. I make your things better."', { ...F(7, C.sub), wordWrap: { width: b.w - 20 } });
+    const worn = Object.entries(c.equipped).filter(([, id]) => id && ITEMS[id]?.mods && canWear(ITEMS[id], who));
+    if (!worn.length) this._t(b.x + 12, b.y + 44, 'You aren\'t wearing anything worth her time.', F(8, C.sub));
+    const rowH = Math.min(24, Math.floor((b.h - 44) / Math.max(1, worn.length)));
+    worn.forEach(([slot, id], i) => {
+      const def = ITEMS[id], lvl = c.upgrades?.[id] ?? 0, y = b.y + 38 + i * rowH, x = b.x + 12, maxed = lvl >= MAX_UPGRADE;
+      const cost = upgradeCost(lvl), mats = Object.entries(cost.mats), can = !maxed && money >= cost.money && mats.every(([m, n]) => count(c, m) >= n);
+      g.fillStyle(can ? 0x1a2030 : 0x121521).fillRoundedRect(x, y, b.w - 24, rowH - 3, 2).lineStyle(1, def.unique ? 0xffd27f : can ? 0xffb347 : C.dim, can ? 0.8 : 0.4).strokeRoundedRect(x, y, b.w - 24, rowH - 3, 2);
+      this._icon(x + 10, y + (rowH - 3) / 2, id).setScale(Math.min(1, (rowH - 5) / 18));
+      this._t(x + 24, y + 2, `${def.name} ${lvl ? '+' + lvl : ''}  (${SLOT_NAMES[slot]})`, F(7, def.unique ? '#ffd27f' : C.text));
+      this._t(x + 24, y + 11, fit(maxed ? modText(scaleMods(def.mods, lvl)) : `${modText(scaleMods(def.mods, lvl))}  →  ${modText(scaleMods(def.mods, lvl + 1))}`, b.w - 150, 5), F(5, C.sub));
+      const price = maxed ? 'MAX' : `$${cost.money} + ${mats.map(([m, n]) => `${n} ${ITEMS[m].name.toLowerCase()}`).join(', ')}  › UPGRADE`;
+      this._t(x + b.w - 30, y + 5, price, F(6, maxed ? C.ok : can ? C.hi : C.bad), can ? () => s.gear.menuUpgrade(id) : null).setOrigin(1, 0);
+    });
+  }
+
+  // FAST TRAVEL (winged boots, hold B): anywhere the party has already been.
+  _travel(g) {
+    const s = this.scene, b = this.box, here = s.map.id;
+    this._t(b.x + 10, b.y + 7, 'WINGED BOOTS · FAST TRAVEL', F(10, '#ffb347'));
+    this._t(b.x + b.w - 10, b.y + 7, '[ESC] close', F(8, C.hi)).setOrigin(1, 0);
+    const dests = (s.save.world.visited ?? []).filter((id) => MAPS[id] && id !== here && id !== 'platform');
+    if (!dests.length) this._t(b.x + 12, b.y + 30, 'Nowhere you\'ve been yet.', F(8, C.sub));
+    dests.forEach((id, i) => {
+      const y = b.y + 28 + i * 18, x = b.x + 12;
+      g.fillStyle(0x1a2030).fillRoundedRect(x, y, b.w - 24, 15, 2).lineStyle(1, 0xffb347, 0.7).strokeRoundedRect(x, y, b.w - 24, 15, 2);
+      this._t(x + 8, y + 3, `${i + 1}. ${MAPS[id].name ?? id}`, F(8, C.text), () => { s.gear.travel(id); this.scene._closeMenu(); });
+    });
+    this._travelKeys = dests;
   }
 }

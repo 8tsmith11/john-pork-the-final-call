@@ -3,10 +3,18 @@
 import { FISH } from './fish.js';
 import { SKILL_TREE } from './skills.js';
 
+// Equipment slots (D-014, Michael). Armor points come from the four armor pieces; gear goes on top.
+export const WEAPON_SLOTS = ['weapon', 'ranged', 'gadget', 'charm'];
+export const ARMOR_SLOTS = ['helmet', 'chestplate', 'leggings', 'boots'];
+export const GEAR_SLOTS = ['goggles', 'parka', 'gloves', 'socks', 'backpack'];
+export const EQUIP_SLOTS = [...WEAPON_SLOTS, ...ARMOR_SLOTS, ...GEAR_SLOTS];
+export const SLOT_NAMES = { weapon: 'Melee', ranged: 'Ranged', gadget: 'Gadget', charm: 'Charm', helmet: 'Helmet', chestplate: 'Chestplate',
+  leggings: 'Leggings', boots: 'Boots', goggles: 'Goggles / hat', parka: 'Rain parka', gloves: 'Gloves', socks: 'Socks', backpack: 'Backpack' };
+
 export const ITEMS = {
   'item.wooden_bat':   { name: 'Wooden bat', slot: 'weapon', analog: true, mods: { melee: 6 }, text: 'Ash wood. Coderot slides off it.' },
   'item.fab_launcher': { name: 'Fab launcher', slot: 'ranged', mods: { gun: 1, shot: 4, shotCd: -0.12 }, text: 'Printed at 3 a.m. Fires sintered pellets.' },
-  'item.mesh_vest':    { name: 'Printed mesh vest', slot: 'armor', mods: { armor: 0.2 }, text: 'Hex lattice. Takes a fifth of the hurt.' },
+  'item.mesh_vest':    { name: 'Printed mesh vest', slot: 'chestplate', mods: { armor: 0.2 }, text: 'Hex lattice. Takes a fifth of the hurt.' },
   'item.sniffer':      { name: 'Helium sniffer', slot: 'gadget', mods: {}, text: 'Follows the lightest thing in the world.' },
   'item.charm_1901':   { name: 'Rollover charm', slot: 'charm', analog: true, mods: { armor: 0.12 }, text: 'A brass clock hand on a cord, stopped at 3:14. Takes the edge off whatever hits you.' },
   'item.pork_pin':     { name: 'Porcelain Pork pin', slot: 'charm', mods: { melee: 3, shot: 3 }, text: 'Three busts looked at the flag at once and this was on the floor afterwards. Warm to the touch.' },
@@ -56,6 +64,48 @@ Object.assign(ITEMS, {
   'item.chocolates':      { name: 'Chocolates', slot: 'gift', stack: 8, text: 'A heart-shaped box. Real cocoa, the label says, in a font that is trying very hard.' },
 });
 
+// Ordinary armor and gear for the new slots (anyone can wear these).
+Object.assign(ITEMS, {
+  'item.bike_helmet':   { name: 'Bike helmet', slot: 'helmet', mods: { armor: 0.05 }, text: 'Foam and a cracked shell. Someone wrote SLOW DOWN on the back in marker.' },
+  'item.hardhat':       { name: 'Hard hat', slot: 'helmet', mods: { armor: 0.08, speed: -0.02 }, text: 'Yellow, dented, heavy. The sticker says the last inspection was in 2081.' },
+  'item.work_pants':    { name: 'Double-knee work pants', slot: 'leggings', analog: true, mods: { armor: 0.06 }, text: 'Canvas so stiff it stands up on its own.' },
+  'item.steel_toes':    { name: 'Steel-toe boots', slot: 'boots', analog: true, mods: { armor: 0.05, speed: -0.03, dashHit: 4 }, text: 'Heavy. Your dodge hits whatever it runs into.' },
+  'item.sneakers':      { name: 'Running sneakers', slot: 'boots', mods: { speed: 0.07 }, text: 'Bright soles, no armor at all. You will get places.' },
+  'item.welding_goggles': { name: 'Welding goggles', slot: 'goggles', mods: { crit: 0.05 }, text: 'Everything looks dimmer except the weak spots.' },
+  'item.rain_parka':    { name: 'Yellow rain parka', slot: 'parka', mods: { armor: 0.03, staRegen: 0.1 }, text: 'Dry is a kind of stamina.' },
+  'item.work_gloves':   { name: 'Work gloves', slot: 'gloves', analog: true, mods: { melee: 2 }, text: 'Leather palms, split at one thumb.' },
+  'item.wool_socks':    { name: 'Wool socks', slot: 'socks', analog: true, mods: { sta: 10 }, text: 'Thick enough to change your shoe size.' },
+  // Backpacks: futuristic, and every one costs you something.
+  'item.pack_coolant':  { name: 'Coolant-loop pack', slot: 'backpack', mods: { staRegen: 0.4, speed: -0.06 }, text: 'A closed loop of chilled gel along your spine. You recover fast, and you carry a fridge. +stamina regen, -speed.' },
+  'item.pack_drone':    { name: 'Drone cradle', slot: 'backpack', mods: { markDmg: 0.15, abilityPower: 0.1, armor: -0.05 }, text: 'A palm-sized drone rides in it and paints everything that moves. Its hum draws them to you. +marked damage, +ability power, -armor.' },
+  'item.pack_capacitor': { name: 'Capacitor pack', slot: 'backpack', mods: { melee: 5, maxHp: -15 }, text: 'Dumps a charge into every swing. The battery bleeds into you a little. +melee, -max HP.' },
+});
+
+// UNIQUE ITEMS: four per roommate, and they only work for their owner (owner-only mods and equip).
+// Each roommate has one special armor piece (special: true); the rest are gear. They are NOT obtainable
+// before late Act 2: they're found through quests or level design (src: 'late-act2' etc. is a note
+// for level design, not code). ?gear=debug hands them out for testing.
+// Trevor's and Manuel's come from what their players ask for (board #150); the rest from backstory.
+Object.assign(ITEMS, {
+  'item.winged_boots':  { name: 'Winged boots', slot: 'boots', owner: 'michael', unique: true, special: true, src: 'late-act2', blink: true,
+    mods: { armor: 0.1, speed: 0.6 }, text: 'Little white wings at the ankles that never stop twitching. Incredibly fast. [B] blinks you forward in a line of fire; hold [B] to fast travel.' },
+  'item.cowboy_hat':    { name: 'Cowboy hat', slot: 'goggles', owner: 'michael', unique: true, src: 'act3',
+    mods: { crit: 0.1, markDmg: 0.2, haggle: 0.15 }, text: 'Tennessee straw, sweat-stained, ironic until it isn\'t. Michael squints under it and hits what he pings. Shopkeepers trust it.' },
+  'item.smoky_socks':   { name: 'Smoky Mountain socks', slot: 'socks', owner: 'michael', unique: true, src: 'act3',
+    mods: { sta: 30, staRegen: 0.3, dodgeCd: -0.1 }, text: 'Hand-knit by somebody\'s grandmother back home. You could hike to Gatlinburg in these. More stamina, faster dodges.' },
+  'item.signal_gloves': { name: 'Signal gloves', slot: 'gloves', owner: 'michael', unique: true, src: 'act3',
+    mods: { abilityPower: 0.25, skillCd: 0.15 }, text: 'His lace runs out to his fingertips through these. Ping reaches further and comes back sooner.' },
+});
+
+// Upgrades at the master armorer: each level (max 5) scales an item's positive bonuses by +15%.
+export const MAX_UPGRADE = 5;
+export const upgradeCost = (level) => ({ money: 20 * (level + 1), mats: { 'item.mat_scrap': level + 1, ...(level ? { 'item.mat_circuit': level } : {}) } });
+export function scaleMods(mods, level = 0) {
+  if (!level) return mods;
+  return Object.fromEntries(Object.entries(mods || {}).map(([k, v]) => [k, v > 0 ? +(v * (1 + 0.15 * level)).toFixed(3) : v]));
+}
+export const canWear = (def, charId) => !!def && (!def.owner || def.owner === charId);
+
 // The fab prints from materials (cost = { materialId: qty }).
 export const RECIPES = [
   { item: 'item.mate_flask',   cost: { 'item.mat_plastic': 2, 'item.mat_scrap': 1 } },
@@ -65,6 +115,10 @@ export const RECIPES = [
   { item: 'item.rebar',        cost: { 'item.mat_scrap': 4 } },
   { item: 'item.nail_gun',     cost: { 'item.mat_scrap': 3, 'item.mat_circuit': 1, 'item.mat_cell': 1 } },
   { item: 'item.scattergun',   cost: { 'item.mat_scrap': 5, 'item.mat_plastic': 3, 'item.mat_cell': 1, 'item.mat_gel': 3 } },
+  { item: 'item.bike_helmet',    cost: { 'item.mat_plastic': 3, 'item.mat_cloth': 1 } },
+  { item: 'item.rain_parka',     cost: { 'item.mat_plastic': 3, 'item.mat_cloth': 2 } },
+  { item: 'item.pack_coolant',   cost: { 'item.mat_gel': 3, 'item.mat_cell': 1, 'item.mat_cloth': 2 } },
+  { item: 'item.pack_capacitor', cost: { 'item.mat_cell': 2, 'item.mat_circuit': 1, 'item.mat_wire': 2 } },
   { item: 'item.fab_launcher', cost: { 'item.mat_scrap': 4, 'item.mat_circuit': 2, 'item.mat_cell': 1, 'item.mat_gel': 2 } },
 ];
 
@@ -78,7 +132,7 @@ export const DROPS = {
 // things, a new world finds different ones). Each entry: [itemId | 'money', weight, min, max].
 // A container rolls `rolls` times and is picked clean after.
 export const LOOT = {
-  tools:   { rolls: 2, table: [['item.mat_scrap', 40, 1, 3], ['item.mat_wire', 30, 1, 2], ['item.box_cutter', 4, 1, 1], ['money', 26, 2, 6]] },
+  tools:   { rolls: 2, table: [['item.mat_scrap', 40, 1, 3], ['item.mat_wire', 30, 1, 2], ['item.box_cutter', 4, 1, 1], ['money', 26, 2, 6], ['item.work_pants', 4, 1, 1], ['item.work_gloves', 4, 1, 1]] },
   parts:   { rolls: 2, table: [['item.mat_circuit', 35, 1, 1], ['item.mat_wire', 35, 1, 3], ['item.mat_cell', 15, 1, 1], ['item.mat_glass', 15, 1, 2]] },
   prints:  { rolls: 1, table: [['item.mat_plastic', 80, 2, 4], ['item.mat_scrap', 20, 1, 1]] },
   trash:   { rolls: 2, table: [['item.mat_glass', 30, 1, 3], ['item.mat_circuit', 15, 1, 1], ['item.mat_plastic', 25, 1, 2], ['money', 25, 1, 5], ['item.relic_coin', 5, 1, 1]] },
@@ -95,6 +149,8 @@ export const SHOPS = {
       { item: 'item.mat_cell', price: 12 },
       { item: 'item.mat_wire', price: 4 },
       { item: 'item.mat_circuit', price: 15 },
+      { item: 'item.sneakers', price: 30 },
+      { item: 'item.pack_drone', price: 120, once: true },
     ] },
   pawn: { title: 'PAWN · BUY / SELL', lines: ['Everything here used to belong to somebody. The man behind the glass does not look up.'],
     stock: [
@@ -103,6 +159,9 @@ export const SHOPS = {
       { item: 'item.guitar_acoustic', price: 60 },
       { item: 'item.guitar_electric', price: 85 },
       { item: 'item.box_cutter', price: 12, once: true },
+      { item: 'item.hardhat', price: 18 },
+      { item: 'item.steel_toes', price: 22 },
+      { item: 'item.welding_goggles', price: 16 },
       { item: 'item.mat_glass', price: 2 },
     ] },
   corner: { title: 'CORNER STORE', lines: ['Open twenty-four hours. The register is older than you.'],
@@ -114,6 +173,8 @@ export const SHOPS = {
       { item: 'item.chocolates', price: 12 },
       { item: 'item.mat_plastic', price: 3 },
       { item: 'item.mat_cloth', price: 3 },
+      { item: 'item.work_gloves', price: 9 },
+      { item: 'item.wool_socks', price: 7 },
     ] },
 };
 
@@ -125,7 +186,12 @@ export function playerMods(char, charId) {
   const m = { melee: 0, shot: 0, shotCd: 0, armor: 0, maxHp: 0, iframes: 0, dodgeCd: 0, revive: 0, gun: 0,
     speed: 0, sta: 0, staRegen: 0, dashHit: 0, crit: 0, lifesteal: 0, loot: 0, haggle: 0, skillCd: 0, abilityPower: 0, markDmg: 0, secondWind: 0, decoys: 0, reviveHeal: 0 };
   const add = (mods, k = 1) => { for (const [key, v] of Object.entries(mods || {})) m[key] = (m[key] ?? 0) + v * k; };
-  for (const id of Object.values(char.equipped || {})) if (id) add(ITEMS[id]?.mods);
+  for (const id of Object.values(char.equipped || {})) {
+    const def = id && ITEMS[id];
+    if (!def || !canWear(def, charId)) continue;                     // unique items only work for their owner
+    add(scaleMods(def.mods, char.upgrades?.[id] ?? 0));
+    if (def.blink) m.blink = true;
+  }
   m.swing = ITEMS[char.equipped?.weapon]?.swing ?? null;   // weapon profiles replace the defaults, they don't add
   m.gunStats = ITEMS[char.equipped?.ranged]?.gun ?? null;
   for (const s of SKILLS[charId] || []) add(s.mods, char.skills?.[s.id] ?? 0);

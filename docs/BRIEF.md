@@ -264,8 +264,8 @@ have to apply, but it would make it interesting."
   them:** Trevor is amazing, Michael is mediocre, Manuel is always out of tune (instruments only, not
   record players or the soundtrack). Trevor plays rock; Michael plays a lullaby that puts any NPC or
   player in range for 3 s to sleep for 8 s (kept asleep while he keeps playing nearby).
-- **The whole game's music should be 8-bit,** except Trevor's guitar, which plays high-quality rock.
-  (Michael wants to hear the current music first: `tools/jukebox.html`.)
+- **Instruments are 8-bit,** except Trevor's guitar, which plays high-quality rock. This applies to
+  instruments only: the soundtrack stays as it is (Michael, correcting an earlier note).
 - **Important events play on every roommate's screen.** The main player can't skip them; the others can.
 - **A third each:** each human should know only about a third of the game (see `PROCESS.md`).
 

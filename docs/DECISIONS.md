@@ -116,5 +116,6 @@ Format:
 - **Romance and instruments:** courtable girlfriends for Trevor and Manuel (weaker buffs). Shared
   events play on every roommate's screen; the main player can't skip them, the others can. Guitars
   sound by who plays them (Trevor amazing, Michael mediocre, Manuel always out of tune), for
-  instruments only. Owner: BagelMeister (task 11).
+  instruments only. Instruments are 8-bit except Trevor's (real-sounding rock); the soundtrack is
+  NOT changed. Owner: BagelMeister (task 11).
 

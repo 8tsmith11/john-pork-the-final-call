@@ -10,6 +10,7 @@ export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown
 // Regular-enemy tuning for a party of three (see spawnEnemies). Measured with a headless bot run:
 // before this the tunnel cleared in ~30 s with no knockdowns.
 export const PARTY_SCALE = { hp: 1.7, dmg: 1.3 };
+export const BLINK = { dist: 112, cooldown: 1.1 };   // winged boots (D-014)
 export const LULLABY = { range: 64, expose: 3, sleep: 8 };
 export const COMBAT = {
   maxHp: 100, hurtIframes: 0.6, reviveTime: 4.0, reviveRange: 18, reviveHp: 40,
@@ -118,8 +119,8 @@ export class Sim {
    */
   setPlaying(id, song, instrument = 'acoustic') {
     const p = this.players.get(id); if (!p) return;
-    if (!song || p.downed || p.riding || p.sleepT > 0) { if (p.playing) this.events.push({ t: 'play', id, on: false }); p.playing = null; return; }
-    p.playing = { song, instrument }; this.events.push({ t: 'play', id, on: true, song, instrument });
+    if (!song || p.downed || p.riding || p.sleepT > 0) { if (p.playing) this.emit({ t: 'play', id, on: false }); p.playing = null; return; }
+    p.playing = { song, instrument }; this.emit({ t: 'play', id, on: true, song, instrument });
   }
 
   // Michael's lullaby: any other player or (non-boss) enemy that stays within LULLABY.range of him
@@ -144,6 +145,26 @@ export class Sim {
       }
     }
   }
+  /**
+   * Winged boots (D-014): an instant dash up to BLINK.dist px, stopped by walls and doors. Goes the way
+   * you're moving, or toward the aim when standing still. The renderer draws the fire line.
+   */
+  blink(id) {
+    const p = this.players.get(id);
+    if (!p || !p.mods?.blink || p.downed || p.riding || p.sleepT > 0 || p.waitExit || (p.blinkCd ?? 0) > 0) return false;
+    const a = Math.hypot(p.vx, p.vy) > 1 ? Math.atan2(p.vy, p.vx) : p.aim;
+    const x0 = p.x, y0 = p.y;
+    let x = x0, y = y0;
+    for (let d = 4; d <= BLINK.dist; d += 4) {
+      const nx = x0 + Math.cos(a) * d, ny = y0 + Math.sin(a) * d;
+      if (this._hits(nx, ny)) break;
+      x = nx; y = ny;
+    }
+    if (Math.hypot(x - x0, y - y0) < 8) return false;
+    Object.assign(p, { x, y, blinkCd: BLINK.cooldown, playing: null, iframes: Math.max(p.iframes, 0.25) });
+    this.emit({ t: 'blink', id, x0: Math.round(x0), y0: Math.round(y0), x1: Math.round(x), y1: Math.round(y) });
+    return true;
+  }
   heal(id, n) { const p = this.players.get(id); if (p && !p.downed) p.hp = Math.min(this.maxHp(p), p.hp + n); }
 
   removePlayer(id) { this.players.delete(id); }
@@ -158,9 +179,12 @@ export class Sim {
   allWaiting(exitId) { const up = [...this.players.values()].filter((p) => !p.downed && !String(p.id).startsWith('ai:')); return up.length > 0 && up.every((p) => p.waitExit === exitId); }
   clearWaiting() { for (const p of this.players.values()) p.waitExit = null; }
 
+  /** Raise an event from outside step() (input handlers): it goes out with the next step's events. */
+  emit(ev) { (this._pending ??= []).push(ev); }
+
   step(dt, inputs) {
     this.tick++;
-    this.events = [];
+    this.events = this._pending ?? []; this._pending = [];
     for (const p of this.players.values()) {
       const inp = inputs.get(p.id) || emptyInput();
       p.meleeCd = Math.max(0, p.meleeCd - dt); p.shotCd = Math.max(0, p.shotCd - dt); p.swingT = Math.max(0, p.swingT - dt);
@@ -220,6 +244,7 @@ export class Sim {
       this._moveAxis(p, 0, p.vy * dt);
 
       p.skillCd = Math.max(0, (p.skillCd ?? 0) - dt);
+      p.blinkCd = Math.max(0, (p.blinkCd ?? 0) - dt);
       if (inp.skill && !p.riding && !p.playing && p.skillCd <= 0) this._ability(p);
       if (inp.attack && !p.riding && !p.playing && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
       if (inp.fire && !p.riding && !p.playing && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);   // no gun, no shooting

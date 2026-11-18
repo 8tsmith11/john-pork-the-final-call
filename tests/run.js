@@ -137,9 +137,19 @@ test('schema 1 -> 2 migration: scrap becomes money, list inventory becomes 36 sl
   old.schemaVersion = 1; old.world.scrap = 10; delete old.world.money;
   old.party.trevor.inventory = [{ id: 'item.mate_flask', qty: 1 }, { id: 'item.wooden_bat', qty: 1 }];
   const m = migrate(JSON.parse(JSON.stringify(old)));
-  assert.equal(m.schemaVersion, 2); assert.equal(m.world.money, 55); assert.ok(!('scrap' in m.world));
+  assert.equal(m.schemaVersion, CURRENT_SCHEMA); assert.equal(m.world.money, 55); assert.ok(!('scrap' in m.world));
   assert.equal(m.party.trevor.inventory.length, 36); assert.equal(m.party.trevor.inventory[1].id, 'item.wooden_bat');
   assert.equal(m.party.manuel.inventory.length, 36);
+});
+
+test('schema 2 -> 3 migration: worn armor moves to the chestplate slot (D-014)', () => {
+  const old = newSave({ seed: 'a', rolls: {}, gameVersion: 't' });
+  old.schemaVersion = 2;
+  for (const c of Object.values(old.party)) { c.equipped = { weapon: null, ranged: null, armor: 'item.mesh_vest', gadget: null, charm: null }; delete c.upgrades; }
+  const m = migrate(JSON.parse(JSON.stringify(old)));
+  assert.equal(m.schemaVersion, CURRENT_SCHEMA);
+  assert.equal(m.party.trevor.equipped.chestplate, 'item.mesh_vest'); assert.ok(!('armor' in m.party.trevor.equipped));
+  assert.equal(m.party.trevor.equipped.boots, null); assert.deepEqual(m.party.trevor.upgrades, {});
 });
 
 test('dialogue graphs: no dangling jumps, and the big scenes are not secretly dead ends', () => {
@@ -161,6 +171,15 @@ test('dialogue graphs: no dangling jumps, and the big scenes are not secretly de
 
 const { SKILL_TREE, skillOpen, migrateSkills } = await import('../src/content/skills.js');
 const { playerMods: pmods } = await import('../src/content/items.js');
+
+test('unique gear only works for its owner; upgrades scale bonuses (D-014)', () => {
+  const wearing = (extra = {}) => ({ skills: {}, skillPoints: 0, equipped: { boots: 'item.winged_boots' }, upgrades: {}, ...extra });
+  const mine = pmods(wearing(), 'michael'), theirs = pmods(wearing(), 'trevor');
+  assert.ok(mine.blink && mine.speed >= 0.6, 'Michael gets the boots');
+  assert.ok(!theirs.blink && theirs.speed < 0.6, 'Trevor gets nothing from them');
+  const up = pmods(wearing({ upgrades: { 'item.winged_boots': 2 } }), 'michael');
+  assert.ok(up.speed > mine.speed && Math.abs(up.speed - 0.6 * 1.3) < 1e-6, 'two armorer levels = +30%');
+});
 test('skill trees: valid links, capstone needs all three branches, mods sum, old skills refunded', () => {
   for (const [who, t] of Object.entries(SKILL_TREE)) {
     const ids = new Set(t.nodes.map((n) => n.id));

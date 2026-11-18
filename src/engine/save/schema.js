@@ -5,7 +5,7 @@
 
 export const FORMAT = 'jpfc-save';
 export const SLOTS = 36;   // inventory slots per character: 0..8 hotbar, 9..35 backpack
-export const CURRENT_SCHEMA = 2;
+export const CURRENT_SCHEMA = 3;
 
 /** migrations[n] upgrades a schema-n save to schema n+1. Append only. */
 export const migrations = {
@@ -21,6 +21,16 @@ export const migrations = {
     }
     save.schemaVersion = 2; return save;
   },
+  // 2 -> 3 (D-014): the single 'armor' slot becomes helmet/chestplate/leggings/boots, with gear slots
+  // (goggles, parka, gloves, socks, backpack) on top. What was worn as armor moves to chestplate.
+  2: (save) => {
+    for (const c of Object.values(save.party ?? {})) {
+      c.equipped ??= {};
+      if ('armor' in c.equipped) { c.equipped.chestplate ??= c.equipped.armor; delete c.equipped.armor; }
+      c.upgrades ??= {};
+    }
+    save.schemaVersion = 3; return save;
+  },
 };
 
 export function newCharacter(id) {
@@ -31,7 +41,10 @@ export function newCharacter(id) {
     morph: { line: id, stage: 0 },
     hp: null,                   // null = full
     inventory: new Array(SLOTS).fill(null),   // fixed slots: { id, qty } | null (engine/inventory.js)
-    equipped: { weapon: null, ranged: null, armor: null, gadget: null, charm: null },
+    equipped: { weapon: null, ranged: null, gadget: null, charm: null,
+      helmet: null, chestplate: null, leggings: null, boots: null,          // armor
+      goggles: null, parka: null, gloves: null, socks: null, backpack: null }, // gear on top
+    upgrades: {},               // { 'item.id': level } from the master armorer (0..5)
   };
 }
 

@@ -34,7 +34,6 @@ export class Romance {
     this.followers = new Map();   // partner id -> { x, y, im }
     this.spots = new Map();       // partner id -> image at her map spot
     this.songT = 0;
-    this.buffText = scene.add.text(6, 76, '', { fontFamily: 'monospace', fontSize: '7px', color: '#f2a6b8' }).setScrollFactor(0).setDepth(9200);
     this._applied = new Map();    // host: player id -> aura key last applied
     if (scene.mode !== 'client') {
       this._starterGuitars();
@@ -157,14 +156,16 @@ export class Romance {
       fw.tag.setText(view.name).setPosition(Math.round(fw.x), Math.round(fw.y) + 9);
     }
 
-    // Buff readout for the local player.
+    // (Active partner buffs are listed in the inventory panel: activeBuffs().)
     const me = snap.players.find((p) => p.id === s.localId);
-    const near = me ? this._near(me) : [];
-    this.buffText.setText(near.map((v) => `♥ ${v.name}: ${v.buffText}`).join('\n'));
+    this._me = me;
 
     this._songDate(me, dt);
     this._reunion();
   }
+
+  /** Partner buffs on the local player right now (shown in the inventory panel). */
+  activeBuffs() { return this._me ? this._near(this._me) : []; }
 
   _near(p) {
     const out = [];
