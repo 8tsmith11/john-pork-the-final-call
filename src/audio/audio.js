@@ -49,7 +49,7 @@ export function babble(who, text) {
 // Area music: CC0 tracks (see CREDITS.md), looped, crossfaded on area change.
 const MUSIC = {
   room631: 'assets/audio/apartment_chill_lofi.ogg', aster_hall: 'assets/audio/apartment_chill_lofi.ogg',
-  metro_plaza: 'assets/audio/city_synthwave_4k.mp3',
+  metro_plaza: null,   // the plaza gets a synthesized city soundscape instead of music
   tunnel_1: 'assets/audio/tunnel_claimed_by_the_void.ogg', platform: 'assets/audio/tunnel_claimed_by_the_void.ogg',
 };
 const MUSIC_VOL = 0.35;
@@ -65,7 +65,58 @@ function fade(el, to, ms, done) {
   step();
 }
 
+// ---------- synthesized soundscapes (no files, no licenses) ----------
+let amb = null;
+function noiseBuffer(a, kind) {
+  const len = a.sampleRate * 4, buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0);
+  let last = 0;
+  for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; last = kind === 'brown' ? (last + 0.02 * w) / 1.02 : w; d[i] = kind === 'brown' ? last * 3.5 : w; }
+  return buf;
+}
+function loopNoise(a, kind, filterType, freq, gain, dest) {
+  const src = a.createBufferSource(); src.buffer = noiseBuffer(a, kind); src.loop = true;
+  const f = a.createBiquadFilter(); f.type = filterType; f.frequency.value = freq;
+  const g = a.createGain(); g.gain.value = gain;
+  src.connect(f); f.connect(g); g.connect(dest); src.start();
+  return { src, g };
+}
+function startCity() {
+  const a = ac(); if (!a) return null;
+  const bus = a.createGain(); bus.gain.value = 0; bus.connect(master);
+  const parts = [
+    loopNoise(a, 'brown', 'lowpass', 180, 0.5, bus),     // traffic rumble
+    loopNoise(a, 'white', 'highpass', 4500, 0.06, bus),  // rain hiss
+    loopNoise(a, 'white', 'bandpass', 900, 0.025, bus),  // crowd murmur bed
+  ];
+  bus.gain.linearRampToValueAtTime(0.9, a.currentTime + 2);
+  const timers = [];
+  const event = () => {
+    const t = a.currentTime, r = Math.random();
+    const o = a.createOscillator(), g = a.createGain(); o.connect(g); g.connect(bus);
+    if (r < 0.45) {        // distant car horn
+      o.type = 'square'; o.frequency.value = 330 + Math.random() * 120;
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.025, t + 0.02); g.gain.setValueAtTime(0.025, t + 0.25); g.gain.linearRampToValueAtTime(0, t + 0.35);
+      o.start(t); o.stop(t + 0.4);
+    } else if (r < 0.6) {  // far siren sweep
+      o.type = 'sine'; o.frequency.setValueAtTime(600, t);
+      for (let i = 0; i < 4; i++) { o.frequency.linearRampToValueAtTime(950, t + i * 1.2 + 0.6); o.frequency.linearRampToValueAtTime(600, t + i * 1.2 + 1.2); }
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.012, t + 1); g.gain.linearRampToValueAtTime(0, t + 5);
+      o.start(t); o.stop(t + 5);
+    } else {               // a passing car (doppler-ish whoosh)
+      o.disconnect(); const n = loopNoise(a, 'white', 'bandpass', 500, 0, bus);
+      n.g.gain.setValueAtTime(0, t); n.g.gain.linearRampToValueAtTime(0.07, t + 1.2); n.g.gain.linearRampToValueAtTime(0, t + 2.6);
+      setTimeout(() => n.src.stop(), 2800);
+    }
+    timers.push(setTimeout(event, 2500 + Math.random() * 6000));
+  };
+  timers.push(setTimeout(event, 1500));
+  return { stop() { bus.gain.linearRampToValueAtTime(0, a.currentTime + 1); timers.forEach(clearTimeout); setTimeout(() => parts.forEach((p) => p.src.stop()), 1200); } };
+}
+const AMBIENCE = { metro_plaza: startCity };
+
 export function setArea(id) {
+  if (amb && amb.id !== id) { amb.handle?.stop(); amb = null; }
+  if (AMBIENCE[id] && !amb) amb = { id, handle: AMBIENCE[id]() };
   const src = MUSIC[id];
   if (src === trackSrc) return;
   if (track) { const old = track; fade(old, 0, 1200, () => old.pause()); }
