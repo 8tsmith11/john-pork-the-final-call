@@ -777,7 +777,10 @@ export class WorldScene extends Phaser.Scene {
     const LINES = ['CONTINUITY: Citizen, things are stable.', 'CONTINUITY: Identity confirmed. Enjoy your evening.', 'CONTINUITY: Thank you for being where we expected.',
       'CONTINUITY: Resident of ASTER 631. Noted.', 'CONTINUITY: Please do not look directly at the light.', 'CONTINUITY: Your curfew is a suggestion. For now.',
       'CONTINUITY: A containment review for the College Park service area is scheduled. Things are stable.', 'CONTINUITY: Coderot exposure in this sector is within tolerance. Tolerance has been revised.'];
-    this._toast(n === 2 ? LINES[LINES.length - 2] : LINES[(n - 1) % LINES.length]);
+    // The containment-review line is the stakes setup: always the 2nd scan, never after the outbreak is contained.
+    const contained = !!this.save.flags['act1.outbreak.contained'], review = LINES[LINES.length - 2];
+    const pool = contained ? LINES.filter((l) => l !== review) : LINES;
+    this._toast(n === 2 && !contained ? review : pool[(n - 1) % pool.length]);
   }
 
   // Recurring people (human note: "memorable characters"): an NPC's `later` list holds lines for
@@ -1140,7 +1143,7 @@ export class WorldScene extends Phaser.Scene {
   _answer() {
     if (this.sim.answerSahur()) {
       this.save.flags['act1.call.answered'] = true;
-      this.save.flags['act1.boss.defeated'] = true;
+      this.save.flags['act1.boss.defeated'] = true; this.save.flags['act1.outbreak.contained'] = true;   // scene 07: the boss falling contains the outbreak (Act 2 reads this)
       this._announce('You answer. The drumming stops mid-beat. The tall wooden figure tilts its head, listening to something only it can hear, and walks back into the dark.');
       // The sim clears its event list at the start of every step, so the 'kill' event answerSahur()
       // pushes from this key handler never reaches _fx. Start the ending from here instead.
@@ -1920,7 +1923,7 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'hurt' && Math.random() < 0.2) this._barkFrom('allyHurt', snap, { not: ev.id });
     if (ev.t === 'drum') { this.cameras.main.shake(40, ev.beat % 4 === 0 ? 0.006 : 0.002); sfx('hit'); }
     if (ev.t === 'boss' && !ev.sahur && this.mode !== 'client') this.save.flags['act1.boss.wardenName'] = ev.name;
-    if (ev.t === 'kill' && ev.boss && this.mode !== 'client') this.save.flags['act1.boss.defeated'] = true;
+    if (ev.t === 'kill' && ev.boss && this.mode !== 'client') { this.save.flags['act1.boss.defeated'] = true; this.save.flags['act1.outbreak.contained'] = true; }
     if (ev.t === 'kill' && ev.boss && !this._endingPlayed) { this._endingPlayed = true; this.time.delayedCall(900, () => this._playEnding(true)); }
     if (ev.t === 'phase') { this.cameras.main.shake(300, 0.01); this._say(ev.phase === 3 ? 'The Warden overloads. The platform starts rendering wrong.' : 'It changes how it moves.'); }
     if (ev.t === 'tell' && ev.kind) {
