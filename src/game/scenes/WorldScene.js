@@ -265,8 +265,10 @@ export class WorldScene extends Phaser.Scene {
     this.doorVis = [];
     for (const o of map.objects) {
       if (o.door) {
-        const vis = this.add.graphics().setDepth(o.y * TILE + TILE - 4);
-        this.doorVis.push({ o, vis, drawn: null });
+        // Fable's door art when present (frames '<id>' and '<id>#open'); drawn placeholder otherwise.
+        const art = props?.has(o.id) ? this.add.image(o.x * TILE, o.y * TILE + TILE, 'props', o.id).setOrigin(0, 1).setDepth(o.y * TILE + TILE - 4) : null;
+        const vis = art ?? this.add.graphics().setDepth(o.y * TILE + TILE - 4);
+        this.doorVis.push({ o, vis, art: !!art, drawn: null });
         continue;
       }
       if (this.textures.exists('wide') && this.textures.get('wide').has(o.id)) {
@@ -809,7 +811,11 @@ export class WorldScene extends Phaser.Scene {
     for (const [id, s] of this.enemySprites) if (!eseen.has(id)) { s.destroy(); this.enemySprites.delete(id); }
     if (!(snap.enemies || []).some((e) => e.boss)) this.bossUi?.setVisible(false);
 
-    for (const d of this.doorVis ?? []) if (d.drawn !== !!d.o.open) { d.drawn = !!d.o.open; this._drawDoor(d.vis, d.o); }
+    for (const d of this.doorVis ?? []) if (d.drawn !== !!d.o.open) {
+      d.drawn = !!d.o.open;
+      if (d.art) { const f = d.o.open && this.textures.get('props').has(`${d.o.id}#open`) ? `${d.o.id}#open` : d.o.id; d.vis.setFrame(f).setAlpha(d.o.open && f === d.o.id ? 0.3 : 1); }
+      else this._drawDoor(d.vis, d.o);
+    }
     this.shotGfx.clear();
     for (const h of snap.hazards || []) {
       const pulse = 0.25 + 0.12 * Math.sin(this.time.now / 120 + h.x);
