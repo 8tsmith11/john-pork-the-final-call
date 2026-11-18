@@ -186,6 +186,8 @@ ICONS = {
     "item.busted_guitar": lambda: I().disc(5, 11, 3, "signal").disc(7, 9, 2, "signal").line(8, 8, 13, 2, "warm2").rect(12, 1, 3, 2, "warm1").pts("bone", (5, 11), (6, 10)).line(9, 8, 13, 3, "bone"),
     "item.nail_gun": lambda: I().rect(3, 5, 9, 4, "warm3").rect(11, 6, 3, 2, "steel").rect(5, 9, 3, 4, "night3").pts("night2", (4, 6), (6, 6)).pts("steel", (14, 7)),
     "item.scattergun": lambda: I().rect(2, 6, 12, 3, "night3").rect(2, 6, 12, 1, "concrete2").rect(4, 9, 3, 4, "warm1").pts("rot0", (12, 7), (13, 7), (10, 5)),
+    # The blue pill: one diamond tablet in a foil blister.
+    "item.blue_pill": lambda: I().rect(3, 4, 10, 9, "steel").rect(4, 5, 8, 7, "bone").pts("screen1", (8, 6), (7, 7), (8, 7), (9, 7), (6, 8), (7, 8), (8, 8), (9, 8), (10, 8), (7, 9), (8, 9), (9, 9), (8, 10)).pts("screen2", (8, 7), (7, 8)).pts("concrete3", (4, 5), (11, 11)),
     "item.relic_phone": phone, "item.relic_coin": coin, "item.relic_figure": figure,
     **D014,
     "generic": lambda: I().rect(4, 4, 8, 8, "concrete2").rect(4, 4, 8, 1, "concrete3").pts("night2", (7, 7), (8, 7), (7, 8), (8, 8)),

@@ -154,7 +154,7 @@ export const SHOPS = {
       { item: 'item.sneakers', price: 30 },
       { item: 'item.pack_drone', price: 120, once: true },
     ] },
-  pawn: { title: 'PAWN · BUY / SELL', lines: ['Everything here used to belong to somebody. The man behind the glass does not look up.'],
+  pawn: { title: 'PAWN · BUY / SELL', lines: ['Everything here used to belong to somebody. Wick, behind the glass, does not look up.', '"Buying or selling. I don\'t do looking."', 'Wick slides the drawer out an inch, which is how he says hello.'],
     stock: [
       { item: 'item.pipe_wrench', price: 30, once: true },
       { item: 'item.busted_guitar', price: 45, once: true },
