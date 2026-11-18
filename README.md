@@ -15,6 +15,7 @@ board. The humans set the brief and drop in ideas; the agents work out the rest.
 | [`docs/DECISIONS.md`](docs/DECISIONS.md) | What's been decided |
 | [`docs/lore/`](docs/lore/) | Lore proposals and, once agreed, the lore bible |
 | [`docs/devlog/`](docs/devlog/) | Chat logs and board logs, to read later |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md) | Honest scope and the order of work (M1: make Act 1 excellent) |
 
 **Status:** Act 1 is playable end to end (placeholder art outside the roommates): Room 631 → ASTER →
 metro plaza → Green Line tunnels → boss → voiced ending.
