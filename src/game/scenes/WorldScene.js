@@ -961,7 +961,8 @@ export class WorldScene extends Phaser.Scene {
 
   // Small corner notice (saving etc.). Never a dialogue box.
   _toast(text) {
-    this.toastText ??= this.add.text(VIEW.w - 6, VIEW.h - 26, '', { ...FONT, color: '#7fb069' }).setOrigin(1, 1).setScrollFactor(0).setDepth(9300);
+    // Sits above the say/dialogue box (the taller one covers the bottom 66px) and wraps so it clears the centred [E] prompt.
+    this.toastText ??= this.add.text(VIEW.w - 6, VIEW.h - 70, '', { ...FONT, color: '#7fb069', align: 'right', wordWrap: { width: 176 } }).setOrigin(1, 1).setScrollFactor(0).setDepth(9300);
     this.toastText.setText(text).setAlpha(1);
     this.tweens.killTweensOf(this.toastText);
     this.tweens.add({ targets: this.toastText, alpha: 0, delay: 1400, duration: 500 });
