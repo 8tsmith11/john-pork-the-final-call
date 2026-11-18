@@ -56,7 +56,17 @@ export class WorldScene extends Phaser.Scene {
     this._makeMenu();
     this.input.keyboard.on('keydown-K', () => this.menu ? this._closeMenu() : this._openSkills());
     this.input.keyboard.on('keydown-M', () => { if (this.mode === 'client') this.net.send({ t: 'morph' }); else this._morph(this.localId); });
-    this.input.keyboard.on('keydown-E', () => { if (this.menu) this._closeMenu(); else if (!this.dlg) this._closeSay(); });
+    // E: close an open panel/description, otherwise interact with the nearest thing in reach.
+    this.input.keyboard.on('keydown-E', () => {
+      if (this.dlg) return;                       // dialogue handles E itself (advance)
+      if (this.menu) return this._closeMenu();
+      if (this.sayOpen) return this._closeSay();
+      const me = this.mode === 'client' ? this._lastRendered?.players.find((p) => p.id === this.localId) : this.sim.players.get(this.localId);
+      if (!me) return;
+      let best = null, bd = 34;
+      for (const o of this.map.objects) { const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y); if (d <= bd) { bd = d; best = o; } }
+      if (best) this._clickedObj = best;
+    });
     this.input.on('pointerdown', (ptr) => this._onClick(ptr));
     this.input.keyboard.on('keydown-H', () => { if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
     this.input.keyboard.on('keydown-F', () => { if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
@@ -512,7 +522,9 @@ export class WorldScene extends Phaser.Scene {
     const ptr = this.input.activePointer, wp = this.cameras.main.getWorldPoint(ptr.x, ptr.y);
     const hover = this._objectAt(wp.x, wp.y);
     const inReach = (o) => Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y) <= 34;
-    this.hint.setText(hover ? (inReach(hover) ? hover.label : `${hover.label} (too far)`) : '');
+    let nearest = null, nd = 34;
+    for (const o of this.map.objects) { const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y); if (d <= nd) { nd = d; nearest = o; } }
+    this.hint.setText(hover ? (inReach(hover) ? hover.label : `${hover.label} (too far)`) : nearest ? `[E] ${nearest.label}` : '');
     this.input.setDefaultCursor(hover && inReach(hover) ? 'pointer' : 'crosshair');
     const near = this._clickedObj; this._clickedObj = null;
     if (!near) return;
