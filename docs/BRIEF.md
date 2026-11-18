@@ -208,6 +208,10 @@ have to apply, but it would make it interesting."
   significant, and it hints at what's coming.
   > *"The scale of the conflicts should escalate. act 1 is relatively local/regional. but still
   > significant and hints at what is to come later."*
+- **Very hard-hitting quotes**, with the craft researched rather than guessed. See
+  `lore/quotes.md`.
+  > *"also there should be some very hard hitting quotes. again dont just rely on your weights,
+  > reserahc what goes into this."*
 
 ---
 
