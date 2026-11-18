@@ -653,6 +653,19 @@ def write(name, w, h, frames):
     print(f"{name}: {len(frames)} frames")
 
 
+# Append new props so existing frames keep their atlas positions.
+# A low four-wheel wedge bot, with scuffed forks and a taped-off power switch.
+c = C().rect(2, 11, 3, 4, "night1").rect(11, 11, 3, 4, "night1")
+c.rect(2, 17, 3, 4, "night1").rect(11, 17, 3, 4, "night1")
+c.pts("concrete1", (2, 12), (13, 12), (2, 18), (13, 18))
+c.rect(4, 10, 8, 10, "steel").h_(4, 10, 8, "bone").v_(11, 11, 8, "concrete2")
+c.rect(6, 12, 4, 5, "night3").h_(6, 12, 4, "concrete3")
+c.rect(6, 13, 4, 2, "bone").pts("night1", (7, 13), (8, 14)).px(10, 16, "signal")
+c.h_(4, 18, 8, "concrete3").h_(3, 19, 10, "steel").h_(2, 20, 12, "bone")
+c.h_(2, 21, 12, "concrete2").h_(2, 22, 3, "steel").h_(11, 22, 3, "steel")
+c.pts("night1", (4, 20), (10, 19)).pts("concrete1", (3, 22), (12, 22))
+P("obj.battlebot", c.outline())
+
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)
 write("big", 32, 40, BIG)

@@ -103,6 +103,7 @@ export const room631 = makeMap({
     { id: 'obj.bed', x: 1, y: 2, label: 'Trevor\'s bed (save)', action: 'save', text: 'Sleep? The balloon is still missing.' },
     { id: 'obj.shrimp_tank', x: 6, y: 1, label: 'Shrimp tank', text: 'Trevor\'s shrimp. The only clean water in the building. They\'re clustered in the corner away from the window.' },
     { id: 'obj.guitar', x: 6, y: 4, label: 'Guitar', text: 'Trevor\'s guitar. Wood. Out of tune, as is tradition.' },
+    { id: 'obj.battlebot', x: 7, y: 4, label: 'Combat robot', text: 'A wedge bot. A strip of tape over the power switch reads: NO HALLWAY TESTS.' },
     { id: 'obj.supplements', x: 1, y: 4, label: 'Trevor\'s shelf', text: 'Vitamins, magnesium for sleep, guitar strings still in the packet, a tub of shrimp flakes. A sticky note on the tub: IF I AM NOT HOME, A PINCH. NOT A HANDFUL, MICHAEL.' },
     { id: 'obj.trevor_mirror', x: 11, y: 1, label: 'Bathroom mirror', text: 'Your reflection. Tired. Normal. You watch it a second longer than you meant to.' },
     { id: 'obj.trevor_pc', x: 4, y: 1, label: 'Trevor\'s computer', action: 'pages', pages: [
