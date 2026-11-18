@@ -10,7 +10,7 @@ import { TILE_COLORS } from '../../content/maps/build.js';
 import { ENEMIES } from '../../content/enemies.js';
 import { GAME_VERSION } from '../../version.js';
 import { loadScene, Conversation } from '../../engine/dialogue.js';
-import { babble, setArea, sfx } from '../../audio/audio.js';
+import { babble, setArea, sfx, ring } from '../../audio/audio.js';
 import { ITEMS, RECIPES, SKILLS, playerMods } from '../../content/items.js';
 import { tileKey } from '../render/tiles.js';
 import { GameMenu, TABS } from '../ui/GameMenu.js';
@@ -140,11 +140,55 @@ export class WorldScene extends Phaser.Scene {
     this._drawDialogue();
   }
 
+  // "Him calling you is like getting hacked": the game itself is taken over before the call connects.
+  _hackCall(onDone) {
+    if (this._hacking) return; this._hacking = true;
+    const W = VIEW.w, H = VIEW.h, root = this.add.container(0, 0).setScrollFactor(0).setDepth(9800);
+    const noise = this.add.graphics(); root.add(noise);
+    const panel = this.add.graphics(); root.add(panel);
+    const pw = 150, ph = 120, px = W / 2 - pw / 2, py = H / 2 - ph / 2;
+    panel.fillStyle(0x05060c, 0.96).fillRoundedRect(px, py, pw, ph, 8).lineStyle(2, 0xf2a6b8, 1).strokeRoundedRect(px, py, pw, ph, 8);
+    const t1 = this.add.text(W / 2, py + 8, 'INCOMING CALL', { ...FONT, fontSize: '8px', color: '#9aa3c7' }).setOrigin(0.5, 0);
+    const t2 = this.add.text(W / 2, py + 18, 'JOHN PORK', { heading: true, fontSize: '14px', color: '#f2a6b8' }).setOrigin(0.5, 0);
+    root.add([t1, t2]);
+    if (this.anims.exists('pork')) { const face = this.add.sprite(W / 2, py + ph - 26, 'principals').play('pork').setOrigin(0.5, 1).setScale(2); root.add(face); }
+    const ans = this.add.text(W / 2, py + ph - 14, '◉ connecting…', { ...FONT, fontSize: '8px', color: '#7fb069' }).setOrigin(0.5, 0); root.add(ans);
+    const hudBits = [this.hudText, this.mapLabel, this.hudName, this.hudLv].filter(Boolean);
+    const saved = hudBits.map((h) => h.text);
+    const garble = (s) => s.replace(/[^\s]/g, () => '█▓▒░#@%&01'[Math.floor(Math.random() * 10)]);
+    ring(2);
+    this.cameras.main.shake(400, 0.008);
+    const t0 = this.time.now;
+    const tick = this.time.addEvent({ delay: 50, loop: true, callback: () => {
+      const k = (this.time.now - t0) / 3200;
+      noise.clear();
+      for (let i = 0; i < 26; i++) {                                    // static + torn scanlines
+        const y = Math.random() * H, h = 1 + Math.random() * 5;
+        noise.fillStyle([0xd65db1, 0x7fb069, 0x6ff2ff, 0xffffff][i % 4], 0.10 + Math.random() * 0.25).fillRect(Math.random() * W * 0.3 - 20, y, W * (0.4 + Math.random() * 0.8), h);
+      }
+      noise.fillStyle(0x000000, 0.25 + 0.2 * Math.sin(this.time.now / 40)).fillRect(0, 0, W, H);
+      hudBits.forEach((h) => h.setText(garble(h.text || 'XXXXXXXX')));
+      root.x = Math.random() < 0.2 ? (Math.random() * 6 - 3) : 0;
+      if (k > 0.7) ans.setText('◉ ANSWERED. You did not press anything.').setColor('#f2a6b8');
+    } });
+    this.time.delayedCall(3200, () => {
+      tick.remove();
+      hudBits.forEach((h, i) => h.setText(saved[i]));
+      this.tweens.add({ targets: root, alpha: 0, duration: 250, onComplete: () => { root.destroy(); this._hacking = false; onDone?.(); } });
+    });
+  }
+
   _setPortrait(who) {
     const id = (who || '').toLowerCase();
     const isRoommate = ['michael', 'trevor', 'manuel'].includes(id) && this.textures.exists(id);
+    const isPork = (id === 'pork' || id === 'john pork') && this.textures.exists('principals');
     this.dlgPortraitBg.setVisible(true);
-    if (isRoommate) {
+    this._porkTalking = isPork;
+    this.dlgBg.setStrokeStyle(1, isPork ? 0xd65db1 : 0xf2a6b8);
+    if (isPork) {
+      this.dlgPortrait.setTexture('principals', 'pork_0').setCrop(0, 0, 24, 18).setScale(2.2).setOrigin(0.5, 0.3).setVisible(true);
+      this.dlgInitial.setText('');
+    } else if (isRoommate) {
       // Head-and-shoulders crop of the roommate's sprite, scaled up.
       this.dlgPortrait.setTexture(id, 'idle_down_0').setCrop(0, 0, 16, 14).setScale(3).setOrigin(0.5, 0.25).setVisible(true);
       this.dlgInitial.setText('');
@@ -152,6 +196,13 @@ export class WorldScene extends Phaser.Scene {
       this.dlgPortrait.setVisible(false);
       this.dlgInitial.setText(who ? who[0].toUpperCase() : '');
     }
+  }
+
+  _tickPorkGlitch() {
+    if (!this.dlg || !this._porkTalking) { if (this.dlgBg && this.dlgBg.x !== VIEW.w / 2) this.dlgBg.setX(VIEW.w / 2); return; }
+    const j = Math.random() < 0.15 ? (Math.random() * 4 - 2) : 0;
+    this.dlgBg.setX(VIEW.w / 2 + j); this.dlgText.setX(76 + j);
+    if (Math.random() < 0.04) this.cameras.main.shake(60, 0.002);
   }
 
   _tickTypewriter(dt) {
@@ -194,7 +245,7 @@ export class WorldScene extends Phaser.Scene {
   _onEnterMap(map) {
     const once = (flag, fn) => { if (!this.save.flags[flag]) { this.save.flags[flag] = true; fn(); } };
     if (map.id === 'aster_hall') once('act1.beat.asterEnter', () => this.startDialogue('aster'));
-    if (map.id === 'tunnel_1') once('act1.beat.call', () => this.startDialogue('the_call'));
+    if (map.id === 'tunnel_1') once('act1.beat.call', () => this._hackCall(() => this.startDialogue('the_call')));
   }
 
   _newGame() {
@@ -858,6 +909,7 @@ export class WorldScene extends Phaser.Scene {
     this._tickAmbient(this.game.loop.delta / 1000);
     this.crowd?.update(this.game.loop.delta / 1000);
     this._tickTypewriter(this.game.loop.delta / 1000);
+    this._tickPorkGlitch();
     this._updateExplored(snap);
     this._drawMinimap(snap);
     this._drawHud(snap);

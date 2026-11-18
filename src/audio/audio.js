@@ -163,3 +163,17 @@ export function sfx(kind) {
   g.gain.setValueAtTime(0.15, t); g.gain.exponentialRampToValueAtTime(0.001, t + spec[3]);
   o.connect(g); g.connect(master); o.start(t); o.stop(t + spec[3] + 0.02);
 }
+
+/** A phone ringing (US two-tone ring cadence), `times` rings. */
+export function ring(times = 2) {
+  const c = ac(); if (!c) return;
+  for (let r = 0; r < times; r++) {
+    const t0 = c.currentTime + r * 3;
+    for (const f of [440, 480]) {
+      const o = c.createOscillator(), g = c.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.07, t0 + 0.02); g.gain.setValueAtTime(0.07, t0 + 1.9); g.gain.linearRampToValueAtTime(0, t0 + 2);
+      o.connect(g); g.connect(master); o.start(t0); o.stop(t0 + 2.05);
+    }
+  }
+}

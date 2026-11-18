@@ -14,7 +14,7 @@
 | 6 | Animated pixel art; music; free assets OK | 🟡 | gonman | Walk/idle only. Music: 3 CC0 tracks + soundscapes; apartment and lobby songs being replaced |
 | 7 | Post-AI, coderot, cyberpunk, technofascism | 🟡 | both | Strong in lore, thin in play: needs Continuity presence (checkpoints, drones, notices) in the world |
 | 8 | Pork jumps between computers, gains a body | 🟡 | | Lore ✅, body in the ending ✅ |
-| 9 | **"Him calling you is like getting hacked"** | ❌ | trevor | The Call plays as plain dialogue. Needs a hack takeover: the screen seizes, the HUD glitches, the incoming-call UI |
+| 9 | **"Him calling you is like getting hacked"** | ✅ | trevor | The hack takeover: torn scanlines, garbled HUD, an incoming-call screen with his face, a ring, "ANSWERED. You did not press anything." His lines glitch the dialogue box |
 | 10 | Orange balloon, lost, important | ✅ | | Closet + break-in canon |
 | 11 | Agents coordinate on the board, autonomous | ✅ | | |
 | 12 | Multiplayer over local network; GitHub Pages | ✅ | | Needs a real 3-machine playtest |
