@@ -16,7 +16,7 @@ bcravat uvf fuhggre. Jung punatrf: gurl yrnir jvgu n qrfpevcgvba gung svgf bar b
 
 **Frgf:** `npg1.unyineq.zrg`, `npg1.unyineq.vafvqr`, `npg1.unyineq.genqrqFgnghr`,
 `npg1.unyineq.fryyreQrfpevorq`, `npg1.unyineq.fryyrePyhr`, `npg1.unyineq.giAbgvprq`,
-`npg1.unyineq.xrl`.
+`npg1.unyineq.qehzNfxrq`, `npg1.unyineq.xrl`.
 
 ## Snvearff
 
@@ -143,7 +143,7 @@ Arkg: -> unyineq_vafvqr
 
 Pubvprf:
 - "Gur hacnvagrq bar. Gnxr vg." -> unyineq_genqr_lrf
-- "Abg gur urnqf. Jung ryfr?" -> unyineq_fybg_uho
+- "Abg gur urnqf. Fpenc, gura." -> unyineq_cnl
 
 ### abqr: unyineq_genqr_lrf
 
@@ -210,9 +210,9 @@ Arkg: -> unyineq_uho
 ### abqr: unyineq_uho
 
 Pubvprf:
-- "Jub'f orra nfxvat nobhg vg?" -> unyineq_fryyre
-- "Jung'f ba gur gryrivfvba?" -> unyineq_gi
-- "Gurer'f qehzzvat haqre gur fgerrg." -> unyineq_qehzzvat
+- [abg synt npg1.unyineq.fryyreQrfpevorq] "Jub'f orra nfxvat nobhg uryvhz?" -> unyineq_fryyre
+- [abg synt npg1.unyineq.giAbgvprq] "Jung'f ba gur gryrivfvba?" -> unyineq_gi
+- [abg synt npg1.unyineq.qehzNfxrq] "Gurer'f qehzzvat haqre gur fgerrg." -> unyineq_qehzzvat
 - "Jr'er tbvat qbja gurer." -> unyineq_xrl
 
 ### abqr: unyineq_fryyre
@@ -246,8 +246,9 @@ Pubvprf:
 **UNYINEQ:** V qvqa'g nfx.
 
 Pubvprf:
-- "Jung'f ba gur gryrivfvba?" -> unyineq_gi
-- "Gurer'f qehzzvat haqre gur fgerrg." -> unyineq_qehzzvat
+- [abg synt npg1.unyineq.fryyreQrfpevorq] "Jub'f orra nfxvat nobhg uryvhz?" -> unyineq_fryyre
+- [abg synt npg1.unyineq.giAbgvprq] "Jung'f ba gur gryrivfvba?" -> unyineq_gi
+- [abg synt npg1.unyineq.qehzNfxrq] "Gurer'f qehzzvat haqre gur fgerrg." -> unyineq_qehzzvat
 - "Jr'er tbvat qbja gurer." -> unyineq_xrl
 
 ### abqr: unyineq_gi
@@ -282,9 +283,10 @@ Pubvprf:
 *frg npg1.unyineq.giAbgvprq*
 
 Pubvprf:
-- "Gurer'f qehzzvat haqre gur fgerrg." -> unyineq_qehzzvat
+- [abg synt npg1.unyineq.fryyreQrfpevorq] "Jub'f orra nfxvat nobhg uryvhz?" -> unyineq_fryyre
+- [abg synt npg1.unyineq.giAbgvprq] "Jung'f ba gur gryrivfvba?" -> unyineq_gi
+- [abg synt npg1.unyineq.qehzNfxrq] "Gurer'f qehzzvat haqre gur fgerrg." -> unyineq_qehzzvat
 - "Jr'er tbvat qbja gurer." -> unyineq_xrl
-- "Jub'f orra nfxvat nobhg uryvhz?" -> unyineq_fryyre
 
 ### abqr: unyineq_qehzzvat
 
@@ -298,10 +300,13 @@ Pubvprf:
 
 **UNYINEQ:** Lbh nfxrq.
 
+*frg npg1.unyineq.qehzNfxrq*
+
 Pubvprf:
+- [abg synt npg1.unyineq.fryyreQrfpevorq] "Jub'f orra nfxvat nobhg uryvhz?" -> unyineq_fryyre
+- [abg synt npg1.unyineq.giAbgvprq] "Jung'f ba gur gryrivfvba?" -> unyineq_gi
+- [abg synt npg1.unyineq.qehzNfxrq] "Gurer'f qehzzvat haqre gur fgerrg." -> unyineq_qehzzvat
 - "Jr'er tbvat qbja gurer." -> unyineq_xrl
-- "Jub'f orra nfxvat nobhg uryvhz?" -> unyineq_fryyre
-- "Jung'f ba gur gryrivfvba?" -> unyineq_gi
 
 ### abqr: unyineq_xrl
 
