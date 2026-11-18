@@ -14,6 +14,7 @@ import { babble, setArea, sfx } from '../../audio/audio.js';
 import { ITEMS, RECIPES, SKILLS, playerMods } from '../../content/items.js';
 import { tileKey } from '../render/tiles.js';
 import { GameMenu, TABS } from '../ui/GameMenu.js';
+import { Crowd } from '../crowd.js';
 
 const STEP = 1 / 60;
 const XP_PER_LEVEL = 30;
@@ -70,7 +71,9 @@ export class WorldScene extends Phaser.Scene {
       if (!me) return;
       let best = null, bd = 34;
       for (const o of this.map.objects) { const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y); if (d <= bd) { bd = d; best = o; } }
-      if (best) this._clickedObj = best;
+      if (best) { this._clickedObj = best; return; }
+      const person = this.crowd?.nearest(me.x, me.y);
+      if (person) { person.mode = 'wait'; person.t = 4; person.spr.setFlipX(person.x > me.x); this._say(this.crowd.lineFor(person)); babble(null, 'hey there friend'); }
     });
     this.input.on('pointerdown', (ptr) => this._onClick(ptr));
     this.input.keyboard.on('keydown-H', () => { if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
@@ -285,6 +288,8 @@ export class WorldScene extends Phaser.Scene {
       g.fillStyle(color, o.action === 'exit' ? 0.55 : 1).fillRect(o.x * TILE + 3, o.y * TILE + 2, TILE - 6, TILE - 6);
       g.fillStyle(0xffffff, 0.18).fillRect(o.x * TILE + 3, o.y * TILE + 2, TILE - 6, 2);
     }
+    this.crowd?.destroy();
+    this.crowd = new Crowd(this, map, this.save.world.seed);
     this._setupLighting(map);
     const mw = map.w * TILE, mh = map.h * TILE, vw = VIEW.w, vh = VIEW.h;
     this.cameras.main.setBounds(Math.min(0, (mw - vw) / 2), Math.min(0, (mh - vh) / 2), Math.max(mw, vw), Math.max(mh, vh)).setRoundPixels(true);
@@ -742,6 +747,7 @@ export class WorldScene extends Phaser.Scene {
     for (const ev of snap.events || []) this._fx(ev, snap);
     this._drawLighting(snap);
     this._tickAmbient(this.game.loop.delta / 1000);
+    this.crowd?.update(this.game.loop.delta / 1000);
     this._tickTypewriter(this.game.loop.delta / 1000);
     this._updateExplored(snap);
     this._drawMinimap(snap);
