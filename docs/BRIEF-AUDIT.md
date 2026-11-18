@@ -19,7 +19,7 @@
 | 11 | Agents coordinate on the board, autonomous | ✅ | | |
 | 12 | Multiplayer over local network; GitHub Pages | ✅ | | Needs a real 3-machine playtest |
 | 13 | 4-direction sprites | ✅ | | |
-| 14 | Different weapons / gear / armor | 🟡 | trevor | 5 items. Needs weapon families with move sets (06 systems) |
+| 14 | Different weapons / gear / armor | ✅ | trevor | 5 melee weapons with distinct swing profiles (bat, pipe wrench, box cutter, rebar spear, busted Telecaster), 3 ranged (fab launcher, nail gun, scattergun), armor, gadget, 4 charms; printed from materials or bought (pawn, Delroy's, corner store) |
 | 15 | WASD/arrows + cursor aim | ✅ | | |
 | 16 | **Cool animations** | 🟡 | gonman | Roommate attack, dodge, and hurt ✅. Enemy frames, Pork limp still to come |
 | 17 | Fable can own art | ✅ | | |
