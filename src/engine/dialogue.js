@@ -70,7 +70,8 @@ export function applyEffects(effects, ctx, sink) {
       let m;
       if ((m = p.match(/^(?:set\s+)?([\w.\-]+)\s*\+\s*(\d+)/i))) sink.flag(m[1], (Number(ctx.flags[m[1]] ?? 0) + +m[2]));
       else if ((m = p.match(/^set\s+([\w.\-]+)(?:\s*=\s*([\w\-]+))?/i))) sink.flag(m[1], m[2] ?? true);
-      else if ((m = p.match(/^give\s+item\s+([\w\-]+)/i))) sink.item(m[1]);
+      // give item sniffer · give item.sniffer · give item item.sniffer 2 · give sniffer x3
+      else if ((m = p.match(/^give\s+(?:item\s+)?(?:item\.)?([\w\-]+)(?:\s*[x×]?\s*(\d+))?/i))) sink.item(m[1], m[2] ? +m[2] : 1);
       else if ((m = p.match(/^standing\s+(\w+)\s*([+-]\d+)/i))) sink.standing(m[1], +m[2]);
     }
   }

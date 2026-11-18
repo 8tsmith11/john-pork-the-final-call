@@ -123,7 +123,7 @@ export class WorldScene extends Phaser.Scene {
     const scene = await loadScene(sceneName);
     const sink = {
       flag: (k, v) => this._flag(k, v),
-      item: (item) => { Inv.add(this.save.party[this.character], `item.${item}`); if (this.mode === 'client') this.net.send({ t: 'item', who: this.character, item }); },
+      item: (item, n = 1) => { if (this.mode === 'client') this.net.send({ t: 'item', who: this.character, item, n }); else { Inv.add(this.save.party[this.character], `item.${item}`, n); this._syncParty(); } this._toast(`★ ${ITEMS[`item.${item}`]?.name ?? item}${n > 1 ? ' ×' + n : ''}`); },
       standing: (f, n) => { if (f in this.save.standing) this.save.standing[f] += n; if (this.mode === 'client') this.net.send({ t: 'standing', faction: f, n }); },
     };
     this.dlg = new Conversation(scene, nodeId, this._dialogueCtx(), sink);
@@ -309,7 +309,7 @@ export class WorldScene extends Phaser.Scene {
           this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, interact: false });
         }
         if (msg.t === 'flag' && typeof msg.key === 'string' && /^(act\d|dlg\.)/.test(msg.key)) this.save.flags[msg.key] = msg.value ?? true;
-        if (msg.t === 'item' && this.save.party[msg.who]) Inv.add(this.save.party[msg.who], `item.${msg.item}`);
+        if (msg.t === 'item' && this.save.party[msg.who] && ITEMS[`item.${msg.item}`]) { Inv.add(this.save.party[msg.who], `item.${msg.item}`, Math.min(99, msg.n | 0 || 1)); this._syncParty(); }
         if (msg.t === 'standing' && msg.faction in this.save.standing) this.save.standing[msg.faction] += Number(msg.n) || 0;
         if (msg.t === 'exit') this._tryExit(this.sim.map.objects.find((o) => o.id === msg.obj));
         if (msg.t === 'answer') this._answer();
