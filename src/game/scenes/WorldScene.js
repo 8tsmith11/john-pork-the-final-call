@@ -90,7 +90,12 @@ export class WorldScene extends Phaser.Scene {
     this.shared = new SharedEvents(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this);
     this._pageIdx = {};
     this.vignette = this._makeVignette();
-    if (this.mode !== 'client') for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
+    if (this.mode !== 'client') for (const p of this.sim.players.values()) {
+      const c = this.save.party[p.character];
+      this.sim.setMods(p.id, playerMods(c, p.character));
+      this.sim.setRot(p.id, c.rot ?? 0);
+      p.analogCharm = !!ITEMS[c.equipped?.charm]?.analog;
+    }
     this.time.delayedCall(500, () => this._spawnBot());
     this.save.world.money ??= 25;
     this.save.flags['settings.crudeHumor'] = 'on';   // always on (Trevor); scripts branch on it
@@ -597,7 +602,11 @@ export class WorldScene extends Phaser.Scene {
   _charOf(peer) { return this.sim.players.get(peer)?.character; }
 
   _syncParty() {
-    for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
+    for (const p of this.sim.players.values()) {
+      const c = this.save.party[p.character];
+      this.sim.setMods(p.id, playerMods(c, p.character));
+      p.analogCharm = !!ITEMS[c.equipped?.charm]?.analog;
+    }
     if (this.mode === 'host') this.net.broadcast({ t: 'party', party: this.save.party, money: this.save.world.money });
     this._refreshMenu();
   }
@@ -1414,6 +1423,7 @@ export class WorldScene extends Phaser.Scene {
         this.acc -= STEP; first = false;
       }
       this._handleInteract(me);
+      for (const p of this.sim.players.values()) this.save.party[p.character].rot = p.rot ?? 0;
       this._hostEvents(events);
       snap = this._lastSnap = { ...this.sim.snapshot(), events, doors: [...this.map.doors.values()].filter((d) => d.open).map((d) => d.id) };
     }
@@ -1781,6 +1791,7 @@ export class WorldScene extends Phaser.Scene {
 
     for (const ev of snap.events || []) this._fx(ev, snap);
     this._barkTick(snap);
+    this._tickRotBarks(snap);
     this._drawLighting(snap);
     this._tickAmbient(this.game.loop.delta / 1000);
     this.neon?.update(this.game.loop.delta / 1000, this.cameras.main);
@@ -1965,6 +1976,20 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
+  _tickRotBarks(snap) {
+    if (this.dlg || this.menu || this.time.now < (this._barkQuietUntil ?? 0)) return;
+    this._rotBarks ??= new Map();
+    for (const p of snap.players) {
+      const stage = p.rot >= 60 ? 2 : p.rot >= 25 ? 1 : 0;
+      if (!stage || p.dn) { this._rotBarks.delete(p.id); continue; }
+      const old = this._rotBarks.get(p.id);
+      if (old?.stage === stage && this.time.now < old.next) continue;
+      this._bark(p.id, stage === 2 ? 'code rot. code rot.' : 'Left. Left.');
+      this._rotBarks.set(p.id, { stage, next: this.time.now + 30000 });
+      break;
+    }
+  }
+
   _fx(ev, snap) {
     this.romance?.onEvent(ev, snap); this.gear?.onEvent(ev); this.eggs?.onEvent(ev); this.perf?.onEvent(ev);
     if (['hit', 'kill', 'shot', 'swing'].includes(ev.t) && (ev.by === this.localId || ev.id === this.localId)) sfx(ev.t);
@@ -2067,6 +2092,15 @@ export class WorldScene extends Phaser.Scene {
       if (p.dn) g.fillStyle(0xffb347).fillRect(18, y + 4, (p.rv / 4) * 54, 1);
       g.fillStyle({ michael: 0xc8605a, trevor: 0x3f6fb5, manuel: 0x5f8f3a }[p.c] ?? 0x888888).fillRect(7, y, 8, 4);
     });
+    // Exposure is only shown while present, below the teammate cards.
+    this.hudRot ??= this.add.text(7, 0, '', { ...FONT, fontSize: '6px', color: '#e8e2d0' }).setScrollFactor(0).setDepth(9002);
+    const rot = me?.rot ?? 0, ry = 44 + (snap.players.length - 1) * 7;
+    this.hudRot.setPosition(7, ry).setText(`ROT ${Math.ceil(rot)}%`).setVisible(rot > 0);
+    if (rot > 0) {
+      g.fillStyle(0x0d0b1a, 0.9).fillRect(4, ry - 1, 112, 8);
+      g.fillStyle(0x332e57).fillRect(48, ry + 1, 62, 4);
+      g.fillStyle(rot >= 60 ? 0xd417c8 : 0xc8e619).fillRect(48, ry + 1, 62 * Math.min(1, rot / 100), 4);
+    }
     // Top-right: XP and money, compact.
     const lines = [`xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `   ◆ ${c.skillPoints} skill pt [K]` : ''}`, `$${this.save.world.money ?? 0}${snap.enemies?.length ? `   coderot ${snap.enemies.length}` : ''}`];
     this.hudText.setText(lines.join('\n'));
