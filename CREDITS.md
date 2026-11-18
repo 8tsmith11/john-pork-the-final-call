@@ -21,3 +21,16 @@ Third-party code and assets, with licenses. Add every new asset here (PROCESS.md
 |---|---|---|---|
 | VT323 | Body text, dialogue, UI | The VT323 Project Authors (Peter Hull) | https://github.com/google/fonts/tree/main/ofl/vt323 |
 | Pixelify Sans | Headings, titles | The Pixelify Sans Project Authors | https://github.com/google/fonts/tree/main/ofl/pixelifysans |
+
+## Music composed in this repository (no third-party rights)
+
+Written as note data in `src/audio/music.js` and played by a small WebAudio sequencer. No audio files.
+
+| Song | Used in | Notes |
+|---|---|---|
+| `apartment` | Room 631 | D major, 68 bpm, eight bars: electric-piano arpeggios, soft bass, a five-note tune in the second half |
+| `title` | Title screen | A minor, 60 bpm: a two-note ringtone figure over a slow progression and a falling line |
+| `lobby` | Co-op lobby | The title's chords, moving, 84 bpm |
+
+The earlier CC0 apartment track (`apartment_chill_lofi.ogg`) is no longer used and can be deleted once the new song is approved by ear.
+

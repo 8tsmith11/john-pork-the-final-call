@@ -1,4 +1,5 @@
 import { ROOMMATES } from './BootScene.js';
+import { setArea } from '../../audio/audio.js';
 import { VIEW, setupCameras, toView } from '../../view.js';
 import { loadAutosave, clearAutosave, importFile, autosave } from '../../engine/save/storage.js';
 
@@ -6,6 +7,7 @@ export class TitleScene extends Phaser.Scene {
   constructor() { super('Title'); }
 
   create() {
+    setArea('title');   // music: see src/audio/music.js
     setupCameras(this);
     const W = VIEW.w, H = VIEW.h;
     this.cameras.main.setBackgroundColor('#0b0d16');

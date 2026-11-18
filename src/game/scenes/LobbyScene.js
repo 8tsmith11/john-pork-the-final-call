@@ -1,4 +1,5 @@
 import { VIEW, setupCameras, toView } from '../../view.js';
+import { setArea } from '../../audio/audio.js';
 // Lobby (D-010): the host owns the save. Joiners claim a character, then receive the save on start.
 import { HostNet, ClientNet, makeRoomCode, playerName } from '../../engine/net/net.js';
 import { ROOMMATES } from './BootScene.js';
@@ -16,6 +17,7 @@ export class LobbyScene extends Phaser.Scene {
   init(data) { this.role = data.role; }
 
   async create() {
+    setArea('lobby');   // music: see src/audio/music.js
     setupCameras(this);
     const W = VIEW.w;
     this.cameras.main.setBackgroundColor('#0b0d16');

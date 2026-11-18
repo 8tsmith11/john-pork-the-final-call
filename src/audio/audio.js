@@ -1,6 +1,8 @@
 // WebAudio: per-character "babble" voices for dialogue and combat sfx; CC0 area music via <audio> (see CREDITS.md).
 // No audio files needed. Real recorded/TTS voices can replace babble for act-ending cutscenes later.
 
+import { startSong, stopSong, currentSong, SONGS } from './music.js';
+
 let ctx = null, master = null, drone = null;
 
 function ac() {
@@ -48,7 +50,9 @@ export function babble(who, text) {
 
 // Area music: CC0 tracks (see CREDITS.md), looped, crossfaded on area change.
 const MUSIC = {
-  room631: 'assets/audio/apartment_chill_lofi.ogg', aster_hall: 'assets/audio/apartment_chill_lofi.ogg',
+  // 'synth:<name>' plays a song from music.js (composed in-repo, no file); anything else is a file path.
+  room631: 'synth:apartment', aster_hall: null, aster_lobby: null,
+  title: 'synth:title', lobby: 'synth:lobby',
   metro_plaza: null,   // the plaza gets a synthesized city soundscape instead of music
   tunnel_1: 'assets/audio/tunnel_claimed_by_the_void.ogg', platform: 'assets/audio/tunnel_claimed_by_the_void.ogg',
 };
@@ -142,7 +146,16 @@ export function setArea(id) {
   if (src === trackSrc) return;
   if (track) { const old = track; fade(old, 0, 1200, () => old.pause()); }
   track = null; trackSrc = src ?? null;
+  if (!src?.startsWith('synth:')) stopSong();
   if (!src) return;
+  if (src.startsWith('synth:')) {
+    const name = src.slice(6);
+    const begin = () => { const a = ac(); if (a && currentSong() !== name && trackSrc === src) startSong(a, master, name, 1.4); };
+    begin();
+    // Browsers hold audio until the first click or key; start then if we couldn't start now.
+    if (!ctx || ctx.state !== 'running') { window.addEventListener('pointerdown', begin, { once: true }); window.addEventListener('keydown', begin, { once: true }); }
+    return;
+  }
   const el = new Audio(src);
   el.loop = true; el.volume = 0;
   el.play().then(() => fade(el, MUSIC_VOL, 1500)).catch(() => {
