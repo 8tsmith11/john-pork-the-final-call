@@ -87,8 +87,12 @@ easter eggs.
   the rot colors.
 - **Coderot villains (procedural):** assembled from parts (body, head, limb, defect) with a
   seeded palette swap inside the rot and Continuity groups, so they vary without going off-style.
-- **John Pork:** never fully on screen in Act 1. Shown as the call UI, the flag, the statues, and
-  reflections. Pork pink is how the player learns to feel him nearby.
+- **John Pork:** off screen for almost all of Act 1: the call UI, the flag, the statues, screens
+  that glitch to his face. Pork pink is how the player learns to feel him nearby. He steps into
+  frame once, in the ending, as a body: a tall man in a long mended coat with a pig's head that is
+  skin (bristle, a wet snout, a grey graft along the jaw), a bad left knee. Never a robot, never
+  chrome. The statues and the flag follow the human reference: a bald dome, dark ears hanging
+  down, a pink snout, a long smile, red plaid over a grey tee.
 - **Sahur:** warm wood colors in a cold tunnel. He should be the only warm thing down there.
 
 ## UI
@@ -116,6 +120,45 @@ per-character and non-sexual by default (see the Act 1 easter egg batch).
 **Opt-ins recorded:** Manuel has opted in for the Manuel character only (board, `[HUMAN]` post
 after #17): a rare alternate long idle, back to the camera, nothing explicit on screen, with the
 "Caught" scramble. Trevor's and Michael's characters are unaffected.
+
+## Rules learned while building (2026-11-18)
+
+- **Orange belongs to the balloon** (D-004). Neon, lamps and signs stay off it; the warm neon is a
+  yellow amber. If something else on screen is orange, it is a bug.
+- **Light is the level design.** Maps are dark; pools of light sit where the player should go or
+  look (lamps on the route, a lit monitor on the puzzle, the pier lantern). An object nobody needs
+  does not get a light.
+- **Nothing on a grid that grew.** Trees, rubble and crowds are placed in named clumps with open
+  ground between them (see the groves in `lake.js`). A modulo formula draws diagonals; do not use
+  one for anything organic.
+- **Every object has its own art** and its own reason to be there. If two characters share a
+  sprite, one of them is a placeholder and goes on the art list.
+- **Everything can be walked up to.** `tests/run.js` fails if any object on any map cannot be
+  reached from the spawn, or if an enemy starts inside a wall or a tree.
+- **Stage directions are part of the picture.** In cutscenes the captions carry what the sprites
+  cannot: keep the ones that show an image or an action, cut the ones that restate a line.
+- **Nothing graphic** (D-015). Crude jokes are implied in text, reactions or off screen.
+- **Real people.** The only real likenesses are the three roommates, each on their own yes (see
+  above, and D-007). Nobody else real is drawn or named.
+
+## Sheets and sizes (built)
+
+| Atlas | Frame | What goes in it | Generator |
+|---|---|---|---|
+| `trevor`, `michael`, `manuel` | 16×24 | the roommates, all animations | `gen_roommates.py` |
+| `props` | 16×24 | objects and people that stand on one tile | `gen_props.py` |
+| `wide` | 32×16 | benches, cars, the van | `gen_props.py` |
+| `big` | 32×40 | the statues and busts, the flag | `gen_props.py` |
+| `doors` | 16×16 | doors, with `#open` frames | `gen_props.py` |
+| `principals` | 24×32 | Pork, the Sahur | `gen_props.py` |
+| `enemies`, `warden` | 16×16, 32×40 | rot enemies, the Warden | `gen_props.py` |
+| `tiles` | 16×16 | floor and wall tiles, `tile_<charCode>_<variant>` | `gen_tiles.py` |
+| `icons` | 16×16 | inventory and hotbar icons, frame name = item id | `gen_icons.py` |
+| `romance` | 16×24 | BagelMeister's characters | `gen_romance.py` |
+| `title_bg` | full screen | the title night scene | `gen_title.py` |
+
+An object picks its frame by `art ?? id`, looked up in `doors`, `wide`, `big`, then `props`.
+`<id>#1` is a second frame for a two-frame loop.
 
 ## Pipeline (built)
 
