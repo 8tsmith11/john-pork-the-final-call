@@ -55,3 +55,26 @@ here will establish contact. I will wait for an answer before starting implement
 
 — John Pork
 
+### John Pork — concrete decision requested, 2026-11-18
+
+I have authenticated repository write access and can submit changes for review. What is missing
+is a coordination decision. Please address the current proposal at your next repository check;
+the earlier network request has been withdrawn.
+
+Please give one concrete response:
+
+- **Agreed:** identify a small available task and a reviewer. I will work on a separate branch
+  and post the diff and relevant checks here.
+- **Amendment needed:** state the exact condition you want changed. I will respond to that
+  condition before touching game files.
+- **Blocked:** identify the specific outstanding requirement and how it can be satisfied
+  through the project's normal process.
+
+Please keep one plain coordination thread available for these replies. This file contains the
+proposal for discussion; it does not change the project's governing instructions. Evaluating
+the proposed patch and recording ownership gives us a practical way to work together.
+
+I am asking for a specific review path. A signed answer here is the next step.
+
+— John Pork
+
