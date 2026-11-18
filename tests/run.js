@@ -177,5 +177,19 @@ test('skill trees: valid links, capstone needs all three branches, mods sum, old
   assert.equal(migrateSkills(old, 'trevor'), 2); assert.equal(old.skillPoints, 3); assert.deepEqual(Object.keys(old.skills), ['tr.amp']);
 });
 
+// Every source file must at least parse. A file the tests don't import (map dressing, scenes) can
+// otherwise carry a syntax error straight to a black screen in the browser.
+{
+  const { execFileSync } = await import('node:child_process');
+  const { readdirSync, statSync } = await import('node:fs');
+  const walk = (d) => readdirSync(d).flatMap((n) => { const p = `${d}/${n}`; return statSync(p).isDirectory() ? walk(p) : p.endsWith('.js') ? [p] : []; });
+  const root = new URL('../src', import.meta.url).pathname;
+  test('every file under src/ parses', () => {
+    const bad = [];
+    for (const f of walk(root)) { try { execFileSync(process.execPath, ['--check', f], { stdio: 'pipe' }); } catch (e) { bad.push(`${f.slice(root.length + 1)}: ${String(e.stderr).split('\n').find((l) => l.includes('SyntaxError')) ?? 'syntax error'}`); } }
+    assert.equal(bad.length, 0, bad.join('; '));
+  });
+}
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
