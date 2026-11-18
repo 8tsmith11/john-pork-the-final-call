@@ -314,7 +314,7 @@ export class WorldScene extends Phaser.Scene {
     const g = this.mapGfx = this.add.graphics().setDepth(-9);
     for (const im of this.propSprites ?? []) im.destroy();
     for (const t of this.propTimers ?? []) t.remove();
-    this.propSprites = []; this.propTimers = [];
+    this.propSprites = []; this.propTimers = []; this.propById = {};
     const props = this.textures.exists('props') ? this.textures.get('props') : null;
     for (const s of this.doorVis ?? []) s.vis.destroy();
     this.doorVis = [];
@@ -335,14 +335,15 @@ export class WorldScene extends Phaser.Scene {
       }
       if (this.textures.exists('big') && this.textures.get('big').has(art)) {
         // Big piece: 32x40, centred on its tile and standing on the tile's bottom edge.
-        this.propSprites.push(this.add.image(o.x * TILE + TILE / 2, o.y * TILE + TILE, 'big', art).setOrigin(0.5, 1).setDepth(o.y * TILE + TILE - 4));
+        const bim = this.add.image(o.x * TILE + TILE / 2, o.y * TILE + TILE, 'big', art).setOrigin(0.5, 1).setDepth(o.y * TILE + TILE - 4);
+        this.propSprites.push(bim); this.propById[o.id] = { im: bim, sheet: 'big', art };
         continue;
       }
       if (props?.has(art)) {
         // Hand-drawn prop: 16x24, standing on its tile. A "#1" frame means a slow two-frame loop.
         const im = this.add.image(o.x * TILE, o.y * TILE + TILE, 'props', art).setOrigin(0, 1).setDepth(o.y * TILE + TILE - 4);
         if (props.has(`${art}#1`)) this.propTimers.push(this.time.addEvent({ delay: 420, loop: true, callback: () => im.active && im.setFrame(im.frame.name === art ? `${art}#1` : art) }));
-        this.propSprites.push(im);
+        this.propSprites.push(im); this.propById[o.id] = { im, sheet: 'props', art };
         continue;
       }
       const warm = o.id === 'obj.printer_3' || o.id === 'obj.mate';
@@ -351,6 +352,7 @@ export class WorldScene extends Phaser.Scene {
       g.fillStyle(color, o.action === 'exit' ? 0.55 : 1).fillRect(o.x * TILE + 3, o.y * TILE + 2, TILE - 6, TILE - 6);
       g.fillStyle(0xffffff, 0.18).fillRect(o.x * TILE + 3, o.y * TILE + 2, TILE - 6, 2);
     }
+    this._refreshPuzzleProps();
     this.crowd?.destroy();
     this.crowd = new Crowd(this, map, this.save.world.seed);
     this._setupLighting(map);
@@ -491,7 +493,7 @@ export class WorldScene extends Phaser.Scene {
     const note = o.id === 'obj.plaza_clock' ? PAPER_CLOCK_NOTE : '';
     if (clocksSolved(this.save.flags) && !this.save.flags['puz.clocks.solved']) {
       this._flag('puz.clocks.solved', true);
-      this._grant('item.charm_1901');
+      this._grant('item.charm_1901'); this._refreshPuzzleProps();
       this.cameras.main.shake(400, 0.006);
       return this._say(`You wind it to ${now}. Somewhere in ASTER, four clocks tick at once. When you're back on the sixth floor, the hallway clock's face is hanging open on a hinge. Inside, a brass clock hand on a cord. (Rollover charm)`);
     }
@@ -503,8 +505,8 @@ export class WorldScene extends Phaser.Scene {
     if (this.save.flags['puz.busts.solved']) return this._say(o.text + '\n\nAll three are looking at the flag. You don\'t want to turn them back.');
     const seq = (this.save.flags['puz.busts.seq'] ?? '').split(',').filter(Boolean);
     const expected = BUST_ORDER[seq.length];
-    if (o.id !== expected) { this._flag('puz.busts.seq', ''); this._bustsFacing = {}; sfx('hit'); return this._say('You turn it toward the flag. Then the others turn back to the door on their own. Or you misremembered which way they faced.'); }
-    seq.push(o.id); this._flag('puz.busts.seq', seq.join(','));
+    if (o.id !== expected) { this._flag('puz.busts.seq', ''); this._bustsFacing = {}; this._refreshPuzzleProps(); sfx('hit'); return this._say('You turn it toward the flag. Then the others turn back to the door on their own. Or you misremembered which way they faced.'); }
+    seq.push(o.id); this._flag('puz.busts.seq', seq.join(',')); this._refreshPuzzleProps();
     (this._bustsFacing ??= {})[o.id] = true;
     sfx('swing');
     if (seq.length === BUST_ORDER.length) {
@@ -514,6 +516,18 @@ export class WorldScene extends Phaser.Scene {
       return this._say('The third bust turns to face the flag. For a second the whole room feels like it\'s being looked at, from three directions, kindly. Something small and porcelain is lying on the floor that wasn\'t there before. (Porcelain Pork pin)');
     }
     this._say(`You turn it to face the flag. (${seq.length} of 3)`);
+  }
+
+  // Puzzle state shows in the art: busts turned toward the flag, the hallway clock face swung open.
+  _refreshPuzzleProps() {
+    const f = this.save.flags, seq = (f['puz.busts.seq'] ?? '').split(',');
+    const set = (id, on, suffix) => {
+      const p = this.propById?.[id]; if (!p) return;
+      const want = on && this.textures.get(p.sheet).has(`${p.art}${suffix}`) ? `${p.art}${suffix}` : p.art;
+      if (p.im.frame.name !== want) p.im.setFrame(want);
+    };
+    for (const id of BUST_ORDER) set(id, !!f['puz.busts.solved'] || seq.includes(id), '#flag');
+    set('obj.clock_6f', !!f['puz.clocks.solved'], '#open');
   }
 
   _grant(itemId) {
