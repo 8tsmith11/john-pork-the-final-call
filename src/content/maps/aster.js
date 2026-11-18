@@ -36,8 +36,8 @@ export const asterHall = makeMap({
     { id: 'obj.door_636', art: DOOR, x: 27, y: 6, label: '636', text: 'A delivery box, unopened, addressed to the previous tenant. And the one before.' },
     { id: 'obj.door_638', art: DOOR, x: 31, y: 6, label: '638', text: 'Television through the door. "Citizens, things are stable." Then the same sentence again, slightly different.' },
     // People on six
-    { id: 'npc.pell', x: 19, y: 7, label: 'Arthur Pell', npc: true, talk: 'aster:pell_talk' },
-    { id: 'npc.409', x: 2, y: 3, label: 'Four-oh-nine', npc: true, text: 'A man on the landing with a bowl of soup going cold beside him. "Please hold. Your call is. Please hold." He says it kindly, the way he must have said it for years.' },
+    { id: 'npc.pell', later: [{ if: "act1.cordon.passed", text: "\"You went down. I can tell by your knees.\" Pell taps the wall with one knuckle. \"Tell me if the yard still smells of ozone. I'd like one thing down there to be the same.\"" }, { if: "act1.complete", text: "\"Was the east gate rolled open?\" He nods before you answer. \"Then somebody remembered how.\"" }], x: 19, y: 7, label: 'Arthur Pell', npc: true, talk: 'aster:pell_talk' },
+    { id: 'npc.409', later: [{ if: "act1.beat.call", text: "His phone is face up on the step, dark. \"Mine rang too. I haven't paid for a plan since my wife. It rang anyway.\"" }, { if: "act1.complete", text: "\"Door stayed shut last night. First time this week.\" He has a fresh bowl. \"I sat here and watched it stay shut.\"" }], x: 2, y: 3, label: 'Four-oh-nine', npc: true, text: 'A man on the landing with a bowl of soup going cold beside him. "Please hold. Your call is. Please hold." He says it kindly, the way he must have said it for years.' },
     // Stairwell
     { id: 'obj.stairs_6f', art: 'obj.stairs', x: 2, y: 1, label: 'Stairs down', action: 'exit', to: 'aster_lobby', text: 'Six flights. Somebody has numbered the steps in chalk and lost count at 71.' },
     { id: 'obj.extinguisher', x: 1, y: 4, label: 'Fire extinguisher', text: 'Inspected 2071. The tag has been initialed every year since by the same hand.' },
@@ -94,7 +94,7 @@ export const asterLobby = makeMap({
       { if: 'act1.cordon.passed', text: '"Somebody said you went down the grate." He looks at your shoes. "Huh. You did."' },
       { if: 'act1.complete', text: 'Dez sits up, which for Dez is a lot. "Drumming stopped about an hour ago. I noticed because I could hear the fridge again."' },
     ] },
-    { id: 'npc.doorman', eggOk: true, x: 16, y: 5, label: 'Fenwick', npc: true, talk: 'aster:fenwick_talk' },
+    { id: 'npc.doorman', eggOk: true, later: [{ if: "act1.beat.call", text: "\"Every screen in the lobby said one name for a minute. I wrote it in the book.\" Fenwick squares the pen to the page. \"It felt rude to leave it out.\"" }, { if: "act1.complete", text: "\"You three came up the stairs at dawn smelling like a pump room. I signed you in. All three.\" He turns the book so you can see. \"I counted twice.\"" }], x: 16, y: 5, label: 'Fenwick', npc: true, talk: 'aster:fenwick_talk' },
     // Second pass: what a lobby has. Each seat faces something; each light has a reason to be on.
     { id: 'obj.armchair_w1', art: 'obj.chair', x: 2, y: 11, label: 'Armchair', text: 'The one nearest the door. Whoever is waiting for someone sits here.' },
     { id: 'obj.table_w', art: 'obj.table', x: 4, y: 9, label: 'Low table', text: 'Three magazines, all the same issue. The crossword is done in every one, differently.' },

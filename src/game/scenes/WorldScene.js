@@ -721,7 +721,7 @@ export class WorldScene extends Phaser.Scene {
     this._flag(`secrets.cylinder.by.${who}`, Number(f[`secrets.cylinder.by.${who}`] || 0) + 1);
     const line = {
       manuel: 'MANUEL: "I cast that. Two-part silicone. It came out of the mold perfect and I have regretted nothing."',
-      trevor: 'TREVOR: "Not mine." He looks at it a while. "It is never mine."',
+      trevor: 'TREVOR: "Why is it warm."',
       michael: 'MICHAEL: "I\'m not touching it." He is already holding it.',
     }[who] ?? '';
     const next = this._cylinderSpot(n);

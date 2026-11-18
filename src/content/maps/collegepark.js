@@ -72,11 +72,11 @@ export const metroPlaza = makeMap({
     // ASTER
     { id: 'obj.aster_door', art: 'obj.street_doors', x: 10, y: 12, label: 'ASTER lobby', action: 'exit', to: 'aster_lobby', text: 'Back into the lobby.' },
     { id: 'obj.aster_sign', art: 'obj.purple_sign', x: 5, y: 13, label: 'ASTER', text: 'A S T E R, in letters a metre high. The T flickers. Residents have stopped seeing it.' },
-    { id: 'npc.okafor', x: 9, y: 23, label: 'Mrs. Okafor', npc: true, text: 'Three generations are arguing on the third floor and she has come down here to let them. "Sit." You sit. "Your friend with the hair. He is making those heads again?" She nods as if you answered. "Good. Somebody should."' },
+    { id: 'npc.okafor', later: [{ if: "act1.beat.call", text: "\"My grandson's game stopped and showed a pig. He says it is a commercial.\" Mrs. Okafor folds her hands. \"I have seen commercials. A commercial wants something.\"" }, { if: "act1.complete", text: "She is still on the bench. The third floor has gone quiet. \"They agreed on dinner. It took the whole night. Sit.\"" }], x: 9, y: 23, label: 'Mrs. Okafor', npc: true, text: 'Three generations are arguing on the third floor and she has come down here to let them. "Sit." You sit. "Your friend with the hair. He is making those heads again?" She nods as if you answered. "Good. Somebody should."' },
     { id: 'obj.garden_bench', art: 'obj.bench', x: 8, y: 22, label: 'Bench', text: 'A brass plate: FOR THE NIGHT SHIFT. No name. Somebody polishes it.' },
     // The plaza
     { id: 'obj.station_entrance', art: 'obj.tunnel_on', x: 38, y: 8, label: 'Metro entrance', text: 'The gates are down for the night. The departure board behind them lists a train to a station that was never built.' },
-    { id: 'npc.mina', eggOk: true, art: PERSON[0], x: 41, y: 10, label: 'Mina', npc: true, text: '"I do requests. I don\'t do the one everybody asks for." She retunes something wooden that was not out of tune.' },
+    { id: 'npc.mina', eggOk: true, later: [{ if: "act1.complete", text: "She is playing the one everybody asks for. She stops when she sees you listening. \"Don't tell anyone.\"" }], art: PERSON[0], x: 41, y: 10, label: 'Mina', npc: true, text: '"I do requests. I don\'t do the one everybody asks for." She retunes something wooden that was not out of tune.' },
     { id: 'npc.rotter_1', x: 30, y: 18, label: 'Rotter', npc: true, text: 'coderot. coderot. coderot.' },
     { id: 'npc.halvard', x: 26, y: 26, label: 'Halvard', npc: true, talk: 'lead_b_halvard', doneFlag: 'act1.halvard.sellerDescribed', doneText: 'The shutter comes up two inches. Halvard\'s eye, then the television behind him, then the shutter again.\n\n"You paid for one rumor. That was it."' },
     { id: 'obj.purple_sign', x: 40, y: 27, label: 'Purple Line sign', text: 'PURPLE LINE: OPENING SOON.' },
@@ -115,7 +115,7 @@ export const metroPlaza = makeMap({
     { id: 'obj.map_cart', art: 'obj.cart', x: 65, y: 15, label: 'Map cart', text: 'Paper maps, hand-corrected. A sign: IF YOU FIND AN ERROR I WILL PAY YOU FOR IT.' },
     { id: 'obj.diner_door', art: 'obj.door', x: 72, y: 8, label: 'The diner', text: 'Open. It is always open. Through the glass, a cook calls an order to an empty room and plates it.' },
     { id: 'obj.diner_menu', art: 'obj.board', x: 69, y: 8, label: 'Menu', text: 'Chalk. One item has been crossed out and rewritten so many times the board is worn pale there.' },
-    { id: 'npc.ray', eggOk: true, art: PERSON[1], x: 70, y: 19, label: 'Big Ray', npc: true, text: '"Scooter\'s fine. You\'re running rich. Sleep, eat something that was alive, come back."' },
+    { id: 'npc.ray', eggOk: true, later: [{ if: "act1.cordon.passed", text: "\"White coats by the grate all night. One of them asked me what a scooter does.\" Big Ray wipes his hands. \"I said it goes.\"" }], art: PERSON[1], x: 70, y: 19, label: 'Big Ray', npc: true, text: '"Scooter\'s fine. You\'re running rich. Sleep, eat something that was alive, come back."' },
     { id: 'obj.scooters', x: 74, y: 19, label: 'Scooter rack', text: 'Three used scooters, chained, each with a price tag written on tape. Delroy\'s kiosk takes cash.' },
     { id: 'obj.shop_scooters', art: 'obj.kiosk', x: 71, y: 18, label: 'Delroy\'s Wheels', action: 'shop', shop: 'scooters', light: 0.7 },
     { id: 'obj.shop_pawn', art: 'obj.kiosk', x: 68, y: 18, label: 'Pawn window', action: 'shop', shop: 'pawn', light: 0.5 },
