@@ -219,6 +219,12 @@ have to apply, but it would make it interesting."
   realistic androids, possibly with biotech involved.
   > *"john pork shouldnt seem like an android, same with tim cheese and tung tung. think realistic
   > androids or maybe even some biotech involved."*
+- Clarified: realistic *in their physical forms*. **The players still know they're machines, and
+  that's commonplace in the story.** They should be **extremely powerful and durable, with unique
+  physical abilities.**
+  > *"in their physical forms." / "however the players still know they are machines, this is
+  > commonplace" / "in the story" / "they should be extremely powerful and durable and have unique
+  > physical abilities"*
 
 ---
 

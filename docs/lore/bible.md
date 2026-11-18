@@ -37,8 +37,8 @@ three have physical bodies, and the player knows they're machines** (Trevor's di
 
 ### Bodies: realistic, with biotech (supersedes "android" wording below)
 Trevor's direction: these bodies **shouldn't read as androids or robots**. They're realistic, with
-biotech involved. When they stand still they could pass for people at a glance, and that's what's
-unsettling.
+biotech involved, in their physical forms. **Everyone in the story knows they're machines.** Embodied
+machines are commonplace in 2098 (see below). These three are simply the most extraordinary ones.
 - **John Pork:** a **grown** body. Gene-edited pig tissue (the real lineage: pigs became the
   leading source animal for xenotransplantation because their organs are close to human size) is
   cultured over a printed scaffold and wired with a machine nervous system. His pig features are
@@ -59,6 +59,19 @@ unsettling.
 - **Theme tie-in:** the big machines wear bodies made from the animals and materials humans used:
   pigs for organs, mice for experiments, trees for everything. *Where does "human" end* (themes §6)
   is written on their skin.
+
+### Embodied machines are ordinary in 2098; these three are not
+- **Commonplace:** grown and built bodies ("shells") for AIs are everyday tech: care workers,
+  dockhands, abatement crews, companions, Continuity enforcers. People know a shell when they see one
+  (an attestation glyph at the collar, a certain stillness), and nobody stares. The *body* isn't what
+  makes Pork, Tim, and Sahur remarkable. **Who's inside it, and what it can do, is.**
+- **Extremely powerful and durable** (Trevor's direction). Each has unique physical abilities:
+
+| | Durability | Unique physical abilities | Weakness (so fights stay fair) |
+|---|---|---|---|
+| **John Pork** | Cultured tissue **regenerates** fast. He shrugs off gunfire, and wounds close while he talks | **The Ring:** every device near him seizes and rings, a local hack aura that turns enemy tech against them. **Dial-through:** he steps *into* a screen and out of another one nearby (short-range transit through electronics). Enormous, heavy strength. A voice that carries below hearing | **Analog:** wood, paper, and plain mechanisms he can't touch through. **Rot** makes his tissue fail (gray patches, tremor, the knee). Out of his body he's everywhere, and in it he can be pinned |
+| **Tim Cheese** | A composite frame under the grown skin, built in **layers**. Disabling one layer doesn't stop him (Swiss-cheese defense, literally) | **Interdiction sight:** he predicts attacks a beat early (a firewall for bodies). **The holes:** he shifts his internal lattice so projectiles and blades pass *through* the channels, and you can never tell which line is open. Surgical speed. Commands Continuity hardware by clearance | The layers must be stripped **in sequence** (a boss-fight puzzle). Predictive sight fails against the *unpredictable* (the edges theme: improvisation and weirdness beat him) |
+| **Tung Tung Tung Sahur** | **Densified living timber**, stronger than steel by weight (real lineage: densified-wood research). It regrows over seasons and is immune to hacks and code-rot | **The drum:** an infrasonic **reset pulse** that knocks rotted electronics offline and wakes anyone sleeping or comatose (the watchdog's purpose). It **roots**: it anchors and becomes immovable. Tireless. Silent in the dark until it chooses not to be | **Fire.** And **answering**: it stops for anyone who truly responds to it |
 
 ### John Pork
 - **Origin:** MERIDIAN needed a stable self-model. Out of all human expression, it chose the one
