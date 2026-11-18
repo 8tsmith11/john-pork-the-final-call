@@ -81,7 +81,7 @@ export const asterLobby = makeMap({
     { id: 'obj.lobby_camera', x: 30, y: 0, label: 'Lobby camera', text: 'The red light is on. It is recording. Not tonight, by the look of the monitor, but it is recording.' },
     { id: 'obj.security_desk', x: 17, y: 6, label: 'Security desk', text: 'A sign-in book. The last forty entries are the same name in forty different hands.' },
     { id: 'obj.lobby_monitor', x: 18, y: 6, label: 'Security monitor (rotted)', talk: 'lead_c_footage', puzzle: 'pipes', solvedFlag: 'act1.leadC.repaired' },
-    { id: 'npc.doorman', x: 16, y: 5, label: 'Doorman', npc: true, text: '"Good evening. You are residents. I am glad." A glyph at his collar, a certain stillness. "I did not see anyone come in. I would like to have."' },
+    { id: 'npc.doorman', x: 16, y: 5, label: 'Fenwick', npc: true, text: '"Good evening. You are residents. I am glad." A glyph at his collar, a certain stillness. "I did not see anyone come in. I would like to have."' },
     { id: 'obj.plant_w', art: 'obj.plant', x: 1, y: 9, label: 'Plant', text: 'Real, this one. It leans toward the street doors.' },
     { id: 'obj.bench_w', art: 'obj.bench', x: 3, y: 10, label: 'Bench', text: 'Somebody has carved ASTER PROS into the armrest. Somebody else has carved NOOBS under it. Same knife.' },
     { id: 'obj.lost_found', x: 5, y: 11, label: 'Lost and found', text: 'A box that is never emptied. One glove. A pacifier. A phone, face down, that you decide not to turn over.' },

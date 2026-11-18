@@ -24,7 +24,7 @@ export const metroPlaza = makeMap({
     { id: 'npc.rotter_2', x: 25, y: 2, label: 'Rotter', npc: true, text: 'code rot. no one can code faster than. code rot.' },
     { id: 'npc.rotter_3', x: 33, y: 8, label: 'Rotter (looks at you differently)', npc: true,
       text: 'code rot. code rot. ...I used to be someone\'s favorite person. code rot.' },
-    { id: 'npc.halvard', x: 6, y: 8, label: 'Shuttered phone-repair stall', npc: true, talk: 'lead_b_halvard' },
+    { id: 'npc.halvard', x: 6, y: 8, label: 'Halvard', npc: true, talk: 'lead_b_halvard' },
     { id: 'obj.billboard', x: 20, y: 1, label: 'Billboard', text: 'A Slop Decades billboard, peeling: "AT THE END OF THE DAY, NO ONE CAN CODE FASTER THAN AI."' },
     { id: 'obj.purple_sign', x: 30, y: 1, label: 'Purple Line sign', text: 'PURPLE LINE: OPENING SOON.' },
     { id: 'obj.grate', x: 36, y: 9, label: 'Storm grate', action: 'exit', floor: true, to: 'tunnel_1', text: 'The grate lifts. Somewhere below, very faintly, something is drumming.' },

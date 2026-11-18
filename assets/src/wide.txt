@@ -3,20 +3,20 @@
 @map 0=night0 1=night1 2=night2 3=night3 a=concrete0 b=concrete1 c=concrete2 d=concrete3 e=warm0 f=warm1 g=warm2 h=warm3 i=warm4 j=skin0 k=skin1 l=skin2 m=skin3 n=screen0 o=screen1 p=screen2 q=bone r=signal s=steel t=pork0 u=pork1 v=pork2 w=balloon0 x=balloon1 y=rot0 z=rot1 A=yerba0 B=yerba1 C=tub0 D=tub1 E=soft0 F=soft1
 @frame obj.pork_flag
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
-0vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv0
-0uuuuuuuuuuu0mmmmmm0uuuuuuuuuuu0
-0uquuuuquuukmlmmmmlmkuuquuuuquu0
-0uu1111uuuukm0mmmm0lkuuu1111uuu0
-0uu1pp1uuuukmmvvvvmlkuuu1pp1uuu0
-0uu1pp1uuuukmmvttvmlkuuu1pp1uuu0
-0uu1pp1uuuuukmvvvvmkuuuu1pp1uuu0
-0uu1q11uuuuumkkkkkkluuuu1q11uuu0
-0uu1111uuuuummmmmmmmuuuu1111uuu0
-0uquuuuquFEFEFdssdEFEFEquuuuquu0
-0uuuuuuuuEFEFEssssFEFEFuuuuuuuu0
-0uuuuuuuuFEFEFssssEFEFEuuuuuuuu0
-0ttttttttEFEFEssssFEFEFtttttttt0
-0t0t0t0t0t0t0t0t0t0t0t0t0t0t0t0.
+0dddddddddddddddddddddddddddddd0
+0dddddddddkddvvvvvuddkddddddddd0
+0qqqqqdqqkkqvvvvvvvuqkkqqqqqqqq0
+0qqqqqdqqkjvvuvvvvuvujkbbbabbbb0
+0qqqqqdqqkjvv0vvvv0vujkAABaA2AA0
+0qqqqqdqqkkvvvuvvuvvukkAAAaAABA0
+0ddddddddddvvvtuutvvuAAAAAa2AAA0
+0sdssssssssvtvvvvvvtuAAA2AaAAAA0
+0ssssdsssssqvttttttuqAAAAAaAAAB0
+0sssssssdssqqvvvvvuqqAAAAAaAA2A0
+0ssdsssFFEFFEFcccccFFEFFEAaAAAA0
+0sssssdEFEFEEEdddddEFEFEEAaAAAA0
+0ssssssFFEFFEFdddddFFEFFEAAAAAA0
+0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0.
 .0.0.0.0.0.0.0.0.0.0.0.0.0.0.0..
 @frame obj.mailboxes
 00000000000000000000000000000000

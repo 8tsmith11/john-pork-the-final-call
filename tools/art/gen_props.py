@@ -352,18 +352,24 @@ BIG["obj.statue_3"] = bust(raw=True).rows()
 
 # ---- wide wall pieces (32x16, hung on a wall tile and the one to its right) ----
 WIDE = {}
-c = C(32, 16).h_(0, 0, 32, "warm0").rect(1, 1, 30, 13, "pork1").h_(1, 1, 30, "pork2").h_(1, 13, 30, "pork0")
-c.rect(9, 10, 14, 4, "soft1").pts("soft0", *[(x, y) for x in range(9, 23) for y in range(10, 14) if (x + y) % 2 == 0 and not 14 <= x <= 17])
-c.rect(14, 10, 4, 4, "steel").pts("concrete3", (14, 10), (17, 10))                                    # grey tee under the plaid
-c.rect(12, 2, 8, 8, "skin3").pts(None, (12, 2), (19, 2)).pts("skin2", (19, 4), (19, 5), (19, 6), (19, 7), (19, 8))  # bald egg head
-c.rect(11, 3, 1, 4, "skin1").rect(20, 3, 1, 4, "skin1")                                               # ears hanging down
-c.pts("night0", (13, 4), (18, 4)).pts("skin2", (13, 3), (18, 3))                                      # eyes, brows
-c.rect(14, 5, 4, 3, "pork2").pts("pork0", (15, 6), (16, 6))                                           # snout
-c.h_(13, 8, 6, "skin1").pts("skin1", (12, 7), (19, 7))                                                # the smile
-for x0 in (3, 24):                                                                                                # a ringing phone each side
-    c.rect(x0, 4, 4, 6, "night1").rect(x0 + 1, 5, 2, 3, "screen2").px(x0 + 1, 8, "bone")
-    c.pts("bone", (x0 - 1, 3), (x0 + 4, 3), (x0 - 1, 10), (x0 + 4, 10))
-c.pts("pork0", *[(x, 14) for x in range(1, 31, 2)])
+# The flag: the photograph, printed on cloth. Overcast sky, grey sea on the left, dark cliffs on the
+# right, and him in the middle: pale head, ears out and down at the top corners, snout, long smile,
+# red plaid open over a grey tee.
+c = C(32, 16).h_(0, 0, 32, "warm0").rect(1, 1, 30, 13, "bone")
+c.rect(1, 1, 30, 2, "concrete3")                                                        # heavy sky
+c.rect(1, 7, 10, 7, "steel").pts("concrete3", (2, 8), (5, 9), (3, 11), (8, 10), (6, 12)).h_(1, 7, 10, "concrete3")   # the sea
+c.rect(21, 4, 10, 10, "yerba0").pts("night2", (22, 6), (24, 8), (27, 7), (29, 10), (23, 11), (26, 12), (28, 5))       # the cliffs
+c.h_(22, 4, 9, "concrete1").pts("yerba1", (25, 5), (29, 6), (30, 9))
+c.rect(7, 11, 18, 3, "soft1").pts("soft0", *[(x, y) for x in range(7, 25) for y in (11, 12, 13) if (x % 3 == 0) or (y == 12 and x % 2)])
+c.rect(14, 11, 5, 3, "concrete3").h_(14, 11, 5, "concrete2")                                # grey tee
+for y, (a, b2) in {2: (13, 18), 3: (12, 19), 4: (11, 20), 5: (11, 20), 6: (11, 20), 7: (11, 20), 8: (11, 20), 9: (12, 19), 10: (13, 18)}.items():
+    c.h_(a, y, b2 - a + 1, "pork2").px(b2, y, "pork1")                                   # the head
+c.rect(9, 3, 2, 4, "skin1").px(10, 2, "skin1").rect(21, 3, 2, 4, "skin1").px(21, 2, "skin1").pts("skin0", (10, 4), (10, 5), (21, 4), (21, 5))  # ears
+c.pts("night0", (13, 5), (18, 5)).pts("pork1", (13, 4), (18, 4))                        # eyes under faint brows
+c.rect(14, 6, 4, 2, "pork1").pts("pork0", (14, 7), (17, 7)).pts("pork2", (15, 6), (16, 6))   # snout
+c.h_(13, 9, 6, "pork0").pts("pork0", (12, 8), (19, 8))                                   # the long smile
+c.v_(6, 3, 4, "concrete3").v_(26, 4, 9, "concrete0")                                      # two soft folds in the cloth
+c.pts("warm0", *[(x, 14) for x in range(1, 31, 2)])
 WIDE["obj.pork_flag"] = c.outline().rows()
 
 
