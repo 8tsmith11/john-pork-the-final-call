@@ -301,6 +301,13 @@ export class WorldScene extends Phaser.Scene {
 
   async _playEnding(fromBoss = false) {
     if (!fromBoss && this.mode !== 'client' && !this.sim.cleared) return this._announce('Something down here is still moving.');
+    // John Pork arrives in person: climbs down from the back of the platform and stands with the party.
+    if (this.anims.exists('pork') && !this.porkSprite) {
+      const me = this.sim.players?.get(this.localId) ?? this._lastRendered?.players.find((p) => p.id === this.localId);
+      const tx = (me?.x ?? 160) + 40, ty = (me?.y ?? 80);
+      this.porkSprite = this.add.sprite(tx, ty - 60, 'principals').setOrigin(0.5, 1).play('pork').setAlpha(0).setDepth(ty);
+      this.tweens.add({ targets: this.porkSprite, y: ty + 4, alpha: 1, duration: 1400, ease: 'Sine.out' });
+    }
     this.startDialogue('ending', null, () => {
       this._flag('act1.complete', true);
       const W = VIEW.w, H = VIEW.h;
