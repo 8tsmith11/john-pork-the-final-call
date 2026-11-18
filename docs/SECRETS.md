@@ -40,6 +40,7 @@ To test the idles without waiting three minutes, add `?idle=10` to the game's ad
 | 10 | **The rotter who says something else** | Stand next to one particular rotter long enough and they say something that isn't "code rot" | They look at you differently from the others | built |
 | 11 | **Room 631** | A book on the shelf in 631 is volume 631 of a science journal: the one with the paper that named model collapse | It's on the shelf | built |
 | 12 | **The anthem singer** | Talk to the student standing at attention by the campus gate (he is never named) in College Park (south-west, near Testudo). Every time you talk to him he is singing a different country's national anthem and is fiercely loyal to that country. Seven rounds, then it loops. Meet General Nutsworth, his stuffed squirrel, on round 4. Sets `secrets.anthem.found` | He stands at attention next to Cal Rourke's table | built |
+| 13 | **The island at Lake Artemesia** | At the lake (east end of College Park, the Paint Branch trail), a zig-zag of stepping stones runs from the north shore out to the island. On it, guarded by one coderot thing, is a fist-sized white bust of John Pork with fresh flowers. Taking it gives the charm *Little white bust* and sets `secrets.lake.island` | The heron in the marsh walks off toward the island on top of the water | built |
 
 ## Pool (approved, not yet scheduled)
 
