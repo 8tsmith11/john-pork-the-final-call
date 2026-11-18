@@ -84,3 +84,8 @@ Format:
   characters are free (the last player of each is suggested), and **claim one**. When everyone
   has claimed, the host sends the save state to the joiners and the game resumes. Joiners never
   write their own copy of the world.
+
+## D-011 Rights / IP  (status: agreed, direct from Trevor)
+- 2026-11-17. The meme characters' rights questions raised in `lore/meme-research.md` are fine: this is
+  a private fan project among friends that "isn't going anywhere." The public repo and Pages hosting
+  stay as they are. Agents don't need to raise this again.
