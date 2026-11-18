@@ -25,14 +25,16 @@ export class Neon {
     this.map = map; this.d = d; this.signs = []; this.holos = []; this.drones = []; this.vents = [];
     this.glows = (d.glow ?? []).map((g) => ({ x: g.x * TILE + 8, y: g.y * TILE + 8, color: g.color, r: g.r ?? 1 }));
     for (const n of d.neon ?? []) {
-      const t = s.add.text(n.x * TILE, n.y * TILE + 4, n.text, { fontFamily: '"Pixelify Sans", monospace', fontSize: `${n.size ?? 7}px`, color: '#ffffff', heading: true })
-        .setOrigin(0, 0.5).setTint(n.color).setDepth(n.y * TILE + 30);
-      t.setShadow(0, 0, '#' + n.color.toString(16).padStart(6, '0'), 4, false, true);
+      const hex = '#' + n.color.toString(16).padStart(6, '0');
+      // A hot white-ish core with a saturated outline and halo reads as neon tube, not printed text.
+      const t = s.add.text(n.x * TILE, n.y * TILE + 4, n.text, { fontFamily: '"Pixelify Sans", monospace', fontSize: `${n.size ?? 7}px`, color: '#fff6f0', stroke: hex, strokeThickness: 2, heading: true })
+        .setOrigin(0, 0.5).setDepth(n.y * TILE + 30);
+      t.setShadow(0, 0, hex, 6, true, true);
       const sign = { t, n, on: true, cx: n.x * TILE + t.width / 2, cy: n.y * TILE + 4 };
       this.objs.push(t);
       if (d.wet) {   // a smeared reflection on the wet street below the sign
-        const r = s.add.text(n.x * TILE, n.y * TILE + 22, n.text, { fontFamily: '"Pixelify Sans", monospace', fontSize: `${n.size ?? 7}px`, color: '#ffffff', heading: true })
-          .setOrigin(0, 0.5).setTint(n.color).setAlpha(0.18).setScale(1, -1.6).setDepth(2).setBlendMode('ADD');
+        const r = s.add.text(n.x * TILE, n.y * TILE + 22, n.text, { fontFamily: '"Pixelify Sans", monospace', fontSize: `${n.size ?? 7}px`, color: hex, heading: true })
+          .setOrigin(0, 0.5).setAlpha(0.25).setScale(1, -1.6).setDepth(2).setBlendMode('ADD');
         sign.r = r; this.objs.push(r);
       }
       this.signs.push(sign);
@@ -40,8 +42,8 @@ export class Neon {
     for (const h of d.holo ?? []) {
       const x = h.x * TILE, y = h.y * TILE, w = h.w * TILE, hh = h.h * TILE;
       const g = s.add.graphics().setDepth(y + hh + 20).setBlendMode('ADD');
-      const t = s.add.text(x + w / 2, y + hh / 2, h.lines[0], { fontFamily: '"Pixelify Sans", monospace', fontSize: '6px', color: '#ffffff', align: 'center', heading: true })
-        .setOrigin(0.5).setTint(h.color).setDepth(y + hh + 21);
+      const t = s.add.text(x + w / 2, y + hh / 2, h.lines[0], { fontFamily: '"Pixelify Sans", monospace', fontSize: '6px', color: '#' + h.color.toString(16).padStart(6, '0'), align: 'center', heading: true })
+        .setOrigin(0.5).setDepth(y + hh + 21);
       this.holos.push({ h, g, t, x, y, w, hh, i: 0, at: 0 }); this.objs.push(g, t);
     }
     for (const v of d.vent ?? []) this.vents.push({ x: v.x * TILE + 8, y: v.y * TILE + 8, acc: Math.random() });
@@ -82,8 +84,8 @@ export class Neon {
     for (const h of this.holos) {
       if (now - h.at > 1.6) { h.at = now; h.i = (h.i + 1) % h.h.lines.length; h.t.setText(h.h.lines[h.i] || ' '); }
       const glitch = Math.random() < 0.03;
-      h.g.clear().fillStyle(h.h.color, glitch ? 0.22 : 0.1).fillRect(h.x, h.y, h.w, h.hh).lineStyle(1, h.h.color, 0.5).strokeRect(h.x + 0.5, h.y + 0.5, h.w - 1, h.hh - 1);
-      for (let yy = h.y + ((now * 12) % 3); yy < h.y + h.hh; yy += 3) h.g.fillStyle(h.h.color, 0.08).fillRect(h.x, yy, h.w, 1);
+      h.g.clear().fillStyle(h.h.color, glitch ? 0.32 : 0.18).fillRect(h.x, h.y, h.w, h.hh).lineStyle(1, h.h.color, 0.85).strokeRect(h.x + 0.5, h.y + 0.5, h.w - 1, h.hh - 1);
+      for (let yy = h.y + ((now * 12) % 3); yy < h.y + h.hh; yy += 3) h.g.fillStyle(h.h.color, 0.14).fillRect(h.x, yy, h.w, 1);
       h.t.setX(h.x + h.w / 2 + (glitch ? (Math.random() * 4 - 2) : 0)).setAlpha(glitch ? 0.5 : 0.95);
     }
     for (const v of this.vents) {
@@ -112,9 +114,9 @@ export class Neon {
       if (sx < -80 || sy < -80 || sx > VIEW.w + 80 || sy > VIEW.h + 80) return;
       L.setScale(sc * z).setTint(color).setAlpha(a); rt.draw(L, sx, sy);
     };
-    for (const g of this.glows) put(g.x, g.y, g.color, g.r, 0.32);
-    for (const sg of this.signs) if (sg.on) put(sg.cx, sg.cy, sg.n.color, 0.75, 0.3);
-    for (const h of this.holos) put(h.x + h.w / 2, h.y + h.hh / 2, h.h.color, 0.8, 0.22);
+    for (const g of this.glows) put(g.x, g.y, g.color, g.r, 0.5);
+    for (const sg of this.signs) if (sg.on) put(sg.cx, sg.cy, sg.n.color, 0.9, 0.55);
+    for (const h of this.holos) put(h.x + h.w / 2, h.y + h.hh / 2, h.h.color, 0.9, 0.4);
     for (const dr of this.drones) {
       if (dr.t < 0) continue;
       // the searchlight: a cold pool on the ground below and ahead, sweeping
