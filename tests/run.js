@@ -191,5 +191,32 @@ test('skill trees: valid links, capstone needs all three branches, mods sum, old
   });
 }
 
+// Level design guard: from the spawn, every object on every map can be walked up to (doors open on
+// contact, so they count as passable). Catches a prop or NPC walled off by a later layout edit.
+test('every map object is reachable on foot', () => {
+  const bad = [];
+  for (const m of Object.values(MAPS_FOR_TEST)) {
+    const seen = new Set(), q = [];
+    for (const s of m.spawns) { const x = Math.floor(s.x / 16), y = Math.floor(s.y / 16); if (m.solid(x, y)) bad.push(`${m.id}: spawn in a wall at ${x},${y}`); else { seen.add(`${x},${y}`); q.push([x, y]); } }
+    while (q.length) {
+      const [x, y] = q.shift();
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
+        if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
+        seen.add(k); q.push([nx, ny]);
+      }
+    }
+    for (const o of m.objects) if (![[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${o.x + dx},${o.y + dy}`))) bad.push(`${m.id}: ${o.id} at ${o.x},${o.y}`);
+  }
+  assert.equal(bad.length, 0, bad.join('; '));
+});
+
+test('stepping onto the lobby street doors leaves the building', () => {
+  const sim = new Sim(MAPS_FOR_TEST.aster_lobby, { seed: 's' }); sim.addPlayer('a', 'manuel');
+  const p = sim.players.get('a'); p.x = 17 * 16 + 8; p.y = 12 * 16 + 8;
+  sim.events.length = 0; sim._moveAxis(p, 0, 16);
+  assert.ok(sim.events.some((e) => e.t === 'bumpExit' && e.id === 'obj.street_doors'));
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

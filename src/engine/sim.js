@@ -505,7 +505,18 @@ export class Sim {
 
   _moveAxis(p, dx, dy) {
     const nx = p.x + dx, ny = p.y + dy;
-    if (!this._hits(nx, ny)) { p.x = nx; p.y = ny; return; }
+    if (!this._hits(nx, ny)) {
+      p.x = nx; p.y = ny;
+      // Walk-on exits marked `stepOn` (the lobby street doors; not the storm grate, which you could cross by accident): stepping on uses
+      // it, like walking into any other door. Edge-triggered so standing there doesn't re-fire.
+      const fk = `${Math.floor(nx / TILE)},${Math.floor(ny / TILE)}`;
+      if (fk !== p.onTile) {
+        p.onTile = fk;
+        const fx = (this.map.floorExits ??= new Map(this.map.objects.filter((o) => o.action === 'exit' && o.floor && o.stepOn).map((o) => [`${o.x},${o.y}`, o]))).get(fk);
+        if (fx && !String(p.id).startsWith('ai:')) this.events.push({ t: 'bumpExit', id: fx.id, by: p.id, dx: Math.sign(dx), dy: Math.sign(dy) });
+      }
+      return;
+    }
     if (!dx && !dy) return;
     // Walking into a door opens it; walking into an exit (door, elevator, ladder) uses it.
     const tx = Math.floor((nx + Math.sign(dx) * HALF_W) / TILE), ty = Math.floor((ny + Math.sign(dy) * HALF_H) / TILE);

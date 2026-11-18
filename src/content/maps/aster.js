@@ -107,6 +107,6 @@ export const asterLobby = makeMap({
       'CONTINUITY AUTHORITY: ROUTINE ABATEMENT IN YOUR AREA. Residents may notice vans. Residents need not notice anything else.',
       'REMINDER. Display of the designated likeness (JP-1) in any medium is an offence: flags, figures, drawings, and descriptions sufficient to identify.\n\nThe notice then describes him, for four lines, so that you will know what not to display.',
       'Somebody has added, in biro, at the bottom: he called my mother in \'71. she still sets a place.' ] },
-    { id: 'obj.street_doors', x: 17, y: 13, label: 'Street doors', action: 'exit', floor: true, to: 'metro_plaza', text: 'Out into the plaza. Sodium light and wet concrete.' },
+    { id: 'obj.street_doors', x: 17, y: 13, label: 'Street doors', action: 'exit', floor: true, stepOn: true, to: 'metro_plaza', text: 'Out into the plaza. Sodium light and wet concrete.' },
   ],
 });
