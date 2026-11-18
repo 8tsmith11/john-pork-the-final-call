@@ -19,9 +19,17 @@ export function makeMap({ id, name, layout, spawns, objects = [], enemies = [], 
     id, name, music, w, h: rows.length, layout: rows,
     spawns: spawns.map(([tx, ty]) => ({ x: tx * TILE + 8, y: ty * TILE + 8 })),
     objects,
+    // Exits (doors, ladders, elevators) block walking; you use them by interacting.
+    // Doors (door: true) block until opened. `floor: true` objects (grates) stay walkable.
+    blocked: new Set(objects.filter((o) => o.action === 'exit' && !o.floor).map((o) => `${o.x},${o.y}`)),
+    doors: new Map(objects.filter((o) => o.door).map((o) => [`${o.x},${o.y}`, o])),
     enemies: enemies.map(([kind, tx, ty]) => ({ kind, x: tx * TILE + 8, y: ty * TILE + 8 })),
     solid(tx, ty) {
       if (ty < 0 || tx < 0 || ty >= this.h || tx >= this.w) return true;
+      const k = `${tx},${ty}`;
+      if (this.blocked.has(k)) return true;
+      const d = this.doors.get(k);
+      if (d) return !d.open;
       return SOLID.has(this.layout[ty][tx]);
     },
   };

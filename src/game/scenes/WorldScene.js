@@ -169,6 +169,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'standing' && msg.faction in this.save.standing) this.save.standing[msg.faction] += Number(msg.n) || 0;
         if (msg.t === 'exit') this._tryExit(this.sim.map.objects.find((o) => o.id === msg.obj));
         if (msg.t === 'answer') this._answer();
+        if (msg.t === 'door') this._toggleDoor(msg.id);
         if (msg.t === 'craft') this._craft(this._charOf(peer), msg.idx);
         if (msg.t === 'skill') this._learn(this._charOf(peer), msg.id);
         if (msg.t === 'use') this._use(this._charOf(peer), peer);
@@ -212,7 +213,16 @@ export class WorldScene extends Phaser.Scene {
     for (const t of this.propTimers ?? []) t.remove();
     this.propSprites = []; this.propTimers = [];
     const props = this.textures.exists('props') ? this.textures.get('props') : null;
+    for (const s of this.doorVis ?? []) s.vis.destroy();
+    this.doorVis = [];
     for (const o of map.objects) {
+      if (o.door) {
+        const vis = props?.has(o.id) ? this.add.image(o.x * TILE, o.y * TILE + TILE, 'props', o.id).setOrigin(0, 1)
+          : this.add.rectangle(o.x * TILE + 1, o.y * TILE, TILE - 2, TILE, 0x5a3d2b).setOrigin(0, 0).setStrokeStyle(1, 0x2b1d14);
+        vis.setDepth(o.y * TILE + TILE - 4);
+        this.doorVis.push({ o, vis });
+        continue;
+      }
       if (props?.has(o.id)) {
         // Hand-drawn prop: 16x24, standing on its tile. A "#1" frame means a slow two-frame loop.
         const im = this.add.image(o.x * TILE, o.y * TILE + TILE, 'props', o.id).setOrigin(0, 1).setDepth(o.y * TILE + TILE - 4);
@@ -347,6 +357,13 @@ export class WorldScene extends Phaser.Scene {
     const stage = this.save.party[p.character]?.morph.stage ?? 0;
     if (stage < 1) return this._announce('No morph yet. (Stage 1 unlocks at level 3.)');
     this.sim.toggleMorph(peerId, true);
+  }
+
+  _toggleDoor(id) {
+    const d = [...this.map.doors.values()].find((x) => x.id === id); if (!d) return;
+    // Don't close a door on someone standing in the doorway.
+    if (d.open && [...this.sim.players.values()].some((p) => Math.floor(p.x / TILE) === d.x && Math.floor(p.y / TILE) === d.y)) return;
+    d.open = !d.open; sfx('swing');
   }
 
   _answer() {
@@ -484,10 +501,11 @@ export class WorldScene extends Phaser.Scene {
       }
       this._handleInteract(me);
       this._hostEvents(events);
-      snap = this._lastSnap = { ...this.sim.snapshot(), events };
+      snap = this._lastSnap = { ...this.sim.snapshot(), events, doors: [...this.map.doors.values()].filter((d) => d.open).map((d) => d.id) };
     }
     if (snap.map !== this.map.id && MAPS[snap.map]) { this._showMap(MAPS[snap.map]); this._onEnterMap(MAPS[snap.map]); }
     this._lastRendered = snap;
+    if (this.mode === 'client' && snap.doors) for (const d of this.map.doors.values()) d.open = snap.doors.includes(d.id);
     this._render(snap);
   }
 
@@ -539,6 +557,7 @@ export class WorldScene extends Phaser.Scene {
     if (near.talk) { const [scene, node] = near.talk.split(':'); this.startDialogue(scene, node || null, near.after ? () => this._flag(near.after, true) : null); return; }
     if (near.action === 'ending') { this._playEnding(); return; }
     if (near.action === 'fab') { this._openFab(); return; }
+    if (near.door) { if (this.mode === 'client') this.net.send({ t: 'door', id: near.id }); else this._toggleDoor(near.id); return; }
     this._say(near.text);
     if (near.flag) {
       if (this.mode === 'client') this.net.send({ t: 'flag', key: near.flag });
@@ -566,6 +585,8 @@ export class WorldScene extends Phaser.Scene {
       s.setFlipX(p.f === 'left');
       const key = `${p.c}_${p.m ? 'walk' : 'idle'}_${facing}`;
       if (s.anims.currentAnim?.key !== key) s.play(key);
+      if (!p.d) p._dashFx = false;
+      if (p.d && (this._ghostTick = (this._ghostTick ?? 0) + 1) % 2 === 0) this._dashGhost(s, p);
       s.setAlpha(p.d ? 0.55 : p.iv ? (Math.floor(this.time.now / 60) % 2 ? 0.4 : 1) : 1);
       s.setAngle(p.dn ? 90 : 0).setTint(p.dn ? 0x777788 : p.mo ? MORPH_LOOK[p.c][0] : 0xffffff).setScale(p.mo ? 1.12 : 1);
     }
@@ -591,12 +612,28 @@ export class WorldScene extends Phaser.Scene {
     for (const [id, s] of this.enemySprites) if (!eseen.has(id)) { s.destroy(); this.enemySprites.delete(id); }
     if (!(snap.enemies || []).some((e) => e.boss)) this.bossUi?.setVisible(false);
 
+    for (const { o, vis } of this.doorVis ?? []) vis.setAlpha(o.open ? 0.18 : 1);
     this.shotGfx.clear();
     for (const sh of snap.shots || []) this.shotGfx.fillStyle(sh.f ? 0xffd27f : 0xd65db1).fillCircle(sh.x, sh.y, sh.f ? 2 : 2.5);
 
     for (const ev of snap.events || []) this._fx(ev, snap);
     this._drawLighting(snap);
     this._drawHud(snap);
+  }
+
+  // Dash: cyan afterimages that streak and fade, plus a spark burst where the dash starts.
+  _dashGhost(s, p) {
+    const g = this.add.image(s.x, s.y, s.texture.key, s.frame.name).setOrigin(0.5, 1).setFlipX(s.flipX)
+      .setTint(0x6ff2ff).setAlpha(0.55).setDepth(s.depth - 1).setBlendMode(Phaser.BlendModes.ADD);
+    this.tweens.add({ targets: g, alpha: 0, scaleX: 0.85, duration: 220, onComplete: () => g.destroy() });
+    if (!p._dashFx) {
+      p._dashFx = true;
+      for (let i = 0; i < 6; i++) {
+        const sp = this.add.rectangle(p.x, p.y, 2, 2, 0xbff9ff).setDepth(s.depth);
+        const a = Math.random() * Math.PI * 2, d = 6 + Math.random() * 8;
+        this.tweens.add({ targets: sp, x: p.x + Math.cos(a) * d, y: p.y + Math.sin(a) * d, alpha: 0, duration: 260, onComplete: () => sp.destroy() });
+      }
+    }
   }
 
   _bossBar(e) {

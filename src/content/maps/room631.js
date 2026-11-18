@@ -32,6 +32,11 @@ export const room631 = makeMap({
   layout: LAYOUT,
   spawns: [[5, 8], [7, 9], [9, 8]],
   objects: [
+    // Interior doors (closed until opened)
+    { id: 'door.trevor_room', x: 4, y: 5, label: 'Trevor\'s door', door: true },
+    { id: 'door.mm_room', x: 22, y: 5, label: 'Michael & Manuel\'s door', door: true },
+    { id: 'door.trevor_bath', x: 8, y: 3, label: 'Bathroom door', door: true },
+    { id: 'door.mm_bath', x: 23, y: 3, label: 'Bathroom door', door: true },
     // Kitchen / dining (west half)
     { id: 'obj.door', x: 0, y: 8, label: 'Front door (hallway)', action: 'exit', to: 'aster_hall', text: 'The sixth-floor hallway. It smells like someone else\'s dinner.' },
     { id: 'obj.statue_1', x: 2, y: 6, label: 'Statue', text: 'One of Manuel\'s John Pork statues, guarding the door. The eyes are very well done.' },

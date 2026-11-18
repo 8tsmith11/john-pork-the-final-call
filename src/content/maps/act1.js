@@ -47,7 +47,7 @@ export const metroPlaza = makeMap({
     { id: 'npc.halvard', x: 6, y: 8, label: 'Shuttered phone-repair stall', npc: true, talk: 'lead_b_halvard' },
     { id: 'obj.billboard', x: 20, y: 1, label: 'Billboard', text: 'A Slop Decades billboard, peeling: "AT THE END OF THE DAY, NO ONE CAN CODE FASTER THAN AI."' },
     { id: 'obj.purple_sign', x: 30, y: 1, label: 'Purple Line sign', text: 'PURPLE LINE: OPENING SOON.' },
-    { id: 'obj.grate', x: 36, y: 9, label: 'Storm grate', action: 'exit', to: 'tunnel_1', text: 'The grate lifts. Somewhere below, very faintly, something is drumming.' },
+    { id: 'obj.grate', x: 36, y: 9, label: 'Storm grate', action: 'exit', floor: true, to: 'tunnel_1', text: 'The grate lifts. Somewhere below, very faintly, something is drumming.' },
   ],
 });
 
