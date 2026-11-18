@@ -422,6 +422,16 @@ for y in range(2, 24, 4):
 P("obj.tunnel_up", c.outline())
 c = C().rect(1, 4, 14, 19, "night1").rect(3, 6, 10, 17, "night0").pts("warm4", (7, 10), (8, 10)).pts("signal", (5, 5), (10, 5)).h_(3, 22, 10, "concrete1")
 P("obj.tunnel_on", c.outline())
+# Easter egg (docs/SECRETS.md): the anthem singer at the campus gate. Broad build, bowl cut, glasses,
+# a stuffed squirrel under one arm, the other hand on his chest.
+c = C()
+c.rect(5, 3, 6, 6, "skin1").rect(4, 2, 8, 3, "night1").v_(4, 4, 3, "night1").v_(11, 4, 3, "night1")
+c.h_(6, 6, 4, "bone").pts("night0", (7, 6), (9, 6)).px(8, 8, "warm0")
+c.rect(2, 9, 12, 10, "screen1").v_(13, 10, 9, "screen0").v_(2, 10, 9, "screen0").h_(3, 18, 10, "screen0")
+c.rect(6, 12, 3, 2, "skin1")
+c.rect(11, 12, 4, 4, "warm2").rect(12, 10, 2, 2, "warm2").px(12, 11, "night0").v_(15, 9, 5, "warm3").px(14, 9, "warm3").rect(12, 13, 2, 2, "bone")
+c.rect(4, 19, 3, 4, "night2").rect(9, 19, 3, 4, "night2").h_(3, 22, 4, "warm0").h_(9, 22, 4, "warm0")
+P("npc.anthem", c.outline())
 P("npc.rotter_1", person("concrete2", "concrete1", "skin1", "night2", lace="rot0"))
 P("npc.rotter_2", person("warm1", "warm0", "skin2", "concrete3", lace="rot1"))
 P("npc.rotter_3", person("concrete1", "concrete0", "skin2", "warm0", lace="rot0", look_up=True))

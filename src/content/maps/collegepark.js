@@ -124,6 +124,16 @@ export const metroPlaza = makeMap({
     { id: 'obj.campus_gate', art: 'obj.purple_sign', x: 11, y: 36, label: 'Campus gate', text: 'UNIVERSITY OF MARYLAND, A CAMPUS OF THE CONTINUITY AUTHORITY. Compute apprentices: your hours have been adjusted.' },
     { id: 'obj.testudo', x: 13, y: 41, label: 'Testudo', flag: 'secrets.testudo.found', text: 'The bronze terrapin. Its nose is worn gold by a century of hands. You rub it.\n\nNothing happens. Then your lace reports full signal for one second, for the first time this year.' },
     { id: 'npc.cal', art: PERSON[0], x: 16, y: 39, label: 'Cal Rourke', npc: true, text: '"Engineering, right? All three of you. I never forget a major." He has a table, a banner, and a pen he would like you to hold.' },
+    // Easter egg (docs/SECRETS.md): he sings a different country's anthem every time you talk to him. He has no name, on purpose.
+    { id: 'npc.anthem', x: 18, y: 42, label: 'Student at attention', npc: true, action: 'pages', flag: 'secrets.anthem.found', pages: [
+      'A big second-year in a compute hoodie stands at attention by the gate, bowl cut, glasses, one hand on his chest, a stuffed squirrel under the other arm. He is singing the anthem of Uruguay. He does all eleven verses.\n\n"Greatest nation on earth," he says after. He has never been.',
+      'Today it is Kazakhstan. He holds the last note until a window closes somewhere.\n\n"I would die for the steppe." He adjusts his glasses. "My mother calls from Chengdu every Sunday and asks which country it is this week. I tell her to stand up first."',
+      'Nepal. He sings it at the sky.\n\n"Only flag in the world with five sides. That takes conviction. Rectangles are for countries that gave up."',
+      'He lifts the squirrel\'s paw into a salute for you.\n\n"General Nutsworth. Decorated in four republics. He outranks you, and he outranks Cal."',
+      'Finland, with his eyes shut. A tear gets under the glasses.\n\n"Don\'t talk during Finland."',
+      'Paraguay. Between verses: "I have a 245 lab due at nine." He checks nothing and starts the next verse. "Paraguay first."',
+      'He is humming something you half know and he stops when he sees you listening.\n\n"That one\'s Maryland\'s. They retired it. I don\'t retire anthems."',
+    ] },
     { id: 'obj.campus_door', art: 'obj.door', x: 14, y: 46, label: 'Compute Hall B', text: 'Badge reader. It knows you. It says your section is 245 and your section is late.' },
     // The parking lot
     { id: 'obj.dead_car_1', art: 'obj.car', x: 34, y: 40, label: 'Car', text: 'It still thinks it is driving. The dashboard shows a road in another state.' },

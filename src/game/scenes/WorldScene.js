@@ -1170,7 +1170,7 @@ export class WorldScene extends Phaser.Scene {
     if (near.action === 'tv') { this._say(this._newsLine()); return; }
     if (near.action === 'shop') { this.gameMenu.show(`shop:${near.shop}`); return; }
     if (near.action === 'quests') { this.gameMenu.show('quests'); return; }
-    if (near.action === 'pages') { const n = (this._pageIdx[near.id] = ((this._pageIdx[near.id] ?? -1) + 1) % near.pages.length); this._say(near.pages[n] + (near.pages.length > 1 ? `\n\n[E again: ${n + 1}/${near.pages.length}]` : '')); return; }
+    if (near.action === 'pages') { if (near.flag && !this.save.flags[near.flag]) this._flag(near.flag, true); const n = (this._pageIdx[near.id] = ((this._pageIdx[near.id] ?? -1) + 1) % near.pages.length); this._say(near.pages[n] + (near.pages.length > 1 ? `\n\n[E again: ${n + 1}/${near.pages.length}]` : '')); return; }
     if (near.id === 'obj.scooters') {
       if (this.mode !== 'client') { for (const c of Object.values(this.save.party)) c.scooterBattery = 100; for (const p of this.sim.players.values()) p.battery = 100; }
       this._say(near.text + '\n\nAll three scooters are charged to 100%. Ride outdoors with [Q].'); return;
