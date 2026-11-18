@@ -64,10 +64,10 @@ export const asterLobby = makeMap({
     '####mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#',   // 5
     '#mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#',   // 6  the desk sits mid-room
     '#mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#',   // 7
-    '#mmmmmmmm|mmmmmmmmmmmmmmmm|mmmmmmmm#',   // 8
-    '#cccccccmmmmmmmmmmmmmmmmmmmmccccccc#',   // 9  seating on carpet, either side
-    '#cccccccmmmmmmmmmmmmmmmmmmmmccccccc#',   // 10
-    '#cccccccmmmmmmmmmmmmmmmmmmmmccccccc#',   // 11
+    '#mmmmmmmm|mmmmmmuuuummmmmm|mmmmmmmm#',   // 8  a runner from the doors to the desk
+    '#cccccccmmmmmmmmuuuummmmmmmmccccccc#',   // 9  seating on carpet, either side
+    '#cccccccmmmmmmmmuuuummmmmmmmccccccc#',   // 10
+    '#cccccccmmmmmmmmuuuummmmmmmmccccccc#',   // 11
     '#######=========mmmm=========#######',   // 12 street glass with the doorway
     '################,,,,################',   // 13 the step outside
     '####################################',   // 14
@@ -75,12 +75,12 @@ export const asterLobby = makeMap({
   spawns: [[17, 10], [18, 10], [17, 9]],
   objects: [
     { id: 'obj.lobby_stairs', art: 'obj.stairs', x: 2, y: 1, label: 'Stairs up', action: 'exit', to: 'aster_hall', text: 'Six flights up.' },
-    { id: 'obj.lobby_elevator', art: 'obj.elevator', x: 33, y: 1, label: 'Elevator', action: 'exit', to: 'aster_hall', text: '"Sixth floor," the elevator says. "Sorry. Sorry. Sixth."' },
+    { id: 'obj.lobby_elevator', art: 'obj.elevator', x: 33, y: 1, label: 'Elevator', light: 0.6, action: 'exit', to: 'aster_hall', text: '"Sixth floor," the elevator says. "Sorry. Sorry. Sixth."' },
     { id: 'obj.mailboxes', x: 7, y: 0, label: 'Mailboxes', text: 'A wall of brass doors. 631 has a flyer for a dentist none of you have been to. 409 is stuffed full and nobody has emptied it.' },
     { id: 'obj.directory', x: 12, y: 0, label: 'Building directory', text: 'White letters pushed into black felt. Enough have fallen that the list reads like a ransom note. B-01 SUPER ... KESSEL, L.' },
     { id: 'obj.super_door', art: DOOR, x: 17, y: 0, label: 'Super\'s office', text: 'Locked. A paper sign, in marker: BACK WHEN IT\'S FIXED.' },
     { id: 'obj.lobby_clock', art: 'obj.clock_6f', x: 22, y: 0, label: 'Lobby clock', text: '19:01. The second hand ticks forward, then slips back a tick.' },
-    { id: 'obj.vending', x: 27, y: 1, label: 'Vending machine', text: 'It hums. Row C has been empty for a year. It takes your coin and considers you.' },
+    { id: 'obj.vending', x: 27, y: 1, label: 'Vending machine', light: 0.6, text: 'It hums. Row C has been empty for a year. It takes your coin and considers you.' },
     { id: 'obj.lobby_camera', x: 30, y: 0, label: 'Lobby camera', text: 'The red light is on. It is recording. Not tonight, by the look of the monitor, but it is recording.' },
     { id: 'obj.security_desk', x: 17, y: 6, label: 'Security desk', text: 'A sign-in book. The last forty entries are the same name in forty different hands.' },
     { id: 'obj.lobby_monitor', x: 18, y: 6, label: 'Security monitor (rotted)', talk: 'lead_c_footage', puzzle: 'pipes', solvedFlag: 'act1.leadC.repaired' },
@@ -88,6 +88,16 @@ export const asterLobby = makeMap({
     { id: 'npc.seun', x: 30, y: 10, label: 'Seun', npc: true, text: '"Oh. I am early. I am sorry." She is in scrubs with her coat over her arm, a glyph at the collar. "Mrs. Varga asks about you three. I tell her you are eating. Are you eating?"' },
     { id: 'npc.dez', x: 9, y: 2, label: 'Dez', npc: true, talk: 'aster:dez_talk' },
     { id: 'npc.doorman', x: 16, y: 5, label: 'Fenwick', npc: true, talk: 'aster:fenwick_talk' },
+    // Second pass: what a lobby has. Each seat faces something; each light has a reason to be on.
+    { id: 'obj.armchair_w1', art: 'obj.chair', x: 2, y: 11, label: 'Armchair', text: 'The one nearest the door. Whoever is waiting for someone sits here.' },
+    { id: 'obj.table_w', art: 'obj.table', x: 4, y: 9, label: 'Low table', text: 'Three magazines, all the same issue. The crossword is done in every one, differently.' },
+    { id: 'obj.armchair_e1', art: 'obj.chair', x: 33, y: 11, label: 'Armchair', text: 'Seun\'s coat is over the back. She will be back for it.' },
+    { id: 'obj.table_e', art: 'obj.table', x: 29, y: 9, label: 'Low table', text: 'A chessboard, mid-game. Kess plays the night shift by leaving one move a day.' },
+    { id: 'obj.parcels', art: 'obj.crate', x: 5, y: 1, label: 'Parcel shelf', text: 'Packages by floor. Six is empty. Somebody on four is being sent the same box every week.' },
+    { id: 'obj.desk_lamp', art: 'obj.nightstand', x: 19, y: 6, label: 'Desk lamp', light: 0.8, text: 'Fenwick does not need the lamp. He leaves it on for whoever comes in.' },
+    { id: 'obj.exit_light_w', art: 'obj.worklamp', x: 15, y: 12, label: 'Door light', light: 0.7, text: 'A caged light over the street doors. Moths.' },
+    { id: 'obj.exit_light_e', art: 'obj.worklamp', x: 20, y: 12, label: 'Door light', light: 0.7, text: 'This one buzzes. The other one doesn\'t.' },
+    { id: 'obj.wet_floor', art: 'obj.board', x: 14, y: 9, label: 'Sign', text: 'CAUTION: WET FLOOR. It has stood here through two droughts.' },
     { id: 'obj.plant_w', art: 'obj.plant', x: 1, y: 9, label: 'Plant', text: 'Real, this one. It leans toward the street doors.' },
     { id: 'obj.bench_w', art: 'obj.bench', x: 3, y: 10, label: 'Bench', text: 'Somebody has carved ASTER PROS into the armrest. Somebody else has carved NOOBS under it. Same knife.' },
     { id: 'obj.lost_found', x: 5, y: 11, label: 'Lost and found', text: 'A box that is never emptied. One glove. A pacifier. A phone, face down, that you decide not to turn over.' },
