@@ -2062,8 +2062,8 @@ export class WorldScene extends Phaser.Scene {
     const lines = [`xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `   ◆ ${c.skillPoints} skill pt [K]` : ''}`, `$${this.save.world.money ?? 0}${snap.enemies?.length ? `   coderot ${snap.enemies.length}` : ''}`];
     this.hudText.setText(lines.join('\n'));
     this.objText ??= this.add.text(VIEW.w - 6, 60, '', { ...FONT, fontSize: '7px', color: '#ffd27f', align: 'right', stroke: '#0b0d16', strokeThickness: 2, wordWrap: { width: 130 } }).setOrigin(1, 0).setScrollFactor(0).setDepth(9001);
-    const obj = this._trackedObjective();
-    this.objText.setText(obj ? `${obj}\n[J] quests` : '').setY((this.minimapBottom ?? 56) + 4).setVisible(!this.menu && !this.dlg);
+    // Only the key hint under the minimap (Trevor: the objective line was too much UI). Objectives live in the quests menu.
+    this.objText.setText('[J] quests').setColor('#9aa3c7').setY((this.minimapBottom ?? 56) + 4).setVisible(!this.menu && !this.dlg);
     this._drawHotbar();
     // Door gathering message overrides the prompt.
     const waiting = snap.players.filter((p) => p.w);
