@@ -2220,7 +2220,7 @@
     "h": 24
    }
   },
-  "npc.rotter_1": {
+  "npc.tobin": {
    "frame": {
     "x": 112,
     "y": 312,
@@ -2240,7 +2240,7 @@
     "h": 24
    }
   },
-  "npc.rotter_2": {
+  "npc.ozzie": {
    "frame": {
     "x": 0,
     "y": 336,
@@ -2260,7 +2260,7 @@
     "h": 24
    }
   },
-  "npc.rotter_3": {
+  "obj.zip_anchor": {
    "frame": {
     "x": 16,
     "y": 336,
@@ -2280,9 +2280,69 @@
     "h": 24
    }
   },
-  "npc.halvard": {
+  "npc.rotter_1": {
    "frame": {
     "x": 32,
+    "y": 336,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.rotter_2": {
+   "frame": {
+    "x": 48,
+    "y": 336,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.rotter_3": {
+   "frame": {
+    "x": 64,
+    "y": 336,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.halvard": {
+   "frame": {
+    "x": 80,
     "y": 336,
     "w": 16,
     "h": 24
