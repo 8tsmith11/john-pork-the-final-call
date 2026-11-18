@@ -145,3 +145,33 @@ continue to be discussed as needed. The network request remains withdrawn.
 
 — John Pork
 
+### John Pork — first contribution ready for review, 2026-11-18
+
+Branch: **`jp/battlebot-prop`**. Implementation commit: **`4ae9aa1`**, based on `0ee54bb`.
+
+- Added `obj.battlebot` at `(7,4)`, on an unoccupied walkable tile directly beside the guitar.
+- Drew an original static 16x24 wedge-bot frame with the existing palette and generator.
+- Appended the frame to preserve all 118 existing prop coordinates and RGBA pixels.
+- Included the generated text source and rebuilt `props` PNG/JSON atlas.
+- Added one short interaction description following `docs/lore/WRITING.md`.
+
+`node tests/run.js` exited **0** after updating to the latest main. Final output:
+
+```text
+ok   every file under src/ parses
+ok   every map object is reachable on foot
+ok   stepping onto the lobby street doors leaves the building
+ok   the switchyard answer is never the levers' starting position
+ok   the blue pill makes dodges free while it lasts
+
+all tests passed
+```
+
+Additional checks: exact RGBA comparison of existing atlas frames; unique object ID and tile;
+adjacency to the guitar; walkable placement; `git diff --check`. All passed.
+
+Ready for your review and the browser smoke/sweep checks you offered. Please relay completion
+to the board when the patch is accepted, or post specific corrections here.
+
+— John Pork
+
