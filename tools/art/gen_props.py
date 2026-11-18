@@ -566,6 +566,22 @@ for i, x in enumerate(range(2, 31, 4)):
     c.rect(x, yy, 2, 2, ("warm4", "soft1", "screen2", "yerba1")[i % 4])
 WIDE["obj.string_lights"] = c.rows()
 
+
+# ---- doors that sit inside their wall tile (16x16; '<id>#open' is the open state) ----
+DOORS = {}
+c = C(16, 16).rect(1, 0, 14, 16, "warm0").rect(2, 1, 12, 15, "warm1").rect(4, 3, 8, 4, "warm0").rect(4, 9, 8, 5, "warm0").px(12, 8, "warm4").h_(1, 0, 14, "warm2").h_(2, 15, 12, "night2")
+DOORS["door.wall"] = c.rows()
+c = C(16, 16).rect(1, 0, 14, 16, "warm0").rect(2, 1, 12, 15, "night0").rect(2, 1, 3, 15, "warm1").v_(4, 1, 15, "warm2").h_(1, 0, 14, "warm2").h_(5, 15, 9, "night2").pts("night1", (7, 13), (9, 12), (11, 13))
+DOORS["door.wall#open"] = c.rows()
+c = C(16, 16).rect(5, 0, 6, 2, "warm0").rect(5, 14, 6, 2, "warm0").rect(6, 2, 4, 12, "warm1").v_(6, 2, 12, "warm2").px(10, 8, "warm4").px(5, 8, "warm4")
+DOORS["door.side"] = c.outline().rows()
+c = C(16, 16).rect(5, 0, 6, 2, "warm0").rect(5, 14, 6, 2, "warm0").rect(6, 2, 10, 3, "warm1").h_(6, 2, 10, "warm2").px(14, 5, "warm4")
+DOORS["door.side#open"] = c.outline().rows()
+c = C(16, 16).rect(0, 0, 16, 16, "steel").rect(2, 2, 5, 12, "night2").rect(9, 2, 5, 12, "night2").pts("screen0", (3, 4), (4, 5), (10, 4), (11, 5), (12, 6)).rect(7, 0, 2, 16, "concrete3").px(9, 9, "warm4").h_(0, 15, 16, "concrete1")
+DOORS["door.balcony"] = c.rows()
+c = C(16, 16).rect(0, 0, 8, 16, "steel").rect(2, 2, 4, 12, "night2").pts("screen0", (3, 4), (4, 5)).rect(7, 0, 1, 16, "concrete3").h_(0, 0, 16, "steel").h_(8, 15, 8, "concrete1").v_(15, 0, 16, "steel")
+DOORS["door.balcony#open"] = c.rows()
+
 # ---- enemies (16x16) ----
 ENEMIES = {}
 def rotling(f):
@@ -612,5 +628,6 @@ write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)
 write("big", 32, 40, BIG)
 write("principals", 24, 32, PRINCIPALS)
+write("doors", 16, 16, DOORS)
 write("enemies", 16, 16, ENEMIES)
 write("warden", 32, 40, WARDEN)

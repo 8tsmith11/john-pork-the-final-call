@@ -80,15 +80,15 @@ Arkg: -> pbyqbcra_pybfrg
 
 **ZVPUNRY:** Ur'f purpxvat vg.
 
-**GERIBE:** Ur purpxf vg yvxr V purpx zl erfgvat urneg engr.
+**GERIBE:** Rirel zbeavat. Orsber pbssrr.
 
-**ZVPUNRY:** Lbh purpx gung sbegl gvzrf n qnl.
-
-**GERIBE:** Sbegl-gjb. Vg'f n abezny ahzore.
+**ZVPUNRY:** Orsber cnagf.
 
 *Gur pybfrg qbbe vf bcra. Vg vf abg hfhnyyl bcra.*
 
 *Gur pybgurf envy. Sbhe fuvegf, n jvagre pbng, naq n yratgu bs benatr evooba gvrq gb gur envy jvgu n objyvar. Gur evooba tbrf hc ryrira pragvzrgerf naq fgbcf.*
+
+*Znahry'f benatr onyybba vf tbar. Gur bar ur purpxf rirel zbeavat. Fbzrbar gbbx vg.*
 
 **ZNAHRY:** Pur.
 
@@ -179,7 +179,7 @@ Pubvprf:
 
 **ZNAHRY:** V qvqa'g eha nalguvat.
 
-**GERIBE:** V jnf nfyrrc. V unir n fyrrc genpxre. V unir qngn.
+**GERIBE:** V jnf nfyrrc. Lbh obgu urneq gur nynez.
 
 *Gurl ybbx ng Zvpunry.*
 

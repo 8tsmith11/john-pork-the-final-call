@@ -57,10 +57,10 @@ export const room631 = makeMap({
       'A cookbook. The cover is a cookbook. Inside it is WHAT WE HEARD: FORTY ACCOUNTS OF THE CALL.\n\nNo two of the forty agree on what he said. Thirty-one agree on how long they stayed on the line.',
       'A coursework folder, Manuel\'s. A sketch of a head, front and side, with measurements. Under it: "ears lower than you think." Under that, much later, in the same hand: "how do I know that".' ] },
     // Interior doors (closed until opened)
-    { id: 'door.trevor_room', x: 4, y: 5, label: 'Trevor\'s door', door: true },
-    { id: 'door.mm_room', x: 22, y: 5, label: 'Michael & Manuel\'s door', door: true },
-    { id: 'door.trevor_bath', x: 8, y: 3, label: 'Bathroom door', door: true },
-    { id: 'door.mm_bath', x: 23, y: 3, label: 'Bathroom door', door: true },
+    { id: 'door.trevor_room', art: 'door.wall', x: 4, y: 5, label: 'Trevor\'s door', door: true },
+    { id: 'door.mm_room', art: 'door.wall', x: 22, y: 5, label: 'Michael & Manuel\'s door', door: true },
+    { id: 'door.trevor_bath', art: 'door.side', x: 8, y: 3, label: 'Bathroom door', door: true },
+    { id: 'door.mm_bath', art: 'door.side', x: 23, y: 3, label: 'Bathroom door', door: true },
     // Kitchen / dining (west half)
     { id: 'obj.whiteboard', x: 12, y: 5, label: 'Whiteboard (what we\'re doing)', action: 'quests' },
     { id: 'obj.coffee', x: 7, y: 6, label: 'Coffee machine', text: 'It makes one cup at a time and judges you for each one. A label in Trevor\'s handwriting: DESCALE ME.' },
@@ -96,7 +96,7 @@ export const room631 = makeMap({
     { id: 'obj.solder', x: 22, y: 9, label: 'Soldering station', text: 'Iron still in its stand. Drills, flux, a half-built sensor board.' },
     { id: 'obj.dehumidifier', x: 16, y: 11, label: 'Dehumidifier', text: 'Running full blast. The printers hate humidity. So does Manuel.' },
     // Balcony
-    { id: 'door.balcony', art: 'obj.window_latch', x: 21, y: 12, label: 'Balcony door', door: true },
+    { id: 'door.balcony', art: 'door.balcony', x: 21, y: 12, label: 'Balcony door', door: true },
     { id: 'obj.ottoman', x: 22, y: 13, label: 'Balcony ottoman', flag: 'act1.balloon.noticedGone',
       text: 'The ottoman everyone glances at to check the weather. Dry. Clear. A normal night, apparently. The balcony door\'s latch behind you is dusty: nobody came in this way.' },
     // Trevor's room + bathroom

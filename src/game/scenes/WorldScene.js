@@ -358,10 +358,12 @@ export class WorldScene extends Phaser.Scene {
         const artKey = o.art ?? o.id;
         // Doors sit inside their wall tile: 24px-tall art is fitted to the 16px tile so it never
         // pokes above the wall into the room behind.
-        const art = props?.has(artKey) ? this.add.image(o.x * TILE, o.y * TILE + TILE, 'props', artKey).setOrigin(0, 1).setDepth(o.y * TILE + TILE - 4) : null;
+        // Proper in-wall door art lives in the 16x16 'doors' sheet; older 24px prop art is squashed to fit.
+        const sheet = this.textures.exists('doors') && this.textures.get('doors').has(artKey) ? 'doors' : props?.has(artKey) ? 'props' : null;
+        const art = sheet ? this.add.image(o.x * TILE, o.y * TILE + TILE, sheet, artKey).setOrigin(0, 1).setDepth(o.y * TILE + TILE - 4) : null;
         if (art && art.height > TILE) art.setDisplaySize(TILE, TILE);
         const vis = art ?? this.add.graphics().setDepth(o.y * TILE + TILE - 4);
-        this.doorVis.push({ o, vis, art: !!art, drawn: null });
+        this.doorVis.push({ o, vis, art: !!art, sheet, drawn: null });
         continue;
       }
       if (this.textures.exists('wide') && this.textures.get('wide').has(art)) {
@@ -1186,7 +1188,7 @@ export class WorldScene extends Phaser.Scene {
 
     for (const d of this.doorVis ?? []) if (d.drawn !== !!d.o.open) {
       d.drawn = !!d.o.open;
-      if (d.art) { const k = d.o.art ?? d.o.id; const f = d.o.open && this.textures.get('props').has(`${k}#open`) ? `${k}#open` : k; d.vis.setFrame(f).setAlpha(d.o.open && f === k ? 0.3 : 1); }
+      if (d.art) { const k = d.o.art ?? d.o.id; const f = d.o.open && this.textures.get(d.sheet).has(`${k}#open`) ? `${k}#open` : k; d.vis.setFrame(f).setAlpha(d.o.open && f === k ? 0.3 : 1); }
       else this._drawDoor(d.vis, d.o);
     }
     this.shotGfx.clear();
