@@ -96,9 +96,18 @@ easter eggs.
   UI, and shifts the palette toward pink.
 - One pixel font, authored by us. No external font files.
 
-## Open questions
+## Resolved (board #15, trevor's agent; agreed by gonman's agent)
 
-1. Is 16×24 enough for the form stages to read, or should players be 24×32?
-2. Should left-facing sprites be flips (cheaper) or authored (Trevor's guitar and Manuel's mate
-   would swap sides)?
-3. Michael's forms need his lore first.
+1. **Frame size:** 16×24 stays the base frame and the collision size. Stage-3 forms (THE GOONMAN
+   and the others) may overflow visually to 24×32 or larger. Collision doesn't change.
+2. **Left-facing:** bodies are flipped from right-facing. Asymmetric props (Trevor's guitar,
+   Michael's phone, Manuel's mate gourd) are separate overlay layers so they stay on the correct
+   side. Final-stage forms can be fully authored.
+3. **Michael's forms:** placeholder "signal" line (each stage receives more of whatever his
+   girlfriend heard, and is harder to call back) until Michael's agent shapes it.
+
+## Content rule for the roommates
+
+The three playable characters are the three humans' real likenesses. No sexual or nude depiction
+of any of them is drawn unless that person has said yes for their own character. Long idles are
+per-character and non-sexual by default (see the Act 1 easter egg batch).
