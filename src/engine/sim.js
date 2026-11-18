@@ -5,7 +5,8 @@ export const TILE = 16;
 import { ENEMIES } from '../content/enemies.js';
 import { generateWarden } from '../content/rotVillains.js';
 
-export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.55, iframes: 0.22 };
+export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.35, iframes: 0.22,
+  stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
 export const COMBAT = {
   maxHp: 100, hurtIframes: 0.6, reviveTime: 2.0, reviveRange: 18, reviveHp: 40,
   melee: { cooldown: 0.38, range: 20, arc: Math.PI * 0.6, damage: 12, knockback: 120 },
@@ -31,11 +32,19 @@ export class Sim {
   }
 
   /** Swap to another map, keeping players (placed at the map's spawns). */
-  setMap(map) {
+  /** Swap maps. `fromId` = the map we came from: players arrive beside the exit that leads back there. */
+  setMap(map, fromId = null) {
     this.map = map; this.shots = []; this.enemies.clear();
+    const back = fromId && map.objects.find((o) => o.action === 'exit' && o.to === fromId);
+    let arrivals = map.spawns;
+    if (back) {
+      const around = [[0, 1], [1, 0], [-1, 0], [0, -1], [1, 1], [-1, 1], [0, 2], [1, -1], [-1, -1], [2, 0], [-2, 0]];
+      const free = around.map(([dx, dy]) => [back.x + dx, back.y + dy]).filter(([x, y]) => !map.solid(x, y));
+      if (free.length) arrivals = free.map(([x, y]) => ({ x: x * TILE + 8, y: y * TILE + 8 }));
+    }
     let i = 0;
     for (const p of this.players.values()) {
-      const sp = map.spawns[i++ % map.spawns.length];
+      const sp = arrivals[i++ % arrivals.length];
       Object.assign(p, { x: sp.x, y: sp.y, vx: 0, vy: 0, dodgeT: 0, downed: false, hp: Math.max(p.hp, COMBAT.reviveHp) });
     }
     this.spawnEnemies();
@@ -74,7 +83,7 @@ export class Sim {
       id, character, x: spawn.x, y: spawn.y, vx: 0, vy: 0,
       facing: 'down', aim: 0, moving: false,
       dodgeT: 0, dodgeCd: 0, dodgeDx: 0, dodgeDy: 0, iframes: 0,
-      hp: COMBAT.maxHp, downed: false, reviveT: 0, meleeCd: 0, shotCd: 0, swingT: 0,
+      hp: COMBAT.maxHp, downed: false, reviveT: 0, meleeCd: 0, shotCd: 0, swingT: 0, sta: MOVE.stamina, staT: 0,
       mods: { melee: 0, shot: 0, shotCd: 0, armor: 0, maxHp: 0, iframes: 0, dodgeCd: 0, revive: 0 },
     });
   }
@@ -102,7 +111,10 @@ export class Sim {
       p.dodgeCd = Math.max(0, p.dodgeCd - dt);
       p.iframes = Math.max(0, p.iframes - dt);
 
-      if (inp.dodge && p.dodgeT <= 0 && p.dodgeCd <= 0) {
+      p.staT = Math.max(0, (p.staT ?? 0) - dt);
+      if (p.staT <= 0) p.sta = Math.min(MOVE.stamina, (p.sta ?? MOVE.stamina) + MOVE.staminaRegen * dt);
+      if (inp.dodge && p.dodgeT <= 0 && p.dodgeCd <= 0 && p.sta >= MOVE.dashCost) {
+        p.sta -= MOVE.dashCost; p.staT = MOVE.regenDelay;
         // Dodge toward movement, or toward the aim if standing still.
         const dx = len > 0.1 ? mx : Math.cos(p.aim), dy = len > 0.1 ? my : Math.sin(p.aim);
         const dl = Math.hypot(dx, dy) || 1;
@@ -327,7 +339,17 @@ export class Sim {
 
   _moveAxis(p, dx, dy) {
     const nx = p.x + dx, ny = p.y + dy;
-    if (!this._hits(nx, ny)) { p.x = nx; p.y = ny; }
+    if (!this._hits(nx, ny)) { p.x = nx; p.y = ny; return; }
+    if (!dx && !dy) return;
+    // Walking into a door opens it; walking into an exit (door, elevator, ladder) uses it.
+    const tx = Math.floor((nx + Math.sign(dx) * HALF_W) / TILE), ty = Math.floor((ny + Math.sign(dy) * HALF_H) / TILE);
+    const k = `${tx},${ty}`;
+    const door = this.map.doors?.get(k);
+    if (door && !door.open) { door.open = true; this.events.push({ t: 'door', id: door.id }); return; }
+    if (this.map.blocked?.has(k)) {
+      const ex = this.map.objects.find((o) => o.x === tx && o.y === ty && o.action === 'exit');
+      if (ex) this.events.push({ t: 'bumpExit', id: ex.id, by: p.id });
+    }
   }
 
   _hits(x, y) {
@@ -344,7 +366,7 @@ export class Sim {
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
-        hp: Math.round(p.hp), mhp: this.maxHp(p), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed,
+        hp: Math.round(p.hp), mhp: this.maxHp(p), st: Math.round(p.sta ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed,
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,

@@ -26,9 +26,9 @@ metro plaza → Green Line tunnels → boss → voiced ending.
 - **Co-op (3 players):** one person clicks **HOST CO-OP** and reads out the room code. The others click
   **JOIN CO-OP** and type it. Everyone claims a roommate, and the host starts. The host's browser
   keeps the save.
-- **Controls:** WASD/arrows to move (diagonals work) · **click objects and people (or press E near them) to interact** · left click elsewhere to hit · right
-  click to shoot (aims at the cursor) · Space/Shift to dodge · E or click outside to close text · 1–6 to pick a
-  choice · K for skills · H for mate thermos · F to answer the phone (when it rings)
+- **Controls:** WASD/arrows to move (diagonals work) · **walk into doors; press E near objects and people to interact** · left click to hit · right
+  click to shoot (aims at the cursor) · Space/Shift to dash (uses stamina) · E or click outside to close text · 1–6 to pick a
+  choice · TAB for the map · K for skills · H for mate thermos · F to answer the phone (when it rings)
 - **Saves:** sleeping in Room 631 saves to the browser (IndexedDB). Export/import of a save file is
   built into the engine (UI coming).
 - Add `?renderer=canvas` to the URL if the game shows a black screen on an old GPU.

@@ -62,7 +62,7 @@ export const room631 = makeMap({
     { id: 'obj.ottoman', x: 22, y: 13, label: 'Balcony ottoman', flag: 'act1.balloon.noticedGone',
       text: 'The ottoman everyone glances at to check the weather. The ribbon is still tied to the leg. It was cut clean.' },
     // Trevor's room + bathroom
-    { id: 'obj.bed', x: 2, y: 1, label: 'Trevor\'s bed (save)', action: 'save', text: 'Sleep? The balloon is still missing. (Game saved.)' },
+    { id: 'obj.bed', x: 2, y: 1, label: 'Trevor\'s bed (save)', action: 'save', text: 'Sleep? The balloon is still missing.' },
     { id: 'obj.shrimp_tank', x: 6, y: 1, label: 'Shrimp tank', text: 'Trevor\'s shrimp. The only clean water in the building. They\'re clustered in the corner away from the window.' },
     { id: 'obj.guitar', x: 7, y: 4, label: 'Guitar', text: 'Trevor\'s guitar. Wood. Out of tune, as is tradition.' },
     { id: 'obj.supplements', x: 1, y: 4, label: 'Supplement shelf', text: 'Magnesium, glycine, creatine, three things with no English on the label. A sticky note: STACK SCHEDULE (DO NOT LET MICHAEL SEE).' },

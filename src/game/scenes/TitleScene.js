@@ -45,7 +45,6 @@ export class TitleScene extends Phaser.Scene {
         .setOrigin(0.5).setInteractive({ useHandCursor: true })
         .on('pointerdown', () => this.scene.start('Lobby', { role }));
     });
-    this.add.text(W / 2, H - 16, 'WASD move · click things to use · L-click hit · R-click shoot · SPACE dodge\nE close · K skills · H heal · M morph · F answer · ESC pause/save',
-      { fontFamily: 'monospace', fontSize: '7px', color: '#5d6487' }).setOrigin(0.5);
+    this.add.text(W / 2, H - 12, 'controls: ESC in game', { fontFamily: 'monospace', fontSize: '7px', color: '#3d4467' }).setOrigin(0.5);
   }
 }

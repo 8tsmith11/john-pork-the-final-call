@@ -91,5 +91,7 @@ export const platform = makeMap({
   ],
   spawns: [[3, 4], [3, 5], [4, 4]],
   enemies: [['boss.warden', 20, 4]],
-  objects: [],
+  objects: [
+    { id: 'obj.platform_back', x: 1, y: 3, label: 'Back into the tunnel', action: 'exit', to: 'tunnel_1', text: 'Back the way you came.' },
+  ],
 });

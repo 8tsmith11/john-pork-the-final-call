@@ -56,6 +56,8 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode !== 'client') for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
     this.save.world.scrap ??= 0;
     this._makeMenu();
+    this.input.keyboard.on('keydown-TAB', (ev) => { ev.preventDefault?.(); this.bigMap = !this.bigMap; });
+    this.input.keyboard.addCapture('TAB');
     this.input.keyboard.on('keydown-K', () => this.menu ? this._closeMenu() : this._openSkills());
     this.input.keyboard.on('keydown-M', () => { if (this.mode === 'client') this.net.send({ t: 'morph' }); else this._morph(this.localId); });
     // E: close an open panel/description, otherwise interact with the nearest thing in reach.
@@ -217,10 +219,8 @@ export class WorldScene extends Phaser.Scene {
     this.doorVis = [];
     for (const o of map.objects) {
       if (o.door) {
-        const vis = props?.has(o.id) ? this.add.image(o.x * TILE, o.y * TILE + TILE, 'props', o.id).setOrigin(0, 1)
-          : this.add.rectangle(o.x * TILE + 1, o.y * TILE, TILE - 2, TILE, 0x5a3d2b).setOrigin(0, 0).setStrokeStyle(1, 0x2b1d14);
-        vis.setDepth(o.y * TILE + TILE - 4);
-        this.doorVis.push({ o, vis });
+        const vis = this.add.graphics().setDepth(o.y * TILE + TILE - 4);
+        this.doorVis.push({ o, vis, drawn: null });
         continue;
       }
       if (props?.has(o.id)) {
@@ -253,7 +253,7 @@ export class WorldScene extends Phaser.Scene {
       const card = this.add.text(W / 2, H / 2, 'ACT 1\nMISSED CALLS', { fontFamily: 'monospace', fontSize: '18px', color: '#f2a6b8', align: 'center' })
         .setOrigin(0.5).setScrollFactor(0).setDepth(9999).setAlpha(0);
       this.tweens.add({ targets: card, alpha: 1, duration: 1600, hold: 2600, yoyo: true });
-      if (this.mode !== 'client') { this.save.world.act = 2; autosave(this.save); }
+      if (this.mode !== 'client') { this.save.world.act = 2; this._save(); }
     });
   }
 
@@ -326,6 +326,15 @@ export class WorldScene extends Phaser.Scene {
       rows = this.mode === 'client'
         ? ['1. Resume', '2. Leave the game (back to title)']
         : ['1. Resume', '2. Save now', '3. Export save file (.jpfc.json)', '4. Save and quit to title'];
+      rows.push(`${rows.length + 1}. Controls`);
+    } else if (this.menu === 'controls') {
+      title = 'CONTROLS   [ESC] back';
+      rows = ['Move: WASD / arrows (diagonals work)   Dash: SPACE / SHIFT (uses stamina)',
+        'Hit: left click   Shoot: right click (aims at the cursor)',
+        'Use / open / talk: walk into doors, or press E when close',
+        'Dialogue: click, E, or SPACE to continue; 1-6 or click to choose',
+        'Skills: K   Heal (mate thermos): H   Morph: M   Answer the phone: F',
+        'Map: TAB   Pause / save / export: ESC'];
     } else {
       title = `${this.character.toUpperCase()} · level ${c.level} · skill points: ${c.skillPoints}   [K] close`;
       rows = (SKILLS[this.character] || []).map((s, i) => `${i + 1}. ${s.name} [${c.skills[s.id] ?? 0}/${s.max}]: ${s.text}`);
@@ -336,11 +345,13 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _pickMenu(i) {
+    if (this.menu === 'controls') return;
     if (this.menu === 'pause') {
+      if (i === (this.mode === 'client' ? 2 : 4)) { this.menu = 'controls'; return this._refreshMenu(); }
       const quit = () => { this.net?.close?.(); this.scene.start('Title'); };
       if (i === 0) return this._closeMenu();
       if (this.mode === 'client') { if (i === 1) quit(); return; }
-      if (i === 1) { autosave(this.save); this._closeMenu(); return this._say('Saved.'); }
+      if (i === 1) { this._save(); this._closeMenu(); return; }
       if (i === 2) { exportFile(this.save); return; }
       if (i === 3) { autosave(this.save).then(quit); return; }
       return;
@@ -402,7 +413,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _tryExit(obj) {
-    if (!obj || obj.action !== 'exit') return;
+    if (!obj || obj.action !== 'exit' || this._transitioning) return;
     if (obj.requiresClear && !this.sim.cleared) return this._announce('Something down here is still moving.');
     const to = MAPS[obj.to];
     if (!to) return this._announce(obj.text);
@@ -411,9 +422,19 @@ export class WorldScene extends Phaser.Scene {
       this.sim.bossVariant = sahur ? 'sahur' : 'warden';
       this.save.flags['act1.boss.kind'] = this.sim.bossVariant;
     }
-    this.sim.setMap(to);
-    this.save.world.area = to.id;
-    this._announce(obj.text);
+    // Quick fade out → swap → fade in. Players arrive beside the matching door on the other side.
+    this._transitioning = true;
+    const from = this.map.id;
+    this.cameras.main.fadeOut(140, 5, 6, 12);
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+      this.sim.setMap(to, from);
+      this.save.world.area = to.id;
+      this._showMap(to); this._onEnterMap(to);
+      this._save();
+      this.cameras.main.fadeIn(220, 5, 6, 12);
+      this._transitioning = false;
+      if (obj.text && obj.text.length > 40) this._announce(obj.text);
+    });
   }
 
   _announce(text) { this._say(text); if (this.mode === 'host') this.net.broadcast({ t: 'say', text }); }
@@ -427,6 +448,20 @@ export class WorldScene extends Phaser.Scene {
     this.mapLabel = this.add.text(6, 4, '', { ...FONT, color: '#9aa3c7' }).setScrollFactor(0).setDepth(9000);
     this.hud = this.add.graphics().setScrollFactor(0).setDepth(9000);
     this.hudText = this.add.text(W - 6, 4, '', { ...FONT, color: '#9aa3c7', align: 'right' }).setOrigin(1, 0).setScrollFactor(0).setDepth(9001);
+  }
+
+  // Small corner notice (saving etc.). Never a dialogue box.
+  _toast(text) {
+    this.toastText ??= this.add.text(VIEW.w - 6, VIEW.h - 10, '', { ...FONT, color: '#7fb069' }).setOrigin(1, 1).setScrollFactor(0).setDepth(9300);
+    this.toastText.setText(text).setAlpha(1);
+    this.tweens.killTweensOf(this.toastText);
+    this.tweens.add({ targets: this.toastText, alpha: 0, delay: 1400, duration: 500 });
+  }
+
+  _save() {
+    if (this.mode === 'client') return;
+    this._toast('saving…');
+    autosave(this.save).then(() => this._toast('✓ saved'));
   }
 
   // Descriptions stay up until E or a click outside the box.
@@ -456,11 +491,7 @@ export class WorldScene extends Phaser.Scene {
       if (!this.box.getBounds().contains(sx, sy)) this._closeSay();
       return;
     }
-    const wp = this.cameras.main.getWorldPoint(sx, sy);
-    const obj = this._objectAt(wp.x, wp.y);
-    if (!obj) return;   // not an object: this click is an attack
-    this.input2.blockAttack = true;
-    this._clickedObj = obj;
+    // World clicks are attacks. Interacting with things is E (nearest in reach).
   }
 
   _nearestObject(p) {
@@ -503,7 +534,7 @@ export class WorldScene extends Phaser.Scene {
       this._hostEvents(events);
       snap = this._lastSnap = { ...this.sim.snapshot(), events, doors: [...this.map.doors.values()].filter((d) => d.open).map((d) => d.id) };
     }
-    if (snap.map !== this.map.id && MAPS[snap.map]) { this._showMap(MAPS[snap.map]); this._onEnterMap(MAPS[snap.map]); }
+    if (snap.map !== this.map.id && MAPS[snap.map]) { this._showMap(MAPS[snap.map]); this._onEnterMap(MAPS[snap.map]); if (this.mode === 'client') this.cameras.main.fadeIn(220, 5, 6, 12); }
     this._lastRendered = snap;
     if (this.mode === 'client' && snap.doors) for (const d of this.map.doors.values()) d.open = snap.doors.includes(d.id);
     this._render(snap);
@@ -513,6 +544,8 @@ export class WorldScene extends Phaser.Scene {
 
   _hostEvents(events) {
     for (const ev of events) {
+      if (ev.t === 'bumpExit' && !this.dlg) this._tryExit(this.map.objects.find((o) => o.id === ev.id));
+      if (ev.t === 'door') sfx('swing');
       if (ev.t === 'kill') {
         this.save.world.scrap = (this.save.world.scrap ?? 0) + (ev.boss ? 10 : 2);
         this._partyDirty = true;
@@ -539,13 +572,10 @@ export class WorldScene extends Phaser.Scene {
 
   _handleInteract(me) {
     if (this.dlg || this.menu) { this.hint.setText(''); return; }
-    const ptr = this.input.activePointer, wp = this.cameras.main.getWorldPoint(ptr.x, ptr.y);
-    const hover = this._objectAt(wp.x, wp.y);
     const inReach = (o) => Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y) <= 34;
     let nearest = null, nd = 34;
     for (const o of this.map.objects) { const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y); if (d <= nd) { nd = d; nearest = o; } }
-    this.hint.setText(hover ? (inReach(hover) ? hover.label : `${hover.label} (too far)`) : nearest ? `[E] ${nearest.label}` : '');
-    this.input.setDefaultCursor(hover && inReach(hover) ? 'pointer' : 'crosshair');
+    this.hint.setText(nearest ? `[E] ${nearest.label}${nearest.door ? (nearest.open ? ' (close)' : ' (open)') : ''}` : '');
     const near = this._clickedObj; this._clickedObj = null;
     if (!near) return;
     if (!inReach(near)) { this.hint.setText(`${near.label} (too far)`); return; }
@@ -563,10 +593,7 @@ export class WorldScene extends Phaser.Scene {
       if (this.mode === 'client') this.net.send({ t: 'flag', key: near.flag });
       else this.save.flags[near.flag] = true;
     }
-    if (near.action === 'save') {
-      if (this.mode === 'client') this._say('Only the host can save. (Their save is the world.)');
-      else autosave(this.save);
-    }
+    if (near.action === 'save') this._save();
   }
 
   // ---------- rendering ----------
@@ -612,13 +639,31 @@ export class WorldScene extends Phaser.Scene {
     for (const [id, s] of this.enemySprites) if (!eseen.has(id)) { s.destroy(); this.enemySprites.delete(id); }
     if (!(snap.enemies || []).some((e) => e.boss)) this.bossUi?.setVisible(false);
 
-    for (const { o, vis } of this.doorVis ?? []) vis.setAlpha(o.open ? 0.18 : 1);
+    for (const d of this.doorVis ?? []) if (d.drawn !== !!d.o.open) { d.drawn = !!d.o.open; this._drawDoor(d.vis, d.o); }
     this.shotGfx.clear();
     for (const sh of snap.shots || []) this.shotGfx.fillStyle(sh.f ? 0xffd27f : 0xd65db1).fillCircle(sh.x, sh.y, sh.f ? 2 : 2.5);
 
     for (const ev of snap.events || []) this._fx(ev, snap);
     this._drawLighting(snap);
+    this._updateExplored(snap);
+    this._drawMinimap(snap);
     this._drawHud(snap);
+  }
+
+  // Door placeholder art: a framed wood panel with a knob; open = swung against the jamb.
+  _drawDoor(g, o) {
+    const x = o.x * TILE, y = o.y * TILE;
+    g.clear();
+    g.fillStyle(0x1a1410).fillRect(x, y, TILE, TILE);                 // dark doorway
+    g.fillStyle(0x3b2a1e).fillRect(x, y, 2, TILE).fillRect(x + TILE - 2, y, 2, TILE).fillRect(x, y, TILE, 2); // frame
+    if (o.open) {
+      g.fillStyle(0x7a5236).fillRect(x + 2, y + 2, 3, TILE - 2);       // door edge, swung open
+      g.fillStyle(0x9a6a46).fillRect(x + 2, y + 2, 1, TILE - 2);
+    } else {
+      g.fillStyle(0x7a5236).fillRect(x + 2, y + 2, TILE - 4, TILE - 2);
+      g.fillStyle(0x8f6243).fillRect(x + 4, y + 4, TILE - 8, 4).fillRect(x + 4, y + 10, TILE - 8, 4); // panels
+      g.fillStyle(0xd9b25a).fillRect(x + TILE - 6, y + 9, 2, 2);        // knob
+    }
   }
 
   // Dash: cyan afterimages that streak and fade, plus a spark burst where the dash starts.
@@ -634,6 +679,52 @@ export class WorldScene extends Phaser.Scene {
         this.tweens.add({ targets: sp, x: p.x + Math.cos(a) * d, y: p.y + Math.sin(a) * d, alpha: 0, duration: 260, onComplete: () => sp.destroy() });
       }
     }
+  }
+
+  // ---------- exploration map ----------
+  _explored(mapId) {
+    const m = MAPS[mapId]; const ex = (this.save.world.explored ??= {});
+    if (!ex[mapId] || ex[mapId].length !== m.w * m.h) ex[mapId] = '0'.repeat(m.w * m.h);
+    return ex[mapId];
+  }
+
+  _updateExplored(snap) {
+    if ((this._exT = (this._exT ?? 0) + 1) % 10) return;   // a few times a second is plenty
+    const m = this.map, R = 6;
+    const arr = this._explored(m.id).split('');
+    let changed = false;
+    for (const p of snap.players) {
+      const cx = Math.floor(p.x / TILE), cy = Math.floor(p.y / TILE);
+      for (let y = cy - R; y <= cy + R; y++) for (let x = cx - R; x <= cx + R; x++) {
+        if (x < 0 || y < 0 || x >= m.w || y >= m.h || (x - cx) ** 2 + (y - cy) ** 2 > R * R) continue;
+        const i = y * m.w + x; if (arr[i] === '0') { arr[i] = '1'; changed = true; }
+      }
+    }
+    if (changed) this.save.world.explored[m.id] = arr.join('');
+    (this.save.world.visited ??= []).includes(m.id) || this.save.world.visited.push(m.id);
+  }
+
+  _drawMinimap(snap) {
+    const big = !!this.bigMap && !this.dlg && !this.menu;
+    const m = this.map, ex = this._explored(m.id);
+    const k = big ? Math.min(6, Math.floor(380 / m.w), Math.floor(170 / m.h)) : Math.min(2, Math.floor(70 / m.w)) || 1;
+    const W = VIEW.w, mw = m.w * k, mh = m.h * k;
+    const ox = big ? Math.floor((W - mw) / 2) : W - mw - 6, oy = big ? 40 : 44;
+    const g = (this.mini ??= this.add.graphics().setScrollFactor(0).setDepth(9050)).clear();
+    this.miniText ??= this.add.text(0, 0, '', { ...FONT, color: '#9aa3c7' }).setScrollFactor(0).setDepth(9051);
+    if (big) g.fillStyle(0x05060c, 0.88).fillRect(0, 0, W, VIEW.h);
+    g.fillStyle(0x0b0d16, 0.75).fillRect(ox - 2, oy - 2, mw + 4, mh + 4).lineStyle(1, 0x5d6487, 0.8).strokeRect(ox - 2, oy - 2, mw + 4, mh + 4);
+    for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) {
+      if (ex[y * m.w + x] !== '1') continue;
+      g.fillStyle(m.solid(x, y) && !m.doors.get(`${x},${y}`) ? 0x3a3f66 : 0x1f2236).fillRect(ox + x * k, oy + y * k, k, k);
+    }
+    for (const o of m.objects) if (ex[o.y * m.w + o.x] === '1' && (o.action === 'exit' || o.door)) g.fillStyle(o.door ? 0x8a6a4a : 0xffb347).fillRect(ox + o.x * k, oy + o.y * k, k, k);
+    for (const e of snap.enemies || []) { const tx = Math.floor(e.x / TILE), ty = Math.floor(e.y / TILE); if (ex[ty * m.w + tx] === '1') g.fillStyle(0xd65db1).fillRect(ox + tx * k, oy + ty * k, k, k); }
+    for (const p of snap.players) g.fillStyle(p.id === this.localId ? 0x7fff9a : 0x6fb6ff).fillRect(ox + Math.floor(p.x / TILE) * k - (big ? 1 : 0), oy + Math.floor(p.y / TILE) * k - (big ? 1 : 0), k + (big ? 2 : 0), k + (big ? 2 : 0));
+    if (big) {
+      const names = (this.save.world.visited || []).map((id) => (MAPS[id]?.name ?? id) + (id === m.id ? '  ◀ you are here' : ''));
+      this.miniText.setPosition(ox, oy + mh + 10).setText(`MAP  [TAB] close\n${m.name}\n\nAreas found:\n  ${names.join('\n  ')}`).setVisible(true);
+    } else this.miniText.setVisible(false);
   }
 
   _bossBar(e) {
@@ -684,6 +775,7 @@ export class WorldScene extends Phaser.Scene {
       g.fillStyle(0x1c1f33).fillRect(6, y, w, 5);
       g.fillStyle(p.dn ? 0x777788 : p.id === this.localId ? 0x7fb069 : 0x5f8fbf).fillRect(6, y, Math.max(0, (p.hp / (p.mhp || 100)) * w), 5);
       if (p.dn) g.fillStyle(0xffb347).fillRect(6, y + 5, (p.rv / 2) * w, 1);
+      else if (p.id === this.localId) g.fillStyle(0x6ff2ff, 0.85).fillRect(6, y + 5, ((p.st ?? 100) / 100) * w, 1);
     });
     if (snap.enemies?.length) lines.push(`rot: ${snap.enemies.length}`);
     const c = this.save.party[this.character];

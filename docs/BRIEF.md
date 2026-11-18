@@ -235,6 +235,14 @@ have to apply, but it would make it interesting."
   text, closes the description or menu. Descriptions don't fade until you close them.
   > *"you should click on world items, npcs etc to interact not e, then click a certain key like e to
   > exit that menu or just click off of the descirption text. descirption shouldnt fade until you exit."*
+- **Revised: interact with E when close (no click-to-interact).** Clicking still advances dialogue.
+- **Dash uses stamina** that regenerates, so it isn't practical for traveling.
+- **You can always go back to previous areas.**
+- **A minimap / map of what's been explored so far.**
+- **Doors work by walking into them,** look better, have a quick scene-change animation, and connect
+  consistently (you arrive at the matching door on the other side). Same with elevators.
+- **No save announcements in dialogue,** just a small notice in the corner.
+- **Controls live in the in-game menu,** not on the title/lobby screen.
 - **The lobby should look way cooler and have music.** (Assigned to gonman for later.)
 - **This should be a very good-looking game.** Visual quality is a top priority (relayed to Fable).
 - **Room 631 layout:** Trevor has a room and a bathroom. Michael and Manuel share a room and a bathroom.
