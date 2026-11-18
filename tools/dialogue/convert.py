@@ -140,6 +140,9 @@ def parse(text):
         # Stage directions (*His breath.*) become narration captions, never spoken. Writer notes
         # (*Trigger: ...*, *Returning ...*, anything with backticks or a jump) are skipped.
         sd = re.match(r"^\*([^*].*?)\*$", line)
+        if sd and re.match(r"^TEXT:\s*", sd.group(1).strip()):
+            # *TEXT: ...* is a text message: shown as one, and kept in the phone's message list.
+            node["lines"].append({"who": "Text: John Pork", "text": re.sub(r"^TEXT:\s*", "", sd.group(1).strip()), "if": cond, "sms": True}); continue
         if sd:
             body = sd.group(1).strip()
             # Conservative: anything that smells like a writer note stays out (see tools/writing/captions.py).

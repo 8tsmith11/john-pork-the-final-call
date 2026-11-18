@@ -207,7 +207,7 @@ export class WorldScene extends Phaser.Scene {
   _setPortrait(who) {
     const id = (who || '').toLowerCase();
     const isRoommate = ['michael', 'trevor', 'manuel'].includes(id) && this.textures.exists(id);
-    const isPork = (id === 'pork' || id === 'john pork') && this.textures.exists('principals');
+    const isPork = (id === 'pork' || id === 'john pork' || id === 'text: john pork') && this.textures.exists('principals');
     this.dlgPortraitBg.setVisible(true);
     this._porkTalking = isPork;
     this.dlgBg.setStrokeStyle(1, isPork ? 0xd65db1 : 0xf2a6b8);
@@ -271,7 +271,11 @@ export class WorldScene extends Phaser.Scene {
       this.dlgText.setColor(line && !line.who ? '#9aa3c7' : '#e8e8f0');
       if (line && line !== this._lastLine) {
         this._lastLine = line; this._lineAt = this.time.now;
-        if (line.who && !(this.dlgVoiced && speak(line.who, line.text))) babble(line.who, line.text);
+        if (line.sms) {   // a text message: buzz, and keep it on the phone
+          sfx('pickup');
+          const texts = (this.save.world.phone ??= { texts: [] }).texts;
+          if (!texts.some((t) => t.text === line.text)) texts.push({ from: 'John Pork', text: line.text, at: new Date().toISOString() });
+        } else if (line.who && !(this.dlgVoiced && speak(line.who, line.text))) babble(line.who, line.text);
         this._typeFull = (line.text ?? '').replace(/\*([^*]+)\*/g, '$1'); this._typeShown = 0;
         this._setPortrait(line.who);
       }

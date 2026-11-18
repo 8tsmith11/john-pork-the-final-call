@@ -7,8 +7,8 @@ import { SKILL_TREE, skillOpen } from '../../content/skills.js';
 import { ROOMMATES } from '../scenes/BootScene.js';
 import { QUESTS, questState } from '../../content/quests.js';
 
-export const TABS = ['inventory', 'quests', 'skills', 'map', 'controls', 'system'];
-const TAB_LABEL = { inventory: 'INVENTORY', quests: 'QUESTS', skills: 'SKILLS', map: 'MAP', controls: 'CONTROLS', system: 'SYSTEM' };
+export const TABS = ['inventory', 'quests', 'phone', 'skills', 'map', 'controls', 'system'];
+const TAB_LABEL = { inventory: 'INVENTORY', quests: 'QUESTS', phone: 'PHONE', skills: 'SKILLS', map: 'MAP', controls: 'CONTROLS', system: 'SYSTEM' };
 const C = { panel: 0x0b0d16, edge: 0xf2a6b8, dim: 0x5d6487, text: '#e8e8f0', sub: '#9aa3c7', hi: '#ffb347', ok: '#7fb069', bad: '#d65db1' };
 const F = (size = 8, color = C.text) => ({ fontFamily: 'monospace', fontSize: `${size}px`, color });
 const SLOT_LABEL = { weapon: 'Melee', ranged: 'Ranged', armor: 'Armor', gadget: 'Gadget', charm: 'Charm' };
@@ -164,6 +164,40 @@ export class GameMenu {
   }
 
   // Skill tree: three branches of four tiers meeting at a capstone. Hover for details, click to learn.
+  // The phone: recent calls (from what has happened) and the texts that have arrived.
+  _phone(g) {
+    const s = this.scene, b = this.box, f = s.save.flags;
+    const px = b.x + 14, py = b.y + 28, pw = 150, ph = b.h - 40;
+    g.fillStyle(0x10121e).fillRoundedRect(px, py, pw, ph, 6).lineStyle(1, 0x3a4060).strokeRoundedRect(px, py, pw, ph, 6);
+    this._t(px + 8, py + 6, 'RECENTS', F(7, C.sub));
+    const calls = [];
+    if (f['act1.beat.call']) calls.push(['John Pork', f['act1.call.answered'] && !f['act1.beat.ring2'] ? 'answered' : Number(f['act1.call.declines'] || 0) >= 1 ? 'declined' : 'incoming']);
+    if (f['act1.beat.ring2']) calls.push(['John Pork', f['act1.call.answered'] && !f['act1.beat.ring3'] ? 'answered' : 'declined']);
+    if (f['act1.beat.ring3']) calls.push(['John Pork', f['act1.call.answered'] ? 'answered' : 'declined']);
+    if (f['act1.beat.buttDial']) calls.push(['John Pork', f['act1.call.buttDialSpokeUp'] ? 'pocket dial (you spoke)' : 'pocket dial']);
+    const vm = Number(f['act1.call.declines'] || 0);
+    if (vm >= 1) calls.push(['Voicemail', `${Math.min(vm, 2)} from John Pork`]);
+    if (!calls.length) this._t(px + 8, py + 18, 'No calls.', F(7, '#4a5175'));
+    calls.slice(-8).reverse().forEach(([who, what], i) => {
+      this._t(px + 8, py + 18 + i * 18, who, F(8, who === 'John Pork' ? '#e87a9c' : C.text));
+      this._t(px + 8, py + 27 + i * 18, what, F(6, C.sub));
+    });
+    // messages
+    const mx = px + pw + 12, mw = b.x + b.w - mx - 14;
+    g.fillStyle(0x10121e).fillRoundedRect(mx, py, mw, ph, 6).lineStyle(1, 0x3a4060).strokeRoundedRect(mx, py, mw, ph, 6);
+    this._t(mx + 8, py + 6, 'MESSAGES', F(7, C.sub));
+    const texts = s.save.world.phone?.texts ?? [];
+    if (!texts.length) this._t(mx + 8, py + 18, 'Nothing new.', F(7, '#4a5175'));
+    let y = py + 20;
+    texts.slice(-7).forEach((t) => {
+      const tt = this._t(mx + 14, y + 3, t.text, { ...F(7, '#fff0f4'), wordWrap: { width: mw - 40 } });
+      g.fillStyle(0x5a2a44, 0.9).fillRoundedRect(mx + 8, y, Math.min(mw - 20, tt.width + 14), tt.height + 6, 4);
+      this.root.bringToTop(tt);
+      y += tt.height + 10;
+    });
+    if (texts.length) this._t(mx + 8, py + ph - 12, `John Pork · ${texts.length} message${texts.length > 1 ? 's' : ''}`, F(6, C.sub));
+  }
+
   _skills(g) {
     const s = this.scene, who = s.character, c = s.save.party[who], b = this.box, tree = SKILL_TREE[who];
     if (!tree) return;
