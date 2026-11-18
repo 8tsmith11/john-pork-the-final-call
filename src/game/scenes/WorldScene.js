@@ -51,6 +51,9 @@ const FONT = { fontFamily: 'monospace', fontSize: '8px', color: '#e8e8f0' };
 // Seconds of standing still before a roommate's long idle starts (?idle=10 to test).
 const IDLE_MS = (Number(new URLSearchParams(globalThis.location?.search ?? '').get('idle')) || 180) * 1000;
 
+// Highlight colours: quest-important text (cyan) and people/places (gold).
+const HI = { quest: '#6fe3e8', name: '#ffd27f' };
+
 export class WorldScene extends Phaser.Scene {
   constructor() { super('World'); }
 
@@ -329,31 +332,68 @@ export class WorldScene extends Phaser.Scene {
     return pages.length ? pages : [''];
   }
 
-  // Quest-important words in gold: anything a writer wraps in {braces}, plus names of people and
-  // places, and the plot's key objects. Built once from the maps.
+  // Two highlight colours (Trevor: quest-important text in its own colour).
+  //   HI.quest (cyan): anything a writer wraps in {braces}, the plot's key objects, and every item a
+  //   quest stage names. HI.name (gold): people and places. Built once from the maps and quests.
   _hiWords() {
     if (this._hiRx !== undefined) return this._hiRx;
-    const words = new Set(['orange balloon', 'the balloon', 'balloon', 'helium', 'sniffer', 'switchyard', 'storm grate', 'grate', 'the platform', 'Green Line', 'John Pork', 'Pork', 'Fab #1', 'Fab #2', 'Room 631', '631']);
+    const esc = (w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const quest = new Set(['orange balloon', 'the balloon', 'balloon', 'helium', 'sniffer', 'switchyard', 'storm grate', 'the platform', 'Fab #1', 'Fab #2', 'the fab', 'fab']);
+    const stageText = QUESTS.flatMap((q) => q.stages.map((st) => st.text.toLowerCase())).join('\n');
+    for (const def of Object.values(ITEMS)) if (def.name && def.name.length > 3 && stageText.includes(def.name.toLowerCase())) quest.add(def.name);
+    for (const q of QUESTS) for (const id of [q.give?.item, q.reward?.item]) if (id && ITEMS[id]?.name) quest.add(ITEMS[id].name);
+    const names = new Set(['Green Line', 'John Pork', 'Pork', 'Room 631', '631']);
     for (const m of Object.values(MAPS)) {
-      if (m.name) words.add(m.name.split(',')[0]);
-      for (const o of m.objects) if (o.npc && o.label) words.add(o.label.replace(/\s*\(.*\)\s*/g, '').trim());
+      if (m.name) names.add(m.name.split(',')[0]);
+      for (const o of m.objects) if (o.npc && o.label) names.add(o.label.replace(/\s*\(.*\)\s*/g, '').trim());
     }
-    const list = [...words].filter((w) => w.length > 2 && !/^(Rotter|Student)/.test(w)).sort((a, b) => b.length - a.length)
-      .map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-    this._hiRx = list.length ? new RegExp(`(^|[^A-Za-z])(${list.join('|')})(?![A-Za-z])`, 'g') : null;
+    const rx = (set, flags) => {
+      const list = [...set].filter((w) => w.length > 2 && !/^(Rotter|Student)/.test(w)).sort((a, b) => b.length - a.length).map(esc);
+      return list.length ? new RegExp(`(^|[^A-Za-z])(${list.join('|')})(?![A-Za-z])`, flags) : null;
+    };
+    this._hiRx = { quest: rx(quest, 'gi'), name: rx(names, 'g') };
     return this._hiRx;
   }
 
+  // mask[i]: 0 plain, 1 name/place, 2 quest-important. {braces} are removed and count as quest.
   _hiMask(text) {
-    // {marked} spans first (braces removed), then the keyword list.
     let plain = '', mask = [];
     for (let i = 0; i < text.length; i++) {
-      if (text[i] === '{') { const j = text.indexOf('}', i); if (j > i) { const inner = text.slice(i + 1, j); plain += inner; mask.push(...Array(inner.length).fill(true)); i = j; continue; } }
-      plain += text[i]; mask.push(false);
+      if (text[i] === '{') { const j = text.indexOf('}', i); if (j > i) { const inner = text.slice(i + 1, j); plain += inner; mask.push(...Array(inner.length).fill(2)); i = j; continue; } }
+      plain += text[i]; mask.push(0);
     }
-    const rx = this._hiWords();
-    if (rx) { rx.lastIndex = 0; let m; while ((m = rx.exec(plain))) { const st = m.index + m[1].length; for (let k = st; k < st + m[2].length; k++) mask[k] = true; } }
+    const { quest, name } = this._hiWords();
+    for (const [rx, v] of [[name, 1], [quest, 2]]) {
+      if (!rx) continue;
+      rx.lastIndex = 0; let m;
+      while ((m = rx.exec(plain))) { const st = m.index + m[1].length; for (let k = st; k < st + m[2].length; k++) if (mask[k] < v) mask[k] = v; }
+    }
     return { plain, mask };
+  }
+
+  // Lay text out as coloured runs (Text objects from `pool`), left to right, line by line.
+  // Returns how many pool entries were used; the caller hides the rest.
+  _richRuns(pool, text, x0, y0, lineH, style, base, depth, shown = Infinity) {
+    const { plain, mask } = this._hiMask(text);
+    const color = [base, HI.name, HI.quest];
+    let used = 0, line = 0, x = x0, run = '', runV = null;
+    const flush = () => {
+      if (!run) return;
+      let t = pool[used];
+      if (!t) { t = this.add.text(0, 0, '', style).setScrollFactor(0).setDepth(depth); pool.push(t); }
+      used++;
+      t.setText(run).setColor(color[runV ?? 0]).setPosition(x, y0 + line * lineH).setVisible(true);
+      x += t.width; run = '';
+    };
+    for (let i = 0; i < plain.length && i < shown; i++) {
+      const ch = plain[i];
+      if (ch === '\n') { flush(); line++; x = x0; runV = null; continue; }
+      if (runV !== null && mask[i] !== runV) flush();
+      runV = mask[i]; run += ch;
+    }
+    flush();
+    for (let k = used; k < pool.length; k++) pool[k].setVisible(false);
+    return used;
   }
 
   _hideRich() { for (const t of this._rich ?? []) t.setVisible(false); }
@@ -363,29 +403,9 @@ export class WorldScene extends Phaser.Scene {
   _renderDlgText() {
     if (!this.dlg || this.dlg.choices.length) return this._hideRich();
     const full = this._typeFull ?? '', shown = Math.floor(this._typeShown ?? 0);
-    const { plain, mask } = this._hiMask(full);
-    const style = { ...FONT, fontSize: '9px' };
     this._rich ??= [];
-    let used = 0;
-    const seg = (str, color, x, y) => {
-      let t = this._rich[used];
-      if (!t) { t = this.add.text(0, 0, '', style).setScrollFactor(0).setDepth(9501); this._rich.push(t); }
-      used++;
-      t.setText(str).setColor(color).setPosition(x, y).setVisible(true);
-      return t.width;
-    };
     this._lineH ??= (() => { this.dlgMeasure.setText('A\nA'); const h2 = this.dlgMeasure.height; this.dlgMeasure.setText('A'); return h2 - this.dlgMeasure.height; })();
-    const x0 = this.dlgText.x, y0 = this._dlgTop ?? this.dlgText.y, base = this._dlgBase ?? '#e8e8f0', hi = '#ffd27f';
-    let i = 0, line = 0, x = x0, run = '', runHi = null;
-    const flush = () => { if (run) x += seg(run, runHi ? hi : base, x, y0 + line * this._lineH); run = ''; };
-    for (; i < plain.length && i < shown; i++) {
-      const ch = plain[i];
-      if (ch === '\n') { flush(); line++; x = x0; runHi = null; continue; }
-      if (runHi !== null && mask[i] !== runHi) flush();
-      runHi = mask[i]; run += ch;
-    }
-    flush();
-    for (let k = used; k < this._rich.length; k++) this._rich[k].setVisible(false);
+    this._richRuns(this._rich, full, this.dlgText.x, this._dlgTop ?? this.dlgText.y, this._lineH, { ...FONT, fontSize: '9px' }, this._dlgBase ?? '#e8e8f0', 9501, shown);
     // "more" marker when this line has another page
     this.dlgMore ??= this.add.text(0, 0, '▼', { ...FONT, fontSize: '8px', color: '#ffb347' }).setOrigin(1, 0).setScrollFactor(0).setDepth(9502);
     const more = this._pages && this._page < this._pages.length - 1 && shown >= full.length;
@@ -943,14 +963,19 @@ export class WorldScene extends Phaser.Scene {
     const c = this.add.container(x, y0).setScrollFactor(0).setDepth(9400);
     const head = this.add.text(0, 6, b.kind, { heading: true, fontSize: '7px', color: done ? '#7fb069' : '#ffb347' }).setOrigin(0.5, 0);
     const title = this.add.text(0, 15, b.title, { heading: true, fontSize: '11px', color: '#ffd27f' }).setOrigin(0.5, 0);
-    const det = this.add.text(0, 30, b.detail ?? '', { ...FONT, fontSize: '8px', color: '#e8e8f0', align: 'center', wordWrap: { width: w - 16 } }).setOrigin(0.5, 0);
+    // NEW QUEST / QUEST UPDATED: the first line is the objective (quest colour), the rest is context.
+    const [objLine, ...rest] = String(b.detail ?? '').split('\n');
+    const objective = !done && b.detail;
+    const det = this.add.text(0, 30, objective ? objLine : (b.detail ?? ''), { ...FONT, fontSize: '8px', color: objective ? HI.quest : '#e8e8f0', align: 'center', wordWrap: { width: w - 16 } }).setOrigin(0.5, 0);
+    if (objective && rest.length) { const more = this.add.text(0, 30 + det.height + 2, rest.join('\n'), { ...FONT, fontSize: '8px', color: '#c9cde0', align: 'center', wordWrap: { width: w - 16 } }).setOrigin(0.5, 0); det.setData('more', more); }
     // New quests stay up until clicked (Trevor); updates and completions slide away on their own.
     const sticky = b.kind === 'NEW QUEST';
-    const hint = sticky ? this.add.text(0, 30 + (b.detail ? det.height + 4 : 0), 'click to close', { ...FONT, fontSize: '7px', color: '#9aa3c7' }).setOrigin(0.5, 0) : null;
-    const h = 36 + (b.detail ? det.height + 4 : 0) + (sticky ? 10 : 0);
+    const more = det.getData('more'), detH = b.detail ? det.height + (more ? more.height + 2 : 0) + 4 : 0;
+    const hint = sticky ? this.add.text(0, 30 + detH, 'click to close', { ...FONT, fontSize: '7px', color: '#9aa3c7' }).setOrigin(0.5, 0) : null;
+    const h = 36 + detH + (sticky ? 10 : 0);
     const bg = this.add.graphics();
     bg.fillStyle(0x0b0d16, 0.92).fillRoundedRect(-w / 2, 0, w, h, 4).lineStyle(1, done ? 0x7fb069 : 0xffb347, 0.9).strokeRoundedRect(-w / 2, 0, w, h, 4);
-    c.add([bg, head, title, det, ...(hint ? [hint] : [])]);
+    c.add([bg, head, title, det, ...(more ? [more] : []), ...(hint ? [hint] : [])]);
     sfx(done ? 'pickup' : 'swing');
     this.tweens.add({ targets: c, y: y1, duration: 260, ease: 'Back.out' });
     const leave = () => { this._qbSticky = null; this.tweens.add({ targets: c, y: y0 - h, alpha: 0, duration: 260, onComplete: () => { c.destroy(); this._nextQuestBanner(); } }); };
@@ -1330,21 +1355,28 @@ export class WorldScene extends Phaser.Scene {
   // E or a click turns the page, and closes it after the last one.
   _say(text) {
     const W = VIEW.w, H = VIEW.h, bottom = H - 5;
-    this.boxText.setFontSize('8px');
     this._sayPages = this._paginate(String(text ?? ''), this.boxText, 6); this._sayPage = 0;
-    this.boxText.setText(this._sayPages[0] + (this._sayPages.length > 1 ? `   ▼ 1/${this._sayPages.length}` : '')).setVisible(true);
+    this.boxText.setText(this._sayPages[0] + (this._sayPages.length > 1 ? `   ▼ 1/${this._sayPages.length}` : '')).setVisible(true).setAlpha(0);
     const h = Math.max(34, this.boxText.height + 14);
     this.box.setSize(W - 20, h).setPosition(W / 2, bottom - h / 2).setVisible(true);
     this.box.geom?.setSize?.(W - 20, h); this.box.updateDisplayOrigin?.();
     this.boxText.setY(bottom - h + 7);
     this.sayOpen = true;
+    this._drawSayRich();
   }
-  _closeSayAll() { this._sayPages = null; this.box.setVisible(false); this.boxText.setVisible(false); this.sayOpen = false; }
+  _drawSayRich() {
+    this._sayRich ??= [];
+    if (!this.sayOpen && !this.boxText.visible) { for (const t of this._sayRich) t.setVisible(false); return; }
+    this._sayLineH ??= (() => { const m = this.add.text(0, 0, 'A\nA', { ...FONT, fontSize: '8px' }).setVisible(false); const h2 = m.height; m.setText('A'); const h = h2 - m.height; m.destroy(); return h; })();
+    this._richRuns(this._sayRich, this.boxText.text, this.boxText.x, this.boxText.y, this._sayLineH, { ...FONT, fontSize: '8px' }, '#e8e8f0', 9002);
+  }
+  _closeSayAll() { this._sayPages = null; this.box.setVisible(false); this.boxText.setVisible(false); this.sayOpen = false; this._drawSayRich(); }
   _closeSay() {
     if (this._sayPages && this._sayPage < this._sayPages.length - 1) {   // next page first
       this._sayPage++;
       const n = this._sayPages.length, last = this._sayPage === n - 1;
       this.boxText.setText(this._sayPages[this._sayPage] + (last ? '' : `   ▼ ${this._sayPage + 1}/${n}`));
+      this._drawSayRich();
       return;
     }
     this._closeSayAll();
