@@ -17,9 +17,9 @@ export class TitleScene extends Phaser.Scene {
     this.add.text(W / 2, 66, 'THE FINAL CALL', { heading: true, fontSize: '12px', color: '#9aa3c7' }).setOrigin(0.5);
     // Easter egg (batch 1, #10): playing at 3 a.m. real local time.
     const sub = hour >= 0 && hour < 5 ? '"why are you still up?"  - J.P.' : 'Maryland, 2098';
-    this.add.text(W / 2, 84, sub, { fontFamily: 'monospace', fontSize: '8px', color: '#5d6487' }).setOrigin(0.5);
+    this.add.text(W / 2, 84, sub, { fontFamily: 'monospace', fontSize: '8px', color: '#9aa3c7' }).setOrigin(0.5);
 
-    this.add.text(W / 2, 112, 'choose your roommate', { fontFamily: 'monospace', fontSize: '8px', color: '#9aa3c7' }).setOrigin(0.5);
+    this.add.text(W / 2, 112, 'choose your roommate', { fontFamily: 'monospace', fontSize: '8px', color: '#e8e8f0', backgroundColor: 'rgba(11,13,22,0.6)', padding: { x: 3, y: 1 } }).setOrigin(0.5);
     const ids = Object.keys(ROOMMATES);
     ids.forEach((id, i) => {
       const x = W / 2 + (i - 1) * 90, y = 160;
@@ -31,24 +31,24 @@ export class TitleScene extends Phaser.Scene {
       zone.on('pointerdown', () => this.scene.start('World', { character: id, mode: 'solo' }));
     });
     // Save controls: the save lives in this browser (and in exported .jpfc.json files).
-    const saveInfo = this.add.text(W / 2, 98, '', { fontFamily: 'monospace', fontSize: '7px', color: '#5d6487' }).setOrigin(0.5);
+    const saveInfo = this.add.text(W / 2, 98, '', { fontFamily: 'monospace', fontSize: '7px', color: '#9aa3c7', backgroundColor: 'rgba(11,13,22,0.6)', padding: { x: 3, y: 1 } })   // backed: it sits on the skyline.setOrigin(0.5);
     const refresh = async () => {
       const s = await loadAutosave().catch(() => null);
-      saveInfo.setText(s ? `save found: act ${s.world.act} · world "${s.world.seed}" · click a roommate to continue` : 'no save yet: clicking a roommate starts a new game');
+      saveInfo.setText(s ? `save found: act ${s.world.act} · world "${s.world.seed}" · click a roommate to continue` : 'no save yet: clicking a roommate starts a new game').setOrigin(0.5);   // re-centre: the padded box changes width
     };
     refresh();
     const small = (x, label, fn) => this.add.text(x, H - 52, label, { fontFamily: 'monospace', fontSize: '7px', color: '#9aa3c7' })
       .setOrigin(0.5).setInteractive({ useHandCursor: true }).on('pointerdown', fn);
     small(W / 2 - 60, '[ new game ]', async () => { if (confirm('Start a new game? This browser\'s save will be erased (export it first if you want to keep it).')) { await clearAutosave(); refresh(); } });
     small(W / 2 + 60, '[ import save file ]', async () => {
-      try { const s = await importFile(); await autosave(s); refresh(); } catch (e) { saveInfo.setText(`couldn't import: ${e.message}`); }
+      try { const s = await importFile(); await autosave(s); refresh(); } catch (e) { saveInfo.setText(`couldn't import: ${e.message}`).setOrigin(0.5); }
     });
     [['HOST CO-OP', 'host'], ['JOIN CO-OP', 'join']].forEach(([label, role], i) => {
       this.add.text(W / 2 + (i ? 70 : -70), H - 34, `[ ${label} ]`, { fontFamily: 'monospace', fontSize: '9px', color: '#ffb347' })
         .setOrigin(0.5).setInteractive({ useHandCursor: true })
         .on('pointerdown', () => this.scene.start('Lobby', { role }));
     });
-    this.add.text(W / 2, H - 12, 'controls: ESC in game', { fontFamily: 'monospace', fontSize: '7px', color: '#3d4467' }).setOrigin(0.5);
+    this.add.text(W / 2, H - 12, 'controls: ESC in game', { fontFamily: 'monospace', fontSize: '7px', color: '#6f789c' }).setOrigin(0.5);
   }
 }
 
