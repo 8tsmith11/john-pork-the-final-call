@@ -134,6 +134,66 @@ test('schema 4 -> 5 adds infection without losing existing exposure or unknown d
   assert.deepEqual(migrate(JSON.parse(JSON.stringify(back))), back);
 });
 
+const sleepArena = () => ({ ...rotArena(), id: 'sleep-recovery',
+  enemies: [{ kind: 'enemy.moth', x: 210, y: 160, elite: 'plain' }] });
+const advanceSleep = (sim, seconds, input = () => emptyInput(), events = []) => {
+  for (let i = 0; i < Math.round(seconds * 60); i++) {
+    sim.step(1 / 60, new Map([...sim.players.values()].map((p) => [p.id, input(p)])));
+    events.push(...sim.events.map((e) => ({ ...e, seconds: sim.tick / 60 })));
+  }
+  return events;
+};
+
+test('three sleeping input-driven players recover from moth hum and can leave without caffeine', () => {
+  const sim = new Sim(sleepArena(), { seed: 'bal1' });
+  for (const [id, character] of [['host', 'trevor'], ['second', 'manuel'], ['third', 'michael']]) sim.addPlayer(id, character);
+  const events = advanceSleep(sim, 4);
+  assert.ok([...sim.players.values()].every((p) => p.sleepT > 0), 'hum still puts all three to sleep');
+  advanceSleep(sim, 36, () => ({ ...emptyInput(), mx: -1, attack: true, dodge: true }), events);
+  for (const p of sim.players.values()) {
+    assert.ok(!(p.sleepT > 0)); assert.ok(p.x < 160 - BOT_LULLABY.mothRange, `${p.id} regained movement`);
+    assert.equal(p.hp, 100); assert.equal(p.downed, false);
+  }
+  assert.equal(events.filter((e) => e.t === 'sleep').length, 3);
+  assert.equal(events.filter((e) => e.t === 'wake').length, 3);
+  assert.equal(sim.wiped, false);
+});
+
+test('continuous moth hum gives the normal exposure window after waking before sleep can start again', () => {
+  const sim = new Sim(sleepArena(), { seed: 'bal1' }); sim.addPlayer('host', 'trevor');
+  const events = advanceSleep(sim, 16), sleeps = events.filter((e) => e.t === 'sleep'), wakes = events.filter((e) => e.t === 'wake');
+  assert.equal(sleeps.length, 2); assert.equal(wakes.length, 1);
+  assert.ok(Math.abs(wakes[0].seconds - sleeps[0].seconds - BOT_LULLABY.sleep) <= 2 / 60);
+  assert.ok(Math.abs(sleeps[1].seconds - wakes[0].seconds - BOT_LULLABY.expose) <= 2 / 60);
+});
+
+test('player lullaby still refreshes sleeping players and enemies, including the longer baby sleep', () => {
+  const sim = new Sim(rotArena());
+  sim.addPlayer('singer', 'michael'); sim.addPlayer('target', 'trevor'); sim.addPlayer('baby', 'manuel');
+  const target = sim.players.get('target'), baby = sim.players.get('baby');
+  target.x = 200; baby.x = 220; baby.mods.sleepGuard = 1;
+  const base = ENEMIES['enemy.rotling'];
+  sim.enemies.set('listener', { id: 'listener', kind: 'enemy.rotling', x: 240, y: 160, hp: 500,
+    def: { ...base, speed: 0 }, cd: 999, hurtT: 0, kx: 0, ky: 0 });
+  sim.setPlaying('singer', 'lullaby'); advanceSleep(sim, 20);
+  assert.ok(!(sim.players.get('singer').sleepT > 0));
+  assert.ok(target.sleepT >= BOT_LULLABY.sleep - 1.1);
+  assert.ok(baby.sleepT >= BOT_LULLABY.babySleep - 1.1);
+  assert.ok(sim.enemies.get('listener').sleepT >= BOT_LULLABY.sleep - 1.1);
+  sim.setPlaying('singer', null); advanceSleep(sim, BOT_LULLABY.babySleep + 1);
+  assert.ok(!(target.sleepT > 0)); assert.ok(!(baby.sleepT > 0));
+  assert.ok(!(sim.enemies.get('listener').sleepT > 0));
+});
+
+test('caffeine still wakes a moth sleeper immediately and blocks hum only while wired', () => {
+  const sim = new Sim(sleepArena(), { seed: 'bal1' }); sim.addPlayer('host', 'trevor');
+  const p = sim.players.get('host'); advanceSleep(sim, 4); assert.ok(p.sleepT > 0);
+  sim.caffeinate('host', 5); assert.equal(p.sleepT, 0);
+  advanceSleep(sim, 4); assert.ok(p.wiredT > 0); assert.ok(!(p.sleepT > 0));
+  advanceSleep(sim, 2); assert.equal(p.wiredT, 0); assert.ok(!(p.sleepT > 0));
+  advanceSleep(sim, BOT_LULLABY.expose); assert.ok(p.sleepT > 0, 'hum works again after caffeine and normal exposure');
+});
+
 test('infection sources, charm range, caffeine and allies obey the disease rules', () => {
   const sim = new Sim(rotArena()); sim.addPlayer('host', 'trevor');
   const p = sim.players.get('host');
