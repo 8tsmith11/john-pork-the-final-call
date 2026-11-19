@@ -15,12 +15,12 @@ export const REGIONS = [
   { id: 'route1', short: 'Route 1', shortEs: 'Ruta 1', ring: 1, act: 1, name: 'Route 1 and the airfield', es: 'La Ruta 1 y el aeródromo', x: 0.53, y: 0.47, maps: [] },
   { id: 'lake', short: 'Lake Artemesia', shortEs: 'Lago Artemesia', ring: 1, act: 1, name: 'Lake Artemesia and the Paint Branch', es: 'El lago Artemesia y el Paint Branch', x: 0.57, y: 0.57, maps: ['lake'] },
   // Ring two: the county and the bay (Act 2)
-  { id: 'greenbelt', short: 'Greenbelt', shortEs: 'Greenbelt', ring: 2, act: 2, name: 'Greenbelt and the dishes', es: 'Greenbelt y las antenas', x: 0.6, y: 0.43, maps: ['greenbelt', 'route1_north'] },
-  { id: 'beltsville', short: 'Beltsville', shortEs: 'Beltsville', ring: 2, act: 2, name: 'Beltsville: the farms', es: 'Beltsville: las granjas', x: 0.5, y: 0.35, maps: ['beltsville'] },
-  { id: 'refuge', short: 'The refuge', shortEs: 'El refugio', ring: 2, act: 2, name: 'The refuge', es: 'El refugio', x: 0.63, y: 0.32, maps: ['refuge'] },
+  { id: 'greenbelt', short: 'Greenbelt', shortEs: 'Greenbelt', ring: 2, act: 2, name: 'Greenbelt and the dishes', es: 'Greenbelt y las antenas', x: 0.6, y: 0.43, maps: ['greenbelt', 'route1_north', 'gb_dishes', 'gb_coop'] },
+  { id: 'beltsville', short: 'Beltsville', shortEs: 'Beltsville', ring: 2, act: 2, name: 'Beltsville: the farms', es: 'Beltsville: las granjas', x: 0.5, y: 0.35, maps: ['beltsville', 'bv_barn'] },
+  { id: 'refuge', short: 'The refuge', shortEs: 'El refugio', ring: 2, act: 2, name: 'The refuge', es: 'El refugio', x: 0.63, y: 0.32, maps: ['refuge', 'rf_settlement'] },
   { id: 'meade', short: 'The Meade', shortEs: 'El Meade', ring: 2, act: 2, name: 'The Meade', es: 'El Meade', x: 0.72, y: 0.38, maps: ['meade'] },
-  { id: 'baltimore', short: 'Baltimore', shortEs: 'Baltimore', ring: 2, act: 2, name: 'Baltimore: the port', es: 'Baltimore: el puerto', x: 0.7, y: 0.15, maps: ['baltimore'] },
-  { id: 'annapolis', short: 'Annapolis', shortEs: 'Annapolis', ring: 2, act: 2, name: 'Annapolis and the bay', es: 'Annapolis y la bahía', x: 0.84, y: 0.55, maps: ['annapolis'] },
+  { id: 'baltimore', short: 'Baltimore', shortEs: 'Baltimore', ring: 2, act: 2, name: 'Baltimore: the port', es: 'Baltimore: el puerto', x: 0.7, y: 0.15, maps: ['baltimore', 'bmore_stacks', 'bmore_clinic'] },
+  { id: 'annapolis', short: 'Annapolis', shortEs: 'Annapolis', ring: 2, act: 2, name: 'Annapolis and the bay', es: 'Annapolis y la bahía', x: 0.84, y: 0.55, maps: ['annapolis', 'ann_harbor'] },
   // Ring three: the Corridor and the Enclave (Act 3)
   { id: 'corridor', short: 'The Corridor', shortEs: 'El Corredor', ring: 3, act: 3, name: 'The Corridor', es: 'El Corredor', x: 0.32, y: 0.4, maps: ['corridor', 'beltway'] },
   { id: 'gaithersburg', short: 'Gaithersburg', shortEs: 'Gaithersburg', ring: 3, act: 3, name: 'Gaithersburg: the standards', es: 'Gaithersburg: los estándares', x: 0.22, y: 0.3, maps: ['gaithersburg'] },

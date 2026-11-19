@@ -8,7 +8,7 @@ import { defineBoss } from './builders.js';
 export const BOSSES = {
   // Baltimore: an outbreak in progress, bigger than College Park's. It calls more of itself.
   'boss.bmore_congregation': defineBoss({ name: 'THE CONGREGATION', epithet: 'Of Everyone Who Picked Up', hp: 1100, guard: 4, damage: 16, speed: 26, color: 0xd417c8,
-    phases: [['summon', 'ring'], ['summon', 'ring', 'rain'], ['summon', 'rain', 'spiral', 'shock']], signature: 'summon', wake: 170 }),
+    phases: [['summon', 'ring'], ['summon', 'ring', 'rain'], ['summon', 'rain', 'spiral', 'shock']], signature: 'summon', wake: 120 }),   // Baltimore is cramped: a short wake
   // Beltsville: tissue that doesn't take; a grown shell that woke up wrong.
   'boss.bv_shell': defineBoss({ name: 'SHELL ZERO', epithet: 'Who Woke Up Wrong', hp: 950, guard: 5, damage: 18, speed: 38, color: 0xc9a0a0,
     phases: [['charge', 'blink'], ['charge', 'blink', 'shock'], ['charge', 'blink', 'shock', 'lane']], signature: 'blink', wake: 150 }),

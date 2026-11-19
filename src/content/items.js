@@ -238,6 +238,12 @@ export const SHOPS = {
       { item: 'item.welding_goggles', price: 16 },
       { item: 'item.mat_glass', price: 2 },
     ] },
+  coop: { title: 'GREENBELT CO-OP', lines: ['[scaffold] Prices set by vote.'],   // act2_more.js scaffold
+    stock: [
+      { item: 'item.energy_bar', price: 4 },
+      { item: 'item.caffeine', price: 10 },
+      { item: 'item.bandage', price: 14 },
+    ] },
   diner: { title: 'THE DINER', lines: ['[scaffold] Whatever you order, it is already on the plate.'],   // act1_more.js scaffold
     stock: [
       { item: 'item.energy_bar', price: 5 },

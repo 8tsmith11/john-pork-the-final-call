@@ -1,6 +1,8 @@
 // Spanish for map names (shown top centre and in the guide) and the HUD ability label (gonman).
 // Every Text goes through tr() (src/main.js), so exact keys are enough. tests/run.js checks the map names.
 export const ES_HUD = {
+  'The dish control room': 'La sala de control de las antenas', 'The Greenbelt co-op': 'La cooperativa de Greenbelt', "The barn the map doesn't show": 'El granero que el mapa no muestra',
+  'The settlement': 'El asentamiento', 'The container stacks': 'Las pilas de contenedores', 'The rowhouse clinic': 'La clínica de la casa adosada', 'The harbor': 'El puerto deportivo',   // act2_more.js scaffold
   'The Beltway': 'La Beltway', 'The Corridor': 'El Corredor', 'Gaithersburg: the standards': 'Gaithersburg: los estándares',
   'Frederick and the Smelter': 'Frederick y la Fundición', 'The Enclave': 'El Enclave', 'The Beltway road is open.': 'El camino a la Beltway está abierto.',   // act3_regions.js scaffold
   'Route 1 north': 'Ruta 1 norte', 'Greenbelt and the dishes': 'Greenbelt y las antenas', 'Beltsville: the farms': 'Beltsville: las granjas',

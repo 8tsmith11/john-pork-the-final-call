@@ -70,7 +70,10 @@ export const greenbelt = fromGrid({
     '@': { spawn: true },
     X: back('greenbelt', 'Back east to Route 1'),
   },
-}).enemy('boss.gb_receiver', 16, 5).build();
+}).enemy('boss.gb_receiver', 16, 5)
+  .exit('gb_dishes', 29, 0, { id: 'obj.greenbelt_to_gb_dishes', selfDrawn: true, stepOn: true, pair: 'obj.gb_dishes_out', label: 'Up the hill to the dishes', text: 'The dish control room. The door is propped open with a tape reel.' })   // act2_more.js
+  .exit('gb_coop', 3, 11, { id: 'obj.greenbelt_to_gb_coop', selfDrawn: true, stepOn: true, pair: 'obj.gb_coop_out', label: 'Down the path to the co-op', text: 'The co-op. OPEN, by a vote of 4 to 3.' })   // act2_more.js
+  .build();
 
 // ---- 7. Beltsville: the farms ----
 export const beltsville = fromGrid({
@@ -96,7 +99,9 @@ export const beltsville = fromGrid({
     '@': { spawn: true },
     X: back('beltsville', 'Back to Route 1'),
   },
-}).enemy('boss.bv_shell', 21, 4).build();
+}).enemy('boss.bv_shell', 21, 4)
+  .exit('bv_barn', 12, 10, { id: 'obj.beltsville_to_bv_barn', selfDrawn: true, stepOn: true, pair: 'obj.bv_barn_out', label: "A barn the map doesn't show", text: "A barn that isn't on any map. It has an airlock." })   // act2_more.js
+  .build();
 
 // ---- 8. The refuge: no signal, timber and lamps ----
 export const refuge = fromGrid({
@@ -120,7 +125,9 @@ export const refuge = fromGrid({
     '@': { spawn: true },
     X: { ...back('refuge', 'Back west to Route 1'), tile: 'g' },
   },
-}).build();
+})
+  .exit('rf_settlement', 8, 0, { id: 'obj.refuge_to_rf_settlement', selfDrawn: true, stepOn: true, pair: 'obj.rf_settlement_out', label: 'Up the boardwalk to the settlement', text: 'Timber walls, lamps in the windows.' })   // act2_more.js
+  .build();
 
 // ---- 9. The Meade (perimeter in Act 2) ----
 export const meade = fromGrid({
@@ -173,7 +180,10 @@ export const baltimore = fromGrid({
     '@': { spawn: true },
     X: { ...back('baltimore', 'South, back to Route 1'), tile: 'q' },
   },
-}).enemy('boss.bmore_congregation', 3, 4).build();
+}).enemy('boss.bmore_congregation', 24, 3)
+  .exit('bmore_stacks', 33, 4, { id: 'obj.baltimore_to_bmore_stacks', selfDrawn: true, stepOn: true, pair: 'obj.bmore_stacks_out', label: 'Into the container stacks', text: 'Shipping containers stacked five high, with curtains.' })   // act2_more.js
+  .exit('bmore_clinic', 0, 9, { id: 'obj.baltimore_to_bmore_clinic', selfDrawn: true, stepOn: true, pair: 'obj.bmore_clinic_out', label: 'Around back to the rowhouse clinic', text: 'A rowhouse with a line out the door.' })   // act2_more.js
+  .build();
 
 // ---- 11. Annapolis and the bay ----
 export const annapolis = fromGrid({
@@ -196,4 +206,6 @@ export const annapolis = fromGrid({
     '@': { spawn: true },
     X: { ...back('annapolis', 'North-west, back to Route 1'), tile: 'q' },
   },
-}).enemy('boss.ann_tide', 22, 6).build();
+}).enemy('boss.ann_tide', 16, 2)
+  .exit('ann_harbor', 31, 7, { id: 'obj.annapolis_to_ann_harbor', selfDrawn: true, stepOn: true, pair: 'obj.ann_harbor_out', label: 'Down the pier to the harbor', text: 'Sailboats moored to second-floor windows. The harbor.' })   // act2_more.js
+  .build();
