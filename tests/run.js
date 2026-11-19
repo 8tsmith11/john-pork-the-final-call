@@ -1069,7 +1069,7 @@ test('skill trees: valid links, capstone needs all three branches, mods sum, old
     assert.ok(!skillOpen(who, c, cap));
     for (const n of t.nodes) c.skills[n.id] = n.max;
     assert.ok(skillOpen(who, c, cap));
-    const m = pmods(c, who); assert.ok(m.abilityPower > 0 && m.armor <= 0.6);
+    const m = pmods(c, who); assert.ok(m.abilityPower > 0 && m.armor <= (who === 'manuel' ? 0.75 : 0.6));   // Manuel's edge raises his cap
   }
   const old = { skills: { 'skill.trevor.stack': 2, 'tr.amp': 1 }, skillPoints: 1 };
   assert.equal(migrateSkills(old, 'trevor'), 2); assert.equal(old.skillPoints, 3); assert.deepEqual(Object.keys(old.skills), ['tr.amp']);
@@ -1464,6 +1464,14 @@ test('the gonman is overpowered on purpose: a much smaller hitbox while thin, en
   go({}, 60 * 30); assert.ok(sim._small(p) - base < 0.5, 'the hitbox is back once recharged');
   assert.ok(gonContent.GONMAN_HIT.enemy.includes('why does it taste so good.') && gonContent.GONMAN_HIT.enemy.includes('what is this. sticky substance.'));
   for (const l of [...gonContent.GONMAN_HIT.enemy, ...gonContent.GONMAN_HIT.boss, ...gonContent.GONMAN_LINES.start, ...gonContent.GONMAN_LINES.release]) assert.ok(LINES_ES[l], `no Spanish for: ${l}`);
+});
+
+test("Manuel's edge: with the same gear and no skills, Manuel is the toughest and hits hardest of the three", () => {
+  const bare = () => ({ skills: {}, equipped: { weapon: 'item.pry_bar' }, abilities: {} });
+  const m = Object.fromEntries(['manuel', 'trevor', 'michael'].map((w) => [w, pmods(bare(), w)]));
+  for (const other of ['trevor', 'michael']) {
+    assert.ok(m.manuel.maxHp > m[other].maxHp && m.manuel.armor > m[other].armor && m.manuel.melee > m[other].melee && m.manuel.speed > m[other].speed, other);
+  }
 });
 
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }

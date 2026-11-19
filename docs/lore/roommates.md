@@ -63,5 +63,6 @@ For his real-life history so far (BattleBots, the UMD Mars rover), see [`real-li
 - Yes to white "toothpaste" splotches on his clothes from level 6 (the gonman's stage two), and his line that it's toothpaste. Implied, nothing drawn beyond the splotches. *(2026-11-19, to gonman in chat)*
 - Gets noticeably rounder as the story goes on (a belly from level 3, bigger at 6 and 8, fuller cheeks), and says "I have to stop going to the dining hall." *(2026-11-19, to gonman in chat)*
 - When the gonman's stage two goes off he turns skinny at once (and much harder to hit) and fills back out to his weight as the move recharges; the enemies it hits nearly freeze and ask what the sticky substance is, and why it tastes so good. *(2026-11-19, to gonman in chat)*
+- His character is the most overpowered of the three (Manuel: he's the worst at video games): a built-in edge on health, damage taken, damage dealt, speed, stamina, dodges and abilities (`MANUEL_EDGE` in `src/content/items.js`). *(2026-11-19, to gonman in chat)*
 
 *gonman: add anything else Manuel has said about his own character.*

@@ -259,6 +259,11 @@ export const SHOPS = {
 export const SKILLS = Object.fromEntries(Object.entries(SKILL_TREE).map(([k, t]) => [k, t.nodes]));
 
 /** Sum gear + skill modifiers for one character in the save. */
+// Manuel's edge (Manuel: "the worst at playing video games, so his character should be the most overpowered").
+// A built-in bonus on top of gear, skills and ability scores: he's the hardest to kill, hits hardest, recovers fastest.
+export const MANUEL_EDGE = { maxHp: 50, armor: 0.3, regen: 1, small: 1.5, melee: 6, shot: 4, crit: 0.1, lifesteal: 1,
+  speed: 0.1, sta: 30, staRegen: 0.5, iframes: 0.1, skillCd: 0.25, abilityPower: 0.3 };
+
 export function playerMods(char, charId) {
   const m = { melee: 0, shot: 0, shotCd: 0, armor: 0, maxHp: 0, iframes: 0, dodgeCd: 0, revive: 0, gun: 0,
     speed: 0, sta: 0, staRegen: 0, dashHit: 0, crit: 0, lifesteal: 0, loot: 0, haggle: 0, skillCd: 0, abilityPower: 0, markDmg: 0, secondWind: 0, decoys: 0, reviveHeal: 0,
@@ -274,6 +279,7 @@ export function playerMods(char, charId) {
   m.gunStats = ITEMS[char.equipped?.ranged]?.gun ?? null;
   for (const s of SKILLS[charId] || []) add(s.mods, char.skills?.[s.id] ?? 0);
   add(abilityModsFor(char, charId));   // ability scores (D-017)
-  m.armor = Math.min(0.6, m.armor); m.skillCd = Math.min(0.6, m.skillCd); m.haggle = Math.min(0.4, m.haggle);
+  if (charId === 'manuel') add(MANUEL_EDGE);
+  m.armor = Math.min(charId === 'manuel' ? 0.75 : 0.6, m.armor); m.skillCd = Math.min(0.6, m.skillCd); m.haggle = Math.min(0.4, m.haggle);
   return m;
 }
