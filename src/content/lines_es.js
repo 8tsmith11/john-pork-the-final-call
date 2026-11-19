@@ -73,6 +73,7 @@ export const LINES_ES = {
   'Che. Sorry. Not sorry.': 'Che. Perdón. No tanto.',
   'Oh. Oh, that\'s Manuel.': 'Uh. Uh, ese es Manuel.',
   'Do it again.': 'Hazlo otra vez.',
+  'What are you eating? They keep getting better.': '¿Qué estás comiendo? Cada vez están mejores.',
   'That\'s a good one. Is that weird?': 'Ese está bueno. ¿Es raro?',
   'Wait. I might have pooped my pants.': 'Pará. Creo que me hice encima.',
   'Okay. That one had weight to it.': 'Okey. Ese tuvo peso.',
