@@ -3,6 +3,7 @@
 
 import { startSong, stopSong, currentSong, SONGS } from './music.js';
 import { performanceMix } from './performanceMix.js';
+import * as Settings from '../settings.js';
 
 let ctx = null, master = null, background = null, drone = null;
 const MUTED = typeof location !== 'undefined' && new URLSearchParams(location.search).has('mute');
@@ -13,10 +14,10 @@ function ac() {
   if (!ctx) {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
-    ctx = new AC(); master = ctx.createGain(); master.gain.value = 0.25;
+    ctx = new AC(); master = ctx.createGain(); master.gain.value = 0.25 * Settings.get('sfx');
     // ?mute in the URL: everything still runs, nothing reaches the speakers (for testing next to people).
     const out = ctx.createGain(); out.gain.value = MUTED ? 0 : 1; master.connect(out); out.connect(ctx.destination);
-    background = ctx.createGain(); background.gain.value = mix.background; background.connect(master);
+    background = ctx.createGain(); background.gain.value = busMusic(); background.connect(out);   // music has its own volume (settings), not under effects; ?mute still applies
   }
   if (ctx.state === 'suspended') ctx.resume();
   return ctx;
@@ -73,7 +74,7 @@ function fade(el, to, ms, done) {
   const step = () => {
     const k = Math.min(1, (performance.now() - t0) / ms);
     mediaVolumes.set(el, from + (to - from) * k);
-    el.volume = mediaVolumes.get(el) * mix.background * (voiceDucked ? 0.2 : 1);
+    el.volume = mediaVolumes.get(el) * mix.background * musicScale() * (voiceDucked ? 0.2 : 1);
     if (k < 1) requestAnimationFrame(step); else done?.();
   };
   step();
@@ -183,13 +184,23 @@ export function setArea(id) {
 export function setMusicDuck(on) {
   voiceDucked = !!on;
   const a = ac();
-  if (a && master) master.gain.setTargetAtTime(on ? 0.06 : 0.25, a.currentTime, 0.25);
+  if (a && master) master.gain.setTargetAtTime((on ? 0.06 : 0.25) * Settings.get('sfx'), a.currentTime, 0.25);
+  if (a && background) background.gain.setTargetAtTime(busMusic(), a.currentTime, 0.25);
   applyMediaMix();
 }
 
 function applyMediaMix() {
-  for (const [el, volume] of mediaVolumes) el.volume = volume * mix.background * (voiceDucked ? 0.2 : 1);
+  for (const [el, volume] of mediaVolumes) el.volume = volume * mix.background * musicScale() * (voiceDucked ? 0.2 : 1);
 }
+// Music and ambience: their own bus straight to the speakers, scaled by the Music setting and ducked under voices.
+function busMusic() { return 0.25 * mix.background * Settings.get('music') * (voiceDucked ? 0.24 : 1); }
+function musicScale() { return Settings.get('music'); }
+// Settings changed (System tab): re-apply effects, music and voice volumes at once.
+Settings.onChange(() => {
+  if (ctx && master) master.gain.setTargetAtTime((voiceDucked ? 0.06 : 0.25) * Settings.get('sfx'), ctx.currentTime, 0.05);
+  if (ctx && background) background.gain.setTargetAtTime(busMusic(), ctx.currentTime, 0.05);
+  applyMediaMix();
+});
 
 /** Nearby performances take over the score/ambience, while a live boss keeps its score audible.
  * Instruments and combat/voice cues stay on the master bus and are never muted here.
@@ -199,7 +210,7 @@ export function setInstrumentFocus(snap, localId) {
   const next = performanceMix(snap, localId);
   if (next.background === mix.background) { mix = next; return; }
   mix = next;
-  if (ctx && background) background.gain.setTargetAtTime(mix.background, ctx.currentTime, 0.04);
+  if (ctx && background) background.gain.setTargetAtTime(busMusic(), ctx.currentTime, 0.04);
   applyMediaMix();
 }
 
@@ -249,7 +260,7 @@ export function speak(who, text) {
   const u = new SpeechSynthesisUtterance(text.replace(/\*[^*]+\*/g, ''));
   const voices = synth.getVoices();
   u.voice = voices.find((v) => st.pref.test(`${v.name} ${v.lang}`) && /en|es/i.test(v.lang)) ?? voices.find((v) => /en/i.test(v.lang)) ?? null;
-  u.pitch = st.pitch; u.rate = st.rate; u.volume = 0.9;
+  u.pitch = st.pitch; u.rate = st.rate; u.volume = 0.9 * Settings.get('voice');
   synth.speak(u);
   return true;
 }

@@ -24,6 +24,7 @@ import { CompanionBrain, isAi } from '../../engine/companion.js';
 import * as Inv from '../../engine/inventory.js';
 import { CallCard } from '../ui/CallCard.js';
 import { tr } from '../../i18n.js';
+import * as Settings from '../../settings.js';
 import { BoardGame } from '../ui/BoardGame.js';
 import { Neon } from '../render/neon.js';
 import { skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
@@ -94,6 +95,8 @@ export class WorldScene extends Phaser.Scene {
     this.sprites = new Map(); this.enemySprites = new Map(); this.shotGfx = this.add.graphics().setDepth(5000);
     this.fxGfx = this.add.graphics().setDepth(5001);
     this.input2 = new InputReader(this);
+    // Screen shake can be turned off in settings (task #31): every shake in the game goes through the camera.
+    { const cam = this.cameras.main, shake = cam.shake.bind(cam); cam.shake = (...args) => (Settings.get('shake') ? shake(...args) : cam); }
     this.events.once('shutdown', () => setInstrumentFocus(null, null));
     this.acc = 0;
     this._makeUi();
@@ -317,7 +320,7 @@ export class WorldScene extends Phaser.Scene {
 
   _tickTypewriter(dt) {
     if (!this.dlg || this._typeFull == null || this._typeShown >= this._typeFull.length) return;
-    this._typeShown = Math.min(this._typeFull.length, this._typeShown + dt * 55);
+    this._typeShown = Math.min(this._typeFull.length, this._typeShown + dt * (Settings.TEXT_SPEEDS[Settings.get('textSpeed')] ?? 55));
     this._renderDlgText();
   }
 
