@@ -192,18 +192,20 @@ test('AI companions follow the human, fight, and never trigger exits', () => {
 });
 
 const Inv = await import('../src/engine/inventory.js');
-test('slot inventory: stacks, hotbar-first, remove, move/merge/swap, half', () => {
+test('slot inventory: stacks, backpack-first (hotbar only when full), remove, move/merge/swap, half', () => {
   const c = { inventory: new Array(36).fill(null) };
   assert.equal(Inv.add(c, 'item.mat_scrap', 150), 0);
-  assert.deepEqual([c.inventory[0].qty, c.inventory[1].qty], [99, 51]);
+  assert.deepEqual([c.inventory[9].qty, c.inventory[10].qty], [99, 51]);   // backpack, not the hotbar
+  assert.ok(c.inventory.slice(0, 9).every((x) => !x), 'hotbar stays empty');
   Inv.add(c, 'item.wooden_bat'); Inv.add(c, 'item.wooden_bat');
-  assert.equal(c.inventory[2].id, 'item.wooden_bat'); assert.equal(c.inventory[3].id, 'item.wooden_bat');   // gear doesn't stack
+  assert.equal(c.inventory[11].id, 'item.wooden_bat'); assert.equal(c.inventory[12].id, 'item.wooden_bat');   // gear doesn't stack
   assert.ok(Inv.remove(c, 'item.mat_scrap', 60)); assert.equal(Inv.count(c, 'item.mat_scrap'), 90);
-  assert.equal(c.inventory[0].qty, 90 > 99 ? 99 : c.inventory[0].qty);   // hotbar stack kept, back stack used first
-  Inv.moveSlot(c, 0, 20); assert.equal(c.inventory[0], null); assert.equal(c.inventory[20].id, 'item.mat_scrap');
-  Inv.moveSlot(c, 2, 20); assert.equal(c.inventory[20].id, 'item.wooden_bat'); assert.equal(c.inventory[2].id, 'item.mat_scrap');   // swap
-  const before = c.inventory[2].qty; Inv.moveSlot(c, 2, 30, true); assert.equal(c.inventory[30].qty + c.inventory[2].qty, before);
+  Inv.moveSlot(c, 9, 20); assert.equal(c.inventory[9], null); assert.equal(c.inventory[20].id, 'item.mat_scrap');
+  Inv.moveSlot(c, 11, 20); assert.equal(c.inventory[20].id, 'item.wooden_bat'); assert.equal(c.inventory[11].id, 'item.mat_scrap');   // swap
+  const before = c.inventory[11].qty; Inv.moveSlot(c, 11, 30, true); assert.equal(c.inventory[30].qty + c.inventory[11].qty, before);
   assert.ok(!Inv.pay(c, { 'item.mat_wire': 1 })); assert.ok(Inv.pay(c, { 'item.mat_scrap': 5 }));
+  const full = { inventory: new Array(36).fill(null).map((_, i) => (i >= 9 ? { id: 'item.wooden_bat', qty: 1 } : null)) };
+  Inv.add(full, 'item.energy_bar'); assert.equal(full.inventory[0].id, 'item.energy_bar', 'hotbar takes it once the backpack is full');
 });
 test('schema 1 -> 2 migration: scrap becomes money, list inventory becomes 36 slots', () => {
   const old = newSave({ seed: 'm', rolls: {}, gameVersion: 't' });

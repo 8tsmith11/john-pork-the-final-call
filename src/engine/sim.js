@@ -745,7 +745,8 @@ export class Sim {
     for (const p of this.players.values()) {
       if (!p.downed) continue;
       const helper = [...this.players.values()].find((q) => !q.downed && Math.hypot(q.x - p.x, q.y - p.y) < COMBAT.reviveRange);
-      p.reviveT = helper ? p.reviveT + dt * (1 + (helper.mods?.revive ?? 0)) : Math.max(0, p.reviveT - dt);
+      // Progress drains slowly when the helper steps away (Trevor: so you can come back), a quarter speed.
+      p.reviveT = helper ? p.reviveT + dt * (1 + (helper.mods?.revive ?? 0)) : Math.max(0, p.reviveT - dt * 0.25);
       if (p.reviveT >= COMBAT.reviveTime) { p.downed = false; p.hp = Math.min(this.maxHp(p), COMBAT.reviveHp + (helper?.mods?.reviveHeal ?? 0)); p.iframes = 1; this.events.push({ t: 'revive', id: p.id }); }
     }
   }

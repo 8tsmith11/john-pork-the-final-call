@@ -26,7 +26,11 @@ export function add(c, id, n = 1) {
     const s = inv[i];
     if (s && s.id === id && s.qty < max) { const k = Math.min(n, max - s.qty); s.qty += k; n -= k; }
   }
-  for (let i = 0; i < SLOTS && n > 0; i++) {
+  // New stacks go to the backpack first (Trevor: items shouldn't auto-fill the hotbar); the hotbar
+  // only takes them when the backpack is full. Stacking onto an existing stack still happens anywhere.
+  const order = [...Array(SLOTS - HOTBAR).keys()].map((k) => k + HOTBAR).concat([...Array(HOTBAR).keys()]);
+  for (const i of order) {
+    if (n <= 0) break;
     if (!inv[i]) { const k = Math.min(n, max); inv[i] = { id, qty: k }; n -= k; }
   }
   return n;

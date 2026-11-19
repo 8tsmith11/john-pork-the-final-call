@@ -1786,9 +1786,11 @@ export class WorldScene extends Phaser.Scene {
       const got = [];
       for (const [who, c] of Object.entries(this.save.party)) {
         if (c.inventory.some((x) => ITEMS[x?.id]?.slot === 'weapon')) continue;
-        if (Inv.add(c, 'item.pry_bar') > 0) continue;
+        // Taken off the wall into your hand: the first free hotbar slot (new items otherwise go to the backpack).
+        const free = c.inventory.slice(0, 9).findIndex((x) => !x);
+        if (free >= 0) c.inventory[free] = { id: 'item.pry_bar', qty: 1 }; else if (Inv.add(c, 'item.pry_bar') > 0) continue;
         c.equipped.weapon ??= 'item.pry_bar'; got.push(who);
-        if (who === this.character) c.hotSel = Math.max(0, c.inventory.findIndex((x) => x?.id === 'item.pry_bar'));
+        if (free >= 0) c.hotSel = free;
       }
       this._syncParty();
       this._say(got.length ? `${near.text}\n\nYou each take a {pry bar}. (Select it on the hotbar with 1-9 or the wheel; left click swings what's in your hand.)` : `${near.text}\n\nEveryone's already armed.`);
