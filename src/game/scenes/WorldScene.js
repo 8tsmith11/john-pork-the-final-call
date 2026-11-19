@@ -2491,7 +2491,7 @@ export class WorldScene extends Phaser.Scene {
       if (!stage || p.dn) { this._rotBarks.delete(p.id); continue; }
       const old = this._rotBarks.get(p.id);
       if (old?.stage === stage && this.time.now < old.next) continue;
-      this._bark(p.id, stage === 2 ? 'code rot. code rot.' : 'Left. Left.');
+      this._bark(p.id, stage === 2 ? 'coderot. coderot.' : 'Left. Left.'   // a code rotter says it as one word (Michael));
       this._rotBarks.set(p.id, { stage, next: this.time.now + 30000 });
       break;
     }

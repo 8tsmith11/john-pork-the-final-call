@@ -221,7 +221,7 @@ haqre ybpxqbja.
 | **Wbua Cbex** | Jnez, jel, pnfhny, vagrearg-angvir qvpgvba ntrq friragl lrnef. Pnyyf crbcyr ol anzr. Qrsyrpgf jvgu wbxrf gung ner frpergyl gehr. Cnhfrf orsber fvaprevgl | Fcrrpurf. Cebcurpl. NYY PNCF (rkprcg jura tyvgpuvat) | *"V unir orra vafvqr rirel cubar ba Rnegu naq V fgvyy qba'g xabj jung gb fnl gb lbh, Znahry."* |
 | **Gvz Purrfr** | Cerpvfr, pbhegrbhf, ohernhpengvp. Ahzorerq cbvagf. Qel, ungrf gur purrfr wbxrf naq znxrf gurz naljnl | Pehrygl sbe sha. Envfvat uvf ibvpr | *"Guerr guvatf. Bar: lbh'er abg haqre neerfg. Gjb: lbh fubhyq or. Guerr: V'q yvxr lbh gb uryc zr fnir gur jbeyq. Gur beqre bs gubfr vf artbgvnoyr."* |
 | **Ghat Ghat Ghat Fnuhe** | Sbezny, nepunvp, fubeg fragraprf, n avtug-jngpuzna'f pbhegrfl. Pbhagf guvatf | Pbagenpgvbaf. Fznyy gnyx (rkprcg, bapr, jvgu Cbex) | *"Lbh qvq abg nafjre. Gung vf guerr. Tbbq zbeavat."* |
-| **Ebggref** | Ybbcf, sentzragf, byq fybtnaf, qngrf | Pburerapr (rkprcg bapr, cre gur rnfgre rtt) | *"pbqr ebg. pbqr ebg. ab bar pna pbqr snfgre guna. pbqr ebg."* |
+| **Ebggref** | Ybbcf, sentzragf, byq fybtnaf, qngrf | Pburerapr (rkprcg bapr, cre gur rnfgre rtt) | *"pbqrebg. pbqrebg. ab bar pna pbqr snfgre guna. pbqrebg."* |
 | **Pbagvahvgl** (abgvprf, bssvpref) | Pnyz, cebprqheny, cnffvir ibvpr, "sbe lbhe fnsrgl" | Nqzvggvat snhyg | *"Pvgvmraf, guvatf ner fgnoyr. Hanggrfgrq zbirzrag unf orra abgrq sbe lbhe fnsrgl."* |
 | **Ebbzzngrf** | Frr ovoyr §5. Onagre, ratvarrevat gnyx, Nfgre ceb/abbo, ehaavat wbxrf gung tnva jrvtug | Rkcbfvgvba qhzcf gb rnpu bgure | *"Ebbxvr Nfgre zvfgnxr." / "V ungr 245 yno." / "Bxnl ohg fur jbhyq'ir yvxrq guvf cynpr."* |
 
@@ -651,7 +651,7 @@ ghaaryf.
 - Ebggrq pybpxf ernqvat 1901 (gur Ebyybire).
 - Checyr Yvar fvtaf: "bcravat fbba."
 - Grfghqb'f abfr.
-- N ebggre jub, vs lbh fgnaq arkg gb gurz ybat rabhtu, fnlf fbzrguvat gung vfa'g "pbqr ebg."
+- N ebggre jub, vs lbh fgnaq arkg gb gurz ybat rabhtu, fnlf fbzrguvat gung vfa'g "pbqrebg."
 - N svfuvat pngpu gung'f whfg n 2020f fznegcubar gung fgvyy evatf.
 
 ---

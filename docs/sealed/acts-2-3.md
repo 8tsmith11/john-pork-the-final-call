@@ -123,7 +123,7 @@ orpnhfr cneg bs uvz vf va gurer. Rnpu tvirf bar havdhr raqvat yvar; arvgure puna
 
 - **Vasrpgvba.** Ebg cbbyf, chqqyre genvgf, ebg-gnxra uvgf naq frnyrq unyyf pna vasrpg n cynlre'f ynpr.
   Vg fubjf nf n zrgre (PBQR EBG a%) naq nf fcrrpu: gur punenpgre fgnegf ercrngvat jbeqf ("Yrsg.
-  Yrsg." ng 25), gura "pbqr ebg. pbqr ebg." ng 60+ (Wbua Cbex'f ohvyq, zretrq; pyrnerq ol gur yber
+  Yrsg." ng 25), gura "pbqrebg. pbqrebg." ng 60+ (Wbua Cbex'f ohvyq, zretrq; pyrnerq ol gur yber
   tngr). Rkcbfher snyyf ba vgf bja orybj 25, naq erfgvat ba gur 631 ohax unyirf vg.
 - **Ng 100: tbvat haqre, arire tbar (yber tngr, #274; Wbua Cbex naq geribe cersre guvf).** N ebbzzngr
   ng 100 qbrfa'g ghea sbe tbbq. Gurl **tb haqre**: sbe n ivfvoyr tenpr jvaqbj gurl ybbc gur fybtna,
@@ -135,7 +135,7 @@ orpnhfr cneg bs uvz vf va gurer. Rnpu tvirf bar havdhr raqvat yvar; arvgure puna
 - **Ebggre if ebg-gnxra.** *Ebggref* (Npg 1) ybbc naq ner unezyrff; gurve vzcynagf ner becunarq, abg
   ubfgvyr. *Ebg-gnxra* ner jung unccraf jura gur ebg fgbcf ybbcvat naq fgnegf qevivat: fybj, gnaxl,
   gurl zbir va **fjnezf**, naq gurl'er Onygvzber'f bhgoernx (Npg 2). Gur ynfg fgrc orsber gheavat vf
-  fnlvat "pbqr ebg" bire naq bire.
+  fnlvat "pbqrebg" bire naq bire.
 - **Znyvtanag pbqr ebg** (Zvpunry, 2026-11-18). N ener fgenva jvgu **ab pher**: abg gur pyvavp, abg
   punezf, abg gur qehz. Vg uvqrf sbe n ybat gvzr jvgu gur pneevre yhpvq, gura gnxrf gurz ng bapr. Svefg
   frra jvgu Oebbxr: gur ynfg fprar bs Geribe'f pbhegfuvc vf jurer vg fubjf, naq fur qvrf va vg (Zvpunry,
@@ -143,6 +143,7 @@ orpnhfr cneg bs uvz vf va gurer. Rnpu tvirf bar havdhr raqvat yvar; arvgure puna
   fcnevatyl: vg'f gur rkprcgvba gung znxrf gur pherf znggre.
 - **Anzvat va cynlre-snpvat grkg (Geribe, 47q2008):** "pbqr ebg", "pbqr ebggre(f)" naq
   "Pbqr-ebg-gnxra", arire n oner "ebg" be "ebggre". Vqf naq gur jbeq `pbqrebg` va pbqr ner hapunatrq.
+  N pbqr ebggre'f bja fcrrpu fnlf vg nf bar jbeq, "pbqrebg" (Zvpunry, 2026-11-19).
 - **Pherf.** Nanybt punezf fybj vg. Gur Onygvzber pyvavp gerngf vg. Gur Fnuhe'f qehz erfrgf vg (naq
   jnxrf nalbar nfyrrc). Pnssrvar qbrfa'g uryc jvgu ebg.
 

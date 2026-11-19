@@ -156,6 +156,7 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
   good. Analog charms slow it. Caffeine doesn't help.
 - **Naming in what players read (Trevor):** always "code rot", "code rotter(s)" and
   "Code-rot-taken", never a bare "rot" or "rotter"; and "John Pork" in full, never a bare "Pork".
+  Exception (Michael): when a code rotter says it, it's one word, "coderot" ("coderot. coderot.").
   Ids and internal notes are exempt.
 
 ## 3. Place: College Park, Maryland, 2098

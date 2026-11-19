@@ -58,7 +58,8 @@ anywhere.
   `docs/lore/meme-research.md` (no real heads of government, no stereotype-led characters, no real
   private people's names).
 - **Naming in what players read** (Trevor): "code rot", "code rotter(s)", "Code-rot-taken", never a
-  bare "rot"; "John Pork" in full, never a bare "Pork". The lint checks both.
+  bare "rot"; "John Pork" in full, never a bare "Pork". The lint checks both. When a code rotter
+  says it, it's one word: "coderot" (Michael).
 - **Seal every surprise** (Michael, 2026-11-19): twists, eggs, gags, story turns, reveals, anything
   one human added about another. Not in comments, plaintext strings, identifiers, commit
   messages, branch names, PR text or task notes (`PROCESS.md`, "Spoilers and surprises"). Check every
