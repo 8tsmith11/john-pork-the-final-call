@@ -648,7 +648,11 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'rest') this._restAtSave(peer, msg.obj);
         if (msg.t === 'use') { this._useWhat = msg.id ?? null; this._use(this._charOf(peer), peer); }
         if (msg.t === 'morph') this._morph(peer);
-        if (msg.t === 'questUse') { const o = this.map.objects.find((x) => x.id === msg.id); if (o) this._questInteract(o, this._charOf(peer), peer); }   // quest hooks, host side
+        if (msg.t === 'questUse') {
+          const o = this.map.objects.find((x) => x.id === msg.id);
+          if (o && msg.quest === undefined) this._questInteract(o, this._charOf(peer), peer);
+          if (o && typeof msg.quest === 'string') this._giveQuestItem(o, msg.quest, this._charOf(peer), peer);
+        }
         if (msg.t === 'puzzle') { const o = this.map.objects.find((x) => x.id === msg.id), pz = o && puzzleFor(o.id); if (pz) this._usePuzzle(pz, o, this._charOf(peer), peer); }   // puzzle kit, host side
         if (msg.t === 'search') { const o = this.map.objects.find((x) => x.id === msg.id && x.loot); if (o) this._search(o, this._charOf(peer)); }
         if (msg.t === 'zip') { const o = this.map.objects.find((x) => x.id === msg.id && x.zip); if (o) this._zip(o, peer); }
@@ -1303,9 +1307,36 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- quests (src/content/quests.js) ----------
-  // Quest hooks (ask / inspect / give / report) change shared state, so only the host runs them (John Pork's
-  // three-window report: a guest's hand-in took the item on their screen only, and the host dropped the flag).
-  // A guest sends { t: 'questUse', id }; the host runs this with the guest's roommate and sends the line back.
+  _questHandIns(near, who) {
+    const qs = questState(this.save);
+    return QUESTS.filter((q) => q.giver === near.id && q.give && questVisible(q, who)
+      && qs[q.id].started && !qs[q.id].done && !this.save.flags[q.give.flag]);
+  }
+
+  _giveQuestItem(near, questId, who = this.character, peer = this.localId) {
+    if (this.mode === 'client') {
+      this.net.send({ t: 'questUse', id: near.id, quest: questId });
+      return;
+    }
+    const p = this.sim.players.get(peer), c = this.save.party[who];
+    if (!p || !c || p.character !== who || p.downed) return;
+    const say = (text) => peer === this.localId ? this._say(text) : this.net?.send(peer, { t: 'say', text });
+    const q = this._questHandIns(near, who).find((q) => q.id === questId);
+    if (!q || !this.map.objects.includes(near) || (near.goneFlag && this.save.flags[near.goneFlag])
+      || this.perf?.asleep(near) || Math.hypot(near.x * TILE + 8 - p.x, near.y * TILE + 8 - p.y) > 34) {
+      say('You can’t hand that in right now.');
+      return;
+    }
+    if (!Inv.remove(c, q.give.item)) {
+      say(`${near.label.toUpperCase()}\n${q.give.refuse ?? '...'}`);
+      return;
+    }
+    this._flag(q.give.flag, true);
+    this._syncParty();
+    this._tickQuests(true, peer);
+  }
+
+  // Asking, inspecting and reporting use the ordinary interaction. Hand-ins use a named action.
   _questInteract(near, who = this.character, peer = this.localId) {
     const f = this.save.flags, qs = questState(this.save), client = this.mode === 'client', remote = peer !== this.localId;
     const say = (t) => (remote ? this.net?.send(peer, { t: 'say', text: t }) : this._say(t));
@@ -1319,7 +1350,7 @@ export class WorldScene extends Phaser.Scene {
       if (q.giver !== near.id) continue;
       const label = near.label.toUpperCase();
       if (!st.started && q.ask) return act(() => { this._flag(q.ask, true); say(`${label}\n${q.pitch}`); this._tickQuests(true, peer); });
-      if (q.give && !f[q.give.flag]) {
+      if (q.give && !f[q.give.flag] && questVisible(q, who)) {
         const c = this.save.party[who];
         if (!c || Inv.count(c, q.give.item) < 1) {
           // Empty-handed: the reminder, then on the next press whatever they have to say about the story
@@ -1329,8 +1360,6 @@ export class WorldScene extends Phaser.Scene {
           if (!remote && !turn && this._sayLater(near)) return true;
           say(`${label}\n${q.give.refuse ?? '...'}`); return true;
         }
-        // The host takes the item from the acting roommate's own bag, once; a stale second request finds the flag set.
-        return act(() => { if (!Inv.remove(c, q.give.item)) return say(`${label}\n${q.give.refuse ?? '...'}`); this._flag(q.give.flag, true); this._syncParty(); this._tickQuests(true, peer); });
       }
       if (q.report && f[q.report.needs] && !f[q.report.flag]) return act(() => { this._flag(q.report.flag, true); this._tickQuests(true, peer); });
     }
@@ -2194,7 +2223,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.romance?.interact(near) || this.gear?.interact(near) || this.stands?.interact(near)) return;
     if (this.approach?.intercept(near)) return;   // D-017: choose how to approach an NPC
     // Story first, quest second: the first talk plays the scene; after that a quest step (pitch,
-    // hand-in, report) takes the interaction if one is waiting, otherwise the scene replays.
+    // report) takes the interaction if one is waiting, otherwise the scene replays.
     if (near.talk && near.npc) {
       const met = `met.${near.id}`;
       if (this.save.flags[met] && this._questInteract(near)) return;

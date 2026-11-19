@@ -62,6 +62,7 @@ const ES = {
   '[J] quests': '[J] misiones', RELOADING: 'RECARGANDO', 'NEW QUEST': 'NUEVA MISIÓN', 'QUEST UPDATED': 'MISIÓN ACTUALIZADA',
   'QUEST COMPLETE': 'MISIÓN COMPLETADA', 'click to close': 'clic para cerrar', 'click or E to close': 'clic o E para cerrar', '▶ YOUR CHOICE': '▶ TU DECISIÓN',
   'saving…': 'guardando…', '✓ saved': '✓ guardado', 'Your bag is full.': 'Tu mochila está llena.', 'Take it off first.': 'Quítatelo primero.',
+  'You can’t hand that in right now.': 'Ahora no podés entregarlo.',
   'INCOMING CALL': 'LLAMADA ENTRANTE', 'IS CALLING': 'ESTÁ LLAMANDO', 'F  ANSWER': 'F  CONTESTAR', 'X  DECLINE': 'X  RECHAZAR',
   'INCOMING SIGNAL': 'SEÑAL ENTRANTE', '◉ connecting…': '◉ conectando…', 'Skipped': 'Saltado',
   'Story scene: everyone watches this one.': 'Escena de historia: la ven todos.',
