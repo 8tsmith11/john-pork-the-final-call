@@ -147,6 +147,16 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
   "1901," and the old slogan. They aren't enemies by default.
 - **Coderot villains:** procedurally generated rot entities (curated name, body, and behavior
   tables). They're the variety layer, never story-critical.
+- **Code-rot-taken:** what happens when the rot stops looping and starts driving a body. Slow, tough,
+  in swarms. A few turn up in Act 1's tunnels; they're a bigger city's problem later.
+- **Catching it:** code rot pools, puddlers, Code-rot-taken hits and sealed halls infect a roommate's
+  lace (the CODE ROT meter). It shows in speech first: they start repeating words, then "code rot."
+  It eases on its own at low levels, and sleeping it off at home helps. At the top of the meter a
+  roommate **goes under** for a while and the others can pull them back; nobody in the party turns for
+  good. Analog charms slow it. Caffeine doesn't help.
+- **Naming in what players read (Trevor):** always "code rot", "code rotter(s)" and
+  "Code-rot-taken", never a bare "rot" or "rotter"; and "John Pork" in full, never a bare "Pork".
+  Ids and internal notes are exempt.
 
 ## 3. Place: College Park, Maryland, 2098
 
@@ -175,10 +185,25 @@ Indonesia is an equatorial compute power with a new inland capital, and the Sahu
 of its exports. The Gulf is the helium and energy chokepoint. Argentina has Lithium Triangle wealth
 and volatility (Manuel's home). The Chesapeake has higher seas, and Annapolis floods routinely.
 
+### Pockets and zones (Trevor, 2026-11-19, through the lore gate)
+Most of the world is uninhabitable, or close to it, because of code rot. It isn't a zombie
+apocalypse: governments and organizations still run, but they govern islands.
+- **Pockets** are cities and districts kept livable under abatement, behind cordons and containment
+  reviews. College Park is one, and Act 1 never leaves it. A review that goes the wrong way can turn a
+  pocket into a zone, which is the stake the drones keep announcing.
+- **Zones** are where lace-connected things and people degrade, infrastructure misbehaves, code
+  rotters loop and Code-rot-taken roam. Crossing one costs exposure. They aren't empty: people with
+  no lace, the baseline poor and the analog communities, live in them, because the rot has less in
+  them to take.
+- **Crossings** between pockets are possible and dangerous, and they run on tech (`tech.md`). People
+  who sell maps draw the pocket's edge; the routes they won't sell you are the zones. "If you're
+  going north on Route 1, don't."
+
 ### Tech, 2098
 **Lace** (neural interface, and how people rot), **fabs** (3D printers, used for crafting),
 **scooters**, **attestation**, **morphs** (staged biohacking forms), **abatement drones**,
-**pre-slop drives**. All of them descend from real 2020s technology.
+**pre-slop drives**. All of them descend from real 2020s technology. The full list, with where the
+player meets each one and how code rot touches it, is [`tech.md`](tech.md).
 
 ## 4. Twist architecture
 

@@ -12,9 +12,9 @@ export const GUIDE_PEOPLE = [
     id: 'john_pork', name: 'John Pork', art: 'john-pork-call', fallbackArt: ['principals', 'pork_0'],
     stages: [
       // Known from the start: the roommates print his figurines and fly his flag (real-life lore).
-      { cond: () => true, text: 'Everybody knows the name, and nobody says it near a drone. His face is on the flag in 631 and on every bust you printed. Nobody you know has ever met him.', es: 'Todos conocen el nombre, y nadie lo dice cerca de un dron. Su cara está en la bandera del 631 y en cada busto que imprimieron. Nadie que conozcas lo vio nunca.' },
+      { cond: () => true, text: 'Everybody knows the name, and nobody says it near a drone. His face is on the flag in 631, on Manuel\'s statues and on every figurine you\'ve printed. Nobody you know says they\'ve met him.', es: 'Todos conocen el nombre, y nadie lo dice cerca de un dron. Su cara está en la bandera del 631, en las estatuas de Manuel y en cada figurita que imprimieron. Nadie que conozcas dice haberlo visto.' },
       { cond: 'act1.beat.call', text: 'Tonight his name took over every screen at once: JOHN PORK, calling.', es: 'Esta noche su nombre tomó todas las pantallas a la vez: JOHN PORK, llamando.' },
-      { cond: 'act1.call.answered', text: 'You answered. He knew Manuel\'s name, and he knew about the balloon.', es: 'Contestaron. Sabía el nombre de Manuel, y sabía lo del globo.' },
+      { cond: 'act1.call.answered', text: 'You answered. He knew whoever picked up by name.', es: 'Contestaron. Sabía el nombre de quien atendió.' },
       { cond: (f) => declines(f) >= 1 && !f['act1.call.answered'], text: 'You let it go. He left voicemails anyway. The first one starts "Hey. It\'s John."', es: 'Lo dejaron pasar. Igual dejó mensajes de voz. El primero empieza: "Hola. Soy John."' },
       { cond: 'act1.complete', text: 'At the dead platform he came in person, in a body that limps. He let the balloon go, and said he\'d need it back before the end.', es: 'En el andén muerto vino en persona, en un cuerpo que renguea. Soltó el globo, y dijo que lo iba a necesitar de vuelta antes del final.' },
     ],
@@ -47,7 +47,7 @@ export const GUIDE_PEOPLE = [
     ],
   },
   {
-    id: 'warden', name: 'The Rot Warden', art: ['warden', 'warden_0'],
+    id: 'warden', name: 'The Warden', art: ['warden', 'warden_0'],
     stages: [
       { cond: (f) => f['act1.boss.defeated'] && f['act1.boss.kind'] !== 'sahur', text: 'What waited at the dead platform: the whole outbreak, standing up. You put it down.', es: 'Lo que esperaba en el andén muerto: todo el brote, parado. Lo derribaron.' },
     ],

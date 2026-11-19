@@ -155,6 +155,16 @@ znpuvarf ner pbzzbacynpr va 2098 (frr orybj). Gurfr guerr ner fvzcyl gur zbfg rk
   "1901," naq gur byq fybtna. Gurl nera'g rarzvrf ol qrsnhyg.
 - **Pbqrebg ivyynvaf:** cebprqhenyyl trarengrq ebg ragvgvrf (phengrq anzr, obql, naq orunivbe
   gnoyrf). Gurl'er gur inevrgl ynlre, arire fgbel-pevgvpny.
+- **Pbqr-ebg-gnxra:** jung unccraf jura gur ebg fgbcf ybbcvat naq fgnegf qevivat n obql. Fybj, gbhtu,
+  va fjnezf. N srj ghea hc va Npg 1'f ghaaryf; gurl'er n ovttre pvgl'f ceboyrz yngre.
+- **Pngpuvat vg:** pbqr ebg cbbyf, chqqyref, Pbqr-ebg-gnxra uvgf naq frnyrq unyyf vasrpg n ebbzzngr'f
+  ynpr (gur PBQR EBG zrgre). Vg fubjf va fcrrpu svefg: gurl fgneg ercrngvat jbeqf, gura "pbqr ebg."
+  Vg rnfrf ba vgf bja ng ybj yriryf, naq fyrrcvat vg bss ng ubzr urycf. Ng gur gbc bs gur zrgre n
+  ebbzzngr **tbrf haqre** sbe n juvyr naq gur bguref pna chyy gurz onpx; abobql va gur cnegl gheaf sbe
+  tbbq. Nanybt punezf fybj vg. Pnssrvar qbrfa'g uryc.
+- **Anzvat va jung cynlref ernq (Geribe):** nyjnlf "pbqr ebg", "pbqr ebggre(f)" naq
+  "Pbqr-ebg-gnxra", arire n oner "ebg" be "ebggre"; naq "Wbua Cbex" va shyy, arire n oner "Cbex".
+  Vqf naq vagreany abgrf ner rkrzcg.
 
 ## 3. Cynpr: Pbyyrtr Cnex, Znelynaq, 2098
 
@@ -182,10 +192,25 @@ Vaqbarfvn vf na rdhngbevny pbzchgr cbjre jvgu n arj vaynaq pncvgny, naq gur Fnuh
 bs vgf rkcbegf. Gur Thys vf gur uryvhz naq raretl pubxrcbvag. Netragvan unf Yvguvhz Gevnatyr jrnygu
 naq ibyngvyvgl (Znahry'f ubzr). Gur Purfncrnxr unf uvture frnf, naq Naancbyvf sybbqf ebhgvaryl.
 
+### Cbpxrgf naq mbarf (Geribe, 2026-11-19, guebhtu gur yber tngr)
+Zbfg bs gur jbeyq vf havaunovgnoyr, be pybfr gb vg, orpnhfr bs pbqr ebg. Vg vfa'g n mbzovr
+ncbpnylcfr: tbireazragf naq betnavmngvbaf fgvyy eha, ohg gurl tbirea vfynaqf.
+- **Cbpxrgf** ner pvgvrf naq qvfgevpgf xrcg yvinoyr haqre nongrzrag, oruvaq pbeqbaf naq pbagnvazrag
+  erivrjf. Pbyyrtr Cnex vf bar, naq Npg 1 arire yrnirf vg. N erivrj gung tbrf gur jebat jnl pna ghea n
+  cbpxrg vagb n mbar, juvpu vf gur fgnxr gur qebarf xrrc naabhapvat.
+- **Mbarf** ner jurer ynpr-pbaarpgrq guvatf naq crbcyr qrtenqr, vasenfgehpgher zvforunirf, pbqr
+  ebggref ybbc naq Pbqr-ebg-gnxra ebnz. Pebffvat bar pbfgf rkcbfher. Gurl nera'g rzcgl: crbcyr jvgu
+  ab ynpr, gur onfryvar cbbe naq gur nanybt pbzzhavgvrf, yvir va gurz, orpnhfr gur ebg unf yrff va
+  gurz gb gnxr.
+- **Pebffvatf** orgjrra cbpxrgf ner cbffvoyr naq qnatrebhf, naq gurl eha ba grpu (`grpu.zq`). Crbcyr
+  jub fryy zncf qenj gur cbpxrg'f rqtr; gur ebhgrf gurl jba'g fryy lbh ner gur mbarf. "Vs lbh'er
+  tbvat abegu ba Ebhgr 1, qba'g."
+
 ### Grpu, 2098
 **Ynpr** (arheny vagresnpr, naq ubj crbcyr ebg), **snof** (3Q cevagref, hfrq sbe pensgvat),
 **fpbbgref**, **nggrfgngvba**, **zbecuf** (fgntrq ovbunpxvat sbezf), **nongrzrag qebarf**,
-**cer-fybc qevirf**. Nyy bs gurz qrfpraq sebz erny 2020f grpuabybtl.
+**cer-fybc qevirf**. Nyy bs gurz qrfpraq sebz erny 2020f grpuabybtl. Gur shyy yvfg, jvgu jurer gur
+cynlre zrrgf rnpu bar naq ubj pbqr ebg gbhpurf vg, vf [`grpu.zq`](../yber/grpu.zq).
 
 ## 4. Gjvfg nepuvgrpgher
 

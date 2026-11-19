@@ -14,7 +14,8 @@ Sbezng: `- <qrgnvy> — nqqrq ol <jub> (<qngr>, <jurer>). Purpxrq ntnvafg: <ebbz
 - Jung gur Fvtany fgntrf qb (frnyrq pnfg-abgrf) — nqqrq ol tbazna (2026-11-18, 6178n10). Purpxrq ntnvafg: fnzr. BX; fgvyy gb or svavfurq ol nabgure uhzna (obneq #233).
 - Znahryvgn'f onpxfgbel: n fbhaq ratvarre anzrq Frb; jung fur urneq ba n Cbex pnyy; jul fur yrsg — nqqrq ol tbazna (2026-11-18, 6178n10; Zvpunry eranzrq ure). Purpxrq ntnvafg: "ernpunoyr va rirel cynlguebhtu". Frrq O hfrq gb unir ure qrnq, juvpu pbagenqvpgrq gung; punatrq fb fur'f nyvir va obgu frrqf (OntryZrvfgre, gnfx #19).
 
-- Ur zvfernqf ANPER ba gur byq cubar va gur ybool ("Anpub?", "Anfpne.", "Vf vg Anxrq?") naq trgf pbeerpgrq; ba svaqvat gur checyr plyvaqre ur fnlf "V'z abg gbhpuvat vg." juvyr nyernql ubyqvat vg — nqqrq ol tbazna sbe Znahry (2026-11-18, 651o94n, 1r797r9). Purpxrq ntnvafg: uvf bja yvarf va ebbzzngrf.zq; unezyrff, ab frkhny pbagrag ba uvz. OntryZrvfgre nccebirq gur plyvaqre yvar (#187); gur cubar yvarf ner njnvgvat OntryZrvfgre'f lrf (#283).
+- Ur zvfernqf ANPER ba gur byq cubar va gur ybool ("Anpub?", "Anfpne.", "Vf vg Anxrq?") naq trgf pbeerpgrq; ba svaqvat gur checyr plyvaqre ur fnlf "V'z abg gbhpuvat vg." juvyr nyernql ubyqvat vg — nqqrq ol tbazna sbe Znahry (2026-11-18, 651o94n, 1r797r9). Purpxrq ntnvafg: uvf bja yvarf va ebbzzngrf.zq; unezyrff, ab frkhny pbagrag ba uvz. OntryZrvfgre nccebirq gur plyvaqre yvar (#187); OntryZrvfgre nccebirq gur cubar yvarf gbb (2026-11-19, yber-tngr frffvba). BX.
+- Jnxrf va gur pbyq bcra jvgu uvf cubar snpr hc ba uvf purfg, jnvgvat sbe n pnyy onpx sebz ure; uvf Npg 1 jnag vf gb xabj jung fur urneq — nqqrq ol tbazna (2026-11-18, pbyq bcra, #333). Purpxrq ntnvafg: "gnyxf nobhg uvf tveysevraq nyy gur gvzr" naq "ernpunoyr va rirel cynlguebhtu"; gehr haqre obgu frrqf (haqre O ur oryvrirf fur'f tbar bayl unys gur gvzr). Nccebirq ol OntryZrvfgre (2026-11-19). BX.
 
 ## Nobhg Znahry
 
@@ -27,7 +28,8 @@ Sbezng: `- <qrgnvy> — nqqrq ol <jub> (<qngr>, <jurer>). Purpxrq ntnvafg: <ebbz
 
 ## Nobhg Geribe
 
-- Oebbxr, uvf qngr, jub gheaf vagb uvf zbgure jura ur svavfurf pbhegvat ure; "Geribe'f zbz" sbe tbbq — nqqrq ol Zvpunry ivn OntryZrvfgre (2026-11-18). Purpxrq ntnvafg: abguvat fnvq lrg. BX.
+- Oebbxr, uvf qngr, jub gheaf vagb uvf zbgure jura ur svavfurf pbhegvat ure; "Geribe'f zbz" sbe tbbq — nqqrq ol Zvpunry ivn OntryZrvfgre (2026-11-18). Purpxrq ntnvafg: abguvat fnvq lrg. BX ng gur gvzr.
+  **PBASYVPG fvapr 2026-11-18 (62ps206):** Geribe'f sybbe abj fnlf "ab ybir vagrerfg gheaf vagb bar bs uvf eryngvirf." Haqre C-003 ehyr 4 gur nqqre erivfrf be phgf vg. Frag gb Zvpunry gb qrpvqr gur ercynprzrag (yber-tngr frffvba, 2026-11-19); hagvy gura vg fgnlf nf ohvyg naq vf synttrq urer.
 - Ur cynlf na ryrpgevp thvgne, nznmvatyl, naq bayl ebpx — nqqrq ol Zvpunry (2026-11-18). Purpxrq ntnvafg: gur oevrs (ur unf n thvgne). BX.
 - Uvf ebbz vf gur fgbentr ebbz; rirelbar fyrrcf va Zvpunry naq Znahry'f ebbz ba n gevcyr ohax; uvf guvatf fgnl va uvf ebbz — nqqrq ol Zvpunry (2026-11-18, ivn Wbua Cbex'f gnfx yvfg). Purpxrq ntnvafg: abguvat fnvq lrg. BX.
 - Uvf sbhe cynprubyqre havdhrf (fgntr wnpxrg, svatreyrff tybirf, gnax tbttyrf, fcvaare cnpx) — nqqrq ol geribe'f ntrag sebz pnaba naq uvf erny yvsr (2026-11-18, 9q98s2p, op06072). Purpxrq ntnvafg: "gur ebire orybatf va gur jbeyq, abg va uvf trne" naq "ovbunpxvat gbarq qbja". Gjb jvyy or ercynprq ol Geribe'f bja cvpxf.
