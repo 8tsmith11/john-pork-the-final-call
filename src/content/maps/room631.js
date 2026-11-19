@@ -83,7 +83,7 @@ export const room631 = makeMap({
     { id: 'obj.parts_bins', loot: 'parts', x: 20, y: 6, label: 'Parts bins', text: 'Forty little drawers labeled in three handwritings. One drawer just says "DO NOT" and has been taped shut.' },
     { id: 'obj.lab_board', x: 21, y: 5, label: '245 lab whiteboard', text: 'A half-erased circuit and, in Manuel\'s handwriting: I HATE 245 LAB. Below it, in Trevor\'s: same. Below that, in Michael\'s: she says hi.' },
     { id: 'obj.workbench', x: 21, y: 9, label: 'Workbench', text: 'Calipers, a magnifier lamp, a half-built drone with no rotors, and a cold slice of pizza holding down a schematic.' },
-    { id: 'obj.failed_prints', loot: 'prints', x: 19, y: 11, label: 'Failed prints bin', text: 'Spaghetti plastic, a warped mate gourd, eleven tiny Pork heads at different stages of being wrong.' },
+    { id: 'obj.failed_prints', loot: 'prints', x: 19, y: 11, label: 'Failed prints bin', text: 'Spaghetti plastic, a warped mate gourd, eleven tiny John Pork heads at different stages of being wrong.' },
     { id: 'obj.router', x: 28, y: 6, label: 'Router', text: 'Its lights blink in a pattern that\'s almost regular. Every few minutes it reboots for no reason and comes back with a slightly different name.' },
     { id: 'obj.drill_press', x: 28, y: 10, label: 'Drill press', text: 'Bolted to the floor, which the lease definitely does not allow.' },
     { id: 'obj.pork_flag', x: 26, y: 5, label: 'John Pork flag', text: 'The flag on the engineering-room wall. Contraband since 2071. Someone ironed it once, which is the most domestic thing anyone in 631 has ever done.' },

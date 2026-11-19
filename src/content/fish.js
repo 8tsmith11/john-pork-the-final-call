@@ -10,7 +10,7 @@ export const FISH = {
   'item.fish_lantern':  { name: 'Lantern bass', slot: 'consumable', heal: 40, text: 'A largemouth bass with a light under its scales, slow and green, like a screen left on in another room. Only in the lake.' },
   'item.relic_phone':   { name: 'A ringing phone', slot: 'junk', text: 'A 2020s phone, waterlogged, cracked, and ringing. The caller ID is blank. It stops when you look at it.' },
   'item.relic_coin':    { name: '2081 commemorative coin', slot: 'junk', text: '"TEN YEARS OF STABILITY". Continuity minted a million of these. Nobody kept one on purpose.' },
-  'item.relic_figure':  { name: 'Pork action figure', slot: 'junk', text: 'Banned merchandise. The paint on the face has been kissed off.' },
+  'item.relic_figure':  { name: 'John Pork action figure', slot: 'junk', text: 'Banned merchandise. The paint on the face has been kissed off.' },
 };
 
 const TABLES = {

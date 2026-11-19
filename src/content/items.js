@@ -19,7 +19,7 @@ export const ITEMS = {
   'item.mesh_vest':    { name: 'Printed mesh vest', slot: 'chestplate', mods: { armor: 0.2 }, text: 'Hex lattice. Takes a fifth of the hurt.' },
   'item.sniffer':      { name: 'Helium sniffer', slot: 'gadget', mods: {}, text: 'Follows the lightest thing in the world.' },
   'item.charm_1901':   { name: 'Rollover charm', slot: 'charm', analog: true, mods: { armor: 0.12 }, text: 'A brass clock hand on a cord, stopped at 3:14. Takes the edge off whatever hits you.' },
-  'item.pork_pin':     { name: 'Porcelain Pork pin', slot: 'charm', mods: { melee: 3, shot: 3 }, text: 'Three busts looked at the flag at once and this was on the floor afterwards. Warm to the touch.' },
+  'item.pork_pin':     { name: 'Porcelain John Pork pin', slot: 'charm', mods: { melee: 3, shot: 3 }, text: 'Three busts looked at the flag at once and this was on the floor afterwards. Warm to the touch.' },
   // Melee weapons carry a `swing` (range px, arc as a fraction of a half-turn, cooldown s, damage, knockback);
   // ranged ones a `gun` profile (cooldown, damage, speed, life, pellets, spread). Missing fields use the defaults.
   'item.pipe_wrench':  { name: 'Pipe wrench', slot: 'weapon', analog: true, swing: { range: 18, arc: 0.5, cooldown: 0.62, damage: 30, knockback: 230 }, text: 'Two feet of cast iron. Slow. Whatever it hits stays hit.' },

@@ -348,7 +348,7 @@ export class WorldScene extends Phaser.Scene {
     const stageText = QUESTS.flatMap((q) => q.stages.map((st) => st.text.toLowerCase())).join('\n');
     for (const def of Object.values(ITEMS)) if (def.name && def.name.length > 3 && stageText.includes(def.name.toLowerCase())) quest.add(def.name);
     for (const q of QUESTS) for (const id of [q.give?.item, q.reward?.item]) if (id && ITEMS[id]?.name) quest.add(ITEMS[id].name);
-    const names = new Set(['Green Line', 'John Pork', 'Pork', 'Room 631', '631']);
+    const names = new Set(['Green Line', 'John Pork', 'Room 631', '631']);
     for (const m of Object.values(MAPS)) {
       if (m.name) names.add(m.name.split(',')[0]);
       for (const o of m.objects) if (o.npc && o.label) names.add(o.label.replace(/\s*\(.*\)\s*/g, '').trim());
@@ -1152,7 +1152,7 @@ export class WorldScene extends Phaser.Scene {
       this._flag('puz.busts.solved', true);
       this._grant('item.pork_pin');
       this.cameras.main.flash(300, 242, 166, 184);
-      return this._say('The third bust turns to face the flag. For a second the whole room feels like it\'s being looked at, from three directions, kindly. Something small and porcelain is lying on the floor that wasn\'t there before. (Porcelain Pork pin)');
+      return this._say('The third bust turns to face the flag. For a second the whole room feels like it\'s being looked at, from three directions, kindly. Something small and porcelain is lying on the floor that wasn\'t there before. (Porcelain John Pork pin)');
     }
     this._say(`You turn it to face the flag. (${seq.length} of 3)`);
   }

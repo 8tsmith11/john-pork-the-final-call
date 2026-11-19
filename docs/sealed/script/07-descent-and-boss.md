@@ -15,7 +15,7 @@ pnyyrq naq tbg abobql.
 
 Gjvfg snvearff: abguvat va guvf svyr fnlf jub phg gur evooba, naq abguvat fnlf jung gur Pnyy fnvq.
 Gur bayl gjvfg-nqwnprag zngrevny vf gur erirefrq snaf (gehr haqre N naq O: gur onyybba jnf chyyrq
-qbja, naq abobql qbja urer xabjf ol jubz), gur nanybt ybpx (gehr haqre obgu: Cbex pna'g ragre
+qbja, naq abobql qbja urer xabjf ol jubz), gur nanybt ybpx (gehr haqre obgu: Wbua Cbex pna'g ragre
 nanybt guvatf), naq Zvpunry'f "fur cvpxrq hc, bar gvzr" (gehr haqre obgu).
 
 ## Syntf
@@ -1297,7 +1297,7 @@ sryg yvxr vg jnf nfxvat."*
 gntyvar, obql cnegf, naq 2 bs 6 orunivbe zbqhyrf. Rirelguvat vg fnlf vf nhguberq orybj naq jbexf
 sbe nal anzr. Vg vf gur fbhepr bs gur bhgoernx: fvkgl lrnef bs becunarq fgngvba fbsgjner, tebja
 vagb gur cyngsbez, fgvyy cntvat n znvagnvare. Vg vf arire fgbel-pevgvpny naq vg arire zragvbaf gur
-onyybba, Cbex, be gur ebbzzngrf' cnfg.
+onyybba, Wbua Cbex, be gur ebbzzngrf' cnfg.
 
 ### Anzr gnoyrf
 
@@ -1914,7 +1914,7 @@ vf, irel snvagyl, uhzzvat nybat.*
 *Gur yvar pybfrf. Frgf `npg1.obff.qrsrngrq`, `npg1.bhgoernx.pbagnvarq`. Tbrf gb `obff_nsgrezngu`.*
 
 *Guvf qbrf abg frg `npg1.pnyy.nafjrerq`. Nafjrevat haqre n ong vf abg gur fnzr pubvpr; gur raqvat
-xrrcf vgf pbyqre Cbex, fyvtugyl gunjrq (frr abgrf).*
+xrrcf vgf pbyqre Wbua Cbex, fyvtugyl gunjrq (frr abgrf).*
 
 ---
 
@@ -2184,7 +2184,7 @@ cubar evatf ng bapr.*
 - Obff fryrpgvba unccraf va `qbbe_bcra`: Fnuhe (`npg1.fnuhe.fhzzbarq`) orngf nongrzrag
   (`npg1.unyineq.qbhoyrPebffrq`) orngf gur Jneqra. Frg `npg1.obff.xvaq` gurer, abg ng svtug fgneg,
   fb gur neeviny abqr pna or pubfra.
-- `qrfprag_pnyy_ergel2` naq `qrfprag_pnyy_ergel3` ner bayl gur cnegl'f fvqr bs gur ergevrf. Cbex'f
+- `qrfprag_pnyy_ergel2` naq `qrfprag_pnyy_ergel3` ner bayl gur cnegl'f fvqr bs gur ergevrf. Wbua Cbex'f
   yvar, gur NAFJRE / QRPYVAR cebzcg, naq ibvprznvyf #2 naq #3 yvir va gur Pnyy fprar. Guvf svyr
   nffhzrf gung fprar pna or ragrerq ng "nggrzcg 2" naq "nggrzcg 3" naq erghea urer. Vs gur Pnyy jnf
   nafjrerq ng gur zvqcbvag, arvgure ergel sverf naq `qbbe_cbex_grkg` vf ninvynoyr vafgrnq.
@@ -2249,7 +2249,7 @@ cubar evatf ng bapr.*
 **Guvatf sbe bgure fprar bjaref**
 
 - Gur Fnuhe ebhgr frgf `npg1.fnuhe.nafjrerqZvqSvtug` ohg abg `npg1.pnyy.nafjrerq`. Fhttrfgrq
-  ernqvat sbe gur raqvat: Cbex vf gur pbyqre irefvba, jvgu bar jnezre yvar ninvynoyr vs
+  ernqvat sbe gur raqvat: Wbua Cbex vf gur pbyqre irefvba, jvgu bar jnezre yvar ninvynoyr vs
   `npg1.fnuhe.nafjrerqZvqSvtug` vf frg.
 - `npg1.obff.jneqraAnzr` vf fgberq va pnfr gur raqvat be Npg 2 jnagf gb anzr jung jnf ba gur
   cyngsbez.
@@ -2261,5 +2261,5 @@ cubar evatf ng bapr.*
 - Gur fybtna nccrnef urer bayl oebxra (gur nq cnary, pbqrebg grkg, gur Jneqra'f sentzrag). Gur bar
   fvaprer qryvirel ol n znwbe punenpgre vf abg fcrag va guvf fprar.
 - Ab yvar va guvf svyr oenapurf ba `frrq`. Gur erirefrq snaf, gur nanybt ybpx, Zvpunry'f "fur
-  cvpxrq hc, bar gvzr", naq Cbex'f grkg ner gur bayl gjvfg-nqwnprag orngf, naq rnpu ubyqf haqre N
+  cvpxrq hc, bar gvzr", naq Wbua Cbex'f grkg ner gur bayl gjvfg-nqwnprag orngf, naq rnpu ubyqf haqre N
   naq O.

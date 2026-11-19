@@ -29,6 +29,7 @@ const VOICES = {
   manuel:  { base: 190, spread: 55, wave: 'square' },
   halvard: { base: 120, spread: 20, wave: 'sawtooth' },
   pork:    { base: 95,  spread: 25, wave: 'sawtooth', glitch: true },
+  'john pork': { base: 95, spread: 25, wave: 'sawtooth', glitch: true },   // the scripts say JOHN PORK now (Trevor)
   'john pork': { base: 95, spread: 25, wave: 'sawtooth', glitch: true },
   sahur:   { base: 70,  spread: 6,  wave: 'sine', knock: true },
   default: { base: 150, spread: 35, wave: 'triangle' },
@@ -233,6 +234,7 @@ export function ring(times = 2) {
 // browser's built-in speech synthesis. Each character gets a stable voice, pitch and pace.
 const VOICE_STYLE = {
   pork: { pitch: 0.55, rate: 0.82, pref: /male|daniel|fred|alex|david|en-gb/i },
+  'john pork': { pitch: 0.55, rate: 0.82, pref: /male|daniel|fred|alex|david|en-gb/i },
   'john pork': { pitch: 0.55, rate: 0.82, pref: /male|daniel|fred|alex|david|en-gb/i },
   trevor: { pitch: 0.95, rate: 1.0, pref: /male|tom|aaron|en-us/i },
   michael: { pitch: 1.1, rate: 1.05, pref: /male|en-us/i },
