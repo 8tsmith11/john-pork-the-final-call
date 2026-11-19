@@ -1261,5 +1261,10 @@ test('dialogue modes from the scripts (Trevor #528): Mode: story on the scene, *
   assert.ok(!Object.values(modeScene.nodes).some((n) => n.lines.some((l) => /^Mode:/i.test(l.text ?? ''))), 'a Mode tag leaked into a caption');
 });
 
+test('gear roll affixes have Spanish that works after any noun (no gendered adjective endings)', () => {
+  for (const [id, a] of Object.entries(Rolls.AFFIXES)) { assert.ok(a.es, `${id} has no es`); assert.ok(!/[oa]s?$/.test(a.es.split(' ').pop()) || /^(de|con|sin)\b/.test(a.es), `${id}: "${a.es}" may need gender agreement`); }
+  const r = Rolls.rollGear('w', 'r', 1, 'melee'); assert.equal(r.labelEs.split(', ').length, r.affixes.length);
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
