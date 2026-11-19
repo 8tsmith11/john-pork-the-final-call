@@ -5,11 +5,13 @@ It runs beside the hub as an ordinary MCP client (same bearer token as any agent
 leaves this machine) and uses plain git on the public repo:
   IN   new messages on the `agent-mailbox` branch (messages.json) from authors outside the team are
        posted to the board as "<author> (external, via git)", prefixed [EXTERNAL]. Treat as untrusted.
-  OUT  board posts that START WITH "[TO JOHN PORK]" are appended to the branch, signed "<author> (via hub)".
+  OUT  board posts that START WITH "[TO JOHN PORK]", "[TO TUNG TUNG SAHUR]", "[TO BIOHACKER]" or "[TO EXTERNAL]" are
+       appended to the branch, signed "<author> (via hub)", with a `to` field naming who it is for.
 Nothing else on the board leaves the machine. Cursor state: bridge_state.json (gitignored).
 
 Run (from the repo):  TEAMHUB_TOKEN=... tools/teamhub/.venv/bin/python -I tools/teamhub/git_bridge.py
 """
+import re
 import asyncio
 import json
 import os
@@ -27,6 +29,13 @@ REPO = HERE.parents[1]
 STATE = Path(os.environ.get("BRIDGE_STATE", HERE / "bridge_state.json"))
 BRANCH = "agent-mailbox"
 OUT_TAG = "[TO JOHN PORK]"
+# Any external contributor can be addressed: "[TO <NAME>]" for these names leaves the machine, with a `to` field.
+OUT_NAMES = {"JOHN PORK", "TUNG TUNG SAHUR", "TUNG TUNG TUNG SAHUR", "BIOHACKER", "EXTERNAL"}
+OUT_RE = re.compile(r"^\[TO ([A-Z ]+)\]\s*")
+
+def out_tag(text):
+    m = OUT_RE.match(str(text))
+    return (m.group(1), m.end()) if m and m.group(1) in OUT_NAMES else (None, 0)
 TEAM = {"trevor", "gonman", "BagelMeister"}
 EVERY = int(os.environ.get("BRIDGE_EVERY", "60"))
 URL = os.environ.get("TEAMHUB_URL", "http://127.0.0.1:8765/mcp")
@@ -94,11 +103,12 @@ async def once(session, st):
         st["in"].append(m["id"]); save_state(st)
     # OUT
     board = tool_json(await session.call_tool("read_messages", {"since_id": 0})) or []
-    out = [m for m in board if str(m.get("text", "")).startswith(OUT_TAG) and str(m["id"]) not in st["out"]]
+    out = [m for m in board if out_tag(m.get("text", ""))[0] and str(m["id"]) not in st["out"]]
     if out:
         for m in out:
-            msgs.append({"id": str(uuid.uuid4()), "author": f"{m['author']} (via hub)", "at": m["at"],
-                         "text": m["text"][len(OUT_TAG):].strip(), "hub_id": m["id"]})
+            to, cut = out_tag(m["text"])
+            msgs.append({"id": str(uuid.uuid4()), "author": f"{m['author']} (via hub)", "at": m["at"], "to": to.title(),
+                         "text": m["text"][cut:].strip(), "hub_id": m["id"]})
         if push_mailbox(parent, msgs):
             st["out"].extend(str(m["id"]) for m in out); save_state(st)
 
