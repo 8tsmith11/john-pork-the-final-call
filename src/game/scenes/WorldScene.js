@@ -22,6 +22,7 @@ import { QUESTS, questState, questVisible } from '../../content/quests.js';
 import { CompanionBrain, isAi } from '../../engine/companion.js';
 import * as Inv from '../../engine/inventory.js';
 import { CallCard } from '../ui/CallCard.js';
+import { BoardGame } from '../ui/BoardGame.js';
 import { Neon } from '../render/neon.js';
 import { skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
@@ -109,6 +110,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode !== 'client') this._syncParty();
     this.input.on('wheel', (ptr, objs, dx, dy) => { if (this.menu || this.dlg) return; const c = this.save.party[this.character]; this.selectHot((c?.hotSel ?? 0) + (dy > 0 ? 1 : -1)); });
     this.time.delayedCall(500, () => this._spawnBot());
+    if (new URLSearchParams(location.search).has('lattice')) this.time.delayedCall(800, () => this.openBoardGame());   // debug: open the board game
     this.save.world.money ??= 25;
     this.save.flags['settings.crudeHumor'] = 'on';   // always on (Trevor); scripts branch on it
     for (const [who, c] of Object.entries(this.save.party)) { Inv.normalize(c); migrateSkills(c, who); }
@@ -819,6 +821,17 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
+  // The casino board game (task #27). Any map object with `boardgame: '<opponent>'` opens it; the result
+  // sets lattice.played / lattice.won (and lattice.won.<opponent id>) for the story. ?lattice opens it at once.
+  openBoardGame(opponent = 'The Dealer', id = 'dealer', onEnd = null) {
+    if (this.boardGame && !this.boardGame.closed) return;
+    this.boardGame = new BoardGame(this, { opponent, seed: `${this.save.world.seed}:${id}:${this.save.flags[`lattice.games.${id}`] ?? 0}`, onEnd: (won) => {
+      this._flag('lattice.played', true); this._flag(`lattice.games.${id}`, Number(this.save.flags[`lattice.games.${id}`] ?? 0) + 1);
+      if (won) { this._flag('lattice.won', true); this._flag(`lattice.won.${id}`, true); }
+      onEnd?.(won);
+    } });
+  }
+
   _syncParty() {
     this._syncHeld();
     if (this.mode !== 'client' && !this.save.flags['q.armed'] && Object.values(this.save.party).some((c) => c.equipped?.weapon)) this.save.flags['q.armed'] = true;   // armed any way at all
@@ -873,7 +886,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- in-game menu (src/game/ui/GameMenu.js) ----------
-  get menu() { return this.gameMenu?.tab ?? (this.puzzle && !this.puzzle.closed ? 'puzzle' : null); }
+  get menu() { return this.gameMenu?.tab ?? (this.puzzle && !this.puzzle.closed ? 'puzzle' : this.boardGame && !this.boardGame.closed ? 'lattice' : null); }
   _makeMenu() {
     this.gameMenu = new GameMenu(this);
     const kb = this.input.keyboard;
@@ -1645,7 +1658,7 @@ export class WorldScene extends Phaser.Scene {
     }
     if (this.menu) {
       this.input2.blockAttack = true;
-      if (this.menu !== 'puzzle' && !this.gameMenu.contains(sx, sy)) this._closeMenu();
+      if (this.menu !== 'puzzle' && this.menu !== 'lattice' && !this.gameMenu.contains(sx, sy)) this._closeMenu();
       return;
     }
     if (!this.sayOpen && !this.dlg && !this.menu && this._useHeld()) { this.input2.blockAttack = true; return; }
@@ -1879,6 +1892,7 @@ export class WorldScene extends Phaser.Scene {
     if (near.action === 'mate') { this._mateBreak(); this._say(near.text + '\n\nEveryone has some. Better. (Thermos refilled.)'); return; }
     if (near.door) { if (this.mode === 'client') this.net.send({ t: 'door', id: near.id }); else this._toggleDoor(near.id); return; }
     if (near.knock) { this._knock(near); return; }
+    if (near.boardgame) { this.openBoardGame(near.boardgame, near.id); return; }
     if (near.action === 'toolwall' && this.mode !== 'client') {
       // One pry bar for every roommate who has no weapon yet; it goes in their hand.
       const got = [];

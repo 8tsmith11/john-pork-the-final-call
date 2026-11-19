@@ -13,7 +13,9 @@ export const COST = {
   relay: { scrap: 1, wire: 1, gel: 1, glass: 1 },
   hub: { cell: 2, glass: 2 },
 };
-export const TARGET = 6, HAND_LIMIT = 7, BANK_RATE = 3;
+export const TARGET = 6, HAND_LIMIT = 9, BANK_RATE = 3;
+// Output per piece on its number. Doubled from the genre's 1/2 so a game fits in ~5 minutes.
+export const YIELD = { relay: 2, hub: 3 };
 const HEXES = [[0, 0], [1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]];
 const NUMBERS = [6, 8, 5, 9, 4, 10];           // no 7s; 6/8 most likely
 const SIZE = 1;
@@ -102,7 +104,7 @@ export function roll(g, forced = null) {
   }
   g.hexes.forEach((h, hi) => {
     if (h.num !== n || hi === g.rot || !h.res) return;
-    for (const vi of h.verts) { const v = g.verts[vi]; if (v.owner) g.hands[v.owner][h.res] += v.hub ? 2 : 1; }
+    for (const vi of h.verts) { const v = g.verts[vi]; if (v.owner) g.hands[v.owner][h.res] += v.hub ? YIELD.hub : YIELD.relay; }
   });
   g.log.push(`${side(g)} rolled ${n}`);
   return n;

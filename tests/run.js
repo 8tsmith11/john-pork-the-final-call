@@ -285,6 +285,40 @@ test('combat: hit-stop freezes enemies and shots for a moment', () => {
   assert.equal(sim.shots[0].y, sy); assert.equal(e.x, ex);
 });
 
+// Lattice, the casino board game (task #27)
+const LAT = await import('../src/engine/lattice.js');
+test('lattice: every seed sets up, plays to a winner, and fits ~5 minutes (AI vs AI)', () => {
+  const lens = [];
+  for (let k = 0; k < 20; k++) {
+    const g = LAT.newGame('t' + k);
+    assert.equal(g.verts.length, 24); assert.equal(g.edges.length, 30);
+    while (g.phase === 'setup') assert.ok(LAT.aiSetup(g));
+    assert.equal(g.verts.filter((v) => v.owner).length, 4);
+    let t = 0; while (!g.winner && t < 400) { LAT.aiTurn(g); t++; }
+    assert.ok(g.winner, `seed t${k} never finished`); assert.ok(LAT.points(g, g.winner) >= LAT.TARGET);
+    lens.push(t);
+  }
+  lens.sort((a, b) => a - b);
+  assert.ok(lens[10] <= 60, `median ${lens[10]} turns is too long for ~5 minutes`);
+});
+test('lattice: rules (spacing, links, costs, sevens, coderot)', () => {
+  const g = LAT.newGame('rules');
+  while (g.phase === 'setup') LAT.aiSetup(g);
+  const mine = g.verts.findIndex((v) => v.owner === 'party');
+  const next = g.edges.filter((e) => e.a === mine || e.b === mine).map((e) => (e.a === mine ? e.b : e.a))[0];
+  assert.ok(!LAT.canRelay(g, 'party', next), 'no relay next to a relay');
+  assert.equal(LAT.build(g, 'link', 0), false, 'must roll first');
+  Object.assign(g.hands.party, { scrap: 0, wire: 0, cell: 0, gel: 0, glass: 0 });
+  LAT.roll(g, [3, 4]); assert.ok(g.mustMoveRot, 'a 7 moves the coderot');
+  assert.equal(LAT.endTurn(g), false, 'cannot end before moving it');
+  const target = g.hexes.findIndex((h, i) => i !== g.rot && h.res); assert.ok(LAT.moveRot(g, target)); assert.equal(g.rot, target);
+  const free = g.edges.findIndex((e, i) => LAT.canLink(g, 'party', i));
+  assert.equal(LAT.build(g, 'link', free), false, 'cannot afford');
+  g.hands.party.scrap = 1; g.hands.party.wire = 1; assert.ok(LAT.build(g, 'link', free));
+  assert.equal(g.hands.party.scrap + g.hands.party.wire, 0);
+  g.hands.party.glass = 3; assert.ok(LAT.bankTrade(g, 'glass', 'gel')); assert.equal(g.hands.party.gel, 1);
+});
+
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
 test('pipe puzzle: every seed is solvable and starts unsolved', () => {
   if (!PipePuzzle) return;
