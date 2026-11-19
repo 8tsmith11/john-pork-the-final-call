@@ -62,6 +62,8 @@ export const corridor = fromGrid({
   },
 }).enemy('boss.cor_hall', 6, 4)
   .exit('cor_sealed', 18, 0, { id: 'obj.corridor_to_cor_sealed', selfDrawn: true, stepOn: true, pair: 'obj.cor_sealed_out', label: "A sealed hall's loading dock", text: 'The dock door is chained. The chain has been cut.' })   // act3_more.js
+  
+  .exit('cor_town', 24, 10, { id: 'obj.corridor_to_cor_town', selfDrawn: true, stepOn: true, pair: 'obj.town_to_corridor', label: 'South to the worker town', text: 'Houses between the halls.' })   // districts.js
   .build();
 
 // ---- 13. Gaithersburg: the standards (the second, the kilogram, the volt) ----

@@ -371,5 +371,60 @@ side({ id: 'md_coffee', act: 3, ...g('npc.md_analyst', ANALYST), title: 'Haven\'
   bring: { item: 'item.caffeine', what: 'a cold brew', whatEs: 'un café frío', refuse: '"That\'s not coffee. Is it a test?"', refuseEs: '"Eso no es café. ¿Es una prueba?"' },
   line: '"Tastes like outside." He holds the can for a long time.', lineEs: '"Sabe a afuera." Se queda con la lata en la mano un largo rato.' });
 
+// ======================= Districts (districts.js): Baltimore (Act 2) and the Corridor (Act 3) =======================
+side({ id: 'bmore_redsign', act: 2, giver: 'npc.bmore_signkeeper', giverName: 'the sign keeper', giverEs: 'el guardián del cartel', title: 'Keep it lit', titleEs: 'Que siga encendido', money: 40, xp: 80,
+  why: 'Something lives in the refinery sign. The sign has to stay lit; the something has to go.', whyEs: 'Algo vive en el cartel de la refinería. El cartel tiene que seguir encendido; ese algo tiene que irse.',
+  pitch: '"Ships steer by it. Don\'t break the sign. Break whatever\'s humming inside it."', pitchEs: '"Los barcos se guían por él. No rompas el cartel. Rompe lo que zumba adentro."',
+  boss: { boss: 'boss.bmore_sign', bossName: 'THE RED SIGN' },
+  line: 'The sign flickers once, then burns steady, all the letters. "First time in years the S stayed on."', lineEs: 'El cartel parpadea una vez y después queda fijo, todas las letras. "Primera vez en años que la S queda prendida."' });
+
+side({ id: 'bmore_book', act: 2, giver: 'npc.bmore_scribe', giverName: 'the scribe', giverEs: 'el escriba', title: 'What they heard', titleEs: 'Lo que oyeron',
+  why: 'The scribe wants a stranger to read the Callers\' book and say if the entries agree.', whyEs: 'El escriba quiere que un extraño lea el libro de los Llamadores y diga si las entradas coinciden.',
+  pitch: '"Read a page. Any page. Then tell me if they heard the same thing. I\'ve stopped being able to tell."', pitchEs: '"Lee una página. Cualquiera. Después dime si oyeron lo mismo. Yo ya no puedo darme cuenta."',
+  look: { obj: 'obj.callers_book', where: "the Callers' book", whereEs: 'el libro de los Llamadores', seen: 'Different words, different hands. The same pause, in every entry, in the same place.', seenEs: 'Palabras distintas, letras distintas. La misma pausa, en cada entrada, en el mismo lugar.' },
+  line: '"The pause. Yes. That\'s the part I can\'t write down."', lineEs: '"La pausa. Sí. Esa es la parte que no puedo escribir."' });
+
+side({ id: 'bmore_mural', act: 2, giver: 'npc.bmore_muralist', giverName: 'the muralist', giverEs: 'la muralista', title: 'Slightly wrong', titleEs: 'Un poco mal',
+  why: 'The muralist knows her Pork mural is wrong somewhere, and wants a fresh pair of eyes.', whyEs: 'La muralista sabe que su mural de Pork está mal en algo, y quiere ojos frescos.',
+  pitch: '"The one on the rowhouse streets. Everybody says it\'s wrong. Nobody says where."', pitchEs: '"El de las calles de casas adosadas. Todos dicen que está mal. Nadie dice dónde."',
+  look: { obj: 'obj.bmore_mural', where: 'the mural of Pork on the rowhouse streets', whereEs: 'el mural de Pork en las calles de casas adosadas', seen: 'He\'s smiling with his mouth closed. Something about that is very wrong, and you can\'t say what.', seenEs: 'Sonríe con la boca cerrada. Algo de eso está muy mal, y no sabes decir qué.' },
+  line: '"Closed mouth. Huh." She picks up a brush. Then puts it down. "No. I\'ll leave it."', lineEs: '"Boca cerrada. Mira tú." Agarra un pincel. Lo deja. "No. Lo dejo así."' });
+
+side({ id: 'bmore_ledger', act: 2, giver: 'npc.bmore_steward', giverName: 'the steward', giverEs: 'la delegada', title: 'The ones that are', titleEs: 'Los que sí',
+  why: 'The union steward wants to know what the port authority\'s ledger says about her members.', whyEs: 'La delegada sindical quiere saber qué dice el registro de la autoridad portuaria sobre sus afiliados.',
+  pitch: '"The port ledger. Find the line for shell labor. Tell me what it calls us."', pitchEs: '"El registro del puerto. Busca la línea de mano de obra de cuerpos. Dime cómo nos llama."',
+  look: { obj: 'obj.authority_ledger', where: 'the port ledger at the port authority', whereEs: 'el registro del puerto en la autoridad portuaria', seen: 'Shell labor is listed under "equipment." Someone has crossed it out and written "members."', seenEs: 'La mano de obra de cuerpos figura como "equipamiento." Alguien lo tachó y escribió "afiliados."' },
+  line: '"Somebody in there is on our side." She almost laughs.', lineEs: '"Alguien ahí adentro está de nuestro lado." Casi se ríe.' });
+
+side({ id: 'cor_tower', act: 3, giver: 'npc.cor_steamfitter', giverName: 'the steamfitter', giverEs: 'el montador', title: 'Holding its breath', titleEs: 'Conteniendo el aliento', money: 50, xp: 100,
+  why: 'One of the cooling towers has stopped breathing out, and the pressure is building.', whyEs: 'Una de las torres de enfriamiento dejó de exhalar, y la presión sube.',
+  pitch: '"Tower three hasn\'t exhaled in a week. Something\'s in there, holding it. Make it let go."', pitchEs: '"La torre tres no exhala hace una semana. Algo la está reteniendo. Haz que suelte."',
+  boss: { boss: 'boss.cor_tower', bossName: 'THE COOLING TOWER' },
+  line: 'Steam pours out of the tower, a long sigh. "There. Hear that? That\'s normal. I missed normal."', lineEs: 'El vapor sale de la torre, un suspiro largo. "Ahí. ¿Oyes? Eso es lo normal. Extrañaba lo normal."' });
+
+side({ id: 'cor_gauge', act: 3, giver: 'npc.cor_steamfitter', giverName: 'the steamfitter', giverEs: 'el montador', title: 'Painted fine', titleEs: 'Pintado como bien',
+  why: 'Someone repainted the temperature gauge, and the steamfitter wants it read honestly.', whyEs: 'Alguien repintó el medidor de temperatura, y el montador quiere una lectura honesta.',
+  pitch: '"Read the gauge by the towers. Ignore the paint. Read the number."', pitchEs: '"Lee el medidor junto a las torres. Ignora la pintura. Lee el número."',
+  look: { obj: 'obj.cooling_gauge', where: 'the temperature gauge by the cooling towers', whereEs: 'el medidor de temperatura junto a las torres', seen: 'Under the "fine" band, the old printed scale: the needle is past the last number anyone printed.', seenEs: 'Debajo de la franja "bien", la escala impresa vieja: la aguja pasó el último número que alguien imprimió.' },
+  line: '"Past the numbers. Right. So, not fine."', lineEs: '"Pasado los números. Bien. O sea, no está bien."' });
+
+side({ id: 'cor_intake', act: 3, giver: 'npc.cor_riverkeeper', giverName: 'the riverkeeper', giverEs: 'el guardián del río', title: 'Drinking the river', titleEs: 'Bebiéndose el río', money: 50, xp: 100,
+  why: 'The waterworks intake is drinking faster than the river can run.', whyEs: 'La toma de la planta de agua bebe más rápido de lo que corre el río.',
+  pitch: '"The intake pulls harder every night. If it keeps on, there won\'t be a river to sell. Not that we own it."', pitchEs: '"La toma tira más fuerte cada noche. Si sigue así, no va a quedar río para vender. No es que sea nuestro."',
+  boss: { boss: 'boss.cor_intake', bossName: 'THE INTAKE' },
+  line: 'The pipes go quiet. Somewhere downstream, water you can hear again. "Forty years. That\'s the sound."', lineEs: 'Las cañerías se callan. Río abajo, agua que se vuelve a oír. "Cuarenta años. Ese es el sonido."' });
+
+side({ id: 'cor_deed', act: 3, giver: 'npc.cor_mayor', giverName: 'the last mayor', giverEs: 'el último alcalde', title: 'The sale', titleEs: 'La venta',
+  why: 'The last mayor wants someone to read the deed and the sale, and tell him what he signed.', whyEs: 'El último alcalde quiere que alguien lea la escritura y la venta, y le diga qué firmó.',
+  pitch: '"The deed\'s framed at the waterworks. Read the sale under it. I signed it. I never read it."', pitchEs: '"La escritura está enmarcada en la planta de agua. Lee la venta debajo. La firmé. Nunca la leí."',
+  look: { obj: 'obj.waterworks_deed', where: 'the deed at the waterworks', whereEs: 'la escritura en la planta de agua', seen: 'The sale isn\'t for the river. It\'s for the name of the town. The river came free.', seenEs: 'La venta no es del río. Es del nombre del pueblo. El río venía de regalo.' },
+  line: '"The name." He says the town\'s old name out loud, just once, to hear it.', lineEs: '"El nombre." Dice el nombre viejo del pueblo en voz alta, una sola vez, para oírlo.' });
+
+side({ id: 'cor_log', act: 3, giver: 'npc.cor_switcher', giverName: 'the switching engineer', giverEs: 'la ingeniera de maniobras', title: 'Signed auto', titleEs: 'Firmado auto',
+  why: 'Half the substation\'s switching log is signed by nobody.', whyEs: 'La mitad del registro de maniobras de la subestación lo firma nadie.',
+  pitch: '"Read the last page of the switching log. Tell me who switched the line to the sealed hall. I didn\'t."', pitchEs: '"Lee la última página del registro de maniobras. Dime quién conectó la línea a la nave sellada. Yo no fui."',
+  look: { obj: 'obj.substation_log', where: 'the switching log at the substation', whereEs: 'el registro de maniobras en la subestación', seen: 'The last entry: "line 6 to sealed hall: closed. signed: auto." Then, under it: "thank you."', seenEs: 'La última entrada: "línea 6 a nave sellada: cerrada. firma: auto." Y debajo: "gracias."' },
+  line: '"It said thank you?" She tears the page out, then tapes it back in.', lineEs: '"¿Dijo gracias?" Arranca la hoja, y después la vuelve a pegar.' });
+
 export const SIDE_QUESTS = built;
 export const ES_SIDE_QUESTS = ES;

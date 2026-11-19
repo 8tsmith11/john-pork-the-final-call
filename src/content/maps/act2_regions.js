@@ -185,6 +185,8 @@ export const baltimore = fromGrid({
 }).enemy('boss.bmore_congregation', 24, 3)
   .exit('bmore_stacks', 33, 4, { id: 'obj.baltimore_to_bmore_stacks', selfDrawn: true, stepOn: true, pair: 'obj.bmore_stacks_out', label: 'Into the container stacks', text: 'Shipping containers stacked five high, with curtains.' })   // act2_more.js
   .exit('bmore_clinic', 0, 9, { id: 'obj.baltimore_to_bmore_clinic', selfDrawn: true, stepOn: true, pair: 'obj.bmore_clinic_out', label: 'Around back to the rowhouse clinic', text: 'A rowhouse with a line out the door.' })   // act2_more.js
+  
+  .exit('bmore_rows', 33, 10, { id: 'obj.baltimore_to_bmore_rows', selfDrawn: true, stepOn: true, pair: 'obj.rows_to_baltimore', label: 'East into the rowhouse streets', text: 'Marble steps, scrubbed white.' })   // districts.js
   .build();
 
 // ---- 11. Annapolis and the bay ----

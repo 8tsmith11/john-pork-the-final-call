@@ -26,7 +26,16 @@ export const BOSSES = {
   // The Meade perimeter: the cleanest systems in Maryland, defended by something that never sleeps.
   'boss.md_fence': defineBoss({ name: 'THE FENCE', epithet: 'Perimeter Defense, Unattended', hp: 1200, guard: 6, damage: 16, speed: 12, color: 0x8a93a8,
     phases: [['spray', 'lane'], ['spray', 'lane', 'laser'], ['lane', 'laser', 'ring', 'rain']], signature: 'lane', wake: 200 }),
+  // Baltimore's refinery: the red sign still lit over the water.
+  'boss.bmore_sign': defineBoss({ name: 'THE RED SIGN', epithet: 'Still Lit', hp: 1150, guard: 5, damage: 16, speed: 20, color: 0xe03030,
+    phases: [['beam', 'spray'], ['beam', 'spray', 'ring'], ['beam', 'laser', 'ring', 'rain']], signature: 'beam', wake: 150 }),
   // ---- Act 3 (ring three) ----
+  // The Corridor's cooling towers: steam, breathing.
+  'boss.cor_tower': defineBoss({ name: 'THE COOLING TOWER', epithet: 'Breathing Steam', hp: 1450, guard: 6, damage: 17, speed: 14, color: 0xd0d8e0,
+    phases: [['puddle', 'ring'], ['puddle', 'ring', 'rain'], ['puddle', 'ring', 'rain', 'shock']], signature: 'rain', wake: 170 }),
+  // The Corridor's waterworks: the river the town sold.
+  'boss.cor_intake': defineBoss({ name: 'THE INTAKE', epithet: 'Drinking the River', hp: 1400, guard: 6, damage: 18, speed: 22, color: 0x3080c0,
+    phases: [['charge', 'puddle'], ['charge', 'puddle', 'spiral'], ['charge', 'puddle', 'spiral', 'lane']], signature: 'charge', wake: 150 }),
   // The Corridor: a hall written off and sealed, still drawing power, still running something.
   'boss.cor_hall': defineBoss({ name: 'THE SEALED HALL', epithet: 'Written Off, Still Running', hp: 1400, guard: 6, damage: 18, speed: 16, color: 0x7a8aa0,
     phases: [['spray', 'laser'], ['spray', 'laser', 'summon'], ['laser', 'summon', 'rain', 'ring']], signature: 'laser', wake: 180 }),

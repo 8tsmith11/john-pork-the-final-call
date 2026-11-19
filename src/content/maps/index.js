@@ -10,13 +10,15 @@ import { route1North, greenbelt, beltsville, refuge, meade, baltimore, annapolis
 import { beltway, corridor, gaithersburg, frederick, enclave } from './act3_regions.js';
 import { gbDishes, gbCoop, bvBarn, rfSettlement, bmoreStacks, bmoreClinic, annHarbor } from './act2_more.js';
 import { addCrowds } from './crowds.js';
+import { bmoreRows, bmoreRefinery, bmoreHall, bmoreAuthority, corTown, corSubstation, corCooling, corWaterworks } from './districts.js';
 import { corSealed, gtClockroom, frSwitchyard, enArchive, meadeInside } from './act3_more.js';
 
 export const MAPS = Object.fromEntries([room631, asterHall, asterLobby, metroPlaza, tunnel1, platform, lake, computeHallB, diner, asterBasement, asterRoof, campusQuad, diningHall, roboticsLab, auditorium,
   route1North, greenbelt, beltsville, refuge, meade, baltimore, annapolis,
   beltway, corridor, gaithersburg, frederick, enclave,
   gbDishes, gbCoop, bvBarn, rfSettlement, bmoreStacks, bmoreClinic, annHarbor,
-  corSealed, gtClockroom, frSwitchyard, enArchive, meadeInside].map((m) => [m.id, m]));
+  corSealed, gtClockroom, frSwitchyard, enArchive, meadeInside,
+  bmoreRows, bmoreRefinery, bmoreHall, bmoreAuthority, corTown, corSubstation, corCooling, corWaterworks].map((m) => [m.id, m]));
 addCrowds(MAPS);   // [SCAFFOLD] townsfolk for rings two and three (crowds.js)
 
 // Where each map sits on the shared world map (tile units). Level design (gonman) can set
@@ -30,6 +32,8 @@ export const WORLD_LAYOUT = {
   gb_dishes: { x: 0, y: -100 }, gb_coop: { x: -30, y: -70 }, bv_barn: { x: 40, y: -110 }, rf_settlement: { x: 100, y: -100 },
   bmore_stacks: { x: 120, y: -160 }, bmore_clinic: { x: 50, y: -160 }, ann_harbor: { x: 215, y: 10 },
   cor_sealed: { x: -120, y: -75 }, gt_clockroom: { x: -90, y: -130 }, fr_switchyard: { x: -120, y: -140 }, en_archive: { x: -60, y: 50 }, meade_inside: { x: 150, y: -30 },
+  bmore_rows: { x: 120, y: -190 }, bmore_refinery: { x: 110, y: -220 }, bmore_hall: { x: 140, y: -220 }, bmore_authority: { x: 160, y: -190 },
+  cor_town: { x: -120, y: -10 }, cor_substation: { x: -130, y: 20 }, cor_cooling: { x: -90, y: -10 }, cor_waterworks: { x: -150, y: -10 },
   beltway: { x: -60, y: -40 }, corridor: { x: -120, y: -40 }, gaithersburg: { x: -90, y: -100 }, frederick: { x: -160, y: -140 }, enclave: { x: -60, y: 20 },
 };
 export const worldPos = (m) => m.world ?? WORLD_LAYOUT[m.id] ?? { x: 0, y: 0 };
