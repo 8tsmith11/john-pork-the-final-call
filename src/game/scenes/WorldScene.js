@@ -103,6 +103,7 @@ export class WorldScene extends Phaser.Scene {
     this.input.mouse?.disableContextMenu();
     this.sprites = new Map(); this.enemySprites = new Map(); this.shotGfx = this.add.graphics().setDepth(5000);
     this.fxGfx = this.add.graphics().setDepth(5001);
+    this.partyHealthGfx = this.add.graphics().setDepth(6399);
     this.input2 = new InputReader(this);
     // Screen shake can be turned off in settings (task #31): every shake in the game goes through the camera.
     { const cam = this.cameras.main, shake = cam.shake.bind(cam); cam.shake = (...args) => (Settings.get('shake') ? shake(...args) : cam); }
@@ -2062,6 +2063,7 @@ export class WorldScene extends Phaser.Scene {
   // ---------- rendering ----------
   _render(snap) {
     const seen = new Set();
+    const partyHealth = this.partyHealthGfx.clear();
     this._reviveCleared = false; if (!snap.players.some((p) => p.dn)) this.reviveGfx?.clear();
     (this.charShadow ??= this.add.graphics().setDepth(3)).clear();
     for (const p of snap.players) if (!p.dn) this.charShadow.fillStyle(0x000000, 0.55).fillEllipse(Math.round(p.x) + 1, Math.round(p.y) + 3, 11, 4);
@@ -2138,6 +2140,17 @@ export class WorldScene extends Phaser.Scene {
         if (p.rv > 0) g.lineStyle(2, 0xffb347, 1).beginPath().arc(p.x, p.y - 20, 6, -Math.PI / 2, -Math.PI / 2 + (p.rv / 4) * Math.PI * 2).strokePath();
       }
       s.setAngle(p.dn ? 90 : 0).setTint(p.dn ? 0x777788 : p.mo ? MORPH_LOOK[p.c][0] : 0xffffff).setScale(p.mo ? 1.12 : 1);
+      if (p.id !== this.localId && !p.w) {
+        const x = s.x - 10;
+        const y = p.dn ? Math.round(p.y) - 32 : Math.round(s.y - s.displayHeight) - 5;
+        const health = p.dn ? 0 : Math.max(0, Math.min(1, p.hp / (p.mhp || 100)));
+        partyHealth.fillStyle(0x0b0d16).fillRect(x, y, 20, 4);
+        partyHealth.fillStyle(0x343a51).fillRect(x + 1, y + 1, 18, 2);
+        if (health > 0) {
+          const color = health < 0.3 ? 0xd65db1 : 0x7fb069;
+          partyHealth.fillStyle(color).fillRect(x + 1, y + 1, Math.max(1, Math.round(18 * health)), 2);
+        }
+      }
       syncWear(this, s, p.c, this.save?.party?.[p.c]);   // parkas and other worn models (render/wearables.js)
     }
     for (const [id, s] of this.sprites) if (!seen.has(id)) { s.destroy(); this.sprites.delete(id); }
