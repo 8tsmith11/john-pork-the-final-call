@@ -161,3 +161,16 @@ Gbova (Npg 2 purpxcbvag ba Ebhgr 1), Zvan (Npg 3), Srajvpx (gur fvta-va obbx, Np
 - Geribe'f bja gjb havdhr vgrzf, uvf ibvpr pnzrb, zber erny-yvsr yber: jnvgvat ba Geribe.
 - Gur Fjrrcre'f qrfvta (orfgvnel qbp 07) naq gur ebg-gnxra (Wbua Cbex'f ohvyq): xrrc gurz va §4.
 - Juvpu raqvat vf pnaba sbe Npg 4, vs gurer'f rire na Npg 4: abar. Rirel raqvat vf na raqvat.
+
+## Fvqr guernq: gur nagurz fghqrag (Geribe'f vqrn, 2026-11-18)
+
+Gur **fghqrag ng nggragvba ol gur pnzchf tngr** (`acp.nagurz`, gur fghssrq fdhveery "Trareny
+Ahgfjbegu", n qvssrerag pbhagel'f nagurz rirel gvzr) vf n wbxr va Npg 1. Yngre ur gheaf bhg gb unir
+erny **cbyvgvpny zbgvirf**: n **angvbanyvfg jub jnagf cbjre**, naq ur tvirf **trahvaryl cbjreshy
+fcrrpurf**. Ur vf **abg n znva cybg cbvag**. Ur orybatf gb, be evfrf vafvqr, **fbzr yngre zbirzrag**
+(Npg 2 be 3) nf n fvqr guernq gur cnegl ehaf vagb.
+- Xrrc Npg 1 rknpgyl nf vf: gur pbzrql vf gur frghc. Gur nagurzf, gur "terngrfg angvba ba rnegu"
+  yvarf naq gur fdhveery'f fnyhgr ernq qvssreragyl bapr ur unf n pebjq.
+- Juvpu zbirzrag, juvpu angvba ur svanyyl cvpxf, naq jung gur cnegl pna qb nobhg uvz ner bcra.
+  Yber tngr (OntryZrvfgre) cynprf uvz; tbazna jevgrf uvf fcrrpurf.
+- Frperg: arire va ernqnoyr qbpf be cynvagrkg cbfgf. Geribe nfxrq sbe guvf gb fgnl frnyrq.
