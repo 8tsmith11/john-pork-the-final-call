@@ -361,5 +361,35 @@ def wall_mask(m):
 for m in range(16):
     out.append(f"@frame tile_35_m{m}")
     out.extend("".join(L[c] for c in row) for row in wall_mask(m))
+
+
+# Connected rugs (task 13): frames tile_117_m<mask>. The body is the same diamond weave as the loose
+# rug tile; edges that border something else get a fringe (a dark binding, a lit thread, then the
+# floor showing under the tassels), so a run of rug tiles reads as one rug with a border all round.
+def rug_mask(m):
+    N_, E_, S_, W_ = m & 1, m & 2, m & 4, m & 8
+    g = blank("soft0")
+    for y in range(N):
+        for x in range(N):
+            if (x % 8 in (0, 7)) or (y % 8 in (0, 7)): g[y][x] = "warm1"
+            elif (x % 8 in (3, 4)) and (y % 8 in (3, 4)): g[y][x] = "warm4"
+            elif (x + y) % 4 == 0: g[y][x] = "soft1"
+    def edge(cells):
+        for i, (x, y) in enumerate(cells):
+            put(g, x, y, "warm0")
+    if not N_:
+        for x in range(N): g[0][x] = "warm0"; g[1][x] = "warm3"
+    if not S_:
+        for x in range(N): g[N - 1][x] = "night1"; g[N - 2][x] = "warm0"
+        for x in range(1, N, 3): g[N - 1][x] = "warm3"                 # tassels on the near edge
+    if not W_:
+        for y in range(N): g[y][0] = "warm0"; g[y][1] = "warm3"
+    if not E_:
+        for y in range(N): g[y][N - 1] = "night1"; g[y][N - 2] = "warm0"
+    return g
+
+for m in range(16):
+    out.append(f"@frame tile_117_m{m}")
+    out.extend("".join(L[c] for c in row) for row in rug_mask(m))
 (REPO / "assets/src/tiles.txt").write_text("\n".join(out) + "\n")
 print(f"tiles: {len(PAINT) * 4} frames")
