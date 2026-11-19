@@ -647,6 +647,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'rest') this._restAtSave(peer, msg.obj);
         if (msg.t === 'use') { this._useWhat = msg.id ?? null; this._use(this._charOf(peer), peer); }
         if (msg.t === 'morph') this._morph(peer);
+        if (msg.t === 'questUse') { const o = this.map.objects.find((x) => x.id === msg.id); if (o) this._questInteract(o, this._charOf(peer), peer); }   // quest hooks, host side
         if (msg.t === 'puzzle') { const o = this.map.objects.find((x) => x.id === msg.id), pz = o && puzzleFor(o.id); if (pz) this._usePuzzle(pz, o, this._charOf(peer), peer); }   // puzzle kit, host side
         if (msg.t === 'search') { const o = this.map.objects.find((x) => x.id === msg.id && x.loot); if (o) this._search(o, this._charOf(peer)); }
         if (msg.t === 'zip') { const o = this.map.objects.find((x) => x.id === msg.id && x.zip); if (o) this._zip(o, peer); }
@@ -1300,33 +1301,41 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- quests (src/content/quests.js) ----------
-  _questInteract(near) {
-    const f = this.save.flags, qs = questState(this.save);
+  // Quest hooks (ask / inspect / give / report) change shared state, so only the host runs them (John Pork's
+  // three-window report: a guest's hand-in took the item on their screen only, and the host dropped the flag).
+  // A guest sends { t: 'questUse', id }; the host runs this with the guest's roommate and sends the line back.
+  _questInteract(near, who = this.character, peer = this.localId) {
+    const f = this.save.flags, qs = questState(this.save), client = this.mode === 'client', remote = peer !== this.localId;
+    const say = (t) => (remote ? this.net?.send(peer, { t: 'say', text: t }) : this._say(t));
+    const act = (fn) => { if (client) this.net.send({ t: 'questUse', id: near.id }); else fn(); return true; };
     for (const q of QUESTS) {
       const st = qs[q.id];
       if (st.done) continue;
       if (q.inspect && near.id === q.inspect.obj && st.started && !f[q.inspect.flag]) {
-        this._flag(q.inspect.flag, true); this._say(`${near.text ?? near.label}\n\n${q.inspect.text ?? ''}`); this._tickQuests(true); return true;
+        return act(() => { this._flag(q.inspect.flag, true); say(`${near.text ?? near.label}\n\n${q.inspect.text ?? ''}`); this._tickQuests(true, peer); });
       }
       if (q.giver !== near.id) continue;
-      const who = near.label.toUpperCase();
-      if (!st.started && q.ask) { this._flag(q.ask, true); this._say(`${who}\n${q.pitch}`); this._tickQuests(true); return true; }
+      const label = near.label.toUpperCase();
+      if (!st.started && q.ask) return act(() => { this._flag(q.ask, true); say(`${label}\n${q.pitch}`); this._tickQuests(true, peer); });
       if (q.give && !f[q.give.flag]) {
-        const c = this.save.party[this.character];
-        if (!Inv.remove(c, q.give.item)) {
+        const c = this.save.party[who];
+        if (!c || Inv.count(c, q.give.item) < 1) {
           // Empty-handed: the reminder, then on the next press whatever they have to say about the story
           // so far (`later`), alternating. Otherwise an open hand-in quest silences the giver for good.
+          // Nothing changes here, so a guest answers this locally.
           const turn = ((this._refuseTurn ??= {})[near.id] = !this._refuseTurn[near.id]);
-          if (!turn && this._sayLater(near)) return true;
-          this._say(`${who}\n${q.give.refuse ?? '...'}`); return true;
-        } this._flag(q.give.flag, true); this._syncParty(); this._tickQuests(true); return true;
+          if (!remote && !turn && this._sayLater(near)) return true;
+          say(`${label}\n${q.give.refuse ?? '...'}`); return true;
+        }
+        // The host takes the item from the acting roommate's own bag, once; a stale second request finds the flag set.
+        return act(() => { if (!Inv.remove(c, q.give.item)) return say(`${label}\n${q.give.refuse ?? '...'}`); this._flag(q.give.flag, true); this._syncParty(); this._tickQuests(true, peer); });
       }
-      if (q.report && f[q.report.needs] && !f[q.report.flag]) { this._flag(q.report.flag, true); this._tickQuests(true); return true; }
+      if (q.report && f[q.report.needs] && !f[q.report.flag]) return act(() => { this._flag(q.report.flag, true); this._tickQuests(true, peer); });
     }
     return false;
   }
 
-  _tickQuests(force = false) {
+  _tickQuests(force = false, peer = null) {   // peer: a guest whose move did this hears the reward line too
     if (this.mode === 'client') return;   // the host advances quests; clients get them in 'world' syncs
     if (!force && (this._qT = (this._qT ?? 0) + 1) % 60) return;
     const f = this.save.flags, qs = questState(this.save);
@@ -1347,6 +1356,7 @@ export class WorldScene extends Phaser.Scene {
         if (mine) this._questBanner('QUEST COMPLETE', q.title, [q.reward?.money ? `+$${q.reward.money}` : '', q.reward?.xp ? `+${q.reward.xp} xp` : '', q.reward?.item ? ITEMS[q.reward.item]?.name : ''].filter(Boolean).join('   '));
         if (this._trackedQuest === q.id) this._trackedQuest = null;
         if (q.reward?.line && mine) this._say(q.reward.line);
+        if (q.reward?.line && peer && peer !== this.localId) this.net?.send(peer, { t: 'say', text: q.reward.line });
       }
     }
   }

@@ -1039,6 +1039,32 @@ test('puzzle kit in co-op: a guest\'s move runs on the host, progress stays on t
   } finally { PUZZLES.splice(PUZZLES.indexOf(pz), 1); }
 });
 
+test('quest hooks in co-op: a guest\'s ask and hand-in run on the host, with the guest\'s own item, once, and the guest hears the lines', () => {
+  const save = newSave({ seed: 'q-coop', rolls: {}, gameVersion: 't' });
+  const npc = MAPS_FOR_TEST.aster_hall.objects.find((o) => o.id === 'npc.409');
+  const sent = [], hostSaid = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', character: 'trevor', localId: 'host', save,
+    net: { send: (peer, msg) => sent.push([peer, msg]) }, _say: (t) => hostSaid.push(t), _questBanner() {}, _syncParty() {}, _toast() {}, _sayLater: () => false });
+  const toGuest = () => sent.filter(([peer]) => peer === 'peerM').map(([, m]) => m.text).join(' | ');
+  host._questInteract(npc, 'michael', 'peerM');
+  assert.ok(save.flags['q.soup.asked'], 'the host keeps the ask flag');
+  assert.match(toGuest(), /soup/i, 'the guest hears the pitch');
+  host._questInteract(npc, 'michael', 'peerM');
+  assert.ok(!save.flags['q.soup.given'], 'empty-handed changes nothing');
+  Inv.add(save.party.michael, 'item.mate_flask'); Inv.add(save.party.trevor, 'item.mate_flask');
+  host._questInteract(npc, 'michael', 'peerM');
+  assert.ok(save.flags['q.soup.given']);
+  assert.equal(Inv.count(save.party.michael, 'item.mate_flask'), 0, 'the item leaves the acting guest\'s bag');
+  assert.equal(Inv.count(save.party.trevor, 'item.mate_flask'), 1, 'the host keeps theirs');
+  assert.match(toGuest(), /wife/, 'the guest hears the reward line');
+  host._questInteract(npc, 'michael', 'peerM');
+  assert.equal(Inv.count(save.party.trevor, 'item.mate_flask'), 1, 'a stale second request takes nothing');
+  const guestSent = [];
+  const guest = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'client', character: 'michael', localId: 'peerM', save: newSave({ seed: 'q-coop', rolls: {}, gameVersion: 't' }), net: { send: (m) => guestSent.push(m) } });
+  assert.equal(guest._questInteract(npc), true);
+  assert.deepEqual(guestSent, [{ t: 'questUse', id: 'npc.409' }], 'a guest only asks the host');
+});
+
 test('regional boss intros preserve the saved Warden name', () => {
   const field = 'act1.boss.wardenName';
   const scene = { mode: 'host', save: { flags: {} }, time: { delayedCall() {} }, _bossIntro() {} };
