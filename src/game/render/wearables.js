@@ -17,18 +17,29 @@ const P = {
   skin1: '#a3674a', skin2: '#d09a72', skin3: '#f0c9a0',
   yerba0: '#3e5a34', yerba1: '#6f9448', tub0: '#2c4a8a', tub1: '#4f7fd0', soft0: '#7a2f38', soft1: '#c05a5e',
   parka: '#b46a26', slicker0: '#e0a51c', slicker1: '#ffd93b', bone: '#e8e2d0', steel: '#7a8794',
+  screen1: '#1a8a9c', screen2: '#3fd0d6', concrete2: '#5b6862', concrete3: '#7f8c84', pork1: '#e87a9c', signal: '#d42a3c',
 };
 
 // The colors each roommate's sheet is painted with (CHARS in tools/art/gen_roommates.py).
 const BODY = {
-  michael: { shirt: [P.soft1, P.soft0], skin: [P.skin3, P.skin2], hair: [P.night2, P.night1], pants: [P.night3] },
-  trevor:  { shirt: [P.tub1, P.tub0],   skin: [P.skin3, P.skin2], hair: [P.warm2, P.warm1],   pants: [P.night3] },
-  manuel:  { shirt: [P.yerba1, P.yerba0], skin: [P.skin2, P.skin1], hair: [P.warm1, P.warm0], pants: [P.night3] },
+  michael: { shirt: [P.soft1, P.soft0], skin: [P.skin3, P.skin2], hair: [P.night2, P.night1], pants: [P.night3], boots: [P.warm0] },
+  trevor:  { shirt: [P.tub1, P.tub0],   skin: [P.skin3, P.skin2], hair: [P.warm2, P.warm1],   pants: [P.night3], boots: [P.warm0] },
+  manuel:  { shirt: [P.yerba1, P.yerba0], skin: [P.skin2, P.skin1], hair: [P.warm1, P.warm0], pants: [P.night3], boots: [P.warm0] },
 };
 
 export const LOOKS = {
   'item.rain_parka':  { slot: 'parka', style: 'parka', main: P.slicker1, shade: P.slicker0, line: P.night0 },   // bright slicker yellow (Michael)
   'item.brown_parka': { slot: 'parka', style: 'parka', main: P.parka, shade: P.warm2, line: P.night0 },   // Michael's brown one
+  // Uniques (task #29, gonman). Manuel's:
+  'item.arg_shirt':      { slot: 'chestplate', style: 'shirt', main: P.screen2, shade: P.screen1, stripe: P.bone, sun: P.warm4 },   // celeste y blanca, the sun on the chest
+  'item.hasbulla_tee':   { slot: 'parka', style: 'shirt', main: P.bone, shade: P.concrete3, oversized: true, print: 'fighter' },     // white, oversized; a small fighter with a belt (no real person)
+  'item.smart_pacifier': { slot: 'goggles', style: 'pacifier', main: P.pork1, shade: P.bone },
+  'item.mate_holster':   { slot: 'backpack', style: 'holster', main: P.warm2, shade: P.warm1, metal: P.steel },
+  // Michael's:
+  'item.winged_boots':   { slot: 'boots', style: 'boots', main: P.bone, shade: P.concrete3, wing: P.bone },
+  'item.cowboy_hat':     { slot: 'goggles', style: 'hat', main: P.warm2, shade: P.warm1, band: P.warm0 },
+  'item.smoky_socks':    { slot: 'socks', style: 'socks', main: P.bone, shade: P.signal },
+  'item.signal_gloves':  { slot: 'gloves', style: 'gloves', main: P.screen1, shade: P.screen2 },
 };
 const LOOK_SLOTS = [...new Set(Object.values(LOOKS).map((l) => l.slot))];
 
@@ -99,7 +110,113 @@ function paintParka(src, out, w, h, facing, body, look) {
   return true;
 }
 
-const PAINTERS = { parka: paintParka };
+// Shared pixel helpers for the painters below.
+function kit(src, out, w, h, body) {
+  const is = (x, y, list) => x >= 0 && y >= 0 && x < w && y < h && list.some((c) => same(src, (y * w + x) * 4, c));
+  const put = (x, y, rgb) => { if (x < 0 || y < 0 || x >= w || y >= h) return; const i = (y * w + x) * 4; out[i] = rgb[0]; out[i + 1] = rgb[1]; out[i + 2] = rgb[2]; out[i + 3] = 255; };
+  const empty = (x, y) => x < 0 || y < 0 || x >= w || y >= h || src[(y * w + x) * 4 + 3] === 0;
+  const C = { shirt: body.shirt.map(hex), skin: body.skin.map(hex), hair: body.hair.map(hex), pants: body.pants.map(hex), boots: body.boots.map(hex) };
+  const rows = (list) => { let a = h, b = -1; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (is(x, y, list)) { a = Math.min(a, y); b = Math.max(b, y); } return [a, b]; };
+  const span = (y) => { let a = w, b = -1; for (let x = 0; x < w; x++) if (!empty(x, y)) { a = Math.min(a, x); b = Math.max(b, x); } return [a, b]; };
+  return { is, put, empty, C, rows, span };
+}
+
+// A shirt: recolor the top. Optional vertical stripes and a sun badge (Argentina), short sleeves and a
+// longer hem for an oversized fit, and a tiny print on the front.
+function paintShirt(src, out, w, h, facing, body, look) {
+  const { is, put, C, rows } = kit(src, out, w, h, body);
+  const [top, bot] = rows(C.shirt); if (bot < 0) return false;
+  const main = hex(look.main), shade = hex(look.shade), stripe = look.stripe && hex(look.stripe);
+  for (let y = top; y <= bot; y++) for (let x = 0; x < w; x++) {
+    if (!is(x, y, C.shirt)) continue;
+    const dark = is(x, y, [C.shirt[1]]);
+    put(x, y, stripe && x % 3 === 1 && !dark ? stripe : dark ? shade : main);
+  }
+  if (look.oversized) {                                    // short sleeves over the upper arm, a longer hem
+    for (let x = 0; x < w; x++) for (let y = top; y <= Math.min(top + 2, h - 1); y++) if (is(x, y, C.skin)) put(x, y, main);
+    for (let x = 0; x < w; x++) if (is(x, bot + 1, C.pants)) put(x, bot + 1, shade);
+  }
+  if (facing === 'down') {
+    let a = w, b = -1; for (let x = 0; x < w; x++) if (is(x, top + 2, C.shirt)) { a = Math.min(a, x); b = Math.max(b, x); }
+    const cx = Math.floor((a + b) / 2);
+    if (look.sun) put(cx, top + 2, hex(look.sun));
+    if (look.print === 'fighter') {                      // a two-pixel figure with a gold belt, nothing more
+      const ink = hex(P.night1), gold = hex(P.warm4);
+      put(cx, top + 1, ink); put(cx, top + 2, ink); put(cx - 1, top + 2, ink); put(cx + 1, top + 2, ink);
+      put(cx - 1, top + 3, gold); put(cx, top + 3, gold); put(cx + 1, top + 3, gold);
+    }
+  }
+  return true;
+}
+
+// A hat: a brim one pixel wider than the head on each side, a crown over the top of the hair, a band.
+function paintHat(src, out, w, h, facing, body, look) {
+  const { is, put, C, rows, span } = kit(src, out, w, h, body);
+  const [ht, hb] = rows(C.hair); if (hb < 0) return false;
+  const main = hex(look.main), shade = hex(look.shade), band = hex(look.band), line = hex(P.night0);
+  const [a, b] = span(ht + 1), brim = ht + 2;
+  for (let x = a - 1; x <= b + 1; x++) { put(x, brim, shade); put(x, brim + 1 > hb + 2 ? brim : brim, shade); }
+  for (let y = ht - 2; y < brim; y++) for (let x = a + 1; x <= b - 1; x++) put(x, y, y === brim - 1 ? band : main);
+  for (let x = a; x <= b; x++) put(x, ht - 3, line);
+  put(a - 2, brim, line); put(b + 2, brim, line);
+  return true;
+}
+
+// Boots: recolor the boot pixels; little wings at the heels (winged boots).
+function paintBoots(src, out, w, h, facing, body, look) {
+  const { is, put, C } = kit(src, out, w, h, body);
+  let any = false;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (is(x, y, C.boots)) { put(x, y, y % 2 ? hex(look.shade) : hex(look.main)); any = true; }
+  if (!any || !look.wing) return any;
+  for (let y = h - 1; y >= 0; y--) {
+    let a = w, b = -1; for (let x = 0; x < w; x++) if (is(x, y, C.boots)) { a = Math.min(a, x); b = Math.max(b, x); }
+    if (b >= 0) { put(a - 1, y - 1, hex(look.wing)); put(a - 2, y - 2, hex(look.wing)); if (facing !== 'right') { put(b + 1, y - 1, hex(look.wing)); put(b + 2, y - 2, hex(look.wing)); } break; }
+  }
+  return true;
+}
+
+// Socks: the trouser row just above the boots, striped.
+function paintSocks(src, out, w, h, facing, body, look) {
+  const { is, put, C } = kit(src, out, w, h, body);
+  let any = false;
+  for (let y = 1; y < h; y++) for (let x = 0; x < w; x++) if (is(x, y, C.pants) && is(x, y + 1, C.boots)) { put(x, y, hex(look.main)); put(x, y - 1, hex(look.shade)); any = true; }
+  return any;
+}
+
+// Gloves: the hands (the lowest skin pixel of each arm column below the shirt line).
+function paintGloves(src, out, w, h, facing, body, look) {
+  const { is, put, C, rows } = kit(src, out, w, h, body);
+  const [top] = rows(C.shirt); if (top >= h) return false;
+  let any = false;
+  for (let x = 0; x < w; x++) { let last = -1; for (let y = top; y < h; y++) if (is(x, y, C.skin)) last = y; if (last >= 0) { put(x, last, hex(look.main)); if (is(x, last - 1, C.skin)) put(x, last - 1, hex(look.shade)); any = true; } }
+  return any;
+}
+
+// The smart pacifier: a pink shield and a white ring at the mouth, seen from the front and the side.
+function paintPacifier(src, out, w, h, facing, body, look) {
+  if (facing === 'up') return false;
+  const { is, put, C, rows } = kit(src, out, w, h, body);
+  const [top] = rows(C.shirt); if (top >= h) return false;
+  let a = w, b = -1; const y = top - 2;
+  for (let x = 0; x < w; x++) if (is(x, y, C.skin)) { a = Math.min(a, x); b = Math.max(b, x); }
+  if (b < 0) return false;
+  const cx = facing === 'right' ? b : Math.floor((a + b) / 2);
+  put(cx, y, hex(look.main)); put(cx - 1, y, hex(look.main)); put(cx, y + 1, hex(look.shade));
+  return true;
+}
+
+// The mate holster: a gourd and its straw on the hip (the back hip from behind).
+function paintHolster(src, out, w, h, facing, body, look) {
+  const { is, put, C, rows, span } = kit(src, out, w, h, body);
+  const [, bot] = rows(C.shirt); if (bot < 0) return false;
+  const [a, b] = span(bot);
+  const x = facing === 'right' ? a + 1 : b;
+  put(x, bot + 1, hex(look.main)); put(x, bot + 2, hex(look.main)); put(x + (facing === 'right' ? -1 : 1), bot + 2, hex(look.shade));
+  put(x, bot, hex(look.shade)); put(x, bot - 1, hex(look.metal));
+  return true;
+}
+
+const PAINTERS = { parka: paintParka, shirt: paintShirt, hat: paintHat, boots: paintBoots, socks: paintSocks, gloves: paintGloves, pacifier: paintPacifier, holster: paintHolster };
 
 /** Build (once) and return the overlay texture key for roommate `who` wearing item `id`. */
 export function wearTexture(scene, who, id) {
