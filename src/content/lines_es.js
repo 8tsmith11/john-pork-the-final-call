@@ -225,6 +225,10 @@ export const LINES_ES = {
   "The gonman provides.": "El gonman provee.",
   "Sticky situation. For them.": "Situación pegajosa. Para ellos.",
   "Nobody talk to me for a bit.": "Que nadie me hable un rato.",
+  // Manuel's toothpaste (barks.js), Rioplatense
+  "It's toothpaste.": "Es pasta de dientes.",
+  "That's toothpaste. I brush very hard.": "Es pasta de dientes. Me cepillo con mucha fuerza.",
+  "Toothpaste. Don't ask about the angle.": "Pasta de dientes. No pregunten por el ángulo.",
 };
 
 /** The line in the current language (Spanish when chosen and known, else as written). */

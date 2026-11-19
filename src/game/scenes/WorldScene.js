@@ -2718,6 +2718,7 @@ export class WorldScene extends Phaser.Scene {
       const up = snap.players.filter((p) => !p.dn);
       const p = up[Math.floor(Math.random() * up.length)];
       const rare = BARKS.idleRare?.[p?.c] && Math.random() < 0.125;   // nicknames stay rare (Trevor)
+      if (p?.c === 'manuel' && (this.save?.party?.manuel?.level ?? 1) >= 6 && Math.random() < 0.3) { this._bark(p.id, this._freshBark(BARKS.toothpaste, 'manuel')); return; }   // the splotches
       if (p) this._bark(p.id, this._freshBark(rare ? BARKS.idleRare : p.mo && BARKS.idleMorph[p.c] ? BARKS.idleMorph : BARKS.idle, p.c));
     }
     // Places inside a big map: the first time this visit that you walk into one, somebody says something.
