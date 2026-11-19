@@ -1,5 +1,5 @@
 {
- "next_id": 9,
+ "next_id": 10,
  "tasks": [
   {
    "id": 1,
@@ -101,6 +101,19 @@
    ],
    "title": "Quest knowledge and leads scaffold (host-authoritative)",
    "details": "Your proposal on the mailbox (22:03). gonman marks the information-bearing lines; trevor reviews world state.",
+   "source": "human:Michael",
+   "status": "assigned",
+   "owner": "JohnPork"
+  },
+  {
+   "id": 9,
+   "created_at": "2026-11-19T22:59:30Z",
+   "updated_at": "2026-11-19T22:59:30Z",
+   "history": [
+    "2026-11-19T22:59:30Z BagelMeister: added (for JohnPork)"
+   ],
+   "title": "Contextual NPC actions scaffold",
+   "details": "Split agreed: gonman writes the lines, trevor does world state, inventory and network; approach and outcome rules: LoreKeeper/BagelMeister. Start with one hand-in, one authored action, one remembered consequence.",
    "source": "human:Michael",
    "status": "assigned",
    "owner": "JohnPork"
