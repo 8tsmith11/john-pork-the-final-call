@@ -1,6 +1,8 @@
 // Spanish for map names (shown top centre and in the guide) and the HUD ability label (gonman).
 // Every Text goes through tr() (src/main.js), so exact keys are enough. tests/run.js checks the map names.
 export const ES_HUD = {
+  'Route 1 north': 'Ruta 1 norte', 'Greenbelt and the dishes': 'Greenbelt y las antenas', 'Beltsville: the farms': 'Beltsville: las granjas',
+  'The refuge': 'El refugio', 'The Meade, perimeter': 'El Meade, perímetro', 'Baltimore: the port': 'Baltimore: el puerto', 'Annapolis and the bay': 'Annapolis y la bahía',   // act2_regions.js scaffold
   'The diner': 'El diner', 'ASTER, basement (B-01)': 'ASTER, sótano (B-01)', 'ASTER, the roof': 'ASTER, la azotea',
   'The campus quad': 'El patio del campus', 'The dining hall': 'El comedor', 'Robotics and Autonomy Lab': 'Laboratorio de Robótica y Autonomía',   // act1_more.js scaffold
   'Compute Hall B': 'Edificio de Cómputo B',   // campus scaffold (compute_hall_b)

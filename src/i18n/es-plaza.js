@@ -1,6 +1,8 @@
 // Spanish for the College Park plaza (collegepark.js), task #28. Keyed by the exact English; tests/run.js
 // checks coverage. Everyone speaks neutral Latin American Spanish here.
 export const ES_PLAZA = {
+  'Route 1 north checkpoint': 'Control de la Ruta 1 norte', "The troopers don't even look up. Not tonight.": 'Los soldados ni levantan la vista. Esta noche no.',
+  'The barrier is up. The road north is open.': 'La barrera está levantada. El camino al norte está abierto.',   // act 2 gate
   'ASTER lobby': 'Lobby de ASTER',
   'Back into the lobby.': 'De vuelta al lobby.',
   'ASTER': 'ASTER',

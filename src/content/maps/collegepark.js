@@ -197,6 +197,9 @@ export const metroPlaza = makeMap({
   spawns: [[10, 14], [11, 14], [9, 15]],
   objects: [
     ...PLAZA_CORDON.objects,
+    // Act 2: the north checkpoint opens once Act 1 is complete (src/content/maps/act2_regions.js).
+    { id: 'obj.plaza_r1n', x: 60, y: 1, label: 'Route 1 north checkpoint', action: 'exit', to: 'route1_north', pair: 'obj.r1n_south', selfDrawn: true,
+      requiresFlag: 'act1.complete', lockedText: 'The troopers don\'t even look up. Not tonight.', text: 'The barrier is up. The road north is open.' },
     { id: 'obj.job_board', art: 'obj.board', x: 45, y: 23, label: 'Abatement bounty board', action: 'jobs', light: 0.6,
       text: 'Corkboard on a sawhorse by the van. Every card is in the same blunt marker. One just says PAYS.' },
     // ASTER
