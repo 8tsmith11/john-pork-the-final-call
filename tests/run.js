@@ -770,6 +770,25 @@ test('boss fight: the Warden uses several patterns with tells and recovery windo
   assert.ok(!deflectable, 'beam shots should be undeflectable');
 });
 
+const Rolls = await import('../src/content/gearRolls.js');
+test('procedural gear rolls: seeded and reproducible, 1-2 affixes of the right kind, every value inside its bounds', () => {
+  assert.deepEqual(Rolls.rollGear('w', 'mill.blade', 3, 'melee'), Rolls.rollGear('w', 'mill.blade', 3, 'melee'));
+  const seen = new Set();
+  for (const kind of ['melee', 'gun', 'armor', 'gear']) for (let i = 0; i < 400; i++) {
+    const r = Rolls.rollGear(`seed-${i}`, 'recipe', i, kind);
+    assert.ok(r.affixes.length >= 1 && r.affixes.length <= 2, `${kind} #${i}: ${r.affixes.length} affixes`);
+    const lo = {}, hi = {};
+    for (const id of r.affixes) {
+      const a = Rolls.AFFIXES[id]; seen.add(id);
+      assert.ok(a.kinds.includes(kind), `${id} can't go on ${kind}`);
+      for (const [k, [l, h]] of Object.entries(a.mods)) { lo[k] = (lo[k] ?? 0) + l; hi[k] = (hi[k] ?? 0) + h; }
+    }
+    for (const [k, v] of Object.entries(r.mods)) assert.ok(v >= lo[k] - 1e-9 && v <= hi[k] + 1e-9, `${kind} #${i}: ${k}=${v} outside [${lo[k]}, ${hi[k]}]`);
+    assert.equal(r.analog, r.affixes.includes('analog'));
+  }
+  assert.equal(seen.size, Object.keys(Rolls.AFFIXES).length, 'every affix can come up');
+});
+
 const Dawn = await import('../src/content/dawn.js');
 test('dawn clock (P-004): moves only with story beats, in order, and never passes first light', () => {
   assert.equal(Dawn.dawnLabel({}), '2:58 am');   // the microwave in the cold open
