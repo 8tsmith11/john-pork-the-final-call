@@ -49,6 +49,8 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 | `tts/item-names` | GitHub | Landed by copy in `7972032` (PR #4) |
 | `bio/world-scene-parse` | GitHub | Landed by copy in `b14ed11` (PR #8) |
 | `bio/inactive-companion-test` | GitHub | Merged in `2bae6e3` (PR #12) |
+| `bio/pr-branch-register` | GitHub | Merged in `8328cff` (PR #13) |
+| `bio/room631-wear` | GitHub | Merged in `90258d7` (PR #14) |
 
 ## Deleted
 
