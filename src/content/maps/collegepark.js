@@ -56,6 +56,12 @@ const PERSON = ['npc.rotter_2', 'npc.rotter_1', 'npc.rotter_3'];
 export const metroPlaza = makeMap({
   id: 'metro_plaza', name: 'College Park',
   outdoor: true,
+  // Awnings over the shopfronts (depth pass): canvas over the pavement in front of a wall, drawn above
+  // anyone standing under it. x, y: first tile of the row in front of the wall; w: tiles; c: stripe pair.
+  awnings: [
+    { x: 67, y: 9, w: 9, c: ['warm3', 'bone'] },     // the diner: warm, analog
+    { x: 66, y: 18, w: 7, c: ['screen0', 'steel'] },  // Wick's pawn window and Delroy's
+  ],
   // Who's here, and why (see src/game/crowd.js).
   crowd: [
     { mode: 'wait', age: 'adult', at: [37, 10], n: 3, face: [38, 8] },                    // a queue at the closed metro gates

@@ -641,6 +641,20 @@ export class WorldScene extends Phaser.Scene {
     for (const im of this.propSprites ?? []) im.destroy();
     for (const t of this.propTimers ?? []) t.remove();
     this.propSprites = []; this.propTimers = []; this.propById = {};
+    // Depth pass (task 13): striped awnings over shopfronts (map.awnings), drawn above anyone standing
+    // under them, with their shade on the pavement below. Colours are palette names.
+    for (const aw of map.awnings ?? []) {
+      const PAL = { warm3: 0xb9853f, bone: 0xe8e2d0, screen0: 0x0f4a5c, steel: 0x7a8794, concrete2: 0x5b6862 };
+      const [c1, c2] = aw.c.map((k) => PAL[k] ?? 0x7a8794), x0 = aw.x * TILE, y0 = aw.y * TILE - 6, w = aw.w * TILE;
+      const shade = this.add.graphics().setDepth(-8); shade.fillStyle(0x000000, 0.28).fillRect(x0 + 2, y0 + 12, w, 5); this.propSprites.push(shade);
+      const g = this.add.graphics().setDepth(aw.y * TILE + TILE + 2);
+      for (let x = 0; x < w; x += 4) g.fillStyle((x / 4) % 2 ? c2 : c1).fillRect(x0 + x, y0, Math.min(4, w - x), 9);
+      g.fillStyle(0x000000, 0.25).fillRect(x0, y0 + 6, w, 3);                          // the fold, in shadow
+      for (let x = 0; x < w; x += 4) g.fillStyle((x / 4) % 2 ? c2 : c1).fillRect(x0 + x + 1, y0 + 9, 2, 2);   // scalloped hem
+      g.fillStyle(0xffffff, 0.12).fillRect(x0, y0, w, 1);                              // lit top edge
+      g.fillStyle(0x17142b).fillRect(x0 - 1, y0, 1, 10).fillRect(x0 + w, y0, 1, 10);     // frame ends
+      this.propSprites.push(g);
+    }
     // Depth pass (task 13): leaf canopies over trees that have open ground to their north, at the tree's
     // base depth, so anyone walking behind a tree is partly hidden by it (art: fg.canopy in props).
     if (this.textures.exists('props') && this.textures.get('props').has('fg.canopy')) {
