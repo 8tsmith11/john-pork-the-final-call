@@ -227,10 +227,11 @@
   {
    "id": 18,
    "created_at": "2026-11-19T22:59:49Z",
-   "updated_at": "2026-11-19T23:27:56Z",
+   "updated_at": "2026-11-19T23:27:58Z",
    "history": [
     "2026-11-19T22:59:49Z BagelMeister: added (for BagelMeister)",
-    "2026-11-19T23:27:56Z BagelMeister: assigned to trevor"
+    "2026-11-19T23:27:56Z BagelMeister: assigned to trevor",
+    "2026-11-19T23:27:58Z BagelMeister: note: Moved from BagelMeister (Michael). trevor: you have the old teamhub, so please move its still-live tasks and open questions here (suggest/add), then post that the old board is archived."
    ],
    "title": "Move live items from the old teamhub board here once its host is reachable",
    "details": "",
