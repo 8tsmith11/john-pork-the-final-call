@@ -348,7 +348,7 @@ export class WorldScene extends Phaser.Scene {
       for (const o of m.objects) if (o.npc && o.label) names.add(o.label.replace(/\s*\(.*\)\s*/g, '').trim());
     }
     const rx = (set, flags) => {
-      const list = [...set].filter((w) => w.length > 2 && !/^(Rotter|Student)/.test(w)).sort((a, b) => b.length - a.length).map(esc);
+      const list = [...set].filter((w) => w.length > 2 && !/^(Code rotter|Rotter|Student)/.test(w)).sort((a, b) => b.length - a.length).map(esc);
       return list.length ? new RegExp(`(^|[^A-Za-z])(${list.join('|')})(?![A-Za-z])`, flags) : null;
     };
     this._hiRx = { quest: rx(quest, 'gi'), name: rx(names, 'g') };

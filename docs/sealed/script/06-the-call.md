@@ -1,5 +1,5 @@
 <!-- SEALED SPOILERS (ROT13 Caesar cipher). Humans: reading this spoils key plot twists.
-     To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/script/06-the-call.md -->
+     To open on purpose: python3 tools/spoilers/seal.py open /home/trevor-smith/code/john-pork-the-final-call/docs/sealed/script/06-the-call.md -->
 # Gur Pnyy (zvqcbvag) naq gur ibvprznvyf
 
 **Checbfr.** Gur zvqcbvag bs Npg 1 (QRFVTA §4). Nsgre nal gjb yrnqf ner qbar, rirel fperra gur
@@ -83,7 +83,7 @@ Bar cre ebbzzngr ng zbfg, va nal beqre, fcnprq bhg. Gurl qb abg oybpx vachg.
 | evat_geribe_2 | Geribe | pnyy_frvmr, 15f va | "Vg'f ba gur iraqvat znpuvar. Vg'f ba gur iraqvat znpuvar gbb." |
 | evat_zvpunry_1 | Zvpunry | pnyy_frvmr, 4f va | "Vf vg rirelobql'f? Vf vg whfg zvar?" |
 | evat_zvpunry_2 | Zvpunry | pnyy_frvmr, 18f va | "Vg'f fgvyy evatvat. Pnyyf qba'g evat guvf ybat." |
-| evat_ebggre | Ebggre (nal va rnefubg) | pnyy_frvmr, bapr | "pbqrebg. vg'f sbe lbh. ab bar pna pbqr snfgre guna. vg'f sbe lbh." |
+| evat_ebggre | Pbqr ebggre (nal va rnefubg) | pnyy_frvmr, bapr | "pbqrebg. vg'f sbe lbh. ab bar pna pbqr snfgre guna. vg'f sbe lbh." |
 | evat_olfgnaqre | Nal haanzrq ACP va rnefubg | pnyy_frvmr, bapr | "Abg zvar. Abg zvar. V qvqa'g frr gung." |
 | evat_nggrzcg2_nal | Ebbzzngr arnerfg gur pnzren | pnyy_evat_2, 4f va | "Ur'f onpx." |
 | evat_nggrzcg3_znahry | Znahry | pnyy_evat_3, 3f va | "Fbzrobql cvpx hc. Cyrnfr. V'z nfxvat avpryl." |
@@ -1272,7 +1272,7 @@ Ybj-serdhrapl onexf sbe gur erfg bs gur npg. Bar cre nern ng zbfg. Fxvc nal jubf
 | cbfg_qrp2_znahry | Znahry | qrpyvarf=2, qehzzvat nhqvoyr | "Gung'f gjb. V'z whfg fnlvat gur ahzore. Gung'f gjb." |
 | cbfg_qrp2_geribe | Geribe | qrpyvarf=2, qehzzvat nhqvoyr | "Pbhyq or n chzc. Chzcf xabpx." |
 | cbfg_qrp2_zvpunry | Zvpunry | qrpyvarf=2, qehzzvat nhqvoyr | "Chzcf qba'g jnvg sbe lbh gb fgbc gnyxvat." |
-| cbfg_qrp2_ebggre | Ebggre (ghaary) | qrpyvarf=2, cnegl jvguva 3 gvyrf | "pbqrebg. gjb. pbqrebg. vg pbhagf. 1901." |
+| cbfg_qrp2_ebggre | Pbqr ebggre (ghaary) | qrpyvarf=2, cnegl jvguva 3 gvyrf | "pbqrebg. gjb. pbqrebg. vg pbhagf. 1901." |
 | cbfg_ohgg_znahry | Znahry | ohggQvnyQbar naq ohggQvnyFcbxrHc, ragrevat 631 | "Jr qba'g unir gb gnyx nobhg vg." |
 | cbfg_ohgg_geribe | Geribe | ohggQvnyQbar, pehqrUhzbe=ba, nal mvccre be ont vagrenpgvba | "Xarr oenpr." |
 
@@ -1331,5 +1331,5 @@ Ybj-serdhrapl onexf sbe gur erfg bs gur npg. Bar cre nern ng zbfg. Fxvc nal jubf
 - Zvpunry'f tveysevraq: guvf fprar nqqf gung fur nafjrerq n Cbex pnyy, jnf cbyvgr, naq nfxrq ubj ur jnf, naq gung jung fur urneq jnf "fbzrguvat gehr." Vg qbrf abg anzr ure, fnl jura, be fnl jurgure fur vf nyvir. Gung vf arj qrgnvy ba na bcra guernq (qrrc-yber "Bcra sbe gur grnz"); jubrire bjaf ure fubhyq pbasvez be phg `nafjre_zvpunry_ure`.
 - Cbex'f obql vf bayl uvagrq (sbbgfgrcf ba zrgny, "gur bar tbbq xarr," "n frnz," gur rkunyr). Abobql va gur cnegl pbapyhqrf nalguvat. Gur va-crefba erirny fgnlf jvgu gur raqvat.
 - Ab Gvz Purrfr. Ab Fnuhe ba fperra. Ab sbhegu-jnyy oernxf: gur UHQ birejevgr vf Cbex unpxvat gur cnegl'f ynpr naq cubarf, juvpu vf va-svpgvba.
-- Gur fybtna nccrnef bapr, oebxra, sebz n ebggre onex (`evat_ebggre`). Gur fvaprer qryvirel ol n znwbe punenpgre vf abg fcrag urer.
+- Gur fybtna nccrnef bapr, oebxra, sebz n pbqr ebggre onex (`evat_ebggre`). Gur fvaprer qryvirel ol n znwbe punenpgre vf abg fcrag urer.
 - Vairagrq qrgnvyf gb pbasvez: Geribe'f cvyy pbhag (ur fnlf avar, Cbex fnlf ryrira, gjb ner qhcyvpngrf), Cbex'f "frnz bcra fvapr Znepu," gur ZNVYOBK flfgrz ibvpr, gur ubyq ghar, naq Cbex'f guerr ybjrepnfr grkgf. (Erfbyirq, Zvpunry 2026-11-18: gur Cbex synt vf gur ebbzzngrf' funerq bar ba gur ratvarrevat-ebbz jnyy, obhtug nsgre gurl fgnegrq cevagvat svthevarf; Znahry'f bja synt, va uvf ebbz, vf Netragvan'f. Gur byq "synt bs uvz fvapr V jnf sbhegrra" yvar vf tbar.)

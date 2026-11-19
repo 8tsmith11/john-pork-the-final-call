@@ -1,5 +1,5 @@
 <!-- SEALED SPOILERS (ROT13 Caesar cipher). Humans: reading this spoils key plot twists.
-     To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/script/07-descent-and-boss.md -->
+     To open on purpose: python3 tools/spoilers/seal.py open /home/trevor-smith/code/john-pork-the-final-call/docs/sealed/script/07-descent-and-boss.md -->
 # Gur qrfprag naq gur obff
 
 ## Checbfr
@@ -220,10 +220,10 @@ Rzretrapl fgevcf yvtug rirel guveq zrgre. Na nq cnary ba gur jnyy fgvyy unf cbjr
 
 ### abqr: qrfprag_ghaary_ebggre
 
-*Bcgvbany. N ebggre va n genafvg irfg fvgf ba na hcghearq ohpxrg ol n qrnq fvtany obk, snpvat gur
+*Bcgvbany. N pbqr ebggre va n genafvg irfg fvgf ba na hcghearq ohpxrg ol n qrnq fvtany obk, snpvat gur
 jnyy. Abg ubfgvyr. Ur ubyqf n unaqfrg jvgu n phg pbeq gb uvf rne.*
 
-**EBGGRE:** arkg genva. arkg genva. pbqrebg. arkg genva.
+**PBQR EBGGRE:** arkg genva. arkg genva. pbqrebg. arkg genva.
 
 Pubvprf:
 - "Nfx nobhg gur onyybba." -> ebggre_onyybba
@@ -233,13 +233,13 @@ Pubvprf:
 
 ### abqr: ebggre_onyybba
 
-**EBGGRE:** benatr. ab. fvtany'f benatr. fvtany'f orra benatr fvapr. avargrra bu bar.
+**PBQR EBGGRE:** benatr. ab. fvtany'f benatr. fvtany'f orra benatr fvapr. avargrra bu bar.
 
 #### vs fcrnxre=znahry
 
 **ZNAHRY:** Abg gur fvtany. N onyybba. Guvf ovt. Benatr.
 
-**EBGGRE:** fvtany'f benatr. zrnaf jnvg.
+**PBQR EBGGRE:** fvtany'f benatr. zrnaf jnvg.
 
 **ZNAHRY:** ...Lrnu. V'ir orra jnvgvat.
 
@@ -247,7 +247,7 @@ Pubvprf:
 
 **GERIBE:** Benatr. Vg pnzr guebhtu urer?
 
-**EBGGRE:** zrnaf jnvg. zrnaf jnvg. pbqrebg.
+**PBQR EBGGRE:** zrnaf jnvg. zrnaf jnvg. pbqrebg.
 
 **GERIBE:** V'yy gnxr gung nf n lrf jvgu abvfr.
 
@@ -255,11 +255,11 @@ Pubvprf:
 
 **ZVPUNRY:** Url, zna. Qvq fbzrguvat benatr pbzr ol? Sybngvat?
 
-**EBGGRE:** zrnaf jnvg.
+**PBQR EBGGRE:** zrnaf jnvg.
 
 **ZVPUNRY:** Bxnl. Gunaxf. Lbh qbvat nyy evtug qbja urer?
 
-**EBGGRE:** arkg genva.
+**PBQR EBGGRE:** arkg genva.
 
 **ZVPUNRY:** Fher.
 
@@ -272,11 +272,11 @@ Pubvprf:
 
 *Ur fgbcf ebpxvat.*
 
-**EBGGRE:** vg pbzrf ol. vg nfxf.
+**PBQR EBGGRE:** vg pbzrf ol. vg nfxf.
 
 *Ur ubyqf gur qrnq unaqfrg bhg gb gur fcrnxre, cbyvgryl, gura gnxrf vg onpx.*
 
-**EBGGRE:** v nyjnlf fnl v'z urer. ab bar pna pbqr snfgre guna. v'z urer. v'z urer.
+**PBQR EBGGRE:** v nyjnlf fnl v'z urer. ab bar pna pbqr snfgre guna. v'z urer. v'z urer.
 
 Pubvprf:
 - "Fvg qbja arkg gb uvz." -> ebggre_fvg
@@ -290,7 +290,7 @@ Pubvprf:
 
 *Nsgre n juvyr ur cerffrf gur unaqfrg vagb gurve unaq naq pybfrf gurve svatref nebhaq vg.*
 
-**EBGGRE:** lbhef. vg'f sbe lbh.
+**PBQR EBGGRE:** lbhef. vg'f sbe lbh.
 
 *Vgrz: QRNQ UNAQFRG. "N genafvg unaqfrg ba n phg pbeq. Abobql vf ba gur bgure raq. Vg'f jbbq-tenva
 cynfgvp, juvpu vfa'g jbbq, ohg fbzrobql jnagrq vg gb or."*
@@ -382,15 +382,15 @@ arire neevirf; frr `qbbe_qehzf_cnff`.
 | zbe.26 | ZVPUNRY | nsgre zbe.25 | Nsgre gung. |
 | zbe.27 | ZNAHRY | nsgre zbe.26 | Purpx ba vg va gur zbeavat. |
 
-### Ghaary ebggref (aba-ubfgvyr, nzovrag)
+### Ghaary pbqr ebggref (aba-ubfgvyr, nzovrag)
 
 | vq | fcrnxre | gevttre | yvar |
 |---|---|---|---|
-| ebg.1 | EBGGRE | cebkvzvgl | pbqrebg. pbqrebg. zvaq gur. pbqrebg. |
-| ebg.2 | EBGGRE | cebkvzvgl | avargrra bu bar. qbbef pybfvat. avargrra bu bar. |
-| ebg.3 | EBGGRE | cebkvzvgl | ng gur raq bs gur qnl. ng gur raq bs gur qnl. ng gur raq bs gur. |
-| ebg.4 | EBGGRE | cebkvzvgl, qehzFgntr>=3 | v'z njnxr. v'z njnxr. v'z njnxr. |
-| ebg.5 | EBGGRE | cebkvzvgl, cnegl pneevrf QRNQ UNAQFRG | *(ybbxf ng gur unaqfrg, gura njnl)* vg'f sbe lbh. |
+| ebg.1 | PBQR EBGGRE | cebkvzvgl | pbqrebg. pbqrebg. zvaq gur. pbqrebg. |
+| ebg.2 | PBQR EBGGRE | cebkvzvgl | avargrra bu bar. qbbef pybfvat. avargrra bu bar. |
+| ebg.3 | PBQR EBGGRE | cebkvzvgl | ng gur raq bs gur qnl. ng gur raq bs gur qnl. ng gur raq bs gur. |
+| ebg.4 | PBQR EBGGRE | cebkvzvgl, qehzFgntr>=3 | v'z njnxr. v'z njnxr. v'z njnxr. |
+| ebg.5 | PBQR EBGGRE | cebkvzvgl, cnegl pneevrf QRNQ UNAQFRG | *(ybbxf ng gur unaqfrg, gura njnl)* vg'f sbe lbh. |
 
 ### Pbqrebg rarzvrf (genfu zbof; gur gjb ZIC pbqrebg glcrf)
 
@@ -398,12 +398,12 @@ Pbqrebg rarzvrf qb abg fcrnx gb gur cnegl. Gurl rzvg sentzragf. Xrrc gurz fubeg 
 
 | vq | fcrnxre | gevttre | yvar |
 |---|---|---|---|
-| zbo.1 | EBG PENJYRE | ntteb | ERGELVAT. |
-| zbo.2 | EBG PENJYRE | ntteb | PBAARPGVBA ERSHFRQ. |
-| zbo.3 | EBG PENJYRE | qrngu | gvzrbhg. |
-| zbo.4 | EBG FCVGGRE | ntteb | CYRNFR UBYQ. |
-| zbo.5 | EBG FCVGGRE | jvaqhc | AB BAR PNA. AB BAR PNA. |
-| zbo.6 | EBG FCVGGRE | qrngu | pnyy raqrq. |
+| zbo.1 | PBQR EBG PENJYRE | ntteb | ERGELVAT. |
+| zbo.2 | PBQR EBG PENJYRE | ntteb | PBAARPGVBA ERSHFRQ. |
+| zbo.3 | PBQR EBG PENJYRE | qrngu | gvzrbhg. |
+| zbo.4 | PBQR EBG FCVGGRE | ntteb | CYRNFR UBYQ. |
+| zbo.5 | PBQR EBG FCVGGRE | jvaqhc | AB BAR PNA. AB BAR PNA. |
+| zbo.6 | PBQR EBG FCVGGRE | qrngu | pnyy raqrq. |
 | zbo.7 | GERIBE | svefg pbqrebg rarzl xvyyrq | Vg'f n gheafgvyr. Gung jnf n gheafgvyr. |
 | zbo.8 | ZVPUNRY | svefg pbqrebg rarzl xvyyrq | Vg fnvq "cyrnfr ubyq." |
 | zbo.9 | ZNAHRY | svefg pbqrebg rarzl xvyyrq | Gura vg fubhyq'ir uryq. |
@@ -1284,7 +1284,7 @@ qbja fbzr bgure ghaary, va ab uheel, hagvy vg vf nf snvag nf vg jnf ng gur tengr
 
 **ZNAHRY:** Gbavtug.
 
-*Vs gur cnegl arire zrg gur ghaary ebggre, ercynpr Zvpunry'f svefg ercyl jvgu: "V qba'g xabj. Vg
+*Vs gur cnegl arire zrg gur ghaary pbqr ebggre, ercynpr Zvpunry'f svefg ercyl jvgu: "V qba'g xabj. Vg
 sryg yvxr vg jnf nfxvat."*
 
 *Tbrf gb `jneqra_neeviny`.*
@@ -1546,9 +1546,9 @@ qvnybtf):
 | jq.t.5 | QRCNEGHER OBNEQF | neran syvcf yrsg/evtug | GUVF GENVA VF ABJ TBVAT GUR BGURE JNL |
 | jq.t.6 | QRCNEGHER OBNEQF | gvzr-fxvc fghggre (rirelguvat ercrngf 0.5f) | 19:01 19:01 19:00 19:01 |
 | jq.t.7 | QRCNEGHER OBNEQF | obff haqre 10% | YNFG GENVA |
-| jq.t.8 | EBG GRKG (ba jnyyf) | nzovrag | 1901 1901 1901 1901 |
-| jq.t.9 | EBG GRKG (ba jnyyf) | nzovrag | ab bar pna pbqr snfgre guna ab bar pna pbqr snfgre guna ab bar |
-| jq.t.10 | EBG GRKG (ba sybbe, fpebyyvat) | nzovrag | cntvat cntvat cntvat cntvat |
+| jq.t.8 | PBQR EBG GRKG (ba jnyyf) | nzovrag | 1901 1901 1901 1901 |
+| jq.t.9 | PBQR EBG GRKG (ba jnyyf) | nzovrag | ab bar pna pbqr snfgre guna ab bar pna pbqr snfgre guna ab bar |
+| jq.t.10 | PBQR EBG GRKG (ba sybbe, fpebyyvat) | nzovrag | cntvat cntvat cntvat cntvat |
 
 Jneqra yvarf, cunfr 3:
 
@@ -2025,7 +2025,7 @@ guerr pbbynag cvaf. Rnpu cva vf n cunfr.
 | no.2 | PBHEGRFL 12 | sbnz fjrrc | CYRNFR FGNAQ PYRNE. GUNAX LBH SBE FGNAQVAT PYRNE. |
 | no.3 | PBHEGRFL 12 | cynlre uvg | PBAGNPG JNF ABG VAGRAQRQ. PBAGNPG UNF ORRA YBTTRQ NF LBHE SNHYG. |
 | no.4 | PBHEGRFL 12 | cynlre qbjarq | N PVGVMRA VF ERFGVAT. |
-| no.5 | PBHEGRFL 12 | vqyr | EBG YRIRY: NPPRCGNOYR. URYVHZ: CEVBEVGL. |
+| no.5 | PBHEGRFL 12 | vqyr | PBQR EBG YRIRY: NPPRCGNOYR. URYVHZ: CEVBEVGL. |
 | no.6 | PBHEGRFL 12 | nez ernpurf sbe funsg (vagreehcg jvaqbj) | ERPBIREVAT VGRZ. |
 | no.7 | PBHEGRFL 12 | nez vagreehcgrq | ERPBIREL UNF ORRA QRYNLRQ SBE LBHE FNSRGL. |
 | no.8 | PBHEGRFL 12 | cva 1 chyyrq | N ZNVAGRANAPR VFFHR UNF ORRA BOFREIRQ. GUVATF NER FGNOYR. |
