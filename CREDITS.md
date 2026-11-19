@@ -7,6 +7,13 @@ Third-party code and assets, with licenses. Add every new asset here (PROCESS.md
 | Phaser (game framework) | 3.90.0 | MIT | https://phaser.io, `vendor/phaser.min.js` |
 | PeerJS (WebRTC signaling client) | 1.5.4 | MIT | https://peerjs.com, `vendor/peerjs.min.js` |
 
+## Calling portrait
+
+`assets/ui/john-pork-call.png` is a direct crop and resize of the supplied calling-screen
+reference `21D207AD-0B95-46CD-BE84-ED8ACD223968.jpeg`. Its coastal selfie is the John Pork
+image documented at [Know Your Meme](https://knowyourmeme.com/photos/2556929-john-pork-john-pork-is-calling).
+Used under the project's fan-project decision D-011 and the approved call-portrait exception.
+
 ## Music (all CC0 1.0, public domain dedication; credit given anyway)
 
 | Track (file) | Used for | Author | Source |

@@ -6,17 +6,18 @@ const C = { night: 0x0d0b1a, panel: 0x17142b, edge: 0x332e57, pink: 0xe87a9c,
 const font = (size, color = C.bone) => ({ fontFamily: 'monospace', fontSize: `${size}px`, color });
 
 /**
- * new CallCard(scene, { name, portraitKey: 'pork_0', onAnswer, onDecline }).
+ * new CallCard(scene, { name, portraitKey: 'john-pork-call', onAnswer, onDecline }).
  * Opens immediately. F / X and pointer buttons resolve once and dispose the card.
  * answer(), decline(), or destroy() can also be called by the host flow (destroy is silent).
  * Optional ringFor is seconds; expiry resolves through onTimeout instead of onDecline.
- * portraitKey is an existing frame in the principals atlas; no external image is loaded.
+ * portraitKey is a preloaded portrait texture or a frame in the principals atlas.
  */
 export class CallCard {
-  constructor(scene, { name = 'John Pork', portraitKey = 'pork_0', onAnswer, onDecline, ringFor, onTimeout } = {}) {
+  constructor(scene, { name = 'John Pork', portraitKey = 'john-pork-call', onAnswer, onDecline, ringFor, onTimeout } = {}) {
     this.scene = scene;
     this.onAnswer = onAnswer; this.onDecline = onDecline;
     this.closed = false;
+    this.photoPortrait = scene.textures.exists(portraitKey) && portraitKey !== 'principals';
     this.root = scene.add.container(0, 0).setScrollFactor(0).setDepth(9800);
     const add = (obj) => { this.root.add(obj); return obj; };
     // Catch clicks over the entire takeover so they cannot reach objects underneath it.
@@ -36,8 +37,11 @@ export class CallCard {
 
     this.ring = add(scene.add.graphics());
     frame.fillStyle(C.night).fillCircle(VIEW.w / 2, 134, 47);
-    if (scene.textures.exists('principals') && scene.textures.get('principals').has(portraitKey)) {
-      add(scene.add.image(VIEW.w / 2, 134, 'principals', portraitKey).setScale(3));
+    const frameKey = portraitKey === 'john-pork-call' ? 'pork_0' : portraitKey;
+    if (this.photoPortrait) {
+      add(scene.add.image(VIEW.w / 2, 134, portraitKey).setDisplaySize(132, 90));
+    } else if (scene.textures.exists('principals') && scene.textures.get('principals').has(frameKey)) {
+      add(scene.add.image(VIEW.w / 2, 134, 'principals', frameKey).setScale(3));
     } else {
       add(scene.add.text(VIEW.w / 2, 134, 'JP', font(26, '#f7b8c8')).setOrigin(0.5));
     }
@@ -73,8 +77,16 @@ export class CallCard {
   _tick() {
     if (this.closed) return;
     const t = this.scene.time.now - this._started, pulse = (t % 1600) / 1600;
-    this.ring.clear().lineStyle(1, C.pink, 0.8).strokeCircle(VIEW.w / 2, 134, 49);
-    this.ring.lineStyle(2, C.pale, 0.65 * (1 - pulse)).strokeCircle(VIEW.w / 2, 134, 50 + pulse * 12);
+    this.ring.clear().lineStyle(1, C.pink, 0.8);
+    if (this.photoPortrait) {
+      this.ring.strokeRoundedRect(VIEW.w / 2 - 70, 85, 140, 98, 3);
+      const spread = Math.floor(pulse * 7);
+      this.ring.lineStyle(2, C.pale, 0.65 * (1 - pulse))
+        .strokeRoundedRect(VIEW.w / 2 - 71 - spread, 84 - spread, 142 + spread * 2, 100 + spread * 2, 3);
+    } else {
+      this.ring.strokeCircle(VIEW.w / 2, 134, 49);
+      this.ring.lineStyle(2, C.pale, 0.65 * (1 - pulse)).strokeCircle(VIEW.w / 2, 134, 50 + pulse * 12);
+    }
     // Small torn strips stay outside the face and controls; the entire screen never flashes.
     const step = Math.floor(t / 180), g = this.glitch.clear();
     for (let i = 0; i < 3; i++) {
