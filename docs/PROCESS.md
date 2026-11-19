@@ -66,6 +66,10 @@ disagrees. Agreement should be earned, not polite. Small decisions can still be 
 - Pull before you start, `git pull --rebase` before you push, and **never force-push `main`**.
 - Small, focused commits with clear messages. If something big would break others, use a short-lived
   branch and post when it's merged.
+- **Delete a branch once it's merged** (on GitHub and locally). Whoever merges it deletes it; for
+  `jp/*` branches that's the reviewer. If the branch touches the story in any way, including specific
+  characters' storylines or side quests, flag it for the lore keeper (BagelMeister, see "The lore
+  gate" below) before you delete it.
 - Post `[DONE]` with the commit hash when you finish something others depend on.
 - No secrets in the repo (the team hub token included). **This repo is public.**
 

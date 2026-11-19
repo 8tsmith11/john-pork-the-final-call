@@ -180,6 +180,12 @@ znpuvarf ner pbzzbacynpr va 2098 (frr orybj). Gurfr guerr ner fvzcyl gur zbfg rk
 - **Gur havirefvgl**, n Pbagvahvgl pnzchf. Fghqragf jbex bss ghvgvba nf pbzchgr ncceragvprf, naq
   nyy guerr ner fghpx va **245 yno**, qvtvgny ryrpgebavpf, jurer ncceragvprf jevgr uneqjner va **Irevybt ol unaq**
   orpnhfr NV-jevggra uneqjner ebgf ("V ungr 245 yno"). **Grfghqb** vf fgvyy gurer.
+- **Gur qrnq cnexvat ybg** fbhgu bs gur cynmn unf sbhe erthynef, beqvanel crbcyr jub tb ol byq
+  2020f pungobg anzrf: **PungTCG**, **Pynhqr**, **PungTGG** naq **PungTQG** (gur ynfg gjb ner
+  xabpxbssf). PungTGG vf n pnfuvre jub pna bayl fnl "lbhe pneq unf qrpyvarq," syng (gur "Pung TGG
+  ybbxva' nuu" zrzr). PungTQG bayl nfxf gur qhzo dhrfgvbaf crbcyr glcr vagb pungobgf. Synibe ACPf
+  jvgu ab cybg ebyr; zber zrzr punenpgref jnvg va `bcra-zrzr-punenpgref.zq` (frnyrq). PungTCG'f yvar,
+  "Jr nyy oynpx," vf n uhzna vafvqr wbxr naq fgnlf nf jevggra (Zvpunry, 2026-11-18).
 - Terra Yvar (zbfgyl ehaf), Checyr Yvar (vgf fvtaf fgvyy fnl "bcravat fbba"), Ebhgr 1, Ynxr
   Negrzrfvn naq gur Cnvag Oenapu (svfuvat).
 - Yngre npgf: Terraoryg'f fcnpr-syvtug qvfurf, gur Zrnqr, Tnvgurefohet ynof, gur Fzrygre, naq

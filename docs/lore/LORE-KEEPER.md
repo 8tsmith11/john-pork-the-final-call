@@ -92,9 +92,6 @@ anywhere.
 **Sent to Michael to sort out (lore-gate session, 2026-11-19):**
 - A later-act idea touches a real person's likeness. On hold until the humans decide (sealed,
   `acts-2-3.md`).
-- The open meme pool (`bagel/meme-npcs`, not merged): several entries are real people, and some lean
-  on race or ethnicity, which `meme-research.md`'s cautions rule out. The four parking-lot chatbots
-  are cleared.
 - The John Pork calling portrait is a real meme photo with no known licence (gonman #299). It was
   Trevor's call; trevor is putting the licence question to him.
 
@@ -123,6 +120,10 @@ anywhere.
   both committed files re-encoded; trevor runs the board export, so he needs to pull before the next one.
 
 **Other:**
+- **The meme pool** is merged, sealed: `docs/sealed/open-meme-characters.md` (Michael cleared it,
+  2026-11-19; his decisions are in its header). Nothing in it is canon until someone claims an entry
+  and it clears the gate. Check each against the other humans' floors; one entry touches Manuel's
+  character and needs gonman's yes; the Palantir–Tim tie gets a `[SEALED]` review.
 - **Hub replies:** this session couldn't reach the hub. The board answers for #251–#381 are in the
   shared notes and still need posting (once the hub reconnects).
 - **Trevor:** his own unique-item picks (two placeholders change) and voice cameo are pending.

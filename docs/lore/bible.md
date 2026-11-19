@@ -173,6 +173,9 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
 - **The university**, a Continuity campus. Students work off tuition as compute apprentices, and
   all three are stuck in **245 lab**, digital electronics, where apprentices write hardware in **Verilog by hand**
   because AI-written hardware rots ("I hate 245 lab"). **Testudo** is still there.
+- **The dead parking lot** south of the plaza has four regulars, ordinary people who go by old
+  2020s chatbot names. Flavor NPCs with no plot role (Michael, 2026-11-18). More meme characters wait
+  in a sealed pool for the lore gate.
 - Green Line (mostly runs), Purple Line (its signs still say "opening soon"), Route 1, Lake
   Artemesia and the Paint Branch (fishing).
 - Later acts: Greenbelt's space-flight dishes, the Meade, Gaithersburg labs, the Smelter, and
