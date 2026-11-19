@@ -10,7 +10,7 @@ export const MICHAEL_BELT = true;   // one switch: BagelMeister can turn it off 
 export const BELT_LINES = {
   michael: ['Sorry. Left my belt at home.', 'Not again. Sorry. Left my belt at home.', 'Sorry! Belt\'s at home.', 'Nobody look. Left my belt at home.'],   // the first is Michael's own line
   manuel: ['Michael. Pants.', 'Che, the pants.', 'Again?'],
-  trevor: ['I\'m buying you a belt.', 'Belt. Putting it on the list.'],
+  trevor: ['You can borrow my lifting belt.', 'I\'m buying you a belt.', 'Belt. Putting it on the list.'],   // gym Trevor, never a body joke (his floor)
   after: ['Okay. We\'re good.', 'That never happened.'],
 };
 
