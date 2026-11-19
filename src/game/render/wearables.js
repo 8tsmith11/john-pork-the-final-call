@@ -297,6 +297,26 @@ function paintGrow(src, out, w, h, facing, body, look, who) {
   }
   // newer boots: a lit top edge
   if (lv >= 7) { const [bt] = rows(C.boots); if (bt < h) for (let x = 0; x < w; x++) if (is(x, bt, C.boots)) put(x, bt, hex(P.warm2)); }
+  // A beard, slowly (Manuel: "grow a slight beard"): stubble at the jaw corners (3), the chin (5), a light beard
+  // along the jaw (6), a little up the cheeks (8). In each roommate's own hair colour; not from behind.
+  if (lv >= 3 && facing !== 'up' && ftop < h && stop < h) {
+    let fb = -1; for (let y = stop - 1; y >= ftop; y--) { let n = 0; for (let x = 0; x < w; x++) if (is(x, y, C.skin)) n++; if (n >= 4) { fb = y; break; } }   // the jaw, not the neck
+    if (fb > ftop + 1) {
+      const stub = C.hair[1] ?? C.hair[0], row = (y) => { const xs = []; for (let x = 0; x < w; x++) if (is(x, y, C.skin)) xs.push(x); return xs; };
+      const xs = row(fb), pick = (i) => xs[Math.max(0, Math.min(xs.length - 1, i))];
+      if (facing === 'right') {                                         // side view: the jaw is the back-lower edge of the face
+        put(pick(xs.length - 2), fb, stub);
+        if (lv >= 5) put(pick(xs.length - 1), fb, stub);
+        if (lv >= 6) xs.forEach((x) => put(x, fb, stub));
+        if (lv >= 8) { const up = row(fb - 1); if (up.length) put(up[0], fb - 1, stub); }
+      } else {
+        put(pick(0), fb, stub); put(pick(xs.length - 1), fb, stub);
+        if (lv >= 5) put(pick(Math.floor(xs.length / 2)), fb, stub);
+        if (lv >= 6) xs.forEach((x) => put(x, fb, stub));
+        if (lv >= 8) { const up = row(fb - 1); if (up.length > 2) { put(up[0], fb - 1, stub); put(up[up.length - 1], fb - 1, stub); } }
+      }
+    }
+  }
   if (st < 1) return true;
   // stage marks
   const smudge = (x, y) => { if (is(x, y, C.shirt)) put(x, y, hex(P.concrete2)); };
