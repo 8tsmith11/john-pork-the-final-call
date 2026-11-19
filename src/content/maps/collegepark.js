@@ -132,7 +132,7 @@ export const metroPlaza = makeMap({
     // Easter egg (docs/SECRETS.md): he sings a different country's anthem every time you talk to him. He has no name, on purpose.
     { id: 'npc.anthem', eggNo: true, x: 18, y: 42, label: 'Student at attention', npc: true, age: 'adult', action: 'pages', flag: 'secrets.anthem.found', pages: [
       'A big second-year in a compute hoodie stands at attention by the gate, bowl cut, glasses, one hand on his chest, a stuffed squirrel under the other arm. He is singing the anthem of Uruguay. He does all eleven verses.\n\n"Greatest nation on earth," he says after. He has never been.',
-      'Today it is Kazakhstan. He holds the last note until a window closes somewhere.\n\n"I would die for the steppe." He adjusts his glasses. "My mother calls from Chengdu every Sunday and asks which country it is this week. I tell her to stand up first."',
+      'Today it is Kazakhstan. He holds the last note until a window closes somewhere.\n\n"I would die for the steppe." He adjusts his glasses. "My mother calls every Sunday and asks which country it is this week. I tell her to stand up first."',
       'Nepal. He sings it at the sky.\n\n"Only flag in the world with five sides. That takes conviction. Rectangles are for countries that gave up."',
       'He lifts the squirrel\'s paw into a salute for you.\n\n"General Nutsworth. Decorated in four republics. He outranks you, and he outranks Cal."',
       'Finland, with his eyes shut. A tear gets under the glasses.\n\n"Don\'t talk during Finland."',
