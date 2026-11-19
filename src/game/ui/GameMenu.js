@@ -1,5 +1,6 @@
 // In-game menu: tabbed panel (INVENTORY · SKILLS · MAP · CONTROLS · SYSTEM) plus the FAB printer.
 // Rebuilt from scratch on every refresh (cheap, and never shows stale state).
+import { REGIONS, RINGS, regionState } from '../../content/regions.js';
 import { ENEMIES, GUIDE_TIPS, GUIDE_STATS_AT, GUIDE_TIP_AT } from '../../content/enemies.js';
 import { PARTY_SCALE, COMBAT } from '../../engine/sim.js';
 import { VIEW } from '../../view.js';
@@ -466,6 +467,12 @@ export class GameMenu {
   _map(g) {
     const s = this.scene, b = this.box;
     const vx = b.x + 10, vy = b.y + 26, vw = b.w - 20, vh = b.h - 44;
+    // LOCAL (the area you're in) or WORLD (the regions in rings, docs/design/10-scope.md).
+    for (const [mode, label, dx] of [['local', 'LOCAL', 74], ['world', 'WORLD', 40]]) {
+      const on = (this.mapMode ?? 'local') === mode;
+      this._t(b.x + b.w - dx, b.y + 26 - 9, label, F(7, on ? C.hi : C.sub), () => { this.mapMode = mode; this.refresh(); });
+    }
+    if (this.mapMode === 'world') return this._worldMap(g, vx, vy, vw, vh);
     if (!this.mapView) {
       const { x, y } = s.playerWorldTile();
       this.mapView = { cx: x, cy: y, zoom: 3 };
@@ -488,6 +495,37 @@ export class GameMenu {
       this._wheelHooked = true;
       s.input.on('wheel', (p, objs, dx, dy) => { if (this.tab !== 'map') return; this.mapView.zoom = Math.max(1, Math.min(8, this.mapView.zoom * (dy > 0 ? 0.8 : 1.25))); this.refresh(); });
       s.input.keyboard.on('keydown-C', () => { if (this.tab !== 'map') return; const { x, y } = s.playerWorldTile(); Object.assign(this.mapView, { cx: x, cy: y }); this.refresh(); });
+    }
+  }
+
+  // The world view: three rings, one per act, with the regions placed roughly where they are. Here, open,
+  // closed tonight (the cordon) and locked (a later act, shown as ???).
+  _worldMap(g, vx, vy, vw, vh) {
+    const s = this.scene, act = s.save.world.act ?? 1, mapId = s.map?.id, es = getLang() === 'es';
+    const cx = vx + vw * 0.5, cy = vy + vh * 0.5, RX = vw * 0.98, RY = vh * 0.98;
+    g.fillStyle(0x0b0d16, 1).fillRect(vx, vy, vw, vh);
+    const COL = { here: 0xffb347, open: 0x7fb069, closed: 0xd65db1, locked: 0x3a4060 };
+    for (const ring of RINGS) {
+      const open = ring.act <= act;
+      g.lineStyle(1, open ? 0x5d6487 : 0x2a2f45, open ? 0.9 : 0.6).strokeEllipse(cx, cy, RX * ring.r * 2, RY * ring.r * 2);
+      this._t(cx, cy - RY * ring.r - 1, open ? (es ? ring.es : ring.name) : '???', F(6, open ? C.sub : '#3a4060')).setOrigin(0.5, 1);
+    }
+    // Each region sits on its ring, in the compass direction it lies from College Park (x/y in regions.js).
+    for (const r of REGIONS) {
+      const ring = RINGS.find((q) => q.ring === r.ring), ang = Math.atan2(r.y - 0.55, r.x - 0.5);
+      const x = cx + Math.cos(ang) * RX * ring.r, y = cy + Math.sin(ang) * RY * ring.r;
+      const st = regionState(r, act, mapId);
+      g.fillStyle(COL[st], 1).fillCircle(x, y, st === 'here' ? 3.5 : 2.5);
+      if (st === 'here') g.lineStyle(1, 0xffb347, 0.8).strokeCircle(x, y, 6);
+      if (st === 'locked') continue;   // later acts: a dot only (the ring itself reads ???)
+      const name = es ? r.shortEs : r.short, left = Math.cos(ang) < -0.2;
+      this._t(x + (left ? -5 : 5), y, name, F(6, st === 'here' ? C.hi : st === 'locked' ? '#3a4060' : C.sub)).setOrigin(left ? 1 : 0, 0.5);
+    }
+    // Legend with the real colours.
+    let lx = vx;
+    for (const [st, en, esL] of [['here', 'here', 'aquí'], ['open', 'open', 'abierto'], ['closed', 'closed tonight', 'cerrado esta noche'], ['locked', 'later', 'más adelante']]) {
+      g.fillStyle(COL[st], 1).fillCircle(lx + 3, vy + vh + 8, 2.5);
+      lx += 9 + this._t(lx + 8, vy + vh + 4, es ? esL : en, F(7, C.sub)).width + 6;
     }
   }
 

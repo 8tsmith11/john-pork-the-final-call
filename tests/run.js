@@ -770,6 +770,17 @@ test('boss fight: the Warden uses several patterns with tells and recovery windo
   assert.ok(!deflectable, 'beam shots should be undeflectable');
 });
 
+const Regions = await import('../src/content/regions.js');
+test('world regions: every built map belongs to exactly one region, each region sits in its act\'s ring, states follow the act', () => {
+  for (const id of Object.keys(MAPS_FOR_TEST)) assert.equal(Regions.REGIONS.filter((r) => r.maps.includes(id)).length, 1, `${id} must belong to one region`);
+  for (const r of Regions.REGIONS) assert.equal(Regions.RINGS.find((q) => q.ring === r.ring)?.act, r.act, `${r.id} ring/act mismatch`);
+  const aster = Regions.REGIONS.find((r) => r.id === 'aster'), campus = Regions.REGIONS.find((r) => r.id === 'campus'), balt = Regions.REGIONS.find((r) => r.id === 'baltimore');
+  assert.equal(Regions.regionState(aster, 1, 'room631'), 'here');
+  assert.equal(Regions.regionState(campus, 1, 'room631'), 'closed');
+  assert.equal(Regions.regionState(balt, 1, 'room631'), 'locked');
+  assert.equal(Regions.regionState(balt, 2, 'room631'), 'closed');
+});
+
 const Mach = await import('../src/engine/machines.js');
 test('machine jobs: one per machine, run on play time while you are away, ready once, collected once', () => {
   const save = { world: {} };
