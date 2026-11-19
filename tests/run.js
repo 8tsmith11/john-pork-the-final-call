@@ -772,7 +772,7 @@ test('boss fight: the Warden uses several patterns with tells and recovery windo
 
 const Dawn = await import('../src/content/dawn.js');
 test('dawn clock (P-004): moves only with story beats, in order, and never passes first light', () => {
-  assert.equal(Dawn.dawnLabel({}), '3:09 am');
+  assert.equal(Dawn.dawnLabel({}), '2:58 am');   // the microwave in the cold open
   let last = Dawn.DAWN_START; const flags = {};
   for (const [flag, at] of Dawn.DAWN_BEATS) { assert.ok(at > last && at < Dawn.FIRST_LIGHT, `${flag} out of order`); last = at; flags[flag] = true; assert.equal(Dawn.dawnMinutes(flags), at); }
   assert.ok(Dawn.dawnProgress(flags) < 1 && Dawn.dawnProgress({}) === 0);
