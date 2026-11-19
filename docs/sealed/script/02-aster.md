@@ -32,9 +32,9 @@ Fpbcr: arneol
 
 *Fpbcr: nyy.*
 
-*Gur fvkgu-sybbe unyyjnl. Pnecrg, rvtug qbbef, n pybpx gung ernqf 19:01.*
+*Gur fvkgu-sybbe unyyjnl. Fbzrbar ba fvk vf selvat bavbaf. Oruvaq bar bs gur qbbef, n gryrivfvba ynhtuf ng abguvat.*
 
-> rf: Ry cnfvyyb qry frkgb cvfb. Nysbzoen, bpub chregnf, ha erybw dhr znepn 19:01.
+> rf: Ry cnfvyyb qry frkgb cvfb. Nythvra ra ry frkgb rfgá sevraqb probyyn. Qrgeáf qr han qr ynf chregnf, ha gryrivfbe fr eír qr anqn.
 
 **ZVPUNRY:** Bxnl. Jub qb jr jnxr hc?
 
