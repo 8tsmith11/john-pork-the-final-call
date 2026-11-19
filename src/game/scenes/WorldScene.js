@@ -639,6 +639,16 @@ export class WorldScene extends Phaser.Scene {
     for (const im of this.propSprites ?? []) im.destroy();
     for (const t of this.propTimers ?? []) t.remove();
     this.propSprites = []; this.propTimers = []; this.propById = {};
+    // Depth pass (task 13): leaf canopies over trees that have open ground to their north, at the tree's
+    // base depth, so anyone walking behind a tree is partly hidden by it (art: fg.canopy in props).
+    if (this.textures.exists('props') && this.textures.get('props').has('fg.canopy')) {
+      const open = (x, y) => y >= 0 && x >= 0 && x < map.w && !map.solid(x, y);
+      map.layout.forEach((row, ty) => [...row].forEach((ch, tx) => {
+        if (ch !== 'T' || !open(tx, ty - 1)) return;
+        const frame = (tx * 7 + ty * 13) % 2 ? 'fg.canopy#1' : 'fg.canopy';
+        this.propSprites.push(this.add.image(tx * TILE + 8, ty * TILE + TILE - 1, 'props', frame).setOrigin(0.5, 1).setDepth(ty * TILE + TILE - 2).setFlipX(((tx * 3 + ty) % 4) < 2));
+      }));
+    }
     for (const t of Object.values(this.leverLabels ?? {})) t.destroy(); this.leverLabels = {}; this.leverGfx?.clear();
     const props = this.textures.exists('props') ? this.textures.get('props') : null;
     for (const s of this.doorVis ?? []) s.vis.destroy();

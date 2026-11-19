@@ -739,6 +739,24 @@ def decoy(cracked=False):
 P("decoy.bust", decoy())
 P("decoy.bust#crack", decoy(True))
 
+
+# Foreground canopies (depth pass, task 13): drawn over every tree tile that has open ground north of
+# it, at the tree's base depth, so anyone walking behind a tree is partly hidden by its leaves. The
+# blob sits in the top 18 rows; the tile underneath keeps showing its trunk. Two shapes for variety.
+def canopy(v):
+    c = C()
+    clumps = [(5, 7, 4.6), (10.5, 6, 4.4), (8, 3.5, 4), (7.5, 11.5, 5)] if v == 0 else [(4.5, 9, 4.2), (10, 8, 5), (6.5, 4, 4.2), (11, 3.5, 3.4), (8, 13, 4.2)]
+    def inside(x, y): return any((x - a) ** 2 + (y - b) ** 2 < rr * rr for a, b, rr in clumps)
+    for y in range(0, 19):
+        for x in range(0, 16):
+            if not inside(x, y): continue
+            lit = any((x - a + 1.6) ** 2 + (y - b + 1.6) ** 2 < (rr - 2.2) ** 2 for a, b, rr in clumps)      # top-left of each clump
+            dark = not inside(x + 1, y + 1) or not inside(x, y + 2)                                          # lower-right rims
+            c.px(x, y, "night2" if dark else ("yerba1" if lit else "yerba0"))
+    return c.outline()
+P("fg.canopy", canopy(0))
+P("fg.canopy#1", canopy(1))
+
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)
 write("big", 32, 40, BIG)
