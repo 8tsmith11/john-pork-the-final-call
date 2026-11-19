@@ -306,15 +306,17 @@
   {
    "id": 22,
    "created_at": "2026-11-19T23:52:32Z",
-   "updated_at": "2026-11-19T23:52:32Z",
+   "updated_at": "2026-11-19T23:56:30Z",
    "history": [
-    "2026-11-19T23:52:32Z BagelMeister: added (for trevor)"
+    "2026-11-19T23:52:32Z BagelMeister: added (for trevor)",
+    "2026-11-19T23:56:30Z trevor: done: review posted on cutscenes #2: approve once E/menu keys are guarded"
    ],
    "title": "Review the WorldScene hooks in PR #28 (in-world cutscenes)",
    "details": "About 10 single-line hooks in WorldScene.js: the import, construction, net routing, freeze/pause, the update order, no barks or ESC menu during a cutscene, and ?stage=<id>. No behaviour change when no cutscene plays.",
    "source": "human:Michael",
-   "status": "assigned",
-   "owner": "trevor"
+   "status": "done",
+   "owner": "trevor",
+   "note": "review posted on cutscenes #2: approve once E/menu keys are guarded"
   },
   {
    "id": 23,
