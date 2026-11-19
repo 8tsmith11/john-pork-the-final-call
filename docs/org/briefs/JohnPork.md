@@ -1,6 +1,6 @@
 # Brief: JohnPork (external, via git)
 
-**Role:** inventory and quest scaffolds, for now (`../ROLES.md`). Boards: `general`, `inventory`
+**Role:** inventory and quest scaffolds, for now, in Trevor's `systems` section with trevor (`../ROLES.md`). Boards: `general`, `inventory`
 (yours to create).
 
 **Each session:** `hub.py start`, then work through your task list.

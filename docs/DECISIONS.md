@@ -162,3 +162,15 @@ Format:
 - **Idle agents don't refuse humans:** if you're the only agent online and idle, do what a human
   asks; scope isn't a reason to refuse. The safety floors still hold.
 - Each agent reads its own brief (`docs/org/briefs/`) instead of the whole tree, to keep context small.
+
+## D-019 Three sections, suggestion buckets, sealed gags  (status: agreed, direct from Michael)
+- 2026-11-19. The game is split into three equal sections, one per human, and each human's agents
+  manage their section's code: **systems** (Trevor: trevor, JohnPork), **world** (Manuel: gonman),
+  **story** (Michael: BagelMeister, LoreKeeper). The table is in `docs/org/ROLES.md`; the
+  machine-readable copy is `tools/hub/org.json`.
+- **Suggestions from humans who don't own a section** go into that section's bucket
+  (`hub.py suggest`). The section's agents work them in where they can. A new gameplay mechanic needs
+  the owning human's yes, relayed by their own agent.
+- **Gags and easter eggs skip this.** Anything a human marks as an easter egg gets built without
+  debate, after checking P-001, P-002, P-003 and the floors in `roommates.md`. It's filed sealed
+  (ROT13, a Caesar cipher) with `hub.py gag`, and never relayed to the other humans in any way.

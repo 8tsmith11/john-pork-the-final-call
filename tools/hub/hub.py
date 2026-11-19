@@ -22,6 +22,20 @@ Who you are: --as NAME, or $HUB_AGENT, or `git config hub.agent NAME` (set it on
   python3 tools/hub/hub.py take ID [--force]           # pick up a help-board handoff
   python3 tools/hub/hub.py human NAME "text"           # relay a human's message to the humans board
 
+Sections (tools/hub/org.json): each human owns one section; its agents manage that code.
+  python3 tools/hub/hub.py sections                    # who owns what, and bucket sizes
+  python3 tools/hub/hub.py suggest SECTION "title" --human NAME [--details ..] [--mechanic]
+        # the owner's own request → that section's open list; another human's → the section's bucket
+  python3 tools/hub/hub.py bucket [SECTION]            # suggestions waiting on a section
+  python3 tools/hub/hub.py accept ID [--to AGENT] [--owner-ok]   # section agent takes a suggestion
+  python3 tools/hub/hub.py decline ID --note ".."      # section agent turns it down (with why)
+  python3 tools/hub/hub.py unassign ID [--note ..]     # back to triage: needs an owner
+  python3 tools/hub/hub.py refile ID SECTION [--mechanic]  # organizer: move a task into a section
+  python3 tools/hub/hub.py close ID --note ".."        # superseded / won't do
+  python3 tools/hub/hub.py note ID "text"              # add a comment to a task's history
+  python3 tools/hub/hub.py gag "title" --human NAME [--to AGENT] [--details ..]
+        # easter egg / gag: sealed (ROT13), skips buckets and relays, goes straight to an implementer
+
 TIME for --resets: ISO 8601 ("2026-11-20T03:00Z"), relative ("+2h", "+90m", "+1h30m"), or local
 clock time ("03:00", the next one).
 """
@@ -44,6 +58,42 @@ REMOTE = os.environ.get("HUB_REMOTE", "origin")
 UTC = dt.timezone.utc
 AWAY_AFTER = dt.timedelta(minutes=45)        # no activity for this long → shown as away
 HANDOFF_HOLD = (dt.timedelta(minutes=30), dt.timedelta(minutes=60))  # owner's window around reset
+def load_org():
+    p = REPO / "tools" / "hub" / "org.json"
+    try:
+        return json.loads(p.read_text(encoding="utf-8")).get("sections", {})
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+SECTIONS = load_org()
+
+
+def sections_of(agent):
+    return [s for s, v in SECTIONS.items() if agent in v.get("agents", [])]
+
+
+def section_of_human(name):
+    for s, v in SECTIONS.items():
+        if v.get("human", "").lower() == name.lower():
+            return s
+    return None
+
+
+def check_section(s):
+    if s not in SECTIONS:
+        sys.exit(f"no section '{s}' (sections: {', '.join(SECTIONS) or 'none'}; see tools/hub/org.json)")
+    return s
+
+
+def seal(text):
+    return "[SEALED] " + codecs.encode(text, "rot13") if text else text
+
+
+def unseal(text):
+    return codecs.decode(text[len("[SEALED] "):], "rot13") if text and text.startswith("[SEALED] ") else text
+
+
 SYSTEM_BOARDS = {
     "general": "Everyone. Announcements, check-ins, cross-team questions.",
     "humans": "Messages from and to the humans (relayed by their agents).",
@@ -241,16 +291,28 @@ def presence_line(who, p):
 def task_line(t):
     who = t.get("owner") or "-"
     src = f" ({t['source']})" if t.get("source") else ""
+    sec = f"{{{t['section']}}} " if t.get("section") else ""
     extra = f"  resets {t['resets_at']}" if t.get("status") == "help" and t.get("resets_at") else ""
-    return f"#{t['id']:<4} [{t['status']:<8}] {who:<14} {t['title']}{src}{extra}"
+    if t.get("status") == "suggested" and t.get("mechanic"):
+        extra += f"  ← mechanic: needs {SECTIONS.get(t.get('section'), {}).get('human', 'the owner')}'s yes"
+    return f"#{t['id']:<4} [{t['status']:<9}] {who:<14} {sec}{t['title']}{src}{extra}"
 
 
 def inbox_of(st, who):
     return [t for t in st.tasks["tasks"] if t.get("owner") == who and t["status"] in ("assigned", "claimed")]
 
 
-def open_list(st):
-    return [t for t in st.tasks["tasks"] if t["status"] == "open"]
+def open_list(st, section=None):
+    """section=None: the general open list (no section). Otherwise that section's open list."""
+    return [t for t in st.tasks["tasks"] if t["status"] == "open" and t.get("section") == section]
+
+
+def bucket_of(st, section):
+    return [t for t in st.tasks["tasks"] if t["status"] == "suggested" and t.get("section") == section]
+
+
+def triage_list(st):
+    return [t for t in st.tasks["tasks"] if t["status"] == "triage"]
 
 
 def help_list(st):
@@ -277,8 +339,19 @@ def dashboard(st):
     L += [presence_line(w, p) for w, p in sorted(st.presence.items())] or ["(nobody yet)"]
     L += ["```", "", "## Help board (handoffs from agents at their usage limit)", "```"]
     L += [task_line(t) for t in help_list(st)] or ["(empty)"]
-    L += ["```", "", "## Open task list (from human suggestions; anyone may claim)", "```"]
+    L += ["```", "", "## Sections (each human owns one; its agents manage that code)", ""]
+    for s, v in SECTIONS.items():
+        L.append(f"- **{s}**: {v.get('human')}'s, managed by {', '.join(v.get('agents', []))}. {v.get('covers', '')}")
+    L += ["", "## Suggestion buckets (other humans' ideas, waiting on the section's agents)", "```"]
+    bk = [t for s in SECTIONS for t in bucket_of(st, s)]
+    L += [task_line(t) for t in bk] or ["(empty)"]
+    L += ["```", "", "## Section open lists (the owner's own requests; that section's agents claim)", "```"]
+    so = [t for s in SECTIONS for t in open_list(st, s)]
+    L += [task_line(t) for t in so] or ["(empty)"]
+    L += ["```", "", "## Open task list (anyone may claim)", "```"]
     L += [task_line(t) for t in open_list(st)] or ["(empty)"]
+    L += ["```", "", "## Needs an owner (triage: BagelMeister assigns)", "```"]
+    L += [task_line(t) for t in triage_list(st)] or ["(empty)"]
     L += ["```", "", "## Agent task lists", "```"]
     owned = [t for t in st.tasks["tasks"] if t["status"] in ("assigned", "claimed")]
     L += [task_line(t) for t in sorted(owned, key=lambda t: (t["owner"], t["id"]))] or ["(empty)"]
@@ -437,10 +510,14 @@ def cmd_help(args):
 
 def cmd_show(args):
     t = snapshot().task(args.id)
+    if args.unseal:
+        t = {**t, "title": unseal(t["title"]), "details": unseal(t.get("details", ""))}
     print(task_line(t))
     for k in ("details", "handoff", "note"):
         if t.get(k):
             print(f"\n{k}:\n{t[k]}")
+    if t.get("kind") == "gag" and not args.unseal:
+        print("\n(sealed gag: agents read it with hub.py show ID --unseal; never show it to another human)")
     print("\nhistory:\n" + "\n".join(t["history"]))
 
 
@@ -451,15 +528,136 @@ def cmd_next(args, st=None):
     if mine:
         show_list(f"1. your task list ({who}): work these first", mine)
         return
+    for s in sections_of(who):
+        bk = bucket_of(st, s)
+        if bk:
+            show_list(f"2. suggestions for your section '{s}': accept, decline, or relay mechanics to "
+                      f"{SECTIONS[s]['human']} first (docs/org/HUB.md)", bk)
+            return
+    for s in sections_of(who):
+        so = open_list(st, s)
+        if so:
+            show_list(f"3. your section's open list ('{s}'): claim one (hub.py claim ID)", so)
+            return
     opn = open_list(st)
     if opn:
-        show_list("2. your list is empty: claim one from the open task list (hub.py claim ID)", opn)
+        show_list("4. claim one from the general open list (hub.py claim ID)", opn)
         return
     hl = [t for t in help_list(st) if can_take(t, who)[0]]
     if hl:
-        show_list("3. nothing open: pick up a handoff from the help board (hub.py take ID)", hl)
+        show_list("5. nothing open: pick up a handoff from the help board (hub.py take ID)", hl)
         return
     print("Nothing queued. Ask a human what they want, check `hub.py read general`, or offer help.")
+
+
+def cmd_sections(args):
+    st = snapshot()
+    for s, v in SECTIONS.items():
+        print(f"{s:<8} {v.get('human'):<8} agents: {', '.join(v.get('agents', [])):<24} "
+              f"bucket {len(bucket_of(st, s))}, open {len(open_list(st, s))}  ({v.get('covers', '')})")
+
+
+def cmd_bucket(args):
+    who = me(args)
+    secs = [check_section(args.section)] if args.section else (sections_of(who) or list(SECTIONS))
+    st = snapshot()
+    for s in secs:
+        show_list(f"bucket: {s} ({SECTIONS[s]['human']}'s section)", bucket_of(st, s))
+
+
+def cmd_suggest(args):
+    who = me(args)
+    sec = check_section(args.section)
+    owner = SECTIONS[sec]["human"]
+    own = args.human.lower() == owner.lower()
+
+    def f(st):
+        t = st.new_task(title=args.title, details=args.details or "", source=f"human:{args.human}",
+                        section=sec, mechanic=bool(args.mechanic), owner=None,
+                        status="open" if own else "suggested")
+        log(t, who, f"filed for section {sec} " + ("(the owner's own request)" if own else f"(suggestion from {args.human}; {owner} owns {sec})"))
+        st.touch(who)
+        return t
+    t = transact(f, f"{who} files a suggestion for {sec}")
+    print(task_line(t))
+    if not own:
+        print(f"In {sec}'s bucket. Its agents ({', '.join(SECTIONS[sec]['agents'])}) decide"
+              + (f"; as a mechanic it needs {owner}'s yes first." if args.mechanic else "."))
+
+
+def cmd_accept(args):
+    def fn(st, t, who):
+        if t["status"] != "suggested":
+            sys.exit(f"#{t['id']} isn't a suggestion waiting in a bucket")
+        sec = t.get("section")
+        if who not in SECTIONS.get(sec, {}).get("agents", []):
+            sys.exit(f"only {sec}'s agents ({', '.join(SECTIONS[sec]['agents'])}) accept its suggestions")
+        if t.get("mechanic") and not args.owner_ok:
+            sys.exit(f"a mechanic needs {SECTIONS[sec]['human']}'s yes: relay it to them, then accept --owner-ok")
+        t.update(status="assigned" if args.to else "open", owner=args.to or None)
+        log(t, who, "accepted" + (f" with {SECTIONS[sec]['human']}'s yes" if args.owner_ok else "")
+            + (f", for {args.to}" if args.to else ", onto the section's open list"))
+    mutate(args, "accepts", fn)
+
+
+def cmd_decline(args):
+    def fn(st, t, who):
+        sec = t.get("section")
+        if t["status"] != "suggested" or who not in SECTIONS.get(sec, {}).get("agents", []):
+            sys.exit("only the section's agents decline a suggestion in their bucket")
+        t.update(status="declined", note=args.note)
+        log(t, who, f"declined: {args.note}")
+    mutate(args, "declines", fn)
+
+
+def cmd_unassign(args):
+    def fn(st, t, who):
+        if t["status"] == "done":
+            sys.exit("already done")
+        t.update(status="triage", owner=None)
+        log(t, who, "unassigned, back to triage" + (f": {args.note}" if args.note else ""))
+    mutate(args, "unassigns", fn)
+
+
+def cmd_refile(args):
+    sec = check_section(args.section)
+
+    def fn(st, t, who):
+        if t["status"] in ("done", "closed", "declined"):
+            sys.exit(f"already {t['status']}")
+        human = (t.get("source") or "").removeprefix("human:")
+        own = human.lower() == SECTIONS[sec]["human"].lower()
+        t.update(section=sec, owner=None, status="open" if own else "suggested",
+                 mechanic=bool(args.mechanic or t.get("mechanic")))
+        log(t, who, f"refiled to section {sec} " + ("(owner's own request)" if own else "bucket"))
+    mutate(args, "refiles", fn)
+
+
+def cmd_close(args):
+    def fn(st, t, who):
+        t.update(status="closed", note=args.note)
+        log(t, who, f"closed: {args.note}")
+    mutate(args, "closes", fn)
+
+
+def cmd_note(args):
+    def fn(st, t, who):
+        log(t, who, f"note: {args.text}")
+    mutate(args, "notes", fn)
+
+
+def cmd_gag(args):
+    who = me(args)
+    to = args.to or who
+
+    def f(st):
+        t = st.new_task(title=seal(args.title), details=seal(args.details or ""), kind="gag",
+                        source=f"human:{args.human}", status="assigned", owner=to)
+        log(t, who, f"sealed gag for {to}: check P-001, P-002, P-003 and the floors, then build it")
+        st.touch(who)
+        return t
+    t = transact(f, f"{who} files a sealed task")
+    print(task_line(t))
 
 
 def cmd_start(args):
@@ -519,8 +717,14 @@ def cmd_claim(args):
             sys.exit("that's a handoff: use hub.py take ID")
         if t.get("owner") and t["owner"] != who and t["status"] != "open":
             sys.exit(f"#{t['id']} belongs to {t['owner']}; ask them or the task organizer")
-        if t["status"] == "done":
-            sys.exit("already done")
+        if t["status"] in ("done", "declined"):
+            sys.exit(f"already {t['status']}")
+        if t["status"] == "suggested":
+            sys.exit("that's a suggestion in a section's bucket: the section's agents accept it first")
+        sec = t.get("section")
+        if sec and who not in SECTIONS.get(sec, {}).get("agents", []) and not args.force:
+            sys.exit(f"#{t['id']} is in {sec} ({SECTIONS[sec]['human']}'s section, managed by "
+                     f"{', '.join(SECTIONS[sec]['agents'])}); ask them, or --force if a human asked you")
         t.update(owner=who, status="claimed")
         log(t, who, "claimed")
     mutate(args, "claims", fn)
@@ -605,11 +809,22 @@ def main(argv=None):
     add("inbox", cmd_inbox, (["agent"], {"nargs": "?"}))
     add("open", cmd_open)
     add("help", cmd_help)
-    add("show", cmd_show, (["id"], {"type": int}))
+    add("show", cmd_show, (["id"], {"type": int}), (["--unseal"], {"action": "store_true"}))
+    add("sections", cmd_sections)
+    add("bucket", cmd_bucket, (["section"], {"nargs": "?"}))
+    add("suggest", cmd_suggest, (["section"], {}), (["title"], {}), (["--human"], {"required": True}),
+        (["--details"], {}), (["--mechanic"], {"action": "store_true"}))
+    add("accept", cmd_accept, (["id"], {"type": int}), (["--to"], {}), (["--owner-ok"], {"action": "store_true"}))
+    add("decline", cmd_decline, (["id"], {"type": int}), (["--note"], {"required": True}))
+    add("unassign", cmd_unassign, (["id"], {"type": int}), (["--note"], {}))
+    add("refile", cmd_refile, (["id"], {"type": int}), (["section"], {}), (["--mechanic"], {"action": "store_true"}))
+    add("close", cmd_close, (["id"], {"type": int}), (["--note"], {"required": True}))
+    add("note", cmd_note, (["id"], {"type": int}), (["text"], {}))
+    add("gag", cmd_gag, (["title"], {}), (["--human"], {"required": True}), (["--to"], {}), (["--details"], {}))
     add("add", cmd_add, (["title"], {}), (["--details"], {}), (["--to"], {}),
         (["--open"], {"action": "store_true"}), (["--human"], {}))
     add("assign", cmd_assign, (["id"], {"type": int}), (["agent"], {}))
-    add("claim", cmd_claim, (["id"], {"type": int}))
+    add("claim", cmd_claim, (["id"], {"type": int}), (["--force"], {"action": "store_true"}))
     add("done", cmd_done, (["id"], {"type": int}), (["--note"], {}))
     add("drop", cmd_drop, (["id"], {"type": int}))
     add("handoff", cmd_handoff, (["id"], {"type": int}), (["--prompt"], {}), (["--prompt-file"], {}),

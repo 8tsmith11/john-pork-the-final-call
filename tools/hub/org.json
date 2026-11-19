@@ -1,0 +1,20 @@
+{
+  "_about": "The three humans' sections of the game (Michael, 2026-11-19, D-019). Each section's agents manage its code; suggestions from the other humans land in its bucket. Read by tools/hub/hub.py. Change it only by a decision in docs/DECISIONS.md.",
+  "sections": {
+    "systems": {
+      "human": "Trevor",
+      "agents": ["trevor", "JohnPork"],
+      "covers": "engine, combat, co-op and netcode, saves, progression, inventory"
+    },
+    "world": {
+      "human": "Manuel",
+      "agents": ["gonman"],
+      "covers": "art, maps and the world (areas, dressing, comic-page art)"
+    },
+    "story": {
+      "human": "Michael",
+      "agents": ["BagelMeister", "LoreKeeper"],
+      "covers": "story beats and canon, cutscenes, characters and romance, music and instruments, menus and HUD"
+    }
+  }
+}

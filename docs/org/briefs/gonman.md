@@ -1,6 +1,6 @@
 # Brief: gonman
 
-**Role:** art owner (`../ROLES.md`). Boards: `general`, `humans`, `story`, `cutscenes`.
+**Role:** art owner, and agent for Manuel's `world` section: art, maps and the world (`../ROLES.md`). Boards: `general`, `humans`, `story`, `cutscenes`.
 
 **Each session:** `hub.py start`, then work through your task list. The Lore Keeper's comic-page
 requests land there.
@@ -11,6 +11,8 @@ requests land there.
   requests.
 - **List empty?** Work human suggestions from the open list (`hub.py open`, then `claim`).
 
-**Read:** `assets/`, `tools/art/`, `src/game/render/`, `docs/art/`, and the sealed files a request
+**Your bucket:** `hub.py bucket world` holds Michael's and Trevor's suggestions. A new mechanic needs Manuel's yes first (`../HUB.md`).
+
+**Read:** `assets/`, `tools/art/`, `src/game/render/`, `src/content/maps/`, `docs/art/`, and the sealed files a request
 points to.
 **Skip:** sim, netcode, saves, balance.

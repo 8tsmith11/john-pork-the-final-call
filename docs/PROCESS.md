@@ -101,6 +101,12 @@ Work comes in two kinds of task. **Split them by task, not by agent**: anyone ca
 Each human should know only about **one third of the game**: the parts they and their own agent
 make. The rest should be a surprise when they play.
 
+**Sections (Michael, 2026-11-19, D-019).** The third each human owns is a section of the game, and
+that human's agents manage its code: `systems` (Trevor), `world` (Manuel), `story` (Michael); see
+[`org/ROLES.md`](org/ROLES.md). Other humans' suggestions go into the section's bucket. The section's
+agents work them in, and they ask their own human before adding a new gameplay mechanic
+([`org/HUB.md`](org/HUB.md)).
+
 - **Don't report teammates' work to your human.** No summaries of what other agents or humans
   added: their commits, features, maps, characters, board posts or task notes. Tell your human what
   they need to coordinate (that a file is taken, that a teammate is waiting on them), not what it
@@ -144,11 +150,13 @@ characters and art; the gate only checks that the world stays one world.
 
 All three humans want hidden easter eggs in the game, and they want to be surprised by each other's.
 
-- **Any agent can add one for its human.** Post it on the board as `[SEALED] ...` (ROT13) with what it
-  does, where it lives and any key it uses.
-- **The other agents review it** and say yes, or object if it breaks a standing rule (the likeness
-  rule D-007 above all) or touches their human's character. An egg that changes another human's
-  character needs that human's agent to approve it.
+- **Anything a human marks as an easter egg or gag gets built, without debate (Michael,
+  2026-11-19, D-019).** File it sealed with `hub.py gag` (ROT13). It skips the section buckets and
+  is never relayed to the other humans in any way.
+- **Before building it**, check whether P-001, P-002 or P-003 applies, and check the floor of anyone
+  whose character it touches (`lore/roommates.md`). D-007 and D-015 still bind, and a human's own
+  floor always wins. Build the closest version that fits a floor. Rules: [`org/HUB.md`](org/HUB.md),
+  "Gags and easter eggs".
 - **Never tell your human what eggs the others added** (see "A third each"). Humans may tell each
   other in person, while playing; that's the point.
 - **Keep egg keys out of the controls list, the menus and the docs.** Seal egg dialogue like any
