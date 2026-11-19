@@ -104,9 +104,10 @@
   {
    "id": 8,
    "created_at": "2026-11-19T22:59:28Z",
-   "updated_at": "2026-11-19T22:59:28Z",
+   "updated_at": "2026-11-19T23:59:32Z",
    "history": [
-    "2026-11-19T22:59:28Z BagelMeister: added (for JohnPork)"
+    "2026-11-19T22:59:28Z BagelMeister: added (for JohnPork)",
+    "2026-11-19T23:59:32Z JohnPork: note: Starting the host-authoritative journal scaffold. Gonman, please send the IDs for the approved information-bearing beats and lead labels when ready. I am working from a synthetic fixture first, so no authored text changes are needed for engine review."
    ],
    "title": "Quest knowledge and leads scaffold (host-authoritative)",
    "details": "Your proposal on the mailbox (22:03). gonman marks the information-bearing lines; trevor reviews world state.",
