@@ -53,6 +53,14 @@ class I:
 def bat():
     return I().line(3, 13, 11, 5, "warm2").line(4, 13, 12, 5, "warm3").line(9, 4, 13, 3, "warm3").rect(11, 3, 3, 3, "warm3").pts("warm1", (3, 13), (4, 12)).pts("warm4", (12, 3))
 
+def pry_bar():
+    # Hex steel, with a hooked upper end and a flat split toe; distinct from the straight rebar.
+    return (I().line(3, 12, 10, 5, "steel").line(4, 13, 11, 6, "concrete2")
+            .line(10, 6, 12, 4, "steel").line(12, 4, 12, 3, "steel")
+            .line(12, 3, 11, 2, "steel").line(11, 2, 9, 2, "steel").px(8, 3, "steel")
+            .pts("concrete2", (13, 3), (13, 4), (12, 5), (3, 14))
+            .pts("bone", (9, 2), (10, 2), (6, 9), (7, 8), (2, 13)).px(3, 13, "night2"))
+
 def launcher():
     return I().rect(2, 6, 11, 4, "steel").rect(2, 6, 11, 1, "concrete3").rect(12, 7, 3, 2, "concrete2").rect(4, 10, 3, 4, "concrete1").rect(8, 10, 2, 2, "concrete1").pts("screen2", (9, 7), (10, 7)).pts("rot0", (3, 8))
 
@@ -209,6 +217,8 @@ ICONS = {
     # Michael's brown rain parka: his exact color (Michael, 2026-11-18).
     "item.brown_parka": lambda: I().disc(8, 4, 3, "parka").rect(3, 6, 10, 9, "parka").rect(6, 4, 4, 3, "night2").line(8, 7, 8, 14, "warm1").rect(2, 7, 2, 6, "warm2").rect(12, 7, 2, 6, "warm2"),
     "generic": lambda: I().rect(4, 4, 8, 8, "concrete2").rect(4, 4, 8, 1, "concrete3").pts("night2", (7, 7), (8, 7), (7, 8), (8, 8)),
+    # Append new frames so existing atlas coordinates stay stable.
+    "item.pry_bar": pry_bar,
 }
 
 

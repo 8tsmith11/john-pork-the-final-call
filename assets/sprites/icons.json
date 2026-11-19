@@ -1479,6 +1479,26 @@
     "w": 16,
     "h": 16
    }
+  },
+  "item.pry_bar": {
+   "frame": {
+    "x": 32,
+    "y": 144,
+    "w": 16,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 16
+   }
   }
  },
  "meta": {
