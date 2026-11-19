@@ -581,7 +581,8 @@ export class WorldScene extends Phaser.Scene {
     this.mapGfx?.destroy(); this.mapRT?.destroy();
     // Bake textured tiles into one render texture (cheap to draw every frame).
     const rt = this.mapRT = this.add.renderTexture(0, 0, map.w * TILE, map.h * TILE).setOrigin(0, 0).setDepth(-10);
-    map.layout.forEach((row, ty) => [...row].forEach((ch, tx) => rt.draw(tileKey(ch, tx, ty), tx * TILE, ty * TILE)));
+    const hasTile = (k) => this.textures.exists(k);   // connected-tile frames, when the art provides them
+    map.layout.forEach((row, ty) => [...row].forEach((ch, tx) => rt.draw(tileKey(ch, tx, ty, map.layout, hasTile), tx * TILE, ty * TILE)));
     const g = this.mapGfx = this.add.graphics().setDepth(-9);
     // Depth pass (task 13): contact shadow where floor meets wall. Lit from the top left, so walls cast
     // down onto the floor below them and right onto the floor beside them. Water and void are skipped.

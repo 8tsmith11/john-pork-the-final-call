@@ -73,6 +73,24 @@ export function makeTiles(scene) {
   }
 }
 
-export function tileKey(ch, tx, ty) {
+// Connected tiles (Trevor): which of the 4 neighbours are the same tile, as a bitmask
+// N=1, E=2, S=4, W=8 (so 0..15). Art can pick a joined variant from it; see tileKey's `mask`.
+export function neighbourMask(layout, tx, ty) {
+  const ch = layout[ty]?.[tx], same = (x, y) => layout[y]?.[x] === ch;
+  return (same(tx, ty - 1) ? 1 : 0) | (same(tx + 1, ty) ? 2 : 0) | (same(tx, ty + 1) ? 4 : 0) | (same(tx - 1, ty) ? 8 : 0);
+}
+// Diagonals for 47-tile blob sets: NE=1, SE=2, SW=4, NW=8.
+export function cornerMask(layout, tx, ty) {
+  const ch = layout[ty]?.[tx], same = (x, y) => layout[y]?.[x] === ch;
+  return (same(tx + 1, ty - 1) ? 1 : 0) | (same(tx + 1, ty + 1) ? 2 : 0) | (same(tx - 1, ty + 1) ? 4 : 0) | (same(tx - 1, ty - 1) ? 8 : 0);
+}
+
+// `layout` is optional. When a connected frame `tile_<code>_m<mask>` exists for this tile it wins;
+// otherwise the old position-hashed variant is used, so tiles without connected art look the same.
+export function tileKey(ch, tx, ty, layout = null, has = null) {
+  if (layout && has) {
+    const m = neighbourMask(layout, tx, ty), key = `tile_${ch.charCodeAt(0)}_m${m}`;
+    if (has(key)) return key;
+  }
   return `tile_${ch.charCodeAt(0)}_${((tx * 7 + ty * 13) & 0xffff) % VARIANTS}`;
 }
