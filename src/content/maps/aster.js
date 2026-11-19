@@ -45,7 +45,7 @@ export const asterHall = makeMap({
     { id: 'obj.washer_1', art: 'obj.washer', x: 17, y: 8, label: 'Washer', text: 'Mid-cycle. It has been mid-cycle since Tuesday.' },
     { id: 'obj.washer_2', art: 'obj.washer', x: 18, y: 8, label: 'Washer', text: 'Empty except for one sock. There is always one sock.' },
     { id: 'obj.dryer', art: 'obj.washer', x: 22, y: 8, label: 'Dryer', text: 'Warm. The lint trap has a rookie Aster mistake written in it with a finger.' },
-    { id: 'obj.folding_table', art: 'obj.table', x: 20, y: 6, label: 'Folding table', text: 'A slide rule, a pencil, and a page of sums in a careful hand. Track numbers down the margin.' },
+    { id: 'obj.folding_table', art: 'obj.table', x: 20, y: 6, label: 'Folding table', text: 'A page of sums in a careful hand. Track numbers down the margin.' },
     // Elevator alcove
     { id: 'obj.elevator', x: 37, y: 8, label: 'Elevator', action: 'exit', to: 'aster_lobby', text: 'The elevator thinks about it, then goes down.' },
     { id: 'obj.plant_6f', art: 'obj.plant', x: 34, y: 6, label: 'Plant', text: 'Plastic. Someone waters it anyway. It is doing well.' },

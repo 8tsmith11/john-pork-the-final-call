@@ -105,7 +105,7 @@ export const metroPlaza = makeMap({
     // The plaza's furniture: where people wait, and what they wait under
     { id: 'obj.shelter', x: 30, y: 12, label: 'Bus shelter', light: 0.6, text: 'A timetable behind cracked plastic. Every bus is listed as DUE.' },
     { id: 'obj.plaza_bench_a', art: 'obj.bench', x: 37, y: 17, label: 'Bench', text: 'Two benches facing each other across four metres of paving, like an argument nobody finished.' },
-    { id: 'obj.plaza_bench_b', art: 'obj.bench', x: 37, y: 20, label: 'Bench', text: 'A paper cup, a transit pass, a pair of reading glasses. Whoever it was meant to come back.' },
+    { id: 'obj.plaza_bench_b', art: 'obj.bench', x: 37, y: 20, label: 'Bench', text: 'Reading glasses, folded on a transit pass. Whoever it was meant to come back.' },
     { id: 'obj.planter_a', art: 'obj.planter', x: 31, y: 19, label: 'Planter', text: 'The city stopped planting these. Somebody else started.' },
     { id: 'obj.planter_b', art: 'obj.planter', x: 46, y: 16, label: 'Planter', text: 'Tomatoes. In a metro plaza. They are doing very well.' },
     { id: 'obj.planter_c', art: 'obj.planter', x: 24, y: 20, label: 'Planter', text: 'Empty except for a single orange ribbon, tied to a stake.' },

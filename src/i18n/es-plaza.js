@@ -50,7 +50,7 @@ export const ES_PLAZA = {
   'Bus shelter': 'Parada de autobús',
   'A timetable behind cracked plastic. Every bus is listed as DUE.': 'Un horario detrás de un plástico rajado. Todos los autobuses figuran como POR LLEGAR.',
   'Two benches facing each other across four metres of paving, like an argument nobody finished.': 'Dos bancos enfrentados a cuatro metros de baldosas, como una discusión que nadie terminó.',
-  'A paper cup, a transit pass, a pair of reading glasses. Whoever it was meant to come back.': 'Un vaso de papel, un pase de transporte, unos lentes de lectura. Quien haya sido, pensaba volver.',
+  'Reading glasses, folded on a transit pass. Whoever it was meant to come back.': 'Unos lentes de leer, doblados sobre un pase de transporte. Quien fuera, pensaba volver.',
   'Planter': 'Cantero',
   'The city stopped planting these. Somebody else started.': 'La ciudad dejó de plantar estos. Alguien más empezó.',
   'Tomatoes. In a metro plaza. They are doing very well.': 'Tomates. En una plaza del metro. Les va muy bien.',

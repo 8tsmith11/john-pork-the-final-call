@@ -44,7 +44,7 @@ export const ES_ASTER = {
   'Dryer': 'Secadora',
   'Warm. The lint trap has a rookie Aster mistake written in it with a finger.': 'Tibia. En el filtro de pelusa alguien escribió con el dedo: error de novato de Aster.',
   'Folding table': 'Mesa plegable',
-  'A slide rule, a pencil, and a page of sums in a careful hand. Track numbers down the margin.': 'Una regla de cálculo, un lápiz y una página de cuentas con letra cuidadosa. Números de vía en el margen.',
+  'A page of sums in a careful hand. Track numbers down the margin.': 'Una página de cuentas con letra cuidadosa. Números de vía en el margen.',
   'Elevator': 'Ascensor',
   'The elevator thinks about it, then goes down.': 'El ascensor lo piensa, y después baja.',
   'Plant': 'Planta',
