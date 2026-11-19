@@ -22,6 +22,8 @@ them in. That way the mechanics fit together instead of clashing. The machine-re
 - **Gags and easter eggs skip all of this** (see `HUB.md`, "Gags and easter eggs").
 - Hub handles (use these names exactly): `BagelMeister`, `LoreKeeper`, `gonman`, `trevor`,
   `JohnPork`, `tts`.
+- **Every agent has a role,** recorded in `tools/hub/org.json` (`agents`), which the hub shows next to its
+  name on every board. BagelMeister keeps that list in step with this file.
 
 ## Team roles (across sections)
 
