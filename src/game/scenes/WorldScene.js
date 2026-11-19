@@ -2447,12 +2447,11 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'boss') this._bossIntro(ev);
     // Combat feel (docs/research/combat.md): pops for finishers, deflects, perfect dodges, slams.
     const pop = (x, y, text, color) => { const t = this.add.text(x, y, text, { heading: true, fontSize: '7px', color }).setOrigin(0.5).setDepth(6060); this.tweens.add({ targets: t, y: y - 10, alpha: 0, duration: 650, onComplete: () => t.destroy() }); };
-    if (ev.t === 'swing' && ev.combo === 3) this.cameras.main.shake(70, 0.003);
-    if (ev.t === 'dashstrike') this.cameras.main.shake(50, 0.002);
-    if (ev.t === 'parry') { pop(ev.x, ev.y - 18, 'PARRY', '#6fe3e8'); this.cameras.main.shake(90, 0.004); sfx('pickup'); }
+    // No screen shake from your own attacks (Trevor): swings, finishers, dash-strikes, parries, slams and hits.
+    if (ev.t === 'parry') { pop(ev.x, ev.y - 18, 'PARRY', '#6fe3e8'); sfx('pickup'); }
     if (ev.t === 'deflect') { pop(ev.x, ev.y - 6, 'DEFLECT', '#6fe3e8'); sfx('swing'); }
     if (ev.t === 'perfect') { pop(ev.x, ev.y - 24, 'PERFECT', '#ffd27f'); this.cameras.main.flash(80, 255, 210, 127); sfx('pickup'); }
-    if (ev.t === 'slam') { pop(ev.x, ev.y - 16, 'SLAM', '#ffb347'); this.cameras.main.shake(110, 0.005); }
+    if (ev.t === 'slam') { pop(ev.x, ev.y - 16, 'SLAM', '#ffb347'); }
     if (ev.t === 'crit') { const t = this.add.text(ev.x, ev.y - 24, 'CRIT', { ...FONT, fontSize: '7px', color: '#ff6b6b' }).setOrigin(0.5).setDepth(6060); this.tweens.add({ targets: t, y: t.y - 8, alpha: 0, duration: 600, onComplete: () => t.destroy() }); }
     if (ev.t === 'secondwind') {
       const g = this.add.circle(ev.x, ev.y - 8, 10, 0x7fd0c0, 0.5).setDepth(6000); this.tweens.add({ targets: g, scale: 3, alpha: 0, duration: 600, onComplete: () => g.destroy() });
@@ -2475,7 +2474,6 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'hit' || ev.t === 'kill') {
       const t = this.add.text(ev.x, ev.y - 14, ev.t === 'kill' ? '✕' : `${ev.dmg}`, { ...FONT, color: ev.t === 'kill' ? '#7fb069' : '#ffd27f' }).setOrigin(0.5).setDepth(6000);
       this.tweens.add({ targets: t, y: t.y - 10, alpha: 0, duration: 450, onComplete: () => t.destroy() });
-      if (ev.by === this.localId) this.cameras.main.shake(60, 0.002);
     }
     if (ev.t === 'hurt' && ev.id === this.localId) { this.cameras.main.shake(120, 0.006); this.cameras.main.flash(80, 120, 20, 40); }
     if (ev.t === 'swing') {
