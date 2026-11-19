@@ -658,7 +658,7 @@ test('boss fight: the Warden uses several patterns with tells and recovery windo
   sim.addPlayer('host', 'trevor');
   const boss = [...sim.enemies.values()].find((e) => e.boss);
   assert.ok(boss, 'no boss on the platform');
-  const kinds = new Set(); let sawOpen = false, noDeflect = false, beamFired = false;
+  const kinds = new Set(); let sawOpen = false, deflectable = false, beamFired = false;
   for (let t = 0; t < 60 * 90; t++) {
     const h = sim.players.get('host'); h.hp = h.maxHp ?? 100; h.downed = false;
     if (t === 60 * 20) { boss.hp = boss.def.hp * 0.6; boss.phase = 2; }   // push into phase 2, then 3
@@ -666,12 +666,12 @@ test('boss fight: the Warden uses several patterns with tells and recovery windo
     sim.step(1 / 60, new Map());
     for (const ev of sim.events) if (ev.t === 'tell' && ev.kind) { kinds.add(ev.kind); assert.ok(ev.dur >= 0.35 && 'red' in ev); }
     if (boss.openT > 0) sawOpen = true;
-    if (boss.state === 'beam' && sim.shots.length) { beamFired = true; if (sim.shots.some((s) => s.noDeflect)) noDeflect = true; }
+    for (const s of sim.shots) if (s.from === 'enemy' && Math.hypot(s.vx, s.vy) > 200) { beamFired = true; if (!s.noDeflect) deflectable = true; }   // only the Sweep fires this fast
     sim.events.length = 0;
   }
   assert.ok(kinds.size >= 4, `only ${[...kinds]} used`);
   assert.ok(sawOpen, 'no recovery window');
-  assert.ok(noDeflect || !beamFired, 'beam shots should be undeflectable');
+  assert.ok(!deflectable, 'beam shots should be undeflectable');
 });
 
 const { CompanionBrain } = await import('../src/engine/companion.js');
