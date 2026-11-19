@@ -152,6 +152,8 @@ export const metroPlaza = makeMap({
   spawns: [[10, 14], [11, 14], [9, 15]],
   objects: [
     ...PLAZA_CORDON.objects,
+    { id: 'obj.job_board', art: 'obj.board', x: 45, y: 23, label: 'Abatement bounty board', action: 'jobs', light: 0.6,
+      text: 'Corkboard on a sawhorse by the van. Every card is in the same blunt marker. One just says PAYS.' },
     // ASTER
     { id: 'obj.aster_door', art: 'obj.street_doors', x: 10, y: 12, label: 'ASTER lobby', action: 'exit', to: 'aster_lobby', text: 'Back into the lobby.' },
     { id: 'obj.aster_sign', art: 'obj.purple_sign', x: 5, y: 13, label: 'ASTER', text: 'A S T E R, in letters a metre high. The T flickers. Residents have stopped seeing it.' },

@@ -89,7 +89,8 @@ export class Sim {
     // Outbreak phases (src/content/outbreak.js): the host sets sim.phaseEnemies; they spawn with their own keys.
     const extra = this.phaseEnemies?.[this.map.id];
     const all = [...(this.map.enemies || []).map((e, i) => [`${this.map.id}#${i}`, e]),
-      ...(extra?.list ?? []).map(([kind, tx, ty, options], i) => [`${this.map.id}#${extra.phase}.${i}`, { ...options, kind, x: tx * TILE + 8, y: ty * TILE + 8 }])];
+      ...(extra?.list ?? []).map(([kind, tx, ty, options], i) => [`${this.map.id}#${extra.phase}.${i}`, { ...options, kind, x: tx * TILE + 8, y: ty * TILE + 8 }]),
+      ...(this.jobEnemies?.[this.map.id] ?? []).map(([key, kind, tx, ty]) => [key, { kind, x: tx * TILE + 8, y: ty * TILE + 8 }])];   // bounty board nests (src/content/jobs.js)
     for (const [spawnKey, e] of all) {
       if (this.killed?.has(spawnKey)) continue;
       const id = `e${this._nextId++}`;

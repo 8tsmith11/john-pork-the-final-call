@@ -47,6 +47,7 @@ import { NpcLife } from '../npcLife.js';
 import { Cordon } from '../cordon.js';
 import { phaseEnemies } from '../../content/outbreak.js';
 import { dawnLabel, dawnProgress } from '../../content/dawn.js';
+import { makeJob, jobLine, OPEN_JOBS } from '../../content/jobs.js';
 import { BigButt } from '../bigButt.js';
 import { GONMAN_LINES, GONMAN_UNLOCK } from '../../content/gonman.js';
 import { growthSize, lookStage } from '../../content/growth.js';
@@ -128,6 +129,7 @@ export class WorldScene extends Phaser.Scene {
       const taken = new Set([...this.sim.players.values()].map((p) => p.character));
       for (const ch of ['trevor', 'manuel', 'michael']) if (!taken.has(ch)) this.sim.addPlayer(`ai:${ch}`, ch);
       this.sim.phaseEnemies = phaseEnemies(this.save.flags);   // outbreak phase spawns (task #38)
+      this.sim.jobEnemies = this._jobEnemies();                 // bounty board nests
       this.sim.spawnEnemies();   // Initial encounters use the same complete party as later map entries.
       this.brain = new CompanionBrain(this.sim);
     }
@@ -1324,6 +1326,46 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // Quest banners: top centre, slide in, queued so none are lost. Gold heading, plain detail.
+  // ---------- the abatement bounty board (src/content/jobs.js) ----------
+  _jobs() {
+    const J = (this.save.world.jobs ??= { next: 0, open: [] });
+    while (J.open.length < OPEN_JOBS) J.open.push(makeJob(this.save.world.seed, J.next++));
+    return J;
+  }
+  _jobDone(job) {
+    if (job.type === 'nest') return (job.killed ?? 0) >= job.spawns.length;
+    if (job.type === 'fish') return (job.caught ?? 0) >= job.qty;
+    return Inv.count(this.save.party[this.character], job.item) >= job.qty;
+  }
+  _jobEnemies() {
+    const out = {};
+    for (const job of this._jobs().open) if (job.type === 'nest') (out[job.map] ??= []).push(...job.spawns.map(([k, x, y], i) => [`${job.map}#job.${job.n}.${i}`, k, x, y]));
+    return out;
+  }
+  /** Host: turn in finished jobs (money to whoever turns in, xp to everyone), post new ones, show the board. */
+  _jobBoard() {
+    const J = this._jobs(), es = getLang() === 'es', paid = [];
+    if (this.mode !== 'client') {
+      for (const job of [...J.open]) {
+        if (!this._jobDone(job)) continue;
+        if (job.type === 'gather') Inv.remove(this.save.party[this.character], job.item, job.qty);
+        W.addMoney(this.save, this.character, job.reward.money); this._grantXp(job.reward.xp);
+        J.open.splice(J.open.indexOf(job), 1); paid.push(`+$${job.reward.money}  +${job.reward.xp} xp`);
+      }
+      this._jobs(); this.sim.jobEnemies = this._jobEnemies(); this._syncParty();
+    }
+    if (paid.length) sfx('pickup');
+    const head = paid.length ? `${es ? 'Pagado' : 'Paid'}: ${paid.join(' · ')}\n\n` : '';
+    this._say(head + J.open.map((j) => `${this._jobDone(j) ? '✓' : '·'} ${jobLine(j, es)}`).join('\n'));
+  }
+  _grantXp(n) {
+    for (const [who, c] of Object.entries(this.save.party)) {
+      c.xp += n;
+      while (c.xp >= c.level * XP_PER_LEVEL) { c.xp -= c.level * XP_PER_LEVEL; c.level++; c.skillPoints++; c.abilityPoints = (c.abilityPoints ?? 0) + 2; this._announce(`${who} reached level ${c.level}. (+1 skill point)`); }
+    }
+    this._partyDirty = true;
+  }
+
   // Side-view cutscene (CinematicScene) over a paused world; resumes when it ends or is skipped.
   async playCinematic(name, onDone) {
     let mod;
@@ -1424,6 +1466,7 @@ export class WorldScene extends Phaser.Scene {
     const id = rollCatch(this.map.id), def = ITEMS[id];
     const log = (this.save.world.fishLog ??= {}); const first = !log[id]; log[id] = (log[id] ?? 0) + 1;
     this._grant(id);
+    for (const job of this._jobs().open) if (job.type === 'fish') job.caught = (job.caught ?? 0) + 1;   // bounty board
     this._say(`${def.name}${first ? '  (new in your fishing log)' : ''}\n${def.text}`);
   }
 
@@ -1734,6 +1777,7 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.fadeOut(140, 5, 6, 12);
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.sim.phaseEnemies = phaseEnemies(this.save.flags);   // the phase may have moved since the last map
+      this.sim.jobEnemies = this._jobEnemies();
       this.sim.setMap(to, from);
       this.enteredFrom = from;
       this.save.world.area = to.id;
@@ -1972,6 +2016,7 @@ export class WorldScene extends Phaser.Scene {
       }
       if (ev.t === 'kill') {
         if (ev.key && !this.save.world.killed.includes(ev.key)) this.save.world.killed.push(ev.key);
+        const jm = /#job\.(\d+)\./.exec(ev.key ?? ''); if (jm) { const job = this._jobs().open.find((j) => j.n === +jm[1]); if (job) job.killed = (job.killed ?? 0) + 1; }
         if (ev.kind) { const g = this._guide().e[ev.kind] ??= { seen: 1, kills: 0 }; g.kills++; }
         // Drops: the cash to each roommate (everyone pays their own way now), a material to whoever landed the kill.
         const drop = ev.boss ? DROPS.boss : DROPS.default;
@@ -2133,6 +2178,7 @@ export class WorldScene extends Phaser.Scene {
       this._say((near.text ?? '') + '\n\nYou find the reset and lean on it. The pump coughs, catches, and starts pulling water. Somewhere south, a long gurgle. The flooded bay is draining.'); return;
     }
     if (near.action === 'tv') { this._say(this._newsLine()); return; }
+    if (near.action === 'jobs') { this._jobBoard(); return; }
     if (near.action === 'shop') { this.gameMenu.show(`shop:${near.shop}`); return; }
     if (near.action === 'quests') { this.gameMenu.show('quests'); return; }
     if (near.action === 'pages') { if (near.flag && !this.save.flags[near.flag]) this._flag(near.flag, true); const n = (this._pageIdx[near.id] = ((this._pageIdx[near.id] ?? -1) + 1) % near.pages.length); this._say(near.pages[n] + (near.pages.length > 1 ? `\n\n[E again: ${n + 1}/${near.pages.length}]` : '')); return; }

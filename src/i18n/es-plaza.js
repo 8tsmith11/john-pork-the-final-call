@@ -143,6 +143,9 @@ export const ES_PLAZA = {
   'Inés': 'Inés',
   'Ottoline, master armorer': 'Ottoline, maestra armera',
   "The shutter comes up two inches. Halvard's eye, then the television behind him, then the shutter again.\n\n\"You paid for one rumor. That was it.\"": "La persiana sube cinco centímetros. El ojo de Halvard, después el televisor detrás de él, después la persiana otra vez.\n\n\"Pagaste por un rumor. Era ese.\"",
+  // The bounty board (src/content/jobs.js)
+  'Abatement bounty board': 'Tablero de recompensas de saneamiento',
+  'Corkboard on a sawhorse by the van. Every card is in the same blunt marker. One just says PAYS.': 'Un corcho sobre un caballete junto a la camioneta. Todas las tarjetas con el mismo marcador grueso. Una solo dice PAGA.',
   // The cordon (task #36)
   'Continuity trooper': 'Soldado de Continuity',
   'Visor down, rifle across the chest, a red stripe on the shoulder. The helmet turns to follow you and nothing else moves.': 'Visor bajo, rifle cruzado sobre el pecho, una franja roja en el hombro. El casco gira para seguirte y nada más se mueve.',

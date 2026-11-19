@@ -770,6 +770,25 @@ test('boss fight: the Warden uses several patterns with tells and recovery windo
   assert.ok(!deflectable, 'beam shots should be undeflectable');
 });
 
+const Jobs = await import('../src/content/jobs.js');
+test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
+  assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
+  const types = new Set();
+  for (let n = 0; n < 300; n++) {
+    const j = Jobs.makeJob(`seed-${n}`, n); types.add(j.type);
+    assert.ok(j.reward.money > 0 && j.reward.xp > 0);
+    assert.ok(Jobs.jobLine(j, false).length > 5 && Jobs.jobLine(j, true).length > 5);
+    if (j.type === 'nest') for (const [kind, x, y] of j.spawns) {
+      assert.ok(ENEMIES[kind], kind);
+      assert.ok(!MAPS_FOR_TEST[j.map].solid(x, y), `${j.map} nest tile ${x},${y} is solid`);
+    }
+  }
+  assert.deepEqual([...types].sort(), ['fish', 'gather', 'nest']);
+  const sim = new Sim(MAPS_FOR_TEST.metro_plaza, { seed: 'jb', deferSpawn: true });
+  sim.jobEnemies = { metro_plaza: [['metro_plaza#job.4.0', 'enemy.rotling', 34, 42]] }; sim.spawnEnemies();
+  assert.ok([...sim.enemies.values()].some((e) => e.spawnKey === 'metro_plaza#job.4.0'));
+});
+
 const Regions = await import('../src/content/regions.js');
 test('world regions: every built map belongs to exactly one region, each region sits in its act\'s ring, states follow the act', () => {
   for (const id of Object.keys(MAPS_FOR_TEST)) assert.equal(Regions.REGIONS.filter((r) => r.maps.includes(id)).length, 1, `${id} must belong to one region`);
