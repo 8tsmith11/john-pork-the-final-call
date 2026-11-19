@@ -75,7 +75,7 @@ export const room631 = makeMap({
     { id: 'obj.statue_1', x: 2, y: 6, label: 'Statue', text: 'One of Manuel\'s John Pork statues, guarding the door. The eyes are very well done.' },
     { id: 'obj.statue_2', x: 2, y: 10, label: 'Statue', text: 'Another statue by the entrance. Its head is turned slightly toward the engineering room. Was it always?' },
     { id: 'obj.statue_3', x: 5, y: 11, label: 'Statue', text: 'The newest statue. Manuel says he finished it last week. He doesn\'t remember sanding it.' },
-    { id: 'obj.mate', x: 6, y: 6, label: 'Mate station (heal + refill)', action: 'mate', text: 'Manuel\'s mate gear on the counter. Still warm. Someone was up at 3 a.m.' },
+    { id: 'obj.mate', x: 6, y: 6, label: 'Mate station (heal, refill, caffeine)', action: 'mate', text: 'Manuel\'s mate gear on the counter. Still warm. Someone was up at 3 a.m.' },
     { id: 'obj.fridge', x: 10, y: 6, label: 'Fridge', text: 'A jar labeled DO NOT. Someone has written "I hate 245 lab" in the condensation.' },
     { id: 'obj.table', x: 6, y: 9, label: 'Dining table', text: 'A pacifier nobody will explain.' },
     { id: 'obj.stove', x: 9, y: 6, label: 'Stove', text: 'Two burners work. The third one only works if you believe in it.' },

@@ -15,7 +15,7 @@ export const ES_ITEMS = {
   busted_guitar: ['Telecaster rota', 'Le quedan dos cuerdas. Un golpe amplio y ruidoso que lo empuja todo. Trevor hace una mueca cada vez.'],
   nail_gun: ['Pistola de clavos', 'Rápida, débil, muchos clavos. Mantén el gatillo.'],
   scattergun: ['Escopeta del fab', 'Cinco perdigones en abanico, corto alcance. Impresa con gel de coderot, quizá por eso zumba.'],
-  mate_flask: ['Termo de mate', 'Manuel querría que lo tuvieras. También querría que se lo devuelvas.'],
+  mate_flask: ['Termo de mate', 'Manuel querría que lo tuvieras. También querría que se lo devuelvas. Cura, y después un golpe de cafeína: piernas más rápidas y aguante que vuelve antes durante 45 segundos, y unos segundos lentos cuando se pasa.'],
   fish_perch: ['Perca blanca', 'Plateada, chica, terca. El pez más común del Chesapeake, todavía, de algún modo.'],
   fish_bluegill: ['Mojarra azul', 'Un pececito plano de mejilla azul. Michael le pone nombre a cada uno que pesca.'],
   fish_catfish: ['Bagre de canal', 'Bigotes, actitud y unos dos kilos de cena.'],

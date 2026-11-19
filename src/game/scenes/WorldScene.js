@@ -940,6 +940,11 @@ export class WorldScene extends Phaser.Scene {
     if (it.caffeine) { this.sim.caffeinate(peerId, it.caffeine); this._toast(`${who} slams the ${it.name.toLowerCase()}. Wide awake for ${it.caffeine}s.`); this._syncParty(); return; }   // D-017
     const healAmt = Math.round((it.heal ?? 0) * (usedId === 'item.mate_flask' ? 1 + (playerMods(c, who).mateHeal ?? 0) : 1));   // mate holster
     this.sim.heal(peerId, healAmt);
+    if (it.mateKick) {   // mate caffeine (sim.mate): the kick toast comes from the snapshot on the drinker's own screen
+      this.sim.mate(peerId);
+      this._toast(`${who} has the ${it.name.toLowerCase()}. +${healAmt} HP`);
+      this._syncParty(); return;
+    }
     if (it.pill) {
       const p = this.sim.players.get(peerId);
       if (p) { p.pillT = it.pill; p.sta = 999; p.staT = 0; }   // the sim clamps stamina to its max on the next step
@@ -1512,7 +1517,7 @@ export class WorldScene extends Phaser.Scene {
 
   _mateBreak() {
     if (this.mode === 'client') { this.net.send({ t: 'mate' }); return; }
-    for (const p of this.sim.players.values()) this.sim.heal(p.id, 999);
+    for (const p of this.sim.players.values()) { this.sim.heal(p.id, 999); this.sim.mate(p.id); }   // and everyone gets the caffeine
     for (const p of this.sim.players.values()) {
       const c = this.save.party[p.character];
       if (c && !Inv.has(c, 'item.mate_flask')) Inv.add(c, 'item.mate_flask');
@@ -1976,7 +1981,7 @@ export class WorldScene extends Phaser.Scene {
       if (this.mode !== 'client') { for (const c of Object.values(this.save.party)) c.scooterBattery = 100; for (const p of this.sim.players.values()) p.battery = 100; }
       this._say(near.text + '\n\nAll three scooters are charged to 100%. Ride outdoors with [Q].'); return;
     }
-    if (near.action === 'mate') { this._mateBreak(); this._say(near.text + '\n\nEveryone has some. Better. (Thermos refilled.)'); return; }
+    if (near.action === 'mate') { this._mateBreak(); this._say(near.text + '\n\nEveryone has some. Better, and wide awake. (Thermos refilled.)'); return; }
     if (near.door) { if (this.mode === 'client') this.net.send({ t: 'door', id: near.id }); else this._toggleDoor(near.id); return; }
     if (near.knock) { this._knock(near); return; }
     if (near.boardgame) { this.openBoardGame(near.boardgame, near.id); return; }

@@ -68,6 +68,8 @@ const ES = {
 // Patterns for strings with numbers or names in them.
 const ES_RX = [
   [/^([★·✓]) (.+?)((?:  \((?:side|yours)\))?)$/, (m, a, b, c) => `${a} ${ES_ALL[b] ?? b}${c === '  (side)' ? '  (secundaria)' : c === '  (yours)' ? '  (tuya)' : ''}`],
+  [/^Caffeine kicks in\. Faster, and stamina comes back quicker \((\d+)s\)\.$/, (m, n) => `La cafeína pega. Más rápido, y el aguante vuelve antes (${n}s).`],
+  [/^(.+)\n\nEveryone has some\. Better, and wide awake\. \(Thermos refilled\.\)$/, (m, a) => `${ES_ALL[a] ?? a}\n\nTodos toman un poco. Mejor, y bien despiertos. (Termo rellenado.)`],
   [/^(.+) ×(\d+)$/, (m, a, n) => `${ES_ALL[a] ?? a} ×${n}`],
   [/^(.+) \+(\d+)$/, (m, a, n) => `${ES_ALL[a] ?? a} +${n}`],
   [/^★ (.+?)( ×\d+)?$/, (m, a, n) => `★ ${ES_ALL[a] ?? a}${n ?? ''}`],

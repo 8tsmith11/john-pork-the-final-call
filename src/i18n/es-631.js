@@ -62,7 +62,7 @@ export const ES_631 = {
   "One of Manuel's John Pork statues, guarding the door. The eyes are very well done.": 'Una de las estatuas de John Pork de Manuel, custodiando la puerta. Los ojos están muy bien hechos.',
   'Another statue by the entrance. Its head is turned slightly toward the engineering room. Was it always?': 'Otra estatua junto a la entrada. La cabeza está un poco girada hacia el taller. ¿Siempre estuvo así?',
   "The newest statue. Manuel says he finished it last week. He doesn't remember sanding it.": 'La estatua más nueva. Manuel dice que la terminó la semana pasada. No recuerda haberla lijado.',
-  'Mate station (heal + refill)': 'Estación de mate (cura + recarga)',
+  'Mate station (heal, refill, caffeine)': 'Estación de mate (cura, recarga, cafeína)',
   "Manuel's mate gear on the counter. Still warm. Someone was up at 3 a.m.": 'Las cosas de mate de Manuel en la mesada. Todavía tibias. Alguien estaba despierto a las 3 a. m.',
   'Fridge': 'Heladera',
   'A jar labeled DO NOT. Someone has written "I hate 245 lab" in the condensation.': 'Un frasco que dice NO. Alguien escribió "Odio el laboratorio 245" en el vapor.',

@@ -21,6 +21,9 @@ export const ROT = { max: 100, poolRate: 4, growth: 0.08, puddlerHit: 6,
 // Combat feel (docs/research/combat.md): combo chain, deflects, perfect dodges, wall slams, hit-stop.
 export const FEEL = { comboWindow: 0.55, finisherDmg: 1.6, finisherKnock: 1.8, finisherArc: 1.25,
   deflectDmg: 1.5, parryStun: 1.0, parryStop: 0.08, openTime: 0.5, openDmg: 1.5, dashWindow: 0.18, dashDmg: 1.3, dashRange: 8, dashLunge: 10, perfectWindow: 0.15, focusTime: 1.5, focusDmg: 1.5, slamSpeed: 140, slamDmg: 8, slamStun: 0.6, hitStop: 0.05 };
+// Mate (Manuel's yerba): a caffeine kick (faster, quicker stamina), then a short crash (slower).
+// No cooldown: another gourd restarts the kick and cancels any crash.
+export const MATE = { buff: 45, crash: 4, speed: 0.15, staRegen: 0.6, crashSpeed: -0.4 };
 export const COMBAT = {
   maxHp: 100, hurtIframes: 0.6, reviveTime: 4.0, reviveRange: 18, reviveHp: 40,
   melee: { cooldown: 0.38, range: 20, arc: Math.PI * 0.6, damage: 12, knockback: 120 },
@@ -240,6 +243,11 @@ export class Sim {
   }
   /** Caffeine (D-017): wakes you now; for `secs` nothing puts you to sleep and you move 15% faster. */
   caffeinate(id, secs) { const p = this.players.get(id); if (!p || p.downed) return; p.sleepT = 0; p.lullT = 0; p.wiredT = secs; this.emit({ t: 'wired', id }); }
+  /** Mate caffeine: (re)starts the kick and cancels any crash. Returns false only if it can't apply. */
+  mate(id) {
+    const p = this.players.get(id); if (!p || p.downed) return false;
+    p.mateT = MATE.buff; p.crashT = 0; this.emit({ t: 'mate', id }); return true;
+  }
   heal(id, n) { const p = this.players.get(id); if (p && !p.downed) p.hp = Math.min(this.maxHp(p), p.hp + n); }
 
   removePlayer(id) { this.players.delete(id); }
@@ -284,7 +292,7 @@ export class Sim {
       p.staT = Math.max(0, (p.staT ?? 0) - dt);
       p.pillT = Math.max(0, (p.pillT ?? 0) - dt);   // blue pill: dodges are free while this runs
       const staMax = MOVE.stamina + (p.mods?.sta ?? 0);
-      if (p.staT <= 0) p.sta = Math.min(staMax, (p.sta ?? staMax) + MOVE.staminaRegen * (1 + (p.mods?.staRegen ?? 0)) * (p.rot >= 100 ? 0.5 : 1) * dt);
+      if (p.staT <= 0) p.sta = Math.min(staMax, (p.sta ?? staMax) + MOVE.staminaRegen * Math.max(0.1, 1 + (p.mods?.staRegen ?? 0) + (p.mateT > 0 ? MATE.staRegen : 0)) * (p.rot >= 100 ? 0.5 : 1) * dt);
       if (inp.dodge && !p.riding && p.dodgeT <= 0 && p.dodgeCd <= 0 && p.sta >= MOVE.dashCost) {
         if (!(p.pillT > 0)) { p.sta -= MOVE.dashCost; p.staT = MOVE.regenDelay; }
         // Dodge toward movement, or toward the aim if standing still.
@@ -314,7 +322,7 @@ export class Sim {
           if (Math.hypot(p.vx, p.vy) > 2) { p.battery = Math.max(0, (p.battery ?? 100) - (p.hicap ? 1.1 : 2.2) * dt); if (p.battery <= 0) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, dead: true }); } }
         } else {
           const rotSpeed = p.rot >= 100 ? 0.65 : p.rot >= 60 ? 0.8 : p.rot >= 25 ? 0.9 : 1;
-          const spd = MOVE.speed * (p.morphed ? 1.15 : 1) * (1 + (p.mods?.speed ?? 0)) * (p.playing ? 0.5 : 1) * (p.wiredT > 0 ? 1.15 : 1) * rotSpeed;
+          const spd = MOVE.speed * (p.morphed ? 1.15 : 1) * (1 + (p.mods?.speed ?? 0)) * (p.playing ? 0.5 : 1) * (p.wiredT > 0 ? 1.15 : 1) * (p.mateT > 0 ? 1 + MATE.speed : p.crashT > 0 ? 1 + MATE.crashSpeed : 1) * rotSpeed;
           p.vx = mx * spd; p.vy = my * spd;
         }
       }
@@ -325,6 +333,8 @@ export class Sim {
       p.skillCd = Math.max(0, (p.skillCd ?? 0) - dt);
       p.blinkCd = Math.max(0, (p.blinkCd ?? 0) - dt);
       if (p.wiredT > 0) p.wiredT = Math.max(0, p.wiredT - dt);
+      if (p.mateT > 0) { p.mateT = Math.max(0, p.mateT - dt); if (p.mateT <= 0) { p.crashT = MATE.crash; this.events.push({ t: 'mateCrash', id: p.id }); } }
+      else if (p.crashT > 0) p.crashT = Math.max(0, p.crashT - dt);
       if (p.mods?.regen && p.hp < this.maxHp(p)) p.hp = Math.min(this.maxHp(p), p.hp + p.mods.regen * dt);   // smart pacifier
       if (inp.skill && !p.riding && !p.playing && p.skillCd <= 0) this._ability(p);
       // Terraria-style: the attack button uses what's in hand. A melee weapon swings, a gun fires, anything
@@ -943,7 +953,7 @@ export class Sim {
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
-        hp: Math.round(p.hp), mhp: this.maxHp(p), rot: Math.round((p.rot ?? 0) * 10) / 10, am: p.ammo ?? null, rl: p.reloadT > 0 ? Math.round(p.reloadT * 10) / 10 : 0, st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0,
+        hp: Math.round(p.hp), mhp: this.maxHp(p), rot: Math.round((p.rot ?? 0) * 10) / 10, am: p.ammo ?? null, rl: p.reloadT > 0 ? Math.round(p.reloadT * 10) / 10 : 0, st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0, mt: Math.ceil(p.mateT ?? 0), cr: p.crashT > 0,
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,

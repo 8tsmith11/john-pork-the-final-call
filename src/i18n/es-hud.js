@@ -11,4 +11,8 @@ export const ES_HUD = {
   '[R] Riff': '[R] Riff',
   '[R] Decoy': '[R] Señuelo',
   '[R] Ping': '[R] Ping',
+  // Mate caffeine (src/game/performances.js)
+  'Mate crash. Your legs feel like wet clay (slower for a few seconds).': 'Bajón del mate. Las piernas parecen de arcilla mojada (más lento unos segundos).',
+  'The crash wears off.': 'Se pasa el bajón.',
+  'crash…': 'bajón…',
 };

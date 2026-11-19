@@ -4,8 +4,9 @@ import fs from 'node:fs';
 import { makeStreams, Rng } from '../src/engine/rng.js';
 import { rollWorld } from '../src/engine/worldRolls.js';
 import { newSave, migrate, CURRENT_SCHEMA } from '../src/engine/save/schema.js';
-import { Sim, MOVE, ROT, LULLABY as BOT_LULLABY, emptyInput } from '../src/engine/sim.js';
+import { Sim, MOVE, ROT, MATE, LULLABY as BOT_LULLABY, emptyInput } from '../src/engine/sim.js';
 import { ENEMIES } from '../src/content/enemies.js';
+import { ITEMS } from '../src/content/items.js';
 import { room631 } from '../src/content/maps/room631.js';
 import { MAPS as MAPS_FOR_TEST } from '../src/content/maps/index.js';
 import { formatBalanceGroup } from '../tools/balance-summary.mjs';
@@ -948,6 +949,28 @@ test('roads get centre-line dashes that stop at junctions', () => {
   const d = laneDashes(lay);
   assert.ok(d.some((r) => r.h === 2 && r.y === 2 * 16 - 1 + 8), 'horizontal road has a centre line');
   assert.ok(!d.some((r) => r.x >= 6 * 16 && r.x < 10 * 16 && r.h === 2), 'no horizontal dash inside the junction');
+});
+
+test('mate gives a caffeine kick, then a short slow crash; another gourd restarts it', () => {
+  assert.ok(ITEMS['item.mate_flask'].mateKick, 'the mate thermos is a caffeine item');
+  const sim = new Sim(MAPS_FOR_TEST.room631, { seed: 's' }); sim.addPlayer('a', 'manuel');
+  const p = sim.players.get('a'); p.x = 14 * 16 + 8; p.y = 9 * 16 + 8;
+  const idle = new Map([['a', emptyInput()]]), walk = new Map([['a', { ...emptyInput(), mx: 1 }]]);
+  const speed = () => { sim.step(1 / 60, walk); const v = p.vx; p.x = 14 * 16 + 8; return v; };
+  const regen = () => { p.sta = 0; p.staT = 0; sim.step(0.5, idle); return p.sta; };
+  const baseSpeed = speed(), baseRegen = regen();
+  assert.equal(sim.mate('a'), true);
+  assert.ok(sim.snapshot().players[0].mt > 0, 'the snapshot shows the buff');
+  assert.ok(Math.abs(speed() - baseSpeed * (1 + MATE.speed)) < 1e-6, 'faster while buzzed');
+  assert.ok(regen() > baseRegen * 1.4, 'stamina comes back quicker');
+  sim.step(5, idle); assert.equal(sim.mate('a'), true, 'no cooldown'); assert.equal(p.mateT, MATE.buff, 'a second gourd restarts the kick');
+  for (let t = 0; t < MATE.buff; t += 0.5) sim.step(0.5, idle);
+  assert.equal(p.mateT, 0); assert.ok(sim.snapshot().players[0].cr, 'the crash follows');
+  assert.ok(Math.abs(speed() - baseSpeed * (1 + MATE.crashSpeed)) < 1e-6, 'slower in the crash');
+  assert.ok(Math.abs(regen() - baseRegen) < 1e-6, 'stamina regen is normal in the crash');
+  sim.mate('a'); assert.equal(p.crashT, 0, 'mate cancels the crash'); p.mateT = 0.1; sim.step(0.2, idle);
+  for (let t = 0; t < MATE.crash; t += 0.5) sim.step(0.5, idle);
+  assert.equal(p.crashT, 0); assert.ok(Math.abs(speed() - baseSpeed) < 1e-6, 'back to normal after the crash');
 });
 
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }

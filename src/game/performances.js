@@ -55,6 +55,17 @@ export class Performances {
     this.s._toast(me.zz ? 'Zzz… you fell asleep.' : 'You wake up.');
   }
 
+  // Mate caffeine, from the snapshot's mt (seconds left) and cr (crashing) flags, like the sleep toast.
+  _mateToast(me) {
+    if (!me) return;
+    const st = me.mt > 0 ? 'up' : me.cr ? 'crash' : 'off', was = this._mateState ?? 'off';
+    if (st === was) return;
+    this._mateState = st;
+    if (st === 'up') this.s._toast(`Caffeine kicks in. Faster, and stamina comes back quicker (${me.mt}s).`);
+    else if (st === 'crash') this.s._toast('Mate crash. Your legs feel like wet clay (slower for a few seconds).');
+    else if (was === 'crash') this.s._toast('The crash wears off.');
+  }
+
   /** Local player threw a sleeping potion (hotbar or inventory). The host consumes it and splashes. */
   throwPotion(itemId) {
     const s = this.s;
@@ -92,6 +103,7 @@ export class Performances {
     const me = snap.players.find((p) => p.id === s.localId) ?? snap.players[0];
     if (snap.map !== this._mapId) { this._mapId = snap.map; this.onMap(); }
     this._sleepToast(snap.players.find((p) => p.id === s.localId));
+    this._mateToast(snap.players.find((p) => p.id === s.localId));
     // --- sound ---
     const seen = new Set();
     for (const p of snap.players) {
@@ -138,6 +150,8 @@ export class Performances {
     const bob = Math.sin(now / 220) * 1.5;
     for (const p of snap.players) {
       if (p.zz) want.set(p.id, ['z Z', p.x, p.y - 30 + bob, '#9aa3c7']);
+      else if (p.mt > 0) want.set(p.id, [`MATE ${p.mt}`, p.x, p.y - 30 + bob, '#c8e619']);
+      else if (p.cr) want.set(p.id, ['crash…', p.x, p.y - 30 + bob, '#8a8f7a']);
       else if (p.pl) want.set(p.id, [p.pl === 'lullaby' ? '♪ ♫' : '♫ ♪', p.x, p.y - 30 + bob, p.c === 'manuel' ? '#c8e619' : '#ffb347']);
     }
     for (const e of snap.enemies ?? []) if (e.zz) want.set(`e:${e.id}`, ['z Z', e.x, e.y - 18 + bob, '#9aa3c7']); else if (e.sg) want.set(`e:${e.id}`, ['♪', e.x + 6, e.y - 16 + bob, '#c8c2e8']);
