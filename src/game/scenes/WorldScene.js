@@ -71,6 +71,12 @@ const SCOPE_DEFAULT = { cold_open: 'all', the_call: 'all', ending: 'all', first_
 
 const CONTROLS_TEXT = 'WASD move · mouse aim · click: use held item\nSpace / Shift dodge · E interact · R ability\n1-9 or wheel: hotbar · Q scooter outdoors\nI bag · J quests · K skills · Tab map · ESC';
 
+// Dialogue modes (Trevor #490/#493, gonman's split #497). STORY scenes stop the world: no walking or attacking
+// while they play. Everything else is FREE: the box stays at the bottom and you keep moving and fighting
+// (E advances, 1-6 choose, Space still dodges, clicks outside the box still attack). A scene or node can
+// override with `mode: 'story' | 'free'` once the scripts carry it.
+const STORY_SCENES = new Set(['cold_open', 'the_call', 'descent_and_boss', 'ending', 'first_death', 'checkpoint', 'lead_b_halvard']);
+
 // Dialogue scenes that happen on the phone, and the title each call gets in the phone tab's transcripts.
 const PHONE_CALLS = { the_call: { start: 'John Pork · the call', call_ring_2: 'John Pork · second call', call_ring_3: 'John Pork · third call', butt_dial: 'John Pork · pocket dial' } };
 
@@ -150,7 +156,7 @@ export class WorldScene extends Phaser.Scene {
     this.save.flags['settings.crudeHumor'] = 'on';   // always on (Trevor); scripts branch on it
     for (const [who, c] of Object.entries(this.save.party)) { Inv.normalize(c); migrateSkills(c, who); }
     this._makeMenu();
-    this.input.keyboard.on('keydown-Q', () => { if (this.dlg || this.menu) return; if (this.mode === 'client') this.net.send({ t: 'scooter' }); else this._scooter(this.localId); });
+    this.input.keyboard.on('keydown-Q', () => { if (this._dlgStops() || this.menu) return; if (this.mode === 'client') this.net.send({ t: 'scooter' }); else this._scooter(this.localId); });
     this.input.keyboard.on('keydown-M', () => { if (this.mode === 'client') this.net.send({ t: 'morph' }); else this._morph(this.localId); });
     // E: close an open panel/description, otherwise interact with the nearest thing in reach.
     this.input.keyboard.on('keydown-E', () => {
@@ -218,7 +224,7 @@ export class WorldScene extends Phaser.Scene {
   // hit while the party is reading. Ordinary NPC talks don't pause anything.
   _storyPaused() {
     const sh = this.shared;
-    return (!!this.dlg && this._dlgScope === 'all') || sh?.active?.scope === 'all' || sh?.watching?.scope === 'all';
+    return (!!this.dlg && !this.dlgFree && this._dlgScope === 'all') || (!this.dlgFree && (sh?.active?.scope === 'all' || sh?.watching?.scope === 'all'));
   }
 
   async _startLocal(sceneName, nodeId, onDone) {
@@ -232,6 +238,8 @@ export class WorldScene extends Phaser.Scene {
       standing: (f, n) => { if (f in this.save.standing) this.save.standing[f] += n; if (this.mode === 'client') this.net.send({ t: 'standing', faction: f, n }); },
     };
     this.dlg = new Conversation(scene, nodeId, this._dialogueCtx(), sink);
+    const node = scene.nodes?.[nodeId ?? scene.start];
+    this.dlgFree = (node?.mode ?? scene.mode ?? (STORY_SCENES.has(sceneName) ? 'story' : 'free')) === 'free';
     this._transcript = PHONE_CALLS[sceneName] ? { title: PHONE_CALLS[sceneName][nodeId ?? 'start'] ?? PHONE_CALLS[sceneName].start, at: new Date().toISOString(), lines: [] } : null;   // phone tab transcripts (Trevor)
     this.dlgVoiced = sceneName === 'ending';   // act-ending cutscene: spoken voices
     this.dlgDone = onDone;
@@ -257,7 +265,7 @@ export class WorldScene extends Phaser.Scene {
         if (n >= 1 && n <= 9 && !this.menu && !this.puzzle) this.selectHot(n - 1);
         return;
       }
-      if (ev.key === 'e' || ev.key === 'E' || ev.key === ' ' || ev.key === 'Enter') {
+      if (ev.key === 'e' || ev.key === 'E' || (ev.key === ' ' && !this.dlgFree) || ev.key === 'Enter') {   // Space dodges in free dialogue
         if (!this.dlg.choices.length && (this._typeShown ?? 0) < (this._typeFull?.length ?? 0)) { this._typeShown = this._typeFull.length; this._drawDialogue(); return; }
         if (!this.dlg.choices.length && this._pages && this._page < this._pages.length - 1) {   // long line: next page first
           this._page++; this._typeFull = this._pages[this._page]; this._typeShown = 0; this._lineAt = this.time.now; this._drawDialogue(); return;
@@ -265,7 +273,9 @@ export class WorldScene extends Phaser.Scene {
         if (!this.dlg.choices.length && this.time.now - (this._lineAt ?? 0) > 220) this.dlg.advance();
         this._drawDialogue();
       }
-      const n = parseInt(ev.key, 10); if (n >= 1 && n <= 6) this._choose(n - 1);
+      const n = parseInt(ev.key, 10);
+      if (n >= 1 && n <= 6 && this.dlg.choices.length) this._choose(n - 1);
+      else if (this.dlgFree && n >= 1 && n <= 9 && !this.menu && !this.puzzle) this.selectHot(n - 1);   // free dialogue: the hotbar still works
     });
     this._drawDialogue();
   }
@@ -1811,8 +1821,10 @@ export class WorldScene extends Phaser.Scene {
     const qb = this._qbSticky;
     if (qb && sx >= qb.x0 && sx <= qb.x1 && sy >= qb.y0 && sy <= qb.y1) { this.input2.blockAttack = true; qb.leave(); return; }
     if (this.dlg) {
-      this.input2.blockAttack = true;
-      return;   // clicks never advance dialogue (E does); choices are clicked directly
+      // Clicks never advance dialogue (E does); choices are clicked directly. In free dialogue a click
+      // outside the box is still an attack.
+      if (!this.dlgFree || sy > VIEW.h - 70) this.input2.blockAttack = true;
+      return;
     }
     if (this.menu) {
       this.input2.blockAttack = true;
@@ -1853,11 +1865,11 @@ export class WorldScene extends Phaser.Scene {
       me = this.sim.players.get(this.localId);
       const inp = this._frozen(this.input2.read(me));
       // Solo: the world pauses while you read or use a menu. (Co-op keeps running for the others.)
-      this.acc += this.mode === 'solo' && (this.dlg || this.menu) ? 0 : Math.min(deltaMs / 1000, 0.1);
+      this.acc += this.mode === 'solo' && (this._dlgStops() || this.menu) ? 0 : Math.min(deltaMs / 1000, 0.1);
       let first = true, events = [];
       while (this.acc >= STEP) {
         const inputs = new Map([[this.localId, first ? inp : { ...inp, dodge: false, interact: false }]]);
-        if (this.brain && !(this.dlg && this.mode === 'solo')) for (const [id, ai] of this.brain.inputs()) inputs.set(id, ai);
+        if (this.brain && !(this._dlgStops() && this.mode === 'solo')) for (const [id, ai] of this.brain.inputs()) inputs.set(id, ai);
         for (const [peer, rinp] of this.remoteInputs) {
           inputs.set(peer, rinp);
           if (rinp.dodge) this.remoteInputs.set(peer, { ...rinp, dodge: false });
@@ -1880,7 +1892,9 @@ export class WorldScene extends Phaser.Scene {
     this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.bigButt?.update(snap); this.pacifier?.update(snap); this.stands?.update();
   }
 
-  _frozen(inp) { return this.dlg || this.menu ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : inp; }
+  _frozen(inp) { return this._dlgStops() || this.menu ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : this.dlg ? { ...inp, interact: false } : inp; }
+  /** A story dialogue is up (the world waits); free dialogue lets everyone keep moving and fighting. */
+  _dlgStops() { return !!this.dlg && !this.dlgFree; }
 
   // Death by code rot (sim.rotDeath): a beat to read it, then the last save loads for everyone.
   _rotReloadSoon() {
@@ -2182,7 +2196,7 @@ export class WorldScene extends Phaser.Scene {
       const facing = p.f === 'left' ? 'right' : p.f;
       s.setFlipX(p.f === 'left');
       // Solo pauses the world during dialogue and menus: show everyone standing, not frozen mid-stride (Trevor).
-      const paused = this.mode === 'solo' && (this.dlg || this.menu);
+      const paused = this.mode === 'solo' && (this._dlgStops() || this.menu);
       let key = `${p.c}_${p.m && !paused ? 'walk' : 'idle'}_${facing}`;
       // Combat frames win over walk/idle: dodge, then the flinch after a hit.
       // No body 'punch' pose on a swing (Trevor): the weapon sweeping through the arc is the attack.
