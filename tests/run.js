@@ -1347,6 +1347,26 @@ test('the platform gate needs the yard, the breakers and the signals; no world s
   assert.ok(tunPuz.puzzleClue('obj.locker', seed, f, 'es').includes('TABLERO'));
 });
 
+test('burst damage cannot skip a gated boss phase or its first tell', () => {
+  const sim = new Sim(MAPS_FOR_TEST.tunnel_1, { seed: 'phase-gate' });
+  const boss = [...sim.enemies.values()].find((e) => e.kind === 'boss.switchman');
+  assert.ok(boss);
+  const burst = () => sim._hurtEnemy(boss, boss.def.hp + boss.def.guard, 0, 0);
+
+  for (const phase of [1, 2, 3]) {
+    burst();
+    assert.equal(boss.phase, phase, 'damage must wait for this phase’s first tell');
+    assert.ok(sim.enemies.has(boss.id), 'the boss must survive until its first tell');
+    boss.phaseTells = 1;
+    burst();
+    if (phase < 3) {
+      assert.equal(boss.phase, phase + 1, 'a burst must advance at most one phase');
+      assert.equal(boss.phaseTells, 0);
+    }
+  }
+  assert.equal(sim.enemies.has(boss.id), false, 'the boss can be killed after the final tell');
+});
+
 test('the Switchman (Act 1 mid boss): sleeps until you come close, starter gear beats it, and its death is not the act boss', () => {
   const random = Math.random, rng = new Rng('switchman'); Math.random = () => rng.next();
   try {
