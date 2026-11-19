@@ -3,6 +3,7 @@
 // from a seed so it's always solvable and differs per world.
 import { VIEW } from '../../view.js';
 import { Rng } from '../../engine/rng.js';
+import { sfx } from '../../audio/audio.js';
 
 const DIRS = [[0, -1], [1, 0], [0, 1], [-1, 0]];          // N E S W
 const SHAPES = { straight: [1, 0, 1, 0], corner: [1, 1, 0, 0], tee: [1, 1, 1, 0] };
@@ -102,7 +103,7 @@ export class PipePuzzle {
       g.fillStyle(lit ? 0x6ff2ff : 0x4a5070).fillCircle(cx, cy, 3);
       if (!c.locked) {
         const z = scene.add.zone(x, y, cell, cell).setOrigin(0, 0).setInteractive({ useHandCursor: true });
-        z.on('pointerdown', (p, lx, ly, ev) => { ev?.stopPropagation?.(); c.r = (c.r + 1) % 4; this.scene.sound?.play?.('x'); this.draw(); if (this.solved()) this._win(); });
+        z.on('pointerdown', (p, lx, ly, ev) => { ev?.stopPropagation?.(); c.r = (c.r + 1) % 4; sfx('swing'); /* was sound.play('x'): a missing key that threw, so the tile turned but never redrew (Trevor) */ this.draw(); if (this.solved()) this._win(); });
         this.root.add(z);
       }
     }

@@ -924,6 +924,13 @@ test('progression (Trevor: too easy, too low a ceiling): steeper curve, costed s
   }
 });
 
+test('no code plays Phaser sounds by key (none are loaded; a missing key throws mid-handler: the cam puzzle tiles stopped redrawing)', async () => {
+  const fs = await import('node:fs'), path = await import('node:path');
+  const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name)) : e.name.endsWith('.js') ? [path.join(d, e.name)] : []));
+  const bad = walk('src').filter((f) => /\.sound\??\.play\??\.?\(/.test(fs.readFileSync(f, 'utf8')));
+  assert.deepEqual(bad, [], 'use sfx() from src/audio/audio.js instead');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
