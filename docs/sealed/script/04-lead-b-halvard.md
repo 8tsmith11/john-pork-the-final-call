@@ -78,8 +78,8 @@ Arkg: -> unyineq_fybg_uho
 
 Pubvprf:
 - "Jung'f vg pbfg gb gnyx?" -> unyineq_cnl
-- "Jung jbhyq lbh gnxr vafgrnq bs zbarl?" -> unyineq_genqr
-- "Lbh ybbx yvxr lbh'ir orra hc n juvyr. Zngr?" -> unyineq_zngr
+- "Gnxr fbzrguvat ryfr?" -> unyineq_genqr
+- "Bssre uvz zngr." -> unyineq_zngr
 - "(Fnl abguvat. Jnvg.)" -> unyineq_jnvg
 
 ### abqr: unyineq_cnl
@@ -109,7 +109,7 @@ Pubvprf:
 **UNYINEQ:** Hfrq. Yvfgra gb uvz. Guvegl.
 
 #### vs fcrnxre=zvpunry
-**ZVPUNRY:** Sbegl. Bxnl. Gurer jnf n cynpr yvxr guvf fur hfrq gb tb, naq gur thl nyjnlf xabpxrq n ovg bss orpnhfr fur'q gnyx gb uvz.
+**ZVPUNRY:** Sbegl. Bxnl. Fur jrag gb n cynpr yvxr guvf. Gur thl xabpxrq fbzr bss orpnhfr fur'q gnyx gb uvz.
 
 **UNYINEQ:** Naq jurer'f fur abj?
 
@@ -123,7 +123,7 @@ Arkg: -> unyineq_vafvqr
 
 ### abqr: unyineq_genqr
 
-**UNYINEQ:** Gurer'f n xvq qryviref gb lbhe sybbe. Fnlf gurer ner urnqf ol lbhe qbbe. Cynfgre. N snpr abobql'f nyybjrq gb unir.
+**UNYINEQ:** N xvq qryviref gb lbhe sybbe. Fnlf gurer ner urnqf ol lbhe qbbe. Cynfgre. N snpr abobql'f nyybjrq gb unir.
 
 **UNYINEQ:** V'q gnxr bar bs gubfr.
 
@@ -147,7 +147,7 @@ Pubvprf:
 
 ### abqr: unyineq_genqr_lrf
 
-**UNYINEQ:** Oevat vg qbja jura lbh'ir tbg unaqf serr. V'yy gnxr lbhe jbeq. V xabj jurer lbh yvir, juvpu vf gur fnzr guvat.
+**UNYINEQ:** Oevat vg jura lbhe unaqf ner serr. V'yy gnxr lbhe jbeq. V xabj jurer lbh yvir. Fnzr guvat.
 
 **ZNAHRY:** Jenc vg. Qba'g whfg chg vg ba n furys. Jenc vg.
 
@@ -217,13 +217,17 @@ Pubvprf:
 
 **UNYINEQ:** Sbhe avtugf ntb. Yngr. Fbzrobql ng gur fybg.
 
-**UNYINEQ:** V tbg jung gur fybg tvirf lbh. Purfg gb puva. N ubbq. Na NFGRE sbo ba n ynalneq, naq V pna ernq n sbo hcfvqr qbja. Fvk guerr bar.
+**UNYINEQ:** V tbg jung gur fybg tvirf lbh. Purfg gb puva. N ubbq.
+
+**UNYINEQ:** Na NFGRE sbo ba n ynalneq. V pna ernq n sbo hcfvqr qbja. Fvk guerr bar.
 
 **UNYINEQ:** Gurl nfxrq bar guvat. "Jung'f uryvhz jbegu." Syng. Yvxr vg jnf jevggra ba n pneq.
 
 **UNYINEQ:** Xrcg bar unaq va n cbpxrg gur jubyr gvzr. Qvqa'g fnl uryyb.
 
-**UNYINEQ:** V gbyq gurz V qba'g cevpr jung V pna'g frr. Gurl fgbbq gurer n juvyr, yvxr gurl jrer jnvgvat sbe n qvssrerag nafjre gb ybnq. Gura gurl jrag hc gur fgnvef.
+**UNYINEQ:** V gbyq gurz V qba'g cevpr jung V pna'g frr.
+
+**UNYINEQ:** Gurl fgbbq gurer, yvxr gurl jrer jnvgvat sbe n qvssrerag nafjre gb ybnq. Gura gurl jrag hc gur fgnvef.
 
 *Ur gnxrf uvf tynffrf bss. Ur ybbxf ng rnpu bs gurz va ghea, gur jnl ur jbhyq ybbx ng fpenc.*
 

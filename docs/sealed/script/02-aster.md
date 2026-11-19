@@ -54,7 +54,7 @@ abobql fnlf fb. Gehr haqre obgu frrq inevnagf.
 
 **GERIBE:** Qvq lbh frr nalbar?
 
-**XRFF:** V jnf va gur obvyre ebbz. Nfx Srajvpx, ur'f ba gur qbbe. Nfx gur pnzren, vs lbh pna trg vg gb fnl nalguvat.
+**XRFF:** V jnf va gur obvyre ebbz. Nfx Srajvpx, ur'f ba gur qbbe. Nfx gur pnzren, vs vg'yy fnl nalguvat.
 
 **XRFF:** Arj ybpx ol zbeavat. Qba'g gbhpu gur byq bar. V jnag vg va qnlyvtug.
 
@@ -70,7 +70,9 @@ abobql fnlf fb. Gehr haqre obgu frrq inevnagf.
 
 **ZEF. INETN:** Yngr jnf gjb ubhef ntb. V urneq lbhe qbbe.
 
-**ZEF. INETN:** Abg n xrl. Gur bgure fbhaq. Gura gur ybpx, gheavat sebz gur jebat fvqr. Gura srrg gbjneq gur fgnvef. Abg uheelvat.
+**ZEF. INETN:** Abg n xrl. Gur bgure fbhaq. Gura gur ybpx, gheavat sebz gur jebat fvqr.
+
+**ZEF. INETN:** Gura srrg gbjneq gur fgnvef. Abg uheelvat.
 
 **ZEF. INETN:** V qvq abg bcra zl qbbe. V nz rvtugl-bar.
 
@@ -118,7 +120,7 @@ abobql fnlf fb. Gehr haqre obgu frrq inevnagf.
 
 **GERIBE:** Srajvpx. Jub pnzr va nsgre zvqavtug?
 
-**SRAJVPX:** Ze. Qrm, ng gjb. Zf. Frha yrsg ng ryrira naq unf abg pbzr onpx. N pbagenpgbe ng guerr-bu-sbhe, jvgu n jbex beqre.
+**SRAJVPX:** Ze. Qrm, ng gjb. Zf. Frha yrsg ng ryrira. N pbagenpgbe ng guerr-bu-sbhe, jvgu n jbex beqre.
 
 **ZVPUNRY:** Lbh yrg uvz hc?
 
@@ -158,15 +160,15 @@ abobql fnlf fb. Gehr haqre obgu frrq inevnagf.
 
 *Cehvgg ybbxf ng gur erthyngvba pneq va uvf unaq. Ur qbrf abg ernq sebz vg.*
 
-**CEHVGG:** V'q xrrc gung jbeq njnl sebz nalobql va n juvgr pbng gbavtug. V'ir tbg gjb xvqf va Ulnggfivyyr. V'z gryyvat lbh nf n arvtuobhe.
+**CEHVGG:** Xrrc gung jbeq njnl sebz juvgr pbngf gbavtug. V'ir tbg gjb xvqf va Ulnggfivyyr. V'z gryyvat lbh nf n arvtuobhe.
 
 **GERIBE:** Lbhe znfg'f cbvagrq ng gur tebhaq.
 
 **CEHVGG:** Vg cbvagf jurer vg'f gbyq.
 
-**CEHVGG:** Sbe jung vg'f jbegu, gur pbqr ebg'f pbzvat hc sebz haqre gur fgngvba. V chg gung va gur ercbeg. Gurl frag gur ercbeg onpx.
+**CEHVGG:** Gur pbqr ebg'f pbzvat hc sebz haqre gur fgngvba. V chg gung va gur ercbeg. Gurl frag vg onpx.
 
-**CEHVGG:** Vs vg xrrcf pyvzovat, gur beqre pbzrf qbja sbe nyy bs Pbyyrtr Cnex. Dhnenagvar. N jnyy ebhaq gur jubyr cbfgpbqr, abobql va be bhg.
+**CEHVGG:** Vs vg xrrcf pyvzovat, gur beqre pbzrf qbja sbe nyy bs Pbyyrtr Cnex. N jnyy ebhaq gur jubyr cbfgpbqr.
 
 **ZVPUNRY:** Jura?
 

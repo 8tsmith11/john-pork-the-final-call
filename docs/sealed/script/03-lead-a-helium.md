@@ -1,5 +1,5 @@
 <!-- SEALED SPOILERS (ROT13 Caesar cipher). Humans: reading this spoils key plot twists.
-     To open on purpose: python3 tools/spoilers/seal.py open /home/trevor-smith/code/john-pork-the-final-call/docs/sealed/script/03-lead-a-helium.md -->
+     To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/script/03-lead-a-helium.md -->
 # Yrnq N: gur uryvhz genvy
 
 > **Erivfvba 2 (gnfx 8).** Phg sebz 67 abqrf gb 4. Gur svefg qensg sbyybjrq gur favssre npebff gur
@@ -33,7 +33,7 @@ guvf bar jnf pneevrq bhg bs gur sebag qbbe naq qbja.
 
 **ZNAHRY:** Cnegf cre ovyyvba. Rabhtu.
 
-**GERIBE:** Lbh jnag n yrnx qrgrpgbe. Jr pna cevag gur ubhfvat. Gur frafbe'f n ubg-jver oevqtr. V'ir tbg bar va gur ovaf sebz yno.
+**GERIBE:** Lbh jnag n yrnx qrgrpgbe. Jr cevag gur ubhfvat. Gur frafbe'f n ubg-jver oevqtr. V'ir tbg bar sebz yno.
 
 **ZNAHRY:** V ungr 245 yno.
 
@@ -45,7 +45,7 @@ Pubvprf:
 
 ### abqr: favssre_ubj
 
-**GERIBE:** Uryvhz pneevrf urng orggre guna nve. Eha n ubg jver. Vs vg pbbyf snfgre guna vg fubhyq, gurer'f uryvhz ba vg.
+**GERIBE:** Uryvhz pneevrf urng orggre guna nve. Eha n ubg jver. Vs vg pbbyf gbb snfg, gurer'f uryvhz ba vg.
 
 **ZVPUNRY:** Gung'f gur jubyr guvat?
 

@@ -118,7 +118,7 @@ Arkg: -> pbyqbcra_qbbe
 
 *Znahry unf abg pbzr gb ybbx ng gur qbbe. Ur vf fgvyy ng gur pybfrg, jvaqvat gur fgho bs evooba ebhaq gjb svatref.*
 
-**ZNAHRY:** Zl tenaqzbgure gvrq gung xabg. V arire hagvrq vg. Fvk lrnef, sbhe ncnegzragf, V zbirq gur envy jvgu gur xabg fgvyy ba vg.
+**ZNAHRY:** Zl tenaqzbgure gvrq gung xabg. Fvk lrnef, sbhe ncnegzragf. V zbirq gur envy jvgu gur xabg fgvyy ba vg.
 
 **GERIBE:** Lbh oebhtug n pybgurf envy sebz Ebfnevb.
 
@@ -198,7 +198,7 @@ Pubvprf:
 
 *Znahry chgf gur evooba va uvf fuveg cbpxrg naq ohggbaf gur cbpxrg.*
 
-**ZNAHRY:** Uryvhz qbrfa'g fgnl jurer lbh chg vg. Vs vg'f va gur ohvyqvat vg'f ba n prvyvat. Vs vg'f bhgfvqr vg'f tbar ol zbeavat.
+**ZNAHRY:** Uryvhz qbrfa'g fgnl chg. Va gur ohvyqvat, vg'f ba n prvyvat. Bhgfvqr, vg'f tbar ol zbeavat.
 
 **GERIBE:** Gura jr'ir tbg gvyy zbeavat.
 

@@ -37,12 +37,12 @@ Syntf: frgf `npg1.pbeqba.cnffrq`, `npg1.pbeqba.ubj` (oyhss / oevor / qebar), `np
 
 *Gncrq gb gur pbbyre, n ynzvangrq abgvpr: DHNENAGVAR BEQRE CRAQVAT. PBYYRTR CNEX. ERNQVATF HAQRE ERIVRJ.*
 
-**GBOVA:** Vs gur wne pbzrf hc jebat, gung tbrf ba rirel qbbe va gur cbfgpbqr, naq gurl fgneg gur jnyy. Zl zbz'f ba Xabk Ebnq.
+**GBOVA:** Vs gur wne pbzrf hc jebat, gurl fgneg gur jnyy. Zl zbz'f ba Xabk Ebnq.
 
 Pubvprf:
-- [synt npg1.nfgre.srajvpxBeqre] "Jr'er jvgu gur ybpx pbagenpgbe. Jbex beqre ba fvk." -> pbeqba_oyhss
+- [synt npg1.nfgre.srajvpxBeqre] "Ybpx pbagenpgbe. Jbex beqre." -> pbeqba_oyhss
 - [zbarl >= 20] "Gjragl sbe lbhe biregvzr?" -> pbeqba_oevor
-- "Jnvg sbe gur qebar gb pbzr ebhaq." -> pbeqba_qebar
+- "Jnvg sbe gur qebar." -> pbeqba_qebar
 - "Arire zvaq." -> RAQ
 
 ### abqr: pbeqba_oyhss
