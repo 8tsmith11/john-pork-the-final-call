@@ -235,6 +235,10 @@ export const LINES_ES = {
   "Hmmmm. Toothpaste?": "Mmmmm. ¿Pasta de dientes?",
   "Sure, sure...": "Claro, claro...",
   "Sure. Sure sure sure.": "Claro. Claro claro claro.",
+  // Manuel getting rounder (barks.js: rounder), Rioplatense
+  "I have to stop going to the dining hall.": "Tengo que dejar de ir al comedor.",
+  "The dining hall has a waffle machine now. That's the problem.": "El comedor ahora tiene una máquina de waffles. Ese es el problema.",
+  "These pants shrank. In the wash. All of them.": "Estos pantalones se achicaron. En el lavado. Todos.",
 };
 
 /** The line in the current language (Spanish when chosen and known, else as written). */

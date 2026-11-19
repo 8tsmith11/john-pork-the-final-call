@@ -9,13 +9,16 @@ export const lookStage = (level = 1) => (level >= 6 ? 2 : level >= 3 ? 1 : 0);
 
 // Each roommate grows his own way (Manuel: "Trevor should become more muscular and taller"). Trevor, the gym
 // one, grows fastest and gets taller as well as bigger; the muscle itself is painted (wearables.js).
-const BUILD = { trevor: { perLevel: 0.02, stageJump: 0.06, cap: 1.3, taller: 0.01 } };
+const BUILD = {
+  trevor: { perLevel: 0.02, stageJump: 0.06, cap: 1.3, taller: 0.01 },
+  manuel: { wider: 0.018 },   // Manuel gets rounder as the story goes on (his own request); the belly is painted too
+};
 
 /** [width, height] scale versus level 1 for this roommate. */
 export function growthSize(level = 1, who = '') {
-  const b = { ...GROWTH, taller: 0, ...(BUILD[who] ?? {}) }, lv = Math.max(1, level);
+  const b = { ...GROWTH, taller: 0, wider: 0, ...(BUILD[who] ?? {}) }, lv = Math.max(1, Math.min(level, 12));
   const s = Math.min(b.cap, 1 + b.perLevel * (lv - 1) + b.stageJump * lookStage(lv));
-  return [s, Math.min(b.cap + 0.06, s + b.taller * (lv - 1))];
+  return [s * (1 + b.wider * (lv - 1)), Math.min(b.cap + 0.06, s + b.taller * (lv - 1))];
 }
 
 /** How much bigger than level 1 a character is drawn (width). */

@@ -85,6 +85,8 @@ export const BARKS = {
     trevor: ['Stay there. Not that you have options.'],
     michael: ['I\'ve got you, I\'ve got you, where are you...'],
   },
+  // Manuel, getting rounder as he levels (level 3 on). His own line first.
+  rounder: { manuel: ['I have to stop going to the dining hall.', 'The dining hall has a waffle machine now. That\'s the problem.', 'These pants shrank. In the wash. All of them.'] },
   // Manuel, from the gonman's stage two on (level 6): the white splotches on his clothes. Manuel's own request.
   toothpaste: { manuel: ['It\'s toothpaste.', 'That\'s toothpaste. I brush very hard.', 'Toothpaste. Don\'t ask about the angle.'] },
   // Places inside a big map (landscape pass): walking into one gets a one-liner, once per visit.

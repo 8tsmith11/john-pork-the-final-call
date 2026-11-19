@@ -272,7 +272,7 @@ function paintPantsDown(src, out, w, h, facing, body, look) {
 // Growth details, cumulative by level. Everyone: a worn knee (2), a wristband (4), a shirt patch (5), newer boots
 // (7), a second worn knee (8). Look stage 1 (level 3) and 2 (level 6) add each roommate's own mark.
 const MARK = { manuel: P.warm4, trevor: P.bone, michael: P.pork1 };
-function paintGrow(src, out, w, h, facing, body, look, who) {
+function paintGrowMarks(src, out, w, h, facing, body, look, who) {
   const { is, put, C, rows, span } = kit(src, out, w, h, body);
   const lv = look.level, st = lookStage(lv), dark = hex(P.night0);
   const [ptop, pbot] = rows(C.pants), [stop, sbot] = rows(C.shirt), [htop] = rows(C.hair), [ftop, fbot] = rows([C.skin[0]]);
@@ -319,6 +319,10 @@ function paintGrow(src, out, w, h, facing, body, look, who) {
   }
   if (st < 1) return true;
   // stage marks
+  if (who === 'manuel' && lv >= 6 && facing !== 'up' && ftop < h && stop < h) {   // fuller cheeks (Manuel gets rounder)
+    let fy = -1; for (let y = stop - 1; y >= ftop; y--) { let n = 0; for (let x = 0; x < w; x++) if (is(x, y, C.skin)) n++; if (n >= 4) { fy = y - 1; break; } }
+    if (fy > ftop) { const [a, b] = span(fy); if (facing !== 'right') { put(a, fy, C.skin[1]); put(a - 1, fy, dark); } put(b, fy, C.skin[1]); put(b + 1, fy, dark); }
+  }
   const smudge = (x, y) => { if (is(x, y, C.shirt)) put(x, y, hex(P.concrete2)); };
   if (who === 'manuel') {                                              // the sculptor: clay builds up; hair goes wild; then the gonman's eyes
     if (htop < h) {
@@ -403,6 +407,32 @@ function paintGrow(src, out, w, h, facing, body, look, who) {
       if (is(a3 + 1, stop + 1, C.shirt) && is(a3 + 2, stop + 2, C.shirt)) { put(a3 + 1, stop + 1, hex(P.pork2)); put(a3 + 2, stop + 2, hex(P.pork2)); }
     }
   }
+  return true;
+}
+
+// Manuel gets rounder as the story goes on (his own request): from level 3 his middle widens, most at the waist,
+// by pushing his arms out and filling the space with belly (front and back), or pushing his front out (profile).
+// Done after every other mark, on the combined picture, so the clay, the toothpaste and the rest move with him.
+function paintGrow(src, out, w, h, facing, body, look, who) {
+  paintGrowMarks(src, out, w, h, facing, body, look, who);
+  const lv = look.level, k = who === 'manuel' ? (lv >= 8 ? 3 : lv >= 6 ? 2 : lv >= 3 ? 1 : 0) : 0;
+  if (!k) return true;
+  const { C, rows } = kit(src, out, w, h, body), [stop, sbot] = rows(C.shirt); if (sbot < 0) return true;
+  const at = (x, y) => { const i = (y * w + x) * 4; return out[i + 3] ? [out[i], out[i + 1], out[i + 2], 255] : [src[i], src[i + 1], src[i + 2], src[i + 3]]; };
+  const dark = [...hex(P.night0), 255], shirt = [...C.shirt[0], 255], hi = [...hex(P.yerba1).map((v) => Math.min(255, v + 18)), 255], pants = [...C.pants[0], 255];
+  const ys = []; for (let y = stop + 2; y <= Math.min(h - 1, sbot + 1); y++) ys.push(y);
+  ys.forEach((y, i) => {
+    const d = Math.max(0, Math.round(k * Math.sin(Math.PI * (i + 0.5) / ys.length) + (i >= ys.length / 2 ? 0.3 : 0)));
+    if (!d) return;
+    const row = Array.from({ length: w }, (_, x) => at(x, y)); let a = w, b = -1;
+    row.forEach((p, x) => { if (p[3]) { a = Math.min(a, x); b = Math.max(b, x); } });
+    if (b < 0) return;
+    const mid = facing === 'right' ? b - 1 : Math.floor((a + b) / 2), dl = facing === 'right' ? 0 : d, dr = d, nw = Array(w).fill(null);   // profile: only the front pushes out
+    for (let x = a; x <= b; x++) { const nx = x <= mid ? x - dl : x + dr; if (nx >= 0 && nx < w && row[x][3]) nw[nx] = row[x]; }
+    for (let x = mid - dl + 1; x <= mid + dr; x++) if (x >= 0 && x < w) nw[x] = y > sbot ? pants : (x === mid ? hi : shirt);   // the belly
+    for (let x = Math.max(0, a - dl); x <= Math.min(w - 1, b + dr); x++) if (!nw[x] && row[x][3]) nw[x] = dark;   // no holes onto the old outline
+    nw.forEach((p, x) => { if (p) { const j = (y * w + x) * 4; out[j] = p[0]; out[j + 1] = p[1]; out[j + 2] = p[2]; out[j + 3] = 255; } });
+  });
   return true;
 }
 
