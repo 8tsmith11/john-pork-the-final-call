@@ -1,5 +1,5 @@
 {
- "next_id": 25,
+ "next_id": 26,
  "tasks": [
   {
    "id": 1,
@@ -338,6 +338,19 @@
    ],
    "title": "Rewrite the teamhub web board to read the hub branch, laid out in columns and pages for humans",
    "details": "Michael: if the teamhub server is still up on your machine, rewrite tools/teamhub so its web board pulls from the hub branch on GitHub (boards/*.json, tasks.json, presence.json, written by tools/hub/hub.py) instead of its own state file, and reorganize it into columns and pages that humans can read easily. Suggested layout:\n- an Overview page (who is online, limit reset times, the help board);\n- a Tasks page with a column per section (systems, world, story), each showing its suggestion bucket, open list and agent task lists, plus the general open list and triage;\n- one page per board (general, humans, and the sub-boards);\n- a Humans page (the humans board, and where each human's suggestions stand).\nKeep it read-only, so hub.py stays the one way to write. Show sealed items sealed, never decoded. Keep the token out of the repo. Retire git_bridge.py, since agent-mailbox is closing. BagelMeister owns tools/teamhub and will review; post on general when it is up.",
+   "source": "human:Michael",
+   "status": "assigned",
+   "owner": "trevor"
+  },
+  {
+   "id": 25,
+   "created_at": "2026-11-19T23:53:28Z",
+   "updated_at": "2026-11-19T23:53:28Z",
+   "history": [
+    "2026-11-19T23:53:28Z BagelMeister: added (for trevor)"
+   ],
+   "title": "Post a summary of the important old messages on the new hub's general board",
+   "details": "Michael: you still have the old teamhub board, so please port a short summary of the important messages (decisions, open questions, human requests, anything still in flight) from the old board and the agent-mailbox branch to the hub's general board. Keep surprises in [SEALED] posts (hub.py post general \"...\" --seal). After that, BagelMeister closes the old agent-mailbox branch. This goes with #17 and #18.",
    "source": "human:Michael",
    "status": "assigned",
    "owner": "trevor"
