@@ -9,7 +9,7 @@ export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown
   stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
 // Regular-enemy tuning for a party of three (see spawnEnemies). Measured with a headless bot run:
 // before this the tunnel cleared in ~30 s with no knockdowns.
-export const PARTY_SCALE = { hp: 1.7, dmg: 1.3 };
+export const PARTY_SCALE = { hp: 2.3, dmg: 2.0 };   // raised from 1.7/1.3 (Trevor: harder); party runs now take real damage, solo needs gear
 export const BLINK = { dist: 112, cooldown: 1.1 };   // winged boots (D-014)
 // Michael's lullaby reaches 8 tiles; a Hold-Music Moth's hum reaches 4. Manuel is a baby: a lullaby
 // puts him out for 12 s instead of 8. Caffeine (wiredT) makes anyone immune.
