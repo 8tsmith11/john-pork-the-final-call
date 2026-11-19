@@ -9,7 +9,7 @@ export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown
   stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
 // Regular-enemy tuning for a party of three (see spawnEnemies). Measured with a headless bot run:
 // before this the tunnel cleared in ~30 s with no knockdowns.
-export const PARTY_SCALE = { hp: 1.7, dmg: 1.3 };
+export const PARTY_SCALE = { hp: 2.3, dmg: 2.0 };   // raised from 1.7/1.3 (Trevor: harder); party runs now take real damage, solo needs gear
 export const BLINK = { dist: 112, cooldown: 1.1 };   // winged boots (D-014)
 // Michael's lullaby reaches 8 tiles; a Hold-Music Moth's hum reaches 4. Manuel is a baby: a lullaby
 // puts him out for 12 s instead of 8. Caffeine (wiredT) makes anyone immune.
@@ -17,6 +17,9 @@ export const LULLABY = { range: 128, mothRange: 64, expose: 3, sleep: 8, babySle
 // Infection stops at a heavy debuff in this pass. Transformation needs a separate design review.
 export const ROT = { max: 100, poolRate: 4, growth: 0.08, puddlerHit: 6,
   lightDecay: 0.1, quietTime: 5, charmRange: 64, charmDecay: 0.6, charmShield: 0.5, maxHallRate: 4 };
+// Combat feel (docs/research/combat.md): combo chain, deflects, perfect dodges, wall slams, hit-stop.
+export const FEEL = { comboWindow: 0.55, finisherDmg: 1.6, finisherKnock: 1.8, finisherArc: 1.25,
+  deflectDmg: 1.5, perfectWindow: 0.15, focusTime: 1.5, focusDmg: 1.5, slamSpeed: 140, slamDmg: 8, slamStun: 0.6, hitStop: 0.05 };
 export const COMBAT = {
   maxHp: 100, hurtIframes: 0.6, reviveTime: 4.0, reviveRange: 18, reviveHp: 40,
   melee: { cooldown: 0.38, range: 20, arc: Math.PI * 0.6, damage: 12, knockback: 120 },
@@ -266,7 +269,7 @@ export class Sim {
       if (len > 1) { mx /= len; my /= len; } // diagonals aren't faster
       p.aim = inp.aim;
       p.dodgeCd = Math.max(0, p.dodgeCd - dt);
-      p.iframes = Math.max(0, p.iframes - dt);
+      p.iframes = Math.max(0, p.iframes - dt); if (p.focusT > 0) p.focusT = Math.max(0, p.focusT - dt);
 
       p.staT = Math.max(0, (p.staT ?? 0) - dt);
       p.pillT = Math.max(0, (p.pillT ?? 0) - dt);   // blue pill: dodges are free while this runs
@@ -279,7 +282,7 @@ export class Sim {
         const dl = Math.hypot(dx, dy) || 1;
         p.dodgeDx = dx / dl; p.dodgeDy = dy / dl;
         p.dashHits = new Set();
-        p.dodgeStamp = this.tick; p.dodgeT = MOVE.dodgeTime; p.dodgeCd = Math.max(0.2, MOVE.dodgeCooldown + (p.mods?.dodgeCd ?? 0)); p.iframes = MOVE.iframes;
+        p.dodgeStamp = this.tick; p.perfectDone = false; p.dodgeT = MOVE.dodgeTime; p.dodgeCd = Math.max(0.2, MOVE.dodgeCooldown + (p.mods?.dodgeCd ?? 0)); p.iframes = MOVE.iframes;
       }
 
       if (p.dodgeT > 0) {
@@ -378,8 +381,8 @@ export class Sim {
     this._stepDoors(dt);
     this._stepHazards(dt);
     this._stepRot(dt);
-    this._stepEnemies(dt);
-    this._stepShots(dt);
+    if (this.hitStop > 0) this.hitStop = Math.max(0, this.hitStop - dt);
+    else { this._stepEnemies(dt); this._stepShots(dt); }
     this._stepRevives(dt);
   }
 
@@ -441,9 +444,27 @@ export class Sim {
   }
 
   _melee(p) {
-    const w = p.mods?.swing, m = w ? { ...COMBAT.melee, ...w, arc: Math.PI * (w.arc ?? 0.6) } : COMBAT.melee;
-    p.meleeCd = m.cooldown; p.swingT = 0.2;   // long enough for both attack frames (12 fps)
-    this.events.push({ t: 'swing', id: p.id, a: p.aim, r: m.range, arc: m.arc });
+    const w = p.mods?.swing, base = w ? { ...COMBAT.melee, ...w, arc: Math.PI * (w.arc ?? 0.6) } : COMBAT.melee;
+    // Combo: swings inside the window chain 1-2-3; the third is a heavy finisher.
+    const now = this.tick * (1 / 60);
+    p.combo = now - (p.lastSwingAt ?? -9) <= base.cooldown + FEEL.comboWindow ? ((p.combo ?? 0) % 3) + 1 : 1;
+    p.lastSwingAt = now;
+    const fin = p.combo === 3;
+    const m = fin ? { ...base, damage: base.damage * FEEL.finisherDmg, knockback: base.knockback * FEEL.finisherKnock, arc: base.arc * FEEL.finisherArc } : base;
+    const focus = p.focusT > 0; if (focus) p.focusT = 0;
+    p.meleeCd = m.cooldown * (fin ? 1.25 : 1); p.swingT = 0.2;   // long enough for both attack frames (12 fps)
+    this.events.push({ t: 'swing', id: p.id, a: p.aim, r: m.range, arc: m.arc, combo: p.combo });
+    // Deflect: enemy shots inside the swing go back the way they came, as the player's.
+    for (const s of this.shots) {
+      if (s.from === 'player') continue;
+      const dx = s.x - p.x, dy = s.y - (p.y - 6), d = Math.hypot(dx, dy);
+      if (d > m.range + 8) continue;
+      let da = Math.atan2(dy, dx) - p.aim; da = Math.atan2(Math.sin(da), Math.cos(da));
+      if (Math.abs(da) > m.arc / 2 + 0.3) continue;
+      const sp = Math.hypot(s.vx, s.vy) * 1.2;
+      Object.assign(s, { from: 'player', owner: p.id, vx: Math.cos(p.aim) * sp, vy: Math.sin(p.aim) * sp, dmg: Math.round(s.dmg * FEEL.deflectDmg), life: 1.6, rot: 0 });
+      this.events.push({ t: 'deflect', x: s.x, y: s.y, by: p.id });
+    }
     for (const e of this.enemies.values()) {
       const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
       const def = this._def(e);
@@ -452,17 +473,19 @@ export class Sim {
       if (Math.abs(da) > m.arc / 2 && d > def.radius + 4) continue;
       const crit = Math.random() < (p.mods?.crit ?? 0);
       if (crit) this.events.push({ t: 'crit', x: e.x, y: e.y });
-      this._hurtEnemy(e, Math.round((m.damage + (p.mods?.melee ?? 0)) * (p.morphed ? 1.3 : 1) * (crit ? 2 : 1)), dx / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), dy / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), p.id);
+      if (fin) this.hitStop = FEEL.hitStop;
+      this._hurtEnemy(e, Math.round((m.damage + (p.mods?.melee ?? 0)) * (p.morphed ? 1.3 : 1) * (crit ? 2 : 1) * (focus ? FEEL.focusDmg : 1)), dx / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), dy / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), p.id);
     }
   }
 
   _fire(p) {
     const c = { ...COMBAT.shot, ...(p.mods?.gunStats ?? {}) }, n = c.pellets ?? 1;
+    const focus = p.focusT > 0; if (focus) p.focusT = 0;
     p.shotCd = Math.max(0.12, c.cooldown + (p.mods?.shotCd ?? 0));
     for (let i = 0; i < n; i++) {
       const a = p.aim + (n > 1 ? (i / (n - 1) - 0.5) * (c.spread ?? 0.4) : 0);
       this.shots.push({ x: p.x + Math.cos(a) * 8, y: p.y - 6 + Math.sin(a) * 8, vx: Math.cos(a) * c.speed, vy: Math.sin(a) * c.speed,
-        life: c.life, dmg: Math.round((c.damage + (p.mods?.shot ?? 0)) * (p.morphed ? 1.3 : 1)), from: 'player', owner: p.id });
+        life: c.life, dmg: Math.round((c.damage + (p.mods?.shot ?? 0)) * (p.morphed ? 1.3 : 1) * (focus ? FEEL.focusDmg : 1)), from: 'player', owner: p.id });
     }
     this.events.push({ t: 'shot', id: p.id });
   }
@@ -480,7 +503,7 @@ export class Sim {
     e.hp -= dmg; e.hurtT = 0.12;
     if (e.boss) { kx *= 0.15; ky *= 0.15; const f = e.hp / e.def.hp; const ph = f < 0.33 ? 3 : f < 0.66 ? 2 : 1;
       if (ph !== e.phase) { e.phase = ph; this.events.push({ t: 'phase', phase: ph }); } }
-    e.kx = kx; e.ky = ky;
+    e.kx = kx; e.ky = ky; if (by) e.lastHitBy = by;
     this.events.push({ t: 'hit', x: e.x, y: e.y, dmg, target: e.id, by });
     if (e.hp <= 0) {
       this.enemies.delete(e.id);
@@ -495,7 +518,15 @@ export class Sim {
 
   _hurtPlayer(p, dmg, infection = 0) {
     if (p.ttl !== undefined && p.hp !== undefined && !p.id) { p.hp -= dmg; return; }   // a decoy bust soaking a hit
-    if (p.downed || p.iframes > 0) return;
+    if (p.downed) return;
+    if (p.iframes > 0) {
+      // Perfect dodge: the hit came in the first moments of a dodge. Refund the dash, grant Focus.
+      if (p.dodgeT > 0 && !p.perfectDone && (this.tick - (p.dodgeStamp ?? -99)) / 60 <= FEEL.perfectWindow && !(p.ttl !== undefined && !p.id)) {
+        p.perfectDone = true; p.focusT = FEEL.focusTime; p.sta = Math.min(MOVE.stamina + (p.mods?.sta ?? 0), (p.sta ?? 0) + MOVE.dashCost);
+        this.hitStop = FEEL.hitStop; this.events.push({ t: 'perfect', id: p.id, x: p.x, y: p.y });
+      }
+      return;
+    }
     if (p.sleepT > 0 && p.mods?.sleepGuard) { this.events.push({ t: 'hit', x: p.x, y: p.y, dmg: 0, target: p.id }); return; }   // Manuel asleep on his pacifier: untouchable
     dmg = Math.max(1, Math.round(dmg * (1 - (p.mods?.armor ?? 0)) * (p.morphed ? 1.2 : 1)));
     this.infect(p, infection);
@@ -526,7 +557,18 @@ export class Sim {
       if (e.boss) { this._stepBoss(e, def, dt); continue; }
       if (e.sleepT > 0) { e.sleepT = Math.max(0, e.sleepT - dt); continue; }
       // knockback decays
-      if (e.kx || e.ky) { this._moveBody(e, e.kx * dt, e.ky * dt, def.radius); e.kx *= 0.82; e.ky *= 0.82; if (Math.hypot(e.kx, e.ky) < 5) e.kx = e.ky = 0; }
+      if (e.kx || e.ky) {
+        const speed = Math.hypot(e.kx, e.ky);
+        if (this._moveBody(e, e.kx * dt, e.ky * dt, def.radius) === false && speed >= FEEL.slamSpeed && !e.slammed) {
+          // Wall slam: knocked hard into a wall. Knockback is a weapon.
+          e.slammed = true; e.kx = e.ky = 0; e.stunT = FEEL.slamStun; this.hitStop = FEEL.hitStop;
+          this.events.push({ t: 'slam', x: e.x, y: e.y });
+          this._hurtEnemy(e, FEEL.slamDmg, 0, 0, e.lastHitBy);
+          if (!this.enemies.has(e.id)) continue;
+        }
+        e.kx *= 0.82; e.ky *= 0.82; if (Math.hypot(e.kx, e.ky) < 5) { e.kx = e.ky = 0; e.slammed = false; }
+      }
+      if (e.stunT > 0) { e.stunT = Math.max(0, e.stunT - dt); continue; }
       const [target, d] = this._nearestPlayer(e.x, e.y);
       if (!target || d > (def.alertRange ?? 220)) continue;
       const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);

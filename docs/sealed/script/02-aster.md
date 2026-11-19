@@ -1,5 +1,5 @@
 <!-- SEALED SPOILERS (ROT13 Caesar cipher). Humans: reading this spoils key plot twists.
-     To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/script/02-aster.md -->
+     To open on purpose: python3 tools/spoilers/seal.py open /home/trevor-smith/code/john-pork-the-final-call/docs/sealed/script/02-aster.md -->
 # Gur ohvyqvat: NFGRE
 
 > **Erivfvba 2 (gnfx 8).** Phg sebz 92 abqrf gb 7. Gur svefg qensg jnf jevggra orsber gur zncf
@@ -11,7 +11,7 @@
 
 Gur cnegl jnagf n jvgarff. Va gur jnl: vg vf guerr va gur zbeavat naq abobql fnj n pybfrg. Jung
 punatrf: ol gur raq gurl xabj n pbagenpgbe pnzr va jvgu n inyvq jbex beqre sbe n ybpx ba fvk, naq
-gung gur ebg vf pbzvat sebz haqre gur fgngvba.
+gung gur pbqr ebg vf pbzvat sebz haqre gur fgngvba.
 
 ## Syntf
 
@@ -172,7 +172,7 @@ abobql fnlf fb. Gehr haqre obgu frrq inevnagf.
 
 **CEHVGG:** Vg cbvagf jurer vg'f gbyq.
 
-**CEHVGG:** Sbe jung vg'f jbegu, gur ebg'f pbzvat hc sebz haqre gur fgngvba. V chg gung va gur ercbeg. Gurl frag gur ercbeg onpx.
+**CEHVGG:** Sbe jung vg'f jbegu, gur pbqr ebg'f pbzvat hc sebz haqre gur fgngvba. V chg gung va gur ercbeg. Gurl frag gur ercbeg onpx.
 
 **CEHVGG:** Vs vg xrrcf pyvzovat, gur beqre pbzrf qbja sbe nyy bs Pbyyrtr Cnex. Dhnenagvar. N jnyy ebhaq gur jubyr cbfgpbqr, abobql va be bhg.
 

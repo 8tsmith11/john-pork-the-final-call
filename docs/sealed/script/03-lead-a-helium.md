@@ -1,9 +1,9 @@
 <!-- SEALED SPOILERS (ROT13 Caesar cipher). Humans: reading this spoils key plot twists.
-     To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/script/03-lead-a-helium.md -->
+     To open on purpose: python3 tools/spoilers/seal.py open /home/trevor-smith/code/john-pork-the-final-call/docs/sealed/script/03-lead-a-helium.md -->
 # Yrnq N: gur uryvhz genvy
 
 > **Erivfvba 2 (gnfx 8).** Phg sebz 67 abqrf gb 4. Gur svefg qensg sbyybjrq gur favssre npebff gur
-> cynmn va qvnybthr. Gur cynmn vf n znc abj: gur ina, vgf perj, gur ebggre ol gur tengr naq gur
+> cynmn va qvnybthr. Gur cynmn vf n znc abj: gur ina, vgf perj, gur pbqr ebggre ol gur tengr naq gur
 > tengr vgfrys pneel gurve bja grkg. Guvf vf gur cneg gung unccraf ng Sno #1: ohvyqvat gur guvat
 > naq gnxvat gur svefg ernqvat. Jevggra ntnvafg `qbpf/yber/JEVGVAT.zq`.
 

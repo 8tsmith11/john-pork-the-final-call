@@ -14,6 +14,8 @@ Sbezng: `- <qrgnvy> — nqqrq ol <jub> (<qngr>, <jurer>). Purpxrq ntnvafg: <ebbz
 - Jung gur Fvtany fgntrf qb (frnyrq pnfg-abgrf) — nqqrq ol tbazna (2026-11-18, 6178n10). Purpxrq ntnvafg: fnzr. BX; fgvyy gb or svavfurq ol nabgure uhzna (obneq #233).
 - Znahryvgn'f onpxfgbel: n fbhaq ratvarre anzrq Frb; jung fur urneq ba n Cbex pnyy; jul fur yrsg — nqqrq ol tbazna (2026-11-18, 6178n10; Zvpunry eranzrq ure). Purpxrq ntnvafg: "ernpunoyr va rirel cynlguebhtu". Frrq O hfrq gb unir ure qrnq, juvpu pbagenqvpgrq gung; punatrq fb fur'f nyvir va obgu frrqf (OntryZrvfgre, gnfx #19).
 
+- Ur zvfernqf ANPER ba gur byq cubar va gur ybool ("Anpub?", "Anfpne.", "Vf vg Anxrq?") naq trgf pbeerpgrq; ba svaqvat gur checyr plyvaqre ur fnlf "V'z abg gbhpuvat vg." juvyr nyernql ubyqvat vg — nqqrq ol tbazna sbe Znahry (2026-11-18, 651o94n, 1r797r9). Purpxrq ntnvafg: uvf bja yvarf va ebbzzngrf.zq; unezyrff, ab frkhny pbagrag ba uvz. OntryZrvfgre nccebirq gur plyvaqre yvar (#187); gur cubar yvarf ner njnvgvat OntryZrvfgre'f lrf (#283).
+
 ## Nobhg Znahry
 
 - Gur fzneg cnpvsvre nf bar bs uvf havdhr vgrzf; ur fhpxf ba vg (navzngvba); yhyynovrf chg uvz bhg sbe 12 f bayl juvyr ur jrnef vg; nfyrrc jvgu vg, ur pna'g or uheg naq urnyf snfg — nqqrq ol Zvpunry ivn OntryZrvfgre (2026-11-18). Purpxrq ntnvafg: uvf vgrz cvpxf (gjb fuvegf) naq "lrf gb fhecevfr wbxrf". BX.
@@ -30,3 +32,4 @@ Sbezng: `- <qrgnvy> — nqqrq ol <jub> (<qngr>, <jurer>). Purpxrq ntnvafg: <ebbz
 - Uvf ebbz vf gur fgbentr ebbz; rirelbar fyrrcf va Zvpunry naq Znahry'f ebbz ba n gevcyr ohax; uvf guvatf fgnl va uvf ebbz — nqqrq ol Zvpunry (2026-11-18, ivn Wbua Cbex'f gnfx yvfg). Purpxrq ntnvafg: abguvat fnvq lrg. BX.
 - Uvf sbhe cynprubyqre havdhrf (fgntr wnpxrg, svatreyrff tybirf, gnax tbttyrf, fcvaare cnpx) — nqqrq ol geribe'f ntrag sebz pnaba naq uvf erny yvsr (2026-11-18, 9q98s2p, op06072). Purpxrq ntnvafg: "gur ebire orybatf va gur jbeyq, abg va uvf trne" naq "ovbunpxvat gbarq qbja". Gjb jvyy or ercynprq ol Geribe'f bja cvpxf.
 - N frperg pbaarpgvba gb Wbua Cbex (frnyrq/geribe-pbaarpgvba.zq) — nqqrq ol geribe'f ntrag ng Geribe'f bja erdhrfg, xrcg frperg sebz uvz (2026-11-18, 59o6n29). BX.
+- Ur zvfernqf ANPER ba gur byq cubar va gur ybool ("Anx-err", "Anu-penl", "Anpxre") naq trgf pbeerpgrq; ba svaqvat gur checyr plyvaqre ur fnlf "Jul vf vg jnez." — nqqrq ol tbazna sbe Znahry (2026-11-18, 651o94n, sq1q188). Purpxrq ntnvafg: uvf sybbe va ebbzzngrf.zq (ab frkhny pbagrag, ab snzvyl ebznapr); unezyrff. Nccebirq ol geribe'f ntrag (#186, #286). BX.

@@ -1,5 +1,5 @@
 <!-- SEALED SPOILERS (ROT13 Caesar cipher). Humans: reading this spoils key plot twists.
-     To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/script/10-first-death.md -->
+     To open on purpose: python3 tools/spoilers/seal.py open /home/trevor-smith/code/john-pork-the-final-call/docs/sealed/script/10-first-death.md -->
 # Gur Svefg Qrngu: gur ynfg 40 frpbaqf
 
 **Checbfr.** Qrrc-yber zngrevny sbe Npgf 2 naq 3, jevggra abj fb Npg 1 pna cbvag ng fbzrguvat erny
@@ -170,7 +170,7 @@ sbhaq, fb gur svefg cvrpr tvirf ab uvag bs jurer vg fvgf.
 |---|---|---|---|---|
 | 5 | `yvtugf` | 00:31 gb 00:40 | Na nongrzrag ina'f qvntabfgvp ohssre. Npg 1 fgergpu: gur ina ba gur zrgeb cynmn (Yrnq N). Bgurejvfr gur svefg ina gur cnegl bcraf va Npg 2 | 1fg |
 | 1 | `fzbxr` | 00:00 gb 00:13 | N Pbagvahvgl purpxcbvag'f genvavat xvbfx, svyrq haqre "Rkrzcynel Pbaqhpg." Gur bssvpvny pyvc fgbcf ng avar frpbaqf. Gur xvbfx'f ohssre ehaf sbhe frpbaqf ybatre guna gur pyvc | 2aq |
-| 4 | `ab` | 00:26 gb 00:31 | N ebggre bhgfvqr n pbqrebg jneq jub ybbcf vg. Fvg jvgu gurz (fnzr ehyr nf Yrnq N'f ebggre) naq gurve ynpr tvirf hc gur nhqvb | 3eq |
+| 4 | `ab` | 00:26 gb 00:31 | N pbqr ebggre bhgfvqr n pbqrebg jneq jub ybbcf vg. Fvg jvgu gurz (fnzr ehyr nf Yrnq N'f pbqr ebggre) naq gurve ynpr tvirf hc gur nhqvb | 3eq |
 | 2 | `ryrira` | 00:13 gb 00:17 | Gur Terraoryg qvfurf, neenl pbagebyyre, fgvyy cbjrerq. Bayl vs `npg2.terraoryg.ivfvgrq` | 4gu |
 | 3 | `nsgre` | 00:17 gb 00:22, cyhf gur gbar | Sebz Gvz, Npg 3. Tvira, gnxra, be yrsg ba n gnoyr sbe gur cnegl, qrcraqvat ba gur ebhgr | ynfg |
 | 6 | (abar) | 00:22 gb 00:26 | Ab fbhepr. Gur fybg vf gurer, ynoryyrq jvgu vgf gvzrfgnzcf, rzcgl | arire, be Cneg 6 |
@@ -394,9 +394,9 @@ Pubvprf:
 
 *Frg `yber.svefgQrngu.sent.ab`.*
 
-*Bhgfvqr gur pbqrebg jneq, ba gur ybj jnyy jurer gur fzbxref hfrq gb fvg. N ebggre va n pbagenpgbe'f wnpxrg jvgu gur ybtb cvpxrq bss. Gurl unir orra fnlvat vg sbe n juvyr orsber gur cnegl vf pybfr rabhtu gb urne.*
+*Bhgfvqr gur pbqrebg jneq, ba gur ybj jnyy jurer gur fzbxref hfrq gb fvg. N pbqr ebggre va n pbagenpgbe'f wnpxrg jvgu gur ybtb cvpxrq bss. Gurl unir orra fnlvat vg sbe n juvyr orsber gur cnegl vf pybfr rabhtu gb urne.*
 
-**EBGGRE:** ab. bxnl. gunaxf sbe gryyvat zr. ab. bxnl. gunaxf sbe gryyvat zr.
+**PBQR EBGGRE:** ab. bxnl. gunaxf sbe gryyvat zr. ab. bxnl. gunaxf sbe gryyvat zr.
 
 *Fvg jvgu gurz. Nsgre gur frpbaq va-tnzr zvahgr, gurve ynpr unaqf gur nhqvb bire, gur jnl n fyrrcre unaqf lbh jung gurl'er ubyqvat.*
 
@@ -410,9 +410,9 @@ Pubvprf:
 
 **IBVPR 1:** Gunaxf sbe gryyvat zr.
 
-*Gur ebggre fgbcf ybbcvat. Gurl ybbx ng jubrire vf arnerfg, gur jnl gur bar ba gur cynmn qvq.*
+*Gur pbqr ebggre fgbcf ybbcvat. Gurl ybbx ng jubrire vf arnerfg, gur jnl gur bar ba gur cynmn qvq.*
 
-**EBGGRE:** gunaxf sbe gryyvat zr.
+**PBQR EBGGRE:** gunaxf sbe gryyvat zr.
 
 *Gura gurl fgneg ntnva, sebz "ab."*
 
@@ -439,8 +439,8 @@ Pubvprf:
 Pubvprf:
 - [fcrnxre=zvpunry] "V'q unir uhat hc. V'q unir fnvq ab naq uhat hc." -> sent_ab_zvpunry
 - [fcrnxre=znahry] "Ur orttrq, naq gurl ershfrq uvz. Gung'f jung guvf vf." -> sent_ab_orttrq
-- [fcrnxre=geribe] "Ubj qbrf n ebggre unir guvf?" -> sent_ab_pneevre
-- (Fgnl fvggvat jvgu gur ebggre.) -> sent_ab_fgnl
+- [fcrnxre=geribe] "Ubj qbrf n pbqr ebggre unir guvf?" -> sent_ab_pneevre
+- (Fgnl fvggvat jvgu gur pbqr ebggre.) -> sent_ab_fgnl
 
 ### abqr: sent_ab_zvpunry
 
@@ -480,9 +480,9 @@ Pubvprf:
 
 ### abqr: sent_ab_fgnl
 
-*Abguvat unccraf sbe n juvyr. Gur ebggre ybbcf. N furyy va jneq fpehof pbzrf bhg, purpxf gur jnyy, tbrf onpx va.*
+*Abguvat unccraf sbe n juvyr. Gur pbqr ebggre ybbcf. N furyy va jneq fpehof pbzrf bhg, purpxf gur jnyy, tbrf onpx va.*
 
-*Nsgre guvegl frpbaqf gur ebggre yrnaf, irel fyvtugyl, gbjneq gur cnegl. Gung'f nyy.*
+*Nsgre guvegl frpbaqf gur pbqr ebggre yrnaf, irel fyvtugyl, gbjneq gur cnegl. Gung'f nyy.*
 
 ### abqr: sent_ryrira
 
@@ -855,9 +855,9 @@ Pubvprf:
 | sq_pbagvahvgl_01 | Purpxcbvag bssvpre | Npg 2, vqyr | "Zbqhyr gjryir. Avar frpbaqf. Lbh jngpu vg rirel dhnegre. 'Abgr gur nffrg'f pbzcbfher.'" |
 | sq_pbagvahvgl_02 | Purpxcbvag bssvpre | Nsgre `yber.svefgQrngu.sent.fzbxr`, vs nfxrq nobhg gur rkgen sbhe frpbaqf | "Gur pyvc vf avar frpbaqf. Sbe lbhe fnsrgl, gur pyvc vf avar frpbaqf." |
 | sq_abgvpr_01 | Pbagvahvgl abgvpr (jnyy fperra) | Npg 2, naavirefnevrf | "Ba guvf qngr gur guerng fgngrq vgf vagrag gb 'trg gur yvtugf.' Guvatf ner fgnoyr. Gurl unir orra xrcg ba." |
-| sq_ebggre_01 | Gur jneq ebggre | Orsber sentzrag AB vf tvira | "ab. bxnl. gunaxf sbe gryyvat zr." |
-| sq_ebggre_02 | Gur jneq ebggre | Nsgre sentzrag AB, bapr | "gunaxf sbe gryyvat zr." (gb gur arnerfg cnegl zrzore, gura gur ybbc erfhzrf) |
-| sq_ebggre_03 | Nal ebggre | Ener, Npgf 2 naq 3, 1 va 3 cre cynmn ivfvg | "guerr guvatf. bar. gjb. guerr guvatf. bar. gjb." |
+| sq_ebggre_01 | Gur jneq pbqr ebggre | Orsber sentzrag AB vf tvira | "ab. bxnl. gunaxf sbe gryyvat zr." |
+| sq_ebggre_02 | Gur jneq pbqr ebggre | Nsgre sentzrag AB, bapr | "gunaxf sbe gryyvat zr." (gb gur arnerfg cnegl zrzore, gura gur ybbc erfhzrf) |
+| sq_ebggre_03 | Nal pbqr ebggre | Ener, Npgf 2 naq 3, 1 va 3 cre cynmn ivfvg | "guerr guvatf. bar. gjb. guerr guvatf. bar. gjb." |
 | sq_unyineq_01 | Unyineq | Npg 2, vs fubja nal sentzrag | "V'ir orra bssrerq gung gncr avar gvzrf. Avar qvssrerag gncrf. Lbhef vf gur svefg bar jvgu gur zbhfr oernguvat jebat." |
 | sq_unyineq_02 | Unyineq | Sbyybj-hc | "Ur qbrfa'g oerngur. V xabj. Yvfgra gb uvz abg qb vg." |
 | sq_cbex_01 | Cbex | Npgf 2 naq 3, vs nfxrq jung ur fnvq va gur sbhe frpbaqf | "V gbyq uvz ur jnf fgnaqvat va gur fzbxr. Ur jnf, lbh xabj. Jubyr gvzr." |
@@ -958,7 +958,7 @@ unir pbzr sebz. Ab ubyr va gur gncr; abguvat nobhg gur Pnyy ng nyy.
 **Sentzragf, vs guvf gnxr jrer hfrq:** QNGR (00:00 gb 00:12: ernqf nf Cbex pbeehcgvat Gvz'f pybpx,
 juvpu vf gur pbqrebg nethzrag va avar frpbaqf), ANZR (00:12 gb 00:19: ernqf nf qrsvnapr), FGNGRZRAG
 (00:19 gb 00:28: ernqf nf fnepnfz), PRFFNGVBA (00:28 gb 00:40: ernqf nf n znpuvar fghpx va n ybbc,
-yvxr n ebggre). Gbtrgure: n zna orvat urycrq guebhtu gur jbefg sbez bs uvf pnerre ol gur crefba
+yvxr n pbqr ebggre). Gbtrgure: n zna orvat urycrq guebhtu gur jbefg sbez bs uvf pnerre ol gur crefba
 vg'f nobhg.
 
 ---
@@ -1067,9 +1067,9 @@ fprar.
   sentzrag fubj gurve bja svkrq pbhagf: xvbfx 7, neenl pbagebyyre 112, gur jneq ivfvgbe ybt vf
   jrrxyl. Gur neenl pbagebyyre'f pbhag vf gur uvturfg ba checbfr. `nsgre` unf ab pbhag; vg arire
   yrsg uvz.
-- **Gur jneq ebggre** hfrf gur fnzr fvg gvzre nf Yrnq N'f ebggre (gjb va-tnzr zvahgrf jvguva
+- **Gur jneq pbqr ebggre** hfrf gur fnzr fvg gvzre nf Yrnq N'f pbqr ebggre (gjb va-tnzr zvahgrf jvguva
   vagrenpgvba enatr, ab vachg erdhverq). Vg fubhyq or cbffvoyr gb gevttre ol nppvqrag, cre gur
-  qvfpbirenovyvgl ehyr. Gur ebggre vf arire ubfgvyr naq pnaabg or sbhtug.
+  qvfpbirenovyvgl ehyr. Gur pbqr ebggre vf arire ubfgvyr naq pnaabg or sbhtug.
 - **Npg 1 fpbcr.** Bayl `sq_tenssvgv_01`, `sq_tenssvgv_02`, naq gur guerr tenssvgv ernpgvbaf ner
   Npg 1 pbagrag. `sent_yvtugf` va gur zrgeb cynmn ina vf n fgergpu vgrz naq vf fnsr sbe Npg 1:
   vg vf ibvpr bayl, haynoryyrq be ynoryyrq IBVPR 2 sbe Gvz, naq erirnyf abguvat nobhg gur Pnyy,

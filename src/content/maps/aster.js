@@ -107,6 +107,7 @@ export const asterLobby = makeMap({
     { id: 'obj.wet_floor', art: 'obj.board', x: 14, y: 9, label: 'Sign', text: 'CAUTION: WET FLOOR. It has stood here through two droughts.' },
     { id: 'obj.plant_w', art: 'obj.plant', x: 1, y: 9, label: 'Plant', text: 'Real, this one. It leans toward the street doors.' },
     { id: 'obj.bench_w', art: 'obj.bench', x: 3, y: 10, label: 'Bench', text: 'Somebody has carved ASTER PROS into the armrest. Somebody else has carved NOOBS under it. Same knife.' },
+    { id: 'obj.old_phone', x: 7, y: 11, label: 'A phone, face up', light: 0.35, text: '' },   // egg, see docs/SECRETS.md
     { id: 'obj.lost_found', loot: 'lost', x: 5, y: 11, label: 'Lost and found', text: 'A box that is never emptied. One glove. A pacifier. A phone, face down, that you decide not to turn over.' },
     { id: 'obj.plant_e', art: 'obj.plant', x: 34, y: 9, label: 'Plant', text: 'Dead for years. Still in the watering rota.' },
     { id: 'obj.bench_e', art: 'obj.bench', x: 31, y: 10, label: 'Bench', text: 'Warm, as if someone just stood up.' },

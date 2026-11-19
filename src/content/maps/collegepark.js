@@ -77,7 +77,7 @@ export const metroPlaza = makeMap({
     // The plaza
     { id: 'obj.station_entrance', art: 'obj.tunnel_on', x: 38, y: 8, label: 'Metro entrance', text: 'The gates are down for the night. The departure board behind them lists a train to a station that was never built.' },
     { id: 'npc.mina', eggOk: true, later: [{ if: "act1.complete", text: "She is playing the one everybody asks for. She stops when she sees you listening. \"Don't tell anyone.\"" }], art: PERSON[0], x: 41, y: 10, label: 'Mina', npc: true, age: 'adult', text: '"I do requests. I don\'t do the one everybody asks for." She retunes something wooden that was not out of tune.' },
-    { id: 'npc.rotter_1', eggNo: true, x: 30, y: 18, label: 'Rotter', npc: true, age: 'adult', text: 'coderot. coderot. coderot.' },
+    { id: 'npc.rotter_1', eggNo: true, x: 30, y: 18, label: 'Code rotter', npc: true, age: 'adult', text: 'coderot. coderot. coderot.' },
     { id: 'npc.halvard', eggOk: true, x: 26, y: 26, label: 'Halvard', npc: true, age: 'adult', talk: 'lead_b_halvard', doneFlag: 'act1.halvard.sellerDescribed', doneText: 'The shutter comes up two inches. Halvard\'s eye, then the television behind him, then the shutter again.\n\n"You paid for one rumor. That was it."' },
     { id: 'obj.purple_sign', x: 40, y: 27, label: 'Purple Line sign', text: 'PURPLE LINE: OPENING SOON.' },
     { id: 'obj.plaza_clock', art: 'obj.clock_6f', x: 46, y: 9, label: 'Station clock', text: '19:01. Under it, somebody has taped a paper clock with the right time and a note: USE THIS ONE.' },
@@ -85,7 +85,7 @@ export const metroPlaza = makeMap({
     { id: 'npc.pruitt', eggOk: true, later: [{ if: "act1.cordon.passed", text: "Pruitt is counting coats against a clipboard. \"Tobin went for coffee an hour ago. There is no coffee for six blocks.\"" }, { if: "act1.complete", text: "\"We are standing down. I was told at five.\" Pruitt caps the pen. \"Nobody has told the van.\"" }], x: 46, y: 19, label: 'Supervisor Pruitt', npc: true, age: 'adult', talk: 'aster:pruitt_talk' },
     { id: 'npc.addo', eggOk: true, art: PERSON[1], x: 47, y: 21, label: 'Addo', npc: true, age: 'adult', text: '"Mast\'s reading light. Something light. Lighter than it should be down there." He seems pleased that somebody asked.' },
     { id: 'npc.del', eggOk: true, art: PERSON[0], x: 44, y: 21, label: 'Del', npc: true, age: 'adult', text: '"Fourteen hours. Fourteen. You know what the rate is after twelve? Same as before twelve."' },
-    { id: 'npc.rotter_3', eggNo: true, x: 49, y: 26, label: 'Rotter (looks at you differently)', npc: true, age: 'adult', text: 'coderot. coderot. ...I used to be someone\'s favorite person. coderot.' },
+    { id: 'npc.rotter_3', eggNo: true, x: 49, y: 26, label: 'Code rotter (looks at you differently)', npc: true, age: 'adult', text: 'coderot. coderot. ...I used to be someone\'s favorite person. coderot.' },
     { id: 'npc.abatement_tech', eggOk: true, art: 'npc.tobin', x: 52, y: 25, label: 'Tobin (abatement, nights)', npc: true, age: 'adult', talk: 'checkpoint', goneFlag: 'act1.cordon.passed' },
     // Hidden fast travel: a maintenance zipline from ASTER's forecourt to the Paint Branch trailhead.
     { id: 'obj.zip_aster', art: 'obj.zip_anchor', x: 16, y: 14, label: 'Cable anchor', zip: [78, 40], text: 'A steel cable bolted to the lamp post, running off over the plaza.' },
@@ -108,7 +108,7 @@ export const metroPlaza = makeMap({
     { id: 'obj.station_light', art: 'obj.worklamp', x: 36, y: 8, label: 'Station light', light: 1.0, text: 'The entrance is lit all night. Nothing has come out of it since midnight.' },
     // Route 1
     { id: 'obj.billboard', x: 65, y: 20, label: 'Billboard', text: 'A Slop Decades billboard, peeling: "AT THE END OF THE DAY, NO ONE CAN CODE FASTER THAN AI."' },
-    { id: 'npc.rotter_2', eggNo: true, x: 57, y: 8, label: 'Rotter', npc: true, age: 'adult', text: 'coderot. no one can code faster than. coderot.' },
+    { id: 'npc.rotter_2', eggNo: true, x: 57, y: 8, label: 'Code rotter', npc: true, age: 'adult', text: 'coderot. no one can code faster than. coderot.' },
     { id: 'obj.route1_north', art: 'obj.board', x: 61, y: 1, label: 'Route 1, north', action: 'exit', text: 'Abatement tape across both lanes, and a van with its lights off. North is closed tonight.' },
     { id: 'obj.route1_south', art: 'obj.board', x: 61, y: 50, label: 'Route 1, south', action: 'exit', text: 'South is the Beltway, and the wall. You don\'t have the papers. Nobody you know has the papers.' },
     { id: 'npc.ines', eggOk: true, later: [{ if: "act1.beat.call", text: "\"Every map on the cart redrew itself for a minute. One name, where the legend goes.\" Ines turns a sheet face down. \"I can't sell these now. I might keep one.\"" }, { if: "act1.complete", text: "\"You look like you walked somewhere that isn't on any of mine.\" She unrolls a blank sheet and holds out a pencil. \"Show me where the ladder was.\"" }], art: PERSON[2], x: 65, y: 14, label: 'Ines', npc: true, age: 'adult', text: '"Lake\'s eleven minutes on foot. Campus is six. The Beltway is as far as you can get before somebody asks who you are."' },

@@ -1,5 +1,5 @@
 <!-- SEALED SPOILERS (ROT13 Caesar cipher). Humans: reading this spoils key plot twists.
-     To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/script/08-ending.md -->
+     To open on purpose: python3 tools/spoilers/seal.py open /home/trevor-smith/code/john-pork-the-final-call/docs/sealed/script/08-ending.md -->
 # Raqvat phgfprar: Zvffrq Pnyyf
 
 ## Checbfr
@@ -1011,8 +1011,8 @@ cbffvoyr zbzrag (Znahry vf oynzvat uvzfrys, guvegl frpbaqf nsgre ybfvat gur onyy
 zrnaf vg nf pbzsbeg: lbh pbhyq abg unir bhg-ratvarrerq uvz, fb vg vf abg lbhe snhyg. Vg qbhoyrf nf
 gur svefg unys bs QRFVTA'f "Zvpunry fnlf fbzrguvat xvaq naq fghcvq"; gur frpbaq unys vf "V guvax
 vg'f tbaan or avpr bhg." Sbe guvf gb ynaq, gur fybtna zhfg unir orra frra ba ovyyobneqf naq urneq
-sebz ebggref rneyvre va gur npg, naq **ab bgure znwbe punenpgre znl fnl vg fvapreryl naljurer ryfr
-va Npg 1**. Ebggref, fvtantr, naq Pbagvahvgl nqf ner svar. Gur ebggrq ovyyobneq ba gur cyngsbez
+sebz pbqr ebggref rneyvre va gur npg, naq **ab bgure znwbe punenpgre znl fnl vg fvapreryl naljurer ryfr
+va Npg 1**. Pbqr ebggref, fvtantr, naq Pbagvahvgl nqf ner svar. Gur ebggrq ovyyobneq ba gur cyngsbez
 jnyy (`raq_nzo_ovyyobneq`) vf gur ynfg frghc orsber gur cnlbss; xrrc vg va senzr va n jvqr fubg
 ohg qb abg cbvag gur pnzren ng vg. Vs gur grnz jbhyq engure ubyq gur fvaprer ernqvat sbe n yngre
 npg, phg gur gjb Zvpunry yvarf sebz "Url. Znahry." guebhtu "Ur'f— uvz." naq gur fprar fgvyy pybfrf;

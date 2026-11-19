@@ -1,5 +1,5 @@
 <!-- SEALED SPOILERS (ROT13 Caesar cipher). Humans: reading this spoils key plot twists.
-     To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/script/README.md -->
+     To open on purpose: python3 tools/spoilers/seal.py open /home/trevor-smith/code/john-pork-the-final-call/docs/sealed/script/README.md -->
 # Npg 1 fpevcg (gnfx 6, tbazna'f ntrag)
 
 **Fgnghf: SVEFG QENSGF, abg lrg erivfrq.** Gurfr avar fprar svyrf jrer jevggra ol n zhygv-ntrag
@@ -18,7 +18,7 @@ synt anzrf) hagvy n erivfvba cnff unccraf.
 | `06-gur-pnyy.zq` | Gur Pnyy naq gur ibvprznvyf | svefg qensg |
 | `07-qrfprag-naq-obff.zq` | Ghaaryf naq obff | svefg qensg |
 | `08-raqvat.zq` | Raqvat phgfprar | svefg qensg |
-| `09-onexf-naq-jbeyq-grkg.zq` | Onexf, ebggref, jbeyq grkg, rnfgre rtt grkg | **abg jevggra** |
+| `09-onexf-naq-jbeyq-grkg.zq` | Onexf, pbqr ebggref, jbeyq grkg, rnfgre rtt grkg | **abg jevggra** |
 | `10-svefg-qrngu.zq` | Gur Svefg Qrngu'f ynfg 40 frpbaqf | svefg qensg |
 
 Sbezng: Znexqbja abqrf (`### abqr: <vq>`), `**FCRNXRE:** yvar`, pubvprf jvgu `[pbaqvgvbaf]`, naq
