@@ -1,5 +1,5 @@
 <!-- SEALED SPOILERS (ROT13 Caesar cipher). Humans: reading this spoils key plot twists.
-     To open on purpose: python3 tools/spoilers/seal.py open /home/trevor-smith/code/john-pork-the-final-call/docs/sealed/script/02-aster.md -->
+     To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/script/02-aster.md -->
 # Gur ohvyqvat: NFGRE
 
 > **Erivfvba 2 (gnfx 8).** Phg sebz 92 abqrf gb 7. Gur svefg qensg jnf jevggra orsber gur zncf
@@ -40,10 +40,6 @@ abobql fnlf fb. Gehr haqre obgu frrq inevnagf.
 
 *Fbzrjurer orybj, guerr xabpxf, n ybat jnl bss. Gura abguvat.*
 
-**ZVPUNRY:** Jnf gung gur cvcrf?
-
-*Abobql nafjref uvz.*
-
 *frg npg1.nfgre.ragrerq*
 
 ### abqr: xrff_gnyx
@@ -73,8 +69,6 @@ abobql fnlf fb. Gehr haqre obgu frrq inevnagf.
 **ZVPUNRY:** Lrf, zn'nz. Fbeel. Vg'f yngr.
 
 **ZEF. INETN:** Yngr jnf gjb ubhef ntb. V urneq lbhe qbbe.
-
-**ZNAHRY:** Lbh urneq vg?
 
 **ZEF. INETN:** Abg n xrl. Gur bgure fbhaq. Gura gur ybpx, gheavat sebz gur jebat fvqr. Gura srrg gbjneq gur fgnvef. Abg uheelvat.
 
@@ -129,8 +123,6 @@ abobql fnlf fb. Gehr haqre obgu frrq inevnagf.
 **ZVPUNRY:** Lbh yrg uvz hc?
 
 **SRAJVPX:** Gur jbex beqre jnf inyvq. Vg jnf sbe gur fvkgu sybbe. Vg jnf sbe n ybpx.
-
-*Abobql fnlf nalguvat.*
 
 **SRAJVPX:** V jbhyq yvxr gb unir frra fbzrguvat jebat jvgu vg.
 
