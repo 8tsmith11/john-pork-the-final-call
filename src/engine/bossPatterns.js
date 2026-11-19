@@ -12,14 +12,21 @@ export const BOSS_PATTERNS = {
   puddle: { name: 'Ground Pools', wind: [0.8, 0.65, 0.5],  recover: 0.8, red: true,  line: null },
   summon: { name: 'Fork',         wind: [0.9, 0.75, 0.6],  recover: 1.0, red: false, line: null },
   blink:  { name: 'Reroute',      wind: [0.6, 0.5, 0.4],   recover: 0.4, red: false, line: null },
+  laser:  { name: 'Carrier',      wind: [1.2, 1.0, 0.9],   recover: 0,   red: true,  line: null },   // ends overheated
+  shock:  { name: 'Ripple',       wind: [0.8, 0.7, 0.6],   recover: 0.5, red: true,  line: null },
+  rain:   { name: 'Packet Rain',  wind: [0.8, 0.7, 0.6],   recover: 0.6, red: true,  line: null },
 };
+// Tuning for the bigger patterns (sim.js reads these).
+export const LASER = { len: 300, half: 7, turn: [0.7, 0.7, 0.9], time: [4.5, 4.5, 6], dmg: 12, tick: 0.35 };
+export const SHOCK = { speed: 110, max: 220, band: 6, dmg: 12 };
+export const RAIN = { count: [6, 6, 9], fall: 1.0, r: 14, dmg: 14 };
 
 // Which patterns a boss draws from in each phase. Phase 1 already has two, so it never repeats one move;
 // phase 2 adds its second module plus the arena attacks; phase 3 adds the spiral.
 export function bossPool(modules, phase) {
   const pool = [modules[0], 'spray'];
-  if (phase >= 2) pool.push(modules[1], 'beam', 'puddle');
-  if (phase >= 3) pool.push('spiral');
+  if (phase >= 2) pool.push(modules[1], 'beam', 'puddle', 'laser', 'shock');
+  if (phase >= 3) pool.push('spiral', 'rain');
   return [...new Set(pool.filter((m) => BOSS_PATTERNS[m]))];
 }
 

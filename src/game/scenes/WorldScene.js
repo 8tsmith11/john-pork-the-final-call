@@ -2132,12 +2132,13 @@ export class WorldScene extends Phaser.Scene {
       else s.setFillStyle(e.h ? 0xffffff : def.color);
       if (e.boss) {
         this._bossBar(e);
+        this._bossArenaFx(e);
         if (e.boss.st === 'vulnerable') s.setAlpha(0.6 + 0.4 * Math.sin(this.time.now / 50)); else s.setAlpha(1);
         if (e.boss.st === 'windup') s.setScale(1.08 + 0.04 * Math.sin(this.time.now / 30), 1.08); else if (!e.boss.sahur) s.setScale(1);
       }
       s.setScale(1 + Math.sin(this.time.now / 90 + e.x) * 0.06, 1);   // jittery rot wobble
     }
-    for (const [id, s] of this.enemySprites) if (!eseen.has(id)) { s.destroy(); this.enemySprites.delete(id); }
+    for (const [id, s] of this.enemySprites) if (!eseen.has(id)) { s.destroy(); this.enemySprites.delete(id); this.bossFx?.clear(); }
     const meP = snap.players.find((p) => p.id === this.localId);
     let tgt = null, td = 70;
     for (const e of snap.enemies || []) { if (e.boss || !e.vn || !meP) continue; const d = Math.hypot(e.x - meP.x, e.y - meP.y); if (d < td) { td = d; tgt = e; } }
@@ -2336,6 +2337,32 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.shake(250, 0.006);
   }
 
+  // Big boss patterns, drawn from the snapshot every frame (bossPatterns.js): the turning beam, rings, marks.
+  _bossArenaFx(e) {
+    const g = (this.bossFx ??= this.add.graphics().setDepth(5400));
+    g.clear();
+    const b = e.boss, t = this.time.now;
+    if (b.la != null) {
+      const cx = e.x, cy = e.y - 8, L = 300, ux = Math.cos(b.la), uy = Math.sin(b.la), ex = cx + ux * L, ey = cy + uy * L;
+      const flick = 0.85 + 0.15 * Math.sin(t / 25);
+      g.lineStyle(22, 0xff3355, 0.18 * flick).lineBetween(cx, cy, ex, ey);   // glow
+      g.lineStyle(14, 0xff4d6d, 0.55 * flick).lineBetween(cx, cy, ex, ey);   // body
+      g.lineStyle(5, 0xffe6ee, 0.95).lineBetween(cx, cy, ex, ey);            // hot core
+      g.fillStyle(0xffe6ee, 0.9).fillCircle(cx, cy, 6 + Math.sin(t / 40) * 1.5);
+      for (let i = 0; i < 4; i++) { const d = ((t / 3 + i * 75) % L); g.fillStyle(0xffffff, 0.8).fillRect(cx + ux * d - 1, cy + uy * d - 1, 2, 2); }   // sparks running out
+    }
+    for (const r of b.wv ?? []) {
+      g.lineStyle(5, 0xff4d6d, 0.25).strokeCircle(e.x, e.y - 4, r);
+      g.lineStyle(2, 0xffb3c1, 0.9).strokeCircle(e.x, e.y - 4, r);
+    }
+    for (const [x, y, left] of b.mk ?? []) {
+      const k = Math.max(0, Math.min(1, left));                               // shrinks to the impact point
+      g.lineStyle(1, 0xff4d6d, 0.9).strokeCircle(x, y, 14);
+      g.fillStyle(0xff4d6d, 0.15 + 0.25 * (1 - k)).fillCircle(x, y, 14 * (1 - k * 0.7));
+      g.lineStyle(1, 0xffe6ee, 0.7).lineBetween(x - 3, y, x + 3, y).lineBetween(x, y - 3, x, y + 3);
+    }
+  }
+
   _bossBar(e) {
     const W = VIEW.w;
     if (!this.bossUi) {
@@ -2437,6 +2464,13 @@ export class WorldScene extends Phaser.Scene {
         for (let i = 0; i < 3; i++) g.beginPath().arc(ev.x, ev.y - 8, 12 + i * 6, ev.a + i * 2.1, ev.a + i * 2.1 + 1.6).strokePath();
       } else if (ev.kind === 'puddle') {
         for (const p of snap.players) g.lineStyle(1, col, 0.8).strokeCircle(p.x, p.y, 16);
+      } else if (ev.kind === 'laser') {
+        g.lineStyle(2, col, 0.7).lineBetween(ev.x, ev.y - 8, ev.x + Math.cos(ev.a) * 140, ev.y - 8 + Math.sin(ev.a) * 140);
+        g.lineStyle(1, col, 0.6).strokeCircle(ev.x, ev.y - 8, 10).strokeCircle(ev.x, ev.y - 8, 16);
+      } else if (ev.kind === 'shock') {
+        g.lineStyle(3, col, 0.8).strokeCircle(ev.x, ev.y - 4, 12).strokeCircle(ev.x, ev.y - 4, 20);
+      } else if (ev.kind === 'rain') {
+        g.lineStyle(1, col, 0.8); for (let i = 0; i < 3; i++) g.lineBetween(ev.x - 8 + i * 8, ev.y - 30, ev.x - 8 + i * 8, ev.y - 18);
       } else if (ev.kind === 'summon') {
         for (const dx of [-14, 14]) g.lineStyle(1, col, 0.8).strokeCircle(ev.x + dx, ev.y + 10, 6);
       } else if (ev.kind === 'blink') {
@@ -2451,6 +2485,7 @@ export class WorldScene extends Phaser.Scene {
       const t = this.add.text(ev.x, ev.y - 30, 'OVERHEATED: hit it!', { ...FONT, color: '#ffb347' }).setOrigin(0.5).setDepth(6100);
       this.tweens.add({ targets: t, y: t.y - 10, alpha: 0, duration: 1300, onComplete: () => t.destroy() });
     }
+    if (ev.t === 'impact') { const c = this.add.circle(ev.x, ev.y, ev.r, 0xffe6ee, 0.8).setDepth(5450); this.tweens.add({ targets: c, scale: 1.6, alpha: 0, duration: 260, onComplete: () => c.destroy() }); sfx('hit'); }
     if (ev.t === 'overload') { this.cameras.main.shake(500, 0.012); this.cameras.main.flash(250, 214, 93, 177); }
     if (ev.t === 'boss') this._bossIntro(ev);
     // Combat feel (docs/research/combat.md): pops for finishers, deflects, perfect dodges, slams.

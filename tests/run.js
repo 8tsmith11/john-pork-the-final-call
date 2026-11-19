@@ -653,6 +653,25 @@ test('boss pattern library: every module has a pattern, pools grow by phase, no 
   let last = null;
   for (let i = 0; i < 500; i++) { const n = pickPattern(bossPool(['ring', 'charge'], 3), last); assert.notEqual(n, last); last = n; }
 });
+test('boss beam: running circles close to the boss stays ahead of it; standing still gets hit', () => {
+  const run = (circle) => {
+    const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'laser' }); sim.addPlayer('host', 'trevor');
+    const boss = [...sim.enemies.values()].find((e) => e.boss), h = sim.players.get('host');
+    boss.phase = 3; boss.state = 'laser'; boss.laserT = 6; boss.laserDir = 1; boss.cd = 99;
+    let ang = 0; const R = 50;
+    boss.laserA = ang - 1.2;   // starts behind the player, turning toward them
+    let hits = 0;
+    for (let t = 0; t < 60 * 5.5; t++) {
+      if (circle) ang += (68 / R) / 60;   // just under walking speed, same direction as the beam
+      h.x = boss.x + Math.cos(ang) * R; h.y = boss.y - 4 + Math.sin(ang) * R; h.hp = 999; h.iframes = 0;
+      const before = h.hp; boss.cd = 99; sim._stepBoss(boss, boss.def, 1 / 60); if (h.hp < before) hits++;
+      if (boss.state !== 'laser') break;
+    }
+    return hits;
+  };
+  assert.equal(run(true), 0, 'circling should outrun the beam');
+  assert.ok(run(false) > 0, 'standing still should get hit');
+});
 test('boss fight: the Warden uses several patterns with tells and recovery windows, sweep shots can\'t be deflected', () => {
   const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'boss-test' });
   sim.addPlayer('host', 'trevor');
