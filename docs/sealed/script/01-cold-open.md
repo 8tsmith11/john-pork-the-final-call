@@ -46,10 +46,6 @@ Arkg: -> pbyqbcra_jnxr
 
 *Gur nynez tbrf ntnva. Uvf unaq pybfrf ba gur cubar.*
 
-**ZVPUNRY:** Jnf gung zvar?
-
-**GERIBE:** Zvar. Tb onpx gb fyrrc.
-
 **ZVPUNRY:** V jnf ba gur cubar.
 
 **GERIBE:** Lbh jrer ba gur pbhpu.
@@ -57,12 +53,6 @@ Arkg: -> pbyqbcra_jnxr
 *Gur jbexorapu. Znahry nfyrrc ba uvf sbernez orgjrra n pbyq tbheq naq n unys-znqr unaq. Qevrq fyvc ba uvf xahpxyrf.*
 
 **ZNAHRY:** ...V ungr 245 yno.
-
-**ZVPUNRY:** Ur'f qbvat yno va uvf fyrrc ntnva.
-
-**ZNAHRY:** Jung gvzr vf vg.
-
-**GERIBE:** Gjb svsgl-rvtug.
 
 **ZNAHRY:** Jul ner jr njnxr ng gjb svsgl-rvtug.
 
@@ -78,8 +68,6 @@ Arkg: -> pbyqbcra_pybfrg
 
 *Znahry fgnaqf naq pebffrf gb gur orqebbz gur jnl ur qbrf rirel gvzr ur jnxrf: gb gur pybfrg, unaq nyernql bhg.*
 
-**ZVPUNRY:** Ur'f purpxvat vg.
-
 **GERIBE:** Rirel zbeavat. Orsber pbssrr.
 
 **ZVPUNRY:** Orsber cnagf.
@@ -89,10 +77,6 @@ Arkg: -> pbyqbcra_pybfrg
 *Gur pybgurf envy. Sbhe fuvegf, n jvagre pbng, naq n yratgu bs benatr evooba gvrq gb gur envy jvgu n objyvar. Gur evooba tbrf hc ryrira pragvzrgerf naq fgbcf.*
 
 *Znahry'f benatr onyybba vf tbar. Gur bar ur purpxf rirel zbeavat. Fbzrbar gbbx vg.*
-
-**ZNAHRY:** Pur.
-
-*Abobql nafjref.*
 
 **ZNAHRY:** Pur. Jub zbirq vg.
 
