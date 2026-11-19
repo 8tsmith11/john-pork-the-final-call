@@ -391,5 +391,55 @@ def rug_mask(m):
 for m in range(16):
     out.append(f"@frame tile_117_m{m}")
     out.extend("".join(L[c] for c in row) for row in rug_mask(m))
+
+
+# Connected grass (task 13): tile_103_m<mask>. Where grass meets anything else, the edge is uneven
+# (a ragged band of bare soil with tufts along it), so lawns stop reading as cut squares. Opaque on
+# purpose: the map renders tiles onto a blank canvas, so a transparent edge would show black.
+def grass_mask(m):
+    N_, E_, S_, W_ = m & 1, m & 2, m & 4, m & 8
+    r = random.Random(f"grassmask-{m}")
+    g = grass(random.Random(f"g-body-{m}"), 0)
+    bump = [r.choice([0, 0, 1, 1, 2]) for _ in range(N)]
+    if not N_:
+        for x in range(N):
+            for y in range(bump[x]): g[y][x] = "warm0"
+            g[bump[x]][x] = "yerba1"
+    if not S_:
+        for x in range(N):
+            d = bump[(x + 5) % N]
+            for y in range(N - d, N): g[y][x] = "warm0"
+            g[N - 1 - d][x] = "night2"; g[max(0, N - 2 - d)][x] = "yerba1"
+    if not W_:
+        for y in range(N):
+            d = bump[(y + 3) % N]
+            for x in range(d): g[y][x] = "warm0"
+            g[y][d] = "yerba1"
+    if not E_:
+        for y in range(N):
+            d = bump[(y + 9) % N]
+            for x in range(N - d, N): g[y][x] = "warm0"
+            g[y][N - 1 - d] = "night2"
+    return g
+
+# Connected water (task 13): tile_126_m<mask>. A pale foam line and a darker shelf where water meets
+# the bank, on every side that isn't more water.
+def water_mask(m):
+    N_, E_, S_, W_ = m & 1, m & 2, m & 4, m & 8
+    g = water(random.Random(f"w-body-{m}"), m % 4)
+    if not N_:
+        for x in range(N): g[0][x] = "bone"; g[1][x] = "screen1"; g[2][x] = "night2"
+    if not S_:
+        for x in range(N): g[N - 1][x] = "screen1"; g[N - 2][x] = "screen2"
+    if not W_:
+        for y in range(N): g[y][0] = "bone"; g[y][1] = "screen1"
+    if not E_:
+        for y in range(N): g[y][N - 1] = "screen2"; g[y][N - 2] = "screen1"
+    return g
+
+for code, fn in ((103, grass_mask), (126, water_mask)):
+    for m in range(16):
+        out.append(f"@frame tile_{code}_m{m}")
+        out.extend("".join(L[c] if c != "warm0" else "." for c in row) for row in fn(m))
 (REPO / "assets/src/tiles.txt").write_text("\n".join(out) + "\n")
 print(f"tiles: {len(PAINT) * 4} frames")
