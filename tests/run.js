@@ -489,6 +489,12 @@ test('the butt pat: rare and idle-only early, frequent after the switchyard, AI 
   const late = sent.filter((m) => m.pat).length; assert.ok(late >= 12, `late pats in 30 min: ${late}`);
 });
 
+const i18nMod = await import('../src/i18n.js');
+test('i18n: built-in object names are never treated as translations', () => {
+  const i18n = i18nMod; const was = i18n.getLang(); i18n.setLang('es');
+  try { for (const s of ['constructor', 'toString', '__proto__', 'hasOwnProperty', '→ constructor', '[E] toString']) assert.equal(i18n.tr(s), s); } finally { i18n.setLang(was); }
+});
+
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
 test('pipe puzzle: every seed is solvable and starts unsolved', () => {
   if (!PipePuzzle) return;

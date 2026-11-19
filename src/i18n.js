@@ -101,7 +101,8 @@ for (const [id, def] of Object.entries(ITEMS)) {
   if (def.name) ES_ITEM_STRINGS[def.name] = es[0];
   if (def.text) ES_ITEM_STRINGS[def.text] = es[1];
 }
-const ES_ALL = { ...ES, ...ES_QUESTS, ...ES_ITEM_STRINGS, ...ES_631, ...ES_TUNNELS_LAKE, ...ES_PLAZA, ...ES_ASTER };
+// No prototype: words like "constructor" or "toString" must not count as translations.
+const ES_ALL = Object.assign(Object.create(null), ES, ES_QUESTS, ES_ITEM_STRINGS, ES_631, ES_TUNNELS_LAKE, ES_PLAZA, ES_ASTER);
 function trOne(s) {
   if (ES_ALL[s] !== undefined) return ES_ALL[s];
   for (const [rx, rep] of ES_RX) if (rx.test(s)) return s.replace(rx, rep);
