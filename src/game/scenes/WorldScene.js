@@ -1789,7 +1789,7 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.sim.phaseEnemies = phaseEnemies(this.save.flags);   // the phase may have moved since the last map
       this.sim.jobEnemies = this._jobEnemies();
-      this.sim.setMap(to, from);
+      this.sim.setMap(to, from, obj.id);   // arrive at the matching exit (stairs to stairs, elevator to elevator)
       this.enteredFrom = from;
       this.save.world.area = to.id;
       this._showMap(to); this._onEnterMap(to);

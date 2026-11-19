@@ -67,10 +67,14 @@ export class Sim {
 
   /** Swap to another map, keeping players (placed at the map's spawns). */
   /** Swap maps. `fromId` = the map we came from: players arrive beside the exit that leads back there. */
-  setMap(map, fromId = null) {
+  setMap(map, fromId = null, viaId = null) {
     this.map = map; this.shots = []; this.hazards = []; this.decoys = []; this.goo = []; this.enemies.clear();
     for (const a of this.allies ?? []) a.relocate = true;
-    const back = fromId && map.objects.find((o) => o.action === 'exit' && o.to === fromId);
+    // Arrive at the counterpart of the exit you used: an explicit `pair`, else the same kind (stairs to stairs,
+    // elevator to elevator), else the first exit back. (John Pork #577: the elevator dropped you at the stairs.)
+    const kind = (id) => (/elevator/.test(id ?? '') ? 'elevator' : /stairs/.test(id ?? '') ? 'stairs' : /door/.test(id ?? '') ? 'door' : '');
+    const backs = fromId ? map.objects.filter((o) => o.action === 'exit' && o.to === fromId) : [];
+    const back = backs.find((o) => viaId && (o.pair === viaId || o.id === viaId)) ?? backs.find((o) => viaId && kind(o.id) && kind(o.id) === kind(viaId)) ?? backs[0];
     let arrivals = map.spawns;
     if (back) {
       const around = [[0, 1], [1, 0], [-1, 0], [0, -1], [1, 1], [-1, 1], [0, 2], [1, -1], [-1, -1], [2, 0], [-2, 0]];
@@ -84,7 +88,8 @@ export class Sim {
     for (const p of this.players.values()) {
       const sp = arrivals[i++ % arrivals.length];
       Object.assign(p, { x: sp.x, y: sp.y, vx: 0, vy: 0, dodgeT: 0, downed: false, swUsed: false, waitExit: null, riding: map.outdoor ? p.riding : false, hp: Math.max(p.hp, COMBAT.reviveHp),
-        onTile: `${Math.floor(sp.x / TILE)},${Math.floor(sp.y / TILE)}` });   // walk-on exits are edge-triggered: the tile you arrive on doesn't count as stepping on
+        onTile: `${Math.floor(sp.x / TILE)},${Math.floor(sp.y / TILE)}`,   // walk-on exits are edge-triggered: the tile you arrive on doesn't count as stepping on
+        arriveHold: true, arriveMx: null, arriveMy: null });   // still holding the key you came in with: no exit until you change it (stairs ping-pong, #577)
     }
     this.spawnEnemies();
   }
@@ -294,6 +299,10 @@ export class Sim {
     this.events = this._pending ?? []; this._pending = [];
     for (const p of this.players.values()) {
       const inp = p.under > 0 && !p.downed ? this._underInput(p) : inputs.get(p.id) || emptyInput();
+      if (p.arriveHold) {   // the arrival grace ends the moment the movement input changes (or is released)
+        if (p.arriveMx === null) { p.arriveMx = inp.mx ?? 0; p.arriveMy = inp.my ?? 0; }
+        else if ((inp.mx ?? 0) !== p.arriveMx || (inp.my ?? 0) !== p.arriveMy) p.arriveHold = false;
+      }
       p.meleeCd = Math.max(0, p.meleeCd - dt); p.shotCd = Math.max(0, p.shotCd - dt); p.swingT = Math.max(0, p.swingT - dt);
       if (p.downed) { p.vx = p.vy = 0; p.moving = false; continue; }
       if (p.sleepT > 0) { if (p.mods?.sleepGuard) { p.hp = Math.min(this.maxHp(p), p.hp + 15 * dt); p.sta = Math.min(MOVE.stamina + (p.mods.sta ?? 0), (p.sta ?? 0) + 40 * dt); }
@@ -1054,7 +1063,7 @@ export class Sim {
       if (fk !== p.onTile) {
         p.onTile = fk;
         const fx = (this.map.floorExits ??= new Map(this.map.objects.filter((o) => o.action === 'exit' && o.floor && o.stepOn).flatMap((o) => Array.from({ length: o.w ?? 1 }, (_, i) => [`${o.x + i},${o.y}`, o])))).get(fk);   // `w`: doors wider than a tile
-        if (fx && !String(p.id).startsWith('ai:')) this.events.push({ t: 'bumpExit', id: fx.id, by: p.id, dx: Math.sign(dx), dy: Math.sign(dy) });
+        if (fx && !p.arriveHold && !String(p.id).startsWith('ai:')) this.events.push({ t: 'bumpExit', id: fx.id, by: p.id, dx: Math.sign(dx), dy: Math.sign(dy) });
       }
       return;
     }
@@ -1066,7 +1075,7 @@ export class Sim {
     if (door && !door.open) { door.open = true; this.events.push({ t: 'door', id: door.id }); return; }
     if (this.map.blocked?.has(k)) {
       const ex = this.map.objects.find((o) => o.x === tx && o.y === ty && o.action === 'exit');
-      if (ex && !String(p.id).startsWith('ai:')) this.events.push({ t: 'bumpExit', id: ex.id, by: p.id, dx: Math.sign(dx), dy: Math.sign(dy) });
+      if (ex && !p.arriveHold && !String(p.id).startsWith('ai:')) this.events.push({ t: 'bumpExit', id: ex.id, by: p.id, dx: Math.sign(dx), dy: Math.sign(dy) });
     }
   }
 

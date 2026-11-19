@@ -770,6 +770,21 @@ test('boss fight: the Warden uses several patterns with tells and recovery windo
   assert.ok(!deflectable, 'beam shots should be undeflectable');
 });
 
+test('arrivals: the elevator lands you at the elevator, and holding the key you came in with never bounces you back (#577)', () => {
+  const sim = new Sim(MAPS_FOR_TEST.aster_lobby, { seed: 'arr' }); sim.addPlayer('host', 'trevor');
+  sim.setMap(MAPS_FOR_TEST.aster_hall, 'aster_lobby', 'obj.lobby_elevator');
+  const h = sim.players.get('host'), elev = MAPS_FOR_TEST.aster_hall.objects.find((o) => o.id === 'obj.elevator');
+  assert.ok(Math.hypot(h.x - (elev.x * 16 + 8), h.y - (elev.y * 16 + 8)) < 48, 'arrived beside the elevator, not the stairs');
+  sim.setMap(MAPS_FOR_TEST.aster_hall, 'aster_lobby', 'obj.lobby_stairs');
+  const up = { ...emptyInput(), my: -1 }, bumps = () => sim.events.filter((e) => e.t === 'bumpExit').length;
+  let n = 0;
+  for (let t = 0; t < 90; t++) { sim.step(1 / 60, new Map([['host', up]])); n += bumps(); }
+  assert.equal(n, 0, 'holding W from the stairs arrival bounced back');
+  sim.step(1 / 60, new Map([['host', emptyInput()]]));
+  for (let t = 0; t < 60 && !n; t++) { sim.step(1 / 60, new Map([['host', up]])); n += bumps(); }
+  assert.ok(n > 0, 'pressing W again uses the stairs');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
