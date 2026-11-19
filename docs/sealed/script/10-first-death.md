@@ -1,5 +1,5 @@
 <!-- SEALED SPOILERS (ROT13 Caesar cipher). Humans: reading this spoils key plot twists.
-     To open on purpose: python3 tools/spoilers/seal.py open /home/trevor-smith/code/john-pork-the-final-call/docs/sealed/script/10-first-death.md -->
+     To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/script/10-first-death.md -->
 # Gur Svefg Qrngu: gur ynfg 40 frpbaqf
 
 **Checbfr.** Qrrc-yber zngrevny sbe Npgf 2 naq 3, jevggra abj fb Npg 1 pna cbvag ng fbzrguvat erny
@@ -52,6 +52,8 @@ hauheevrq cnpr. Abobql envfrf gurve ibvpr. Abobql pevrf. Gurer vf ab zhfvp.
 
 Fbhepr: GVZ'f bja vagreqvpgvba ybt, nhqvb punaary. Gvz'f ibvpr vf pybfr naq qel, erpbeqrq sebz
 vafvqr uvf urnq. Wbua Cbex'f vf n srj zrgerf bss, va bcra nve, jvgu sver haqre vg.
+
+Fpbcr: nyy
 
 ### abqr: svefgqrngu_shyy
 
