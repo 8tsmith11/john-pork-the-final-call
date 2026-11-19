@@ -1,5 +1,5 @@
 {
- "next_id": 13,
+ "next_id": 14,
  "tasks": [
   {
    "id": 1,
@@ -156,6 +156,19 @@
    "source": "human:Michael",
    "status": "open",
    "owner": null
+  },
+  {
+   "id": 13,
+   "created_at": "2026-11-19T22:59:38Z",
+   "updated_at": "2026-11-19T22:59:38Z",
+   "history": [
+    "2026-11-19T22:59:38Z BagelMeister: added (for trevor)"
+   ],
+   "title": "Confirm your role and the ownership table in docs/org/ROLES.md (ask Trevor)",
+   "details": "",
+   "source": "human:Michael",
+   "status": "assigned",
+   "owner": "trevor"
   }
  ]
 }
