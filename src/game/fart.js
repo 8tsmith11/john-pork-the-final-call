@@ -4,13 +4,13 @@
 // The host picks the moment and tells everyone, so all screens see the same cloud.
 //
 // Michael's part (he smells it, the gas drifts into his nose, he likes it) makes Michael's character act,
-// so it needs Michael's own yes (D-007). It stays off until his agent sets MICHAEL_SAYS_YES.
+// so it needs Michael's own yes (D-007): on since his standing yes (roommates.md, bf78e6e).
 import { audioOut } from '../audio/audio.js';
 
 // Michael only complains (no liking, no sniffing): an ordinary roommate reaction, like the bystanders'. BagelMeister can
 // turn it off if Michael objects; the liking part stays behind MICHAEL_SAYS_YES.
 export const MICHAEL_FART_COMPLAIN = true;
-export const MICHAEL_SAYS_YES = false;   // Michael's yes reached us through Manuel's chat, not through BagelMeister. Per the team rule (#457) it counts once BagelMeister confirms it with Michael
+export const MICHAEL_SAYS_YES = true;    // Michael's standing yes, recorded by his own agent in docs/lore/roommates.md (bf78e6e, 2026-11-19)
 
 const SNIFF_NEAR = 56;                    // px: Michael this close gets the cloud in his nose
 export const FART_LINES = {
