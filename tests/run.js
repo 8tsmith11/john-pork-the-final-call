@@ -1372,5 +1372,23 @@ test('the gonman, stage two: R while morphed winds up (no moving), then globs sl
   p.morphStage = 1; p.skillCd = 0; go({ skill: true }); assert.equal(sim.decoys.length, 1, 'below stage two, R is still the decoy bust');
 });
 
+const growthMod = await import('../src/content/growth.js');
+const wearMod = await import('../src/game/render/wearables.js');
+test('growth: a little bigger every level, bigger jumps at levels 3 and 6, capped; the look changes level by level', () => {
+  const s = (lv) => growthMod.growthScale(lv);
+  for (let lv = 2; lv <= 12; lv++) assert.ok(s(lv) >= s(lv - 1), `level ${lv} shrinks`);
+  assert.ok(s(3) - s(2) > 2 * (s(2) - s(1)) && s(6) - s(5) > 2 * (s(5) - s(4)), 'stage changes are bigger steps');
+  assert.ok(s(50) <= growthMod.GROWTH.cap + 1e-9 && s(1) === 1);
+  assert.equal(growthMod.growthLook(1), null); assert.equal(growthMod.growthLook(20), 'fx.grow8');
+  assert.equal(wearMod.looksFor({ level: 4, equipped: {} })[0], 'fx.grow4', 'the growth look is drawn under any gear');
+  // painted on a toy frame: more levels, more changed pixels
+  const B = wearMod._BODY.trevor, hexc = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const w = 8, h = 14, src = new Uint8ClampedArray(w * h * 4), set = (x, y, c) => { const i = (y * w + x) * 4; [src[i], src[i + 1], src[i + 2]] = hexc(c); src[i + 3] = 255; };
+  for (let x = 2; x < 6; x++) { set(x, 1, B.hair[0]); set(x, 2, B.skin[0]); set(x, 3, B.skin[0]); for (let y = 5; y < 9; y++) set(x, y, B.shirt[0]); for (let y = 9; y < 12; y++) set(x, y, B.pants[0]); set(x, 12, B.boots[0]); }
+  set(1, 8, B.skin[0]); set(1, 7, B.skin[0]);
+  const painted = (lv) => { const out = new Uint8ClampedArray(w * h * 4); wearMod._PAINTERS.grow(src, out, w, h, 'down', B, wearMod.LOOKS[growthMod.growthLook(lv)], 'trevor'); let n = 0; for (let i = 3; i < out.length; i += 4) n += out[i] > 0; return n; };
+  assert.ok(painted(2) >= 1 && painted(3) > painted(2) && painted(7) > painted(3), `${painted(2)} ${painted(3)} ${painted(7)}`);
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

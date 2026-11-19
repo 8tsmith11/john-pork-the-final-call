@@ -49,6 +49,7 @@ import { phaseEnemies } from '../../content/outbreak.js';
 import { dawnLabel, dawnProgress } from '../../content/dawn.js';
 import { BigButt } from '../bigButt.js';
 import { GONMAN_LINES, GONMAN_UNLOCK } from '../../content/gonman.js';
+import { growthScale, lookStage } from '../../content/growth.js';
 import { Beltless } from '../beltless.js';
 import { Approach } from '../approach.js';
 import { Pacifier } from '../pacifier.js';
@@ -2300,7 +2301,12 @@ export class WorldScene extends Phaser.Scene {
         g.lineStyle(2, 0x1c1f33, 0.9).strokeCircle(p.x, p.y - 20, 6);
         if (p.rv > 0) g.lineStyle(2, 0xffb347, 1).beginPath().arc(p.x, p.y - 20, 6, -Math.PI / 2, -Math.PI / 2 + (p.rv / 4) * Math.PI * 2).strokePath();
       }
-      s.setAngle(p.dn ? 90 : 0).setTint(p.dn ? 0x777788 : p.un ? 0xc07ad8 : p.mo ? MORPH_LOOK[p.c][0] : 0xffffff).setScale(p.mo ? 1.12 : 1);
+      // Growth (src/content/growth.js): a little bigger every level, a pop when the level changes, a flash at a new look stage.
+      const lv = this.save?.party?.[p.c]?.level ?? 1;
+      if (s.lastLevel !== undefined && lv > s.lastLevel) { s.popUntil = this.time.now + 600; if (lookStage(lv) > lookStage(s.lastLevel)) this._growFlash(s); }
+      s.lastLevel = lv;
+      const pop = s.popUntil > this.time.now ? 1 + 0.18 * Math.sin(((s.popUntil - this.time.now) / 600) * Math.PI) : 1;
+      s.setAngle(p.dn ? 90 : 0).setTint(p.dn ? 0x777788 : p.un ? 0xc07ad8 : p.mo ? MORPH_LOOK[p.c][0] : 0xffffff).setScale(growthScale(lv) * (p.mo ? 1.12 : 1) * pop);
       if (p.id !== this.localId && !p.w) {
         const x = s.x - 10;
         const y = p.dn ? Math.round(p.y) - 32 : Math.round(s.y - s.displayHeight) - 5;
@@ -2661,6 +2667,14 @@ export class WorldScene extends Phaser.Scene {
       src.buffer = buf; f.type = 'bandpass'; f.frequency.value = 900 + (k % 2) * 300; g.gain.value = 0.18 * vol;
       src.connect(f); f.connect(g); g.connect(dest); src.start(at);
     }
+  }
+
+  /** A new look stage: a ring of light around the roommate and a few sparks. */
+  _growFlash(s) {
+    const r = this.add.circle(s.x, s.y - 10, 4, 0xffe8a8, 0).setStrokeStyle(2, 0xffe8a8, 0.9).setDepth(s.depth + 1);
+    this.tweens.add({ targets: r, scale: 5, alpha: 0, duration: 700, onComplete: () => r.destroy() });
+    for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2, d = this.add.rectangle(s.x, s.y - 10, 2, 2, 0xffe8a8).setDepth(s.depth + 1); this.tweens.add({ targets: d, x: s.x + Math.cos(a) * 18, y: s.y - 10 + Math.sin(a) * 18, alpha: 0, duration: 600, onComplete: () => d.destroy() }); }
+    sfx('kill');
   }
 
   _bark(playerId, text) {

@@ -10,6 +10,8 @@
 // To add a model for another worn item: add an entry to LOOKS keyed by item id. `slot` says which
 // equipment slot it is read from. Styles other than 'parka' need their own painter below.
 
+import { growthLook, lookStage } from '../../content/growth.js';
+
 const hex = (s) => [parseInt(s.slice(1, 3), 16), parseInt(s.slice(3, 5), 16), parseInt(s.slice(5, 7), 16)];
 const P = {
   night0: '#0d0b1a', night1: '#17142b', night2: '#231f3f', night3: '#332e57',
@@ -45,11 +47,14 @@ export const LOOKS = {
   'item.smoky_socks':    { slot: 'socks', style: 'socks', main: P.bone, shade: P.signal },
   'item.signal_gloves':  { slot: 'gloves', style: 'gloves', main: P.screen1, shade: P.screen2 },
 };
-const LOOK_SLOTS = [...new Set(Object.values(LOOKS).map((l) => l.slot))];
+// Growth (src/content/growth.js): one look per level, painted under any gear.
+for (let lv = 2; lv <= 8; lv++) LOOKS[`fx.grow${lv}`] = { slot: '_grow', style: 'grow', level: lv };
+const LOOK_SLOTS = [...new Set(Object.values(LOOKS).map((l) => l.slot))].filter((s) => s !== '_grow');
 
 /** The looks a roommate is wearing right now, in draw order. */
 export function looksFor(c) {
-  return LOOK_SLOTS.map((sl) => c?.equipped?.[sl]).filter((id) => id && LOOKS[id]);
+  const grow = growthLook(c?.level ?? 1);
+  return [...(grow ? [grow] : []), ...LOOK_SLOTS.map((sl) => c?.equipped?.[sl]).filter((id) => id && LOOKS[id])];
 }
 
 const same = (d, i, rgb) => d[i + 3] > 0 && d[i] === rgb[0] && d[i + 1] === rgb[1] && d[i + 2] === rgb[2];
@@ -264,7 +269,59 @@ function paintPantsDown(src, out, w, h, facing, body, look) {
   return true;
 }
 
-const PAINTERS = { pantsdown: paintPantsDown, butt: paintButt, parka: paintParka, shirt: paintShirt, hat: paintHat, boots: paintBoots, socks: paintSocks, gloves: paintGloves, pacifier: paintPacifier, holster: paintHolster };
+// Growth details, cumulative by level. Everyone: a worn knee (2), a wristband (4), a shirt patch (5), newer boots
+// (7), a second worn knee (8). Look stage 1 (level 3) and 2 (level 6) add each roommate's own mark.
+const MARK = { manuel: P.warm4, trevor: P.bone, michael: P.pork1 };
+function paintGrow(src, out, w, h, facing, body, look, who) {
+  const { is, put, C, rows, span } = kit(src, out, w, h, body);
+  const lv = look.level, st = lookStage(lv), dark = hex(P.night0);
+  const [ptop, pbot] = rows(C.pants), [stop, sbot] = rows(C.shirt), [htop] = rows(C.hair), [ftop, fbot] = rows([C.skin[0]]);
+  const pantsCols = (y) => { const xs = []; for (let x = 0; x < w; x++) if (is(x, y, C.pants)) xs.push(x); return xs; };
+  // worn knees
+  if (pbot >= 0) {
+    const ky = Math.min(pbot, ptop + Math.floor((pbot - ptop) * 0.6)), xs = pantsCols(ky);
+    if (lv >= 2 && xs.length) put(xs[0], ky, hex(P.concrete2));
+    if (lv >= 8 && xs.length > 1) put(xs[xs.length - 1], ky, hex(P.concrete2));
+  }
+  // a wristband: the skin pixel just above the lowest one in the leftmost arm column (the hand stays bare)
+  if (lv >= 4 && sbot >= 0) {
+    for (let x = 0; x < w; x++) {
+      const ys = []; for (let y = stop; y <= Math.min(h - 1, sbot + 3); y++) if (is(x, y, C.skin)) ys.push(y);
+      if (ys.length >= 2) { put(x, ys[ys.length - 2], hex(MARK[who] ?? P.bone)); break; }
+    }
+  }
+  // a patch on the shirt
+  if (lv >= 5 && sbot >= 0 && facing !== 'up') {
+    const y = sbot - 1, [a, b] = span(y);
+    if (b > a + 2) { const x = facing === 'right' ? a + 1 : b - 2; if (is(x, y, C.shirt)) put(x, y, hex(body.shirt[1] === P.soft0 ? P.warm2 : P.soft0)); }
+  }
+  // newer boots: a lit top edge
+  if (lv >= 7) { const [bt] = rows(C.boots); if (bt < h) for (let x = 0; x < w; x++) if (is(x, bt, C.boots)) put(x, bt, hex(P.warm2)); }
+  if (st < 1) return true;
+  // stage marks
+  if (who === 'manuel' && htop < h) {                                  // wild hair, a clay smudge; then glowing eyes
+    const xs = []; for (let x = 0; x < w; x++) if (is(x, htop, C.hair)) xs.push(x);
+    if (xs.length) { const mid = xs[Math.floor(xs.length / 2)]; put(mid, htop - 1, hex(P.warm1)); if (st >= 2) { put(mid - 2, htop - 1, hex(P.warm1)); put(mid + 1, htop - 2, hex(P.warm0)); } }
+    if (stop < h && facing !== 'up') { const [a] = span(stop + 2); put(a + 2, stop + 2, hex(P.concrete2)); }
+    if (st >= 2 && facing !== 'up' && ftop < h) for (let y = ftop; y <= fbot; y++) for (let x = 1; x < w - 1; x++)
+      if (same(src, (y * w + x) * 4, dark) && is(x - 1, y, C.skin) && is(x + 1, y, C.skin)) put(x, y, hex(P.yerba1));   // the gonman doesn't blink
+  }
+  if (who === 'trevor' && ftop < h) {                                  // a headband; then broader shoulders
+    const y = Math.max(0, ftop - 1); for (let x = 0; x < w; x++) if (is(x, y, C.hair) || is(x, y, C.skin)) put(x, y, hex(P.bone));
+    if (st >= 2 && stop < h) for (const y of [stop, stop + 1]) {   // shoulders one pixel wider each side, outline moved out with them
+      const [a, b] = span(y); if (b < 0) continue;
+      put(a, y, C.shirt[1]); put(b, y, C.shirt[1]); put(a - 1, y, dark); put(b + 1, y, dark);
+    }
+  }
+  if (who === 'michael' && ftop < h) {                                 // the lace glowing behind his ear; then brighter, down the neck
+    const y = ftop + 1, [a, b] = span(y), x = facing === 'right' ? a : b;
+    put(x, y, hex(P.screen2));
+    if (st >= 2) { put(x, y + 1, hex(P.screen2)); put(x, y + 2, hex(P.screen1)); if (facing === 'down') put(a, y, hex(P.screen1)); }
+  }
+  return true;
+}
+
+const PAINTERS = { grow: paintGrow, pantsdown: paintPantsDown, butt: paintButt, parka: paintParka, shirt: paintShirt, hat: paintHat, boots: paintBoots, socks: paintSocks, gloves: paintGloves, pacifier: paintPacifier, holster: paintHolster };
 
 /** Build (once) and return the overlay texture key for roommate `who` wearing item `id`. */
 export function wearTexture(scene, who, id) {
@@ -281,7 +338,7 @@ export function wearTexture(scene, who, id) {
     if (!fw || !fh) continue;
     const src = rctx.getImageData(f.cutX, f.cutY, fw, fh), out = ctx.createImageData(fw, fh);
     const facing = /_up_/.test(name) ? 'up' : /_right_/.test(name) ? 'right' : 'down';
-    PAINTERS[look.style]?.(src.data, out.data, fw, fh, facing, body, look);
+    PAINTERS[look.style]?.(src.data, out.data, fw, fh, facing, body, look, who);
     ctx.putImageData(out, f.cutX, f.cutY);
     const nf = canvas.add(name, 0, f.cutX, f.cutY, fw, fh);
     if (f.trimmed && nf) nf.setTrim(f.realWidth, f.realHeight, f.x, f.y, fw, fh);
@@ -309,3 +366,6 @@ export function syncWear(scene, body, who, c) {
   });
   return body.wear;
 }
+
+// For tests and previews (tools that paint looks outside the browser).
+export const _PAINTERS = PAINTERS, _BODY = BODY;
