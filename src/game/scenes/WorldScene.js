@@ -547,9 +547,9 @@ export class WorldScene extends Phaser.Scene {
         // pokes above the wall into the room behind.
         // Proper in-wall door art lives in the 16x16 'doors' sheet; older 24px prop art is squashed to fit.
         const sheet = this.textures.exists('doors') && this.textures.get('doors').has(artKey) ? 'doors' : props?.has(artKey) ? 'props' : null;
-        const art = sheet ? this.add.image(o.x * TILE, o.y * TILE + TILE, sheet, artKey).setOrigin(0, 1).setDepth(o.y * TILE + TILE - 4) : null;
+        const art = sheet ? this.add.image(o.x * TILE, o.y * TILE + TILE, sheet, artKey).setOrigin(0, 1).setDepth(o.floor ? 2 : o.y * TILE + TILE - 4) : null;
         if (art && art.height > TILE) art.setDisplaySize(TILE, TILE);
-        const vis = art ?? this.add.graphics().setDepth(o.y * TILE + TILE - 4);
+        const vis = art ?? this.add.graphics().setDepth(o.floor ? 2 : o.y * TILE + TILE - 4);
         this.doorVis.push({ o, vis, art: !!art, sheet, drawn: null });
         continue;
       }
@@ -560,13 +560,13 @@ export class WorldScene extends Phaser.Scene {
       }
       if (this.textures.exists('big') && this.textures.get('big').has(art)) {
         // Big piece: 32x40, centred on its tile and standing on the tile's bottom edge.
-        const bim = this.add.image(o.x * TILE + TILE / 2, o.y * TILE + TILE, 'big', art).setOrigin(0.5, 1).setDepth(o.y * TILE + TILE - 4);
+        const bim = this.add.image(o.x * TILE + TILE / 2, o.y * TILE + TILE, 'big', art).setOrigin(0.5, 1).setDepth(o.floor ? 2 : o.y * TILE + TILE - 4);
         this.propSprites.push(bim); this.propById[o.id] = { im: bim, sheet: 'big', art };
         continue;
       }
       if (props?.has(art)) {
         // Hand-drawn prop: 16x24, standing on its tile. A "#1" frame means a slow two-frame loop.
-        const im = this.add.image(o.x * TILE, o.y * TILE + TILE, 'props', art).setOrigin(0, 1).setDepth(o.y * TILE + TILE - 4);
+        const im = this.add.image(o.x * TILE, o.y * TILE + TILE, 'props', art).setOrigin(0, 1).setDepth(o.floor ? 2 : o.y * TILE + TILE - 4);
         if (props.has(`${art}#1`)) this.propTimers.push(this.time.addEvent({ delay: 420, loop: true, callback: () => im.active && im.setFrame(im.frame.name === art ? `${art}#1` : art) }));
         this.propSprites.push(im); this.propById[o.id] = { im, sheet: 'props', art };
         continue;
@@ -641,6 +641,7 @@ export class WorldScene extends Phaser.Scene {
     const c = this.save.party[this.character]; if (!c) return;
     i = ((i % 9) + 9) % 9;
     this._hotFlash = { i, at: this.time.now };
+    this._showHeldName(c.inventory[i]);
     if (this.mode === 'client') { c.hotSel = i; this.net.send({ t: 'hotSel', i }); return; }
     this._setHot(this.character, i);
   }
@@ -651,6 +652,17 @@ export class WorldScene extends Phaser.Scene {
     if (def && (def.slot === 'weapon' || def.slot === 'ranged') && canWear(def, who)) c.equipped[def.slot] = def === ITEMS[c.inventory[c.hotSel].id] ? c.inventory[c.hotSel].id : c.equipped[def.slot];
     this._syncParty();
   }
+  // Minecraft-style: the name of what's now in your hand, just above the hotbar, fading after a moment.
+  _showHeldName(it) {
+    const h = this.hot; if (!h) return;
+    const def = ITEMS[it?.id];
+    this.heldName ??= this.add.text(VIEW.w / 2, h.y0 - 4, '', { ...FONT, fontSize: '8px', color: '#e8e8f0', stroke: '#0b0d16', strokeThickness: 3 }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(9003);
+    this.tweens.killTweensOf(this.heldName);
+    if (!def) { this.heldName.setAlpha(0); return; }
+    this.heldName.setText(`${def.name}${it.qty > 1 ? ` ×${it.qty}` : ''}`).setColor(def.unique ? '#ffd27f' : '#e8e8f0').setAlpha(1);
+    this.tweens.add({ targets: this.heldName, alpha: 0, delay: 1300, duration: 500 });
+  }
+
   // Left click with a non-weapon in hand uses it (eat, throw, play, read), at most every 0.35 s.
   _useHeld() {
     const c = this.save.party[this.character]; if (!c) return false;

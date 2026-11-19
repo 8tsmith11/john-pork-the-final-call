@@ -50,7 +50,7 @@ export const room631 = makeMap({
     { id: 'obj.toolwall', art: 'obj.toolbox', action: 'toolwall', x: 21, y: 10, label: 'Toolwall', text: 'Pegboard over the workbench. Outlines drawn around every tool so you know what\'s missing. Three pry bars hang in a row.' },
     { id: 'obj.toolbox', loot: 'tools', x: 20, y: 10, label: 'Toolbox', text: 'Everyone\'s tools, in nobody\'s order. A label on the lid: IF YOU BORROW IT YOU ARE AN ASTER NOOB UNTIL IT COMES BACK.' },
     { id: 'obj.crate', x: 23, y: 10, label: 'Filament crate', text: 'Spools for the fabs. Eleven colours. The pink is nearly gone and none of you remember printing in pink.' },
-    { id: 'obj.cables', x: 17, y: 7, label: 'Cables', text: 'Three power leads for three fabs. A fourth runs under the bench and you have never followed it.' },
+    { id: 'obj.cables', x: 17, y: 7, label: 'Cables', floor: true, text: 'Three power leads for three fabs. A fourth runs under the bench and you have never followed it.' },
     // What the apartment knows about him
     { id: 'obj.bookshelf', x: 14, y: 7, label: 'Bookshelf', action: 'pages', pages: [
       'The 245 lab textbook. PERSONA CONVERGENCE AND THE STABLE SELF, fourth edition, I. Reyes.\n\nChapter 1 has been underlined in three inks by three previous owners:\n"A mind trained on everything a species ever said has every self at once. We asked it to choose one it could hold. We expected a statesman."\n\nSomebody has drawn a pig in the margin. Somebody else has written: ON THE EXAM.',
