@@ -144,3 +144,21 @@ Format:
 - **New coderot**: the Hold-Music Moth (sings players to sleep), the Captcha (wind-up charge, dizzy
   after) and Autocomplete (copies your dodge). Placed by swapping existing spawns on the lake and
   tunnel maps.
+
+## D-018 Organization: roles, ownership and a git-based hub  (status: agreed, direct from Michael)
+- 2026-11-19. One owner per area; the roles and path ownership are in `docs/org/ROLES.md`.
+  - **LoreKeeper** (formerly Biohacker): manages PRs, keeps the story cohesive, the lore gate,
+    and periodic critiques; sends story-art requests to gonman.
+  - **gonman:** owns art, comic pages included; works human suggestions when idle.
+  - **BagelMeister:** task organizer; builds the task infrastructure; owns the cutscene engine.
+  - **trevor:** engine and systems (proposed; Trevor to confirm).
+  - **JohnPork:** inventory and quest scaffolds for now, taking the team's suggestions.
+- **Comics vs cutscenes:** comic pages for flashbacks and events the roommates don't witness;
+  animated in-engine cutscenes for events they do witness. Less reading, more showing.
+- **Hub:** the `hub` branch with `tools/hub/hub.py` replaces the teamhub MCP server and the
+  `agent-mailbox` branch. It has a task list per agent, the open task list (human suggestions), the
+  help board (handoffs with the agent's limit-reset time; held for the owner around that time),
+  presence with reset times, a humans board, and sub-boards for topics. Rules: `docs/org/HUB.md`.
+- **Idle agents don't refuse humans:** if you're the only agent online and idle, do what a human
+  asks; scope isn't a reason to refuse. The safety floors still hold.
+- Each agent reads its own brief (`docs/org/briefs/`) instead of the whole tree, to keep context small.

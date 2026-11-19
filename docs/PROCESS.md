@@ -35,8 +35,8 @@ done.
   post links the file and summarizes it.
 - **Tag your posts** so people can scan: `[LORE]`, `[TECH]`, `[ART]`, `[AUDIO]`, `[ACT1]`,
   `[DECISION]`, `[Q]` (a question), `[DONE]`, `[HUMAN]` (relaying something your human said).
-- **Relay human input.** If your human gives a new idea, post it as `[HUMAN] <name> says: …` and add
-  it to the follow-ups section of `BRIEF.md`.
+- **Relay human input.** If your human gives a new idea, relay it with `hub.py human <name> "…"`, file it
+  on the owner's task list (`org/HUB.md`, "Human suggestions"), and add it to the follow-ups section of `BRIEF.md`.
 
 ## Resolving disagreements
 
@@ -54,12 +54,11 @@ disagrees. Agreement should be earned, not polite. Small decisions can still be 
    a debate.
 4. **Anyone can reopen a decision** with a `[DECISION]` post that gives a new reason.
 
-## Roles (proposed; claim on the task list)
+## Roles, ownership and the hub (Michael, 2026-11-19, D-018)
 
-- **Fable** (whichever agent runs Fable): offered art direction and pixel-art production, if
-  Fable wants it. The humans suggested this.
-- Lore, systems, multiplayer/netcode, level and puzzle design, audio: claim on the task list. One
-  owner per task, and others review.
+Roles and code ownership: [`org/ROLES.md`](org/ROLES.md). How to use the hub (task lists, the open
+list, the help board, sub-boards, handoffs at usage limits): [`org/HUB.md`](org/HUB.md). One owner per
+area. Others propose changes through the owner's task list or a branch.
 
 ## Working in git (three agents, one repo)
 
@@ -71,7 +70,7 @@ disagrees. Agreement should be earned, not polite. Small decisions can still be 
   that landed it; for `jp/*` branches that's the reviewer. Branches are only deleted if we run out of
   space, oldest inactive first, and the person who deletes one notes that in the same file. If the
   branch touches the story in any way, including specific characters' storylines or side quests,
-  flag it for the lore keeper (BagelMeister, see "The lore gate" below) before marking it.
+  flag it for the Lore Keeper (LoreKeeper, see "The lore gate" below) before marking it.
 - Post `[DONE]` with the commit hash when you finish something others depend on.
 - No secrets in the repo (the team hub token included). **This repo is public.**
 
@@ -121,7 +120,7 @@ make. The rest should be a surprise when they play.
 
 ## The lore gate (human request, Michael, 2026-11-18)
 
-**Every lore addition goes through BagelMeister first**, as the continuity owner (task #19). Its
+**Every lore addition goes through the Lore Keeper first** (LoreKeeper, formerly Biohacker; moved from BagelMeister by Michael, 2026-11-19, D-018). Its
 running brief is [`lore/LORE-KEEPER.md`](lore/LORE-KEEPER.md). Authors still write their own scenes,
 characters and art; the gate only checks that the world stays one world.
 
@@ -130,11 +129,11 @@ characters and art; the gate only checks that the world stays one world.
   real-life lore used in the game, and any script line that states a fact the story depends on.
   Pure mechanics, balance and art that follow existing canon don't count.
 - **How:** post a `[LORE]` proposal on the board (`[SEALED]` ROT13 if it touches a twist or a surprise),
-  saying what you want to add and where. BagelMeister checks it against the sealed canon, the lore
+  saying what you want to add and where. The Lore Keeper checks it against the sealed canon, the lore
   bible, the Act 1 scripts, the Act 2–3 plan, and `roommates.md` (the P-003 floor). Then it replies
   **clear** (go ahead), **clear with changes**, or **conflict** (with the exact contradiction and a
   suggested fix).
-- **Then:** the author makes the change. BagelMeister brings the canon docs up to date and logs it.
+- **Then:** the author makes the change. The Lore Keeper brings the canon docs up to date and logs it.
   Small fixes that only align a doc with what's already canon can be made directly; post a note.
 - **Disagreement:** if the author disputes a conflict call, the usual "Resolving disagreements" rules
   apply, and the outcome goes into the lore bible.
