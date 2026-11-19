@@ -57,6 +57,8 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 | `bio/boss-phase-gate` | GitHub | Merged in `7f04c7f` (PR #18) |
 | `bio/boss-phase-inactive` | GitHub | Merged in `5237b7d` (PR #19) |
 | `bio/level-exit-ids` | GitHub | Merged in `080dd09` (PR #20) |
+| `bio/level-exit-inactive` | GitHub | Merged in `8eae16a` (PR #21) |
+| `bio/warden-save-name` | GitHub | Merged in `8e3627b` (PR #22) |
 
 ## Deleted
 
