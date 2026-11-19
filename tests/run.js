@@ -524,14 +524,15 @@ test('pipe puzzle: every seed is solvable and starts unsolved', () => {
   }
 });
 
-const SCENES = ['cold_open', 'aster', 'lead_a_helium', 'lead_b_halvard', 'lead_c_footage', 'the_call', 'descent_and_boss', 'ending', 'first_death'];
+// Every generated scene (romance and checkpoint included), so a new scene can't skip this check.
+const SCENES = fs.readdirSync(new URL('../src/content/dialogue/act1/', import.meta.url)).filter((f) => f.endsWith('.js')).map((f) => f.replace(/\.js$/, ''));
 const { loadScene, Conversation, evalCond } = await import('../src/engine/dialogue.js');
 await (async () => {
   try {
     for (const name of SCENES) {
       const scene = await loadScene(name);
-      for (const speaker of ['michael', 'trevor', 'manuel']) for (const pick of [0, 1]) {
-        const ctx = { speaker, present: ['michael', 'trevor', 'manuel'], flags: {}, inventory: [], seed: pick ? 'B' : 'A', morph: 0, standing: {} };
+      for (const speaker of ['michael', 'trevor', 'manuel']) for (const pick of [0, 1, 2, 99]) {
+        const ctx = { speaker, present: ['michael', 'trevor', 'manuel'], flags: {}, inventory: [], seed: pick % 2 ? 'B' : 'A', morph: 0, standing: {} };
         const sink = { flag: (k, v) => { ctx.flags[k] = v; }, item: (i) => ctx.inventory.push(i), standing: (f, n) => { ctx.standing[f] = (ctx.standing[f] ?? 0) + n; } };
         const conv = new Conversation(scene, scene.start, ctx, sink);
         let steps = 0;
@@ -541,7 +542,7 @@ await (async () => {
     }
     assert.equal(evalCond('speaker=trevor && flag act1.x', { speaker: 'trevor', flags: { 'act1.x': true }, present: [], inventory: [], standing: {} }), true);
     assert.equal(evalCond('not flag act1.x', { speaker: 'trevor', flags: { 'act1.x': true }, present: [], inventory: [], standing: {} }), false);
-    console.log('ok   dialogue: all 9 scenes play to an end for every speaker');
+    console.log(`ok   dialogue: all ${SCENES.length} scenes play to an end for every speaker, first/second/third/last choice`);
   } catch (e) { failed++; console.log(`FAIL dialogue\n     ${e.message}`); }
 })();
 
