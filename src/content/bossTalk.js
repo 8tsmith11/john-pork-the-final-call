@@ -22,6 +22,24 @@ export const BOSS_TALK = {
       es: { line: 'TODOS NUESTROS AGENTES ESTÁN', reply: { trevor: 'Que no termine la frase.', michael: 'Bueno. Bueno bueno bueno.', manuel: 'Ahora. Todo lo que tengamos.' } },
     },
   },
+  // Act 1's mid boss in the switchyard (gonman, task #34). It speaks in yard orders.
+  switchman: {
+    intro: {
+      line: 'ALL POINTS SET FOR NOWHERE.',
+      reply: { trevor: 'It\'s the yard. The yard grew a guy.', michael: 'Why does everything down here talk?', manuel: 'Che, it has a lever for an arm.' },
+      es: { line: 'TODAS LAS AGUJAS PUESTAS HACIA NINGÚN LADO.', reply: { trevor: 'Es el patio. Al patio le creció un tipo.', michael: '¿Por qué aquí abajo habla todo?', manuel: 'Che, tiene una palanca de brazo.' } },
+    },
+    phase2: {
+      line: 'STAND CLEAR OF THE CLOSING POINTS.',
+      reply: { trevor: 'The lamp went green. Hit it now.', michael: 'Is green good? Tell me green is good.', manuel: 'Rookie Aster mistake, signalling your moves.' },
+      es: { line: 'ALÉJENSE DE LAS AGUJAS QUE SE CIERRAN.', reply: { trevor: 'La lámpara se puso verde. Ahora.', michael: '¿Verde es bueno? Díganme que verde es bueno.', manuel: 'Error de novato de Aster, avisar tus movimientos.' } },
+    },
+    phase3: {
+      line: 'NEXT TRAIN. NEXT TRAIN. NEXT',
+      reply: { trevor: 'It\'s stuck on the timetable. Finish it.', michael: 'There is no next train. Stop saying it.', manuel: 'Ya casi. Almost.' },
+      es: { line: 'PRÓXIMO TREN. PRÓXIMO TREN. PRÓX', reply: { trevor: 'Se trabó en el horario. Terminemos.', michael: 'No hay próximo tren. Dejá de decirlo.', manuel: 'Ya casi.' } },
+    },
+  },
   sahur: {
     intro: {
       line: 'tung. tung. tung.',

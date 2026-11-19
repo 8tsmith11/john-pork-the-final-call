@@ -47,6 +47,12 @@ export const GUIDE_PEOPLE = [
     ],
   },
   {
+    id: 'switchman', name: 'The Switchman', art: ['warden', 'switchman_0'],
+    stages: [
+      { cond: 'act1.switchman.down', text: 'Code rot that grew out of the switchyard\'s old signal gear and kept working the points for trains that stopped coming. You put it down. The yard is quiet.', es: 'Podredumbre de código que creció del viejo equipo de señales del patio de maniobras y siguió moviendo las agujas para trenes que dejaron de venir. Lo derribaron. El patio quedó en silencio.' },
+    ],
+  },
+  {
     id: 'warden', name: 'The Warden', art: ['warden', 'warden_0'],
     stages: [
       { cond: (f) => f['act1.aster.pruittWarned'] || f['act1.cordon.passed'], text: 'What the sniffer crews call the thing at the heart of the outbreak, down on the old platform. Pruitt says it holds the code rot together. Nobody has seen it and filed a report.', es: 'Así le dicen las cuadrillas de los olfateadores a lo que está en el corazón del brote, abajo en el andén viejo. Pruitt dice que mantiene unida la podredumbre. Nadie lo vio y presentó un informe.' },

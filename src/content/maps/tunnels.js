@@ -36,6 +36,7 @@ export const tunnel1 = makeMap({
     ['enemy.rot_taken', 45, 3], ['enemy.rot_taken', 53, 3],                                  // the bypass
     ['enemy.rot_taken', 50, 23], ['enemy.rot_taken', 57, 24],                                // the signal room
     ['enemy.rot_taken', 58, 13], ['enemy.rot_taken', 62, 12], ['enemy.rot_taken', 62, 14],   // the approach
+    ['boss.switchman', 40, 13],                                                              // the switchyard's mid boss (task #34); asleep until you come close
   ],
   objects: [
     // Seeded loot in the side branches (trevor): exploring off the main line pays.

@@ -698,6 +698,21 @@ def warden(f):
     return c.outline()
 for f in (0, 1):
     WARDEN[f"warden_{f}"] = warden(f).rows()
+# The Switchman (task #34, Act 1's mid boss in the switchyard): code rot that grew out of the old signal
+# gear. A lamp-head with one lens lit, a lever for an arm, a body of relay cabinet, legs of rail and sleeper.
+def switchman(f):
+    c = C(32, 40)
+    c.rect(11, 2, 10, 10, "night1").h_(11, 2, 10, "concrete2").rect(13, 4, 6, 6, "night0")                # lamp head, hood
+    c.rect(14, 5, 4, 4, "signal" if f == 0 else "yerba1").px(14, 5, "bone")                              # the lens, red/green
+    c.rect(9, 12, 14, 16, "concrete1").v_(22, 12, 16, "concrete0").h_(9, 12, 14, "concrete2")             # relay cabinet body
+    for y in (15, 19, 23): c.h_(11, y, 9, "night2").pts("warm4", (12, y + 1), (18, y + 1))                # relay rows, amber lamps
+    c.rect(23, 13, 2, 12 - f * 2, "steel").rect(22, 24 - f * 2, 5, 3, "bone")                              # the lever arm, thrown
+    c.rect(5, 14, 4, 3, "steel").rect(4, 17, 3, 7, "steel")                                              # the other arm
+    c.rect(10, 28, 4, 10, "steel").rect(18, 28, 4, 10, "steel").h_(7, 37, 18, "warm1").h_(7, 38, 18, "warm0")   # rails, sleeper
+    c.pts("rot0", (12, 21), (20, 17), (10, 30)).pts("rot1", (21, 26), (13, 33))                         # rot showing through
+    return c.outline()
+for f in (0, 1):
+    WARDEN[f"switchman_{f}"] = switchman(f).rows()
 
 
 def write(name, w, h, frames):

@@ -4,7 +4,7 @@
 export const TILE = 16;
 import { BOSS_PATTERNS, bossPool, pickPattern, windFor, LASER, SHOCK, RAIN } from './bossPatterns.js';
 import { ENEMIES } from '../content/enemies.js';
-import { generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
+import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.35, iframes: 0.22,
   stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
@@ -88,6 +88,12 @@ export class Sim {
           ai: 'sahur', xp: 80, touchCooldown: 0.9, modules: [] };
         this.enemies.set(id, { id, spawnKey, kind: 'boss.sahur', def, boss: true, sahur: true, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 0.75, cd2: 2, beat: 0, hurtT: 0, kx: 0, ky: 0, dash: 0, root: 0, fightT: 0 });
         this.events.push({ t: 'boss', name: def.name, epithet: def.epithet, sahur: true });
+        continue;
+      }
+      if (e.kind === 'boss.switchman') {   // Act 1's mid boss: sleeps until someone comes close (task #34)
+        const w = switchmanDef(Math.max(1, this.players.size));
+        const def = { ...w, hp: w.maxHp, ai: 'boss', xp: 40, touchCooldown: 0.9 };
+        this.enemies.set(id, { id, spawnKey, kind: e.kind, def, boss: true, mini: true, awake: false, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 2, cd2: 3, hurtT: 0, kx: 0, ky: 0, dash: 0 });
         continue;
       }
       if (e.kind === 'boss.warden') {
@@ -561,8 +567,8 @@ export class Sim {
       if (e.spawnKey) this.killed?.add(e.spawnKey);
       if (e.def?.trait === 'splitter') for (let i = 0; i < 2; i++) { const nid = `e${this._nextId++}`; this.enemies.set(nid, { id: nid, kind: 'enemy.rotling', def: { ...ENEMIES['enemy.rotling'], hp: 8, speed: 60, radius: 4, color: e.def.color, vname: 'Fragment', trait: 'plain', xp: 2 }, x: e.x + (i ? 6 : -6), y: e.y, hp: 8, cd: 0.6, hurtT: 0, kx: 0, ky: 0 }); }
       if (e.def?.trait === 'puddler') this.hazards.push({ x: e.x, y: e.y, r: 14, ttl: 5, dps: 8 });
-      this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss, key: e.spawnKey });
-      if (e.boss) for (const a of [...this.enemies.values()]) if (a.summoned) { this.enemies.delete(a.id); this.events.push({ t: 'kill', x: a.x, y: a.y, kind: a.kind, xp: 0, crumble: true }); }   // its adds crumble with it
+      this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss, mini: !!e.mini, key: e.spawnKey });
+      if (e.boss && !e.mini) for (const a of [...this.enemies.values()]) if (a.summoned) { this.enemies.delete(a.id); this.events.push({ t: 'kill', x: a.x, y: a.y, kind: a.kind, xp: 0, crumble: true }); }   // its adds crumble with it
       const k = this.players.get(by);   // Argentina shirt (gambeta): a kill hands the dodge straight back
       if (k?.mods?.killDodge) { k.dodgeCd = 0; k.sta = Math.min(MOVE.stamina + (k.mods.sta ?? 0), (k.sta ?? 0) + MOVE.dashCost); }
     }
@@ -732,6 +738,10 @@ export class Sim {
     if (e.kx || e.ky) { this._moveBody(e, e.kx * dt, e.ky * dt, def.radius); e.kx *= 0.8; e.ky *= 0.8; }
     const [target, d] = this._nearestPlayer(e.x, e.y);
     if (!target) return;
+    if (def.mini && !e.awake) {                       // a mid boss waits for someone to come close
+      if (d > (def.wake ?? 150)) return;
+      e.awake = true; this.events.push({ t: 'boss', name: def.name, epithet: def.epithet, kind: e.kind });
+    }
     const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
     const rage = e.phase === 3 ? 1.5 : e.phase === 2 ? 1.2 : 1;
     if (d < def.radius + 7 && e.cd2 <= 0 && e.state !== 'vulnerable') { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd2 = def.touchCooldown; }
@@ -743,7 +753,7 @@ export class Sim {
       const victim = p[Math.floor(Math.random() * p.length)];
       if (victim) this.hazards.push({ x: victim.x + (Math.random() * 20 - 10), y: victim.y + (Math.random() * 20 - 10), r: 14, ttl: 6, dps: Math.round(10 * (def.dmgMul ?? 1)) });
     }
-    if (e.phase === 3) {
+    if (e.phase === 3 && !def.mini) {                 // the closing ring is the Warden's arena, not a tunnel's
       if (e.ringR == null) { e.ringR = Math.max(this.map.w, this.map.h) * TILE * 0.6; e.cx = (this.map.w * TILE) / 2; e.cy = (this.map.h * TILE) / 2; this.events.push({ t: 'overload' }); }
       e.ringR = Math.max(70, e.ringR - 6 * dt);
       for (const p of this.players.values()) if (!p.downed && Math.hypot(p.x - e.cx, p.y - e.cy) > e.ringR && (p._ringT = (p._ringT ?? 0) - dt) <= 0) { p._ringT = 0.6; this._hurtPlayer(p, 6); }
@@ -792,7 +802,7 @@ export class Sim {
     this._moveBody(e, ux * def.speed * rage * dt, uy * def.speed * rage * dt, def.radius);
     if (e.cd > 0) return;
     // Pattern library (task #32): pick from this phase's pool, never the same move twice running.
-    e.next = pickPattern(bossPool(def.modules, e.phase), e.last); e.last = e.next;
+    e.next = pickPattern(def.pool ? def.pool[Math.max(0, Math.min(2, e.phase - 1))] : bossPool(def.modules, e.phase), e.last); e.last = e.next;
     e.state = 'windup'; e.windT = windFor(e.next, e.phase);
     e.aimA = Math.atan2(uy, ux);
     const pat = BOSS_PATTERNS[e.next];
@@ -1029,7 +1039,7 @@ export class Sim {
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
         mk: e.marked > 0, zz: e.sleepT > 0, sg: !!this._def(e).lullaby && !(e.sleepT > 0), st: e.st ?? null,
         ...(e.def && !e.boss ? { vn: e.def.vname, tr: e.def.trait, c: e.def.color, mh: e.def.hp, r: e.def.radius } : {}),
-        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10 } } : {}) })),
+        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
       allies: (this.allies ?? []).map((a) => ({ x: Math.round(a.x), y: Math.round(a.y), hp: a.hp, mhp: a.maxHp, dn: a.down > 0, st: a.st })),
       hazards: this.hazards.map((h) => ({ x: Math.round(h.x), y: Math.round(h.y), r: h.r, t: Math.round(h.ttl * 10) / 10 })),

@@ -39,13 +39,53 @@
     "w": 32,
     "h": 40
    }
+  },
+  "switchman_0": {
+   "frame": {
+    "x": 64,
+    "y": 0,
+    "w": 32,
+    "h": 40
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 40
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 40
+   }
+  },
+  "switchman_1": {
+   "frame": {
+    "x": 96,
+    "y": 0,
+    "w": 32,
+    "h": 40
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 40
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 40
+   }
   }
  },
  "meta": {
   "image": "warden.png",
   "format": "RGBA8888",
   "size": {
-   "w": 64,
+   "w": 128,
    "h": 40
   },
   "scale": "1"

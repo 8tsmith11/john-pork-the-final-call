@@ -32,6 +32,17 @@ export function generateWarden(seed, playerCount = 1) {
   };
 }
 
+// Act 1's mid boss (task #34, Trevor's #510 "multiple bosses per act"): the Switchman, code rot grown out
+// of the switchyard's old signal gear. Lighter than the Warden and beatable with starter gear; it sleeps
+// until someone comes close. `mini` keeps its death from counting as the act's boss (no ending).
+export function switchmanDef(playerCount = 1) {
+  return {
+    name: 'THE SWITCHMAN', epithet: 'Who Still Throws the Points', color: 0xd8b060,
+    modules: ['charge', 'spray'], pool: [['charge', 'spray'], ['charge', 'spray', 'shock', 'blink'], ['charge', 'spray', 'shock', 'blink', 'ring']],
+    maxHp: 260 + 130 * Math.max(0, playerCount - 1), radius: 10, speed: 30, damage: 14, mini: true, wake: 150,
+  };
+}
+
 // ---- Regular coderot villains: every spawn gets a seeded variant (brief: "randomly created coderot
 // villains"). Bounded tables keep them fair: stats move within safe ranges, traits are telegraphed.
 const V_PREFIX = ['Stale', 'Forked', 'Leaky', 'Null', 'Looping', 'Orphan', 'Verbose', 'Deprecated', 'Cached', 'Unsigned', 'Zombie', 'Ghost'];

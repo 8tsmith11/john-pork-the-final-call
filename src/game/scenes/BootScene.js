@@ -39,6 +39,7 @@ export class BootScene extends Phaser.Scene {
       if (has('principals', `${k}_0`)) this.anims.create({ key: k, frames: [0, 1].map((i) => ({ key: 'principals', frame: `${k}_${i}` })), frameRate: 2, repeat: -1 });
     }
     if (has('warden', 'warden_0')) this.anims.create({ key: 'warden', frames: [0, 1].map((i) => ({ key: 'warden', frame: `warden_${i}` })), frameRate: 3, repeat: -1 });
+    if (has('warden', 'switchman_0')) this.anims.create({ key: 'switchman', frames: [0, 1].map((i) => ({ key: 'warden', frame: `switchman_${i}` })), frameRate: 2, repeat: -1 });
     // Hand-drawn tiles: each frame of the 'tiles' atlas becomes its own texture under the key the
     // map renderer already uses (tile_<charCode>_<variant>). makeTiles() then only fills gaps.
     if (this.textures.exists('tiles')) {

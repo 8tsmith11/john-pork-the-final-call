@@ -1068,5 +1068,31 @@ test('the platform gate needs the yard, the breakers and the signals; no world s
   assert.ok(tunPuz.puzzleClue('obj.locker', seed, f, 'es').includes('TABLERO'));
 });
 
+test('the Switchman (Act 1 mid boss): sleeps until you come close, starter gear beats it, and its death is not the act boss', () => {
+  const random = Math.random, rng = new Rng('switchman'); Math.random = () => rng.next();
+  try {
+    const sim = new Sim(MAPS_FOR_TEST.tunnel_1, { seed: 'sw', deferSpawn: true });
+    sim.addPlayer('host', 'trevor'); sim.addPlayer('ai:manuel', 'manuel'); sim.addPlayer('ai:michael', 'michael');
+    for (const p of sim.players.values()) sim.setMods(p.id, playerModsT({ equipped: { weapon: 'item.pry_bar' }, skills: {} }, p.character));
+    sim.spawnEnemies();
+    for (const [id, e] of [...sim.enemies]) if (e.kind !== 'boss.switchman') sim.enemies.delete(id);   // just the boss
+    const sw = [...sim.enemies.values()][0];
+    assert.ok(sw && sw.boss && sw.mini && !sw.awake);
+    sim.step(1 / 60, new Map());
+    assert.ok(sim.snapshot().enemies[0].boss.idle, 'boss bar should stay hidden while it sleeps');
+    for (const p of sim.players.values()) { p.x = sw.x - 60; p.y = sw.y; }
+    const brain = new CompanionBrain(sim), h = sim.players.get('host'), bot = new BalanceBot(sim, brain);
+    let woke = false, kill = null;
+    for (let t = 0; t < 60 * 240 && !kill; t++) {
+      const inputs = new Map([['host', bot.input(h)]]); for (const [id, i] of brain.inputs()) inputs.set(id, i);
+      sim.step(1 / 60, inputs);
+      for (const e of sim.events) { if (e.t === 'boss' && e.kind === 'boss.switchman') woke = true; if (e.t === 'kill' && e.boss) kill = e; }
+      if (sim.wiped) for (const p of sim.players.values()) { p.downed = false; p.hp = sim.maxHp(p); }   // a wipe brings everyone back (death rules)
+    }
+    assert.ok(woke, 'it never woke up'); assert.ok(kill, 'starter gear could not beat the Switchman');
+    assert.equal(kill.mini, true, 'its kill must be flagged as the mid boss, so it never starts the ending');
+  } finally { Math.random = random; }
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
