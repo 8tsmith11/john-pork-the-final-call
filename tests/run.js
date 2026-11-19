@@ -879,6 +879,57 @@ test('AI companions follow the human, fight, and never trigger exits', () => {
 });
 
 const Inv = await import('../src/engine/inventory.js');
+// Exercise the real scene method without starting Phaser's browser renderer.
+const savedPhaserForCraft = globalThis.Phaser;
+let CraftWorldScene;
+try {
+  globalThis.Phaser ??= { Scene: class {} };
+  CraftWorldScene = (await import('../src/game/scenes/WorldScene.js')).WorldScene;
+} finally {
+  if (savedPhaserForCraft === undefined) delete globalThis.Phaser;
+  else globalThis.Phaser = savedPhaserForCraft;
+}
+const { RECIPES: CRAFT_RECIPES } = await import('../src/content/items.js');
+const craftFixture = (inventory, weapon = null) => {
+  const c = newSave({ seed: 'craft-test', rolls: {}, gameVersion: 'test' }).party.trevor;
+  c.inventory = inventory; c.equipped.weapon = weapon;
+  const notices = [], scene = { save: { party: { trevor: c } }, syncs: 0,
+    _announce: (text) => notices.push(text), _syncParty() { this.syncs++; } };
+  return { c, scene, notices, craft: (id) => CraftWorldScene.prototype._craft.call(scene, 'trevor', CRAFT_RECIPES.findIndex((r) => r.item === id)) };
+};
+const fullCraftBag = () => Array.from({ length: Inv.SLOTS }, () => ({ id: 'item.wooden_bat', qty: 1 }));
+test('crafting rejects a full bag without payment, a phantom equipped item or a success broadcast', () => {
+  for (const weapon of [null, 'item.wooden_bat']) {
+    const inv = fullCraftBag(); inv[0] = { id: 'item.mat_scrap', qty: 99, extra: 'preserve' };
+    const f = craftFixture(inv, weapon), before = structuredClone(f.c);
+    f.craft('item.rebar');
+    assert.deepEqual(f.c, before); assert.equal(f.c.inventory, inv);
+    assert.equal(f.scene.syncs, 0); assert.deepEqual(f.notices, ['Your bag is full.']);
+  }
+});
+test('crafting can use a slot freed by payment and can fill an existing stack in a full bag', () => {
+  const inv = fullCraftBag(); inv[0] = { id: 'item.mat_scrap', qty: 4 };
+  const f = craftFixture(inv); f.craft('item.rebar');
+  assert.equal(Inv.count(f.c, 'item.mat_scrap'), 0); assert.equal(Inv.count(f.c, 'item.rebar'), 1);
+  assert.equal(f.c.equipped.weapon, 'item.rebar'); assert.equal(f.scene.syncs, 1);
+  const stacked = fullCraftBag(); stacked[0] = { id: 'item.mat_plastic', qty: 99 }; stacked[1] = { id: 'item.mat_scrap', qty: 99 };
+  stacked[2] = { id: 'item.mate_flask', qty: Inv.stackOf('item.mate_flask') - 1 };
+  const g = craftFixture(stacked); g.craft('item.mate_flask');
+  assert.equal(Inv.count(g.c, 'item.mate_flask'), Inv.stackOf('item.mate_flask'));
+  assert.equal(Inv.count(g.c, 'item.mat_plastic'), 97); assert.equal(Inv.count(g.c, 'item.mat_scrap'), 98);
+  assert.equal(g.c.inventory.length, Inv.SLOTS); assert.equal(g.scene.syncs, 1);
+});
+test('crafting with insufficient materials changes nothing; successful worn output still equips', () => {
+  const inv = new Array(Inv.SLOTS).fill(null); inv[9] = { id: 'item.mat_scrap', qty: 3 };
+  const f = craftFixture(inv), before = structuredClone(f.c); f.craft('item.rebar');
+  assert.deepEqual(f.c, before); assert.equal(f.scene.syncs, 0); assert.equal(f.notices.length, 1);
+  const g = craftFixture(new Array(Inv.SLOTS).fill(null)); Inv.add(g.c, 'item.mat_plastic', 8); Inv.add(g.c, 'item.mat_cloth', 6);
+  g.craft('item.rain_parka');
+  assert.equal(Inv.count(g.c, 'item.mat_plastic'), 5); assert.equal(Inv.count(g.c, 'item.mat_cloth'), 4);
+  assert.equal(g.c.equipped.parka, 'item.rain_parka'); assert.equal(Inv.count(g.c, 'item.rain_parka'), 0);
+  assert.equal(g.scene.syncs, 1);
+});
+
 test('slot inventory: stacks, backpack-first (hotbar only when full), remove, move/merge/swap, half', () => {
   const c = { inventory: new Array(36).fill(null) };
   assert.equal(Inv.add(c, 'item.mat_scrap', 150), 0);
