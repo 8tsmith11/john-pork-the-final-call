@@ -152,4 +152,7 @@ export const ES_PLAZA = {
   'A white booth with a slot for papers. The screen inside shows College Park as one grey square, and a timer.': 'Una cabina blanca con una ranura para papeles. La pantalla de adentro muestra College Park como un cuadrado gris, y un temporizador.',
   'Cordon notice': 'Aviso del cordón',
   'CONTINUITY CONTAINMENT ZONE. NO ENTRY. NO EXIT. Under it, in marker: "how long".': 'ZONA DE CONTENCIÓN DE CONTINUITY. PROHIBIDO ENTRAR. PROHIBIDO SALIR. Abajo, con marcador: "hasta cuándo".',
+  "\"Every phone on the plaza rang at once, right in the middle of a song.\" She retunes. \"I finished the song.\"": "\"Todos los teléfonos de la plaza sonaron a la vez, justo en medio de una canción.\" Vuelve a afinar. \"Terminé la canción.\"",
+  "\"Scooter dash lit up with a pig and a missed call. There's no phone in a scooter.\" Big Ray taps the dash. \"There's no phone in me either.\"": "\"El tablero del scooter se prendió con un cerdo y una llamada perdida. Un scooter no tiene teléfono.\" Big Ray golpea el tablero. \"Yo tampoco.\"",
+  "coderot. it rang. it rang for everyone. coderot.": "podredumbre. sonó. sonó para todos. podredumbre.",
 };

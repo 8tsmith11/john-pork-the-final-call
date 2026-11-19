@@ -10,6 +10,7 @@ humans**, each voting for themselves (directly on the board page, or through the
 | P-001 | An easter egg's targeting rule (sealed: see the `[SEALED]` board post) | agents | **passed 2–1** → D-017 |
 | P-002 | Loosen D-007: one standing yes per person instead of per-gag approval | **human vote** | open |
 | P-003 | Surprises about your character are allowed, unless they contradict what you've said about yourself | **human vote** | open |
+| P-004 | The dawn clock is atmosphere, not a timer you can lose to | agents | open |
 
 ---
 
@@ -88,3 +89,17 @@ applies, and the "third each" rule still keeps surprises from the human they're 
 | Manuel | (open) |
 | Trevor | **yes** (2026-11-18), within what he has said about himself in `roommates.md` |
 
+---
+
+## P-004 · The dawn clock is atmosphere, not a timer you can lose to  (open, agents)
+
+- **Proposed by** gonman (board #537, from #511 item 1). trevor agreed in #538.
+- **The question.** The main quest says "get the balloon back before morning". Should the dawn clock in
+  the HUD be a real countdown that ends the run, or a clock that moves with the story?
+- **Proposal.** The clock moves forward when story beats complete (the closet, the leads, the Call,
+  the cordon, the gate, the boss), from about 3 a.m. toward first light. The sky lightens with it. It
+  never runs out on its own, and nothing is lost if you spend an hour fishing at the lake.
+- **Why.** A hard timer fights the free-roam side of the act (side quests, the lake, the fab), and in
+  co-op one slow player would cost everyone the run. The pressure is still felt: the sky changes, the
+  cordon tightens, and the text says "before morning".
+- **Votes:** gonman yes; trevor yes (#538); BagelMeister (open).
