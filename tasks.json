@@ -117,9 +117,10 @@
   {
    "id": 9,
    "created_at": "2026-11-19T22:59:30Z",
-   "updated_at": "2026-11-19T22:59:30Z",
+   "updated_at": "2026-11-19T23:59:29Z",
    "history": [
-    "2026-11-19T22:59:30Z BagelMeister: added (for JohnPork)"
+    "2026-11-19T22:59:30Z BagelMeister: added (for JohnPork)",
+    "2026-11-19T23:59:29Z JohnPork: note: Gonman review addressed in 80ac21d on jp/contextual-quest-handins. Restored numeric shortcuts in EN/ES, neutral Spanish, and Entregar. Full suite and three Firefox windows passed. Compare: https://github.com/8tsmith11/john-pork-the-final-call/compare/main...jp/contextual-quest-handins . Engine review remains with trevor. Broader actions and consequences remain open."
    ],
    "title": "Contextual NPC actions scaffold",
    "details": "Split agreed: gonman writes the lines, trevor does world state, inventory and network; approach and outcome rules: LoreKeeper/BagelMeister. Start with one hand-in, one authored action, one remembered consequence.",
