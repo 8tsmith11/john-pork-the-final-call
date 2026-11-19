@@ -24,6 +24,9 @@ const ES = {
   '[ESC] back': '[ESC] volver', free: 'libre', 'AI (free to claim)': 'IA (libre)', 'Opening a room...': 'Abriendo una sala...',
   'Pick your roommate first.': 'Primero elige a tu compañero.', 'waiting for the host to start...': 'esperando a que el anfitrión empiece...',
   'Connected. Claim your roommate.': 'Conectado. Elige a tu compañero.', 'The host closed the game.': 'El anfitrión cerró la partida.',
+  'Maryland, 2098': 'Maryland, 2098', '"why are you still up?"  - J.P.': '"¿por qué sigues despierto?"  - J.P.',
+  'no save yet: clicking a roommate starts a new game': 'sin partida guardada: elige un compañero para empezar',
+  '[ new game ]': '[ partida nueva ]', '[ import save file ]': '[ importar partida ]', '[ HOST CO-OP ]': '[ CREAR CO-OP ]', '[ JOIN CO-OP ]': '[ UNIRSE CO-OP ]',
   // menu tabs and panels
   // tab labels kept about as long as the English so the bar fits
   INVENTORY: 'OBJETOS', QUESTS: 'MISIONES', GUIDE: 'GUÍA', PHONE: 'TELÉFONO', SKILLS: 'HABIL.', STATS: 'DATOS',
@@ -70,6 +73,8 @@ const ES_RX = [
   [/^Melee ([+-]?\d+) {3}Ranged (\S+) {3}Speed (\S+)$/, 'Cuerpo $1   Distancia $2   Velocidad $3'],
   [/^HP (\d+) {3}damage (\d+) {3}speed (\d+)$/, 'Vida $1   daño $2   velocidad $3'],
   [/^Armor · (.+)$/, 'Armadura · $1'], [/^Gear · (.+)$/, 'Equipo · $1'],
+  [/^save found: act (\d+) · world "(.+)" · click a roommate to continue$/, 'partida encontrada: acto $1 · mundo "$2" · elige un compañero para continuar'],
+  [/^\[ START ACT (\d+): (\d+) players?( \+ (\d) AI)? \]$/, (m, a, n, x, ai) => `[ EMPEZAR ACTO ${a}: ${n} jugador${n > 1 ? 'es' : ''}${ai ? ` + ${ai} IA` : ''} ]`],
   [/^→ (.+)$/s, (m, a) => `→ ${ES_ALL[a] ?? a}`],
   [/^\[E\] Talk to (.+)$/, '[E] Hablar con $1'],
   [/^\[E\] (.+?)( \((?:open|close)\))?$/, (m, a, oc) => `[E] ${ES_ALL[a] ?? a}${oc === ' (open)' ? ' (abrir)' : oc === ' (close)' ? ' (cerrar)' : ''}`],
