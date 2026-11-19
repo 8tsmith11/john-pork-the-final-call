@@ -262,6 +262,11 @@ c = C().rect(2, 14, 12, 8, "warm2").h_(2, 14, 12, "warm3").v_(2, 15, 7, "warm1")
 P("obj.lost_found", c.outline())
 c = C().rect(0, 2, 16, 21, "steel").rect(1, 3, 6, 19, "night2").rect(9, 3, 6, 19, "night2").pts("screen0", (2, 5), (3, 6), (10, 5), (11, 6)).rect(7, 11, 2, 3, "warm4")
 P("obj.street_doors", c.outline())
+# The lobby's street doors are two tiles wide (the walk-on exit spans both; John Pork's QA saw a dark gap on the
+# right): one half-door, glass leaf, push bar, pull handle at the centre seam. The right half is this one flipped.
+c = C().rect(0, 2, 16, 21, "steel").rect(1, 3, 14, 19, "night2").pts("screen0", (2, 5), (3, 6), (4, 7), (2, 9)).h_(1, 12, 14, "steel")
+c.rect(11, 9, 2, 5, "warm4").rect(1, 18, 14, 4, "night1")
+P("obj.lobby_door_l", c.outline())
 # ---- College Park, outdoors ----
 c = C().rect(3, 15, 10, 5, "warm2").rect(2, 20, 12, 2, "warm1").rect(5, 11, 6, 4, "warm2").rect(11, 12, 3, 3, "warm3").px(13, 13, "warm4").px(12, 12, "night0")
 c.pts("warm1", (4, 16), (6, 17), (8, 16), (10, 17), (7, 13)).rect(3, 21, 2, 2, "warm1").rect(11, 21, 2, 2, "warm1").rect(1, 22, 14, 1, "concrete2")
