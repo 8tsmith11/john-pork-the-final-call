@@ -22,6 +22,33 @@ const test = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e
 const rotArena = () => ({ id: 'rot-test', w: 100, h: 100, objects: [], enemies: [],
   spawns: [{ x: 160, y: 160 }], solid: () => false });
 
+const addSpawnParty = (sim) => {
+  for (const [id, character] of [['host', 'trevor'], ['ai:manuel', 'manuel'], ['ai:michael', 'michael']]) sim.addPlayer(id, character);
+};
+test('deferred startup with the full roster matches boss scaling on ordinary map entry', () => {
+  for (const seed of ['party-load-1', 'party-load-2', 'party-load-3']) {
+    const loaded = new Sim(MAPS_FOR_TEST.platform, { seed, deferSpawn: true });
+    assert.equal(loaded.enemies.size, 0); assert.equal(loaded.events.length, 0);
+    addSpawnParty(loaded); loaded.spawnEnemies();
+    const entered = new Sim(MAPS_FOR_TEST.room631, { seed });
+    addSpawnParty(entered); entered.setMap(MAPS_FOR_TEST.platform);
+    const boss = [...loaded.enemies.values()].find((e) => e.boss), other = [...entered.enemies.values()].find((e) => e.boss);
+    assert.equal(boss.def.hp, 720); assert.equal(boss.def.hp, other.def.hp);
+    assert.equal(loaded.snapshot().enemies.find((e) => e.boss).boss.max, other.def.hp);
+    assert.deepEqual([...loaded.enemies.values()].map((e) => e.spawnKey), [...entered.enemies.values()].map((e) => e.spawnKey));
+    assert.equal(loaded.events.filter((e) => e.t === 'boss').length, 1);
+  }
+});
+test('startup stays eager by default and deferred spawning preserves killed enemies', () => {
+  const map = MAPS_FOR_TEST.platform, eager = new Sim(map);
+  assert.equal(eager.enemies.size, map.enemies.length);
+  assert.equal([...eager.enemies.values()].find((e) => e.boss).def.hp, 360);
+  const killed = new Set(map.enemies.map((_, i) => `${map.id}#${i}`));
+  const loaded = new Sim(map, { deferSpawn: true, killed });
+  addSpawnParty(loaded); loaded.spawnEnemies();
+  assert.equal(loaded.enemies.size, 0); assert.equal(loaded.events.length, 0);
+});
+
 test('authored elite tuples preserve ordinary spawns and cannot replace their coordinates', () => {
   const map = makeMap({ id: 'elite-test', name: 'Test', layout: ['.....'], spawns: [[0, 0]],
     enemies: [['enemy.rotling', 1, 0], ['enemy.spitter', 3, 0, { elite: 'armored', x: -1, kind: 'bad' }]] });

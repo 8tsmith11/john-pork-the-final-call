@@ -87,7 +87,7 @@ export class WorldScene extends Phaser.Scene {
     this.save = this.passedSave ?? (await loadAutosave().catch(() => null)) ?? this._newGame();
     const startMap = MAPS[this.save.world.area] ?? MAPS.room631;
     this.save.world.killed ??= [];
-    this.sim = new Sim(startMap, { seed: this.save.world.seed, killed: new Set(this.save.world.killed) });
+    this.sim = new Sim(startMap, { seed: this.save.world.seed, killed: new Set(this.save.world.killed), deferSpawn: this.mode !== 'client' });
     this.localId = this.mode === 'client' ? this.net.id : 'host';
     this.remoteInputs = new Map();
     this.snapBuf = [];
@@ -97,6 +97,7 @@ export class WorldScene extends Phaser.Scene {
       // Task 9: roommates nobody is playing are still here, run by the companion brain.
       const taken = new Set([...this.sim.players.values()].map((p) => p.character));
       for (const ch of ['trevor', 'manuel', 'michael']) if (!taken.has(ch)) this.sim.addPlayer(`ai:${ch}`, ch);
+      this.sim.spawnEnemies();   // Initial encounters use the same complete party as later map entries.
       this.brain = new CompanionBrain(this.sim);
     }
     this.input.mouse?.disableContextMenu();
