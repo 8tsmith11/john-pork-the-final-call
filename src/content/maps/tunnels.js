@@ -49,9 +49,9 @@ export const tunnel1 = makeMap({
     { id: 'obj.shoe', art: 'obj.lost_found', x: 31, y: 24, label: 'On the dry side', text: 'One child\'s shoe, a lunch tin, and a tally cut into the wall in fives. It stops at a hundred and forty.' },
     // Switchyard
     lamp(34, 6, 'Bright enough to read by.'), lamp(45, 20, 'The bulb hums at the same pitch as the rails.'),
-    { id: 'obj.switch_a', art: 'obj.extinguisher', x: 35, y: 9, label: 'Switch lever A', text: 'A hand lever, greased. It throws the north line. Somebody uses it.' },
-    { id: 'obj.switch_b', art: 'obj.extinguisher', x: 44, y: 14, label: 'Switch lever B', text: 'Rusted in place, pointing at the main line.' },
-    { id: 'obj.switch_c', art: 'obj.extinguisher', x: 35, y: 19, label: 'Switch lever C', text: 'Thrown toward the south line. The south line ends in a wall.' },
+    { id: 'obj.switch_a', art: 'none', lever: 'a', x: 35, y: 9, label: 'Switch lever A', text: 'A hand lever, greased. It throws the north line. Somebody uses it.' },
+    { id: 'obj.switch_b', art: 'none', lever: 'b', x: 44, y: 14, label: 'Switch lever B', text: 'Rusted in place, pointing at the main line.' },
+    { id: 'obj.switch_c', art: 'none', lever: 'c', x: 35, y: 19, label: 'Switch lever C', text: 'Thrown toward the south line. The south line ends in a wall.' },
     { id: 'obj.yard_map', art: 'obj.board', x: 39, y: 5, label: 'Yard diagram', text: 'A paper diagram of the switchyard, corrected in pen by a careful hand. Track numbers down the margin. One line has been added that the tunnel does not have.' },
     // Bypass
     lamp(48, 2, 'Someone has hung a paper lantern over the cage.'),

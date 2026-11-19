@@ -534,11 +534,12 @@ export class WorldScene extends Phaser.Scene {
     for (const im of this.propSprites ?? []) im.destroy();
     for (const t of this.propTimers ?? []) t.remove();
     this.propSprites = []; this.propTimers = []; this.propById = {};
+    for (const t of Object.values(this.leverLabels ?? {})) t.destroy(); this.leverLabels = {}; this.leverGfx?.clear();
     const props = this.textures.exists('props') ? this.textures.get('props') : null;
     for (const s of this.doorVis ?? []) s.vis.destroy();
     this.doorVis = [];
     for (const o of map.objects) {
-      if (o.romance || o.selfDrawn) continue;     // drawn by src/game/romance.js / gear.js
+      if (o.romance || o.selfDrawn || o.lever) continue;     // drawn by src/game/romance.js / gear.js / _drawLevers
       const art = o.art ?? o.id;   // several objects can share one drawing
       if (o.door) {
         // Fable's door art when present (frames '<id>' and '<id>#open'); drawn placeholder otherwise.
@@ -686,6 +687,7 @@ export class WorldScene extends Phaser.Scene {
     const before = questState(this.save), was = JSON.parse(JSON.stringify(before));
     Object.assign(this.save.flags, msg.flags ?? {});
     if (msg.guide) this.save.world.guide = msg.guide;
+    this._drawLevers();
     this.save.world.quests = msg.quests ?? this.save.world.quests;
     const now = questState(this.save);
     for (const q of QUESTS) {
@@ -1170,8 +1172,31 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // Puzzle state shows in the art: busts turned toward the flag, the hallway clock face swung open.
+  // Switchyard levers drawn so you can see which way each is thrown (Trevor): a base plate and a
+  // handle leaning LEFT or RIGHT, with the letter above. Redrawn whenever a lever moves.
+  _drawLevers() {
+    const levers = this.map.objects.filter((o) => o.lever);
+    if (!levers.length) { this.leverGfx?.clear(); return; }
+    this.leverGfx ??= this.add.graphics();
+    this.leverLabels ??= {};
+    const g = this.leverGfx.clear();
+    for (const o of levers) {
+      const right = (this.save.flags[`act1.switch.${o.lever}`] ?? 'left') === 'right';
+      const bx = o.x * TILE + 8, by = o.y * TILE + 13;
+      g.setDepth(by);
+      g.fillStyle(0x2a2d3a).fillRect(bx - 6, by - 2, 12, 4);                     // base plate
+      g.fillStyle(0x4a4f63).fillRect(bx - 2, by - 4, 4, 3);                      // pivot
+      const tx = bx + (right ? 7 : -7), ty = by - 13;
+      g.lineStyle(2, 0xb8bcc8).lineBetween(bx, by - 3, tx, ty);                 // handle
+      g.fillStyle(right ? 0x7fb069 : 0xffb347).fillCircle(tx, ty, 2.5);         // knob
+      const lab = (this.leverLabels[o.id] ??= this.add.text(0, 0, '', { ...FONT, fontSize: '6px', color: '#e8e8f0', stroke: '#0b0d16', strokeThickness: 2 }).setOrigin(0.5, 1));
+      lab.setText(`${o.lever.toUpperCase()} ${right ? '▶' : '◀'}`).setPosition(bx, by - 17).setDepth(by + 1);
+    }
+  }
+
   _refreshPuzzleProps() {
     const f = this.save.flags, seq = (f['puz.busts.seq'] ?? '').split(',');
+    this._drawLevers();
     const set = (id, on, suffix) => {
       const p = this.propById?.[id]; if (!p) return;
       const want = on && this.textures.get(p.sheet).has(`${p.art}${suffix}`) ? `${p.art}${suffix}` : p.art;
@@ -1229,6 +1254,7 @@ export class WorldScene extends Phaser.Scene {
     const key = `act1.switch.${k}`, now = (this.save.flags[key] ?? 'left') === 'left' ? 'right' : 'left';
     this._flag(key, now); sfx('hit'); this.cameras.main.shake(80, 0.003);
     this._toast(`Lever ${k.toUpperCase()}: ${now.toUpperCase()}`);
+    this._drawLevers();
     const sol = yardSolution(this.save.world.seed);
     const solved = LEVERS.every((x) => (this.save.flags[`act1.switch.${x}`] ?? 'left') === sol[x]);
     if (solved && !this.save.flags['act1.switchyard.solved']) {
