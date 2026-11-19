@@ -104,6 +104,7 @@ const ES_RX = [
   [/^CODE ROT (\d+)%$/, 'PODREDUMBRE $1%'],
   [/^New in the field guide: (.+) \[ESC → GUIDE\]$/, 'Nuevo en la guía: $1 [ESC → GUÍA]'],
   [/^› Language: .+$/, '› Idioma: Español'],
+  [/^(\d+):(\d\d) am$/, (m, h, mm) => `${h}:${mm} a. m.`],
   [/^Sent \$(\d+) to (\w+)$/, (m, n, who) => `Enviaste $${n} a ${who}`],
   [/^› (Music|Effects|Voices): (\d+)%$/, (m, k, v) => `› ${{ Music: 'Música', Effects: 'Efectos', Voices: 'Voces' }[k]}: ${v}%`],
   [/^› Screen shake: (on|off)$/, (m, v) => `› Sacudida de pantalla: ${v === 'on' ? 'sí' : 'no'}`],

@@ -45,6 +45,7 @@ import { Fart } from '../fart.js';
 import { NpcLife } from '../npcLife.js';
 import { Cordon } from '../cordon.js';
 import { phaseEnemies } from '../../content/outbreak.js';
+import { dawnLabel, dawnProgress } from '../../content/dawn.js';
 import { BigButt } from '../bigButt.js';
 import { Approach } from '../approach.js';
 import { Pacifier } from '../pacifier.js';
@@ -1630,7 +1631,8 @@ export class WorldScene extends Phaser.Scene {
   // Semi-dark lighting: a dark layer with light pools around players and lit objects.
   _setupLighting(map) {
     const DARK = { room631: 0.35, aster_hall: 0.45, metro_plaza: 0.4, tunnel_1: 0.7, platform: 0.62 };
-    this.darkness = DARK[map.id] ?? 0.4;
+    // The dawn clock (P-004): outdoors the night thins toward first light as the story moves.
+    this.darkness = (DARK[map.id] ?? 0.4) * (map.outdoor && (this.save.world.act ?? 1) === 1 ? 1 - 0.45 * dawnProgress(this.save.flags) : 1);
     this.lights?.destroy();
     const W = VIEW.w, H = VIEW.h;
     this.lights = this.add.renderTexture(0, 0, W, H).setOrigin(0, 0).setScrollFactor(0).setDepth(8000);
@@ -2821,6 +2823,7 @@ export class WorldScene extends Phaser.Scene {
     } else this.hudAmmo.setVisible(false);
     // Top-right: XP and money, compact.
     const lines = [`xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `   ◆ ${c.skillPoints} skill pt [K]` : ''}`, `$${W.money(this.save, this.character)}${snap.enemies?.length ? `   coderot ${snap.enemies.length}` : ''}`];
+    if ((this.save.world.act ?? 1) === 1) lines.unshift(dawnLabel(this.save.flags));   // the dawn clock (P-004): moves with the story only
     this.hudText.setText(lines.join('\n'));
     this.objText ??= this.add.text(VIEW.w - 6, 60, '', { ...FONT, fontSize: '7px', color: '#ffd27f', align: 'right', stroke: '#0b0d16', strokeThickness: 2, wordWrap: { width: 130 } }).setOrigin(1, 0).setScrollFactor(0).setDepth(9001);
     // Only the key hint under the minimap (Trevor: the objective line was too much UI). Objectives live in the quests menu.

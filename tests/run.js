@@ -770,6 +770,15 @@ test('boss fight: the Warden uses several patterns with tells and recovery windo
   assert.ok(!deflectable, 'beam shots should be undeflectable');
 });
 
+const Dawn = await import('../src/content/dawn.js');
+test('dawn clock (P-004): moves only with story beats, in order, and never passes first light', () => {
+  assert.equal(Dawn.dawnLabel({}), '3:09 am');
+  let last = Dawn.DAWN_START; const flags = {};
+  for (const [flag, at] of Dawn.DAWN_BEATS) { assert.ok(at > last && at < Dawn.FIRST_LIGHT, `${flag} out of order`); last = at; flags[flag] = true; assert.equal(Dawn.dawnMinutes(flags), at); }
+  assert.ok(Dawn.dawnProgress(flags) < 1 && Dawn.dawnProgress({}) === 0);
+  assert.equal(Dawn.dawnMinutes({ 'act1.beat.call': true }), 4 * 60 + 41, 'a later beat alone sets the clock');
+});
+
 const Outbreak = await import('../src/content/outbreak.js');
 test('outbreak phases (task #38): before the Call, after it, contained; phase spawns have their own killed keys', () => {
   assert.equal(Outbreak.outbreakPhase({}), 'before');
