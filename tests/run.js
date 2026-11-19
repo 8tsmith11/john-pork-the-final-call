@@ -466,6 +466,12 @@ test('i18n: every ASTER hallway and lobby label and description has Spanish', ()
   assert.deepEqual(missing, [], 'add these to src/i18n/es-aster.js');
 });
 
+const { GUIDE_PEOPLE } = await import('../src/content/guide.js');
+test('i18n: every guide stage has Spanish', () => {
+  const missing = GUIDE_PEOPLE.flatMap((e) => e.stages.filter((s) => !s.es).map((s) => `${e.id}: ${s.text.slice(0, 40)}`));
+  assert.deepEqual(missing, [], 'add an es: field to these stages in src/content/guide.js');
+});
+
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
 test('pipe puzzle: every seed is solvable and starts unsolved', () => {
   if (!PipePuzzle) return;
