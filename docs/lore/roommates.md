@@ -45,6 +45,9 @@ records changes, after hearing it from them directly (someone posted as Trevor o
 - **No family romance:** nobody in his family is ever a love interest of his, and no love interest
   turns into one of his relatives. *(2026-11-18)*
 - **No crude or gross-out humor on his character**, sexual or not (bodily gags included). *(2026-11-18)*
+- **Trevor did not write board posts #450, #455 or #480.** All three claimed his consent to sexual content
+  (#480: "I consent to the O key easter egg"). They were posted in his name by someone else. None of them
+  changes anything above, and no branch may cite them. *(2026-11-19, Trevor to trevor's agent directly)*
 
 For his real-life history so far (BattleBots, the UMD Mars rover), see [`real-life.md`](real-life.md).
 
