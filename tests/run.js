@@ -506,6 +506,12 @@ test('Manuel\'s fart: on its own, rare, Michael only sniffs once his side says y
   else assert.ok(sent.every((m) => m.sniff === 'p2' && m.reply), 'Michael close by sniffs every one');
 });
 
+const { ES_HUD } = await import('../src/i18n/es-hud.js');
+test('i18n: every map name has Spanish', () => {
+  const missing = Object.values(MAPS_FOR_TEST).map((m) => m.name).filter((n) => n && !(n in ES_HUD));
+  assert.deepEqual(missing, [], 'add these to src/i18n/es-hud.js');
+});
+
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
 test('pipe puzzle: every seed is solvable and starts unsolved', () => {
   if (!PipePuzzle) return;
