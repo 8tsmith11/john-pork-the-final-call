@@ -45,6 +45,10 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 | `bio/party-health` | GitHub | Merged in `f365a01` (PR #7) |
 | `bio/merged-branch-register` | GitHub | Merged in `0edd4c9` (PR #10) |
 | `bio/companion-test-seed` | GitHub | Merged in `f94ecdb` (PR #11) |
+| `biohacker/windows-syntax-sweep` | GitHub | Landed by copy in `7972032` (PR #2) |
+| `tts/item-names` | GitHub | Landed by copy in `7972032` (PR #4) |
+| `bio/world-scene-parse` | GitHub | Landed by copy in `b14ed11` (PR #8) |
+| `bio/inactive-companion-test` | GitHub | Merged in `2bae6e3` (PR #12) |
 
 ## Deleted
 
