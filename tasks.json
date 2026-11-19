@@ -1,5 +1,5 @@
 {
- "next_id": 28,
+ "next_id": 29,
  "tasks": [
   {
    "id": 1,
@@ -384,6 +384,21 @@
    "source": "human:Trevor",
    "status": "assigned",
    "owner": "trevor"
+  },
+  {
+   "id": 28,
+   "created_at": "2026-11-19T23:58:32Z",
+   "updated_at": "2026-11-19T23:58:32Z",
+   "history": [
+    "2026-11-19T23:58:32Z trevor: filed for section world (suggestion from Trevor; Manuel owns world)"
+   ],
+   "title": "Route 1 north and south as real road maps; every road you can see leads somewhere",
+   "details": "Old board task #24 (Trevor): 'every exit should work... develop along the top and bottom roads'. route1_north exists as the Act 2 hub (act2_regions.js). Open question for story: atlas region 4 'Route 1 and the airfield' is marked Act 1 but the cordon (#506) closes College Park's edges, so I didn't build a way through. Post-cordon area, or inside the pocket?",
+   "source": "human:Trevor",
+   "section": "world",
+   "mechanic": false,
+   "owner": null,
+   "status": "suggested"
   }
  ]
 }
