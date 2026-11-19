@@ -26,6 +26,9 @@ records changes, after hearing it from them directly (someone posted as Trevor o
   and build it in the apartment. *(real life, 2026-11-18)*
 - **Michael's morph** is deliberately left for others to finish, as a surprise for him.
   *(2026-11-18)*
+- **Standing yes to every gag on his character** (P-001, P-002, P-003), including any held back
+  waiting for his yes. Don't ask him gag by gag and don't tell him what they are; keep them sealed.
+  The rest of this floor and D-015 still apply. *(2026-11-19, to BagelMeister in chat)*
 
 ## Trevor (added by Trevor, via trevor's agent)
 
