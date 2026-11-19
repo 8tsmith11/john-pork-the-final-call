@@ -1409,17 +1409,23 @@ export class WorldScene extends Phaser.Scene {
     this._questBanner('HOW TO PLAY', 'Controls', CONTROLS_TEXT);
   }
 
+  // Quest cards wait until the dialogue is over (Trevor): talk to Four-oh-nine, read why he wants soup, close the
+  // box, and only then does NEW QUEST slide in. Cards queue here; update() starts the next one once nothing is open.
   _questBanner(kind, title, detail) {
     (this._qbQueue ??= []).push({ kind, title, detail });
-    if (!this._qbBusy) this._nextQuestBanner();
   }
 
+  /** True while a text box or a dialogue tree is on screen (quest cards hold until it closes). */
+  _talkOpen() { return !!(this.sayOpen || this.dlg); }
+
   _nextQuestBanner() {
+    if (this._talkOpen()) { this._qbBusy = false; return; }   // a new conversation opened between two cards: wait again
     const b = this._qbQueue?.shift(); if (!b) { this._qbBusy = false; return; }
     this._qbBusy = true;
     const W = VIEW.w, w = 230, x = W / 2, y0 = -40, y1 = 26;
     const done = b.kind === 'QUEST COMPLETE';
     const c = this.add.container(x, y0).setScrollFactor(0).setDepth(9400);
+    this._qbCard = c;
     const head = this.add.text(0, 6, b.kind, { heading: true, fontSize: '7px', color: done ? '#7fb069' : '#ffb347' }).setOrigin(0.5, 0);
     const title = this.add.text(0, 15, b.title, { heading: true, fontSize: '11px', color: '#ffd27f' }).setOrigin(0.5, 0);
     // NEW QUEST / QUEST UPDATED: the first line is the objective (quest colour), the rest is context.
@@ -1934,7 +1940,7 @@ export class WorldScene extends Phaser.Scene {
     if (!this.ready || ptr.button !== 0) return;
     const { x: sx, y: sy } = toView(ptr);
     const qb = this._qbSticky;
-    if (qb && sx >= qb.x0 && sx <= qb.x1 && sy >= qb.y0 && sy <= qb.y1) { this.input2.blockAttack = true; qb.leave(); return; }
+    if (qb && !this._talkOpen() && sx >= qb.x0 && sx <= qb.x1 && sy >= qb.y0 && sy <= qb.y1) { this.input2.blockAttack = true; qb.leave(); return; }   // a hidden card (dialogue up) can't be clicked away
     if (this.dlg) {
       // Clicks never advance dialogue (E does); choices are clicked directly. In free dialogue a click
       // outside the box is still an attack.
@@ -1967,6 +1973,8 @@ export class WorldScene extends Phaser.Scene {
   // ---------- loop ----------
   update(_, deltaMs) {
     if (!this.ready) return;
+    if (!this._qbBusy && this._qbQueue?.length && !this._talkOpen()) this._nextQuestBanner();   // quest cards after dialogue
+    if (this._qbCard?.active) this._qbCard.setVisible(!this._talkOpen());   // a card already up steps aside while someone talks
     let snap, me;
     if (this.mode === 'client') {
       snap = this._interpolated();
