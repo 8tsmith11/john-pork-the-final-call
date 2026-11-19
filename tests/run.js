@@ -214,6 +214,7 @@ test('combat robot: follows its owner, rams coderot, goes down and reboots', () 
 
 // Combat feel (docs/research/combat.md)
 const { FEEL } = await import('../src/engine/sim.js');
+const { ENEMIES: ENEMIES_T } = await import('../src/content/enemies.js');
 const combatSim = () => {
   const sim = new Sim(MAPS_FOR_TEST.tunnel_1, { seed: 's' }); sim.addPlayer('a', 'trevor'); sim.enemies.clear();
   const p = sim.players.get('a'); p.aim = 0; return { sim, p };
@@ -261,6 +262,13 @@ test('combat: attacking right out of a dodge is a dash-strike (lunge, more damag
   p.dodgeEndTick = sim.tick; const x0 = p.x; sim._melee(p);
   assert.ok(sim.events.some((v) => v.t === 'dashstrike') && p.x > x0, 'lunged');
   assert.ok(999 - e.hp > plain, `dash-strike reached and hit (${999 - e.hp} vs ${plain})`);
+});
+test('combat: a chaser that lands a hit stands open for a moment (x1.5 damage, no movement)', () => {
+  const { sim, p } = combatSim(); p.iframes = 0;
+  const e = { id: 'c', kind: 'enemy.rotling', def: { ...ENEMIES_T['enemy.rotling'], ai: 'chase' }, x: p.x + 4, y: p.y, hp: 999, cd: 0, hurtT: 0, kx: 0, ky: 0 };
+  sim.enemies.set('c', e); sim._stepEnemies(1 / 60);
+  assert.ok(e.openT > 0, 'open after its hit'); const x = e.x; sim._stepEnemies(1 / 60); assert.equal(e.x, x, 'holds still while open');
+  sim._hurtEnemy(e, 10, 0, 0, 'a'); assert.equal(999 - e.hp, 15);
 });
 test('combat: hit-stop freezes enemies and shots for a moment', () => {
   const { sim, p } = combatSim(); const e = dummy(sim, p.x + 60, p.y); e.cd = 0;

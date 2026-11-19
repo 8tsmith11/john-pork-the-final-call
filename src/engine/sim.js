@@ -19,7 +19,7 @@ export const ROT = { max: 100, poolRate: 4, growth: 0.08, puddlerHit: 6,
   lightDecay: 0.1, quietTime: 5, charmRange: 64, charmDecay: 0.6, charmShield: 0.5, maxHallRate: 4 };
 // Combat feel (docs/research/combat.md): combo chain, deflects, perfect dodges, wall slams, hit-stop.
 export const FEEL = { comboWindow: 0.55, finisherDmg: 1.6, finisherKnock: 1.8, finisherArc: 1.25,
-  deflectDmg: 1.5, parryStun: 1.0, parryStop: 0.08, dashWindow: 0.18, dashDmg: 1.3, dashRange: 8, dashLunge: 10, perfectWindow: 0.15, focusTime: 1.5, focusDmg: 1.5, slamSpeed: 140, slamDmg: 8, slamStun: 0.6, hitStop: 0.05 };
+  deflectDmg: 1.5, parryStun: 1.0, parryStop: 0.08, openTime: 0.5, openDmg: 1.5, dashWindow: 0.18, dashDmg: 1.3, dashRange: 8, dashLunge: 10, perfectWindow: 0.15, focusTime: 1.5, focusDmg: 1.5, slamSpeed: 140, slamDmg: 8, slamStun: 0.6, hitStop: 0.05 };
 export const COMBAT = {
   maxHp: 100, hurtIframes: 0.6, reviveTime: 4.0, reviveRange: 18, reviveHp: 40,
   melee: { cooldown: 0.38, range: 20, arc: Math.PI * 0.6, damage: 12, knockback: 120 },
@@ -511,6 +511,7 @@ export class Sim {
     if (this._def(e).armor && e.st !== 'dizzy') dmg = Math.max(1, Math.round(dmg * (1 - this._def(e).armor)));
     if (e.st === 'dizzy') dmg *= 2;   // a Captcha reeling after its charge
     else if (e.parried > 0) dmg *= 2;   // parried: open for a second
+    else if (e.openT > 0) dmg = Math.round(dmg * FEEL.openDmg);   // recovering after its own hit
     if (e.marked > 0) dmg = Math.round(dmg * (1.5 + (this.players.get(by)?.mods?.markDmg ?? 0)));
     if (e.def?.trait === 'blinker' && Math.random() < 0.35 && e.hp - dmg > 0) {
       const a = Math.random() * Math.PI * 2, nx = e.x + Math.cos(a) * 40, ny = e.y + Math.sin(a) * 40;
@@ -585,6 +586,7 @@ export class Sim {
         e.kx *= 0.82; e.ky *= 0.82; if (Math.hypot(e.kx, e.ky) < 5) { e.kx = e.ky = 0; e.slammed = false; }
       }
       if (e.parried > 0) e.parried = Math.max(0, e.parried - dt);
+      if (e.openT > 0) e.openT = Math.max(0, e.openT - dt);
       if (e.stunT > 0) { e.stunT = Math.max(0, e.stunT - dt); continue; }
       const [target, d] = this._nearestPlayer(e.x, e.y);
       if (!target || d > (def.alertRange ?? 220)) continue;
@@ -598,9 +600,9 @@ export class Sim {
           if (dd > 0 && dd < def.radius * 2 + 2) { sx += dx / dd; sy += dy / dd; }
         }
         const dx = ux + sx * 0.65, dy = uy + sy * 0.65, length = Math.max(1, Math.hypot(dx, dy));
-        if (e.hurtT <= 0) this._moveBody(e, dx / length * def.speed * dt, dy / length * def.speed * dt, def.radius);
+        if (e.hurtT <= 0 && !(e.openT > 0)) this._moveBody(e, dx / length * def.speed * dt, dy / length * def.speed * dt, def.radius);
         if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) {
-          this._hurtPlayer(target, def.damage, def.infection); e.cd = def.touchCooldown;
+          this._hurtPlayer(target, def.damage, def.infection); e.cd = def.touchCooldown; e.openT = FEEL.openTime;   // recovery window (combat brief #7)
         }
         continue;
       }
@@ -661,8 +663,8 @@ export class Sim {
         continue;
       }
       if (def.ai === 'chase') {
-        if (e.hurtT <= 0) this._moveBody(e, ux * def.speed * dt, uy * def.speed * dt, def.radius);
-        if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd = def.touchCooldown; }
+        if (e.hurtT <= 0 && !(e.openT > 0)) this._moveBody(e, ux * def.speed * dt, uy * def.speed * dt, def.radius);
+        if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd = def.touchCooldown; e.openT = FEEL.openTime; }
       } else if (def.ai === 'kite') {
         // Keep the band: back off when you close in, close in when you're far, strafe sideways between.
         const dir = d < def.range * 0.6 ? -1 : d > def.range ? 1 : 0;
