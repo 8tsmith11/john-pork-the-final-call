@@ -20,13 +20,18 @@ from datetime import datetime
 from pathlib import Path
 import codecs
 
-SEALED_HEADER = ("<!-- SEALED SPOILERS (ROT13 Caesar cipher): chat logs are full of plot twists.\n"
+SEALED_HEADER = ("<!-- SEALED SPOILERS (ROT47 cipher): chat logs are full of plot twists.\n"
                  "     To read on purpose: python3 tools/spoilers/seal.py open {path} -->\n")
 
 
+def _rot47(text):
+    return "".join(chr(33 + (ord(c) - 33 + 47) % 94) if 33 <= ord(c) <= 126 else c for c in text)
+
+
 def seal_output(path, text):
-    """Write a devlog file sealed with ROT13 (docs/sealed/README.md)."""
-    path.write_text(SEALED_HEADER.format(path=path.relative_to(REPO).as_posix()) + codecs.encode(text, 'rot_13'))
+    """Write a devlog file sealed with ROT47 (docs/sealed/README.md). Not ROT13: transcripts quote
+    sealed ROT13 text, and ROT13 on top of it would turn that text back into plaintext."""
+    path.write_text(SEALED_HEADER.format(path=path.relative_to(REPO).as_posix()) + _rot47(text))
 
 REPO = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO / "docs" / "devlog"

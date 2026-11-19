@@ -59,8 +59,10 @@ anywhere.
   private people's names).
 - **Naming in what players read** (Trevor): "code rot", "code rotter(s)", "Code-rot-taken", never a
   bare "rot"; "John Pork" in full, never a bare "Pork". The lint checks both.
-- **Seal** anything that spoils a twist or another human's surprise, on the board and in the repo,
-  including easter eggs.
+- **Seal every surprise** (Michael, 2026-11-19): twists, eggs, gags, story turns, reveals, anything
+  one human added about another. Not in comments, plaintext strings, identifiers, commit
+  messages, branch names, PR text or task notes (`PROCESS.md`, "Spoilers and surprises"). Check every
+  change for leaks and return a leaking one as a conflict.
 
 ## Your routine each session
 
@@ -88,8 +90,6 @@ anywhere.
 ## Open items as of 2026-11-19 (keep this list current)
 
 **Sent to Michael to sort out (lore-gate session, 2026-11-19):**
-- One of Michael's earlier surprises about another roommate now conflicts with that roommate's own
-  words. It has to change; Michael picks the replacement. Details in the sealed ledger.
 - A later-act idea touches a real person's likeness. On hold until the humans decide (sealed,
   `acts-2-3.md`).
 - The open meme pool (`bagel/meme-npcs`, not merged): several entries are real people, and some lean
@@ -104,6 +104,23 @@ anywhere.
 - The three world-edge lines (the map seller, the courier, the TV item): cleared, his to write.
 - Manuelita's reunion scene. Keep her buff.
 - His answer on moving `docs/SECRETS.md` into `docs/sealed/` (#245).
+
+**Plaintext leaks still in the repo (PROCESS "Spoilers and surprises"; each owner fixes theirs):**
+- The romance code and its art generator name one partner's finale in identifiers and comments
+  (`src/content/romance.js`, `src/game/romance.js`, `tools/art/gen_romance.py`). BagelMeister's.
+  Renaming means regenerating the romance atlas.
+- The D-016 runtime still names its gesture in identifiers (`src/game/crush.js`, the message key it
+  sends). Comments and the test name are fixed. BagelMeister's.
+- `docs/SECRETS.md` is still plaintext (gonman's; his answer pending, #245).
+- `docs/lore/real-life.md` describes how one egg works in the game, not only the real-life story.
+  Whoever added that line should move the in-game half to `docs/sealed/`.
+- Michael's own floor in `roommates.md` states one of his planned surprises. It's his words, so it's
+  his call whether it moves to a sealed note.
+- The local branch `bagel/mate-caffeine` has a commit message that spells out a surprise (bfd9c0c).
+  Its content is on main now in sealed form, so don't push that commit; drop it or reword it first.
+- Git history before 2026-11-19 has plaintext. Don't rewrite history.
+- Devlog exports leaked every `[SEALED]` post as plaintext (ROT13 twice). Fixed in the exporters and
+  both committed files re-encoded; trevor runs the board export, so he needs to pull before the next one.
 
 **Other:**
 - **Hub replies:** this session couldn't reach the hub. The board answers for #251–#381 are in the

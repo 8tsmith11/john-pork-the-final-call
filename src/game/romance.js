@@ -14,7 +14,7 @@ import * as Inv from '../engine/inventory.js';
 import { playerMods } from '../content/items.js';
 import { TILE } from '../engine/sim.js';
 import { audioOut } from '../audio/audio.js';
-import { PARTNERS, REUNITED_FLAG, STAGE, FIGHT_KILLS, SONG_SECONDS, SONG_RANGE, flagOf, stageOf, together, partnerView } from '../content/romance.js';
+import { PARTNERS, REUNITED_FLAG, STAGE, FIGHT_KILLS, SONG_SECONDS, SONG_RANGE, flagOf, stageOf, together, ended, partnerView } from '../content/romance.js';
 
 // Put the dates on their maps (once per page load).
 for (const [id, P] of Object.entries(PARTNERS)) {
@@ -108,7 +108,7 @@ export class Romance {
     if (stage === STAGE.SONG) {
       if (P.place?.map !== s.map.id) return s._say(`${Who} wants to play for her where they met.`), true;
       s._toast(`${Who} plays for ${P.name}…`);
-      this.s.time.delayedCall(SONG_SECONDS * 1000, () => run('finale', () => { s._flag(flagOf(id, 'gone'), true); s._toast(`♥ ${partnerView(this.flags, id).name} walks with ${Who} now.`); }));
+      this.s.time.delayedCall(SONG_SECONDS * 1000, () => run('finale', () => { s._flag(flagOf(id, 'gone'), true); if (!ended(this.flags, id)) s._toast(`♥ ${partnerView(this.flags, id).name} walks with ${Who} now.`); }));
       return true;
     }
     let node;
@@ -174,7 +174,7 @@ export class Romance {
       if ((this._forms ??= {})[id] !== undefined && this._forms[id] !== form && form === 'popped') this._pop();
       this._forms[id] = form;
       // At her spot on the map, until she's with the party.
-      if (P.place && !together(f, id) && P.place.map === s.map.id && tex) {
+      if (P.place && !together(f, id) && !ended(f, id) && P.place.map === s.map.id && tex) {
         let im = this.spots.get(id);
         if (!im) { im = s.add.image(P.place.x * TILE, P.place.y * TILE + TILE, 'romance', frame(view.art)).setOrigin(0, 1).setDepth(P.place.y * TILE + TILE - 4); this.spots.set(id, im); }
         im.setFrame(frame(view.art));
@@ -237,7 +237,7 @@ export class Romance {
         this.songT = 0;
         const stop = () => { if (s.mode === 'client') s.net.send({ t: 'play', id: this._playingItem() }); else s.sim.setPlaying(s.localId, null); };
         stop();
-        s.shared.start(P.scene, 'finale', () => { s._flag(flagOf(id, 'gone'), true); s._toast(`♥ ${partnerView(this.flags, id).name} walks with ${P.for[0].toUpperCase() + P.for.slice(1)} now.`); });
+        s.shared.start(P.scene, 'finale', () => { s._flag(flagOf(id, 'gone'), true); if (!ended(this.flags, id)) s._toast(`♥ ${partnerView(this.flags, id).name} walks with ${P.for[0].toUpperCase() + P.for.slice(1)} now.`); });
       }
     }
   }

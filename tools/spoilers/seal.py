@@ -21,15 +21,22 @@ def rot13(text: str) -> str:
     return codecs.encode(text, "rot_13")
 
 
+def rot47(text: str) -> str:
+    """ROT47 over printable ASCII. Devlog transcripts use it: they quote ROT13 text, and ROT13 on top of
+    ROT13 would turn it back into plaintext."""
+    return "".join(chr(33 + (ord(c) - 33 + 47) % 94) if 33 <= ord(c) <= 126 else c for c in text)
+
+
 def main() -> None:
     if len(sys.argv) < 3:
         sys.exit(__doc__)
     cmd = sys.argv[1]
     if cmd == "open":
         body = Path(sys.argv[2]).read_text()
+        header = ""
         if body.startswith("<!-- SEALED"):
-            body = body.split("-->\n", 1)[1]
-        sys.stdout.write(rot13(body))
+            header, body = body.split("-->\n", 1)
+        sys.stdout.write(rot47(body) if "ROT47" in header else rot13(body))
     elif cmd == "seal":
         src, dst = Path(sys.argv[2]), Path(sys.argv[3])
         dst.parent.mkdir(parents=True, exist_ok=True)

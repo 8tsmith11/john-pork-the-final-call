@@ -23,10 +23,6 @@ export const PARTNERS = {
     name: 'Brooke', for: 'trevor', art: 'npc.brooke', scene: 'romance_trevor', courted: true, radius: 64,
     buff: { melee: 4, shot: 3, armor: 0.06, speed: 0.05 },
     buffText: '+damage, +armor, +speed',
-    // Once courted she is "Trevor's mom" for good, whichever form Trevor picks.
-    after: { name: 'Trevor\'s mom', art: { mom: 'npc.trevor_mom', girlfriend: 'npc.brooke' },
-      buff: { mom: { armor: 0.1, melee: 2, staRegen: 0.35, revive: 0.25 }, girlfriend: { melee: 4, shot: 3, armor: 0.06, speed: 0.05 } },
-      buffText: { mom: '+armor, +stamina, faster revives', girlfriend: '+damage, +armor, +speed' } },
     place: { map: 'metro_plaza', x: 51, y: 18 },
   },
   ines: {
@@ -46,16 +42,15 @@ export const SONG_RANGE = 48;
 
 export const flagOf = (id, key) => `act1.romance.${id}.${key}`;
 export const stageOf = (flags, id) => Number(flags[flagOf(id, 'stage')] ?? 0) || 0;
-export const together = (flags, id) => (PARTNERS[id].courted ? stageOf(flags, id) >= STAGE.TOGETHER : !!flags[REUNITED_FLAG]);
+// A sealed scene can set act1.romance.<id>.left: she is then neither at her spot nor with the party.
+export const ended = (flags, id) => !!flags[flagOf(id, 'left')];
+export const together = (flags, id) => !ended(flags, id)
+  && (PARTNERS[id].courted ? stageOf(flags, id) >= STAGE.TOGETHER : !!flags[REUNITED_FLAG]);
 export const formOf = (flags, id) => flags[flagOf(id, 'form')] ?? null;
 
 /** Name, sprite and buff for a partner right now. */
 export function partnerView(flags, id) {
   const P = PARTNERS[id], form = formOf(flags, id);
-  if (P.after && stageOf(flags, id) >= STAGE.TOGETHER || P.after && form) {
-    const f = form === 'girlfriend' ? 'girlfriend' : 'mom';
-    return { name: P.after.name, art: P.after.art[f], buff: P.after.buff[f], buffText: P.after.buffText[f], radius: P.radius };
-  }
   return { name: P.name, art: P.forms?.[form] ?? P.art, buff: P.buff, buffText: P.buffText, radius: P.radius };
 }
 

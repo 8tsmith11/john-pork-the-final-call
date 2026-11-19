@@ -554,7 +554,7 @@ test('i18n: every guide stage has Spanish', () => {
 });
 
 const { Crush } = await import('../src/game/crush.js');
-test('the butt pat: rare and idle-only early, frequent after the switchyard, AI roommates included', () => {
+test('D-016 gesture timing: rare and idle-only early, frequent after the switchyard, AI roommates included', () => {
   const sent = [];
   const mk = (flags) => { const sc = { mode: 'solo', time: { now: 0 }, save: { flags, world: { act: 1 } } }; const c = new Crush(sc); c._send = (m) => sent.push(m); return { sc, c }; };
   const snap = (dx) => ({ players: [{ id: 'ai:michael', c: 'michael', x: 100 + dx, y: 100 }, { id: 'p1', c: 'manuel', x: 110, y: 100 }] });

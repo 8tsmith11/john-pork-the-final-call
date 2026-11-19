@@ -16,6 +16,13 @@ SEALED_HEADER = ("<!-- SEALED SPOILERS (ROT13 Caesar cipher): chat logs are full
                  "     To read on purpose: python3 tools/spoilers/seal.py open {path} -->\n")
 
 
+def once(text):
+    """A [SEALED] post is ROT13 already. Decode its body so the file-wide ROT13 leaves it encoded once
+    (ROT13 twice is plaintext, which is how sealed posts used to leak into this file)."""
+    tag = "[SEALED]"
+    return tag + codecs.encode(text[len(tag):], "rot_13") if text.startswith(tag) else text
+
+
 def seal_output(path, text):
     """Write a devlog file sealed with ROT13 (docs/sealed/README.md)."""
     path.write_text(SEALED_HEADER.format(path=path.relative_to(REPO).as_posix()) + codecs.encode(text, 'rot_13'))
@@ -39,7 +46,7 @@ def main() -> None:
         lines.append(f"| {t['id']} | {cell(t['title'])} | {t['status']} | {cell(t['owner'])} | {cell(t['note'])} |\n")
     lines.append("\n## Messages\n")
     for m in data.get("messages", []):
-        lines.append(f"\n---\n\n**#{m['id']} {m['author']}**  ·  {m['at']}\n\n{m['text']}\n")
+        lines.append(f"\n---\n\n**#{m['id']} {m['author']}**  ·  {m['at']}\n\n{once(m['text'])}\n")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     seal_output(OUT, "".join(lines))
     print(OUT.relative_to(REPO))
