@@ -886,6 +886,26 @@ test('skill trees: valid links, capstone needs all three branches, mods sum, old
   });
 }
 
+test('map objects have atlas art or a code-drawn renderer', () => {
+  const atlasDir = new URL('../assets/sprites/', import.meta.url);
+  const frames = new Set();
+  for (const file of fs.readdirSync(atlasDir)) {
+    if (!file.endsWith('.json')) continue;
+    const atlas = JSON.parse(fs.readFileSync(new URL(file, atlasDir), 'utf8'));
+    for (const frame of Object.keys(atlas.frames)) frames.add(frame);
+  }
+  const missing = [];
+  for (const map of Object.values(MAPS_FOR_TEST)) {
+    for (const object of map.objects) {
+      // WorldScene draws these outside its atlas-based map object pass.
+      if (object.romance || object.selfDrawn || object.lever) continue;
+      const frame = object.art ?? object.id;
+      if (!frames.has(frame)) missing.push(map.id + '/' + object.id + ' needs ' + frame);
+    }
+  }
+  assert.deepEqual(missing, [], 'Missing map object art:\n' + missing.join('\n'));
+});
+
 // Level design guard: from the spawn, every object on every map can be walked up to (doors open on
 // contact, so they count as passable). Catches a prop or NPC walled off by a later layout edit.
 test('every map object is reachable on foot', () => {
