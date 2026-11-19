@@ -238,6 +238,12 @@ export const SHOPS = {
       { item: 'item.welding_goggles', price: 16 },
       { item: 'item.mat_glass', price: 2 },
     ] },
+  diner: { title: 'THE DINER', lines: ['[scaffold] Whatever you order, it is already on the plate.'],   // act1_more.js scaffold
+    stock: [
+      { item: 'item.energy_bar', price: 5 },
+      { item: 'item.caffeine', price: 12 },
+      { item: 'item.crab_chips', price: 9 },
+    ] },
   corner: { title: 'CORNER STORE', lines: ['Open twenty-four hours. The register is older than you.'],
     stock: [
       { item: 'item.energy_bar', price: 6 },

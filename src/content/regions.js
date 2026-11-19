@@ -9,9 +9,9 @@ export const RINGS = [
 
 export const REGIONS = [
   // Ring one: College Park (Act 1)
-  { id: 'aster', short: 'ASTER', shortEs: 'ASTER', ring: 1, act: 1, name: 'ASTER', es: 'ASTER', x: 0.48, y: 0.52, maps: ['room631', 'aster_hall', 'aster_lobby'] },
-  { id: 'plaza', short: 'Metro & Green Line', shortEs: 'Metro y Línea Verde', ring: 1, act: 1, name: 'The metro plaza and the Green Line', es: 'La plaza del metro y la Línea Verde', x: 0.51, y: 0.56, maps: ['metro_plaza', 'tunnel_1', 'platform'] },
-  { id: 'campus', short: 'Campus', shortEs: 'Campus', ring: 1, act: 1, name: 'The campus', es: 'El campus', x: 0.44, y: 0.58, maps: ['compute_hall_b'] },
+  { id: 'aster', short: 'ASTER', shortEs: 'ASTER', ring: 1, act: 1, name: 'ASTER', es: 'ASTER', x: 0.48, y: 0.52, maps: ['room631', 'aster_hall', 'aster_lobby', 'aster_basement', 'aster_roof'] },
+  { id: 'plaza', short: 'Metro & Green Line', shortEs: 'Metro y Línea Verde', ring: 1, act: 1, name: 'The metro plaza and the Green Line', es: 'La plaza del metro y la Línea Verde', x: 0.51, y: 0.56, maps: ['metro_plaza', 'tunnel_1', 'platform', 'diner'] },
+  { id: 'campus', short: 'Campus', shortEs: 'Campus', ring: 1, act: 1, name: 'The campus', es: 'El campus', x: 0.44, y: 0.58, maps: ['compute_hall_b', 'campus_quad', 'dining_hall', 'robotics_lab'] },
   { id: 'route1', short: 'Route 1', shortEs: 'Ruta 1', ring: 1, act: 1, name: 'Route 1 and the airfield', es: 'La Ruta 1 y el aeródromo', x: 0.53, y: 0.47, maps: [] },
   { id: 'lake', short: 'Lake Artemesia', shortEs: 'Lago Artemesia', ring: 1, act: 1, name: 'Lake Artemesia and the Paint Branch', es: 'El lago Artemesia y el Paint Branch', x: 0.57, y: 0.57, maps: ['lake'] },
   // Ring two: the county and the bay (Act 2)

@@ -1,6 +1,8 @@
 // Spanish for map names (shown top centre and in the guide) and the HUD ability label (gonman).
 // Every Text goes through tr() (src/main.js), so exact keys are enough. tests/run.js checks the map names.
 export const ES_HUD = {
+  'The diner': 'El diner', 'ASTER, basement (B-01)': 'ASTER, sótano (B-01)', 'ASTER, the roof': 'ASTER, la azotea',
+  'The campus quad': 'El patio del campus', 'The dining hall': 'El comedor', 'Robotics and Autonomy Lab': 'Laboratorio de Robótica y Autonomía',   // act1_more.js scaffold
   'Compute Hall B': 'Edificio de Cómputo B',   // campus scaffold (compute_hall_b)
   'Room 631, ASTER': 'Cuarto 631, ASTER',
   'ASTER, 6th floor': 'ASTER, 6.º piso',

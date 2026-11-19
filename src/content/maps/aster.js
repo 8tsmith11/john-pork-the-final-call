@@ -40,6 +40,7 @@ export const asterHall = makeMap({
     { id: 'npc.pell', eggOk: true, later: [{ if: "act1.cordon.passed", text: "\"You went down. I can tell by your knees.\" Pell taps the wall with one knuckle. \"Tell me if the yard still smells of ozone. I'd like one thing down there to be the same.\"" }, { if: "act1.complete", text: "\"Was the east gate rolled open?\" He nods before you answer. \"Then somebody remembered how.\"" }], x: 19, y: 7, label: 'Arthur Pell', npc: true, age: 'adult', talk: 'aster:pell_talk' },
     { id: 'npc.409', eggOk: true, later: [{ if: "act1.beat.call", text: "His phone is face up on the step, dark. \"Mine rang too. I haven't paid for a plan since my wife. It rang anyway.\"" }, { if: "act1.complete", text: "\"Door stayed shut last night. First time this week.\" He has a fresh bowl. \"I sat here and watched it stay shut.\"" }], x: 2, y: 3, label: 'Four-oh-nine', npc: true, age: 'adult', text: 'A man on the landing, his soup going cold. "Please hold. Your call is. Please hold." He says it kindly, like he said it for years.' },
     // Stairwell
+    { id: 'obj.hall_roof', art: 'obj.stairs', x: 3, y: 1, label: 'Roof hatch', action: 'exit', to: 'aster_roof', pair: 'obj.roof_hatch', text: 'A ladder up to the roof hatch. The lock is broken. It has always been broken.' },   // [SCAFFOLD] act1_more.js
     { id: 'obj.stairs_6f', art: 'obj.stairs', x: 2, y: 1, label: 'Stairs down', action: 'exit', to: 'aster_lobby', text: 'Six flights. Somebody has numbered the steps in chalk and lost count at 71.' },
     { id: 'obj.extinguisher', x: 1, y: 4, label: 'Fire extinguisher', text: 'Inspected 2071. The tag has been initialed every year since by the same hand.' },
     // Laundry room
@@ -78,6 +79,7 @@ export const asterLobby = makeMap({
   ],
   spawns: [[17, 10], [18, 10], [17, 9]],
   objects: [
+    { id: 'obj.lobby_basement', art: 'obj.stairs', x: 1, y: 1, label: 'Stairs down (B-01)', action: 'exit', to: 'aster_basement', pair: 'obj.basement_stairs', text: 'Down to the basement. The super\'s level.' },   // [SCAFFOLD] act1_more.js
     { id: 'obj.lobby_stairs', art: 'obj.stairs', x: 2, y: 1, label: 'Stairs up', action: 'exit', to: 'aster_hall', text: 'Six flights up.' },
     { id: 'obj.lobby_elevator', art: 'obj.elevator', x: 33, y: 1, label: 'Elevator', light: 0.6, action: 'exit', to: 'aster_hall', text: '"Sixth floor," the elevator says. "Sorry. Sorry. Sixth."' },
     { id: 'obj.mailboxes', x: 7, y: 0, label: 'Mailboxes', text: 'A wall of brass doors. 631 has a flyer for a dentist none of you have been to. 409 is stuffed full and nobody has emptied it.' },

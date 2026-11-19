@@ -33,4 +33,4 @@ export const computeHallB = fromGrid({
     '@': { spawn: true },
     D: { exit: 'metro_plaza', id: 'obj.chb_doors', art: 'obj.door', label: 'Back out to the campus walk', stepOn: true, pair: 'obj.campus_door', text: 'Out into the night.' },
   },
-}).build();
+}).exit('campus_quad', 12, 0, { id: 'obj.chb_quad_door', art: 'obj.door', label: 'Out to the quad', pair: 'obj.quad_chb', text: 'The back doors, out to the campus quad.' }).build();

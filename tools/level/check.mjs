@@ -12,6 +12,7 @@ for (const id of ids) {
   const walk = (x, y) => x >= 0 && y >= 0 && x < m.w && y < m.h && (!m.solid(x, y) || m.doors?.has(`${x},${y}`));
   // reachability from the first spawn
   const sx = Math.floor(m.spawns[0].x / 16), sy = Math.floor(m.spawns[0].y / 16), seen = new Set([`${sx},${sy}`]), q = [[sx, sy]];
+  for (const sp of m.spawns) { const x = Math.floor(sp.x / 16), y = Math.floor(sp.y / 16); if (m.solid(x, y)) problems.push(`spawn inside a wall at ${x},${y}`); }
   while (q.length) { const [x, y] = q.pop(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const k = `${x + dx},${y + dy}`; if (!seen.has(k) && walk(x + dx, y + dy)) { seen.add(k); q.push([x + dx, y + dy]); } } }
   const reachable = (x, y) => seen.has(`${x},${y}`) || [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${x + dx},${y + dy}`));
   const idCount = {};
