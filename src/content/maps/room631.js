@@ -131,7 +131,7 @@ export const room631 = makeMap({
     // The triple bunk: all three sleep here (bible §3). Placeholder art until gonman draws obj.bunk
     // (a 32x40 'big' sprite); then drop the art line.
     { id: 'obj.bunk', x: 18, y: 2, label: 'Triple bunk (save)', action: 'save',
-      text: 'The triple bunk. Three mattresses high, and every rung of the ladder creaks.\n\nTop: Trevor, two guitar picks and a glass of water he never finishes. Middle: Michael, a phone charger and a sweatshirt that isn\'t his size. Bottom: Manuel, a carved gourd and a postcard from Buenos Aires tucked into the slats above him.\n\nSleep? The balloon is still missing.' },
+      text: 'The triple bunk. Three mattresses high, and every rung of the ladder creaks.\n\nTop: Trevor, two guitar picks and a glass of water he never finishes. Middle: Michael, a phone charger and a sweatshirt that isn\'t his size. Bottom: Manuel, a carved gourd and a postcard from Buenos Aires tucked into the slats above him.' },   // the sleep line depends on the story (WorldScene BUNK_SLEEP)
     { id: 'obj.arg_flag', x: 22, y: 0, label: 'Argentine flag', text: 'Tacked up over Manuel\'s end of the room. It is bigger than the window.' },
     { id: 'obj.stand_michael', x: 17, y: 4, label: 'Guitar stand', stand: 'item.guitar_acoustic', owner: 'michael', selfDrawn: true,
       text: 'Michael\'s guitar stand, at the foot of the bunk. There is a capo clipped to it and a setlist taped to the leg with one song on it.' },

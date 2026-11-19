@@ -74,6 +74,12 @@ const CONTROLS_TEXT = 'WASD move · mouse aim · click: use held item\nSpace / S
 // Dialogue scenes that happen on the phone, and the title each call gets in the phone tab's transcripts.
 const PHONE_CALLS = { the_call: { start: 'John Pork · the call', call_ring_2: 'John Pork · second call', call_ring_3: 'John Pork · third call', butt_dial: 'John Pork · pocket dial' } };
 
+// What the bunk says about sleeping (task #34). Narration, so neutral Spanish.
+const BUNK_SLEEP = {
+  notYet: { en: 'Sleep? The balloon is still missing.', es: '¿Dormir? El globo sigue sin aparecer.' },
+  sleep: { en: 'Trevor sets an alarm, then turns it off again. Michael is asleep before the light is. Manuel lies on the bottom bunk looking up at the postcard for a while.', es: 'Trevor pone una alarma y la vuelve a apagar. Michael se duerme antes que la luz. Manuel se queda un rato en la cucheta de abajo, mirando la postal.' },
+};
+
 export class WorldScene extends Phaser.Scene {
   constructor() { super('World'); }
 
@@ -1749,8 +1755,10 @@ export class WorldScene extends Phaser.Scene {
     if (!actor || !bed || this.sim.map.id !== 'room631'
       || Math.hypot(actor.x - (bed.x * TILE + 8), actor.y - (bed.y * TILE + 8)) > 34) return;
     const rested = this.sim.restAtSave(peer, objectId);
+    const slept = !!this.save.flags['act1.boss.defeated'];   // task #34: a real night's sleep once the act's boss is down
+    if (slept) for (const p of this.sim.players.values()) if (!p.downed) this.sim.heal(p.id, 999);
     for (const p of this.sim.players.values()) this.save.party[p.character].rot = p.rot ?? 0;
-    this._save(rested ? '✓ saved · rest eased the code rot' : '✓ saved');
+    this._save(slept ? '✓ saved · slept it off' : rested ? '✓ saved · rest eased the code rot' : '✓ saved');
     if (peer !== this.localId) this.net?.send(peer, { t: 'say', text: rested ? 'Rested. Code rot exposure halved.' : '✓ saved' });
   }
 
@@ -2101,7 +2109,11 @@ export class WorldScene extends Phaser.Scene {
       this._say(`${near.text}\n\nStill needs: ${missing.join(', ')}. (Print them at the fab.)`);
       return;
     }
-    this._say(near.text);
+    if (near.action === 'save' && near.id === 'obj.bunk') {   // task #34: the bunk's line follows the story; after the boss you can actually sleep
+      const L = getLang() === 'es' ? 'es' : 'en', after = !!this.save.flags['act1.boss.defeated'];
+      this._say(`${tr(near.text ?? '')}\n\n${BUNK_SLEEP[after ? 'sleep' : 'notYet'][L]}`);
+      if (after) this.cameras.main.fadeOut(500, 5, 6, 12).once('camerafadeoutcomplete', () => this.cameras.main.fadeIn(900, 5, 6, 12));
+    } else this._say(near.text);
     if (near.flag) {
       if (this.mode === 'client') this.net.send({ t: 'flag', key: near.flag });
       else this.save.flags[near.flag] = true;
