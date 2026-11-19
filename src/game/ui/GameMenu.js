@@ -1,7 +1,7 @@
 // In-game menu: tabbed panel (INVENTORY · SKILLS · MAP · CONTROLS · SYSTEM) plus the FAB printer.
 // Rebuilt from scratch on every refresh (cheap, and never shows stale state).
 import { ENEMIES, GUIDE_TIPS, GUIDE_STATS_AT, GUIDE_TIP_AT } from '../../content/enemies.js';
-import { PARTY_SCALE } from '../../engine/sim.js';
+import { PARTY_SCALE, COMBAT } from '../../engine/sim.js';
 import { VIEW } from '../../view.js';
 import { sellPrice, ITEMS, RECIPES, SKILLS, SHOPS, playerMods, ARMOR_SLOTS, GEAR_SLOTS, WEAPON_SLOTS, SLOT_NAMES, MAX_UPGRADE, upgradeCost, scaleMods, canWear } from '../../content/items.js';
 import { MAPS } from '../../content/maps/index.js';
@@ -10,6 +10,22 @@ import { canPay, count } from '../../engine/inventory.js';
 import { SKILL_TREE, skillOpen } from '../../content/skills.js';
 import { ROOMMATES } from '../scenes/BootScene.js';
 import { QUESTS, questState, questVisible } from '../../content/quests.js';
+
+// One line of weapon stats for tooltips: melee hit, rate, dps, reach, arc, knockback; guns dmg×pellets, rate, clip, reload.
+export function weaponStats(def, lvl = 0) {
+  if (def?.slot === 'weapon') {
+    const w = { ...COMBAT.melee, ...(def.swing ?? {}) }, bonus = scaleMods(def.mods, lvl)?.melee ?? 0;
+    const hit = Math.round(w.damage + bonus), rate = 1 / w.cooldown, arc = (def.swing?.arc ?? 0.6);
+    const kb = w.knockback >= 200 ? 'heavy' : w.knockback >= 110 ? 'medium' : 'light';
+    return `hit ${hit} · ${rate.toFixed(1)}/s · ${Math.round(hit * rate)} dmg/s · reach ${w.range} · ${arc >= 0.7 ? 'wide' : arc <= 0.35 ? 'narrow' : 'normal'} arc · ${kb} knockback`;
+  }
+  if (def?.slot === 'ranged') {
+    const g = { ...COMBAT.shot, ...(def.gun ?? {}) }, bonus = scaleMods(def.mods, lvl)?.shot ?? 0, n = g.pellets ?? 1;
+    const dmg = Math.round(g.damage + bonus), rate = 1 / Math.max(0.12, g.cooldown + (scaleMods(def.mods, lvl)?.shotCd ?? 0));
+    return `${n > 1 ? `${dmg}×${n}` : `dmg ${dmg}`} · ${rate.toFixed(1)} shots/s · clip ${g.clip} · reload ${g.reload}s`;
+  }
+  return null;
+}
 
 export const TABS = ['inventory', 'quests', 'guide', 'phone', 'skills', 'stats', 'map', 'controls', 'system'];
 const TAB_LABEL = { inventory: 'INVENTORY', quests: 'QUESTS', guide: 'GUIDE', phone: 'PHONE', skills: 'SKILLS', stats: 'STATS', map: 'MAP', controls: 'CONTROLS', system: 'SYSTEM' };
@@ -174,7 +190,11 @@ export class GameMenu {
     const stats = modText(scaleMods(def.mods, lvl));
     this.tip.push(this._t(x, y, `${def.name}${lvl ? ` +${lvl}` : ''}${h.qty > 1 ? ' ×' + h.qty : ''}`, F(9, def.unique ? '#ffd27f' : C.hi)));
     this.tip.push(this._t(x, y + 11, `${kind}${def.heal ? `  · heals ${def.heal}` : ''}${stats ? '  · ' + stats : ''}`, F(6, C.ok)));
-    this.tip.push(this._t(x, y + 20, def.text ?? '', { ...F(7, C.sub), wordWrap: { width: this.tipW } }));
+    // Weapon stats (Trevor): what a hit or a shot actually does.
+    const ws = weaponStats(def, lvl);
+    let ty = y + 20;
+    if (ws) { const t = this._t(x, ty, ws, { ...F(7, '#6fe3e8'), wordWrap: { width: this.tipW } }); this.tip.push(t); ty += t.height + 2; }
+    this.tip.push(this._t(x, ty, def.text ?? '', { ...F(7, C.sub), wordWrap: { width: this.tipW } }));
   }
 
   _quests() {
