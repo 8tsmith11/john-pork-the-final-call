@@ -809,26 +809,30 @@ test('schema 6 -> 7: the shared wallet splits evenly into each roommate\'s, rema
 const { CompanionBrain } = await import('../src/engine/companion.js');
 const { ITEMS: ITEMS_T } = await import('../src/content/items.js');
 test('AI companions follow the human, fight, and never trigger exits', () => {
-  const sim = new Sim(MAPS_FOR_TEST.tunnel_1, { seed: 's' });
-  sim.addPlayer('host', 'trevor'); sim.addPlayer('ai:manuel', 'manuel'); sim.addPlayer('ai:michael', 'michael');
-  for (const p of sim.players.values()) p.mods.swing = ITEMS_T['item.pry_bar'].swing;   // everyone starts with a pry bar
-  // This test is about following, not surviving: the host here wanders and barely swings, so the code rot
-  // zombie packs along the route (task #33) would just down the party. The rotlings stay for "fought something".
-  for (const [id, e] of [...sim.enemies]) if (e.kind === 'enemy.rot_taken') sim.enemies.delete(id);
-  const brain = new CompanionBrain(sim), h = sim.players.get('host'), before = sim.enemies.size;
-  let aiExit = false; const near = { 'ai:manuel': 0, 'ai:michael': 0 }; let frames = 0;
-  for (let t = 0; t < 60 * 40; t++) {
-    const ang = t / 300, inputs = new Map([['host', { ...emptyInput(), mx: Math.cos(ang), my: Math.sin(ang * 1.3), attack: t % 20 === 0 }]]);
-    for (const [id, i] of brain.inputs()) inputs.set(id, i);
-    sim.step(1 / 60, inputs);
-    if (sim.events.some((e) => e.t === 'bumpExit' && String(e.by).startsWith('ai:'))) aiExit = true;
-    if (t > 60 * 10) { frames++; for (const id in near) { const p = sim.players.get(id); if (Math.hypot(p.x - h.x, p.y - h.y) < 120) near[id]++; } }
-  }
-  // Following, measured over time: companions break off to fight, so one end-of-run snapshot was flaky.
-  for (const id in near) assert.ok(near[id] / frames >= 0.7, `${id} fell behind (near ${(near[id] / frames * 100).toFixed(0)}% of the time)`);
-  assert.ok(sim.enemies.size < before, 'the party fought nothing');
-  assert.ok(!aiExit, 'a companion used an exit');
-  assert.ok(!sim.allWaiting('nope') || true);
+  // Combat rolls and companion skill timers also use Math.random, outside the map seed.
+  const random = Math.random, rng = new Rng('companion-follow'); Math.random = () => rng.next();
+  try {
+    const sim = new Sim(MAPS_FOR_TEST.tunnel_1, { seed: 's' });
+    sim.addPlayer('host', 'trevor'); sim.addPlayer('ai:manuel', 'manuel'); sim.addPlayer('ai:michael', 'michael');
+    for (const p of sim.players.values()) p.mods.swing = ITEMS_T['item.pry_bar'].swing;   // everyone starts with a pry bar
+    // This test is about following, not surviving: the host here wanders and barely swings, so the code rot
+    // zombie packs along the route (task #33) would just down the party. The rotlings stay for "fought something".
+    for (const [id, e] of [...sim.enemies]) if (e.kind === 'enemy.rot_taken') sim.enemies.delete(id);
+    const brain = new CompanionBrain(sim), h = sim.players.get('host'), before = sim.enemies.size;
+    let aiExit = false; const near = { 'ai:manuel': 0, 'ai:michael': 0 }; let frames = 0;
+    for (let t = 0; t < 60 * 40; t++) {
+      const ang = t / 300, inputs = new Map([['host', { ...emptyInput(), mx: Math.cos(ang), my: Math.sin(ang * 1.3), attack: t % 20 === 0 }]]);
+      for (const [id, i] of brain.inputs()) inputs.set(id, i);
+      sim.step(1 / 60, inputs);
+      if (sim.events.some((e) => e.t === 'bumpExit' && String(e.by).startsWith('ai:'))) aiExit = true;
+      if (t > 60 * 10) { frames++; for (const id in near) { const p = sim.players.get(id); if (Math.hypot(p.x - h.x, p.y - h.y) < 120) near[id]++; } }
+    }
+    // Following, measured over time: companions break off to fight, so one end-of-run snapshot was flaky.
+    for (const id in near) assert.ok(near[id] / frames >= 0.7, `${id} fell behind (near ${(near[id] / frames * 100).toFixed(0)}% of the time)`);
+    assert.ok(sim.enemies.size < before, 'the party fought nothing');
+    assert.ok(!aiExit, 'a companion used an exit');
+    assert.ok(!sim.allWaiting('nope') || true);
+  } finally { Math.random = random; }
 });
 
 const Inv = await import('../src/engine/inventory.js');
