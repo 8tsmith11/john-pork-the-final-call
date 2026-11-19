@@ -36,11 +36,13 @@ export const PLAZA_CORDON = {
 };
 
 // After the Call (the cordon has closed). gonman owns these words; first drafts.
-export const CORDON_LINES_AFTER = [
-  { en: 'The zone is sealed. Return to your residence.', es: 'La zona está sellada. Vuelva a su residencia.' },
-  { en: 'Step back or be tagged.', es: 'Retroceda o queda marcado.' },
-  { en: 'We heard the phones. Go inside.', es: 'Escuchamos los teléfonos. Entre.' },
-  { en: 'Containment is in effect. Nobody crosses.', es: 'La contención está vigente. Nadie cruza.' },
+export const CORDON_LINES_AFTER = [   // gonman: after the Call the troopers are scared too, and it shows
+  { en: 'Back inside. Now.', es: 'Adentro. Ya.' },
+  { en: 'Phones off, hands where we can see them.', es: 'Teléfonos apagados, las manos a la vista.' },
+  { en: 'We heard it ring too. Go home.', es: 'Nosotros también lo oímos sonar. Vuelva a casa.' },
+  { en: 'The line was closed. Now it\'s closed harder.', es: 'La línea estaba cerrada. Ahora está más cerrada.' },
+  { en: 'Step back or get tagged.', es: 'Retroceda o lo marcamos.' },
+  { en: 'If it calls again, don\'t pick up.', es: 'Si vuelve a llamar, no atienda.' },
 ];
 
 // What a trooper says when you walk up to the line. Short: it's read while walking.

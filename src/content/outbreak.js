@@ -16,7 +16,13 @@ export function outbreakPhase(flags = {}) {
 // gonman: which spots get code-rot-taken after the Call (plaza, Route 1 at night).
 export const PHASE_SPAWNS = {
   after: {
-    metro_plaza: [],
+    metro_plaza: [                                                  // gonman: the rot surfaces where people would be at night
+      ['enemy.rotling', 36, 41], ['enemy.spitter', 42, 38], ['enemy.rotling', 47, 45],   // the parking lot
+      ['enemy.rotling', 60, 22], ['enemy.rotling', 61, 44],                              // Route 1, both halves
+      ['enemy.rotling', 24, 33], ['enemy.spitter', 72, 32],                              // the cross street
+      ['enemy.rotling', 75, 10],                                                         // the east sidewalk by the shops
+      // Append only: metro_plaza#after.N killed keys must keep their meaning.
+    ],
   },
 };
 
