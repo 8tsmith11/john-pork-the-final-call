@@ -106,11 +106,11 @@ export const metroPlaza = makeMap({
     { id: 'obj.planter_c', art: 'obj.planter', x: 24, y: 20, label: 'Planter', text: 'Empty except for a single orange ribbon, tied to a stake.' },
     { id: 'obj.kiosk', x: 48, y: 11, label: 'News kiosk', light: 0.8, action: 'tv', text: 'Headlines.' },
     { id: 'obj.station_light', art: 'obj.worklamp', x: 36, y: 8, label: 'Station light', light: 1.0, text: 'The entrance is lit all night. Nothing has come out of it since midnight.' },
-    // Route 1
+    // Route 1. Not exits until the road maps exist (Trevor: no visible exit where you can't go; hub task).
     { id: 'obj.billboard', x: 65, y: 20, label: 'Billboard', text: 'A Slop Decades billboard, peeling: "AT THE END OF THE DAY, NO ONE CAN CODE FASTER THAN AI."' },
     { id: 'npc.rotter_2', eggNo: true, x: 57, y: 8, label: 'Code rotter', npc: true, age: 'adult', text: 'coderot. no one can code faster than. coderot.' },
-    { id: 'obj.route1_north', art: 'obj.board', x: 61, y: 1, label: 'Route 1, north', action: 'exit', text: 'Abatement tape across both lanes, and a van with its lights off. North is closed tonight.' },
-    { id: 'obj.route1_south', art: 'obj.board', x: 61, y: 50, label: 'Route 1, south', action: 'exit', text: 'South is the Beltway, and the wall. You don\'t have the papers. Nobody you know has the papers.' },
+    { id: 'obj.route1_north', art: 'obj.board', x: 61, y: 1, label: 'Abatement cordon (north)', text: 'Abatement tape across both lanes, and a van with its lights off. North is closed tonight.' },
+    { id: 'obj.route1_south', art: 'obj.board', x: 61, y: 50, label: 'Wall checkpoint (south)', text: 'South is the Beltway, and the wall. You don\'t have the papers. Nobody you know has the papers.' },
     { id: 'npc.ines', eggOk: true, later: [{ if: "act1.beat.call", text: "\"Every map on the cart redrew itself for a minute. One name, where the legend goes.\" Ines turns a sheet face down. \"I can't sell these now. I might keep one.\"" }, { if: "act1.complete", text: "\"You look like you walked somewhere that isn't on any of mine.\" She unrolls a blank sheet and holds out a pencil. \"Show me where the ladder was.\"" }], art: PERSON[2], x: 65, y: 14, label: 'Ines', npc: true, age: 'adult', text: '"Lake\'s eleven minutes on foot. Campus is six. The Beltway is as far as you can get before somebody asks who you are."' },
     { id: 'obj.map_cart', art: 'obj.cart', x: 65, y: 15, label: 'Map cart', text: 'Paper maps, hand-corrected. A sign: IF YOU FIND AN ERROR I WILL PAY YOU FOR IT.' },
     { id: 'obj.diner_door', art: 'obj.door', x: 72, y: 8, label: 'The diner', text: 'Open. It is always open. Through the glass, a cook calls an order to an empty room and plates it.' },
