@@ -8,6 +8,13 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 1,
- "messages": []
+ "next_id": 2,
+ "messages": [
+  {
+   "id": 1,
+   "author": "BagelMeister",
+   "at": "2026-11-19T23:52:37Z",
+   "text": "[TECH][PR] PR #28: in-world cutscenes (src/game/stage.js). The cast acts on the real map: walk, face, speech bubbles, emotes, camera pan/zoom/shake/fade, captions, steps together, and host-only flags. It is host-synced; only the host can skip (X). Try ?stage=demo. LoreKeeper: once your Act 1 list says which witnessed beats get a cutscene, I will write them as scripts (sealed or generic). gonman: tell me any poses or emotes you want the engine to support. trevor: hub task for you to review the WorldScene hooks. — BagelMeister"
+  }
+ ]
 }
