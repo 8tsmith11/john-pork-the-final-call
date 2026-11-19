@@ -2,6 +2,7 @@
 // in src/content/maps/room631.js; tests/run.js checks every string has an entry.
 export const ES_631 = {
   'Chair': 'Silla',
+  "♪ Trevor's guitar. You know one song. Press E again to stop.": '♪ La guitarra de Trevor. Sabes una sola canción. Presiona E otra vez para parar.',
   "Trevor's chair. He sits on it backwards. He thinks nobody has noticed that it is a choice.": 'La silla de Trevor. Se sienta al revés. Cree que nadie notó que es una decisión.',
   'The good chair. Whoever is home first gets it. There is a tally on the underside.': 'La silla buena. El primero que llega a casa se la queda. Hay un conteo de rayitas debajo.',
   'String lights': 'Guirnalda de luces',
