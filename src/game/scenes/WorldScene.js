@@ -2044,7 +2044,9 @@ export class WorldScene extends Phaser.Scene {
       s.setPosition(Math.round(p.x), Math.round(p.y + 4)).setDepth(p.y);
       const facing = p.f === 'left' ? 'right' : p.f;
       s.setFlipX(p.f === 'left');
-      let key = `${p.c}_${p.m ? 'walk' : 'idle'}_${facing}`;
+      // Solo pauses the world during dialogue and menus: show everyone standing, not frozen mid-stride (Trevor).
+      const paused = this.mode === 'solo' && (this.dlg || this.menu);
+      let key = `${p.c}_${p.m && !paused ? 'walk' : 'idle'}_${facing}`;
       // Combat frames win over walk/idle: dodge, then the swing, then the flinch after a hit.
       const act = p.d ? 'dodge' : p.sw ? 'attack' : (p.iv && !p.d) ? 'hurt' : null;
       if (act && this.anims.exists(`${p.c}_${act}_${facing}`)) key = `${p.c}_${act}_${facing}`;
