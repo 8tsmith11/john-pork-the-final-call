@@ -1155,6 +1155,16 @@ test('stepping onto the lobby street doors leaves the building', () => {
 });
 
 const yard = await import('../src/content/switchyard.js');
+test('the flooded bay directs Spanish players toward the pump room', () => {
+  const previousLanguage = i18nMod.getLang();
+  i18nMod.setLang('es');
+  try {
+    const clue = yard.clueFor('obj.sunk_vending', yard.solution('test-yard'), false);
+    assert.match(i18nMod.tr(clue), /hacia el norte, en dirección a la sala de bombas/);
+  } finally {
+    i18nMod.setLang(previousLanguage);
+  }
+});
 test('the switchyard answer is never the levers\' starting position', () => {
   const { solution, LEVERS } = yard;
   for (let i = 0; i < 400; i++) assert.ok(LEVERS.some((k) => solution(`seed-${i}`)[k] === 'right'), `seed-${i}`);
