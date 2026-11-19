@@ -38,7 +38,11 @@ export const route1North = fromGrid({
     E: { enemy: 'enemy.rot_taken' },
     '@': { spawn: true },
   },
-}).build();
+})
+  // Act 3: the Beltway road, open once Act 2 is complete (src/content/maps/act3_regions.js).
+  .exit('beltway', 10, 12, { id: 'obj.r1n_to_beltway', selfDrawn: true, stepOn: true, pair: 'obj.bw_to_r1n', label: 'South-west to the Beltway',
+    requiresFlag: 'act2.complete', lockedText: 'A barricade, and a sign: INNER LOOP CLOSED. Not yet.', text: 'The ring road around the Enclave.' })
+  .build();
 
 // ---- 6. Greenbelt and the dishes ----
 export const greenbelt = fromGrid({
@@ -66,7 +70,7 @@ export const greenbelt = fromGrid({
     '@': { spawn: true },
     X: back('greenbelt', 'Back east to Route 1'),
   },
-}).enemy('boss.gb_receiver', 28, 2).build();
+}).enemy('boss.gb_receiver', 16, 5).build();
 
 // ---- 7. Beltsville: the farms ----
 export const beltsville = fromGrid({
@@ -169,7 +173,7 @@ export const baltimore = fromGrid({
     '@': { spawn: true },
     X: { ...back('baltimore', 'South, back to Route 1'), tile: 'q' },
   },
-}).enemy('boss.bmore_congregation', 17, 4).build();
+}).enemy('boss.bmore_congregation', 3, 4).build();
 
 // ---- 11. Annapolis and the bay ----
 export const annapolis = fromGrid({

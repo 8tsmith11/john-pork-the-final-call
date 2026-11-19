@@ -1,8 +1,10 @@
 // Check maps for the usual level-design mistakes (docs/design/11-level-builder.md).
 // Usage: node tools/level/check.mjs [mapId ...]     (no args: every map). Exit code 1 if anything fails.
 // Checks: everything reachable from the spawn; doors have wall on both sides; nothing interactable sits on a
-// solid tile it can't be reached from; unique object ids; exits lead to known maps; "[scaffold]" text left.
+// solid tile it can't be reached from; unique object ids; exits lead to known maps; a sleeping boss doesn't wake
+// the moment you arrive (spawns and exits outside its wake radius); "[scaffold]" text left.
 import { MAPS } from '../../src/content/maps/index.js';
+import { BOSSES } from '../../src/content/bosses.js';
 
 const ids = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(MAPS);
 let bad = 0;
@@ -28,6 +30,13 @@ for (const id of ids) {
     if (!((wall(x - 1, y) && wall(x + 1, y)) || (wall(x, y - 1) && wall(x, y + 1)))) problems.push(`door ${d.id} at ${k} has no wall on one side`);
   }
   for (const e of m.enemies) { const x = Math.floor(e.x / 16), y = Math.floor(e.y / 16); if (m.solid(x, y)) problems.push(`enemy ${e.kind} on a solid tile ${x},${y}`); else if (!seen.has(`${x},${y}`)) problems.push(`enemy ${e.kind} unreachable at ${x},${y}`); }
+  for (const e of m.enemies) if (BOSSES[e.kind]) {   // a sleeping boss shouldn't wake the moment you walk in
+    const wake = BOSSES[e.kind](1).wake ?? 0;
+    for (const o of [...m.spawns.map((sp) => ({ id: 'spawn', x: sp.x / 16, y: sp.y / 16 })), ...m.objects.filter((q) => q.action === 'exit')]) {
+      const d = Math.hypot((o.x + 0.5) * 16 - e.x, (o.y + 0.5) * 16 - e.y);
+      if (wake && d < wake) problems.push(`${e.kind} wakes on arrival: ${Math.round(d)}px from ${o.id} (wake ${wake})`);
+    }
+  }
   bad += problems.length;
   console.log(`${problems.length ? 'XX' : 'OK'} ${id}${problems.length ? '' : ` (${m.objects.length} objects, ${m.enemies.length} enemies)`}`);
   for (const p of problems) console.log(`   ✗ ${p}`);

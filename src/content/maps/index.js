@@ -7,9 +7,11 @@ import { lake } from './lake.js';
 import { computeHallB } from './campus.js';
 import { diner, asterBasement, asterRoof, campusQuad, diningHall, roboticsLab } from './act1_more.js';
 import { route1North, greenbelt, beltsville, refuge, meade, baltimore, annapolis } from './act2_regions.js';
+import { beltway, corridor, gaithersburg, frederick, enclave } from './act3_regions.js';
 
 export const MAPS = Object.fromEntries([room631, asterHall, asterLobby, metroPlaza, tunnel1, platform, lake, computeHallB, diner, asterBasement, asterRoof, campusQuad, diningHall, roboticsLab,
-  route1North, greenbelt, beltsville, refuge, meade, baltimore, annapolis].map((m) => [m.id, m]));
+  route1North, greenbelt, beltsville, refuge, meade, baltimore, annapolis,
+  beltway, corridor, gaithersburg, frederick, enclave].map((m) => [m.id, m]));
 
 // Where each map sits on the shared world map (tile units). Level design (gonman) can set
 // `world: {x, y}` on a map to override. Interiors sit beside their building's entrance.
@@ -19,5 +21,6 @@ export const WORLD_LAYOUT = {
   campus_quad: { x: 0, y: 70 }, dining_hall: { x: -30, y: 70 }, robotics_lab: { x: 36, y: 70 },
   route1_north: { x: 40, y: -40 }, greenbelt: { x: 0, y: -70 }, beltsville: { x: 40, y: -90 }, refuge: { x: 100, y: -80 },
   meade: { x: 150, y: -60 }, baltimore: { x: 80, y: -160 }, annapolis: { x: 180, y: 10 },
+  beltway: { x: -60, y: -40 }, corridor: { x: -120, y: -40 }, gaithersburg: { x: -90, y: -100 }, frederick: { x: -160, y: -140 }, enclave: { x: -60, y: 20 },
 };
 export const worldPos = (m) => m.world ?? WORLD_LAYOUT[m.id] ?? { x: 0, y: 0 };

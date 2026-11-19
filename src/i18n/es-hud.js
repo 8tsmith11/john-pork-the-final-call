@@ -1,6 +1,8 @@
 // Spanish for map names (shown top centre and in the guide) and the HUD ability label (gonman).
 // Every Text goes through tr() (src/main.js), so exact keys are enough. tests/run.js checks the map names.
 export const ES_HUD = {
+  'The Beltway': 'La Beltway', 'The Corridor': 'El Corredor', 'Gaithersburg: the standards': 'Gaithersburg: los estándares',
+  'Frederick and the Smelter': 'Frederick y la Fundición', 'The Enclave': 'El Enclave', 'The Beltway road is open.': 'El camino a la Beltway está abierto.',   // act3_regions.js scaffold
   'Route 1 north': 'Ruta 1 norte', 'Greenbelt and the dishes': 'Greenbelt y las antenas', 'Beltsville: the farms': 'Beltsville: las granjas',
   'The refuge': 'El refugio', 'The Meade, perimeter': 'El Meade, perímetro', 'Baltimore: the port': 'Baltimore: el puerto', 'Annapolis and the bay': 'Annapolis y la bahía',   // act2_regions.js scaffold
   'The diner': 'El diner', 'ASTER, basement (B-01)': 'ASTER, sótano (B-01)', 'ASTER, the roof': 'ASTER, la azotea',

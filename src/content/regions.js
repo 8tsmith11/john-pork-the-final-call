@@ -22,10 +22,10 @@ export const REGIONS = [
   { id: 'baltimore', short: 'Baltimore', shortEs: 'Baltimore', ring: 2, act: 2, name: 'Baltimore: the port', es: 'Baltimore: el puerto', x: 0.7, y: 0.15, maps: ['baltimore'] },
   { id: 'annapolis', short: 'Annapolis', shortEs: 'Annapolis', ring: 2, act: 2, name: 'Annapolis and the bay', es: 'Annapolis y la bahía', x: 0.84, y: 0.55, maps: ['annapolis'] },
   // Ring three: the Corridor and the Enclave (Act 3)
-  { id: 'corridor', short: 'The Corridor', shortEs: 'El Corredor', ring: 3, act: 3, name: 'The Corridor', es: 'El Corredor', x: 0.32, y: 0.4, maps: [] },
-  { id: 'gaithersburg', short: 'Gaithersburg', shortEs: 'Gaithersburg', ring: 3, act: 3, name: 'Gaithersburg: the standards', es: 'Gaithersburg: los estándares', x: 0.22, y: 0.3, maps: [] },
-  { id: 'frederick', short: 'Frederick', shortEs: 'Frederick', ring: 3, act: 3, name: 'Frederick and the Smelter', es: 'Frederick y la Fundición', x: 0.1, y: 0.14, maps: [] },
-  { id: 'enclave', short: 'The Enclave', shortEs: 'El Enclave', ring: 3, act: 3, name: 'The Enclave', es: 'El Enclave', x: 0.42, y: 0.8, maps: [] },
+  { id: 'corridor', short: 'The Corridor', shortEs: 'El Corredor', ring: 3, act: 3, name: 'The Corridor', es: 'El Corredor', x: 0.32, y: 0.4, maps: ['corridor', 'beltway'] },
+  { id: 'gaithersburg', short: 'Gaithersburg', shortEs: 'Gaithersburg', ring: 3, act: 3, name: 'Gaithersburg: the standards', es: 'Gaithersburg: los estándares', x: 0.22, y: 0.3, maps: ['gaithersburg'] },
+  { id: 'frederick', short: 'Frederick', shortEs: 'Frederick', ring: 3, act: 3, name: 'Frederick and the Smelter', es: 'Frederick y la Fundición', x: 0.1, y: 0.14, maps: ['frederick'] },
+  { id: 'enclave', short: 'The Enclave', shortEs: 'El Enclave', ring: 3, act: 3, name: 'The Enclave', es: 'El Enclave', x: 0.42, y: 0.8, maps: ['enclave'] },
 ];
 
 export const regionOfMap = (mapId) => REGIONS.find((r) => r.maps.includes(mapId)) ?? null;
