@@ -665,7 +665,7 @@ export class WorldScene extends Phaser.Scene {
   // Host -> clients: flags and quest progress, whenever they change (checked twice a second).
   _broadcastWorld() {
     if (this.mode !== 'host') return;
-    const msg = { t: 'world', flags: this.save.flags, quests: questState(this.save) };
+    const msg = { t: 'world', flags: this.save.flags, quests: questState(this.save), guide: this._guide() };
     const sig = JSON.stringify(msg);
     if (sig === this._worldSig) return;
     this._worldSig = sig; this.net.broadcast(msg);
@@ -673,6 +673,7 @@ export class WorldScene extends Phaser.Scene {
   _applyWorld(msg) {
     const before = questState(this.save), was = JSON.parse(JSON.stringify(before));
     Object.assign(this.save.flags, msg.flags ?? {});
+    if (msg.guide) this.save.world.guide = msg.guide;
     this.save.world.quests = msg.quests ?? this.save.world.quests;
     const now = questState(this.save);
     for (const q of QUESTS) {
@@ -682,6 +683,21 @@ export class WorldScene extends Phaser.Scene {
       if (!a.done && b.done) { this._questBanner('QUEST COMPLETE', q.title, [q.reward?.money ? `+$${q.reward.money}` : '', q.reward?.xp ? `+${q.reward.xp} xp` : ''].filter(Boolean).join('   ')); if (q.reward?.line) this._say(q.reward.line); }
     }
     this._refreshMenu();
+  }
+
+  // Field guide (Terraria's bestiary): enemies unlock on sight, NPCs when you talk to them; kills reveal more.
+  _guide() { const g = (this.save.world.guide ??= {}); g.e ??= {}; g.n ??= {}; return g; }
+  _tickGuide() {
+    if (this.mode === 'client' || (this._guideT = (this._guideT ?? 0) + 1) % 30) return;
+    const g = this._guide();
+    for (const e of this.sim.enemies.values()) {
+      if (g.e[e.kind]) continue;
+      for (const p of this.sim.players.values()) if (Math.hypot(p.x - e.x, p.y - e.y) < 150) {
+        g.e[e.kind] = { seen: 1, kills: 0, name: e.def?.name };
+        if (p.id === this.localId || !isAi(p.id)) this._toast(`New in the field guide: ${e.def?.name ?? e.kind} [ESC → GUIDE]`);
+        break;
+      }
+    }
   }
 
   _syncParty() {
@@ -1502,6 +1518,7 @@ export class WorldScene extends Phaser.Scene {
       const inp = this._frozen(this.input2.read(me));
       this.net.send({ t: 'input', inp });
       this._handleInteract(me);
+      this._tickGuide();
     } else {
       me = this.sim.players.get(this.localId);
       const inp = this._frozen(this.input2.read(me));
@@ -1550,6 +1567,7 @@ export class WorldScene extends Phaser.Scene {
       }
       if (ev.t === 'kill') {
         if (ev.key && !this.save.world.killed.includes(ev.key)) this.save.world.killed.push(ev.key);
+        if (ev.kind) { const g = this._guide().e[ev.kind] ??= { seen: 1, kills: 0 }; g.kills++; }
         // Drops: money to the shared wallet, a material to whoever landed the kill.
         const drop = ev.boss ? DROPS.boss : DROPS.default;
         const cash = drop.money[0] + Math.floor(Math.random() * (drop.money[1] - drop.money[0] + 1));
@@ -1635,6 +1653,7 @@ export class WorldScene extends Phaser.Scene {
     const near = this._clickedObj; this._clickedObj = null;
     if (!near) return;
     if (!inReach(near)) { this.hint.setText(`${near.label} (too far)`); return; }
+    if (near.npc && this.mode !== 'client') this._guide().n[near.id] ??= { name: near.label.replace(/\s*\(.*\)\s*/g, '').trim(), where: this.map.name ?? this.map.id };
     if (near.action === 'exit') {
       if (this.mode === 'client') this.net.send({ t: 'exit', obj: near.id });
       else this._tryExit(near);

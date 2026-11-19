@@ -1,5 +1,7 @@
 // In-game menu: tabbed panel (INVENTORY · SKILLS · MAP · CONTROLS · SYSTEM) plus the FAB printer.
 // Rebuilt from scratch on every refresh (cheap, and never shows stale state).
+import { ENEMIES, GUIDE_TIPS, GUIDE_STATS_AT, GUIDE_TIP_AT } from '../../content/enemies.js';
+import { PARTY_SCALE } from '../../engine/sim.js';
 import { VIEW } from '../../view.js';
 import { sellPrice, ITEMS, RECIPES, SKILLS, SHOPS, playerMods, ARMOR_SLOTS, GEAR_SLOTS, WEAPON_SLOTS, SLOT_NAMES, MAX_UPGRADE, upgradeCost, scaleMods, canWear } from '../../content/items.js';
 import { MAPS } from '../../content/maps/index.js';
@@ -9,8 +11,8 @@ import { SKILL_TREE, skillOpen } from '../../content/skills.js';
 import { ROOMMATES } from '../scenes/BootScene.js';
 import { QUESTS, questState, questVisible } from '../../content/quests.js';
 
-export const TABS = ['inventory', 'quests', 'phone', 'skills', 'stats', 'map', 'controls', 'system'];
-const TAB_LABEL = { inventory: 'INVENTORY', quests: 'QUESTS', phone: 'PHONE', skills: 'SKILLS', stats: 'STATS', map: 'MAP', controls: 'CONTROLS', system: 'SYSTEM' };
+export const TABS = ['inventory', 'quests', 'guide', 'phone', 'skills', 'stats', 'map', 'controls', 'system'];
+const TAB_LABEL = { inventory: 'INVENTORY', quests: 'QUESTS', guide: 'GUIDE', phone: 'PHONE', skills: 'SKILLS', stats: 'STATS', map: 'MAP', controls: 'CONTROLS', system: 'SYSTEM' };
 const C = { panel: 0x0b0d16, edge: 0xf2a6b8, dim: 0x5d6487, text: '#e8e8f0', sub: '#9aa3c7', hi: '#ffb347', ok: '#7fb069', bad: '#d65db1' };
 const F = (size = 8, color = C.text) => ({ fontFamily: 'monospace', fontSize: `${size}px`, color });
 // Shop row labels (any item kind). Equipment slots themselves come from items.js (SLOT_NAMES).
@@ -193,6 +195,53 @@ export class GameMenu {
 
   // Skill tree: three branches of four tiers meeting at a capstone. Hover for details, click to learn.
   // The phone: recent calls (from what has happened) and the texts that have arrived.
+  // Field guide, Terraria's bestiary: seen → name, picture and lore; 5 kills → stats; 15 → a tip.
+  // People are listed once you've talked to them. Locked entries stay as "???".
+  _guide(g) {
+    const s = this.scene, b = this.box, gd = s.save.world.guide ?? { e: {}, n: {} };
+    const kinds = Object.keys(ENEMIES), seen = kinds.filter((k) => gd.e?.[k]);
+    const people = Object.entries(gd.n ?? {});
+    this.guideSel ??= kinds[0];
+    const lx = b.x + 12, top = b.y + 28;
+    this._t(lx, top, `CODE ROT  ${seen.length}/${kinds.length}`, F(7, C.hi));
+    let y = top + 11;
+    for (const k of kinds) {
+      const e = gd.e?.[k], on = k === this.guideSel;
+      if (on) g.fillStyle(0x3a3150, 0.8).fillRect(lx - 3, y - 1, 112, 10);
+      this._t(lx, y, e ? `${ENEMIES[k].name}${e.kills ? `  ×${e.kills}` : ''}` : '???', F(7, e ? (on ? C.hi : C.text) : C.sub), e ? () => { this.guideSel = k; this.refresh(); } : null);
+      y += 10;
+    }
+    y += 6;
+    this._t(lx, y, `PEOPLE  ${people.length}`, F(7, C.hi)); y += 11;
+    for (const [id, p] of people.slice(0, 12)) {
+      const on = id === this.guideSel;
+      if (on) g.fillStyle(0x3a3150, 0.8).fillRect(lx - 3, y - 1, 112, 10);
+      this._t(lx, y, p.name, F(7, on ? C.hi : C.text), () => { this.guideSel = id; this.refresh(); }); y += 10;
+    }
+    // detail pane
+    const dx = b.x + 140, dw = b.w - 152;
+    g.lineStyle(1, C.dim, 0.5).lineBetween(dx - 8, top, dx - 8, b.y + b.h - 10);
+    const sel = this.guideSel, e = gd.e?.[sel], def = ENEMIES[sel], person = gd.n?.[sel];
+    if (def && e) {
+      const frame = `${sel}_0`, tex = s.textures.get('enemies');
+      if (tex?.has?.(frame)) this.root.add(s.add.image(dx + 16, top + 30, 'enemies', frame).setScale(2));
+      else g.fillStyle(def.color ?? 0xd65db1).fillCircle(dx + 16, top + 18, 10);
+      this._t(dx + 40, top + 2, def.name, F(10, C.hi));
+      this._t(dx + 40, top + 15, `seen · ${e.kills} defeated`, F(6, C.sub));
+      let yy = top + 42;
+      const lore = this._t(dx, yy, def.lore ?? '', { ...F(7, C.text), wordWrap: { width: dw } }); yy += lore.height + 8;
+      if (e.kills >= GUIDE_STATS_AT) {
+        const hp = Math.round(def.hp * PARTY_SCALE.hp), dmg = Math.round((def.damage ?? 0) * PARTY_SCALE.dmg);
+        this._t(dx, yy, `HP ${hp}   damage ${dmg}   speed ${def.speed}`, F(7, '#6fe3e8')); yy += 12;
+      } else { this._t(dx, yy, `Stats: defeat ${GUIDE_STATS_AT - e.kills} more`, F(6, C.sub)); yy += 10; }
+      if (e.kills >= GUIDE_TIP_AT && GUIDE_TIPS[sel]) { const tip = this._t(dx, yy, `Tip: ${GUIDE_TIPS[sel]}`, { ...F(7, C.ok), wordWrap: { width: dw } }); yy += tip.height + 4; }
+      else if (GUIDE_TIPS[sel]) this._t(dx, yy, `Tip: defeat ${Math.max(0, GUIDE_TIP_AT - e.kills)} more`, F(6, C.sub));
+    } else if (person) {
+      this._t(dx, top + 2, person.name, F(10, C.hi));
+      this._t(dx, top + 16, `Met: ${person.where}`, F(7, C.sub));
+    } else this._t(dx, top + 2, seen.length || people.length ? 'Pick an entry.' : 'Nothing yet. Things you see and people you talk to show up here.', { ...F(7, C.sub), wordWrap: { width: dw } });
+  }
+
   _phone(g) {
     const s = this.scene, b = this.box, f = s.save.flags;
     const px = b.x + 14, py = b.y + 28, pw = 150, ph = b.h - 40;

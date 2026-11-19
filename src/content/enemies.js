@@ -1,5 +1,16 @@
 // Enemy kinds (stable ids; referenced by maps and saves). Coderot villains are generated from
 // these bases plus seeded tables (src/content/rotVillains.js, later).
+// Field guide tips, revealed after enough kills (Terraria's bestiary model; GameMenu 'guide' tab).
+export const GUIDE_TIPS = {
+  'enemy.rotling': 'It flashes, then lunges in a straight line. Step aside, or hit it mid-lunge to parry it open.',
+  'enemy.spitter': 'Three-shot fan, led at where you are going. Swing through the shots to send them back.',
+  'enemy.moth': 'The hum puts you to sleep. Caffeine keeps you up; otherwise close fast or stay out of reach.',
+  'enemy.captcha': 'Armoured until it charges. Dodge the dash and it reels: double damage while it is dizzy.',
+  'enemy.autocomplete': 'It copies how you move. Change direction often and it guesses wrong.',
+  'enemy.rot_taken': 'Slow, in packs, and it infects. Knock them into walls and keep moving.',
+};
+export const GUIDE_STATS_AT = 5, GUIDE_TIP_AT = 15;
+
 export const ENEMIES = {
   'enemy.rotling': {
     name: 'Rotling', hp: 26, speed: 46, damage: 11, radius: 6, xp: 6,
