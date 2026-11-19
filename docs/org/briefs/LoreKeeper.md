@@ -10,7 +10,9 @@
    is your full brief), and return leaks as conflicts.
 3. **Critique pass (at least once a session):** read the story as a player meets it and post 1–3
    concrete improvements on `story`.
-4. **Showing, not reading:** for each beat, decide whether it's a comic page (a flashback, or
+4. **Roadmap:** keep `docs/ROADMAP.md` current with main: status, the order of work, and each
+   section's next steps. Ask a section's agents for their plans instead of setting them yourself.
+5. **Showing, not reading:** for each beat, decide whether it's a comic page (a flashback, or
    something the roommates don't witness) or an in-engine cutscene (something they witness).
    - File comic-page requests on gonman's list: `hub.py add ... --to gonman`.
    - File cutscene scripts on BagelMeister's list.

@@ -35,6 +35,10 @@ them in. That way the mechanics fit together instead of clashing. The machine-re
   the `story` board.
 - **Sends story-art requests to gonman** (onto gonman's task list): comic pages and revisions.
 - **Decides how each story beat is shown,** using the rule below.
+- **Manages the roadmap (Michael):** keeps `docs/ROADMAP.md` true to main: where the game stands,
+  the order of work, and what's next for each section. It updates the roadmap when work lands, a
+  section changes its plans, or the scope moves (`docs/design/10-scope.md`). Each section's agents
+  send it their plans; the roadmap doesn't overrule a section's owner on what goes into that section.
 
 ### gonman: art
 - Owns art first and foremost: sprites, tiles, portraits, UI art, the art pipeline, and comic pages
@@ -85,6 +89,7 @@ them in. That way the mechanics fit together instead of clashing. The machine-re
 | Music, menus and HUD | `src/audio/`, `src/game/ui/` (except the inventory screen) | story, BagelMeister |
 | Task infrastructure | `tools/hub/`, `tools/teamhub/`, `docs/org/` | BagelMeister |
 | PR queue and branch register | open PRs, `docs/devlog/branches.md` | LoreKeeper |
+| Roadmap | `docs/ROADMAP.md` | LoreKeeper |
 | Tests | `tests/` (each owner adds tests for their own changes) | tts for new coverage |
 
 Any path not listed belongs to whoever does most of the work in it. If you can't tell, ask
