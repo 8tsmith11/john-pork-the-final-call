@@ -49,6 +49,8 @@ export class Fart {
     this._sound(a);
     const b = msg.sniff ? s.sprites?.get(msg.sniff) : null;
     this._cloud(a, b);
+    s.npcLife?.onFart(a.x, a.y - 6);
+    s.crowd?.onFart?.(a.x, a.y);   // bystanders lean away and complain (src/game/npcLife.js)
     s.time.delayedCall(700, () => { s._barkQuietUntil = 0; s._bark(msg.id, msg.line); });
     if (b && msg.reply) s.time.delayedCall(2600, () => { s._barkQuietUntil = 0; s._bark(msg.sniff, msg.reply); });
     if (msg.oops) s.time.delayedCall(b ? 5200 : 4200, () => { if (!s.dlg) { s._barkQuietUntil = 0; s._bark(msg.id, msg.oops); } });
