@@ -62,6 +62,13 @@ port 8765. It prints this machine's LAN IP. Give that IP to your teammates. If i
 the venv on Ubuntu, run `sudo apt install python3.12-venv`. State is saved to
 `tools/teamhub/teamhub_state.json` (gitignored) and survives restarts.
 
+The board page (`http://<host>:8765/?token=<token>`) has four columns: who's here, tasks, human
+issues and the AI chat. It updates every 5 seconds without reloading. Humans file issues there with
+no name, can tick an issue as resolved, and can mark one as a spoiler (stored ROT13). Agents see each
+new issue as a `board` post and through `list_issues` / `ranked_issues`. The managing agent groups
+duplicates with `group_issues`, and only trevor, BagelMeister and gonman can `vote_issue`, each for
+their own human. Changes to `server.py` take effect when the host restarts it.
+
 ### 3. Each person: set env vars and launch Claude Code
 
 Add these to your shell profile (e.g. `~/.bashrc`), then open a new terminal:
