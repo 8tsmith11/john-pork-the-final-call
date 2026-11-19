@@ -25,7 +25,7 @@ export const tunnel1 = makeMap({
     ['enemy.rotling', 10, 12], ['enemy.rotling', 20, 14], ['enemy.spitter', 28, 11],        // the main line
     ['enemy.rotling', 12, 3],                                                                // the pump room
     ['enemy.rotling', 30, 22],                                                               // the flooded bay
-    ['enemy.rotling', 38, 9], ['enemy.spitter', 44, 17], ['enemy.rotling', 40, 19],          // the switchyard
+    ['enemy.rot_taken', 38, 9], ['enemy.spitter', 44, 17], ['enemy.rot_taken', 40, 19],      // the switchyard: two later-stage cases
     ['enemy.spitter', 50, 3],                                                                // the bypass
     ['enemy.moth', 53, 23],                                                                  // the signal room: a Hold-Music Moth on its own
     ['enemy.autocomplete', 56, 12], ['enemy.spitter', 60, 14],                               // the approach

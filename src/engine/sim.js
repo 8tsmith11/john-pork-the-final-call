@@ -14,6 +14,9 @@ export const BLINK = { dist: 112, cooldown: 1.1 };   // winged boots (D-014)
 // Michael's lullaby reaches 8 tiles; a Hold-Music Moth's hum reaches 4. Manuel is a baby: a lullaby
 // puts him out for 12 s instead of 8. Caffeine (wiredT) makes anyone immune.
 export const LULLABY = { range: 128, mothRange: 64, expose: 3, sleep: 8, babySleep: 12 };   // babySleep: Manuel with the smart pacifier in
+// Infection stops at a heavy debuff in this pass. Transformation needs a separate design review.
+export const ROT = { max: 100, poolRate: 4, growth: 0.08, puddlerHit: 6,
+  lightDecay: 0.1, quietTime: 5, charmRange: 64, charmDecay: 0.6, charmShield: 0.5, maxHallRate: 4 };
 // Combat feel (docs/research/combat.md): combo chain, deflects, perfect dodges, wall slams, hit-stop.
 export const FEEL = { comboWindow: 0.55, finisherDmg: 1.6, finisherKnock: 1.8, finisherArc: 1.25,
   deflectDmg: 1.5, parryStun: 1.0, parryStop: 0.08, perfectWindow: 0.15, focusTime: 1.5, focusDmg: 1.5, slamSpeed: 140, slamDmg: 8, slamStun: 0.6, hitStop: 0.05 };
@@ -84,7 +87,8 @@ export class Sim {
         this.events.push({ t: 'boss', name: w.name, epithet: w.epithet });
         continue;
       }
-      const base = ENEMIES[e.kind], v = rollVariant(this.seed, spawnKey, e.kind), tr = TRAITS[v.trait];
+      const base = ENEMIES[e.kind];
+      const v = base.ai === 'swarm' ? { name: base.name, trait: 'plain', tint: base.color } : rollVariant(this.seed, spawnKey, e.kind), tr = TRAITS[v.trait];
       // The party is always three (AI companions fill empty seats), so regular enemies are tuned for three.
       const def = { ...base, hp: Math.round(base.hp * tr.hp * PARTY_SCALE.hp), damage: Math.round((base.damage ?? 0) * PARTY_SCALE.dmg), speed: base.speed * tr.speed, armor: tr.armor ?? 0, color: v.tint, vname: v.name, trait: v.trait };
       this.enemies.set(id, { id, spawnKey, kind: e.kind, def, x: e.x, y: e.y, hp: def.hp, cd: Math.random(), hurtT: 0, kx: 0, ky: 0 });
@@ -101,7 +105,7 @@ export class Sim {
       id, character, x: spawn.x, y: spawn.y, vx: 0, vy: 0,
       facing: 'down', aim: 0, moving: false,
       dodgeT: 0, dodgeCd: 0, dodgeDx: 0, dodgeDy: 0, iframes: 0,
-      hp: COMBAT.maxHp, downed: false, reviveT: 0, meleeCd: 0, shotCd: 0, swingT: 0, sta: MOVE.stamina, staT: 0,
+      hp: COMBAT.maxHp, rot: 0, rotQuiet: 0, downed: false, reviveT: 0, meleeCd: 0, shotCd: 0, swingT: 0, sta: MOVE.stamina, staT: 0,
       mods: { melee: 0, shot: 0, shotCd: 0, armor: 0, maxHp: 0, iframes: 0, dodgeCd: 0, revive: 0, gun: 0 },
     });
   }
@@ -109,6 +113,46 @@ export class Sim {
   /** Gear/skill modifiers from the save (src/content/items.js playerMods). */
   setMods(id, mods) { const p = this.players.get(id); if (p) { const full = p.hp >= this.maxHp(p); p.mods = mods; if (full) p.hp = this.maxHp(p); } }
   maxHp(p) { return COMBAT.maxHp + (p.mods?.maxHp ?? 0); }
+  setRot(id, value) {
+    const p = this.players.get(id);
+    if (p) p.rot = Math.max(0, Math.min(ROT.max, Number.isFinite(value) ? value : 0));
+  }
+  _rotWard(p) {
+    return [...this.players.values()].some((q) => !q.downed && q.analogCharm
+      && Math.hypot(q.x - p.x, q.y - p.y) <= ROT.charmRange);
+  }
+  infect(p, amount) {
+    if (!this.players.has(p.id) || p.downed || !(amount > 0) || !Number.isFinite(amount)) return;
+    p.rotQuiet = 0;
+    this.setRot(p.id, (p.rot ?? 0) + amount * (this._rotWard(p) ? ROT.charmShield : 1));
+  }
+  _stepRot(dt) {
+    for (const p of this.players.values()) {
+      if (p.downed) continue;
+      p.rotQuiet = (p.rotQuiet ?? 0) + dt;
+      // Authored sealed halls may set rotExposure in points/second; ordinary halls stay safe.
+      const hall = Number.isFinite(this.map.rotExposure) ? Math.max(0, Math.min(ROT.maxHallRate, this.map.rotExposure)) : 0;
+      this.infect(p, hall * dt);
+      if (!(p.rot > 0)) continue;
+      const lightTime = Math.min(dt, Math.max(0, p.rotQuiet - ROT.quietTime));
+      const change = this._rotWard(p) ? -ROT.charmDecay * dt : p.rot >= 60 ? ROT.growth * dt
+        : p.rot < 25 ? -ROT.lightDecay * lightTime : 0;
+      this.setRot(p.id, p.rot + change);
+    }
+  }
+  /** An actual rest at the apartment save point; ordinary autosaves do not treat disease.
+   * Nearby companions and roommates rest together. Validate the actor on the host, too.
+   */
+  restAtSave(id, objectId) {
+    const p = this.players.get(id), bed = this.map.objects.find((o) => o.id === objectId && o.action === 'save');
+    if (this.map.id !== 'room631' || !p || p.downed || !bed) return false;
+    const x = bed.x * TILE + 8, y = bed.y * TILE + 8;
+    if (Math.hypot(p.x - x, p.y - y) > 24) return false;
+    for (const q of this.players.values()) if (Math.hypot(q.x - x, q.y - y) <= 64) {
+      this.setRot(q.id, (q.rot ?? 0) / 2); q.rotQuiet = 0;
+    }
+    return true;
+  }
   /** Electric scooter: fast travel outdoors. Can't fight or dash while riding; a hit knocks you off. */
   toggleScooter(id, allowed) {
     const p = this.players.get(id); if (!p || p.downed) return false;
@@ -230,7 +274,7 @@ export class Sim {
       p.staT = Math.max(0, (p.staT ?? 0) - dt);
       p.pillT = Math.max(0, (p.pillT ?? 0) - dt);   // blue pill: dodges are free while this runs
       const staMax = MOVE.stamina + (p.mods?.sta ?? 0);
-      if (p.staT <= 0) p.sta = Math.min(staMax, (p.sta ?? staMax) + MOVE.staminaRegen * (1 + (p.mods?.staRegen ?? 0)) * dt);
+      if (p.staT <= 0) p.sta = Math.min(staMax, (p.sta ?? staMax) + MOVE.staminaRegen * (1 + (p.mods?.staRegen ?? 0)) * (p.rot >= 100 ? 0.5 : 1) * dt);
       if (inp.dodge && !p.riding && p.dodgeT <= 0 && p.dodgeCd <= 0 && p.sta >= MOVE.dashCost) {
         if (!(p.pillT > 0)) { p.sta -= MOVE.dashCost; p.staT = MOVE.regenDelay; }
         // Dodge toward movement, or toward the aim if standing still.
@@ -259,7 +303,8 @@ export class Sim {
           p.vx += (mx * top - p.vx) * Math.min(1, acc * dt); p.vy += (my * top - p.vy) * Math.min(1, acc * dt);
           if (Math.hypot(p.vx, p.vy) > 2) { p.battery = Math.max(0, (p.battery ?? 100) - (p.hicap ? 1.1 : 2.2) * dt); if (p.battery <= 0) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, dead: true }); } }
         } else {
-          const spd = MOVE.speed * (p.morphed ? 1.15 : 1) * (1 + (p.mods?.speed ?? 0)) * (p.playing ? 0.5 : 1) * (p.wiredT > 0 ? 1.15 : 1);
+          const rotSpeed = p.rot >= 100 ? 0.65 : p.rot >= 60 ? 0.8 : p.rot >= 25 ? 0.9 : 1;
+          const spd = MOVE.speed * (p.morphed ? 1.15 : 1) * (1 + (p.mods?.speed ?? 0)) * (p.playing ? 0.5 : 1) * (p.wiredT > 0 ? 1.15 : 1) * rotSpeed;
           p.vx = mx * spd; p.vy = my * spd;
         }
       }
@@ -339,6 +384,7 @@ export class Sim {
     this._stepAllies(dt);
     this._stepDoors(dt);
     this._stepHazards(dt);
+    this._stepRot(dt);
     if (this.hitStop > 0) this.hitStop = Math.max(0, this.hitStop - dt);
     else { this._stepEnemies(dt); this._stepShots(dt); }
     this._stepRevives(dt);
@@ -366,6 +412,7 @@ export class Sim {
       h.ttl -= dt;
       for (const p of this.players.values()) {
         if (p.downed || Math.hypot(p.x - h.x, p.y - h.y) > h.r) continue;
+        this.infect(p, ROT.poolRate * dt);
         if ((p._hazT = (p._hazT ?? 0) - dt) <= 0) { p._hazT = 0.5; const keep = p.iframes; p.iframes = 0; this._hurtPlayer(p, Math.round(h.dps * 0.5)); if (keep > p.iframes) p.iframes = keep; }
       }
     }
@@ -481,7 +528,7 @@ export class Sim {
     }
   }
 
-  _hurtPlayer(p, dmg) {
+  _hurtPlayer(p, dmg, infection = 0) {
     if (p.ttl !== undefined && p.hp !== undefined && !p.id) { p.hp -= dmg; return; }   // a decoy bust soaking a hit
     if (p.downed) return;
     if (p.iframes > 0) {
@@ -494,6 +541,7 @@ export class Sim {
     }
     if (p.sleepT > 0 && p.mods?.sleepGuard) { this.events.push({ t: 'hit', x: p.x, y: p.y, dmg: 0, target: p.id }); return; }   // Manuel asleep on his pacifier: untouchable
     dmg = Math.max(1, Math.round(dmg * (1 - (p.mods?.armor ?? 0)) * (p.morphed ? 1.2 : 1)));
+    this.infect(p, infection);
     p.hp -= dmg; p.iframes = COMBAT.hurtIframes + (p.mods?.iframes ?? 0);
     if (p.riding) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, knocked: true }); }
     this.events.push({ t: 'hurt', id: p.id, x: p.x, y: p.y, dmg });
@@ -535,12 +583,27 @@ export class Sim {
       if (e.parried > 0) e.parried = Math.max(0, e.parried - dt);
       if (e.stunT > 0) { e.stunT = Math.max(0, e.stunT - dt); continue; }
       const [target, d] = this._nearestPlayer(e.x, e.y);
-      if (!target || d > 220) continue;
+      if (!target || d > (def.alertRange ?? 220)) continue;
       const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
+      if (def.ai === 'swarm') {
+        // Converge as a slow pack, with separation so bodies cannot stack into one instant hit.
+        let sx = 0, sy = 0;
+        for (const other of this.enemies.values()) {
+          if (other === e || this._def(other).ai !== 'swarm') continue;
+          const dx = e.x - other.x, dy = e.y - other.y, dd = Math.hypot(dx, dy);
+          if (dd > 0 && dd < def.radius * 2 + 2) { sx += dx / dd; sy += dy / dd; }
+        }
+        const dx = ux + sx * 0.65, dy = uy + sy * 0.65, length = Math.max(1, Math.hypot(dx, dy));
+        if (e.hurtT <= 0) this._moveBody(e, dx / length * def.speed * dt, dy / length * def.speed * dt, def.radius);
+        if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) {
+          this._hurtPlayer(target, def.damage, def.infection); e.cd = def.touchCooldown;
+        }
+        continue;
+      }
       if (def.ai === 'lullaby') {        // hover just out of reach, humming
         const [lo, hi] = def.keepAway ?? [44, 70], dir = d < lo ? -1 : d > hi ? 1 : 0;
         if (e.hurtT <= 0) this._moveBody(e, (ux * dir + uy * Math.sin(this.tick / 40) * 0.6) * def.speed * dt, (uy * dir - ux * Math.sin(this.tick / 40) * 0.6) * def.speed * dt, def.radius);
-        if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) { this._hurtPlayer(target, def.damage); e.cd = def.touchCooldown; }
+        if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd = def.touchCooldown; }
         continue;
       }
       if (def.ai === 'charge') {         // walk in, wind up, dash in a straight line, then reel
@@ -549,7 +612,7 @@ export class Sim {
         else if (e.st === 'windup') { if (e.stT <= 0) { e.st = 'dash'; e.stT = def.dashTime; e.hitOnce = false; } }
         else if (e.st === 'dash') {
           const blocked = this._moveBody(e, e.dx * def.dashSpeed * dt, e.dy * def.dashSpeed * dt, def.radius) === false;
-          if (!e.hitOnce && d < def.radius + 7) { this._hurtPlayer(target, def.damage); e.hitOnce = true; }
+          if (!e.hitOnce && d < def.radius + 7) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.hitOnce = true; }
           if (e.stT <= 0 || blocked) { e.st = 'dizzy'; e.stT = def.dizzy; }
         } else if (e.st === 'dizzy') { if (e.stT <= 0) e.st = 'walk'; }
         continue;
@@ -564,7 +627,7 @@ export class Sim {
         }
         if (e.dashT > 0) this._moveBody(e, e.dx * def.dashSpeed * dt, e.dy * def.dashSpeed * dt, def.radius);
         else if (e.hurtT <= 0) this._moveBody(e, ux * def.speed * dt, uy * def.speed * dt, def.radius);
-        if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) { this._hurtPlayer(target, def.damage); e.cd = def.touchCooldown; }
+        if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd = def.touchCooldown; }
         continue;
       }
       if (def.ai === 'lunge') {
@@ -586,7 +649,7 @@ export class Sim {
           if (e.stT <= 0) { e.st = 'lunge'; e.stT = def.lungeTime; e.hitOnce = false; }
         } else if (e.st === 'lunge') {
           this._moveBody(e, e.dx * def.lungeSpeed * dt, e.dy * def.lungeSpeed * dt, def.radius);
-          if (!e.hitOnce && d < def.radius + 7 - (target.mods?.small ?? 0)) { this._hurtPlayer(target, def.damage); e.hitOnce = true; }
+          if (!e.hitOnce && d < def.radius + 7 - (target.mods?.small ?? 0)) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.hitOnce = true; }
           if (e.stT <= 0) { e.st = 'recover'; e.stT = def.recover; e.cd = def.touchCooldown + Math.random() * 0.6; }
         } else if (e.st === 'recover') {
           if (e.stT <= 0) e.st = 'stalk';
@@ -595,7 +658,7 @@ export class Sim {
       }
       if (def.ai === 'chase') {
         if (e.hurtT <= 0) this._moveBody(e, ux * def.speed * dt, uy * def.speed * dt, def.radius);
-        if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) { this._hurtPlayer(target, def.damage); e.cd = def.touchCooldown; }
+        if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd = def.touchCooldown; }
       } else if (def.ai === 'kite') {
         // Keep the band: back off when you close in, close in when you're far, strafe sideways between.
         const dir = d < def.range * 0.6 ? -1 : d > def.range ? 1 : 0;
@@ -610,7 +673,7 @@ export class Sim {
           const base = Math.atan2(py - e.y, px - e.x), n = def.burst ?? 1;
           for (let i = 0; i < n; i++) {
             const a = base + (n > 1 ? (i - (n - 1) / 2) * (def.spread ?? 0.2) : 0);
-            this.shots.push({ x: e.x, y: e.y - 4, vx: Math.cos(a) * def.shotSpeed, vy: Math.sin(a) * def.shotSpeed, life: 2.2, dmg: def.damage, from: 'enemy' });
+            this.shots.push({ x: e.x, y: e.y - 4, vx: Math.cos(a) * def.shotSpeed, vy: Math.sin(a) * def.shotSpeed, life: 2.2, dmg: def.damage, rot: def.trait === 'puddler' ? ROT.puddlerHit : 0, from: 'enemy' });
           }
         }
       }
@@ -629,7 +692,7 @@ export class Sim {
     if (!target) return;
     const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
     const rage = e.phase === 3 ? 1.5 : e.phase === 2 ? 1.2 : 1;
-    if (d < def.radius + 7 && e.cd2 <= 0 && e.state !== 'vulnerable') { this._hurtPlayer(target, def.damage); e.cd2 = def.touchCooldown; }
+    if (d < def.radius + 7 && e.cd2 <= 0 && e.state !== 'vulnerable') { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd2 = def.touchCooldown; }
 
     // Phase-wide arena effects
     if (e.phase >= 2 && (e.poolT = (e.poolT ?? 0) - dt) <= 0) {
@@ -698,9 +761,10 @@ export class Sim {
     const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
     if (e.dash > 0) { e.dash -= dt; this._moveBody(e, e.dx * 190 * dt, e.dy * 190 * dt, def.radius); }
     else if (e.root <= 0) this._moveBody(e, ux * def.speed * dt, uy * def.speed * dt, def.radius);
-    if (d < def.radius + 7 && e.cd2 <= 0) { this._hurtPlayer(target, def.damage); e.cd2 = def.touchCooldown; }
+    if (d < def.radius + 7 && e.cd2 <= 0) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd2 = def.touchCooldown; }
     if (e.cd > 0) return;
     e.cd = 0.75; e.beat++;
+    for (const p of this.players.values()) this.setRot(p.id, 0);
     this.events.push({ t: 'drum', beat: e.beat });
     if (e.root > 0) { e.root--; if (e.root === 0) { e.dash = 0.35; e.dx = ux; e.dy = uy; this.events.push({ t: 'tell', x: e.x, y: e.y }); } return; }
     if (e.beat % 4 === 0) {
@@ -732,7 +796,7 @@ export class Sim {
         }
       } else {
         for (const p of this.players.values()) {
-          if (!p.downed && Math.hypot(p.x - s.x, p.y - 6 - s.y) < 7 - (p.mods?.small ?? 0)) { this._hurtPlayer(p, s.dmg); hit = true; break; }
+          if (!p.downed && Math.hypot(p.x - s.x, p.y - 6 - s.y) < 7 - (p.mods?.small ?? 0)) { this._hurtPlayer(p, s.dmg, s.rot ?? 0); hit = true; break; }
         }
       }
       if (!hit) keep.push(s);
@@ -808,7 +872,7 @@ export class Sim {
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
-        hp: Math.round(p.hp), mhp: this.maxHp(p), st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0,
+        hp: Math.round(p.hp), mhp: this.maxHp(p), rot: Math.round((p.rot ?? 0) * 10) / 10, st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0,
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,

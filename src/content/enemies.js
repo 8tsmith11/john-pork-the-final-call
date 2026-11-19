@@ -12,6 +12,11 @@ export const GUIDE_TIPS = {
 export const GUIDE_STATS_AT = 5, GUIDE_TIP_AT = 15;
 
 export const ENEMIES = {
+  'enemy.rot_taken': {
+    name: 'Code-rot-taken', hp: 42, speed: 26, damage: 8, radius: 6, xp: 10,
+    ai: 'swarm', alertRange: 280, touchCooldown: 1.3, infection: 8, color: 0xd417c8,
+    lore: 'A person whose degraded lace now drives the body.',
+  },
   'enemy.rotling': {
     name: 'Rotling', hp: 26, speed: 46, damage: 11, radius: 6, xp: 6,
     // Circles you with the pack, flashes, then lunges in a straight line (dodge it), then stands open.

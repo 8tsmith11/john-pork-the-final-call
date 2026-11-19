@@ -97,7 +97,12 @@ export class WorldScene extends Phaser.Scene {
     this.shared = new SharedEvents(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this);
     this._pageIdx = {};
     this.vignette = this._makeVignette();
-    if (this.mode !== 'client') for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
+    if (this.mode !== 'client') for (const p of this.sim.players.values()) {
+      const c = this.save.party[p.character];
+      this.sim.setMods(p.id, playerMods(c, p.character));
+      this.sim.setRot(p.id, c.rot ?? 0);
+      p.analogCharm = !!ITEMS[c.equipped?.charm]?.analog;
+    }
     // No default punch (Trevor). Nobody starts armed: weapons are found, bought, printed, or taken
     // off the 631 toolwall (obj.toolwall). How the first one is earned is still being discussed (#hub).
     for (const c of Object.values(this.save.party)) c.hotSel ??= 0;
@@ -503,6 +508,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'equip') this._equip(this._charOf(peer), msg.id);
         if (msg.t === 'mate') this._mateBreak();
         if (msg.t === 'hotSel') this._setHot(this._charOf(peer), msg.i);
+        if (msg.t === 'rest') this._restAtSave(peer, msg.obj);
         if (msg.t === 'use') { this._useWhat = msg.id ?? null; this._use(this._charOf(peer), peer); }
         if (msg.t === 'morph') this._morph(peer);
         if (msg.t === 'search') { const o = this.map.objects.find((x) => x.id === msg.id && x.loot); if (o) this._search(o, this._charOf(peer)); }
@@ -516,7 +522,7 @@ export class WorldScene extends Phaser.Scene {
       this.net.on('leave', (peer) => {
         // A roommate who drops out keeps walking with the party as a companion.
         const p = this.sim.players.get(peer); this.sim.removePlayer(peer);
-        if (p) { this.sim.addPlayer(`ai:${p.character}`, p.character); const a = this.sim.players.get(`ai:${p.character}`); Object.assign(a, { x: p.x, y: p.y, hp: p.hp }); this.sim.setMods(a.id, playerMods(this.save.party[p.character], p.character)); }
+        if (p) { this.sim.addPlayer(`ai:${p.character}`, p.character); const a = this.sim.players.get(`ai:${p.character}`); Object.assign(a, { x: p.x, y: p.y, hp: p.hp, rot: p.rot ?? 0, rotQuiet: p.rotQuiet ?? 0, analogCharm: p.analogCharm }); this.sim.setMods(a.id, playerMods(this.save.party[p.character], p.character)); }
       });
       this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
       this.time.addEvent({ delay: 500, loop: true, callback: () => this._broadcastWorld() });
@@ -740,7 +746,11 @@ export class WorldScene extends Phaser.Scene {
 
   _syncParty() {
     this._syncHeld();
-    for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
+    for (const p of this.sim.players.values()) {
+      const c = this.save.party[p.character];
+      this.sim.setMods(p.id, playerMods(c, p.character));
+      p.analogCharm = !!ITEMS[c.equipped?.charm]?.analog;
+    }
     if (this.mode === 'host') this.net.broadcast({ t: 'party', party: this.save.party, money: this.save.world.money });
     this._refreshMenu();
   }
@@ -1493,10 +1503,21 @@ export class WorldScene extends Phaser.Scene {
     this.tweens.add({ targets: this.toastText, alpha: 0, delay: 1400, duration: 500 });
   }
 
-  _save() {
+  _save(message = '✓ saved') {
     if (this.mode === 'client') return;
     this._toast('saving…');
-    autosave(this.save).then(() => this._toast('✓ saved'));
+    autosave(this.save).then(() => this._toast(message));
+  }
+
+  _restAtSave(peer, objectId) {
+    if (this.mode === 'client') return;
+    const actor = this.sim.players.get(peer), bed = this.sim.map.objects.find((o) => o.id === objectId && o.action === 'save');
+    if (!actor || !bed || this.sim.map.id !== 'room631'
+      || Math.hypot(actor.x - (bed.x * TILE + 8), actor.y - (bed.y * TILE + 8)) > 34) return;
+    const rested = this.sim.restAtSave(peer, objectId);
+    for (const p of this.sim.players.values()) this.save.party[p.character].rot = p.rot ?? 0;
+    this._save(rested ? '✓ saved · rest eased the code rot' : '✓ saved');
+    if (peer !== this.localId) this.net?.send(peer, { t: 'say', text: rested ? 'Rested. Code rot exposure halved.' : '✓ saved' });
   }
 
   // Descriptions stay up until E or a click outside the box.
@@ -1599,6 +1620,7 @@ export class WorldScene extends Phaser.Scene {
         this.acc -= STEP; first = false;
       }
       this._handleInteract(me);
+      for (const p of this.sim.players.values()) this.save.party[p.character].rot = p.rot ?? 0;
       this._hostEvents(events);
       snap = this._lastSnap = { ...this.sim.snapshot(), events, doors: [...this.map.doors.values()].filter((d) => d.open).map((d) => d.id) };
     }
@@ -1814,7 +1836,10 @@ export class WorldScene extends Phaser.Scene {
       if (this.mode === 'client') this.net.send({ t: 'flag', key: near.flag });
       else this.save.flags[near.flag] = true;
     }
-    if (near.action === 'save') this._save();
+    if (near.action === 'save') {
+      if (this.mode === 'client') this.net.send({ t: 'rest', obj: near.id });
+      else this._restAtSave(this.localId, near.id);
+    }
   }
 
   // Hidden: see the sealed docs.
@@ -1988,6 +2013,7 @@ export class WorldScene extends Phaser.Scene {
 
     for (const ev of snap.events || []) this._fx(ev, snap);
     this._barkTick(snap);
+    this._tickRotBarks(snap);
     this._drawLighting(snap);
     this._tickAmbient(this.game.loop.delta / 1000);
     this.neon?.update(this.game.loop.delta / 1000, this.cameras.main);
@@ -2183,6 +2209,20 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
+  _tickRotBarks(snap) {
+    if (this.dlg || this.menu || this.time.now < (this._barkQuietUntil ?? 0)) return;
+    this._rotBarks ??= new Map();
+    for (const p of snap.players) {
+      const stage = p.rot >= 60 ? 2 : p.rot >= 25 ? 1 : 0;
+      if (!stage || p.dn) { this._rotBarks.delete(p.id); continue; }
+      const old = this._rotBarks.get(p.id);
+      if (old?.stage === stage && this.time.now < old.next) continue;
+      this._bark(p.id, stage === 2 ? 'code rot. code rot.' : 'Left. Left.');
+      this._rotBarks.set(p.id, { stage, next: this.time.now + 30000 });
+      break;
+    }
+  }
+
   _fx(ev, snap) {
     this.romance?.onEvent(ev, snap); this.gear?.onEvent(ev); this.eggs?.onEvent(ev); this.perf?.onEvent(ev);
     if (['hit', 'kill', 'shot', 'swing'].includes(ev.t) && (ev.by === this.localId || ev.id === this.localId)) sfx(ev.t);
@@ -2292,6 +2332,15 @@ export class WorldScene extends Phaser.Scene {
       if (p.dn) g.fillStyle(0xffb347).fillRect(18, y + 4, (p.rv / 4) * 54, 1);
       g.fillStyle({ michael: 0xc8605a, trevor: 0x3f6fb5, manuel: 0x5f8f3a }[p.c] ?? 0x888888).fillRect(7, y, 8, 4);
     });
+    // Exposure is only shown while present, below the teammate cards.
+    this.hudRot ??= this.add.text(7, 0, '', { ...FONT, fontSize: '6px', color: '#e8e2d0' }).setScrollFactor(0).setDepth(9002);
+    const rot = me?.rot ?? 0, ry = 44 + (snap.players.length - 1) * 7;
+    this.hudRot.setPosition(7, ry).setText(`CODE ROT ${Math.ceil(rot)}%`).setVisible(rot > 0);
+    if (rot > 0) {
+      g.fillStyle(0x0d0b1a, 0.9).fillRect(4, ry - 1, 112, 8);
+      g.fillStyle(0x332e57).fillRect(76, ry + 1, 34, 4);
+      g.fillStyle(rot >= 60 ? 0xd417c8 : 0xc8e619).fillRect(76, ry + 1, 34 * Math.min(1, rot / 100), 4);
+    }
     // Top-right: XP and money, compact.
     const lines = [`xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `   ◆ ${c.skillPoints} skill pt [K]` : ''}`, `$${this.save.world.money ?? 0}${snap.enemies?.length ? `   coderot ${snap.enemies.length}` : ''}`];
     this.hudText.setText(lines.join('\n'));
