@@ -13,11 +13,15 @@ export const BOSS_PATTERNS = {
   puddle: { name: 'Ground Pools', wind: [0.8, 0.65, 0.5],  recover: 0.8, red: true,  line: 'mind the gap. mind the gap.', es: 'cuidado con el hueco. cuidado con el hueco.' },
   summon: { name: 'Fork',         wind: [0.9, 0.75, 0.6],  recover: 1.0, red: false, line: 'transferring you to another agent.', es: 'transfiriéndote a otro agente.' },
   blink:  { name: 'Reroute',      wind: [0.6, 0.5, 0.4],   recover: 0.4, red: false, line: 'service is being rerouted.', es: 'el servicio está siendo desviado.' },
+  lane:   { name: 'Points Thrown', wind: [1.1, 0.95, 0.8], recover: 0, red: true, line: 'POINTS SET. CLEAR THE LINE.', es: 'AGUJAS LISTAS. DESPEJEN LA VÍA.' },   // ends open (LANE.open)
   laser:  { name: 'Carrier',      wind: [1.2, 1.0, 0.9],   recover: 0,   red: true,  line: 'carrier detected. do not hang up.', es: 'portadora detectada. no cuelgue.' },   // ends overheated
   shock:  { name: 'Ripple',       wind: [0.8, 0.7, 0.6],   recover: 0.5, red: true,  line: 'signal strength: all bars.', es: 'intensidad de señal: todas las barras.' },
   rain:   { name: 'Packet Rain',  wind: [0.8, 0.7, 0.6],   recover: 0.6, red: true,  line: 'your call is important to us.', es: 'su llamada es importante para nosotros.' },
 };
 // Tuning for the bigger patterns (sim.js reads these).
+// The Switchman's yard attack (Trevor via John Pork #584): a rail lane lights up across the yard, a rush
+// sweeps down it end to end, and the Switchman is left open afterwards. Red: dodge out of the lane.
+export const LANE = { half: 12, time: [0.7, 0.6, 0.5], dmg: 16, open: 1.6 };
 export const LASER = { len: 300, half: 7, turn: [0.7, 0.7, 0.9], time: [4.5, 4.5, 6], dmg: 12, tick: 0.35 };
 export const SHOCK = { speed: 110, max: 220, band: 6, dmg: 12 };
 export const RAIN = { count: [6, 6, 9], fall: 1.0, r: 14, dmg: 14 };

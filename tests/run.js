@@ -1367,6 +1367,22 @@ test('burst damage cannot skip a gated boss phase or its first tell', () => {
   assert.equal(sim.enemies.has(boss.id), false, 'the boss can be killed after the final tell');
 });
 
+test('the Switchman\'s lane sweep: a player in the lane is hit once, one outside is not, and he is open afterwards', () => {
+  const sim = new Sim(MAPS_FOR_TEST.tunnel_1, { seed: 'lane', deferSpawn: true });
+  sim.addPlayer('in', 'trevor'); sim.addPlayer('out', 'manuel'); sim.spawnEnemies();
+  for (const [id, e] of [...sim.enemies]) if (e.kind !== 'boss.switchman') sim.enemies.delete(id);
+  const sw = [...sim.enemies.values()][0], a = sim.players.get('in'), b2 = sim.players.get('out');
+  sw.awake = true; sw.laneY = a.y; sw.next = 'lane'; sw.cd = 99;
+  b2.y = a.y + 60;
+  const hpA = a.hp, hpB = b2.hp;
+  sim._bossAttack(sw, sw.def, a, 1, 0, 1);
+  assert.equal(sw.state, 'lane');
+  for (let t = 0; t < 60 && sw.state === 'lane'; t++) { a.iframes = 0; sim._stepBoss(sw, sw.def, 1 / 60); }
+  assert.ok(a.hp < hpA, 'the player in the lane should be hit');
+  assert.equal(b2.hp, hpB, 'the player outside the lane should not be hit');
+  assert.ok(sw.openT > 0, 'he is open after the sweep');
+});
+
 test('the Switchman (Act 1 mid boss): sleeps until you come close, starter gear beats it, and its death is not the act boss', () => {
   const random = Math.random, rng = new Rng('switchman'); Math.random = () => rng.next();
   try {

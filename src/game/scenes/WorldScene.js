@@ -2621,6 +2621,12 @@ export class WorldScene extends Phaser.Scene {
     const g = (this.bossFx ??= this.add.graphics().setDepth(5400));
     g.clear();
     const b = e.boss, t = this.time.now;
+    if (b.ln) {   // the rush in the lane: a bright block running east with a trail
+      const [ly, fx] = b.ln;
+      g.fillStyle(0xff4d4d, 0.12).fillRect(0, ly - 12, fx, 24);
+      g.fillStyle(0xffe6ee, 0.95).fillRect(fx - 20, ly - 10, 20, 20);
+      g.fillStyle(0xd8b060, 1).fillRect(fx - 24, ly - 10, 4, 20);
+    }
     if (b.la != null) {
       const cx = e.x, cy = e.y - 8, L = 300, ux = Math.cos(b.la), uy = Math.sin(b.la), ex = cx + ux * L, ey = cy + uy * L;
       const flick = 0.85 + 0.15 * Math.sin(t / 25);
@@ -2870,6 +2876,11 @@ export class WorldScene extends Phaser.Scene {
         for (let i = 0; i < 3; i++) g.beginPath().arc(ev.x, ev.y - 8, 12 + i * 6, ev.a + i * 2.1, ev.a + i * 2.1 + 1.6).strokePath();
       } else if (ev.kind === 'puddle') {
         for (const p of snap.players) g.lineStyle(1, col, 0.8).strokeCircle(p.x, p.y, 16);
+      } else if (ev.kind === 'lane' && ev.ly != null) {   // the rail lane lights up across the whole map
+        const W = this.map.w * TILE;
+        g.fillStyle(col, 0.18).fillRect(0, ev.ly - 12, W, 24);
+        g.lineStyle(1, col, 0.9).lineBetween(0, ev.ly - 12, W, ev.ly - 12).lineBetween(0, ev.ly + 12, W, ev.ly + 12);
+        for (let x = 0; x < W; x += 24) g.fillStyle(col, 0.5).fillTriangle(x, ev.ly - 4, x, ev.ly + 4, x + 8, ev.ly);   // arrows: it comes from the west
       } else if (ev.kind === 'laser') {
         g.lineStyle(2, col, 0.7).lineBetween(ev.x, ev.y - 8, ev.x + Math.cos(ev.a) * 140, ev.y - 8 + Math.sin(ev.a) * 140);
         g.lineStyle(1, col, 0.6).strokeCircle(ev.x, ev.y - 8, 10).strokeCircle(ev.x, ev.y - 8, 16);

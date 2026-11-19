@@ -2,7 +2,7 @@
 // The host steps the Sim with every player's latest input; clients render snapshots.
 
 export const TILE = 16;
-import { BOSS_PATTERNS, bossPool, pickPattern, windFor, LASER, SHOCK, RAIN } from './bossPatterns.js';
+import { BOSS_PATTERNS, bossPool, pickPattern, windFor, LASER, SHOCK, RAIN, LANE } from './bossPatterns.js';
 import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 
@@ -832,6 +832,16 @@ export class Sim {
     this._stepBossArena(e, dt, def.dmgMul ?? 1);
     this._stepBossAdds(e, def, dt);
     if (e.state === 'vulnerable') { if (e.vulnT <= 0) e.state = 'move'; return; }       // reeling: stands still
+    if (e.state === 'lane') {   // the rush sweeps the lane west to east; anyone in it is hit once
+      e.laneT += dt;
+      const W = this.map.w * TILE, front = (e.laneT / e.laneDur) * W;
+      for (const p of this.players.values()) {
+        if (p.downed || e.laneHit.has(p.id)) continue;
+        if (Math.abs(p.y - e.laneY) < LANE.half + 4 && p.x < front && p.x > front - 64) { e.laneHit.add(p.id); this._hurtPlayer(p, LANE.dmg); }
+      }
+      if (e.laneT >= e.laneDur) { e.state = 'move'; e.openT = LANE.open; this.events.push({ t: 'vuln', x: e.x, y: e.y }); }   // open: takes extra damage (openDmg) while he resets the points
+      return;
+    }
     if (e.state === 'laser') {   // rooted; a thick beam turns around it
       e.laserT -= dt; e.laserA += e.laserDir * LASER.turn[e.phase - 1] * dt;
       const cx = e.x, cy = e.y - 8, ux = Math.cos(e.laserA), uy = Math.sin(e.laserA);
@@ -876,8 +886,9 @@ export class Sim {
     e.state = 'windup'; e.windT = windFor(e.next, e.phase);
     e.aimA = Math.atan2(uy, ux);
     const pat = BOSS_PATTERNS[e.next];
+    if (e.next === 'lane') e.laneY = Math.round(target.y);   // the lane runs through where the target stands
     e.phaseTells = (e.phaseTells ?? 0) + 1;
-    this.events.push({ t: 'tell', x: e.x, y: e.y, kind: e.next, a: e.aimA, dur: e.windT, red: pat.red, name: pat.name, line: pat.line, es: pat.es });
+    this.events.push({ t: 'tell', x: e.x, y: e.y, kind: e.next, a: e.aimA, dur: e.windT, ly: e.laneY, red: pat.red, name: pat.name, line: pat.line, es: pat.es });
   }
 
   // The Warden keeps pulling code rot zombies out of the tunnel mouths during the fight (def.adds):
@@ -927,6 +938,7 @@ export class Sim {
     if (mod === 'ring') { const n = e.phase === 3 ? 18 : 12; for (let i = 0; i < n; i++) shoot((i / n) * Math.PI * 2 + this.tick * 0.01); }
     if (mod === 'spray') { for (let i = -2; i <= 2; i++) shoot(e.aimA + i * 0.18, 110); }
     if (mod === 'charge') { e.state = 'dash'; e.dash = 0.5; e.dx = Math.cos(e.aimA); e.dy = Math.sin(e.aimA); }
+    if (mod === 'lane') { e.state = 'lane'; e.laneT = 0; e.laneDur = LANE.time[e.phase - 1]; e.laneHit = new Set(); e.openT = 0; }
     if (mod === 'laser') { e.state = 'laser'; e.laserT = LASER.time[e.phase - 1]; e.laserDir = Math.random() < 0.5 ? 1 : -1; e.laserA = e.aimA - e.laserDir * 0.6; e.openT = 0; }
     if (mod === 'shock') (e.waves ??= []).push({ r: 4, hit: new Set() });
     if (mod === 'rain') {
@@ -1110,7 +1122,7 @@ export class Sim {
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
         mk: e.marked > 0, zz: e.sleepT > 0, ...(e.slowT > 0 ? { sl: 1 } : {}), sg: !!this._def(e).lullaby && !(e.sleepT > 0), st: e.st ?? null,
         ...(e.def && !e.boss ? { vn: e.def.vname, tr: e.def.trait, c: e.def.color, mh: e.def.hp, r: e.def.radius } : {}),
-        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
+        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
       goo: this.goo.map((g) => ({ x: Math.round(g.x), y: Math.round(g.y), r: g.r, t: Math.round(g.ttl * 10) / 10 })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
       allies: (this.allies ?? []).map((a) => ({ x: Math.round(a.x), y: Math.round(a.y), hp: a.hp, mhp: a.maxHp, dn: a.down > 0, st: a.st })),
