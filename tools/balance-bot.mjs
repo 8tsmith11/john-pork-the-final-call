@@ -70,7 +70,7 @@ export class BalanceBot {
     }).filter((s) => s.t >= 0 && s.t <= 0.24 && s.t <= s.s.life && s.miss < 9 - (p.mods?.small ?? 0))
       .sort((a, b) => a.t - b.t)[0];
     if (threat) {
-      if (canSwing && threat.distance <= swing.range + 6 && p.meleeCd <= 0 && !(p.dodgeT > 0)) {
+      if (!threat.s.noDeflect && canSwing && threat.distance <= swing.range + 6 && p.meleeCd <= 0 && !(p.dodgeT > 0)) {
         inp.aim = Math.atan2(threat.dy, threat.dx); inp.attack = true; return inp;
       }
       if (threat.t <= 0.18 && this._roll(p, inp, -threat.s.vx, -threat.s.vy)) return inp;
