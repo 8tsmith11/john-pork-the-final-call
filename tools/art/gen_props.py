@@ -386,7 +386,13 @@ P("npc.409", person("concrete1", "concrete0", "skin2", "night2", lace="rot0", lo
 P("npc.seun", person("tub1", "tub0", "bone", "night1", lace="screen2", hunch=False))    # a care-worker shell in scrubs
 P("npc.dez", person("night3", "night2", "skin1", "warm0"))                              # the night courier, half asleep
 P("npc.pruitt", person("bone", "concrete3", "skin3", "warm1", hunch=False))             # the supervisor: white abatement coat
-P("npc.okafor", person("soft1", "soft0", "skin0", "bone"))                              # the grandmother
+def okafor():                                                                           # the grandmother: headwrap, shawl, cane
+    c = C().rect(5, 6, 6, 6, "skin0").rect(4, 3, 8, 4, "screen1").h_(4, 3, 8, "screen2").px(11, 5, "screen0")
+    c.pts("night0", (7, 9), (9, 9)).h_(7, 11, 2, "warm0")
+    c.rect(3, 12, 10, 4, "warm3").h_(3, 12, 10, "warm4").rect(4, 16, 8, 6, "warm1").v_(11, 13, 9, "warm0")
+    c.v_(13, 12, 11, "warm0").px(13, 11, "warm2").h_(5, 22, 2, "night1").h_(9, 22, 2, "night1")
+    return c.outline()
+P("npc.okafor", okafor())
 c = C().rect(4, 5, 8, 8, "bone").pts(None, (4, 5), (11, 5), (4, 12), (11, 12)).pts("night0", (8, 6), (8, 7), (8, 8), (9, 9))
 c.rect(12, 6, 4, 8, "bone").pts("night0", (13, 8), (14, 10)).rect(5, 7, 5, 4, "night1").pts("warm4", (6, 8), (8, 9))    # the face swung open on its hinge
 P("obj.clock_6f#open", c.outline())
@@ -762,6 +768,32 @@ def canopy(v):
     return c.outline()
 P("fg.canopy", canopy(0))
 P("fg.canopy#1", canopy(1))
+
+
+# NPC variety (Manuel: "more variability in looks"): the plaza regulars who used to borrow a rotter sprite.
+def mina():                     # busker: a wide-brimmed hat, a long coat, a little wooden instrument
+    c = C().rect(5, 6, 6, 6, "skin2").rect(3, 4, 10, 2, "night3").rect(5, 2, 6, 2, "night3").h_(5, 5, 6, "warm1")
+    c.pts("night0", (7, 9), (9, 9)).px(8, 11, "pork0")
+    c.rect(4, 12, 8, 10, "concrete1").v_(11, 12, 10, "concrete0").h_(4, 12, 8, "concrete2")
+    c.rect(2, 14, 5, 4, "warm2").h_(2, 14, 5, "warm3").v_(6, 13, 6, "warm0").px(4, 16, "night1")     # the instrument
+    c.h_(5, 22, 2, "night1").h_(9, 22, 2, "night1")
+    return c.outline()
+def ray():                      # the scooter mechanic: wide, grey overalls, a rag in the back pocket, a wrench
+    c = C().rect(4, 5, 8, 6, "skin1").h_(4, 5, 8, "night1").pts("night0", (6, 8), (9, 8)).h_(6, 10, 4, "warm0")
+    c.rect(2, 11, 12, 10, "concrete2").v_(13, 11, 10, "concrete1").rect(5, 11, 6, 3, "skin1").h_(5, 13, 6, "concrete2")
+    c.pts("concrete3", (4, 12), (11, 12)).rect(12, 16, 2, 3, "signal")                                   # straps, the rag
+    c.v_(1, 15, 6, "steel").px(1, 14, "steel").px(0, 14, "steel")                                        # the wrench
+    c.rect(3, 21, 4, 2, "night1").rect(9, 21, 4, 2, "night1")
+    return c.outline()
+def cal():                      # the campus candidate: a suit, a too-bright tie, a big smile, a clipboard
+    c = C().rect(5, 4, 6, 6, "skin3").rect(5, 3, 6, 2, "warm3").pts("night0", (7, 6), (9, 6)).h_(6, 8, 4, "bone")
+    c.rect(4, 10, 8, 10, "night3").v_(11, 10, 10, "night2").rect(7, 10, 2, 7, "bone").v_(8, 11, 5, "warm4")
+    c.rect(10, 13, 4, 5, "bone").h_(10, 13, 4, "steel").pts("night2", (11, 15), (12, 16))                 # the clipboard
+    c.rect(5, 20, 2, 2, "night1").rect(9, 20, 2, 2, "night1").h_(4, 22, 3, "night0").h_(9, 22, 3, "night0")
+    return c.outline()
+P("npc.mina", mina())
+P("npc.ray", ray())
+P("npc.cal", cal())
 
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)

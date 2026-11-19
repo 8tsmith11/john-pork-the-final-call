@@ -62,15 +62,16 @@ export const metroPlaza = makeMap({
     { x: 67, y: 9, w: 9, c: ['warm3', 'bone'] },     // the diner: warm, analog
     { x: 66, y: 18, w: 7, c: ['screen0', 'steel'] },  // Wick's pawn window and Delroy's
   ],
-  // Who's here, and why (see src/game/crowd.js).
+  // Who's here, and why (see src/game/crowd.js). Kept thin on purpose (Manuel: too many NPCs): a few
+  // people with a reason to be here read better than a busy plaza.
   crowd: [
-    { mode: 'wait', age: 'adult', at: [37, 10], n: 3, face: [38, 8] },                    // a queue at the closed metro gates
+    { mode: 'wait', age: 'adult', at: [37, 10], n: 2, face: [38, 8] },                    // a queue at the closed metro gates
     { mode: 'talk', age: 'adult', at: [33, 15] },                                        // two people talking by a pillar
     { mode: 'walk', age: 'adult', path: [[23, 12], [38, 18], [52, 12]], n: 2 },           // crossing the plaza
-    { mode: 'walk', age: 'adult', path: [[57, 4], [57, 28], [57, 46]], n: 2 },            // the west sidewalk of Route 1
-    { mode: 'walk', age: 'adult', path: [[65, 46], [65, 22], [65, 4]], n: 2 },            // and the east one
-    { mode: 'walk', age: 'adult', path: [[4, 30], [30, 30], [54, 30]], n: 2 },            // along the cross street
-    { mode: 'wait', age: 'adult', at: [70, 20], n: 2, face: [70, 19] },                   // waiting on Big Ray
+    { mode: 'walk', age: 'adult', path: [[57, 4], [57, 28], [57, 46]], n: 1 },            // the west sidewalk of Route 1
+    { mode: 'walk', age: 'adult', path: [[65, 46], [65, 22], [65, 4]], n: 1 },            // and the east one
+    { mode: 'walk', age: 'adult', path: [[4, 30], [30, 30], [54, 30]], n: 1 },            // along the cross street
+    { mode: 'wait', age: 'adult', at: [70, 20], n: 1, face: [70, 19] },                   // waiting on Big Ray
   ],
   layout: g.map((r) => r.join('')),
   spawns: [[10, 14], [11, 14], [9, 15]],
@@ -82,15 +83,13 @@ export const metroPlaza = makeMap({
     { id: 'obj.garden_bench', art: 'obj.bench', x: 8, y: 22, label: 'Bench', text: 'A brass plate: FOR THE NIGHT SHIFT. No name. Somebody polishes it.' },
     // The plaza
     { id: 'obj.station_entrance', art: 'obj.tunnel_on', x: 38, y: 8, label: 'Metro entrance', text: 'The gates are down for the night. The departure board behind them lists a train to a station that was never built.' },
-    { id: 'npc.mina', eggOk: true, later: [{ if: "act1.complete", text: "She is playing the one everybody asks for. She stops when she sees you listening. \"Don't tell anyone.\"" }], art: PERSON[0], x: 41, y: 10, label: 'Mina', npc: true, age: 'adult', text: '"I do requests. I don\'t do the one everybody asks for." She retunes something wooden that was not out of tune.' },
+    { id: 'npc.mina', eggOk: true, later: [{ if: "act1.complete", text: "She is playing the one everybody asks for. She stops when she sees you listening. \"Don't tell anyone.\"" }], x: 41, y: 10, label: 'Mina', npc: true, age: 'adult', text: '"I do requests. I don\'t do the one everybody asks for." She retunes something wooden that was not out of tune.' },
     { id: 'npc.rotter_1', eggNo: true, x: 30, y: 18, label: 'Code rotter', npc: true, age: 'adult', text: 'coderot. coderot. coderot.' },
     { id: 'npc.halvard', eggOk: true, x: 26, y: 26, label: 'Halvard', npc: true, age: 'adult', talk: 'lead_b_halvard', doneFlag: 'act1.halvard.sellerDescribed', doneText: 'The shutter comes up two inches. Halvard\'s eye, then the television behind him, then the shutter again.\n\n"You paid for one rumor. That was it."' },
     { id: 'obj.purple_sign', x: 40, y: 27, label: 'Purple Line sign', text: 'PURPLE LINE: OPENING SOON.' },
     { id: 'obj.plaza_clock', art: 'obj.clock_6f', x: 46, y: 9, label: 'Station clock', text: '19:01. Under it, somebody has taped a paper clock with the right time and a note: USE THIS ONE.' },
     { id: 'obj.van', x: 45, y: 20, label: 'Abatement van', text: 'White, unmarked except for a mast on the roof. The mast is turning. It is pointed at the ground.' },
     { id: 'npc.pruitt', eggOk: true, later: [{ if: "act1.cordon.passed", text: "Pruitt is counting coats against a clipboard. \"Tobin went for coffee an hour ago. There is no coffee for six blocks.\"" }, { if: "act1.complete", text: "\"We are standing down. I was told at five.\" Pruitt caps the pen. \"Nobody has told the van.\"" }], x: 46, y: 19, label: 'Supervisor Pruitt', npc: true, age: 'adult', talk: 'aster:pruitt_talk' },
-    { id: 'npc.addo', eggOk: true, art: PERSON[1], x: 47, y: 21, label: 'Addo', npc: true, age: 'adult', text: '"Mast\'s reading light. Something light. Lighter than it should be down there." He seems pleased that somebody asked.' },
-    { id: 'npc.del', eggOk: true, art: PERSON[0], x: 44, y: 21, label: 'Del', npc: true, age: 'adult', text: '"Fourteen hours. Fourteen. You know what the rate is after twelve? Same as before twelve."' },
     { id: 'npc.rotter_3', eggNo: true, x: 49, y: 26, label: 'Code rotter (looks at you differently)', npc: true, age: 'adult', text: 'coderot. coderot. ...I used to be someone\'s favorite person. coderot.' },
     { id: 'npc.abatement_tech', eggOk: true, art: 'npc.tobin', x: 52, y: 25, label: 'Tobin (abatement, nights)', npc: true, age: 'adult', talk: 'checkpoint', goneFlag: 'act1.cordon.passed' },
     // Hidden fast travel: a maintenance zipline from ASTER's forecourt to the Paint Branch trailhead.
@@ -114,14 +113,12 @@ export const metroPlaza = makeMap({
     { id: 'obj.station_light', art: 'obj.worklamp', x: 36, y: 8, label: 'Station light', light: 1.0, text: 'The entrance is lit all night. Nothing has come out of it since midnight.' },
     // Route 1. Not exits until the road maps exist (Trevor: no visible exit where you can't go; hub task).
     { id: 'obj.billboard', x: 65, y: 20, label: 'Billboard', text: 'A Slop Decades billboard, peeling: "AT THE END OF THE DAY, NO ONE CAN CODE FASTER THAN AI."' },
-    { id: 'npc.rotter_2', eggNo: true, x: 57, y: 8, label: 'Code rotter', npc: true, age: 'adult', text: 'coderot. no one can code faster than. coderot.' },
     { id: 'obj.route1_north', art: 'obj.board', x: 61, y: 1, label: 'Abatement cordon (north)', text: 'Abatement tape across both lanes, and a van with its lights off. North is closed tonight.' },
     { id: 'obj.route1_south', art: 'obj.board', x: 61, y: 50, label: 'Wall checkpoint (south)', text: 'South is the Beltway, and the wall. You don\'t have the papers. Nobody you know has the papers.' },
-    { id: 'npc.ines', eggOk: true, later: [{ if: "act1.beat.call", text: "\"Every map on the cart redrew itself for a minute. One name, where the legend goes.\" Ines turns a sheet face down. \"I can't sell these now. I might keep one.\"" }, { if: "act1.complete", text: "\"You look like you walked somewhere that isn't on any of mine.\" She unrolls a blank sheet and holds out a pencil. \"Show me where the ladder was.\"" }], art: PERSON[2], x: 65, y: 14, label: 'Ines', npc: true, age: 'adult', text: '"Lake\'s eleven minutes on foot. Campus is six. The Beltway is as far as you can get before somebody asks who you are."' },
     { id: 'obj.map_cart', art: 'obj.cart', x: 65, y: 15, label: 'Map cart', text: 'Paper maps, hand-corrected. A sign: IF YOU FIND AN ERROR I WILL PAY YOU FOR IT.' },
     { id: 'obj.diner_door', art: 'obj.door', x: 72, y: 8, label: 'The diner', text: 'Open. It is always open. Through the glass, a cook calls an order to an empty room and plates it.' },
     { id: 'obj.diner_menu', art: 'obj.board', x: 69, y: 8, label: 'Menu', text: 'Chalk. One item has been crossed out and rewritten so many times the board is worn pale there.' },
-    { id: 'npc.ray', eggOk: true, later: [{ if: "act1.cordon.passed", text: "\"White coats by the grate all night. One of them asked me what a scooter does.\" Big Ray wipes his hands. \"I said it goes.\"" }], art: PERSON[1], x: 70, y: 19, label: 'Big Ray', npc: true, age: 'adult', text: '"Scooter\'s fine. You\'re running rich. Sleep, eat something that was alive, come back."' },
+    { id: 'npc.ray', eggOk: true, later: [{ if: "act1.cordon.passed", text: "\"White coats by the grate all night. One of them asked me what a scooter does.\" Big Ray wipes his hands. \"I said it goes.\"" }], x: 70, y: 19, label: 'Big Ray', npc: true, age: 'adult', text: '"Scooter\'s fine. You\'re running rich. Sleep, eat something that was alive, come back."' },
     { id: 'obj.scooters', x: 74, y: 19, label: 'Scooter rack', text: 'Three used scooters, chained, each with a price tag written on tape. Delroy\'s kiosk takes cash.' },
     { id: 'obj.shop_scooters', art: 'obj.kiosk', x: 71, y: 18, label: 'Delroy\'s Wheels', action: 'shop', shop: 'scooters', light: 0.7 },
     { id: 'obj.shop_pawn', art: 'obj.kiosk', x: 68, y: 18, label: 'Pawn window (Wick)', action: 'shop', shop: 'pawn', light: 0.5 },
@@ -134,7 +131,7 @@ export const metroPlaza = makeMap({
     // The campus edge
     { id: 'obj.campus_gate', art: 'obj.purple_sign', x: 11, y: 36, label: 'Campus gate', text: 'UNIVERSITY OF MARYLAND, A CAMPUS OF THE CONTINUITY AUTHORITY. Compute apprentices: your hours have been adjusted.' },
     { id: 'obj.testudo', x: 13, y: 41, label: 'Testudo', flag: 'secrets.testudo.found', text: 'The bronze terrapin. Its nose is worn gold by a century of hands. You rub it.\n\nNothing happens. Then your lace reports full signal for one second, for the first time this year.' },
-    { id: 'npc.cal', eggOk: true, later: [{ if: "act1.beat.call", text: "\"That call polled very well with my base.\" Cal has not stopped smiling. \"I don't have a base yet. Sign here and I will.\"" }, { if: "act1.cordon.passed", text: "\"Abatement asked me to move the table. I moved it four inches.\" He squares the banner. \"That's civics.\"" }], art: PERSON[0], x: 16, y: 39, label: 'Cal Rourke', npc: true, age: 'adult', text: '"Engineering, right? All three of you. I never forget a major." He has a table, a banner, and a pen he would like you to hold.' },
+    { id: 'npc.cal', eggOk: true, later: [{ if: "act1.beat.call", text: "\"That call polled very well with my base.\" Cal has not stopped smiling. \"I don't have a base yet. Sign here and I will.\"" }, { if: "act1.cordon.passed", text: "\"Abatement asked me to move the table. I moved it four inches.\" He squares the banner. \"That's civics.\"" }], x: 16, y: 39, label: 'Cal Rourke', npc: true, age: 'adult', text: '"Engineering, right? All three of you. I never forget a major." He has a table, a banner, and a pen he would like you to hold.' },
     // Easter egg (docs/SECRETS.md): he sings a different country's anthem every time you talk to him. He has no name, on purpose.
     { id: 'npc.anthem', eggNo: true, x: 18, y: 42, label: 'Student at attention', npc: true, age: 'adult', action: 'pages', flag: 'secrets.anthem.found', pages: [
       'A big second-year in a compute hoodie stands at attention by the gate, bowl cut, glasses, one hand on his chest, a stuffed squirrel under the other arm. He is singing the anthem of Uruguay. He does all eleven verses.\n\n"Greatest nation on earth," he says after. He has never been.',

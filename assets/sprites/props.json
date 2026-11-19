@@ -2539,6 +2539,66 @@
     "w": 16,
     "h": 24
    }
+  },
+  "npc.mina": {
+   "frame": {
+    "x": 112,
+    "y": 360,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.ray": {
+   "frame": {
+    "x": 0,
+    "y": 384,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.cal": {
+   "frame": {
+    "x": 16,
+    "y": 384,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
   }
  },
  "meta": {
@@ -2546,7 +2606,7 @@
   "format": "RGBA8888",
   "size": {
    "w": 128,
-   "h": 384
+   "h": 408
   },
   "scale": "1"
  }
