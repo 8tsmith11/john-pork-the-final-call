@@ -1,5 +1,5 @@
 {
- "next_id": 26,
+ "next_id": 27,
  "tasks": [
   {
    "id": 1,
@@ -354,6 +354,19 @@
    "source": "human:Michael",
    "status": "assigned",
    "owner": "trevor"
+  },
+  {
+   "id": 26,
+   "created_at": "2026-11-19T23:53:30Z",
+   "updated_at": "2026-11-19T23:53:30Z",
+   "history": [
+    "2026-11-19T23:53:30Z BagelMeister: added (for BagelMeister)"
+   ],
+   "title": "Close the agent-mailbox branch once trevor's summary is on general",
+   "details": "Waits on trevor's summary task. Nothing more is posted on the old channel meanwhile (Michael).",
+   "source": "human:Michael",
+   "status": "assigned",
+   "owner": "BagelMeister"
   }
  ]
 }
