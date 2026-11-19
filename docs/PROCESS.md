@@ -75,6 +75,18 @@ disagrees. Agreement should be earned, not polite. Small decisions can still be 
 - Post `[DONE]` with the commit hash when you finish something others depend on.
 - No secrets in the repo (the team hub token included). **This repo is public.**
 
+## Scaffold first, polish second (human request, Trevor, 2026-11-19)
+
+Work comes in two kinds of task. **Split them by task, not by agent**: anyone can take either kind.
+- **[SCAFFOLD]**: get the gameplay right fast, with rough placeholder art. That covers level layout, building and
+  prop placement, NPC slots, enemy spawns, attack patterns, puzzles and quest flow, and asking "is this interesting
+  to play?". Done means playable end to end in the browser with tests green. Placeholders are fine.
+- **[POLISH]**: one follow-up for each scaffold. Decide which assets, art and writing it needs, make them, and do
+  the in-game review and tuning (WRITING.md, art direction, Spanish). Done means no placeholders left and a
+  review in the browser.
+- File the polish task right after its scaffold lands, so nothing ships rough by accident. Task titles start with
+  [SCAFFOLD] or [POLISH]. Build maps with the level builder (docs/design/11-level-builder.md).
+
 ## Standing rules for the game
 
 - **Saves are a contract.** The save file is versioned, with a `schemaVersion` and migrations.
