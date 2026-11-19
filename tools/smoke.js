@@ -12,9 +12,9 @@ setTimeout(async () => {
     const { MAPS } = await import('/src/content/maps/index.js');
     const c = w.save.party.trevor;
     ok('3 players (2 AI)', w.sim.players.size === 3);
-    w.save.world.money = 200;
+    w.save.party.trevor.money = 200;   // wallets are per roommate (schema 7)
     const scooterPrice = w.priceFor('trevor', 90);   // CHA and haggle discounts apply (D-017)
-    w._buy('trevor', 'scooters', 0); ok('buy scooter', I.has(c, 'item.scooter') && w.save.world.money === 200 - scooterPrice);
+    w._buy('trevor', 'scooters', 0); ok('buy scooter', I.has(c, 'item.scooter') && w.save.party.trevor.money === 200 - scooterPrice);
     w._buy('trevor', 'pawn', 0); ok('buy wrench', I.has(c, 'item.pipe_wrench'));
     w._buy('trevor', 'corner', 0); ok('buy food', I.has(c, 'item.energy_bar'));
     I.add(c, 'item.mat_scrap', 10);
