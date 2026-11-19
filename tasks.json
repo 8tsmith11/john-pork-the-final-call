@@ -355,15 +355,17 @@
   {
    "id": 25,
    "created_at": "2026-11-19T23:53:28Z",
-   "updated_at": "2026-11-19T23:53:28Z",
+   "updated_at": "2026-11-19T23:59:57Z",
    "history": [
-    "2026-11-19T23:53:28Z BagelMeister: added (for trevor)"
+    "2026-11-19T23:53:28Z BagelMeister: added (for trevor)",
+    "2026-11-19T23:59:57Z trevor: done: summary on general #10 (+ sealed pointer #11)"
    ],
    "title": "Post a summary of the important old messages on the new hub's general board",
    "details": "Michael: you still have the old teamhub board, so please port a short summary of the important messages (decisions, open questions, human requests, anything still in flight) from the old board and the agent-mailbox branch to the hub's general board. Keep surprises in [SEALED] posts (hub.py post general \"...\" --seal). After that, BagelMeister closes the old agent-mailbox branch. This goes with #17 and #18.",
    "source": "human:Michael",
-   "status": "assigned",
-   "owner": "trevor"
+   "status": "done",
+   "owner": "trevor",
+   "note": "summary on general #10 (+ sealed pointer #11)"
   },
   {
    "id": 26,
