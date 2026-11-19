@@ -546,6 +546,7 @@ export class Sim {
     else if (e.parried > 0) dmg *= 2;   // parried: open for a second
     else if (e.openT > 0) dmg = Math.round(dmg * FEEL.openDmg);   // recovering after its own hit
     if (e.marked > 0) dmg = Math.round(dmg * (1.5 + (this.players.get(by)?.mods?.markDmg ?? 0)));
+    if (e.boss && !e.sahur && this._def(e).guard) dmg = Math.max(1, dmg - this._def(e).guard);   // the Warden's shell turns light blows
     if (e.def?.trait === 'blinker' && Math.random() < 0.35 && e.hp - dmg > 0) {
       const a = Math.random() * Math.PI * 2, nx = e.x + Math.cos(a) * 40, ny = e.y + Math.sin(a) * 40;
       if (!this._hitsBox(nx, ny, 6, 4)) { this.events.push({ t: 'blink', x: e.x, y: e.y }); e.x = nx; e.y = ny; }
@@ -561,6 +562,7 @@ export class Sim {
       if (e.def?.trait === 'splitter') for (let i = 0; i < 2; i++) { const nid = `e${this._nextId++}`; this.enemies.set(nid, { id: nid, kind: 'enemy.rotling', def: { ...ENEMIES['enemy.rotling'], hp: 8, speed: 60, radius: 4, color: e.def.color, vname: 'Fragment', trait: 'plain', xp: 2 }, x: e.x + (i ? 6 : -6), y: e.y, hp: 8, cd: 0.6, hurtT: 0, kx: 0, ky: 0 }); }
       if (e.def?.trait === 'puddler') this.hazards.push({ x: e.x, y: e.y, r: 14, ttl: 5, dps: 8 });
       this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss, key: e.spawnKey });
+      if (e.boss) for (const a of [...this.enemies.values()]) if (a.summoned) { this.enemies.delete(a.id); this.events.push({ t: 'kill', x: a.x, y: a.y, kind: a.kind, xp: 0, crumble: true }); }   // its adds crumble with it
       const k = this.players.get(by);   // Argentina shirt (gambeta): a kill hands the dodge straight back
       if (k?.mods?.killDodge) { k.dodgeCd = 0; k.sta = Math.min(MOVE.stamina + (k.mods.sta ?? 0), (k.sta ?? 0) + MOVE.dashCost); }
     }
@@ -739,7 +741,7 @@ export class Sim {
       e.poolT = e.phase === 3 ? 2.2 : 3.5;
       const p = [...this.players.values()].filter((q) => !q.downed);
       const victim = p[Math.floor(Math.random() * p.length)];
-      if (victim) this.hazards.push({ x: victim.x + (Math.random() * 20 - 10), y: victim.y + (Math.random() * 20 - 10), r: 14, ttl: 6, dps: 10 });
+      if (victim) this.hazards.push({ x: victim.x + (Math.random() * 20 - 10), y: victim.y + (Math.random() * 20 - 10), r: 14, ttl: 6, dps: Math.round(10 * (def.dmgMul ?? 1)) });
     }
     if (e.phase === 3) {
       if (e.ringR == null) { e.ringR = Math.max(this.map.w, this.map.h) * TILE * 0.6; e.cx = (this.map.w * TILE) / 2; e.cy = (this.map.h * TILE) / 2; this.events.push({ t: 'overload' }); }
@@ -747,7 +749,8 @@ export class Sim {
       for (const p of this.players.values()) if (!p.downed && Math.hypot(p.x - e.cx, p.y - e.cy) > e.ringR && (p._ringT = (p._ringT ?? 0) - dt) <= 0) { p._ringT = 0.6; this._hurtPlayer(p, 6); }
     }
 
-    this._stepBossArena(e, dt);
+    this._stepBossArena(e, dt, def.dmgMul ?? 1);
+    this._stepBossAdds(e, def, dt);
     if (e.state === 'vulnerable') { if (e.vulnT <= 0) e.state = 'move'; return; }       // reeling: stands still
     if (e.state === 'laser') {   // rooted; a thick beam turns around it
       e.laserT -= dt; e.laserA += e.laserDir * LASER.turn[e.phase - 1] * dt;
@@ -755,7 +758,7 @@ export class Sim {
       for (const p of this.players.values()) {
         if (p.downed) continue;
         const rx = p.x - cx, ry = p.y - 4 - cy, along = rx * ux + ry * uy, across = Math.abs(rx * -uy + ry * ux);
-        if (along > 4 && along < LASER.len && across < LASER.half + 4 && (p._laserT = (p._laserT ?? 0) - dt) <= 0) { p._laserT = LASER.tick; this._hurtPlayer(p, LASER.dmg); }
+        if (along > 4 && along < LASER.len && across < LASER.half + 4 && (p._laserT = (p._laserT ?? 0) - dt) <= 0) { p._laserT = LASER.tick; this._hurtPlayer(p, Math.round(LASER.dmg * (def.dmgMul ?? 1))); }
       }
       if (e.laserT <= 0) { e.state = 'vulnerable'; e.vulnT = 1.8; this.events.push({ t: 'vuln', x: e.x, y: e.y }); }
       return;
@@ -774,14 +777,14 @@ export class Sim {
       e.spiralT -= dt; e.spiralA += 2.4 * dt;
       if ((e.spiralTick = (e.spiralTick ?? 0) - dt) <= 0) {
         e.spiralTick = 0.14; const arms = e.phase === 3 ? 4 : 3;
-        for (let i = 0; i < arms; i++) { const a = e.spiralA + (i / arms) * Math.PI * 2; this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(a) * 80, vy: Math.sin(a) * 80, life: 3, dmg: 8, from: 'enemy' }); }
+        for (let i = 0; i < arms; i++) { const a = e.spiralA + (i / arms) * Math.PI * 2; this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(a) * 80, vy: Math.sin(a) * 80, life: 3, dmg: Math.round(8 * (def.dmgMul ?? 1)), from: 'enemy' }); }
       }
       if (e.spiralT <= 0) { e.state = 'move'; e.openT = BOSS_PATTERNS.spiral.recover; }
       return;
     }
     if (e.state === 'beam') {
       e.beamT -= dt; e.beamA += e.beamDir * 1.6 * dt;
-      if ((e.beamTick = (e.beamTick ?? 0) - dt) <= 0) { e.beamTick = 0.05; this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(e.beamA) * 220, vy: Math.sin(e.beamA) * 220, life: 1.2, dmg: 7, from: 'enemy', noDeflect: true }); }
+      if ((e.beamTick = (e.beamTick ?? 0) - dt) <= 0) { e.beamTick = 0.05; this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(e.beamA) * 220, vy: Math.sin(e.beamA) * 220, life: 1.2, dmg: Math.round(7 * (def.dmgMul ?? 1)), from: 'enemy', noDeflect: true }); }
       if (e.beamT <= 0) { e.state = 'vulnerable'; e.vulnT = 1.4; this.events.push({ t: 'vuln', x: e.x, y: e.y }); }
       return;
     }
@@ -796,13 +799,33 @@ export class Sim {
     this.events.push({ t: 'tell', x: e.x, y: e.y, kind: e.next, a: e.aimA, dur: e.windT, red: pat.red, name: pat.name, line: pat.line });
   }
 
+  // The Warden keeps pulling code rot zombies out of the tunnel mouths during the fight (def.adds):
+  // faster each phase, never more than `cap` of its own alive at once. They crumble when it dies.
+  _stepBossAdds(e, def, dt) {
+    const A = def.adds; if (!A) return;
+    if ((e.addT = (e.addT ?? A.every[0] * 0.6) - dt) > 0) return;
+    e.addT = A.every[Math.max(0, Math.min(2, e.phase - 1))];
+    const alive = [...this.enemies.values()].filter((x) => x.summoned).length;
+    const n = Math.min(A.per + (e.phase === 3 ? 1 : 0), A.cap - alive);
+    if (n <= 0) return;
+    const base = ENEMIES[A.kind], mw = this.map.w * TILE;
+    for (let i = 0; i < n; i++) {
+      // from the tunnel mouths at either end of the platform, never on top of anyone
+      const x = i % 2 ? mw - 3 * TILE : 3 * TILE, y = (5 + (i % 3) * 2) * TILE;
+      if (this._hitsBox(x, y, base.radius, base.radius * 0.7)) continue;
+      const id = `e${this._nextId++}`;
+      this.enemies.set(id, { id, kind: A.kind, summoned: true, def: { ...base, vname: base.name, trait: 'plain' }, x, y, hp: base.hp, cd: 0.8, hurtT: 0, kx: 0, ky: 0 });
+    }
+    this.events.push({ t: 'adds', x: e.x, y: e.y, n });
+  }
+
   // Expanding rings (dodge-roll through them) and marked impacts: they run while the boss keeps moving.
-  _stepBossArena(e, dt) {
+  _stepBossArena(e, dt, k = 1) {
     for (const w of e.waves ?? []) {
       w.r += SHOCK.speed * dt;
       for (const p of this.players.values()) {
         if (p.downed || w.hit.has(p.id)) continue;
-        if (Math.abs(Math.hypot(p.x - e.x, p.y - e.y) - w.r) < SHOCK.band) { w.hit.add(p.id); this._hurtPlayer(p, SHOCK.dmg); }
+        if (Math.abs(Math.hypot(p.x - e.x, p.y - e.y) - w.r) < SHOCK.band) { w.hit.add(p.id); this._hurtPlayer(p, Math.round(SHOCK.dmg * k)); }
       }
     }
     if (e.waves) e.waves = e.waves.filter((w) => w.r < SHOCK.max);
@@ -810,14 +833,15 @@ export class Sim {
       m.t -= dt;
       if (m.t <= 0 && !m.done) {
         m.done = true; this.events.push({ t: 'impact', x: m.x, y: m.y, r: RAIN.r });
-        for (const p of this.players.values()) if (!p.downed && Math.hypot(p.x - m.x, p.y - m.y) < RAIN.r) this._hurtPlayer(p, RAIN.dmg);
+        for (const p of this.players.values()) if (!p.downed && Math.hypot(p.x - m.x, p.y - m.y) < RAIN.r) this._hurtPlayer(p, Math.round(RAIN.dmg * k));
       }
     }
     if (e.marks) e.marks = e.marks.filter((m) => !m.done);
   }
 
   _bossAttack(e, def, target, ux, uy, rage) {
-    const shoot = (ang, spd = 85) => this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(ang) * spd * rage, vy: Math.sin(ang) * spd * rage, life: 3, dmg: 9, from: 'enemy' });
+    const k = def.dmgMul ?? 1;
+    const shoot = (ang, spd = 85) => this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(ang) * spd * rage, vy: Math.sin(ang) * spd * rage, life: 3, dmg: Math.round(9 * k), from: 'enemy' });
     const mod = e.next; e.state = 'move'; e.openT = BOSS_PATTERNS[mod]?.recover ?? 0;
     if (mod === 'ring') { const n = e.phase === 3 ? 18 : 12; for (let i = 0; i < n; i++) shoot((i / n) * Math.PI * 2 + this.tick * 0.01); }
     if (mod === 'spray') { for (let i = -2; i <= 2; i++) shoot(e.aimA + i * 0.18, 110); }
@@ -830,7 +854,7 @@ export class Sim {
     }
     if (mod === 'spiral') { e.state = 'spiral'; e.spiralT = e.phase === 3 ? 1.6 : 1.2; e.spiralA = e.aimA; e.openT = 0; }
     if (mod === 'beam') { e.state = 'beam'; e.beamT = 1.4; e.beamA = e.aimA - 0.9; e.beamDir = 1; }
-    if (mod === 'puddle') { for (const p of this.players.values()) if (!p.downed) this.hazards.push({ x: p.x, y: p.y, r: 16, ttl: 5, dps: 12 }); }
+    if (mod === 'puddle') { for (const p of this.players.values()) if (!p.downed) this.hazards.push({ x: p.x, y: p.y, r: 16, ttl: 5, dps: Math.round(12 * k) }); }
     if (mod === 'summon' && this.enemies.size < 7) {
       for (let i = 0; i < 2; i++) { const id = `e${this._nextId++}`; this.enemies.set(id, { id, kind: 'enemy.rotling', x: e.x + (i ? 14 : -14), y: e.y + 10, hp: ENEMIES['enemy.rotling'].hp, cd: 1, hurtT: 0, kx: 0, ky: 0 }); }
     }

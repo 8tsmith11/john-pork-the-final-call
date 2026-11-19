@@ -32,6 +32,7 @@ import { Neon } from '../render/neon.js';
 import { skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
+import { LAMP_COLORS, GATE_FLAG, breakerState, lampState, breakersSet, lampsSet, gateOpen, puzzleClue, toggleText, STEP_TEXT } from '../../content/tunnelPuzzles.js';
 import { SharedEvents } from '../sharedEvent.js';
 import { Performances } from '../performances.js';
 import { Romance } from '../romance.js';
@@ -1400,6 +1401,7 @@ export class WorldScene extends Phaser.Scene {
   // Switchyard levers drawn so you can see which way each is thrown (Trevor): a base plate and a
   // handle leaning LEFT or RIGHT, with the letter above. Redrawn whenever a lever moves.
   _drawLevers() {
+    this._syncGateArt();
     const levers = this.map.objects.filter((o) => o.lever);
     if (!levers.length) { this.leverGfx?.clear(); return; }
     this.leverGfx ??= this.add.graphics();
@@ -1485,7 +1487,39 @@ export class WorldScene extends Phaser.Scene {
     if (solved && !this.save.flags['act1.switchyard.solved']) {
       this._flag('act1.switchyard.solved', true);
       this.cameras.main.shake(500, 0.01); sfx('kill');
-      this._say('Somewhere east, something heavy unlocks and rolls. The lines agree now. The gate to the platform is open.');
+      if (!this._checkGate()) this._say(STEP_TEXT.switchyard[getLang() === 'es' ? 'es' : 'en']);
+    }
+  }
+
+  // Task #33: the other two holds on the platform gate (src/content/tunnelPuzzles.js).
+  _breaker(k) {
+    const key = `act1.breaker.${k}`, now = breakerState(this.save.flags, k) === 'down' ? 'up' : 'down', was = breakersSet(this.save.flags, this.save.world.seed);
+    this._flag(key, now); sfx('hit'); this.cameras.main.shake(60, 0.002);
+    this._toast(toggleText('breaker', k, now, getLang()));
+    this._drawLevers();
+    if (!was && breakersSet(this.save.flags, this.save.world.seed) && !this._checkGate()) { sfx('kill'); this._say(STEP_TEXT.breakers[getLang() === 'es' ? 'es' : 'en']); }
+  }
+  _siglamp(k) {
+    const key = `act1.siglamp.${k}`, cur = lampState(this.save.flags, k), now = LAMP_COLORS[(LAMP_COLORS.indexOf(cur) + 1) % LAMP_COLORS.length];
+    const was = lampsSet(this.save.flags, this.save.world.seed);
+    this._flag(key, now); sfx('swing');
+    this._toast(toggleText('lamp', k, now, getLang()));
+    this._drawLevers();
+    if (!was && lampsSet(this.save.flags, this.save.world.seed) && !this._checkGate()) this._say(STEP_TEXT.lamps[getLang() === 'es' ? 'es' : 'en']);
+  }
+  /** Opens the platform gate once yard, power and signals all agree. Returns true if it just opened. */
+  _checkGate() {
+    if (this.save.flags[GATE_FLAG] || !gateOpen(this.save.flags, this.save.world.seed)) return false;
+    this._flag(GATE_FLAG, true);
+    this.cameras.main.shake(600, 0.012); sfx('kill');
+    this._say(STEP_TEXT.gate[getLang() === 'es' ? 'es' : 'en']);
+    return true;
+  }
+  _syncGateArt() {
+    for (const o of this.map?.objects ?? []) {
+      const im = (o.breaker || o.siglamp) && this.propById?.[o.id]?.im; if (!im) continue;
+      const f = o.breaker ? (breakerState(this.save.flags, o.breaker) === 'up' ? 'obj.breaker_up' : 'obj.breaker_dn') : `obj.siglamp_${lampState(this.save.flags, o.siglamp)}`;
+      if (im.frame?.name !== f) im.setFrame(f);
     }
   }
 
@@ -1984,6 +2018,9 @@ export class WorldScene extends Phaser.Scene {
       this._flag(near.grantFlag ?? `got.${near.id}`, true); this._grant(near.grant); this._say(near.text ?? ''); return;
     }
     if (/^obj\.switch_[abc]$/.test(near.id)) { this._lever(near.id.slice(-1)); return; }
+    if (near.breaker) { this._breaker(near.breaker); return; }
+    if (near.siglamp) { this._siglamp(near.siglamp); return; }
+    if (['obj.locker', 'obj.signal_chair', 'obj.departures'].includes(near.id)) { this._say(tr(near.text ?? '') + puzzleClue(near.id, this.save.world.seed, this.save.flags, getLang())); return; }
     if (near.id === 'obj.vending') { this._kickVending(near); return; }
     if (CLOCKS.includes(near.id)) { this._windClock(near); return; }
     if (BUST_ORDER.includes(near.id)) { this._turnBust(near); return; }
@@ -1994,7 +2031,7 @@ export class WorldScene extends Phaser.Scene {
       if (!this.save.flags['secrets.nacre.found']) this._flag('secrets.nacre.found', true);
       this._say(`${OLD_PHONE.base}\n\n${mine.length ? mine[(n - 1) % mine.length] : ''}${n > 2 ? '\n\n' + OLD_PHONE.later : ''}`); return;
     }
-    if (near.id === 'obj.yard_map') { this._say(`${YARD_MAP_TEXT}\n\nCurrent: ${LEVERS.map((k) => `${k.toUpperCase()} ${(this.save.flags[`act1.switch.${k}`] ?? 'left').toUpperCase()}`).join(' · ')}${this.save.flags['act1.switchyard.solved'] ? '\nThe east gate is open.' : ''}`); return; }
+    if (near.id === 'obj.yard_map') { this._say(`${YARD_MAP_TEXT}\n\nCurrent: ${LEVERS.map((k) => `${k.toUpperCase()} ${(this.save.flags[`act1.switch.${k}`] ?? 'left').toUpperCase()}`).join(' · ')}${this.save.flags[GATE_FLAG] ? '\nThe east gate is open.' : this.save.flags['act1.switchyard.solved'] ? '\nThe yard agrees. The gate still needs power and signals.' : ''}`); return; }
     if (['obj.work_order', 'obj.sunk_vending', 'obj.ledger'].includes(near.id)) { this._say((near.text ?? '') + clueFor(near.id, yardSolution(this.save.world.seed), !!this.save.flags['act1.bay.drained'])); return; }
     if (near.id === 'obj.pump') {
       if (this.save.flags['act1.bay.drained']) { this._say((near.text ?? '') + '\n\nIt\'s still running, the way you left it. Down in the flooded bay, the waterline has dropped.'); return; }

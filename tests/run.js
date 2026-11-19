@@ -34,7 +34,7 @@ test('deferred startup with the full roster matches boss scaling on ordinary map
     const entered = new Sim(MAPS_FOR_TEST.room631, { seed });
     addSpawnParty(entered); entered.setMap(MAPS_FOR_TEST.platform);
     const boss = [...loaded.enemies.values()].find((e) => e.boss), other = [...entered.enemies.values()].find((e) => e.boss);
-    assert.equal(boss.def.hp, 720); assert.equal(boss.def.hp, other.def.hp);
+    assert.equal(boss.def.hp, 1440); assert.equal(boss.def.hp, other.def.hp);   // doubled in task #33
     assert.equal(loaded.snapshot().enemies.find((e) => e.boss).boss.max, other.def.hp);
     assert.deepEqual([...loaded.enemies.values()].map((e) => e.spawnKey), [...entered.enemies.values()].map((e) => e.spawnKey));
     assert.equal(loaded.events.filter((e) => e.t === 'boss').length, 1);
@@ -43,7 +43,7 @@ test('deferred startup with the full roster matches boss scaling on ordinary map
 test('startup stays eager by default and deferred spawning preserves killed enemies', () => {
   const map = MAPS_FOR_TEST.platform, eager = new Sim(map);
   assert.equal(eager.enemies.size, map.enemies.length);
-  assert.equal([...eager.enemies.values()].find((e) => e.boss).def.hp, 360);
+  assert.equal([...eager.enemies.values()].find((e) => e.boss).def.hp, 720);   // solo Warden, doubled in task #33
   const killed = new Set(map.enemies.map((_, i) => `${map.id}#${i}`));
   const loaded = new Sim(map, { deferSpawn: true, killed });
   addSpawnParty(loaded); loaded.spawnEnemies();
@@ -746,6 +746,9 @@ test('AI companions follow the human, fight, and never trigger exits', () => {
   const sim = new Sim(MAPS_FOR_TEST.tunnel_1, { seed: 's' });
   sim.addPlayer('host', 'trevor'); sim.addPlayer('ai:manuel', 'manuel'); sim.addPlayer('ai:michael', 'michael');
   for (const p of sim.players.values()) p.mods.swing = ITEMS_T['item.pry_bar'].swing;   // everyone starts with a pry bar
+  // This test is about following, not surviving: the host here wanders and barely swings, so the code rot
+  // zombie packs along the route (task #33) would just down the party. The rotlings stay for "fought something".
+  for (const [id, e] of [...sim.enemies]) if (e.kind === 'enemy.rot_taken') sim.enemies.delete(id);
   const brain = new CompanionBrain(sim), h = sim.players.get('host'), before = sim.enemies.size;
   let aiExit = false;
   for (let t = 0; t < 60 * 40; t++) {
@@ -1005,6 +1008,64 @@ test('a party wipe brings everyone back with full health and no code rot', () =>
   for (const p of sim.players.values()) { p.hp = 0; p.downed = true; p.rot = 80; }
   assert.ok(sim.wiped); sim.setMap(sim.map, null); sim.wipeReset();
   for (const p of sim.players.values()) { assert.equal(p.hp, sim.maxHp(p)); assert.equal(p.rot, 0); assert.ok(!p.downed); }
+});
+
+// Task #33 (Michael via BagelMeister #503): the harder road to the Warden.
+const tunPuz = await import('../src/content/tunnelPuzzles.js');
+const { playerMods: playerModsT } = await import('../src/content/items.js');
+const wardenFight = (loadout, seed) => {
+  const L = {
+    bare: () => ({ equipped: { weapon: 'item.pry_bar' }, skills: {} }),
+    good: (who) => ({ equipped: { weapon: 'item.pipe_wrench', chestplate: 'item.mesh_vest', helmet: 'item.hardhat', leggings: 'item.work_pants', boots: 'item.steel_toes' },
+      skills: { trevor: { 'tr.jab': 3, 'tr.tank': 3, 'tr.amp': 2 }, manuel: { 'ma.hands': 3, 'ma.shoulders': 2, 'ma.clay': 2 }, michael: { 'mi.ping': 3, 'mi.lock': 2, 'mi.luck': 2 } }[who] }),
+  }[loadout];
+  const random = Math.random, rng = new Rng(`boss:${loadout}:${seed}`); Math.random = () => rng.next();
+  try {
+    const sim = new Sim(MAPS_FOR_TEST.platform, { seed, deferSpawn: true });
+    sim.addPlayer('host', 'trevor'); sim.addPlayer('ai:manuel', 'manuel'); sim.addPlayer('ai:michael', 'michael');
+    for (const p of sim.players.values()) { sim.setMods(p.id, playerModsT(L(p.character), p.character)); p.hp = sim.maxHp(p); }
+    sim.spawnEnemies();
+    const brain = new CompanionBrain(sim), h = sim.players.get('host'), bot = new BalanceBot(sim, brain);
+    let won = false, adds = 0, crumbled = 0;
+    for (let t = 0; t < 60 * 420 && !won && !sim.wiped; t++) {
+      const inputs = new Map([['host', bot.input(h)]]); for (const [id, i] of brain.inputs()) inputs.set(id, i);
+      sim.step(1 / 60, inputs);
+      for (const e of sim.events) { if (e.t === 'kill' && e.boss) won = true; if (e.t === 'adds') adds++; if (e.crumble) crumbled++; }
+    }
+    return { won, adds, crumbled, summonedLeft: [...sim.enemies.values()].filter((e) => e.summoned).length };
+  } finally { Math.random = random; }
+};
+test('the Warden: starter gear never beats it, a geared and skilled party does; its zombies crumble with it', () => {
+  for (const s of ['w1', 'w2']) assert.equal(wardenFight('bare', s).won, false, `bare ${s} won`);
+  for (const s of ['w1', 'w2']) { const r = wardenFight('good', s); assert.ok(r.won, `good ${s} lost`); assert.equal(r.summonedLeft, 0, 'adds outlived the Warden'); }
+  const long = wardenFight('bare', 'w1'); assert.ok(long.adds >= 1, 'the Warden never pulled in any zombies');
+});
+test('the Warden is twice as tough and hits harder; the Sahur variant is unchanged', () => {
+  const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 's', deferSpawn: true });
+  for (const c of ['trevor', 'manuel', 'michael']) sim.addPlayer(c, c);
+  sim.spawnEnemies();
+  const w = [...sim.enemies.values()].find((e) => e.boss);
+  assert.equal(w.def.hp, 1440); assert.ok(w.def.damage > 14 && w.def.dmgMul > 1 && w.def.guard > 0 && w.def.adds);
+  const s2 = new Sim(MAPS_FOR_TEST.platform, { seed: 's', deferSpawn: true }); s2.bossVariant = 'sahur';
+  for (const c of ['trevor', 'manuel', 'michael']) s2.addPlayer(c, c);
+  s2.spawnEnemies();
+  const sah = [...s2.enemies.values()].find((e) => e.boss);
+  assert.ok(sah.sahur && sah.def.hp === 99999 && sah.def.damage === 16 && !sah.def.guard && !sah.def.adds);
+});
+test('the platform gate needs the yard, the breakers and the signals; no world starts solved', () => {
+  for (let i = 0; i < 300; i++) {
+    const seed = `gate-${i}`, b = tunPuz.breakerTarget(seed), l = tunPuz.lampTarget(seed);
+    assert.ok(tunPuz.BREAKERS.some((k) => b[k] === 'up') && tunPuz.BREAKERS.some((k) => b[k] === 'down'), seed);
+    assert.ok(tunPuz.LAMPS.some((k) => l[k] !== 'red'), seed);
+  }
+  const seed = 'gate-x', f = {};
+  assert.equal(tunPuz.gateOpen(f, seed), false);
+  for (const k of tunPuz.BREAKERS) f[`act1.breaker.${k}`] = tunPuz.breakerTarget(seed)[k];
+  for (const k of tunPuz.LAMPS) f[`act1.siglamp.${k}`] = tunPuz.lampTarget(seed)[k];
+  assert.equal(tunPuz.gateOpen(f, seed), false, 'opened without the yard');
+  f['act1.switchyard.solved'] = true; assert.equal(tunPuz.gateOpen(f, seed), true);
+  assert.equal(MAPS_FOR_TEST.tunnel_1.objects.find((o) => o.id === 'obj.tunnel_on').requiresFlag, tunPuz.GATE_FLAG);
+  assert.ok(tunPuz.puzzleClue('obj.locker', seed, f, 'es').includes('TABLERO'));
 });
 
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }

@@ -29,6 +29,13 @@ export const tunnel1 = makeMap({
     ['enemy.spitter', 50, 3],                                                                // the bypass
     ['enemy.moth', 53, 23],                                                                  // the signal room: a Hold-Music Moth on its own
     ['enemy.autocomplete', 56, 12], ['enemy.spitter', 60, 14],                               // the approach
+    // Harder road (task #33, Michael): code rot zombies all the way along, in small packs.
+    ['enemy.rot_taken', 22, 13], ['enemy.rot_taken', 26, 14], ['enemy.rot_taken', 30, 12],   // the main line
+    ['enemy.rot_taken', 28, 22],                                                             // the flooded bay
+    ['enemy.rot_taken', 41, 12], ['enemy.rot_taken', 45, 12], ['enemy.rot_taken', 38, 15],   // the switchyard
+    ['enemy.rot_taken', 45, 3], ['enemy.rot_taken', 53, 3],                                  // the bypass
+    ['enemy.rot_taken', 50, 23], ['enemy.rot_taken', 57, 24],                                // the signal room
+    ['enemy.rot_taken', 58, 13], ['enemy.rot_taken', 62, 12], ['enemy.rot_taken', 62, 14],   // the approach
   ],
   objects: [
     // Seeded loot in the side branches (trevor): exploring off the main line pays.
@@ -61,9 +68,12 @@ export const tunnel1 = makeMap({
     { id: 'obj.departures', art: 'obj.lobby_monitor', x: 53, y: 20, label: 'Departure board', light: 0.5, text: 'NEXT TRAIN: 1901. PLATFORM: —. Then the board corrects itself, apologises, and shows the same thing.' },
     { id: 'obj.ledger', art: 'obj.security_desk', x: 56, y: 24, label: 'A ledger on a desk', text: 'Names, in a formal hand, one line each, with a time beside every one. Thousands. The last entry is tonight\'s date and has no name yet.' },
     { id: 'obj.signal_chair', art: 'obj.bench', x: 49, y: 24, label: 'A chair', text: 'Wooden. Far too tall for anyone you know. The seat is worn.' },
+    // Signal room: the gate's breaker panel (src/content/tunnelPuzzles.js)
+    ...['1', '2', '3', '4'].map((k, i) => ({ id: `obj.breaker_${k}`, art: 'obj.breaker_dn', x: 55 + i, y: 21, label: `Breaker ${k}`, breaker: k, text: 'A heavy breaker on the gate panel, painted the yellow of things you are not supposed to touch.' })),
     // The approach
     lamp(60, 11, 'The last lamp. Past it, the dark has a shape.'),
-    { id: 'obj.tunnel_on', x: 64, y: 13, label: 'Toward the platform', action: 'exit', to: 'platform', requiresFlag: 'act1.switchyard.solved', lockedText: 'A rolling gate across the line, locked from somewhere upstream. The switchyard is set wrong.',
+    ...['1', '2', '3'].map((k, i) => ({ id: `obj.siglamp_${k}`, art: 'obj.siglamp_red', x: 59 + i * 2, y: 10, label: `Signal ${k}`, siglamp: k, text: 'A signal lamp on a bracket, with a lens wheel you can turn by hand.' })),
+    { id: 'obj.tunnel_on', x: 64, y: 13, label: 'Toward the platform', action: 'exit', to: 'platform', requiresFlag: 'act1.tunnel.gate', lockedText: 'A rolling gate across the line, held three ways: the yard upstream, the power in the signal room, and the signals on this wall.',
       text: 'The tunnel opens onto a platform nobody has used in decades. The drumming stops. Something else is here.' },
   ],
 });

@@ -667,6 +667,20 @@ def spitter(f):
 for f in (0, 1):
     ENEMIES[f"enemy.rotling_{f}"] = rotling(f).rows()
     ENEMIES[f"enemy.spitter_{f}"] = spitter(f).rows()
+# A code-rot-taken person (task #33 put a lot of them in the tunnels): an ordinary body, hunched, with the
+# lace glowing rot magenta at the temple; frame 1 has one row of the body shoved a pixel sideways, the
+# "frame out of place" from DIRECTION.md.
+def rot_taken(f):
+    c = C(16, 16).rect(6, 2, 5, 5, "skin1").h_(6, 2, 5, "night2").v_(6, 2, 3, "night2")      # head, hair
+    c.pts("night0", (7, 4), (9, 4)).px(10, 3, "rot0").px(11, 3, "rot0")                     # eyes, the lace glow
+    sh = 1 if f else 0
+    c.rect(5 + sh, 7, 6, 2, "concrete1").rect(5, 9, 6, 3, "concrete1").v_(10, 7, 5, "concrete0")   # torso (one row glitched)
+    c.pts("skin1", (4, 9), (4, 10), (11, 10), (12, 11))                                     # arms hanging forward
+    c.rect(6, 12, 2, 3, "night2").rect(9, 12 + f, 2, 3 - f, "night2")                         # legs, one dragging
+    c.pts("rot0", (8, 8 + f), (5, 11)).px(11, 2, "rot1")                                    # rot showing through
+    return c.outline()
+for f in (0, 1):
+    ENEMIES[f"enemy.rot_taken_{f}"] = rot_taken(f).rows()
 
 # ---- the Rot Warden (32x40, pale so the engine can tint it with the seeded color) ----
 WARDEN = {}
@@ -794,6 +808,30 @@ def cal():                      # the campus candidate: a suit, a too-bright tie
 P("npc.mina", mina())
 P("npc.ray", ray())
 P("npc.cal", cal())
+
+
+# Task #33, the gate puzzles in the tunnel: a breaker on the gate panel (lever down / up) and a signal
+# lamp on a wall bracket (red / amber / green; amber is the yellow-amber, never the balloon's orange).
+def breaker(up):
+    c = C().rect(3, 6, 10, 15, "concrete1").h_(3, 6, 10, "concrete2").v_(12, 7, 14, "night2")
+    c.rect(5, 8, 6, 2, "warm4").h_(5, 9, 6, "warm3")                                   # the yellow do-not-touch band
+    c.rect(6, 12, 4, 6, "night1")                                                       # the slot
+    if up: c.rect(7, 11, 2, 4, "steel").rect(6, 10, 4, 2, "bone")                         # lever thrown up
+    else:  c.rect(7, 15, 2, 4, "steel").rect(6, 18, 4, 2, "bone")                         # lever down
+    c.px(11, 19, "yerba1" if up else "signal")                                          # the little status light
+    return c.outline()
+def siglamp(col):
+    lit = {"red": ("signal", "soft1"), "amber": ("warm4", "bone"), "green": ("yerba1", "bone")}[col]
+    c = C().v_(8, 13, 9, "steel").h_(5, 21, 7, "concrete1")                               # bracket and plate
+    c.rect(4, 4, 8, 9, "night1").h_(4, 4, 8, "concrete1")                                # the housing
+    c.rect(6, 6, 4, 4, lit[0]).px(6, 6, lit[1])                                          # the lens, lit
+    c.h_(5, 3, 6, "night2")                                                              # the hood
+    return c.outline()
+P("obj.breaker_dn", breaker(False))
+P("obj.breaker_up", breaker(True))
+P("obj.siglamp_red", siglamp("red"))
+P("obj.siglamp_amber", siglamp("amber"))
+P("obj.siglamp_green", siglamp("green"))
 
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)

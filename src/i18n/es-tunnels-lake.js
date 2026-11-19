@@ -48,7 +48,12 @@ export const ES_TUNNELS_LAKE = {
   'The last lamp. Past it, the dark has a shape.': 'La última lámpara. Más allá, la oscuridad tiene forma.',
   'Toward the platform': 'Hacia el andén',
   'The tunnel opens onto a platform nobody has used in decades. The drumming stops. Something else is here.': 'El túnel se abre a un andén que nadie usa hace décadas. El tamborileo se detiene. Hay algo más aquí.',
-  'A rolling gate across the line, locked from somewhere upstream. The switchyard is set wrong.': 'Un portón corredizo cruza la vía, trabado desde algún punto anterior. El patio de maniobras está mal puesto.',
+  'A rolling gate across the line, held three ways: the yard upstream, the power in the signal room, and the signals on this wall.': 'Un portón corredizo cruza la vía, trabado de tres formas: el patio de maniobras, la corriente en la sala de señales y las señales en esta pared.',
+  // Task #33, the gate puzzles (gonman)
+  'Breaker 1': 'Disyuntor 1', 'Breaker 2': 'Disyuntor 2', 'Breaker 3': 'Disyuntor 3', 'Breaker 4': 'Disyuntor 4',
+  'A heavy breaker on the gate panel, painted the yellow of things you are not supposed to touch.': 'Un disyuntor pesado en el tablero del portón, pintado del amarillo de las cosas que no hay que tocar.',
+  'Signal 1': 'Señal 1', 'Signal 2': 'Señal 2', 'Signal 3': 'Señal 3',
+  'A signal lamp on a bracket, with a lens wheel you can turn by hand.': 'Una lámpara de señal en un soporte, con una rueda de lentes que se gira a mano.',
   'Back into the tunnel': 'De vuelta al túnel',
   'Back the way you came.': 'Por donde vinieron.',
   'Station sign': 'Cartel de la estación',

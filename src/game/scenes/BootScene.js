@@ -32,7 +32,7 @@ export class BootScene extends Phaser.Scene {
     for (const k of ['enemy.moth', 'enemy.captcha', 'enemy.autocomplete']) {   // D-017 coderot (tools/art/gen_bagel_enemies.py)
       if (has('bagel_enemies', `${k}_0`)) this.anims.create({ key: k, frames: [0, 1].map((i) => ({ key: 'bagel_enemies', frame: `${k}_${i}` })), frameRate: k === 'enemy.moth' ? 7 : 5, repeat: -1 });
     }
-    for (const k of ['enemy.rotling', 'enemy.spitter']) {
+    for (const k of ['enemy.rotling', 'enemy.spitter', 'enemy.rot_taken']) {
       if (has('enemies', `${k}_0`)) this.anims.create({ key: k, frames: [0, 1].map((i) => ({ key: 'enemies', frame: `${k}_${i}` })), frameRate: 5, repeat: -1 });
     }
     for (const k of ['sahur', 'pork']) {

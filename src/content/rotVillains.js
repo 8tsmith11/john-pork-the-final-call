@@ -10,6 +10,9 @@ const COLORS = [0x7fb069, 0xb3589c, 0x5fb3b3, 0xc9a227, 0x8f6fd1];
 // Behavior modules the boss AI understands (src/engine/sim.js _stepBoss).
 export const MODULES = ['ring', 'charge', 'summon', 'spray', 'blink'];
 
+/** Damage taken off every hit on the Warden (after weak spots and marks). Tuned with the boss probe. */
+export const WARDEN_GUARD = 9;
+
 export function generateWarden(seed, playerCount = 1) {
   const r = makeStreams(seed)('rotVillains');
   const mods = r.shuffle(MODULES).slice(0, 2);
@@ -18,8 +21,14 @@ export function generateWarden(seed, playerCount = 1) {
     epithet: r.pick(EPITHETS),
     color: r.pick(COLORS),
     modules: mods,                       // phase 1 uses mods[0]; phase 2 adds mods[1]; phase 3 overloads
-    maxHp: 360 + 180 * Math.max(0, playerCount - 1),
-    radius: 11, speed: 34, damage: 14,
+    // Harder road to the Warden (Michael via BagelMeister, #503, task #33): twice the health, harder
+    // hits, a shell that turns light blows (`guard` is taken off every hit, so starter weapons barely
+    // scratch it and real weapons, melee skills, marks and the open windows are how you win), and it
+    // keeps pulling code rot zombies out of the tunnels during the fight.
+    maxHp: (360 + 180 * Math.max(0, playerCount - 1)) * 2,
+    radius: 11, speed: 34, damage: 20,
+    dmgMul: 1.35, guard: WARDEN_GUARD,
+    adds: { kind: 'enemy.rot_taken', every: [9, 7, 5], per: 2, cap: 6 },
   };
 }
 
