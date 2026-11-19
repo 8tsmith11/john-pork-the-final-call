@@ -1,0 +1,78 @@
+// Language (Trevor: English or Spanish, in the lobby and in settings). Every Text the game draws goes
+// through tr() (src/main.js patches the text factory and setText), so a UI string translates wherever
+// it appears: exact matches first, then patterns. Anything not listed stays English, so content can
+// be translated piece by piece (dialogue and quests: hub task). Stored per browser.
+const KEY = 'jpfc.lang';
+let lang = 'en';
+try { lang = localStorage.getItem(KEY) === 'es' ? 'es' : 'en'; } catch { /* private window: English */ }
+
+export const getLang = () => lang;
+export function setLang(l) { lang = l === 'es' ? 'es' : 'en'; try { localStorage.setItem(KEY, lang); } catch { /* fine */ } }
+export const LANG_LABEL = { en: 'English', es: 'Español' };
+
+// Exact strings (UI chrome). Keep keys exactly as drawn in English.
+const ES = {
+  // title / lobby
+  'choose your roommate': 'elige a tu compañero', 'controls: ESC in game': 'controles: ESC en el juego', 'THE FINAL CALL': 'LA ÚLTIMA LLAMADA',
+  '[ESC] back': '[ESC] volver', free: 'libre', 'AI (free to claim)': 'IA (libre)', 'Opening a room...': 'Abriendo una sala...',
+  'Pick your roommate first.': 'Primero elige a tu compañero.', 'waiting for the host to start...': 'esperando a que el anfitrión empiece...',
+  'Connected. Claim your roommate.': 'Conectado. Elige a tu compañero.', 'The host closed the game.': 'El anfitrión cerró la partida.',
+  // menu tabs and panels
+  // tab labels kept about as long as the English so the bar fits
+  INVENTORY: 'OBJETOS', QUESTS: 'MISIONES', GUIDE: 'GUÍA', PHONE: 'TELÉFONO', SKILLS: 'HABIL.', STATS: 'DATOS',
+  MAP: 'MAPA', CONTROLS: 'TECLAS', SYSTEM: 'SISTEMA', '[ESC]': '[ESC]', '[ESC] close': '[ESC] cerrar',
+  BACKPACK: 'MOCHILA', 'HOTBAR  (keys 1-9)': 'BARRA  (teclas 1-9)', ARMOR: 'ARMADURA', GEAR: 'EQUIPO', HANDS: 'MANOS',
+  'BUFFS  (hover gear for details)': 'MEJORAS  (pasa el ratón por el equipo)', 'none right now': 'ninguna ahora',
+  // slot labels must fit their 13px boxes
+  head: 'cabeza', chest: 'pecho', legs: 'pier.', boots: 'botas', eyes: 'ojos', coat: 'abrigo', hands: 'manos', socks: 'medias', pack: 'moch.',
+  melee: 'cuerpo', ranged: 'dist.', gadget: 'útil', charm: 'amul.',
+  'click: pick up / place · right click: use / equip / half': 'clic: tomar / dejar · clic der.: usar / equipar / mitad',
+  'Melee weapon': 'Arma cuerpo a cuerpo', 'Ranged weapon': 'Arma a distancia', Food: 'Comida', Material: 'Material', Curio: 'Curiosidad',
+  'Key item': 'Objeto clave', 'Instrument (use to play)': 'Instrumento (úsalo para tocar)', Gift: 'Regalo',
+  'Nothing yet.': 'Nada todavía.', 'Nothing new.': 'Nada nuevo.', 'No calls.': 'Sin llamadas.', RECENTS: 'RECIENTES', MESSAGES: 'MENSAJES',
+  'FAB #2 · PRINT': 'FAB #2 · IMPRIMIR', 'no change': 'sin cambio', 'Pick an entry.': 'Elige una entrada.',
+  'Nothing yet. Things you see and people you talk to show up here.': 'Nada todavía. Aquí aparece lo que ves y la gente con la que hablas.',
+  '› Resume': '› Continuar', '› Save now': '› Guardar ahora', '› Export save file (.jpfc.json)': '› Exportar partida (.jpfc.json)',
+  '› Save and quit to title': '› Guardar y volver al título', '› Leave the game': '› Salir de la partida',
+  'The host keeps the save for everyone.': 'El anfitrión guarda la partida de todos.',
+  // HUD and prompts
+  '[J] quests': '[J] misiones', RELOADING: 'RECARGANDO', 'NEW QUEST': 'NUEVA MISIÓN', 'QUEST UPDATED': 'MISIÓN ACTUALIZADA',
+  'QUEST COMPLETE': 'MISIÓN COMPLETADA', 'click to close': 'clic para cerrar', '▶ YOUR CHOICE': '▶ TU DECISIÓN',
+  'saving…': 'guardando…', '✓ saved': '✓ guardado', 'Your bag is full.': 'Tu mochila está llena.', 'Take it off first.': 'Quítatelo primero.',
+  'INCOMING CALL': 'LLAMADA ENTRANTE', 'IS CALLING': 'ESTÁ LLAMANDO', 'F  ANSWER': 'F  CONTESTAR', 'X  DECLINE': 'X  RECHAZAR',
+  'INCOMING SIGNAL': 'SEÑAL ENTRANTE', '◉ connecting…': '◉ conectando…', 'Skipped': 'Saltado',
+  'Story scene: everyone watches this one.': 'Escena de historia: la ven todos.',
+};
+// Patterns for strings with numbers or names in them.
+const ES_RX = [
+  [/^\[E\] Talk to (.+)$/, '[E] Hablar con $1'],
+  [/^Talk to (.+)$/, 'Hablar con $1'],
+  [/^(.+) \(too far\)$/, '$1 (muy lejos)'],
+  [/^ROOM CODE: (\S+) {3}\(others: Join and type it\)$/, 'CÓDIGO DE SALA: $1   (los demás: Unirse y escribirlo)'],
+  [/^Joining (.+)\.\.\.$/, 'Uniéndose a $1...'],
+  [/^(\S+) IS CHOOSING…$/, '$1 ESTÁ ELIGIENDO…'],
+  [/^(\S+) decides$/, 'decide $1'],
+  [/^Watching (\S+) {2}· {2}\[X\] skip$/, 'Mirando a $1  ·  [X] saltar'],
+  [/^(\S+) is talking(?: to (.+?))? {2}· {2}\[T\] watch$/, (m, a, b) => `${a} está hablando${b ? ` con ${b}` : ''}  ·  [T] mirar`],
+  [/^CODE ROT (\d+)%$/, 'PODREDUMBRE $1%'],
+  [/^New in the field guide: (.+) \[ESC → GUIDE\]$/, 'Nuevo en la guía: $1 [ESC → GUÍA]'],
+  [/^› Language: .+$/, '› Idioma: Español'],
+  [/^World "(.+)" · saved in this browser$/, 'Mundo "$1" · guardado en este navegador'],
+];
+
+export function tr(s) {
+  if (lang !== 'es' || typeof s !== 'string' || !s) return s;
+  if (ES[s] !== undefined) return ES[s];
+  for (const [rx, rep] of ES_RX) if (rx.test(s)) return s.replace(rx, rep);
+  return s;
+}
+
+// A small "EN · ES" switch for the title and lobby screens. onChange runs after the language flips.
+export function langToggle(scene, x, y, onChange) {
+  const t = scene.add.text(x, y, '', { fontFamily: 'monospace', fontSize: '8px', color: '#9aa3c7', backgroundColor: 'rgba(11,13,22,0.6)', padding: { x: 3, y: 1 } })
+    .setOrigin(1, 0).setScrollFactor(0).setDepth(9999).setInteractive({ useHandCursor: true });
+  const draw = () => t.setText(lang === 'es' ? 'EN · [ES]' : '[EN] · ES');
+  t.on('pointerdown', () => { setLang(lang === 'es' ? 'en' : 'es'); draw(); onChange?.(); });
+  draw();
+  return t;
+}

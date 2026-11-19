@@ -3,6 +3,7 @@
 import { ENEMIES, GUIDE_TIPS, GUIDE_STATS_AT, GUIDE_TIP_AT } from '../../content/enemies.js';
 import { PARTY_SCALE, COMBAT } from '../../engine/sim.js';
 import { VIEW } from '../../view.js';
+import { getLang, setLang, LANG_LABEL } from '../../i18n.js';
 import { sellPrice, ITEMS, RECIPES, SKILLS, SHOPS, playerMods, ARMOR_SLOTS, GEAR_SLOTS, WEAPON_SLOTS, SLOT_NAMES, MAX_UPGRADE, upgradeCost, scaleMods, canWear } from '../../content/items.js';
 import { MAPS } from '../../content/maps/index.js';
 import { ABILITIES, ABILITY_KEYS, MAX_SCORE, modOf, fmtMod, scoresOf } from '../../content/abilities.js';
@@ -382,6 +383,8 @@ export class GameMenu {
     const items = s.mode === 'client'
       ? [['Resume', () => this.close()], ['Leave the game', () => s.menuQuit(false)]]
       : [['Resume', () => this.close()], ['Save now', () => { s._save(); this.close(); }], ['Export save file (.jpfc.json)', () => s.menuExport()], ['Save and quit to title', () => s.menuQuit(true)]];
+    // Language (Trevor): English or Spanish. Switches at once; menus rebuild on refresh.
+    items.push([`Language: ${LANG_LABEL[getLang()]}`, () => { setLang(getLang() === 'es' ? 'en' : 'es'); this.refresh(); s._refreshMenu?.(); }]);
     items.forEach(([label, fn], i) => this._t(b.x + 14, b.y + 32 + i * 18, `› ${label}`, F(9, i === 0 ? C.hi : C.text), fn));
     this._t(b.x + 14, b.y + b.h - 18, s.mode === 'client' ? 'The host keeps the save for everyone.' : `World "${s.save.world.seed}" · saved in this browser`, F(7, C.sub));
   }

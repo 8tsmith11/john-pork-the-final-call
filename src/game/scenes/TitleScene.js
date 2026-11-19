@@ -1,3 +1,4 @@
+import { langToggle } from '../../i18n.js';
 import { ROOMMATES } from './BootScene.js';
 import { setArea } from '../../audio/audio.js';
 import { VIEW, setupCameras, toView } from '../../view.js';
@@ -12,6 +13,7 @@ export class TitleScene extends Phaser.Scene {
     const W = VIEW.w, H = VIEW.h;
     this.cameras.main.setBackgroundColor('#0b0d16');
     paintNight(this);
+    langToggle(this, W - 6, 6, () => this.scene.restart());   // English / Español (Trevor)
     const hour = new Date().getHours();
     this.add.text(W / 2, 40, 'JOHN PORK', { heading: true, fontSize: '30px', color: '#f2a6b8' }).setOrigin(0.5);
     this.add.text(W / 2, 66, 'THE FINAL CALL', { heading: true, fontSize: '12px', color: '#9aa3c7' }).setOrigin(0.5);

@@ -1,4 +1,5 @@
 import { VIEW, setupCameras, toView } from '../../view.js';
+import { langToggle } from '../../i18n.js';
 import { setArea } from '../../audio/audio.js';
 import { paintNight } from './TitleScene.js';
 // Lobby (D-010): the host owns the save. Joiners claim a character, then receive the save on start.
@@ -29,7 +30,9 @@ export class LobbyScene extends Phaser.Scene {
     this.cards = IDS.map((id, i) => this._card(id, W / 2 + (i - 1) * 110, 120));
     this.startBtn = this.add.text(W / 2, 236, '', { ...FONT, color: '#ffb347', fontSize: '11px' }).setOrigin(0.5)
       .setInteractive({ useHandCursor: true }).on('pointerdown', () => this._start());
-    this.add.text(8, 256, '[ESC] back', { ...FONT, color: '#5d6487' });
+    const back = this.add.text(8, 256, '[ESC] back', { ...FONT, color: '#5d6487' });
+    // English / Español (Trevor). The lobby keeps its connection, so relabel in place instead of restarting.
+    langToggle(this, W - 6, 6, () => { back.setText('[ESC] back'); for (const c of this.cards) { c.label?.setText(c.label.text); } this.status.setText(this.status.text); this.startBtn.setText(this.startBtn.text); });
     this.input.keyboard.on('keydown-ESC', () => { this.net?.close(); this.scene.start('Title'); });
     try { this.role === 'host' ? await this._host() : await this._join(); }
     catch (e) { this.status.setText(`${e.message || e}`).setColor('#ff6b6b'); }

@@ -5,6 +5,7 @@ import { LobbyScene } from './game/scenes/LobbyScene.js';
 
 export { GAME_VERSION } from './version.js';
 import { VIEW } from './view.js';
+import { tr } from './i18n.js';
 
 // Crisp text: every Text renders at the canvas zoom (see src/view.js), in the game's pixel fonts.
 // 'monospace' in a style means body text (VT323); `heading: true` uses Pixelify Sans. VT323 runs
@@ -16,8 +17,11 @@ Phaser.GameObjects.GameObjectFactory.prototype.text = function (x, y, t, style =
   if (st.heading) { st.fontFamily = "'Pixelify Sans', monospace"; }
   else if (!st.fontFamily || st.fontFamily === 'monospace') { st.fontFamily = "'VT323', monospace"; st.fontSize = `${Math.round(px * 1.45)}px`; }
   delete st.heading;
-  return _text.call(this, x, y, t, st);
+  return _text.call(this, x, y, tr(t), st);
 };
+// Language: every string a Text shows goes through tr() (src/i18n.js), at creation and on setText.
+const _setText = Phaser.GameObjects.Text.prototype.setText;
+Phaser.GameObjects.Text.prototype.setText = function (v) { return _setText.call(this, Array.isArray(v) ? v.map(tr) : tr(v)); };
 
 const params = new URLSearchParams(location.search);
 
