@@ -433,6 +433,13 @@ test('i18n: every quest title, reason, stage, pitch and reward line has Spanish'
   assert.deepEqual(missing, [], 'add these to src/i18n/es-quests.js');
 });
 
+const { ES_ITEMS } = await import('../src/i18n/es-items.js');
+const { ITEMS: ITEMS_FOR_ES } = await import('../src/content/items.js');
+test('i18n: every item has a Spanish name and description', () => {
+  const missing = Object.entries(ITEMS_FOR_ES).filter(([id, d]) => { const es = ES_ITEMS[id.replace(/^item\./, '')]; return !es || !es[0] || (d.text && !es[1]); }).map(([id]) => id);
+  assert.deepEqual(missing, [], 'add these to src/i18n/es-items.js');
+});
+
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
 test('pipe puzzle: every seed is solvable and starts unsolved', () => {
   if (!PipePuzzle) return;

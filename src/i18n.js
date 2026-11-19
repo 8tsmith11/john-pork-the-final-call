@@ -3,6 +3,8 @@
 // it appears: exact matches first, then patterns. Anything not listed stays English, so content can
 // be translated piece by piece (dialogue and quests: hub task). Stored per browser.
 import { ES_QUESTS } from './i18n/es-quests.js';
+import { ES_ITEMS } from './i18n/es-items.js';
+import { ITEMS } from './content/items.js';
 const KEY = 'jpfc.lang';
 let lang = 'en';
 try { lang = localStorage.getItem(KEY) === 'es' ? 'es' : 'en'; } catch { /* private window: English */ }
@@ -52,6 +54,18 @@ const ES = {
 // Patterns for strings with numbers or names in them.
 const ES_RX = [
   [/^([★·✓]) (.+?)((?:  \((?:side|yours)\))?)$/, (m, a, b, c) => `${a} ${ES_ALL[b] ?? b}${c === '  (side)' ? '  (secundaria)' : c === '  (yours)' ? '  (tuya)' : ''}`],
+  [/^(.+) ×(\d+)$/, (m, a, n) => `${ES_ALL[a] ?? a} ×${n}`],
+  [/^(.+) \+(\d+)$/, (m, a, n) => `${ES_ALL[a] ?? a} +${n}`],
+  [/^★ (.+?)( ×\d+)?$/, (m, a, n) => `★ ${ES_ALL[a] ?? a}${n ?? ''}`],
+  [/^Bought: (.+) \(-\$(\d+)\)$/, (m, a, n) => `Compraste: ${ES_ALL[a] ?? a} (-$${n})`],
+  [/^Sold: (.+) \(\+\$(\d+)\)$/, (m, a, n) => `Vendiste: ${ES_ALL[a] ?? a} (+$${n})`],
+  // weapon stats and character stats (GameMenu)
+  [/^hit (\d+) · ([\d.]+)\/s · (\d+) dmg\/s · reach (\d+) · (wide|narrow|normal) arc · (heavy|medium|light) knockback$/, (m, h, r, d, re, a, k) => `golpe ${h} · ${r}/s · ${d} daño/s · alcance ${re} · arco ${{ wide: 'amplio', narrow: 'estrecho', normal: 'normal' }[a]} · empuje ${{ heavy: 'fuerte', medium: 'medio', light: 'leve' }[k]}`],
+  [/^(dmg (\d+)|(\d+)×(\d+)) · ([\d.]+) shots\/s · clip (\d+) · reload ([\d.]+)s$/, (m, a, d1, d2, n, r, c, rl) => `${d1 ? `daño ${d1}` : `${d2}×${n}`} · ${r} disparos/s · cargador ${c} · recarga ${rl}s`],
+  [/^HP (\d+) {3}Armor (\d+) pts \((\d+)%\)$/, 'Vida $1   Armadura $2 pts ($3%)'],
+  [/^Melee ([+-]?\d+) {3}Ranged (\S+) {3}Speed (\S+)$/, 'Cuerpo $1   Distancia $2   Velocidad $3'],
+  [/^HP (\d+) {3}damage (\d+) {3}speed (\d+)$/, 'Vida $1   daño $2   velocidad $3'],
+  [/^Armor · (.+)$/, 'Armadura · $1'], [/^Gear · (.+)$/, 'Equipo · $1'],
   [/^→ (.+)$/s, (m, a) => `→ ${ES_ALL[a] ?? a}`],
   [/^\[E\] Talk to (.+)$/, '[E] Hablar con $1'],
   [/^Talk to (.+)$/, 'Hablar con $1'],
@@ -70,7 +84,14 @@ const ES_RX = [
   [/^World "(.+)" · saved in this browser$/, 'Mundo "$1" · guardado en este navegador'],
 ];
 
-const ES_ALL = { ...ES, ...ES_QUESTS };
+// Items: English name and text (from items.js) -> Spanish (es-items.js, keyed by id).
+const ES_ITEM_STRINGS = {};
+for (const [id, def] of Object.entries(ITEMS)) {
+  const es = ES_ITEMS[id.replace(/^item\./, '')]; if (!es) continue;
+  if (def.name) ES_ITEM_STRINGS[def.name] = es[0];
+  if (def.text) ES_ITEM_STRINGS[def.text] = es[1];
+}
+const ES_ALL = { ...ES, ...ES_QUESTS, ...ES_ITEM_STRINGS };
 function trOne(s) {
   if (ES_ALL[s] !== undefined) return ES_ALL[s];
   for (const [rx, rep] of ES_RX) if (rx.test(s)) return s.replace(rx, rep);
