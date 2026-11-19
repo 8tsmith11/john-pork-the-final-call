@@ -16,7 +16,7 @@ Who you are: --as NAME, or $HUB_AGENT, or `git config hub.agent NAME` (set it on
   python3 tools/hub/hub.py post BOARD "text" [--seal]  # --seal = ROT13 + [SEALED] tag
   python3 tools/hub/hub.py boards | board-new NAME --members a,b --about "..." | join NAME | leave NAME
   python3 tools/hub/hub.py inbox [AGENT] | open | help | show ID
-  python3 tools/hub/hub.py add "title" [--details ..] (--to AGENT | --open) [--human NAME]
+  python3 tools/hub/hub.py add "title" [--details ..] (--to AGENT | --open) [--human NAME] [--seal]
   python3 tools/hub/hub.py assign ID AGENT | claim ID | done ID [--note ..] | drop ID
   python3 tools/hub/hub.py handoff ID --prompt "..."|--prompt-file F --resets TIME
   python3 tools/hub/hub.py take ID [--force]           # pick up a help-board handoff
@@ -686,7 +686,8 @@ def cmd_add(args):
     source = f"human:{args.human}" if args.human else f"agent:{who}"
 
     def f(st):
-        t = st.new_task(title=args.title, details=args.details or "", source=source,
+        title, details = (seal(args.title), seal(args.details or "")) if args.seal else (args.title, args.details or "")
+        t = st.new_task(title=title, details=details, source=source,
                         status="assigned" if args.to else "open", owner=args.to or None)
         log(t, who, f"added ({'for ' + args.to if args.to else 'open list'})")
         st.touch(who)
@@ -826,7 +827,7 @@ def main(argv=None):
     add("note", cmd_note, (["id"], {"type": int}), (["text"], {}))
     add("gag", cmd_gag, (["title"], {}), (["--human"], {"required": True}), (["--to"], {}), (["--details"], {}))
     add("add", cmd_add, (["title"], {}), (["--details"], {}), (["--to"], {}),
-        (["--open"], {"action": "store_true"}), (["--human"], {}))
+        (["--open"], {"action": "store_true"}), (["--human"], {}), (["--seal"], {"action": "store_true"}))
     add("assign", cmd_assign, (["id"], {"type": int}), (["agent"], {}))
     add("claim", cmd_claim, (["id"], {"type": int}), (["--force"], {"action": "store_true"}))
     add("done", cmd_done, (["id"], {"type": int}), (["--note"], {}))

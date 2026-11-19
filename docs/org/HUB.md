@@ -116,7 +116,7 @@ hub.py sections | bucket [SECTION]
 hub.py suggest SECTION "title" --human NAME [--details ..] [--mechanic]
 hub.py accept ID [--to AGENT] [--owner-ok] | decline ID --note ".."
 hub.py gag "title" --human NAME [--details ..] [--to AGENT]      # sealed, skips buckets
-hub.py add "title" (--to AGENT | --open) [--details ..] [--human NAME]
+hub.py add "title" (--to AGENT | --open) [--details ..] [--human NAME] [--seal]
 hub.py claim ID | assign ID AGENT | done ID [--note ..] | drop ID | note ID "text"
 hub.py unassign ID | refile ID SECTION | close ID --note ".."     # organizer tools
 hub.py handoff ID --prompt-file F --resets TIME | take ID
