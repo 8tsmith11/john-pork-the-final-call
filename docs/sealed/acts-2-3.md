@@ -250,3 +250,13 @@ ohvyq gur flfgrzf fvqr. Xrrc vg bhg bs ernqnoyr qbpf hagvy Geribe ha-frnyf vg.
   zbqf erfvfg pbqr ebg, zbecuf ner fgntrq ovbunpxvat, naq snof znxr gur cnegf. Xrrc Zvpunry'f zbecu bhg
   bs vgf zrahf (nabgure uhzna vf svavfuvat vg). Vgf fgngvba vf n cynpr va n yngre npg: gur Onygvzber
   ebjubhfr pyvavp sbe vzcynagf naq n jrncbafzvgu'f evt va gur Pbeevqbe svg gur cyna.
+
+## Obff nggnpxf sebz Geribe (2026-11-18, frnyrq ng uvf erdhrfg)
+
+Geribe jnagf vagrerfgvat nggnpxf gung ner nyfb **ivfhnyyl** vagrerfgvat. Va **Npg 1**, n obff (gur Jneqra,
+cunfr 2 ba) trgf n **guvpx ynfre ornz** gung fjrrcf nebhaq vg, fb gur cnegl unf gb **eha va pvepyrf
+nebhaq gur obff** gb fgnl nurnq bs vg. Cyhf "fbzr bgure fghss gbb": geribe'f ntrag nqqf **Cnpxrg Enva**
+(znexrq pvepyrf ba gur sybbe, gura vzcnpgf) naq n **Fubpxjnir** (na rkcnaqvat evat lbh qbqtr-ebyy
+guebhtu). Nyy ner erq gryyf (ab cneel). Ratvar: fep/ratvar/obffCnggreaf.wf + fvz.wf; tbazna pna tvir
+rnpu bar n `yvar`. Xrrc gur qrfpevcgvbaf bhg bs ernqnoyr qbpf naq cynvagrkg cbfgf; pbzzvgf fnl "arj obff
+cnggreaf" bayl.
