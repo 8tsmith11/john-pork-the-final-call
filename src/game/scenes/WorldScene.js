@@ -2609,7 +2609,11 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'kill' && ev.boss && !ev.mini && !this._endingPlayed) { this._endingPlayed = true; this.time.delayedCall(900, () => this._playEnding(true)); }
     if (ev.t === 'phase') { this.cameras.main.shake(300, 0.01); this._bossTalk(`phase${ev.phase}`, snap); }   // live, never pauses (Trevor)
     if (ev.t === 'tell' && ev.kind) {
-      if (ev.line) { const boss = snap.enemies?.find((e) => e.boss); if (boss) this._liveLine(() => this.enemySprites.get(boss.id), tr(ev.line), '#f2a6b8'); }
+      // The Warden's line for this pattern (gonman, #481): lowercase in rot magenta, all caps in Continuity red.
+      if (ev.line) {
+        const boss = snap.enemies?.find((e) => e.boss), text = (getLang() === 'es' && ev.es) || ev.line;
+        if (boss) this._liveLine(() => this.enemySprites.get(boss.id), text, text === text.toUpperCase() ? '#ff4d4d' : '#d65db1');
+      }
       // Boss pattern tells (bossPatterns.js): red = can't deflect or parry, dodge it; amber = deflectable.
       const g = this.add.graphics().setDepth(5500), dur = (ev.dur ?? 0.7) * 1000, col = ev.red ? 0xff4d4d : 0xffb347;
       if (ev.kind === 'charge' || ev.kind === 'beam') {

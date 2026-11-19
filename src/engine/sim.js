@@ -804,7 +804,7 @@ export class Sim {
     e.state = 'windup'; e.windT = windFor(e.next, e.phase);
     e.aimA = Math.atan2(uy, ux);
     const pat = BOSS_PATTERNS[e.next];
-    this.events.push({ t: 'tell', x: e.x, y: e.y, kind: e.next, a: e.aimA, dur: e.windT, red: pat.red, name: pat.name, line: pat.line });
+    this.events.push({ t: 'tell', x: e.x, y: e.y, kind: e.next, a: e.aimA, dur: e.windT, red: pat.red, name: pat.name, line: pat.line, es: pat.es });
   }
 
   // The Warden keeps pulling code rot zombies out of the tunnel mouths during the fight (def.adds):
