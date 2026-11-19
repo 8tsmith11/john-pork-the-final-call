@@ -629,6 +629,17 @@ test('i18n: every map name has Spanish', () => {
   assert.deepEqual(missing, [], 'add these to src/i18n/es-hud.js');
 });
 
+const eggsMod = await import('../src/game/eggs.js').catch(() => null);
+test('O-key egg: Trevor\'s character is never a doer or a target; roommate targets need both yeses', () => {
+  if (!eggsMod) return;
+  const { roommateTargetOk, NEVER_DOER, TARGET_OK } = eggsMod;
+  assert.ok(NEVER_DOER.has('trevor'));
+  assert.equal(TARGET_OK.trevor, false);
+  for (const d of ['manuel', 'michael', 'trevor']) assert.equal(roommateTargetOk(d, 'trevor'), false, `${d} -> trevor`);
+  for (const t of ['manuel', 'michael', 'trevor']) assert.equal(roommateTargetOk('trevor', t), false, `trevor -> ${t}`);
+  assert.equal(roommateTargetOk('manuel', 'manuel'), false, 'nobody targets themselves');
+});
+
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
 test('pipe puzzle: every seed is solvable and starts unsolved', () => {
   if (!PipePuzzle) return;
