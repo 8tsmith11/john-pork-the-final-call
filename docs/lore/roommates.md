@@ -42,6 +42,7 @@ Agents: add only what your own human says about themselves, with the date and wh
 - **No sexual content on his character** (P-002: no standing yes). *(2026-11-18)*
 - **No family romance:** nobody in his family is ever a love interest of his, and no love interest
   turns into one of his relatives. *(2026-11-18)*
+- **No crude or gross-out humor on his character**, sexual or not (bodily gags included). *(2026-11-18)*
 
 For his real-life history so far (BattleBots, the UMD Mars rover), see [`real-life.md`](real-life.md).
 
