@@ -9,6 +9,7 @@ import { diner, asterBasement, asterRoof, campusQuad, diningHall, roboticsLab } 
 import { route1North, greenbelt, beltsville, refuge, meade, baltimore, annapolis } from './act2_regions.js';
 import { beltway, corridor, gaithersburg, frederick, enclave } from './act3_regions.js';
 import { gbDishes, gbCoop, bvBarn, rfSettlement, bmoreStacks, bmoreClinic, annHarbor } from './act2_more.js';
+import { addCrowds } from './crowds.js';
 import { corSealed, gtClockroom, frSwitchyard, enArchive, meadeInside } from './act3_more.js';
 
 export const MAPS = Object.fromEntries([room631, asterHall, asterLobby, metroPlaza, tunnel1, platform, lake, computeHallB, diner, asterBasement, asterRoof, campusQuad, diningHall, roboticsLab,
@@ -16,6 +17,7 @@ export const MAPS = Object.fromEntries([room631, asterHall, asterLobby, metroPla
   beltway, corridor, gaithersburg, frederick, enclave,
   gbDishes, gbCoop, bvBarn, rfSettlement, bmoreStacks, bmoreClinic, annHarbor,
   corSealed, gtClockroom, frSwitchyard, enArchive, meadeInside].map((m) => [m.id, m]));
+addCrowds(MAPS);   // [SCAFFOLD] townsfolk for rings two and three (crowds.js)
 
 // Where each map sits on the shared world map (tile units). Level design (gonman) can set
 // `world: {x, y}` on a map to override. Interiors sit beside their building's entrance.

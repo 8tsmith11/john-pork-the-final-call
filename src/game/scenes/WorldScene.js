@@ -2109,7 +2109,8 @@ export class WorldScene extends Phaser.Scene {
     let nearest = null, nd = 34;
     for (const o of this.map.objects) { if (o.goneFlag && this.save.flags[o.goneFlag]) { this.propById?.[o.id]?.im.setVisible(false); continue; } const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y); if (d <= nd) { nd = d; nearest = o; } }
     const person = !nearest ? this.crowd?.nearest(me.x, me.y) : null;
-    const verb = (o) => (o.npc || o.talk && o.id.startsWith('npc.') ? `Talk to ${o.label}` : o.label);
+    // "Talk to a crabber", not "Talk to A crabber": a leading article reads lower-case mid-sentence.
+    const verb = (o) => (o.npc || o.talk && o.id.startsWith('npc.') ? `Talk to ${o.label.replace(/^(A|An|The) /, (w) => w.toLowerCase())}` : o.label);
     this.hint.setText(nearest ? `[E] ${verb(nearest)}${nearest.door ? (nearest.open ? ' (close)' : ' (open)') : ''}` : person ? `[E] Talk to ${person.name}` : '');
     // Name tag over whoever you're about to talk to.
     this.nameTag ??= this.add.text(0, 0, '', { ...FONT, fontSize: '7px', color: '#ffe6c0' }).setOrigin(0.5, 1).setDepth(6500);
