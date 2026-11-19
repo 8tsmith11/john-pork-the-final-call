@@ -5,7 +5,8 @@ import { formatBalanceGroup } from './balance-summary.mjs';
 import { BalanceBot, countHostMoves, newMoveCounts } from './balance-bot.mjs';
 const root = process.argv[2];
 const legacy = process.argv.includes('--legacy');
-const { Sim } = await import(root + '/src/engine/sim.js');
+const rules = await import(root + '/src/engine/sim.js');
+const { Sim } = rules;
 const { Rng } = await import(root + '/src/engine/rng.js');
 const { CompanionBrain } = await import(root + '/src/engine/companion.js');
 const { MAPS } = await import(root + '/src/content/maps/index.js');
@@ -27,7 +28,7 @@ function runSeed(mapId, solo, gear, seed) {
   const char = { equipped: gear ? { weapon: 'item.wooden_bat', armor: 'item.mesh_vest' } : { weapon: 'item.pry_bar' }, skills: {} };
   for (const p of sim.players.values()) sim.setMods(p.id, playerMods(char, p.character));
   const brain = new CompanionBrain(sim), h = sim.players.get('host');
-  const bot = new BalanceBot(sim, brain, { legacy }), moves = newMoveCounts();
+  const bot = new BalanceBot(sim, brain, { legacy, rules }), moves = newMoveCounts();
   const start = sim.enemies.size; let downs = 0, wipes = 0, dmg = 0, t = 0;
   for (; t < 60 * 600 && sim.enemies.size > 0; t++) {
     const inp = bot.input(h), previousDodge = h.dodgeStamp;

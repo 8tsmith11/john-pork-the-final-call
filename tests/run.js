@@ -12,6 +12,7 @@ import { formatBalanceGroup } from '../tools/balance-summary.mjs';
 import { BalanceBot, countHostMoves, newMoveCounts } from '../tools/balance-bot.mjs';
 import { CompanionBrain as BalanceBrain } from '../src/engine/companion.js';
 import { ITEMS as BALANCE_ITEMS } from '../src/content/items.js';
+import * as BOT_RULES from '../src/engine/sim.js';
 
 let failed = 0;
 const test = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}\n     ${e.message}`); } };
@@ -19,9 +20,9 @@ const test = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e
 const rotArena = () => ({ id: 'rot-test', w: 100, h: 100, objects: [], enemies: [],
   spawns: [{ x: 160, y: 160 }], solid: () => false });
 
-const botFixture = () => {
+const botFixture = (options) => {
   const sim = new Sim(rotArena()); sim.addPlayer('host', 'trevor');
-  const p = sim.players.get('host'), bot = new BalanceBot(sim, new BalanceBrain(sim)), counts = newMoveCounts();
+  const p = sim.players.get('host'), bot = new BalanceBot(sim, new BalanceBrain(sim), options), counts = newMoveCounts();
   p.mods.swing = { ...BALANCE_ITEMS['item.pry_bar'].swing };
   const step = () => { const inp = bot.input(p); sim.step(1 / 60, new Map([[p.id, inp]])); countHostMoves(counts, sim.events, p.id); return inp; };
   return { sim, p, bot, counts, step };
@@ -52,6 +53,12 @@ test('balance bot respects stamina and ignores shots travelling away', () => {
   const { sim, p, bot } = botFixture(); p.mods.swing = null;
   sim.shots.push({ x: p.x + 12, y: p.y - 6, vx: -100, vy: 0, life: 2, dmg: 10, from: 'enemy' });
   assert.equal(bot.input(p).dodge, true, 'no phantom deflect without a melee weapon');
+});
+test('balance bot honors the target checkout rules instead of its own defaults', () => {
+  const { sim, p, bot } = botFixture({ rules: { ...BOT_RULES, MOVE: { ...BOT_RULES.MOVE, dashCost: 101 } } });
+  p.meleeCd = 1;
+  sim.shots.push({ x: p.x + 12, y: p.y - 6, vx: -100, vy: 0, life: 2, dmg: 10, from: 'enemy' });
+  assert.equal(bot.input(p).dodge, false, 'target checkout requires more stamina than is available');
 });
 test('balance bot parries a committed lunge and sustains real combo finishers', () => {
   const f = botFixture();

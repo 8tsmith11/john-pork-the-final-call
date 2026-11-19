@@ -1,18 +1,19 @@
-import { COMBAT, MOVE, LULLABY, FEEL, emptyInput } from '../src/engine/sim.js';
+import * as DEFAULT_RULES from '../src/engine/sim.js';
 
 const THINK_TICKS = 6; // 100 ms decisions; held attacks continue between decisions.
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
 /** A repeatable, knowledgeable scripted player, not a prediction of an average human. */
 export class BalanceBot {
-  constructor(sim, brain, { legacy = false } = {}) {
+  constructor(sim, brain, { legacy = false, rules = DEFAULT_RULES } = {}) {
     this.sim = sim; this.brain = brain; this.legacy = legacy;
-    this.nextThink = 0; this.last = emptyInput();
+    this.rules = rules;
+    this.nextThink = 0; this.last = rules.emptyInput();
   }
 
   input(p) {
-    if (this.legacy) return p.downed ? emptyInput() : this._legacy(p);
-    if (p.downed || p.sleepT > 0 || p.waitExit) return emptyInput();
+    if (this.legacy) return p.downed ? this.rules.emptyInput() : this._legacy(p);
+    if (p.downed || p.sleepT > 0 || p.waitExit) return this.rules.emptyInput();
     if (this.sim.tick < this.nextThink) return { ...this.last, dodge: false };
     this.nextThink = this.sim.tick + THINK_TICKS;
     return this.last = this._think(p);
@@ -29,7 +30,7 @@ export class BalanceBot {
   }
 
   _roll(p, inp, dx, dy) {
-    if (p.dodgeT > 0 || p.dodgeCd > 0 || (p.sta ?? 0) < MOVE.dashCost) return false;
+    if (p.dodgeT > 0 || p.dodgeCd > 0 || (p.sta ?? 0) < this.rules.MOVE.dashCost) return false;
     const length = Math.hypot(dx, dy) || 1;
     for (const [x, y] of [[dx / length, dy / length], [-dy / length, dx / length], [dy / length, -dx / length]]) {
       if (!this.brain._clear(p.x, p.y, p.x + x * 30, p.y + y * 30)) continue;
@@ -39,6 +40,7 @@ export class BalanceBot {
   }
 
   _think(p) {
+    const { COMBAT, LULLABY, FEEL, emptyInput } = this.rules;
     const sim = this.sim, inp = emptyInput(), m = this._memory(p);
     const foes = [...sim.enemies.values()].filter((e) => e.hp > 0).sort((a, b) => dist(a, p) - dist(b, p));
     // Hum is a visible/audible cue. Break exposure before another close-range attempt.
@@ -92,7 +94,7 @@ export class BalanceBot {
 
   // The previous decision policy is retained for an apples-to-apples --legacy comparison.
   _legacy(p) {
-    const inp = emptyInput(), m = this._memory(p);
+    const inp = this.rules.emptyInput(), m = this._memory(p);
     let foe = null, fd = 1e9;
     for (const e of this.sim.enemies.values()) { const d = dist(e, p); if (d < fd) { fd = d; foe = e; } }
     if (!foe) return inp;
@@ -100,7 +102,7 @@ export class BalanceBot {
     if (fd > 16) { inp.mx = Math.cos(a); inp.my = Math.sin(a); } else inp.attack = true;
     if (p.hp < 30 && fd < 30 && p.sta > 40) { inp.mx = -Math.cos(a); inp.my = -Math.sin(a); inp.dodge = true; }
     if (fd > 16 && !this.brain._clear(p.x, p.y, foe.x, foe.y)) {
-      const tmp = emptyInput(); this.brain._steer(p, m, foe.x, foe.y, tmp); inp.mx = tmp.mx; inp.my = tmp.my;
+      const tmp = this.rules.emptyInput(); this.brain._steer(p, m, foe.x, foe.y, tmp); inp.mx = tmp.mx; inp.my = tmp.my;
     }
     return inp;
   }
