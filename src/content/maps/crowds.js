@@ -7,6 +7,11 @@ const ART = ['npc.rotter_1', 'npc.rotter_2', 'npc.rotter_3'];
 
 // [map, hint x, hint y, id suffix, label, line]
 const CROWD = [
+  // ---- Act 1 (the new campus areas; act1_more.js) ----
+  ['diner', 6, 5, 'diner_regular', 'A regular at the counter', '"Same booth, same order, every night. The cook starts it when I walk in. Sometimes before."'],
+  ['campus_quad', 8, 6, 'quad_student', 'A student on the brick path', '"Midterms got cancelled. Not postponed. Cancelled. Nobody sent an email."'],
+  ['dining_hall', 20, 3, 'dining_student', 'A student with a waffle', '"It\'s shaped like the university seal. I feel like I\'m eating my diploma."'],
+  ['robotics_lab', 16, 6, 'lab_grad', 'A grad student asleep at a bench', '"Mm. Five more minutes. Tell the rover I\'m sorry."'],
   // ---- Act 2 ----
   ['route1_north', 8, 6, 'r1n_family', 'A family with a handcart', '"We heard Baltimore has work. We heard it from a man who heard it."'],
   ['route1_north', 30, 3, 'r1n_trooper', 'An off-duty trooper', '"I\'m not on shift. If I were, I\'d stop you. I\'m not."'],
@@ -67,6 +72,7 @@ const CROWD = [
   ['enclave', 22, 8, 'en_jogger', 'A jogger on the path', '"Path only. Never the grass. I\'ve jogged past the grass for eleven years."'],
   ['en_archive', 4, 3, 'en_reader', 'A reader in the stacks', '"Every version of every address. Some days I read them all, in order."'],
   ['en_archive', 19, 6, 'en_guard', 'An archive guard', '"Nothing can rot the parchment. My job is mainly people."'],
+  ['gt_labs', 8, 5, 'gt_checker', 'A faction clock-checker', '"I\'m here to check our clocks against theirs. Ours are wrong. I\'m going to say they\'re right."'],
   ['meade_inside', 22, 4, 'md_list_reader', 'An analyst at the far desk', '"Don\'t look at the wall. Everybody looks at the wall."'],
   ['meade_inside', 4, 7, 'md_night_clerk', 'A night clerk', '"I file the intercepts. I don\'t read them. I read them."'],
 ];

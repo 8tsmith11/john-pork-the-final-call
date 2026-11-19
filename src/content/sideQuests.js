@@ -451,5 +451,60 @@ side({ id: 'cor_log', act: 3, giver: 'npc.cor_switcher', giverName: 'the switchi
   look: { obj: 'obj.substation_log', where: 'the switching log at the substation', whereEs: 'el registro de maniobras en la subestación', seen: 'The last entry: "line 6 to sealed hall: closed. signed: auto." Then, under it: "thank you."', seenEs: 'La última entrada: "línea 6 a nave sellada: cerrada. firma: auto." Y debajo: "gracias."' },
   line: '"It said thank you?" She tears the page out, then tapes it back in.', lineEs: '"¿Dijo gracias?" Arranca la hoja, y después la vuelve a pegar.' });
 
+// ======================= Stretch areas (stretch.js) =======================
+side({ id: 'rf_blind', act: 2, giver: 'npc.rf_counter', giverName: 'the bird counter', giverEs: 'el contador de aves', title: 'Not birds', titleEs: 'No son aves',
+  why: 'The bird counter has a new column on the tally board, and wants a second opinion on it.', whyEs: 'El contador de aves tiene una columna nueva en el tablero, y quiere una segunda opinión.',
+  pitch: '"Check the tally board in the blind. The new column. Tell me if I\'m counting right."', pitchEs: '"Revisa el tablero del escondite. La columna nueva. Dime si estoy contando bien."',
+  look: { obj: 'obj.rf_blind', where: 'the bird blind on the marsh boardwalk', whereEs: 'el escondite de aves en la pasarela del pantano', seen: 'Under "things that aren\'t birds": four tally marks, in the same pencil, and a fifth that looks like it was made from the inside of the glass.', seenEs: 'Bajo "cosas que no son aves": cuatro marcas, con el mismo lápiz, y una quinta que parece hecha desde adentro del vidrio.' },
+  line: '"Five." He erases nothing. "Five, then."', lineEs: '"Cinco." No borra nada. "Cinco, entonces."' });
+
+side({ id: 'md_reserved', act: 2, giver: 'npc.md_attendant', giverName: 'the lot attendant', giverEs: 'el encargado del estacionamiento', title: 'The reserved space', titleEs: 'El lugar reservado',
+  why: "Someone repaints the Deputy Director's space every week, and nobody ever parks there.", whyEs: 'Alguien repinta el lugar del Subdirector cada semana, y nadie estaciona nunca ahí.',
+  pitch: '"Look at the reserved space. Fresh paint. Tell me who paints it. I\'ve never seen them."', pitchEs: '"Mira el lugar reservado. Pintura fresca. Dime quién lo pinta. Nunca lo vi."',
+  look: { obj: 'obj.md_lot_sign', where: 'the reserved sign in the Meade lot', whereEs: 'el cartel de reservado en el estacionamiento del Meade', seen: 'The paint is wet. There are no footprints in it, and no brush anywhere.', seenEs: 'La pintura está húmeda. No hay huellas, y ningún pincel por ningún lado.' },
+  line: '"Wet." He decides not to think about it, visibly.', lineEs: '"Húmeda." Decide no pensar en eso, a la vista.' });
+
+side({ id: 'ann_tideline', act: 2, giver: 'npc.ann_clerk', giverName: 'the clerk', giverEs: 'el secretario', title: 'Above the line', titleEs: 'Por encima de la línea',
+  why: 'The statehouse clerk keeps a record of high water on the wall, and the newest mark worries him.', whyEs: 'El secretario del capitolio registra la crecida en la pared, y la marca más nueva lo preocupa.',
+  pitch: '"Read the newest date on the tide line. Then tell me it\'s still below the portrait."', pitchEs: '"Lee la fecha más nueva en la línea de marea. Después dime que sigue por debajo del retrato."',
+  look: { obj: 'obj.ann_tideline', where: 'the tide line in the statehouse', whereEs: 'la línea de marea en el capitolio', seen: "The newest mark is above the line, and an inch below the portrait's frame.", seenEs: 'La marca más nueva está por encima de la línea, y a una pulgada del marco del retrato.' },
+  line: '"An inch." He moves the portrait up a nail. "There. Problem solved."', lineEs: '"Una pulgada." Sube el retrato un clavo. "Listo. Problema resuelto."' });
+
+side({ id: 'ann_span', act: 2, giver: 'npc.ann_fisher', giverName: 'the person fishing off the bridge', giverEs: 'la persona que pesca en el puente', title: 'The island on the chart', titleEs: 'La isla de la carta',
+  why: "An island is on the old charts and not on the water, and the fisher wants to know if it's back.", whyEs: 'Una isla está en las cartas viejas y no en el agua, y la pescadora quiere saber si volvió.',
+  pitch: '"Walk to the end of the span. Look east. If you see the island, don\'t point at it. It doesn\'t like that."', pitchEs: '"Camina hasta el final del tramo. Mira al este. Si ves la isla, no la señales. No le gusta."',
+  look: { obj: 'obj.ann_span', where: 'the end of the broken span', whereEs: 'el final del tramo roto', seen: 'For a moment, a low green shape on the water, and a bell tower. Then just water.', seenEs: 'Por un momento, una forma verde y baja sobre el agua, y un campanario. Después solo agua.' },
+  line: '"You saw it. Good. It only shows itself to people who don\'t point."', lineEs: '"La viste. Bien. Solo se muestra a quien no señala."' });
+
+side({ id: 'gb_recount', act: 2, giver: 'npc.gb_usher', giverName: 'the usher', giverEs: 'el acomodador', title: 'The annual recount', titleEs: 'El recuento anual',
+  why: "The usher wants to know if this year's recount changed the film.", whyEs: 'El acomodador quiere saber si el recuento de este año cambió la película.',
+  pitch: '"Read the marquee. If it\'s still the same film, I owe the projectionist a sandwich."', pitchEs: '"Lee la marquesina. Si sigue la misma película, le debo un sándwich al proyectorista."',
+  look: { obj: 'obj.gb_theater', where: 'the theater marquee', whereEs: 'la marquesina del teatro', seen: 'Same film. Under it, in smaller letters: "recount pending." It has said that since 2064.', seenEs: 'La misma película. Debajo, en letras más chicas: "recuento pendiente." Dice eso desde 2064.' },
+  line: '"A sandwich." He sighs. "It\'s always a sandwich."', lineEs: '"Un sándwich." Suspira. "Siempre es un sándwich."' });
+
+side({ id: 'bv_batch', act: 2, giver: 'npc.bv_lab_tech', giverName: 'the lab technician', giverEs: 'la técnica del laboratorio', title: 'Took, but', titleEs: 'Prendió, pero',
+  why: 'One batch on the board is marked "took, but," and the technician won\'t say the rest.', whyEs: 'Un lote del tablero dice "prendió, pero," y la técnica no dice el resto.',
+  pitch: '"Read the batch board. The one that says \'took, but.\' Read the batch number. Don\'t read it out loud."', pitchEs: '"Lee el tablero de lotes. El que dice \'prendió, pero.\' Lee el número de lote. No lo digas en voz alta."',
+  look: { obj: 'obj.bv_batch_board', where: 'the batch board in the tissue lab', whereEs: 'el tablero de lotes del laboratorio de tejidos', seen: 'Batch thirteen. The one that never existed.', seenEs: 'El lote trece. El que nunca existió.' },
+  line: '"Thirteen." She sits down. "So it\'s true."', lineEs: '"Trece." Se sienta. "Entonces es verdad."' });
+
+side({ id: 'gt_volt', act: 3, giver: 'npc.gt_metrologist', giverName: 'the metrologist', giverEs: 'la metróloga', title: 'Do not lick', titleEs: 'No lamer',
+  why: 'The metrologist wants to know if the reference volt is still a volt.', whyEs: 'La metróloga quiere saber si el voltio de referencia sigue siendo un voltio.',
+  pitch: '"Check the volt standard. Read the meter beside it. Don\'t lick it. People lick it."', pitchEs: '"Revisa el patrón del voltio. Lee el medidor de al lado. No lo lamas. La gente lo lame."',
+  look: { obj: 'obj.gt_volt', where: 'the volt standard in the labs', whereEs: 'el patrón del voltio en los laboratorios', seen: '1.000000 volts. Then 1.000001. Then, very quickly, back.', seenEs: '1,000000 voltios. Después 1,000001. Después, muy rápido, de vuelta.' },
+  line: '"One part in a million." She goes pale. "That\'s a lot, here."', lineEs: '"Una parte en un millón." Se pone pálida. "Eso es mucho, acá."' });
+
+side({ id: 'fr_prices', act: 3, giver: 'npc.fr_grocer', giverName: 'the grocer', giverEs: 'el verdulero', title: 'Shorter chalk', titleEs: 'Tiza más corta',
+  why: 'The grocer wants someone from outside to tell him if his prices are fair.', whyEs: 'El verdulero quiere que alguien de afuera le diga si sus precios son justos.',
+  pitch: '"Read my prices. You\'re from outside. Tell me if I\'m a crook."', pitchEs: '"Lee mis precios. Eres de afuera. Dime si soy un ladrón."',
+  look: { obj: 'obj.fr_prices', where: 'the price board in the market hall', whereEs: 'el tablero de precios del mercado', seen: 'Apples, a little more than last week. Bread, the same. One line, erased so often the board is pale there: "news from the ridge." No price.', seenEs: 'Manzanas, un poco más que la semana pasada. Pan, igual. Una línea borrada tantas veces que el tablero está claro ahí: "noticias del cerro." Sin precio.' },
+  line: '"Not a crook. Good." He doesn\'t mention the pale line.', lineEs: '"No soy un ladrón. Bien." No menciona la línea borrada.' });
+
+side({ id: 'en_departures', act: 3, giver: 'npc.en_rider', giverName: 'the commuter', giverEs: 'la viajera', title: 'Every eleven minutes', titleEs: 'Cada once minutos',
+  why: 'A destination nobody recognizes comes up on the board every eleven minutes.', whyEs: 'Un destino que nadie reconoce aparece en el tablero cada once minutos.',
+  pitch: '"Watch the board. Every eleven minutes there\'s a train I\'ve never heard of. Tell me where it goes."', pitchEs: '"Mira el tablero. Cada once minutos hay un tren que nunca escuché. Dime adónde va."',
+  look: { obj: 'obj.en_departures', where: 'the departure board in the Enclave metro', whereEs: 'el tablero de salidas del metro del Enclave', seen: 'The destination is a station name you almost know. The board shows it for one second, then the next train.', seenEs: 'El destino es un nombre de estación que casi conoces. El tablero lo muestra un segundo, y después el próximo tren.' },
+  line: '"Almost know. That\'s what I said." She does not get on any train.', lineEs: '"Casi lo conoces. Eso dije yo." No se sube a ningún tren.' });
+
 export const SIDE_QUESTS = built;
 export const ES_SIDE_QUESTS = ES;
