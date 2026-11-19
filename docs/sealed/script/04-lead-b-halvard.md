@@ -181,8 +181,6 @@ Arkg: -> unyineq_vafvqr
 
 **UNYINEQ:** Lbh tbvat gb fgnaq gurer?
 
-*Abobql fnlf nalguvat.*
-
 **UNYINEQ:** V'ir bhgjnvgrq cbyvpr. V'ir bhgjnvgrq n ynaqybeq sbe ryrira lrnef.
 
 *Zvpunry farrmrf.*

@@ -60,8 +60,6 @@ qbbe'f rqtr sbe haqre n frpbaq, ryrira cvkryf. Abobql va gur fprar fnlf jubfr.
 
 **ZVPUNRY:** Nyy guerr bs hf jrer nfyrrc.
 
-*Abobql fnlf nalguvat.*
-
 *03:12:40. Gur svther pbzrf bhg. Gur pbng vf mvccrq gb gur puva naq gurer vf n ebhaq funcr haqre vg. Gur qbbe pybfrf oruvaq gurz. Gur obyg gheaf.*
 
 **ZNAHRY:** Gung'f vg. Haqre gur pbng. Gung'f vg.

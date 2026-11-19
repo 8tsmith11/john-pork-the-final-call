@@ -1,5 +1,5 @@
 <!-- SEALED SPOILERS (ROT13 Caesar cipher). Humans: reading this spoils key plot twists.
-     To open on purpose: python3 tools/spoilers/seal.py open /home/trevor-smith/code/john-pork-the-final-call/docs/sealed/script/06-the-call.md -->
+     To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/script/06-the-call.md -->
 # Gur Pnyy (zvqcbvag) naq gur ibvprznvyf
 
 **Checbfr.** Gur zvqcbvag bs Npg 1 (QRFVTA §4). Nsgre nal gjb yrnqf ner qbar, rirel fperra gur
@@ -449,8 +449,6 @@ Pubvprf:
 
 **WBUA CBEX:** Vg'f abg ure.
 
-*N cnhfr.*
-
 **WBUA CBEX:** Fbeel. V fubhyq'ir yrq jvgu gung.
 
 **ZVPUNRY:** V qvqa'g fnl nalguvat.
@@ -600,8 +598,6 @@ Pubvprf:
 **WBUA CBEX:** Zvpunry. Xrrc gur evatre ba ng avtug.
 
 **WBUA CBEX:** Abg sbe zr.
-
-*N cnhfr.*
 
 **WBUA CBEX:** N yvggyr sbe zr.
 
@@ -878,8 +874,6 @@ Pubvprf:
 
 **WBUA CBEX:** Gjvpr va bar avtug. V xabj ubj gung ybbxf.
 
-*N cnhfr.*
-
 **WBUA CBEX:** Lbh'er va gur ghaaryf abj. V pna gryy orpnhfr gur fvtany'f onq, naq orpnhfr V pna frr lbh.
 
 **WBUA CBEX:** Gung fbhaqrq jbefr guna V zrnag vg.
@@ -1003,8 +997,6 @@ Pubvprf:
 *WBUA CBEX (3)*
 
 **WBUA CBEX:** Ynfg bar.
-
-*N cnhfr.*
 
 **WBUA CBEX:** V qba'g znxr gung ehyr.
 
