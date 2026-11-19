@@ -320,5 +320,46 @@ for ch, fn in PAINT.items():
         g = fn(random.Random(f"{ch}-{v}"), v)
         out.append(f"@frame tile_{ord(ch)}_{v}")
         out.extend("".join(L[c] for c in row) for row in g)
+
+# Connected walls (Trevor #340/#341, depth pass task 13): frames tile_35_m<mask>, mask = same-tile
+# neighbours N=1 E=2 S=4 W=8. Three-quarter view: a wall with more wall below it is the dark TOP
+# (seen from above); a wall with floor below it is the lit FRONT FACE, brick with a baseboard.
+# Exposed edges of the top get a thin lit rim (north/west, toward the light) or a dark rim.
+def wall_mask(m):
+    N_, E_, S_, W_ = m & 1, m & 2, m & 4, m & 8
+    r = random.Random(f"wallmask-{m}")
+    if S_:                                    # top of the wall, seen from above
+        g = blank("night1")
+        speck(g, r, ["night0"], 6)
+        if not N_:
+            for x in range(N): g[0][x] = "night3"; g[1][x] = "night2"
+        if not W_:
+            for y in range(N): g[y][0] = "night3"
+        if not E_:
+            for y in range(N): g[y][N - 1] = "night0"
+        return g
+    g = blank("night3")                       # the front face, lit from the top left
+    top = 0 if N_ else 4
+    if not N_:                                # a one-tile-thick wall: show a sliver of top first
+        for y in range(4):
+            for x in range(N): g[y][x] = "night1"
+        for x in range(N): g[0][x] = "night3"
+    for y in range(top, N):
+        course = (y - top) // 3
+        for x in range(N):
+            if (y - top) % 3 == 2 or (x + (4 if course % 2 else 0)) % 8 == 7:
+                g[y][x] = "night2"
+    for x in range(N): g[top][x] = "concrete1"            # where the top meets the face
+    for x in range(N): g[N - 2][x] = "night1"; g[N - 1][x] = "night0"   # baseboard and contact
+    if not W_:
+        for y in range(top, N - 2): g[y][0] = "concrete0"
+    if not E_:
+        for y in range(top, N - 2): g[y][N - 1] = "night1"
+    speck(g, r, ["concrete0"], 2)
+    return g
+
+for m in range(16):
+    out.append(f"@frame tile_35_m{m}")
+    out.extend("".join(L[c] for c in row) for row in wall_mask(m))
 (REPO / "assets/src/tiles.txt").write_text("\n".join(out) + "\n")
 print(f"tiles: {len(PAINT) * 4} frames")
