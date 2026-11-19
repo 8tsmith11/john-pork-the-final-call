@@ -842,6 +842,28 @@ test('side quests (sideQuests.js): every giver, object, item, boss and person th
   assert.equal(new Set(SideQ.SIDE_QUESTS.map((q) => q.id)).size, SideQ.SIDE_QUESTS.length, 'side quest ids are unique');
 });
 
+const PK = await import('../src/content/puzzleKit.js');
+test('puzzle kit: cycle (fixed, seeded, check), order resets on a wrong part, timed only in its window, solved stays solved', async () => {
+  const run = (p, ids, ctx = {}) => { const f = {}; let r; for (const id of ids) { r = PK.use(p, id, f, ctx); Object.assign(f, r.set); } return { f, r }; };
+  const dials = PK.definePuzzle({ id: 'dials', kind: 'cycle', parts: ['a', 'b'], states: ['0', '1', '2'], answer: ['2', '1'], reward: { text: 'open', item: 'item.x' } });
+  let { f, r } = run(dials, ['a', 'a', 'b']);
+  assert.ok(r.solved && f['pz.dials.solved'] && r.reward.item === 'item.x');
+  assert.equal(PK.use(dials, 'a', f).solved, false, 'a solved puzzle stays solved');
+  const seeded = PK.definePuzzle({ id: 'seeded', kind: 'cycle', parts: ['a'], states: ['x', 'y'], answer: (seed) => [seed === 's1' ? 'y' : 'x'], reward: { text: 'ok' } });
+  assert.ok(run(seeded, ['a'], { seed: 's1' }).r.solved); assert.ok(!run(seeded, ['a'], { seed: 's2' }).r.solved);
+  const weights = PK.definePuzzle({ id: 'w', kind: 'cycle', parts: ['l', 'r'], states: ['1', '2', '5'], check: (st) => st.reduce((n, v) => n + +v, 0) === 7, reward: { text: 'balanced' } });
+  assert.ok(run(weights, ['l', 'r', 'r']).r.solved);
+  const order = PK.definePuzzle({ id: 'o', kind: 'order', parts: ['p1', 'p2', 'p3'], answer: ['p3', 'p1', 'p2'], reward: { text: 'yes' } });
+  const bad = run(order, ['p3', 'p2']); assert.ok(bad.r.wrong && bad.f['pz.o.seq'] === '');
+  assert.ok(run(order, ['p3', 'p1', 'p2']).r.solved);
+  const bell = PK.definePuzzle({ id: 'bell', kind: 'timed', parts: ['bell'], window: PK.cycleWindow(60, 10), reward: { text: 'it rings' } });
+  assert.ok(!PK.use(bell, 'bell', {}, { t: 30 }).solved); assert.ok(PK.use(bell, 'bell', {}, { t: 65 }).solved);
+  assert.throws(() => PK.definePuzzle({ id: 'x', kind: 'cycle', parts: ['a'], states: ['1'], answer: ['1'], reward: { text: 't' } }));
+  const { PUZZLES } = await import('../src/content/puzzles.js');
+  const ids = new Set(Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.map((o) => o.id)));
+  for (const p of PUZZLES) for (const o of p.parts) assert.ok(ids.has(o), `puzzle ${p.id}: part ${o} is on no map`);
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));

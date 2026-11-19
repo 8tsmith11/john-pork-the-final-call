@@ -59,6 +59,8 @@ import { Pacifier } from '../pacifier.js';
 import { GuitarStands } from '../guitarStands.js';
 import { ABILITY_KEYS, BASE_SCORES, MAX_SCORE } from '../../content/abilities.js';
 import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
+import { puzzleFor } from '../../content/puzzles.js';
+import { use as usePuzzle } from '../../content/puzzleKit.js';
 
 const STEP = 1 / 60;
 const XP_PER_LEVEL = 30;
@@ -1510,6 +1512,19 @@ export class WorldScene extends Phaser.Scene {
     this._say(`You open the face and wind it. It now reads ${now}.${note}`);
   }
 
+  // Puzzle kit (src/content/puzzleKit.js): flags, line and reward come from the spec; this only applies them.
+  _usePuzzle(p, o) {
+    const r = usePuzzle(p, o.id, this.save.flags, { seed: this.save.world.seed, t: this.time.now / 1000, lang: getLang() });
+    for (const [k, v] of Object.entries(r.set)) this._flag(k, v);
+    sfx(r.wrong ? 'hit' : 'swing');
+    if (r.solved) {
+      if (r.reward.item) this._grant(r.reward.item);
+      if (r.reward.money) { W.addMoney(this.save, this.character, r.reward.money); this._partyDirty = true; }
+      this.cameras.main.shake(300, 0.005); this._tickQuests(true);
+    }
+    this._say(`${tr(o.text ?? o.label ?? '')}\n\n${r.say}`);
+  }
+
   // Hard optional: turn Manuel's busts to face the flag, in the right order.
   _turnBust(o) {
     if (this.save.flags['puz.busts.solved']) return this._say(o.text + '\n\nAll three are looking at the flag. You don\'t want to turn them back.');
@@ -2175,6 +2190,7 @@ export class WorldScene extends Phaser.Scene {
     if (['obj.locker', 'obj.signal_chair', 'obj.departures'].includes(near.id)) { this._say(tr(near.text ?? '') + puzzleClue(near.id, this.save.world.seed, this.save.flags, getLang())); return; }
     if (near.id === 'obj.vending') { this._kickVending(near); return; }
     if (CLOCKS.includes(near.id)) { this._windClock(near); return; }
+    { const pz = puzzleFor(near.id); if (pz) { this._usePuzzle(pz, near); return; } }   // puzzle kit (src/content/puzzles.js)
     if (BUST_ORDER.includes(near.id)) { this._turnBust(near); return; }
     if (near.id === 'obj.manuel_table') { this._say(near.text + BUST_HINT); return; }
     if (near.id === 'obj.shrimp_tank') { this._say(near.text + '\n\n' + this._shrimpReading()); return; }
