@@ -1154,8 +1154,8 @@ export class WorldScene extends Phaser.Scene {
     const objective = !done && b.detail;
     const det = this.add.text(0, 30, objective ? objLine : (b.detail ?? ''), { ...FONT, fontSize: '8px', color: objective ? HI.quest : '#e8e8f0', align: 'center', wordWrap: { width: w - 16 } }).setOrigin(0.5, 0);
     if (objective && rest.length) { const more = this.add.text(0, 30 + det.height + 2, rest.join('\n'), { ...FONT, fontSize: '8px', color: '#c9cde0', align: 'center', wordWrap: { width: w - 16 } }).setOrigin(0.5, 0); det.setData('more', more); }
-    // New quests stay up until clicked (Trevor); updates and completions slide away on their own.
-    const sticky = b.kind === 'NEW QUEST';
+    // New quests and quest updates stay up until clicked (Trevor); completions slide away on their own.
+    const sticky = b.kind === 'NEW QUEST' || b.kind === 'QUEST UPDATED';   // click to close (Trevor)
     const more = det.getData('more'), detH = b.detail ? det.height + (more ? more.height + 2 : 0) + 4 : 0;
     const hint = sticky ? this.add.text(0, 30 + detH, 'click to close', { ...FONT, fontSize: '7px', color: '#9aa3c7' }).setOrigin(0.5, 0) : null;
     const h = 36 + detH + (sticky ? 10 : 0);
