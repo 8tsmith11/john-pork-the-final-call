@@ -43,6 +43,8 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 | `bio/art-check` | GitHub | Merged in `623a592` (PR #5) |
 | `bio/es-audit` | GitHub | Merged in `446f89a` (PR #6) |
 | `bio/party-health` | GitHub | Merged in `f365a01` (PR #7) |
+| `bio/merged-branch-register` | GitHub | Merged in `0edd4c9` (PR #10) |
+| `bio/companion-test-seed` | GitHub | Merged in `f94ecdb` (PR #11) |
 
 ## Deleted
 
