@@ -138,8 +138,8 @@ Format:
   Investigate or Pickpocket (d20 + modifier vs a DC by role). People carry pockets rolled once per
   world. Coderot-impaired NPCs only allow Talk, Insight and Investigate. `src/content/approaches.js`.
 - **Sleeping potions** (thrown) and **caffeine** (wakes you, sleep-immune for 45 s). Lullabies put
-  Manuel out for 12 s instead of 8, only while he wears the smart pacifier (otherwise 8 s like
-  everyone). Michael's lullaby reaches 8 tiles.
+  people out for 8 s, with one sealed exception (`docs/sealed/roommate-surprises.md`). Michael's
+  lullaby reaches 8 tiles.
 - **New coderot**: the Hold-Music Moth (sings players to sleep), the Captcha (wind-up charge, dizzy
   after) and Autocomplete (copies your dodge). Placed by swapping existing spawns on the lake and
   tunnel maps.

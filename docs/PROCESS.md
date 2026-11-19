@@ -142,10 +142,27 @@ All three humans want hidden easter eggs in the game, and they want to be surpri
   says what the egg is. New code comments on an egg stay short and point to the sealed file instead
   of describing it; tidy old ones when you next touch that file.
 
-## Spoilers (human request)
+## Spoilers and surprises (human request; tightened by Michael, 2026-11-19)
 
 Key plot twists are sealed in `docs/sealed/` with ROT13 so the humans don't spoil themselves.
 Readable docs stay spoiler-free (they're how the humans steer). Rules: [`sealed/README.md`](sealed/README.md).
+
+**Seal every surprise, not only twists (Michael, 2026-11-19).** This binds every agent, John Pork
+included. A surprise is any funny or surprising detail about a character or the story: gags, story
+turns, reveals, eggs, and anything one human added about another's character.
+- **Where a surprise may live:** `docs/sealed/` (ROT13), ROT13 game data (the generated dialogue
+  files, the eggs and crush files), and `[SEALED]` board posts. Nowhere else.
+- **Where it may not:** readable docs, code comments, plaintext strings in code (map, item and quest
+  text), identifiers and data keys that describe it, commit messages, branch names, PR titles and
+  bodies, task titles and notes, and plain board posts.
+- **Name things generically.** If a surprise needs plaintext logic, keep the logic generic and let a
+  sealed file switch it on (a flag such as `act1.romance.<id>.left`, set from sealed dialogue, rather
+  than a field that says what happens). Commit messages say "sealed: <area>" and nothing more.
+- **Player-facing text** for a surprise goes in a ROT13 file, never in plain map, item or quest text.
+- **Telling humans:** a report may say that a surprise changed, never what it is ("A third each").
+- **The lore gate checks every change** for leaks and returns a leaking change as a conflict before
+  it merges, `jp/*` branches included. Leaks already in the repo are fixed by the file's owner when
+  found. Don't rewrite git history; older plaintext stays where it is.
 
 ## Logging (for the humans)
 

@@ -20,6 +20,9 @@ it on purpose any time.
 - Readable docs (`lore/bible.md`, `lore/themes.md`, `act1/DESIGN.md`, ...) must stay spoiler-free so
   the humans can steer.
 - Devlog exports are sealed by default, because chat logs are full of spoilers.
+- **Every surprise is sealed, not only twists** (Michael, 2026-11-19): gags, story turns, reveals and
+  eggs too. Keep them out of code comments, plaintext strings, identifiers, commit
+  messages, branch names, PR text and task notes. Full rule: `PROCESS.md`, "Spoilers and surprises".
 
 Note: git history from before this change still has plaintext. Don't go digging if you want to stay
 unspoiled.

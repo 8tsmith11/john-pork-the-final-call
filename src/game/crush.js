@@ -1,11 +1,7 @@
-// Michael's crush (D-016): as the story moves on, Michael gets progressively more into his roommates,
-// Manuel most of all. Every so often, when Michael is near one of them, he says one line from the
-// highest tier he's unlocked; each line plays once per world, ever, and sometimes they answer.
-// The host picks the moment and line and tells everyone, so all screens see the same thing.
-//
-// The butt pat needs Manuel's yes (D-007: a roommate's likeness in anything sexual needs that person's own
-// yes). He gave it, and on 2026-11-18 widened it: unprompted, whenever the two are close, rare early on and
-// much more often later, AI-run characters included.
+// D-016 runtime. What it does is sealed (docs/sealed/roommate-surprises.md, PROCESS "Spoilers and
+// surprises"): keep comments here to timing and plumbing. Lines come from src/content/crush.js
+// (ROT13), one tier at a time, each once per world. The host picks the moment and tells everyone, so
+// all screens see the same thing. The consent it needs is on record in the sealed ledger (D-007).
 import CRUSH from '../content/crush.js';
 import { audioOut } from '../audio/audio.js';
 
@@ -60,10 +56,8 @@ export class Crush {
 
   }
 
-  // The butt pat (Manuel's yes, his character only). From the start it's a rare idle thing: both of them
-  // standing still next to each other, every 8-14 minutes at most. Once the switchyard is solved
-  // (tier 2) it gets much more frequent and no longer waits for them to stand still: every 1-2 minutes
-  // whenever they're close.
+  // The sealed gesture: rare and idle-only at first (every 8-14 minutes at most, both standing still);
+  // from tier 2 (switchyard solved) every 1-2 minutes whenever they're close.
   _pats(snap, michael, near, now, tier) {
     const s = this.s;
     const manuel = MANUEL_SAYS_YES && near('manuel', PAT_NEAR);
@@ -91,7 +85,7 @@ export class Crush {
     if (msg.reply && msg.replyId) s.time.delayedCall(msg.pat ? 900 : 3200, () => { s._barkQuietUntil = 0; s._bark(msg.replyId, msg.reply); });
   }
 
-  // A quick pat: Michael bumps toward Manuel, a slap, a heart.
+  // The gesture itself: a bump, a sound, a heart.
   _pat(fromId, toId) {
     const s = this.s, a = s.sprites?.get(fromId), b = s.sprites?.get(toId);
     if (!a || !b) return;
