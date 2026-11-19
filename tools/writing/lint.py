@@ -35,6 +35,8 @@ RULES = {
     "bare-rot": re.compile(r"(?<![\w.-])(?<!code )(?<!CODE )(?:rot|rotters?)\b(?![.\w-])", re.I),
     # Trevor: always "John Pork", never just "Pork".
     "bare-pork": re.compile(r"(?<!John )(?<!JOHN )(?<![\w.-])(?:Pork|PORK)\b(?![\w-])"),
+    # Mamet: "any time any character is saying to another 'as you know'" (docs/research/dialogue-craft.md).
+    "as-you-know": re.compile(r"\b(?:as you know|like I said|as I (?:said|told you)|as we both know)\b", re.I),
     "never-did": re.compile(r"\b(?:It|He|She|They|That)\s+never\s+(?:did|has|had|was|will|does)\.", re.I),
 }
 
