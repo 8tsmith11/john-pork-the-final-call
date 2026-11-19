@@ -661,14 +661,22 @@ test('i18n: every map name has Spanish', () => {
 });
 
 const eggsMod = await import('../src/game/eggs.js').catch(() => null);
-test('O-key egg: Trevor\'s character is never a doer or a target; roommate targets need both yeses', () => {
+test('O-key egg: P-001 targeting all NPCs and players; Trevor consents per amended approval; nobody targets themselves', () => {
   if (!eggsMod) return;
-  const { roommateTargetOk, NEVER_DOER, TARGET_OK } = eggsMod;
-  assert.ok(NEVER_DOER.has('trevor'));
-  assert.equal(TARGET_OK.trevor, false);
-  for (const d of ['manuel', 'michael', 'trevor']) assert.equal(roommateTargetOk(d, 'trevor'), false, `${d} -> trevor`);
-  for (const t of ['manuel', 'michael', 'trevor']) assert.equal(roommateTargetOk('trevor', t), false, `trevor -> ${t}`);
-  assert.equal(roommateTargetOk('manuel', 'manuel'), false, 'nobody targets themselves');
+  const { roommateTargetOk, NEVER_DOER, TARGET_OK, DOER_ON_ROOMMATE_OK } = eggsMod;
+  assert.ok(!NEVER_DOER.has('trevor'));
+  assert.equal(TARGET_OK.trevor, true);
+  assert.equal(TARGET_OK.manuel, true);
+  assert.equal(TARGET_OK.michael, true);
+  for (const d of ['manuel', 'michael', 'trevor']) {
+    for (const t of ['manuel', 'michael', 'trevor']) {
+      if (d === t) {
+        assert.equal(roommateTargetOk(d, t), false, 'nobody targets themselves');
+      } else {
+        assert.equal(roommateTargetOk(d, t), true, `${d} -> ${t}`);
+      }
+    }
+  }
 });
 
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
