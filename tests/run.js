@@ -40,6 +40,27 @@ test('authored elite tuples preserve ordinary spawns and cannot replace their co
   }
 });
 
+test('an ordinary plain Captcha keeps base armor until it becomes dizzy', () => {
+  const map = { ...rotArena(), id: 'captcha-armor-probe', enemies: [{ kind: 'enemy.captcha', x: 210, y: 160 }] };
+  const sim = new Sim(map, { seed: 'armor-2' }), e = [...sim.enemies.values()][0];
+  assert.equal(e.def.trait, 'plain', 'ordinary seeded variant, without an authored override');
+  let hp = e.hp; sim._hurtEnemy(e, 20, 0, 0);
+  assert.equal(hp - e.hp, 14, 'base armor absorbs 30%');
+  hp = e.hp; e.st = 'dizzy'; sim._hurtEnemy(e, 20, 0, 0);
+  assert.equal(hp - e.hp, 40, 'charge recovery bypasses armor and takes double damage');
+});
+
+test('armored variants retain their protection without stacking it onto base armor', () => {
+  for (const [kind, elite, damage] of [
+    ['enemy.captcha', 'armored', 14], ['enemy.spitter', 'armored', 14], ['enemy.spitter', 'plain', 20],
+  ]) {
+    const map = { ...rotArena(), enemies: [{ kind, x: 210, y: 160, elite }] };
+    const sim = new Sim(map), e = [...sim.enemies.values()][0], hp = e.hp;
+    sim._hurtEnemy(e, 20, 0, 0);
+    assert.equal(hp - e.hp, damage, `${elite} ${kind}`);
+  }
+});
+
 test('authored elites reject unknown, inherited and malformed traits', () => {
   for (const elite of ['missing', 'toString', null, ['armored']]) {
     const map = { ...rotArena(), enemies: [{ kind: 'enemy.spitter', x: 200, y: 160, elite }] };
