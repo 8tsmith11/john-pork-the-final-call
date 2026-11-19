@@ -215,15 +215,16 @@ test('three sleeping input-driven players recover from moth hum and can leave wi
   assert.equal(sim.wiped, false);
 });
 
-test('continuous moth hum gives the normal exposure window after waking before sleep can start again', () => {
+test('continuous moth hum: after waking, the sleep cooldown and then the normal exposure before sleep can start again', () => {
   const sim = new Sim(sleepArena(), { seed: 'bal1' }); sim.addPlayer('host', 'trevor');
-  const events = advanceSleep(sim, 16), sleeps = events.filter((e) => e.t === 'sleep'), wakes = events.filter((e) => e.t === 'wake');
+  const events = advanceSleep(sim, BOT_LULLABY.expose * 2 + BOT_LULLABY.sleep + BOT_LULLABY.immune + 1);
+  const sleeps = events.filter((e) => e.t === 'sleep'), wakes = events.filter((e) => e.t === 'wake');
   assert.equal(sleeps.length, 2); assert.equal(wakes.length, 1);
   assert.ok(Math.abs(wakes[0].seconds - sleeps[0].seconds - BOT_LULLABY.sleep) <= 2 / 60);
-  assert.ok(Math.abs(sleeps[1].seconds - wakes[0].seconds - BOT_LULLABY.expose) <= 2 / 60);
+  assert.ok(Math.abs(sleeps[1].seconds - wakes[0].seconds - BOT_LULLABY.immune - BOT_LULLABY.expose) <= 2 / 60);
 });
 
-test('player lullaby still refreshes sleeping players and enemies, including the longer baby sleep', () => {
+test('player lullaby (Trevor: was overpowered): short sleep, no refresh, a cooldown before the same target sleeps again', () => {
   const sim = new Sim(rotArena());
   sim.addPlayer('singer', 'michael'); sim.addPlayer('target', 'trevor'); sim.addPlayer('baby', 'manuel');
   const target = sim.players.get('target'), baby = sim.players.get('baby');
@@ -231,14 +232,17 @@ test('player lullaby still refreshes sleeping players and enemies, including the
   const base = ENEMIES['enemy.rotling'];
   sim.enemies.set('listener', { id: 'listener', kind: 'enemy.rotling', x: 240, y: 160, hp: 500,
     def: { ...base, speed: 0 }, cd: 999, hurtT: 0, kx: 0, ky: 0 });
-  sim.setPlaying('singer', 'lullaby'); advanceSleep(sim, 20);
+  const L = BOT_LULLABY;
+  sim.setPlaying('singer', 'lullaby'); advanceSleep(sim, L.expose + 0.5);
   assert.ok(!(sim.players.get('singer').sleepT > 0));
-  assert.ok(target.sleepT >= BOT_LULLABY.sleep - 1.1);
-  assert.ok(baby.sleepT >= BOT_LULLABY.babySleep - 1.1);
-  assert.ok(sim.enemies.get('listener').sleepT >= BOT_LULLABY.sleep - 1.1);
-  sim.setPlaying('singer', null); advanceSleep(sim, BOT_LULLABY.babySleep + 1);
-  assert.ok(!(target.sleepT > 0)); assert.ok(!(baby.sleepT > 0));
-  assert.ok(!(sim.enemies.get('listener').sleepT > 0));
+  assert.ok(target.sleepT > 0 && baby.sleepT > 0 && sim.enemies.get('listener').sleepT > 0, 'everyone in range falls asleep');
+  advanceSleep(sim, L.sleep);                                   // still playing: no refresh
+  assert.ok(!(target.sleepT > 0) && !(sim.enemies.get('listener').sleepT > 0), 'wakes after the short sleep');
+  assert.ok(baby.sleepT > 0, 'the pacifier still gives the longer baby sleep');
+  advanceSleep(sim, L.immune - 1);
+  assert.ok(!(target.sleepT > 0) && !(sim.enemies.get('listener').sleepT > 0), 'cooldown: can\'t be sung back to sleep yet');
+  advanceSleep(sim, 1 + L.expose + 0.5);
+  assert.ok(target.sleepT > 0, 'after the cooldown and a fresh exposure, sleep works again');
 });
 
 test('caffeine still wakes a moth sleeper immediately and blocks hum only while wired', () => {
@@ -247,7 +251,7 @@ test('caffeine still wakes a moth sleeper immediately and blocks hum only while 
   sim.caffeinate('host', 5); assert.equal(p.sleepT, 0);
   advanceSleep(sim, 4); assert.ok(p.wiredT > 0); assert.ok(!(p.sleepT > 0));
   advanceSleep(sim, 2); assert.equal(p.wiredT, 0); assert.ok(!(p.sleepT > 0));
-  advanceSleep(sim, BOT_LULLABY.expose); assert.ok(p.sleepT > 0, 'hum works again after caffeine and normal exposure');
+  assert.ok(!(p.sleepT > 0)); advanceSleep(sim, BOT_LULLABY.immune + BOT_LULLABY.expose); assert.ok(p.sleepT > 0, 'hum works again after the sleep cooldown and normal exposure');
 });
 
 test('infection sources, charm range, caffeine and allies obey the disease rules', () => {

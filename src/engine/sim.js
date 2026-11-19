@@ -14,7 +14,9 @@ export const PARTY_SCALE = { hp: 2.3, dmg: 2.0 };   // raised from 1.7/1.3 (Trev
 export const BLINK = { dist: 112, cooldown: 1.1 };   // winged boots (D-014)
 // Michael's lullaby reaches 8 tiles; a Hold-Music Moth's hum reaches 4. Manuel is a baby: a lullaby
 // puts him out for 12 s instead of 8. Caffeine (wiredT) makes anyone immune.
-export const LULLABY = { range: 128, mothRange: 64, expose: 3, sleep: 8, babySleep: 12 };   // babySleep: Manuel with the smart pacifier in
+// Trevor (2026-11-19): the lullaby was overpowered. Shorter sleep, no refresh while he keeps playing, and a
+// cooldown after each sleep before the same target (player or enemy) can be sung to sleep again.
+export const LULLABY = { range: 128, mothRange: 64, expose: 3, sleep: 5, babySleep: 8, immune: 8 };   // babySleep: Manuel with the smart pacifier in
 // Infection is a heavy debuff up to 100%; what happens at 100% is UNDER below.
 export const ROT = { max: 100, poolRate: 4, growth: 0.08, puddlerHit: 6,
   lightDecay: 0.1, quietTime: 5, charmRange: 64, charmDecay: 0.6, charmShield: 0.5, maxHallRate: 4 };
@@ -204,19 +206,15 @@ export class Sim {
     const targets = [...[...this.players.values()].filter((p) => !p.downed && !(p.wiredT > 0)), ...[...this.enemies.values()].filter((e) => !e.boss && !e.sahur && !e.def?.lullaby)];
     // Manuel sleeps the longer LULLABY.babySleep only while wearing the smart pacifier (sleepGuard).
     const sleepFor = (t) => (t.character === 'manuel' && t.mods?.sleepGuard ? LULLABY.babySleep : LULLABY.sleep);
+    for (const t of [...this.players.values(), ...this.enemies.values()]) if (t.lullCd > 0) t.lullCd = Math.max(0, t.lullCd - dt);   // counts from falling asleep, even while wired or downed
     for (const t of targets) {
       // enemy singers (moths) only sing players to sleep
       const near = singers.some((s) => s !== t && (!this.enemies.has(s.id) || this.players.has(t.id)) && Math.hypot(s.x - t.x, s.y - t.y) <= (this.enemies.has(s.id) ? LULLABY.mothRange : LULLABY.range));
-      // Already asleep: while Michael keeps playing nearby, the sleep timer resets every second.
-      if (t.sleepT > 0) {
-        const playerNear = playerSingers.some((s) => s !== t && Math.hypot(s.x - t.x, s.y - t.y) <= LULLABY.range);
-        t.lullRefresh = playerNear ? (t.lullRefresh ?? 0) + dt : 0;
-        if (t.lullRefresh >= 1) { t.lullRefresh = 0; t.sleepT = Math.max(t.sleepT, sleepFor(t)); }
-        continue;
-      }
+      // Asleep, or just woke up: no exposure builds (the cooldown ticks above, for everyone).
+      if (t.sleepT > 0 || t.lullCd > 0) { t.lullT = 0; continue; }
       t.lullT = near ? (t.lullT ?? 0) + dt : 0;
       if (t.lullT >= LULLABY.expose) {
-        t.lullT = 0; t.sleepT = sleepFor(t);
+        t.lullT = 0; t.sleepT = sleepFor(t); t.lullCd = t.sleepT + LULLABY.immune;
         if (t.playing) t.playing = null;
         this.events.push({ t: 'sleep', id: t.id, enemy: this.enemies.has(t.id), x: Math.round(t.x), y: Math.round(t.y) });
       }
