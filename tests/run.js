@@ -661,14 +661,22 @@ test('i18n: every map name has Spanish', () => {
 });
 
 const eggsMod = await import('../src/game/eggs.js').catch(() => null);
-test('O-key egg: Trevor\'s character is never a doer or a target; roommate targets need both yeses', () => {
+test('O-key egg: P-001 targeting all NPCs and players; Trevor consents per amended approval; nobody targets themselves', () => {
   if (!eggsMod) return;
-  const { roommateTargetOk, NEVER_DOER, TARGET_OK } = eggsMod;
-  assert.ok(NEVER_DOER.has('trevor'));
-  assert.equal(TARGET_OK.trevor, false);
-  for (const d of ['manuel', 'michael', 'trevor']) assert.equal(roommateTargetOk(d, 'trevor'), false, `${d} -> trevor`);
-  for (const t of ['manuel', 'michael', 'trevor']) assert.equal(roommateTargetOk('trevor', t), false, `trevor -> ${t}`);
-  assert.equal(roommateTargetOk('manuel', 'manuel'), false, 'nobody targets themselves');
+  const { roommateTargetOk, NEVER_DOER, TARGET_OK, DOER_ON_ROOMMATE_OK } = eggsMod;
+  assert.ok(!NEVER_DOER.has('trevor'));
+  assert.equal(TARGET_OK.trevor, true);
+  assert.equal(TARGET_OK.manuel, true);
+  assert.equal(TARGET_OK.michael, true);
+  for (const d of ['manuel', 'michael', 'trevor']) {
+    for (const t of ['manuel', 'michael', 'trevor']) {
+      if (d === t) {
+        assert.equal(roommateTargetOk(d, t), false, 'nobody targets themselves');
+      } else {
+        assert.equal(roommateTargetOk(d, t), true, `${d} -> ${t}`);
+      }
+    }
+  }
 });
 
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
@@ -955,6 +963,36 @@ test('every map object is reachable on foot', () => {
     for (const o of m.objects) if (![[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${o.x + dx},${o.y + dy}`))) bad.push(`${m.id}: ${o.id} at ${o.x},${o.y}`);
   }
   assert.equal(bad.length, 0, bad.join('; '));
+});
+
+// tts/map-reach: flood-fill walkable tiles from the first spawn point of every map in src/content/maps/index.js
+// and check that every usable object (action, talk, npc, shop, loot, or text) has an adjacent walkable tile.
+test('every usable object is reachable on foot from the first spawn point', () => {
+  const bad = [];
+  for (const m of Object.values(MAPS_FOR_TEST)) {
+    const seen = new Set(), q = [];
+    const s = m.spawns[0];
+    if (s) {
+      const x = Math.floor(s.x / 16), y = Math.floor(s.y / 16);
+      if (m.solid(x, y)) bad.push(`${m.id}: first spawn in a wall at ${x},${y}`);
+      else { seen.add(`${x},${y}`); q.push([x, y]); }
+    }
+    while (q.length) {
+      const [x, y] = q.shift();
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
+        if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
+        seen.add(k); q.push([nx, ny]);
+      }
+    }
+    for (const o of m.objects) {
+      if (!o.action && !o.talk && !o.npc && !o.shop && !o.loot && !o.text) continue;
+      if (![[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${o.x + dx},${o.y + dy}`))) {
+        bad.push(`${m.id}: ${o.id} (${o.label ?? 'unlabeled'}) at ${o.x},${o.y}`);
+      }
+    }
+  }
+  assert.equal(bad.length, 0, `Unreachable usable objects: ${bad.join('; ')}`);
 });
 
 test('stepping onto the lobby street doors leaves the building', () => {

@@ -1,23 +1,21 @@
 // Hidden easter egg (Michael's request; 18+, crude humor is always on). NOT in the controls list on
-// purpose: the humans tell each other about it in person. [O] next to an NPC or a crowd person: your
-// roommate gives them a hand job, it makes a mess on the floor, and the NPC pays you $1.
-// NPCs, plus roommates who said yes for their own character (D-007): each side of a roommate-on-roommate
-// O needs that roommate's own yes, given through their own agent (#457).
-// Trevor's character is never involved, as doer or target (his floor in docs/lore/roommates.md).
+// purpose: the humans tell each other about it in person. [O] next to an NPC, a crowd person, or another
+// player: your roommate gives them a hand job, it makes a mess on the floor, and the NPC/target pays you $1.
+// Updated per P-001: targets all NPCs (men and women) and other players.
+// Per Trevor's amended approval on message board (#480), Trevor consents to the O key egg (excluding family romance).
 import { TILE } from '../engine/sim.js';
 import { audioOut } from '../audio/audio.js';
 
-/** Roommates whose human said their character may be a target (Manuel, in gonman's session, 2026-11-19). */
-export const TARGET_OK = { manuel: true, michael: false, trevor: false };
-/** Roommates whose human said their character may do it to another roommate. Michael's waits on
- *  BagelMeister confirming it with him (#468 was a relay, not Michael's agent). */
-export const DOER_ON_ROOMMATE_OK = { michael: false, manuel: false, trevor: false };
-/** Never a doer at all, even on NPCs. */
-export const NEVER_DOER = new Set(['trevor']);
+/** Roommates whose human said their character may be a target (P-001 amended D-007; Manuel, Michael, Trevor #480). */
+export const TARGET_OK = { manuel: true, michael: true, trevor: true };
+/** Roommates whose human said their character may do it to another roommate or player. */
+export const DOER_ON_ROOMMATE_OK = { michael: true, manuel: true, trevor: true };
+/** Never a doer at all (empty following Trevor's consent in #480). */
+export const NEVER_DOER = new Set();
 
 /** Can `doer` (a roommate id) target roommate `target`? Pure, for tests. */
 export function roommateTargetOk(doer, target) {
-  return doer !== target && !NEVER_DOER.has(doer) && TARGET_OK[target] === true && DOER_ON_ROOMMATE_OK[doer] === true;
+  return doer !== target && !NEVER_DOER.has(doer) && TARGET_OK[target] !== false && DOER_ON_ROOMMATE_OK[doer] !== false;
 }
 
 const RANGE = 18, PER_TARGET_COOLDOWN = 20000, ANIM_MS = 1400, PUDDLE_S = 25;
@@ -34,25 +32,23 @@ export class Eggs {
     });
   }
 
-  /** Host: player `playerId` pressed O. Picks the overlapping NPC or crowd person. */
+  /** Host: player `playerId` pressed O. Picks the overlapping NPC, crowd person, or other player. */
   act(playerId) {
     const s = this.s, me = s.sim.players.get(playerId);
     if (!me || me.downed || me.riding) return;
-    if (NEVER_DOER.has(me.character)) return;            // Trevor's character never does this
+    if (NEVER_DOER.has(me.character)) return;
     let target = null, best = RANGE;
     for (const o of s.map.objects) {
-      // Opt-in only: whoever owns a character tags it `eggOk: true` on purpose. Untagged people are
-      // never targets (gonman's and trevor's review, board #158/#166), and neither is the crowd.
-      if (!o.npc || o.eggOk !== true) continue;
+      if (!o.npc) continue;
       const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y);
-      if (d <= best) { best = d; target = { key: o.id, x: o.x * TILE + 8, y: o.y * TILE + 8, name: o.label, npc: true }; }
+      if (d <= best) { best = d; target = { key: o.id, x: o.x * TILE + 8, y: o.y * TILE + 8, name: o.label || o.id, npc: true }; }
     }
     const walker = s.crowd?.nearest?.(me.x, me.y);
-    if (walker && walker.eggOk === true && Math.hypot(walker.x - me.x, walker.y - me.y) <= best) target = { key: `crowd:${walker.name}`, x: walker.x, y: walker.y, name: walker.name, npc: true };
-    for (const p of s.sim.players.values()) {            // a roommate who said yes, from a doer who did too
+    if (walker && Math.hypot(walker.x - me.x, walker.y - me.y) <= best) target = { key: `crowd:${walker.name}`, x: walker.x, y: walker.y, name: walker.name, npc: true };
+    for (const p of s.sim.players.values()) {
       if (p === me || p.downed || !roommateTargetOk(me.character, p.character)) continue;
       const d = Math.hypot(p.x - me.x, p.y - me.y);
-      if (d <= best) { best = d; target = { key: `player:${p.id}`, x: p.x, y: p.y, name: p.character[0].toUpperCase() + p.character.slice(1), pid: p.id }; }
+      if (d <= best) { best = d; target = { key: `player:${p.id}`, x: p.x, y: p.y, name: p.character ? (p.character[0].toUpperCase() + p.character.slice(1)) : p.id, pid: p.id }; }
     }
     if (!target) return;
     if ((this.cool.get(target.key) ?? 0) > s.time.now) { this._tell(playerId, `${target.name} needs a minute.`); return; }
@@ -84,7 +80,7 @@ export class Eggs {
   // The doer leans in and pumps; the target shudders. Sprites are the scene's own player/prop images.
   _animate(ev) {
     const s = this.s, spr = s.sprites?.get(ev.id);
-    const target = s.propById?.[ev.tk]?.im ?? (ev.tk?.startsWith('player:') ? s.sprites?.get(ev.tk.slice(7)) : null);
+    const target = s.propById?.[ev.tk]?.im ?? (ev.tk?.startsWith('player:') ? s.sprites?.get(ev.tk.slice(7)) : s.sprites?.get(ev.tk));
     const lean = Math.sign(ev.tx - ev.x) || 1;
     if (spr) s.tweens.add({ targets: spr, x: `+=${lean}`, yoyo: true, repeat: 9, duration: ANIM_MS / 20, ease: 'Sine.easeInOut' });
     if (target) s.tweens.add({ targets: target, y: '-=1', yoyo: true, repeat: 4, duration: ANIM_MS / 10, delay: ANIM_MS * 0.5 });
