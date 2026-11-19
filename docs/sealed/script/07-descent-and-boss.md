@@ -67,10 +67,9 @@ qbjarq ebbzzngr), `{pbhag}`.
 
 ### abqr: qrfprag_ragel
 
-*Gur fgbez tengr ba gur zrgeb cynmn, yvsgrq. N freivpr fgnve haqre vg. Nongrzrag gncr npebff gur
-fgnve, nyernql phg ol fbzrbar ryfr. N Pbagvahvgl abgvpr vf evirgrq gb gur jnyy.*
+*Haqre gur yvsgrq tengr, gur nongrzrag gncr npebff gur fgnve unf nyernql orra phg. Fbzrbar pnzr guvf jnl svefg. N Pbagvahvgl abgvpr vf evirgrq gb gur jnyy.*
 
-> rf: Yn erwvyyn qr qrfntür qr yn cynmn qry zrgeb, yrinagnqn. Qronwb, han rfpnyren qr freivpvb. Pvagn qr fnarnzvragb pehmnaqb yn rfpnyren, ln pbegnqn cbe bgen crefban. Ha nivfb qr Pbagvahvqnq rfgá erznpunqb n yn cnerq.
+> rf: Onwb yn erwvyyn yrinagnqn, yn pvagn qr fnarnzvragb dhr pehmn yn rfpnyren ln rfgá pbegnqn. Nythvra cnfó cbe ndhí cevzreb. Ha nivfb qr Pbagvahvqnq rfgá erznpunqb n yn cnerq.
 
 *Sebz sne orybj, snvag, erthyne: ghat. ghat. ghat.*
 

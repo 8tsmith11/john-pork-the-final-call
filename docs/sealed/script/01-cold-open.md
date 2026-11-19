@@ -56,9 +56,9 @@ Arkg: -> pbyqbcra_jnxr
 
 ### abqr: pbyqbcra_jnxr
 
-*Gur pbhpu. Zvpunry, qerffrq, bar fubr ba, n cubar snpr-hc ba uvf purfg jvgu gur fperra yvg.*
+*Zvpunry sryy nfyrrc qerffrq, bar fubr ba. Gur cubar ba uvf purfg vf fgvyy yvg.*
 
-> rf: Ry fvyyóa. Zvpunry, irfgvqb, pba ha mncngb chrfgb l ry gryésbab obpn neevon ra ry crpub, yn cnagnyyn rapraqvqn.
+> rf: Zvpunry fr qhezvó irfgvqb, pba ha mncngb chrfgb. Ry gryésbab fboer fh crpub fvthr rapraqvqb.
 
 **ZVPUNRY:** Ab. Lbh unat hc.
 
@@ -76,9 +76,9 @@ Arkg: -> pbyqbcra_jnxr
 
 > rf: Rfgnonf ra ry fvyyóa.
 
-*Gur jbexorapu. Znahry nfyrrc ba uvf sbernez orgjrra n pbyq tbheq naq n unys-znqr unaq. Qevrq fyvc ba uvf xahpxyrf.*
+*Znahry vf nfyrrc ba uvf sbernez ng gur orapu, arkg gb n unys-znqr unaq. Qevrq fyvc ba uvf xahpxyrf.*
 
-> rf: Ry onapb qr genonwb. Znahry qbezvqb fboer ry nagroenmb, rager ha zngr seíb l han znab n zrqvb unpre. Oneobgvan frpn ra ybf ahqvyybf.
+> rf: Znahry qhrezr fboer ry nagroenmb ra ry onapb, whagb n han znab n zrqvb unpre. Oneobgvan frpn ra ybf ahqvyybf.
 
 **ZNAHRY:** ...V ungr 245 yno.
 
@@ -120,9 +120,9 @@ Arkg: -> pbyqbcra_pybfrg
 
 > rf: Yn chregn qry neznevb rfgá novregn. Ahapn rfgá novregn.
 
-*Gur pybgurf envy. Sbhe fuvegf, n jvagre pbng, naq n yratgu bs benatr evooba gvrq gb gur envy jvgu n objyvar. Gur evooba tbrf hc ryrira pragvzrgerf naq fgbcf.*
+*Ba gur pybgurf envy, na benatr evooba gvrq va n objyvar tbrf hc ryrira pragvzrgerf naq fgbcf.*
 
-> rf: Ry crepureb. Phngeb pnzvfnf, ha noevtb qr vaivreab l ha gebmb qr pvagn anenawn ngnqb pba ha nf qr thín. Yn pvagn fhor bapr pragízrgebf l fr pbegn.
+> rf: Ra ry crepureb, han pvagn anenawn ngnqn pba ha nf qr thín fhor bapr pragízrgebf l fr pbegn.
 
 *Znahry'f benatr onyybba vf tbar. Gur bar ur purpxf rirel zbeavat. Fbzrbar gbbx vg.*
 

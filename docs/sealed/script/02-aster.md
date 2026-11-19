@@ -220,9 +220,9 @@ Fpbcr: arneol
 
 ### abqr: cryy_gnyx
 
-*Gur ynhaqel ebbz. Na byq zna jvgu n fyvqr ehyr naq n cntr bs fhzf, genpx ahzoref qbja gur znetva.*
+*Va gur ynhaqel ebbz na byq zna vf qbvat fhzf ol unaq. Genpx ahzoref eha qbja gur znetva.*
 
-> rf: Ry yninqreb. Ha ivrwb pba han ertyn qr páyphyb l han ubwn qr phragnf, aúzrebf qr iín ra ry znetra.
+> rf: Ra ry yninqreb, ha napvnab unpr phragnf n znab. Aúzrebf qr iín ra ry znetra.
 
 **CRYY:** Sbegl-bar lrnef ba gur Terra Yvar. Gurer ner guerr yriref va gung lneq naq fbzrobql unf orra ng gurz.
 

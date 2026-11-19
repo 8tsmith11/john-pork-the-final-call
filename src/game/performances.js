@@ -34,28 +34,6 @@ export class Performances {
     this._tell(playerId, `♪ ${def.name}: use it again to stop.`);
   }
 
-  /**
-   * (Unused since obj.guitar became Trevor's guitar stand, src/game/guitarStands.js: the guitar is taken
-   * off the stand into the bag now. Kept for any other instrument fixed in place.)
-   * Trevor's guitar in 631 (obj.guitar), played where it stands: plugged into its amp, so it doesn't come
-   * with you. Only Michael picks it up, and he only knows the lullaby (his usual sloppy one; see
-   * instruments.js). Walking away from it stops the song.
-   */
-  useFixed(obj) {
-    const s = this.s;
-    if (s.mode === 'client') s.net.send({ t: 'play', fixed: obj.id });
-    else this.toggleFixed(s.localId, s.character, obj.id);
-  }
-  toggleFixed(playerId, char, objId) {
-    const s = this.s, sim = s.sim, p = sim?.players.get(playerId), o = s.map?.objects.find((x) => x.id === objId);
-    if (!p || !o || char !== 'michael') return;
-    if (p.playing) { sim.setPlaying(playerId, null); this.anchor?.delete(playerId); return; }
-    if (p.riding) { this._tell(playerId, 'Not while riding.'); return; }
-    sim.setPlaying(playerId, 'lullaby', 'electric');
-    (this.anchor ??= new Map()).set(playerId, { x: o.x * TILE + 8, y: o.y * TILE + 8 });
-    this._tell(playerId, '♪ Trevor\'s guitar. You know one song. Press E again to stop.');
-  }
-
   _tell(playerId, text) {
     const s = this.s;
     if (playerId === s.localId) s._toast(text);
@@ -65,8 +43,7 @@ export class Performances {
   onHostMsg(peer, msg) {
     if (msg.t === 'potion') { this._throw(peer, this.s._charOf(peer), msg.id); return true; }
     if (msg.t !== 'play') return false;
-    if (msg.fixed) this.toggleFixed(peer, this.s._charOf(peer), msg.fixed);
-    else this.toggle(peer, this.s._charOf(peer), msg.id);
+    this.toggle(peer, this.s._charOf(peer), msg.id);
     return true;
   }
 
@@ -111,12 +88,6 @@ export class Performances {
   asleep(obj) { return (this.npcSleep.get(obj.id)?.until ?? 0) > this.s.time.now; }
 
   update(snap, dt) {
-    // Host: a fixed instrument stops when its player walks away from it.
-    if (this.s.mode !== 'client' && this.anchor?.size) for (const [id, at] of this.anchor) {
-      const p = this.s.sim?.players.get(id);
-      if (!p || !p.playing) { this.anchor.delete(id); continue; }
-      if (Math.hypot(p.x - at.x, p.y - at.y) > 28) { this.s.sim.setPlaying(id, null); this.anchor.delete(id); }
-    }
     const s = this.s, now = s.time.now;
     const me = snap.players.find((p) => p.id === s.localId) ?? snap.players[0];
     if (snap.map !== this._mapId) { this._mapId = snap.map; this.onMap(); }

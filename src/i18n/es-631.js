@@ -11,7 +11,6 @@ export const ES_631 = {
   "Michael's guitar stand (take the electric guitar)": 'Soporte de guitarra de Michael (agarrar la guitarra eléctrica)',
   "Michael's guitar stand (take the acoustic guitar)": 'Soporte de guitarra de Michael (agarrar la guitarra acústica)',
   "Michael's guitar stand (empty)": 'Soporte de guitarra de Michael (vacío)',
-  "♪ Trevor's guitar. You know one song. Press E again to stop.": '♪ La guitarra de Trevor. Sabes una sola canción. Presiona E otra vez para parar.',
   "Trevor's chair. He sits on it backwards. He thinks nobody has noticed that it is a choice.": 'La silla de Trevor. Se sienta al revés. Cree que nadie notó que es una decisión.',
   'The good chair. Whoever is home first gets it. There is a tally on the underside.': 'La silla buena. El primero que llega a casa se la queda. Hay un conteo de rayitas debajo.',
   'String lights': 'Guirnalda de luces',

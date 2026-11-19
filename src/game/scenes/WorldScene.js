@@ -1953,7 +1953,6 @@ export class WorldScene extends Phaser.Scene {
     if (CLOCKS.includes(near.id)) { this._windClock(near); return; }
     if (BUST_ORDER.includes(near.id)) { this._turnBust(near); return; }
     if (near.id === 'obj.manuel_table') { this._say(near.text + BUST_HINT); return; }
-    if (near.id === 'obj.guitar' && this.character === 'michael') { this.perf?.useFixed(near); return; }   // he only knows the lullaby
     if (near.id === 'obj.shrimp_tank') { this._say(near.text + '\n\n' + this._shrimpReading()); return; }
     if (near.id === 'obj.old_phone') {   // egg, see docs/SECRETS.md
       const n = (this._phoneLooks = (this._phoneLooks ?? 0) + 1), mine = OLD_PHONE[this.character] ?? [];

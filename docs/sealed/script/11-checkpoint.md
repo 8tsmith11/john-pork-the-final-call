@@ -13,9 +13,9 @@ Fpbcr: arneol
 
 ### abqr: pbeqba_fgneg
 
-*N zna va n juvgr nongrzrag pbng fvgf ba n pbbyre orfvqr gur fgbez tengr, ubbq qbja, vafvqr n fdhner bs benatr gncr. Uvf ynalneq fnlf GBOVA, AVTUGF. Gur gnoyrg va uvf ync vf fubjvat n onyy tnzr sebz 2061.*
+*Gbova fvgf ba n pbbyre vafvqr gur nongrzrag gncr, ubbq qbja, jngpuvat n onyy tnzr sebz 2061 ba uvf gnoyrg. Uvf ynalneq fnlf AVTUGF.*
 
-> rf: Ha ubzoer pba noevtb oynapb qr fnarnzvragb rfgá fragnqb ra han urynqren cbegágvy whagb n yn erwvyyn, pba yn pnchpun onwn, qrageb qr ha phnqenqb qr pvagn anenawn. Fh perqrapvny qvpr GBOVA, ABPURF. Yn gnoyrgn ra fhf ebqvyynf cnfn ha cnegvqb qr 2061.
+> rf: Gbova rfgá fragnqb ra han urynqren cbegágvy qrageb qr yn pvagn qr fnarnzvragb, pba yn pnchpun onwn, zvenaqb ra yn gnoyrgn ha cnegvqb qr 2061. Fh perqrapvny qvpr ABPURF.
 
 **GBOVA:** Tengr'f fuhg. V'z fnzcyvat.
 

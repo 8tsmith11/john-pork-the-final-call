@@ -49,10 +49,9 @@ Fpbcr: nyy
 
 ### abqr: raqvat_obff_snyyf
 
-*Gur qrnq cyngsbez haqre Pbyyrtr Cnex. Ng gur sne raq n iragvyngvba funsg evfrf guebhtu sbegl
-zrgerf bs pbapergr gb n fznyy fdhner bs fxl, gur pbybhe bs qvfujngre.*
+*Gur qrnq cyngsbez. Sbegl zrgerf hc gur iragvyngvba funsg, n fdhner bs fxl gur pbybhe bs qvfujngre.*
 
-> rf: Ry naqéa zhregb onwb Pbyyrtr Cnex. Ny sbaqb, ha cbmb qr iragvynpvóa fhor cbe phneragn zrgebf qr pbapergb unfgn ha crdhrñb phnqenqb qr pvryb, pbybe nthn qr sertne.
+> rf: Ry naqéa zhregb. Phneragn zrgebf neevon, cbe ry cbmb qr iragvynpvóa, ha phnqenqb qr pvryb pbybe nthn qr sertne.
 
 #### vs synt npg1.obff.fnuhe
 
