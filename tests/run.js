@@ -4,17 +4,78 @@ import fs from 'node:fs';
 import { makeStreams, Rng } from '../src/engine/rng.js';
 import { rollWorld } from '../src/engine/worldRolls.js';
 import { newSave, migrate, CURRENT_SCHEMA } from '../src/engine/save/schema.js';
-import { Sim, MOVE, ROT, emptyInput } from '../src/engine/sim.js';
+import { Sim, MOVE, ROT, LULLABY as BOT_LULLABY, emptyInput } from '../src/engine/sim.js';
 import { ENEMIES } from '../src/content/enemies.js';
 import { room631 } from '../src/content/maps/room631.js';
 import { MAPS as MAPS_FOR_TEST } from '../src/content/maps/index.js';
 import { formatBalanceGroup } from '../tools/balance-summary.mjs';
+import { BalanceBot, countHostMoves, newMoveCounts } from '../tools/balance-bot.mjs';
+import { CompanionBrain as BalanceBrain } from '../src/engine/companion.js';
+import { ITEMS as BALANCE_ITEMS } from '../src/content/items.js';
 
 let failed = 0;
 const test = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}\n     ${e.message}`); } };
 
 const rotArena = () => ({ id: 'rot-test', w: 100, h: 100, objects: [], enemies: [],
   spawns: [{ x: 160, y: 160 }], solid: () => false });
+
+const botFixture = () => {
+  const sim = new Sim(rotArena()); sim.addPlayer('host', 'trevor');
+  const p = sim.players.get('host'), bot = new BalanceBot(sim, new BalanceBrain(sim)), counts = newMoveCounts();
+  p.mods.swing = { ...BALANCE_ITEMS['item.pry_bar'].swing };
+  const step = () => { const inp = bot.input(p); sim.step(1 / 60, new Map([[p.id, inp]])); countHostMoves(counts, sim.events, p.id); return inp; };
+  return { sim, p, bot, counts, step };
+};
+test('balance bot deflects an incoming shot through actual sim inputs', () => {
+  const { sim, p, counts, step } = botFixture();
+  sim.shots.push({ x: p.x + 16, y: p.y - 6, vx: -100, vy: 0, life: 2, dmg: 10, from: 'enemy' });
+  step(); assert.equal(counts.deflect, 1); assert.equal(sim.shots[0].from, 'player');
+  countHostMoves(counts, [{ t: 'deflect', by: 'ai:manuel' }, { t: 'perfect', id: 'ai:manuel' }], p.id);
+  assert.equal(counts.deflect, 1); assert.equal(counts.perfect, 0);
+});
+test('balance bot rolls into a shot when melee is cooling down, then uses a dash-strike', () => {
+  const { sim, p, bot, counts, step } = botFixture(); p.meleeCd = 0.2;
+  sim.shots.push({ x: p.x + 14, y: p.y - 6, vx: -100, vy: 0, life: 2, dmg: 10, from: 'enemy' });
+  sim.enemies.set('dummy', { id: 'dummy', kind: 'enemy.rotling', x: p.x + 80, y: p.y, hp: 999, cd: 9, hurtT: 0, sleepT: 99 });
+  const inp = step(); assert.ok(inp.dodge && inp.mx > 0);
+  assert.equal(bot.input(p).dodge, false, 'a roll is not reissued on cached frames');
+  for (let i = 0; i < 50; i++) step();
+  assert.ok(counts.perfect >= 1); assert.ok(counts.dashstrike >= 1); assert.equal(p.hp, 100);
+});
+test('balance bot respects stamina and ignores shots travelling away', () => {
+  for (const away of [false, true]) {
+    const { sim, p, bot } = botFixture(); p.meleeCd = 1; p.sta = 0;
+    sim.shots.push({ x: p.x + 12, y: p.y - 6, vx: away ? 100 : -100, vy: 0, life: 2, dmg: 10, from: 'enemy' });
+    if (away) p.sta = 100;
+    assert.equal(bot.input(p).dodge, false);
+  }
+  const { sim, p, bot } = botFixture(); p.mods.swing = null;
+  sim.shots.push({ x: p.x + 12, y: p.y - 6, vx: -100, vy: 0, life: 2, dmg: 10, from: 'enemy' });
+  assert.equal(bot.input(p).dodge, true, 'no phantom deflect without a melee weapon');
+});
+test('balance bot parries a committed lunge and sustains real combo finishers', () => {
+  const f = botFixture();
+  const e = { id: 'lunger', kind: 'enemy.rotling', x: f.p.x + 14, y: f.p.y, hp: 999, cd: 9, hurtT: 0,
+    st: 'lunge', stT: 0.2, dx: -1, dy: 0, hitOnce: false };
+  f.sim.enemies.set(e.id, e); f.step(); assert.equal(f.counts.parry, 1);
+  const g = botFixture();
+  g.sim.enemies.set('dummy', { id: 'dummy', kind: 'enemy.rotling', x: g.p.x + 14, y: g.p.y, hp: 999, cd: 9, hurtT: 0, sleepT: 99 });
+  for (let i = 0; i < 150; i++) g.step();
+  assert.ok(g.counts.finishers >= 1);
+});
+
+test('balance bot leaves a continuous moth hum before being locked asleep', () => {
+  const { sim, p, counts, step } = botFixture(); p.meleeCd = 5;
+  sim.enemies.set('moth', { id: 'moth', kind: 'enemy.moth', def: { ...ENEMIES['enemy.moth'], speed: 0 },
+    x: p.x + 50, y: p.y, hp: 999, cd: 9, hurtT: 0 });
+  let furthest = 0;
+  for (let i = 0; i < 180; i++) {
+    step(); assert.ok(!(p.sleepT > 0));
+    const moth = sim.enemies.get('moth'); furthest = Math.max(furthest, Math.hypot(p.x - moth.x, p.y - moth.y));
+  }
+  assert.ok(furthest > BOT_LULLABY.mothRange, 'breaks the continuous hum while its weapon cools');
+  assert.equal(counts.perfect, 0);
+});
 
 test('schema 4 -> 5 adds infection without losing existing exposure or unknown data', () => {
   const old = newSave({ seed: 'rot-save', rolls: {}, gameVersion: 'test' });
