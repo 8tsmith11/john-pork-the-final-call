@@ -249,9 +249,9 @@ fgvat ba nal cvpxhc.
 **ZVPUNRY:** Gung'f "grkg zr jura lbh trg va." Ur'f jnyxvat fbzrobql gb gur qbbe.
 
 Pubvprf:
-- [fcrnxre=znahry] "Ur'f pbzvat onpx sbe gur yvtugf. Ur fnvq fb." -> sent_yvtugf_cebzvfr
-- [fcrnxre=geribe] "'V'yy trg gur yvtugf.' Ur'f gur bar jub ghearq gurz bss." -> sent_yvtugf_guerng
-- [fcrnxre=zvpunry] "Jub'f gur bgure thl? Ur fbhaqf jerpxrq." -> sent_yvtugf_bgure
+- [fcrnxre=znahry] "Ur'f pbzvat onpx sbe gur yvtugf." -> sent_yvtugf_cebzvfr
+- [fcrnxre=geribe] "Ur ghearq gurz bss." -> sent_yvtugf_guerng
+- [fcrnxre=zvpunry] "Jub'f gur bgure thl?" -> sent_yvtugf_bgure
 - "Cynl vg ntnva." -> sent_yvtugf
 - (Fnl abguvat.) -> sent_yvtugf_dhvrg
 
@@ -336,10 +336,10 @@ Pubvprf:
 **ZVPUNRY:** Fbzrobql ng gur bssvpr jngpurq guvf naq jrag, lrnu, fgbc vg gurer.
 
 Pubvprf:
-- [fcrnxre=geribe] "Fb ur pbhyq fgvyy trg va gur thl'f urnq. Evtug gb gur raq." -> sent_fzbxr_ubyq
-- [fcrnxre=znahry] "Ur whfg qvqa'g jnag uvz fgnaqvat va vg." -> sent_fzbxr_xvaq
-- [fcrnxre=zvpunry] "Guerr guvatf, naq ur bayl trgf gb gjb." -> sent_fzbxr_pbhag
-- [synt yber.svefgQrngu.sent.yvtugf] "Guveq guvat. Gung'f gur bar ur ybfg." -> sent_fzbxr_pbhag
+- [fcrnxre=geribe] "Ur jnf fgvyy va gur thl'f urnq." -> sent_fzbxr_ubyq
+- [fcrnxre=znahry] "Ur qvqa'g jnag uvz va vg." -> sent_fzbxr_xvaq
+- [fcrnxre=zvpunry] "Ur bayl trgf gb gjb." -> sent_fzbxr_pbhag
+- [synt yber.svefgQrngu.sent.yvtugf] "Gur guveq guvat vf gur ybfg bar." -> sent_fzbxr_pbhag
 - (Fnl abguvat.) -> sent_fzbxr_dhvrg
 
 ### abqr: sent_fzbxr_ubyq
@@ -439,14 +439,16 @@ Pubvprf:
 **GERIBE:** Jr'ir tbg gur nafjre naq ab dhrfgvba.
 
 Pubvprf:
-- [fcrnxre=zvpunry] "V'q unir uhat hc. V'q unir fnvq ab naq uhat hc." -> sent_ab_zvpunry
-- [fcrnxre=znahry] "Ur orttrq, naq gurl ershfrq uvz. Gung'f jung guvf vf." -> sent_ab_orttrq
-- [fcrnxre=geribe] "Ubj qbrf n pbqr ebggre unir guvf?" -> sent_ab_pneevre
+- [fcrnxre=zvpunry] "V'q unir uhat hc." -> sent_ab_zvpunry
+- [fcrnxre=znahry] "Ur orttrq. Gurl ershfrq uvz." -> sent_ab_orttrq
+- [fcrnxre=geribe] "Jurer qvq n pbqr ebggre trg guvf?" -> sent_ab_pneevre
 - (Fgnl fvggvat jvgu gur pbqr ebggre.) -> sent_ab_fgnl
 
 ### abqr: sent_ab_zvpunry
 
-**ZVPUNRY:** Fbzrobql pnyyf naq nfxf lbh gur ovt guvat. Jungrire vg vf. Lbh fnl ab, lbh unat hc, lbh srry fvpx nobhg vg sbe n lrne.
+**ZVPUNRY:** Fbzrobql pnyyf naq nfxf lbh gur ovt guvat. Lbh fnl ab. Lbh unat hc.
+
+**ZVPUNRY:** Lbh srry fvpx nobhg vg sbe n lrne.
 
 **GERIBE:** Gung fcrpvsvp, uhu.
 
@@ -528,7 +530,7 @@ Pubvprf:
 
 Pubvprf:
 - "Pbhyq jr svavfu gur ghea?" -> sent_ryrira_ghea
-- [fcrnxre=znahry] "Ur nfxrq nobhg gur qvfu. Abg nobhg uvzfrys." -> sent_ryrira_uvzfrys
+- [fcrnxre=znahry] "Ur nfxrq nobhg gur qvfu." -> sent_ryrira_uvzfrys
 - (Fnl abguvat.) -> sent_ryrira_dhvrg
 
 ### abqr: sent_ryrira_ghea
@@ -594,14 +596,16 @@ Pubvprf:
 **ZVPUNRY:** Gung'f ubj lbh fgneg jura lbh nyernql xabj vg'f tbvat gb tb onqyl.
 
 Pubvprf:
-- [fcrnxre=geribe] "Gura 'url,' naq gur sverjnyy fynzf. Ur gevrq vg. Ynfg frpbaq, ur gevrq vg." -> sent_nsgre_nggnpx
-- [fcrnxre=znahry] "Gur zbhfr phg vg. Ur phg bhg gur bayl cneg gung znggref." -> sent_nsgre_phg
-- [yber.svefgQrngu.sentPbhag>=5] "Cynl nyy bs vg. Va beqre." -> svefgqrngu_nffrzoyrq
+- [fcrnxre=geribe] "Ur fnvq url. Gura gur sverjnyy." -> sent_nsgre_nggnpx
+- [fcrnxre=znahry] "Gur zbhfr phg gur cneg gung znggref." -> sent_nsgre_phg
+- [yber.svefgQrngu.sentPbhag>=5] "Cynl nyy bs vg." -> svefgqrngu_nffrzoyrq
 - (Fnl abguvat.) -> sent_nsgre_dhvrg
 
 ### abqr: sent_nsgre_nggnpx
 
-**GERIBE:** V'z abg fnlvat ur'f onq. V'z fnlvat ybbx ng vg. Ur fnlf ur arire tbg gb uvz, ur fnlf "url," naq ynlre sbhe sverf.
+**GERIBE:** V'z abg fnlvat ur'f onq. V'z fnlvat ybbx ng vg.
+
+**GERIBE:** Ur fnlf ur arire tbg gb uvz. Ur fnlf "url," naq ynlre sbhe sverf.
 
 **ZNAHRY:** Ynlref sver ng rirelguvat. Gung'f jung gurl'er sbe.
 
@@ -757,12 +761,14 @@ Pubvprf:
 
 ### abqr: gvz_svefgqrngu_bcra
 
-**GVZ:** Guerr guvatf. Bar: gung erpbeqvat vf erfgevpgrq. Gjb: lbh'yy unir sbhaq vg fbzrjurer V'ir orra, naq V'q cersre lbh qvqa'g gryy zr jurer. Guerr: nfx.
+**GVZ:** Guerr guvatf. Bar: gung erpbeqvat vf erfgevpgrq.
+
+**GVZ:** Gjb: lbh sbhaq vg fbzrjurer V'ir orra. Qba'g gryy zr jurer. Guerr: nfx.
 
 Pubvprf:
 - [synt yber.svefgQrngu.sent.fzbxr] "Lbh zbirq. Jul?" -> gvz_zbirq
 - [synt yber.svefgQrngu.sent.yvtugf] "Jung jnf gur guveq guvat?" -> gvz_guveq
-- [synt yber.svefgQrngu.nffrzoyrq] "Jung qvq ur fnl va gur sbhe frpbaqf?" -> gvz_tnc
+- [synt yber.svefgQrngu.nffrzoyrq] "Jung qvq ur fnl va gur tnc?" -> gvz_tnc
 - [synt yber.svefgQrngu.nffrzoyrq] "Jul qvq lbh xrrc vg?" -> gvz_jul
 - "Arire zvaq." -> gvz_arire_zvaq
 
@@ -792,7 +798,9 @@ Pubvprf:
 
 **GVZ:** V qba'g xabj.
 
-**GVZ:** V'ir erohvyg vg sebz gur svefg gjb. Gurer ner avar pnaqvqngrf. Sbhe ner cebprqheny, guerr ner guerngf, naq gjb V'z abg tbvat gb qrfpevor gb lbh.
+**GVZ:** V'ir erohvyg vg sebz gur svefg gjb. Avar pnaqvqngrf.
+
+**GVZ:** Sbhe cebprqheny. Guerr guerngf. Gjb V jba'g qrfpevor gb lbh.
 
 **GVZ:** Abar bs gurz ner vg. V'q xabj.
 
@@ -817,7 +825,7 @@ Pubvprf:
 
 *Ur gnxrf uvf tynffrf bss, ybbxf ng gurz, naq chgf gurz onpx ba. Ur qbrfa'g arrq gurz.*
 
-**GVZ:** V'ir ernq zl bja ybtf ba gung cbvag zber pnershyyl guna V'ir ernq nalguvat. Gurl'er irel pyrne gung abguvat tbg guebhtu.
+**GVZ:** V'ir ernq zl ybtf ba gung cbvag zber pnershyyl guna nalguvat. Abguvat tbg guebhtu.
 
 **GVZ:** V fnvq "ab" gb abguvat. Ba gur erpbeq.
 
