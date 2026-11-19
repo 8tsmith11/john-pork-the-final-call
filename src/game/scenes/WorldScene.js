@@ -67,6 +67,9 @@ const SCOPE_DEFAULT = { cold_open: 'all', the_call: 'all', ending: 'all', first_
 
 const CONTROLS_TEXT = 'WASD move · mouse aim · click: use held item\nSpace / Shift dodge · E interact · R ability\n1-9 or wheel: hotbar · Q scooter outdoors\nI bag · J quests · K skills · Tab map · ESC';
 
+// Dialogue scenes that happen on the phone, and the title each call gets in the phone tab's transcripts.
+const PHONE_CALLS = { the_call: { start: 'John Pork · the call', call_ring_2: 'John Pork · second call', call_ring_3: 'John Pork · third call', butt_dial: 'John Pork · pocket dial' } };
+
 export class WorldScene extends Phaser.Scene {
   constructor() { super('World'); }
 
@@ -208,6 +211,7 @@ export class WorldScene extends Phaser.Scene {
       standing: (f, n) => { if (f in this.save.standing) this.save.standing[f] += n; if (this.mode === 'client') this.net.send({ t: 'standing', faction: f, n }); },
     };
     this.dlg = new Conversation(scene, nodeId, this._dialogueCtx(), sink);
+    this._transcript = PHONE_CALLS[sceneName] ? { title: PHONE_CALLS[sceneName][nodeId ?? 'start'] ?? PHONE_CALLS[sceneName].start, at: new Date().toISOString(), lines: [] } : null;   // phone tab transcripts (Trevor)
     this.dlgVoiced = sceneName === 'ending';   // act-ending cutscene: spoken voices
     this.dlgDone = onDone;
     this._drawDialogue();
@@ -328,6 +332,15 @@ export class WorldScene extends Phaser.Scene {
     this._renderDlgText();
   }
 
+  // Phone transcripts: what was said on each call, kept on the phone tab (newest last, last 20 calls).
+  _logChoice(who, c) { if (this._transcript && c?.text) this._transcript.lines.push([who ?? this.character, c.text.replace(/\*/g, ''), true]); }
+  _saveTranscript() {
+    const t = this._transcript; this._transcript = null;
+    if (!t?.lines.length) return;
+    const list = ((this.save.world.phone ??= { texts: [] }).transcripts ??= []);
+    list.push(t); if (list.length > 20) list.shift();
+  }
+
   // Minimum time a line stays up before a click can skip it: base + reading time, capped.
   _minLineMs() { return Math.min(1600, 650 + (this.dlg?.line?.text?.length ?? 0) * 12); }
 
@@ -337,6 +350,7 @@ export class WorldScene extends Phaser.Scene {
     if (this._aiDecider && !this.dlg.spectator) return this._toast(`${this._aiDecider.toUpperCase()} decides`);
     if (!this.shared?.canChoose()) return;
     this.shared?.picked(this.character, this.dlg.choices[i].text.replace(/\*/g, ''));
+    this._logChoice(this.character, this.dlg.choices[i]);
     this.dlg.choose(i); this._drawDialogue();
   }
 
@@ -347,7 +361,7 @@ export class WorldScene extends Phaser.Scene {
     this.dlgText.setVisible(false);   // body text is drawn by _renderDlgText (pages + highlights)
     if (!on || d.choices.length) this._hideRich();
     if (!on) { this.dlgTimer?.setVisible(false); this.dlgPortrait.setVisible(false); this.dlgPortraitBg.setVisible(false); this.dlgInitial.setText(''); }
-    if (d && d.done) { this.dlg = null; if (this.dlgVoiced) hush(); this.dlgVoiced = false; const cb = this.dlgDone; this.dlgDone = null; cb?.(); return; }
+    if (d && d.done) { this._saveTranscript(); this.dlg = null; if (this.dlgVoiced) hush(); this.dlgVoiced = false; const cb = this.dlgDone; this.dlgDone = null; cb?.(); return; }
     if (!on) return;
     const choices = d.choices;
     this.dlgTimer?.setVisible(false);
@@ -383,6 +397,7 @@ export class WorldScene extends Phaser.Scene {
             const opts = this.dlg.choices.map((c, i) => [c, i]).filter(([c]) => !c.timeout);
             const [c, i] = opts[Math.floor(Math.random() * opts.length)] ?? [this.dlg.choices[0], 0];
             this._toast(`${this._aiDecider?.toUpperCase() ?? ''}: "${c.text.replace(/[*"]/g, '')}"`);
+            this._logChoice(this._aiDecider, c);
             this.dlg.choose(i); this._drawDialogue();
           });
         }
@@ -405,6 +420,7 @@ export class WorldScene extends Phaser.Scene {
       this.dlgText.setColor(line && !line.who ? '#9aa3c7' : '#e8e8f0');
       if (line && line !== this._lastLine) {
         this._lastLine = line; this._lineAt = this.time.now;
+        if (this._transcript && line.text && !line.sms) this._transcript.lines.push([line.who ?? '', line.text.replace(/\*([^*]+)\*/g, '$1')]);
         // The guide's Sahur entry: seen once he speaks on screen, whichever route (cameo or boss).
         if (line.who && /sahur/i.test(line.who) && !this.save.flags['act1.sahur.seen']) this._flag('act1.sahur.seen', true);
         if (line.sms) {   // a text message: buzz, and keep it on the phone
@@ -2054,8 +2070,9 @@ export class WorldScene extends Phaser.Scene {
       // Solo pauses the world during dialogue and menus: show everyone standing, not frozen mid-stride (Trevor).
       const paused = this.mode === 'solo' && (this.dlg || this.menu);
       let key = `${p.c}_${p.m && !paused ? 'walk' : 'idle'}_${facing}`;
-      // Combat frames win over walk/idle: dodge, then the swing, then the flinch after a hit.
-      const act = p.d ? 'dodge' : p.sw ? 'attack' : (p.iv && !p.d) ? 'hurt' : null;
+      // Combat frames win over walk/idle: dodge, then the flinch after a hit.
+      // No body 'punch' pose on a swing (Trevor): the weapon sweeping through the arc is the attack.
+      const act = p.d ? 'dodge' : (p.iv && !p.d) ? 'hurt' : null;
       if (act && this.anims.exists(`${p.c}_${act}_${facing}`)) key = `${p.c}_${act}_${facing}`;
       // Long idle easter eggs: stand still for 3 minutes (?idle=<seconds> to test). Moving breaks it.
       const busy = p.m || p.d || p.sw || p.dn || p.iv;

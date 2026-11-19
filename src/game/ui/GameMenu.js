@@ -303,6 +303,9 @@ export class GameMenu {
     const vm = Number(f['act1.call.declines'] || 0);
     if (vm >= 1) calls.push(['Voicemail', `${Math.min(vm, 2)} from John Pork`]);
     for (const v of s.save.world.phone?.voicemails ?? []) calls.push([`Voicemail · ${v.from}`, '▶ play', () => s.cameos?.replay(v.id)]);   // voice cameos
+    // Transcripts of every call (Trevor): click one to read it in the right-hand pane.
+    const scripts = s.save.world.phone?.transcripts ?? [];
+    scripts.forEach((t, i) => calls.push([t.title, '▤ transcript', () => { this._phoneView = i; this.refresh(); }]));
     if (!calls.length) this._t(px + 8, py + 18, 'No calls.', F(7, '#4a5175'));
     calls.slice(-8).reverse().forEach(([who, what, onClick], i) => {
       this._t(px + 8, py + 18 + i * 18, who, F(8, who === 'John Pork' ? '#e87a9c' : C.text));
@@ -311,6 +314,18 @@ export class GameMenu {
     // messages
     const mx = px + pw + 12, mw = b.x + b.w - mx - 14;
     g.fillStyle(0x10121e).fillRoundedRect(mx, py, mw, ph, 6).lineStyle(1, 0x3a4060).strokeRoundedRect(mx, py, mw, ph, 6);
+    const shown = scripts[this._phoneView];
+    if (shown) {   // a call's transcript, newest lines at the bottom; click the header to go back to messages
+      this._t(mx + 8, py + 6, `◂ ${shown.title.toUpperCase()}`, F(7, C.hi), () => { this._phoneView = null; this.refresh(); });
+      const out = [];
+      for (const [who, text, picked] of shown.lines) out.push(`${who ? `${who.toUpperCase()}: ` : ''}${picked ? `▸ ${text}` : text}`);
+      const body = this._t(mx + 8, py + 18, '', { ...F(7, C.text), wordWrap: { width: mw - 16 }, lineSpacing: 1 });
+      // Fit the newest lines that fit the pane.
+      let lines = out.slice();
+      body.setText(lines.join('\n'));
+      while (lines.length > 1 && body.height > ph - 26) { lines.shift(); body.setText(['…', ...lines].join('\n')); }
+      return;
+    }
     this._t(mx + 8, py + 6, 'MESSAGES', F(7, C.sub));
     const texts = s.save.world.phone?.texts ?? [];
     if (!texts.length) this._t(mx + 8, py + 18, 'Nothing new.', F(7, '#4a5175'));
