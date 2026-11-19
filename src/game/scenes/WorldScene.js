@@ -62,6 +62,8 @@ const HI = { quest: '#6fe3e8', name: '#ffd27f' };
 // Who sees a conversation in co-op, until the scripts carry their own `Scope:` lines (gonman, #307).
 const SCOPE_DEFAULT = { cold_open: 'all', the_call: 'all', ending: 'all', first_death: 'all', 'aster:aster_enter': 'all' };
 
+const CONTROLS_TEXT = 'WASD move · mouse aim · click: use held item\nSpace / Shift dodge · E interact · R ability\n1-9 or wheel: hotbar · Q scooter outdoors\nI bag · J quests · K skills · Tab map · ESC';
+
 export class WorldScene extends Phaser.Scene {
   constructor() { super('World'); }
 
@@ -140,7 +142,8 @@ export class WorldScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-F', () => { if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
     this._showMap(startMap);
     this.ready = true;
-    if (!this.save.flags['act1.coldopen.done']) this.startDialogue('cold_open', null, () => this._flag('act1.coldopen.done', true));
+    if (!this.save.flags['act1.coldopen.done']) this.startDialogue('cold_open', null, () => { this._flag('act1.coldopen.done', true); this._controlsHint(); });
+    else this.time.delayedCall(1200, () => this._controlsHint());
   }
 
   // ---------- dialogue ----------
@@ -1207,6 +1210,13 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // Quest banners: top centre, slide in, queued so none are lost. Gold heading, plain detail.
+  // First-time controls card (shown once per save, after the cold open). Click to close, like quest cards.
+  _controlsHint() {
+    if (this.save.flags['tut.controls']) return;
+    this._flag('tut.controls', true);
+    this._questBanner('HOW TO PLAY', 'Controls', CONTROLS_TEXT);
+  }
+
   _questBanner(kind, title, detail) {
     (this._qbQueue ??= []).push({ kind, title, detail });
     if (!this._qbBusy) this._nextQuestBanner();
@@ -1226,7 +1236,7 @@ export class WorldScene extends Phaser.Scene {
     const det = this.add.text(0, 30, objective ? objLine : (b.detail ?? ''), { ...FONT, fontSize: '8px', color: objective ? HI.quest : '#e8e8f0', align: 'center', wordWrap: { width: w - 16 } }).setOrigin(0.5, 0);
     if (objective && rest.length) { const more = this.add.text(0, 30 + det.height + 2, rest.join('\n'), { ...FONT, fontSize: '8px', color: '#c9cde0', align: 'center', wordWrap: { width: w - 16 } }).setOrigin(0.5, 0); det.setData('more', more); }
     // New quests and quest updates stay up until clicked (Trevor); completions slide away on their own.
-    const sticky = b.kind === 'NEW QUEST' || b.kind === 'QUEST UPDATED';   // click to close (Trevor)
+    const sticky = b.kind === 'NEW QUEST' || b.kind === 'QUEST UPDATED' || b.kind === 'HOW TO PLAY';   // click to close (Trevor)
     const more = det.getData('more'), detH = b.detail ? det.height + (more ? more.height + 2 : 0) + 4 : 0;
     const hint = sticky ? this.add.text(0, 30 + detH, 'click to close', { ...FONT, fontSize: '7px', color: '#9aa3c7' }).setOrigin(0.5, 0) : null;
     const h = 36 + detH + (sticky ? 10 : 0);
