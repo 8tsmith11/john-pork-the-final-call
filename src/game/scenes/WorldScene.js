@@ -119,6 +119,7 @@ export class WorldScene extends Phaser.Scene {
     this.input.on('wheel', (ptr, objs, dx, dy) => { if (this.menu || this.dlg) return; const c = this.save.party[this.character]; this.selectHot((c?.hotSel ?? 0) + (dy > 0 ? 1 : -1)); });
     this.time.delayedCall(500, () => this._spawnBot());
     if (new URLSearchParams(location.search).has('lattice')) this.time.delayedCall(800, () => this.openBoardGame());   // debug: open the board game
+    { const c = new URLSearchParams(location.search).get('cinematic'); if (c) this.time.delayedCall(600, () => this.playCinematic(c)); }   // debug: ?cinematic=demo
     this.save.world.money ??= 25;
     this.save.flags['settings.crudeHumor'] = 'on';   // always on (Trevor); scripts branch on it
     for (const [who, c] of Object.entries(this.save.party)) { Inv.normalize(c); migrateSkills(c, who); }
@@ -131,6 +132,7 @@ export class WorldScene extends Phaser.Scene {
       if (this.fishing) { this._reel(); return; }
       if (this.menu) return this._closeMenu();
       if (this.sayOpen) return this._closeSay();
+      if (this._qbSticky) return this._qbSticky.leave();   // E closes a quest card too (Trevor)
       const me = this.mode === 'client' ? this._lastRendered?.players.find((p) => p.id === this.localId) : this.sim.players.get(this.localId);
       if (!me) return;
       let best = null, bd = 34;
@@ -1213,6 +1215,16 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // Quest banners: top centre, slide in, queued so none are lost. Gold heading, plain detail.
+  // Side-view cutscene (CinematicScene) over a paused world; resumes when it ends or is skipped.
+  async playCinematic(name, onDone) {
+    let mod;
+    try { mod = await import(`../../content/cinematics/${name}.js`); } catch { console.info(`[cinematic] none named ${name}`); return onDone?.(); }
+    const ctx = { flags: this.save.flags, character: this.character, present: this.humanRoommates?.() ?? [this.character] };
+    this.scene.pause();
+    this.scene.launch('Cinematic', { cine: mod.default, ctx, onDone: () => { this.scene.resume(); onDone?.(); } });
+    this.scene.bringToTop('Cinematic');
+  }
+
   // First-time controls card (shown once per save, after the cold open). Click to close, like quest cards.
   _controlsHint() {
     if (this.save.flags['tut.controls']) return;
@@ -1241,7 +1253,7 @@ export class WorldScene extends Phaser.Scene {
     // New quests and quest updates stay up until clicked (Trevor); completions slide away on their own.
     const sticky = b.kind === 'NEW QUEST' || b.kind === 'QUEST UPDATED' || b.kind === 'HOW TO PLAY';   // click to close (Trevor)
     const more = det.getData('more'), detH = b.detail ? det.height + (more ? more.height + 2 : 0) + 4 : 0;
-    const hint = sticky ? this.add.text(0, 30 + detH, 'click to close', { ...FONT, fontSize: '7px', color: '#9aa3c7' }).setOrigin(0.5, 0) : null;
+    const hint = sticky ? this.add.text(0, 30 + detH, 'click or E to close', { ...FONT, fontSize: '7px', color: '#9aa3c7' }).setOrigin(0.5, 0) : null;
     const h = 36 + detH + (sticky ? 10 : 0);
     const bg = this.add.graphics();
     bg.fillStyle(0x0b0d16, 0.92).fillRoundedRect(-w / 2, 0, w, h, 4).lineStyle(1, done ? 0x7fb069 : 0xffb347, 0.9).strokeRoundedRect(-w / 2, 0, w, h, 4);

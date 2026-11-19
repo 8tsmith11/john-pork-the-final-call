@@ -36,6 +36,7 @@ export class TitleScene extends Phaser.Scene {
     const saveInfo = this.add.text(W / 2, 98, '', { fontFamily: 'monospace', fontSize: '7px', color: '#9aa3c7', backgroundColor: 'rgba(11,13,22,0.6)', padding: { x: 3, y: 1 } })   // backed: it sits on the skyline.setOrigin(0.5);
     const refresh = async () => {
       const s = await loadAutosave().catch(() => null);
+      if (!saveInfo.active) return;   // left the title before the save check finished
       saveInfo.setText(s ? `save found: act ${s.world.act} · world "${s.world.seed}" · click a roommate to continue` : 'no save yet: clicking a roommate starts a new game').setOrigin(0.5);   // re-centre: the padded box changes width
     };
     refresh();

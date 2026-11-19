@@ -51,6 +51,7 @@ const ES = {
   'DEPARTURE BOARDS': 'TABLEROS DE SALIDAS', 'LAST DEPARTURE BOARD': 'ÚLTIMO TABLERO DE SALIDAS', "MANUEL'S PHONE": 'TELÉFONO DE MANUEL',
   "MICHAEL'S PHONE": 'TELÉFONO DE MICHAEL', "TREVOR'S PHONE": 'TELÉFONO DE TREVOR', 'ALL PHONES': 'TODOS LOS TELÉFONOS',
   'VOICE 1': 'VOZ 1', 'VOICE 2': 'VOZ 2', TV: 'TELE', "TREVOR'S MOM": 'LA MAMÁ DE TREVOR', MAILBOX: 'BUZÓN DE VOZ', 'TEXT: JOHN PORK': 'MENSAJE: JOHN PORK',
+  'click: next · ESC: skip': 'clic: siguiente · ESC: saltar', 'College Park, 2098': 'College Park, 2098',
   'HOW TO PLAY': 'CÓMO JUGAR', Controls: 'Controles',
   'WASD move · mouse aim · click: use held item': 'WASD moverse · ratón apunta · clic: usar',
   'Space / Shift dodge · E interact · R ability': 'Espacio / Shift esquivar · E usar · R habilidad',
@@ -58,7 +59,7 @@ const ES = {
   'I bag · J quests · K skills · Tab map · ESC': 'I mochila · J misiones · K habil. · Tab mapa · ESC',
   // HUD and prompts
   '[J] quests': '[J] misiones', RELOADING: 'RECARGANDO', 'NEW QUEST': 'NUEVA MISIÓN', 'QUEST UPDATED': 'MISIÓN ACTUALIZADA',
-  'QUEST COMPLETE': 'MISIÓN COMPLETADA', 'click to close': 'clic para cerrar', '▶ YOUR CHOICE': '▶ TU DECISIÓN',
+  'QUEST COMPLETE': 'MISIÓN COMPLETADA', 'click to close': 'clic para cerrar', 'click or E to close': 'clic o E para cerrar', '▶ YOUR CHOICE': '▶ TU DECISIÓN',
   'saving…': 'guardando…', '✓ saved': '✓ guardado', 'Your bag is full.': 'Tu mochila está llena.', 'Take it off first.': 'Quítatelo primero.',
   'INCOMING CALL': 'LLAMADA ENTRANTE', 'IS CALLING': 'ESTÁ LLAMANDO', 'F  ANSWER': 'F  CONTESTAR', 'X  DECLINE': 'X  RECHAZAR',
   'INCOMING SIGNAL': 'SEÑAL ENTRANTE', '◉ connecting…': '◉ conectando…', 'Skipped': 'Saltado',
