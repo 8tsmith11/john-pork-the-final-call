@@ -100,10 +100,9 @@ export const room631 = makeMap({
     { id: 'obj.ottoman', x: 22, y: 13, label: 'Balcony ottoman', flag: 'act1.balloon.noticedGone',
       text: 'The ottoman everyone glances at to check the weather. Dry. Clear. A normal night, apparently. The balcony door\'s latch behind you is dusty: nobody came in this way.' },
     // Trevor's room + bathroom
-    // Placeholder art until gonman draws obj.boxes (hub task).
-    { id: 'obj.boxes_1', art: 'obj.crate', x: 1, y: 1, label: 'Boxes', text: 'Moving boxes, stacked to the ceiling. TREVOR: WINTER. TREVOR: MISC. TREVOR: MISC 2. He has lived here two years and never unpacked MISC 2.' },
-    { id: 'obj.boxes_2', art: 'obj.crate', x: 1, y: 2, label: 'Boxes', text: 'A box marked BOT PARTS, DO NOT STACK, with three boxes stacked on it.' },
-    { id: 'obj.boxes_3', art: 'obj.crate', x: 2, y: 1, label: 'Boxes', text: 'Amp cables, a pedal board, a spare mattress cover still in the plastic. Everything Trevor owns lives in here. Trevor sleeps next door.' },
+    { id: 'obj.boxes_1', art: 'obj.boxes', x: 1, y: 1, label: 'Boxes', text: 'Moving boxes, stacked to the ceiling. TREVOR: WINTER. TREVOR: MISC. TREVOR: MISC 2. He has lived here two years and never unpacked MISC 2.' },
+    { id: 'obj.boxes_2', art: 'obj.boxes', x: 1, y: 2, label: 'Boxes', text: 'A box marked BOT PARTS, DO NOT STACK, with three boxes stacked on it.' },
+    { id: 'obj.boxes_3', art: 'obj.boxes', x: 2, y: 1, label: 'Boxes', text: 'Amp cables, a pedal board, a spare mattress cover still in the plastic. Everything Trevor owns lives in here. Trevor sleeps next door.' },
     { id: 'obj.shrimp_tank', x: 6, y: 1, label: 'Shrimp tank', text: 'Trevor\'s shrimp. The only clean water in the building. They\'re clustered in the corner away from the window.' },
     { id: 'obj.guitar', x: 6, y: 4, label: 'Guitar', text: 'Trevor\'s electric guitar, plugged into a little practice amp. He only plays rock, and he plays it annoyingly well.' },
     { id: 'obj.battlebot', x: 7, y: 4, label: 'Combat robot', flag: 'q.bot.looked', goneFlag: 'q.bot.built', botInstall: true, text: 'A wedge bot. A strip of tape over the power switch reads: NO HALLWAY TESTS.' },
@@ -127,7 +126,7 @@ export const room631 = makeMap({
     // Michael & Manuel's room + bathroom
     // The triple bunk: all three sleep here (bible §3). Placeholder art until gonman draws obj.bunk
     // (a 32x40 'big' sprite); then drop the art line.
-    { id: 'obj.bunk', art: 'obj.bed', x: 18, y: 2, label: 'Triple bunk (save)', action: 'save',
+    { id: 'obj.bunk', x: 18, y: 2, label: 'Triple bunk (save)', action: 'save',
       text: 'The triple bunk. Three mattresses high, and every rung of the ladder creaks.\n\nTop: Trevor, two guitar picks and a glass of water he never finishes. Middle: Michael, a phone charger and a sweatshirt that isn\'t his size. Bottom: Manuel, a carved gourd and a postcard from Buenos Aires tucked into the slats above him.\n\nSleep? The balloon is still missing.' },
     { id: 'obj.arg_flag', x: 22, y: 0, label: 'Argentine flag', text: 'The Argentine flag, sky blue and white with the sun in the middle, tacked up over Manuel\'s end of the room. It is bigger than the window.' },
     { id: 'obj.michael_closet', art: 'obj.manuel_closet', loot: 'michael_closet', x: 16, y: 4, label: 'Michael\'s closet',

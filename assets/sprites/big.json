@@ -119,13 +119,33 @@
     "w": 32,
     "h": 40
    }
+  },
+  "obj.bunk": {
+   "frame": {
+    "x": 192,
+    "y": 0,
+    "w": 32,
+    "h": 40
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 40
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 40
+   }
   }
  },
  "meta": {
   "image": "big.png",
   "format": "RGBA8888",
   "size": {
-   "w": 192,
+   "w": 224,
    "h": 40
   },
   "scale": "1"

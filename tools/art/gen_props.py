@@ -455,6 +455,12 @@ P("obj.zip_anchor", c.outline())
 c = C()
 c.rect(5, 15, 6, 8, "night2").rect(6, 16, 4, 6, "screen0").rect(6, 16, 4, 2, "screen1").pts("bone", (8, 19), (7, 20), (8, 20)).px(9, 17, "screen2").pts("concrete3", (6, 21), (9, 16))
 P("obj.old_phone", c.outline())
+# Stacked cardboard moving boxes (task 20).
+c = C()
+c.rect(2, 13, 12, 10, "warm2").h_(2, 13, 12, "warm3").v_(13, 14, 9, "warm1").h_(4, 17, 6, "bone").v_(8, 13, 10, "warm1")
+c.rect(3, 6, 9, 7, "warm2").h_(3, 6, 9, "warm3").v_(11, 7, 6, "warm1").h_(5, 9, 4, "bone")
+c.rect(6, 1, 7, 5, "warm1").h_(6, 1, 7, "warm3").v_(12, 2, 4, "warm0").px(9, 3, "bone")
+P("obj.boxes", c.outline())
 P("npc.rotter_1", person("concrete2", "concrete1", "skin1", "night2", lace="rot0"))
 P("npc.rotter_2", person("warm1", "warm0", "skin2", "concrete3", lace="rot1"))
 P("npc.rotter_3", person("concrete1", "concrete0", "skin2", "warm0", lace="rot0", look_up=True))
@@ -511,6 +517,20 @@ BIG["obj.statue_2#flag"] = bust(turn=3).rows()
 BIG["obj.statue_3#flag"] = bust(turn=3, raw=True).rows()
 
 # ---- wide wall pieces (32x16, hung on a wall tile and the one to its right) ----
+# The triple bunk (task 20): three mattresses on wooden posts with a ladder up the right side.
+c = C(32, 40)
+c.rect(3, 3, 2, 36, "warm1").rect(27, 3, 2, 36, "warm1").v_(4, 3, 36, "warm0").v_(28, 3, 36, "warm0")
+for y0, blanket, dark in ((6, "tub1", "tub0"), (17, "soft1", "soft0"), (28, "yerba0", "night2")):
+    c.rect(5, y0 + 5, 22, 2, "warm2").h_(5, y0 + 6, 22, "warm0")                    # the bed rail
+    c.rect(5, y0, 22, 5, blanket).h_(5, y0 + 4, 22, dark).rect(5, y0, 5, 3, "bone").h_(5, y0 + 2, 5, "concrete3")   # blanket, pillow
+c.pts("warm4", (14, 7), (16, 8), (19, 7))                                             # top: guitar picks on the blanket
+c.pts("screen2", (20, 18), (21, 18)).px(20, 19, "screen1")                            # middle: a phone left glowing
+c.rect(21, 29, 2, 3, "warm2").px(22, 28, "steel")                                     # bottom: the mate gourd
+c.v_(23, 5, 33, "warm2").v_(26, 5, 33, "warm2")
+for y in (9, 14, 20, 25, 31, 36): c.h_(23, y, 4, "warm3")                             # ladder rungs
+c.h_(3, 39, 26, "night2")
+BIG["obj.bunk"] = c.outline().rows()
+
 WIDE = {}
 # The flag: the photograph, printed on cloth. Overcast sky, grey sea on the left, dark cliffs on the
 # right, and him in the middle: pale head, ears out and down at the top corners, snout, long smile,
@@ -531,6 +551,13 @@ c.h_(13, 9, 6, "pork0").pts("pork0", (12, 8), (19, 8))                          
 c.v_(6, 3, 4, "concrete3").v_(26, 4, 9, "concrete0")                                      # two soft folds in the cloth
 c.pts("warm0", *[(x, 14) for x in range(1, 31, 2)])
 WIDE["obj.pork_flag"] = c.outline().rows()
+# The Argentine flag (task 20): sky blue, white, sky blue, with the sun in the middle band.
+c = C(32, 16)
+c.rect(2, 2, 28, 4, "screen2").rect(2, 6, 28, 4, "bone").rect(2, 10, 28, 4, "screen2")
+c.h_(2, 5, 28, "screen1").h_(2, 13, 28, "screen1").h_(2, 9, 28, "concrete3")
+c.rect(15, 7, 2, 2, "warm4").pts("warm3", (14, 7), (17, 8), (15, 6), (16, 9))
+c.pts("warm0", (2, 1), (29, 1))
+WIDE["obj.arg_flag"] = c.outline().rows()
 
 
 # ---- the principal machines (24x32, standing, facing the camera) ----

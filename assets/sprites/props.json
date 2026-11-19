@@ -2300,7 +2300,7 @@
     "h": 24
    }
   },
-  "npc.rotter_1": {
+  "obj.boxes": {
    "frame": {
     "x": 48,
     "y": 336,
@@ -2320,7 +2320,7 @@
     "h": 24
    }
   },
-  "npc.rotter_2": {
+  "npc.rotter_1": {
    "frame": {
     "x": 64,
     "y": 336,
@@ -2340,7 +2340,7 @@
     "h": 24
    }
   },
-  "npc.rotter_3": {
+  "npc.rotter_2": {
    "frame": {
     "x": 80,
     "y": 336,
@@ -2360,7 +2360,7 @@
     "h": 24
    }
   },
-  "npc.halvard": {
+  "npc.rotter_3": {
    "frame": {
     "x": 96,
     "y": 336,
@@ -2380,10 +2380,30 @@
     "h": 24
    }
   },
-  "obj.battlebot": {
+  "npc.halvard": {
    "frame": {
     "x": 112,
     "y": 336,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.battlebot": {
+   "frame": {
+    "x": 0,
+    "y": 360,
     "w": 16,
     "h": 24
    },
@@ -2406,7 +2426,7 @@
   "format": "RGBA8888",
   "size": {
    "w": 128,
-   "h": 360
+   "h": 384
   },
   "scale": "1"
  }

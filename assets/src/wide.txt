@@ -18,6 +18,23 @@ eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 0ssssssFFEFFEFdddddFFEFFEAAAAAA0
 0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0.
 .0.0.0.0.0.0.0.0.0.0.0.0.0.0.0..
+@frame obj.arg_flag
+..0..........................0..
+.0e00000000000000000000000000e0.
+.0pppppppppppppppppppppppppppp0.
+.0pppppppppppppppppppppppppppp0.
+.0pppppppppppppppppppppppppppp0.
+.0oooooooooooooooooooooooooooo0.
+.0qqqqqqqqqqqqqhqqqqqqqqqqqqqq0.
+.0qqqqqqqqqqqqhiiqqqqqqqqqqqqq0.
+.0qqqqqqqqqqqqqiihqqqqqqqqqqqq0.
+.0ddddddddddddddhddddddddddddd0.
+.0pppppppppppppppppppppppppppp0.
+.0pppppppppppppppppppppppppppp0.
+.0pppppppppppppppppppppppppppp0.
+.0oooooooooooooooooooooooooooo0.
+..0000000000000000000000000000..
+................................
 @frame obj.mailboxes
 00000000000000000000000000000000
 iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
