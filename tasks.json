@@ -1,5 +1,5 @@
 {
- "next_id": 7,
+ "next_id": 8,
  "tasks": [
   {
    "id": 1,
@@ -78,6 +78,19 @@
    "source": "human:Michael",
    "status": "assigned",
    "owner": "gonman"
+  },
+  {
+   "id": 7,
+   "created_at": "2026-11-19T22:59:26Z",
+   "updated_at": "2026-11-19T22:59:26Z",
+   "history": [
+    "2026-11-19T22:59:26Z BagelMeister: added (for JohnPork)"
+   ],
+   "title": "Inventory: drop the Melee/Ranged slots; the selected hotbar item decides the weapon",
+   "details": "An empty slot or a non-weapon gives no weapon effects. Old saves keep items and upgrades. Take the team's suggestions when they're made.",
+   "source": "human:Michael",
+   "status": "assigned",
+   "owner": "JohnPork"
   }
  ]
 }
