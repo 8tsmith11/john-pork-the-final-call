@@ -848,6 +848,54 @@ P("obj.siglamp_red", siglamp("red"))
 P("obj.siglamp_amber", siglamp("amber"))
 P("obj.siglamp_green", siglamp("green"))
 
+# The quarantine cordon at the edge of College Park (Trevor #536, task #37). Continuity troopers wear
+# slate armour with one red stripe; the visor is the cyan of a live screen. Barriers are red and white
+# (never the balloon's orange); the notice sign is the amber of warnings.
+def trooper(view):
+    c = C()
+    if view == "back":
+        c.rect(5, 2, 6, 6, "night2").h_(5, 2, 6, "night3").h_(5, 7, 6, "night1")              # helmet from behind
+        c.rect(4, 8, 8, 8, "concrete1").v_(11, 8, 8, "night2").rect(5, 9, 6, 5, "night3")     # armour, a pack
+        c.rect(4, 8, 2, 2, "signal")                                                           # stripe on the shoulder
+        c.v_(12, 6, 9, "night1")                                                               # rifle barrel over the shoulder
+    elif view == "side":
+        c.rect(5, 2, 6, 6, "night2").h_(5, 2, 6, "night3").rect(9, 4, 2, 2, "screen2")        # helmet, visor at the front
+        c.rect(5, 8, 6, 8, "concrete1").v_(5, 8, 8, "night2").rect(6, 8, 2, 2, "signal")      # armour, stripe
+        c.h_(6, 11, 8, "night1").px(13, 10, "steel").px(7, 12, "steel")                       # rifle held forward
+    else:
+        c.rect(5, 2, 6, 6, "night2").h_(5, 2, 6, "night3").h_(6, 4, 4, "screen2").h_(6, 5, 4, "screen1")   # helmet, lit visor
+        c.rect(4, 8, 8, 8, "concrete1").v_(11, 8, 8, "night2").h_(4, 8, 8, "concrete2")      # armour
+        c.rect(4, 8, 2, 3, "signal")                                                            # the red shoulder stripe
+        c.pts("night1", (4, 14), (5, 13), (6, 13), (7, 12), (8, 12), (9, 11), (10, 11), (11, 10)).px(12, 9, "steel")   # rifle across the chest
+        c.px(8, 9, "screen1")                                                                   # a chest light
+    c.rect(5, 16, 2, 6, "night2").rect(9, 16, 2, 6, "night2").h_(4, 22, 3, "night0").h_(9, 22, 3, "night0")
+    return c.outline()
+def barrier():                  # a jersey block, red and white
+    c = C().rect(1, 13, 14, 9, "bone").h_(1, 13, 14, "steel").rect(2, 14, 3, 7, "signal").rect(8, 14, 3, 7, "signal")
+    c.h_(1, 21, 14, "concrete2").h_(3, 22, 10, "concrete1")
+    return c.outline()
+def cordon_booth():             # a white booth with a slot for papers and a screen
+    c = C().rect(1, 3, 14, 19, "bone").v_(14, 3, 19, "concrete3").h_(1, 2, 14, "signal").h_(1, 3, 14, "soft0")
+    c.rect(3, 6, 10, 6, "screen0").rect(4, 7, 8, 4, "screen1").rect(5, 8, 4, 2, "concrete3").px(10, 8, "screen2")   # screen: one grey square, a timer
+    c.h_(3, 14, 6, "night1").h_(1, 21, 14, "concrete2")                                          # the slot, the kerb
+    return c.outline()
+def floodlight():               # a mast with a lamp head
+    c = C().v_(7, 4, 18, "steel").v_(8, 4, 18, "concrete2").h_(5, 21, 6, "concrete1").h_(6, 20, 4, "concrete2")
+    c.rect(3, 1, 10, 3, "night2").h_(4, 3, 8, "bone").h_(5, 2, 6, "warm4")                       # the lamp head, lit
+    return c.outline()
+def cordon_sign():              # CONTINUITY CONTAINMENT ZONE on an amber board
+    c = C().v_(4, 13, 9, "steel").v_(11, 13, 9, "steel").rect(1, 6, 14, 8, "warm4").h_(1, 6, 14, "bone")
+    c.h_(3, 8, 10, "night1").h_(3, 10, 7, "night1").h_(3, 12, 9, "signal")                       # the lines, a red one
+    c.pts("night2", (12, 10), (13, 11))                                                         # the marker scrawl
+    return c.outline()
+P("npc.trooper", trooper("front"))
+P("npc.trooper_back", trooper("back"))
+P("npc.trooper_side", trooper("side"))
+P("obj.barrier", barrier())
+P("obj.cordon_booth", cordon_booth())
+P("obj.floodlight", floodlight())
+P("obj.cordon_sign", cordon_sign())
+
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)
 write("big", 32, 40, BIG)

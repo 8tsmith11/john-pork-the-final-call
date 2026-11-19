@@ -1,6 +1,6 @@
 // Draws the quarantine cordon (src/content/cordon.js) and turns players back at the map edge.
-// Cosmetic and local: troopers, barriers, booths, floodlights and signs are drawn in code (placeholders
-// until real sprites land), plus a chain-link fence along the tree line of maps with `cordon: true`.
+// Cosmetic and local: troopers, barriers, booths, floodlights and signs use gonman's props frames (task #37;
+// the code-drawn shapes stay as a fallback), plus a chain-link fence along the tree line of maps with `cordon: true`.
 // Walking into the edge band makes the nearest trooper say a line (no dialogue box, nothing pauses).
 import { CORDON_LINES } from '../content/cordon.js';
 import { getLang } from '../i18n.js';
@@ -31,6 +31,7 @@ export class Cordon {
     const parts = (map?.objects ?? []).filter((o) => o.cordon);
     if (!map?.cordon && !parts.length) return;
     const g = s.add.graphics().setDepth(2); this.objs.push(g);
+    const sheet = s.textures.exists('props') ? s.textures.get('props') : null, art = (f) => !!sheet?.has(f);
     // Chain-link fence just inside the tree line, broken where the barriers and openings are.
     if (map.cordon) {
       const W = map.w * TILE, H = map.h * TILE, y0 = TILE + 2, y1 = H - TILE - 2, x0 = TILE + 2, x1 = W - TILE - 2;
@@ -46,12 +47,23 @@ export class Cordon {
     for (let ty = 0; ty < map.h; ty++) for (let tx = 0; tx < map.w; tx++) {
       if (map.layout[ty][tx] !== '=' || !map.cordon) continue;
       const x = tx * TILE, y = ty * TILE;
+      if (art('obj.barrier')) { this.objs.push(s.add.image(x + 8, y + TILE, 'props', 'obj.barrier').setOrigin(0.5, 1).setDepth(y + TILE - 2)); continue; }
       g.fillStyle(0xd8d8de, 1).fillRect(x + 1, y + 5, 14, 9);
       g.fillStyle(0xd23a3a, 1).fillRect(x + 1, y + 5, 4, 9).fillRect(x + 9, y + 5, 4, 9);
       g.fillStyle(0x000000, 0.3).fillRect(x + 1, y + 13, 14, 2);
     }
     for (const o of parts) {
       const x = o.x * TILE, y = o.y * TILE;
+      const frame = { light: 'obj.floodlight', booth: 'obj.cordon_booth', sign: 'obj.cordon_sign' }[o.cordon];
+      if (frame && art(frame)) {   // gonman's sprites (task #37); the floodlight keeps its sweeping cone
+        this.objs.push(s.add.image(x + 8, y + TILE, 'props', frame).setOrigin(0.5, 1).setDepth(y + TILE - 2));
+        if (o.cordon === 'light') {
+          const cone = s.add.triangle(x + 8, y - 6, 0, 0, -18, 34, 18, 34, 0xfff3c4, 0.08).setOrigin(0, 0).setDepth(3);
+          s.tweens.add({ targets: cone, angle: { from: -25, to: 25 }, duration: 3000 + (o.x * 37) % 1500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+          this.objs.push(cone);
+        }
+        continue;
+      }
       if (o.cordon === 'light') {
         g.fillStyle(0x4a5060, 1).fillRect(x + 7, y - 10, 2, 24); g.fillStyle(0xfff3c4, 1).fillRect(x + 4, y - 12, 8, 3);
         const cone = s.add.triangle(x + 8, y - 10, 0, 0, -18, 34, 18, 34, 0xfff3c4, 0.08).setOrigin(0, 0).setDepth(3);
@@ -64,7 +76,8 @@ export class Cordon {
         g.fillStyle(0x4a5060, 1).fillRect(x + 7, y + 4, 2, 10); g.fillStyle(0xf2c94c, 1).fillRect(x + 1, y - 2, 14, 8);
         g.fillStyle(0x15171f, 1).fillRect(x + 3, y, 10, 1).fillRect(x + 3, y + 2, 7, 1);
       } else if (o.cordon === 'trooper') {
-        const im = s.add.image(x + 8, y + 15, troopTexture(s)).setOrigin(0.5, 1).setDepth(y + 15).setFlipX(o.face === 'left');
+        const tf = o.face === 'up' ? 'npc.trooper_back' : o.face === 'left' || o.face === 'right' ? 'npc.trooper_side' : 'npc.trooper';
+        const im = (art(tf) ? s.add.image(x + 8, y + TILE, 'props', tf) : s.add.image(x + 8, y + 15, troopTexture(s))).setOrigin(0.5, 1).setDepth(y + 15).setFlipX(o.face === 'left');
         s.tweens.add({ targets: im, scaleY: { from: 1, to: 0.97 }, duration: 1600 + (o.x * 53) % 600, yoyo: true, repeat: -1 });
         this.objs.push(im); this.troopers.push(im);
       }

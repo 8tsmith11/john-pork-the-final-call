@@ -2699,6 +2699,146 @@
     "w": 16,
     "h": 24
    }
+  },
+  "npc.trooper": {
+   "frame": {
+    "x": 112,
+    "y": 384,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.trooper_back": {
+   "frame": {
+    "x": 0,
+    "y": 408,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.trooper_side": {
+   "frame": {
+    "x": 16,
+    "y": 408,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.barrier": {
+   "frame": {
+    "x": 32,
+    "y": 408,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.cordon_booth": {
+   "frame": {
+    "x": 48,
+    "y": 408,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.floodlight": {
+   "frame": {
+    "x": 64,
+    "y": 408,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.cordon_sign": {
+   "frame": {
+    "x": 80,
+    "y": 408,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
   }
  },
  "meta": {
@@ -2706,7 +2846,7 @@
   "format": "RGBA8888",
   "size": {
    "w": 128,
-   "h": 408
+   "h": 432
   },
   "scale": "1"
  }
