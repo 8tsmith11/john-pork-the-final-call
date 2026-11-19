@@ -11,7 +11,14 @@ sealed and belongs to the lore gate.
 And earlier: "Act 1 was extremely quick: we just went right from the apartments to the dead platform and
 killed the Warden with crowbars. Act 1 should be a whole story within itself that leads to another." (#504)
 
-## Where we are (honest count, main today)
+## Where we are (2026-11-19, evening): every floor below is met as scaffold
+
+`node tools/scope.mjs` shows Act 1 at 15 areas, 27 NPCs, 3 bosses and 16 side quests; Act 2 at 14, 40, 5 and 26;
+Act 3 at 10, 29, 4 and 20. Most of it is **scaffold** ("[scaffold]" text, placeholder art, lore-gate names
+pending), so it is a skeleton you can walk end to end, not a finished game. Trevor keeps asking for more, so
+the table below now has a **stretch** row per line: the next tier we scaffold toward, while polish fills in.
+
+## Where we were (honest count, before the scaffold pass)
 
 - Maps: room 631, ASTER (two floors), College Park, the lake, the tunnels and the platform: 6–7 areas,
   all inside one quarantined pocket.
@@ -31,6 +38,7 @@ killed the Warden with crowbars. Act 1 should be a whole story within itself tha
 | Boss fights | 3–4 | 4–5 | 4–5 |
 | Side quests | 15+ | 25+ | 20+ |
 | Story beats with a cutscene | 3 | 4 | 5 |
+| **Stretch** (areas / NPCs / bosses / side) | 20 / 35 / 4 / 20 | 26 / 50 / 6 / 35 | 18 / 40 / 6 / 28 |
 
 The whole game lands around **12–15 hours** on the main path, and 20+ with side content. That's the
 "much more spanning game": a world that opens up act by act, not a corridor to the next boss.
