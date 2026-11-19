@@ -34,10 +34,6 @@ Fpbcr: arneol
 
 > rf: Ry zbavgbe fr npynen. Ry irfgíohyb, rfgn abpur, qrfqr neevon: ybf gerf zveáaqbfr n fí zvfzbf.
 
-**ZVPUNRY:** Gung'f hf. Uv.
-
-> rf: Fbzbf abfbgebf. Ubyn.
-
 **GERIBE:** Tb onpx. Fvkgu sybbe. Guerr b'pybpx.
 
 > rf: Ihryir ngeáf. Frkgb cvfb. Ynf gerf.
@@ -54,10 +50,6 @@ Fpbcr: arneol
 
 > rf: Rfr rf ha noevtb qr fnarnzvragb.
 
-**GERIBE:** Gung'f n pbng. Nalobql pna unir n pbng.
-
-> rf: Rf ha noevtb. Phnydhvren chrqr grare ha noevtb.
-
 *Gur svther jbexf gur one vagb gur senzr. Bapr. Gjvpr.*
 
 > rf: Yn svthen zrgr yn oneen ra ry znepb. Han irm. Qbf.
@@ -70,10 +62,6 @@ Fpbcr: arneol
 
 > rf: Yn svthen ergebprqr. Qrfchéf ragen. Yn chregn fr pvreen.
 
-**ZVPUNRY:** Jnvg.
-
-> rf: Rfcren.
-
 *Gur gvzrfgnzc ernqf 1901 sbe gjb senzrf. Gura 03:10:02.*
 
 > rf: Yn uben znepn 1901 qhenagr qbf phnqebf. Qrfchéf 03:10:02.
@@ -85,10 +73,6 @@ Fpbcr: arneol
 **GERIBE:** Abobql'f va fubg. Vg bcraf vajneq. Jubrire vg jnf vf oruvaq gur qbbe.
 
 > rf: Ab unl anqvr ra yn gbzn. Noer unpvn nqrageb. Dhvra frn rfgá qrgeáf qr yn chregn.
-
-**ZNAHRY:** Jr jrer nfyrrc.
-
-> rf: Rfgáonzbf qbezvqbf.
 
 **ZVPUNRY:** Nyy guerr bs hf jrer nfyrrc.
 
@@ -140,14 +124,6 @@ Pubvprf:
 
 > rf: Ab.
 
-**ZVPUNRY:** V'z nfxvat.
-
-> rf: Fbyb certhagb.
-
-**ZNAHRY:** V xabj jung lbh'er nfxvat.
-
-> rf: Ln fé yb dhr certhagáf.
-
 *frg npg1.yrnqP.ybpxNfxrq*
 
 Arkg: -> sbbgntr_uho
@@ -173,10 +149,6 @@ Arkg: -> sbbgntr_uho
 **GERIBE:** Vg'f ryrira cvkryf.
 
 > rf: Fba bapr cíkryrf.
-
-**ZNAHRY:** Fgbc vg gurer.
-
-> rf: Cneá nuí.
 
 **GERIBE:** Vg jba'g ubyq ba gung senzr. Jngpu.
 

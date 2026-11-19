@@ -1281,5 +1281,25 @@ test('gear roll affixes have Spanish that works after any noun (no gendered adje
   const r = Rolls.rollGear('w', 'r', 1, 'melee'); assert.equal(r.labelEs.split(', ').length, r.affixes.length);
 });
 
+const landMaps = (await import('../src/content/maps/index.js')).MAPS;
+const decorMod = await import('../src/game/render/decor.js');
+test('landscape pass: place bubbles sit inside their map, scenery and decals stay on the map and off walls', () => {
+  for (const [id, zones] of Object.entries(BARKS.zones)) {
+    const m = landMaps[id]; assert.ok(m, id);
+    for (const z of zones) {
+      const [x, y, w, h] = z.at; assert.ok(x >= 0 && y >= 0 && x + w <= m.w && y + h <= m.h, `${id} zone ${z.at} off the map`);
+      for (const who of ['manuel', 'trevor', 'michael']) assert.ok(z[who]?.length, `${id} zone ${z.at} has no line for ${who}`);
+    }
+  }
+  const plaza = landMaps.metro_plaza;
+  for (const s of plaza.scenery) { assert.ok(s.x >= 0 && s.y >= 0 && s.x < plaza.w && s.y < plaza.h, `${s.art} off the map`); assert.ok(!'#~T|'.includes(plaza.layout[s.y][s.x]) || s.solid, `${s.art} at ${s.x},${s.y} stands in a wall or tree`); }
+  const decals = decorMod.mapDecals(plaza);
+  assert.ok(decals.length > 150, 'College Park should have plenty of ground detail');
+  assert.deepEqual(decorMod.mapDecals(plaza), decals, 'decals are seeded, not random');
+  assert.ok(decals.filter((d) => d.frame.startsWith('dec.')).every((d) => !plaza.solid(d.x, d.y) || d.frame === 'dec.bay_v'), 'a ground decal sits on a wall');
+  assert.ok(decals.some((d) => d.frame.startsWith('roof.')), 'roofs have detail');
+  assert.ok(plaza.solid(38, 18) && plaza.solid(39, 19), 'the fountain is solid');
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

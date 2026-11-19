@@ -47,14 +47,6 @@ Fpbcr: arneol
 
 > rf: Arprfvgnf ha qrgrpgbe qr shtnf. Vzcevzvzbf yn pnepnfn. Ry frafbe rf ha chragr qr uvyb pnyvragr. Gratb hab qry ynobengbevb.
 
-**ZNAHRY:** V ungr 245 yno.
-
-> rf: Bqvb ry ynobengbevb 245.
-
-**GERIBE:** Lbh ungr vg yrff gbavtug.
-
-> rf: Rfgn abpur yb bqvnf ha cbpb zrabf.
-
 Pubvprf:
 - "Cevag vg." -> favssre_ohvyq
 
@@ -68,10 +60,6 @@ Pubvprf:
 **GERIBE:** Uryvhz pneevrf urng orggre guna nve. Eha n ubg jver. Vs vg pbbyf gbb snfg, gurer'f uryvhz ba vg.
 
 > rf: Ry uryvb pbaqhpr ry pnybe zrwbe dhr ry nver. Cbarf ha uvyb pnyvragr. Fv fr raseín qrznfvnqb eácvqb, unl uryvb.
-
-**ZVPUNRY:** Gung'f gur jubyr guvat?
-
-> rf: ¿Rfb rf gbqb?
 
 **GERIBE:** Gung'f rirel yrnx qrgrpgbe sbe n uhaqerq naq svsgl lrnef.
 
@@ -101,14 +89,6 @@ Arkg: -> favssre_ohvyq
 
 > rf: Nuí.
 
-**ZVPUNRY:** Gung yvggyr guvat?
-
-> rf: ¿Rfb gna puvdhvgb?
-
-**ZNAHRY:** Gung yvggyr guvat vf n cneg cre ovyyvba.
-
-> rf: Rfb gna puvdhvgb rf han cnegr cbe zvy zvyybarf.
-
 **GERIBE:** Ebbxvr Nfgre zvfgnxr, pryroengvat orsber vg'f mrebrq.
 
 > rf: Reebe qr abingb qr Nfgre, srfgrwne nagrf qr pnyvoene n preb.
@@ -134,14 +114,6 @@ Arkg: -> favssre_ernq
 **ZNAHRY:** Vg jrag bhg gur sebag. Pneevrq ybj. Pybfr gb gur sybbe.
 
 > rf: Fnyvó cbe nqrynagr. Yb yyrineba onwb. Prepn qry cvfb.
-
-**ZVPUNRY:** Jul ybj?
-
-> rf: ¿Cbe dhé onwb?
-
-**ZNAHRY:** V qba'g xabj. Onyybbaf tb hc.
-
-> rf: Ab fé. Ybf tybobf fhora.
 
 *Ur ubyqf vg gb gur tnc haqre gur sebag qbbe. Gur yvar oraqf.*
 

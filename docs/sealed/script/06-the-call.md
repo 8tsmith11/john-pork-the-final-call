@@ -218,14 +218,6 @@ Bar cre ebbzzngr ng zbfg, va nal beqre, fcnprq bhg. Gurl qb abg oybpx vachg.
 
 > rf: *Ry* tbazna.
 
-**ZNAHRY:** Jvgu gur "gur."
-
-> rf: Pba ry "ry".
-
-**WBUA CBEX:** Ab, V urneq vg. Vg'f tbbq. Qba'g yrg vg trg njnl sebz lbh.
-
-> rf: Ab, yb rfphpué. Rfgá ohrab. Dhr ab fr gr rfpncr.
-
 #### raq
 
 -> nafjre_znahry_uho
@@ -302,14 +294,6 @@ Pubvprf:
 **WBUA CBEX:** Fbzrobql fgnegrq gb. Pbhag gur znexf ba gur cyngr jura lbh'er ubzr. Gung qbbe gnxrf zber guna gung.
 
 > rf: Nythvra rzcrmó n unpreyb. Phragn ynf znepnf ra yn puncn phnaqb rfgéf ra pnfn. Rfn chregn arprfvgn záf dhr rfb.
-
-**ZNAHRY:** Jung qbrf gung zrna?
-
-> rf: ¿Dhé fvtavsvpn rfb?
-
-**WBUA CBEX:** Vg zrnaf pbhag gurz.
-
-> rf: Fvtavsvpn dhr ynf phragrf.
 
 #### vs abg synt npg1.pyhr.ybpxSbeprq
 **WBUA CBEX:** Tb ubzr naq ybbx ng lbhe sebag qbbe. Gur cyngr. Gura nfx zr ntnva.
@@ -463,10 +447,6 @@ Pubvprf:
 **WBUA CBEX:** Ryrira. Gjb bs gurz ner gur fnzr cvyy jvgu qvssrerag ynoryf. V ernq gur ongpu pbqrf.
 
 > rf: Bapr. Qbf fba yn zvfzn cnfgvyyn pba qvfgvagn rgvdhrgn. Yrí ybf póqvtbf qr ybgr.
-
-**WBUA CBEX:** V jnfa'g tbvat gb fnl nalguvat.
-
-> rf: Ab von n qrpve anqn.
 
 **GERIBE:** Juvpu gjb?
 
@@ -956,14 +936,6 @@ Pubvprf:
 
 *Frg `npg1.inaf.jnearq`.*
 
-**ZVPUNRY:** Jr unir fpbbgref.
-
-> rf: Grarzbf fpbbgref.
-
-**WBUA CBEX:** Gura vg'yy fbhaq gehr.
-
-> rf: Ragbaprf in n fbane pvregb.
-
 *Ur nyzbfg unatf hc. Ur qbrfa'g, lrg.*
 
 > rf: Pnfv pbegn. Gbqniín ab.
@@ -1027,14 +999,6 @@ Pubvprf:
 **ZNAHRY:** V ungr 245 yno.
 
 > rf: Bqvb ry ynobengbevb 245.
-
-**ZVPUNRY:** Jung qbrf gung unir gb qb jvgu...
-
-> rf: ¿Dhé gvrar dhr ire rfb pba...
-
-**ZNAHRY:** V arrqrq gb fnl fbzrguvat abezny.
-
-> rf: Arprfvgnon qrpve nytb abezny.
 
 #### vs fcrnxre=geribe
 
@@ -1596,10 +1560,6 @@ Pubvprf:
 
 > rf: Rfgá gnenernaqb.
 
-*Gurl yvfgra gb gur raq bs vg. Abobql fxvcf vg.*
-
-> rf: Yb rfphpuna unfgn ry svany. Anqvr yb fnygn.
-
 **ZVPUNRY:** Vg'f xvaq bs avpr.
 
 > rf: Rf zrqvb yvaqb.
@@ -2022,14 +1982,6 @@ Pubvprf:
 **GERIBE:** Ebbxvr Nfgre zvfgnxr, gubhtu. Ybpx lbhe fperra.
 
 > rf: Vthny, reebe qr abingb qr Nfgre. Oybdhrn yn cnagnyyn.
-
-**ZVPUNRY:** Qbrf ur unir n fperra?
-
-> rf: ¿Gvrar cnagnyyn?
-
-**GERIBE:** Ur unf n mvccre, nccneragyl.
-
-> rf: Gvrar ha pvreer, cnerpr.
 
 #### vs frggvatf.pehqrUhzbe=bss
 

@@ -659,6 +659,7 @@ export class WorldScene extends Phaser.Scene {
         if (this.shared?.onMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg)) return;
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
         if (msg.t === 'say') this._say(msg.text);
+        if (msg.t === 'caption') this._caption(msg.text);
         if (msg.t === 'reload') { this.scene.restart({ mode: 'client', net: this.net, save: msg.save, character: this.character }); return; }
         if (msg.t === 'party') { this.save.party = msg.party; this._refreshMenu(); }   // wallets ride along in party
         if (msg.t === 'world') this._applyWorld(msg);
@@ -1733,7 +1734,7 @@ export class WorldScene extends Phaser.Scene {
       this._save();
       this.cameras.main.fadeIn(220, 5, 6, 12);
       this._transitioning = false;
-      if (obj.text && obj.text.length > 40) this._announce(obj.text);
+      if (obj.text && obj.text.length > 40) { this._caption(obj.text); if (this.mode === 'host') this.net.broadcast({ t: 'caption', text: obj.text }); }   // arrival line fades by itself
     });
   }
 
@@ -2641,12 +2642,34 @@ export class WorldScene extends Phaser.Scene {
     // Now and then, out of nowhere.
     this._nextIdleBark ??= this.time.now + 20000;
     if (this.time.now > this._nextIdleBark) {
-      this._nextIdleBark = this.time.now + 60000 + Math.random() * 50000;   // about once every minute and a half
+      this._nextIdleBark = this.time.now + 35000 + Math.random() * 35000;   // about every 35-70 s (Manuel: bubbles keep it moving)
       const up = snap.players.filter((p) => !p.dn);
       const p = up[Math.floor(Math.random() * up.length)];
       const rare = BARKS.idleRare?.[p?.c] && Math.random() < 0.125;   // nicknames stay rare (Trevor)
       if (p) this._bark(p.id, this._freshBark(rare ? BARKS.idleRare : p.mo && BARKS.idleMorph[p.c] ? BARKS.idleMorph : BARKS.idle, p.c));
     }
+    // Places inside a big map: the first time this visit that you walk into one, somebody says something.
+    const zones = BARKS.zones?.[this.map?.id], me = snap.players.find((p) => p.id === this.localId);
+    if (zones && me && !this.dlg && this.time.now >= (this._barkQuietUntil ?? 0)) {
+      if (this._zoneMap !== this.map.id) { this._zoneMap = this.map.id; this._zonesSeen = new Set(); }
+      const tx = Math.floor(me.x / TILE), ty = Math.floor(me.y / TILE);
+      const i = zones.findIndex((z) => !this._zonesSeen.has(z) && tx >= z.at[0] && ty >= z.at[1] && tx < z.at[0] + z.at[2] && ty < z.at[1] + z.at[3]);
+      if (i >= 0) {
+        this._zonesSeen.add(zones[i]);
+        const up = snap.players.filter((p) => !p.dn && zones[i][p.c]), p = up[Math.floor(Math.random() * up.length)];
+        if (p) this._bark(p.id, pickBark(zones[i], p.c));
+      }
+    }
+  }
+
+  /** A one-line caption that fades by itself (arrivals): no box to close, nothing pauses. */
+  _caption(text) {
+    if (!text) return;
+    this.arrivalCaption ??= this.add.text(VIEW.w / 2, 30, '', { ...FONT, fontSize: '8px', color: '#d8d2f0', backgroundColor: '#0b0d16bb', padding: { x: 4, y: 2 }, align: 'center', wordWrap: { width: VIEW.w - 80 } })
+      .setOrigin(0.5, 0).setScrollFactor(0).setDepth(9350);
+    this.tweens.killTweensOf(this.arrivalCaption);
+    this.arrivalCaption.setText(tr(text)).setAlpha(1).setVisible(true);
+    this.tweens.add({ targets: this.arrivalCaption, alpha: 0, delay: 3200, duration: 700 });
   }
 
   _tickRotBarks(snap) {

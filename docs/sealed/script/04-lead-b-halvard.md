@@ -59,14 +59,6 @@ Fpbcr: arneol
 > rf: Ndhí nshren, qv zrabf.
 
 #### vs fcrnxre=geribe
-**GERIBE:** Lbhe fvta fnlf juvyr lbh jnvg.
-
-> rf: Gh pnegry qvpr ny vafgnagr.
-
-**UNYINEQ:** Fvta'f byqre guna lbh. Qbrfa'g fnl ubj ybat.
-
-> rf: Ry pnegry rf záf ivrwb dhr gú. Ab qvpr pháagb qhen ry vafgnagr.
-
 **GERIBE:** Jr urneq fbzrbar'f zbivat uryvhz.
 
 > rf: Bízbf dhr nythvra rfgá zbivraqb uryvb.
@@ -149,14 +141,6 @@ Pubvprf:
 
 > rf: Qvwr phneragn.
 
-**ZNAHRY:** V urneq lbh. Svsgl. Whfg bcra vg.
-
-> rf: Gr rfphpué. Pvaphragn. Noeí l yvfgb.
-
-**GERIBE:** Ebbxvr Nfgre zvfgnxr.
-
-> rf: Reebe qr abingb qr Nfgre.
-
 **UNYINEQ:** Sbegl. V'z n srapr, fba. Xrrc gur gra sbe jungrire'f jebat jvgu lbh.
 
 > rf: Phneragn. Fbl crevfgn, zhpunpub. Tháeqngr ybf qvrm cnen yb dhr frn dhr gr cnfn.
@@ -213,14 +197,6 @@ Arkg: -> unyineq_vafvqr
 
 > rf: Ab.
 
-**UNYINEQ:** V qvqa'g fnl juvpu.
-
-> rf: Ab qvwr pháy.
-
-**ZNAHRY:** V xabj juvpu. Ab.
-
-> rf: Ln fé pháy. Ab.
-
 **ZVPUNRY:** Lbh znqr guerr, zna.
 
 > rf: Uvpvfgr gerf, ureznab.
@@ -269,14 +245,6 @@ Arkg: -> unyineq_vafvqr
 
 > rf: Fba ubwnf l nthn pnyvragr. Fr cnfn ra ebaqn.
 
-**UNYINEQ:** Bhg bs gur fnzr fgenj.
-
-> rf: Cbe yn zvfzn cnwvgn.
-
-**ZNAHRY:** Obzovyyn. Lrf.
-
-> rf: Obzovyyn. Fí.
-
 **UNYINEQ:** Jvgu fgenatref.
 
 > rf: Pba qrfpbabpvqbf.
@@ -304,10 +272,6 @@ Arkg: -> unyineq_vafvqr
 **UNYINEQ:** Lbh tbvat gb fgnaq gurer?
 
 > rf: ¿Fr ina n dhrqne nuí cnenqbf?
-
-**UNYINEQ:** V'ir bhgjnvgrq cbyvpr. V'ir bhgjnvgrq n ynaqybeq sbe ryrira lrnef.
-
-> rf: Yrf tnaé ra cnpvrapvn n cbyvpínf. Yr tnaé n ha pnfreb qhenagr bapr nñbf.
 
 *Zvpunry farrmrf.*
 
@@ -367,10 +331,6 @@ Pubvprf:
 
 > rf: Unpr phngeb abpurf. Gneqr. Nythvra ra yn enahen.
 
-**UNYINEQ:** V tbg jung gur fybg tvirf lbh. Purfg gb puva. N ubbq.
-
-> rf: Iv yb dhr qrwn ire yn enahen. Qry crpub ny zragóa. Han pnchpun.
-
 **UNYINEQ:** Na NFGRE sbo ba n ynalneq. V pna ernq n sbo hcfvqr qbja. Fvk guerr bar.
 
 > rf: Han yynir zntaégvpn qr NFGRE ra ha pbeqóa. Yrb han yynir ny eriéf. Frvf gerf hab.
@@ -379,21 +339,9 @@ Pubvprf:
 
 > rf: Certhagó han fbyn pbfn. "¿Pháagb inyr ry uryvb?" Cynab. Pbzb fv yb yrlren qr han gnewrgn.
 
-**UNYINEQ:** Xrcg bar unaq va n cbpxrg gur jubyr gvzr. Qvqa'g fnl uryyb.
-
-> rf: Ghib han znab ra ry obyfvyyb gbqb ry gvrzcb. Ab fnyhqó.
-
-**UNYINEQ:** V gbyq gurz V qba'g cevpr jung V pna'g frr.
-
-> rf: Yr qvwr dhr ab cbatb cerpvb n yb dhr ab irb.
-
 **UNYINEQ:** Gurl fgbbq gurer, yvxr gurl jrer jnvgvat sbe n qvssrerag nafjre gb ybnq. Gura gurl jrag hc gur fgnvef.
 
 > rf: Fr dhrqó nuí cnenqb, pbzb rfcrenaqb dhr pnetnen bgen erfchrfgn. Qrfchéf fhovó yn rfpnyren.
-
-*Ur gnxrf uvf tynffrf bss. Ur ybbxf ng rnpu bs gurz va ghea, gur jnl ur jbhyq ybbx ng fpenc.*
-
-> rf: Fr fnpn ybf nagrbwbf. Ybf zven n pnqn hab, pbzb zveneín pungneen.
 
 **UNYINEQ:** Zl rlrf ner fvkgl-rvtug naq gur yvtug haqre gurfr fgnvef yvrf. V'yy gryy lbh jung V'q jevgr ba gur gnt.
 
@@ -547,14 +495,6 @@ Pubvprf:
 **UNYINEQ:** Lbh'er tbvat qbja gur tengr.
 
 > rf: Ina n onwne cbe yn erwvyyn.
-
-**ZVPUNRY:** Jr qvqa'g fnl gung.
-
-> rf: Ab qvwvzbf rfb.
-
-**UNYINEQ:** Lbh'ir tbg gur fubrf sbe vg.
-
-> rf: Gvrara ybf mncngbf cnen rfb.
 
 *Ur gnxrf gur ybat xrl bss vgf anvy naq ubyqf vg n frpbaq orsber ur yrgf tb bs vg.*
 

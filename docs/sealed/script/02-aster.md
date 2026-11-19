@@ -40,17 +40,9 @@ Fpbcr: arneol
 
 > rf: Ohrab. ¿N dhvéa qrfcregnzbf?
 
-**GERIBE:** Abobql lrg. Jr ybbx svefg.
-
-> rf: N anqvr gbqniín. Cevzreb zvenzbf.
-
 **ZNAHRY:** Xrff vf hc. Xrff vf nyjnlf hc.
 
 > rf: Xrff rfgá qrfcvregn. Xrff fvrzcer rfgá qrfcvregn.
-
-**ZVPUNRY:** Inetn'f yvtug'f ba.
-
-> rf: Yn yhm qr Inetn rfgá ceraqvqn.
 
 *Fbzrjurer orybj, guerr xabpxf, n ybat jnl bss. Gura abguvat.*
 
@@ -67,14 +59,6 @@ Fpbcr: arneol
 **XRFF:** Cel one, sebz gur unyy fvqr. Gjb ovgrf naq vg tnir.
 
 > rf: Cnynapn, qry ynqb qry cnfvyyb. Qbf zbeqvqnf l prqvó.
-
-**ZNAHRY:** Gjb?
-
-> rf: ¿Qbf?
-
-**XRFF:** V'q unir arrqrq sbhe. Gung qbbe'f fbyvq. V uhat vg.
-
-> rf: Lb unoeín arprfvgnqb phngeb. Rfn chregn rf fóyvqn. Yn pbythé lb.
 
 **GERIBE:** Qvq lbh frr nalbar?
 
@@ -100,10 +84,6 @@ Fpbcr: arneol
 
 > rf: ¿Fba qry 631? ¿Ybf qry preqb?
 
-**ZVPUNRY:** Lrf, zn'nz. Fbeel. Vg'f yngr.
-
-> rf: Fí, frñben. Creqóa. Rf gneqr.
-
 **ZEF. INETN:** Yngr jnf gjb ubhef ntb. V urneq lbhe qbbe.
 
 > rf: Gneqr ren unpr qbf ubenf. Bí fh chregn.
@@ -115,18 +95,6 @@ Fpbcr: arneol
 **ZEF. INETN:** Gura srrg gbjneq gur fgnvef. Abg uheelvat.
 
 > rf: Qrfchéf cnfbf unpvn yn rfpnyren. Fva ncheb.
-
-**ZEF. INETN:** V qvq abg bcra zl qbbe. V nz rvtugl-bar.
-
-> rf: Ab noeí zv chregn. Gratb bpuragn l ha nñbf.
-
-**ZNAHRY:** Abobql'f fnlvat lbh fubhyq unir.
-
-> rf: Anqvr qvpr dhr graqeín dhr unoreyn novregb.
-
-*N cnhfr oruvaq gur qbbe.*
-
-> rf: Han cnhfn qrgeáf qr yn chregn.
 
 **ZEF. INETN:** Ur enat urer bapr. Va friragl-bar. V jnf jnfuvat hc. V yrg vg evat, naq gura V cvpxrq hc.
 
@@ -144,10 +112,6 @@ Fpbcr: arneol
 
 > rf: Qrm gvrar yn seragr ncblnqn ra ybf ohmbarf.
 
-**ZVPUNRY:** Qrm. Qrm, ohqql.
-
-> rf: Qrm. Qrm, nzvtb.
-
 **QRM:** V'z njnxr. V'z erfgvat zl snpr.
 
 > rf: Rfgbl qrfcvregb. Rfgbl qrfpnafnaqb yn pnen.
@@ -164,29 +128,13 @@ Fpbcr: arneol
 
 > rf: L ha noevtb. Pbzb ry qr ryybf. Oynapb, pnchpun chrfgn. Rageó zvragenf Srajvpx unpín fh ebaqn. Ab erivfó ry pbeerb.
 
-**ZNAHRY:** Fb?
-
-> rf: ¿L?
-
 **QRM:** Rirelobql purpxf gur znvy.
 
 > rf: Gbqb ry zhaqb erivfn ry pbeerb.
 
-**ZNAHRY:** Jura jnf guvf?
-
-> rf: ¿Pháaqb shr rfb?
-
-**QRM:** Guerr. Vfu. V jnf...
-
-> rf: N ynf gerf. Záf b zrabf. Lb rfgnon...
-
 *Ur vf nfyrrc ntnva.*
 
 > rf: Fr ibyivó n qbezve.
-
-**ZVPUNRY:** Nfgre ceb.
-
-> rf: Ceb qr Nfgre.
 
 *frg npg1.nfgre.qrmPbng*
 
@@ -212,10 +160,6 @@ Fpbcr: arneol
 
 > rf: Yn beqra ren iáyvqn. Ren cnen ry frkgb cvfb. Ren cnen han preenqhen.
 
-**SRAJVPX:** V jbhyq yvxr gb unir frra fbzrguvat jebat jvgu vg.
-
-> rf: Zr unoeín thfgnqb ire nytb zny ra ryyn.
-
 *frg npg1.nfgre.srajvpxBeqre*
 
 ### abqr: cryy_gnyx
@@ -227,10 +171,6 @@ Fpbcr: arneol
 **CRYY:** Sbegl-bar lrnef ba gur Terra Yvar. Gurer ner guerr yriref va gung lneq naq fbzrobql unf orra ng gurz.
 
 > rf: Phneragn l ha nñbf ra yn Yíarn Ireqr. Unl gerf cnynapnf ra rfr cngvb l nythvra ynf gbpó.
-
-**GERIBE:** Ubj qb lbh xabj?
-
-> rf: ¿Pózb fnor?
 
 **CRYY:** Gur genvaf eha jebat ba Ghrfqnlf.
 
@@ -264,25 +204,9 @@ Fpbcr: arneol
 
 > rf: Ha tybob.
 
-**ZNAHRY:** Uryvhz.
-
-> rf: Qr uryvb.
-
-*Cehvgg ybbxf ng gur erthyngvba pneq va uvf unaq. Ur qbrf abg ernq sebz vg.*
-
-> rf: Cehvgg zven yn gnewrgn qr ertynzragb dhr gvrar ra yn znab. Ab yn yrr.
-
 **CEHVGG:** Xrrc gung jbeq njnl sebz juvgr pbngf gbavtug. V'ir tbg gjb xvqf va Ulnggfivyyr. V'z gryyvat lbh nf n arvtuobhe.
 
 > rf: Rfn cnynoen, yrwbf qr ynf ongnf oynapnf rfgn abpur. Gratb qbf uvwbf ra Ulnggfivyyr. Gr yb qvtb pbzb irpvab.
-
-**GERIBE:** Lbhe znfg'f cbvagrq ng gur tebhaq.
-
-> rf: Gh záfgvy nchagn ny fhryb.
-
-**CEHVGG:** Vg cbvagf jurer vg'f gbyq.
-
-> rf: Nchagn nqbaqr yr qvpra.
 
 **CEHVGG:** Gur pbqr ebg'f pbzvat hc sebz haqre gur fgngvba. V chg gung va gur ercbeg. Gurl frag vg onpx.
 
@@ -291,10 +215,6 @@ Fpbcr: arneol
 **CEHVGG:** Ebg fcernqf yvxr qnzc, n ovg rireljurer. Guvf fcernqf sebz bar cynpr: gur byq cyngsbez haqre gur fgngvba.
 
 > rf: Yn cbqerqhzoer fr rkcnaqr pbzb yn uhzrqnq, ha cbpb cbe gbqbf ynqbf. Rfgb fr rkcnaqr qrfqr ha fbyb yhtne: ry naqéa ivrwb qronwb qr yn rfgnpvóa.
-
-**GERIBE:** Bar cynpr ubj?
-
-> rf: ¿Ha fbyb yhtne pózb?
 
 **CEHVGG:** Fbzrguvat qbja gurer vf ubyqvat vg gbtrgure. Gur favssre perjf pnyy vg gur jneqra. Yvxr vg'f ba qhgl.
 

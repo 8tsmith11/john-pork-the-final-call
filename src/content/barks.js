@@ -12,6 +12,12 @@ export const BARKS = {
       'Ears lower. Always lower than you think.',
       'I had lab at eight. I still have lab at eight.',
       'It doesn\'t just go. Somebody has to carry it.',
+      "If anyone asks, I was never here.",
+      "My feet are wet. My soul is wet.",
+      "I need mate. Medically.",
+      "I can smell the diner from here. Cruel.",
+      "Who walks this slow? Oh. Me.",
+      "After this I sleep for three days.",
     ],
     trevor: [
       'I should\'ve brought the guitar.',
@@ -19,6 +25,11 @@ export const BARKS = {
       'I\'m not tired. I\'m horizontal on the inside.',
       'That hum\'s a B flat. Roughly.',
       'Whose turn was the chain?',
+      "My step count is going to be insane.",
+      "I left a benchmark running.",
+      "If the stack wears off, just carry me.",
+      "Rain is just the sky debugging.",
+      "Nobody tell my mom where I am.",
     ],
     michael: [
       'No bars. Obviously no bars.',
@@ -26,6 +37,12 @@ export const BARKS = {
       'I\'m just checking the time.',
       'I\'ve got a thing at nine. I had a thing at nine.',
       'Is anybody else hungry? Is that weird?',
+      "Do you think the shrimp miss us?",
+      "I would kill for a bagel right now.",
+      "If I die, delete my search history.",
+      "My phone says 2%. It always says 2%.",
+      "I should text her. I won't. But I should.",
+      "We're the good guys, right?",
     ],
   },
   // Rare idle lines (about one idle bark in eight): Trevor's nicknames for John Pork, Juan Puerco or Juan
@@ -67,6 +84,20 @@ export const BARKS = {
     manuel: ['Don\'t get comfortable down there.'],
     trevor: ['Stay there. Not that you have options.'],
     michael: ['I\'ve got you, I\'ve got you, where are you...'],
+  },
+  // Places inside a big map (landscape pass): walking into one gets a one-liner, once per visit.
+  // at: [x, y, w, h] in tiles. Bubbles, not boxes (Manuel: they keep the game moving).
+  zones: {
+    metro_plaza: [
+      { at: [36, 16, 6, 6], manuel: ["Throw a coin. For the balloon."], trevor: ["That pump has been running since before we were born."], michael: ["I'm making a wish. Don't ask."] },
+      { at: [30, 37, 24, 12], manuel: ["Somebody lives in that car. Respect."], trevor: ["Those four are always here. Always."], michael: ["Don't make eye contact with the rice guy."] },
+      { at: [66, 9, 12, 3], manuel: ["If they had medialunas I would live here."], trevor: ["Their coffee is technically coffee."], michael: ["Pancakes after? Please?"] },
+      { at: [2, 37, 26, 9], manuel: ["There it is. The building where I suffer."], trevor: ["Rub the turtle. It's science."], michael: ["Campus at night is creepy."] },
+      { at: [66, 18, 14, 4], manuel: ["Ours are better. Ours just don't have tires."], trevor: ["Ray will try to sell us a scooter. Ray always tries."], michael: ["I want the red one."] },
+      { at: [1, 28, 55, 2], manuel: ["Don't step on the rail. Just in case."], trevor: ["They built the whole line and never ran a train."], michael: ["Purple Line, opening soon. Any decade now."] },
+      { at: [44, 20, 9, 8], manuel: ["Act normal. Normal."], trevor: ["Don't say helium near the van."], michael: ["Hi! We're just walking!"] },
+      { at: [66, 38, 17, 5], manuel: ["Smells like the river back home. Worse."], trevor: ["Ozzie's at the lake. Ozzie is always at the lake."], michael: ["Is that a frog? That's a frog."] },
+    ],
   },
   // Walking into a place, once per visit.
   enter: {
