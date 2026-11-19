@@ -307,7 +307,8 @@ function paintGrow(src, out, w, h, facing, body, look, who) {
       if (same(src, (y * w + x) * 4, dark) && is(x - 1, y, C.skin) && is(x + 1, y, C.skin)) put(x, y, hex(P.yerba1));   // the gonman doesn't blink
   }
   if (who === 'trevor' && ftop < h) {                                  // a headband; then broader shoulders
-    const y = Math.max(0, ftop - 1); for (let x = 0; x < w; x++) if (is(x, y, C.hair) || is(x, y, C.skin)) put(x, y, hex(P.bone));
+    const y = facing === 'up' && htop < h ? htop + 3 : Math.max(0, ftop - 1);   // from behind, the band goes round the back of his head
+    for (let x = 0; x < w; x++) if (is(x, y, C.hair) || is(x, y, C.skin)) put(x, y, hex(P.bone));
     if (st >= 2 && stop < h) for (const y of [stop, stop + 1]) {   // shoulders one pixel wider each side, outline moved out with them
       const [a, b] = span(y); if (b < 0) continue;
       put(a, y, C.shirt[1]); put(b, y, C.shirt[1]); put(a - 1, y, dark); put(b + 1, y, dark);
