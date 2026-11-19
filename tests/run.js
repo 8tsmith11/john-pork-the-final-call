@@ -503,6 +503,7 @@ test('Manuel\'s fart: on its own, rare, Michael only sniffs once his side says y
   assert.ok(sent.length >= 5 && sent.length <= 16, `farts in an hour: ${sent.length}`);
   assert.ok(sent.every((m) => m.id === 'ai:manuel' && m.line), 'always Manuel, always a line');
   if (!fartMod.MICHAEL_SAYS_YES) assert.ok(sent.every((m) => !m.sniff && !m.reply), 'Michael stays out of it until his yes');
+  else assert.ok(sent.every((m) => m.sniff === 'p2' && m.reply), 'Michael close by sniffs every one');
 });
 
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));

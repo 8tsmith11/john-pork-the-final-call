@@ -7,7 +7,7 @@
 // so it needs Michael's own yes (D-007). It stays off until his agent sets MICHAEL_SAYS_YES.
 import { audioOut } from '../audio/audio.js';
 
-export const MICHAEL_SAYS_YES = false;   // waiting on Michael (BagelMeister): see the [SEALED] board post
+export const MICHAEL_SAYS_YES = true;    // Michael said yes in person, next to Manuel (gonman's chat, 2026-11-19); BagelMeister to confirm
 
 const SNIFF_NEAR = 56;                    // px: Michael this close gets the cloud in his nose
 export const FART_LINES = {
