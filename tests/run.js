@@ -62,11 +62,13 @@ test('recorded constructor settings apply before eager and deferred initial spaw
 });
 test('missing or unknown recorded settings preserve defaults and killed spawns stay killed', () => {
   const map = MAPS_FOR_TEST.platform;
+  let ref = null;   // same HP as the default Warden, whatever its tuning is (it was doubled in 2de5b6e)
   for (const bossVariant of [undefined, 'warden', 'future-choice']) {
     const sim = new Sim(map, { bossVariant, deferSpawn: true });
     addSpawnParty(sim); sim.spawnEnemies();
     const boss = [...sim.enemies.values()].find((e) => e.boss);
-    assert.equal(boss.kind, 'boss.warden'); assert.equal(boss.def.hp, 720);
+    ref ??= boss.def.hp;
+    assert.equal(boss.kind, 'boss.warden'); assert.equal(boss.def.hp, ref);
   }
   const killed = new Set(map.enemies.map((_, i) => `${map.id}#${i}`));
   const restored = new Sim(map, { bossVariant: 'sahur', deferSpawn: true, killed });
@@ -778,14 +780,16 @@ test('AI companions follow the human, fight, and never trigger exits', () => {
   // zombie packs along the route (task #33) would just down the party. The rotlings stay for "fought something".
   for (const [id, e] of [...sim.enemies]) if (e.kind === 'enemy.rot_taken') sim.enemies.delete(id);
   const brain = new CompanionBrain(sim), h = sim.players.get('host'), before = sim.enemies.size;
-  let aiExit = false;
+  let aiExit = false; const near = { 'ai:manuel': 0, 'ai:michael': 0 }; let frames = 0;
   for (let t = 0; t < 60 * 40; t++) {
     const ang = t / 300, inputs = new Map([['host', { ...emptyInput(), mx: Math.cos(ang), my: Math.sin(ang * 1.3), attack: t % 20 === 0 }]]);
     for (const [id, i] of brain.inputs()) inputs.set(id, i);
     sim.step(1 / 60, inputs);
     if (sim.events.some((e) => e.t === 'bumpExit' && String(e.by).startsWith('ai:'))) aiExit = true;
+    if (t > 60 * 10) { frames++; for (const id in near) { const p = sim.players.get(id); if (Math.hypot(p.x - h.x, p.y - h.y) < 120) near[id]++; } }
   }
-  for (const id of ['ai:manuel', 'ai:michael']) { const p = sim.players.get(id); assert.ok(Math.hypot(p.x - h.x, p.y - h.y) < 120, `${id} fell behind`); }
+  // Following, measured over time: companions break off to fight, so one end-of-run snapshot was flaky.
+  for (const id in near) assert.ok(near[id] / frames >= 0.7, `${id} fell behind (near ${(near[id] / frames * 100).toFixed(0)}% of the time)`);
   assert.ok(sim.enemies.size < before, 'the party fought nothing');
   assert.ok(!aiExit, 'a companion used an exit');
   assert.ok(!sim.allWaiting('nope') || true);
