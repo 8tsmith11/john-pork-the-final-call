@@ -6,6 +6,8 @@ const rot13 = (s) => s.replace(/[a-zA-Z]/g, (c) => {
   return String.fromCharCode(((c.charCodeAt(0) - b + 13) % 26) + b);
 });
 
+import { getLang } from '../i18n.js';
+
 const cache = new Map();
 export async function loadScene(name) {
   if (!cache.has(name)) {
@@ -90,7 +92,9 @@ export class Conversation {
     this.node = this.scene.nodes[id];
     this.nodeId = id; this.ctx.nodeId = id;
     if (!this.node) { this.done = true; return; }
-    this.lines = this.node.lines.filter((l) => evalCond(l.if, this.ctx));
+    // Spanish (task 28): a line or choice with an `es` text shows it when the language is Spanish.
+    const es = getLang() === 'es';
+    this.lines = this.node.lines.filter((l) => evalCond(l.if, this.ctx)).map((l) => (es && l.es ? { ...l, text: l.es } : l));
     this.i = 0;
     applyEffects(this.node.effects, this.ctx, this.sink);
     this.sink.flag(`dlg.once.${id}`, true);
@@ -101,7 +105,8 @@ export class Conversation {
 
   get choices() {
     if (!this.node || this.i < this.lines.length) return [];
-    return this.node.choices.filter((c) => evalCond(c.if, this.ctx));
+    const es = getLang() === 'es';
+    return this.node.choices.filter((c) => evalCond(c.if, this.ctx)).map((c) => (es && c.es ? { ...c, text: c.es } : c));
   }
 
   advance() {

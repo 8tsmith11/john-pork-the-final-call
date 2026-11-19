@@ -42,6 +42,7 @@ SCOPE_NODE = re.compile(r"^\*(Scope|Decider):\s*([a-z ]+?)\.?\*$", re.I)
 
 def parse(text):
     nodes, order, node, cond, in_choices = {}, [], None, None, False
+    last_caption = None
     meta = {}
     outer, chain, inner_if = None, [], None     # #### block state; ##### blocks nest inside it
     # Stage directions are often hard-wrapped over several lines: *Pork opens his hand. / The balloon
@@ -74,6 +75,21 @@ def parse(text):
             continue
         if line.startswith("## ") or line.startswith("# "):
             node = None; continue
+        es = re.match(r"^>\s*es:\s*(.+)$", line)
+        if es:
+            txt = es.group(1).strip().strip('"').strip()
+            if not in_choices and last_caption and last_caption[0] is node and last_caption[2] == len(node["lines"]) and last_caption[2] - last_caption[1] > 1:
+                # a long caption was split into box-sized pieces: split the Spanish the same way
+                k = last_caption[2] - last_caption[1]
+                sents = re.split(r"(?<=[.!?:])\s+", txt); per = max(1, -(-len(sents) // k))
+                chunks = [" ".join(sents[i:i + per]) for i in range(0, len(sents), per)]
+                chunks = (chunks + [""] * k)[:k]
+                if len(sents) > k * per: chunks[-1] = " ".join(sents[(k - 1) * per:])
+                for i, c in enumerate(chunks): node["lines"][last_caption[1] + i]["es"] = c or "…"
+                continue
+            target = (node["choices"][-1] if in_choices and node["choices"] else (node["lines"][-1] if node["lines"] else None))
+            if target is not None: target["es"] = txt
+            continue
         b = BLOCK.match(line)
         if b:
             nested, kind, rest = len(b.group(1)) == 5, b.group(2).lower(), b.group(3).strip()
@@ -156,12 +172,14 @@ def parse(text):
             # Conservative: anything that smells like a writer note stays out (see tools/writing/captions.py).
             NOTEY = r"\b(player|players|flag|seed|variant|node|scene|branch|beat|choice|trigger|speaker|party|engine|cutscene|camera pans|we see|fade|cut to|TODO|TBD|optional|if the|unless|otherwise|act ?[123]|lead [abc]|stage \d|npc)\b|\[|\]|=|\{|\}"
             if not re.match(r"^(Trigger|Returning|Note|After|If |When the|Sets|Reads|Conditions|Effect)", body) and "`" not in body and "->" not in body and len(body) < 700 and not re.search(NOTEY, body, re.I):
+                start_len = len(node["lines"])
                 piece = ""
                 for sent in re.split(r"(?<=[.!?:])\s+", body):
                     if piece and len(piece) + len(sent) > 210:
                         node["lines"].append({"who": None, "text": piece, "if": cond, "narr": True}); piece = sent
                     else: piece = (piece + " " + sent).strip()
                 if piece: node["lines"].append({"who": None, "text": piece, "if": cond, "narr": True})
+                last_caption = (node, start_len, len(node["lines"]))
             continue
     for n in nodes.values():
         n["effects"] = n["effects"] or None
