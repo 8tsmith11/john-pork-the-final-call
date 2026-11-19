@@ -229,6 +229,12 @@ export const LINES_ES = {
   "It's toothpaste.": "Es pasta de dientes.",
   "That's toothpaste. I brush very hard.": "Es pasta de dientes. Me cepillo con mucha fuerza.",
   "Toothpaste. Don't ask about the angle.": "Pasta de dientes. No pregunten por el ángulo.",
+  // the toothpaste exchange (src/game/toothpaste.js): Michael neutral, Manuel Rioplatense
+  "Manuel. What's that white stuff on your shirt?": "Manuel, ¿qué es esa cosa blanca en tu camiseta?",
+  "Manuel, you've got something... white. On you.": "Manuel, tienes algo... blanco. Encima.",
+  "Hmmmm. Toothpaste?": "Mmmmm. ¿Pasta de dientes?",
+  "Sure, sure...": "Claro, claro...",
+  "Sure. Sure sure sure.": "Claro. Claro claro claro.",
 };
 
 /** The line in the current language (Spanish when chosen and known, else as written). */

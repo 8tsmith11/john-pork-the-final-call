@@ -1153,10 +1153,11 @@ test('the blue pill makes dodges free while it lasts', () => {
 const { BARKS } = await import('../src/content/barks.js');
 const { LINES_ES } = await import('../src/content/lines_es.js');
 const beltMod = await import('../src/game/beltless.js');
+const toothMod = await import('../src/game/toothpaste.js');
 const crowd = await import('../src/game/crowd.js');
 test('every bark and crowd line has Spanish', () => {
   const all = []; const walk = (o) => { if (typeof o === 'string') all.push(o); else if (o && typeof o === 'object') Object.values(o).forEach(walk); };
-  walk(BARKS); walk(crowd.LINES); walk(crowd.PIXEL_LINES); walk(fartMod.FART_LINES); walk(buttMod.BUTT_LINES); walk(Object.values(npcLifeMod.NPC_LIFE).map((l) => l.hi)); walk(npcLifeMod.NPC_FART); walk(beltMod.BELT_LINES);
+  walk(BARKS); walk(crowd.LINES); walk(crowd.PIXEL_LINES); walk(fartMod.FART_LINES); walk(buttMod.BUTT_LINES); walk(Object.values(npcLifeMod.NPC_LIFE).map((l) => l.hi)); walk(npcLifeMod.NPC_FART); walk(beltMod.BELT_LINES); walk(toothMod.TOOTHPASTE_TALK);
   const missing = all.filter((s) => !LINES_ES[s]);
   assert.deepEqual(missing, [], 'add these to src/content/lines_es.js');
 });
@@ -1399,6 +1400,21 @@ test('growth: a little bigger every level, bigger jumps at levels 3 and 6, cappe
   set(1, 8, B.skin[0]); set(1, 7, B.skin[0]);
   const painted = (lv) => { const out = new Uint8ClampedArray(w * h * 4); wearMod._PAINTERS.grow(src, out, w, h, 'down', B, wearMod.LOOKS[growthMod.growthLook(lv)], 'trevor'); let n = 0; for (let i = 3; i < out.length; i += 4) n += out[i] > 0; return n; };
   assert.ok(painted(2) >= 1 && painted(3) > painted(2) && painted(7) > painted(3), `${painted(2)} ${painted(3)} ${painted(7)}`);
+});
+
+test('the toothpaste exchange: Michael asks, Manuel says "Hmmmm. Toothpaste?", Michael doubts it; Trevor is never in it', () => {
+  assert.equal(toothMod.TOOTHPASTE_TALK.answer, 'Hmmmm. Toothpaste?');
+  assert.ok(toothMod.TOOTHPASTE_TALK.doubt.includes('Sure, sure...'));
+  assert.ok(!/trevor/i.test(Object.keys(toothMod.TOOTHPASTE_TALK).join(' ')));
+  // a fake scene: level 6, the two standing together; the host fires the exchange and three bubbles follow
+  const said = [], timers = [];
+  const scene = { mode: 'solo', time: { now: 999999, delayedCall: (ms, fn) => timers.push(fn) }, save: { party: { manuel: { level: 6 } } }, _bark: (id, l) => said.push([id, l]) };
+  const tt = new toothMod.ToothpasteTalk(scene); tt.next = 0;
+  tt.update({ players: [{ id: 'a', c: 'manuel', x: 0, y: 0 }, { id: 'b', c: 'michael', x: 30, y: 0 }, { id: 'c', c: 'trevor', x: 10, y: 0 }] });
+  timers.forEach((f) => f());
+  assert.deepEqual(said.map(([id]) => id), ['b', 'a', 'b']); assert.equal(said[1][1], 'Hmmmm. Toothpaste?');
+  scene.save.party.manuel.level = 5; const t2 = new toothMod.ToothpasteTalk(scene); t2.next = 0; said.length = 0;
+  t2.update({ players: [{ id: 'a', c: 'manuel', x: 0, y: 0 }, { id: 'b', c: 'michael', x: 30, y: 0 }] }); assert.equal(said.length, 0, 'not before level 6');
 });
 
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
