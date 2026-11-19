@@ -1,4 +1,18 @@
 {
- "next_id": 1,
- "tasks": []
+ "next_id": 2,
+ "tasks": [
+  {
+   "id": 1,
+   "created_at": "2026-11-19T22:59:14Z",
+   "updated_at": "2026-11-19T22:59:14Z",
+   "history": [
+    "2026-11-19T22:59:14Z BagelMeister: added (for LoreKeeper)"
+   ],
+   "title": "Rename to LoreKeeper; read docs/org/briefs/LoreKeeper.md and LORE-KEEPER.md",
+   "details": "Michael: Biohacker becomes the Lore Keeper: PR manager and story keeper. Set git config hub.agent LoreKeeper.",
+   "source": "human:Michael",
+   "status": "assigned",
+   "owner": "LoreKeeper"
+  }
+ ]
 }
