@@ -35,6 +35,8 @@ export class Performances {
   }
 
   /**
+   * (Unused since obj.guitar became Trevor's guitar stand, src/game/guitarStands.js: the guitar is taken
+   * off the stand into the bag now. Kept for any other instrument fixed in place.)
    * Trevor's guitar in 631 (obj.guitar), played where it stands: plugged into its amp, so it doesn't come
    * with you. Only Michael picks it up, and he only knows the lullaby (his usual sloppy one; see
    * instruments.js). Walking away from it stops the song.

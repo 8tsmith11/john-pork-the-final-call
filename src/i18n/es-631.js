@@ -2,6 +2,15 @@
 // in src/content/maps/room631.js; tests/run.js checks every string has an entry.
 export const ES_631 = {
   'Chair': 'Silla',
+  'Guitar stand': 'Soporte de guitarra',
+  "Trevor's guitar stand, next to a little practice amp. He only plays rock, and he plays it annoyingly well.": 'El soporte de guitarra de Trevor, al lado de un amplificador de práctica chiquito. Solo toca rock, y lo toca irritantemente bien.',
+  "Michael's guitar stand, at the foot of the bunk. There is a capo clipped to it and a setlist taped to the leg with one song on it.": 'El soporte de guitarra de Michael, al pie de la cucheta. Tiene un capo enganchado y una lista de temas pegada a la pata con una sola canción.',
+  "Trevor's guitar stand (take the electric guitar)": 'Soporte de guitarra de Trevor (agarrar la guitarra eléctrica)',
+  "Trevor's guitar stand (take the acoustic guitar)": 'Soporte de guitarra de Trevor (agarrar la guitarra acústica)',
+  "Trevor's guitar stand (empty)": 'Soporte de guitarra de Trevor (vacío)',
+  "Michael's guitar stand (take the electric guitar)": 'Soporte de guitarra de Michael (agarrar la guitarra eléctrica)',
+  "Michael's guitar stand (take the acoustic guitar)": 'Soporte de guitarra de Michael (agarrar la guitarra acústica)',
+  "Michael's guitar stand (empty)": 'Soporte de guitarra de Michael (vacío)',
   "♪ Trevor's guitar. You know one song. Press E again to stop.": '♪ La guitarra de Trevor. Sabes una sola canción. Presiona E otra vez para parar.',
   "Trevor's chair. He sits on it backwards. He thinks nobody has noticed that it is a choice.": 'La silla de Trevor. Se sienta al revés. Cree que nadie notó que es una decisión.',
   'The good chair. Whoever is home first gets it. There is a tally on the underside.': 'La silla buena. El primero que llega a casa se la queda. Hay un conteo de rayitas debajo.',
