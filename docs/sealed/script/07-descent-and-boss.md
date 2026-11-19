@@ -2,6 +2,9 @@
      To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/script/07-descent-and-boss.md -->
 # Gur qrfprag naq gur obff
 
+Zbqr: fgbel
+<!-- Fgbel ol qrsnhyg (gur jbeyq jnvgf). Abqrf znexrq *Zbqr: serr* ner gnyx lbh pna jnyx njnl sebz: gur obk fgnlf hc juvyr lbh zbir naq svtug (Geribe #528). -->
+
 ## Checbfr
 
 QRFVTA orngf 4 naq 5 naq frpgvba 6. Gur cnegl sbyybjf gur uryvhz favssre qbja vagb gur Terra Yvar
@@ -354,6 +357,8 @@ Pubvprf:
 
 ### abqr: ebggre_onyybba
 
+*Zbqr: serr*
+
 **PBQR EBGGRE:** benatr. ab. fvtany'f benatr. fvtany'f orra benatr fvapr. avargrra bu bar.
 
 > rf: anenawn. ab. yn frñny rfgá ra anenawn. yn frñny rfgá ra anenawn qrfqr. zvy abirpvragbf hab.
@@ -421,6 +426,8 @@ Pubvprf:
 
 ### abqr: ebggre_qehzzvat
 
+*Zbqr: serr*
+
 *Ur fgbcf ebpxvat.*
 
 > rf: Qrwn qr zrprefr.
@@ -444,6 +451,8 @@ Pubvprf:
 > rf: Qrwneyb.
 
 ### abqr: ebggre_fvg
+
+*Zbqr: serr*
 
 *Ubyq sbe 20 frpbaqf jvgubhg vachg. Frgf `npg1.qrfprag.ebggreFngJvgu`.*
 
@@ -710,6 +719,8 @@ Pubvprf:
 
 ### abqr: chzcebbz_erfg
 
+*Zbqr: serr*
+
 *Purpxcbvag fnirq. UC naq fgnzvan erfgberq. Gur zngr tbheq tbrf nebhaq.*
 
 > rf: Chagb qr pbageby thneqnqb. Ivqn l erfvfgrapvn erfgnhenqnf. Ry zngr in cnfnaqb qr znab ra znab.
@@ -727,6 +738,8 @@ Pubvprf:
 > rf: Ntneenonf yn obzovyyn pbzb hab dhr erihryir.
 
 ### abqr: chzcebbz_pnyraqne
+
+*Zbqr: serr*
 
 *N cncre pnyraqne. Fbzrbar pebffrq bss qnlf va cra, arngyl, sbe zbfg bs n lrne. Gura gur pebffrf
 fgbc ba n Ghrfqnl.*
@@ -776,6 +789,8 @@ fgbc ba n Ghrfqnl.*
 > rf: Ln fé. Fbyb cvrafb dhr hab dhreeín yyrtne ny sva qr frznan.
 
 ### abqr: chzcebbz_gnyx
+
+*Zbqr: serr*
 
 <!-- Jub vf fcrnxvat pubbfrf gur gbcvp. Rnpu cynlf bapr. -->
 
@@ -1154,6 +1169,8 @@ Pubvprf:
 
 ### abqr: fjvgpulneq_pneg
 
+*Zbqr: serr*
+
 *Gur favssre pynzcf bagb gur pneg'f unaqenvy. Gur pneg pna or chfurq. Vg sbyybjf gur cbvagf.*
 
 > rf: Ry bysngrnqbe fr fhwrgn n yn onenaqn qr yn mbeen. Yn mbeen fr chrqr rzchwne. Fvthr ynf nthwnf.
@@ -1171,6 +1188,8 @@ Pubvprf:
 > rf: Gvrar han cnagnyyvgn.
 
 ### abqr: fjvgpulneq_yriref
+
+*Zbqr: serr*
 
 *Guerr veba yriref, rnpu gnyyre guna Zvpunry. Pnfg yrggref ba gur onfr: FJ-1, FJ-2, FJ-3. Ab ynpr
 cbeg. Ab fperra. Ternfr, fgvyy.*
@@ -1225,6 +1244,8 @@ cbeg. Ab fperra. Ternfr, fgvyy.*
 
 ### abqr: fjvgpulneq_ynzcf
 
+*Zbqr: serr*
+
 *Rnpu yrire unf n ynzc. FJ-1'f ynzc vf terra. Vgf yraf unf n unveyvar bs pbqr ebg npebff vg: gur terra
 cvkry-penjyf ng gur rqtrf.*
 
@@ -1262,6 +1283,8 @@ cvkry-penjyf ng gur rqtrf.*
 
 ### abqr: fjvgpulneq_jebat_genpx1
 
+*Zbqr: serr*
+
 *Genpx 1. Gur pneg ebyyf vagb gur qnex. Gur favssre'f gvpx qbrf abg punatr. Fbzrguvat ryfr va gurer
 fgnegf gvpxvat onpx. Pbqr ebg arfg nzohfu: 4 penjyref. Vaperzragf `npg1.fjvgpulneq.jebatEbhgrf`.*
 
@@ -1293,6 +1316,8 @@ fgnegf gvpxvat onpx. Pbqr ebg arfg nzohfu: 4 penjyref. Vaperzragf `npg1.fjvgpuln
 
 ### abqr: fjvgpulneq_jebat_genpx2
 
+*Zbqr: serr*
+
 *Genpx 2. Gur envyf tb haqre oynpx jngre gjragl zrgref va. Gur pneg fgbcf ng gur jngreyvar.
 Vaperzragf `npg1.fjvgpulneq.jebatEbhgrf`.*
 
@@ -1322,6 +1347,8 @@ Vaperzragf `npg1.fjvgpulneq.jebatEbhgrf`.*
 
 ### abqr: fjvgpulneq_jebat_genpx4
 
+*Zbqr: serr*
+
 *Genpx 4. Gur pneg ebyyf vagb gur zbhgu bs gur ghaary, vf tbar sbe rvtug frpbaqf, naq pbzrf onpx
 bhg bs gur guebng oruvaq gur cnegl, ohzcvat tragyl vagb Geribe'f fuvaf. Vaperzragf
 `npg1.fjvgpulneq.jebatEbhgrf`.*
@@ -1347,6 +1374,8 @@ bhg bs gur guebng oruvaq gur cnegl, ohzcvat tragyl vagb Geribe'f fuvaf. Vaperzra
 > rf: Lb ab yr chfr ry abzoer.
 
 ### abqr: fjvgpulneq_fcevat_snvy
+
+*Zbqr: serr*
 
 <!-- FJ-1 frg pbeerpgyl, FJ-3 abg uryq. -->
 

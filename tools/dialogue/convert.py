@@ -39,6 +39,8 @@ def rot13(s): return codecs.encode(s, "rot_13")
 
 SCOPE_FILE = re.compile(r"^Scope:\s*(all|nearby|self)\s*$", re.I)
 SCOPE_NODE = re.compile(r"^\*(Scope|Decider):\s*([a-z ]+?)\.?\*$", re.I)
+MODE_FILE = re.compile(r"^Mode:\s*(story|free)\s*$", re.I)        # whole scene: the world waits (story) or keeps going (free)
+MODE_NODE = re.compile(r"^\*Mode:\s*(story|free)\.?\*$", re.I)     # one node, overrides the scene (Trevor #528)
 
 def parse(text):
     nodes, order, node, cond, in_choices = {}, [], None, None, False
@@ -73,6 +75,13 @@ def parse(text):
         line = raw.strip()
         fs = SCOPE_FILE.match(line)
         if fs and node is None: meta['scope'] = fs.group(1).lower(); continue
+        fm = MODE_FILE.match(line)
+        if fm and node is None: meta['mode'] = fm.group(1).lower(); continue
+        nm = MODE_NODE.match(line)
+        if nm:
+            if node is not None: node['mode'] = nm.group(1).lower()
+            else: meta['mode'] = nm.group(1).lower()
+            continue
         ns = SCOPE_NODE.match(line)
         if ns and node is not None: node[ns.group(1).lower()] = ns.group(2).strip().lower(); continue
         m = NODE.match(line)

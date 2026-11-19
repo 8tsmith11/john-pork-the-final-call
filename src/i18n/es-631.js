@@ -148,4 +148,5 @@ export const ES_631 = {
   'Front-door lock': 'Cerradura de la entrada',
   'The deadbolt plate is bent and the strike is splintered. Someone forced it from the hallway side, quietly, and pulled the door shut behind them.': 'La placa del cerrojo está doblada y el contramarco astillado. Alguien la forzó desde el pasillo, en silencio, y cerró la puerta al salir.',
   'Two toothbrushes and a third one nobody claims.': 'Dos cepillos de dientes y un tercero que nadie reclama.',
+  "Fab #1, still warm. The sniffer is printed and the reading has not changed: light, and down. Under the plaza.": "Fab #1, todavía tibia. El rastreador está impreso y la lectura no cambió: liviano, y hacia abajo. Debajo de la plaza.",
 };
