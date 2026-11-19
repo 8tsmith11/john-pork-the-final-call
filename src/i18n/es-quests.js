@@ -2,14 +2,14 @@
 // if you change an English string there, change its key here too (tests/run.js checks coverage).
 export const ES_QUESTS = {
   'The balloon': 'El globo',
-  "Someone forced the front door tonight and took Manuel's orange balloon from his closet. Find out who, and get it back.": 'Alguien forzó la puerta esta noche y se llevó el globo naranja del clóset de Manuel. Averigua quién, y recupéralo.',
+  "Someone forced the front door tonight and took Manuel's orange balloon from his closet. Get it back before morning: Continuity is sniffing for it, and a containment review at dawn could wall College Park in.": "Alguien forzó la puerta esta noche y se llevó el globo naranja del clóset de Manuel. Recupéralo antes de la mañana: Continuidad lo está rastreando, y una revisión de contención al amanecer podría amurallar College Park.",
   "Check Manuel's closet.": 'Revisa el clóset de Manuel.',
   'Look at the front door.': 'Mira la puerta de entrada.',
   'Ask around the ASTER lobby. Somebody saw something at 3 a.m.': 'Pregunta en el lobby de ASTER. Alguien vio algo a las 3 a. m.',
   'Run down two leads: Halvard under the metro stairs, the lobby camera footage, or the helium trail (print a sniffer at Fab #1).': 'Sigue dos pistas: Halvard bajo las escaleras del metro, el video de la cámara del lobby o el rastro de helio (imprime un rastreador en Fab #1).',
-  'Get past the abatement cordon at the storm grate in the plaza.': 'Pasa el cordón de saneamiento en la rejilla de la plaza.',
-  'Get through the Green Line tunnels: set the switchyard levers right.': 'Cruza los túneles de la Línea Verde: pon bien las palancas del patio de maniobras.',
-  'Reach the dead platform.': 'Llega al andén muerto.',
+  "The trail goes down the storm grate into the Green Line. Get past the abatement cordon in the plaza.": "El rastro baja por la rejilla de desagüe hacia la Línea Verde. Pasa el cordón de saneamiento de la plaza.",
+  "Open the gate to the dead platform: set the switchyard, power the breakers, set the signals.": "Abre el portón al andén muerto: pon el patio de maniobras, da corriente a los disyuntores, pon las señales.",
+  "Reach the dead platform. The balloon is down there, and so is the heart of the outbreak.": "Llega al andén muerto. El globo está ahí abajo, y también el corazón del brote.",
 
   'Soup on the landing': 'Sopa en el descanso',
   'He sits by the stairwell all night. If anyone heard the door at three a.m., it was him.': 'Se sienta junto a la escalera toda la noche. Si alguien oyó la puerta a las tres, fue él.',

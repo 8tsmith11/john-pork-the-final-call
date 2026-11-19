@@ -9,16 +9,16 @@
 
 export const QUESTS = [
   {
-    id: 'main.balloon', why: "Someone forced the front door tonight and took Manuel's orange balloon from his closet. Find out who, and get it back.", title: 'The balloon', main: true, act: 1,
+    id: 'main.balloon', why: "Someone forced the front door tonight and took Manuel\'s orange balloon from his closet. Get it back before morning: Continuity is sniffing for it, and a containment review at dawn could wall College Park in.", title: 'The balloon', main: true, act: 1,
     stages: [
       { text: 'Check Manuel\'s closet.', done: (f) => f['act1.balloon.noticedGone'] },
       { text: 'Look at the front door.', done: (f) => f['act1.clue.lockForced'] },
       // Clear next steps (Trevor): name the places and people, and say how many leads are enough.
       { text: 'Ask around the ASTER lobby. Somebody saw something at 3 a.m.', done: (f) => Object.keys(f).some((k) => k.startsWith('met.npc.') || k.startsWith('act1.halvard') || k.startsWith('act1.leadC') || k.startsWith('act1.leadA')) },
       { text: 'Run down two leads: Halvard under the metro stairs, the lobby camera footage, or the helium trail (print a sniffer at Fab #1).', done: (f) => [f['act1.halvard.met'], f['act1.leadC.done'], f['act1.leadA.done']].filter(Boolean).length >= 2 || f['act1.cordon.passed'] || f['act1.beat.call'] },
-      { text: 'Get past the abatement cordon at the storm grate in the plaza.', done: (f) => f['act1.cordon.passed'] || f['act1.beat.call'] },
-      { text: 'Get through the Green Line tunnels: set the switchyard levers right.', done: (f) => f['act1.switchyard.solved'] },
-      { text: 'Reach the dead platform.', done: (f) => f['act1.boss.defeated'] || f['act1.complete'] },
+      { text: 'The trail goes down the storm grate into the Green Line. Get past the abatement cordon in the plaza.', done: (f) => f['act1.cordon.passed'] || f['act1.beat.call'] },
+      { text: 'Open the gate to the dead platform: set the switchyard, power the breakers, set the signals.', done: (f) => f['act1.tunnel.gate'] || f['act1.boss.defeated'] },
+      { text: 'Reach the dead platform. The balloon is down there, and so is the heart of the outbreak.', done: (f) => f['act1.boss.defeated'] || f['act1.complete'] },
     ],
     reward: { xp: 60 },
   },
