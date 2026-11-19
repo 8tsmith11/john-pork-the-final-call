@@ -6,6 +6,7 @@ import { VIEW } from '../../view.js';
 import { getLang, setLang, LANG_LABEL } from '../../i18n.js';
 import { sellPrice, ITEMS, RECIPES, SKILLS, SHOPS, playerMods, ARMOR_SLOTS, GEAR_SLOTS, WEAPON_SLOTS, SLOT_NAMES, MAX_UPGRADE, upgradeCost, scaleMods, canWear } from '../../content/items.js';
 import { MAPS } from '../../content/maps/index.js';
+import { GUIDE_PEOPLE, guideText } from '../../content/guide.js';
 import { ABILITIES, ABILITY_KEYS, MAX_SCORE, modOf, fmtMod, scoresOf } from '../../content/abilities.js';
 import { canPay, count } from '../../engine/inventory.js';
 import { SKILL_TREE, skillOpen } from '../../content/skills.js';
@@ -205,7 +206,8 @@ export class GameMenu {
     if (!show.length) this._t(b.x + 14, y, 'Nothing yet.', F(8, C.sub));
     for (const q of show) {
       const st = qs[q.id];
-      this._t(b.x + 14, y, `${st.done ? '✓' : q.main ? '★' : '·'} ${q.title}${q.main ? '' : q.owner ? '  (yours)' : '  (side)'}`, F(9, st.done ? C.ok : q.main ? C.hi : C.text)); y += 12;
+      // Every quest looks the same (Trevor): no main/side markers or labels.
+      this._t(b.x + 14, y, `${st.done ? '✓' : '·'} ${q.title}`, F(9, st.done ? C.ok : C.hi)); y += 12;
       if (!st.done) {
         const obj = this._t(b.x + 26, y, `→ ${q.stages[st.stage]?.text ?? ''}`, { ...F(7, '#6fe3e8'), wordWrap: { width: b.w - 50 } }); y += obj.height + 2;
         if (q.why) { const why = this._t(b.x + 26, y, q.why, { ...F(7, C.sub), wordWrap: { width: b.w - 50 } }); y += why.height + 6; } else y += 4;
@@ -219,48 +221,62 @@ export class GameMenu {
   // Field guide, Terraria's bestiary: seen → name, picture and lore; 5 kills → stats; 15 → a tip.
   // People are listed once you've talked to them. Locked entries stay as "???".
   _guide(g) {
-    const s = this.scene, b = this.box, gd = s.save.world.guide ?? { e: {}, n: {} };
+    const s = this.scene, b = this.box, gd = s.save.world.guide ?? { e: {}, n: {} }, f = s.save.flags;
     const kinds = Object.keys(ENEMIES), seen = kinds.filter((k) => gd.e?.[k]);
-    const people = Object.entries(gd.n ?? {});
-    this.guideSel ??= kinds[0];
+    // People: key characters first (John Pork from the start, Trevor's call), then everyone else you've met.
+    const keyPeople = GUIDE_PEOPLE.map((p) => ({ ...p, text: guideText(p, f) })).filter((p) => p.text);
+    const keyNames = new Set(keyPeople.map((p) => p.name.toLowerCase()));
+    const met = Object.entries(gd.n ?? {}).filter(([, p]) => !keyNames.has(p.name.toLowerCase()));
+    this.guideSel ??= keyPeople[0]?.id ?? kinds[0];
     const lx = b.x + 12, top = b.y + 28;
-    this._t(lx, top, `CODE ROT  ${seen.length}/${kinds.length}`, F(7, C.hi));
-    let y = top + 11;
-    for (const k of kinds) {
-      const e = gd.e?.[k], on = k === this.guideSel;
+    let y = top;
+    const row = (label, id, on, enabled = true) => {
       if (on) g.fillStyle(0x3a3150, 0.8).fillRect(lx - 3, y - 1, 112, 10);
-      this._t(lx, y, e ? `${ENEMIES[k].name}${e.kills ? `  ×${e.kills}` : ''}` : '???', F(7, e ? (on ? C.hi : C.text) : C.sub), e ? () => { this.guideSel = k; this.refresh(); } : null);
+      this._t(lx, y, label, F(7, enabled ? (on ? C.hi : C.text) : C.sub), enabled ? () => { this.guideSel = id; this.refresh(); } : null);
       y += 10;
-    }
-    y += 6;
-    this._t(lx, y, `PEOPLE  ${people.length}`, F(7, C.hi)); y += 11;
-    for (const [id, p] of people.slice(0, 12)) {
-      const on = id === this.guideSel;
-      if (on) g.fillStyle(0x3a3150, 0.8).fillRect(lx - 3, y - 1, 112, 10);
-      this._t(lx, y, p.name, F(7, on ? C.hi : C.text), () => { this.guideSel = id; this.refresh(); }); y += 10;
-    }
-    // detail pane
+    };
+    this._t(lx, y, `PEOPLE  ${keyPeople.length + met.length}`, F(7, C.hi)); y += 11;
+    for (const p of keyPeople) row(p.name, p.id, p.id === this.guideSel);
+    for (const [id, p] of met.slice(0, 10)) row(p.name, id, id === this.guideSel);
+    y += 5;
+    this._t(lx, y, `CODE ROT  ${seen.length}/${kinds.length}`, F(7, C.hi)); y += 11;
+    for (const k of kinds) { const e = gd.e?.[k]; row(e ? `${ENEMIES[k].name}${e.kills ? `  ×${e.kills}` : ''}` : '???', k, k === this.guideSel, !!e); }
+    // detail pane: picture, name, description
     const dx = b.x + 140, dw = b.w - 152;
     g.lineStyle(1, C.dim, 0.5).lineBetween(dx - 8, top, dx - 8, b.y + b.h - 10);
-    const sel = this.guideSel, e = gd.e?.[sel], def = ENEMIES[sel], person = gd.n?.[sel];
-    if (def && e) {
-      const frame = `${sel}_0`, tex = s.textures.get('enemies');
-      if (tex?.has?.(frame)) this.root.add(s.add.image(dx + 16, top + 30, 'enemies', frame).setScale(2));
-      else g.fillStyle(def.color ?? 0xd65db1).fillCircle(dx + 16, top + 18, 10);
-      this._t(dx + 40, top + 2, def.name, F(10, C.hi));
-      this._t(dx + 40, top + 15, `seen · ${e.kills} defeated`, F(6, C.sub));
-      let yy = top + 42;
-      const lore = this._t(dx, yy, def.lore ?? '', { ...F(7, C.text), wordWrap: { width: dw } }); yy += lore.height + 8;
+    const pic = (art, fallback) => {
+      const tryArt = (a) => {
+        if (!a) return null;
+        if (typeof a === 'string') return s.textures.exists(a) ? s.add.image(0, 0, a) : null;
+        const [tex, frame] = a; return s.textures.exists(tex) && s.textures.get(tex).has(frame) ? s.add.image(0, 0, tex, frame) : null;
+      };
+      const im = tryArt(art) ?? tryArt(fallback);
+      g.fillStyle(0x0b0d16).fillRect(dx, top, 52, 52).lineStyle(1, C.dim, 0.8).strokeRect(dx, top, 52, 52);
+      if (im) { const k = Math.min(48 / im.width, 48 / im.height); im.setScale(k).setPosition(dx + 26, top + 26); this.root.add(im); }
+      return !!im;
+    };
+    const head = (name, sub) => { this._t(dx + 60, top + 4, name, F(10, C.hi)); if (sub) this._t(dx + 60, top + 18, sub, F(6, C.sub)); };
+    const body = (text, yy = top + 60) => this._t(dx, yy, text, { ...F(7, C.text), wordWrap: { width: dw } });
+    const sel = this.guideSel, key = keyPeople.find((p) => p.id === sel), e = gd.e?.[sel], def = ENEMIES[sel], person = gd.n?.[sel];
+    if (key) { pic(key.art, key.fallbackArt); head(key.name); body(key.text); }
+    else if (def && e) {
+      pic(['enemies', `${sel}_0`]) || g.fillStyle(def.color ?? 0xd65db1).fillCircle(dx + 26, top + 26, 12);
+      head(def.name, `seen · ${e.kills} defeated`);
+      const lore = body(def.lore ?? ''); let yy = top + 64 + lore.height;
       if (e.kills >= GUIDE_STATS_AT) {
         const hp = Math.round(def.hp * PARTY_SCALE.hp), dmg = Math.round((def.damage ?? 0) * PARTY_SCALE.dmg);
         this._t(dx, yy, `HP ${hp}   damage ${dmg}   speed ${def.speed}`, F(7, '#6fe3e8')); yy += 12;
       } else { this._t(dx, yy, `Stats: defeat ${GUIDE_STATS_AT - e.kills} more`, F(6, C.sub)); yy += 10; }
-      if (e.kills >= GUIDE_TIP_AT && GUIDE_TIPS[sel]) { const tip = this._t(dx, yy, `Tip: ${GUIDE_TIPS[sel]}`, { ...F(7, C.ok), wordWrap: { width: dw } }); yy += tip.height + 4; }
+      if (e.kills >= GUIDE_TIP_AT && GUIDE_TIPS[sel]) this._t(dx, yy, `Tip: ${GUIDE_TIPS[sel]}`, { ...F(7, C.ok), wordWrap: { width: dw } });
       else if (GUIDE_TIPS[sel]) this._t(dx, yy, `Tip: defeat ${Math.max(0, GUIDE_TIP_AT - e.kills)} more`, F(6, C.sub));
     } else if (person) {
-      this._t(dx, top + 2, person.name, F(10, C.hi));
-      this._t(dx, top + 16, `Met: ${person.where}`, F(7, C.sub));
-    } else this._t(dx, top + 2, seen.length || people.length ? 'Pick an entry.' : 'Nothing yet. Things you see and people you talk to show up here.', { ...F(7, C.sub), wordWrap: { width: dw } });
+      // Anyone else you've talked to: their picture and how they first came across.
+      const o = Object.values(MAPS).flatMap((m) => m.objects).find((x) => x.id === sel);
+      pic(['props', o?.art ?? sel]);
+      head(person.name, `Met: ${person.where}`);
+      const desc = String(o?.pages?.[0] ?? o?.text ?? '').split('\n\n')[0];
+      if (desc) body(desc);
+    } else this._t(dx, top + 2, 'Pick an entry.', F(7, C.sub));
   }
 
   _phone(g) {

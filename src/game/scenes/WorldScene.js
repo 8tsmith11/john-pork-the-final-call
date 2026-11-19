@@ -1214,7 +1214,7 @@ export class WorldScene extends Phaser.Scene {
   // The objective you're working on, always on screen (main quest unless a side quest just moved).
   _trackedObjective() {
     const qs = questState(this.save);
-    const pick = (id) => { const q = QUESTS.find((x) => x.id === id), st = q && qs[q.id]; return q && st?.started && !st.done ? `${q.main ? '★' : '·'} ${q.stages[st.stage]?.text ?? ''}` : null; };
+    const pick = (id) => { const q = QUESTS.find((x) => x.id === id), st = q && qs[q.id]; return q && st?.started && !st.done ? `· ${q.stages[st.stage]?.text ?? ''}` : null; };
     return pick(this._trackedQuest) ?? pick(QUESTS.find((q) => q.main)?.id) ?? '';
   }
 
