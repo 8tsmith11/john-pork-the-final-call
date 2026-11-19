@@ -87,5 +87,11 @@ This file is spoiler-free on purpose. The truth itself is in `docs/sealed/` (ROT
 - **P-001 (passed 2–1):** the code its result needs is still unwritten. It's engine work; flag it if
   nobody has picked it up. What it is stays sealed (PROCESS "Hidden easter eggs"), so keep the detail
   in `[SEALED]` posts and out of this file.
+- **Open meme characters (flagged 2026-11-18, branch `bagel/meme-npcs`):** Michael's pool of twelve
+  memes waiting to become characters, with his pitches, sources and cautions:
+  [`open-meme-characters.md`](open-meme-characters.md). Each one goes through the gate when someone
+  claims it. Check the real-person entries (Huang, Palantir, Diddy, Kirk, the stop-sign driver)
+  against their cautions. The Palantir–Tim tie touches Tim's arc, so it gets a `[SEALED]` review. The
+  four chatbot NPCs in the parking lot are already in the game and logged in `bible.md` §3.
 - **Lint:** 26 house-style flags remain in scenes 06, 07, 08 and 10 (gonman's). Not yours to fix
   unless asked.

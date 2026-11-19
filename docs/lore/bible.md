@@ -163,6 +163,12 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
 - **The university**, a Continuity campus. Students work off tuition as compute apprentices, and
   all three are stuck in **245 lab**, digital electronics, where apprentices write hardware in **Verilog by hand**
   because AI-written hardware rots ("I hate 245 lab"). **Testudo** is still there.
+- **The dead parking lot** south of the plaza has four regulars, ordinary people who go by old
+  2020s chatbot names: **ChatGPT**, **Claude**, **ChatGTT** and **ChatGDT** (the last two are
+  knockoffs). ChatGTT is a cashier who can only say "your card has declined," flat (the "Chat GTT
+  lookin' ahh" meme). ChatGDT only asks the dumb questions people type into chatbots. Flavor NPCs
+  with no plot role; more meme characters are waiting in `open-meme-characters.md`. ChatGPT's line, "We all black," is a
+  human inside joke and stays as written (Michael, 2026-11-18).
 - Green Line (mostly runs), Purple Line (its signs still say "opening soon"), Route 1, Lake
   Artemesia and the Paint Branch (fishing).
 - Later acts: Greenbelt's space-flight dishes, the Meade, Gaithersburg labs, the Smelter, and

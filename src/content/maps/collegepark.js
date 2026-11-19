@@ -143,6 +143,26 @@ export const metroPlaza = makeMap({
     // The parking lot
     { id: 'obj.dead_car_1', art: 'obj.car', x: 34, y: 40, label: 'Car', text: 'It still thinks it is driving. The dashboard shows a road in another state.' },
     { id: 'obj.dead_car_2', art: 'obj.car', x: 44, y: 45, label: 'Car', text: 'Somebody lives in this one. There are curtains. You knock on nothing and move on.' },
+    // Four regulars who go by old 2020s chatbot names (Michael's request, 2026-11-18). ChatGPT's line is an inside joke: keep it as written.
+    { id: 'npc.chatgpt', art: PERSON[1], x: 39, y: 41, label: 'ChatGPT', npc: true, age: 'adult', text: '"We all black." ChatGPT nods at the other three like that settles it.' },
+    { id: 'npc.claude', art: PERSON[0], x: 41, y: 41, label: 'Claude', npc: true, age: 'adult', text: '"I would love to help with that." Nobody has asked Claude anything. Claude is holding a parking ticket from 2031.' },
+    // ChatGTT is the "Chat GTT lookin' ahh" meme (a cashier reading "your card declined" like a robot). See docs/lore/open-meme-characters.md.
+    { id: 'npc.chatgtt', art: PERSON[2], x: 39, y: 43, label: 'ChatGTT', npc: true, age: 'adult', action: 'pages', pages: [
+      'ChatGTT speaks in one flat tone, like a till reading a receipt. "Your card has declined."\n\nYou have not handed him a card.',
+      '"Your card has declined," ChatGTT says again, at exactly the same speed. "Would you like to try another card."\n\nIt does not come out as a question.',
+      '"I work the register at the Route 1 market. Tuesdays. Thursdays." Flat. "Your card has declined."',
+      'Somebody behind the cars shouts, "Why you talkin\' like a robot? Chat GTT lookin\' ahh."\n\nChatGTT does not turn around. "Two T\'s," he says.',
+    ] },
+    // ChatGDT only ever asks the kind of question people type into chatbots.
+    { id: 'npc.chatgdt', art: PERSON[1], x: 41, y: 43, label: 'ChatGDT', npc: true, age: 'adult', action: 'pages', pages: [
+      'ChatGDT grabs your sleeve. "How do I make a million dollars in 30 days."\n\nHe has a notebook open and a pen ready.',
+      '"Is the rice okay if it\'s been in the car since June." He is holding the rice.',
+      '"Can a fish get coderot. Asking for my fish."',
+      '"Write me a breakup text that makes her want me back. Make it short. Make it really long."',
+      '"How many days are in a week if you count the weekend."',
+      '"What\'s the fastest way to learn Verilog without learning anything." He writes your silence down.',
+      '"Am I the asshole." He does not say for what.',
+    ] },
     { id: 'obj.payphone', x: 53, y: 36, label: 'Payphone', text: 'A payphone, older than the building behind it. No power to it. It rings once while you are looking at it.' },
     // Paint Branch
     { id: 'obj.bridge_log', art: 'obj.board', x: 69, y: 39, label: 'Fishing log', text: 'A waterproof book on a chain. Fifty years of strangers: date, catch, weather. The last page is tomorrow\'s date, already filled in.' },
