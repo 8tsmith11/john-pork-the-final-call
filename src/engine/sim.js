@@ -181,9 +181,10 @@ export class Sim {
 
   // Michael's lullaby: any other player or (non-boss) enemy that stays within LULLABY.range of him
   // for LULLABY.expose seconds falls asleep for LULLABY.sleep seconds. Leaving the range resets it.
-  // Sleepers still in range when a second passes get the full LULLABY.sleep again.
+  // Player music refreshes sleepers each second. Enemy hum allows a full sleep, then a chance to act.
   _stepLullaby(dt) {
-    const singers = [...[...this.players.values()].filter((p) => p.playing?.song === 'lullaby' && !p.downed), ...[...this.enemies.values()].filter((e) => this._def(e).lullaby && !(e.sleepT > 0))];
+    const playerSingers = [...this.players.values()].filter((p) => p.playing?.song === 'lullaby' && !p.downed);
+    const singers = [...playerSingers, ...[...this.enemies.values()].filter((e) => this._def(e).lullaby && !(e.sleepT > 0))];
     const targets = [...[...this.players.values()].filter((p) => !p.downed && !(p.wiredT > 0)), ...[...this.enemies.values()].filter((e) => !e.boss && !e.sahur && !e.def?.lullaby)];
     // Manuel sleeps the longer LULLABY.babySleep only while wearing the smart pacifier (sleepGuard).
     const sleepFor = (t) => (t.character === 'manuel' && t.mods?.sleepGuard ? LULLABY.babySleep : LULLABY.sleep);
@@ -192,7 +193,8 @@ export class Sim {
       const near = singers.some((s) => s !== t && (!this.enemies.has(s.id) || this.players.has(t.id)) && Math.hypot(s.x - t.x, s.y - t.y) <= (this.enemies.has(s.id) ? LULLABY.mothRange : LULLABY.range));
       // Already asleep: while Michael keeps playing nearby, the sleep timer resets every second.
       if (t.sleepT > 0) {
-        t.lullRefresh = near ? (t.lullRefresh ?? 0) + dt : 0;
+        const playerNear = playerSingers.some((s) => s !== t && Math.hypot(s.x - t.x, s.y - t.y) <= LULLABY.range);
+        t.lullRefresh = playerNear ? (t.lullRefresh ?? 0) + dt : 0;
         if (t.lullRefresh >= 1) { t.lullRefresh = 0; t.sleepT = Math.max(t.sleepT, sleepFor(t)); }
         continue;
       }
