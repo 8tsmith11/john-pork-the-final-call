@@ -87,6 +87,51 @@ test('combat robot: follows its owner, rams coderot, goes down and reboots', () 
   assert.equal(sim.snapshot().allies.length, 1);
 });
 
+// Combat feel (docs/research/combat.md)
+const { FEEL } = await import('../src/engine/sim.js');
+const combatSim = () => {
+  const sim = new Sim(MAPS_FOR_TEST.tunnel_1, { seed: 's' }); sim.addPlayer('a', 'trevor'); sim.enemies.clear();
+  const p = sim.players.get('a'); p.aim = 0; return { sim, p };
+};
+const dummy = (sim, x, y, hp = 999) => { const e = { id: 'd' + x, kind: 'enemy.rotling', x, y, hp, cd: 99, hurtT: 0, kx: 0, ky: 0, sleepT: 0 }; sim.enemies.set(e.id, e); return e; };
+test('combat: the third swing in a chain is a heavy finisher', () => {
+  const { sim, p } = combatSim(); const e = dummy(sim, p.x + 12, p.y);
+  const hits = [];
+  for (let i = 0; i < 3; i++) { const before = e.hp; sim._melee(p); hits.push(before - e.hp); e.x = p.x + 12; e.y = p.y; e.kx = e.ky = 0; sim.tick += 30; }
+  assert.equal(p.combo, 3); assert.ok(hits[2] > hits[0] * 1.4, `finisher ${hits[2]} vs first ${hits[0]}`);
+  sim.tick += 200; sim._melee(p); assert.equal(p.combo, 1, 'a slow swing restarts the chain');
+});
+test('combat: a swing deflects enemy shots back as the player\'s', () => {
+  const { sim, p } = combatSim();
+  sim.shots.push({ x: p.x + 10, y: p.y - 6, vx: -100, vy: 0, life: 2, dmg: 10, from: 'enemy' });
+  sim._melee(p);
+  assert.equal(sim.shots[0].from, 'player'); assert.ok(sim.shots[0].vx > 0); assert.equal(sim.shots[0].dmg, 15);
+});
+test('combat: a hit early in a dodge is a perfect dodge (stamina back, focus)', () => {
+  const { sim, p } = combatSim();
+  p.dodgeT = 0.2; p.iframes = 0.2; p.dodgeStamp = sim.tick; p.perfectDone = false; p.sta = 10;
+  sim._hurtPlayer(p, 20);
+  assert.equal(p.hp, 100); assert.ok(p.focusT > 0); assert.ok(p.sta > 10);
+  const q = combatSim(); q.p.dodgeT = 0.1; q.p.iframes = 0.1; q.p.dodgeStamp = q.sim.tick - 30; q.p.sta = 10;
+  q.sim._hurtPlayer(q.p, 20); assert.ok(!(q.p.focusT > 0), 'late in the dodge is just a dodge');
+});
+test('combat: knocked hard into a wall, an enemy is slammed and stunned', () => {
+  const { sim } = combatSim(); const m = sim.map;
+  let wx = -1, wy = -1;
+  outer: for (let y = 1; y < m.layout.length - 1; y++) for (let x = 2; x < m.layout[0].length - 1; x++) if (m.solid(x, y) && !m.solid(x - 1, y) && !m.solid(x - 2, y)) { wx = x; wy = y; break outer; }
+  assert.ok(wx > 0, 'found a wall');
+  const e = dummy(sim, (wx - 1) * 16 + 8, wy * 16 + 8, 100); e.kx = 300; e.ky = 0;
+  for (let i = 0; i < 10 && !(e.stunT > 0); i++) sim._stepEnemies(1 / 60);
+  assert.ok(e.stunT > 0, 'stunned'); assert.equal(e.hp, 100 - FEEL.slamDmg);
+});
+test('combat: hit-stop freezes enemies and shots for a moment', () => {
+  const { sim, p } = combatSim(); const e = dummy(sim, p.x + 60, p.y); e.cd = 0;
+  sim.shots.push({ x: p.x + 40, y: p.y - 30, vx: 0, vy: -50, life: 2, dmg: 1, from: 'enemy' });
+  sim.hitStop = 0.05; const sy = sim.shots[0].y, ex = e.x;
+  sim.step(1 / 60, new Map());
+  assert.equal(sim.shots[0].y, sy); assert.equal(e.x, ex);
+});
+
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
 test('pipe puzzle: every seed is solvable and starts unsolved', () => {
   if (!PipePuzzle) return;
