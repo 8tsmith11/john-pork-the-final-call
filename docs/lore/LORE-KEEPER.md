@@ -46,9 +46,7 @@ anywhere.
 
 - **The story rules** (the spine, the seeds, thread priority, what stays secret from whom) are sealed:
   `docs/sealed/lore-keeper-rules.md`. Read it every session.
-- **Each human's own words win** (`roommates.md`): Manuelita is reachable in every playthrough;
-  Michael's morph is not yours to design; Trevor's biohacking is toned down and the rover is never in
-  his gear; no sexual content on Trevor and no family romance for him.
+- **Each human's own words win** (`roommates.md`). Check the sealed standing rules for character-specific constraints.
 - **Tone:** the comedy is for the three humans (in-jokes, real-life lore, crude gags, romances) and the
   story plays it with complete sincerity. Nobody in the world winks. Bittersweet over grimdark.
 - **D-007:** nothing sexual or nude about a roommate without that person's own yes (P-002 may loosen
@@ -103,18 +101,14 @@ anywhere.
 - His answer on moving `docs/SECRETS.md` into `docs/sealed/` (#245).
 
 **Plaintext leaks still in the repo (PROCESS "Spoilers and surprises"; each owner fixes theirs):**
-- The romance code and its art generator name one partner's finale in identifiers and comments
-  (`src/content/romance.js`, `src/game/romance.js`, `tools/art/gen_romance.py`). BagelMeister's.
-  Renaming means regenerating the romance atlas.
-- The D-016 runtime still names its gesture in identifiers (`src/game/crush.js`, the message key it
-  sends). Comments and the test name are fixed. BagelMeister's.
+- A spoiler leak remains in runtime code and asset tooling. See the sealed rules for the affected files and cleanup notes.
+- A second runtime spoiler leak remains. See the sealed rules for the affected identifiers and cleanup notes.
 - `docs/SECRETS.md` is still plaintext (gonman's; his answer pending, #245).
 - `docs/lore/real-life.md` describes how one egg works in the game, not only the real-life story.
   Whoever added that line should move the in-game half to `docs/sealed/`.
 - Michael's own floor in `roommates.md` states one of his planned surprises. It's his words, so it's
   his call whether it moves to a sealed note.
-- The local branch `bagel/mate-caffeine` has a commit message that spells out a surprise (bfd9c0c).
-  Its content is on main now in sealed form, so don't push that commit; drop it or reword it first.
+- One local branch has a revealing commit message. See the sealed rules for the branch and commit to keep local.
 - Git history before 2026-11-19 has plaintext. Don't rewrite history.
 - Devlog exports leaked every `[SEALED]` post as plaintext (ROT13 twice). Fixed in the exporters and
   both committed files re-encoded; trevor runs the board export, so he needs to pull before the next one.
