@@ -19,7 +19,7 @@ export const ROT = { max: 100, poolRate: 4, growth: 0.08, puddlerHit: 6,
   lightDecay: 0.1, quietTime: 5, charmRange: 64, charmDecay: 0.6, charmShield: 0.5, maxHallRate: 4 };
 // Combat feel (docs/research/combat.md): combo chain, deflects, perfect dodges, wall slams, hit-stop.
 export const FEEL = { comboWindow: 0.55, finisherDmg: 1.6, finisherKnock: 1.8, finisherArc: 1.25,
-  deflectDmg: 1.5, parryStun: 1.0, parryStop: 0.08, perfectWindow: 0.15, focusTime: 1.5, focusDmg: 1.5, slamSpeed: 140, slamDmg: 8, slamStun: 0.6, hitStop: 0.05 };
+  deflectDmg: 1.5, parryStun: 1.0, parryStop: 0.08, dashWindow: 0.18, dashDmg: 1.3, dashRange: 8, dashLunge: 10, perfectWindow: 0.15, focusTime: 1.5, focusDmg: 1.5, slamSpeed: 140, slamDmg: 8, slamStun: 0.6, hitStop: 0.05 };
 export const COMBAT = {
   maxHp: 100, hurtIframes: 0.6, reviveTime: 4.0, reviveRange: 18, reviveHp: 40,
   melee: { cooldown: 0.38, range: 20, arc: Math.PI * 0.6, damage: 12, knockback: 120 },
@@ -286,7 +286,7 @@ export class Sim {
       }
 
       if (p.dodgeT > 0) {
-        p.dodgeT -= dt;
+        p.dodgeT -= dt; if (p.dodgeT <= 0) p.dodgeEndTick = this.tick;   // dash-strike window opens
         p.vx = p.dodgeDx * MOVE.dodgeSpeed; p.vy = p.dodgeDy * MOVE.dodgeSpeed;
         if (p.mods?.dashHit) for (const e of this.enemies.values()) {
           if (p.dashHits?.has(e.id) || Math.hypot(e.x - p.x, e.y - p.y) > 12 + this._def(e).radius) continue;
@@ -454,7 +454,11 @@ export class Sim {
     p.combo = now - (p.lastSwingAt ?? -9) <= base.cooldown + FEEL.comboWindow ? ((p.combo ?? 0) % 3) + 1 : 1;
     p.lastSwingAt = now;
     const fin = p.combo === 3;
-    const m = fin ? { ...base, damage: base.damage * FEEL.finisherDmg, knockback: base.knockback * FEEL.finisherKnock, arc: base.arc * FEEL.finisherArc } : base;
+    // Dash-strike (Hades, Hyper Light Drifter): attack right out of a dodge for a fast lunging stab.
+    const dash = (this.tick - (p.dodgeEndTick ?? -99)) / 60 <= FEEL.dashWindow;
+    if (dash) { p.dodgeEndTick = -99; const ux = Math.cos(p.aim), uy = Math.sin(p.aim); this._moveBody(p, ux * FEEL.dashLunge, uy * FEEL.dashLunge, 5); this.events.push({ t: 'dashstrike', id: p.id, x: p.x, y: p.y }); }
+    let m = fin ? { ...base, damage: base.damage * FEEL.finisherDmg, knockback: base.knockback * FEEL.finisherKnock, arc: base.arc * FEEL.finisherArc } : base;
+    if (dash) m = { ...m, damage: m.damage * FEEL.dashDmg, range: m.range + FEEL.dashRange, arc: m.arc * 0.7 };
     const focus = p.focusT > 0; if (focus) p.focusT = 0;
     p.meleeCd = m.cooldown * (fin ? 1.25 : 1); p.swingT = 0.2;   // long enough for both attack frames (12 fps)
     this.events.push({ t: 'swing', id: p.id, a: p.aim, r: m.range, arc: m.arc, combo: p.combo });

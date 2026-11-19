@@ -255,6 +255,13 @@ test('combat: hitting a lunging enemy parries it (attack cancelled, stunned, foc
   assert.ok(e.hitOnce && e.stunT > 0 && p.focusT > 0, 'parried');
   assert.ok(sim.events.some((v) => v.t === 'parry'));
 });
+test('combat: attacking right out of a dodge is a dash-strike (lunge, more damage)', () => {
+  const { sim, p } = combatSim(); const e = dummy(sim, p.x + 26, p.y);
+  sim._melee(p); const plain = 999 - e.hp; e.hp = 999; sim.tick += 200;   // out of reach for a normal swing
+  p.dodgeEndTick = sim.tick; const x0 = p.x; sim._melee(p);
+  assert.ok(sim.events.some((v) => v.t === 'dashstrike') && p.x > x0, 'lunged');
+  assert.ok(999 - e.hp > plain, `dash-strike reached and hit (${999 - e.hp} vs ${plain})`);
+});
 test('combat: hit-stop freezes enemies and shots for a moment', () => {
   const { sim, p } = combatSim(); const e = dummy(sim, p.x + 60, p.y); e.cd = 0;
   sim.shots.push({ x: p.x + 40, y: p.y - 30, vx: 0, vy: -50, life: 2, dmg: 1, from: 'enemy' });
