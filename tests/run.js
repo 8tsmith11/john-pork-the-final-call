@@ -495,6 +495,16 @@ test('i18n: built-in object names are never treated as translations', () => {
   try { for (const s of ['constructor', 'toString', '__proto__', 'hasOwnProperty', '→ constructor', '[E] toString']) assert.equal(i18n.tr(s), s); } finally { i18n.setLang(was); }
 });
 
+const fartMod = await import('../src/game/fart.js');
+test('Manuel\'s fart: on its own, rare, Michael only sniffs once his side says yes', () => {
+  const sent = [], sc = { mode: 'solo', time: { now: 0 } }, f = new fartMod.Fart(sc); f._send = (m) => sent.push(m);
+  const snap = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 120, y: 100 }] };
+  for (let i = 0; i < 3600; i++) { sc.time.now = i * 1000; f.update(snap); }   // an hour, no input at all
+  assert.ok(sent.length >= 5 && sent.length <= 16, `farts in an hour: ${sent.length}`);
+  assert.ok(sent.every((m) => m.id === 'ai:manuel' && m.line), 'always Manuel, always a line');
+  if (!fartMod.MICHAEL_SAYS_YES) assert.ok(sent.every((m) => !m.sniff && !m.reply), 'Michael stays out of it until his yes');
+});
+
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
 test('pipe puzzle: every seed is solvable and starts unsolved', () => {
   if (!PipePuzzle) return;
@@ -698,7 +708,7 @@ const { LINES_ES } = await import('../src/content/lines_es.js');
 const crowd = await import('../src/game/crowd.js');
 test('every bark and crowd line has Spanish', () => {
   const all = []; const walk = (o) => { if (typeof o === 'string') all.push(o); else if (o && typeof o === 'object') Object.values(o).forEach(walk); };
-  walk(BARKS); walk(crowd.LINES); walk(crowd.PIXEL_LINES);
+  walk(BARKS); walk(crowd.LINES); walk(crowd.PIXEL_LINES); walk(fartMod.FART_LINES);
   const missing = all.filter((s) => !LINES_ES[s]);
   assert.deepEqual(missing, [], 'add these to src/content/lines_es.js');
 });

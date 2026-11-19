@@ -66,6 +66,17 @@ export const LINES_ES = {
   'There.': 'Ahí.',
   'Nobody clump up.': 'Nadie se amontone.',
   'I don\'t like how quiet it got.': 'No me gusta lo callado que se puso.',
+  // Manuel's farts (src/game/fart.js): Manuel in voseo
+  'That was the mate.': 'Fue el mate.',
+  'Nobody saw that.': 'Nadie vio eso.',
+  'The gonman is lighter now.': 'El gonman ahora está más liviano.',
+  'Che. Sorry. Not sorry.': 'Che. Perdón. No tanto.',
+  'Oh. Oh, that\'s Manuel.': 'Uh. Uh, ese es Manuel.',
+  'Do it again.': 'Hazlo otra vez.',
+  'That\'s a good one. Is that weird?': 'Ese está bueno. ¿Es raro?',
+  'Wait. I might have pooped my pants.': 'Pará. Creo que me hice encima.',
+  'Okay. That one had weight to it.': 'Okey. Ese tuvo peso.',
+  'Nobody look at me for a minute.': 'Que nadie me mire un minuto.',
   // crowd
   'Trains are twenty minutes out, the board says. The board said that forty minutes ago.': 'Los trenes están a veinte minutos, dice el tablero. El tablero dijo eso hace cuarenta minutos.',
   'Don\'t stand under the awning. The abatement guys spray at nine.': 'No te pares bajo el toldo. Los de saneamiento fumigan a las nueve.',
