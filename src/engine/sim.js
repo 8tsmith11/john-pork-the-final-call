@@ -45,7 +45,7 @@ export class Sim {
     this.events = [];         // this tick's events for rendering: hits, deaths, shots
     this.tick = 0;
     this._nextId = 1;
-    this.spawnEnemies();
+    if (!opts.deferSpawn) this.spawnEnemies();
   }
 
   /** Swap to another map, keeping players (placed at the map's spawns). */
