@@ -1,5 +1,6 @@
 // Headless balance probe: a scripted human (chase + swing + dash away when low) with two AI
 // companions clears a map. Reports time, downs, wipes, and HP lost. Usage: node tools/balance.mjs "$PWD"
+import { formatBalanceGroup } from './balance-summary.mjs';
 const root = process.argv[2];
 const { Sim, emptyInput } = await import(root + '/src/engine/sim.js');
 const { CompanionBrain } = await import(root + '/src/engine/companion.js');
@@ -34,10 +35,9 @@ function run(mapId, solo, gear, seed) {
     for (const e of sim.events) { if (e.t === 'down') downs++; if (e.t === 'hurt') dmg += e.dmg; }
     if (sim.wiped) { wipes++; for (const p of sim.players.values()) { p.downed = false; p.hp = 60; } }
   }
-  return { mapId, solo, gear, secs: Math.round(t / 60), killed: start - sim.enemies.size, of: start, downs, wipes, dmg };
+  return { mapId, solo, gear, seed, secs: Math.round(t / 60), killed: start - sim.enemies.size, of: start, downs, wipes, dmg };
 }
 for (const mapId of ['tunnel_1', 'lake']) for (const solo of [false, true]) for (const gear of [false, true]) {
   const rs = [1, 2, 3].map((k) => run(mapId, solo, gear, 'bal' + k));
-  const avg = (f) => Math.round(rs.reduce((a, r) => a + r[f], 0) / rs.length);
-  console.log(`${mapId.padEnd(9)} ${solo ? 'solo ' : 'party'} ${gear ? 'gear ' : 'bare '} time ${avg('secs')}s  killed ${avg('killed')}/${rs[0].of}  downs ${avg('downs')}  wipes ${avg('wipes')}  dmg taken ${avg('dmg')}`);
+  for (const line of formatBalanceGroup(rs)) console.log(line);
 }

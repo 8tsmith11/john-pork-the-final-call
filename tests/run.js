@@ -7,9 +7,27 @@ import { newSave, migrate, CURRENT_SCHEMA } from '../src/engine/save/schema.js';
 import { Sim, MOVE, emptyInput } from '../src/engine/sim.js';
 import { room631 } from '../src/content/maps/room631.js';
 import { MAPS as MAPS_FOR_TEST } from '../src/content/maps/index.js';
+import { formatBalanceGroup } from '../tools/balance-summary.mjs';
 
 let failed = 0;
 const test = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}\n     ${e.message}`); } };
+
+test('balance reporting exposes one incomplete run and one wipe among successful seeds', () => {
+  const base = { mapId: 'tunnel_1', solo: false, gear: false, secs: 30, killed: 12, of: 12, downs: 0, wipes: 0, dmg: 50 };
+  const runs = [{ ...base, seed: 'bal1' }, { ...base, seed: 'bal2' },
+    { ...base, seed: 'bal3', secs: 600, killed: 11, downs: 1, wipes: 1 }];
+  // The old rounded mean would have reported killed 12/12, downs 0 and wipes 0.
+  const lines = formatBalanceGroup(runs);
+  assert.ok(lines[0].includes('cleared 2/3 runs'));
+  assert.ok(lines[0].includes('max 600s'));
+  assert.ok(lines[0].includes('downs total 1'));
+  assert.ok(lines[0].includes('wipes total 1'));
+  assert.ok(lines[1].includes('bal3: INCOMPLETE, 1 remaining'));
+  assert.equal(lines.length, 2);
+  const clear = formatBalanceGroup(runs.map((run) => ({ ...run, killed: 12, downs: 0, wipes: 0 })));
+  assert.ok(clear[0].includes('cleared 3/3 runs'));
+  assert.equal(clear.length, 1);
+});
 
 test('rng streams are deterministic and independent', () => {
   const a = makeStreams('seed-1'), b = makeStreams('seed-1');
