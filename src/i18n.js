@@ -36,6 +36,11 @@ const ES = {
   '› Resume': '› Continuar', '› Save now': '› Guardar ahora', '› Export save file (.jpfc.json)': '› Exportar partida (.jpfc.json)',
   '› Save and quit to title': '› Guardar y volver al título', '› Leave the game': '› Salir de la partida',
   'The host keeps the save for everyone.': 'El anfitrión guarda la partida de todos.',
+  // dialogue speaker labels (drawn uppercase); people's names stay as they are
+  DRONE: 'DRON', SNIFFER: 'RASTREADOR', NOTICE: 'AVISO', 'AD PANEL': 'PANEL PUBLICITARIO', 'CODE ROTTER': 'PODRIDO DE CÓDIGO',
+  'DEPARTURE BOARDS': 'TABLEROS DE SALIDAS', 'LAST DEPARTURE BOARD': 'ÚLTIMO TABLERO DE SALIDAS', "MANUEL'S PHONE": 'TELÉFONO DE MANUEL',
+  "MICHAEL'S PHONE": 'TELÉFONO DE MICHAEL', "TREVOR'S PHONE": 'TELÉFONO DE TREVOR', 'ALL PHONES': 'TODOS LOS TELÉFONOS',
+  'VOICE 1': 'VOZ 1', 'VOICE 2': 'VOZ 2', TV: 'TELE', "TREVOR'S MOM": 'LA MAMÁ DE TREVOR', MAILBOX: 'BUZÓN DE VOZ', 'TEXT: JOHN PORK': 'MENSAJE: JOHN PORK',
   // HUD and prompts
   '[J] quests': '[J] misiones', RELOADING: 'RECARGANDO', 'NEW QUEST': 'NUEVA MISIÓN', 'QUEST UPDATED': 'MISIÓN ACTUALIZADA',
   'QUEST COMPLETE': 'MISIÓN COMPLETADA', 'click to close': 'clic para cerrar', '▶ YOUR CHOICE': '▶ TU DECISIÓN',
