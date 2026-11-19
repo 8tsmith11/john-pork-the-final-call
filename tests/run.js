@@ -1,6 +1,7 @@
 // Node test runner (no dependencies): `node tests/run.js`. Must pass before pushing.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { makeStreams, Rng } from '../src/engine/rng.js';
 import { rollWorld } from '../src/engine/worldRolls.js';
 import { newSave, migrate, CURRENT_SCHEMA } from '../src/engine/save/schema.js';
@@ -927,7 +928,7 @@ test('progression (Trevor: too easy, too low a ceiling): steeper curve, costed s
 test('no code plays Phaser sounds by key (none are loaded; a missing key throws mid-handler: the cam puzzle tiles stopped redrawing)', async () => {
   const fs = await import('node:fs'), path = await import('node:path');
   const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name)) : e.name.endsWith('.js') ? [path.join(d, e.name)] : []));
-  const bad = walk('src').filter((f) => /\.sound\??\.play\??\.?\(/.test(fs.readFileSync(f, 'utf8')));
+  const bad = walk(fileURLToPath(new URL('../src', import.meta.url))).filter((f) => /\.sound\??\.play\??\.?\(/.test(fs.readFileSync(f, 'utf8')));
   assert.deepEqual(bad, [], 'use sfx() from src/audio/audio.js instead');
 });
 
@@ -1265,8 +1266,9 @@ test('dialogue graphs: no dangling jumps, and the big scenes are not secretly de
   const rot = (x) => x.replace(/[a-z]/gi, (c) => String.fromCharCode((c <= 'Z' ? 65 : 97) + ((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26)));
   // Scenes that are one connected conversation (not a bag of standalone barks/fragments).
   const CONNECTED = { ending: 2, the_call: 8, cold_open: 2, lead_a_helium: 2, lead_b_halvard: 2, lead_c_footage: 2 };
-  for (const f of fs.readdirSync('src/content/dialogue/act1')) {
-    const src = fs.readFileSync(`src/content/dialogue/act1/${f}`, 'utf8');
+  const dialogueDir = new URL('../src/content/dialogue/act1/', import.meta.url);
+  for (const f of fs.readdirSync(dialogueDir)) {
+    const src = fs.readFileSync(new URL(f, dialogueDir), 'utf8');
     const d = JSON.parse(rot(JSON.parse(src.slice(src.indexOf('export default ') + 15).trim().replace(/;$/, ''))));
     const name = f.replace('.js', ''), ids = Object.keys(d.nodes);
     for (const [id, n] of Object.entries(d.nodes)) {
@@ -1332,7 +1334,6 @@ test('every item in ITEMS has a non-empty name and text', () => {
 {
   const { execFileSync } = await import('node:child_process');
   const { readdirSync, statSync } = await import('node:fs');
-  const { fileURLToPath } = await import('node:url');
   const walk = (d) => readdirSync(d).flatMap((n) => { const p = `${d}/${n}`; return statSync(p).isDirectory() ? walk(p) : p.endsWith('.js') ? [p] : []; });
   const root = fileURLToPath(new URL('../src', import.meta.url));
   test('every file under src/ parses', () => {
