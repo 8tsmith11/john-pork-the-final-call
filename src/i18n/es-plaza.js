@@ -142,4 +142,5 @@ export const ES_PLAZA = {
   'Brooke': 'Brooke',
   'Inés': 'Inés',
   'Ottoline, master armorer': 'Ottoline, maestra armera',
+  "The shutter comes up two inches. Halvard's eye, then the television behind him, then the shutter again.\n\n\"You paid for one rumor. That was it.\"": "La persiana sube cinco centímetros. El ojo de Halvard, después el televisor detrás de él, después la persiana otra vez.\n\n\"Pagaste por un rumor. Era ese.\"",
 };

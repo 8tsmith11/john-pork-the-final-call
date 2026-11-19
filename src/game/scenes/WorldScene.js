@@ -237,7 +237,7 @@ export class WorldScene extends Phaser.Scene {
       pay: (n) => { this.save.world.money = Math.max(0, (this.save.world.money ?? 0) - n); this._partyDirty = true; this._toast(`-$${n}`); },
       standing: (f, n) => { if (f in this.save.standing) this.save.standing[f] += n; if (this.mode === 'client') this.net.send({ t: 'standing', faction: f, n }); },
     };
-    this.dlg = new Conversation(scene, nodeId, this._dialogueCtx(), sink);
+    this.dlg = new Conversation(scene, nodeId, this._dialogueCtx(), sink); this._dlgModeNode = this.dlg.nodeId;
     const node = scene.nodes?.[nodeId ?? scene.start];
     this.dlgFree = (node?.mode ?? scene.mode ?? (STORY_SCENES.has(sceneName) ? 'story' : 'free')) === 'free';
     this._transcript = PHONE_CALLS[sceneName] ? { title: PHONE_CALLS[sceneName][nodeId ?? 'start'] ?? PHONE_CALLS[sceneName].start, at: new Date().toISOString(), lines: [] } : null;   // phone tab transcripts (Trevor)
@@ -386,6 +386,10 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _drawDialogue() {
+    if (this.dlg?.node && this._dlgModeNode !== this.dlg.nodeId) {   // per-node mode (story/free) as the scene moves on (gonman, #528)
+      this._dlgModeNode = this.dlg.nodeId;
+      if (this.dlg.node.mode) this.dlgFree = this.dlg.node.mode === 'free';
+    }
     const d = this.dlg, on = !!d && !d.done;
     if (this._callCard && !this._callCard.closed && (!on || this._callCardFor !== d.nodeId || !d.choices.length)) this._callCard.destroy();
     [this.dlgBg, this.dlgWho, ...this.dlgChoices].forEach((o) => o.setVisible(on));

@@ -1182,5 +1182,13 @@ test('the fuse errand (Trevor #514): the carrier is in the signal room, the fuse
   assert.ok(!/Halvard/.test(leads), 'the leads stage names Halvard before you meet him');
 });
 
+const modeScene = await (await import('../src/engine/dialogue.js')).loadScene('descent_and_boss');
+test('dialogue modes from the scripts (Trevor #528): Mode: story on the scene, *Mode: free* on talk nodes', () => {
+  assert.equal(modeScene.mode, 'story');
+  for (const n of ['pumproom_rest', 'switchyard_levers', 'rotter_sit']) assert.equal(modeScene.nodes[n].mode, 'free', n);
+  for (const n of ['descent_entry', 'door_open']) assert.ok(!modeScene.nodes[n].mode, `${n} should follow the scene (story)`);
+  assert.ok(!Object.values(modeScene.nodes).some((n) => n.lines.some((l) => /^Mode:/i.test(l.text ?? ''))), 'a Mode tag leaked into a caption');
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
