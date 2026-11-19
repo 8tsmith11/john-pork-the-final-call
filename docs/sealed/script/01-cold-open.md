@@ -38,6 +38,10 @@ Fpbcr: nyy
 
 **GERIBE:** Cnfg zr vf n zbafgre.
 
+*Orsber nalguvat ryfr ur tbrf gb gur fuevzc gnax naq ernqf vg, gur jnl Znahry tbrf gb uvf pybfrg.*
+
+**GERIBE:** Gurl'er nyy ng gur onpx. Gurl bayl ohapu hc jura fbzrguvat'f jebat.
+
 Arkg: -> pbyqbcra_jnxr
 
 ### abqr: pbyqbcra_jnxr
