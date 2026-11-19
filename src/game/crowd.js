@@ -28,6 +28,12 @@ export const LINES = {
     'Scan says I\'m "provisionally attested." Provisionally. Like I might stop being a person.',
     'You want a lace patch? Unofficial. Works better than the official one. Mostly.',
     'Somebody keyed JUSTICE FOR JOHN PORK into the bus shelter again. They keep painting over it.',
+    'I came out for milk an hour ago. I don\'t remember what milk is for.',
+    'My smart fridge broke up with me. Left a note on the door and everything.',
+    'Don\'t eat at the diner after midnight. Or before. The cook\'s great, though.',
+    'You three look like a group project.',
+    'I\'d tell you the time, but every clock says 19:01 and I\'ve stopped arguing.',
+    'If a drone asks, I was never here. If it asks twice, I was here, and it was great.',
   ],
   shell: [
     'Attested and available. Please step around me.',
@@ -46,13 +52,25 @@ function makeSprite(scene, key, r) {
   const shell = r.chance(0.14), umbrella = !shell && r.chance(0.35), lace = !shell && r.chance(0.3);
   const skin = shell ? '#d9dde3' : r.pick(SKIN), hair = r.pick(HAIR), coat = r.pick(COAT), legs = r.pick(['#1f1f28', '#2c3340', '#3a3030']);
   const tex = scene.textures.createCanvas(key, 32, 24), c = tex.getContext();
+  // More variety (Manuel): height, build, a hat, a beard, a scarf or a bag, picked once per person.
+  const short = r.chance(0.3) ? 1 : 0, wide = r.chance(0.25) ? 1 : 0;
+  const hat = shell || umbrella ? null : r.pick([null, null, 'beanie', 'cap', 'hood']), hatCol = r.pick(['#3b4a6b', '#7a3b3b', '#2f4a3a', '#1f1f28', '#8a6f3a']);
+  const beard = !shell && r.chance(0.2), scarf = !shell && r.chance(0.2) ? r.pick(['#b9853f', '#5c3a22', '#7f8c84']) : null, bag = !shell && r.chance(0.3);
+  const longHair = r.chance(0.5);
   for (let f = 0; f < 2; f++) {
-    const x0 = f * 16, bob = f;
+    const x0 = f * 16, bob = f, top = short;
     c.fillStyle = legs; c.fillRect(x0 + 5, 18, 2, 5 - bob); c.fillRect(x0 + 9, 18, 2, 5 - (1 - bob));
-    c.fillStyle = coat; c.fillRect(x0 + 4, 9 + bob, 8, 10);
-    c.fillStyle = skin; c.fillRect(x0 + 5, 3 + bob, 6, 6);
-    c.fillStyle = hair; c.fillRect(x0 + 5, 2 + bob, 6, r.chance(0.5) ? 2 : 3);
-    c.fillStyle = '#111'; c.fillRect(x0 + 6, 5 + bob, 1, 1); c.fillRect(x0 + 9, 5 + bob, 1, 1);
+    c.fillStyle = coat; c.fillRect(x0 + 4 - wide, 9 + bob + top, 8 + wide * 2, 10 - top);
+    c.fillStyle = skin; c.fillRect(x0 + 5, 3 + bob + top, 6, 6);
+    c.fillStyle = hair; c.fillRect(x0 + 5, 2 + bob + top, 6, longHair ? 3 : 2);
+    if (longHair) c.fillRect(x0 + 4, 3 + bob + top, 1, 5);
+    c.fillStyle = '#111'; c.fillRect(x0 + 6, 5 + bob + top, 1, 1); c.fillRect(x0 + 9, 5 + bob + top, 1, 1);
+    if (beard) { c.fillStyle = hair; c.fillRect(x0 + 5, 7 + bob + top, 6, 2); }
+    if (hat === 'beanie') { c.fillStyle = hatCol; c.fillRect(x0 + 5, 1 + bob + top, 6, 2); c.fillRect(x0 + 7, 0 + bob + top, 2, 1); }
+    if (hat === 'cap') { c.fillStyle = hatCol; c.fillRect(x0 + 5, 1 + bob + top, 6, 2); c.fillRect(x0 + 10, 3 + bob + top, 3, 1); }
+    if (hat === 'hood') { c.fillStyle = coat; c.fillRect(x0 + 4, 1 + bob + top, 8, 2); c.fillRect(x0 + 4, 3 + bob + top, 1, 5); c.fillRect(x0 + 11, 3 + bob + top, 1, 5); }
+    if (scarf) { c.fillStyle = scarf; c.fillRect(x0 + 5, 9 + bob + top, 6, 2); }
+    if (bag) { c.fillStyle = '#3a2418'; c.fillRect(x0 + 11 + wide, 12 + bob, 2, 4); c.fillRect(x0 + 6, 9 + bob + top, 1, 4); }
     if (shell) { c.fillStyle = '#6ff2ff'; c.fillRect(x0 + 6, 9 + bob, 4, 1); }          // attestation glyph at the collar
     if (lace) { c.fillStyle = '#d65db1'; c.fillRect(x0 + 10, 4 + bob, 1, 1); }          // lace implant glow
     if (umbrella) { c.fillStyle = r.pick(UMBRELLA); c.fillRect(x0 + 1, 0, 14, 2); c.fillRect(x0 + 3, -1 + 1, 10, 1); c.fillStyle = '#222'; c.fillRect(x0 + 12, 2, 1, 9); }
@@ -133,6 +151,12 @@ export class Crowd {
   update(dt) {
     for (const p of this.people) {
       p.t -= dt;
+      if (p.flee > 0) {                                // backing away from Manuel's gas cloud
+        p.flee -= dt; p.x += p.fx * 22 * dt; p.y += p.fy * 22 * dt;
+        p.spr.setFlipX(p.fx < 0).setPosition(Math.round(p.x), Math.round(p.y + 4)).setDepth(p.y);
+        p.spr.setFrame(Math.floor(this.scene.time.now / 120) % 2 ? 'f1' : 'f0');
+        continue;
+      }
       if (p.mode === 'walk' && p.path) {
         const [tx, ty] = p.path[p.leg], gx = tx * TILE + 8, gy = ty * TILE + 8;
         const d = Math.hypot(gx - p.x, gy - p.y);
@@ -151,6 +175,15 @@ export class Crowd {
       }
       if (p.mode !== 'talk') p.spr.setPosition(Math.round(p.x), Math.round(p.y + 4));
       p.spr.setDepth(p.y);
+    }
+  }
+
+  /** Manuel's gas cloud at (x, y): anyone close backs away for a second (src/game/fart.js). */
+  onFart(x, y) {
+    for (const p of this.people) {
+      const d = Math.hypot(p.x - x, p.y - y);
+      if (d > 72 || p.shell) continue;                 // shells don't smell
+      p.flee = 1 + Math.random() * 0.6; p.fx = (p.x - x) / (d || 1); p.fy = (p.y - y) / (d || 1) * 0.4;
     }
   }
 

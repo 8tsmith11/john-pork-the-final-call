@@ -556,6 +556,7 @@ test('i18n: built-in object names are never treated as translations', () => {
 });
 
 const fartMod = await import('../src/game/fart.js');
+const npcLifeMod = await import('../src/content/npc_life.js');
 test('Manuel\'s fart: on its own, rare, Michael only sniffs once his side says yes', () => {
   const sent = [], sc = { mode: 'solo', time: { now: 0 } }, f = new fartMod.Fart(sc); f._send = (m) => sent.push(m);
   const snap = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 120, y: 100 }] };
@@ -807,7 +808,7 @@ const { LINES_ES } = await import('../src/content/lines_es.js');
 const crowd = await import('../src/game/crowd.js');
 test('every bark and crowd line has Spanish', () => {
   const all = []; const walk = (o) => { if (typeof o === 'string') all.push(o); else if (o && typeof o === 'object') Object.values(o).forEach(walk); };
-  walk(BARKS); walk(crowd.LINES); walk(crowd.PIXEL_LINES); walk(fartMod.FART_LINES);
+  walk(BARKS); walk(crowd.LINES); walk(crowd.PIXEL_LINES); walk(fartMod.FART_LINES); walk(Object.values(npcLifeMod.NPC_LIFE).map((l) => l.hi)); walk(npcLifeMod.NPC_FART);
   const missing = all.filter((s) => !LINES_ES[s]);
   assert.deepEqual(missing, [], 'add these to src/content/lines_es.js');
 });
