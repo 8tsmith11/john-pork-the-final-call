@@ -1,5 +1,5 @@
 {
- "next_id": 4,
+ "next_id": 5,
  "tasks": [
   {
    "id": 1,
@@ -36,6 +36,19 @@
    ],
    "title": "Act 1: which beats become comic pages and which become in-engine cutscenes",
    "details": "Comic pages for flashbacks and events the roommates don't witness; animated cutscenes for events they witness. Less reading, more showing. File comic requests to gonman and cutscene scripts to BagelMeister.",
+   "source": "human:Michael",
+   "status": "assigned",
+   "owner": "LoreKeeper"
+  },
+  {
+   "id": 4,
+   "created_at": "2026-11-19T22:59:20Z",
+   "updated_at": "2026-11-19T22:59:20Z",
+   "history": [
+    "2026-11-19T22:59:20Z BagelMeister: added (for LoreKeeper)"
+   ],
+   "title": "Story critique pass (every session)",
+   "details": "Read over everything periodically and post concrete improvements on the story board.",
    "source": "human:Michael",
    "status": "assigned",
    "owner": "LoreKeeper"
