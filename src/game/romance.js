@@ -9,7 +9,7 @@
 //   - Each new world starts Trevor with the electric guitar and Michael with the acoustic.
 // Debug: ?romance=debug reunites Manuelita and hands every roommate flowers, chocolates and a guitar.
 import { MAPS } from '../content/maps/index.js';
-import { ITEMS } from '../content/items.js';
+import { ITEMS, SHOPS } from '../content/items.js';
 import * as Inv from '../engine/inventory.js';
 import { playerMods } from '../content/items.js';
 import { TILE } from '../engine/sim.js';
@@ -72,8 +72,11 @@ export class Romance {
     if (!P) return false;
     const s = this.s, f = this.flags, me = s.character;
     if (f[flagOf(id, 'gone')]) { s._say(`${partnerView(f, id).name} is with you now.`); return true; }
-    if (me !== P.for && !s.actsFor?.(P.for)) { s._say(`${P.name.toUpperCase()}\n${NOT_YOURS[id]?.[me] ?? '"I\'m waiting for someone."'}`); return true; }
-    const proxy = me !== P.for;   // nobody plays that roommate: you act for them, and the scene is spoken as them
+    if (me !== P.for) {
+      // Nobody plays her roommate: he steps up and courts her himself, and you watch (Trevor).
+      if (s.mode !== 'client' && s.actsFor?.(P.for)) return this._aiCourt(id, P);
+      s._say(`${P.name.toUpperCase()}\n${NOT_YOURS[id]?.[me] ?? '"I\'m waiting for someone."'}`); return true;
+    }
     const stage = stageOf(f, id), c = s.save.party[me];
     let node;
     if (stage === STAGE.MEET) node = 'meet';
@@ -81,8 +84,40 @@ export class Romance {
     else if (stage === STAGE.FIGHT) node = Number(f[flagOf(id, 'kills')] ?? 0) >= FIGHT_KILLS ? 'fight_done' : 'wait_fight';
     else if (stage === STAGE.CHOCOLATES) node = this._take(c, 'item.chocolates') ? 'chocolates' : 'wait_chocolates';
     else node = 'wait_song';
-    if (proxy) s._speakerOverride = P.for;
-    s.shared.start(P.scene, node, () => { s._speakerOverride = null; });
+    s.shared.start(P.scene, node);
+    return true;
+  }
+
+  // An AI-controlled roommate courts his date himself: his own items (he buys flowers or chocolates
+  // from the shared wallet if he has none), his own song, his own choices. The scene is spoken as him.
+  _aiCourt(id, P) {
+    const s = this.s, f = this.flags, who = P.for, Who = who[0].toUpperCase() + who.slice(1), c = s.save.party[who];
+    const stage = stageOf(f, id);
+    const get = (item) => {
+      if (Inv.has(c, item)) return true;
+      const st = Object.values(SHOPS).flatMap((sh) => sh.stock).find((x) => x.item === item); if (!st) return false;
+      const price = s.priceFor ? s.priceFor(who, st.price) : st.price;
+      if ((s.save.world.money ?? 0) < price) { s._say(`${Who}: "I need ${ITEMS[item].name.toLowerCase()} first, and we're broke."`); return false; }
+      s.save.world.money -= price; Inv.add(c, item); s._syncParty(); s._toast(`${Who} buys ${ITEMS[item].name.toLowerCase()} (-$${price})`);
+      return true;
+    };
+    const run = (node, onDone) => {
+      s._speakerOverride = who; s._aiDecider = who;
+      s.shared.start(P.scene, node, () => { s._speakerOverride = null; s._aiDecider = null; onDone?.(); });
+    };
+    if (stage === STAGE.SONG) {
+      if (P.place?.map !== s.map.id) return s._say(`${Who} wants to play for her where they met.`), true;
+      s._toast(`${Who} plays for ${P.name}…`);
+      this.s.time.delayedCall(SONG_SECONDS * 1000, () => run('finale', () => { s._flag(flagOf(id, 'gone'), true); s._toast(`♥ ${partnerView(this.flags, id).name} walks with ${Who} now.`); }));
+      return true;
+    }
+    let node;
+    if (stage === STAGE.MEET) node = 'meet';
+    else if (stage === STAGE.FLOWERS) node = get('item.flowers') && this._take(c, 'item.flowers') ? 'flowers' : 'wait_flowers';
+    else if (stage === STAGE.FIGHT) node = Number(f[flagOf(id, 'kills')] ?? 0) >= FIGHT_KILLS ? 'fight_done' : 'wait_fight';
+    else if (stage === STAGE.CHOCOLATES) node = get('item.chocolates') && this._take(c, 'item.chocolates') ? 'chocolates' : 'wait_chocolates';
+    else node = 'wait_song';
+    run(node);
     return true;
   }
 
@@ -195,7 +230,7 @@ export class Romance {
     const s = this.s;
     if (!me || s.dlg) { this.songT = 0; return; }
     for (const [id, P] of Object.entries(PARTNERS)) {
-      if (!P.courted || !(P.for === s.character || s.actsFor?.(P.for)) || stageOf(this.flags, id) !== STAGE.SONG || P.place?.map !== s.map.id) continue;
+      if (!P.courted || P.for !== s.character || stageOf(this.flags, id) !== STAGE.SONG || P.place?.map !== s.map.id) continue;
       const close = me.pl && Math.hypot(me.x - (P.place.x * TILE + 8), me.y - (P.place.y * TILE + 8)) <= SONG_RANGE;
       this.songT = close ? this.songT + dt : 0;
       if (this.songT >= SONG_SECONDS) {

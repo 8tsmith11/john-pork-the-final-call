@@ -200,7 +200,7 @@ export class GameMenu {
   _quests() {
     const s = this.scene, b = this.box, qs = questState(s.save);
     let y = b.y + 28;
-    const show = QUESTS.filter((q) => (qs[q.id].started || qs[q.id].done) && questVisible(q, s.character, s.humanRoommates?.()));
+    const show = QUESTS.filter((q) => (qs[q.id].started || qs[q.id].done) && questVisible(q, s.character));
     if (!show.length) this._t(b.x + 14, y, 'Nothing yet.', F(8, C.sub));
     for (const q of show) {
       const st = qs[q.id];

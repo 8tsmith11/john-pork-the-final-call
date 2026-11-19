@@ -319,6 +319,7 @@ export class WorldScene extends Phaser.Scene {
   _choose(i) {
     if (!this.dlg?.choices[i] || this.time.now - (this._lineAt ?? 0) < 450) return;
     if (this.dlg.spectator) { if (this.dlg.decider === this.character) { this.dlg.choose(i); this._toast('…'); } return; }
+    if (this._aiDecider && !this.dlg.spectator) return this._toast(`${this._aiDecider.toUpperCase()} decides`);
     if (!this.shared?.canChoose()) return;
     this.shared?.picked(this.character, this.dlg.choices[i].text.replace(/\*/g, ''));
     this.dlg.choose(i); this._drawDialogue();
@@ -355,8 +356,24 @@ export class WorldScene extends Phaser.Scene {
       const mine = !decider || decider === this.character;
       // A header row above the options (not on top of them): clear for the decider, quiet for everyone else.
       this._choiceHeader = !!(decider && this.mode !== 'solo');
+      // An AI roommate's own scene (romance he's courting himself): he picks, after a beat.
+      if (this._aiDecider && !d.spectator) {
+        this._choiceHeader = true;
+        this.dlgWho.setText(`${this._aiDecider.toUpperCase()} IS CHOOSING…`).setColor('#9aa3c7');
+        if (this._aiPickFor !== d.nodeId) {
+          this._aiPickFor = d.nodeId;
+          const node = d.nodeId;
+          this.time.delayedCall(1100, () => {
+            if (!this.dlg || this.dlg.nodeId !== node || !this.dlg.choices.length) return;
+            const opts = this.dlg.choices.map((c, i) => [c, i]).filter(([c]) => !c.timeout);
+            const [c, i] = opts[Math.floor(Math.random() * opts.length)] ?? [this.dlg.choices[0], 0];
+            this._toast(`${this._aiDecider?.toUpperCase() ?? ''}: "${c.text.replace(/[*"]/g, '')}"`);
+            this.dlg.choose(i); this._drawDialogue();
+          });
+        }
+      }
       if (this._choiceHeader) this.dlgWho.setText(mine ? '▶ YOUR CHOICE' : `${decider.toUpperCase()} IS CHOOSING…`).setColor(mine ? '#6fe3e8' : '#9aa3c7');
-      this.dlgChoices.forEach((t, i) => t.setText(choices[i] ? `${i + 1}. ${choices[i].text.replace(/\*/g, '')}` : '').setVisible(!!choices[i]).setAlpha(mine ? 1 : 0.45));
+      this.dlgChoices.forEach((t, i) => t.setText(choices[i] ? `${i + 1}. ${choices[i].text.replace(/\*/g, '')}` : '').setVisible(!!choices[i]).setAlpha(mine && !this._aiDecider ? 1 : 0.45));
       // John Pork's call: the ANSWER / DECLINE choice is shown as a full phone takeover (CallCard).
       const label = (c) => c.text.replace(/[*"]/g, '').trim().toUpperCase();
       const ai = choices.findIndex((c) => label(c) === 'ANSWER'), di = choices.findIndex((c) => label(c) === 'DECLINE');
@@ -779,7 +796,7 @@ export class WorldScene extends Phaser.Scene {
     this.save.world.quests = msg.quests ?? this.save.world.quests;
     const now = questState(this.save);
     for (const q of QUESTS) {
-      const a = was[q.id] ?? {}, b = now[q.id]; if (!b || !questVisible(q, this.character, this.humanRoommates())) continue;
+      const a = was[q.id] ?? {}, b = now[q.id]; if (!b || !questVisible(q, this.character)) continue;
       if (!a.started && b.started && !b.done) { this._questBanner('NEW QUEST', q.title, [q.stages[b.stage]?.text, q.why].filter(Boolean).join('\n')); this._trackedQuest = q.id; }
       else if (b.started && !b.done && b.stage > (a.stage ?? 0)) this._questBanner('QUEST UPDATED', q.title, q.stages[b.stage]?.text ?? '');
       if (!a.done && b.done) { this._questBanner('QUEST COMPLETE', q.title, [q.reward?.money ? `+$${q.reward.money}` : '', q.reward?.xp ? `+${q.reward.xp} xp` : ''].filter(Boolean).join('   ')); if (q.reward?.line) this._say(q.reward.line); }
@@ -1126,7 +1143,7 @@ export class WorldScene extends Phaser.Scene {
     for (const q of QUESTS) {
       const st = qs[q.id];
       if (st.done) continue;
-      const mine = questVisible(q, this.character, this.humanRoommates());
+      const mine = questVisible(q, this.character);
       if (!st.started && q.start?.(f)) { st.started = true; if (mine) { this._questBanner('NEW QUEST', q.title, [q.stages[0]?.text, q.why].filter(Boolean).join('\n')); this._trackedQuest = q.id; } }
       if (!st.started) continue;
       while (st.stage < q.stages.length && q.stages[st.stage].done(f, this.save)) {
