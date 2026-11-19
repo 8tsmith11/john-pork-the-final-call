@@ -165,8 +165,9 @@ P("obj.mate", c.outline())
 c = C().rect(3, 3, 10, 20, "bone").rect(11, 3, 2, 20, "concrete3").h_(3, 10, 10, "concrete2")
 c.rect(4, 6, 1, 3, "steel").rect(4, 12, 1, 4, "steel").pts("pork1", (8, 6)).pts("warm4", (9, 14), (7, 16))
 P("obj.fridge", c.outline())
-c = C().rect(0, 13, 16, 3, "warm2").h_(0, 13, 16, "warm3").rect(1, 16, 2, 7, "warm0").rect(13, 16, 2, 7, "warm0")
-c.rect(4, 12, 4, 1, "bone").px(10, 12, "pork1").px(11, 12, "bone")
+c = C().rect(0, 10, 16, 5, "warm3").h_(0, 10, 16, "warm4").rect(0, 15, 16, 2, "warm1").h_(0, 17, 16, "warm0")   # lit top, front edge, underside
+c.rect(1, 17, 2, 6, "warm0").rect(13, 17, 2, 6, "warm0").v_(14, 17, 6, "night2")                                  # legs, far leg in shade
+c.rect(4, 11, 4, 2, "bone").h_(4, 13, 4, "concrete3").px(10, 12, "pork1").px(11, 12, "bone")                       # a plate, a mug
 P("obj.table", c.outline())
 c = C().rect(2, 12, 12, 11, "steel").rect(2, 11, 12, 2, "night2").pts("signal", (4, 11), (11, 11)).px(8, 11, "concrete1")
 c.pts("night1", (4, 15), (7, 15), (10, 15)).rect(4, 17, 8, 4, "night1").h_(4, 17, 8, "concrete3")
@@ -265,7 +266,9 @@ P("obj.street_doors", c.outline())
 c = C().rect(3, 15, 10, 5, "warm2").rect(2, 20, 12, 2, "warm1").rect(5, 11, 6, 4, "warm2").rect(11, 12, 3, 3, "warm3").px(13, 13, "warm4").px(12, 12, "night0")
 c.pts("warm1", (4, 16), (6, 17), (8, 16), (10, 17), (7, 13)).rect(3, 21, 2, 2, "warm1").rect(11, 21, 2, 2, "warm1").rect(1, 22, 14, 1, "concrete2")
 P("obj.testudo", c.outline())
-c = C().rect(1, 10, 14, 12, "yerba0").rect(1, 9, 14, 2, "night2").h_(1, 15, 14, "night2").pts("bone", (4, 12), (5, 12), (10, 18)).rect(2, 22, 2, 1, "night0").rect(12, 22, 2, 1, "night0")
+c = C().rect(1, 7, 14, 4, "concrete1").h_(1, 7, 14, "concrete2").h_(1, 10, 14, "night1")                   # lid, seen from above
+c.rect(1, 11, 14, 11, "yerba0").v_(13, 11, 11, "night2").v_(14, 11, 11, "night2").h_(1, 15, 12, "night2")          # front, shaded side
+c.h_(1, 11, 12, "yerba1").pts("bone", (4, 13), (5, 13), (9, 18)).rect(2, 22, 2, 1, "night0").rect(11, 22, 2, 1, "night0")
 P("obj.dumpster", c.outline())
 c = C().rect(4, 3, 8, 14, "tub0").rect(5, 4, 6, 5, "night1").rect(6, 10, 4, 4, "steel").pts("bone", (6, 10), (8, 11), (7, 12)).rect(10, 9, 1, 5, "night0").rect(7, 17, 2, 6, "steel")
 P("obj.payphone", c.outline())
@@ -286,7 +289,7 @@ c.pts("warm4", (11, 8), (12, 8), (11, 9), (11, 10), (12, 10), (12, 9))
 P("obj.neon", c.outline())
 c = C().rect(0, 9, 16, 2, "steel").rect(1, 11, 1, 12, "steel").rect(14, 11, 1, 12, "steel").rect(2, 11, 12, 8, "night2").pts("screen0", (4, 13), (5, 14), (9, 13)).rect(3, 19, 10, 2, "warm1")
 P("obj.shelter", c.outline())
-c = C().rect(2, 15, 12, 7, "concrete2").h_(2, 15, 12, "concrete3").pts("yerba1", (4, 13), (5, 12), (6, 13), (8, 12), (9, 13), (10, 11), (11, 13), (7, 11)).pts("yerba0", (5, 14), (7, 14), (9, 14), (11, 14), (6, 12))
+c = C().rect(2, 13, 12, 3, "concrete3").h_(2, 13, 12, "bone").rect(3, 14, 10, 1, "warm0").rect(2, 16, 12, 6, "concrete2").v_(12, 16, 6, "concrete1").v_(13, 16, 6, "concrete1").h_(2, 21, 12, "concrete1").pts("yerba1", (4, 13), (5, 12), (6, 13), (8, 12), (9, 13), (10, 11), (11, 13), (7, 11)).pts("yerba0", (5, 14), (7, 14), (9, 14), (11, 14), (6, 12))
 P("obj.planter", c.outline())
 c = C().rect(2, 8, 12, 14, "night3").rect(3, 9, 10, 6, "screen0").pts("screen2", (4, 10), (5, 11), (8, 10), (10, 12)).h_(2, 7, 12, "soft1").rect(3, 16, 10, 1, "warm4").rect(4, 18, 8, 3, "night1")
 P("obj.kiosk", c.outline())
@@ -363,7 +366,10 @@ c = C().rect(2, 4, 3, 10, "screen2").rect(5, 5, 3, 8, "bone").rect(8, 6, 3, 6, "
 P("obj.pennant", c.outline())
 c = C().rect(2, 14, 12, 8, "signal").h_(2, 14, 12, "soft1").rect(6, 12, 4, 2, "steel").rect(4, 17, 8, 1, "night0").pts("steel", (7, 18))
 P("obj.toolbox", c.outline())
-c = C().rect(1, 10, 14, 12, "warm2").h_(1, 10, 14, "warm3").h_(1, 16, 14, "warm0").v_(8, 10, 12, "warm0").pts("night0", (3, 13), (4, 13), (5, 13), (11, 19), (12, 19)).rect(3, 6, 6, 4, "warm1")
+c = C().rect(1, 8, 14, 4, "warm3").h_(1, 8, 14, "warm4").h_(1, 10, 14, "warm2")                                 # top face, lit
+c.rect(1, 12, 14, 10, "warm2").v_(12, 12, 10, "warm1").v_(13, 12, 10, "warm1").v_(14, 12, 10, "warm0")             # front, shaded side
+c.h_(1, 12, 14, "warm1").h_(1, 17, 12, "warm1").v_(7, 12, 10, "warm1").pts("night0", (3, 14), (4, 14), (5, 14), (10, 20), (11, 20))
+c.rect(3, 5, 6, 3, "warm1").h_(3, 5, 6, "warm2")                                                                   # a smaller box on top
 P("obj.crate", c.outline())
 c = C().pts("night0", *[(x, 18 + (x // 3) % 2) for x in range(0, 16)]).pts("signal", *[(x, 20 - (x // 4) % 2) for x in range(2, 14)]).pts("screen1", (3, 21), (4, 22), (5, 21), (9, 22), (10, 21))
 PROPS["obj.cables"] = c.rows()
