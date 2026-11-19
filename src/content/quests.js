@@ -9,7 +9,7 @@
 
 export const QUESTS = [
   {
-    id: 'main.balloon', why: "Someone forced the front door tonight and took Manuel\'s orange balloon from his closet. Get it back before morning: Continuity is sniffing for it, and a containment review at dawn could wall College Park in.", title: 'The balloon', main: true, act: 1,
+    id: 'main.balloon', why: "Someone forced the front door tonight and took Manuel\'s orange balloon from his closet. Get it back before morning: Continuity\'s vans are sniffing for it, and the code rot under the station could get College Park walled in.", title: 'The balloon', main: true, act: 1,
     stages: [
       { text: 'Check Manuel\'s closet.', done: (f) => f['act1.balloon.noticedGone'] },
       { text: 'Look at the front door.', done: (f) => f['act1.clue.lockForced'] },

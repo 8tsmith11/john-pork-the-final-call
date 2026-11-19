@@ -118,6 +118,7 @@ export const LINES_ES = {
   'Shh. They can hear you through the water.': 'Shh. Te oyen a través del agua.',
   'Nothing\'s biting. Nothing\'s been biting since 2071.': 'No pica nada. No pica nada desde 2071.',
   'next train. next train.': 'próximo tren. próximo tren.',
+  'the warden is on shift. the warden is on shift.': 'el guardián está de turno. el guardián está de turno.',
   '...you look like someone.': '...te pareces a alguien.',
   'Oh, come ON.': 'Ay, ¡POR FAVOR!',
   'Was that the drain?': '¿Eso fue la alcantarilla?',

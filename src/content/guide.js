@@ -49,6 +49,7 @@ export const GUIDE_PEOPLE = [
   {
     id: 'warden', name: 'The Warden', art: ['warden', 'warden_0'],
     stages: [
+      { cond: (f) => f['act1.aster.pruittWarned'] || f['act1.cordon.passed'], text: 'What the sniffer crews call the thing at the heart of the outbreak, down on the old platform. Pruitt says it holds the code rot together. Nobody has seen it and filed a report.', es: 'Así le dicen las cuadrillas de los olfateadores a lo que está en el corazón del brote, abajo en el andén viejo. Pruitt dice que mantiene unida la podredumbre. Nadie lo vio y presentó un informe.' },
       { cond: (f) => f['act1.boss.defeated'] && f['act1.boss.kind'] !== 'sahur', text: 'What waited at the dead platform: the whole outbreak, standing up. You put it down.', es: 'Lo que esperaba en el andén muerto: todo el brote, parado. Lo derribaron.' },
     ],
   },

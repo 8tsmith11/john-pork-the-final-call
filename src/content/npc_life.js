@@ -18,7 +18,7 @@ export const NPC_LIFE = {
   'npc.pruitt': { mood: 'pace', hi: ['Don\'t step on the readings.', 'If anyone asks, I\'m on a break. I am always on a break.'] },
   'npc.abatement_tech': { mood: 'fidget', hi: ['Nobody past the tape. That includes me.', 'They gave me a jar. Nobody said what goes in the jar.'] },
   'npc.ozzie': { mood: 'nod', hi: ['Shh. They can hear you through the water.', 'Nothing\'s biting. Nothing\'s been biting since 2071.'] },
-  'npc.rotter_1': { mood: 'fidget', hi: ['next train. next train.'] },
+  'npc.rotter_1': { mood: 'fidget', hi: ['next train. next train.', 'the warden is on shift. the warden is on shift.'] },
   'npc.rotter_3': { mood: 'still', hi: ['...you look like someone.'] },
 };
 

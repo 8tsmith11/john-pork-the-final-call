@@ -2,7 +2,7 @@
 // if you change an English string there, change its key here too (tests/run.js checks coverage).
 export const ES_QUESTS = {
   'The balloon': 'El globo',
-  "Someone forced the front door tonight and took Manuel's orange balloon from his closet. Get it back before morning: Continuity is sniffing for it, and a containment review at dawn could wall College Park in.": "Alguien forzó la puerta esta noche y se llevó el globo naranja del clóset de Manuel. Recupéralo antes de la mañana: Continuidad lo está rastreando, y una revisión de contención al amanecer podría amurallar College Park.",
+  "Someone forced the front door tonight and took Manuel's orange balloon from his closet. Get it back before morning: Continuity's vans are sniffing for it, and the code rot under the station could get College Park walled in.": "Alguien forzó la puerta esta noche y se llevó el globo naranja del clóset de Manuel. Recupéralo antes de la mañana: las camionetas de Continuidad lo están rastreando, y la podredumbre bajo la estación podría hacer que amurallen College Park.",
   "Check Manuel's closet.": 'Revisa el clóset de Manuel.',
   'Look at the front door.': 'Mira la puerta de entrada.',
   'Ask around the ASTER lobby. Somebody saw something at 3 a.m.': 'Pregunta en el lobby de ASTER. Alguien vio algo a las 3 a. m.',

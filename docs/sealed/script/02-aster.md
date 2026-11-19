@@ -288,6 +288,18 @@ Fpbcr: arneol
 
 > rf: Yn cbqerqhzoer qr póqvtb fhor qrfqr qronwb qr yn rfgnpvóa. Yb chfr ra ry vasbezr. Zr yb qribyivreba.
 
+**CEHVGG:** Ebg fcernqf yvxr qnzc, n ovg rireljurer. Guvf fcernqf sebz bar cynpr: gur byq cyngsbez haqre gur fgngvba.
+
+> rf: Yn cbqerqhzoer fr rkcnaqr pbzb yn uhzrqnq, ha cbpb cbe gbqbf ynqbf. Rfgb fr rkcnaqr qrfqr ha fbyb yhtne: ry naqéa ivrwb qronwb qr yn rfgnpvóa.
+
+**GERIBE:** Bar cynpr ubj?
+
+> rf: ¿Ha fbyb yhtne pózb?
+
+**CEHVGG:** Fbzrguvat qbja gurer vf ubyqvat vg gbtrgure. Gur favssre perjf pnyy vg gur jneqra. Yvxr vg'f ba qhgl.
+
+> rf: Nytb nuí nonwb yn znagvrar havqn. Ynf phnqevyynf qr ybf bysngrnqberf yr qvpra ry thneqváa. Pbzb fv rfghivren qr gheab.
+
 **CEHVGG:** Vs vg xrrcf pyvzovat, gur beqre pbzrf qbja sbe nyy bs Pbyyrtr Cnex. N jnyy ebhaq gur jubyr cbfgpbqr.
 
 > rf: Fv fvthr fhovraqb, onwn yn beqra cnen gbqb Pbyyrtr Cnex. Ha zheb nyerqrqbe qr gbqb ry póqvtb cbfgny.
