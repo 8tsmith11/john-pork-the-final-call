@@ -25,7 +25,8 @@ export function makeMap({ id, name, layout, spawns, objects = [], enemies = [], 
     // Doors (door: true) block until opened. `floor: true` objects (grates) stay walkable.
     blocked: new Set(objects.filter((o) => o.action === 'exit' && !o.floor).map((o) => `${o.x},${o.y}`)),
     doors: new Map(objects.filter((o) => o.door).map((o) => [`${o.x},${o.y}`, o])),
-    enemies: enemies.map(([kind, tx, ty]) => ({ kind, x: tx * TILE + 8, y: ty * TILE + 8 })),
+    // Optional fourth field carries authored spawn options, e.g. { elite: 'armored' }.
+    enemies: enemies.map(([kind, tx, ty, options]) => ({ ...options, kind, x: tx * TILE + 8, y: ty * TILE + 8 })),
     solid(tx, ty) {
       if (ty < 0 || tx < 0 || ty >= this.h || tx >= this.w) return true;
       const k = `${tx},${ty}`;

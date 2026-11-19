@@ -59,10 +59,14 @@ export const lake = makeMap({
   spawns: [[2, 21], [2, 22], [3, 22]],
   enemies: [
     ['enemy.captcha', 12, 21],                                     // on the trail in: a Captcha, checking who comes to the lake
-    ['enemy.autocomplete', 58, 12], ['enemy.spitter', 61, 16],     // north-east woods by the fence
+    ['enemy.autocomplete', 58, 12], ['enemy.spitter', 61, 16, { elite: 'armored' }], // north-east woods: an armored ranged anchor
     ['enemy.spitter', 21, 34], ['enemy.rotling', 29, 36],          // the marsh
     ['enemy.moth', 30, 7],                                         // north shore: a Hold-Music Moth, alone, by the moth lamp
     ['enemy.spitter', 46, 19],                                     // on the island, with the thing it's sitting on
+    // Append only: existing lake#0..6 killed-spawn keys must keep their meaning.
+    ['enemy.rotling', 56, 13],                                    // closes while the north-east elite fires
+    ['enemy.captcha', 52, 31],                                    // south-east bend, away from the fisherman
+    ['enemy.autocomplete', 54, 30],                               // flanks the charge rather than another isolated duel
   ],
   objects: [
     { id: 'obj.lake_back', art: 'obj.purple_sign', x: 0, y: 22, label: 'Back to College Park', action: 'exit', to: 'metro_plaza', text: 'The trail back to the plaza.' },

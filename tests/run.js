@@ -13,12 +13,50 @@ import { BalanceBot, countHostMoves, newMoveCounts } from '../tools/balance-bot.
 import { CompanionBrain as BalanceBrain } from '../src/engine/companion.js';
 import { ITEMS as BALANCE_ITEMS } from '../src/content/items.js';
 import * as BOT_RULES from '../src/engine/sim.js';
+import { makeMap } from '../src/content/maps/build.js';
+import { TRAITS } from '../src/content/rotVillains.js';
 
 let failed = 0;
 const test = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}\n     ${e.message}`); } };
 
 const rotArena = () => ({ id: 'rot-test', w: 100, h: 100, objects: [], enemies: [],
   spawns: [{ x: 160, y: 160 }], solid: () => false });
+
+test('authored elite tuples preserve ordinary spawns and cannot replace their coordinates', () => {
+  const map = makeMap({ id: 'elite-test', name: 'Test', layout: ['.....'], spawns: [[0, 0]],
+    enemies: [['enemy.rotling', 1, 0], ['enemy.spitter', 3, 0, { elite: 'armored', x: -1, kind: 'bad' }]] });
+  assert.deepEqual(map.enemies[0], { kind: 'enemy.rotling', x: 24, y: 8 });
+  assert.deepEqual(map.enemies[1], { kind: 'enemy.spitter', x: 56, y: 8, elite: 'armored' });
+  for (const seed of ['bal1', 'bal2', 'bal3', 'other']) {
+    const sim = new Sim(map, { seed, killed: new Set(['elite-test#0']) });
+    assert.equal(sim.enemies.size, 1);
+    const e = [...sim.enemies.values()][0], base = ENEMIES['enemy.spitter'];
+    assert.equal(e.spawnKey, 'elite-test#1'); assert.equal(e.def.trait, 'armored');
+    assert.equal(e.hp, Math.round(base.hp * TRAITS.armored.hp * BOT_RULES.PARTY_SCALE.hp));
+    assert.equal(e.def.armor, TRAITS.armored.armor); assert.equal(e.def.speed, base.speed * TRAITS.armored.speed);
+    assert.equal(e.def.ai, base.ai); assert.match(e.def.vname, /^Elite /);
+    const snap = sim.snapshot().enemies[0];
+    assert.equal(snap.tr, 'armored'); assert.match(snap.vn, /^Elite /);
+  }
+});
+
+test('authored elites reject unknown, inherited and malformed traits', () => {
+  for (const elite of ['missing', 'toString', null, ['armored']]) {
+    const map = { ...rotArena(), enemies: [{ kind: 'enemy.spitter', x: 200, y: 160, elite }] };
+    assert.throws(() => new Sim(map), /Unknown elite trait .* at rot-test#0/);
+  }
+});
+
+test('lake pressure preserves its seven original killed-spawn keys', () => {
+  const map = MAPS_FOR_TEST.lake, old = [
+    ['enemy.captcha', 12, 21], ['enemy.autocomplete', 58, 12], ['enemy.spitter', 61, 16],
+    ['enemy.spitter', 21, 34], ['enemy.rotling', 29, 36], ['enemy.moth', 30, 7], ['enemy.spitter', 46, 19],
+  ];
+  assert.deepEqual(map.enemies.slice(0, 7).map((e) => [e.kind, (e.x - 8) / 16, (e.y - 8) / 16]), old);
+  const sim = new Sim(map, { killed: new Set(old.map((_, i) => `lake#${i}`)) });
+  assert.equal(sim.enemies.size, map.enemies.length - 7);
+  assert.ok([...sim.enemies.values()].every((e) => Number(e.spawnKey.split('#')[1]) >= 7));
+});
 
 const botFixture = (options) => {
   const sim = new Sim(rotArena()); sim.addPlayer('host', 'trevor');

@@ -88,7 +88,13 @@ export class Sim {
         continue;
       }
       const base = ENEMIES[e.kind];
-      const v = base.ai === 'swarm' ? { name: base.name, trait: 'plain', tint: base.color } : rollVariant(this.seed, spawnKey, e.kind), tr = TRAITS[v.trait];
+      const v = base.ai === 'swarm' ? { name: base.name, trait: 'plain', tint: base.color } : rollVariant(this.seed, spawnKey, e.kind);
+      // Authored elites reuse one existing trait, rather than stacking another multiplier.
+      if (e.elite !== undefined) {
+        if (typeof e.elite !== 'string' || !Object.hasOwn(TRAITS, e.elite)) throw new Error(`Unknown elite trait ${e.elite} at ${spawnKey}`);
+        v.trait = e.elite; v.name = `Elite ${v.name}`;
+      }
+      const tr = TRAITS[v.trait];
       // The party is always three (AI companions fill empty seats), so regular enemies are tuned for three.
       const def = { ...base, hp: Math.round(base.hp * tr.hp * PARTY_SCALE.hp), damage: Math.round((base.damage ?? 0) * PARTY_SCALE.dmg), speed: base.speed * tr.speed, armor: tr.armor ?? 0, color: v.tint, vname: v.name, trait: v.trait };
       this.enemies.set(id, { id, spawnKey, kind: e.kind, def, x: e.x, y: e.y, hp: def.hp, cd: Math.random(), hurtT: 0, kx: 0, ky: 0 });
