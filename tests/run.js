@@ -715,6 +715,31 @@ test('schema 2 -> 3 migration: worn armor moves to the chestplate slot (D-014)',
   assert.equal(m.party.trevor.equipped.boots, null); assert.deepEqual(m.party.trevor.upgrades, {});
 });
 
+test('worn gear leaves the bag and sits in its equipment slot (Michael)', () => {
+  const c = { inventory: new Array(36).fill(null), equipped: {} };
+  Inv.add(c, 'item.rain_parka'); Inv.add(c, 'item.brown_parka'); Inv.add(c, 'item.wooden_bat');
+  assert.ok(Inv.wear(c, 'item.rain_parka'));
+  assert.equal(c.equipped.parka, 'item.rain_parka'); assert.equal(Inv.count(c, 'item.rain_parka'), 0, 'not in the bag while worn');
+  assert.ok(Inv.has(c, 'item.rain_parka'), 'still owned'); assert.equal(Inv.ids(c).length, 2);
+  assert.ok(Inv.wear(c, 'item.brown_parka'), 'swap');
+  assert.equal(c.equipped.parka, 'item.brown_parka'); assert.equal(Inv.count(c, 'item.rain_parka'), 1, 'the old one goes back in the bag');
+  assert.ok(Inv.unwear(c, 'parka')); assert.equal(c.equipped.parka, null); assert.equal(Inv.count(c, 'item.brown_parka'), 1);
+  assert.ok(!Inv.wear(c, 'item.wooden_bat'), 'weapons are held from the hotbar, not worn');
+  const full = { inventory: new Array(36).fill(null).map(() => ({ id: 'item.wooden_bat', qty: 1 })), equipped: { parka: 'item.rain_parka' } };
+  assert.ok(!Inv.unwear(full, 'parka'), 'no room to take it off'); assert.equal(full.equipped.parka, 'item.rain_parka');
+});
+test('schema 5 -> 6 migration: worn gear comes out of the bag, weapons stay', () => {
+  const old = newSave({ seed: 'w', rolls: {}, gameVersion: 't' });
+  old.schemaVersion = 5;
+  const t = old.party.trevor;
+  t.inventory[0] = { id: 'item.pry_bar', qty: 1 }; t.inventory[9] = { id: 'item.rain_parka', qty: 1 }; t.inventory[10] = { id: 'item.mesh_vest', qty: 1 };
+  t.equipped.weapon = 'item.pry_bar'; t.equipped.parka = 'item.rain_parka'; t.equipped.chestplate = 'item.mesh_vest'; t.equipped.boots = 'item.sneakers';
+  const m = migrate(JSON.parse(JSON.stringify(old))), mt = m.party.trevor;
+  assert.equal(m.schemaVersion, CURRENT_SCHEMA);
+  assert.equal(mt.inventory[9], null); assert.equal(mt.inventory[10], null);
+  assert.equal(mt.inventory[0].id, 'item.pry_bar'); assert.equal(mt.equipped.parka, 'item.rain_parka'); assert.equal(mt.equipped.boots, 'item.sneakers');
+});
+
 test('dialogue graphs: no dangling jumps, and the big scenes are not secretly dead ends', () => {
   const rot = (x) => x.replace(/[a-z]/gi, (c) => String.fromCharCode((c <= 'Z' ? 65 : 97) + ((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26)));
   // Scenes that are one connected conversation (not a bag of standalone barks/fragments).

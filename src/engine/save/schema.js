@@ -7,7 +7,7 @@ import { BASE_SCORES } from '../../content/abilities.js';
 
 export const FORMAT = 'jpfc-save';
 export const SLOTS = 36;   // inventory slots per character: 0..8 hotbar, 9..35 backpack
-export const CURRENT_SCHEMA = 5;
+export const CURRENT_SCHEMA = 6;
 
 /** migrations[n] upgrades a schema-n save to schema n+1. Append only. */
 export const migrations = {
@@ -46,6 +46,23 @@ export const migrations = {
   4: (save) => {
     for (const c of Object.values(save.party ?? {})) c.rot ??= 0;
     save.schemaVersion = 5; return save;
+  },
+  // 5 -> 6 (Michael): worn armor and gear leave the bag; the equipment slot holds the item. Each
+  // worn item's copy in the bag is taken out (melee and ranged weapons stay in the hotbar).
+  5: (save) => {
+    const WORN = ['helmet', 'chestplate', 'leggings', 'boots', 'goggles', 'parka', 'gloves', 'socks', 'backpack', 'gadget', 'charm'];
+    for (const c of Object.values(save.party ?? {})) {
+      const inv = Array.isArray(c.inventory) ? c.inventory : [];
+      for (const sl of WORN) {
+        const id = c.equipped?.[sl]; if (!id) continue;
+        for (let i = inv.length - 1; i >= 0; i--) {
+          const st = inv[i]; if (!st || st.id !== id) continue;
+          st.qty -= 1; if (st.qty <= 0) inv[i] = null;
+          break;
+        }
+      }
+    }
+    save.schemaVersion = 6; return save;
   },
 };
 

@@ -9,6 +9,10 @@ export const WEAPON_SLOTS = ['weapon', 'ranged', 'gadget', 'charm'];
 export const ARMOR_SLOTS = ['helmet', 'chestplate', 'leggings', 'boots'];
 export const GEAR_SLOTS = ['goggles', 'parka', 'gloves', 'socks', 'backpack'];
 export const EQUIP_SLOTS = [...WEAPON_SLOTS, ...ARMOR_SLOTS, ...GEAR_SLOTS];
+// Worn slots (Michael): a worn item leaves the bag and lives only in its equipment slot (the ARMOR /
+// GEAR / gadget / charm boxes beside the character), so it no longer takes a backpack or hotbar slot.
+// Melee and ranged weapons stay in the hotbar, because the selected hotbar slot is what you hold.
+export const WORN_SLOTS = [...ARMOR_SLOTS, ...GEAR_SLOTS, 'gadget', 'charm'];
 export const SLOT_NAMES = { weapon: 'Melee', ranged: 'Ranged', gadget: 'Gadget', charm: 'Charm', helmet: 'Helmet', chestplate: 'Chestplate',
   leggings: 'Leggings', boots: 'Boots', goggles: 'Goggles / hat', parka: 'Rain parka', gloves: 'Gloves', socks: 'Socks', backpack: 'Backpack' };
 

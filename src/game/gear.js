@@ -47,7 +47,7 @@ export class Gear {
     const s = this.s, ordinary = ['item.bike_helmet', 'item.work_pants', 'item.sneakers', 'item.welding_goggles', 'item.rain_parka', 'item.work_gloves', 'item.wool_socks', 'item.pack_coolant', 'item.mesh_vest'];
     for (const [who, c] of Object.entries(s.save.party)) {
       for (const id of ordinary) if (!Inv.has(c, id)) Inv.add(c, id);
-      for (const [id, def] of Object.entries(ITEMS)) if (def.unique && def.owner === who && !Inv.has(c, id)) { Inv.add(c, id); c.equipped[def.slot] = id; }
+      for (const [id, def] of Object.entries(ITEMS)) if (def.unique && def.owner === who && !Inv.has(c, id)) { Inv.add(c, id); if (!Inv.wear(c, id)) c.equipped[def.slot] = id; }
       for (const m of ['item.mat_scrap', 'item.mat_circuit']) Inv.add(c, m, 20);
     }
     s.save.world.money = Math.max(s.save.world.money ?? 0, 500);

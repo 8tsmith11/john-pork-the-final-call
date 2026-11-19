@@ -1,7 +1,7 @@
 // Slot inventory (human request: "an actual inventory grid with items like Minecraft, and a hotbar").
 // Each character's `inventory` is a fixed array of SLOTS entries, each `{ id, qty }` or null.
 // Slots 0..8 are the hotbar; 9..35 the backpack grid. Pure JS (Node-tested).
-import { ITEMS } from '../content/items.js';
+import { ITEMS, WORN_SLOTS } from '../content/items.js';
 
 import { SLOTS } from './save/schema.js';
 export { SLOTS };
@@ -37,7 +37,10 @@ export function add(c, id, n = 1) {
 }
 
 export function count(c, id) { return c.inventory.reduce((t, s) => t + (s && s.id === id ? s.qty : 0), 0); }
-export const has = (c, id) => count(c, id) > 0;
+/** Is `id` worn in one of the worn slots (armor, gear, gadget, charm)? Worn items aren't in the bag. */
+export const worn = (c, id) => WORN_SLOTS.some((sl) => c.equipped?.[sl] === id);
+/** Owns it: in the bag or worn. (count() is bag-only, for paying and removing.) */
+export const has = (c, id) => count(c, id) > 0 || worn(c, id);
 export const ids = (c) => c.inventory.filter(Boolean).map((s) => s.id);
 
 /** Remove n of id (from the back of the backpack first, so the hotbar keeps its stacks). */
@@ -75,3 +78,26 @@ export function moveSlot(c, a, b, half = false) {
 /** Can `c` pay this material cost ({ id: qty })? */
 export const canPay = (c, cost) => Object.entries(cost || {}).every(([id, n]) => count(c, id) >= n);
 export function pay(c, cost) { if (!canPay(c, cost)) return false; for (const [id, n] of Object.entries(cost || {})) remove(c, id, n); return true; }
+
+/** Put on a worn-slot item from the bag: it leaves the bag, and whatever was in that slot goes back
+ *  into the bag. False (and nothing changes) if `id` isn't in the bag or the old piece won't fit. */
+export function wear(c, id) {
+  const slot = ITEMS[id]?.slot;
+  if (!WORN_SLOTS.includes(slot) || count(c, id) < 1) return false;
+  c.equipped ??= {};
+  const old = c.equipped[slot];
+  remove(c, id, 1);
+  if (old && add(c, old) > 0) { remove(c, old, 1); add(c, id); return false; }   // no room: undo
+  c.equipped[slot] = id;
+  return true;
+}
+
+/** Take off whatever is in a worn slot, back into the bag. False if the bag is full. */
+export function unwear(c, slot) {
+  const id = c.equipped?.[slot];
+  if (!id || !WORN_SLOTS.includes(slot)) return false;
+  if (add(c, id) > 0) return false;
+  c.equipped[slot] = null;
+  return true;
+}
+

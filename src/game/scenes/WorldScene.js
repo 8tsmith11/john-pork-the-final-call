@@ -12,7 +12,7 @@ import { ENEMIES } from '../../content/enemies.js';
 import { GAME_VERSION } from '../../version.js';
 import { loadScene, Conversation, evalCond } from '../../engine/dialogue.js';
 import { babble, setArea, sfx, ring, speak, hush, setInstrumentFocus } from '../../audio/audio.js';
-import { sellPrice, LOOT, DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods, EQUIP_SLOTS, canWear } from '../../content/items.js';
+import { sellPrice, LOOT, DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods, EQUIP_SLOTS, WORN_SLOTS, canWear } from '../../content/items.js';
 import { tileKey, laneDashes } from '../render/tiles.js';
 import { GameMenu, TABS } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
@@ -22,6 +22,7 @@ import { rollCatch } from '../../content/fish.js';
 import { QUESTS, questState, questVisible } from '../../content/quests.js';
 import { CompanionBrain, isAi } from '../../engine/companion.js';
 import * as Inv from '../../engine/inventory.js';
+import { syncWear } from '../render/wearables.js';
 import { CallCard } from '../ui/CallCard.js';
 import { tr } from '../../i18n.js';
 import * as Settings from '../../settings.js';
@@ -892,7 +893,9 @@ export class WorldScene extends Phaser.Scene {
     if (!Inv.pay(c, r.cost)) return this._announce('Not enough materials for that.');
     const item = ITEMS[r.item];
     Inv.add(c, r.item);
-    if (item.slot !== 'consumable' && !c.equipped[item.slot]) c.equipped[item.slot] = r.item;
+    if (EQUIP_SLOTS.includes(item.slot) && !c.equipped[item.slot] && canWear(item, who)) {
+      if (WORN_SLOTS.includes(item.slot)) Inv.wear(c, r.item); else c.equipped[item.slot] = r.item;
+    }
     this._announce(`The fab hums. ${who} gets: ${item.name}.`);
     this._syncParty();
   }
@@ -974,7 +977,7 @@ export class WorldScene extends Phaser.Scene {
   menuSell(slot) { if (this.mode === 'client') this.net.send({ t: 'sell', slot }); else this._sell(this.character, slot); }
   _sell(who, slot) {
     const c = this.save.party[who], it = c?.inventory[slot]; if (!it) return;
-    if (Object.values(c.equipped || {}).includes(it.id) && Inv.count(c, it.id) <= 1) return this._toast('Take it off first.');
+    if ([c.equipped?.weapon, c.equipped?.ranged].includes(it.id) && Inv.count(c, it.id) <= 1) return this._toast('Put it away first.');   // worn gear isn't in the bag
     const price = sellPrice(it.id); if (!price) return this._toast('Wick won\'t take that.');
     Inv.takeSlot(c, slot); this.save.world.money = (this.save.world.money ?? 0) + price;
     sfx('pickup'); this._toast(`Sold: ${ITEMS[it.id]?.name} (+$${price})`); this._syncParty();
@@ -1015,7 +1018,11 @@ export class WorldScene extends Phaser.Scene {
     const c = this.save.party[who], def = ITEMS[id];
     if (!c || !def || !Inv.has(c, id) || !EQUIP_SLOTS.includes(def.slot)) return;
     if (!canWear(def, who)) return this._announce(`${def.name}: only ${def.owner[0].toUpperCase() + def.owner.slice(1)} can wear that.`);
-    c.equipped[def.slot] = c.equipped[def.slot] === id ? null : id;   // click again to unequip
+    if (WORN_SLOTS.includes(def.slot)) {
+      // Worn gear moves between the bag and its equipment slot (it doesn't take a bag slot while worn).
+      if (c.equipped[def.slot] === id) { if (!Inv.unwear(c, def.slot)) return this._toast('Your bag is full. Make room to take it off.'); }
+      else if (!Inv.wear(c, id)) return this._toast('Your bag is full. Make room to swap.');
+    } else c.equipped[def.slot] = c.equipped[def.slot] === id ? null : id;   // weapons: click again to unequip
     this._syncParty();
   }
 
@@ -2105,6 +2112,7 @@ export class WorldScene extends Phaser.Scene {
         if (p.rv > 0) g.lineStyle(2, 0xffb347, 1).beginPath().arc(p.x, p.y - 20, 6, -Math.PI / 2, -Math.PI / 2 + (p.rv / 4) * Math.PI * 2).strokePath();
       }
       s.setAngle(p.dn ? 90 : 0).setTint(p.dn ? 0x777788 : p.mo ? MORPH_LOOK[p.c][0] : 0xffffff).setScale(p.mo ? 1.12 : 1);
+      syncWear(this, s, p.c, this.save?.party?.[p.c]);   // parkas and other worn models (render/wearables.js)
     }
     for (const [id, s] of this.sprites) if (!seen.has(id)) { s.destroy(); this.sprites.delete(id); }
 

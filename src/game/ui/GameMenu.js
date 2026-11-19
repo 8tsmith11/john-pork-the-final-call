@@ -9,9 +9,10 @@ import { sellPrice, ITEMS, RECIPES, SKILLS, SHOPS, playerMods, ARMOR_SLOTS, GEAR
 import { MAPS } from '../../content/maps/index.js';
 import { GUIDE_PEOPLE, guideText } from '../../content/guide.js';
 import { ABILITIES, ABILITY_KEYS, MAX_SCORE, modOf, fmtMod, scoresOf } from '../../content/abilities.js';
-import { canPay, count } from '../../engine/inventory.js';
+import { canPay, count, has, worn } from '../../engine/inventory.js';
 import { SKILL_TREE, skillOpen } from '../../content/skills.js';
 import { ROOMMATES } from '../scenes/BootScene.js';
+import { looksFor, wearTexture } from '../render/wearables.js';
 import { QUESTS, questState, questVisible } from '../../content/quests.js';
 
 // One line of weapon stats for tooltips: melee hit, rate, dps, reach, arc, knockback; guns dmg×pellets, rate, clip, reload.
@@ -106,6 +107,14 @@ export class GameMenu {
     g.fillStyle(0x151827).fillRoundedRect(b.x + 32, b.y + 28, 52, 108, 3);
     const spr = s.add.sprite(b.x + 58, b.y + 124, who).setOrigin(0.5, 1).setScale(3).play(`${who}_idle_down`);
     this.root.add(spr);
+    // worn models (parkas) on the paper doll too, frame for frame
+    for (const id of looksFor(c)) {
+      const key = wearTexture(s, who, id); if (!key) continue;
+      const o = s.add.image(spr.x, spr.y, key, spr.frame.name).setOrigin(0.5, 1).setScale(3);
+      this.root.add(o);
+      const follow = (anim, frame) => { if (o.active && o.texture.has(frame.textureFrame)) o.setFrame(frame.textureFrame); };
+      spr.on('animationupdate', follow); o.once('destroy', () => spr.off('animationupdate', follow));
+    }
     this._t(b.x + 58, b.y + 126, `${ROOMMATES[who].name}`, F(7, C.text)).setOrigin(0.5, 0);
     const slotBox = (slot, x, y) => {
       const id = c.equipped[slot], def = id && ITEMS[id], uniq = def?.unique, lvl = id ? c.upgrades?.[id] ?? 0 : 0;
@@ -138,7 +147,8 @@ export class GameMenu {
     if (buffs.length > rows) this._t(b.x + 136, b.y + 180 + (rows - 1) * 7, `+${buffs.length - rows}`, F(5, C.sub));
     // grid + hotbar
     const gx = b.x + 140, gy = b.y + 36;
-    this._t(gx, gy - 4, 'BACKPACK', F(6, C.sub)).setOrigin(0, 1);
+    const used = inv.slice(9).filter(Boolean).length;
+    this._t(gx, gy - 4, `BACKPACK  ${used}/27  · worn gear sits in its slot, not here`, F(6, C.sub)).setOrigin(0, 1);
     const slotXY = (i) => i < 9 ? [gx + i * (S + GAP), gy + 3 * (S + GAP) + 10] : [gx + ((i - 9) % 9) * (S + GAP), gy + Math.floor((i - 9) / 9) * (S + GAP)];
     this._t(gx, gy + 3 * (S + GAP) + 6, 'HOTBAR  (keys 1-9)', F(6, C.sub)).setOrigin(0, 1);
     const eq = new Set(Object.values(c.equipped || {}));
@@ -422,7 +432,7 @@ export class GameMenu {
       if (r.req && !s.save.flags[r.req]) return;
       k++;
       const def = ITEMS[r.item], x = b.x + 12 + (k % cols) * (cw + 8), y = b.y + 24 + Math.floor(k / cols) * (ch + 6);
-      const can = canPay(c, r.cost), owned = count(c, r.item);
+      const can = canPay(c, r.cost), owned = count(c, r.item) + (worn(c, r.item) ? 1 : 0);
       g.fillStyle(can ? 0x1a2030 : 0x121521).fillRoundedRect(x, y, cw, ch, 3).lineStyle(1, can ? 0xffb347 : C.dim, can ? 0.9 : 0.5).strokeRoundedRect(x, y, cw, ch, 3);
       g.fillStyle(0x0b0d16).fillRect(x + 5, y + 5, 20, 20);
       this._icon(x + 15, y + 15, r.item);
@@ -462,7 +472,7 @@ export class GameMenu {
     // rows: buy = the shelf; sell = your bag (one row per stack)
     const rows = this.shopMode === 'sell'
       ? c.inventory.map((it, slot) => it && { id: it.id, qty: it.qty, slot, price: sellPrice(it.id) }).filter(Boolean)
-      : shop.stock.map((st, i) => ({ id: st.item, i, st, price: s.priceFor(who, st.price), owned: st.once && count(c, st.item) > 0, locked: st.needs && !count(c, st.needs) }));
+      : shop.stock.map((st, i) => ({ id: st.item, i, st, price: s.priceFor(who, st.price), owned: st.once && has(c, st.item), locked: st.needs && !count(c, st.needs) }));
     const listW = 190, rowH = 15, maxRows = Math.floor((b.y + b.h - 8 - ty) / rowH);
     this.shopSel = Math.max(0, Math.min(this.shopSel ?? 0, rows.length - 1));
     if (!rows.length) this._t(b.x + 14, ty + 4, this.shopMode === 'sell' ? 'Nothing to sell.' : 'Sold out.', F(8, C.sub));
