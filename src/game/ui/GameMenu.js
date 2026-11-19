@@ -7,7 +7,7 @@ import { ABILITIES, ABILITY_KEYS, MAX_SCORE, modOf, fmtMod, scoresOf } from '../
 import { canPay, count } from '../../engine/inventory.js';
 import { SKILL_TREE, skillOpen } from '../../content/skills.js';
 import { ROOMMATES } from '../scenes/BootScene.js';
-import { QUESTS, questState } from '../../content/quests.js';
+import { QUESTS, questState, questVisible } from '../../content/quests.js';
 
 export const TABS = ['inventory', 'quests', 'phone', 'skills', 'stats', 'map', 'controls', 'system'];
 const TAB_LABEL = { inventory: 'INVENTORY', quests: 'QUESTS', phone: 'PHONE', skills: 'SKILLS', stats: 'STATS', map: 'MAP', controls: 'CONTROLS', system: 'SYSTEM' };
@@ -178,11 +178,11 @@ export class GameMenu {
   _quests() {
     const s = this.scene, b = this.box, qs = questState(s.save);
     let y = b.y + 28;
-    const show = QUESTS.filter((q) => qs[q.id].started || qs[q.id].done);
+    const show = QUESTS.filter((q) => (qs[q.id].started || qs[q.id].done) && questVisible(q, s.character));
     if (!show.length) this._t(b.x + 14, y, 'Nothing yet.', F(8, C.sub));
     for (const q of show) {
       const st = qs[q.id];
-      this._t(b.x + 14, y, `${st.done ? '✓' : q.main ? '★' : '·'} ${q.title}${q.main ? '' : '  (side)'}`, F(9, st.done ? C.ok : q.main ? C.hi : C.text)); y += 12;
+      this._t(b.x + 14, y, `${st.done ? '✓' : q.main ? '★' : '·'} ${q.title}${q.main ? '' : q.owner ? '  (yours)' : '  (side)'}`, F(9, st.done ? C.ok : q.main ? C.hi : C.text)); y += 12;
       if (!st.done) {
         const obj = this._t(b.x + 26, y, `→ ${q.stages[st.stage]?.text ?? ''}`, { ...F(7, '#6fe3e8'), wordWrap: { width: b.w - 50 } }); y += obj.height + 2;
         if (q.why) { const why = this._t(b.x + 26, y, q.why, { ...F(7, C.sub), wordWrap: { width: b.w - 50 } }); y += why.height + 6; } else y += 4;

@@ -18,7 +18,7 @@ import { GameMenu, TABS } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
 import { BARKS, pickBark } from '../../content/barks.js';
 import { rollCatch } from '../../content/fish.js';
-import { QUESTS, questState } from '../../content/quests.js';
+import { QUESTS, questState, questVisible } from '../../content/quests.js';
 import { CompanionBrain, isAi } from '../../engine/companion.js';
 import * as Inv from '../../engine/inventory.js';
 import { CallCard } from '../ui/CallCard.js';
@@ -495,12 +495,15 @@ export class WorldScene extends Phaser.Scene {
         if (p) { this.sim.addPlayer(`ai:${p.character}`, p.character); const a = this.sim.players.get(`ai:${p.character}`); Object.assign(a, { x: p.x, y: p.y, hp: p.hp }); this.sim.setMods(a.id, playerMods(this.save.party[p.character], p.character)); }
       });
       this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
+      this.time.addEvent({ delay: 500, loop: true, callback: () => this._broadcastWorld() });
+      this.net.on('join', () => { this._worldSig = null; });
     } else if (this.mode === 'client') {
       this.net.on('msg', (msg) => {
         if (this.shared?.onMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg)) return;
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
         if (msg.t === 'say') this._say(msg.text);
         if (msg.t === 'party') { this.save.party = msg.party; this.save.world.money = msg.money; this._refreshMenu(); }
+        if (msg.t === 'world') this._applyWorld(msg);
       });
       this.net.on('close', () => this._say('The host closed the game.'));
     }
@@ -657,6 +660,28 @@ export class WorldScene extends Phaser.Scene {
     this._heldUseAt = this.time.now;
     this.menuUseSlot(c.hotSel ?? 0);
     return true;
+  }
+
+  // Host -> clients: flags and quest progress, whenever they change (checked twice a second).
+  _broadcastWorld() {
+    if (this.mode !== 'host') return;
+    const msg = { t: 'world', flags: this.save.flags, quests: questState(this.save) };
+    const sig = JSON.stringify(msg);
+    if (sig === this._worldSig) return;
+    this._worldSig = sig; this.net.broadcast(msg);
+  }
+  _applyWorld(msg) {
+    const before = questState(this.save), was = JSON.parse(JSON.stringify(before));
+    Object.assign(this.save.flags, msg.flags ?? {});
+    this.save.world.quests = msg.quests ?? this.save.world.quests;
+    const now = questState(this.save);
+    for (const q of QUESTS) {
+      const a = was[q.id] ?? {}, b = now[q.id]; if (!b || !questVisible(q, this.character)) continue;
+      if (!a.started && b.started && !b.done) { this._questBanner('NEW QUEST', q.title, [q.stages[b.stage]?.text, q.why].filter(Boolean).join('\n')); this._trackedQuest = q.id; }
+      else if (b.started && !b.done && b.stage > (a.stage ?? 0)) this._questBanner('QUEST UPDATED', q.title, q.stages[b.stage]?.text ?? '');
+      if (!a.done && b.done) { this._questBanner('QUEST COMPLETE', q.title, [q.reward?.money ? `+$${q.reward.money}` : '', q.reward?.xp ? `+${q.reward.xp} xp` : ''].filter(Boolean).join('   ')); if (q.reward?.line) this._say(q.reward.line); }
+    }
+    this._refreshMenu();
   }
 
   _syncParty() {
@@ -972,23 +997,25 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _tickQuests(force = false) {
+    if (this.mode === 'client') return;   // the host advances quests; clients get them in 'world' syncs
     if (!force && (this._qT = (this._qT ?? 0) + 1) % 60) return;
     const f = this.save.flags, qs = questState(this.save);
     for (const q of QUESTS) {
       const st = qs[q.id];
       if (st.done) continue;
-      if (!st.started && q.start?.(f)) { st.started = true; this._questBanner('NEW QUEST', q.title, [q.stages[0]?.text, q.why].filter(Boolean).join('\n')); this._trackedQuest = q.id; }
+      const mine = questVisible(q, this.character);
+      if (!st.started && q.start?.(f)) { st.started = true; if (mine) { this._questBanner('NEW QUEST', q.title, [q.stages[0]?.text, q.why].filter(Boolean).join('\n')); this._trackedQuest = q.id; } }
       if (!st.started) continue;
       while (st.stage < q.stages.length && q.stages[st.stage].done(f, this.save)) {
         st.stage++;
-        if (st.stage < q.stages.length) { this._questBanner('QUEST UPDATED', q.title, q.stages[st.stage].text); this._trackedQuest = q.id; }
+        if (st.stage < q.stages.length && mine) { this._questBanner('QUEST UPDATED', q.title, q.stages[st.stage].text); this._trackedQuest = q.id; }
       }
       if (st.stage >= q.stages.length) {
         st.done = true;
-        if (this.mode !== 'client') { this.save.world.money = (this.save.world.money ?? 0) + (q.reward?.money ?? 0); for (const c of Object.values(this.save.party)) c.xp += q.reward?.xp ?? 0; if (q.reward?.item) Inv.add(this.save.party[this.character], q.reward.item); this._partyDirty = true; }
-        this._questBanner('QUEST COMPLETE', q.title, [q.reward?.money ? `+$${q.reward.money}` : '', q.reward?.xp ? `+${q.reward.xp} xp` : '', q.reward?.item ? ITEMS[q.reward.item]?.name : ''].filter(Boolean).join('   '));
+        if (this.mode !== 'client') { this.save.world.money = (this.save.world.money ?? 0) + (q.reward?.money ?? 0); for (const [who, c] of Object.entries(this.save.party)) if (questVisible(q, who)) c.xp += q.reward?.xp ?? 0; if (q.reward?.item) Inv.add(this.save.party[q.owner ?? this.character], q.reward.item); this._partyDirty = true; }
+        if (mine) this._questBanner('QUEST COMPLETE', q.title, [q.reward?.money ? `+$${q.reward.money}` : '', q.reward?.xp ? `+${q.reward.xp} xp` : '', q.reward?.item ? ITEMS[q.reward.item]?.name : ''].filter(Boolean).join('   '));
         if (this._trackedQuest === q.id) this._trackedQuest = null;
-        if (q.reward?.line) this._say(q.reward.line);
+        if (q.reward?.line && mine) this._say(q.reward.line);
       }
     }
   }

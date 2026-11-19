@@ -111,7 +111,7 @@ QUESTS.push({
 });
 
 QUESTS.push({
-  id: 'side.bot', title: 'Get it running', act: 1,
+  id: 'side.bot', title: 'Get it running', act: 1, owner: 'trevor',   // personal: only Trevor's journal, popups and reward
   why: "Trevor builds combat robots. The wedge bot in his room just needs parts, and a robot that rams coderot on its own is worth a lot tonight.",
   start: (f) => f['q.bot.looked'],
   stages: [
@@ -120,6 +120,9 @@ QUESTS.push({
   ],
   reward: { xp: 40, line: 'The bot twitches, spins its bar up to a whine, and rolls off the desk on its own. It parks itself at your heel and waits.' },
 });
+
+// A quest with `owner` is personal: only that roommate sees it and gets its reward. Others are shared.
+export const questVisible = (q, who) => !q.owner || q.owner === who;
 
 export function questState(save) {
   const s = (save.world.quests ??= {});
