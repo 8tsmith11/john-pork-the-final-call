@@ -650,6 +650,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'buy') this._buy(this._charOf(peer), msg.shop, msg.idx);
         if (msg.t === 'sell') this._sell(this._charOf(peer), msg.slot | 0);
         if (msg.t === 'sendMoney') this._sendMoney(this._charOf(peer), String(msg.to), msg.n | 0);
+        if (msg.t === 'jobs') this._jobBoard(this._charOf(peer));
         if (msg.t === 'scooter') this._scooter(peer);
       });
       on('leave', (peer) => {
@@ -914,7 +915,7 @@ export class WorldScene extends Phaser.Scene {
   // Host -> clients: flags and quest progress, whenever they change (checked twice a second).
   _broadcastWorld() {
     if (this.mode !== 'host') return;
-    const msg = { t: 'world', flags: this.save.flags, quests: questState(this.save), guide: this._guide(), drops: this.save.world.drops ?? [] };
+    const msg = { t: 'world', flags: this.save.flags, quests: questState(this.save), guide: this._guide(), drops: this.save.world.drops ?? [], jobs: this.save.world.jobs };
     const sig = JSON.stringify(msg);
     if (sig === this._worldSig) return;
     this._worldSig = sig; this.net.broadcast(msg);
@@ -924,6 +925,7 @@ export class WorldScene extends Phaser.Scene {
     Object.assign(this.save.flags, msg.flags ?? {});
     if (msg.guide) this.save.world.guide = msg.guide;
     if (msg.drops) this.save.world.drops = msg.drops;   // items on the floor (src/game/guitarStands.js)
+    if (msg.jobs) this.save.world.jobs = msg.jobs;      // the host's bounty board
     this._drawLevers();
     this.save.world.quests = msg.quests ?? this.save.world.quests;
     const now = questState(this.save);
@@ -1333,10 +1335,10 @@ export class WorldScene extends Phaser.Scene {
     while (J.open.length < OPEN_JOBS) J.open.push(makeJob(this.save.world.seed, J.next++));
     return J;
   }
-  _jobDone(job) {
+  _jobDone(job, who = this.character) {
     if (job.type === 'nest') return (job.killed ?? 0) >= job.spawns.length;
     if (job.type === 'fish') return (job.caught ?? 0) >= job.qty;
-    return Inv.count(this.save.party[this.character], job.item) >= job.qty;
+    return Inv.count(this.save.party[who], job.item) >= job.qty;
   }
   _jobEnemies() {
     const out = {};
@@ -1344,17 +1346,18 @@ export class WorldScene extends Phaser.Scene {
     return out;
   }
   /** Host: turn in finished jobs (money to whoever turns in, xp to everyone), post new ones, show the board. */
-  _jobBoard() {
+  _jobBoard(who = this.character) {
     const J = this._jobs(), es = getLang() === 'es', paid = [];
     if (this.mode !== 'client') {
       for (const job of [...J.open]) {
-        if (!this._jobDone(job)) continue;
-        if (job.type === 'gather') Inv.remove(this.save.party[this.character], job.item, job.qty);
-        W.addMoney(this.save, this.character, job.reward.money); this._grantXp(job.reward.xp);
+        if (!this._jobDone(job, who)) continue;
+        if (job.type === 'gather') Inv.remove(this.save.party[who], job.item, job.qty);
+        W.addMoney(this.save, who, job.reward.money); this._grantXp(job.reward.xp);
         J.open.splice(J.open.indexOf(job), 1); paid.push(`+$${job.reward.money}  +${job.reward.xp} xp`);
       }
-      this._jobs(); this.sim.jobEnemies = this._jobEnemies(); this._syncParty();
+      this._jobs(); this.sim.jobEnemies = this._jobEnemies(); this._syncParty();   // the 500 ms world broadcast carries the board to clients
     }
+    if (who !== this.character) return;   // a client's turn-in: they see the result from the world sync
     if (paid.length) sfx('pickup');
     const head = paid.length ? `${es ? 'Pagado' : 'Paid'}: ${paid.join(' · ')}\n\n` : '';
     this._say(head + J.open.map((j) => `${this._jobDone(j) ? '✓' : '·'} ${jobLine(j, es)}`).join('\n'));
@@ -2179,7 +2182,7 @@ export class WorldScene extends Phaser.Scene {
       this._say((near.text ?? '') + '\n\nYou find the reset and lean on it. The pump coughs, catches, and starts pulling water. Somewhere south, a long gurgle. The flooded bay is draining.'); return;
     }
     if (near.action === 'tv') { this._say(this._newsLine()); return; }
-    if (near.action === 'jobs') { this._jobBoard(); return; }
+    if (near.action === 'jobs') { if (this.mode === 'client') this.net.send({ t: 'jobs' }); this._jobBoard(); return; }
     if (near.action === 'shop') { this.gameMenu.show(`shop:${near.shop}`); return; }
     if (near.action === 'quests') { this.gameMenu.show('quests'); return; }
     if (near.action === 'pages') { if (near.flag && !this.save.flags[near.flag]) this._flag(near.flag, true); const n = (this._pageIdx[near.id] = ((this._pageIdx[near.id] ?? -1) + 1) % near.pages.length); this._say(near.pages[n] + (near.pages.length > 1 ? `\n\n[E again: ${n + 1}/${near.pages.length}]` : '')); return; }
