@@ -645,7 +645,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'use') { this._useWhat = msg.id ?? null; this._use(this._charOf(peer), peer); }
         if (msg.t === 'morph') this._morph(peer);
         if (msg.t === 'search') { const o = this.map.objects.find((x) => x.id === msg.id && x.loot); if (o) this._search(o, this._charOf(peer)); }
-        if (msg.t === 'zip') { const o = this.map.objects.find((x) => x.id === msg.id && x.zip); if (o) this._zip(o); }
+        if (msg.t === 'zip') { const o = this.map.objects.find((x) => x.id === msg.id && x.zip); if (o) this._zip(o, peer); }
         if (msg.t === 'useSlot') { this._useSlot = msg.i | 0; this._use(this._charOf(peer), peer); }
         if (msg.t === 'move' && this.save.party[this._charOf(peer)]) { Inv.moveSlot(this.save.party[this._charOf(peer)], msg.a | 0, msg.b | 0, !!msg.half); this._syncParty(); }
         if (msg.t === 'buy') this._buy(this._charOf(peer), msg.shop, msg.idx);
@@ -1225,19 +1225,20 @@ export class WorldScene extends Phaser.Scene {
 
   // Hidden mechanic (fast travel): ziplines. E at an anchor and the party rides the cable to the
   // other end. The first ride is a secret. Host-authoritative: the sim positions move.
-  _zip(o) {
+  // Only the player who grabs the cable rides it; everyone else stays free (AI companions just follow).
+  _zip(o, riderId = this.localId) {
     if (this.mode === 'client') { this.net.send({ t: 'zip', id: o.id }); return; }
-    if (this._zipping) return;
+    const rider = this.sim.players.get(riderId);
+    if (!rider || rider.downed || (this._zipping ??= new Set()).has(riderId)) return;
     const [tx, ty] = o.zip, x1 = tx * TILE + 8, y1 = ty * TILE + 8;
-    const riders = [...this.sim.players.values()].filter((p) => !p.downed);
-    const from = riders.map((p) => ({ p, x: p.x, y: p.y }));
-    this._zipping = true; sfx('swing');
+    const from = [{ p: rider, x: rider.x, y: rider.y }];
+    this._zipping.add(riderId); sfx('swing');
     if (!this.save.flags['secrets.zipline.found']) { this._flag('secrets.zipline.found', true); this._toast('★ Secret: the zipline (fast travel across the plaza)'); }
     const t0 = this.time.now, dur = 1400;
     const tick = this.time.addEvent({ delay: 16, loop: true, callback: () => {
       const k = Math.min(1, (this.time.now - t0) / dur), e = k * k * (3 - 2 * k);
-      from.forEach(({ p, x, y }, i) => { p.x = x + (x1 + (i - 1) * 10 - x) * e; p.y = y + (y1 - y) * e - Math.sin(Math.PI * k) * 6; p.vx = p.vy = 0; });
-      if (k >= 1) { tick.remove(); this._zipping = false; }
+      from.forEach(({ p, x, y }) => { p.x = x + (x1 - x) * e; p.y = y + (y1 - y) * e - Math.sin(Math.PI * k) * 6; p.vx = p.vy = 0; });
+      if (k >= 1) { tick.remove(); this._zipping.delete(riderId); }
     } });
   }
 
