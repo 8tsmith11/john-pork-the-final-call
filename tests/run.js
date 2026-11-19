@@ -785,6 +785,31 @@ test('arrivals: the elevator lands you at the elevator, and holding the key you 
   assert.ok(n > 0, 'pressing W again uses the stairs');
 });
 
+const LB = await import('../src/content/maps/builder.js');
+const CB = await import('../src/content/builders.js');
+test('level builder: text grids and rooms become valid maps (doors walled, doorways merged, legend things placed)', () => {
+  const m = LB.fromGrid({ id: 'lb_demo', name: 'Demo', fill: '.', rows: ['##########', '#@....E..#', '#..####..#', '#..#..#..#', '#.....N..#', '####DD####'],
+    legend: { E: { enemy: 'enemy.rotling' }, '@': { spawn: true }, N: { npc: 'npc.lb_demo', label: 'Demo', text: '[scaffold] hi' }, D: { exit: 'metro_plaza', label: 'Out', stepOn: true } } }).build();
+  assert.equal(m.enemies.length, 1); assert.equal(m.spawns.length, 1);
+  const exits = m.objects.filter((o) => o.action === 'exit'); assert.equal(exits.length, 1); assert.equal(exits[0].w, 2);
+  assert.ok(!m.solid(4, 5) && !m.solid(5, 5), 'a walk-on doorway stays walkable');
+  const r = LB.level({ id: 'lb_room', name: 'Room', w: 12, h: 8 }).room(2, 1, 6, 5, { floor: '.', door: { side: 's', at: 2, label: 'Door' } }).build();
+  const d = r.objects.find((o) => o.door); assert.ok(d && r.solid(d.x - 1, d.y) && r.solid(d.x + 1, d.y), 'a room door has wall on both sides');
+});
+test('content builders: enemies, bosses, NPCs and items validate their specs and produce the game\'s shapes', () => {
+  const [eid, e] = CB.defineEnemy({ id: 'enemy.test_bug', name: 'Test Bug', hp: 30, speed: 40, damage: 8, ai: 'lunge' });
+  assert.equal(eid, 'enemy.test_bug'); assert.ok(e.xp > 0 && e.radius > 0);
+  assert.throws(() => CB.defineEnemy({ id: 'enemy.x', name: 'X', hp: 1, speed: 1, damage: 1, ai: 'teleport' }), /ai must be/);
+  const boss = CB.defineBoss({ name: 'TEST BOSS', hp: 500, phases: [['charge', 'spray'], ['charge', 'lane'], ['ring', 'lane', 'shock']], mini: true });
+  const solo = boss(1), trio = boss(3); assert.equal(solo.maxHp, 500); assert.ok(trio.maxHp > solo.maxHp); assert.equal(solo.pool.length, 3); assert.ok(solo.phaseGate);
+  assert.throws(() => CB.defineBoss({ name: 'B', hp: 100, phases: [['charge'], ['nope'], ['ring']] }), /unknown pattern/);
+  const n = CB.defineNpc({ id: 'npc.test_guy', x: 3, y: 4, label: 'Guy', text: '[scaffold] hey', mood: 'pace', hi: ['Hey.'] });
+  assert.ok(n.object.npc && n.life.mood === 'pace');
+  const it = CB.defineItem({ id: 'item.test_spoon', name: 'Spoon', slot: 'weapon', text: 'A spoon.', swing: { damage: 5, range: 12, cooldown: 0.4 }, price: 3 });
+  assert.equal(it[0], 'item.test_spoon'); assert.deepEqual(it.shop, { item: 'item.test_spoon', price: 3 });
+  assert.throws(() => CB.defineItem({ id: 'item.y', name: 'Y', slot: 'hat', text: 'y' }), /slot must be/);
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
