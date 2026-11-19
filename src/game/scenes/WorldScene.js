@@ -2472,7 +2472,8 @@ export class WorldScene extends Phaser.Scene {
       this._nextIdleBark = this.time.now + 60000 + Math.random() * 50000;   // about once every minute and a half
       const up = snap.players.filter((p) => !p.dn);
       const p = up[Math.floor(Math.random() * up.length)];
-      if (p) this._bark(p.id, this._freshBark(p.mo && BARKS.idleMorph[p.c] ? BARKS.idleMorph : BARKS.idle, p.c));
+      const rare = BARKS.idleRare?.[p?.c] && Math.random() < 0.125;   // nicknames stay rare (Trevor)
+      if (p) this._bark(p.id, this._freshBark(rare ? BARKS.idleRare : p.mo && BARKS.idleMorph[p.c] ? BARKS.idleMorph : BARKS.idle, p.c));
     }
   }
 

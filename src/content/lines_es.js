@@ -27,7 +27,7 @@ export const LINES_ES = {
   'I hate 245 lab. The gonman also hates 245 lab.': 'Odio el laboratorio 245. El gonman también odia el laboratorio 245.',
   'If Juan Puerco calls, I\'m in the shower.': 'Si llama Juan Puerco, estoy en la ducha.',
   'Juan Puerco hasn\'t called in a while. I don\'t like it.': 'Juan Puerco no llama hace rato. No me gusta.',
-  'Nobody pick up for Juan Puerco without me.': 'Que nadie le conteste a Juan Puerco sin mí.',
+  'Nobody pick up for Juan Cerdo without me.': 'Que nadie le conteste a Juan Cerdo sin mí.',
   'Trevor keeps calling him Juan Puerco. It\'s catching.': 'Trevor le sigue diciendo Juan Puerco. Se contagia.',
   // barks: kills
   'Aster pros.': 'Pros de Aster.',

@@ -1142,9 +1142,9 @@ Pubvprf:
 
 #### vs fcrnxre=znahry
 
-**GERIBE:** Lbh qrpyvarq Whna Chrepb.
+**GERIBE:** Lbh qrpyvarq Wbua Cbex.
 
-> rf: Erpunmnfgr n Whna Chrepb.
+> rf: Erpunmnfgr n Wbua Cbex.
 
 **ZNAHRY:** V cnavpxrq.
 
