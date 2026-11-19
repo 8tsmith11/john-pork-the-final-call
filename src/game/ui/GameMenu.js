@@ -152,6 +152,15 @@ export class GameMenu {
     const slotXY = (i) => i < 9 ? [gx + i * (S + GAP), gy + 3 * (S + GAP) + 10] : [gx + ((i - 9) % 9) * (S + GAP), gy + Math.floor((i - 9) / 9) * (S + GAP)];
     this._t(gx, gy + 3 * (S + GAP) + 6, 'HOTBAR  (keys 1-9)', F(6, C.sub)).setOrigin(0, 1);
     const eq = new Set(Object.values(c.equipped || {}));
+    // Holding a stack? Click outside the panel to drop it on the floor (src/game/guitarStands.js).
+    // The panel itself swallows clicks so a near miss on a slot doesn't drop anything.
+    if (this.held != null) {
+      const out = s.add.zone(0, 0, VIEW.w, VIEW.h).setOrigin(0).setInteractive();
+      out.on('pointerdown', () => { const i = this.held, half = this.heldHalf; this.held = null; this.heldHalf = false; if (inv[i]) s.stands?.drop(i, !half); this.refresh(); });
+      const panel = s.add.zone(b.x, b.y, b.w, b.h).setOrigin(0).setInteractive();
+      this.root.addAt(out, 1); this.root.addAt(panel, 2);   // right above the backdrop, under every slot and tab
+      this._t(b.x + b.w / 2, b.y + b.h + 3, 'click outside to drop it', F(6, C.hi)).setOrigin(0.5, 0);
+    }
     for (let i = 0; i < 36; i++) {
       const [x, y] = slotXY(i), it = inv[i], held = this.held === i;
       g.fillStyle(i < 9 ? 0x1a1d30 : 0x151827).fillRect(x, y, S, S);
@@ -168,7 +177,7 @@ export class GameMenu {
         if (right && !p.event?.shiftKey) { const def = ITEMS[it.id]; if (def?.slot === 'material' || it.qty > 1 && def?.slot !== 'consumable') { this.held = i; this.heldHalf = true; } else s.menuUseSlot(i); return this.refresh(); }
         this.held = i; this.heldHalf = false; this.refresh();
       });
-      z.on('pointerover', () => { this.hover = it ? { id: it.id, qty: it.qty } : null; this._drawTip(); });
+      z.on('pointerover', () => { this.hover = it ? { id: it.id, qty: it.qty, i } : null; this._drawTip(); });
       this.root.add(z);
     }
     // the held stack follows the cursor
@@ -180,7 +189,7 @@ export class GameMenu {
     }
     // tooltip area
     this.tipY = gy + 4 * (S + GAP) + 16; this.tipX = gx; this.tipW = b.x + b.w - gx - 10;
-    this._t(gx, b.y + b.h - 12, 'click: pick up / place · right click: use / equip / half', F(6, '#4a5175'));
+    this._t(gx, b.y + b.h - 12, 'click: pick up / place · right: use / half · G / shift+G: drop', F(6, '#4a5175'));
     this._drawTip();
   }
 
@@ -416,8 +425,8 @@ export class GameMenu {
     const b = this.box;
     const rows = [['Move', 'WASD / arrows (diagonals work)'], ['Dash', 'SPACE / SHIFT (uses stamina)'], ['Hit', 'Left click'],
       ['Shoot', 'Right click, once you have a ranged weapon'], ['Use / talk', 'E when close; walk into doors'], ['Dialogue', 'E (or SPACE) to continue; click or 1-6 to choose'],
-      ['Menu', 'ESC   Inventory I   Quests J   Skills K   Map TAB'], ['Hotbar', '1-9 use or equip that slot'], ['Ability', 'R: Trevor Riff · Manuel Decoy Bust · Michael Ping'], ['Heal / Morph', 'H (mate thermos)   M (when unlocked)'], ['Scooter', 'Q outdoors, once you own one (Delroy\'s, on the plaza)'], ['Phone', 'F to answer when it rings']];
-    rows.forEach(([k, v], i) => { this._t(b.x + 14, b.y + 30 + i * 15, k, F(8, C.hi)); this._t(b.x + 110, b.y + 30 + i * 15, v, F(8)); });
+      ['Menu', 'ESC   Inventory I   Quests J   Skills K   Map TAB'], ['Hotbar', '1-9 use or equip that slot'], ['Ability', 'R: Trevor Riff · Manuel Decoy Bust · Michael Ping'], ['Heal / Morph', 'H (mate thermos)   M (when unlocked)'], ['Scooter', 'Q outdoors, once you own one (Delroy\'s, on the plaza)'], ['Drop', 'G drops one of what\'s in hand, SHIFT+G the stack; E picks up'], ['Phone', 'F to answer when it rings']];
+    rows.forEach(([k, v], i) => { this._t(b.x + 14, b.y + 30 + i * 14, k, F(8, C.hi)); this._t(b.x + 110, b.y + 30 + i * 14, v, F(8)); });
   }
 
   _system() {

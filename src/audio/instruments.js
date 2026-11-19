@@ -3,7 +3,8 @@
 //   1. WHO plays decides how it sounds: Trevor is amazing, Michael is mediocre, Manuel is always out
 //      of tune. This applies to instruments only. Record players and the soundtrack are unaffected.
 //   2. The game's music is 8-bit, except Trevor: he plays real-sounding rock (plucked-string
-//      synthesis through an amp, double-tracked, with a drum kit).
+//      synthesis through an amp, double-tracked, with a drum kit). One exception for Michael: on an
+//      electric guitar he plays Twinkle Twinkle Little Star through an amp (twinkleSong), not 8-bit.
 // startInstrument() returns { stop, setVolume } and loops until stopped.
 
 const m2f = (m) => 440 * 2 ** ((m - 69) / 12);
@@ -231,6 +232,52 @@ function lullabySong(ctx, bus, electric, sloppy) {
   };
 }
 
+// MICHAEL ON TREVOR'S ELECTRIC: "Twinkle Twinkle Little Star" (traditional, public domain), in C at
+// 104 bpm, the only thing he can play on an electric (Michael's request). Unlike his acoustic lullaby
+// this one is a real-sounding guitar through a cranked amp: plucked lead, palm-muted power-chord
+// chugs on the eighths. Still mediocre: late or early, the odd wrong fret, dropped chugs, and now
+// and then a squeal of feedback because he stands too close to the amp. It still counts as his
+// lullaby (songOf stays 'lullaby'), so it puts listeners to sleep the same way.
+function twinkleSong(ctx, bus, sloppy) {
+  const bpm = 104, stepSec = 60 / bpm / 2;              // eighth notes, 8 per bar
+  const L1 = [60, 60, 67, 67, 69, 69, 67, 0, 65, 65, 64, 64, 62, 62, 60, 0];   // twinkle twinkle little star / how I wonder what you are
+  const L2 = [67, 67, 65, 65, 64, 64, 62, 0];                                  // up above the world so high (and again: like a diamond)
+  const beats = [...L1, ...L2, ...L2, ...L1];                                 // 48 quarter notes, 0 = the held half note
+  const C = 48, F = 41, G = 43;
+  const H1 = [C, C, F, C, F, C, G, C], H2 = [C, F, C, G];
+  const halves = [...H1, ...H2, ...H2, ...H1];                                // one power chord per half bar
+  const steps = beats.length * 2;
+  return {
+    stepSec, steps,
+    play(i, t) {
+      const jit = () => (sloppy ? (Math.random() * 2 - 1) * 0.03 : 0);
+      const wrong = (n) => (sloppy && Math.random() < 0.06 ? n + (Math.random() < 0.5 ? -1 : 1) * (Math.random() < 0.7 ? 1 : 2) : n);
+      // lead: one note per beat; a 0 means the note before it rings on
+      if (i % 2 === 0) {
+        const b = i / 2, n = beats[b];
+        if (n && !(sloppy && Math.random() < 0.04)) {
+          const held = beats[b + 1] === 0 ? 2 : 1;
+          playBuf(ctx, pluck(ctx, wrong(n) + 12, held * 2 * stepSec + 0.3, { bright: 0.85, damp: 0.998 }), t + jit(), bus.lead, 0.6);
+          if (sloppy && Math.random() < 0.07) chipNoise(ctx, bus.lead, t + 0.01, 0.05, 0.05, 1800);   // pick scrape
+        }
+      }
+      // rhythm: palm-muted root + fifth on every eighth, an open chord on each half-bar downbeat
+      const root = halves[Math.floor(i / 4)], down = i % 4 === 0;
+      if (!(sloppy && !down && Math.random() < 0.08)) {
+        const dur = down ? 4 * stepSec + 0.1 : 0.14, damp = down ? 0.997 : 0.95;
+        for (const [k, n] of [root, root + 7, root + 12].entries()) playBuf(ctx, pluck(ctx, n, dur, { bright: down ? 0.7 : 0.9, damp }), t + jit() + k * 0.005, bus.rhythm, down ? 0.4 : 0.5);
+      }
+      // feedback squeal, once in a while, on a bar line
+      if (sloppy && i % 8 === 0 && Math.random() < 0.06) {
+        const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine';
+        o.frequency.setValueAtTime(m2f(91), t); o.frequency.linearRampToValueAtTime(m2f(92), t + 0.6);
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.05, t + 0.25); g.gain.exponentialRampToValueAtTime(0.0005, t + 0.9);
+        o.connect(g); g.connect(bus.lead); o.start(t); o.stop(t + 1);
+      }
+    },
+  };
+}
+
 // MANUEL, "Mate at Dawn" (his own tune), 8-bit, and always out of tune: every string is tuned
 // wrong (fixed for the whole performance, so the chords beat against each other), the pitch drifts,
 // and a fifth of his notes land a semitone off.
@@ -303,6 +350,20 @@ export function startInstrument(ctx, dest, { who, instrument = 'acoustic', volum
       const rv = reverb(ctx, 1.8, 2.4), rvg = node(0.25); air.connect(rv); rv.connect(rvg); rvg.connect(out);
     }
     seq = rockSong(ctx, bus, electric);
+  } else if (who === 'michael' && electric) {
+    // Michael on an electric: Twinkle Twinkle through one overdriven amp (see twinkleSong).
+    const amp = (drive, lvl) => {
+      const i = node(1), g = node(2.4), s = ctx.createWaveShaper(); s.curve = driveCurve(drive); s.oversample = '4x';
+      const h = ctx.createBiquadFilter(); h.type = 'highpass'; h.frequency.value = 90;
+      const c = ctx.createBiquadFilter(); c.type = 'lowpass'; c.frequency.value = 4000; c.Q.value = 0.8;
+      const out2 = node(lvl);
+      i.connect(g); g.connect(s); s.connect(h); h.connect(c); c.connect(out2); out2.connect(out);
+      return { i, out2 };
+    };
+    const lead = amp(10, 0.11), rhythm = amp(16, 0.075);
+    bus.lead = lead.i; bus.rhythm = rhythm.i;
+    const rv = reverb(ctx, 1.4, 3), rvg = node(0.2); lead.out2.connect(rv); rhythm.out2.connect(rv); rv.connect(rvg); rvg.connect(out);
+    seq = twinkleSong(ctx, bus, skill !== 'amazing');
   } else {
     // 8-bit performers get a plain chip mix with a short slap echo.
     bus.lead = node(1); bus.bass = node(1);

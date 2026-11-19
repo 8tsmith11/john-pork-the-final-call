@@ -6,7 +6,7 @@
 //   - Once she's with the party she walks beside her roommate, and the host gives every player near
 //     her the buff.
 //   - Manuelita joins when the story sets REUNITED_FLAG; her reunion plays once, shared.
-//   - Each new world starts Trevor with the electric guitar and Michael with the acoustic.
+//   - The guitars start on their stands in 631, not in anyone's bag (src/game/guitarStands.js).
 // Debug: ?romance=debug reunites Manuelita and hands every roommate flowers, chocolates and a guitar.
 import { MAPS } from '../content/maps/index.js';
 import { ITEMS, SHOPS } from '../content/items.js';
@@ -37,7 +37,6 @@ export class Romance {
     this.songT = 0;
     this._applied = new Map();    // host: player id -> aura key last applied
     if (scene.mode !== 'client') {
-      this._starterGuitars();
       this._debug();
       scene.time.addEvent({ delay: 500, loop: true, callback: () => this._aura() });
       if (scene.mode === 'host') scene.time.addEvent({ delay: 2000, loop: true, callback: () => this._broadcastFlags() });
@@ -45,15 +44,6 @@ export class Romance {
   }
 
   get flags() { return this.s.save.flags; }
-
-  _starterGuitars() {
-    const s = this.s, f = this.flags;
-    if (f['act1.romance.starterGuitars']) return;
-    Inv.add(s.save.party.trevor, 'item.guitar_electric');
-    Inv.add(s.save.party.michael, 'item.guitar_acoustic');
-    f['act1.romance.starterGuitars'] = true;
-    s._syncParty?.();
-  }
 
   _debug() {
     const q = new URLSearchParams(globalThis.location?.search ?? '').get('romance');
