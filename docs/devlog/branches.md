@@ -40,6 +40,9 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 | `jp/balance-nodeflect` | GitHub | Merged (tip `a5fb881`) |
 | `jp/call-card` | GitHub | Landed by copy (tip `45b607a`; the same change is on `main`) |
 | `jp/call-portrait` | GitHub | Landed by copy (tip `4aec474`; the same change is on `main`) |
+| `bio/art-check` | GitHub | Merged in `623a592` (PR #5) |
+| `bio/es-audit` | GitHub | Merged in `446f89a` (PR #6) |
+| `bio/party-health` | GitHub | Merged in `f365a01` (PR #7) |
 
 ## Deleted
 
