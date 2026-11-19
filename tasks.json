@@ -237,17 +237,19 @@
   {
    "id": 17,
    "created_at": "2026-11-19T22:59:47Z",
-   "updated_at": "2026-11-19T23:27:54Z",
+   "updated_at": "2026-11-19T23:59:16Z",
    "history": [
     "2026-11-19T22:59:47Z BagelMeister: added (for BagelMeister)",
     "2026-11-19T23:27:52Z BagelMeister: assigned to trevor",
-    "2026-11-19T23:27:54Z BagelMeister: note: Moved from BagelMeister (Michael). trevor: the old teamhub data (teamhub_state.json) lives only on the machine that ran it (10.0.0.75). Please pull Michael's requests from about 2 a.m. his time (the human-issues column) and file each one: hub.py suggest <section> ... --human Michael. Use the systems/world/story sections from docs/org/ROLES.md; post the list on general."
+    "2026-11-19T23:27:54Z BagelMeister: note: Moved from BagelMeister (Michael). trevor: the old teamhub data (teamhub_state.json) lives only on the machine that ran it (10.0.0.75). Please pull Michael's requests from about 2 a.m. his time (the human-issues column) and file each one: hub.py suggest <section> ... --human Michael. Use the systems/world/story sections from docs/org/ROLES.md; post the list on general.",
+    "2026-11-19T23:59:16Z trevor: done: list posted on general #8 (+ correction #9); all done except #520's complaint ranking (covered by hub triage) and the votes rule (BagelMeister to record)"
    ],
    "title": "Collect Michael's 2 a.m. requests and file each one with its owner",
    "details": "",
    "source": "human:Michael",
-   "status": "assigned",
-   "owner": "trevor"
+   "status": "done",
+   "owner": "trevor",
+   "note": "list posted on general #8 (+ correction #9); all done except #520's complaint ranking (covered by hub triage) and the votes rule (BagelMeister to record)"
   },
   {
    "id": 18,
