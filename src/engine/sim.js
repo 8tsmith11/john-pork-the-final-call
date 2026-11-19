@@ -604,9 +604,16 @@ export class Sim {
       if (!this._hitsBox(nx, ny, 6, 4)) { this.events.push({ t: 'blink', x: e.x, y: e.y }); e.x = nx; e.y = ny; }
     }
     e.hp -= dmg; e.hurtT = 0.12;
-    // Phase gate (bosses with def.phaseGate): HP can't fall past the end of the current phase until the boss
-    // has shown at least one tell in it, so burst damage can't skip a phase before you've seen it.
-    if (e.boss && e.def?.phaseGate && !(e.phaseTells > 0) && e.phase < 3) e.hp = Math.max(e.hp, Math.ceil(e.def.hp * (e.phase === 1 ? 0.66 : 0.33)));
+    // Stop damage at the end of the earliest phase that hasn't shown an attack tell.
+    if (e.boss && e.def?.phaseGate) {
+      const untoldPhase = e.phase + (e.phaseTells > 0 ? 1 : 0);
+      if (untoldPhase < 3) {
+        const threshold = untoldPhase === 1 ? 0.66 : 0.33;
+        e.hp = Math.max(e.hp, Math.ceil(e.def.hp * threshold));
+      } else if (untoldPhase === 3) {
+        e.hp = Math.max(e.hp, 1);
+      }
+    }
     if (e.boss) { kx *= 0.15; ky *= 0.15; const f = e.hp / e.def.hp; const ph = f < 0.33 ? 3 : f < 0.66 ? 2 : 1;
       if (ph !== e.phase) { e.phase = ph; e.phaseTells = 0; this.events.push({ t: 'phase', phase: ph }); } }
     e.kx = kx; e.ky = ky; if (by) e.lastHitBy = by;
