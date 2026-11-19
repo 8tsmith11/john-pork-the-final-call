@@ -12,7 +12,7 @@ const mediaVolumes = new Map();
 
 function ac() {
   if (!ctx) {
-    const AC = window.AudioContext || window.webkitAudioContext;
+    const AC = typeof window !== "undefined" && (window.AudioContext || window.webkitAudioContext);   // none outside a browser (tests): sound is a no-op
     if (!AC) return null;
     ctx = new AC(); master = ctx.createGain(); master.gain.value = 0.25 * Settings.get('sfx');
     // ?mute in the URL: everything still runs, nothing reaches the speakers (for testing next to people).

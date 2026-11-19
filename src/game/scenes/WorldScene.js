@@ -647,6 +647,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'rest') this._restAtSave(peer, msg.obj);
         if (msg.t === 'use') { this._useWhat = msg.id ?? null; this._use(this._charOf(peer), peer); }
         if (msg.t === 'morph') this._morph(peer);
+        if (msg.t === 'puzzle') { const o = this.map.objects.find((x) => x.id === msg.id), pz = o && puzzleFor(o.id); if (pz) this._usePuzzle(pz, o, this._charOf(peer), peer); }   // puzzle kit, host side
         if (msg.t === 'search') { const o = this.map.objects.find((x) => x.id === msg.id && x.loot); if (o) this._search(o, this._charOf(peer)); }
         if (msg.t === 'zip') { const o = this.map.objects.find((x) => x.id === msg.id && x.zip); if (o) this._zip(o, peer); }
         if (msg.t === 'useSlot') { this._useSlot = msg.i | 0; this._use(this._charOf(peer), peer); }
@@ -669,7 +670,7 @@ export class WorldScene extends Phaser.Scene {
       on('msg', (msg) => {
         if (this.shared?.onMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg)) return;
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
-        if (msg.t === 'say') this._say(msg.text);
+        if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text);
         if (msg.t === 'caption') this._caption(msg.text);
         if (msg.t === 'reload') { this.scene.restart({ mode: 'client', net: this.net, save: msg.save, character: this.character }); return; }
         if (msg.t === 'party') { this.save.party = msg.party; this._refreshMenu(); }   // wallets ride along in party
@@ -1519,16 +1520,26 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // Puzzle kit (src/content/puzzleKit.js): flags, line and reward come from the spec; this only applies them.
-  _usePuzzle(p, o) {
-    const r = usePuzzle(p, o.id, this.save.flags, { seed: this.save.world.seed, t: this.time.now / 1000, lang: getLang() });
-    for (const [k, v] of Object.entries(r.set)) this._flag(k, v);
+  // Co-op (Biohacker's review): the host is the only one who runs a puzzle. A guest sends { t: 'puzzle', id }, the
+  // host sets the flags (its world broadcast carries them to everyone), gives the reward once, to the roommate who
+  // solved it, and sends the line back in both languages.
+  _usePuzzle(p, o, who = this.character, peer = this.localId) {
+    if (this.mode === 'client') { this.net.send({ t: 'puzzle', id: o.id }); return; }
+    const ctx = { seed: this.save.world.seed, t: this.time.now / 1000 };
+    const r = usePuzzle(p, o.id, this.save.flags, { ...ctx, lang: 'en' }), rEs = usePuzzle(p, o.id, this.save.flags, { ...ctx, lang: 'es' });
+    for (const [k, v] of Object.entries(r.set)) this.save.flags[k] = v;
     sfx(r.wrong ? 'hit' : 'swing');
     if (r.solved) {
-      if (r.reward.item) this._grant(r.reward.item);
-      if (r.reward.money) { W.addMoney(this.save, this.character, r.reward.money); this._partyDirty = true; }
+      const pc = this.save.party[who];
+      if (r.reward.item && pc) { Inv.add(pc, r.reward.item); this._toast(`★ ${ITEMS[r.reward.item]?.name ?? r.reward.item}`); }
+      if (r.reward.money) W.addMoney(this.save, who, r.reward.money);
+      this._syncParty?.(); this._partyDirty = true;
       this.cameras.main.shake(300, 0.005); this._tickQuests(true);
     }
-    this._say(`${tr(o.text ?? o.label ?? '')}\n\n${r.say}`);
+    const base = o.text ?? o.label ?? '';
+    const text = `${base}\n\n${r.say}`, textEs = `${tr(base)}\n\n${rEs.say}`;
+    if (peer === this.localId) this._say(getLang() === 'es' ? textEs : text);
+    else this.net?.send(peer, { t: 'say', text, textEs });
   }
 
   // Hard optional: turn Manuel's busts to face the flag, in the right order.

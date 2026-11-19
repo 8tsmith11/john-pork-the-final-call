@@ -1013,6 +1013,32 @@ try {
   if (savedPhaserForCraft === undefined) delete globalThis.Phaser;
   else globalThis.Phaser = savedPhaserForCraft;
 }
+test('puzzle kit in co-op: a guest\'s move runs on the host, progress stays on the host, the reward goes once to the guest who solved it', async () => {
+  const { PUZZLES } = await import('../src/content/puzzles.js');
+  const pz = PK.definePuzzle({ id: 'coop_t', kind: 'cycle', parts: ['obj.a', 'obj.b'], states: ['0', '1'], answer: ['1', '1'], reward: { text: 'done', textEs: 'listo', item: 'item.mat_scrap', money: 9 } });
+  PUZZLES.push(pz);
+  try {
+    const party = { trevor: newSave({ seed: 'pz', rolls: {}, gameVersion: 't' }).party.trevor, michael: newSave({ seed: 'pz', rolls: {}, gameVersion: 't' }).party.michael };
+    const sent = [], said = [];
+    const host = { mode: 'host', character: 'trevor', localId: 'host', save: { flags: {}, world: { seed: 'pz' }, party }, time: { now: 0 }, cameras: { main: { shake() {} } },
+      net: { send: (peer, msg) => sent.push([peer, msg]) }, _say: (t) => said.push(t), _toast() {}, _tickQuests() {}, _syncParty() {} };
+    const objs = { 'obj.a': { id: 'obj.a', label: 'A' }, 'obj.b': { id: 'obj.b', label: 'B' } };
+    const money0 = party.michael.money ?? 0, scrap0 = Inv.count(party.michael, 'item.mat_scrap');
+    CraftWorldScene.prototype._usePuzzle.call(host, pz, objs['obj.a'], 'michael', 'peerM');
+    CraftWorldScene.prototype._usePuzzle.call(host, pz, objs['obj.b'], 'michael', 'peerM');
+    assert.ok(host.save.flags['pz.coop_t.solved'], 'the host keeps the progress and the solve');
+    assert.equal(Inv.count(party.michael, 'item.mat_scrap'), scrap0 + 1); assert.equal((party.michael.money ?? 0), money0 + 9);
+    CraftWorldScene.prototype._usePuzzle.call(host, pz, objs['obj.b'], 'trevor', 'host');
+    assert.equal(Inv.count(party.trevor, 'item.mat_scrap'), 0, 'no second reward after it is solved');
+    assert.ok(sent.every(([peer, m]) => peer === 'peerM' && m.t === 'say' && m.textEs), 'the guest gets the line back, in both languages');
+    assert.equal(said.length, 1, 'the host only shows lines for its own moves');
+    const guestSent = [];
+    const guest = { mode: 'client', net: { send: (m) => guestSent.push(m) } };
+    CraftWorldScene.prototype._usePuzzle.call(guest, pz, objs['obj.a']);
+    assert.deepEqual(guestSent, [{ t: 'puzzle', id: 'obj.a' }], 'a guest only asks the host');
+  } finally { PUZZLES.splice(PUZZLES.indexOf(pz), 1); }
+});
+
 test('regional boss intros preserve the saved Warden name', () => {
   const field = 'act1.boss.wardenName';
   const scene = { mode: 'host', save: { flags: {} }, time: { delayedCall() {} }, _bossIntro() {} };
