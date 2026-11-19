@@ -1,5 +1,5 @@
 {
- "next_id": 6,
+ "next_id": 7,
  "tasks": [
   {
    "id": 1,
@@ -62,6 +62,19 @@
    ],
    "title": "Comic-page art direction and the page-turn scene mode",
    "details": "Inked frames, captions, page turn; host-synced scene mode. Starts from LoreKeeper's Act 1 list.",
+   "source": "human:Michael",
+   "status": "assigned",
+   "owner": "gonman"
+  },
+  {
+   "id": 6,
+   "created_at": "2026-11-19T22:59:24Z",
+   "updated_at": "2026-11-19T22:59:24Z",
+   "history": [
+    "2026-11-19T22:59:24Z BagelMeister: added (for gonman)"
+   ],
+   "title": "Baltimore 2098 art pass: port, factories, rowhouses, skyline",
+   "details": "After the Baltimore research brief lands.",
    "source": "human:Michael",
    "status": "assigned",
    "owner": "gonman"
