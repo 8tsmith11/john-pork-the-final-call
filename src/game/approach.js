@@ -11,6 +11,7 @@ import { sfx } from '../audio/audio.js';
 import { getLang, tr } from '../i18n.js';
 
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const APPROACH_ROWS = 8;
 
 export class Approach {
   constructor(scene) {
@@ -34,7 +35,7 @@ export class Approach {
       .filter((q) => Inv.count(c, q.give.item) > 0)
       .map((q) => ({
         id: `give:${q.id}`,
-        name: `${getLang() === 'es' ? 'Dar' : 'Give'} ${tr(ITEMS[q.give.item].name)} (1)`,
+        name: `${getLang() === 'es' ? 'Entregar' : 'Give'} ${tr(ITEMS[q.give.item].name)} (1)`,
       }));
     const allowed = ALLOWED[this.roleOf(o)];
     return [...handIns, ...APPROACHES.filter((a) => o.approach === false ? a.id === 'talk' : !allowed || allowed.includes(a.id))];
@@ -149,11 +150,14 @@ export class Approach {
     const s = this.s, b = menu.box, o = this.target, who = s.character, c = s.save.party[who];
     if (!o) return;
     const sc = scoresOf(c, who), options = this.options(o);
+    const rows = Math.min(options.length, APPROACH_ROWS);
+    const keys = rows === 1 ? '1' : `1-${rows}`;
+    const choose = getLang() === 'es' ? 'elegir' : 'choose';
     menu._t(b.x + 12, b.y + 8, (o.label ?? '').toUpperCase(), { fontFamily: 'monospace', fontSize: '10px', color: '#ffb347' });
-    menu._t(b.x + b.w - 12, b.y + 8, '[ESC] back', { fontFamily: 'monospace', fontSize: '7px', color: '#9aa3c7' }).setOrigin(1, 0);
+    menu._t(b.x + b.w - 12, b.y + 8, `[${keys}] ${choose}  ${tr('[ESC] back')}`, { fontFamily: 'monospace', fontSize: '7px', color: '#9aa3c7' }).setOrigin(1, 0);
     const wary = (this.wary.get(o.id) ?? 0) > s.time.now;
     menu._t(b.x + 12, b.y + 22, `How do you want to handle this?${wary ? '  (They\'re wary of you right now.)' : ''}`, { fontFamily: 'monospace', fontSize: '7px', color: '#9aa3c7' });
-    const list = menu.scroller.list(`approach:${o.id}`, { n: options.length, per: 8, onPick: (i) => this.choose(options[i].id) });
+    const list = menu.scroller.list(`approach:${o.id}`, { n: options.length, per: APPROACH_ROWS, onPick: (i) => this.choose(options[i].id) });
     this.shownOptions = options.slice(list.first, list.last);
     this.shownOptions.forEach((a, i) => {
       const y = b.y + 36 + i * 24, x = b.x + 12, m = a.ability ? modOf(sc[a.ability]) : null;

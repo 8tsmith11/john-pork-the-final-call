@@ -1324,7 +1324,7 @@ export class WorldScene extends Phaser.Scene {
     const q = this._questHandIns(near, who).find((q) => q.id === questId);
     if (!q || !this.map.objects.includes(near) || (near.goneFlag && this.save.flags[near.goneFlag])
       || this.perf?.asleep(near) || Math.hypot(near.x * TILE + 8 - p.x, near.y * TILE + 8 - p.y) > 34) {
-      say('You can’t hand that in right now.');
+      say("You can't hand that in right now.");
       return;
     }
     if (!Inv.remove(c, q.give.item)) {
