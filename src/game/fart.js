@@ -7,7 +7,7 @@
 // so it needs Michael's own yes (D-007). It stays off until his agent sets MICHAEL_SAYS_YES.
 import { audioOut } from '../audio/audio.js';
 
-export const MICHAEL_SAYS_YES = true;    // Michael said yes in person, next to Manuel (gonman's chat, 2026-11-19); BagelMeister to confirm
+export const MICHAEL_SAYS_YES = false;   // Michael's yes reached us through Manuel's chat, not through BagelMeister. Per the team rule (#457) it counts once BagelMeister confirms it with Michael
 
 const SNIFF_NEAR = 56;                    // px: Michael this close gets the cloud in his nose
 export const FART_LINES = {
