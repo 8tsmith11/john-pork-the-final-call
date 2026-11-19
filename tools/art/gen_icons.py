@@ -163,7 +163,7 @@ D014 = {
     "item.steel_toes": lambda: boot("warm1", "steel"),
     "item.sneakers": lambda: boot("bone", "bone", "tub1").line(5, 11, 9, 11, "tub0").pts("signal", (6, 5), (7, 7)),
     "item.welding_goggles": lambda: I().rect(1, 7, 14, 2, "night3").disc(5, 8, 3, "steel").disc(11, 8, 3, "steel").disc(5, 8, 2, "screen0").disc(11, 8, 2, "screen0").pts("screen2", (4, 7), (10, 7)),
-    "item.rain_parka": lambda: I().disc(8, 4, 3, "warm4").rect(3, 6, 10, 9, "warm4").rect(6, 4, 4, 3, "night2").line(8, 7, 8, 14, "warm3").rect(2, 7, 2, 6, "warm3").rect(12, 7, 2, 6, "warm3"),
+    "item.rain_parka": lambda: I().disc(8, 4, 3, "slicker1").rect(3, 6, 10, 9, "slicker1").rect(6, 4, 4, 3, "night2").line(8, 7, 8, 14, "slicker0").rect(2, 7, 2, 6, "slicker0").rect(12, 7, 2, 6, "slicker0"),
     "item.work_gloves": lambda: glove("warm3", "warm1"),
     "item.wool_socks": lambda: sock("soft1", "bone", "soft0"),
     "item.pack_coolant": lambda: pack("concrete2", "concrete1").line(3, 5, 3, 13, "screen1").line(12, 5, 12, 13, "screen2").pts("screen2", (8, 10)),

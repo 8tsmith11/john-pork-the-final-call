@@ -16,7 +16,7 @@ const P = {
   warm1: '#5c3a22', warm0: '#3a2418', warm2: '#8a5a2e', warm3: '#b9853f', warm4: '#e0b866',
   skin1: '#a3674a', skin2: '#d09a72', skin3: '#f0c9a0',
   yerba0: '#3e5a34', yerba1: '#6f9448', tub0: '#2c4a8a', tub1: '#4f7fd0', soft0: '#7a2f38', soft1: '#c05a5e',
-  parka: '#b46a26', bone: '#e8e2d0', steel: '#7a8794',
+  parka: '#b46a26', slicker0: '#e0a51c', slicker1: '#ffd93b', bone: '#e8e2d0', steel: '#7a8794',
 };
 
 // The colors each roommate's sheet is painted with (CHARS in tools/art/gen_roommates.py).
@@ -27,7 +27,7 @@ const BODY = {
 };
 
 export const LOOKS = {
-  'item.rain_parka':  { slot: 'parka', style: 'parka', main: P.warm4, shade: P.warm3, line: P.night0 },   // yellow
+  'item.rain_parka':  { slot: 'parka', style: 'parka', main: P.slicker1, shade: P.slicker0, line: P.night0 },   // bright slicker yellow (Michael)
   'item.brown_parka': { slot: 'parka', style: 'parka', main: P.parka, shade: P.warm2, line: P.night0 },   // Michael's brown one
 };
 const LOOK_SLOTS = [...new Set(Object.values(LOOKS).map((l) => l.slot))];
@@ -73,7 +73,15 @@ function paintParka(src, out, w, h, facing, body, look) {
   const nearSkin = (x, y) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => is(x + dx, y + dy, skin));
   for (let y = headTop; y < top; y++) for (let x = 0; x < w; x++) {
     if (is(x, y, hair)) put(x, y, facing !== 'up' && nearSkin(x, y) ? shade : main);
-    else if (facing === 'up' && is(x, y, skin) && y >= top - 2) put(x, y, shade);   // the neck disappears into it
+    // from behind, the hood covers the back of the head and neck: one parka-colored strip running
+    // down into the coat between the neck's outlines (Michael)
+    else if (facing === 'up' && is(x, y, skin)) put(x, y, main);
+  }
+  // from the side, the same strip down the back of the neck, from the hood into the collar
+  if (facing === 'right') for (let y = Math.max(0, top - 2); y < top; y++) {
+    let first = -1, sk = -1;
+    for (let x = 0; x < w; x++) { if (first < 0 && !empty(x, y)) first = x; if (sk < 0 && is(x, y, skin)) sk = x; }
+    if (first >= 0 && sk > first + 1) for (let x = first + 1; x < sk; x++) put(x, y, main);
   }
   // smooth the dome: spiky hair (Manuel's curls) leaves gaps and inner outlines along the top of the
   // head. Above the face, close the gaps with outline and paint inner outline pixels as hood.
