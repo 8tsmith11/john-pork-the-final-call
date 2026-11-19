@@ -67,7 +67,7 @@ export const room631 = makeMap({
     { id: 'obj.coffee', x: 7, y: 6, label: 'Coffee machine', text: 'It makes one cup at a time and judges you for each one. A label in Trevor\'s handwriting: DESCALE ME.' },
     { id: 'obj.tv', x: 12, y: 7, label: 'TV (news)', action: 'tv' },
     { id: 'obj.couch', x: 12, y: 10, label: 'Couch', text: 'The couch came with the apartment. Nobody has ever found the bottom of the cushions. Michael found a 2081 coin in there once and kept it.' },
-    { id: 'obj.scooters', x: 1, y: 7, label: 'Scooter dock', text: 'Three scooters on the charging rail: blue, green, red. The red one\'s battery reads 61% and has read 61% for a month.' },
+    { id: 'obj.scooters', x: 1, y: 7, label: 'Scooter dock', text: 'Three scooters on the charging rail: blue, green, red, all on bare rims. A sticky note on the red one, in Trevor\'s handwriting: AIRLESS ONLY. The batteries still charge.' },
     { id: 'obj.shoes', x: 1, y: 9, label: 'Shoe rack', text: 'Six shoes, two of them matching. Somebody\'s cleats from a sport nobody here plays.' },
     { id: 'obj.plant', x: 14, y: 11, label: 'Plant', text: 'A pothos that has survived three roommates, two coderot scares and one week where everyone forgot it existed.' },
     { id: 'obj.house_rules', x: 6, y: 5, label: 'House rules (taped up)', text: '631 HOUSE RULES: 1. Don\'t touch Manuel\'s statues. 2. Don\'t feed the shrimp, Trevor feeds the shrimp. 3. Whoever finishes the mate makes more. 4. No Continuity people in the apartment. 5. (scribbled out) 6. Rookie Aster mistakes are forgiven once.' },
