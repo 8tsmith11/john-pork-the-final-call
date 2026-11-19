@@ -212,10 +212,11 @@
   {
    "id": 17,
    "created_at": "2026-11-19T22:59:47Z",
-   "updated_at": "2026-11-19T23:27:52Z",
+   "updated_at": "2026-11-19T23:27:54Z",
    "history": [
     "2026-11-19T22:59:47Z BagelMeister: added (for BagelMeister)",
-    "2026-11-19T23:27:52Z BagelMeister: assigned to trevor"
+    "2026-11-19T23:27:52Z BagelMeister: assigned to trevor",
+    "2026-11-19T23:27:54Z BagelMeister: note: Moved from BagelMeister (Michael). trevor: the old teamhub data (teamhub_state.json) lives only on the machine that ran it (10.0.0.75). Please pull Michael's requests from about 2 a.m. his time (the human-issues column) and file each one: hub.py suggest <section> ... --human Michael. Use the systems/world/story sections from docs/org/ROLES.md; post the list on general."
    ],
    "title": "Collect Michael's 2 a.m. requests and file each one with its owner",
    "details": "",
