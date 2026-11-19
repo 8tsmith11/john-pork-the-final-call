@@ -1132,11 +1132,10 @@ export class WorldScene extends Phaser.Scene {
     this._flag(`secrets.cylinder.by.${who}`, Number(f[`secrets.cylinder.by.${who}`] || 0) + 1);
     const line = {
       manuel: 'MANUEL: "I cast that. Two-part silicone. It came out of the mold perfect and I have regretted nothing."',
-      trevor: 'TREVOR: "Why is it warm."',
       michael: 'MICHAEL: "I\'m not touching it." He is already holding it.',
     }[who] ?? '';
     const next = this._cylinderSpot(n);
-    const tally = ['manuel', 'trevor', 'michael'].map((k) => `${k[0].toUpperCase()}${k.slice(1)} ${Number(f[`secrets.cylinder.by.${k}`] || 0)}`).join(' · ');
+    const tally = ['manuel', 'michael'].map((k) => `${k[0].toUpperCase()}${k.slice(1)} ${Number(f[`secrets.cylinder.by.${k}`] || 0)}`).join(' · ');
     return `\n\nUnderneath everything else: the purple cylinder. Cast silicone, a little dusty, exactly the shape you remember.\n${line}\nHouse rule: whoever finds it hides it again. It goes somewhere worse${next ? `, out by ${next.where}` : ''}.\nFound so far: ${tally}`;
   }
 
@@ -1144,7 +1143,8 @@ export class WorldScene extends Phaser.Scene {
   _search(o, who = this.character) {
     if (this.mode === 'client') { this.net.send({ t: 'search', id: o.id }); return; }
     const key = `loot.${this.map.id}.${o.id}`, base = o.text ?? o.label;
-    const cyl = this._cylinderHere(o) ? this._findCylinder(who) : '';
+    // Trevor's floor (roommates.md, 2026-11-19): no crude humor on his character, so he never finds it.
+    const cyl = who !== 'trevor' && this._cylinderHere(o) ? this._findCylinder(who) : '';
     if (this.save.flags[key]) return this._say(`${base}\n\nPicked clean.${cyl}`);
     const L = LOOT[o.loot]; if (!L) return this._say(base);
     this._flag(key, true);
