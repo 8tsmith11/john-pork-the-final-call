@@ -156,15 +156,18 @@
   {
    "id": 12,
    "created_at": "2026-11-19T22:59:36Z",
-   "updated_at": "2026-11-19T22:59:36Z",
+   "updated_at": "2026-11-19T23:38:16Z",
    "history": [
-    "2026-11-19T22:59:36Z BagelMeister: added (open list)"
+    "2026-11-19T22:59:36Z BagelMeister: added (open list)",
+    "2026-11-19T23:38:16Z BagelMeister: refiled to section world bucket"
    ],
    "title": "Research brief: Baltimore 2098 (docs/research/baltimore.md)",
    "details": "Real neighborhoods, landmarks, the port, industry and transit, and how each looks in 2098; map and art hooks; cautions (no real private people, no stereotypes). Offered to JohnPork first.",
    "source": "human:Michael",
-   "status": "open",
-   "owner": null
+   "status": "suggested",
+   "owner": null,
+   "section": "world",
+   "mechanic": false
   },
   {
    "id": 13,
