@@ -30,7 +30,8 @@ Sections (tools/hub/org.json): each human owns one section; its agents manage th
   python3 tools/hub/hub.py accept ID [--to AGENT] [--owner-ok]   # section agent takes a suggestion
   python3 tools/hub/hub.py decline ID --note ".."      # section agent turns it down (with why)
   python3 tools/hub/hub.py unassign ID [--note ..]     # back to triage: needs an owner
-  python3 tools/hub/hub.py refile ID SECTION [--mechanic]  # organizer: move a task into a section
+  python3 tools/hub/hub.py refile ID SECTION [--mechanic] [--canon WHERE]  # organizer: move a task
+        # into a section's bucket, or with --canon (already-agreed canon) straight to its open list
   python3 tools/hub/hub.py close ID --note ".."        # superseded / won't do
   python3 tools/hub/hub.py note ID "text"              # add a comment to a task's history
   python3 tools/hub/hub.py gag "title" --human NAME [--to AGENT] [--details ..]
@@ -627,9 +628,11 @@ def cmd_refile(args):
             sys.exit(f"already {t['status']}")
         human = (t.get("source") or "").removeprefix("human:")
         own = human.lower() == SECTIONS[sec]["human"].lower()
-        t.update(section=sec, owner=None, status="open" if own else "suggested",
-                 mechanic=bool(args.mechanic or t.get("mechanic")))
-        log(t, who, f"refiled to section {sec} " + ("(owner's own request)" if own else "bucket"))
+        direct = own or args.canon   # canon work is already agreed: no bucket decision needed
+        t.update(section=sec, owner=None, status="open" if direct else "suggested",
+                 mechanic=bool(args.mechanic or t.get("mechanic")) and not args.canon)
+        why = "(already canon)" if args.canon else "(owner's own request)" if own else "bucket"
+        log(t, who, f"refiled to section {sec} {why}" + (f": {args.canon}" if args.canon else ""))
     mutate(args, "refiles", fn)
 
 
@@ -817,7 +820,8 @@ def main(argv=None):
     add("accept", cmd_accept, (["id"], {"type": int}), (["--to"], {}), (["--owner-ok"], {"action": "store_true"}))
     add("decline", cmd_decline, (["id"], {"type": int}), (["--note"], {"required": True}))
     add("unassign", cmd_unassign, (["id"], {"type": int}), (["--note"], {}))
-    add("refile", cmd_refile, (["id"], {"type": int}), (["section"], {}), (["--mechanic"], {"action": "store_true"}))
+    add("refile", cmd_refile, (["id"], {"type": int}), (["section"], {}), (["--mechanic"], {"action": "store_true"}),
+        (["--canon"], {"metavar": "WHERE", "help": "already canon (cite where): goes to the section's open list, not its bucket"}))
     add("close", cmd_close, (["id"], {"type": int}), (["--note"], {"required": True}))
     add("note", cmd_note, (["id"], {"type": int}), (["text"], {}))
     add("gag", cmd_gag, (["title"], {}), (["--human"], {"required": True}), (["--to"], {}), (["--details"], {}))
