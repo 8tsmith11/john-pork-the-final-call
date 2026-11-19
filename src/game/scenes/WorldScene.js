@@ -729,6 +729,8 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.setZoom(this.worldZoom);
     const mw = map.w * TILE, mh = map.h * TILE, vw = SW / this.worldZoom, vh = SH / this.worldZoom;
     this.cameras.main.setBounds(Math.min(0, (mw - vw) / 2), Math.min(0, (mh - vh) / 2), Math.max(mw, vw), Math.max(mh, vh)).setRoundPixels(true);
+    // The whole area is on screen (the apartment, small rooms): the minimap adds nothing and would sit on the room.
+    this.mapFits = mw <= vw && mh <= vh;
     this.mapLabel.setText(map.name);
     setArea(map.id);
     for (const s of this.enemySprites.values()) s.destroy();
@@ -2262,10 +2264,28 @@ export class WorldScene extends Phaser.Scene {
 
   _drawMinimap(snap) {
     const g = (this.mini ??= this.add.graphics().setScrollFactor(0).setDepth(9050)).clear();
+    if (this.mapFits) { this.minimapBottom = null; return; }
     if (this.menu || this.dlg) return;
     const w = Math.min(100, this.map.w * 2), h = Math.min(40, this.map.h * 2);
     this.drawAreaMap(g, VIEW.w - w - 6, 44, w, h, snap);
     this.minimapBottom = this._areaFrameBottom ?? 44 + h;
+    g.setAlpha(this._hudAlpha('mini', { x: VIEW.w - w - 8, y: 42, w: w + 4, h: this.minimapBottom - 40 }));
+  }
+
+  /** Local player's position in HUD (VIEW) coordinates, or null. */
+  _playerOnScreen() {
+    const s = this.sprites.get(this.localId), v = this.cameras.main.worldView;
+    if (!s || !v.width) return null;
+    return { x: ((s.x - v.x) / v.width) * VIEW.w, y: ((s.y - v.y) / v.height) * VIEW.h };
+  }
+
+  /** HUD panels fade out of the way while the player is under them; eased per panel `key`. */
+  _hudAlpha(key, r) {
+    const p = this._playerOnScreen(), pad = 14;
+    const under = p && r && p.x > r.x - pad && p.x < r.x + r.w + pad && p.y > r.y - pad && p.y < r.y + r.h + pad;
+    const a = (this._hudA ??= {});
+    a[key] = (a[key] ?? 1) + ((under ? 0.2 : 1) - (a[key] ?? 1)) * 0.2;
+    return a[key];
   }
 
   // Boss name card: big, centered, then it gets out of the way.
@@ -2500,7 +2520,12 @@ export class WorldScene extends Phaser.Scene {
     this.hudText.setText(lines.join('\n'));
     this.objText ??= this.add.text(VIEW.w - 6, 60, '', { ...FONT, fontSize: '7px', color: '#ffd27f', align: 'right', stroke: '#0b0d16', strokeThickness: 2, wordWrap: { width: 130 } }).setOrigin(1, 0).setScrollFactor(0).setDepth(9001);
     // Only the key hint under the minimap (Trevor: the objective line was too much UI). Objectives live in the quests menu.
-    this.objText.setText('[J] quests').setColor('#9aa3c7').setY((this.minimapBottom ?? 56) + 4).setVisible(!this.menu && !this.dlg);
+    this.objText.setText('[J] quests').setColor('#9aa3c7').setY(this.minimapBottom ? this.minimapBottom + 4 : 28).setVisible(!this.menu && !this.dlg);
+    const ob = this.objText.getBounds();
+    this.objText.setAlpha(this._hudAlpha('obj', { x: VIEW.w - 6 - ob.width, y: this.objText.y, w: ob.width, h: ob.height }));
+    // The player card (and teammate bars) fade the same way.
+    const ca = this._hudAlpha('card', { x: 4, y: 4, w: 112, h: 46 + 7 * Math.max(0, snap.players.length - 1) });
+    for (const o of [g, this.hudPortrait, this.hudName, this.hudLv, this.hudSkill]) o?.setAlpha(ca);
     this._drawHotbar();
     // Door gathering message overrides the prompt.
     const waiting = snap.players.filter((p) => p.w);
