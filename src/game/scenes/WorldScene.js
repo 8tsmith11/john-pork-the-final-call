@@ -2421,10 +2421,13 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'hurt' && ev.id === this.localId) { this.cameras.main.shake(120, 0.006); this.cameras.main.flash(80, 120, 20, 40); }
     if (ev.t === 'swing') {
       const p = snap.players.find((q) => q.id === ev.id); if (!p) return;
-      const g = this.add.graphics().setDepth(p.y + 1);
+      // Both the arc and the weapon follow the swinger for the whole swing (BagelMeister #401): drawn
+      // around their own origin and moved to the player's current position every frame.
+      const at = () => this._lastRendered?.players?.find((q) => q.id === ev.id) ?? p;
+      const g = this.add.graphics().setDepth(p.y + 1).setPosition(p.x, p.y - 8);
       const r = Math.max(12, (ev.r ?? 20) - 4), half = (ev.arc ?? 1.8) / 2;   // the weapon's real reach and arc
-      g.lineStyle(2, 0xe8e8f0, 0.8).beginPath().arc(p.x, p.y - 8, r, ev.a - half, ev.a + half).strokePath();
-      this.tweens.add({ targets: g, alpha: 0, duration: 140, onComplete: () => g.destroy() });
+      g.lineStyle(2, 0xe8e8f0, 0.8).beginPath().arc(0, 0, r, ev.a - half, ev.a + half).strokePath();
+      this.tweens.add({ targets: g, alpha: 0, duration: 140, onUpdate: () => { const q = at(); g.setPosition(q.x, q.y - 8).setDepth(q.y + 1); }, onComplete: () => g.destroy() });
       // The weapon itself sweeps through the arc (Trevor: swinging the crowbar swings a crowbar). Icons are drawn
       // handle bottom-left to head top-right, so +45 degrees points the head outward along the swing.
       const weapon = this.save.party[p.c]?.equipped?.weapon;
@@ -2433,8 +2436,8 @@ export class WorldScene extends Phaser.Scene {
         const from = ev.a - half, to = ev.a + half, flip = Math.cos(ev.a) < 0;   // swing toward the facing side
         const sweep = { t: 0 };
         this.tweens.add({ targets: sweep, t: 1, duration: ev.combo === 3 ? 190 : 140, ease: 'Cubic.out',
-          onUpdate: () => { const ang = flip ? to - (to - from) * sweep.t : from + (to - from) * sweep.t; im.setRotation(ang + Math.PI / 4); },
-          onComplete: () => this.tweens.add({ targets: im, alpha: 0, duration: 80, onComplete: () => im.destroy() }) });
+          onUpdate: () => { const ang = flip ? to - (to - from) * sweep.t : from + (to - from) * sweep.t; const q = at(); im.setRotation(ang + Math.PI / 4).setPosition(q.x, q.y - 8).setDepth(q.y + 2); },
+          onComplete: () => this.tweens.add({ targets: im, alpha: 0, duration: 80, onUpdate: () => { const q = at(); im.setPosition(q.x, q.y - 8); }, onComplete: () => im.destroy() }) });
       }
     }
     if (ev.t === 'morph') { const p = snap.players.find((q) => q.id === ev.id); if (p) { this.cameras.main.flash(120, 180, 255, 160); if (ev.id === this.localId) this._say(ev.on ? `${MORPH_LOOK[p.c][1]}. Stronger. Faster. Softer in the wrong places.` : 'You come back to yourself. Mostly.'); } }
