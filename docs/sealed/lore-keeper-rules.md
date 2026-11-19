@@ -40,3 +40,26 @@ uhzna'f fhecevfrf, gur rttf bguref nqqrq, be nalguvat nobhg uvf bja zbecu.
   fraqf). Pbzzragf naq gur grfg anzr ner svkrq. OntryZrvfgre'f.
 - Gur ybpny oenapu `ontry/zngr-pnssrvar` unf n pbzzvg zrffntr gung fcryyf bhg n fhecevfr (osq9p0p).
   Vgf pbagrag vf ba znva abj va frnyrq sbez, fb qba'g chfu gung pbzzvg; qebc vg be erjbeq vg svefg.
+
+## Zbirq sebz gur bcra oevrs (2026-11-19, Zvpunry: frny nalguvat fcbvyre-nqwnprag)
+
+**Frnyrq pnaba vaqrk** (cerprqrapr 4 va gur bcra oevrs):
+`qbpf/frnyrq/gjvfgf.zq` (§1 gur frperg uvfgbel naq gur avtug bs gur oernx-va, §2 gur Npg 1 qrfvta
+naq pyhr znc, §3 gur frrq yvarf), `qbpf/frnyrq/ovoyr-shyy.zq`, `qbpf/frnyrq/pnfg-abgrf.zq`,
+`qbpf/frnyrq/geribe-pbaarpgvba.zq`, `qbpf/frnyrq/ebbzzngr-fhecevfrf.zq` (jub nqqrq jung nobhg jubz),
+naq guvf svyr. Yngre npgf: `qbpf/frnyrq/npgf-2-3.zq` (znva dhrfgf, vgrz chmmyrf, havdhr-vgrz
+fbheprf, guernq cevbevgl, pbqrebg pnaba).
+
+**Frag gb Zvpunry:** n yngre-npg vqrn gbhpurf n erny crefba'f yvxrarff; ba ubyq hagvy gur uhznaf
+qrpvqr (`npgf-2-3.zq`).
+
+**Jnvgvat ba tbazna** (cebcbfnyf va `npgf-2-3.zq` naq `gjvfgf.zq`):
+- Bar raqvat yvar sbe gur pnhfr svk (gjvfgf §1).
+- Gjb fgbel erdhrfgf sebz Geribe: gur yber tngr'f cebcbfnyf ner va, uvf gb jevgr jvgu zr.
+- Gur guerr jbeyq-rqtr yvarf (gur znc fryyre, gur pbhevre, gur GI vgrz): pyrnerq, uvf gb jevgr.
+- Znahryvgn'f erhavba fprar. Xrrc ure ohss.
+
+**Zrzr cbby:** bar ragel gbhpurf Znahry'f punenpgre naq arrqf tbazna'f lrf; gur Cnynagve–Gvz gvr
+trgf n [FRNYRQ] erivrj.
+
+**Geribe:** uvf bja havdhr-vgrz cvpxf (gjb cynprubyqref punatr) naq ibvpr pnzrb ner craqvat.

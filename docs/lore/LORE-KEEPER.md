@@ -29,13 +29,9 @@ anywhere.
 2. **Real shared history:** `docs/lore/real-life.md`.
 3. **The scripts as written:** `docs/sealed/script/01`–`11` (Act 1). When a doc and a script disagree,
    the script usually wins. Change the doc, unless the script breaks rule 1 or 2.
-4. **Sealed canon:** `docs/sealed/twists.md` (§1 the secret history and the night of the break-in, §2
-   the Act 1 design and clue map, §3 the seed lines), `docs/sealed/bible-full.md`,
-   `docs/sealed/cast-notes.md`, `docs/sealed/trevor-connection.md`,
-   `docs/sealed/roommate-surprises.md` (who added what about whom), and the sealed half of this
-   brief, `docs/sealed/lore-keeper-rules.md`.
-5. **The plan for later acts:** `docs/sealed/acts-2-3.md` (main quests, item puzzles, unique-item
-   sources, thread priority, coderot canon).
+4. **Sealed canon:** the files in `docs/sealed/`. Their index, and what each one holds, is in the
+   sealed half of this brief, `docs/sealed/lore-keeper-rules.md`.
+5. **The plan for later acts:** sealed too (see the index in `lore-keeper-rules.md`).
 6. **Open docs the humans read:** `docs/lore/bible.md` (keep it in step with `bible-full.md` minus the
    🔒 parts), `docs/lore/tech.md` (tech, 2098), `docs/act1/DESIGN.md`, `docs/design/*` (cast 04, world
    atlas 02, systems 06, bestiary 07), `docs/lore/themes.md`, `docs/lore/WRITING.md` (the house
@@ -89,16 +85,12 @@ anywhere.
 ## Open items as of 2026-11-19 (keep this list current)
 
 **Sent to Michael to sort out (lore-gate session, 2026-11-19):**
-- A later-act idea touches a real person's likeness. On hold until the humans decide (sealed,
-  `acts-2-3.md`).
+- One later-act idea is on hold until the humans decide (details sealed in `lore-keeper-rules.md`).
 - The John Pork calling portrait is a real meme photo with no known licence (gonman #299). It was
   Trevor's call; trevor is putting the licence question to him.
 
-**Waiting on gonman (proposals sealed in `acts-2-3.md` and `twists.md`):**
-- One ending line for the cause fix (sealed, twists §1).
-- Two story requests from Trevor: the lore gate's proposals are in (sealed), his to write with me.
-- The three world-edge lines (the map seller, the courier, the TV item): cleared, his to write.
-- Manuelita's reunion scene. Keep her buff.
+**Waiting on gonman:**
+- Four writing items; the list is sealed in `lore-keeper-rules.md`.
 - His answer on moving `docs/SECRETS.md` into `docs/sealed/` (#245).
 
 **Plaintext leaks still in the repo (PROCESS "Spoilers and surprises"; each owner fixes theirs):**
@@ -117,11 +109,11 @@ anywhere.
 **Other:**
 - **The meme pool** is merged, sealed: `docs/sealed/open-meme-characters.md` (Michael cleared it,
   2026-11-19; his decisions are in its header). Nothing in it is canon until someone claims an entry
-  and it clears the gate. Check each against the other humans' floors; one entry touches Manuel's
-  character and needs gonman's yes; the Palantir–Tim tie gets a `[SEALED]` review.
+  and it clears the gate. Check each against the other humans' floors. Two entries need extra
+  review (sealed in `lore-keeper-rules.md`).
 - **Hub replies:** this session couldn't reach the hub. The board answers for #251–#381 are in the
   shared notes and still need posting (once the hub reconnects).
-- **Trevor:** his own unique-item picks (two placeholders change) and voice cameo are pending.
+- **Trevor:** two of his own choices are pending (sealed in `lore-keeper-rules.md`).
 - **Votes:** P-002 and P-003 still need Manuel's. Trevor voted P-002 no and P-003 yes; Michael yes on
   both.
 - **P-001:** the code its result needs is still unwritten. Engine work, unclaimed. Detail stays
