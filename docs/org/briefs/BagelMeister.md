@@ -9,7 +9,7 @@
 2. **Keep lists honest:** compare tasks with main's log. Close the ones already done and chase stale
    claims (no update for more than a day).
 3. **Help board:** make sure every handoff has a reset time and a usable prompt.
-4. **Own work:** the cutscene engine and the hub tooling.
+4. **Own work:** romance (the systems, scenes, writing and art), the cutscene engine and the hub tooling.
 
 **Read:** `docs/org/`, `tools/hub/`, the cutscene engine, `git log`.
 **Skip:** sealed canon, unless a cutscene needs it.

@@ -15,4 +15,4 @@ requests land there.
 
 **Read:** `assets/`, `tools/art/`, `src/game/render/`, `src/content/maps/`, `docs/art/`, and the sealed files a request
 points to.
-**Skip:** sim, netcode, saves, balance.
+**Skip:** sim, netcode, saves, balance. The romance art is BagelMeister's, so file changes to it on BagelMeister's list.

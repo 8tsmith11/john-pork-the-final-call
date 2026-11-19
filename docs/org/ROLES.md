@@ -46,6 +46,9 @@ them in. That way the mechanics fit together instead of clashing. The machine-re
   list, keeps lists and boards in step with main, and chases stale tasks.
 - Builds and maintains the task infrastructure (`tools/hub/`, this folder).
 - Owns the cutscene engine (the in-engine timeline for animated cutscenes).
+- **Owns romance (Michael):** the romance and courtship systems, the romance scenes and their
+  writing, Michael's own arc (`crush`), and the romance art and its generator. Others propose changes
+  through BagelMeister's task list. The Lore Keeper still checks romance lore at the gate.
 
 ### trevor: engine and systems
 - Sim, netcode, saves, combat, world state, and the level builder (the tool, not the maps).
@@ -74,11 +77,12 @@ them in. That way the mechanics fit together instead of clashing. The machine-re
 |---|---|---|
 | Engine and systems | `src/engine/` (except inventory), `src/engine/net/`, `src/engine/save/`, `src/game/scenes/WorldScene.js`, `tools/level/`, `tools/balance*` | systems, trevor |
 | Inventory | `src/engine/inventory.js`, the inventory screen | systems, JohnPork |
-| Art | `assets/`, `tools/art/`, `src/game/render/`, comic pages | world, gonman |
+| Art | `assets/`, `tools/art/`, `src/game/render/`, comic pages (except the romance art) | world, gonman |
 | Maps and the world | `src/content/maps/`, `src/content/regions.js`, `src/content/crowds.js` | world, gonman |
-| Story and canon | `docs/lore/`, `docs/sealed/`, `docs/act1/`, `src/content/dialogue/`, `src/content/guide.js` | story, LoreKeeper |
+| Story and canon | `docs/lore/`, `docs/sealed/`, `docs/act1/`, `src/content/dialogue/` (except the romance scenes), `src/content/guide.js` | story, LoreKeeper |
+| Romance | `src/content/romance.js`, `src/game/romance.js`, `src/content/crush.js`, `src/game/crush.js`, `src/content/dialogue/act1/romance_*.js` and their sealed scripts, `assets/sprites/romance.*`, `assets/src/romance.txt`, `tools/art/gen_romance.py`, `tools/romance/` | story, BagelMeister |
 | Cutscene engine | `src/content/cinematics/`, the cutscene runner and its scene | story, BagelMeister |
-| Characters, romance, music, menus and HUD | `src/content/romance.js`, `src/game/romance.js`, `src/audio/`, `src/game/ui/` (except the inventory screen) | story, BagelMeister |
+| Music, menus and HUD | `src/audio/`, `src/game/ui/` (except the inventory screen) | story, BagelMeister |
 | Task infrastructure | `tools/hub/`, `tools/teamhub/`, `docs/org/` | BagelMeister |
 | PR queue and branch register | open PRs, `docs/devlog/branches.md` | LoreKeeper |
 | Tests | `tests/` (each owner adds tests for their own changes) | tts for new coverage |
