@@ -1090,10 +1090,11 @@ test('the blue pill makes dodges free while it lasts', () => {
 
 const { BARKS } = await import('../src/content/barks.js');
 const { LINES_ES } = await import('../src/content/lines_es.js');
+const beltMod = await import('../src/game/beltless.js');
 const crowd = await import('../src/game/crowd.js');
 test('every bark and crowd line has Spanish', () => {
   const all = []; const walk = (o) => { if (typeof o === 'string') all.push(o); else if (o && typeof o === 'object') Object.values(o).forEach(walk); };
-  walk(BARKS); walk(crowd.LINES); walk(crowd.PIXEL_LINES); walk(fartMod.FART_LINES); walk(buttMod.BUTT_LINES); walk(Object.values(npcLifeMod.NPC_LIFE).map((l) => l.hi)); walk(npcLifeMod.NPC_FART);
+  walk(BARKS); walk(crowd.LINES); walk(crowd.PIXEL_LINES); walk(fartMod.FART_LINES); walk(buttMod.BUTT_LINES); walk(Object.values(npcLifeMod.NPC_LIFE).map((l) => l.hi)); walk(npcLifeMod.NPC_FART); walk(beltMod.BELT_LINES);
   const missing = all.filter((s) => !LINES_ES[s]);
   assert.deepEqual(missing, [], 'add these to src/content/lines_es.js');
 });
@@ -1299,6 +1300,12 @@ test('landscape pass: place bubbles sit inside their map, scenery and decals sta
   assert.ok(decals.filter((d) => d.frame.startsWith('dec.')).every((d) => !plaza.solid(d.x, d.y) || d.frame === 'dec.bay_v'), 'a ground decal sits on a wall');
   assert.ok(decals.some((d) => d.frame.startsWith('roof.')), 'roofs have detail');
   assert.ok(plaza.solid(38, 18) && plaza.solid(39, 19), 'the fountain is solid');
+});
+
+test("Michael's belt gag: his own line first, on behind one switch, painted as an overlay with the boxers on", () => {
+  assert.equal(beltMod.BELT_LINES.michael[0], 'Sorry. Left my belt at home.');
+  assert.equal(typeof beltMod.MICHAEL_BELT, 'boolean');
+  assert.ok(!beltMod.BELT_LINES.trevor.some((l) => /pants|boxer|butt/i.test(l)), "Trevor only reacts; nothing happens to Trevor's character");
 });
 
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }

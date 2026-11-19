@@ -205,6 +205,18 @@ export const LINES_ES = {
   "Smells like the river back home. Worse.": "Huele al río de casa. Peor.",
   "Ozzie's at the lake. Ozzie is always at the lake.": "Ozzie está en el lago. Siempre está en el lago.",
   "Is that a frog? That's a frog.": "¿Eso es una rana? Es una rana.",
+  // Michael forgot his belt (src/game/beltless.js). Manuel's reactions in Rioplatense.
+  "Sorry. Left my belt at home.": "Perdón. Me olvidé el cinturón en casa.",
+  "Not again. Sorry. Left my belt at home.": "Otra vez no. Perdón. Me olvidé el cinturón en casa.",
+  "Sorry! Belt's at home.": "¡Perdón! El cinturón quedó en casa.",
+  "Nobody look. Left my belt at home.": "Nadie mire. Me olvidé el cinturón en casa.",
+  "Michael. Pants.": "Michael. Los pantalones.",
+  "Che, the pants.": "Che, el pantalón.",
+  "Again?": "¿Otra vez?",
+  "I'm buying you a belt.": "Te voy a comprar un cinturón.",
+  "Belt. Putting it on the list.": "Cinturón. Lo anoto en la lista.",
+  "Okay. We're good.": "Listo. Todo bien.",
+  "That never happened.": "Eso nunca pasó.",
 };
 
 /** The line in the current language (Spanish when chosen and known, else as written). */

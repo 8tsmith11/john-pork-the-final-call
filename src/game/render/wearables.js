@@ -32,6 +32,8 @@ export const LOOKS = {
   'item.brown_parka': { slot: 'parka', style: 'parka', main: P.parka, shade: P.warm2, line: P.night0 },   // Michael's brown one
   // Not gear: Manuel's butt, now and then noticeably bigger (Manuel's own request; src/game/bigButt.js).
   'fx.bigbutt':          { slot: '_fx', style: 'butt' },
+  // Not gear: Michael's trousers fall down to his ankles now and then (src/game/beltless.js). Boxers on, nothing shown.
+  'fx.pantsdown':        { slot: '_fx', style: 'pantsdown', main: P.bone, heart: P.signal },   // white boxers with little red hearts (Michael)
   // Uniques (task #29, gonman). Manuel's:
   'item.arg_shirt':      { slot: 'chestplate', style: 'shirt', main: P.screen2, shade: P.screen1, stripe: P.bone, sun: P.warm4 },   // celeste y blanca, the sun on the chest
   'item.hasbulla_tee':   { slot: 'parka', style: 'shirt', main: P.bone, shade: P.concrete3, oversized: true, print: 'fighter' },     // white, oversized; a small fighter with a belt (no real person)
@@ -239,7 +241,30 @@ function paintButt(src, out, w, h, facing, body) {
   return true;
 }
 
-const PAINTERS = { butt: paintButt, parka: paintParka, shirt: paintShirt, hat: paintHat, boots: paintBoots, socks: paintSocks, gloves: paintGloves, pacifier: paintPacifier, holster: paintHolster };
+// Michael without a belt: his trousers slide down to his ankles. White boxers with little red hearts where the
+// trousers started, bare legs below them, the trousers bunched over the boots. Boxers stay on (D-015).
+function paintPantsDown(src, out, w, h, facing, body, look) {
+  const { is, put, C, rows } = kit(src, out, w, h, body);
+  const [hip, low] = rows(C.pants); if (low < 0) return false;
+  const [bt] = rows(C.boots);
+  const white = hex(look.main), heart = hex(look.heart), line = hex(P.night0), pants = C.pants[0];
+  let left = w; for (let x = 0; x < w; x++) if (is(x, hip, C.pants)) { left = x; break; }
+  for (let y = hip; y <= low; y++) for (let x = 0; x < w; x++) {
+    if (!is(x, y, C.pants)) continue;
+    if (y <= hip + 1) {
+      // Boxers, two rows: each heart is two bumps on the top row and the point under them, tiled every 5 px.
+      const p = (x - left + 4) % 5, isHeart = (y === hip && (p === 0 || p === 2)) || (y === hip + 1 && p === 1);   // a 1-2 px gap between hearts
+      put(x, y, isHeart ? heart : white);
+    } else put(x, y, is(x - 1, y, C.pants) && is(x + 1, y, C.pants) ? C.skin[0] : C.skin[1]);   // bare legs down to the ankles
+  }
+  // The trousers, bunched round the ankles over the tops of the boots, spilling one pixel out each side.
+  const y = bt < h ? bt : low; let a = w, b = -1;
+  for (let x = 0; x < w; x++) if (is(x, y, C.boots) || is(x, y, C.pants)) { a = Math.min(a, x); b = Math.max(b, x); }
+  if (b >= 0) { for (let x = a - 1; x <= b + 1; x++) put(x, y, pants); put(a - 2, y, line); put(b + 2, y, line); }
+  return true;
+}
+
+const PAINTERS = { pantsdown: paintPantsDown, butt: paintButt, parka: paintParka, shirt: paintShirt, hat: paintHat, boots: paintBoots, socks: paintSocks, gloves: paintGloves, pacifier: paintPacifier, holster: paintHolster };
 
 /** Build (once) and return the overlay texture key for roommate `who` wearing item `id`. */
 export function wearTexture(scene, who, id) {
