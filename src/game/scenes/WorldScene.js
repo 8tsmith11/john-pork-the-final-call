@@ -594,6 +594,15 @@ export class WorldScene extends Phaser.Scene {
         if (wallAt(x, y - 1)) { g.fillStyle(0x000000, 0.34).fillRect(px, py, TILE, 2); g.fillStyle(0x000000, 0.16).fillRect(px, py + 2, TILE, 3); }
         if (wallAt(x - 1, y)) { g.fillStyle(0x000000, 0.22).fillRect(px, py, 2, TILE); g.fillStyle(0x000000, 0.1).fillRect(px + 2, py, 2, TILE); }
       }
+      // Wall faces: a dark base where a wall meets the floor in front of it, and a thin lit edge on the
+      // top of any wall that has floor above it (the cap catching the light).
+      for (let y = 0; y < map.h; y++) for (let x = 0; x < map.w; x++) {
+        if (!wallAt(x, y)) continue;
+        const px = x * TILE, py = y * TILE;
+        if (open(x, y + 1)) { g.fillStyle(0x000000, 0.28).fillRect(px, py + TILE - 2, TILE, 2); g.fillStyle(0xffffff, 0.07).fillRect(px, py + 1, TILE, 1); }
+        if (open(x, y - 1)) g.fillStyle(0xffffff, 0.12).fillRect(px, py, TILE, 1);
+        if (open(x + 1, y) && !wallAt(x + 1, y)) g.fillStyle(0xffffff, 0.06).fillRect(px + TILE - 1, py, 1, TILE);
+      }
     }
     for (const im of this.propSprites ?? []) im.destroy();
     for (const t of this.propTimers ?? []) t.remove();
