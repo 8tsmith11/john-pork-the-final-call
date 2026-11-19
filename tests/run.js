@@ -1,6 +1,7 @@
 // Node test runner (no dependencies): `node tests/run.js`. Must pass before pushing.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { makeStreams, Rng } from '../src/engine/rng.js';
 import { rollWorld } from '../src/engine/worldRolls.js';
 import { newSave, migrate, CURRENT_SCHEMA } from '../src/engine/save/schema.js';
@@ -840,7 +841,7 @@ test('skill trees: valid links, capstone needs all three branches, mods sum, old
   const { execFileSync } = await import('node:child_process');
   const { readdirSync, statSync } = await import('node:fs');
   const walk = (d) => readdirSync(d).flatMap((n) => { const p = `${d}/${n}`; return statSync(p).isDirectory() ? walk(p) : p.endsWith('.js') ? [p] : []; });
-  const root = new URL('../src', import.meta.url).pathname;
+  const root = fileURLToPath(new URL('../src', import.meta.url));
   test('every file under src/ parses', () => {
     const bad = [];
     for (const f of walk(root)) { try { execFileSync(process.execPath, ['--check', f], { stdio: 'pipe' }); } catch (e) { bad.push(`${f.slice(root.length + 1)}: ${String(e.stderr).split('\n').find((l) => l.includes('SyntaxError')) ?? 'syntax error'}`); } }
