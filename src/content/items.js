@@ -13,7 +13,8 @@ export const SLOT_NAMES = { weapon: 'Melee', ranged: 'Ranged', gadget: 'Gadget',
   leggings: 'Leggings', boots: 'Boots', goggles: 'Goggles / hat', parka: 'Rain parka', gloves: 'Gloves', socks: 'Socks', backpack: 'Backpack' };
 
 export const ITEMS = {
-  'item.wooden_bat':   { name: 'Wooden bat', slot: 'weapon', analog: true, mods: { melee: 6 }, text: 'Ash wood. Coderot slides off it.' },
+  'item.pry_bar':      { name: 'Pry bar', slot: 'weapon', analog: true, swing: { range: 18, arc: 0.6, cooldown: 0.4, damage: 11, knockback: 120 }, text: 'Half a meter of hex steel from the 631 toolwall. Everyone in the apartment owns one; nobody remembers buying it.' },
+  'item.wooden_bat':   { name: 'Wooden bat', slot: 'weapon', analog: true, swing: { range: 20, arc: 0.7, cooldown: 0.45, damage: 12, knockback: 160 }, mods: { melee: 6 }, text: 'Ash wood. Coderot slides off it.' },
   'item.fab_launcher': { name: 'Fab launcher', slot: 'ranged', mods: { gun: 1, shot: 4, shotCd: -0.12 }, text: 'Printed at 3 a.m. Fires sintered pellets.' },
   'item.mesh_vest':    { name: 'Printed mesh vest', slot: 'chestplate', mods: { armor: 0.2 }, text: 'Hex lattice. Takes a fifth of the hurt.' },
   'item.sniffer':      { name: 'Helium sniffer', slot: 'gadget', mods: {}, text: 'Follows the lightest thing in the world.' },

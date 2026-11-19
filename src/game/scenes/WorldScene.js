@@ -95,6 +95,11 @@ export class WorldScene extends Phaser.Scene {
     this._pageIdx = {};
     this.vignette = this._makeVignette();
     if (this.mode !== 'client') for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
+    // No default punch (Trevor). Nobody starts armed: weapons are found, bought, printed, or taken
+    // off the 631 toolwall (obj.toolwall). How the first one is earned is still being discussed (#hub).
+    for (const c of Object.values(this.save.party)) c.hotSel ??= 0;
+    if (this.mode !== 'client') this._syncParty();
+    this.input.on('wheel', (ptr, objs, dx, dy) => { if (this.menu || this.dlg) return; const c = this.save.party[this.character]; this.selectHot((c?.hotSel ?? 0) + (dy > 0 ? 1 : -1)); });
     this.time.delayedCall(500, () => this._spawnBot());
     this.save.world.money ??= 25;
     this.save.flags['settings.crudeHumor'] = 'on';   // always on (Trevor); scripts branch on it
@@ -172,7 +177,7 @@ export class WorldScene extends Phaser.Scene {
     this.input.keyboard.on('keydown', (ev) => {
       if (!this.dlg) {
         const n = parseInt(ev.key, 10);
-        if (n >= 1 && n <= 9 && !this.menu && !this.puzzle) this.menuUseSlot(n - 1);
+        if (n >= 1 && n <= 9 && !this.menu && !this.puzzle) this.selectHot(n - 1);
         return;
       }
       if (ev.key === 'e' || ev.key === 'E' || ev.key === ' ' || ev.key === 'Enter') {
@@ -473,6 +478,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'ability') this._raiseAbility(this._charOf(peer), msg.key);
         if (msg.t === 'equip') this._equip(this._charOf(peer), msg.id);
         if (msg.t === 'mate') this._mateBreak();
+        if (msg.t === 'hotSel') this._setHot(this._charOf(peer), msg.i);
         if (msg.t === 'use') { this._useWhat = msg.id ?? null; this._use(this._charOf(peer), peer); }
         if (msg.t === 'morph') this._morph(peer);
         if (msg.t === 'search') { const o = this.map.objects.find((x) => x.id === msg.id && x.loot); if (o) this._search(o, this._charOf(peer)); }
@@ -617,7 +623,44 @@ export class WorldScene extends Phaser.Scene {
   // ---------- crafting, skills, items (host-authoritative) ----------
   _charOf(peer) { return this.sim.players.get(peer)?.character; }
 
+  // What each roommate has in hand: the selected hotbar slot for humans, the equipped weapon for AI.
+  _heldKind(c, ai) {
+    if (ai) return c.equipped?.weapon ? 'melee' : null;
+    const def = ITEMS[c.inventory?.[c.hotSel ?? 0]?.id];
+    return def?.slot === 'weapon' ? 'melee' : def?.slot === 'ranged' ? 'gun' : null;
+  }
+  _syncHeld() {
+    if (this.mode === 'client') return;
+    for (const p of this.sim.players.values()) p.held = this._heldKind(this.save.party[p.character], String(p.id).startsWith('ai:'));
+  }
+  // Select a hotbar slot (1-9 / wheel). A weapon or gun in that slot becomes the one you hold.
+  selectHot(i) {
+    const c = this.save.party[this.character]; if (!c) return;
+    i = ((i % 9) + 9) % 9;
+    this._hotFlash = { i, at: this.time.now };
+    if (this.mode === 'client') { c.hotSel = i; this.net.send({ t: 'hotSel', i }); return; }
+    this._setHot(this.character, i);
+  }
+  _setHot(who, i) {
+    const c = this.save.party[who]; if (!c) return;
+    c.hotSel = Math.max(0, Math.min(8, i | 0));
+    const def = ITEMS[c.inventory[c.hotSel]?.id];
+    if (def && (def.slot === 'weapon' || def.slot === 'ranged') && canWear(def, who)) c.equipped[def.slot] = def === ITEMS[c.inventory[c.hotSel].id] ? c.inventory[c.hotSel].id : c.equipped[def.slot];
+    this._syncParty();
+  }
+  // Left click with a non-weapon in hand uses it (eat, throw, play, read), at most every 0.35 s.
+  _useHeld() {
+    const c = this.save.party[this.character]; if (!c) return false;
+    const it = c.inventory[c.hotSel ?? 0], def = ITEMS[it?.id];
+    if (!def || def.slot === 'weapon' || def.slot === 'ranged') return false;
+    if (this.time.now - (this._heldUseAt ?? 0) < 350) return true;
+    this._heldUseAt = this.time.now;
+    this.menuUseSlot(c.hotSel ?? 0);
+    return true;
+  }
+
   _syncParty() {
+    this._syncHeld();
     for (const p of this.sim.players.values()) this.sim.setMods(p.id, playerMods(this.save.party[p.character], p.character));
     if (this.mode === 'host') this.net.broadcast({ t: 'party', party: this.save.party, money: this.save.world.money });
     this._refreshMenu();
@@ -1318,7 +1361,8 @@ export class WorldScene extends Phaser.Scene {
     const h = this.hot, c = this.save.party[this.character]; if (!h || !c?.inventory) return;
     const hide = !!(this.dlg || this.menu || this.box.visible);
     const flash = this._hotFlash && this.time.now - this._hotFlash.at < 220 ? this._hotFlash.i : -1;
-    const sig = JSON.stringify([c.inventory.slice(0, 9), c.equipped, hide, flash]);
+    const sel = c.hotSel ?? 0;
+    const sig = JSON.stringify([c.inventory.slice(0, 9), c.equipped, hide, flash, sel]);
     if (sig === h.sig) return;
     h.sig = sig;
     h.g.clear(); h.g.setVisible(!hide);
@@ -1327,6 +1371,7 @@ export class WorldScene extends Phaser.Scene {
       const x = h.x0 + i * (h.S + 2), it = c.inventory[i];
       h.g.fillStyle(i === flash ? 0x3a3150 : 0x0b0d16, 0.85).fillRect(x, h.y0, h.S, h.S);
       h.g.lineStyle(1, it && eq.has(it.id) ? 0x7fb069 : 0x5d6487, 0.9).strokeRect(x + 0.5, h.y0 + 0.5, h.S - 1, h.S - 1);
+      if (i === sel) h.g.lineStyle(2, 0xffd27f, 1).strokeRect(x - 0.5, h.y0 - 0.5, h.S + 1, h.S + 1);   // in hand
       const tex = it && this.textures.get('icons').has(it.id) ? it.id : 'generic';
       h.icons[i].setFrame(tex).setVisible(!!it && !hide);
       h.qty[i].setText(it && it.qty > 1 ? `${it.qty}` : '').setVisible(!hide);
@@ -1401,6 +1446,7 @@ export class WorldScene extends Phaser.Scene {
       if (this.menu !== 'puzzle' && !this.gameMenu.contains(sx, sy)) this._closeMenu();
       return;
     }
+    if (!this.sayOpen && !this.dlg && !this.menu && this._useHeld()) { this.input2.blockAttack = true; return; }
     if (this.sayOpen) {
       this.input2.blockAttack = true;
       if (!this.box.getBounds().contains(sx, sy)) this._closeSay();
@@ -1627,6 +1673,19 @@ export class WorldScene extends Phaser.Scene {
     if (near.action === 'mate') { this._mateBreak(); this._say(near.text + '\n\nEveryone has some. Better. (Thermos refilled.)'); return; }
     if (near.door) { if (this.mode === 'client') this.net.send({ t: 'door', id: near.id }); else this._toggleDoor(near.id); return; }
     if (near.knock) { this._knock(near); return; }
+    if (near.action === 'toolwall' && this.mode !== 'client') {
+      // One pry bar for every roommate who has no weapon yet; it goes in their hand.
+      const got = [];
+      for (const [who, c] of Object.entries(this.save.party)) {
+        if (c.inventory.some((x) => ITEMS[x?.id]?.slot === 'weapon')) continue;
+        if (Inv.add(c, 'item.pry_bar') > 0) continue;
+        c.equipped.weapon ??= 'item.pry_bar'; got.push(who);
+        if (who === this.character) c.hotSel = Math.max(0, c.inventory.findIndex((x) => x?.id === 'item.pry_bar'));
+      }
+      this._syncParty();
+      this._say(got.length ? `${near.text}\n\nYou each take a {pry bar}. (Select it on the hotbar with 1-9 or the wheel; left click swings what's in your hand.)` : `${near.text}\n\nEveryone's already armed.`);
+      return;
+    }
     if (near.botInstall && this.mode !== 'client' && this.save.flags['q.bot.looked'] && !this.save.flags['q.bot.built']) {
       const PARTS = ['item.bot_drive', 'item.bot_weapon', 'item.bot_brain'];
       const holder = (id) => Object.values(this.save.party).find((c) => Inv.has(c, id));

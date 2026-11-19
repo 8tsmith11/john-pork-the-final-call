@@ -166,9 +166,11 @@ await (async () => {
 })();
 
 const { CompanionBrain } = await import('../src/engine/companion.js');
+const { ITEMS: ITEMS_T } = await import('../src/content/items.js');
 test('AI companions follow the human, fight, and never trigger exits', () => {
   const sim = new Sim(MAPS_FOR_TEST.tunnel_1, { seed: 's' });
   sim.addPlayer('host', 'trevor'); sim.addPlayer('ai:manuel', 'manuel'); sim.addPlayer('ai:michael', 'michael');
+  for (const p of sim.players.values()) p.mods.swing = ITEMS_T['item.pry_bar'].swing;   // everyone starts with a pry bar
   const brain = new CompanionBrain(sim), h = sim.players.get('host'), before = sim.enemies.size;
   let aiExit = false;
   for (let t = 0; t < 60 * 40; t++) {

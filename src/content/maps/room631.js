@@ -47,6 +47,7 @@ export const room631 = makeMap({
     { id: 'obj.poster_band', x: 3, y: 0, label: 'Poster', text: 'A band called THE LEGACY SYSTEMS, live at the Black Cat. Trevor has seen them four times. He says the fifth was the one to see.' },
     { id: 'obj.photo_wall', x: 16, y: 0, label: 'Photos', text: 'Printed photos, pinned in a grid. The same yellow raincoat is in most of them. There is a gap in the bottom row, the size of one print.' },
     { id: 'obj.pennant', x: 21, y: 0, label: 'Pennant', text: 'Celeste y blanca, from a match Manuel\'s grandmother took him to. She kept the score in the margin of the programme. She kept everything.' },
+    { id: 'obj.toolwall', art: 'obj.toolbox', action: 'toolwall', x: 21, y: 10, label: 'Toolwall', text: 'Pegboard over the workbench. Outlines drawn around every tool so you know what\'s missing. Three pry bars hang in a row.' },
     { id: 'obj.toolbox', loot: 'tools', x: 20, y: 10, label: 'Toolbox', text: 'Everyone\'s tools, in nobody\'s order. A label on the lid: IF YOU BORROW IT YOU ARE AN ASTER NOOB UNTIL IT COMES BACK.' },
     { id: 'obj.crate', x: 23, y: 10, label: 'Filament crate', text: 'Spools for the fabs. Eleven colours. The pink is nearly gone and none of you remember printing in pink.' },
     { id: 'obj.cables', x: 17, y: 7, label: 'Cables', text: 'Three power leads for three fabs. A fourth runs under the bench and you have never followed it.' },

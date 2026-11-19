@@ -10,7 +10,8 @@ function run(mapId, solo, gear, seed) {
   const sim = new Sim(MAPS[mapId], { seed });
   sim.addPlayer('host', 'trevor');
   if (!solo) { sim.addPlayer('ai:manuel', 'manuel'); sim.addPlayer('ai:michael', 'michael'); }
-  const char = { equipped: gear ? { weapon: 'item.wooden_bat', armor: 'item.mesh_vest' } : {}, skills: {} };
+  // 'bare' = the starter pry bar everyone owns (nobody fights unarmed any more).
+  const char = { equipped: gear ? { weapon: 'item.wooden_bat', armor: 'item.mesh_vest' } : { weapon: 'item.pry_bar' }, skills: {} };
   for (const p of sim.players.values()) sim.setMods(p.id, playerMods(char, p.character));
   const brain = new CompanionBrain(sim), h = sim.players.get('host');
   const start = sim.enemies.size; let downs = 0, wipes = 0, dmg = 0, t = 0;

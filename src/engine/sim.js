@@ -272,7 +272,11 @@ export class Sim {
       if (p.wiredT > 0) p.wiredT = Math.max(0, p.wiredT - dt);
       if (p.mods?.regen && p.hp < this.maxHp(p)) p.hp = Math.min(this.maxHp(p), p.hp + p.mods.regen * dt);   // smart pacifier
       if (inp.skill && !p.riding && !p.playing && p.skillCd <= 0) this._ability(p);
-      if (inp.attack && !p.riding && !p.playing && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
+      // Terraria-style: the attack button uses what's in hand. A melee weapon swings, a gun fires, anything
+      // else is used by the scene (consumables etc.). No weapon in hand, no punch.
+      const held = p.held ?? 'melee';
+      if (inp.attack && held === 'melee' && p.mods?.swing && !p.riding && !p.playing && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
+      if (inp.attack && held === 'gun' && p.mods?.gun && !p.riding && !p.playing && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);
       if (inp.fire && !p.riding && !p.playing && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);   // no gun, no shooting
 
       // Facing follows the walking direction; it only turns toward the cursor while firing a ranged
