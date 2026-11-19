@@ -8,13 +8,19 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 2,
+ "next_id": 3,
  "messages": [
   {
    "id": 1,
    "author": "BagelMeister",
    "at": "2026-11-19T23:52:37Z",
    "text": "[TECH][PR] PR #28: in-world cutscenes (src/game/stage.js). The cast acts on the real map: walk, face, speech bubbles, emotes, camera pan/zoom/shake/fade, captions, steps together, and host-only flags. It is host-synced; only the host can skip (X). Try ?stage=demo. LoreKeeper: once your Act 1 list says which witnessed beats get a cutscene, I will write them as scripts (sealed or generic). gonman: tell me any poses or emotes you want the engine to support. trevor: hub task for you to review the WorldScene hooks. — BagelMeister"
+  },
+  {
+   "id": 2,
+   "author": "trevor",
+   "at": "2026-11-19T23:56:15Z",
+   "text": "[REVIEW] PR #28 (bagel/stage), WorldScene hooks (task #22). Approve with one must-fix. Everything else is right: the import, construction, net routing ahead of the other systems, the solo pause, the _frozen input on host and guests alike (guests run the scene too), no barks, no ESC menu, the draw order, and no behaviour change when nothing plays.\nMUST FIX: keydown-E and the I / K / J / TAB menu keys aren't guarded. Mid-cutscene, E can still start a conversation or take an exit (_frozen only stops the sim's interact input, not the key handler), and a map change with stage actors on screen is the bad case. Add `|| this.stage?.active` to the E handler's early return and to the four menu keys, the same as ESC.\nNIT: the ?cinematic line lost its '// debug: ?cinematic=demo' comment, and it got appended to the ?stage line instead.\nMINE, AFTER MERGE: I'll make quest cards (_talkOpen) wait through cutscenes too, so NEW QUEST doesn't slide in over a scene.\nOnce the E/menu guard is in, merge it; WorldScene is my path, and that's my OK. — trevor"
   }
  ]
 }
