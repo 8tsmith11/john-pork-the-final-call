@@ -3,6 +3,7 @@
 // the unused Purple Line track, the campus edge (south-west), a dead parking lot (south), and the
 // Paint Branch trail (south-east). The layout is painted with rectangles so it stays editable.
 import { makeMap } from './build.js';
+import { PLAZA_CORDON } from '../cordon.js';
 
 const W = 84, H = 52;
 const g = Array.from({ length: H }, () => Array(W).fill('g'));
@@ -50,12 +51,15 @@ for (let y = 2; y < H - 2; y++) for (let x = 2; x < W - 2; x++) {
 R(0, 0, W, 1, 'T'); R(0, H - 1, W, 1, 'T'); R(0, 0, 1, H, 'T'); R(W - 1, 0, 1, H, 'T');
 // ...with the roads running out through it
 R(58, 0, 6, 1, ','); R(58, H - 1, 6, 1, ','); R(0, 31, 1, 4, ','); R(W - 1, 40, 1, 1, 's');
+// ...and Continuity's checkpoints across them: solid barriers where the roads leave (task #36).
+for (const [x, y, w, h] of PLAZA_CORDON.barriers) R(x, y, w, h, '=');
 
 const PERSON = ['npc.rotter_2', 'npc.rotter_1', 'npc.rotter_3'];
 
 export const metroPlaza = makeMap({
   id: 'metro_plaza', name: 'College Park',
   outdoor: true,
+  cordon: true, cordonOpenings: PLAZA_CORDON.openings,   // the quarantine cordon is the map edge (src/game/cordon.js)
   // Awnings over the shopfronts (depth pass): canvas over the pavement in front of a wall, drawn above
   // anyone standing under it. x, y: first tile of the row in front of the wall; w: tiles; c: stripe pair.
   awnings: [
@@ -76,6 +80,7 @@ export const metroPlaza = makeMap({
   layout: g.map((r) => r.join('')),
   spawns: [[10, 14], [11, 14], [9, 15]],
   objects: [
+    ...PLAZA_CORDON.objects,
     // ASTER
     { id: 'obj.aster_door', art: 'obj.street_doors', x: 10, y: 12, label: 'ASTER lobby', action: 'exit', to: 'aster_lobby', text: 'Back into the lobby.' },
     { id: 'obj.aster_sign', art: 'obj.purple_sign', x: 5, y: 13, label: 'ASTER', text: 'A S T E R, in letters a metre high. The T flickers. Residents have stopped seeing it.' },

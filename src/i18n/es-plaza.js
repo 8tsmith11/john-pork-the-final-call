@@ -143,4 +143,13 @@ export const ES_PLAZA = {
   'Inés': 'Inés',
   'Ottoline, master armorer': 'Ottoline, maestra armera',
   "The shutter comes up two inches. Halvard's eye, then the television behind him, then the shutter again.\n\n\"You paid for one rumor. That was it.\"": "La persiana sube cinco centímetros. El ojo de Halvard, después el televisor detrás de él, después la persiana otra vez.\n\n\"Pagaste por un rumor. Era ese.\"",
+  // The cordon (task #36)
+  'Continuity trooper': 'Soldado de Continuity',
+  'Visor down, rifle across the chest, a red stripe on the shoulder. The helmet turns to follow you and nothing else moves.': 'Visor bajo, rifle cruzado sobre el pecho, una franja roja en el hombro. El casco gira para seguirte y nada más se mueve.',
+  'Floodlight': 'Reflector',
+  'A floodlight on a mast, humming. The beam sweeps the fence line and comes back to you.': 'Un reflector en un mástil, zumbando. El haz barre la cerca y vuelve a ti.',
+  'Checkpoint booth': 'Cabina del control',
+  'A white booth with a slot for papers. The screen inside shows College Park as one grey square, and a timer.': 'Una cabina blanca con una ranura para papeles. La pantalla de adentro muestra College Park como un cuadrado gris, y un temporizador.',
+  'Cordon notice': 'Aviso del cordón',
+  'CONTINUITY CONTAINMENT ZONE. NO ENTRY. NO EXIT. Under it, in marker: "how long".': 'ZONA DE CONTENCIÓN DE CONTINUITY. PROHIBIDO ENTRAR. PROHIBIDO SALIR. Abajo, con marcador: "hasta cuándo".',
 };
