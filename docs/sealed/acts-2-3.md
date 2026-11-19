@@ -192,3 +192,14 @@ Fgnegvat vqrnf sebz geribe'f ntrag (gnxr, phg be ercynpr):
   va Npg 2 naq gura fryyf gur cnegl bhg; be Unyineq, jub genqrf gur cnegl gb Pbagvahvgl; be fbzrbar
   pybfre, gvzrq fb gur Npg 1 erirny naq gur orgenlny rpub rnpu bgure.
 - Arire gryy Geribe juvpu. Ernqnoyr qbpf fgnl fcbvyre-serr.
+
+## Cynaarq srngher sebz Geribe: gur phfgbzvmngvba fgngvba (2026-11-18, frnyrq ng uvf erdhrfg)
+
+Yngre ba (abg Npg 1): na njrfbzr **phfgbzvmngvba zrah jvgu n pbby HV ng fbzr xvaq bs fgngvba**, sbe
+**jrncbaf**, naq fvzvyneyl sbe **grpu obql vzcynagf** naq **nezbe**. Vqrnf gb qrirybc jura vgf npg pbzrf:
+n orapu be pyvavp gur cnegl haybpxf (n jrncbafzvgu'f evt, n onpx-nyyrl vzcynag punve), fybg-onfrq zbqf cre
+vgrz (oneery, tevc, rqtr, pber; vzcynag fbpxrgf ba gur ynpr; nezbe cyngrf), n ovt ebgngvat cerivrj bs
+gur vgrz, fgng qrygnf yvir nf lbh fjnc, naq zngrevny pbfgf sebz gur sno rpbabzl. Vg gvrf vagb gur
+zbecu/ovbunpxvat yvar (vzcynagf), gur nanybt-if-ynpr gurzr (nanybt zbqf erfvfg pbqr ebg, ynpr zbqf
+ner fgebatre ohg ebg), naq gur rkvfgvat hctenqr yriryf ng gur nezbere. Bjare GOQ; geribe'f ntrag pna
+ohvyq gur flfgrzf fvqr. Xrrc vg bhg bs ernqnoyr qbpf hagvy Geribe ha-frnyf vg.
