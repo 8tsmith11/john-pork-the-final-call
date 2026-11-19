@@ -2374,6 +2374,14 @@ export class WorldScene extends Phaser.Scene {
       g.fillStyle(0x332e57).fillRect(76, ry + 1, 34, 4);
       g.fillStyle(rot >= 60 ? 0xd417c8 : 0xc8e619).fillRect(76, ry + 1, 34 * Math.min(1, rot / 100), 4);
     }
+    // Ammo for the gun you carry, left of the hotbar (combat brief #8): count, or RELOADING.
+    this.hudAmmo ??= this.add.text(0, 0, '', { ...FONT, fontSize: '8px', color: '#e8e8f0', stroke: '#0b0d16', strokeThickness: 3 }).setOrigin(1, 0.5).setScrollFactor(0).setDepth(9003);
+    const gunId = c.equipped?.ranged, gunDef = ITEMS[gunId]?.gun;
+    if (gunId && this.hot && !this.menu && !this.dlg) {
+      const clip = gunDef?.clip ?? 6, am = me?.am ?? clip;
+      this.hudAmmo.setText(me?.rl > 0 ? 'RELOADING' : `${'▮'.repeat(Math.min(am, 8))}${am > 8 ? '+' : ''} ${am}/${clip}`).setColor(me?.rl > 0 ? '#ffb347' : '#e8e8f0')
+        .setPosition(this.hot.x0 - 6, this.hot.y0 + this.hot.S / 2).setVisible(true);
+    } else this.hudAmmo.setVisible(false);
     // Top-right: XP and money, compact.
     const lines = [`xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `   ◆ ${c.skillPoints} skill pt [K]` : ''}`, `$${this.save.world.money ?? 0}${snap.enemies?.length ? `   coderot ${snap.enemies.length}` : ''}`];
     this.hudText.setText(lines.join('\n'));

@@ -23,7 +23,7 @@ export const FEEL = { comboWindow: 0.55, finisherDmg: 1.6, finisherKnock: 1.8, f
 export const COMBAT = {
   maxHp: 100, hurtIframes: 0.6, reviveTime: 4.0, reviveRange: 18, reviveHp: 40,
   melee: { cooldown: 0.38, range: 20, arc: Math.PI * 0.6, damage: 12, knockback: 120 },
-  shot: { cooldown: 0.5, speed: 210, damage: 8, life: 0.9 },
+  shot: { cooldown: 0.5, speed: 210, damage: 8, life: 0.9, clip: 6, reload: 1.2 },   // clip/reload: Gungeon's rhythm (combat brief #8)
 };
 const HALF_W = 5, HALF_H = 4; // feet hitbox (characters are 16x24; collide at the feet)
 
@@ -270,6 +270,7 @@ export class Sim {
       p.aim = inp.aim;
       p.dodgeCd = Math.max(0, p.dodgeCd - dt);
       p.iframes = Math.max(0, p.iframes - dt); if (p.focusT > 0) p.focusT = Math.max(0, p.focusT - dt);
+      if (p.reloadT > 0) { p.reloadT = Math.max(0, p.reloadT - dt); if (p.reloadT === 0) p.ammo = ({ ...COMBAT.shot, ...(p.mods?.gunStats ?? {}) }).clip; }
 
       p.staT = Math.max(0, (p.staT ?? 0) - dt);
       p.pillT = Math.max(0, (p.pillT ?? 0) - dt);   // blue pill: dodges are free while this runs
@@ -495,6 +496,12 @@ export class Sim {
 
   _fire(p) {
     const c = { ...COMBAT.shot, ...(p.mods?.gunStats ?? {}) }, n = c.pellets ?? 1;
+    // Magazine: a gun holds `clip` shots, then reloads for `reload` s. Swapping guns starts a fresh clip.
+    const key = JSON.stringify(p.mods?.gunStats ?? null);
+    if (p.gunKey !== key) { p.gunKey = key; p.ammo = c.clip; p.reloadT = 0; }
+    if (p.reloadT > 0) return;
+    p.ammo = (p.ammo ?? c.clip) - 1;
+    if (p.ammo <= 0) { p.reloadT = c.reload; p.ammo = 0; this.events.push({ t: 'reload', id: p.id }); }
     const focus = p.focusT > 0; if (focus) p.focusT = 0;
     p.shotCd = Math.max(0.12, c.cooldown + (p.mods?.shotCd ?? 0));
     for (let i = 0; i < n; i++) {
@@ -878,7 +885,7 @@ export class Sim {
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
-        hp: Math.round(p.hp), mhp: this.maxHp(p), rot: Math.round((p.rot ?? 0) * 10) / 10, st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0,
+        hp: Math.round(p.hp), mhp: this.maxHp(p), rot: Math.round((p.rot ?? 0) * 10) / 10, am: p.ammo ?? null, rl: p.reloadT > 0 ? Math.round(p.reloadT * 10) / 10 : 0, st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0,
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,

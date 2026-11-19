@@ -270,6 +270,13 @@ test('combat: a chaser that lands a hit stands open for a moment (x1.5 damage, n
   assert.ok(e.openT > 0, 'open after its hit'); const x = e.x; sim._stepEnemies(1 / 60); assert.equal(e.x, x, 'holds still while open');
   sim._hurtEnemy(e, 10, 0, 0, 'a'); assert.equal(999 - e.hp, 15);
 });
+test('combat: guns hold a clip, then reload (no shots while reloading)', () => {
+  const { sim, p } = combatSim(); p.mods.gun = 1; p.mods.gunStats = { cooldown: 0.1, damage: 4, speed: 200, life: 0.5, clip: 2, reload: 1 };
+  sim._fire(p); sim._fire(p); assert.equal(p.ammo, 0); assert.ok(p.reloadT > 0);
+  const n = sim.shots.length; sim._fire(p); assert.equal(sim.shots.length, n, 'no shot while reloading');
+  for (let i = 0; i < 61; i++) sim.step(1 / 60, new Map());
+  assert.equal(p.reloadT, 0); assert.equal(p.ammo, 2);
+});
 test('combat: hit-stop freezes enemies and shots for a moment', () => {
   const { sim, p } = combatSim(); const e = dummy(sim, p.x + 60, p.y); e.cd = 0;
   sim.shots.push({ x: p.x + 40, y: p.y - 30, vx: 0, vy: -50, life: 2, dmg: 1, from: 'enemy' });

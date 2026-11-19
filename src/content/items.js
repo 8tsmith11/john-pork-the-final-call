@@ -26,8 +26,8 @@ export const ITEMS = {
   'item.box_cutter':   { name: 'Box cutter', slot: 'weapon', swing: { range: 14, arc: 0.45, cooldown: 0.18, damage: 8, knockback: 40 }, mods: { crit: 0.15 }, text: 'Short reach, very fast. Get close and stay close.' },
   'item.rebar':        { name: 'Rebar spear', slot: 'weapon', analog: true, swing: { range: 32, arc: 0.28, cooldown: 0.48, damage: 19, knockback: 90 }, text: 'A length of rebar with one end ground to a point. Long, narrow. Hit them before they reach you.' },
   'item.busted_guitar':{ name: 'Busted Telecaster', slot: 'weapon', analog: true, swing: { range: 22, arc: 0.9, cooldown: 0.5, damage: 12, knockback: 260 }, mods: { abilityPower: 0.1 }, text: 'Two strings left. A wide, loud swing that throws everything back. Trevor winces every time.' },
-  'item.nail_gun':     { name: 'Nail gun', slot: 'ranged', gun: { cooldown: 0.16, damage: 4, speed: 260, life: 0.6 }, mods: { gun: 1 }, text: 'Fast, weak, a lot of nails. Hold the trigger.' },
-  'item.scattergun':   { name: 'Fab scattergun', slot: 'ranged', gun: { cooldown: 0.85, damage: 6, speed: 200, life: 0.38, pellets: 5, spread: 0.45 }, mods: { gun: 1 }, text: 'Five pellets in a fan, short range. Printed from coderot gel, which may be why it hums.' },
+  'item.nail_gun':     { name: 'Nail gun', slot: 'ranged', gun: { cooldown: 0.16, damage: 4, speed: 260, life: 0.6, clip: 24, reload: 1.6 }, mods: { gun: 1 }, text: 'Fast, weak, a lot of nails. Hold the trigger.' },
+  'item.scattergun':   { name: 'Fab scattergun', slot: 'ranged', gun: { cooldown: 0.85, damage: 6, speed: 200, life: 0.38, pellets: 5, spread: 0.45, clip: 2, reload: 1.4 }, mods: { gun: 1 }, text: 'Five pellets in a fan, short range. Printed from coderot gel, which may be why it hums.' },
   'item.mate_flask':   { name: 'Mate thermos', slot: 'consumable', heal: 45, text: 'Manuel would want you to have it. He would also want it back.' },
 };
 
