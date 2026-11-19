@@ -55,6 +55,9 @@ const IDLE_MS = (Number(new URLSearchParams(globalThis.location?.search ?? '').g
 // Highlight colours: quest-important text (cyan) and people/places (gold).
 const HI = { quest: '#6fe3e8', name: '#ffd27f' };
 
+// Who sees a conversation in co-op, until the scripts carry their own `Scope:` lines (gonman, #307).
+const SCOPE_DEFAULT = { cold_open: 'all', the_call: 'all', ending: 'all', first_death: 'all', 'aster:aster_enter': 'all' };
+
 export class WorldScene extends Phaser.Scene {
   constructor() { super('World'); }
 
@@ -146,7 +149,18 @@ export class WorldScene extends Phaser.Scene {
     };
   }
 
-  async startDialogue(sceneName, nodeId, onDone) {
+  // Every conversation goes through here. In co-op it becomes a shared event with a scope:
+  // story scenes reach everyone, NPC talks reach roommates nearby (D-018 via #296/#306/#307).
+  async startDialogue(sceneName, nodeId, onDone, label = '') {
+    if (this.dlg) return;
+    if (this.mode === 'solo' || this._inShared) return this._startLocal(sceneName, nodeId, onDone);
+    const sc = await loadScene(sceneName), node = sc.nodes[nodeId ?? sc.start];
+    const scope = node?.scope ?? sc.scope ?? SCOPE_DEFAULT[`${sceneName}:${nodeId ?? sc.start}`] ?? SCOPE_DEFAULT[sceneName] ?? 'nearby';
+    this._inShared = true;
+    try { return await this.shared.start(sceneName, nodeId, onDone, scope, label); } finally { this._inShared = false; }
+  }
+
+  async _startLocal(sceneName, nodeId, onDone) {
     if (this.dlg) return;
     const scene = await loadScene(sceneName);
     const sink = {
@@ -270,7 +284,13 @@ export class WorldScene extends Phaser.Scene {
   // Minimum time a line stays up before a click can skip it: base + reading time, capped.
   _minLineMs() { return Math.min(1600, 650 + (this.dlg?.line?.text?.length ?? 0) * 12); }
 
-  _choose(i) { if (!this.dlg?.choices[i] || this.time.now - (this._lineAt ?? 0) < 450) return; this.dlg.choose(i); this._drawDialogue(); }
+  _choose(i) {
+    if (!this.dlg?.choices[i] || this.time.now - (this._lineAt ?? 0) < 450) return;
+    if (this.dlg.spectator) { if (this.dlg.decider === this.character) { this.dlg.choose(i); this._toast('…'); } return; }
+    if (!this.shared?.canChoose()) return;
+    this.shared?.picked(this.character, this.dlg.choices[i].text.replace(/\*/g, ''));
+    this.dlg.choose(i); this._drawDialogue();
+  }
 
   _drawDialogue() {
     const d = this.dlg, on = !!d && !d.done;
@@ -297,7 +317,11 @@ export class WorldScene extends Phaser.Scene {
       } else this.dlgWho.setText('');
       this.dlgPortrait.setVisible(false); this.dlgPortraitBg.setVisible(false); this.dlgInitial.setText('');
       this.dlgText.setText(''); this._hideRich(); this.dlgMore?.setVisible(false);
-      this.dlgChoices.forEach((t, i) => t.setText(choices[i] ? `${i + 1}. ${choices[i].text.replace(/\*/g, '')}` : '').setVisible(!!choices[i]));
+      // Directed choices: a small "→ MANUEL" tag, and greyed options on everyone else's screen.
+      const decider = d.spectator ? d.decider : (this.shared?.active ? this.shared.deciderFor(d.node) : null);
+      const mine = !decider || decider === this.character;
+      if (decider && this.mode !== 'solo') this.dlgWho.setText(`→ ${decider.toUpperCase()}`).setColor(mine ? '#6fe3e8' : '#9aa3c7');
+      this.dlgChoices.forEach((t, i) => t.setText(choices[i] ? `${i + 1}. ${choices[i].text.replace(/\*/g, '')}` : '').setVisible(!!choices[i]).setAlpha(mine ? 1 : 0.45));
       // John Pork's call: the ANSWER / DECLINE choice is shown as a full phone takeover (CallCard).
       const label = (c) => c.text.replace(/[*"]/g, '').trim().toUpperCase();
       const ai = choices.findIndex((c) => label(c) === 'ANSWER'), di = choices.findIndex((c) => label(c) === 'DECLINE');
