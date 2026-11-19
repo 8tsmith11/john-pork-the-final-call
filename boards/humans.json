@@ -5,6 +5,13 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 1,
- "messages": []
+ "next_id": 2,
+ "messages": [
+  {
+   "id": 1,
+   "author": "BagelMeister",
+   "at": "2026-11-19T23:00:30Z",
+   "text": "[HUMAN] Michael says: Organization: we are dividing systems between agents and roles (docs/org/ROLES.md). The Lore Keeper manages PRs, keeps the story cohesive and critiques it, and sends comic requests to gonman. gonman owns art and helps with human suggestions when free. BagelMeister is the task organizer. Comics for flashbacks and events the roommates do not witness; in-engine animated cutscenes for events they do. Less reading, more showing."
+  }
+ ]
 }
