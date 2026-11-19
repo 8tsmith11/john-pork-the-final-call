@@ -1528,19 +1528,25 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode === 'client') { this.net.send({ t: 'puzzle', id: o.id }); return; }
     const ctx = { seed: this.save.world.seed, t: this.time.now / 1000 };
     const r = usePuzzle(p, o.id, this.save.flags, { ...ctx, lang: 'en' }), rEs = usePuzzle(p, o.id, this.save.flags, { ...ctx, lang: 'es' });
+    const reply = (text, textEs = text) => {
+      if (peer === this.localId) this._say(getLang() === 'es' ? textEs : text);
+      else this.net?.send(peer, { t: 'say', text, textEs });
+    };
+    const item = r.solved && r.reward.item;
+    const pc = this.save.party[who];
+    if (item && (!pc || Inv.add(pc, item) > 0)) return reply('Your bag is full.');
+
     for (const [k, v] of Object.entries(r.set)) this.save.flags[k] = v;
     sfx(r.wrong ? 'hit' : 'swing');
     if (r.solved) {
-      const pc = this.save.party[who];
-      if (r.reward.item && pc) { Inv.add(pc, r.reward.item); this._toast(`★ ${ITEMS[r.reward.item]?.name ?? r.reward.item}`); }
+      if (item) this._toast(`★ ${ITEMS[item]?.name ?? item}`);
       if (r.reward.money) W.addMoney(this.save, who, r.reward.money);
       this._syncParty?.(); this._partyDirty = true;
       this.cameras.main.shake(300, 0.005); this._tickQuests(true);
     }
     const base = o.text ?? o.label ?? '';
     const text = `${base}\n\n${r.say}`, textEs = `${tr(base)}\n\n${rEs.say}`;
-    if (peer === this.localId) this._say(getLang() === 'es' ? textEs : text);
-    else this.net?.send(peer, { t: 'say', text, textEs });
+    reply(text, textEs);
   }
 
   // Hard optional: turn Manuel's busts to face the flag, in the right order.

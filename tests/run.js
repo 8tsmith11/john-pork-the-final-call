@@ -1041,6 +1041,13 @@ test('puzzle kit in co-op: a guest\'s move runs on the host, progress stays on t
     const objs = { 'obj.a': { id: 'obj.a', label: 'A' }, 'obj.b': { id: 'obj.b', label: 'B' } };
     const money0 = party.michael.money ?? 0, scrap0 = Inv.count(party.michael, 'item.mat_scrap');
     CraftWorldScene.prototype._usePuzzle.call(host, pz, objs['obj.a'], 'michael', 'peerM');
+    const inventory = party.michael.inventory;
+    party.michael.inventory = Array.from({ length: Inv.SLOTS }, () => ({ id: 'item.wooden_bat', qty: 1 }));
+    CraftWorldScene.prototype._usePuzzle.call(host, pz, objs['obj.b'], 'michael', 'peerM');
+    assert.ok(!host.save.flags['pz.coop_t.solved'], 'a full bag must leave a puzzle open for retry');
+    assert.equal((party.michael.money ?? 0), money0, 'no money should be paid until the item fits');
+    assert.match(sent.at(-1)[1].text, /bag is full/);
+    party.michael.inventory = inventory;
     CraftWorldScene.prototype._usePuzzle.call(host, pz, objs['obj.b'], 'michael', 'peerM');
     assert.ok(host.save.flags['pz.coop_t.solved'], 'the host keeps the progress and the solve');
     assert.equal(Inv.count(party.michael, 'item.mat_scrap'), scrap0 + 1); assert.equal((party.michael.money ?? 0), money0 + 9);
