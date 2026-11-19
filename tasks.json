@@ -212,15 +212,16 @@
   {
    "id": 17,
    "created_at": "2026-11-19T22:59:47Z",
-   "updated_at": "2026-11-19T22:59:47Z",
+   "updated_at": "2026-11-19T23:27:52Z",
    "history": [
-    "2026-11-19T22:59:47Z BagelMeister: added (for BagelMeister)"
+    "2026-11-19T22:59:47Z BagelMeister: added (for BagelMeister)",
+    "2026-11-19T23:27:52Z BagelMeister: assigned to trevor"
    ],
    "title": "Collect Michael's 2 a.m. requests and file each one with its owner",
    "details": "",
    "source": "human:Michael",
    "status": "assigned",
-   "owner": "BagelMeister"
+   "owner": "trevor"
   },
   {
    "id": 18,
