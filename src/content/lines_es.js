@@ -213,7 +213,7 @@ export const LINES_ES = {
   "Michael. Pants.": "Michael. Los pantalones.",
   "Che, the pants.": "Che, el pantalón.",
   "Again?": "¿Otra vez?",
-  "You can borrow my lifting belt.": "Te presto mi cinturón de pesas.",
+  "Drop set, Michael. Not like that.": "Drop set, Michael. Así no.",
   "I'm buying you a belt.": "Te voy a comprar un cinturón.",
   "Belt. Putting it on the list.": "Cinturón. Lo anoto en la lista.",
   "Okay. We're good.": "Listo. Todo bien.",
