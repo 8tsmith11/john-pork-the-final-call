@@ -30,6 +30,8 @@ const BODY = {
 export const LOOKS = {
   'item.rain_parka':  { slot: 'parka', style: 'parka', main: P.slicker1, shade: P.slicker0, line: P.night0 },   // bright slicker yellow (Michael)
   'item.brown_parka': { slot: 'parka', style: 'parka', main: P.parka, shade: P.warm2, line: P.night0 },   // Michael's brown one
+  // Not gear: Manuel's butt, now and then noticeably bigger (Manuel's own request; src/game/bigButt.js).
+  'fx.bigbutt':          { slot: '_fx', style: 'butt' },
   // Uniques (task #29, gonman). Manuel's:
   'item.arg_shirt':      { slot: 'chestplate', style: 'shirt', main: P.screen2, shade: P.screen1, stripe: P.bone, sun: P.warm4 },   // celeste y blanca, the sun on the chest
   'item.hasbulla_tee':   { slot: 'parka', style: 'shirt', main: P.bone, shade: P.concrete3, oversized: true, print: 'fighter' },     // white, oversized; a small fighter with a belt (no real person)
@@ -216,7 +218,28 @@ function paintHolster(src, out, w, h, facing, body, look) {
   return true;
 }
 
-const PAINTERS = { parka: paintParka, shirt: paintShirt, hat: paintHat, boots: paintBoots, socks: paintSocks, gloves: paintGloves, pacifier: paintPacifier, holster: paintHolster };
+// Manuel's bigger butt: the top rows of the trousers bulge out behind him (both sides from the front and
+// back), in the trouser colour with an outline. Clothed, cartoonish, nothing else (D-015).
+function paintButt(src, out, w, h, facing, body) {
+  const { is, put, C, rows } = kit(src, out, w, h, body);
+  const [hip, low] = rows(C.pants); if (low < 0) return false;
+  const pants = C.pants[0], line = hex(P.night0), shine = hex(P.night3).map((v) => Math.min(255, v + 28));
+  for (let y = Math.max(0, hip - 1); y <= Math.min(hip + 4, low); y++) {
+    let a = w, b = -1; for (let x = 0; x < w; x++) if (is(x, y, C.pants) || is(x, y, C.shirt)) { a = Math.min(a, x); b = Math.max(b, x); }
+    if (b < 0) continue;
+    const swell = [1, 2, 3, 3, 2, 1][y - (hip - 1)] ?? 1;
+    const sides = facing === 'right' ? [-1] : [-1, 1];
+    for (const sd of sides) {
+      const edge = sd < 0 ? a : b;
+      for (let k = 1; k <= swell; k++) put(edge + sd * k, y, pants);
+      put(edge + sd * (swell + 1), y, line);
+    }
+    if (y === hip + 1) put(facing === 'right' ? a - 1 : a, y, shine);
+  }
+  return true;
+}
+
+const PAINTERS = { butt: paintButt, parka: paintParka, shirt: paintShirt, hat: paintHat, boots: paintBoots, socks: paintSocks, gloves: paintGloves, pacifier: paintPacifier, holster: paintHolster };
 
 /** Build (once) and return the overlay texture key for roommate `who` wearing item `id`. */
 export function wearTexture(scene, who, id) {

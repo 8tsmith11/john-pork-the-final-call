@@ -19,6 +19,10 @@ export const BARKS = {
       'I\'m not tired. I\'m horizontal on the inside.',
       'That hum\'s a B flat. Roughly.',
       'Whose turn was the chain?',
+      // Trevor calls John Pork "Juan Puerco" (Manuel's request), in English too.
+      'If Juan Puerco calls, I\'m in the shower.',
+      'Juan Puerco hasn\'t called in a while. I don\'t like it.',
+      'Nobody pick up for Juan Puerco without me.',
     ],
     michael: [
       'No bars. Obviously no bars.',
@@ -26,6 +30,7 @@ export const BARKS = {
       'I\'m just checking the time.',
       'I\'ve got a thing at nine. I had a thing at nine.',
       'Is anybody else hungry? Is that weird?',
+      'Trevor keeps calling him Juan Puerco. It\'s catching.',
     ],
   },
   // Manuel in his morph gets stranger. The others notice before he does.

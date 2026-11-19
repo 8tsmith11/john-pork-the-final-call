@@ -25,6 +25,10 @@ export const LINES_ES = {
   'THE gonman. Say the article.': 'EL gonman. Decí el artículo.',
   'I can hear the printers from here. Can you hear the printers?': 'Oigo las impresoras desde acá. ¿Ustedes oyen las impresoras?',
   'I hate 245 lab. The gonman also hates 245 lab.': 'Odio el laboratorio 245. El gonman también odia el laboratorio 245.',
+  'If Juan Puerco calls, I\'m in the shower.': 'Si llama Juan Puerco, estoy en la ducha.',
+  'Juan Puerco hasn\'t called in a while. I don\'t like it.': 'Juan Puerco no llama hace rato. No me gusta.',
+  'Nobody pick up for Juan Puerco without me.': 'Que nadie le conteste a Juan Puerco sin mí.',
+  'Trevor keeps calling him Juan Puerco. It\'s catching.': 'Trevor le sigue diciendo Juan Puerco. Se contagia.',
   // barks: kills
   'Aster pros.': 'Pros de Aster.',
   'Aster pros!': '¡Pros de Aster!',
@@ -125,6 +129,10 @@ export const LINES_ES = {
   'That\'s going in the report.': 'Eso va al informe.',
   'You\'re running rich, buddy.': 'Vas con la mezcla muy rica, amigo.',
   'I\'ll... still take your vote.': 'Igual... acepto tu voto.',
+  // Manuel's big butt moments (src/game/bigButt.js): Manuel in voseo
+  'Why are my pants tight all of a sudden.': 'Por qué me aprieta el pantalón de repente.',
+  'Leg day. I did not do leg day.': 'Día de piernas. No hice día de piernas.',
+  'Nobody say anything.': 'Nadie diga nada.',
   // crowd
   'I came out for milk an hour ago. I don\'t remember what milk is for.': 'Salí a comprar leche hace una hora. No me acuerdo para qué sirve la leche.',
   'My smart fridge broke up with me. Left a note on the door and everything.': 'Mi refrigerador inteligente me dejó. Me dejó una nota en la puerta y todo.',
