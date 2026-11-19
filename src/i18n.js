@@ -6,6 +6,7 @@ import { ES_QUESTS } from './i18n/es-quests.js';
 import { ES_ITEMS } from './i18n/es-items.js';
 import { ES_631 } from './i18n/es-631.js';
 import { ES_TUNNELS_LAKE } from './i18n/es-tunnels-lake.js';
+import { ES_ASTER } from './i18n/es-aster.js';
 import { ITEMS } from './content/items.js';
 const KEY = 'jpfc.lang';
 let lang = 'en';
@@ -94,7 +95,7 @@ for (const [id, def] of Object.entries(ITEMS)) {
   if (def.name) ES_ITEM_STRINGS[def.name] = es[0];
   if (def.text) ES_ITEM_STRINGS[def.text] = es[1];
 }
-const ES_ALL = { ...ES, ...ES_QUESTS, ...ES_ITEM_STRINGS, ...ES_631, ...ES_TUNNELS_LAKE };
+const ES_ALL = { ...ES, ...ES_QUESTS, ...ES_ITEM_STRINGS, ...ES_631, ...ES_TUNNELS_LAKE, ...ES_ASTER };
 function trOne(s) {
   if (ES_ALL[s] !== undefined) return ES_ALL[s];
   for (const [rx, rep] of ES_RX) if (rx.test(s)) return s.replace(rx, rep);

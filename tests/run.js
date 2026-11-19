@@ -453,6 +453,13 @@ test('i18n: every Room 631 label and description has Spanish', () => {
   assert.deepEqual(missing, [], 'add these to src/i18n/es-631.js');
 });
 
+const { ES_ASTER } = await import('../src/i18n/es-aster.js');
+test('i18n: every ASTER hallway and lobby label and description has Spanish', () => {
+  const missing = [];
+  for (const id of ['aster_hall', 'aster_lobby']) for (const o of MAPS_FOR_TEST[id].objects) for (const t of [o.label, o.text, ...(o.pages ?? []), ...((o.later ?? []).map((l) => l.text)), o.lockedText, o.doneText]) if (typeof t === 'string' && t && !(t in ES_ASTER)) missing.push(`${id}: ${t.slice(0, 40)}`);
+  assert.deepEqual(missing, [], 'add these to src/i18n/es-aster.js');
+});
+
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
 test('pipe puzzle: every seed is solvable and starts unsolved', () => {
   if (!PipePuzzle) return;
