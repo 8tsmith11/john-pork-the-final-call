@@ -2117,7 +2117,7 @@ export class WorldScene extends Phaser.Scene {
   _bark(playerId, text) {
     const s = this.sprites.get(playerId);
     if (!s || !text || this.dlg || this.menu || this.time.now < (this._barkQuietUntil ?? 0)) return;
-    this._barkQuietUntil = this.time.now + 5000;                    // one voice at a time
+    this._barkQuietUntil = this.time.now + 9000;                    // one voice at a time, and room between them
     const t = this.add.text(s.x, s.y - 30, text, { ...FONT, fontSize: '6px', color: '#e8e8f0', backgroundColor: '#0b0d16cc', padding: { x: 2, y: 1 } }).setOrigin(0.5, 1).setDepth(7000);
     const follow = this.time.addEvent({ delay: 30, loop: true, callback: () => t.active && s.active && t.setPosition(s.x, s.y - 30) });
     this.tweens.add({ targets: t, alpha: 0, delay: 2600, duration: 500, onComplete: () => { follow.remove(); t.destroy(); } });
@@ -2126,7 +2126,18 @@ export class WorldScene extends Phaser.Scene {
   _barkFrom(kind, snap, { not = null, by = null } = {}) {
     const players = (snap?.players ?? []).filter((p) => !p.dn && p.id !== not);
     const p = by ? players.find((x) => x.id === by) : players[Math.floor(Math.random() * players.length)];
-    if (p) this._bark(p.id, pickBark(BARKS[kind], p.c));
+    if (p) this._bark(p.id, this._freshBark(BARKS[kind], p.c));
+  }
+
+  // Never the same line twice in a row: remember the last few said and pick around them (the pools are
+  // small, and a repeated one-liner is what reads as filler).
+  _freshBark(table, who) {
+    const pool = [...(table?.[who] ?? []), ...(table?.any ?? [])];
+    if (!pool.length) return null;
+    const recent = (this._recentBarks ??= []), fresh = pool.filter((t) => !recent.includes(t));
+    const pick = (fresh.length ? fresh : pool)[Math.floor(Math.random() * (fresh.length || pool.length))];
+    recent.push(pick); if (recent.length > 6) recent.shift();
+    return pick;
   }
 
   _barkTick(snap) {
@@ -2139,10 +2150,10 @@ export class WorldScene extends Phaser.Scene {
     // Now and then, out of nowhere.
     this._nextIdleBark ??= this.time.now + 20000;
     if (this.time.now > this._nextIdleBark) {
-      this._nextIdleBark = this.time.now + 28000 + Math.random() * 30000;
+      this._nextIdleBark = this.time.now + 60000 + Math.random() * 50000;   // about once every minute and a half
       const up = snap.players.filter((p) => !p.dn);
       const p = up[Math.floor(Math.random() * up.length)];
-      if (p) this._bark(p.id, pickBark(p.mo && BARKS.idleMorph[p.c] ? BARKS.idleMorph : BARKS.idle, p.c));
+      if (p) this._bark(p.id, this._freshBark(p.mo && BARKS.idleMorph[p.c] ? BARKS.idleMorph : BARKS.idle, p.c));
     }
   }
 
@@ -2150,8 +2161,8 @@ export class WorldScene extends Phaser.Scene {
     this.romance?.onEvent(ev, snap); this.gear?.onEvent(ev); this.eggs?.onEvent(ev); this.perf?.onEvent(ev);
     if (['hit', 'kill', 'shot', 'swing'].includes(ev.t) && (ev.by === this.localId || ev.id === this.localId)) sfx(ev.t);
     if (ev.t === 'hurt' && ev.id === this.localId) sfx('hurt');
-    if (ev.t === 'kill' && !ev.boss && Math.random() < 0.3) this._barkFrom('kill', snap, { by: ev.by });
-    if (ev.t === 'hurt' && Math.random() < 0.2) this._barkFrom('allyHurt', snap, { not: ev.id });
+    if (ev.t === 'kill' && !ev.boss && Math.random() < 0.15) this._barkFrom('kill', snap, { by: ev.by });
+    if (ev.t === 'hurt' && Math.random() < 0.08) this._barkFrom('allyHurt', snap, { not: ev.id });
     if (ev.t === 'drum') { this.cameras.main.shake(40, ev.beat % 4 === 0 ? 0.006 : 0.002); sfx('hit'); }
     if (ev.t === 'boss' && !ev.sahur && this.mode !== 'client') this.save.flags['act1.boss.wardenName'] = ev.name;
     if (ev.t === 'kill' && ev.boss && this.mode !== 'client') { this.save.flags['act1.boss.defeated'] = true; this.save.flags['act1.outbreak.contained'] = true; }
