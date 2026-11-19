@@ -14,7 +14,7 @@ const ROAD = new Set([',', 'z', 'Z']);
 
 /** Seeded decals for one map: [{ frame, x, y }] in tiles. Skips solid tiles and tiles with an object or scenery on them. */
 export function scatterDecals(map) {
-  if (!map.outdoor) return [];
+  if (!map.outdoor) return wearDecals(map);
   const taken = new Set([...(map.objects ?? []), ...(map.scenery ?? [])].map((o) => `${o.x},${o.y}`));
   for (const [, x, y] of map.decals ?? []) taken.add(`${x},${y}`);
   const at = (x, y) => map.layout[y]?.[x];
@@ -40,6 +40,12 @@ export function scatterDecals(map) {
       if (f) out.push({ frame: f, x, y });
       continue;
     }
+    if (ch === '~' && !taken.has(`${x},${y}`)) {                     // lily pads and scum near the shore
+      const shore = [[1, 0], [-1, 0], [0, 1], [0, -1], [2, 0], [-2, 0], [0, 2], [0, -2]].some(([dx, dy]) => 'gdy'.includes(at(x + dx, y + dy) ?? '~'));
+      const rw = hash(`${map.id}:water:${x},${y}`);
+      if (shore && rw < 0.16) out.push({ frame: 'dec.lily', x, y });
+      continue;
+    }
     if (taken.has(`${x},${y}`) || map.solid(x, y)) continue;
     const r = hash(`${map.id}:${x},${y}`), pick = (list) => list[Math.floor(hash(`${map.id}#${x},${y}`) * list.length)];
     let frame = null;
@@ -60,11 +66,44 @@ export function scatterDecals(map) {
       else if (ch === ',' && r < 0.14) frame = pick(['dec.puddle_0', 'dec.puddle_1', 'dec.rubble']);
     } else if (ch === 'd') {
       if (r < 0.55) frame = 'dec.flowers';                                                     // planting beds are planted
+    } else if (ch === 'g' && near(x, y, '~') && r < 0.5) {
+      frame = 'dec.reeds';                                                                      // reeds along the water
     } else if (ch === 'g') {
       if (near(x, y, 'T') && r < 0.12) frame = pick(['dec.leaves_0', 'dec.leaves_1']);
       else if (r < 0.035) frame = 'dec.flowers';                                               // wildflowers in the lawns
     }
     if (frame) out.push({ frame, x, y });
+  }
+  return out;
+}
+
+// Indoor and underground wear (natural pass, Manuel: "a slightly post-apocalyptic world"). map.wear: 'tunnel' for
+// the Green Line (cracks, drips, rubble, rust, trash, roots), 'lived' for buildings people still live in (stains,
+// a few cracked tiles, litter: worn, not wrecked). Maps without `wear` stay clean.
+function wearDecals(map) {
+  if (!map.wear) return [];
+  const taken = new Set([...(map.objects ?? []), ...(map.scenery ?? [])].map((o) => `${o.x},${o.y}`));
+  for (const [, x, y] of map.decals ?? []) taken.add(`${x},${y}`);
+  const at = (x, y) => map.layout[y]?.[x], out = [];
+  const nearWall = (x, y) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => at(x + dx, y + dy) === '#');
+  for (let y = 0; y < map.h; y++) for (let x = 0; x < map.w; x++) {
+    const ch = at(x, y); if (taken.has(`${x},${y}`) || map.solid(x, y)) continue;
+    const r = hash(`${map.id}:w:${x},${y}`), pick = (l) => l[Math.floor(hash(`${map.id}#w${x},${y}`) * l.length)];
+    let f = null;
+    if (map.wear === 'tunnel') {
+      if (ch === ':' || ch === 'p' || ch === 'm') {
+        if (nearWall(x, y) && r < 0.12) f = pick(['dec.rust', 'dec.drip', 'dec.roots', 'dec.rubble']);
+        else if (r < 0.07) f = pick(['dec.crack_0', 'dec.crack_1', 'dec.crack_2']);
+        else if (r < 0.11) f = pick(['dec.drip', 'dec.puddle_0', 'dec.puddle_1']);              // it drips everywhere down here
+        else if (r < 0.14) f = pick(['dec.rubble', 'dec.stain', 'dec.oil']);
+        else if (r < 0.15) f = 'dec.trash';
+      } else if ((ch === 'h' || ch === 't') && r < 0.12) f = pick(['dec.weeds', 'dec.rubble', 'dec.rust', 'dec.crack_2']);
+    } else if (map.wear === 'lived') {
+      if ('mk'.includes(ch) && r < 0.03) f = pick(['dec.crack_0', 'dec.crack_1']);
+      else if ('mckuw.e'.includes(ch) && r < 0.045) f = pick(['dec.stain', 'dec.gum', 'dec.stain']);
+      else if (nearWall(x, y) && r < 0.06) f = pick(['dec.litter_0', 'dec.litter_1']);
+    }
+    if (f) out.push({ frame: f, x, y });
   }
   return out;
 }

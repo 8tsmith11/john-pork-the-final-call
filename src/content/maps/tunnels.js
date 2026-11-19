@@ -14,12 +14,24 @@ R(33, 6, 14, 16, ':'); R(33, 8, 14, 1, 'h'); R(33, 18, 14, 1, 'h');            /
 for (const [x, y] of [[36, 10], [43, 10], [36, 16], [43, 16]]) R(x, y, 1, 1, '|');
 R(40, 2, 3, 4, ':'); R(40, 2, 18, 3, ':'); R(55, 2, 3, 9, ':');                // the northern bypass, rejoining at the east end
 R(51, 16, 3, 6, ':'); R(47, 21, 12, 5, ':');                                   // south-east: the signal room
+// Decay (natural pass, Manuel): the flooded bay has a ragged waterline, not a box; room corners have caved in;
+// the main line has fallen in here and there along its walls. Floor wear comes from map.wear (decor.js).
+const n2 = (x, y) => { const h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return h - Math.floor(h); };
+const caveIn = (x, y, w, h) => { for (const [cx, cy] of [[x, y], [x + w - 1, y], [x, y + h - 1], [x + w - 1, y + h - 1]]) if (g[cy][cx] === ':') g[cy][cx] = '#'; };
+for (const [x, y, w, h] of [[7, 2, 14, 4], [33, 6, 14, 16], [47, 21, 12, 5], [18, 21, 16, 5]]) caveIn(x, y, w, h);
+caveIn(34, 7, 12, 14);                                                          // the switchyard is big enough to lose two
+for (const x of [6, 17, 29, 48, 60]) { if (g[11][x] === ':' && n2(x, 11) < 0.7) g[11][x] = '#'; if (g[15][x + 2] === ':' && n2(x, 15) < 0.7) g[15][x + 2] = '#'; }   // the main line's walls, fallen in
+for (let y = 21; y < 26; y++) for (let x = 18; x < 34; x++) {                 // the flooded bay: water with a ragged edge
+  if (g[y][x] !== ':' && g[y][x] !== '~') continue;
+  const d = ((x + 0.5 - 23.5) / 5.6) ** 2 + ((y + 0.5 - 24.4) / 2.2) ** 2;
+  g[y][x] = d < 1 + (n2(x * 1.9, y * 2.3) - 0.5) * 0.7 ? '~' : ':';
+}
 
 const lamp = (x, y, text) => ({ id: `obj.worklamp_${x}_${y}`, art: 'obj.worklamp', x, y, label: 'Work lamp', light: 0.7, text });
 
 export const tunnel1 = makeMap({
   id: 'tunnel_1', name: 'Green Line maintenance tunnels',
-  propScale: 1.25,
+  propScale: 1.25, wear: 'tunnel',
   layout: g.map((r) => r.join('')),
   spawns: [[3, 12], [3, 14], [4, 12]],
   enemies: [
@@ -92,7 +104,7 @@ P(19, 1, 6, 1, ':');                                                           /
 
 export const platform = makeMap({
   id: 'platform', name: 'The dead platform beneath College Park',
-  propScale: 1.25,
+  propScale: 1.25, wear: 'tunnel',
   layout: p.map((r) => r.join('')),
   spawns: [[3, 7], [3, 8], [4, 7]],
   enemies: [['boss.warden', 30, 7]],

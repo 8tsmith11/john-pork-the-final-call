@@ -1071,6 +1071,12 @@ D("dec.crack_2", dc().pts("night1", (0, 9), (1, 9), (2, 8), (3, 8), (4, 9), (5, 
   (6, 11), (6, 12), (5, 13), (11, 6), (12, 5), (12, 4)).pts("yerba1", (7, 11), (12, 6)))
 D("dec.rubble", dc().rect(4, 9, 3, 2, "concrete2").rect(9, 7, 2, 2, "concrete3").rect(7, 11, 2, 1, "concrete1").pts("concrete3", (5, 9), (12, 11), (3, 12)).pts("night1", (4, 11), (9, 9)))
 D("dec.trash", dc().rect(5, 6, 6, 6, "night2").h_(6, 5, 4, "night3").px(8, 4, "night3").pts("night1", (6, 11), (10, 9)).pts("bone", (11, 11), (12, 11)).px(3, 12, "steel"))
+# Shores and decay (natural pass): reeds at the waterline, lily pads, rust, a drip stain, roots through a floor.
+D("dec.reeds", dc().v_(3, 6, 9, "yerba1").v_(5, 4, 11, "yerba0").v_(8, 7, 8, "yerba1").v_(11, 5, 10, "yerba0").v_(13, 8, 7, "yerba1").pts("warm2", (5, 3), (11, 4)).pts("warm1", (5, 2), (11, 3)))
+D("dec.lily", ell(ell(dc(), 5, 6, 2.6, 1.8, "yerba0"), 11, 11, 2.2, 1.5, "yerba0").pts("yerba1", (4, 5), (5, 5), (10, 10), (11, 10)).pts("pork1", (6, 6)).pts("night2", (5, 7), (11, 12)))
+D("dec.rust", ell(dc(), 8, 9, 5, 3.5, "warm1").pts("warm2", (6, 8), (9, 9), (7, 10)).pts("night2", (11, 10), (4, 9)))
+D("dec.drip", ell(ell(dc(), 8, 8, 4.5, 2.6, "screen0"), 8, 8, 3, 1.6, "night1", ring=True).pts("screen1", (7, 8), (9, 7)))
+D("dec.roots", dc().pts("warm1", (0, 4), (1, 4), (2, 5), (3, 5), (4, 6), (5, 6), (6, 7), (6, 8), (7, 9), (8, 9), (15, 11), (14, 11), (13, 12), (12, 12), (11, 13)).pts("warm0", (3, 6), (7, 10), (12, 13)).pts("yerba0", (8, 8), (13, 11)))
 D("dec.grate_tree", ell(ell(dc(), 8, 8, 7.5, 7.5, "night1", ring=True), 8, 8, 5.5, 5.5, "night2", ring=True).pts("steel", (8, 1), (1, 8), (14, 8), (8, 14)))
 
 write("props", 16, 24, PROPS)
