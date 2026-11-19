@@ -132,6 +132,11 @@ orpnhfr cneg bs uvz vf va gurer. Rnpu tvirf bar havdhr raqvat yvar; arvgure puna
   Fnuhe'f qehz erfrgf rirelbar va rnefubg. Vs abobql ernpurf gurz, gurl qebc nf qbjarq jvgu rkcbfher
   yrsg uvtu, abg qrnq. Creznarag gheavat unccraf bayl gb ACPf naq bayl va gur fgbel (Onygvzber, Npg 2).
   Gur fgbel arire creznaragyl gheaf n ebbzzngr.
+  **Zvpunry'f ehyr (2026-11-19, ohvyg: `fep/ratvar/fvz.wf` HAQRE):** n ebbzzngr tbrf haqre bayl vs
+  nabgure ebbzzngr vf n uhzna cynlre jub'f hc. Bgurejvfr uvggvat 100 vf qrngu ol pbqr ebg naq gur
+  ynfg fnir ybnqf. Gur jvaqbj vf 30 f, chyyvat onpx gnxrf 4 f orfvqr gurz naq yrnirf rkcbfher ng 75,
+  naq fbzrbar jub qebcf ng gur raq vf qbjarq ng 90. Pbqr ebg rarzvrf vtaber n ebbzzngr jub'f haqre.
+  Nal cnegl jvcr oevatf rirelbar onpx jvgu shyy urnygu naq ab pbqr ebg.
 - **Ebggre if ebg-gnxra.** *Ebggref* (Npg 1) ybbc naq ner unezyrff; gurve vzcynagf ner becunarq, abg
   ubfgvyr. *Ebg-gnxra* ner jung unccraf jura gur ebg fgbcf ybbcvat naq fgnegf qevivat: fybj, gnaxl,
   gurl zbir va **fjnezf**, naq gurl'er Onygvzber'f bhgoernx (Npg 2). Gur ynfg fgrc orsber gheavat vf

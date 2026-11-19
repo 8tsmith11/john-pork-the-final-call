@@ -15,4 +15,8 @@ export const ES_HUD = {
   'Mate crash. Your legs feel like wet clay (slower for a few seconds).': 'Bajón del mate. Las piernas parecen de arcilla mojada (más lento unos segundos).',
   'The crash wears off.': 'Se pasa el bajón.',
   'crash…': 'bajón…',
+  // Going under at 100% code rot (src/engine/sim.js UNDER)
+  'Nobody pulled you back in time. You\'re down; a roommate can still pick you up.': 'Nadie te trajo de vuelta a tiempo. Estás caído; un compañero todavía puede levantarte.',
+  'You\'re back. The code rot is still high.': 'Volviste. La podredumbre sigue alta.',
+  'You come to at the start of the area.': 'Despiertas al inicio de la zona.',
 };

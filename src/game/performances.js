@@ -149,7 +149,8 @@ export class Performances {
     const want = new Map();
     const bob = Math.sin(now / 220) * 1.5;
     for (const p of snap.players) {
-      if (p.zz) want.set(p.id, ['z Z', p.x, p.y - 30 + bob, '#9aa3c7']);
+      if (p.un) want.set(p.id, [p.pu > 0 ? `pulling back ${Math.round(p.pu * 100)}%` : `coderot. coderot. (${p.un})`, p.x, p.y - 30 + bob, '#d417c8']);   // gone under (sim UNDER)
+      else if (p.zz) want.set(p.id, ['z Z', p.x, p.y - 30 + bob, '#9aa3c7']);
       else if (p.mt > 0) want.set(p.id, [`MATE ${p.mt}`, p.x, p.y - 30 + bob, '#c8e619']);
       else if (p.cr) want.set(p.id, ['crash…', p.x, p.y - 30 + bob, '#8a8f7a']);
       else if (p.pl) want.set(p.id, [p.pl === 'lullaby' ? '♪ ♫' : '♫ ♪', p.x, p.y - 30 + bob, p.c === 'manuel' ? '#c8e619' : '#ffb347']);
