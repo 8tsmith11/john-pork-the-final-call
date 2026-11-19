@@ -104,10 +104,10 @@ export const QUESTS = [
 ];
 
 QUESTS.push({
-  id: 'side.lantern', why: "Ozzie has fished this lake for forty-one years. Whatever goes into it, he's seen.", title: 'Something that glows', giver: 'npc.ozzie', act: 1,
+  id: 'side.lantern', why: "Ozzie has fished this lake for fifty-two years. Whatever goes into it, he's seen.", title: 'Something that glows', giver: 'npc.ozzie', act: 1,
   ask: 'q.lantern.asked', start: (f) => f['q.lantern.asked'],
   give: { item: 'item.fish_lantern', flag: 'q.lantern.given', refuse: '"Not that. The one with the light in it. You\'ll know."' },
-  pitch: 'Ozzie taps the notebook without looking up. "Forty-one years on this pier. Every fish in here, I\'ve had. Except one. Bass with a light in it. My wife saw one in \'61. I never have." He finally looks at you. "You got young eyes. Fish the lake."',
+  pitch: 'Ozzie taps the notebook without looking up. "Fifty-two years on this pier. Every fish in here, I\'ve had. Except one. Bass with a light in it. My wife saw one in \'61. I never have." He finally looks at you. "You got young eyes. Fish the lake."',
   stages: [{ text: 'Catch a lantern bass in Lake Artemesia and bring it to Ozzie on the south pier.', done: (f) => f['q.lantern.given'] }],
   reward: { money: 25, xp: 40, item: 'item.ozzie_lure', line: 'He holds it up to his face for a long time. The light moves under the scales. "Huh," he says. He writes in the notebook, one tally mark, very carefully. Then he lets it go off the end of the pier, and hands you a lure out of his hat.' },
 });
