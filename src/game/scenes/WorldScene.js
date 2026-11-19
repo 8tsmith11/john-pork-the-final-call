@@ -11,7 +11,7 @@ import { TILE_COLORS } from '../../content/maps/build.js';
 import { ENEMIES } from '../../content/enemies.js';
 import { GAME_VERSION } from '../../version.js';
 import { loadScene, Conversation, evalCond } from '../../engine/dialogue.js';
-import { babble, setArea, sfx, ring, speak, hush, setInstrumentFocus } from '../../audio/audio.js';
+import { babble, setArea, sfx, ring, speak, hush, setInstrumentFocus, audioOut } from '../../audio/audio.js';
 import { sellPrice, LOOT, DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods, EQUIP_SLOTS, WORN_SLOTS, canWear } from '../../content/items.js';
 import { tileKey, laneDashes } from '../render/tiles.js';
 import { mapDecals, sceneryPlacement } from '../render/decor.js';
@@ -48,6 +48,7 @@ import { Cordon } from '../cordon.js';
 import { phaseEnemies } from '../../content/outbreak.js';
 import { dawnLabel, dawnProgress } from '../../content/dawn.js';
 import { BigButt } from '../bigButt.js';
+import { GONMAN_LINES, GONMAN_UNLOCK } from '../../content/gonman.js';
 import { Beltless } from '../beltless.js';
 import { Approach } from '../approach.js';
 import { Pacifier } from '../pacifier.js';
@@ -1136,6 +1137,7 @@ export class WorldScene extends Phaser.Scene {
     const stage = this.save.party[p.character]?.morph.stage ?? 0;
     if (stage < 1) return;   // nothing until it's unlocked (human request: no 'not yet' message)
     this.sim.toggleMorph(peerId, true);
+    p.morphStage = stage;    // the sim reads the stage for stage-two moves (the gonman's R)
   }
 
   // John Pork "shows up here and there" (brief): a screen you walk past glitches to his face for a
@@ -1989,6 +1991,7 @@ export class WorldScene extends Phaser.Scene {
             c.xp -= c.level * XP_PER_LEVEL; c.level++; c.skillPoints++; c.abilityPoints = (c.abilityPoints ?? 0) + 2;   // D-017
             this._announce(`${p.character} reached level ${c.level}. (+1 skill point)`);
             if (c.level >= 3 && c.morph.stage < 1) { c.morph.stage = 1; this._announce(MORPH_UNLOCK[p.character]); }
+            if (p.character === 'manuel' && c.level >= 6 && c.morph.stage < 2) { c.morph.stage = 2; p.morphStage = 2; this._announce(GONMAN_UNLOCK); }   // Manuel only: stage two
           }
         }
       }
@@ -2368,6 +2371,17 @@ export class WorldScene extends Phaser.Scene {
       this.shotGfx.lineStyle(1, 0x7fb069, 0.6 * Math.min(1, h.t)).strokeCircle(h.x, h.y, h.r);
       for (let i = 0; i < 3; i++) this.shotGfx.fillStyle(0x7fb069, 0.5).fillRect(h.x + Math.sin(this.time.now / 90 + i * 2) * h.r * 0.6, h.y + Math.cos(this.time.now / 110 + i) * h.r * 0.5, 2, 2);
     }
+    // The gonman's puddles: off-white, a little glossy, fading out; and drips on whatever got hit.
+    for (const g of snap.goo || []) {
+      const a = Math.min(1, g.t / 1.5);
+      this.shotGfx.fillStyle(0xeee8d8, 0.6 * a).fillEllipse(g.x, g.y, g.r * 1.8, g.r * 1.1);
+      this.shotGfx.fillStyle(0xeee8d8, 0.5 * a).fillCircle(g.x + g.r * 0.9, g.y - 2, 2).fillCircle(g.x - g.r * 0.8, g.y + 3, 1.5);
+      this.shotGfx.fillStyle(0xffffff, 0.7 * a).fillRect(g.x - 3, g.y - 2, 2, 1);
+    }
+    for (const e of snap.enemies || []) if (e.sl) {
+      const k = (this.time.now / 400 + e.id) % 1;
+      this.shotGfx.fillStyle(0xeee8d8, 0.9).fillRect(e.x - 3, e.y - 11 + k * 6, 1, 2).fillRect(e.x + 2, e.y - 9 + ((k + 0.5) % 1) * 6, 1, 2);
+    }
     if (snap.ring) {
       const cx = (this.map.w * TILE) / 2, cy = (this.map.h * TILE) / 2;
       this.shotGfx.lineStyle(3, 0xd65db1, 0.5 + 0.3 * Math.sin(this.time.now / 100)).strokeCircle(cx, cy, snap.ring);
@@ -2606,6 +2620,46 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- barks: short lines over the roommates' heads (content in src/content/barks.js) ----------
+  // The gonman, stage two: implied only (D-015). A censor mosaic over his hips, a hand going like a piston beside it,
+  // little motion ticks, and a rhythmic sound for the wind-up; then the release flies at the enemies.
+  _gonmanWindup(ev) {
+    const s = this.sprites.get(ev.id); if (!s) return;
+    this._barkQuietUntil = 0; this._bark(ev.id, GONMAN_LINES.start[Math.floor(Math.random() * GONMAN_LINES.start.length)]);
+    const g = this.add.graphics(), until = this.time.now + ev.ms, TONES = [0xd09a72, 0xf0c9a0, 0xa3674a, 0xc08a68];
+    const tick = this.time.addEvent({ delay: 40, loop: true, callback: () => {
+      g.clear(); if (!s.active || this.time.now > until) { tick.remove(); g.destroy(); return; }
+      const x0 = Math.round(s.x) - 3, y0 = Math.round(s.y) - 9, beat = Math.floor(this.time.now / 70) % 2;
+      for (let cy = 0; cy < 2; cy++) for (let cx = 0; cx < 3; cx++) g.fillStyle(TONES[(cx + cy + Math.floor(this.time.now / 120)) % 4]).fillRect(x0 + cx * 2, y0 + cy * 2, 2, 2);   // the mosaic
+      g.fillStyle(0xd09a72).fillRect(x0 + 6, y0 + (beat ? 0 : 3), 2, 2);                                             // the hand, going
+      g.fillStyle(0xffffff, 0.8).fillRect(x0 + 9, y0 + 1, 2, 1).fillRect(x0 + 9, y0 + 3, 2, 1);                     // motion ticks
+      g.setDepth(s.depth + 0.05);
+    } });
+    this._gonmanSound(s, ev.ms);
+  }
+
+  _gonmanRelease(ev) {
+    const s = this.sprites.get(ev.id); if (!s) return;
+    this.time.delayedCall(150, () => { this._barkQuietUntil = 0; this._bark(ev.id, GONMAN_LINES.release[Math.floor(Math.random() * GONMAN_LINES.release.length)]); });
+    sfx('hit');
+    (ev.pts ?? []).forEach(([x, y], i) => {
+      const b = this.add.circle(s.x, s.y - 7, 2, 0xf4f0e6).setDepth(6000), x0 = s.x, y0 = s.y - 7, dur = 240 + i * 45;
+      this.tweens.addCounter({ from: 0, to: 1, duration: dur, ease: 'Sine.out', onUpdate: (tw) => { const k = tw.getValue(); b.setPosition(x0 + (x - x0) * k, y0 + (y - y0) * k - Math.sin(k * Math.PI) * 14); },
+        onComplete: () => { b.destroy(); for (let j = 0; j < 4; j++) { const d = this.add.circle(x, y, 1, 0xf4f0e6).setDepth(5000); this.tweens.add({ targets: d, x: x + (Math.random() - 0.5) * 12, y: y + (Math.random() - 0.5) * 8, alpha: 0, duration: 320, onComplete: () => d.destroy() }); } } });
+    });
+  }
+
+  _gonmanSound(s, ms) {
+    const out = audioOut(); if (!out) return;
+    const me = this.sprites.get(this.localId), vol = Math.max(0, 1 - (me ? Math.hypot(me.x - s.x, me.y - s.y) : 0) / 220); if (vol <= 0) return;
+    const { ctx, dest } = out, n = Math.floor(ms / 140), buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.05), ctx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+    for (let k = 0; k < n; k++) {   // a soft rhythmic rustle, a little faster toward the end
+      const src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain(), at = ctx.currentTime + 0.02 + (k * 0.14) * (1 - k / (n * 3));
+      src.buffer = buf; f.type = 'bandpass'; f.frequency.value = 900 + (k % 2) * 300; g.gain.value = 0.18 * vol;
+      src.connect(f); f.connect(g); g.connect(dest); src.start(at);
+    }
+  }
+
   _bark(playerId, text) {
     text = esLine(text);                                            // Spanish when chosen (src/content/lines_es.js)
     const s = this.sprites.get(playerId);
@@ -2737,6 +2791,8 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'riff') { const r = this.add.circle(ev.x, ev.y - 6, 6, 0xffe08a, 0).setStrokeStyle(2, 0xffe08a, 0.9).setDepth(5600); this.tweens.add({ targets: r, scale: 7.5, alpha: 0, duration: 380, onComplete: () => r.destroy() }); this.cameras.main.shake(140, 0.006); sfx('kill'); }
     if (ev.t === 'ping') { const r = this.add.circle(ev.x, ev.y - 6, 6, 0x6ff2ff, 0).setStrokeStyle(1, 0x6ff2ff, 0.9).setDepth(5600); this.tweens.add({ targets: r, scale: 25, alpha: 0, duration: 650, onComplete: () => r.destroy() }); sfx('shot'); }
     if (ev.t === 'decoy') sfx('swing');
+    if (ev.t === 'gonman') this._gonmanWindup(ev);
+    if (ev.t === 'goo') this._gonmanRelease(ev);
     if (ev.t === 'vuln') {
       const t = this.add.text(ev.x, ev.y - 30, 'OVERHEATED: hit it!', { ...FONT, color: '#ffb347' }).setOrigin(0.5).setDepth(6100);
       this.tweens.add({ targets: t, y: t.y - 10, alpha: 0, duration: 1300, onComplete: () => t.destroy() });

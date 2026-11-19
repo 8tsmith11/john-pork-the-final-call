@@ -19,4 +19,5 @@ export const ES_HUD = {
   'Nobody pulled you back in time. You\'re down; a roommate can still pick you up.': 'Nadie te trajo de vuelta a tiempo. Estás caído; un compañero todavía puede levantarte.',
   'You\'re back. The code rot is still high.': 'Volviste. La podredumbre sigue alta.',
   'You come to at the start of the area.': 'Despiertas al inicio de la zona.',
+  "The gonman reached stage two. New move: [R] while morphed. Nobody is going to like it.": "El gonman llegó a la etapa dos. Movimiento nuevo: [R] con la transformación activa. No le va a gustar a nadie.",
 };

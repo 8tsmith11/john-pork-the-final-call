@@ -1308,5 +1308,18 @@ test("Michael's belt gag: his own line first, on behind one switch, painted as a
   assert.ok(!beltMod.BELT_LINES.trevor.some((l) => /pants|boxer|butt/i.test(l)), "Trevor only reacts; nothing happens to Trevor's character");
 });
 
+test('the gonman, stage two: R while morphed winds up (no moving), then globs slow enemies and leave puddles; otherwise R is the decoy', () => {
+  const sim = new Sim(landMaps.metro_plaza, { seed: 'gon' }); sim.addPlayer('a', 'manuel');
+  const p = sim.players.get('a'); p.x = 38 * 16 + 8; p.y = 23 * 16 + 8; p.aim = 0; p.skillCd = 0;
+  sim.enemies.clear(); sim.enemies.set('e1', { id: 'e1', kind: 'enemy.rotling', x: p.x + 50, y: p.y, hp: 999, cd: 9, hurtT: 0, kx: 0, ky: 0, sleepT: 999 });   // holds still
+  const go = (inp, n = 1) => { for (let i = 0; i < n; i++) sim.step(1 / 60, new Map([['a', { ...emptyInput(), ...inp }]])); };
+  p.morphed = true; p.morphStage = 2;
+  go({ skill: true }); assert.ok(p.gonT > 0, 'the wind-up started'); assert.equal(sim.decoys.length, 0, 'no decoy at stage two');
+  const x0 = p.x; go({ mx: 1 }, 30); assert.equal(p.x, x0, 'he cannot walk during the wind-up');
+  go({}, 70); assert.equal(sim.goo.length, 5, 'five puddles'); assert.ok(sim.enemies.get('e1').slowT > 0, 'the enemy in front is slowed');
+  go({}, 60 * 8); assert.equal(sim.goo.length, 0, 'puddles dry up'); assert.ok(!(sim.enemies.get('e1')?.slowT > 0), 'and the slow wears off');
+  p.morphStage = 1; p.skillCd = 0; go({ skill: true }); assert.equal(sim.decoys.length, 1, 'below stage two, R is still the decoy bust');
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
