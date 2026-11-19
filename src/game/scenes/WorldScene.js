@@ -50,7 +50,7 @@ import { dawnLabel, dawnProgress } from '../../content/dawn.js';
 import { makeJob, jobLine, OPEN_JOBS } from '../../content/jobs.js';
 import { BigButt } from '../bigButt.js';
 import { GONMAN_LINES, GONMAN_UNLOCK } from '../../content/gonman.js';
-import { growthSize, lookStage } from '../../content/growth.js';
+import { growthSize, lookStage, gonmanWeight } from '../../content/growth.js';
 import { Beltless } from '../beltless.js';
 import { ToothpasteTalk } from '../toothpaste.js';
 import { Approach } from '../approach.js';
@@ -2356,7 +2356,11 @@ export class WorldScene extends Phaser.Scene {
       if (s.lastLevel !== undefined && lv > s.lastLevel) { s.popUntil = this.time.now + 600; if (lookStage(lv) > lookStage(s.lastLevel)) this._growFlash(s); }
       s.lastLevel = lv;
       const pop = s.popUntil > this.time.now ? 1 + 0.18 * Math.sin(((s.popUntil - this.time.now) / 600) * Math.PI) : 1;
-      s.setAngle(p.dn ? 90 : 0).setTint(p.dn ? 0x777788 : p.un ? 0xc07ad8 : p.mo ? MORPH_LOOK[p.c][0] : 0xffffff).setScale(...growthSize(lv, p.c).map((v) => v * (p.mo ? 1.12 : 1) * pop));
+      const wt = p.c === 'manuel' ? gonmanWeight(lv, p.gs) : null;   // after the gonman: thin, filling back out as it recharges
+      if (wt && s.lastBelly !== undefined && wt.belly > s.lastBelly && p.gs !== undefined) s.popUntil = this.time.now + 300;   // a little pop as he fills out a size
+      if (wt) s.lastBelly = wt.belly;
+      const [gx, gy] = growthSize(lv, p.c);
+      s.setAngle(p.dn ? 90 : 0).setTint(p.dn ? 0x777788 : p.un ? 0xc07ad8 : p.mo ? MORPH_LOOK[p.c][0] : 0xffffff).setScale(gx * (wt?.width ?? 1) * (p.mo ? 1.12 : 1) * pop, gy * (p.mo ? 1.12 : 1) * pop);
       if (p.id !== this.localId && !p.w) {
         const x = s.x - 10;
         const y = p.dn ? Math.round(p.y) - 32 : Math.round(s.y - s.displayHeight) - 5;
@@ -2368,7 +2372,8 @@ export class WorldScene extends Phaser.Scene {
           partyHealth.fillStyle(color).fillRect(x + 1, y + 1, Math.max(1, Math.round(18 * health)), 2);
         }
       }
-      syncWear(this, s, p.c, this.save?.party?.[p.c]);   // parkas and other worn models (render/wearables.js)
+      const worn = this.save?.party?.[p.c];
+      syncWear(this, s, p.c, wt && p.gs !== undefined ? { ...worn, _belly: wt.belly } : worn);   // parkas and other worn models (render/wearables.js)
     }
     for (const [id, s] of this.sprites) if (!seen.has(id)) { s.destroy(); this.sprites.delete(id); }
 

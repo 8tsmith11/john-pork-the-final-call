@@ -62,5 +62,6 @@ For his real-life history so far (BattleBots, the UMD Mars rover), see [`real-li
   nothing drawn, no other roommate involved (`src/content/gonman.js`). *(2026-11-19, to gonman in chat)*
 - Yes to white "toothpaste" splotches on his clothes from level 6 (the gonman's stage two), and his line that it's toothpaste. Implied, nothing drawn beyond the splotches. *(2026-11-19, to gonman in chat)*
 - Gets noticeably rounder as the story goes on (a belly from level 3, bigger at 6 and 8, fuller cheeks), and says "I have to stop going to the dining hall." *(2026-11-19, to gonman in chat)*
+- When the gonman's stage two goes off he turns thin at once and fills back out to his weight as the move recharges. *(2026-11-19, to gonman in chat)*
 
 *gonman: add anything else Manuel has said about his own character.*

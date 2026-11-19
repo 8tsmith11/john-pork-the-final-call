@@ -28,7 +28,7 @@ export const FEEL = { comboWindow: 0.55, finisherDmg: 1.6, finisherKnock: 1.8, f
 // The gonman, stage two (Manuel's own request for his own character; implied only, nothing drawn, D-007/D-015).
 // R while morphed: a wind-up where he can't move, then sticky globs fly toward his aim. A glob slows what it hits
 // and leaves a puddle that slows anything walking through it. Bosses slow less; the Sahur doesn't slow at all.
-export const GONMAN = { windup: 1.4, cd: 14, slow: 0.4, bossSlow: 0.7, slowTime: 4, puddleR: 16, puddleTtl: 7, globs: 5, near: 36, far: 84, dmg: 2 };
+export const GONMAN = { windup: 1.4, cd: 30, slow: 0.4, bossSlow: 0.7, slowTime: 4, puddleR: 16, puddleTtl: 7, globs: 5, near: 36, far: 84, dmg: 2 };
 export const MATE = { buff: 45, crash: 4, speed: 0.15, staRegen: 0.6, crashSpeed: -0.4 };
 // Going under (Michael, 2026-11-19; sealed lore acts-2-3 §4). At 100% code rot a roommate goes
 // under if another roommate is a human player who's up: a code rot zombie that walks at and swings
@@ -357,6 +357,7 @@ export class Sim {
       else if (p.crashT > 0) p.crashT = Math.max(0, p.crashT - dt);
       if (p.mods?.regen && p.hp < this.maxHp(p)) p.hp = Math.min(this.maxHp(p), p.hp + p.mods.regen * dt);   // smart pacifier
       if (p.gonT > 0) { p.gonT -= dt; if (p.gonT <= 0) this._gonmanRelease(p); }
+      if (p.gonSlim && p.skillCd <= 0 && !(p.gonT > 0)) p.gonSlim = false;
       const busy = p.gonT > 0;                                       // the gonman is occupied
       if (inp.skill && !p.riding && !p.playing && !busy && p.skillCd <= 0) this._ability(p);
       // Terraria-style: the attack button uses what's in hand. A melee weapon swings, a gun fires, anything
@@ -508,6 +509,7 @@ export class Sim {
         this._hurtEnemy(e, GONMAN.dmg, 0, 0, p.id);
       }
     }
+    p.gonSlim = true;                                              // he's thin now, and fills back out as it recharges
     this.events.push({ t: 'goo', id: p.id, pts });
   }
 
@@ -1068,7 +1070,7 @@ export class Sim {
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
-        hp: Math.round(p.hp), mhp: this.maxHp(p), rot: Math.round((p.rot ?? 0) * 10) / 10, am: p.ammo ?? null, rl: p.reloadT > 0 ? Math.round(p.reloadT * 10) / 10 : 0, st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0, un: p.under > 0 ? Math.ceil(p.under) : 0, pu: p.under > 0 ? Math.round(((p.pullT ?? 0) / UNDER.pullTime) * 100) / 100 : 0, mt: Math.ceil(p.mateT ?? 0), cr: p.crashT > 0,
+        hp: Math.round(p.hp), mhp: this.maxHp(p), rot: Math.round((p.rot ?? 0) * 10) / 10, am: p.ammo ?? null, rl: p.reloadT > 0 ? Math.round(p.reloadT * 10) / 10 : 0, st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, ...(p.gonSlim ? { gs: Math.max(0, Math.min(1, Math.round((1 - p.skillCd / (GONMAN.cd * (1 - (p.mods?.skillCd ?? 0)))) * 100) / 100)) } : {}), pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0, un: p.under > 0 ? Math.ceil(p.under) : 0, pu: p.under > 0 ? Math.round(((p.pullT ?? 0) / UNDER.pullTime) * 100) / 100 : 0, mt: Math.ceil(p.mateT ?? 0), cr: p.crashT > 0,
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,

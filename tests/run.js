@@ -1436,5 +1436,20 @@ test('the toothpaste exchange: Michael asks, Manuel says "Hmmmm. Toothpaste?", M
   t2.update({ players: [{ id: 'a', c: 'manuel', x: 0, y: 0 }, { id: 'b', c: 'michael', x: 30, y: 0 }] }); assert.equal(said.length, 0, 'not before level 6');
 });
 
+test('the gonman leaves Manuel thin, and he fills back out as the move recharges', () => {
+  const sim = new Sim(landMaps.metro_plaza, { seed: 'slim' }); sim.addPlayer('a', 'manuel');
+  const p = sim.players.get('a'); p.x = 38 * 16 + 8; p.y = 23 * 16 + 8; p.aim = 0; p.skillCd = 0; p.morphed = true; p.morphStage = 2; sim.enemies.clear();
+  const go = (inp, n = 1) => { for (let i = 0; i < n; i++) sim.step(1 / 60, new Map([['a', { ...emptyInput(), ...inp }]])); };
+  go({ skill: true }); go({}, 100);
+  const me = () => sim.snapshot().players.find((q) => q.id === 'a');
+  assert.ok(p.gonSlim && me().gs < 0.15, `thin right after (${me().gs})`);
+  go({}, 60 * 12); const mid = me().gs; assert.ok(mid > 0.3 && mid < 0.8, `halfway back (${mid})`);
+  go({}, 60 * 20); assert.ok(!p.gonSlim && me().gs === undefined, 'back to his weight once recharged');
+  const w = (r) => growthMod.gonmanWeight(8, r);
+  assert.deepEqual([w(0).belly, w(0.4).belly, w(0.7).belly, w(1).belly], [0, 1, 2, 3]);
+  assert.ok(w(0).width < 0.9 && w(1).width === 1 && growthMod.gonmanWeight(8).belly === 3);
+  assert.equal(growthMod.growthLook(8, 1), 'fx.grow8b1'); assert.equal(growthMod.growthLook(8, 3), 'fx.grow8');
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

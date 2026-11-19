@@ -10,7 +10,7 @@
 // To add a model for another worn item: add an entry to LOOKS keyed by item id. `slot` says which
 // equipment slot it is read from. Styles other than 'parka' need their own painter below.
 
-import { growthLook, lookStage } from '../../content/growth.js';
+import { growthLook, lookStage, bellyFor } from '../../content/growth.js';
 
 const hex = (s) => [parseInt(s.slice(1, 3), 16), parseInt(s.slice(3, 5), 16), parseInt(s.slice(5, 7), 16)];
 const P = {
@@ -48,12 +48,15 @@ export const LOOKS = {
   'item.signal_gloves':  { slot: 'gloves', style: 'gloves', main: P.screen1, shade: P.screen2 },
 };
 // Growth (src/content/growth.js): one look per level, painted under any gear.
-for (let lv = 2; lv <= 8; lv++) LOOKS[`fx.grow${lv}`] = { slot: '_grow', style: 'grow', level: lv };
+for (let lv = 2; lv <= 8; lv++) {
+  LOOKS[`fx.grow${lv}`] = { slot: '_grow', style: 'grow', level: lv };
+  for (let b = 0; b <= 3; b++) LOOKS[`fx.grow${lv}b${b}`] = { slot: '_grow', style: 'grow', level: lv, belly: b };   // Manuel's weight after the gonman
+}
 const LOOK_SLOTS = [...new Set(Object.values(LOOKS).map((l) => l.slot))].filter((s) => s !== '_grow');
 
 /** The looks a roommate is wearing right now, in draw order. */
 export function looksFor(c) {
-  const grow = growthLook(c?.level ?? 1);
+  const grow = growthLook(c?.level ?? 1, c?._belly);   // _belly: Manuel's belly right now, when it isn't his level's
   return [...(grow ? [grow] : []), ...LOOK_SLOTS.map((sl) => c?.equipped?.[sl]).filter((id) => id && LOOKS[id])];
 }
 
@@ -415,7 +418,7 @@ function paintGrowMarks(src, out, w, h, facing, body, look, who) {
 // Done after every other mark, on the combined picture, so the clay, the toothpaste and the rest move with him.
 function paintGrow(src, out, w, h, facing, body, look, who) {
   paintGrowMarks(src, out, w, h, facing, body, look, who);
-  const lv = look.level, k = who === 'manuel' ? (lv >= 8 ? 3 : lv >= 6 ? 2 : lv >= 3 ? 1 : 0) : 0;
+  const lv = look.level, k = who === 'manuel' ? (look.belly ?? bellyFor(lv)) : 0;
   if (!k) return true;
   const { C, rows } = kit(src, out, w, h, body), [stop, sbot] = rows(C.shirt); if (sbot < 0) return true;
   const at = (x, y) => { const i = (y * w + x) * 4; return out[i + 3] ? [out[i], out[i + 1], out[i + 2], 255] : [src[i], src[i + 1], src[i + 2], src[i + 3]]; };
