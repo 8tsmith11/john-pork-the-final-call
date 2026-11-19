@@ -2399,14 +2399,25 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'kill' && ev.boss && !this._endingPlayed) { this._endingPlayed = true; this.time.delayedCall(900, () => this._playEnding(true)); }
     if (ev.t === 'phase') { this.cameras.main.shake(300, 0.01); this._say(ev.phase === 3 ? 'The Warden overloads. The platform starts rendering wrong.' : 'It changes how it moves.'); }
     if (ev.t === 'tell' && ev.kind) {
-      const g = this.add.graphics().setDepth(5500), dur = (ev.dur ?? 0.7) * 1000;
+      // Boss pattern tells (bossPatterns.js): red = can't deflect or parry, dodge it; amber = deflectable.
+      const g = this.add.graphics().setDepth(5500), dur = (ev.dur ?? 0.7) * 1000, col = ev.red ? 0xff4d4d : 0xffb347;
       if (ev.kind === 'charge' || ev.kind === 'beam') {
         const len = ev.kind === 'charge' ? 120 : 160;
-        g.lineStyle(ev.kind === 'charge' ? 10 : 3, 0xd65db1, 0.35).lineBetween(ev.x, ev.y - 8, ev.x + Math.cos(ev.a) * len, ev.y - 8 + Math.sin(ev.a) * len);
-      } else if (ev.kind === 'ring' || ev.kind === 'spray') {
-        g.lineStyle(2, 0xffb347, 0.7).strokeCircle(ev.x, ev.y - 8, 18);
+        if (ev.kind === 'beam') for (const d of [-0.9, 0.9]) g.lineStyle(1, col, 0.5).lineBetween(ev.x, ev.y - 8, ev.x + Math.cos(ev.a + d) * len, ev.y - 8 + Math.sin(ev.a + d) * len);
+        g.lineStyle(ev.kind === 'charge' ? 10 : 3, col, 0.4).lineBetween(ev.x, ev.y - 8, ev.x + Math.cos(ev.a) * len, ev.y - 8 + Math.sin(ev.a) * len);
+      } else if (ev.kind === 'ring') {
+        g.lineStyle(2, col, 0.7).strokeCircle(ev.x, ev.y - 8, 18);
+      } else if (ev.kind === 'spray') {
+        g.lineStyle(2, col, 0.7).beginPath().arc(ev.x, ev.y - 8, 26, ev.a - 0.4, ev.a + 0.4).strokePath();
+      } else if (ev.kind === 'spiral') {
+        g.lineStyle(2, col, 0.7);
+        for (let i = 0; i < 3; i++) g.beginPath().arc(ev.x, ev.y - 8, 12 + i * 6, ev.a + i * 2.1, ev.a + i * 2.1 + 1.6).strokePath();
       } else if (ev.kind === 'puddle') {
-        for (const p of snap.players) g.lineStyle(1, 0xd65db1, 0.8).strokeCircle(p.x, p.y, 16);
+        for (const p of snap.players) g.lineStyle(1, col, 0.8).strokeCircle(p.x, p.y, 16);
+      } else if (ev.kind === 'summon') {
+        for (const dx of [-14, 14]) g.lineStyle(1, col, 0.8).strokeCircle(ev.x + dx, ev.y + 10, 6);
+      } else if (ev.kind === 'blink') {
+        g.lineStyle(1, col, 0.8).strokeCircle(ev.x, ev.y - 8, 10).strokeCircle(ev.x, ev.y - 8, 4);
       }
       this.tweens.add({ targets: g, alpha: { from: 0.4, to: 1 }, duration: dur, yoyo: false, onComplete: () => g.destroy() });
     }

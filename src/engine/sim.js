@@ -2,6 +2,7 @@
 // The host steps the Sim with every player's latest input; clients render snapshots.
 
 export const TILE = 16;
+import { BOSS_PATTERNS, bossPool, pickPattern, windFor } from './bossPatterns.js';
 import { ENEMIES } from '../content/enemies.js';
 import { generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 
@@ -473,7 +474,7 @@ export class Sim {
     this.events.push({ t: 'swing', id: p.id, a: p.aim, r: m.range, arc: m.arc, combo: p.combo });
     // Deflect: enemy shots inside the swing go back the way they came, as the player's.
     for (const s of this.shots) {
-      if (s.from === 'player') continue;
+      if (s.from === 'player' || s.noDeflect) continue;   // red-tell attacks (the boss Sweep) can't be deflected
       const dx = s.x - p.x, dy = s.y - (p.y - 6), d = Math.hypot(dx, dy);
       if (d > m.range + 8) continue;
       let da = Math.atan2(dy, dx) - p.aim; da = Math.atan2(Math.sin(da), Math.cos(da));
@@ -708,6 +709,7 @@ export class Sim {
   _stepBoss(e, def, dt) {
     e.cd2 = Math.max(0, e.cd2 - dt);
     e.vulnT = Math.max(0, (e.vulnT ?? 0) - dt);
+    if (e.openT > 0) e.openT = Math.max(0, e.openT - dt);   // recovery after a pattern (bossPatterns.js)
     if (e.kx || e.ky) { this._moveBody(e, e.kx * dt, e.ky * dt, def.radius); e.kx *= 0.8; e.ky *= 0.8; }
     const [target, d] = this._nearestPlayer(e.x, e.y);
     if (!target) return;
@@ -739,29 +741,39 @@ export class Sim {
       if (e.dash <= 0) { e.state = 'vulnerable'; e.vulnT = 1.6; this.events.push({ t: 'vuln', x: e.x, y: e.y }); }
       return;
     }
+    if (e.state === 'spiral') {   // Hold Loop: rotating arms, then a long recovery
+      e.spiralT -= dt; e.spiralA += 2.4 * dt;
+      if ((e.spiralTick = (e.spiralTick ?? 0) - dt) <= 0) {
+        e.spiralTick = 0.14; const arms = e.phase === 3 ? 4 : 3;
+        for (let i = 0; i < arms; i++) { const a = e.spiralA + (i / arms) * Math.PI * 2; this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(a) * 80, vy: Math.sin(a) * 80, life: 3, dmg: 8, from: 'enemy' }); }
+      }
+      if (e.spiralT <= 0) { e.state = 'move'; e.openT = BOSS_PATTERNS.spiral.recover; }
+      return;
+    }
     if (e.state === 'beam') {
       e.beamT -= dt; e.beamA += e.beamDir * 1.6 * dt;
-      if ((e.beamTick = (e.beamTick ?? 0) - dt) <= 0) { e.beamTick = 0.05; this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(e.beamA) * 220, vy: Math.sin(e.beamA) * 220, life: 1.2, dmg: 7, from: 'enemy' }); }
+      if ((e.beamTick = (e.beamTick ?? 0) - dt) <= 0) { e.beamTick = 0.05; this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(e.beamA) * 220, vy: Math.sin(e.beamA) * 220, life: 1.2, dmg: 7, from: 'enemy', noDeflect: true }); }
       if (e.beamT <= 0) { e.state = 'vulnerable'; e.vulnT = 1.4; this.events.push({ t: 'vuln', x: e.x, y: e.y }); }
       return;
     }
     // move
     this._moveBody(e, ux * def.speed * rage * dt, uy * def.speed * rage * dt, def.radius);
     if (e.cd > 0) return;
-    const mods = e.phase === 1 ? [def.modules[0]] : def.modules;
-    const extra = e.phase >= 2 ? ['beam', 'puddle'] : [];
-    e.next = [...mods, ...extra][Math.floor(Math.random() * (mods.length + extra.length))];
-    e.state = 'windup'; e.windT = e.phase === 3 ? 0.45 : 0.75;
+    // Pattern library (task #32): pick from this phase's pool, never the same move twice running.
+    e.next = pickPattern(bossPool(def.modules, e.phase), e.last); e.last = e.next;
+    e.state = 'windup'; e.windT = windFor(e.next, e.phase);
     e.aimA = Math.atan2(uy, ux);
-    this.events.push({ t: 'tell', x: e.x, y: e.y, kind: e.next, a: e.aimA, dur: e.windT });
+    const pat = BOSS_PATTERNS[e.next];
+    this.events.push({ t: 'tell', x: e.x, y: e.y, kind: e.next, a: e.aimA, dur: e.windT, red: pat.red, name: pat.name, line: pat.line });
   }
 
   _bossAttack(e, def, target, ux, uy, rage) {
     const shoot = (ang, spd = 85) => this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(ang) * spd * rage, vy: Math.sin(ang) * spd * rage, life: 3, dmg: 9, from: 'enemy' });
-    const mod = e.next; e.state = 'move';
+    const mod = e.next; e.state = 'move'; e.openT = BOSS_PATTERNS[mod]?.recover ?? 0;
     if (mod === 'ring') { const n = e.phase === 3 ? 18 : 12; for (let i = 0; i < n; i++) shoot((i / n) * Math.PI * 2 + this.tick * 0.01); }
     if (mod === 'spray') { for (let i = -2; i <= 2; i++) shoot(e.aimA + i * 0.18, 110); }
     if (mod === 'charge') { e.state = 'dash'; e.dash = 0.5; e.dx = Math.cos(e.aimA); e.dy = Math.sin(e.aimA); }
+    if (mod === 'spiral') { e.state = 'spiral'; e.spiralT = e.phase === 3 ? 1.6 : 1.2; e.spiralA = e.aimA; e.openT = 0; }
     if (mod === 'beam') { e.state = 'beam'; e.beamT = 1.4; e.beamA = e.aimA - 0.9; e.beamDir = 1; }
     if (mod === 'puddle') { for (const p of this.players.values()) if (!p.downed) this.hazards.push({ x: p.x, y: p.y, r: 16, ttl: 5, dps: 12 }); }
     if (mod === 'summon' && this.enemies.size < 7) {

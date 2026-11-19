@@ -606,6 +606,37 @@ await (async () => {
   } catch (e) { failed++; console.log(`FAIL dialogue\n     ${e.message}`); }
 })();
 
+const { BOSS_PATTERNS, bossPool, pickPattern } = await import('../src/engine/bossPatterns.js');
+const { MODULES: WARDEN_MODULES } = await import('../src/content/rotVillains.js');
+test('boss pattern library: every module has a pattern, pools grow by phase, no move twice running', () => {
+  for (const m of WARDEN_MODULES) assert.ok(BOSS_PATTERNS[m], `module ${m} has no pattern`);
+  for (const [k, p] of Object.entries(BOSS_PATTERNS)) assert.ok(p.wind.length === 3 && p.wind[0] >= p.wind[2] && p.wind[2] >= 0.35, `${k} wind-ups must shrink by phase and stay readable`);
+  const pool = bossPool(['ring', 'charge'], 1);
+  assert.ok(pool.length >= 2 && bossPool(['ring', 'charge'], 2).length > pool.length && bossPool(['ring', 'charge'], 3).includes('spiral'));
+  let last = null;
+  for (let i = 0; i < 500; i++) { const n = pickPattern(bossPool(['ring', 'charge'], 3), last); assert.notEqual(n, last); last = n; }
+});
+test('boss fight: the Warden uses several patterns with tells and recovery windows, sweep shots can\'t be deflected', () => {
+  const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'boss-test' });
+  sim.addPlayer('host', 'trevor');
+  const boss = [...sim.enemies.values()].find((e) => e.boss);
+  assert.ok(boss, 'no boss on the platform');
+  const kinds = new Set(); let sawOpen = false, noDeflect = false, beamFired = false;
+  for (let t = 0; t < 60 * 90; t++) {
+    const h = sim.players.get('host'); h.hp = h.maxHp ?? 100; h.downed = false;
+    if (t === 60 * 20) { boss.hp = boss.def.hp * 0.6; boss.phase = 2; }   // push into phase 2, then 3
+    if (t === 60 * 50) { boss.hp = boss.def.hp * 0.25; boss.phase = 3; }
+    sim.step(1 / 60, new Map());
+    for (const ev of sim.events) if (ev.t === 'tell' && ev.kind) { kinds.add(ev.kind); assert.ok(ev.dur >= 0.35 && 'red' in ev); }
+    if (boss.openT > 0) sawOpen = true;
+    if (boss.state === 'beam' && sim.shots.length) { beamFired = true; if (sim.shots.some((s) => s.noDeflect)) noDeflect = true; }
+    sim.events.length = 0;
+  }
+  assert.ok(kinds.size >= 4, `only ${[...kinds]} used`);
+  assert.ok(sawOpen, 'no recovery window');
+  assert.ok(noDeflect || !beamFired, 'beam shots should be undeflectable');
+});
+
 const { CompanionBrain } = await import('../src/engine/companion.js');
 const { ITEMS: ITEMS_T } = await import('../src/content/items.js');
 test('AI companions follow the human, fight, and never trigger exits', () => {
