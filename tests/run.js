@@ -447,6 +447,12 @@ test('i18n: every tunnel, platform and lake label and description has Spanish', 
   for (const id of ['tunnel_1', 'platform', 'lake']) for (const o of MAPS_FOR_TEST[id].objects) for (const t of [o.label, o.text, ...(o.pages ?? []), ...((o.later ?? []).map((l) => l.text)), o.lockedText]) if (t && !(t in ES_TUNNELS_LAKE)) missing.push(`${id}: ${t.slice(0, 40)}`);
   assert.deepEqual(missing, [], 'add these to src/i18n/es-tunnels-lake.js');
 });
+const { ES_PLAZA } = await import('../src/i18n/es-plaza.js');
+test('i18n: every plaza label and description has Spanish', () => {
+  const missing = [];
+  for (const o of MAPS_FOR_TEST.metro_plaza.objects) for (const t of [o.label, o.text, ...(o.pages ?? []), ...((o.later ?? []).map((l) => l.text)), o.lockedText]) if (t && !(t in ES_PLAZA)) missing.push(t.slice(0, 40));
+  assert.deepEqual(missing, [], 'add these to src/i18n/es-plaza.js');
+});
 test('i18n: every Room 631 label and description has Spanish', () => {
   const m = MAPS_FOR_TEST.room631, missing = [];
   for (const o of m.objects) for (const t of [o.label, o.text, ...(o.pages ?? []), ...((o.later ?? []).map((l) => l.text)), o.lockedText]) if (t && !(t in ES_631)) missing.push(t.slice(0, 40));
