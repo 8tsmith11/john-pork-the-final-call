@@ -788,10 +788,13 @@ test('arrivals: the elevator lands you at the elevator, and holding the key you 
 const LB = await import('../src/content/maps/builder.js');
 const CB = await import('../src/content/builders.js');
 test('level builder: text grids and rooms become valid maps (doors walled, doorways merged, legend things placed)', () => {
-  const m = LB.fromGrid({ id: 'lb_demo', name: 'Demo', fill: '.', rows: ['##########', '#@....E..#', '#..####..#', '#..#..#..#', '#.....N..#', '####DD####'],
+  const m = LB.fromGrid({ id: 'lb_demo', name: 'Demo', fill: '.', rows: ['##########', '#@....E..#', '#..####..#', '#..#..#..#', '#.....N..#', '####DD#D##'],
     legend: { E: { enemy: 'enemy.rotling' }, '@': { spawn: true }, N: { npc: 'npc.lb_demo', label: 'Demo', text: '[scaffold] hi' }, D: { exit: 'metro_plaza', label: 'Out', stepOn: true } } }).build();
   assert.equal(m.enemies.length, 1); assert.equal(m.spawns.length, 1);
-  const exits = m.objects.filter((o) => o.action === 'exit'); assert.equal(exits.length, 1); assert.equal(exits[0].w, 2);
+  const exits = m.objects.filter((o) => o.action === 'exit');
+  assert.equal(exits.length, 2);
+  assert.equal(exits[0].w, 2, 'adjacent cells merge into one doorway');
+  assert.notEqual(exits[0].id, exits[1].id, 'separate doorways to the same map have distinct IDs');
   assert.ok(!m.solid(4, 5) && !m.solid(5, 5), 'a walk-on doorway stays walkable');
   const r = LB.level({ id: 'lb_room', name: 'Room', w: 12, h: 8 }).room(2, 1, 6, 5, { floor: '.', door: { side: 's', at: 2, label: 'Door' } }).build();
   const d = r.objects.find((o) => o.door); assert.ok(d && r.solid(d.x - 1, d.y) && r.solid(d.x + 1, d.y), 'a room door has wall on both sides');
