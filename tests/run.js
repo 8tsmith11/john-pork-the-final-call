@@ -387,6 +387,14 @@ test('lattice: rules (spacing, links, costs, sevens, coderot)', () => {
   g.hands.party.glass = 3; assert.ok(LAT.bankTrade(g, 'glass', 'gel')); assert.equal(g.hands.party.gel, 1);
 });
 
+const { ES_QUESTS } = await import('../src/i18n/es-quests.js');
+const { QUESTS: QUESTS_ES } = await import('../src/content/quests.js');
+test('i18n: every quest title, reason, stage, pitch and reward line has Spanish', () => {
+  const missing = [];
+  for (const q of QUESTS_ES) for (const t of [q.title, q.why, q.pitch, q.reward?.line, ...q.stages.map((st) => st.text)]) if (t && !(t in ES_QUESTS)) missing.push(t.slice(0, 50));
+  assert.deepEqual(missing, [], 'add these to src/i18n/es-quests.js');
+});
+
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
 test('pipe puzzle: every seed is solvable and starts unsolved', () => {
   if (!PipePuzzle) return;

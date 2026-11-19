@@ -2,6 +2,7 @@
 // through tr() (src/main.js patches the text factory and setText), so a UI string translates wherever
 // it appears: exact matches first, then patterns. Anything not listed stays English, so content can
 // be translated piece by piece (dialogue and quests: hub task). Stored per browser.
+import { ES_QUESTS } from './i18n/es-quests.js';
 const KEY = 'jpfc.lang';
 let lang = 'en';
 try { lang = localStorage.getItem(KEY) === 'es' ? 'es' : 'en'; } catch { /* private window: English */ }
@@ -45,6 +46,8 @@ const ES = {
 };
 // Patterns for strings with numbers or names in them.
 const ES_RX = [
+  [/^([★·✓]) (.+?)((?:  \((?:side|yours)\))?)$/, (m, a, b, c) => `${a} ${ES_ALL[b] ?? b}${c === '  (side)' ? '  (secundaria)' : c === '  (yours)' ? '  (tuya)' : ''}`],
+  [/^→ (.+)$/s, (m, a) => `→ ${ES_ALL[a] ?? a}`],
   [/^\[E\] Talk to (.+)$/, '[E] Hablar con $1'],
   [/^Talk to (.+)$/, 'Hablar con $1'],
   [/^(.+) \(too far\)$/, '$1 (muy lejos)'],
@@ -57,13 +60,22 @@ const ES_RX = [
   [/^CODE ROT (\d+)%$/, 'PODREDUMBRE $1%'],
   [/^New in the field guide: (.+) \[ESC → GUIDE\]$/, 'Nuevo en la guía: $1 [ESC → GUÍA]'],
   [/^› Language: .+$/, '› Idioma: Español'],
+  [/^(.+)  \(side\)$/, (m, a) => `${ES_ALL[a] ?? a}  (secundaria)`],
+  [/^(.+)  \(yours\)$/, (m, a) => `${ES_ALL[a] ?? a}  (tuya)`],
   [/^World "(.+)" · saved in this browser$/, 'Mundo "$1" · guardado en este navegador'],
 ];
 
+const ES_ALL = { ...ES, ...ES_QUESTS };
+function trOne(s) {
+  if (ES_ALL[s] !== undefined) return ES_ALL[s];
+  for (const [rx, rep] of ES_RX) if (rx.test(s)) return s.replace(rx, rep);
+  return null;
+}
 export function tr(s) {
   if (lang !== 'es' || typeof s !== 'string' || !s) return s;
-  if (ES[s] !== undefined) return ES[s];
-  for (const [rx, rep] of ES_RX) if (rx.test(s)) return s.replace(rx, rep);
+  const whole = trOne(s); if (whole !== null) return whole;
+  // Multi-line text (a name line over a pitch, an objective over its reason): translate line by line.
+  if (s.includes('\n')) { const parts = s.split('\n'); const out = parts.map((l) => trOne(l) ?? l); if (out.some((l, i) => l !== parts[i])) return out.join('\n'); }
   return s;
 }
 

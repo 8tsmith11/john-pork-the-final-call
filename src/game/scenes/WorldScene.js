@@ -22,6 +22,7 @@ import { QUESTS, questState, questVisible } from '../../content/quests.js';
 import { CompanionBrain, isAi } from '../../engine/companion.js';
 import * as Inv from '../../engine/inventory.js';
 import { CallCard } from '../ui/CallCard.js';
+import { tr } from '../../i18n.js';
 import { BoardGame } from '../ui/BoardGame.js';
 import { Neon } from '../render/neon.js';
 import { skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
@@ -1616,7 +1617,7 @@ export class WorldScene extends Phaser.Scene {
   // E or a click turns the page, and closes it after the last one.
   _say(text) {
     const W = VIEW.w, H = VIEW.h, bottom = H - 5;
-    this._sayPages = this._paginate(String(text ?? ''), this.boxText, 6); this._sayPage = 0;
+    this._sayPages = this._paginate(tr(String(text ?? '')), this.boxText, 6); this._sayPage = 0;   // translate before wrapping
     this.boxText.setText(this._sayPages[0] + (this._sayPages.length > 1 ? `   ▼ 1/${this._sayPages.length}` : '')).setVisible(true).setAlpha(0);
     const h = Math.max(34, this.boxText.height + 14);
     this.box.setSize(W - 20, h).setPosition(W / 2, bottom - h / 2).setVisible(true);
