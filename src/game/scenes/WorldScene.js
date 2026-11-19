@@ -42,6 +42,7 @@ import { Fart } from '../fart.js';
 import { NpcLife } from '../npcLife.js';
 import { Approach } from '../approach.js';
 import { Pacifier } from '../pacifier.js';
+import { GuitarStands } from '../guitarStands.js';
 import { ABILITY_KEYS, BASE_SCORES, MAX_SCORE } from '../../content/abilities.js';
 import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
 
@@ -105,7 +106,7 @@ export class WorldScene extends Phaser.Scene {
     this._wireNet();
     this._makeDialogueUi();
     // D-014: shared events, instruments, romance (src/game/sharedEvent.js, performances.js, romance.js)
-    this.shared = new SharedEvents(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this);
+    this.shared = new SharedEvents(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this); this.stands = new GuitarStands(this);
     this._pageIdx = {};
     this.vignette = this._makeVignette();
     if (this.mode !== 'client') for (const p of this.sim.players.values()) {
@@ -555,7 +556,7 @@ export class WorldScene extends Phaser.Scene {
   _wireNet() {
     if (this.mode === 'host') {
       this.net.on('msg', (peer, msg) => {
-        if (this.shared?.onMsg(msg, peer) || this.perf?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg)) return;
+        if (this.shared?.onMsg(msg, peer) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg)) return;
         if (msg.t === 'input') {
           const prev = this.remoteInputs.get(peer);
           this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, interact: false });
@@ -828,7 +829,7 @@ export class WorldScene extends Phaser.Scene {
   // Host -> clients: flags and quest progress, whenever they change (checked twice a second).
   _broadcastWorld() {
     if (this.mode !== 'host') return;
-    const msg = { t: 'world', flags: this.save.flags, quests: questState(this.save), guide: this._guide() };
+    const msg = { t: 'world', flags: this.save.flags, quests: questState(this.save), guide: this._guide(), drops: this.save.world.drops ?? [] };
     const sig = JSON.stringify(msg);
     if (sig === this._worldSig) return;
     this._worldSig = sig; this.net.broadcast(msg);
@@ -837,6 +838,7 @@ export class WorldScene extends Phaser.Scene {
     const before = questState(this.save), was = JSON.parse(JSON.stringify(before));
     Object.assign(this.save.flags, msg.flags ?? {});
     if (msg.guide) this.save.world.guide = msg.guide;
+    if (msg.drops) this.save.world.drops = msg.drops;   // items on the floor (src/game/guitarStands.js)
     this._drawLevers();
     this.save.world.quests = msg.quests ?? this.save.world.quests;
     const now = questState(this.save);
@@ -1784,7 +1786,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode === 'client' && snap.doors) for (const d of this.map.doors.values()) d.open = snap.doors.includes(d.id);
     this._render(snap);
     setInstrumentFocus(snap, this.localId);
-    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.pacifier?.update(snap);
+    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.pacifier?.update(snap); this.stands?.update();
   }
 
   _frozen(inp) { return this.dlg || this.menu ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : inp; }
@@ -1906,7 +1908,7 @@ export class WorldScene extends Phaser.Scene {
       return;
     }
     if (near.npc && this.perf?.asleep(near)) { this._say(`${near.label} is fast asleep.`); return; }
-    if (this.romance?.interact(near) || this.gear?.interact(near)) return;
+    if (this.romance?.interact(near) || this.gear?.interact(near) || this.stands?.interact(near)) return;
     if (this.approach?.intercept(near)) return;   // D-017: choose how to approach an NPC
     // Story first, quest second: the first talk plays the scene; after that a quest step (pitch,
     // hand-in, report) takes the interaction if one is waiting, otherwise the scene replays.
