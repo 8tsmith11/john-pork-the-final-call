@@ -5,6 +5,7 @@ export const TILE = 16;
 import { BOSS_PATTERNS, bossPool, pickPattern, windFor, LASER, SHOCK, RAIN, LANE } from './bossPatterns.js';
 import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
+import { BOSSES } from '../content/bosses.js';
 
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.35, iframes: 0.22,
   stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
@@ -109,6 +110,12 @@ export class Sim {
           ai: 'sahur', xp: 80, touchCooldown: 0.9, modules: [] };
         this.enemies.set(id, { id, spawnKey, kind: 'boss.sahur', def, boss: true, sahur: true, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 0.75, cd2: 2, beat: 0, hurtT: 0, kx: 0, ky: 0, dash: 0, root: 0, fightT: 0 });
         this.events.push({ t: 'boss', name: def.name, epithet: def.epithet, sahur: true });
+        continue;
+      }
+      if (BOSSES[e.kind]) {   // bosses made with defineBoss (src/content/bosses.js): mid bosses unless def.mini === false
+        const w = BOSSES[e.kind](Math.max(1, this.players.size));
+        const def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
+        this.enemies.set(id, { id, spawnKey, kind: e.kind, def, boss: true, mini: w.mini !== false, awake: !w.wake, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 2, cd2: 3, hurtT: 0, kx: 0, ky: 0, dash: 0 });
         continue;
       }
       if (e.kind === 'boss.switchman') {   // Act 1's mid boss: sleeps until someone comes close (task #34)

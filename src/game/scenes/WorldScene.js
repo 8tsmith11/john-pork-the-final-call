@@ -2652,7 +2652,7 @@ export class WorldScene extends Phaser.Scene {
   // by themselves. Nothing pauses, nothing waits for a click; lines queue so two never overlap.
   _bossTalk(trigger, snap, kind) {
     const boss = snap?.enemies?.find((e) => e.boss);
-    kind ??= boss?.boss?.sahur ? 'sahur' : boss?.k === 'boss.switchman' ? 'switchman' : 'warden';
+    kind ??= boss?.boss?.sahur ? 'sahur' : boss?.k === 'boss.switchman' ? 'switchman' : !boss?.k || boss.k === 'boss.warden' ? 'warden' : boss.k.slice(5);
     const t = bossTalk(kind, trigger, getLang());
     if (!t) return;
     if (boss) this._liveLine(() => this.enemySprites.get(boss.id), t.line, '#f2a6b8');
@@ -2851,7 +2851,8 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'hurt' && Math.random() < 0.08) this._barkFrom('allyHurt', snap, { not: ev.id });
     if (ev.t === 'drum') { this.cameras.main.shake(40, ev.beat % 4 === 0 ? 0.006 : 0.002); sfx('hit'); }
     if (ev.t === 'boss' && !ev.sahur && this.mode !== 'client') this.save.flags['act1.boss.wardenName'] = ev.name;
-    if (ev.t === 'kill' && ev.mini && this.mode !== 'client') this._flag('act1.switchman.down', true);   // the mid boss: no ending
+    // Mid bosses: no ending. The Switchman keeps its flag; bosses from src/content/bosses.js set boss.<id>.down.
+    if (ev.t === 'kill' && ev.mini && this.mode !== 'client') this._flag(!ev.kind || ev.kind === 'boss.switchman' ? 'act1.switchman.down' : `boss.${ev.kind.slice(5)}.down`, true);
     if (ev.t === 'kill' && ev.boss && !ev.mini && this.mode !== 'client') { this.save.flags['act1.boss.defeated'] = true; this.save.flags['act1.outbreak.contained'] = true; }
     if (ev.t === 'kill' && ev.boss && !ev.mini && !this._endingPlayed) { this._endingPlayed = true; this.time.delayedCall(900, () => this._playEnding(true)); }
     if (ev.t === 'phase') { this.cameras.main.shake(300, 0.01); this._bossTalk(`phase${ev.phase}`, snap); }   // live, never pauses (Trevor)
@@ -2906,7 +2907,7 @@ export class WorldScene extends Phaser.Scene {
     }
     if (ev.t === 'impact') { const c = this.add.circle(ev.x, ev.y, ev.r, 0xffe6ee, 0.8).setDepth(5450); this.tweens.add({ targets: c, scale: 1.6, alpha: 0, duration: 260, onComplete: () => c.destroy() }); sfx('hit'); }
     if (ev.t === 'overload') { this.cameras.main.shake(500, 0.012); this.cameras.main.flash(250, 214, 93, 177); }
-    if (ev.t === 'boss') { this._bossIntro(ev); this.time.delayedCall(1900, () => this._bossTalk('intro', this._lastRendered, ev.sahur ? 'sahur' : ev.kind === 'boss.switchman' ? 'switchman' : 'warden')); }
+    if (ev.t === 'boss') { this._bossIntro(ev); this.time.delayedCall(1900, () => this._bossTalk('intro', this._lastRendered, ev.sahur ? 'sahur' : ev.kind === 'boss.switchman' ? 'switchman' : !ev.kind || ev.kind === 'boss.warden' ? 'warden' : ev.kind.slice(5))); }   // other bosses talk only if BOSS_TALK has them
     // Combat feel (docs/research/combat.md): pops for finishers, deflects, perfect dodges, slams.
     const pop = (x, y, text, color) => { const t = this.add.text(x, y, text, { heading: true, fontSize: '7px', color }).setOrigin(0.5).setDepth(6060); this.tweens.add({ targets: t, y: y - 10, alpha: 0, duration: 650, onComplete: () => t.destroy() }); };
     // No screen shake from your own attacks (Trevor): swings, finishers, dash-strikes, parries, slams and hits.

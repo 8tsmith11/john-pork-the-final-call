@@ -66,7 +66,7 @@ export const greenbelt = fromGrid({
     '@': { spawn: true },
     X: back('greenbelt', 'Back east to Route 1'),
   },
-}).build();
+}).enemy('boss.gb_receiver', 28, 2).build();
 
 // ---- 7. Beltsville: the farms ----
 export const beltsville = fromGrid({
@@ -92,7 +92,7 @@ export const beltsville = fromGrid({
     '@': { spawn: true },
     X: back('beltsville', 'Back to Route 1'),
   },
-}).build();
+}).enemy('boss.bv_shell', 21, 4).build();
 
 // ---- 8. The refuge: no signal, timber and lamps ----
 export const refuge = fromGrid({
@@ -140,7 +140,7 @@ export const meade = fromGrid({
     '@': { spawn: true },
     X: { ...back('meade', 'Back west to Route 1'), tile: ',' },
   },
-}).build();
+}).enemy('boss.md_fence', 27, 3).build();
 
 // ---- 10. Baltimore: the port, an outbreak in progress ----
 export const baltimore = fromGrid({
@@ -169,7 +169,7 @@ export const baltimore = fromGrid({
     '@': { spawn: true },
     X: { ...back('baltimore', 'South, back to Route 1'), tile: 'q' },
   },
-}).build();
+}).enemy('boss.bmore_congregation', 17, 4).build();
 
 // ---- 11. Annapolis and the bay ----
 export const annapolis = fromGrid({
@@ -192,4 +192,4 @@ export const annapolis = fromGrid({
     '@': { spawn: true },
     X: { ...back('annapolis', 'North-west, back to Route 1'), tile: 'q' },
   },
-}).build();
+}).enemy('boss.ann_tide', 22, 6).build();

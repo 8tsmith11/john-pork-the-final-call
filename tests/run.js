@@ -813,6 +813,19 @@ test('content builders: enemies, bosses, NPCs and items validate their specs and
   assert.throws(() => CB.defineItem({ id: 'item.y', name: 'Y', slot: 'hat', text: 'y' }), /slot must be/);
 });
 
+const BossReg = await import('../src/content/bosses.js');
+test('registry bosses (defineBoss): each one placed on a map spawns as a sleeping mid boss with its patterns', () => {
+  const placed = new Set();
+  for (const m of Object.values(MAPS_FOR_TEST)) for (const e of m.enemies) if (BossReg.BOSSES[e.kind]) {
+    placed.add(e.kind);
+    const sim = new Sim(m, { seed: 'reg' }); sim.addPlayer('host', 'trevor');
+    const b = [...sim.enemies.values()].find((x) => x.kind === e.kind);
+    assert.ok(b && b.boss && b.mini && !b.awake, `${e.kind} should spawn asleep as a mid boss`);
+    assert.equal(b.def.pool.length, 3); assert.ok(b.def.hp >= 50);
+  }
+  assert.equal(placed.size, Object.keys(BossReg.BOSSES).length, 'every registry boss should be placed on some map');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));

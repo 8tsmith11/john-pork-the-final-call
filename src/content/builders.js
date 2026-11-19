@@ -32,7 +32,7 @@ export function defineEnemy({ id, name, hp, speed, damage, ai, radius = 6, xp = 
  * signature: a pattern guaranteed within the boss's first two attacks.
  * Returns a function (playerCount) => def, like switchmanDef.
  */
-export function defineBoss({ name, epithet = '', hp, perPlayer = Math.round(hp / 2), phases, guard = 0, damage = 14, speed = 30, radius = 10, color = 0xd8b060, mini = false, wake = 0, phaseGate = true, ...rest }) {
+export function defineBoss({ name, epithet = '', hp, perPlayer = Math.round(hp / 2), phases, guard = 0, damage = 14, speed = 30, radius = 10, color = 0xd8b060, mini = true, wake = 0, phaseGate = true, ...rest }) {
   need(name, 'boss needs a name');
   need(num(hp, 50, 20000), `${name}: hp 50-20000`);
   need(Array.isArray(phases) && phases.length === 3 && phases.every((p) => Array.isArray(p) && p.length >= 1), `${name}: phases must be three non-empty pattern lists`);
