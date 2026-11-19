@@ -86,7 +86,7 @@ export function level({ id, name, w, h, fill = 'g', border = '#', ...extra }) {
     exit(to, x, y, o = {}) {
       const { exit: _e, tile: _t, ...rest } = o;
       // A doorway drawn as several adjacent cells (e.g. 'DD') becomes one exit `w` tiles wide.
-      const prev = objects.find((q) => q.action === 'exit' && q.to === to && q.y === y && q.x + (q.w ?? 1) === x && !rest.id);
+      const prev = objects.find((q) => q.action === 'exit' && q.to === to && q.y === y && q.x + (q.w ?? 1) === x && (!rest.id || q.id === rest.id));
       if (prev) { prev.w = (prev.w ?? 1) + 1; return B; }
       objects.push({ id: rest.id ?? `obj.${id}_to_${to}`, x, y, label: rest.label ?? `To ${to}`, action: 'exit', to, text: rest.text ?? '', ...(rest.stepOn ? { floor: true, stepOn: true } : {}), ...rest });
       return B;

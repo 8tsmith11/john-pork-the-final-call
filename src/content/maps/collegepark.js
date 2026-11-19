@@ -265,7 +265,7 @@ export const metroPlaza = makeMap({
       'Paraguay. Between verses: "I have a 245 lab due at nine." He checks nothing and starts the next verse. "Paraguay first."',
       'He is humming something you half know and he stops when he sees you listening.\n\n"That one\'s Maryland\'s. They retired it. I don\'t retire anthems."',
     ] },
-    { id: 'obj.campus_door', art: 'obj.door', x: 14, y: 46, label: 'Compute Hall B', text: 'Badge reader. It knows you. It says your section is 245 and your section is late.' },
+    { id: 'obj.campus_door', art: 'obj.door', x: 14, y: 46, label: 'Compute Hall B', action: 'exit', to: 'compute_hall_b', pair: 'obj.chb_doors', text: 'Badge reader. It knows you. It says your section is 245 and your section is late.' },
     // The parking lot
     { id: 'obj.dead_car_1', art: 'obj.car', x: 34, y: 40, label: 'Car', text: 'It still thinks it is driving. The dashboard shows a road in another state.' },
     { id: 'obj.dead_car_2', art: 'obj.car', x: 44, y: 45, label: 'Car', text: 'Somebody lives in this one. There are curtains. You knock on nothing and move on.' },
