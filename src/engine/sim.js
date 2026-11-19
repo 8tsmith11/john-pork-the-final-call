@@ -74,13 +74,17 @@ export class Sim {
     let arrivals = map.spawns;
     if (back) {
       const around = [[0, 1], [1, 0], [-1, 0], [0, -1], [1, 1], [-1, 1], [0, 2], [1, -1], [-1, -1], [2, 0], [-2, 0]];
-      const free = around.map(([dx, dy]) => [back.x + dx, back.y + dy]).filter(([x, y]) => !map.solid(x, y));
+      // Never land on an exit tile (Manuel: entering ASTER bounced you back out). The lobby's walk-on street doors
+      // are two tiles wide, so "one to the right of the door" was the door again, and the first step left the building.
+      const exitTiles = new Set(map.objects.filter((o) => o.action === 'exit').flatMap((o) => Array.from({ length: o.w ?? 1 }, (_, i) => `${o.x + i},${o.y}`)));
+      const free = around.map(([dx, dy]) => [back.x + dx, back.y + dy]).filter(([x, y]) => !map.solid(x, y) && !exitTiles.has(`${x},${y}`));
       if (free.length) arrivals = free.map(([x, y]) => ({ x: x * TILE + 8, y: y * TILE + 8 }));
     }
     let i = 0;
     for (const p of this.players.values()) {
       const sp = arrivals[i++ % arrivals.length];
-      Object.assign(p, { x: sp.x, y: sp.y, vx: 0, vy: 0, dodgeT: 0, downed: false, swUsed: false, waitExit: null, riding: map.outdoor ? p.riding : false, hp: Math.max(p.hp, COMBAT.reviveHp) });
+      Object.assign(p, { x: sp.x, y: sp.y, vx: 0, vy: 0, dodgeT: 0, downed: false, swUsed: false, waitExit: null, riding: map.outdoor ? p.riding : false, hp: Math.max(p.hp, COMBAT.reviveHp),
+        onTile: `${Math.floor(sp.x / TILE)},${Math.floor(sp.y / TILE)}` });   // walk-on exits are edge-triggered: the tile you arrive on doesn't count as stepping on
     }
     this.spawnEnemies();
   }

@@ -1154,6 +1154,25 @@ test('stepping onto the lobby street doors leaves the building', () => {
   assert.ok(sim.events.some((e) => e.t === 'bumpExit' && e.id === 'obj.street_doors'), 'right-hand door tile does nothing');
 });
 
+test('arriving through any door never lands you on an exit, and your first step stays put (entering ASTER bounced you out)', () => {
+  const bad = [];
+  for (const m of Object.values(MAPS_FOR_TEST)) {
+    const exitTiles = new Set(m.objects.filter((o) => o.action === 'exit').flatMap((o) => Array.from({ length: o.w ?? 1 }, (_, i) => `${o.x + i},${o.y}`)));
+    for (const fromId of new Set(m.objects.filter((o) => o.action === 'exit' && MAPS_FOR_TEST[o.to]).map((o) => o.to))) {
+      const sim = new Sim(MAPS_FOR_TEST[fromId], { seed: 's' });
+      for (const [id, c] of [['a', 'manuel'], ['b', 'trevor'], ['c', 'michael']]) sim.addPlayer(id, c);
+      sim.setMap(m, fromId);
+      for (const p of sim.players.values()) {
+        const tile = `${Math.floor(p.x / 16)},${Math.floor(p.y / 16)}`;
+        if (exitTiles.has(tile)) bad.push(`${fromId} -> ${m.id}: ${p.id} lands on an exit at ${tile}`);
+        sim.events.length = 0; sim._moveAxis(p, 1, 0);
+        if (sim.events.some((e) => e.t === 'bumpExit')) bad.push(`${fromId} -> ${m.id}: ${p.id}'s first step uses an exit`);
+      }
+    }
+  }
+  assert.equal(bad.length, 0, bad.join('; '));
+});
+
 const yard = await import('../src/content/switchyard.js');
 test('the flooded bay directs Spanish players toward the pump room', () => {
   const previousLanguage = i18nMod.getLang();
