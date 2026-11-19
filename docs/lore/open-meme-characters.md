@@ -213,6 +213,24 @@ questions.
   [Axios](https://www.axios.com/2025/08/06/ai-chatgpt-star-wars-clankers) ·
   [Rolling Stone](https://rollingstone.com/culture/culture-features/clanker-cogsucker-robot-ai-slurs-viral-1235401262)
 
+### Chicken jockey (Manuel's mount)
+- **Meme:** in *A Minecraft Movie* (April 2025), Jack Black's Steve shouts "Chicken jockey!" when a
+  baby zombie rides in on a chicken. The scene went viral from the February 27 trailer, and in
+  theaters audiences cheered, threw popcorn and staged stunts (one teen brought a live chicken), to
+  the point that some cinemas issued warnings.
+- **Michael's pitch (2026-11-18):** a chicken jockey mount for **Manuel**, unlocked through a quest.
+- **Fit ideas:** biohacking and morphs are canon, so the mount can be a gene-edited bird bred big
+  enough to ride, from a quest out on the edges (the lake, a farm on Route 1). Mounts are new to the
+  game, so whoever claims this also designs how riding works with the scooters (they're the starting
+  vehicle) and in co-op.
+- **Cautions:** use our own design and look, not Minecraft's baby zombie or blocky chicken; the
+  reference is the phrase and the idea. Played straight, nobody in 2098 knows why everyone yells it.
+- Sources: [KYM: Chicken Jockey](https://knowyourmeme.com/memes/chicken-jockey-minecraft-movie) ·
+  [KYM explainer](https://knowyourmeme.com/editorials/guides/whats-the-chicken-jockey-meme-from-the-minecraft-movie-jack-black-as-steve-and-his-famous-weird-quote-explained) ·
+  [KYM: the Chicken Jockey Incident](https://knowyourmeme.com/memes/events/the-chicken-jockey-incident) ·
+  [Star Tribune](https://www.startribune.com/the-chaos-of-chicken-jockey-at-a-minecraft-movie/601333275) ·
+  [Uproxx](https://uproxx.com/movies/a-minecraft-movie-chicken-jockey-meme-explained)
+
 ---
 
 ## Declined (2026-11-18)
