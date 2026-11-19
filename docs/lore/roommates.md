@@ -58,5 +58,7 @@ For his real-life history so far (BattleBots, the UMD Mars rover), see [`real-li
   **Argentina shirt**. *(board #178, #181)*
 - Yes to surprise jokes on his character and storyline, crude but nothing explicit drawn.
   *(board #168)*
+- Yes to a crude, implied stage-two power for the gonman (his own character only): R while morphed,
+  nothing drawn, no other roommate involved (`src/content/gonman.js`). *(2026-11-19, to gonman in chat)*
 
 *gonman: add anything else Manuel has said about his own character.*

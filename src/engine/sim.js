@@ -25,6 +25,10 @@ export const FEEL = { comboWindow: 0.55, finisherDmg: 1.6, finisherKnock: 1.8, f
   deflectDmg: 1.5, parryStun: 1.0, parryStop: 0.08, openTime: 0.5, openDmg: 1.5, dashWindow: 0.18, dashDmg: 1.3, dashRange: 8, dashLunge: 10, perfectWindow: 0.15, focusTime: 1.5, focusDmg: 1.5, slamSpeed: 140, slamDmg: 8, slamStun: 0.6, hitStop: 0.05 };
 // Mate (Manuel's yerba): a caffeine kick (faster, quicker stamina), then a short crash (slower).
 // No cooldown: another gourd restarts the kick and cancels any crash.
+// The gonman, stage two (Manuel's own request for his own character; implied only, nothing drawn, D-007/D-015).
+// R while morphed: a wind-up where he can't move, then sticky globs fly toward his aim. A glob slows what it hits
+// and leaves a puddle that slows anything walking through it. Bosses slow less; the Sahur doesn't slow at all.
+export const GONMAN = { windup: 1.4, cd: 14, slow: 0.4, bossSlow: 0.7, slowTime: 4, puddleR: 16, puddleTtl: 7, globs: 5, near: 36, far: 84, dmg: 2 };
 export const MATE = { buff: 45, crash: 4, speed: 0.15, staRegen: 0.6, crashSpeed: -0.4 };
 // Going under (Michael, 2026-11-19; sealed lore acts-2-3 §4). At 100% code rot a roommate goes
 // under if another roommate is a human player who's up: a code rot zombie that walks at and swings
@@ -54,6 +58,7 @@ export class Sim {
     this.shots = [];          // projectiles
     this.hazards = [];        // lingering rot pools: {x, y, r, ttl, dps}
     this.decoys = [];         // Manuel's decoy busts: {x, y, ttl, hp}
+    this.goo = [];            // the gonman's puddles: {x, y, r, ttl}
     this.events = [];         // this tick's events for rendering: hits, deaths, shots
     this.tick = 0;
     this._nextId = 1;
@@ -63,7 +68,7 @@ export class Sim {
   /** Swap to another map, keeping players (placed at the map's spawns). */
   /** Swap maps. `fromId` = the map we came from: players arrive beside the exit that leads back there. */
   setMap(map, fromId = null) {
-    this.map = map; this.shots = []; this.hazards = []; this.decoys = []; this.enemies.clear();
+    this.map = map; this.shots = []; this.hazards = []; this.decoys = []; this.goo = []; this.enemies.clear();
     for (const a of this.allies ?? []) a.relocate = true;
     const back = fromId && map.objects.find((o) => o.action === 'exit' && o.to === fromId);
     let arrivals = map.spawns;
@@ -336,7 +341,7 @@ export class Sim {
           if (Math.hypot(p.vx, p.vy) > 2) { p.battery = Math.max(0, (p.battery ?? 100) - (p.hicap ? 1.1 : 2.2) * dt); if (p.battery <= 0) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, dead: true }); } }
         } else {
           const rotSpeed = p.rot >= 100 ? 0.65 : p.rot >= 60 ? 0.8 : p.rot >= 25 ? 0.9 : 1;
-          const spd = MOVE.speed * (p.morphed ? 1.15 : 1) * (1 + (p.mods?.speed ?? 0)) * (p.playing ? 0.5 : 1) * (p.wiredT > 0 ? 1.15 : 1) * (p.mateT > 0 ? 1 + MATE.speed : p.crashT > 0 ? 1 + MATE.crashSpeed : 1) * rotSpeed;
+          const spd = MOVE.speed * (p.morphed ? 1.15 : 1) * (1 + (p.mods?.speed ?? 0)) * (p.playing ? 0.5 : 1) * (p.gonT > 0 ? 0 : 1) * (p.wiredT > 0 ? 1.15 : 1) * (p.mateT > 0 ? 1 + MATE.speed : p.crashT > 0 ? 1 + MATE.crashSpeed : 1) * rotSpeed;
           p.vx = mx * spd; p.vy = my * spd;
         }
       }
@@ -350,13 +355,15 @@ export class Sim {
       if (p.mateT > 0) { p.mateT = Math.max(0, p.mateT - dt); if (p.mateT <= 0) { p.crashT = MATE.crash; this.events.push({ t: 'mateCrash', id: p.id }); } }
       else if (p.crashT > 0) p.crashT = Math.max(0, p.crashT - dt);
       if (p.mods?.regen && p.hp < this.maxHp(p)) p.hp = Math.min(this.maxHp(p), p.hp + p.mods.regen * dt);   // smart pacifier
-      if (inp.skill && !p.riding && !p.playing && p.skillCd <= 0) this._ability(p);
+      if (p.gonT > 0) { p.gonT -= dt; if (p.gonT <= 0) this._gonmanRelease(p); }
+      const busy = p.gonT > 0;                                       // the gonman is occupied
+      if (inp.skill && !p.riding && !p.playing && !busy && p.skillCd <= 0) this._ability(p);
       // Terraria-style: the attack button uses what's in hand. A melee weapon swings, a gun fires, anything
       // else is used by the scene (consumables etc.). No weapon in hand, no punch.
       const held = p.held ?? 'melee';
-      if (inp.attack && held === 'melee' && p.mods?.swing && !p.riding && !p.playing && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
-      if (inp.attack && held === 'gun' && p.mods?.gun && !p.riding && !p.playing && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);
-      if (inp.fire && !p.riding && !p.playing && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);   // no gun, no shooting
+      if (inp.attack && held === 'melee' && p.mods?.swing && !p.riding && !p.playing && !busy && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
+      if (inp.attack && held === 'gun' && p.mods?.gun && !p.riding && !p.playing && !busy && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);
+      if (inp.fire && !p.riding && !p.playing && !busy && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);   // no gun, no shooting
 
       // Facing follows the walking direction; it only turns toward the cursor while firing a ranged
       // weapon. Standing still keeps the last facing.
@@ -467,6 +474,9 @@ export class Sim {
         if (this.enemies.has(e.id)) { e.hurtT = (e.boss ? 0.3 : 0.9) * Math.min(2.2, ap); if (p.mods?.markDmg) e.marked = Math.max(e.marked ?? 0, 3); }   // stunned (and rattled)
       }
       this.events.push({ t: 'riff', id: p.id, x: p.x, y: p.y, r });
+    } else if (p.character === 'manuel' && p.morphed && (p.morphStage ?? 0) >= 2) {
+      p.skillCd = GONMAN.cd * cdk; p.gonT = GONMAN.windup; p.gonAim = p.aim;   // the gonman, stage two
+      this.events.push({ t: 'gonman', id: p.id, ms: GONMAN.windup * 1000 });
     } else if (p.character === 'manuel') {
       p.skillCd = 10 * cdk;
       const n = 1 + (p.mods?.decoys ?? 0);
@@ -480,6 +490,24 @@ export class Sim {
       for (const e of this.enemies.values()) if (Math.hypot(e.x - p.x, e.y - p.y) < 150 * Math.min(1.8, ap)) e.marked = 5 * ap;
       this.events.push({ t: 'ping', id: p.id, x: p.x, y: p.y });
     }
+  }
+
+  /** The release: globs in a fan toward where he was aiming. Each one slows what it lands on and leaves a puddle. */
+  _gonmanRelease(p) {
+    const n = GONMAN.globs, pts = [];
+    for (let i = 0; i < n; i++) {
+      const a = (p.gonAim ?? p.aim ?? 0) + (i - (n - 1) / 2) * 0.32, f = ((i * 0.37 + 0.5) % 1);
+      let d = GONMAN.near + (GONMAN.far - GONMAN.near) * f, x = p.x + Math.cos(a) * d, y = p.y + Math.sin(a) * d;
+      while (d > 8 && this.map.solid(Math.floor(x / TILE), Math.floor(y / TILE))) { d -= 8; x = p.x + Math.cos(a) * d; y = p.y + Math.sin(a) * d; }   // not into walls
+      pts.push([Math.round(x), Math.round(y)]);
+      this.goo.push({ x, y, r: GONMAN.puddleR, ttl: GONMAN.puddleTtl });
+      for (const e of [...this.enemies.values()]) {
+        if (e.sahur || Math.hypot(e.x - x, e.y - y) > GONMAN.puddleR + (this._def(e).radius ?? 6)) continue;
+        e.slowT = Math.max(e.slowT ?? 0, GONMAN.slowTime);
+        this._hurtEnemy(e, GONMAN.dmg, 0, 0, p.id);
+      }
+    }
+    this.events.push({ t: 'goo', id: p.id, pts });
   }
 
   _melee(p) {
@@ -610,8 +638,12 @@ export class Sim {
   }
 
   _stepEnemies(dt) {
+    for (const g of this.goo) g.ttl -= dt;
+    this.goo = this.goo.filter((g) => g.ttl > 0);
     for (const e of this.enemies.values()) {
-      const def = this._def(e);
+      if (e.slowT > 0) e.slowT = Math.max(0, e.slowT - dt);
+      if (!e.sahur && this.goo.some((g) => Math.hypot(e.x - g.x, e.y - g.y) < g.r)) e.slowT = Math.max(e.slowT ?? 0, 0.4);   // walked through a puddle
+      const def0 = this._def(e), def = e.slowT > 0 && !e.sahur ? { ...def0, speed: def0.speed * (e.boss ? GONMAN.bossSlow : GONMAN.slow) } : def0;
       e.cd = Math.max(0, e.cd - dt); e.hurtT = Math.max(0, e.hurtT - dt);
       if (e.sahur) { this._stepSahur(e, def, dt); continue; }
       if (e.boss) { this._stepBoss(e, def, dt); continue; }
@@ -1039,9 +1071,10 @@ export class Sim {
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
-        mk: e.marked > 0, zz: e.sleepT > 0, sg: !!this._def(e).lullaby && !(e.sleepT > 0), st: e.st ?? null,
+        mk: e.marked > 0, zz: e.sleepT > 0, ...(e.slowT > 0 ? { sl: 1 } : {}), sg: !!this._def(e).lullaby && !(e.sleepT > 0), st: e.st ?? null,
         ...(e.def && !e.boss ? { vn: e.def.vname, tr: e.def.trait, c: e.def.color, mh: e.def.hp, r: e.def.radius } : {}),
         ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
+      goo: this.goo.map((g) => ({ x: Math.round(g.x), y: Math.round(g.y), r: g.r, t: Math.round(g.ttl * 10) / 10 })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
       allies: (this.allies ?? []).map((a) => ({ x: Math.round(a.x), y: Math.round(a.y), hp: a.hp, mhp: a.maxHp, dn: a.down > 0, st: a.st })),
       hazards: this.hazards.map((h) => ({ x: Math.round(h.x), y: Math.round(h.y), r: h.r, t: Math.round(h.ttl * 10) / 10 })),

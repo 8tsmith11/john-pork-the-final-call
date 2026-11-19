@@ -218,6 +218,13 @@ export const LINES_ES = {
   "Belt. Putting it on the list.": "Cinturón. Lo anoto en la lista.",
   "Okay. We're good.": "Listo. Todo bien.",
   "That never happened.": "Eso nunca pasó.",
+  // the gonman, stage two (src/content/gonman.js); Manuel's lines, Rioplatense
+  "The gonman needs a minute. Don't look.": "El gonman necesita un minuto. No miren.",
+  "Turn around. All of you.": "Dense vuelta. Todos.",
+  "This is a tactical decision.": "Esto es una decisión táctica.",
+  "The gonman provides.": "El gonman provee.",
+  "Sticky situation. For them.": "Situación pegajosa. Para ellos.",
+  "Nobody talk to me for a bit.": "Que nadie me hable un rato.",
 };
 
 /** The line in the current language (Spanish when chosen and known, else as written). */
