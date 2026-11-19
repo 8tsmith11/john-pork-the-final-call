@@ -1382,6 +1382,7 @@ test('landscape pass: place bubbles sit inside their map, scenery and decals sta
   assert.ok(decals.filter((d) => d.frame.startsWith('dec.')).every((d) => !plaza.solid(d.x, d.y) || d.frame === 'dec.bay_v' || (d.frame === 'dec.lily' && plaza.layout[d.y][d.x] === '~')), 'a ground decal sits on a wall');
   assert.ok(decals.some((d) => d.frame.startsWith('roof.')), 'roofs have detail');
   assert.ok(plaza.solid(38, 18) && plaza.solid(39, 19), 'the fountain is solid');
+  assert.ok(decorMod.mapDecals(landMaps.room631).length > 0, 'room 631 has lived-in wear');
 });
 
 test("Michael's belt gag: his own line first, on behind one switch, painted as an overlay with the boxers on", () => {
