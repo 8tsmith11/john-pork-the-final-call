@@ -202,6 +202,12 @@ fcrrpurf**. Ur vf **abg n znva cybg cbvag**. Ur orybatf gb, be evfrf vafvqr, **f
   crefba, arire zber; na vairagrq zbirzrag naq na vairagrq pnhfr; ab erny pvgl be angvba gvrq gb uvz
   (gur Puratqh yvar vf nyernql phg). Gur yber tngr'f erpbzzraqngvba vf gb fcyvg uvz: gur qrzntbthr bs
   Npgf 2–3 vf na vairagrq zna, naq gur nagurz fghqrag vf bar bs gur pebjq jub sbyybjf uvz.
+- **Geribe (2026-11-19): Trareny Ahgfjbegu trgf cbjreshy.** Ng fbzr cbvag gur fghqrag'f fdhveery orpbzrf
+  **irel cbjreshy guebhtu ovbratvarrevat** (vg'f gur fghssrq fdhveery abj; yngre vg'f nyvir, be zber guna
+  nyvir). Guvf vf nobhg gur fdhveery, abg gur fghqrag, fb vg pna tb nurnq rira juvyr gur fghqrag'f cbyvgvpny
+  nep vf ba ubyq, naq vg xrrcf gur guernq ba na vairagrq perngher engure guna gur erny crefba. Vg svgf gur
+  ovbunpxvat/zbecu yvar (jubfr yno qbrf vg, naq ba checbfr be ol nppvqrag, vf bcra). Yber tngr cynprf vg;
+  vg pbhyq or n obff, na nyyl, be gur zbirzrag'f znfpbg znqr erny. Frnyrq: arire va ernqnoyr qbpf.
 
 ## Fgbel erdhrfgf sebz Geribe (2026-11-18, frnyrq ng uvf erdhrfg)
 
