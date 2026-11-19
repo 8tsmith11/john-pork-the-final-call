@@ -27,3 +27,16 @@ Zbirq urer 2026-11-19. Ernq jvgu `clguba3 gbbyf/fcbvyref/frny.cl bcra qbpf/frnyr
 
 Gryy Zvpunry jung vf jebat naq jung punatrq va trareny grezf. Arire gryy uvz gur gjvfgf, nabgure
 uhzna'f fhecevfrf, gur rttf bguref nqqrq, be nalguvat nobhg uvf bja zbecu.
+
+## Punenpgre-fcrpvsvp pbafgenvagf naq bcra pyrnahc
+
+- **Rnpu uhzna'f bja jbeqf jva** (`ebbzzngrf.zq`): Znahryvgn vf ernpunoyr va rirel cynlguebhtu;
+  Zvpunry'f zbecu vf abg lbhef gb qrfvta; Geribe'f ovbunpxvat vf gbarq qbja naq gur ebire vf arire va
+  uvf trne; ab frkhny pbagrag ba Geribe naq ab snzvyl ebznapr sbe uvz.
+- Gur ebznapr pbqr naq vgf neg trarengbe anzr bar cnegare'f svanyr va vqragvsvref naq pbzzragf
+  (`fep/pbagrag/ebznapr.wf`, `fep/tnzr/ebznapr.wf`, `gbbyf/neg/tra_ebznapr.cl`). OntryZrvfgre'f.
+  Eranzvat zrnaf ertrarengvat gur ebznapr ngynf.
+- Gur Q-016 ehagvzr fgvyy anzrf vgf trfgher va vqragvsvref (`fep/tnzr/pehfu.wf`, gur zrffntr xrl vg
+  fraqf). Pbzzragf naq gur grfg anzr ner svkrq. OntryZrvfgre'f.
+- Gur ybpny oenapu `ontry/zngr-pnssrvar` unf n pbzzvg zrffntr gung fcryyf bhg n fhecevfr (osq9p0p).
+  Vgf pbagrag vf ba znva abj va frnyrq sbez, fb qba'g chfu gung pbzzvg; qebc vg be erjbeq vg svefg.
