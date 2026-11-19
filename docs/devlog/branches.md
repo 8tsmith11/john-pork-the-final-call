@@ -55,6 +55,8 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 | `bio/switchyard-hint-es` | GitHub | Merged in `8506a11` (PR #16) |
 | `bio/switchyard-hint-inactive` | GitHub | Merged in `4d2009a` (PR #17) |
 | `bio/boss-phase-gate` | GitHub | Merged in `7f04c7f` (PR #18) |
+| `bio/boss-phase-inactive` | GitHub | Merged in `5237b7d` (PR #19) |
+| `bio/level-exit-ids` | GitHub | Merged in `080dd09` (PR #20) |
 
 ## Deleted
 
