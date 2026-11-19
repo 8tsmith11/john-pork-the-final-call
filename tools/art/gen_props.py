@@ -896,9 +896,178 @@ P("obj.cordon_booth", cordon_booth())
 P("obj.floodlight", floodlight())
 P("obj.cordon_sign", cordon_sign())
 
+# Landscape pass (Manuel: "the plaza is a huge concrete block with some random small concrete structure").
+# Street furniture for `scenery` (non-interactive, src/content/maps/*.js) and floor decals stamped into the
+# baked map (src/game/render/decor.js). No orange anywhere: that is the balloon's (D-004).
+def ell(c, cx, cy, rx, ry, col, ring=False):
+    for y in range(c.h):
+        for x in range(c.w):
+            d = ((x + 0.5 - cx) / rx) ** 2 + ((y + 0.5 - cy) / ry) ** 2
+            if (d <= 1 and not ring) or (ring and 0.62 <= d <= 1):
+                c.px(x, y, col)
+    return c
+
+
+def fountain(f):
+    c = C(32, 40)
+    ell(c, 16, 31, 15.5, 8, "concrete1")                                      # the basin's outer wall
+    ell(c, 16, 30, 15.5, 7.5, "concrete2")
+    ell(c, 16, 30, 13, 5.5, "screen0")                                        # the pool
+    ell(c, 16, 30, 11, 4.2, "screen1")
+    for x in range(2, 30): 
+        if c.g[24][x] != ".": c.px(x, 24, "concrete3")                        # lit rim
+    for x, y in ((9 + f, 30), (20 - f, 31), (14, 33), (23, 29 + f)):
+        c.px(x, y, "screen2")                                                 # ripples
+    c.pts("warm4", (11, 32), (19, 29), (22, 32))                              # coins
+    c.rect(14, 13, 4, 17, "concrete2").v_(14, 13, 17, "concrete3").v_(17, 13, 17, "concrete1")   # the column
+    ell(c, 16, 13, 6, 2.2, "concrete2"); c.h_(11, 12, 10, "concrete3")       # the upper bowl
+    for i, (x, y) in enumerate(((16, 5), (15, 6), (17, 6), (14, 8), (18, 8), (13, 10), (19, 10), (12, 12), (20, 12))):
+        c.px(x, y + (f if i % 2 else 0), "screen2" if i % 3 else "bone")      # the jet falling back
+    c.pts("screen2", (12, 15 + f), (20, 16 - f), (11, 19), (21, 20), (12, 24 - f), (20, 23 + f))  # water off the bowl
+    return c.outline()
+
+
+BIG["obj.fountain"] = fountain(0).rows()
+BIG["obj.fountain#1"] = fountain(1).rows()
+
+def bin_(recycle=False):
+    body, dark = ("tub1", "tub0") if recycle else ("steel", "concrete1")
+    c = C().rect(4, 12, 8, 10, body).v_(11, 12, 10, dark).h_(3, 11, 10, "night2").h_(4, 10, 8, "night3")
+    c.v_(6, 13, 8, dark).v_(9, 13, 8, dark)
+    if recycle: c.pts("bone", (7, 15), (8, 15), (6, 16), (9, 16), (7, 17), (8, 17))
+    else: c.pts("bone", (5, 10), (6, 9)).px(10, 10, "warm2")                   # a cup and a bag corner
+    return c.outline()
+def bikerack():
+    c = C().v_(2, 12, 10, "steel").v_(13, 12, 10, "steel").h_(2, 12, 12, "concrete3")       # the hoop
+    ell(c, 5, 18, 3.6, 3.6, "night0", ring=True); ell(c, 11, 18, 3.6, 3.6, "night0", ring=True)   # wheels
+    c.pts("bone", (5, 18), (11, 18))                                                         # hubs
+    c.pts("tub1", (5, 17), (6, 16), (7, 15), (8, 15), (9, 15), (10, 16), (11, 17), (7, 16), (8, 17), (9, 18), (6, 17))   # the frame
+    c.h_(6, 14, 3, "night0").pts("bone", (10, 14), (11, 14))                                 # saddle, bars
+    return c.outline()
+def bollard():
+    c = C().rect(6, 15, 4, 7, "concrete2").v_(9, 15, 7, "concrete1").h_(6, 14, 4, "concrete3").h_(6, 17, 4, "bone")
+    return c.outline()
+def hydrant():
+    c = C().rect(5, 14, 6, 8, "signal").v_(10, 14, 8, "soft0").rect(6, 12, 4, 2, "signal").px(7, 11, "soft1").px(8, 11, "signal")
+    c.rect(3, 16, 2, 2, "soft0").rect(11, 16, 2, 2, "soft0").h_(4, 21, 8, "night2").px(6, 13, "soft1")
+    return c.outline()
+def newsbox():
+    c = C().rect(1, 12, 6, 10, "tub1").v_(6, 12, 10, "tub0").rect(2, 14, 4, 3, "screen0").h_(2, 15, 4, "bone")
+    c.rect(8, 13, 6, 9, "warm4").v_(13, 13, 9, "warm3").rect(9, 15, 4, 3, "night2").h_(9, 16, 4, "bone")
+    c.h_(1, 11, 6, "tub0").h_(8, 12, 6, "warm3")
+    return c.outline()
+def mailbox():
+    c = C().rect(4, 11, 8, 8, "tub0").h_(5, 10, 6, "tub0").h_(5, 10, 6, "tub1").v_(11, 11, 8, "night3")
+    c.h_(5, 13, 6, "bone").rect(5, 19, 1, 3, "night1").rect(10, 19, 1, 3, "night1").px(7, 15, "signal")
+    return c.outline()
+def meter():
+    c = C().v_(7, 12, 10, "steel").v_(8, 12, 10, "concrete1").rect(5, 6, 6, 6, "night2").rect(6, 7, 4, 2, "screen1").px(7, 10, "warm4")
+    return c.outline()
+def busstop():
+    c = C().v_(7, 6, 16, "steel").rect(3, 1, 10, 6, "screen0").h_(3, 1, 10, "screen1").rect(5, 3, 5, 2, "bone").pts("night1", (5, 5), (9, 5))
+    c.h_(5, 21, 6, "concrete2")
+    return c.outline()
+def trafficlight(lit):
+    c = C().v_(7, 11, 11, "night2").rect(5, 1, 6, 11, "night1").h_(5, 1, 6, "night3")
+    for i, col in enumerate(("signal", "warm4", "yerba1")):
+        c.rect(7, 2 + i * 3, 2, 2, col if i == lit else "night2")
+    c.h_(5, 21, 6, "concrete2")
+    return c.outline()
+def cone():
+    c = C().h_(4, 21, 8, "night2").rect(6, 13, 4, 8, "signal").rect(5, 18, 6, 3, "signal").h_(5, 16, 6, "bone").px(7, 12, "signal").px(8, 12, "soft1")
+    return c.outline()
+def flowerpot():
+    c = C().rect(4, 16, 8, 6, "warm2").h_(3, 15, 10, "warm3").v_(11, 16, 6, "warm1")
+    c.rect(4, 11, 8, 4, "yerba0").pts("yerba1", (5, 11), (8, 10), (10, 12)).pts("pork1", (5, 12), (9, 11)).pts("bone", (7, 12), (10, 13)).px(6, 10, "tub1")
+    return c.outline()
+def aframe():
+    c = C().rect(4, 10, 8, 11, "night2").h_(4, 10, 8, "night3").pts("warm1", (4, 21), (11, 21))
+    c.h_(5, 12, 5, "bone").h_(5, 14, 6, "bone").h_(5, 16, 4, "bone").h_(6, 18, 3, "pork1")
+    return c.outline()
+def utilitybox():
+    c = C().rect(3, 11, 10, 11, "concrete2").v_(12, 11, 11, "concrete1").h_(3, 11, 10, "concrete3")
+    c.rect(5, 14, 3, 3, "pork1").px(6, 15, "bone").pts("night1", (9, 13), (10, 13), (9, 19), (10, 19)).h_(4, 17, 6, "rot0")
+    return c.outline()
+def adtotem(f):
+    c = C().rect(3, 1, 10, 21, "night1").h_(3, 1, 10, "night3")
+    scr = ("pork0", "pork1", "pork2") if f == 0 else ("screen0", "screen1", "screen2")
+    c.rect(4, 3, 8, 16, scr[0]).rect(5, 5, 6, 7, scr[1]).pts(scr[2], (6, 6), (7, 6), (8, 7))
+    c.h_(5, 14, 6, "bone").h_(5, 16, 4, "bone").h_(4, 21, 8, "concrete1")
+    return c.outline()
+def cafe_table():
+    c = C().rect(1, 15, 3, 6, "night2").rect(12, 15, 3, 6, "night2")                      # two chairs
+    ell(c, 8, 15, 4.5, 2, "bone"); c.h_(5, 14, 6, "concrete3")
+    c.v_(7, 17, 4, "steel").h_(5, 21, 6, "steel").px(9, 14, "warm2")                      # a cup left behind
+    return c.outline()
+def shoppingcart():
+    c = C().rect(3, 13, 10, 6, "steel")
+    for x in range(4, 13, 2): c.v_(x, 14, 4, "concrete1")
+    c.h_(3, 13, 10, "concrete3").v_(13, 11, 3, "steel").pts("night1", (4, 21), (11, 21)).h_(4, 19, 8, "concrete1").px(7, 15, "bone")
+    return c.outline()
+def tires():
+    c = C()
+    for y in (19, 16, 13):
+        ell(c, 8, y + 1.5, 6, 2.2, "night1"); c.h_(4, y, 8, "night2"); c.h_(6, y + 1, 4, "night0")
+    return c.outline()
+def charger(f):
+    c = C().rect(5, 8, 6, 14, "concrete1").v_(10, 8, 14, "night3").h_(5, 8, 6, "concrete2")
+    c.rect(6, 10, 4, 3, "screen1" if f else "screen0").px(7, 11, "screen2").pts("yerba1" if f else "night2", (7, 15))
+    c.pts("night1", (11, 14), (12, 15), (12, 17), (13, 19), (13, 21))                     # the cable
+    return c.outline()
+
+for name, c in (("obj.bin", bin_()), ("obj.recycle", bin_(True)), ("obj.bikerack", bikerack()), ("obj.bollard", bollard()),
+                ("obj.hydrant", hydrant()), ("obj.newsbox", newsbox()), ("obj.mailbox", mailbox()), ("obj.meter", meter()),
+                ("obj.busstop", busstop()), ("obj.trafficlight", trafficlight(0)), ("obj.trafficlight#1", trafficlight(2)),
+                ("obj.cone", cone()), ("obj.flowerpot", flowerpot()), ("obj.aframe", aframe()), ("obj.utilitybox", utilitybox()),
+                ("obj.adtotem", adtotem(0)), ("obj.adtotem#1", adtotem(1)), ("obj.cafe_table", cafe_table()),
+                ("obj.shoppingcart", shoppingcart()), ("obj.tires", tires()), ("obj.charger", charger(0)), ("obj.charger#1", charger(1))):
+    P(name, c)
+
+# Floor decals: 16x16, flat on the ground, no outline. Stamped into the baked map under everything.
+DECALS = {}
+def D(name, c): DECALS[name] = c.rows()
+def dc(): return C(16, 16)
+D("dec.puddle_0", ell(ell(dc(), 8, 9, 6, 3, "screen0"), 7, 9, 4, 1.8, "screen1").pts("screen2", (5, 8), (6, 8), (10, 10)))
+D("dec.puddle_1", ell(ell(dc(), 7, 8, 4, 2.5, "screen0"), 12, 12, 2.5, 1.5, "screen0").pts("screen1", (6, 8), (7, 7), (12, 12)))
+D("dec.manhole", ell(ell(ell(dc(), 8, 8, 6, 6, "night1"), 8, 8, 5, 5, "concrete1"), 8, 8, 5, 5, "night2", ring=True).h_(5, 8, 7, "night1").v_(8, 5, 7, "night1").pts("concrete3", (6, 6), (10, 6)))
+D("dec.drain", dc().rect(3, 1, 10, 5, "night1").pts("concrete2", (4, 2), (6, 2), (8, 2), (10, 2), (4, 4), (6, 4), (8, 4), (10, 4)).h_(3, 6, 10, "concrete1"))
+D("dec.crack_0", dc().pts("night1", (2, 3), (3, 4), (4, 4), (5, 5), (6, 6), (6, 7), (7, 8), (9, 8), (10, 9), (11, 11), (12, 12), (8, 9), (8, 10)))
+D("dec.crack_1", dc().pts("night1", (13, 2), (12, 3), (11, 3), (10, 4), (9, 6), (9, 7), (8, 8), (7, 10), (5, 11), (4, 12), (10, 7), (11, 8)))
+D("dec.leaves_0", dc().pts("warm2", (3, 4), (4, 4), (11, 9)).pts("warm3", (12, 9), (6, 12)).pts("yerba1", (9, 3), (2, 11)).pts("warm1", (7, 12), (13, 6)))
+D("dec.leaves_1", dc().pts("warm3", (4, 7), (5, 7), (10, 12)).pts("warm2", (9, 4), (12, 5), (3, 13)).pts("yerba0", (6, 3), (13, 13)))
+D("dec.litter_0", dc().rect(6, 8, 3, 2, "bone").px(9, 8, "concrete3").px(5, 9, "warm2").pts("night2", (6, 10), (8, 10)))          # a crushed cup
+D("dec.litter_1", dc().rect(4, 6, 6, 5, "bone").h_(5, 7, 4, "night2").h_(5, 9, 3, "pork1").px(9, 10, "concrete3"))                # a soggy flyer
+D("dec.gum", dc().pts("night2", (3, 3), (9, 5), (12, 11), (5, 12), (7, 8)))
+D("dec.oil", ell(ell(dc(), 8, 8, 5, 3, "night1"), 7, 8, 2.5, 1.2, "night2").pts("tub0", (6, 7)).pts("pork0", (9, 9)))
+D("dec.weeds", dc().pts("yerba1", (2, 14), (3, 13), (4, 14), (12, 2), (13, 1), (13, 3)).pts("yerba0", (3, 14), (12, 3), (7, 9), (8, 8)))
+D("dec.chalk", dc().h_(2, 2, 12, "bone").h_(2, 8, 12, "bone").h_(2, 14, 12, "bone").v_(2, 2, 13, "bone").v_(13, 2, 13, "bone").v_(8, 8, 7, "bone").pts("bone", (5, 4), (5, 5), (10, 11), (11, 10)))   # hopscotch
+D("dec.chalk_pig", ell(dc(), 8, 8, 6, 5, "pork1", ring=True).pts("pork1", (3, 3), (4, 2), (12, 2), (13, 3), (6, 7), (10, 7), (7, 10), (9, 10), (8, 10)))   # somebody drew him
+D("dec.bay_v", dc().v_(0, 0, 16, "bone").pts("concrete3", (0, 5), (0, 11)))
+D("dec.bay_h", dc().h_(0, 15, 16, "bone").pts("concrete3", (4, 15), (12, 15)))
+D("dec.arrow_n", dc().v_(7, 5, 10, "bone").v_(8, 5, 10, "bone").h_(5, 6, 6, "bone").h_(6, 5, 4, "bone").pts("bone", (7, 3), (8, 3), (6, 4), (9, 4)))
+D("dec.arrow_s", dc().v_(7, 1, 10, "bone").v_(8, 1, 10, "bone").h_(5, 9, 6, "bone").h_(6, 10, 4, "bone").pts("bone", (7, 12), (8, 12), (6, 11), (9, 11)))
+D("dec.tactile", dc().rect(0, 0, 16, 4, "warm3").pts("warm4", *[(x, y) for x in range(1, 16, 3) for y in (1, 2)]))   # the bumpy strip at a kerb cut
+D("dec.hatch", dc().pts("warm4", *[(x, y) for x in range(16) for y in range(16) if (x + y) % 6 == 0]))
+D("dec.stain", ell(dc(), 8, 9, 6, 4, "night2").pts("night1", (6, 9), (9, 8)))
+D("dec.flowers", dc().pts("pork1", (3, 4), (11, 9), (6, 12)).pts("bone", (8, 3), (13, 13), (2, 10)).pts("warm4", (5, 7), (12, 4)).pts("tub1", (9, 12)).pts("yerba1", (3, 5), (11, 10), (8, 4), (6, 13), (12, 5)))   # wildflowers in the grass
+# Roofs seen from above (dark night1 tops): what sits on a city roof at night.
+D("roof.ac", dc().rect(2, 3, 12, 10, "concrete1").h_(2, 3, 12, "concrete2").v_(13, 4, 9, "night2").h_(2, 13, 12, "night0")
+  .rect(4, 5, 6, 6, "night2").pts("steel", (5, 6), (8, 6), (6, 7), (7, 8), (5, 9), (8, 9)).pts("concrete3", (11, 5), (11, 7), (11, 9)))
+D("roof.vent", dc().rect(6, 6, 4, 4, "steel").h_(5, 5, 6, "concrete3").h_(6, 10, 4, "night0").px(7, 7, "night1").px(8, 8, "night1"))
+D("roof.skylight", dc().rect(3, 4, 10, 8, "concrete2").rect(4, 5, 8, 6, "screen0").pts("screen1", (5, 6), (6, 6), (5, 7)).h_(3, 12, 10, "night0").v_(8, 5, 6, "concrete2"))
+D("roof.skylight_lit", dc().rect(3, 4, 10, 8, "concrete2").rect(4, 5, 8, 6, "warm4").pts("bone", (5, 6), (6, 6), (5, 7)).h_(3, 12, 10, "night0").v_(8, 5, 6, "concrete2"))
+D("roof.solar", dc().rect(1, 2, 14, 11, "tub0").pts("night2", *[(x, y) for x in range(1, 15) for y in range(2, 13) if x % 5 == 0 or y % 4 == 1]).h_(1, 13, 14, "night0").pts("tub1", (2, 3), (3, 3), (7, 7)))
+D("roof.tank", ell(ell(dc(), 8, 8, 6, 6, "warm1"), 8, 8, 4.5, 4.5, "warm2", ring=True).pts("warm3", (6, 4), (5, 5)).h_(4, 14, 9, "night0"))
+D("roof.hatch", dc().rect(5, 5, 6, 6, "concrete1").h_(5, 5, 6, "concrete2").h_(5, 11, 6, "night0").px(10, 8, "steel"))
+D("roof.pipe", dc().h_(0, 7, 16, "steel").h_(0, 8, 16, "concrete1").h_(0, 9, 16, "night0").v_(10, 4, 3, "steel"))
+D("roof.antenna", dc().v_(8, 2, 12, "steel").h_(5, 4, 7, "steel").h_(6, 7, 5, "steel").px(8, 1, "signal").h_(6, 14, 5, "night0"))
+D("roof.garden", dc().rect(2, 2, 12, 12, "warm1").rect(3, 3, 10, 10, "warm0").pts("yerba1", (4, 4), (6, 5), (9, 4), (11, 6), (5, 9), (8, 10), (11, 11)).pts("yerba0", (5, 4), (7, 7), (10, 8), (4, 11)).pts("pork1", (9, 9)))
+D("dec.grate_tree", ell(ell(dc(), 8, 8, 7.5, 7.5, "night1", ring=True), 8, 8, 5.5, 5.5, "night2", ring=True).pts("steel", (8, 1), (1, 8), (14, 8), (8, 14)))
+
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)
 write("big", 32, 40, BIG)
+write("decals", 16, 16, DECALS)
 write("principals", 24, 32, PRINCIPALS)
 write("doors", 16, 16, DOORS)
 write("enemies", 16, 16, ENEMIES)

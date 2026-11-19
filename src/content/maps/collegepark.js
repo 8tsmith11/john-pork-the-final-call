@@ -14,36 +14,61 @@ R(1, 30, 82, 1, 's'); R(1, 31, 82, 4, ','); R(1, 35, 82, 1, 's');           // t
 R(56, 1, 2, 50, 's'); R(58, 1, 6, 50, ','); R(64, 1, 2, 50, 's');           // Route 1, north to south
 R(56, 31, 10, 4, ',');                                                      // the intersection
 R(1, 28, 55, 2, 'h');                                                       // the Purple Line that never opened
+// Zebra crossings (landscape pass): all four arms of the intersection, and mid-block where the plaza's
+// cross path meets Route 1, so the plaza, the shops and the scooter yard join up.
+R(58, 28, 6, 2, 'z'); R(58, 36, 6, 2, 'z'); R(54, 31, 2, 4, 'Z'); R(66, 31, 2, 4, 'Z');
+R(58, 18, 6, 2, 'z'); R(54, 18, 2, 2, 'q');                                 // plaza to Route 1
 
-// The metro plaza
+// The metro plaza (landscape pass, Manuel: "a huge concrete block"): a brick promenade down from the
+// station steps and a brick cross path, a fountain where they meet, hedged lawns with trees in the
+// quarters, trees along the promenade, and a brick edge. Pavers fill what's left.
 R(22, 10, 32, 18, 'p');
-for (const [x, y] of [[26, 14], [34, 14], [42, 14], [50, 14], [26, 22], [34, 22], [42, 22], [50, 22]]) R(x, y, 1, 1, '|');
+R(22, 10, 1, 18, 'q'); R(53, 10, 1, 18, 'q'); R(22, 27, 32, 1, 'q');       // the brick edge
+R(36, 10, 6, 18, 'q');                                                      // the promenade, as wide as the steps
+R(22, 18, 32, 2, 'q');                                                      // the cross path, ASTER side to Route 1
+const bed = (x, y, w, h) => { R(x, y, w, h, 'f'); R(x + 1, y + 1, w - 2, h - 2, 'g'); };   // a lawn inside a clipped hedge
+bed(25, 12, 9, 5); g[14][27] = 'T'; g[14][31] = 'T'; g[13][29] = 'd'; g[15][29] = 'd';   // north-west lawn: two trees, a flowerbed
+bed(44, 12, 8, 4); g[13][46] = 'T'; g[13][49] = 'T'; g[14][47] = 'd'; g[14][48] = 'd';   // north-east lawn
+R(32, 21, 3, 3, 'd'); g[22][33] = 'T';                                      // south-west: a tree in a planting bed
+R(43, 24, 2, 2, 'd'); g[24][44] = 'T';                                      // south-east, by the abatement van
+for (const [x, y] of [[35, 11], [42, 11], [35, 24], [42, 24]]) g[y][x] = 'T';   // trees along the promenade
 R(32, 3, 14, 6, '#'); R(36, 9, 6, 1, 'p');                                  // the station building and its steps
 R(23, 24, 8, 2, '#');                                                       // the row of shuttered stalls
 
 // ASTER and its forecourt
-R(4, 3, 14, 10, '#'); R(4, 13, 14, 4, 'p'); R(18, 14, 4, 2, 's');
+R(4, 3, 14, 10, '#'); R(4, 13, 14, 4, 'p'); R(4, 16, 14, 1, 'q'); R(18, 14, 4, 2, 's');
 R(2, 19, 16, 1, '='); R(2, 20, 18, 7, 'g');                                 // a railed strip of garden
+R(2, 23, 18, 1, 'y'); R(4, 21, 3, 1, 'd'); R(13, 25, 4, 1, 'd'); R(15, 21, 2, 2, 'd');   // a gravel path through it, flowerbeds
 
 // East of Route 1: the diner, the alley, the scooter yard, a shuttered block
-R(66, 3, 14, 6, '#'); R(66, 9, 16, 3, ','); R(66, 12, 14, 6, '#'); R(66, 18, 14, 4, 'p');
+R(66, 3, 14, 6, '#'); R(66, 9, 16, 3, ','); R(66, 9, 12, 2, 'p'); R(66, 12, 14, 6, '#'); R(66, 18, 14, 4, 'p');
 R(66, 23, 12, 6, '#'); R(80, 3, 2, 27, ',');
 
-// South-west: the campus edge
-R(2, 36, 26, 1, '#'); R(12, 36, 3, 1, 's'); R(12, 37, 3, 9, 's'); R(10, 40, 7, 4, 'p'); R(4, 46, 20, 4, '#');
+// South-west: the campus edge. Brick walks (it's a campus), hedges along Compute Hall, flowerbeds.
+R(2, 36, 26, 1, '#'); R(12, 36, 3, 1, 's'); R(12, 37, 3, 9, 'q'); R(10, 40, 7, 4, 'q'); R(4, 46, 20, 4, '#');
+R(4, 45, 8, 1, 'f'); R(15, 45, 9, 1, 'f'); R(8, 40, 2, 4, 'd'); R(17, 40, 1, 4, 'd');
 
-// South: the dead parking lot
+// South: the dead parking lot, with planting islands at both ends
 R(30, 37, 24, 12, ',');
+R(30, 40, 2, 5, 'd'); g[42][30] = 'T'; R(52, 40, 2, 5, 'd'); g[42][53] = 'T';
 
 // South-east: Paint Branch and the trail to the lake
 for (let y = 36; y < 51; y++) { const x = 72 + Math.round(3 * Math.sin(y / 3)); R(x, y, 2, 1, '~'); }
-R(66, 40, 17, 1, 's');
-for (let x = 66; x < 83; x++) if (g[40][x] === 's' && (g[39][x] === '~' || g[41][x] === '~')) g[40][x] = 'b';
+R(66, 40, 17, 1, 'y');                                                      // the trail is gravel
+for (let x = 66; x < 83; x++) if (g[40][x] === 'y' && (g[39][x] === '~' || g[41][x] === '~')) g[40][x] = 'b';
 for (let x = 68; x < 80; x++) if (g[39][x] === '~' && g[41][x] === '~') g[40][x] = 'b';
 
-// Trees: scattered through whatever is still grass, kept off paths
+// Trees: clustered into copses and clearings (smooth noise), not sprinkled evenly, kept off paths.
+const n2 = (x, y) => { const h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return h - Math.floor(h); };
+const noise = (x, y) => {   // value noise on a 7-tile grid, smoothly interpolated
+  const gx = x / 7, gy = y / 7, x0 = Math.floor(gx), y0 = Math.floor(gy), fx = gx - x0, fy = gy - y0;
+  const s = (v) => v * v * (3 - 2 * v), a = n2(x0, y0), b = n2(x0 + 1, y0), c = n2(x0, y0 + 1), d = n2(x0 + 1, y0 + 1);
+  return a + (b - a) * s(fx) + (c - a) * s(fy) + (a - b - c + d) * s(fx) * s(fy);
+};
 for (let y = 2; y < H - 2; y++) for (let x = 2; x < W - 2; x++) {
-  if (g[y][x] !== 'g' || (x * 7 + y * 13) % 9 !== 0) continue;
+  if (g[y][x] !== 'g') continue;
+  const dense = noise(x, y), r = n2(x * 3.1, y * 1.7);
+  if (!(dense > 0.6 ? r < 0.42 : r < 0.03)) continue;
   const open = [[1, 0], [-1, 0], [0, 1], [0, -1]].every(([dx, dy]) => g[y + dy][x + dx] === 'g' || g[y + dy][x + dx] === 'T');
   if (open) g[y][x] = 'T';
 }
@@ -70,14 +95,60 @@ export const metroPlaza = makeMap({
   // people with a reason to be here read better than a busy plaza.
   crowd: [
     { mode: 'wait', age: 'adult', at: [37, 10], n: 2, face: [38, 8] },                    // a queue at the closed metro gates
-    { mode: 'talk', age: 'adult', at: [33, 15] },                                        // two people talking by a pillar
-    { mode: 'walk', age: 'adult', path: [[23, 12], [38, 18], [52, 12]], n: 2 },           // crossing the plaza
+    { mode: 'talk', age: 'adult', at: [40, 21] },                                        // two people talking by the fountain
+    { mode: 'walk', age: 'adult', path: [[23, 20], [36, 20], [36, 22], [41, 22], [41, 21], [52, 21]], n: 2 },   // crossing the plaza, round the fountain
     { mode: 'walk', age: 'adult', path: [[57, 4], [57, 28], [57, 46]], n: 1 },            // the west sidewalk of Route 1
     { mode: 'walk', age: 'adult', path: [[65, 46], [65, 22], [65, 4]], n: 1 },            // and the east one
     { mode: 'walk', age: 'adult', path: [[4, 30], [30, 30], [54, 30]], n: 1 },            // along the cross street
     { mode: 'wait', age: 'adult', at: [70, 20], n: 1, face: [70, 19] },                   // waiting on Big Ray
   ],
   layout: g.map((r) => r.join('')),
+  // Landscape pass: street furniture nobody needs to talk to (src/game/render/decor.js draws it; solid
+  // pieces are walls to the sim). Kept off sidewalks' walking lines, NPC spots and enemy spawns.
+  scenery: [
+    // The plaza: the fountain at the crossing, lamps, bins, racks, a news box, two ad screens, pots by the benches
+    { art: 'obj.fountain', x: 38, y: 19, w: 2, h: 2, solid: true, anim: 600 },
+    ...[[23, 11], [52, 11], [34, 26], [43, 26]].map(([x, y]) => ({ art: 'obj.streetlamp', x, y, light: 0.9 })),
+    ...[[34, 17], [43, 17], [23, 22], [52, 23]].map(([x, y]) => ({ art: 'obj.bin', x, y })),
+    { art: 'obj.bikerack', x: 23, y: 12 }, { art: 'obj.bikerack', x: 23, y: 13 }, { art: 'obj.newsbox', x: 44, y: 10 },
+    { art: 'obj.adtotem', x: 24, y: 10, light: 0.6, anim: 2600 }, { art: 'obj.adtotem', x: 51, y: 10, light: 0.6, anim: 3100 },
+    { art: 'obj.flowerpot', x: 36, y: 17 }, { art: 'obj.flowerpot', x: 41, y: 17 }, { art: 'obj.flowerpot', x: 41, y: 20 },
+    { art: 'obj.cone', x: 50, y: 25 }, { art: 'obj.cone', x: 50, y: 27 }, { art: 'obj.utilitybox', x: 31, y: 23 },
+    { art: 'obj.crate', x: 47, y: 22 }, { art: 'obj.boxes', x: 48, y: 22 }, { art: 'obj.worklamp', x: 49, y: 22, light: 0.9 },   // the abatement crew's camp by the van
+    { art: 'obj.bench', x: 24, y: 22 }, { art: 'obj.bench', x: 29, y: 21 },                                                       // benches by the hopscotch
+    // ASTER's forecourt
+    { art: 'obj.bikerack', x: 14, y: 13 }, { art: 'obj.bikerack', x: 15, y: 13 }, { art: 'obj.bin', x: 7, y: 13 },
+    { art: 'obj.flowerpot', x: 4, y: 15 }, { art: 'obj.flowerpot', x: 17, y: 15 },
+    // Route 1: lights at the junction, hydrants, boxes, meters, a bus stop, racks, bins
+    ...[[57, 30], [64, 30], [57, 35], [64, 35]].map(([x, y], i) => ({ art: 'obj.trafficlight', x, y, anim: 3200 + i * 150 })),
+    { art: 'obj.hydrant', x: 56, y: 8 }, { art: 'obj.hydrant', x: 64, y: 26 }, { art: 'obj.hydrant', x: 56, y: 44 },
+    { art: 'obj.newsbox', x: 56, y: 13 }, { art: 'obj.mailbox', x: 64, y: 13 }, { art: 'obj.meter', x: 64, y: 5 }, { art: 'obj.meter', x: 64, y: 8 },
+    { art: 'obj.busstop', x: 56, y: 24 }, { art: 'obj.bikerack', x: 56, y: 10 }, { art: 'obj.bikerack', x: 56, y: 11 },
+    { art: 'obj.bin', x: 56, y: 16 }, { art: 'obj.bin', x: 65, y: 29 }, { art: 'obj.meter', x: 64, y: 40 }, { art: 'obj.bin', x: 56, y: 40 },
+    // The cross street
+    { art: 'obj.busstop', x: 20, y: 30 }, { art: 'obj.bin', x: 6, y: 35 }, { art: 'obj.bin', x: 32, y: 35 }, { art: 'obj.hydrant', x: 47, y: 35 },
+    { art: 'obj.bikerack', x: 26, y: 35 }, { art: 'obj.bikerack', x: 27, y: 35 }, { art: 'obj.newsbox', x: 40, y: 35 },
+    // The parking lot: cars in the bays, a cart, tires, cones, two lot lamps
+    ...[[32, 37], [36, 37], [46, 37], [50, 37], [34, 47], [40, 47], [48, 47]].map(([x, y]) => ({ art: 'obj.car', x, y, w: 2, solid: true })),
+    { art: 'obj.shoppingcart', x: 48, y: 41 }, { art: 'obj.tires', x: 31, y: 46, solid: true },
+    { art: 'obj.cone', x: 45, y: 43 }, { art: 'obj.cone', x: 46, y: 43 },
+    { art: 'obj.streetlamp', x: 36, y: 44, light: 0.8 }, { art: 'obj.streetlamp', x: 48, y: 39, light: 0.8 },
+    // Campus
+    { art: 'obj.bin', x: 15, y: 44 }, { art: 'obj.bikerack', x: 10, y: 39 }, { art: 'obj.bikerack', x: 11, y: 39 }, { art: 'obj.streetlamp', x: 16, y: 44, light: 0.8 },
+    // The diner's forecourt, the scooter yard, the alley
+    { art: 'obj.cafe_table', x: 68, y: 10 }, { art: 'obj.cafe_table', x: 70, y: 10 }, { art: 'obj.aframe', x: 76, y: 10 }, { art: 'obj.flowerpot', x: 66, y: 10 },
+    { art: 'obj.charger', x: 76, y: 18, anim: 1500 }, { art: 'obj.charger', x: 77, y: 18, anim: 1700 }, { art: 'obj.tires', x: 79, y: 21, solid: true },
+    { art: 'obj.cone', x: 73, y: 21 }, { art: 'obj.cone', x: 78, y: 19 },
+    { art: 'obj.boxes', x: 80, y: 8 }, { art: 'obj.crate', x: 80, y: 16 }, { art: 'obj.bin', x: 81, y: 23 }, { art: 'obj.recycle', x: 81, y: 24 },
+  ],
+  // Paint on the ground: parking bays, lane arrows, kerb drains, tactile strips, chalk (the rest is scattered).
+  decals: [
+    ...[30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52].flatMap((x) => [[37, 'dec.bay_v'], [38, 'dec.bay_v'], [47, 'dec.bay_v'], [48, 'dec.bay_v']].map(([y, f]) => [f, x, y])),
+    ...[[59, 10], [59, 24], [59, 44]].map(([x, y]) => ['dec.arrow_s', x, y]), ...[[62, 6], [62, 22], [62, 42]].map(([x, y]) => ['dec.arrow_n', x, y]),
+    ...[[10, 31], [28, 31], [46, 31], [76, 31]].map(([x, y]) => ['dec.drain', x, y]),
+    ...[[54, 35], [55, 35], [66, 35], [67, 35]].map(([x, y]) => ['dec.tactile', x, y]),
+    ['dec.chalk', 26, 21], ['dec.chalk', 26, 22], ['dec.chalk_pig', 39, 25],
+  ],
   spawns: [[10, 14], [11, 14], [9, 15]],
   objects: [
     ...PLAZA_CORDON.objects,
@@ -108,7 +179,7 @@ export const metroPlaza = makeMap({
     { id: 'obj.neon_stalls', art: 'obj.neon', x: 29, y: 25, label: 'Neon sign', light: 1.1, text: 'PHONES FIXED · UNLOCKED · FORGOTTEN. The last word was added by hand.' },
     { id: 'obj.neon_yard', art: 'obj.neon', x: 67, y: 17, label: 'Neon sign', light: 1.0, text: 'RAY\'S. The apostrophe is a different colour. It was a gift.' },
     // The plaza's furniture: where people wait, and what they wait under
-    { id: 'obj.shelter', x: 30, y: 12, label: 'Bus shelter', light: 0.6, text: 'A timetable behind cracked plastic. Every bus is listed as DUE.' },
+    { id: 'obj.shelter', x: 34, y: 11, label: 'Bus shelter', light: 0.6, text: 'A timetable behind cracked plastic. Every bus is listed as DUE.' },
     { id: 'obj.plaza_bench_a', art: 'obj.bench', x: 37, y: 17, label: 'Bench', text: 'Two benches facing each other across four metres of paving, like an argument nobody finished.' },
     { id: 'obj.plaza_bench_b', art: 'obj.bench', x: 37, y: 20, label: 'Bench', text: 'Reading glasses, folded on a transit pass. Whoever it was meant to come back.' },
     { id: 'obj.planter_a', art: 'obj.planter', x: 31, y: 19, label: 'Planter', text: 'The city stopped planting these. Somebody else started.' },

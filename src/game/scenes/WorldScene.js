@@ -14,6 +14,7 @@ import { loadScene, Conversation, evalCond } from '../../engine/dialogue.js';
 import { babble, setArea, sfx, ring, speak, hush, setInstrumentFocus } from '../../audio/audio.js';
 import { sellPrice, LOOT, DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods, EQUIP_SLOTS, WORN_SLOTS, canWear } from '../../content/items.js';
 import { tileKey, laneDashes } from '../render/tiles.js';
+import { mapDecals, sceneryPlacement } from '../render/decor.js';
 import { GameMenu, TABS } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
 import { BARKS, pickBark } from '../../content/barks.js';
@@ -688,6 +689,11 @@ export class WorldScene extends Phaser.Scene {
     const rt = this.mapRT = this.add.renderTexture(0, 0, map.w * TILE, map.h * TILE).setOrigin(0, 0).setDepth(-10);
     const hasTile = (k) => this.textures.exists(k);   // connected-tile frames, when the art provides them
     map.layout.forEach((row, ty) => [...row].forEach((ch, tx) => rt.draw(tileKey(ch, tx, ty, map.layout, hasTile), tx * TILE, ty * TILE)));
+    // Landscape pass: floor decals (puddles, cracks, leaves, paint) baked in over the tiles (src/game/render/decor.js).
+    if (this.textures.exists('decals')) {
+      const dec = this.textures.get('decals');
+      for (const d of mapDecals(map)) if (dec.has(d.frame)) rt.drawFrame('decals', d.frame, d.x * TILE, d.y * TILE);
+    }
     const g = this.mapGfx = this.add.graphics().setDepth(-9);
     // Depth pass (task 13): contact shadow where floor meets wall. Lit from the top left, so walls cast
     // down onto the floor below them and right onto the floor beside them. Water and void are skipped.
@@ -788,6 +794,16 @@ export class WorldScene extends Phaser.Scene {
       g.fillStyle(0x000000, 0.35).fillRect(o.x * TILE + 3, o.y * TILE + 12, TILE - 6, 3);
       g.fillStyle(color, o.action === 'exit' ? 0.55 : 1).fillRect(o.x * TILE + 3, o.y * TILE + 2, TILE - 6, TILE - 6);
       g.fillStyle(0xffffff, 0.18).fillRect(o.x * TILE + 3, o.y * TILE + 2, TILE - 6, 2);
+    }
+    // Landscape pass: street furniture (map.scenery). Drawn like props, never interactive; solid pieces are
+    // walls to the sim (build.js). A "#1" frame loops, every `anim` ms (default 420).
+    const hasArt = (sheet, art) => this.textures.exists(sheet) && this.textures.get(sheet).has(art);
+    for (const s of map.scenery ?? []) {
+      const pl = sceneryPlacement(s, hasArt); if (!pl) continue;
+      const im = this.add.image(pl.x, pl.y, pl.sheet, s.art).setOrigin(...pl.origin).setDepth(s.floor ? 2 : pl.y - 4).setFlipX(!!s.flip);
+      if (!s.floor) shadowUnder(pl.sheet === 'big' ? pl.x : s.x * TILE + (pl.sheet === 'wide' ? TILE : TILE / 2), pl.y, pl.shadow);
+      if (hasArt(pl.sheet, `${s.art}#1`)) this.propTimers.push(this.time.addEvent({ delay: s.anim ?? 420, loop: true, callback: () => im.active && im.setFrame(im.frame.name === s.art ? `${s.art}#1` : s.art) }));
+      this.propSprites.push(im);
     }
     this._refreshPuzzleProps();
     this.crowd?.destroy();
@@ -1637,7 +1653,7 @@ export class WorldScene extends Phaser.Scene {
     const W = VIEW.w, H = VIEW.h;
     this.lights = this.add.renderTexture(0, 0, W, H).setOrigin(0, 0).setScrollFactor(0).setDepth(8000);
     // Light sources: anything with `light: <radius scale>` (lamps, neon, screens), plus NPCs, exits and a few named props.
-    this.lightSpots = map.objects.filter((o) => o.light || o.npc || o.action === 'exit' || ['obj.printer_3', 'obj.mate', 'obj.pork_flag', 'obj.shrimp_tank', 'obj.billboard', 'obj.oscilloscope', 'obj.lobby_monitor'].includes(o.id));
+    this.lightSpots = map.objects.filter((o) => o.light || o.npc || o.action === 'exit' || ['obj.printer_3', 'obj.mate', 'obj.pork_flag', 'obj.shrimp_tank', 'obj.billboard', 'obj.oscilloscope', 'obj.lobby_monitor'].includes(o.id)).concat((map.scenery ?? []).filter((s) => s.light));
     this.rotEdge = map.id === 'tunnel_1' || map.id === 'platform';
   }
 
