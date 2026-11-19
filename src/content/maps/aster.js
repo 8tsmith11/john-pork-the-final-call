@@ -27,15 +27,15 @@ export const asterHall = makeMap({
     { id: 'obj.graffiti', x: 15, y: 2, label: 'Graffiti', text: 'Three hands, three paints: FREE JOHN PORK. JUSTICE FOR JOHN PORK. TIM CHEESE WILL PAY. Someone has crossed out the first one, then uncrossed it.' },
     { id: 'obj.door_635', art: DOOR, x: 19, y: 2, label: '635', text: 'Six locks. Five are decorative. You have never worked out which.' },
     { id: 'obj.newsletter', art: 'obj.board', x: 23, y: 2, label: 'Tenant board', text: 'THE ASTER LETTER. Bake sale. Boiler schedule. Lost: one grey cat, answers to nothing. The issue for the month of the Call is missing. The next one starts mid-sentence.' },
-    { id: 'obj.door_637', art: DOOR, x: 27, y: 2, label: '637', text: 'Someone is practicing scales on something with strings. They are getting worse.' },
+    { id: 'obj.door_637', action: 'exit', to: 'apt_637', pair: 'obj.apt_637_out', art: DOOR, x: 27, y: 2, label: '637', text: 'Someone is practicing scales on something with strings. They are getting worse.' },
     { id: 'obj.bathroom', x: 31, y: 2, label: 'Bathroom (occupied)', text: '"One minute!"', knock: true },
     { id: 'obj.clock_6f', x: 35, y: 2, label: 'Hallway clock', text: 'It reads 19:01. It has read 19:01 since you moved in.' },
     { id: 'obj.chute', x: 39, y: 2, label: 'Trash chute', text: 'It goes down eleven floors. Things come back up sometimes. Nobody talks about that either.' },
     // South side
     { id: 'obj.door_632', art: DOOR, x: 6, y: 6, label: '632', text: 'A child\'s drawing taped at child height: three stick figures and a fourth, taller, with a round head.' },
     { id: 'obj.door_634', art: DOOR, x: 11, y: 6, label: '634', text: 'Vacant since spring. The peephole has been painted over from the inside.' },
-    { id: 'obj.door_636', art: DOOR, x: 27, y: 6, label: '636', text: 'A delivery box, unopened, addressed to the previous tenant. And the one before.' },
-    { id: 'obj.door_638', art: DOOR, x: 31, y: 6, label: '638', text: 'Television through the door. "Citizens, things are stable." Then the same sentence again, slightly different.' },
+    { id: 'obj.door_636', action: 'exit', to: 'apt_636', pair: 'obj.apt_636_out', art: DOOR, x: 27, y: 6, label: '636', text: 'A delivery box, unopened, addressed to the previous tenant. And the one before.' },
+    { id: 'obj.door_638', action: 'exit', to: 'apt_638', pair: 'obj.apt_638_out', art: DOOR, x: 31, y: 6, label: '638', text: 'Television through the door. "Citizens, things are stable." Then the same sentence again, slightly different.' },
     // People on six
     { id: 'npc.pell', eggOk: true, later: [{ if: "act1.cordon.passed", text: "\"You went down. I can tell by your knees.\" Pell taps the wall with one knuckle. \"Tell me if the yard still smells of ozone. I'd like one thing down there to be the same.\"" }, { if: "act1.complete", text: "\"Was the east gate rolled open?\" He nods before you answer. \"Then somebody remembered how.\"" }], x: 19, y: 7, label: 'Arthur Pell', npc: true, age: 'adult', talk: 'aster:pell_talk' },
     { id: 'npc.409', eggOk: true, later: [{ if: "act1.beat.call", text: "His phone is face up on the step, dark. \"Mine rang too. I haven't paid for a plan since my wife. It rang anyway.\"" }, { if: "act1.complete", text: "\"Door stayed shut last night. First time this week.\" He has a fresh bowl. \"I sat here and watched it stay shut.\"" }], x: 2, y: 3, label: 'Four-oh-nine', npc: true, age: 'adult', text: 'A man on the landing, his soup going cold. "Please hold. Your call is. Please hold." He says it kindly, like he said it for years.' },
@@ -80,6 +80,7 @@ export const asterLobby = makeMap({
   spawns: [[17, 10], [18, 10], [17, 9]],
   objects: [
     { id: 'obj.lobby_basement', art: 'obj.stairs', x: 1, y: 1, label: 'Stairs down (B-01)', action: 'exit', to: 'aster_basement', pair: 'obj.basement_stairs', text: 'Down to the basement. The super\'s level.' },   // [SCAFFOLD] act1_more.js
+    { id: 'obj.lobby_5f', art: 'obj.stairs', x: 3, y: 1, label: 'Stairs (fifth floor)', action: 'exit', to: 'aster_5f', pair: 'obj.aster5_stairs', text: 'Five flights. One short of home.' },   // [SCAFFOLD] act1_aster.js
     { id: 'obj.lobby_stairs', art: 'obj.stairs', x: 2, y: 1, label: 'Stairs up', action: 'exit', to: 'aster_hall', text: 'Six flights up.' },
     { id: 'obj.lobby_elevator', art: 'obj.elevator', x: 33, y: 1, label: 'Elevator', light: 0.6, action: 'exit', to: 'aster_hall', text: '"Sixth floor," the elevator says. "Sorry. Sorry. Sixth."' },
     { id: 'obj.mailboxes', x: 7, y: 0, label: 'Mailboxes', text: 'A wall of brass doors. 631 has a flyer for a dentist none of you have been to. 409 is stuffed full and nobody has emptied it.' },

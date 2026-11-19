@@ -1,6 +1,7 @@
 // Spanish for map names (shown top centre and in the guide) and the HUD ability label (gonman).
 // Every Text goes through tr() (src/main.js), so exact keys are enough. tests/run.js checks the map names.
 export const ES_HUD = {
+  'Apartment 637': 'Departamento 637', 'Apartment 638': 'Departamento 638', 'Apartment 636': 'Departamento 636', 'ASTER, fifth floor': 'ASTER, quinto piso', 'ASTER, the laundry room': 'ASTER, el lavadero',   // act1_aster.js scaffold
   'The rowhouse streets': 'Las calles de casas adosadas', 'The sugar refinery': 'La refinería de azúcar', "The Callers' hall": 'El salón de los Llamadores', 'The port authority': 'La autoridad portuaria',
   'The worker town': 'El pueblo obrero', 'The substation': 'La subestación eléctrica', 'The cooling towers': 'Las torres de enfriamiento', 'The waterworks': 'La planta de agua',   // districts.js scaffold
   'The lecture auditorium': 'El auditorio',   // act1_more.js scaffold

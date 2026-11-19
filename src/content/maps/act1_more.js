@@ -49,7 +49,7 @@ export const asterBasement = fromGrid({
     E: { enemy: 'enemy.rotling' },
     '@': { spawn: true },
   },
-}).build();
+}).exit('aster_laundry', 25, 7, { id: 'obj.basement_laundry', art: 'obj.door', pair: 'obj.laundry_out', label: 'The laundry room', text: 'The laundry room. Two dryers going, nobody here.' }).build();
 
 // ---- ASTER roof: water tank, the view of the cordon lights, a place people go to be alone ----
 export const asterRoof = fromGrid({

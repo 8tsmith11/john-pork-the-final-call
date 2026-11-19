@@ -83,6 +83,31 @@ side({ id: 'autograder', act: 1, ...g1('npc.chb_ta', TA), title: 'Partial credit
   boss: { boss: 'boss.chb_autograder', bossName: 'THE AUTOGRADER' },
   line: '"I\'ll mark it as excused." She means you. She means it kindly.', lineEs: '"Lo marco como ausencia justificada." Habla de ti. Lo dice con cariño.' });
 
+// ---- ASTER neighbors (act1_aster.js) ----
+side({ id: 'apt637_scales', act: 1, giver: 'npc.apt637_player', giverName: 'the neighbor in 637', giverEs: 'el vecino del 637', title: 'The same exercise', titleEs: 'El mismo ejercicio', money: 8, xp: 25,
+  why: 'The neighbor in 637 wants to know how long they\'ve been practicing the same scales.', whyEs: 'El vecino del 637 quiere saber cuánto tiempo lleva practicando las mismas escalas.',
+  pitch: '"Look at the first page of my sheet music. The date. I don\'t want to look."', pitchEs: '"Mira la primera página de mis partituras. La fecha. No quiero mirar."',
+  look: { obj: 'obj.apt637_sheet', where: 'the sheet music in 637', whereEs: 'las partituras del 637', seen: 'The first date is eleven years ago. Every page since is the same exercise, slightly better, then slightly worse.', seenEs: 'La primera fecha es de hace once años. Cada página desde entonces es el mismo ejercicio, un poco mejor, después un poco peor.' },
+  line: '"Eleven years." A long pause. "I\'ll try a new one tomorrow." You both know they won\'t.', lineEs: '"Once años." Una pausa larga. "Mañana pruebo otro." Los dos saben que no.' });
+
+side({ id: 'apt638_tv', act: 1, giver: 'npc.apt638_viewer', giverName: 'the neighbor in 638', giverEs: 'la vecina del 638', title: 'Spot the difference', titleEs: 'Encuentra la diferencia', money: 8, xp: 25,
+  why: 'The neighbor in 638 wants a second pair of eyes on the television.', whyEs: 'La vecina del 638 quiere otro par de ojos frente al televisor.',
+  pitch: '"Watch it say it twice. Tell me what changed. I\'ve been at it since spring."', pitchEs: '"Mira cómo lo dice dos veces. Dime qué cambió. Estoy con esto desde la primavera."',
+  look: { obj: 'obj.apt638_tv', where: 'the television in 638', whereEs: 'el televisor del 638', seen: 'The second time, the anchor blinks one time fewer.', seenEs: 'La segunda vez, la presentadora parpadea una vez menos.' },
+  line: '"One blink. I knew it was the eyes." She writes it on a list. The list is long.', lineEs: '"Un parpadeo. Sabía que eran los ojos." Lo anota en una lista. La lista es larga.' });
+
+side({ id: 'laundry_sock', act: 1, giver: 'npc.laundry_folder', giverName: 'the person folding laundry', giverEs: 'la persona que dobla la ropa', title: 'One sock (gray)', titleEs: 'Una media (gris)', money: 6, xp: 20,
+  why: 'Two notes on the laundry corkboard, one lost sock, one found sock, and nobody has connected them.', whyEs: 'Dos notas en el corcho del lavadero, una media perdida, una encontrada, y nadie las conectó.',
+  pitch: '"Read the corkboard. Somebody lost a sock and somebody found one. I\'m too tired to be the one who fixes it."', pitchEs: '"Lee el corcho. Alguien perdió una media y alguien encontró una. Estoy muy cansada para ser quien lo arregle."',
+  look: { obj: 'obj.laundry_board', where: 'the laundry room corkboard', whereEs: 'el corcho del lavadero', seen: 'You pin the two notes together. It feels like the most useful thing you have done tonight.', seenEs: 'Juntas las dos notas con un alfiler. Se siente como lo más útil que hiciste esta noche.' },
+  line: '"Look at that. Community." She goes back to folding.', lineEs: '"Mira eso. Comunidad." Vuelve a doblar.' });
+
+side({ id: 'aster5_loud', act: 1, giver: 'npc.aster5_neighbor', giverName: 'the fifth-floor neighbor', giverEs: 'el vecino del quinto', title: 'Someone home', titleEs: 'Alguien en casa', money: 8, xp: 25,
+  why: 'The fifth-floor neighbor wants to know who\'s on the roof at night.', whyEs: 'El vecino del quinto quiere saber quién está en la azotea de noche.',
+  pitch: '"Footsteps on the roof, every night. Not yours. Go up and say hi for me. I don\'t do stairs past six."', pitchEs: '"Pasos en la azotea, todas las noches. No son tuyos. Sube y saluda de mi parte. Yo no subo más allá del sexto."',
+  talk: { npc: 'npc.roof_watcher', who: 'whoever is on the roof', whoEs: 'quien esté en la azotea' },
+  line: '"Counting floodlights? Huh. Tell them to walk softer." He means it fondly.', lineEs: '"¿Contando reflectores? Mira. Diles que pisen más suave." Lo dice con cariño.' });
+
 // ======================= Act 2 =======================
 const WALKER = ['the walker', 'el caminante'], COMMITTEE = ['the committee member', 'la integrante del comité'], TECH = ['the technician', 'el técnico'],
   CLERK = ['the clerk', 'la empleada'], VET = ['the vet', 'la veterinaria'], TEACHER = ['the teacher', 'la maestra'], SMITH = ['the blacksmith', 'el herrero'],

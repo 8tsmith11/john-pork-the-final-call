@@ -2,6 +2,7 @@
 // exact English in src/content/maps/aster.js; tests/run.js checks every string has an entry.
 // Neutral Latin American Spanish (Manuel's Rioplatense is only for his own lines).
 export const ES_ASTER = {
+  'Stairs (fifth floor)': 'Escalera (quinto piso)', 'Five flights. One short of home.': 'Cinco pisos. Uno menos que casa.',   // act1_aster.js scaffold
   'Stairs down (B-01)': 'Escalera abajo (B-01)', "Down to the basement. The super's level.": 'Abajo, al sótano. El nivel del encargado.',
   'Roof hatch': 'Escotilla de la azotea', 'A ladder up to the roof hatch. The lock is broken. It has always been broken.': 'Una escalera hasta la escotilla de la azotea. La cerradura está rota. Siempre estuvo rota.',   // act1_more.js scaffold
   'Room 631': 'Cuarto 631',
