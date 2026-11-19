@@ -14,6 +14,7 @@ export const ES_TUNNELS_LAKE = {
   'Chalk on the wall': 'Tiza en la pared',
   "An arrow pointing east: PLATFORM. Under it, newer: you'll hear it first.": 'Una flecha hacia el este: ANDÉN. Debajo, más nuevo: lo vas a oír primero.',
   'This one flickers in threes.': 'Esta parpadea de a tres.',
+  'Something is scratched into the side, below the waterline. You can see the marks but not read them. If the water were lower... A drain hose runs out of the bay and away north, up toward the pump room.': 'Hay algo rayado en el costado, bajo la línea del agua. Se ven las marcas, pero no se pueden leer. Si bajara el agua... Una manguera de desagüe sale de la zona inundada y va hacia el norte, en dirección a la sala de bombas.',
   'Sump pump': 'Bomba de achique',
   'Running. It has been keeping this tunnel dry since before any of you were born, and nobody has told it to stop.': 'Funcionando. Mantiene seco este túnel desde antes de que nacieran, y nadie le dijo que pare.',
   'Work order': 'Orden de trabajo',
