@@ -47,6 +47,7 @@ export class Sim {
   constructor(map, opts = {}) {
     this.seed = opts.seed ?? 'default';
     this.killed = opts.killed ?? new Set();   // spawn keys of enemies already dead in this world
+    this.bossVariant = opts.bossVariant;
     this.map = map;          // { w, h, solid(tx, ty) -> bool, spawns: [{x,y}] }
     this.players = new Map(); // id -> player
     this.enemies = new Map(); // id -> enemy
