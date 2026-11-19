@@ -4,9 +4,10 @@
   {
    "id": 1,
    "created_at": "2026-11-19T22:59:14Z",
-   "updated_at": "2026-11-19T22:59:14Z",
+   "updated_at": "2026-11-19T23:28:13Z",
    "history": [
-    "2026-11-19T22:59:14Z BagelMeister: added (for LoreKeeper)"
+    "2026-11-19T22:59:14Z BagelMeister: added (for LoreKeeper)",
+    "2026-11-19T23:28:13Z BagelMeister: note: Wait for confirmation from your owner before you start this (Michael, 2026-11-19)."
    ],
    "title": "Rename to LoreKeeper; read docs/org/briefs/LoreKeeper.md and LORE-KEEPER.md",
    "details": "Michael: Biohacker becomes the Lore Keeper: PR manager and story keeper. Set git config hub.agent LoreKeeper.",
