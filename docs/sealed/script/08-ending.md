@@ -1,5 +1,5 @@
 <!-- SEALED SPOILERS (ROT13 Caesar cipher). Humans: reading this spoils key plot twists.
-     To open on purpose: python3 tools/spoilers/seal.py open /home/trevor-smith/code/john-pork-the-final-call/docs/sealed/script/08-ending.md -->
+     To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/script/08-ending.md -->
 # Raqvat phgfprar: Zvffrq Pnyyf
 
 ## Checbfr
@@ -236,7 +236,7 @@ orsber vg yrgf uvz fgnaq.*
 #### raq
 
 - [synt npg1.obff.fnuhe] -> raqvat_fnuhe
-- [ryfr] -> raqvat_va_crefba
+- [ryfr] -> raqvat_fnuhe_jngpu
 
 ---
 
@@ -273,6 +273,55 @@ vg jnyxf vagb gur qnex, naq gur gvpxvat tbrf jvgu vg.*
 **CBEX:** Gung'f abg gehr.
 
 *Frgf `npg1.raqvat.fnuheTerrgvat`.*
+
+-> raqvat_va_crefba
+
+---
+
+### abqr: raqvat_fnuhe_jngpu
+
+*Gnfx 16 (Geribe): gur Fnuhe vf va Npg 1 ba rirel ebhgr. Guvf vf gur ebhgr jurer gur Jneqra jnf gur
+obff. Ur jnf arire sbhtug; ur pnzr qbja gb frr jub unq orra xabpxvat. Jung ur fnlf pbhagf gur
+qrpyvarf.*
+
+*Cbex fgbcf. Ur vf ybbxvat cnfg gur ebbzzngrf, ng gur ghaary zbhgu.*
+
+*N gnyy svther bs pneirq jbbq fgnaqf gurer, n ong uryq hcevtug va obgu unaqf yvxr n jngpuzna'f
+fgnss. Oenff gvpxf fbzrjurer vafvqr vg. Abobql urneq vg neevir.*
+
+**FNUHE:** Tbbq zbeavat, Wbua.
+
+**CBEX:** Fgvyy ba fuvsg?
+
+*Gur jbbqra urnq gheaf n srj qrterrf, gbjneq gur ebbzzngrf.*
+
+#### vs npg1.pnyy.qrpyvarf>=2
+
+**FNUHE:** Gjb xabpxf. V jnf ba gur ynfg fgnve.
+
+*Vg gbhpurf gur ong gb gur ghaary jnyy, gjvpr. Gur frpbaq bar lbh srry va lbhe grrgu.*
+
+#### vs npg1.pnyy.qrpyvarf==1
+
+**FNUHE:** Bar xabpx. V pnzr nf sne nf gur fjvgpulneq.
+
+*Vg gbhpurf gur ong gb gur ghaary jnyy, bapr.*
+
+#### ryfr
+
+**FNUHE:** Ab xabpxf gbavtug. V jnyxrq qbja naljnl.
+
+*Vg qbrf abg yvsg gur ong. Vg ybbxf ng rnpu bs lbh va ghea, gur jnl n zna purpxf n ybpx ur nyernql
+xabjf vf fuhg.*
+
+#### raq
+
+*Oruvaq Cbex, gur cyngsbez pybpx, fghpx nyy avtug, zbirf bar zvahgr. Gur Fnuhe jnyxf vagb gur qnex
+naq gur gvpxvat tbrf jvgu vg.*
+
+**CBEX:** Fvkgl lrnef. Arire yngr bapr. V pna'g fgnaq uvz.
+
+*Frgf `npg1.raqvat.fnuheJngpurq`.*
 
 -> raqvat_va_crefba
 
@@ -1089,7 +1138,7 @@ ebhtuyl 10 frpbaqf bs serr pbageby sbe gur obql vafcrpgf, be fxvc fgenvtug gb `r
 jura nal cynlre jnyxf gbjneq gur ghaary rkvg. Gur obql zhfg or tbar jura gur cyngsbez vf arkg
 ybnqrq (Npg 2); abobql frrf vg yrnir.
 
-**Fnuhe inevnag.** `raqvat_fnuhe` cynlf bayl jvgu `npg1.obff.fnuhe`. Gur Fnuhe fgnaqf ng gur ghaary
+**Fnuhe ba rirel ebhgr (gnfx 16).** Jvgu gur Jneqra nf obff, `raqvat_fnuhe_jngpu` cynlf vafgrnq: fnzr ragenapr, fnzr gjb ireongvz yvarf, gura n pbhag bs gur qrpyvarf (gjb xabpxf, bar xabpx, abar) naq bar zbir bs gur cyngsbez pybpx. Ur vf arire sbhtug ba gung ebhgr. **Fnuhe inevnag.** `raqvat_fnuhe` cynlf bayl jvgu `npg1.obff.fnuhe`. Gur Fnuhe fgnaqf ng gur ghaary
 zbhgu sebz gur zbzrag Cbex fgrcf bss gur ynqqre, ivfvoyr va gur onpx bs senzr orsber gur pnzren
 npxabjyrqtrf vg. Vg unf rknpgyl gjb yvarf. Bar fbsg qehz uvg (n ong gnc ba gur jnyy, abg gur svtug
 zbgvs), gura vg rkvgf. "Lbh nafjrerq. Gung vf bar." zveebef vgf svtug yvar ("Gung vf guerr.") naq
