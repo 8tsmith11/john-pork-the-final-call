@@ -20,11 +20,20 @@ the lore gate (BagelMeister). This file is the systems side, which trevor builds
    player can see the room growing. Today's fab #1, fab #2 and the bench count as the first three.
 2. **Machines.** Each one is data: `{ id, name, slot, flag, recipes: [...], ui: 'fab'|'bench'|'station' }`.
    Using it opens its own menu tab in the existing GameMenu (the fab list already scrolls with the shared
-   Scroller). Candidates, for the lore gate to place: a tire press or vulcanizer (for the airless tires),
-   a CNC mill, a battery rig, a circuit printer, and the customization station.
+   Scroller). The list (gonman's split, #546), with placement for the lore gate:
+   - **one per roommate, tied to what they already do:** Manuel's **kiln** (fired and glazed busts make
+     better decoys for his [R], plus custom busts as gear); Michael's **key-cutting and lock bench**
+     (lockpicks and keys for locked loot and doors); Trevor's **CNC mill** (metal weapons and armour, where
+     procedural rolls fit best);
+   - **shared:** the **tire press** (the Act 2 airless-tire event), a **battery rig** (scooter batteries,
+     anything that needs charge), and the **customization station**.
+   - The circuit printer folds into the existing fabs (fab #3 already prints the bot brain).
+   631's east half fits about five slots before it gets hard to read. gonman lays them out (a bare bench,
+   a power drop, a taped outline of what goes there) and draws each machine with an idle and a busy frame.
 3. **Recipes.** These extend today's fab recipes (`cost`, `req`). New fields: `machine` (which machine
-   makes it), `time` (seconds of in-world printing, during which the machine shows as busy), and
-   `roll` (procedural, below).
+   makes it), `time` (seconds of in-world work, during which the machine shows as busy), and `roll`
+   (procedural, below). Jobs keep running while you're away. The output waits in the machine, and a
+   "ready" toast shows when you walk back into 631, so nobody stands at a fab waiting.
 4. **Custom vs procedural gear.** Custom recipes give a fixed, hand-designed item (uniques, story gear).
    Procedural recipes roll a **seeded variant** from bounded tables, like the code rot villains: a base item
    plus 1–2 affixes within safe ranges (e.g. +10–20% swing speed, +1 clip, an analog vs lace trait). The
