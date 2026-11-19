@@ -12,7 +12,7 @@ export const MICHAEL_SAYS_YES = true;    // Michael said yes in person, next to 
 const SNIFF_NEAR = 56;                    // px: Michael this close gets the cloud in his nose
 export const FART_LINES = {
   manuel: ['That was the mate.', 'Nobody saw that.', 'The gonman is lighter now.', 'Che. Sorry. Not sorry.'],
-  michael: ['Oh. Oh, that\'s Manuel.', 'Do it again.', 'That\'s a good one. Is that weird?'],
+  michael: ['What are you eating? They keep getting better.', 'Oh. Oh, that\'s Manuel.', 'Do it again.', 'What are you eating? They keep getting better.', 'That\'s a good one. Is that weird?'],   // the first is Michael's own line
   // Sometimes (about 1 in 4) Manuel follows up, a few seconds later, with second thoughts.
   oops: ['Wait. I might have pooped my pants.', 'Okay. That one had weight to it.', 'Nobody look at me for a minute.'],
 };
