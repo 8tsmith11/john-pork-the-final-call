@@ -17,6 +17,7 @@ import { tileKey } from '../render/tiles.js';
 import { GameMenu, TABS } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
 import { BARKS, pickBark } from '../../content/barks.js';
+import { esLine } from '../../content/lines_es.js';
 import { rollCatch } from '../../content/fish.js';
 import { QUESTS, questState, questVisible } from '../../content/quests.js';
 import { CompanionBrain, isAi } from '../../engine/companion.js';
@@ -2261,6 +2262,7 @@ export class WorldScene extends Phaser.Scene {
 
   // ---------- barks: short lines over the roommates' heads (content in src/content/barks.js) ----------
   _bark(playerId, text) {
+    text = esLine(text);                                            // Spanish when chosen (src/content/lines_es.js)
     const s = this.sprites.get(playerId);
     if (!s || !text || this.dlg || this.menu || this.time.now < (this._barkQuietUntil ?? 0)) return;
     this._barkQuietUntil = this.time.now + 9000;                    // one voice at a time, and room between them

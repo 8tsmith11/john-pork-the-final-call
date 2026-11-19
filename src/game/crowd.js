@@ -2,6 +2,7 @@
 // seed (so co-op players see the same people), simulated locally, never story-critical.
 import { Rng } from '../engine/rng.js';
 import { TILE } from '../engine/sim.js';
+import { esLine } from '../content/lines_es.js';
 
 const SKIN = ['#f1c9a5', '#e0ac85', '#c68863', '#8d5a3b', '#5c3a26', '#f5d7c0'];
 const HAIR = ['#1a1a22', '#3a2416', '#6b4a2e', '#b08850', '#d8d0c0', '#2c2c3a', '#7a2f2f'];
@@ -13,7 +14,7 @@ const FIRST = ['Dana', 'Marcus', 'Yuki', 'Rosa', 'Tobi', 'Imani', 'Greg', 'Priya
 const LAST = ['Okafor', 'Reyes-Hart', 'Kowalski', 'Nguyen', 'Brennan', 'Haddad', 'Moreau', 'Pak', 'Silva', 'Adeyemi', 'Lindqvist', 'Castro', 'Oyelaran', 'Fitch'];
 
 
-const LINES = {
+export const LINES = {
   any: [
     'Trains are twenty minutes out, the board says. The board said that forty minutes ago.',
     'Don\'t stand under the awning. The abatement guys spray at nine.',
@@ -60,7 +61,7 @@ function makeSprite(scene, key, r) {
   return { shell };
 }
 
-const PIXEL_LINES = [
+export const PIXEL_LINES = [
   'People keep squinting at me. Is there something on my face?',
   'I had my photo taken for the attestation office. They sent it back. Twice.',
   'My mother says I look just like my father. I don\'t know how she can tell.',
@@ -160,9 +161,9 @@ export class Crowd {
   }
 
   lineFor(p) {
-    if (p.pixel) return p.r.pick(PIXEL_LINES);
+    if (p.pixel) return esLine(p.r.pick(PIXEL_LINES));
     const pool = p.shell ? LINES.shell : (LINES[this.map.id] ?? LINES.any);
-    return p.r.pick(pool);
+    return esLine(p.r.pick(pool));
   }
 
   destroy() { for (const p of this.people) p.spr.destroy(); this.people = []; }

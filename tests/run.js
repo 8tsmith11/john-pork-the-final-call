@@ -593,5 +593,15 @@ test('the blue pill makes dodges free while it lasts', () => {
   assert.equal(p.sta, MOVE.stamina);
 });
 
+const { BARKS } = await import('../src/content/barks.js');
+const { LINES_ES } = await import('../src/content/lines_es.js');
+const crowd = await import('../src/game/crowd.js');
+test('every bark and crowd line has Spanish', () => {
+  const all = []; const walk = (o) => { if (typeof o === 'string') all.push(o); else if (o && typeof o === 'object') Object.values(o).forEach(walk); };
+  walk(BARKS); walk(crowd.LINES); walk(crowd.PIXEL_LINES);
+  const missing = all.filter((s) => !LINES_ES[s]);
+  assert.deepEqual(missing, [], 'add these to src/content/lines_es.js');
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
