@@ -54,6 +54,7 @@ import { GONMAN_LINES, GONMAN_UNLOCK, GONMAN_HIT } from '../../content/gonman.js
 import { growthSize, lookStage, gonmanWeight } from '../../content/growth.js';
 import { Beltless } from '../beltless.js';
 import { ToothpasteTalk } from '../toothpaste.js';
+import { RunningGags } from '../runningGags.js';
 import { Approach } from '../approach.js';
 import { Pacifier } from '../pacifier.js';
 import { GuitarStands } from '../guitarStands.js';
@@ -151,7 +152,7 @@ export class WorldScene extends Phaser.Scene {
     this._wireNet();
     this._makeDialogueUi();
     // D-014: shared events, instruments, romance (src/game/sharedEvent.js, performances.js, romance.js)
-    this.shared = new SharedEvents(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.cordon = new Cordon(this); this.bigButt = new BigButt(this); this.beltless = new Beltless(this); this.toothpaste = new ToothpasteTalk(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this); this.stands = new GuitarStands(this);
+    this.shared = new SharedEvents(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.cordon = new Cordon(this); this.bigButt = new BigButt(this); this.beltless = new Beltless(this); this.toothpaste = new ToothpasteTalk(this); this.gags = new RunningGags(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this); this.stands = new GuitarStands(this);
     this._pageIdx = {};
     this.vignette = this._makeVignette();
     if (this.mode !== 'client') for (const p of this.sim.players.values()) {
@@ -669,7 +670,7 @@ export class WorldScene extends Phaser.Scene {
       on('join', () => { this._worldSig = null; });
     } else if (this.mode === 'client') {
       on('msg', (msg) => {
-        if (this.shared?.onMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg)) return;
+        if (this.shared?.onMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg)) return;
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
         if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text);
         if (msg.t === 'caption') this._caption(msg.text);
@@ -2033,7 +2034,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode === 'client' && snap.doors) for (const d of this.map.doors.values()) d.open = snap.doors.includes(d.id);
     this._render(snap);
     setInstrumentFocus(snap, this.localId);
-    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.pacifier?.update(snap); this.stands?.update();
+    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.gags?.update(snap); this.pacifier?.update(snap); this.stands?.update();
   }
 
   _frozen(inp) { return this._dlgStops() || this.menu ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : this.dlg ? { ...inp, interact: false } : inp; }
@@ -2341,7 +2342,7 @@ export class WorldScene extends Phaser.Scene {
         this.sprites.set(p.id, s);
         if (p.id === this.localId) this.cameras.main.startFollow(s, true, 0.15, 0.15);
       }
-      s.setPosition(Math.round(p.x), Math.round(p.y + 4)).setDepth(p.y);
+      s.setPosition(Math.round(p.x + (s.offX ?? 0)), Math.round(p.y + 4 + (s.offY ?? 0))).setDepth(p.y);   // offX/offY: short gag nudges (crush.js, fart.js) that tweens can move
       const facing = p.f === 'left' ? 'right' : p.f;
       s.setFlipX(p.f === 'left');
       // Solo pauses the world during dialogue and menus: show everyone standing, not frozen mid-stride (Trevor).
@@ -2842,14 +2843,15 @@ export class WorldScene extends Phaser.Scene {
       if (s) s.wasDown = p.dn;
     }
     // Now and then, out of nowhere.
-    this._nextIdleBark ??= this.time.now + 20000;
+    this._nextIdleBark ??= this.time.now + 12000;
     if (this.time.now > this._nextIdleBark) {
-      this._nextIdleBark = this.time.now + 35000 + Math.random() * 35000;   // about every 35-70 s (Manuel: bubbles keep it moving)
+      this._nextIdleBark = this.time.now + 20000 + Math.random() * 20000;   // about every 20-40 s (Manuel: more of the running jokes)
       const up = snap.players.filter((p) => !p.dn);
       const p = up[Math.floor(Math.random() * up.length)];
       const rare = BARKS.idleRare?.[p?.c] && Math.random() < 0.125;   // nicknames stay rare (Trevor)
       if (p?.c === 'manuel' && (this.save?.party?.manuel?.level ?? 1) >= 6 && Math.random() < 0.3) { this._bark(p.id, this._freshBark(BARKS.toothpaste, 'manuel')); return; }   // the splotches
       if (p?.c === 'manuel' && (this.save?.party?.manuel?.level ?? 1) >= 3 && Math.random() < 0.3) { this._bark(p.id, this._freshBark(BARKS.rounder, 'manuel')); return; }   // getting rounder
+      if (p && BARKS.lab245[p.c] && Math.random() < 0.2) { this._bark(p.id, this._freshBark(BARKS.lab245, p.c)); return; }   // the running joke: everybody hates 245 lab
       if (p) this._bark(p.id, this._freshBark(rare ? BARKS.idleRare : p.mo && BARKS.idleMorph[p.c] ? BARKS.idleMorph : BARKS.idle, p.c));
     }
     // Places inside a big map: the first time this visit that you walk into one, somebody says something.

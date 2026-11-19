@@ -8,7 +8,7 @@ export const BUTT_LINES = ['Why are my pants tight all of a sudden.', 'Leg day. 
 export class BigButt {
   constructor(scene) {
     this.s = scene;
-    this.next = scene.time.now + 150000 + Math.random() * 150000;   // first one 2.5-5 minutes in
+    this.next = scene.time.now + 90000 + Math.random() * 90000;     // first one 1.5-3 minutes in (Manuel: more often)
     this.until = 0; this.who = null; this.n = 0;
   }
 
@@ -17,7 +17,7 @@ export class BigButt {
     if (s.mode !== 'client' && now > this.next && !s.dlg) {
       const manuel = snap?.players?.find((p) => p.c === 'manuel' && !p.dn);
       if (manuel) {
-        this.next = now + 180000 + Math.random() * 240000;            // then every 3-7 minutes
+        this.next = now + 120000 + Math.random() * 120000;            // then every 2-4 minutes
         const n = (this.n += 1), line = n % 3 === 1 ? BUTT_LINES[Math.floor(n / 3) % BUTT_LINES.length] : null;
         this._send({ t: 'butt', id: manuel.id, ms: 25000 + Math.random() * 20000, line });
       }

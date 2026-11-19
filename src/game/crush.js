@@ -25,7 +25,7 @@ export class Crush {
   constructor(scene) {
     this.s = scene;
     this.next = scene.time.now + 45000;
-    this.nextPat = scene.time.now + 240000;   // not in the first four minutes of a session
+    this.nextPat = scene.time.now + 150000;   // not in the first two and a half minutes of a session
   }
 
   get used() { return (this.s.save.flags['act1.crush.used'] ??= []); }
@@ -56,8 +56,8 @@ export class Crush {
 
   }
 
-  // The sealed gesture: rare and idle-only at first (every 8-14 minutes at most, both standing still);
-  // from tier 2 (switchyard solved) every 1-2 minutes whenever they're close.
+  // The sealed gesture: rare and idle-only at first (every 4-7 minutes at most, both standing still);
+  // from tier 2 (switchyard solved) every 45-90 s whenever they're close (Manuel: more often, 2026-11-19).
   _pats(snap, michael, near, now, tier) {
     const s = this.s;
     const manuel = MANUEL_SAYS_YES && near('manuel', PAT_NEAR);
@@ -66,7 +66,7 @@ export class Crush {
     const still = (a, b) => b && Math.hypot(a[0] - b[0], a[1] - b[1]) < 0.3;
     const idle = still([michael.x, michael.y], prev.m) && still([manuel.x, manuel.y], prev.n);
     if (tier < 2 && !idle) return;
-    this.nextPat = now + (tier >= 2 ? 60000 + Math.random() * 60000 : 480000 + Math.random() * 360000);
+    this.nextPat = now + (tier >= 2 ? 45000 + Math.random() * 45000 : 240000 + Math.random() * 180000);
     const n = (s.save.flags['act1.crush.pats'] = (s.save.flags['act1.crush.pats'] ?? 0) + 1);
     this._send({ t: 'crush', id: michael.id, pat: manuel.id, replyId: manuel.id, reply: DATA.patReplies[(n - 1) % DATA.patReplies.length] });
   }
@@ -82,21 +82,34 @@ export class Crush {
     const s = this.s;
     if (msg.text) { s._barkQuietUntil = 0; s._bark(msg.id, msg.text); }
     if (msg.pat) this._pat(msg.id, msg.pat);
-    if (msg.reply && msg.replyId) s.time.delayedCall(msg.pat ? 900 : 3200, () => { s._barkQuietUntil = 0; s._bark(msg.replyId, msg.reply); });
+    if (msg.reply && msg.replyId) s.time.delayedCall(msg.pat ? 2200 : 3200, () => { s._barkQuietUntil = 0; s._bark(msg.replyId, msg.reply); });
   }
 
-  // The gesture itself: a bump, a sound, a heart.
+  // The gesture, drawn out so it reads (Manuel, 2026-11-19: "last longer so they are noticeable"): about two
+  // seconds from lean-in to the last heart. Nudges go through offX/offY, which the render loop adds every frame.
   _pat(fromId, toId) {
     const s = this.s, a = s.sprites?.get(fromId), b = s.sprites?.get(toId);
     if (!a || !b) return;
-    s.tweens.add({ targets: a, x: a.x + Math.sign(b.x - a.x || 1) * 3, yoyo: true, duration: 90 });
-    s.tweens.add({ targets: b, y: b.y - 2, yoyo: true, duration: 80, delay: 90 });
-    const h = s.add.text(b.x, b.y - 26, '♥', { fontFamily: 'monospace', fontSize: '8px', color: '#f2a6b8' }).setOrigin(0.5).setDepth(7000);
-    s.tweens.add({ targets: h, y: h.y - 10, alpha: 0, duration: 900, onComplete: () => h.destroy() });
+    const dir = Math.sign(b.x - a.x || 1);
+    a.offX = 0; b.offY = 0; b.offX = 0;
+    s.tweens.add({ targets: a, offX: dir * 4, duration: 260, hold: 900, yoyo: true, ease: 'Sine.easeOut', onComplete: () => { a.offX = 0; } });
+    s.tweens.add({ targets: b, offY: -4, duration: 110, yoyo: true, repeat: 1, delay: 300, onComplete: () => { b.offY = 0; } });
+    s.tweens.add({ targets: b, offX: dir * 2, duration: 140, yoyo: true, delay: 300, onComplete: () => { b.offX = 0; } });
+    s.time.delayedCall(300, () => {
+      const bang = s.add.text(b.x, b.y - 30, '!', { fontFamily: 'monospace', fontSize: '10px', color: '#ffd166', stroke: '#0b0d16', strokeThickness: 2 }).setOrigin(0.5).setDepth(7001);
+      s.tweens.add({ targets: bang, y: bang.y - 4, duration: 200, yoyo: true, hold: 1100, onComplete: () => bang.destroy() });
+      for (let i = 0; i < 3; i++) {
+        const h = s.add.text(b.x + (i - 1) * 6, b.y - 24, '♥', { fontFamily: 'monospace', fontSize: '9px', color: '#f2a6b8' }).setOrigin(0.5).setDepth(7000).setAlpha(0);
+        s.tweens.add({ targets: h, alpha: 1, y: h.y - 14 - i * 3, duration: 1700, delay: 200 + i * 260, ease: 'Sine.easeOut', onComplete: () => s.tweens.add({ targets: h, alpha: 0, duration: 400, onComplete: () => h.destroy() }) });
+      }
+    });
     const out = audioOut(); if (!out) return;
-    const { ctx, dest } = out, t = ctx.currentTime + 0.09, n = ctx.createBufferSource(), buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.06), ctx.sampleRate), d = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length) ** 2;
-    const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1500; const g = ctx.createGain(); g.gain.value = 0.7;
-    n.buffer = buf; n.connect(f); f.connect(g); g.connect(dest); n.start(t);
+    const { ctx, dest } = out;
+    for (const [at, vol] of [[0.3, 0.7], [0.62, 0.45]]) {   // two of them, the second softer
+      const t = ctx.currentTime + at, n = ctx.createBufferSource(), buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.06), ctx.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length) ** 2;
+      const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1500; const g = ctx.createGain(); g.gain.value = vol;
+      n.buffer = buf; n.connect(f); f.connect(g); g.connect(dest); n.start(t);
+    }
   }
 }

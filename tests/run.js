@@ -628,7 +628,7 @@ test('D-016 gesture timing: rare and idle-only early, frequent after the switchy
   for (let i = 0; i < 400; i++) { sc.time.now = 250000 + i * 1000; c.update(snap(i % 2)); }
   assert.equal(sent.filter((m) => m.pat).length, 0, 'no pat while Michael keeps moving early on');
   for (let i = 0; i < 1800; i++) { sc.time.now = 700000 + i * 1000; c.update(snap(0)); }
-  const early = sent.filter((m) => m.pat).length; assert.ok(early >= 1 && early <= 4, `early pats in 30 min: ${early}`);
+  const early = sent.filter((m) => m.pat).length; assert.ok(early >= 2 && early <= 8, `early pats in 30 min: ${early}`);   // Manuel: more often (2026-11-19)
   // after the switchyard: many more, even while moving
   sent.length = 0; ({ sc, c } = mk({ 'act1.beat.call': true, 'act1.switchyard.solved': true }));
   for (let i = 0; i < 1800; i++) { sc.time.now = 250000 + i * 1000; c.update(snap(i % 2)); }
@@ -644,14 +644,30 @@ test('i18n: built-in object names are never treated as translations', () => {
 const fartMod = await import('../src/game/fart.js');
 const buttMod = await import('../src/game/bigButt.js');
 const npcLifeMod = await import('../src/content/npc_life.js');
-test('Manuel\'s fart: on its own, rare, Michael only sniffs once his side says yes', () => {
+test('Manuel\'s fart: on its own, every couple of minutes; Michael only complains until his side says yes', () => {
   const sent = [], sc = { mode: 'solo', time: { now: 0 } }, f = new fartMod.Fart(sc); f._send = (m) => sent.push(m);
   const snap = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 120, y: 100 }] };
   for (let i = 0; i < 3600; i++) { sc.time.now = i * 1000; f.update(snap); }   // an hour, no input at all
-  assert.ok(sent.length >= 5 && sent.length <= 16, `farts in an hour: ${sent.length}`);
+  assert.ok(sent.length >= 15 && sent.length <= 40, `farts in an hour: ${sent.length}`);   // Manuel: more often (2026-11-19)
   assert.ok(sent.every((m) => m.id === 'ai:manuel' && m.line), 'always Manuel, always a line');
-  if (!fartMod.MICHAEL_SAYS_YES) assert.ok(sent.every((m) => !m.sniff && !m.reply), 'Michael stays out of it until his yes');
+  if (!fartMod.MICHAEL_SAYS_YES) assert.ok(sent.every((m) => !m.sniff && (fartMod.MICHAEL_FART_COMPLAIN ? m.by === 'p2' && fartMod.FART_LINES.complain.includes(m.reply) : !m.reply)), 'until his yes Michael only complains, never sniffs');
   else assert.ok(sent.every((m) => m.sniff === 'p2' && m.reply), 'Michael close by sniffs every one');
+});
+
+const gagsMod = await import('../src/game/runningGags.js');
+const linesEsMod = await import('../src/content/lines_es.js');
+test('running gags: the 245 lab chat and the abuela voice notes come round, with Spanish for every line', () => {
+  const sent = [], sc = { mode: 'solo', time: { now: 0 }, save: { flags: {} } }, g = new gagsMod.RunningGags(sc); g._send = (m) => sent.push(m);
+  const snap = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 300, y: 100 }, { id: 'p3', c: 'trevor', x: 500, y: 100 }] };
+  for (let i = 0; i < 3600; i++) { sc.time.now = i * 1000; g.update(snap); }   // an hour, no input
+  const chats = sent.filter((m) => m.k === 'chat'), notes = sent.filter((m) => m.k === 'abuela');
+  assert.ok(chats.length >= 6 && chats.length <= 16, `245 chats in an hour: ${chats.length}`);
+  assert.ok(notes.length >= 4 && notes.length <= 10, `abuela notes in an hour: ${notes.length}`);
+  assert.ok(notes.every((m) => m.a === 'ai:manuel'), 'the voice notes are Manuel\'s');
+  assert.ok(chats.filter((m) => m.a === 'p3').every((m) => gagsMod.GAG_LINES.chat.trevor.includes(m.la)), 'Trevor only says he hates 245 lab');
+  const all = Object.values(gagsMod.GAG_LINES).flatMap((g) => Object.values(g).flat());
+  const missing = all.filter((l) => !linesEsMod.LINES_ES[l]);
+  assert.deepEqual(missing, [], 'Spanish for these lines in src/content/lines_es.js');
 });
 
 const { ES_HUD } = await import('../src/i18n/es-hud.js');

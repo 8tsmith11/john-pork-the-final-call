@@ -8,8 +8,8 @@ import { wearTexture } from './render/wearables.js';
 export const MICHAEL_BELT = true;   // one switch: BagelMeister can turn it off if Michael changes his mind
 
 export const BELT_LINES = {
-  michael: ['Sorry. Left my belt at home.', 'Not again. Sorry. Left my belt at home.', 'Sorry! Belt\'s at home.', 'Nobody look. Left my belt at home.'],   // the first is Michael's own line
-  manuel: ['Michael. Pants.', 'Che, the pants.', 'Again?'],
+  michael: ['Sorry. Left my belt at home.', 'Not again. Sorry. Left my belt at home.', 'Sorry! Belt\'s at home.', 'Nobody look. Left my belt at home.', 'In my defense, I own one belt and it\'s in Tennessee.', 'Eyes up, Manuel. Left my belt at home.'],   // the first is Michael's own line
+  manuel: ['Michael. Pants.', 'Che, the pants.', 'Again?', 'Che, Michael. The hearts again.'],
   trevor: ['Drop set, Michael. Not like that.', 'I\'m buying you a belt.', 'Belt. Putting it on the list.'],   // gym Trevor, never a body joke (his floor)
   after: ['Okay. We\'re good.', 'That never happened.'],
 };
@@ -17,7 +17,7 @@ export const BELT_LINES = {
 export class Beltless {
   constructor(scene) {
     this.s = scene;
-    this.next = scene.time.now + 150000 + Math.random() * 90000;    // first time 2.5-4 minutes in
+    this.next = scene.time.now + 60000 + Math.random() * 60000;     // first time 1-2 minutes in (Manuel: more often)
     this.until = 0; this.who = null; this.n = 0;
   }
 
@@ -26,7 +26,7 @@ export class Beltless {
     if (MICHAEL_BELT && s.mode !== 'client' && now > this.next && !s.dlg && !s.menu) {
       const michael = snap?.players?.find((p) => p.c === 'michael' && !p.dn && !p.zz);
       if (michael) {
-        this.next = now + 240000 + Math.random() * 240000;            // then every 4-8 minutes
+        this.next = now + 120000 + Math.random() * 120000;            // then every 2-4 minutes
         const n = (this.n += 1), others = snap.players.filter((p) => p.c !== 'michael' && !p.dn && BELT_LINES[p.c]);
         const r = others.length && Math.random() < 0.5 ? others[Math.floor(Math.random() * others.length)] : null;
         this._send({ t: 'belt', id: michael.id, ms: 6000 + Math.random() * 3000,

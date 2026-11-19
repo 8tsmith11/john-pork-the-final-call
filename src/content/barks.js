@@ -3,6 +3,13 @@
 // Keep each line something a tired 21-year-old would say out loud. See docs/lore/WRITING.md.
 
 export const BARKS = {
+  // The running joke (Manuel: "I hate 245 lab" more often). One idle line in five comes from here. Trevor's is the
+  // whiteboard's "same"; Michael hates it too, warmly.
+  lab245: {
+    manuel: ['I hate 245 lab.', 'Still hate 245 lab. Checked again.', 'They should close 245 lab. For safety.', 'In my next life I skip 245 lab.'],
+    trevor: ['I also hate 245 lab.', '245 lab took my whole weekend.', 'Same. About 245 lab.'],
+    michael: ['I hate 245 lab, and I love everybody here.', 'Who designed 245 lab? I want a word.', 'I haven\'t started the 245 report. I haven\'t started the last one.'],
+  },
   // Now and then, standing around or walking.
   idle: {
     manuel: [

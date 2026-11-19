@@ -15,7 +15,7 @@ const NEAR = 80;   // px
 export class ToothpasteTalk {
   constructor(scene) {
     this.s = scene;
-    this.next = scene.time.now + 120000 + Math.random() * 120000;   // checks start 2-4 minutes in
+    this.next = scene.time.now + 60000 + Math.random() * 60000;     // checks start 1-2 minutes in (Manuel: more often)
     this.n = 0;
   }
 
@@ -26,7 +26,7 @@ export class ToothpasteTalk {
     const manuel = snap?.players?.find((p) => p.c === 'manuel' && !p.dn && !p.zz);
     const michael = snap?.players?.find((p) => p.c === 'michael' && !p.dn && !p.zz);
     if (!manuel || !michael || Math.hypot(manuel.x - michael.x, manuel.y - michael.y) > NEAR) { this.next = now + 8000; return; }
-    this.next = now + 240000 + Math.random() * 240000;               // then every 4-8 minutes
+    this.next = now + 120000 + Math.random() * 120000;               // then every 2-4 minutes
     const n = (this.n += 1);
     this._send({ t: 'toothpaste', manuel: manuel.id, michael: michael.id, ask: TOOTHPASTE_TALK.ask[(n - 1) % 2], doubt: TOOTHPASTE_TALK.doubt[(n - 1) % 2] });
   }
