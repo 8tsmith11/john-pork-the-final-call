@@ -15,7 +15,7 @@ export const BLINK = { dist: 112, cooldown: 1.1 };   // winged boots (D-014)
 // Michael's lullaby reaches 8 tiles; a Hold-Music Moth's hum reaches 4. Manuel is a baby: a lullaby
 // puts him out for 12 s instead of 8. Caffeine (wiredT) makes anyone immune.
 export const LULLABY = { range: 128, mothRange: 64, expose: 3, sleep: 8, babySleep: 12 };   // babySleep: Manuel with the smart pacifier in
-// Infection stops at a heavy debuff in this pass. Transformation needs a separate design review.
+// Infection is a heavy debuff up to 100%; what happens at 100% is UNDER below.
 export const ROT = { max: 100, poolRate: 4, growth: 0.08, puddlerHit: 6,
   lightDecay: 0.1, quietTime: 5, charmRange: 64, charmDecay: 0.6, charmShield: 0.5, maxHallRate: 4 };
 // Combat feel (docs/research/combat.md): combo chain, deflects, perfect dodges, wall slams, hit-stop.
@@ -24,6 +24,12 @@ export const FEEL = { comboWindow: 0.55, finisherDmg: 1.6, finisherKnock: 1.8, f
 // Mate (Manuel's yerba): a caffeine kick (faster, quicker stamina), then a short crash (slower).
 // No cooldown: another gourd restarts the kick and cancels any crash.
 export const MATE = { buff: 45, crash: 4, speed: 0.15, staRegen: 0.6, crashSpeed: -0.4 };
+// Going under (Michael, 2026-11-19; sealed lore acts-2-3 §4). At 100% code rot a roommate goes
+// under if another roommate is a human player who's up: a code rot zombie that walks at and swings
+// at the nearest roommate. Stand beside them to pull them back; if nobody does before the window
+// ends, they drop as downed. With no other human up, it's death by code rot and the save reloads
+// (WorldScene reads sim.rotDeath).
+export const UNDER = { window: 30, pullTime: 4, pullRange: 18, reach: 16, damage: 8, cooldown: 1.1, afterPull: 75, afterDrop: 90 };
 export const COMBAT = {
   maxHp: 100, hurtIframes: 0.6, reviveTime: 4.0, reviveRange: 18, reviveHp: 40,
   melee: { cooldown: 0.38, range: 20, arc: Math.PI * 0.6, damage: 12, knockback: 120 },
@@ -269,7 +275,7 @@ export class Sim {
     this.tick++;
     this.events = this._pending ?? []; this._pending = [];
     for (const p of this.players.values()) {
-      const inp = inputs.get(p.id) || emptyInput();
+      const inp = p.under > 0 && !p.downed ? this._underInput(p) : inputs.get(p.id) || emptyInput();
       p.meleeCd = Math.max(0, p.meleeCd - dt); p.shotCd = Math.max(0, p.shotCd - dt); p.swingT = Math.max(0, p.swingT - dt);
       if (p.downed) { p.vx = p.vy = 0; p.moving = false; continue; }
       if (p.sleepT > 0) { if (p.mods?.sleepGuard) { p.hp = Math.min(this.maxHp(p), p.hp + 15 * dt); p.sta = Math.min(MOVE.stamina + (p.mods.sta ?? 0), (p.sta ?? 0) + 40 * dt); }
@@ -405,6 +411,7 @@ export class Sim {
     this._stepDoors(dt);
     this._stepHazards(dt);
     this._stepRot(dt);
+    this._stepUnder(dt);
     if (this.hitStop > 0) this.hitStop = Math.max(0, this.hitStop - dt);
     else { this._stepEnemies(dt); this._stepShots(dt); }
     this._stepRevives(dt);
@@ -585,7 +592,7 @@ export class Sim {
     for (const dc of this.decoys) { const d = Math.hypot(dc.x - x, dc.y - y); if (d < 130 && d < bd) { bd = d; best = dc; } }
     if (best) return [best, bd];
     for (const p of this.players.values()) {
-      if (p.downed) continue;
+      if (p.downed || p.under > 0) continue;   // code rot leaves its own alone
       const d = Math.hypot(p.x - x, p.y - y);
       if (d < bd) { bd = d; best = p; }
     }
@@ -896,6 +903,45 @@ export class Sim {
     }
   }
 
+  _isHuman(p) { return !String(p.id).startsWith('ai:'); }
+  _upOthers(p) { return [...this.players.values()].filter((q) => q !== p && !q.downed && !(q.under > 0)); }
+  /** A zombie's input: walk at the nearest roommate who's up. The swing is in _stepUnder. */
+  _underInput(p) {
+    let best = null, bd = Infinity;
+    for (const q of this._upOthers(p)) { const d = Math.hypot(q.x - p.x, q.y - p.y); if (d < bd) { bd = d; best = q; } }
+    if (!best || bd < UNDER.reach - 4) return { ...emptyInput(), aim: best ? Math.atan2(best.y - p.y, best.x - p.x) : p.aim };
+    return { ...emptyInput(), mx: (best.x - p.x) / bd, my: (best.y - p.y) / bd, aim: Math.atan2(best.y - p.y, best.x - p.x) };
+  }
+  _stepUnder(dt) {
+    for (const p of this.players.values()) {
+      if (p.downed) { p.under = 0; p.pullT = 0; continue; }
+      const humansUp = this._upOthers(p).filter((q) => this._isHuman(q));
+      if (!(p.under > 0)) {
+        if ((p.rot ?? 0) < ROT.max) continue;
+        if (humansUp.length) { p.under = UNDER.window; p.pullT = 0; p.zCd = UNDER.cooldown; p.riding = false; p.playing = null; this.events.push({ t: 'under', id: p.id }); }
+        else if (!this.rotDeath) { this.rotDeath = p.id; this.events.push({ t: 'rotDeath', id: p.id }); }
+        continue;
+      }
+      if (!humansUp.length) { if (!this.rotDeath) { this.rotDeath = p.id; this.events.push({ t: 'rotDeath', id: p.id }); } continue; }
+      const up = this._upOthers(p);
+      const helper = up.find((q) => Math.hypot(q.x - p.x, q.y - p.y) < UNDER.pullRange);
+      p.pullT = helper ? (p.pullT ?? 0) + dt * (1 + (helper.mods?.revive ?? 0)) : Math.max(0, (p.pullT ?? 0) - dt * 0.5);
+      if (p.pullT >= UNDER.pullTime) { p.under = 0; p.pullT = 0; p.rot = UNDER.afterPull; p.rotQuiet = 0; p.iframes = 1; this.events.push({ t: 'pulled', id: p.id, by: helper?.id }); continue; }
+      p.zCd = Math.max(0, (p.zCd ?? 0) - dt);
+      const target = up.reduce((b, q) => (!b || Math.hypot(q.x - p.x, q.y - p.y) < Math.hypot(b.x - p.x, b.y - p.y) ? q : b), null);
+      if (target && p.zCd <= 0 && Math.hypot(target.x - p.x, target.y - p.y) < UNDER.reach) {
+        p.zCd = UNDER.cooldown; p.swingT = 0.2; this._hurtPlayer(target, UNDER.damage);
+        this.events.push({ t: 'zswing', id: p.id, target: target.id });
+      }
+      p.under = Math.max(0, p.under - dt);
+      if (p.under <= 0) { p.pullT = 0; p.rot = UNDER.afterDrop; p.hp = 0; p.downed = true; p.reviveT = 0; this.events.push({ t: 'down', id: p.id, rot: true }); }
+    }
+  }
+  /** After a party wipe: everyone wakes with full health and no code rot (Michael). */
+  wipeReset() {
+    for (const p of this.players.values()) Object.assign(p, { hp: this.maxHp(p), rot: 0, rotQuiet: 0, under: 0, pullT: 0, downed: false, reviveT: 0, iframes: 1 });
+  }
+
   get wiped() { return this.players.size > 0 && [...this.players.values()].every((p) => p.downed); }
 
   _moveBody(b, dx, dy, r) {
@@ -953,7 +999,7 @@ export class Sim {
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
-        hp: Math.round(p.hp), mhp: this.maxHp(p), rot: Math.round((p.rot ?? 0) * 10) / 10, am: p.ammo ?? null, rl: p.reloadT > 0 ? Math.round(p.reloadT * 10) / 10 : 0, st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0, mt: Math.ceil(p.mateT ?? 0), cr: p.crashT > 0,
+        hp: Math.round(p.hp), mhp: this.maxHp(p), rot: Math.round((p.rot ?? 0) * 10) / 10, am: p.ammo ?? null, rl: p.reloadT > 0 ? Math.round(p.reloadT * 10) / 10 : 0, st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0, un: p.under > 0 ? Math.ceil(p.under) : 0, pu: p.under > 0 ? Math.round(((p.pullT ?? 0) / UNDER.pullTime) * 100) / 100 : 0, mt: Math.ceil(p.mateT ?? 0), cr: p.crashT > 0,
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,

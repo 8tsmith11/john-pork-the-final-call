@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { makeStreams, Rng } from '../src/engine/rng.js';
 import { rollWorld } from '../src/engine/worldRolls.js';
 import { newSave, migrate, CURRENT_SCHEMA } from '../src/engine/save/schema.js';
-import { Sim, MOVE, ROT, MATE, LULLABY as BOT_LULLABY, emptyInput } from '../src/engine/sim.js';
+import { Sim, MOVE, ROT, MATE, UNDER, LULLABY as BOT_LULLABY, emptyInput } from '../src/engine/sim.js';
 import { ENEMIES } from '../src/content/enemies.js';
 import { ITEMS } from '../src/content/items.js';
 import { room631 } from '../src/content/maps/room631.js';
@@ -971,6 +971,40 @@ test('mate gives a caffeine kick, then a short slow crash; another gourd restart
   sim.mate('a'); assert.equal(p.crashT, 0, 'mate cancels the crash'); p.mateT = 0.1; sim.step(0.2, idle);
   for (let t = 0; t < MATE.crash; t += 0.5) sim.step(0.5, idle);
   assert.equal(p.crashT, 0); assert.ok(Math.abs(speed() - baseSpeed) < 1e-6, 'back to normal after the crash');
+});
+
+test('code rot at 100%: solo it is death and a save reload; with another human up you go under', () => {
+  const at = (sim, id, tx, ty) => { const p = sim.players.get(id); p.x = tx * 16 + 8; p.y = ty * 16 + 8; return p; };
+  const idle = (sim) => new Map([...sim.players.keys()].map((id) => [id, emptyInput()]));
+  // Solo, with only AI roommates: death by code rot.
+  let sim = new Sim(MAPS_FOR_TEST.room631, { seed: 'u' }); sim.addPlayer('host', 'michael'); sim.addPlayer('ai:trevor', 'trevor');
+  at(sim, 'host', 14, 9); at(sim, 'ai:trevor', 20, 9); sim.setRot('host', 100); sim.step(1 / 60, idle(sim));
+  assert.equal(sim.rotDeath, 'host', 'AI roommates do not keep you from dying'); assert.ok(!(sim.players.get('host').under > 0));
+  // Co-op: the other human is up, so Michael goes under, walks at them and swings.
+  sim = new Sim(MAPS_FOR_TEST.room631, { seed: 'u' }); sim.addPlayer('host', 'michael'); sim.addPlayer('peer', 'manuel');
+  const m = at(sim, 'host', 14, 9), q = at(sim, 'peer', 18, 9); sim.setRot('host', 100);
+  sim.step(1 / 60, idle(sim));
+  assert.ok(m.under > 0 && !sim.rotDeath, 'gone under, not dead'); assert.ok(sim.snapshot().players.find((p) => p.id === 'host').un > 0);
+  const x0 = m.x; q.x = 40 * 16; sim.step(0.2, idle(sim)); assert.ok(m.x > x0, 'the zombie walks at the nearest roommate');
+  q.x = m.x + 10; q.y = m.y; q.iframes = 0; const hp = q.hp; sim.step(1 / 60, idle(sim)); sim.step(1.2, idle(sim));
+  assert.ok(q.hp < hp, 'the zombie hurts roommates');
+  // Pull back: stand next to them for UNDER.pullTime.
+  for (let t = 0; t < UNDER.pullTime + 0.5; t += 0.25) { q.x = m.x + 8; q.y = m.y; q.iframes = 9; sim.step(0.25, idle(sim)); }
+  assert.ok(!(m.under > 0) && !m.downed, 'pulled back'); assert.ok(m.rot >= UNDER.afterPull && m.rot < UNDER.afterPull + 1, 'code rot drops back, still high');
+  // Nobody comes: after the window they drop, downed, with code rot left high.
+  sim.setRot('host', 100); q.x = 40 * 16; q.y = m.y; sim.step(1 / 60, idle(sim)); assert.ok(m.under > 0);
+  for (let t = 0; t < UNDER.window + 1; t += 0.5) { q.x = 40 * 16; q.y = m.y; q.iframes = 9; sim.step(0.5, idle(sim)); }
+  assert.ok(m.downed && !(m.under > 0)); assert.equal(m.rot, UNDER.afterDrop); assert.ok(!sim.rotDeath);
+  // Going under with no other human up (the other human is down) is death by code rot too.
+  m.downed = false; m.hp = 50; q.downed = true; sim.setRot('host', 100); sim.step(1 / 60, idle(sim));
+  assert.equal(sim.rotDeath, 'host');
+});
+
+test('a party wipe brings everyone back with full health and no code rot', () => {
+  const sim = new Sim(MAPS_FOR_TEST.room631, { seed: 'w' }); sim.addPlayer('host', 'michael'); sim.addPlayer('ai:manuel', 'manuel');
+  for (const p of sim.players.values()) { p.hp = 0; p.downed = true; p.rot = 80; }
+  assert.ok(sim.wiped); sim.setMap(sim.map, null); sim.wipeReset();
+  for (const p of sim.players.values()) { assert.equal(p.hp, sim.maxHp(p)); assert.equal(p.rot, 0); assert.ok(!p.downed); }
 });
 
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }

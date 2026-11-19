@@ -1,4 +1,4 @@
-import { Sim, TILE } from '../../engine/sim.js';
+import { Sim, TILE, UNDER } from '../../engine/sim.js';
 import { VIEW, setupCameras, toView } from '../../view.js';
 import { InputReader } from '../../engine/input.js';
 import { newSave } from '../../engine/save/schema.js';
@@ -78,6 +78,11 @@ export class WorldScene extends Phaser.Scene {
 
   // mode: 'solo' | 'host' | 'client'. Host and solo run the Sim; clients render host snapshots.
   init(data) {
+    // Phaser reuses this object on a restart (save reload, quit and play again). Drop everything the
+    // last run set, so lazily made HUD objects (this.x ??= ...) get made again instead of pointing
+    // at destroyed ones. Phaser's own systems are already here on the first init and are kept.
+    WorldScene._baseKeys ??= new Set(Object.keys(this));
+    for (const k of Object.keys(this)) if (!WorldScene._baseKeys.has(k)) delete this[k];
     this.character = data.character; this.mode = data.mode;
     this.net = data.net; this.assignments = data.assignments; this.passedSave = data.save;
   }
@@ -574,8 +579,12 @@ export class WorldScene extends Phaser.Scene {
 
   // ---------- networking ----------
   _wireNet() {
+    // Handlers come off when this scene shuts down, so a restart (the save reload) doesn't double them.
+    const on = (t, fn) => { this.net.on(t, fn); this._netHandlers.push([t, fn]); };
+    this._netHandlers = [];
+    this.events.once('shutdown', () => { for (const [t, fn] of this._netHandlers) this.net?.off?.(t, fn); });
     if (this.mode === 'host') {
-      this.net.on('msg', (peer, msg) => {
+      on('msg', (peer, msg) => {
         if (this.shared?.onMsg(msg, peer) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg)) return;
         if (msg.t === 'input') {
           const prev = this.remoteInputs.get(peer);
@@ -604,23 +613,24 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'sell') this._sell(this._charOf(peer), msg.slot | 0);
         if (msg.t === 'scooter') this._scooter(peer);
       });
-      this.net.on('leave', (peer) => {
+      on('leave', (peer) => {
         // A roommate who drops out keeps walking with the party as a companion.
         const p = this.sim.players.get(peer); this.sim.removePlayer(peer);
         if (p) { this.sim.addPlayer(`ai:${p.character}`, p.character); const a = this.sim.players.get(`ai:${p.character}`); Object.assign(a, { x: p.x, y: p.y, hp: p.hp, rot: p.rot ?? 0, rotQuiet: p.rotQuiet ?? 0, analogCharm: p.analogCharm }); this.sim.setMods(a.id, playerMods(this.save.party[p.character], p.character)); }
       });
       this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
       this.time.addEvent({ delay: 500, loop: true, callback: () => this._broadcastWorld() });
-      this.net.on('join', () => { this._worldSig = null; });
+      on('join', () => { this._worldSig = null; });
     } else if (this.mode === 'client') {
-      this.net.on('msg', (msg) => {
+      on('msg', (msg) => {
         if (this.shared?.onMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg)) return;
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
         if (msg.t === 'say') this._say(msg.text);
+        if (msg.t === 'reload') { this.scene.restart({ mode: 'client', net: this.net, save: msg.save, character: this.character }); return; }
         if (msg.t === 'party') { this.save.party = msg.party; this.save.world.money = msg.money; this._refreshMenu(); }
         if (msg.t === 'world') this._applyWorld(msg);
       });
-      this.net.on('close', () => this._say('The host closed the game.'));
+      on('close', () => this._say('The host closed the game.'));
     }
   }
 
@@ -1804,6 +1814,7 @@ export class WorldScene extends Phaser.Scene {
       this._handleInteract(me);
       for (const p of this.sim.players.values()) this.save.party[p.character].rot = p.rot ?? 0;
       this._hostEvents(events);
+      if (this.sim.rotDeath && !this._rotReload) this._rotReloadSoon();
       snap = this._lastSnap = { ...this.sim.snapshot(), events, doors: [...this.map.doors.values()].filter((d) => d.open).map((d) => d.id) };
     }
     if (snap.map !== this.map.id && MAPS[snap.map]) { this._showMap(MAPS[snap.map]); this._onEnterMap(MAPS[snap.map]); if (this.mode === 'client') this.cameras.main.fadeIn(220, 5, 6, 12); }
@@ -1815,6 +1826,21 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _frozen(inp) { return this.dlg || this.menu ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : inp; }
+
+  // Death by code rot (sim.rotDeath): a beat to read it, then the last save loads for everyone.
+  _rotReloadSoon() {
+    this._rotReload = true;
+    this.time.delayedCall(2400, () => this.cameras.main.fadeOut(600, 5, 6, 12));
+    this.time.delayedCall(3100, async () => {
+      const save = await loadAutosave().catch(() => null);
+      if (this.mode === 'host') {
+        const assignments = {};
+        for (const p of this.sim.players.values()) if (!isAi(p.id)) assignments[p.id] = p.character;
+        this.net.broadcast({ t: 'reload', save: save ?? this.save });
+        this.scene.restart({ mode: 'host', net: this.net, save: save ?? undefined, assignments, character: this.character });
+      } else this.scene.restart({ mode: this.mode, character: this.character, save: save ?? undefined });
+    });
+  }
 
   _hostEvents(events) {
     for (const ev of events) {
@@ -1867,6 +1893,8 @@ export class WorldScene extends Phaser.Scene {
     if (this._wipeAt && this.time.now > this._wipeAt) {
       this._wipeAt = 0;
       this.sim.setMap(this.sim.map, this.enteredFrom ?? null);
+      this.sim.wipeReset();   // full health, no code rot (Michael)
+      for (const p of this.sim.players.values()) this.save.party[p.character].rot = 0;
       this.cameras.main.fadeIn(500, 5, 6, 12);
       this._toast('You come to at the start of the area.');
     }
@@ -1893,7 +1921,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _handleInteract(me) {
-    if (this.dlg || this.menu) { this.hint.setText(''); return; }
+    if (this.dlg || this.menu || me?.under > 0 || me?.un) { this.hint.setText(''); return; }
     // John Pork calls back. If the party declined, he rings again deeper in the tunnels: once at the
     // switchyard, once on the approach. A third decline is what brings the Sahur (the_call script).
     if (this.map.id === 'tunnel_1' && this.mode !== 'client' && !this.save.flags['act1.call.answered']) {
@@ -2139,7 +2167,7 @@ export class WorldScene extends Phaser.Scene {
         g.lineStyle(2, 0x1c1f33, 0.9).strokeCircle(p.x, p.y - 20, 6);
         if (p.rv > 0) g.lineStyle(2, 0xffb347, 1).beginPath().arc(p.x, p.y - 20, 6, -Math.PI / 2, -Math.PI / 2 + (p.rv / 4) * Math.PI * 2).strokePath();
       }
-      s.setAngle(p.dn ? 90 : 0).setTint(p.dn ? 0x777788 : p.mo ? MORPH_LOOK[p.c][0] : 0xffffff).setScale(p.mo ? 1.12 : 1);
+      s.setAngle(p.dn ? 90 : 0).setTint(p.dn ? 0x777788 : p.un ? 0xc07ad8 : p.mo ? MORPH_LOOK[p.c][0] : 0xffffff).setScale(p.mo ? 1.12 : 1);
       if (p.id !== this.localId && !p.w) {
         const x = s.x - 10;
         const y = p.dn ? Math.round(p.y) - 32 : Math.round(s.y - s.displayHeight) - 5;
@@ -2504,7 +2532,7 @@ export class WorldScene extends Phaser.Scene {
       if (!stage || p.dn) { this._rotBarks.delete(p.id); continue; }
       const old = this._rotBarks.get(p.id);
       if (old?.stage === stage && this.time.now < old.next) continue;
-      this._bark(p.id, stage === 2 ? 'code rot. code rot.' : 'Left. Left.');
+      this._bark(p.id, stage === 2 ? 'coderot. coderot.' : 'Left. Left.');   // a code rotter says it as one word (Michael)
       this._rotBarks.set(p.id, { stage, next: this.time.now + 30000 });
       break;
     }
@@ -2615,7 +2643,17 @@ export class WorldScene extends Phaser.Scene {
       }
     }
     if (ev.t === 'morph') { const p = snap.players.find((q) => q.id === ev.id); if (p) { this.cameras.main.flash(120, 180, 255, 160); if (ev.id === this.localId) this._say(ev.on ? `${MORPH_LOOK[p.c][1]}. Stronger. Faster. Softer in the wrong places.` : 'You come back to yourself. Mostly.'); } }
-    if (ev.t === 'down' && ev.id === this.localId) this._say('You\'re down. A roommate can pick you up by staying next to you for a few seconds.');
+    if (ev.t === 'down' && ev.id === this.localId) this._say(ev.rot ? 'Nobody pulled you back in time. You\'re down; a roommate can still pick you up.' : 'You\'re down. A roommate can pick you up by staying next to you for a few seconds.');
+    // Going under at 100% code rot (sim UNDER).
+    const nameOf = (id) => { const c = snap.players.find((q) => q.id === id)?.c; return c ? c[0].toUpperCase() + c.slice(1) : 'Someone'; };
+    if (ev.t === 'under') {
+      this.cameras.main.flash(200, 212, 23, 200);
+      if (ev.id === this.localId) this._say(`The code rot takes over. You've gone under. Your roommates have ${UNDER.window} seconds to pull you back by standing next to you.`);
+      else this._toast(`${nameOf(ev.id)} has gone under. Stand next to them to pull them back.`);
+    }
+    if (ev.t === 'pulled') this._toast(ev.id === this.localId ? 'You\'re back. The code rot is still high.' : `${nameOf(ev.id)} is back.`);
+    if (ev.t === 'zswing') sfx('swing');
+    if (ev.t === 'rotDeath') { this.cameras.main.flash(300, 212, 23, 200); this._say(`Code rot took ${ev.id === this.localId ? 'you' : nameOf(ev.id)}. Loading the last save…`); }
   }
 
   _drawHud(snap) {

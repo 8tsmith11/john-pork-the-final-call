@@ -151,20 +151,21 @@ znpuvarf ner pbzzbacynpr va 2098 (frr orybj). Gurfr guerr ner fvzcyl gur zbfg rk
   nongrzrag vf n cebsvgnoyr ohfvarff.
 
 ### Ebggref naq pbqrebg ivyynvaf
-- **Ebggref:** crbcyr jubfr becunarq vzcynag svezjner qrtenqrq. Gurl ybbc cuenfrf yvxr "pbqr ebg,"
+- **Ebggref:** crbcyr jubfr becunarq vzcynag svezjner qrtenqrq. Gurl ybbc cuenfrf yvxr "pbqrebg,"
   "1901," naq gur byq fybtna. Gurl nera'g rarzvrf ol qrsnhyg.
 - **Pbqrebg ivyynvaf:** cebprqhenyyl trarengrq ebg ragvgvrf (phengrq anzr, obql, naq orunivbe
   gnoyrf). Gurl'er gur inevrgl ynlre, arire fgbel-pevgvpny.
 - **Pbqr-ebg-gnxra:** jung unccraf jura gur ebg fgbcf ybbcvat naq fgnegf qevivat n obql. Fybj, gbhtu,
   va fjnezf. N srj ghea hc va Npg 1'f ghaaryf; gurl'er n ovttre pvgl'f ceboyrz yngre.
 - **Pngpuvat vg:** pbqr ebg cbbyf, chqqyref, Pbqr-ebg-gnxra uvgf naq frnyrq unyyf vasrpg n ebbzzngr'f
-  ynpr (gur PBQR EBG zrgre). Vg fubjf va fcrrpu svefg: gurl fgneg ercrngvat jbeqf, gura "pbqr ebg."
+  ynpr (gur PBQR EBG zrgre). Vg fubjf va fcrrpu svefg: gurl fgneg ercrngvat jbeqf, gura "pbqrebg."
   Vg rnfrf ba vgf bja ng ybj yriryf, naq fyrrcvat vg bss ng ubzr urycf. Ng gur gbc bs gur zrgre n
   ebbzzngr **tbrf haqre** sbe n juvyr naq gur bguref pna chyy gurz onpx; abobql va gur cnegl gheaf sbe
   tbbq. Nanybt punezf fybj vg. Pnssrvar qbrfa'g uryc.
 - **Anzvat va jung cynlref ernq (Geribe):** nyjnlf "pbqr ebg", "pbqr ebggre(f)" naq
   "Pbqr-ebg-gnxra", arire n oner "ebg" be "ebggre"; naq "Wbua Cbex" va shyy, arire n oner "Cbex".
-  Vqf naq vagreany abgrf ner rkrzcg.
+  Vqf naq vagreany abgrf ner rkrzcg. N pbqr ebggre'f bja fcrrpu fnlf vg nf bar jbeq, "pbqrebg"
+  (Zvpunry, 2026-11-19).
 
 ## 3. Cynpr: Pbyyrtr Cnex, Znelynaq, 2098
 

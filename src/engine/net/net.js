@@ -18,6 +18,7 @@ export function makeRoomCode() {
 class Emitter {
   constructor() { this._h = {}; }
   on(t, fn) { (this._h[t] ||= []).push(fn); return this; }
+  off(t, fn) { this._h[t] = (this._h[t] || []).filter((f) => f !== fn); return this; }
   emit(t, ...a) { (this._h[t] || []).forEach((fn) => fn(...a)); (this._h['*'] || []).forEach((fn) => fn(t, ...a)); }
 }
 

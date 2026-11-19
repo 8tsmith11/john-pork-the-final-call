@@ -310,9 +310,9 @@ fgvat ba nal cvpxhc.
 
 > rf: Phneragn l han ercebqhppvbarf.
 
-**GERIBE:** Fbzrobql fng va guvf ina naq yvfgrarq gb avar frpbaqf sbegl-bar gvzrf. Gung'f abg n qvntabfgvp. Gung'f n unovg.
+**GERIBE:** Fbzrobql fng va guvf ina naq yvfgrarq gb avar frpbaqf sbegl-bar gvzrf. Abobql arrqf n qvntabfgvp gung onqyl.
 
-> rf: Nythvra fr fragó ra rfgn pnzvbargn l rfphpuó ahrir frthaqbf phneragn l han irprf. Rfb ab rf ha qvntaófgvpb. Rf ha uáovgb.
+> rf: Nythvra fr fragó ra rfgn pnzvbargn l rfphpuó ahrir frthaqbf phneragn l han irprf. Anqvr arprfvgn ha qvntaófgvpb gnagb.
 
 #### vs fcrnxre=zvpunry
 
@@ -588,7 +588,7 @@ Pubvprf:
 
 *Frg `yber.svefgQrngu.sent.ab`.*
 
-*Bhgfvqr gur pbqrebg jneq, ba gur ybj jnyy jurer gur fzbxref hfrq gb fvg. N pbqr ebggre va n pbagenpgbe'f wnpxrg jvgu gur ybtb cvpxrq bss. Gurl unir orra fnlvat vg sbe n juvyr orsber gur cnegl vf pybfr rabhtu gb urne.*
+*Bhgfvqr gur pbqr-ebg jneq, ba gur ybj jnyy jurer gur fzbxref hfrq gb fvg. N pbqr ebggre va n pbagenpgbe'f wnpxrg jvgu gur ybtb cvpxrq bss. Gurl unir orra fnlvat vg sbe n juvyr orsber gur cnegl vf pybfr rabhtu gb urne.*
 
 **PBQR EBGGRE:** ab. bxnl. gunaxf sbe gryyvat zr. ab. bxnl. gunaxf sbe gryyvat zr.
 
@@ -734,11 +734,11 @@ Pubvprf:
 
 > rf: Nfí dhr nythvra yb chfb. Prepn qr ryybf. Yb onfgnagr shregr cnen dhr yb ntneenen ha ynpr ebgb.
 
-**GERIBE:** Ng n pbqrebg jneq.
+**GERIBE:** Ng n pbqr-ebg jneq.
 
 > rf: Ra ha cnoryyóa qr cbqerqhzoer qr póqvtb.
 
-**GERIBE:** Jub pbzrf gb n pbqrebg jneq gb yvfgra gb guvf?
+**GERIBE:** Jub pbzrf gb n pbqr-ebg jneq gb yvfgra gb guvf?
 
 > rf: ¿Dhvéa ivrar n ha cnoryyóa qr cbqerqhzoer qr póqvtb n rfphpune rfgb?
 
@@ -1538,7 +1538,7 @@ unir pbzr sebz. Ab ubyr va gur gncr; abguvat nobhg gur Pnyy ng nyy.
 *[00:40] Erpbeqvat raqf.*
 
 **Sentzragf, vs guvf gnxr jrer hfrq:** QNGR (00:00 gb 00:12: ernqf nf Wbua Cbex pbeehcgvat Gvz'f pybpx,
-juvpu vf gur pbqrebg nethzrag va avar frpbaqf), ANZR (00:12 gb 00:19: ernqf nf qrsvnapr), FGNGRZRAG
+juvpu vf gur pbqr ebg nethzrag va avar frpbaqf), ANZR (00:12 gb 00:19: ernqf nf qrsvnapr), FGNGRZRAG
 (00:19 gb 00:28: ernqf nf fnepnfz), PRFFNGVBA (00:28 gb 00:40: ernqf nf n znpuvar fghpx va n ybbc,
 yvxr n pbqr ebggre). Gbtrgure: n zna orvat urycrq guebhtu gur jbefg sbez bs uvf pnerre ol gur crefba
 vg'f nobhg.

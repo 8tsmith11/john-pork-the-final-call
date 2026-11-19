@@ -1327,7 +1327,7 @@ Pubvprf:
 
 *Gevttre: `npg1.qrfprag.pnyyCbvag2`, cnegl bhg bs pbzong, naq abg `npg1.pnyy.nafjrerq`. Frg `npg1.pnyy.nggrzcg = 2`.*
 
-*Gur frvmr vf gur fnzr ohg dhvpxre, yvxr ur xabjf gur jnl va abj. Gur cvax vf cngpul. Qbja urer gur pbqrebg rngf gur pbearef bs uvf anzr.*
+*Gur frvmr vf gur fnzr ohg dhvpxre, yvxr ur xabjf gur jnl va abj. Gur cvax vf cngpul. Qbja urer gur pbqr ebg rngf gur pbearef bs uvf anzr.*
 
 > rf: Yn gbzn rf vthny creb záf eácvqn, pbzb fv ln pbabpvren ry pnzvab. Ry ebfn rfgá znapunqb. Npá nonwb yn cbqerqhzoer fr pbzr ynf rfdhvanf qr fh abzoer.
 
@@ -2101,7 +2101,7 @@ Ybj-serdhrapl onexf sbe gur erfg bs gur npg. Bar cre nern ng zbfg. Fxvc nal jubf
 - Evat gvzrbhg vf 30f ba nyy guerr evatf naq pbhagf nf n qrpyvar jvgu `npg1.pnyy.enatBhg = gehr`. Erfrg `enatBhg` gb snyfr ba n cerffrq qrpyvar.
 
 **Gur frvmr rssrpg**
-- Birejevgr beqre sbe UHQ ynoryf: bowrpgvir grkg ynfg ba gur jnl va (vg vf glcrq bhg va flap jvgu "Lbh ybfg fbzrguvat."), ynfg ba gur jnl bhg. Hfr Wbua Cbex cvax bayl (neg ehyr Q-004). Evat 2 qebcf enaqbz yrggref sebz gur anzr va cebcbegvba gb nern pbqrebg yriry. Evat 3 hfrf n fvatyr pragrerq ynory naq ab sybbq.
+- Birejevgr beqre sbe UHQ ynoryf: bowrpgvir grkg ynfg ba gur jnl va (vg vf glcrq bhg va flap jvgu "Lbh ybfg fbzrguvat."), ynfg ba gur jnl bhg. Hfr Wbua Cbex cvax bayl (neg ehyr Q-004). Evat 2 qebcf enaqbz yrggref sebz gur anzr va cebcbegvba gb nern pbqr ebg yriry. Evat 3 hfrf n fvatyr pragrerq ynory naq ab sybbq.
 - Gur pbeare pybpx orpbzrf n pnyy gvzre ba NAFJRE naq fubjf gur svany qhengvba sbe 1f nsgre unat-hc. Gur pnyy-ybt ragel hfrf gur fnzr ahzore.
 - Arneol qvrtrgvp fcrnxref (iraqvat znpuvar, ybool vagrepbz, n ovyyobneq vs ba gur cynmn) evat gbb. ACP cubarf qb abg.
 - Onooyr ibvpr sbe Wbua Cbex jvgu fhogvgyrf. Vgnyvp fgntr yvarf gung qrfpevor fbhaq (sbbgfgrcf ba zrgny, qevc, gur xrggyr-yvxr rkunyr) ner nhqvb phrf haqre gur pnyy, abg fhogvgyr grkg, rkprcg jurer n yvar vf znexrq "Fhogvgyrf:".
