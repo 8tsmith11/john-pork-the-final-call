@@ -44,6 +44,7 @@ import { Crush } from '../crush.js';
 import { Fart } from '../fart.js';
 import { NpcLife } from '../npcLife.js';
 import { Cordon } from '../cordon.js';
+import { phaseEnemies } from '../../content/outbreak.js';
 import { BigButt } from '../bigButt.js';
 import { Approach } from '../approach.js';
 import { Pacifier } from '../pacifier.js';
@@ -121,6 +122,7 @@ export class WorldScene extends Phaser.Scene {
       // Task 9: roommates nobody is playing are still here, run by the companion brain.
       const taken = new Set([...this.sim.players.values()].map((p) => p.character));
       for (const ch of ['trevor', 'manuel', 'michael']) if (!taken.has(ch)) this.sim.addPlayer(`ai:${ch}`, ch);
+      this.sim.phaseEnemies = phaseEnemies(this.save.flags);   // outbreak phase spawns (task #38)
       this.sim.spawnEnemies();   // Initial encounters use the same complete party as later map entries.
       this.brain = new CompanionBrain(this.sim);
     }
@@ -1705,6 +1707,7 @@ export class WorldScene extends Phaser.Scene {
     const from = this.map.id;
     this.cameras.main.fadeOut(140, 5, 6, 12);
     this.cameras.main.once('camerafadeoutcomplete', () => {
+      this.sim.phaseEnemies = phaseEnemies(this.save.flags);   // the phase may have moved since the last map
       this.sim.setMap(to, from);
       this.enteredFrom = from;
       this.save.world.area = to.id;

@@ -81,8 +81,11 @@ export class Sim {
   }
 
   spawnEnemies() {
-    for (const [i, e] of (this.map.enemies || []).entries()) {
-      const spawnKey = `${this.map.id}#${i}`;               // stable: the world remembers who you killed
+    // Outbreak phases (src/content/outbreak.js): the host sets sim.phaseEnemies; they spawn with their own keys.
+    const extra = this.phaseEnemies?.[this.map.id];
+    const all = [...(this.map.enemies || []).map((e, i) => [`${this.map.id}#${i}`, e]),
+      ...(extra?.list ?? []).map(([kind, tx, ty, options], i) => [`${this.map.id}#${extra.phase}.${i}`, { ...options, kind, x: tx * TILE + 8, y: ty * TILE + 8 }])];
+    for (const [spawnKey, e] of all) {
       if (this.killed?.has(spawnKey)) continue;
       const id = `e${this._nextId++}`;
       if (e.kind === 'boss.warden' && this.bossVariant === 'sahur') {

@@ -770,6 +770,21 @@ test('boss fight: the Warden uses several patterns with tells and recovery windo
   assert.ok(!deflectable, 'beam shots should be undeflectable');
 });
 
+const Outbreak = await import('../src/content/outbreak.js');
+test('outbreak phases (task #38): before the Call, after it, contained; phase spawns have their own killed keys', () => {
+  assert.equal(Outbreak.outbreakPhase({}), 'before');
+  assert.equal(Outbreak.outbreakPhase({ 'act1.beat.call': true }), 'after');
+  assert.equal(Outbreak.outbreakPhase({ 'act1.beat.call': true, 'act1.outbreak.contained': true }), 'contained');
+  const map = MAPS_FOR_TEST.metro_plaza, base = new Sim(map, { seed: 'ph' }).enemies.size;
+  const extra = { metro_plaza: { phase: 'after', list: [['enemy.rotling', 40, 20], ['enemy.rotling', 42, 20]] } };
+  const sim = new Sim(map, { seed: 'ph', deferSpawn: true }); sim.phaseEnemies = extra; sim.spawnEnemies();
+  assert.equal(sim.enemies.size, base + 2);
+  const keys = [...sim.enemies.values()].map((e) => e.spawnKey).filter((k) => k.includes('#after.'));
+  assert.deepEqual(keys.sort(), ['metro_plaza#after.0', 'metro_plaza#after.1']);
+  const again = new Sim(map, { seed: 'ph', deferSpawn: true, killed: new Set(['metro_plaza#after.0']) }); again.phaseEnemies = extra; again.spawnEnemies();
+  assert.equal(again.enemies.size, base + 1, 'a killed phase enemy stays dead');
+});
+
 const Wallet = await import('../src/engine/wallet.js');
 test('money per roommate (Trevor #515): own wallets, pay, shared finds to each, send between roommates', () => {
   const save = { party: { trevor: { money: 25 }, manuel: { money: 25 }, michael: { money: 25 } } };

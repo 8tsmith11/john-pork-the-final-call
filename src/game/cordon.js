@@ -2,7 +2,8 @@
 // Cosmetic and local: troopers, barriers, booths, floodlights and signs use gonman's props frames (task #37;
 // the code-drawn shapes stay as a fallback), plus a chain-link fence along the tree line of maps with `cordon: true`.
 // Walking into the edge band makes the nearest trooper say a line (no dialogue box, nothing pauses).
-import { CORDON_LINES } from '../content/cordon.js';
+import { CORDON_LINES, CORDON_LINES_AFTER } from '../content/cordon.js';
+import { outbreakPhase } from '../content/outbreak.js';
 import { getLang } from '../i18n.js';
 import { VIEW } from '../view.js';
 
@@ -28,7 +29,10 @@ export class Cordon {
     const s = this.s, map = s.map;
     for (const o of this.objs) o.destroy();
     this.objs = []; this.troopers = []; this.mapId = map?.id;
-    const parts = (map?.objects ?? []).filter((o) => o.cordon);
+    this.phase = outbreakPhase(s.save?.flags);   // after the Call the cordon closes (task #38)
+    const closed = this.phase === 'after';
+    const parts = [...(map?.objects ?? []).filter((o) => o.cordon),
+      ...(closed ? (map?.cordonClosing ?? []).map(([x, y, face]) => ({ cordon: 'trooper', x, y, face })) : [])];
     if (!map?.cordon && !parts.length) return;
     const g = s.add.graphics().setDepth(2); this.objs.push(g);
     const sheet = s.textures.exists('props') ? s.textures.get('props') : null, art = (f) => !!sheet?.has(f);
@@ -58,7 +62,7 @@ export class Cordon {
       if (frame && art(frame)) {   // gonman's sprites (task #37); the floodlight keeps its sweeping cone
         this.objs.push(s.add.image(x + 8, y + TILE, 'props', frame).setOrigin(0.5, 1).setDepth(y + TILE - 2));
         if (o.cordon === 'light') {
-          const cone = s.add.triangle(x + 8, y - 6, 0, 0, -18, 34, 18, 34, 0xfff3c4, 0.08).setOrigin(0, 0).setDepth(3);
+          const cone = s.add.triangle(x + 8, y - 6, 0, 0, -18, 34, 18, 34, closed ? 0xff4d4d : 0xfff3c4, closed ? 0.12 : 0.08).setOrigin(0, 0).setDepth(3);
           s.tweens.add({ targets: cone, angle: { from: -25, to: 25 }, duration: 3000 + (o.x * 37) % 1500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
           this.objs.push(cone);
         }
@@ -66,7 +70,7 @@ export class Cordon {
       }
       if (o.cordon === 'light') {
         g.fillStyle(0x4a5060, 1).fillRect(x + 7, y - 10, 2, 24); g.fillStyle(0xfff3c4, 1).fillRect(x + 4, y - 12, 8, 3);
-        const cone = s.add.triangle(x + 8, y - 10, 0, 0, -18, 34, 18, 34, 0xfff3c4, 0.08).setOrigin(0, 0).setDepth(3);
+        const cone = s.add.triangle(x + 8, y - 10, 0, 0, -18, 34, 18, 34, closed ? 0xff4d4d : 0xfff3c4, closed ? 0.12 : 0.08).setOrigin(0, 0).setDepth(3);
         s.tweens.add({ targets: cone, angle: { from: -25, to: 25 }, duration: 3000 + (o.x * 37) % 1500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
         this.objs.push(cone);
       } else if (o.cordon === 'booth') {
@@ -87,7 +91,7 @@ export class Cordon {
   update(snap) {
     const s = this.s, map = s.map;
     if (!map) return;
-    if (map.id !== this.mapId) this._build();
+    if (map.id !== this.mapId || outbreakPhase(s.save?.flags) !== this.phase) this._build();
     if (!map.cordon || !this.troopers.length) return;
     const me = snap?.players?.find((p) => p.id === s.localId);
     if (!me || me.dn || s.time.now < this.nextLine) return;
@@ -95,7 +99,8 @@ export class Cordon {
     const nearEdge = tx < BAND || ty < BAND || tx >= map.w - BAND || ty >= map.h - BAND;
     const open = (map.cordonOpenings ?? []).some(([ox, oy, ow, oh]) => Math.abs(tx - (ox + ow / 2)) <= BAND + 1 && Math.abs(ty - (oy + oh / 2)) <= BAND + 1);
     if (!nearEdge || open) return;
-    const line = CORDON_LINES[this.lineIx++ % CORDON_LINES.length];
+    const lines = this.phase === 'after' ? CORDON_LINES_AFTER : CORDON_LINES;
+    const line = lines[this.lineIx++ % lines.length];
     this.nextLine = s.time.now + COOLDOWN;
     const text = getLang() === 'es' ? line.es : line.en;
     // Shown over you, not over the trooper: the posts sit at the screen's edge, under the HUD. A trooper

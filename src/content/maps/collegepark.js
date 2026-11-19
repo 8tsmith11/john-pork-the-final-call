@@ -59,7 +59,7 @@ const PERSON = ['npc.rotter_2', 'npc.rotter_1', 'npc.rotter_3'];
 export const metroPlaza = makeMap({
   id: 'metro_plaza', name: 'College Park',
   outdoor: true,
-  cordon: true, cordonOpenings: PLAZA_CORDON.openings,   // the quarantine cordon is the map edge (src/game/cordon.js)
+  cordon: true, cordonOpenings: PLAZA_CORDON.openings, cordonClosing: PLAZA_CORDON.closing,   // the quarantine cordon is the map edge (src/game/cordon.js)
   // Awnings over the shopfronts (depth pass): canvas over the pavement in front of a wall, drawn above
   // anyone standing under it. x, y: first tile of the row in front of the wall; w: tiles; c: stripe pair.
   awnings: [

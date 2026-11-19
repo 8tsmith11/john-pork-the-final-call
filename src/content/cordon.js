@@ -29,7 +29,19 @@ export const PLAZA_CORDON = {
     L(20, 50, 10), L(45, 50, 11), T(28, 49, 'up', 8), S(36, 50, 6), L(1, 12, 12), T(2, 18, 'right', 9),
   ],
   openings: [[83, 40, 1, 1]],   // edge tiles that don't trigger the turn-back (the trail to the lake)
+  // After the Call the cordon closes (task #38): more troopers on the posts and along the fence, and the
+  // floodlights go red. Drawn only in that phase; not map objects (nothing to examine, nothing to reach).
+  closing: [[59, 3, 'down'], [62, 3, 'down'], [59, 48, 'up'], [62, 48, 'up'], [3, 32, 'right'], [3, 33, 'right'],
+    [12, 2, 'down'], [48, 2, 'down'], [75, 2, 'down'], [81, 8, 'left'], [81, 33, 'left'], [40, 49, 'up'], [12, 49, 'up'], [2, 8, 'right'], [2, 24, 'right']],
 };
+
+// After the Call (the cordon has closed). gonman owns these words; first drafts.
+export const CORDON_LINES_AFTER = [
+  { en: 'The zone is sealed. Return to your residence.', es: 'La zona está sellada. Vuelva a su residencia.' },
+  { en: 'Step back or be tagged.', es: 'Retroceda o queda marcado.' },
+  { en: 'We heard the phones. Go inside.', es: 'Escuchamos los teléfonos. Entre.' },
+  { en: 'Containment is in effect. Nobody crosses.', es: 'La contención está vigente. Nadie cruza.' },
+];
 
 // What a trooper says when you walk up to the line. Short: it's read while walking.
 export const CORDON_LINES = [
