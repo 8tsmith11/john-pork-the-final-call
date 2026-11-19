@@ -1339,7 +1339,7 @@ export class WorldScene extends Phaser.Scene {
     this.hint = this.add.text(W / 2, H - 46, '', { ...FONT, color: '#ffb347' }).setOrigin(0.5).setScrollFactor(0).setDepth(9000);
     this.box = this.add.rectangle(W / 2, H - 22, W - 20, 34, 0x0b0d16, 0.9).setStrokeStyle(1, 0x5d6487).setScrollFactor(0).setDepth(9000).setVisible(false);
     this.boxText = this.add.text(18, H - 36, '', { ...FONT, wordWrap: { width: W - 36 } }).setScrollFactor(0).setDepth(9001).setVisible(false);
-    this.mapLabel = this.add.text(6, 4, '', { ...FONT, color: '#9aa3c7' }).setScrollFactor(0).setDepth(9000);
+    this.mapLabel = this.add.text(6, 4, '', { ...FONT, color: '#9aa3c7', backgroundColor: 'rgba(11,13,22,0.72)', padding: { x: 3, y: 1 } }).setScrollFactor(0).setDepth(9000);   // backed, so it reads over wall props
     this.hud = this.add.graphics().setScrollFactor(0).setDepth(9000);
     this.hudText = this.add.text(W - 6, 4, '', { ...FONT, color: '#9aa3c7', align: 'right' }).setOrigin(1, 0).setScrollFactor(0).setDepth(9001);
     this._makeHotbar();

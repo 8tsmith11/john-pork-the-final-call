@@ -5,6 +5,7 @@ import { startSong, stopSong, currentSong, SONGS } from './music.js';
 import { performanceMix } from './performanceMix.js';
 
 let ctx = null, master = null, background = null, drone = null;
+const MUTED = typeof location !== 'undefined' && new URLSearchParams(location.search).has('mute');
 let mix = { nearby: false, boss: false, background: 1 }, voiceDucked = false;
 const mediaVolumes = new Map();
 
@@ -12,7 +13,9 @@ function ac() {
   if (!ctx) {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
-    ctx = new AC(); master = ctx.createGain(); master.gain.value = 0.25; master.connect(ctx.destination);
+    ctx = new AC(); master = ctx.createGain(); master.gain.value = 0.25;
+    // ?mute in the URL: everything still runs, nothing reaches the speakers (for testing next to people).
+    const out = ctx.createGain(); out.gain.value = MUTED ? 0 : 1; master.connect(out); out.connect(ctx.destination);
     background = ctx.createGain(); background.gain.value = mix.background; background.connect(master);
   }
   if (ctx.state === 'suspended') ctx.resume();
@@ -163,7 +166,7 @@ export function setArea(id) {
     if (!ctx || ctx.state !== 'running') { window.addEventListener('pointerdown', begin, { once: true }); window.addEventListener('keydown', begin, { once: true }); }
     return;
   }
-  const el = new Audio(src);
+  const el = new Audio(src); el.muted = MUTED;
   el.loop = true; el.volume = 0;
   mediaVolumes.set(el, 0);
   el.play().then(() => fade(el, MUSIC_VOL, 1500)).catch(() => {
