@@ -22,8 +22,8 @@ export const tunnel1 = makeMap({
   layout: g.map((r) => r.join('')),
   spawns: [[3, 12], [3, 14], [4, 12]],
   enemies: [
-    ['enemy.rotling', 10, 12], ['enemy.rotling', 20, 14], ['enemy.spitter', 28, 11],        // the main line
-    ['enemy.rotling', 12, 3],                                                                // the pump room
+    ['enemy.rotling', 24, 12], ['enemy.rotling', 20, 14], ['enemy.spitter', 28, 11],        // the main line (kept 17+ tiles from the ladder: John Pork's call plays on arrival, Trevor)
+    ['enemy.rotling', 19, 2],                                                                // the pump room (far corner, out of reach of the ladder)
     ['enemy.rotling', 30, 22],                                                               // the flooded bay
     ['enemy.rot_taken', 38, 9], ['enemy.spitter', 44, 17], ['enemy.rot_taken', 40, 19],      // the switchyard: two later-stage cases
     ['enemy.spitter', 50, 3],                                                                // the bypass

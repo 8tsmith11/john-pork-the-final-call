@@ -110,6 +110,15 @@ QUESTS.push({
   reward: { money: 25, xp: 40, item: 'item.ozzie_lure', line: 'He holds it up to his face for a long time. The light moves under the scales. "Huh," he says. He writes in the notebook, one tally mark, very carefully. Then he lets it go off the end of the pier, and hands you a lure out of his hat.' },
 });
 
+// First weapon (Trevor: make it clear where it comes from). Starts after the cold open; done once anyone is armed.
+QUESTS.push({
+  id: 'side.armup', title: 'Something to swing', act: 1,
+  why: "Coderot is loose in the building tonight, and none of you is holding so much as a wrench. The toolwall over the workbench in 631 has three pry bars.",
+  start: (f) => f['act1.coldopen.done'] && !f['q.armed'],
+  stages: [{ text: 'Take a pry bar from the toolwall in 631 (over the workbench).', done: (f) => f['q.armed'] }],
+  reward: { line: 'Hotbar: 1-9 or the mouse wheel picks what\'s in your hand. Left click swings it.' },
+});
+
 QUESTS.push({
   id: 'side.bot', title: 'Get it running', act: 1, owner: 'trevor',   // personal: only Trevor's journal, popups and reward
   why: "Trevor builds combat robots. The wedge bot in his room just needs parts, and a robot that rams coderot on its own is worth a lot tonight.",

@@ -176,6 +176,7 @@ export class WorldScene extends Phaser.Scene {
 
   async _startLocal(sceneName, nodeId, onDone) {
     if (this.dlg) return;
+    this._dlgSceneName = sceneName;
     const scene = await loadScene(sceneName);
     const sink = {
       flag: (k, v) => this._flag(k, v),
@@ -233,7 +234,12 @@ export class WorldScene extends Phaser.Scene {
     const t1 = this.add.text(W / 2, py + 8, 'INCOMING CALL', { ...FONT, fontSize: '8px', color: '#9aa3c7' }).setOrigin(0.5, 0);
     const t2 = this.add.text(W / 2, py + 18, 'JOHN PORK', { heading: true, fontSize: '14px', color: '#f2a6b8' }).setOrigin(0.5, 0);
     root.add([t1, t2]);
-    if (this.anims.exists('pork')) { const face = this.add.sprite(W / 2, py + ph - 26, 'principals').play('pork').setOrigin(0.5, 1).setScale(2); root.add(face); }
+    // Trevor's call portrait (assets/ui/john-pork-call.png, f9a4d75); the drawn sprite only if it's missing.
+    if (this.textures.exists('john-pork-call')) {
+      const ih = ph - 54, iw = Math.round(ih * 264 / 180);
+      panel.lineStyle(1, 0xf2a6b8, 0.8).strokeRect(W / 2 - iw / 2 - 2, py + 34, iw + 4, ih + 4);
+      root.add(this.add.image(W / 2, py + 36, 'john-pork-call').setOrigin(0.5, 0).setDisplaySize(iw, ih));
+    } else if (this.anims.exists('pork')) { const face = this.add.sprite(W / 2, py + ph - 26, 'principals').play('pork').setOrigin(0.5, 1).setScale(2); root.add(face); }
     const ans = this.add.text(W / 2, py + ph - 14, '◉ connecting…', { ...FONT, fontSize: '8px', color: '#7fb069' }).setOrigin(0.5, 0); root.add(ans);
     const hudBits = [this.hudText, this.mapLabel, this.hudName, this.hudLv].filter(Boolean);
     const saved = hudBits.map((h) => h.text);
@@ -268,7 +274,11 @@ export class WorldScene extends Phaser.Scene {
     this.dlgPortraitBg.setVisible(true);
     this._porkTalking = isPork;
     this.dlgBg.setStrokeStyle(1, isPork ? 0xd65db1 : 0xf2a6b8);
-    if (isPork) {
+    if (isPork && this._dlgSceneName === 'the_call' && this.textures.exists('john-pork-call')) {
+      // On the phone: Trevor's call portrait, same as the incoming-call screen.
+      this.dlgPortrait.setTexture('john-pork-call').setCrop().setDisplaySize(38, 26).setOrigin(0.5, 0.5).setVisible(true);
+      this.dlgInitial.setText('');
+    } else if (isPork) {
       this.dlgPortrait.setTexture('principals', 'pork_0').setCrop(0, 0, 24, 18).setScale(2.2).setOrigin(0.5, 0.3).setVisible(true);
       this.dlgInitial.setText('');
     } else if (isRoommate) {
@@ -317,6 +327,7 @@ export class WorldScene extends Phaser.Scene {
     if (!on) return;
     const choices = d.choices;
     this.dlgTimer?.setVisible(false);
+    this._choiceHeader = false;
     if (choices.length) {
       if (this._choicesFor !== d.nodeId) { this._choicesFor = d.nodeId; this._lineAt = this.time.now; }
       // A timed choice ("Let it ring."): count down on screen and take it if nobody picks.
@@ -334,7 +345,9 @@ export class WorldScene extends Phaser.Scene {
       // Directed choices: a small "→ MANUEL" tag, and greyed options on everyone else's screen.
       const decider = d.spectator ? d.decider : (this.shared?.active ? this.shared.deciderFor(d.node) : null);
       const mine = !decider || decider === this.character;
-      if (decider && this.mode !== 'solo') this.dlgWho.setText(`→ ${decider.toUpperCase()}`).setColor(mine ? '#6fe3e8' : '#9aa3c7');
+      // A header row above the options (not on top of them): clear for the decider, quiet for everyone else.
+      this._choiceHeader = !!(decider && this.mode !== 'solo');
+      if (this._choiceHeader) this.dlgWho.setText(mine ? '▶ YOUR CHOICE' : `${decider.toUpperCase()} IS CHOOSING…`).setColor(mine ? '#6fe3e8' : '#9aa3c7');
       this.dlgChoices.forEach((t, i) => t.setText(choices[i] ? `${i + 1}. ${choices[i].text.replace(/\*/g, '')}` : '').setVisible(!!choices[i]).setAlpha(mine ? 1 : 0.45));
       // John Pork's call: the ANSWER / DECLINE choice is shown as a full phone takeover (CallCard).
       const label = (c) => c.text.replace(/[*"]/g, '').trim().toUpperCase();
@@ -382,7 +395,7 @@ export class WorldScene extends Phaser.Scene {
   _hiWords() {
     if (this._hiRx !== undefined) return this._hiRx;
     const esc = (w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const quest = new Set(['orange balloon', 'the balloon', 'balloon', 'helium', 'sniffer', 'switchyard', 'storm grate', 'the platform', 'Fab #1', 'Fab #2', 'the fab', 'fab']);
+    const quest = new Set(['orange balloon', 'the balloon', 'balloon', 'helium', 'sniffer', 'switchyard', 'storm grate', 'the platform', 'Fab #1', 'Fab #2', 'the fab', 'fab', 'toolwall', 'the toolwall']);
     const stageText = QUESTS.flatMap((q) => q.stages.map((st) => st.text.toLowerCase())).join('\n');
     for (const def of Object.values(ITEMS)) if (def.name && def.name.length > 3 && stageText.includes(def.name.toLowerCase())) quest.add(def.name);
     for (const q of QUESTS) for (const id of [q.give?.item, q.reward?.item]) if (id && ITEMS[id]?.name) quest.add(ITEMS[id].name);
@@ -462,7 +475,7 @@ export class WorldScene extends Phaser.Scene {
     const W = VIEW.w, H = VIEW.h, bottom = H - 6;
     let h;
     if (isChoices) {
-      h = 14 + this.dlgChoices.filter((t) => t.visible).reduce((sum, t) => sum + t.height + 3, 0);
+      h = 14 + (this._choiceHeader ? 12 : 0) + this.dlgChoices.filter((t) => t.visible).reduce((sum, t) => sum + t.height + 3, 0);
     } else {
       this.dlgMeasure.setText('A\nA\nA\nA');   // a full 4-line page: the box never jumps between lines
       h = 24 + this.dlgMeasure.height;
@@ -475,7 +488,7 @@ export class WorldScene extends Phaser.Scene {
     this.dlgTimer?.setPosition(W - 30, top + 6);
     this.dlgText.setY(top + 17); this._dlgTop = top + 17;
     this.dlgMore?.setPosition(W - 30, top + h - 12);
-    let y = top + 7;
+    let y = top + 7 + (isChoices && this._choiceHeader ? 12 : 0);
     for (const t of this.dlgChoices) { if (!t.visible) continue; t.setY(y); y += t.height + 3; }
     const py = top + 30;
     this.dlgPortraitBg.setY(py); this.dlgPortrait.setY(py); this.dlgInitial.setY(py);
@@ -755,6 +768,7 @@ export class WorldScene extends Phaser.Scene {
 
   _syncParty() {
     this._syncHeld();
+    if (this.mode !== 'client' && !this.save.flags['q.armed'] && Object.values(this.save.party).some((c) => c.equipped?.weapon)) this.save.flags['q.armed'] = true;   // armed any way at all
     for (const p of this.sim.players.values()) {
       const c = this.save.party[p.character];
       this.sim.setMods(p.id, playerMods(c, p.character));
@@ -1624,7 +1638,7 @@ export class WorldScene extends Phaser.Scene {
           inputs.set(peer, rinp);
           if (rinp.dodge) this.remoteInputs.set(peer, { ...rinp, dodge: false });
         }
-        if (!this._storyPaused()) this.sim.step(STEP, inputs);   // story scenes hold the world still for everyone
+        this.sim.step(STEP, inputs);   // dialogue never pauses combat (Trevor); levels keep enemies away from scenes instead
         events = events.concat(this.sim.events);
         this.acc -= STEP; first = false;
       }
@@ -1823,6 +1837,7 @@ export class WorldScene extends Phaser.Scene {
         c.equipped.weapon ??= 'item.pry_bar'; got.push(who);
         if (free >= 0) c.hotSel = free;
       }
+      this._flag('q.armed', true); this._tickQuests(true);
       this._syncParty();
       this._say(got.length ? `${near.text}\n\nYou each take a {pry bar}. (Select it on the hotbar with 1-9 or the wheel; left click swings what's in your hand.)` : `${near.text}\n\nEveryone's already armed.`);
       return;
