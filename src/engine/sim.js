@@ -604,8 +604,11 @@ export class Sim {
       if (!this._hitsBox(nx, ny, 6, 4)) { this.events.push({ t: 'blink', x: e.x, y: e.y }); e.x = nx; e.y = ny; }
     }
     e.hp -= dmg; e.hurtT = 0.12;
+    // Phase gate (bosses with def.phaseGate): HP can't fall past the end of the current phase until the boss
+    // has shown at least one tell in it, so burst damage can't skip a phase before you've seen it.
+    if (e.boss && e.def?.phaseGate && !(e.phaseTells > 0) && e.phase < 3) e.hp = Math.max(e.hp, Math.ceil(e.def.hp * (e.phase === 1 ? 0.66 : 0.33)));
     if (e.boss) { kx *= 0.15; ky *= 0.15; const f = e.hp / e.def.hp; const ph = f < 0.33 ? 3 : f < 0.66 ? 2 : 1;
-      if (ph !== e.phase) { e.phase = ph; this.events.push({ t: 'phase', phase: ph }); } }
+      if (ph !== e.phase) { e.phase = ph; e.phaseTells = 0; this.events.push({ t: 'phase', phase: ph }); } }
     e.kx = kx; e.ky = ky; if (by) e.lastHitBy = by;
     this.events.push({ t: 'hit', x: e.x, y: e.y, dmg, target: e.id, by });
     if (e.hp <= 0) {
@@ -866,6 +869,7 @@ export class Sim {
     e.state = 'windup'; e.windT = windFor(e.next, e.phase);
     e.aimA = Math.atan2(uy, ux);
     const pat = BOSS_PATTERNS[e.next];
+    e.phaseTells = (e.phaseTells ?? 0) + 1;
     this.events.push({ t: 'tell', x: e.x, y: e.y, kind: e.next, a: e.aimA, dur: e.windT, red: pat.red, name: pat.name, line: pat.line, es: pat.es });
   }
 
