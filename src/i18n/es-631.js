@@ -41,7 +41,7 @@ export const ES_631 = {
   'Couch': 'Sofá',
   'The couch came with the apartment. Nobody has ever found the bottom of the cushions. Michael found a 2081 coin in there once and kept it.': 'El sofá venía con el departamento. Nadie encontró nunca el fondo de los cojines. Michael encontró una moneda de 2081 una vez y se la quedó.',
   'Scooter dock': 'Base de scooters',
-  "Three scooters on the charging rail: blue, green, red. The red one's battery reads 61% and has read 61% for a month.": 'Tres scooters en el riel de carga: azul, verde, rojo. La batería del rojo marca 61% y marca 61% hace un mes.',
+  "Three scooters on the charging rail: blue, green, red, all on bare rims. A sticky note on the red one, in Trevor's handwriting: AIRLESS ONLY. The batteries still charge.": 'Tres scooters en el riel de carga: azul, verde, rojo, todos sobre las llantas peladas. Un post-it en el rojo, con la letra de Trevor: SOLO SIN AIRE. Las baterías todavía cargan.',
   'Shoe rack': 'Zapatero',
   "Six shoes, two of them matching. Somebody's cleats from a sport nobody here plays.": 'Seis zapatos, dos de ellos hacen juego. Unos botines de alguien, de un deporte que nadie aquí juega.',
   'Plant': 'Planta',
