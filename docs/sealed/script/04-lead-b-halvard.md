@@ -282,7 +282,7 @@ Pubvprf:
 
 #### raq
 
-**UNYINEQ:** Vg'f n oevrsvat. Vagreqvpgvba, vagreany. N sevraq jvgu n qvfu chyyf gurz qbja naq V xrrc gurz. Fbzrobql fubhyq.
+**UNYINEQ:** Vg'f n oevrsvat. Vagreany. N sevraq jvgu n qvfu chyyf gurz qbja naq V xrrc gurz. Fbzrobql fubhyq.
 
 *frg npg1.unyineq.giAbgvprq*
 
