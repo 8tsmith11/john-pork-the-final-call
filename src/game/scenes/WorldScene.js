@@ -49,7 +49,7 @@ import { phaseEnemies } from '../../content/outbreak.js';
 import { dawnLabel, dawnProgress } from '../../content/dawn.js';
 import { BigButt } from '../bigButt.js';
 import { GONMAN_LINES, GONMAN_UNLOCK } from '../../content/gonman.js';
-import { growthScale, lookStage } from '../../content/growth.js';
+import { growthSize, lookStage } from '../../content/growth.js';
 import { Beltless } from '../beltless.js';
 import { Approach } from '../approach.js';
 import { Pacifier } from '../pacifier.js';
@@ -2306,7 +2306,7 @@ export class WorldScene extends Phaser.Scene {
       if (s.lastLevel !== undefined && lv > s.lastLevel) { s.popUntil = this.time.now + 600; if (lookStage(lv) > lookStage(s.lastLevel)) this._growFlash(s); }
       s.lastLevel = lv;
       const pop = s.popUntil > this.time.now ? 1 + 0.18 * Math.sin(((s.popUntil - this.time.now) / 600) * Math.PI) : 1;
-      s.setAngle(p.dn ? 90 : 0).setTint(p.dn ? 0x777788 : p.un ? 0xc07ad8 : p.mo ? MORPH_LOOK[p.c][0] : 0xffffff).setScale(growthScale(lv) * (p.mo ? 1.12 : 1) * pop);
+      s.setAngle(p.dn ? 90 : 0).setTint(p.dn ? 0x777788 : p.un ? 0xc07ad8 : p.mo ? MORPH_LOOK[p.c][0] : 0xffffff).setScale(...growthSize(lv, p.c).map((v) => v * (p.mo ? 1.12 : 1) * pop));
       if (p.id !== this.localId && !p.w) {
         const x = s.x - 10;
         const y = p.dn ? Math.round(p.y) - 32 : Math.round(s.y - s.displayHeight) - 5;

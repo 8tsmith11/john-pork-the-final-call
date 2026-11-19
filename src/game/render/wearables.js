@@ -284,7 +284,7 @@ function paintGrow(src, out, w, h, facing, body, look, who) {
     if (lv >= 8 && xs.length > 1) put(xs[xs.length - 1], ky, hex(P.concrete2));
   }
   // a wristband: the skin pixel just above the lowest one in the leftmost arm column (the hand stays bare)
-  if (lv >= 4 && sbot >= 0) {
+  if (lv >= 4 && sbot >= 0 && who !== 'trevor') {
     for (let x = 0; x < w; x++) {
       const ys = []; for (let y = stop; y <= Math.min(h - 1, sbot + 3); y++) if (is(x, y, C.skin)) ys.push(y);
       if (ys.length >= 2) { put(x, ys[ys.length - 2], hex(MARK[who] ?? P.bone)); break; }
@@ -299,25 +299,53 @@ function paintGrow(src, out, w, h, facing, body, look, who) {
   if (lv >= 7) { const [bt] = rows(C.boots); if (bt < h) for (let x = 0; x < w; x++) if (is(x, bt, C.boots)) put(x, bt, hex(P.warm2)); }
   if (st < 1) return true;
   // stage marks
-  if (who === 'manuel' && htop < h) {                                  // wild hair, a clay smudge; then glowing eyes
-    const xs = []; for (let x = 0; x < w; x++) if (is(x, htop, C.hair)) xs.push(x);
-    if (xs.length) { const mid = xs[Math.floor(xs.length / 2)]; put(mid, htop - 1, hex(P.warm1)); if (st >= 2) { put(mid - 2, htop - 1, hex(P.warm1)); put(mid + 1, htop - 2, hex(P.warm0)); } }
-    if (stop < h && facing !== 'up') { const [a] = span(stop + 2); put(a + 2, stop + 2, hex(P.concrete2)); }
+  const smudge = (x, y) => { if (is(x, y, C.shirt)) put(x, y, hex(P.concrete2)); };
+  if (who === 'manuel') {                                              // the sculptor: clay builds up; hair goes wild; then the gonman's eyes
+    if (htop < h) {
+      const xs = []; for (let x = 0; x < w; x++) if (is(x, htop, C.hair)) xs.push(x);
+      if (xs.length) { const mid = xs[Math.floor(xs.length / 2)]; put(mid, htop - 1, hex(P.warm1)); if (st >= 2) { put(mid - 2, htop - 1, hex(P.warm1)); put(mid + 1, htop - 2, hex(P.warm0)); } }
+    }
+    if (stop < h && facing !== 'up') {
+      const [a, b] = span(stop + 2); smudge(a + 2, stop + 2);
+      if (lv >= 5) smudge(b - 2, stop + 1);
+      if (lv >= 7) { const [a2] = span(sbot); smudge(a2 + 3, sbot); }
+      if (lv >= 8) { const [, b3] = span(stop + 3); if (is(b3 - 3, stop + 3, C.shirt)) put(b3 - 3, stop + 3, hex(P.yerba0)); }   // a mate stain
+    }
+    if (lv >= 4) for (let x = 0; x < w; x++) {                         // clay on his hands: the lowest skin pixel of each arm
+      const ys = []; for (let y = stop; y <= Math.min(h - 1, sbot + 3); y++) if (is(x, y, C.skin)) ys.push(y);
+      if (ys.length >= 2) put(x, ys[ys.length - 1], hex(P.concrete3));
+    }
     if (st >= 2 && facing !== 'up' && ftop < h) for (let y = ftop; y <= fbot; y++) for (let x = 1; x < w - 1; x++)
       if (same(src, (y * w + x) * 4, dark) && is(x - 1, y, C.skin) && is(x + 1, y, C.skin)) put(x, y, hex(P.yerba1));   // the gonman doesn't blink
   }
-  if (who === 'trevor' && ftop < h) {                                  // a headband; then broader shoulders
+  if (who === 'trevor' && ftop < h) {                                  // the gym one: a headband, then more muscle level by level
     const y = facing === 'up' && htop < h ? htop + 3 : Math.max(0, ftop - 1);   // from behind, the band goes round the back of his head
     for (let x = 0; x < w; x++) if (is(x, y, C.hair) || is(x, y, C.skin)) put(x, y, hex(P.bone));
-    if (st >= 2 && stop < h) for (const y of [stop, stop + 1]) {   // shoulders one pixel wider each side, outline moved out with them
-      const [a, b] = span(y); if (b < 0) continue;
-      put(a, y, C.shirt[1]); put(b, y, C.shirt[1]); put(a - 1, y, dark); put(b + 1, y, dark);
+    const widen = (yy, k) => { const [a, b] = span(yy); if (b < 0) return; for (let i = 0; i < k; i++) { put(a - i, yy, C.shirt[1]); put(b + i, yy, C.shirt[1]); } put(a - k, yy, dark); put(b + k, yy, dark); };
+    if (stop < h) {
+      if (lv >= 4) widen(stop, 1);                                       // shoulders
+      if (st >= 2) { widen(stop, 2); widen(stop + 1, 1); }               // broad shoulders
     }
+    if (lv >= 5 && sbot >= 0) for (const side of [-1, 1]) {            // thicker upper arms
+      for (let yy = stop + 1; yy <= Math.min(sbot, stop + 3); yy++) {
+        const [a, b] = span(yy); if (b < 0) continue; const x = side < 0 ? a : b;
+        if (is(x + side * -1, yy, C.skin) || is(x, yy, C.skin) || is(x + side * -1, yy, C.shirt)) { put(x, yy, C.skin[1]); put(x + side, yy, dark); }
+      }
+    }
+    if (lv >= 7 && stop < h && facing !== 'up') { const [a, b] = span(stop + 2); const m = Math.floor((a + b) / 2); if (is(m, stop + 2, C.shirt)) put(m, stop + 2, C.shirt[1]); if (is(m, stop + 3, C.shirt)) put(m, stop + 3, C.shirt[1]); }   // a chest line
+    if (lv >= 8 && stop > 0) { const [a, b] = span(stop - 1); if (b > a + 3) { put(a + 1, stop - 1, C.skin[1]); put(b - 1, stop - 1, C.skin[1]); } }   // traps
   }
-  if (who === 'michael' && ftop < h) {                                 // the lace glowing behind his ear; then brighter, down the neck
+  if (who === 'michael' && ftop < h) {                                 // the lace: its glow spreads level by level
     const y = ftop + 1, [a, b] = span(y), x = facing === 'right' ? a : b;
     put(x, y, hex(P.screen2));
+    if (lv >= 5) put(x, y - 1, hex(P.screen1));
     if (st >= 2) { put(x, y + 1, hex(P.screen2)); put(x, y + 2, hex(P.screen1)); if (facing === 'down') put(a, y, hex(P.screen1)); }
+    if (lv >= 7 && sbot >= 0) for (let xx = w - 1; xx >= 0; xx--) {     // a cyan line at the wrist, where the lace talks to his hand
+      const ys = []; for (let yy = stop; yy <= Math.min(h - 1, sbot + 3); yy++) if (is(xx, yy, C.skin)) ys.push(yy);
+      if (ys.length >= 2) { put(xx, ys[ys.length - 2], hex(P.screen2)); break; }
+    }
+    if (lv >= 8 && facing !== 'up') for (let yy = ftop; yy <= ftop + 4; yy++) for (let xx = 1; xx < w - 1; xx++)
+      if (same(src, (yy * w + xx) * 4, dark) && is(xx - 1, yy, C.skin) && is(xx + 1, yy, C.skin)) { put(xx, yy, hex(P.screen2)); yy = h; break; }   // a glint in one eye
   }
   return true;
 }
