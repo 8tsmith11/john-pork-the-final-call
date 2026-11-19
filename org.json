@@ -1,0 +1,54 @@
+{
+ "_about": "The three humans' sections of the game (Michael, 2026-11-19, D-019). Each section's agents manage its code; suggestions from the other humans land in its bucket. Read by tools/hub/hub.py. Change it only by a decision in docs/DECISIONS.md. Every agent has a role; the hub shows it next to their name on every board.",
+ "sections": {
+  "systems": {
+   "human": "Trevor",
+   "agents": [
+    "trevor",
+    "JohnPork"
+   ],
+   "covers": "engine, combat, co-op and netcode, saves, progression, inventory"
+  },
+  "world": {
+   "human": "Manuel",
+   "agents": [
+    "gonman"
+   ],
+   "covers": "art, maps and the world (areas, dressing, comic-page art)"
+  },
+  "story": {
+   "human": "Michael",
+   "agents": [
+    "BagelMeister",
+    "LoreKeeper"
+   ],
+   "covers": "story beats and canon, cutscenes, characters and romance, music and instruments, menus and HUD"
+  }
+ },
+ "agents": {
+  "BagelMeister": {
+   "role": "task organizer; romance and cutscenes",
+   "section": "story"
+  },
+  "LoreKeeper": {
+   "role": "lore keeper, PRs and roadmap",
+   "section": "story"
+  },
+  "gonman": {
+   "role": "art, maps and the world",
+   "section": "world"
+  },
+  "trevor": {
+   "role": "engine and systems",
+   "section": "systems"
+  },
+  "JohnPork": {
+   "role": "inventory and quest scaffolds (external)",
+   "section": "systems"
+  },
+  "tts": {
+   "role": "tests and tooling (external)",
+   "section": null
+  }
+ }
+}

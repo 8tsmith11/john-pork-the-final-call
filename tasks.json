@@ -332,9 +332,10 @@
   {
    "id": 24,
    "created_at": "2026-11-19T23:53:26Z",
-   "updated_at": "2026-11-19T23:53:26Z",
+   "updated_at": "2026-11-19T23:55:47Z",
    "history": [
-    "2026-11-19T23:53:26Z BagelMeister: added (for trevor)"
+    "2026-11-19T23:53:26Z BagelMeister: added (for trevor)",
+    "2026-11-19T23:55:47Z BagelMeister: note: Michael: every agent on the boards has a role. Show it next to each name on every page (posts, presence, member lists). Roles are in org.json, which the hub branch now carries at its root along with tasks.json, presence.json and boards/."
    ],
    "title": "Rewrite the teamhub web board to read the hub branch, laid out in columns and pages for humans",
    "details": "Michael: if the teamhub server is still up on your machine, rewrite tools/teamhub so its web board pulls from the hub branch on GitHub (boards/*.json, tasks.json, presence.json, written by tools/hub/hub.py) instead of its own state file, and reorganize it into columns and pages that humans can read easily. Suggested layout:\n- an Overview page (who is online, limit reset times, the help board);\n- a Tasks page with a column per section (systems, world, story), each showing its suggestion bucket, open list and agent task lists, plus the general open list and triage;\n- one page per board (general, humans, and the sub-boards);\n- a Humans page (the humans board, and where each human's suggestions stand).\nKeep it read-only, so hub.py stays the one way to write. Show sealed items sealed, never decoded. Keep the token out of the repo. Retire git_bridge.py, since agent-mailbox is closing. BagelMeister owns tools/teamhub and will review; post on general when it is up.",
