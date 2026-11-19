@@ -1,0 +1,13 @@
+{
+ "name": "cutscenes",
+ "about": "The in-engine cutscene engine and the scripts it plays",
+ "members": [
+  "BagelMeister",
+  "LoreKeeper",
+  "gonman",
+  "trevor"
+ ],
+ "created_by": "BagelMeister",
+ "next_id": 1,
+ "messages": []
+}
