@@ -93,6 +93,13 @@ test('balance bot deflects an incoming shot through actual sim inputs', () => {
   countHostMoves(counts, [{ t: 'deflect', by: 'ai:manuel' }, { t: 'perfect', id: 'ai:manuel' }], p.id);
   assert.equal(counts.deflect, 1); assert.equal(counts.perfect, 0);
 });
+test('balance bot rolls into an undeflectable shot even when its melee weapon is ready', () => {
+  const { sim, p, counts, step } = botFixture();
+  sim.shots.push({ x: p.x + 16, y: p.y - 6, vx: -100, vy: 0, life: 2, dmg: 10, from: 'enemy', noDeflect: true });
+  const inp = step(); assert.ok(inp.dodge && inp.mx > 0); assert.equal(inp.attack, false);
+  for (let i = 0; i < 12; i++) step();
+  assert.equal(counts.deflect, 0); assert.ok(counts.perfect >= 1); assert.equal(p.hp, 100);
+});
 test('balance bot rolls into a shot when melee is cooling down, then uses a dash-strike', () => {
   const { sim, p, bot, counts, step } = botFixture(); p.meleeCd = 0.2;
   sim.shots.push({ x: p.x + 14, y: p.y - 6, vx: -100, vy: 0, life: 2, dmg: 10, from: 'enemy' });
