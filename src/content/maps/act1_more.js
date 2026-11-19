@@ -79,7 +79,7 @@ export const campusQuad = fromGrid({
   id: 'campus_quad', name: 'The campus quad', fill: 'g', outdoor: true,
   rows: [
     'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
-    'T########gggggggggggggg#########gT',
+    'T########gggggggggggggg#########AT',
     'T########gggggggggggggg#########gT',
     'T####F###ggggqqqqqqgggg####R####gT',
     'Tggggqggggggggq....qggggggggqggggT',
@@ -93,6 +93,7 @@ export const campusQuad = fromGrid({
   legend: {
     F: { exit: 'dining_hall', id: 'obj.quad_dining', art: 'obj.door', label: 'The dining hall', pair: 'obj.dining_out', text: 'The dining hall. The lights are on.' },
     R: { exit: 'robotics_lab', id: 'obj.quad_robotics', art: 'obj.door', label: 'Robotics and Autonomy Lab', pair: 'obj.robotics_out', text: 'The robotics lab. A keypad, and someone has written the code on the wall next to it.' },
+    A: { exit: 'auditorium', id: 'obj.quad_auditorium', art: 'obj.door', label: 'The lecture auditorium', pair: 'obj.aud_out', text: 'The big lecture hall. A projector hum through the doors.' },
     H: { exit: 'compute_hall_b', id: 'obj.quad_chb', art: 'obj.door', label: 'Back into Compute Hall B', pair: 'obj.chb_quad_door', text: 'Back inside.' },
     E: { enemy: 'enemy.spitter' },
     '@': { spawn: true },
@@ -145,3 +146,28 @@ export const roboticsLab = fromGrid({
     D: { exit: 'campus_quad', id: 'obj.robotics_out', art: 'obj.door', label: 'Out to the quad', stepOn: true, pair: 'obj.quad_robotics', text: 'Back out to the quad.' },
   },
 }).build();
+
+// ---- The lecture auditorium (off the quad): tiered seats, a projector still running, and the Autograder ----
+export const auditorium = fromGrid({
+  id: 'auditorium', name: 'The lecture auditorium', fill: 'e',
+  rows: [
+    '########################################',
+    '#eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeU',
+    '#eeeeeeeesssssssssseesssssssssseeeeeeee#',
+    '#eePeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee#',
+    '#eeeeeeeesssssssssseesssssssssseeeeeeee#',
+    '#eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee#',
+    '#eeeeeeeesssssssssseesssssssssseeeeeeee#',
+    '#eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee#',
+    '#eeeeeeeesssssssssseesssssssssseeeeEeee#',
+    '#eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee@eee#',
+    '########################################',
+  ],
+  legend: {
+    s: { scenery: 'obj.table', solid: true, tile: 'e' },
+    P: { prop: 'obj.board', id: 'obj.aud_projector', label: 'The projector', text: '[scaffold] Still running. Slide 41 of 41: "Questions?" Nobody has asked one in a long time.' },
+    E: { enemy: 'enemy.rotling' },
+    '@': { spawn: true },
+    U: { exit: 'campus_quad', id: 'obj.aud_out', art: 'obj.door', label: 'Out to the quad', pair: 'obj.quad_auditorium', text: 'Back out to the quad.' },
+  },
+}).enemy('boss.chb_autograder', 3, 6).build();

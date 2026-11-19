@@ -42,6 +42,47 @@ function side({ id, act, giver, giverName, giverEs, title, titleEs, why, whyEs, 
   built.push(q);
 }
 
+// ======================= Act 1 (the new campus and ASTER areas) =======================
+const COOK = ['the cook', 'el cocinero'], WATCHER = ['the roof watcher', 'la que mira desde la azotea'], DCOOK = ['the dining-hall cook', 'la cocinera del comedor'],
+  STUDENT = ['the student', 'el estudiante'], TA = ['the TA', 'la ayudante de cátedra'];
+const g1 = (npc, [n, e]) => ({ giver: npc, giverName: n, giverEs: e });
+
+side({ id: 'diner_oldbay', act: 1, ...g1('npc.diner_cook', COOK), title: 'Out of Old Bay', titleEs: 'Sin Old Bay', money: 12, xp: 25,
+  why: 'The diner cook ran out of Old Bay, and he has a plan.', whyEs: 'Al cocinero del diner se le acabó el Old Bay, y tiene un plan.',
+  pitch: '"Out of Old Bay. Bring me a bag of the crab chips. I\'ll grind them. Don\'t tell anyone."', pitchEs: '"Se acabó el Old Bay. Tráeme una bolsa de papas de cangrejo. Las muelo. No le digas a nadie."',
+  bring: { item: 'item.crab_chips', what: 'a bag of Old Bay crab chips', whatEs: 'una bolsa de papas de cangrejo Old Bay', refuse: '"That\'s not Old Bay. That\'s not even food."', refuseEs: '"Eso no es Old Bay. Eso ni siquiera es comida."' },
+  line: 'He grinds them in a coffee mill and seasons an order nobody placed. "Perfect."', lineEs: 'Las muele en un molinillo de café y condimenta un pedido que nadie hizo. "Perfecto."' });
+
+side({ id: 'diner_jukebox', act: 1, ...g1('npc.diner_cook', COOK), title: 'The same song', titleEs: 'La misma canción', money: 10, xp: 25,
+  why: 'The cook wants to know which band is on the jukebox tonight.', whyEs: 'El cocinero quiere saber qué banda suena en la rocola esta noche.',
+  pitch: '"Every song on that jukebox is the same song. Different band every decade. Go see which decade we\'re in."', pitchEs: '"Todas las canciones de esa rocola son la misma. Otra banda cada década. Fíjate en qué década estamos."',
+  look: { obj: 'obj.diner_jukebox', where: 'the jukebox', whereEs: 'la rocola', seen: 'The card in the slot says 2090s. The band is called Juke. The song is the song.', seenEs: 'La tarjeta dice años 2090. La banda se llama Juke. La canción es la canción.' },
+  line: '"The nineties. Good decade for it."', lineEs: '"Los noventa. Buena década para esa."' });
+
+side({ id: 'roof_lights', act: 1, ...g1('npc.roof_watcher', WATCHER), title: 'Count the floodlights', titleEs: 'Contar los reflectores', money: 10, xp: 30,
+  why: 'Someone on the ASTER roof thinks the cordon is getting smaller.', whyEs: 'Alguien en la azotea de ASTER cree que el cordón se está achicando.',
+  pitch: '"Count the floodlights from the rail. There were eleven last week. Tell me how many."', pitchEs: '"Cuenta los reflectores desde la baranda. La semana pasada había once. Dime cuántos hay."',
+  look: { obj: 'obj.roof_view', where: 'the view north from the roof', whereEs: 'la vista al norte desde la azotea', seen: 'Twelve. The new one is closer than the others.', seenEs: 'Doce. El nuevo está más cerca que los otros.' },
+  line: '"Twelve." They don\'t say anything for a while. "Thanks for counting."', lineEs: '"Doce." No dicen nada por un rato. "Gracias por contar."' });
+
+side({ id: 'waffle', act: 1, ...g1('npc.dining_cook', DCOOK), title: 'The new machine', titleEs: 'La máquina nueva', money: 10, xp: 25,
+  why: 'The dining-hall cook doesn\'t trust the new waffle machine.', whyEs: 'La cocinera del comedor no confía en la máquina de waffles nueva.',
+  pitch: '"The waffle machine is new. Nothing on campus is new. Go look at it and tell me who bought it."', pitchEs: '"La máquina de waffles es nueva. Nada en el campus es nuevo. Ve a mirarla y dime quién la compró."',
+  look: { obj: 'obj.waffle_machine', where: 'the waffle machine', whereEs: 'la máquina de waffles', seen: 'A sticker on the back: a purchase order number, and a signature you can\'t read.', seenEs: 'Una etiqueta atrás: un número de orden de compra y una firma ilegible.' },
+  line: '"Can\'t read it either? Good. Then it\'s not just me."', lineEs: '"¿Tampoco la puedes leer? Bien. Entonces no soy solo yo."' });
+
+side({ id: 'rover', act: 1, ...g1('npc.chb_student', STUDENT), title: 'Demo day', titleEs: 'Día de la demo', money: 12, xp: 30,
+  why: 'A student wants to know if the rover team\'s machine is still in the robotics lab.', whyEs: 'Un estudiante quiere saber si la máquina del equipo del rover sigue en el laboratorio de robótica.',
+  pitch: '"Is the rover still in the robotics lab? Behind the quad. The team left in a hurry. Somebody should check on it."', pitchEs: '"¿El rover sigue en el laboratorio de robótica? Detrás del patio. El equipo se fue apurado. Alguien debería ver cómo está."',
+  look: { obj: 'obj.mars_rover', where: 'the Mars rover in the robotics lab', whereEs: 'el rover de Marte en el laboratorio de robótica', seen: 'Six wheels, half its panels off, and somebody has put a blanket over it, like it might get cold.', seenEs: 'Seis ruedas, la mitad de los paneles afuera, y alguien le puso una manta encima, como si fuera a tener frío.' },
+  line: '"A blanket. That\'s the team, all right."', lineEs: '"Una manta. Ese es el equipo, sin duda."' });
+
+side({ id: 'autograder', act: 1, ...g1('npc.chb_ta', TA), title: 'Partial credit', titleEs: 'Crédito parcial', money: 30, xp: 70,
+  why: 'The autograder in the lecture auditorium is grading anyone who walks in.', whyEs: 'El corrector automático del auditorio califica a cualquiera que entre.',
+  pitch: '"The autograder got out of the course site. It\'s in the auditorium. It\'s grading people. Physically."', pitchEs: '"El corrector automático se escapó del sitio del curso. Está en el auditorio. Está calificando gente. Físicamente."',
+  boss: { boss: 'boss.chb_autograder', bossName: 'THE AUTOGRADER' },
+  line: '"I\'ll mark it as excused." She means you. She means it kindly.', lineEs: '"Lo marco como ausencia justificada." Habla de ti. Lo dice con cariño.' });
+
 // ======================= Act 2 =======================
 const WALKER = ['the walker', 'el caminante'], COMMITTEE = ['the committee member', 'la integrante del comité'], TECH = ['the technician', 'el técnico'],
   CLERK = ['the clerk', 'la empleada'], VET = ['the vet', 'la veterinaria'], TEACHER = ['the teacher', 'la maestra'], SMITH = ['the blacksmith', 'el herrero'],
