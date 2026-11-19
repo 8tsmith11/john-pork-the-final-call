@@ -3,8 +3,9 @@
 // highest tier he's unlocked; each line plays once per world, ever, and sometimes they answer.
 // The host picks the moment and line and tells everyone, so all screens see the same thing.
 //
-// The butt pat is OFF until Manuel says yes (D-007: a roommate's likeness in anything sexual needs that
-// person's own yes). gonman sets MANUEL_SAYS_YES once Manuel has answered.
+// The butt pat needs Manuel's yes (D-007: a roommate's likeness in anything sexual needs that person's own
+// yes). He gave it, and on 2026-11-18 widened it: unprompted, whenever the two are close, rare early on and
+// much more often later, AI-run characters included.
 import CRUSH from '../content/crush.js';
 import { audioOut } from '../audio/audio.js';
 
@@ -28,7 +29,7 @@ export class Crush {
   constructor(scene) {
     this.s = scene;
     this.next = scene.time.now + 45000;
-    this.nextPat = scene.time.now + 120000;
+    this.nextPat = scene.time.now + 240000;   // not in the first four minutes of a session
   }
 
   get used() { return (this.s.save.flags['act1.crush.used'] ??= []); }
@@ -37,10 +38,12 @@ export class Crush {
     const s = this.s;
     if (s.mode === 'client' || s.dlg || s.menu) return;
     const now = s.time.now, tier = crushTier(s.save);
-    if (!tier) return;
+    // AI-run roommates are in snap.players like anyone else, so all of this happens with nobody at the keys.
     const michael = snap.players.find((p) => p.c === 'michael' && !p.dn && !p.zz);
     if (!michael) return;
     const near = (c, r) => snap.players.find((p) => p.c === c && !p.dn && Math.hypot(p.x - michael.x, p.y - michael.y) <= r);
+    this._pats(snap, michael, near, now, tier);
+    if (!tier) return;
 
     if (now > this.next) {
       this.next = now + 70000 + Math.random() * 70000;
@@ -55,14 +58,23 @@ export class Crush {
       }
     }
 
-    if (MANUEL_SAYS_YES && tier >= 2 && now > this.nextPat) {
-      const manuel = near('manuel', PAT_NEAR);
-      if (manuel) {
-        this.nextPat = now + 150000 + Math.random() * 150000;
-        const n = (s.save.flags['act1.crush.pats'] = (s.save.flags['act1.crush.pats'] ?? 0) + 1);
-        this._send({ t: 'crush', id: michael.id, pat: manuel.id, replyId: manuel.id, reply: DATA.patReplies[(n - 1) % DATA.patReplies.length] });
-      }
-    }
+  }
+
+  // The butt pat (Manuel's yes, his character only). From the start it's a rare idle thing: both of them
+  // standing still next to each other, every 8-14 minutes at most. Once the switchyard is solved
+  // (tier 2) it gets much more frequent and no longer waits for them to stand still: every 1-2 minutes
+  // whenever they're close.
+  _pats(snap, michael, near, now, tier) {
+    const s = this.s;
+    const manuel = MANUEL_SAYS_YES && near('manuel', PAT_NEAR);
+    const prev = this._prev ?? {}; this._prev = { m: [michael.x, michael.y], n: manuel ? [manuel.x, manuel.y] : null };
+    if (!manuel || now < this.nextPat) return;
+    const still = (a, b) => b && Math.hypot(a[0] - b[0], a[1] - b[1]) < 0.3;
+    const idle = still([michael.x, michael.y], prev.m) && still([manuel.x, manuel.y], prev.n);
+    if (tier < 2 && !idle) return;
+    this.nextPat = now + (tier >= 2 ? 60000 + Math.random() * 60000 : 480000 + Math.random() * 360000);
+    const n = (s.save.flags['act1.crush.pats'] = (s.save.flags['act1.crush.pats'] ?? 0) + 1);
+    this._send({ t: 'crush', id: michael.id, pat: manuel.id, replyId: manuel.id, reply: DATA.patReplies[(n - 1) % DATA.patReplies.length] });
   }
 
   _send(msg) {

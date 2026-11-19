@@ -472,6 +472,23 @@ test('i18n: every guide stage has Spanish', () => {
   assert.deepEqual(missing, [], 'add an es: field to these stages in src/content/guide.js');
 });
 
+const { Crush } = await import('../src/game/crush.js');
+test('the butt pat: rare and idle-only early, frequent after the switchyard, AI roommates included', () => {
+  const sent = [];
+  const mk = (flags) => { const sc = { mode: 'solo', time: { now: 0 }, save: { flags, world: { act: 1 } } }; const c = new Crush(sc); c._send = (m) => sent.push(m); return { sc, c }; };
+  const snap = (dx) => ({ players: [{ id: 'ai:michael', c: 'michael', x: 100 + dx, y: 100 }, { id: 'p1', c: 'manuel', x: 110, y: 100 }] });
+  // early (no flags): moving never pats; standing still does, then waits minutes
+  let { sc, c } = mk({});
+  for (let i = 0; i < 400; i++) { sc.time.now = 250000 + i * 1000; c.update(snap(i % 2)); }
+  assert.equal(sent.filter((m) => m.pat).length, 0, 'no pat while Michael keeps moving early on');
+  for (let i = 0; i < 1800; i++) { sc.time.now = 700000 + i * 1000; c.update(snap(0)); }
+  const early = sent.filter((m) => m.pat).length; assert.ok(early >= 1 && early <= 4, `early pats in 30 min: ${early}`);
+  // after the switchyard: many more, even while moving
+  sent.length = 0; ({ sc, c } = mk({ 'act1.beat.call': true, 'act1.switchyard.solved': true }));
+  for (let i = 0; i < 1800; i++) { sc.time.now = 250000 + i * 1000; c.update(snap(i % 2)); }
+  const late = sent.filter((m) => m.pat).length; assert.ok(late >= 12, `late pats in 30 min: ${late}`);
+});
+
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
 test('pipe puzzle: every seed is solvable and starts unsolved', () => {
   if (!PipePuzzle) return;
