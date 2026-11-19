@@ -72,7 +72,8 @@ export class Romance {
     if (!P) return false;
     const s = this.s, f = this.flags, me = s.character;
     if (f[flagOf(id, 'gone')]) { s._say(`${partnerView(f, id).name} is with you now.`); return true; }
-    if (me !== P.for) { s._say(`${P.name.toUpperCase()}\n${NOT_YOURS[id]?.[me] ?? '"I\'m waiting for someone."'}`); return true; }
+    if (me !== P.for && !s.actsFor?.(P.for)) { s._say(`${P.name.toUpperCase()}\n${NOT_YOURS[id]?.[me] ?? '"I\'m waiting for someone."'}`); return true; }
+    const proxy = me !== P.for;   // nobody plays that roommate: you act for them, and the scene is spoken as them
     const stage = stageOf(f, id), c = s.save.party[me];
     let node;
     if (stage === STAGE.MEET) node = 'meet';
@@ -80,7 +81,8 @@ export class Romance {
     else if (stage === STAGE.FIGHT) node = Number(f[flagOf(id, 'kills')] ?? 0) >= FIGHT_KILLS ? 'fight_done' : 'wait_fight';
     else if (stage === STAGE.CHOCOLATES) node = this._take(c, 'item.chocolates') ? 'chocolates' : 'wait_chocolates';
     else node = 'wait_song';
-    s.shared.start(P.scene, node);
+    if (proxy) s._speakerOverride = P.for;
+    s.shared.start(P.scene, node, () => { s._speakerOverride = null; });
     return true;
   }
 
@@ -193,7 +195,7 @@ export class Romance {
     const s = this.s;
     if (!me || s.dlg) { this.songT = 0; return; }
     for (const [id, P] of Object.entries(PARTNERS)) {
-      if (!P.courted || P.for !== s.character || stageOf(this.flags, id) !== STAGE.SONG || P.place?.map !== s.map.id) continue;
+      if (!P.courted || !(P.for === s.character || s.actsFor?.(P.for)) || stageOf(this.flags, id) !== STAGE.SONG || P.place?.map !== s.map.id) continue;
       const close = me.pl && Math.hypot(me.x - (P.place.x * TILE + 8), me.y - (P.place.y * TILE + 8)) <= SONG_RANGE;
       this.songT = close ? this.songT + dt : 0;
       if (this.songT >= SONG_SECONDS) {

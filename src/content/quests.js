@@ -133,7 +133,8 @@ QUESTS.push({
 });
 
 // A quest with `owner` is personal: only that roommate sees it and gets its reward. Others are shared.
-export const questVisible = (q, who) => !q.owner || q.owner === who;
+// `humans` (optional): roommates played by a person. An AI roommate's personal quest shows for everyone.
+export const questVisible = (q, who, humans = null) => !q.owner || q.owner === who || (humans && !humans.has(q.owner));
 
 export function questState(save) {
   const s = (save.world.quests ??= {});

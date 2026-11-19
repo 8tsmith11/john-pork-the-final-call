@@ -144,11 +144,19 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode === 'client') this.net.send({ t: 'flag', key: k, value: v });
   }
 
+  // Roommates a human is playing. Everyone else is an AI companion, and the human can act for them
+  // (Trevor: NPC stories must progress in a one-player game too).
+  humanRoommates() {
+    const ps = this.mode === 'client' ? (this._lastRendered?.players ?? []).map((p) => ({ id: p.id, character: p.c })) : [...(this.sim?.players.values() ?? [])];
+    return new Set(ps.filter((p) => !String(p.id).startsWith('ai:')).map((p) => p.character));
+  }
+  actsFor(who) { return who === this.character || !this.humanRoommates().has(who); }
+
   _dialogueCtx() {
     const me = this.save.party[this.character];
     const present = [...new Set((this._lastRendered?.players || []).map((p) => p.c))];
     return {
-      speaker: this.character, present: present.length ? present : [this.character], flags: this.save.flags,
+      speaker: this._speakerOverride ?? this.character, present: present.length ? present : [this.character], flags: this.save.flags,
       inventory: Inv.ids(me), seed: this.save.world.rolls?.twistVariant ?? 'A',
       morph: me.morph.stage, standing: this.save.standing, money: this.save.world.money ?? 0,
     };
@@ -771,7 +779,7 @@ export class WorldScene extends Phaser.Scene {
     this.save.world.quests = msg.quests ?? this.save.world.quests;
     const now = questState(this.save);
     for (const q of QUESTS) {
-      const a = was[q.id] ?? {}, b = now[q.id]; if (!b || !questVisible(q, this.character)) continue;
+      const a = was[q.id] ?? {}, b = now[q.id]; if (!b || !questVisible(q, this.character, this.humanRoommates())) continue;
       if (!a.started && b.started && !b.done) { this._questBanner('NEW QUEST', q.title, [q.stages[b.stage]?.text, q.why].filter(Boolean).join('\n')); this._trackedQuest = q.id; }
       else if (b.started && !b.done && b.stage > (a.stage ?? 0)) this._questBanner('QUEST UPDATED', q.title, q.stages[b.stage]?.text ?? '');
       if (!a.done && b.done) { this._questBanner('QUEST COMPLETE', q.title, [q.reward?.money ? `+$${q.reward.money}` : '', q.reward?.xp ? `+${q.reward.xp} xp` : ''].filter(Boolean).join('   ')); if (q.reward?.line) this._say(q.reward.line); }
@@ -1118,7 +1126,7 @@ export class WorldScene extends Phaser.Scene {
     for (const q of QUESTS) {
       const st = qs[q.id];
       if (st.done) continue;
-      const mine = questVisible(q, this.character);
+      const mine = questVisible(q, this.character, this.humanRoommates());
       if (!st.started && q.start?.(f)) { st.started = true; if (mine) { this._questBanner('NEW QUEST', q.title, [q.stages[0]?.text, q.why].filter(Boolean).join('\n')); this._trackedQuest = q.id; } }
       if (!st.started) continue;
       while (st.stage < q.stages.length && q.stages[st.stage].done(f, this.save)) {
