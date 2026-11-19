@@ -18,14 +18,14 @@ export const REGIONS = [
   { id: 'greenbelt', short: 'Greenbelt', shortEs: 'Greenbelt', ring: 2, act: 2, name: 'Greenbelt and the dishes', es: 'Greenbelt y las antenas', x: 0.6, y: 0.43, maps: ['greenbelt', 'route1_north', 'gb_dishes', 'gb_coop'] },
   { id: 'beltsville', short: 'Beltsville', shortEs: 'Beltsville', ring: 2, act: 2, name: 'Beltsville: the farms', es: 'Beltsville: las granjas', x: 0.5, y: 0.35, maps: ['beltsville', 'bv_barn'] },
   { id: 'refuge', short: 'The refuge', shortEs: 'El refugio', ring: 2, act: 2, name: 'The refuge', es: 'El refugio', x: 0.63, y: 0.32, maps: ['refuge', 'rf_settlement'] },
-  { id: 'meade', short: 'The Meade', shortEs: 'El Meade', ring: 2, act: 2, name: 'The Meade', es: 'El Meade', x: 0.72, y: 0.38, maps: ['meade'] },
+  { id: 'meade', short: 'The Meade', shortEs: 'El Meade', ring: 2, act: 2, name: 'The Meade', es: 'El Meade', x: 0.72, y: 0.38, maps: ['meade', 'meade_inside'] },
   { id: 'baltimore', short: 'Baltimore', shortEs: 'Baltimore', ring: 2, act: 2, name: 'Baltimore: the port', es: 'Baltimore: el puerto', x: 0.7, y: 0.15, maps: ['baltimore', 'bmore_stacks', 'bmore_clinic'] },
   { id: 'annapolis', short: 'Annapolis', shortEs: 'Annapolis', ring: 2, act: 2, name: 'Annapolis and the bay', es: 'Annapolis y la bahía', x: 0.84, y: 0.55, maps: ['annapolis', 'ann_harbor'] },
   // Ring three: the Corridor and the Enclave (Act 3)
-  { id: 'corridor', short: 'The Corridor', shortEs: 'El Corredor', ring: 3, act: 3, name: 'The Corridor', es: 'El Corredor', x: 0.32, y: 0.4, maps: ['corridor', 'beltway'] },
-  { id: 'gaithersburg', short: 'Gaithersburg', shortEs: 'Gaithersburg', ring: 3, act: 3, name: 'Gaithersburg: the standards', es: 'Gaithersburg: los estándares', x: 0.22, y: 0.3, maps: ['gaithersburg'] },
-  { id: 'frederick', short: 'Frederick', shortEs: 'Frederick', ring: 3, act: 3, name: 'Frederick and the Smelter', es: 'Frederick y la Fundición', x: 0.1, y: 0.14, maps: ['frederick'] },
-  { id: 'enclave', short: 'The Enclave', shortEs: 'El Enclave', ring: 3, act: 3, name: 'The Enclave', es: 'El Enclave', x: 0.42, y: 0.8, maps: ['enclave'] },
+  { id: 'corridor', short: 'The Corridor', shortEs: 'El Corredor', ring: 3, act: 3, name: 'The Corridor', es: 'El Corredor', x: 0.32, y: 0.4, maps: ['corridor', 'beltway', 'cor_sealed'] },
+  { id: 'gaithersburg', short: 'Gaithersburg', shortEs: 'Gaithersburg', ring: 3, act: 3, name: 'Gaithersburg: the standards', es: 'Gaithersburg: los estándares', x: 0.22, y: 0.3, maps: ['gaithersburg', 'gt_clockroom'] },
+  { id: 'frederick', short: 'Frederick', shortEs: 'Frederick', ring: 3, act: 3, name: 'Frederick and the Smelter', es: 'Frederick y la Fundición', x: 0.1, y: 0.14, maps: ['frederick', 'fr_switchyard'] },
+  { id: 'enclave', short: 'The Enclave', shortEs: 'El Enclave', ring: 3, act: 3, name: 'The Enclave', es: 'El Enclave', x: 0.42, y: 0.8, maps: ['enclave', 'en_archive'] },
 ];
 
 export const regionOfMap = (mapId) => REGIONS.find((r) => r.maps.includes(mapId)) ?? null;

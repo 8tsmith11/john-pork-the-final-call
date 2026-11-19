@@ -151,7 +151,9 @@ export const meade = fromGrid({
     '@': { spawn: true },
     X: { ...back('meade', 'Back west to Route 1'), tile: ',' },
   },
-}).enemy('boss.md_fence', 27, 3).build();
+}).enemy('boss.md_fence', 27, 3)
+  .exit('meade_inside', 10, 8, { id: 'obj.meade_to_meade_inside', selfDrawn: true, stepOn: true, requiresFlag: 'act2.complete', lockedText: 'The gate does not acknowledge you. Not yet.', pair: 'obj.meade_inside_out', label: 'The Meade gate', text: 'Black glass behind the berm. The gate is open.' })   // act3_more.js
+  .build();
 
 // ---- 10. Baltimore: the port, an outbreak in progress ----
 export const baltimore = fromGrid({

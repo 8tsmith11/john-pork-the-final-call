@@ -60,7 +60,9 @@ export const corridor = fromGrid({
     '@': { spawn: true },
     R: back('corridor', 'East, back to the Beltway', ','),
   },
-}).enemy('boss.cor_hall', 6, 4).build();
+}).enemy('boss.cor_hall', 6, 4)
+  .exit('cor_sealed', 18, 0, { id: 'obj.corridor_to_cor_sealed', selfDrawn: true, stepOn: true, pair: 'obj.cor_sealed_out', label: "A sealed hall's loading dock", text: 'The dock door is chained. The chain has been cut.' })   // act3_more.js
+  .build();
 
 // ---- 13. Gaithersburg: the standards (the second, the kilogram, the volt) ----
 export const gaithersburg = fromGrid({
@@ -86,7 +88,9 @@ export const gaithersburg = fromGrid({
     '@': { spawn: true },
     S: back('gaithersburg', 'South, back to the Beltway', 'g'),
   },
-}).enemy('boss.gt_clock', 6, 4).build();
+}).enemy('boss.gt_clock', 6, 4)
+  .exit('gt_clockroom', 20, 3, { id: 'obj.gaithersburg_to_gt_clockroom', art: 'obj.door', pair: 'obj.gt_clockroom_out', label: 'Down to the clock vault', text: 'Stairs down. A tick, from below.' })   // act3_more.js
+  .build();
 
 // ---- 14. Frederick and the Smelter: a market town, potlines turned server halls, a switchyard like a forest ----
 export const frederick = fromGrid({
@@ -113,7 +117,9 @@ export const frederick = fromGrid({
     '@': { spawn: true },
     S: back('frederick', 'South-east, back to the Beltway', 'q'),
   },
-}).enemy('boss.fr_potline', 26, 3).build();
+}).enemy('boss.fr_potline', 22, 1)
+  .exit('fr_switchyard', 35, 8, { id: 'obj.frederick_to_fr_switchyard', selfDrawn: true, stepOn: true, pair: 'obj.fr_switchyard_out', label: 'East into the switchyard', text: 'Steel towers like a forest.' })   // act3_more.js
+  .build();
 
 // ---- 15. The Enclave: Washington inside the wall; everything works, nobody on the grass ----
 export const enclave = fromGrid({
@@ -139,4 +145,6 @@ export const enclave = fromGrid({
     '@': { spawn: true },
     S: back('enclave', 'Out through the gate, to the Beltway', 'q'),
   },
-}).enemy('boss.en_gate', 32, 5).build();
+}).enemy('boss.en_gate', 32, 5)
+  .exit('en_archive', 4, 9, { id: 'obj.enclave_to_en_archive', selfDrawn: true, stepOn: true, pair: 'obj.en_archive_out', label: 'The national archive', text: 'Marble steps. The doors open on schedule.' })   // act3_more.js
+  .build();
