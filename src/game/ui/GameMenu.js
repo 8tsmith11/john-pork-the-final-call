@@ -14,6 +14,7 @@ import { SKILL_TREE, skillOpen } from '../../content/skills.js';
 import { ROOMMATES } from '../scenes/BootScene.js';
 import { looksFor, wearTexture } from '../render/wearables.js';
 import { QUESTS, questState, questVisible } from '../../content/quests.js';
+import { Scroller } from './scroll.js';
 
 // One line of weapon stats for tooltips: melee hit, rate, dps, reach, arc, knockback; guns dmg×pellets, rate, clip, reload.
 export function weaponStats(def, lvl = 0) {
@@ -50,6 +51,55 @@ export class GameMenu {
     this.root = scene.add.container(0, 0).setScrollFactor(0).setDepth(9600).setVisible(false);
     this.tab = null;
     this.box = { x: 40, y: 22, w: VIEW.w - 80, h: VIEW.h - 44 };
+    this.scroller = new Scroller();
+    this._wireScroll();
+  }
+
+  // Long lists scroll (src/game/ui/scroll.js): mouse wheel, W/S or arrows, the gamepad's d-pad or
+  // left stick; ENTER / gamepad A picks the selected row. On the tabbed menu A/D still cycle tabs.
+  _wireScroll() {
+    const s = this.scene, live = () => this.tab && this.tab !== 'map' && !s.dlg;
+    s.input.on('wheel', (p, objs, dx, dy) => { if (live() && dy && this.scroller.scroll(Math.sign(dy))) this.refresh(); });
+    s.input.keyboard?.on('keydown', (ev) => {
+      if (!live()) return;
+      const k = ev.key, side = !TABS.includes(this.tab);
+      const dy = k === 'ArrowUp' || k === 'w' || k === 'W' ? -1 : k === 'ArrowDown' || k === 's' || k === 'S' ? 1 : 0;
+      const dx = !side ? 0 : k === 'ArrowLeft' || k === 'a' || k === 'A' ? -1 : k === 'ArrowRight' || k === 'd' || k === 'D' ? 1 : 0;
+      if (dy || dx) { if (this.scroller.move(dy, dx)) this.refresh(); return; }
+      if (k === 'Enter') this.scroller.pick();
+    });
+    const poll = () => this._pollPad();
+    s.events.on('update', poll); s.events.once('shutdown', () => s.events.off('update', poll));
+  }
+
+  // Gamepad (standard mapping): d-pad / stick navigate with key repeat, A picks, B backs out,
+  // LB/RB cycle tabs, START opens or closes the menu.
+  _pollPad() {
+    const pad = [...(navigator.getGamepads?.() ?? [])].find((p) => p?.connected); if (!pad) return;
+    const s = this.scene, now = s.time.now, st = this._pad ??= { held: {}, next: {} };
+    const btn = (i) => !!pad.buttons[i]?.pressed, ax = pad.axes ?? [];
+    const edge = (name, on, repeat) => {
+      const was = st.held[name]; st.held[name] = on;
+      if (!on) return false;
+      if (!was) { st.next[name] = now + 320; return true; }
+      if (repeat && now >= st.next[name]) { st.next[name] = now + 90; return true; }
+      return false;
+    };
+    const e = {
+      up: edge('up', btn(12) || ax[1] < -0.5, true), down: edge('down', btn(13) || ax[1] > 0.5, true),
+      left: edge('left', btn(14) || ax[0] < -0.5, true), right: edge('right', btn(15) || ax[0] > 0.5, true),
+      a: edge('a', btn(0)), b: edge('b', btn(1)), lb: edge('lb', btn(4)), rb: edge('rb', btn(5)), start: edge('start', btn(9)),
+    };
+    if (s.dlg || !s.ready) return;
+    if (e.start) { this.tab ? s._closeMenu() : this.show('inventory'); return; }
+    if (!this.tab) return;
+    if (e.b) { if (this.held != null) { this.held = null; this.refresh(); } else s._closeMenu(); return; }
+    if (e.lb || e.rb) { this.cycle(e.rb ? 1 : -1); return; }
+    const dy = e.up ? -1 : e.down ? 1 : 0, dx = e.left ? -1 : e.right ? 1 : 0;
+    if (TABS.includes(this.tab) && dx) { this.cycle(dx); return; }
+    if (this.tab === 'map') return;
+    if ((dy || dx) && this.scroller.move(dy, dx)) this.refresh();
+    if (e.a) this.scroller.pick();
   }
 
   get open() { return !!this.tab; }
@@ -58,7 +108,7 @@ export class GameMenu {
     const wasOpen = !!this.tab; this.tab = tab; this.refresh();
     if (!wasOpen) { this.root.setAlpha(0); this.scene.tweens.add({ targets: this.root, alpha: 1, duration: 140 }); }
   }
-  close() { this.held = null; this.hover = null; this.skillHover = null; this.tab = null; this.root.removeAll(true); this.root.setVisible(false); }
+  close() { this.scroller.clear(); this.held = null; this.hover = null; this.skillHover = null; this.tab = null; this.root.removeAll(true); this.root.setVisible(false); }
   cycle(dir) { if (!TABS.includes(this.tab)) return; this.show(TABS[(TABS.indexOf(this.tab) + dir + TABS.length) % TABS.length]); }
 
   // ---- helpers ----
@@ -72,7 +122,7 @@ export class GameMenu {
 
   refresh() {
     if (!this.tab) return;
-    this.root.removeAll(true); this.tip = [];
+    this.root.removeAll(true); this.tip = []; this.scroller.clear();
     this.root.setVisible(true);
     const b = this.box, g = this._g();
     g.fillStyle(0x000000, 0.45).fillRect(0, 0, VIEW.w, VIEW.h);                 // dim the world
@@ -143,8 +193,9 @@ export class GameMenu {
     this._t(b.x + 8, b.y + 172, 'BUFFS  (hover gear for details)', F(6, C.sub));
     const rows = Math.floor((b.h - 182) / 7);
     if (!buffs.length) this._t(b.x + 8, b.y + 180, 'none right now', F(6, '#4a5175'));
-    buffs.slice(0, rows).forEach((line, k) => this._t(b.x + 8, b.y + 180 + k * 7, fit(line, 128, 5), F(5, '#f2a6b8')));
-    if (buffs.length > rows) this._t(b.x + 136, b.y + 180 + (rows - 1) * 7, `+${buffs.length - rows}`, F(5, C.sub));
+    const BL = this.scroller.list('buffs', { n: buffs.length, per: rows, select: false });   // wheel / W-S scroll it
+    buffs.slice(BL.first, BL.last).forEach((line, k) => this._t(b.x + 8, b.y + 180 + k * 7, fit(line, 124, 5), F(5, '#f2a6b8')));
+    this.scroller.bar(g, b.x + 133, b.y + 182, rows * 7 - 4, BL);
     // grid + hotbar
     const gx = b.x + 140, gy = b.y + 36;
     const used = inv.slice(9).filter(Boolean).length;
@@ -219,21 +270,27 @@ export class GameMenu {
     this.tip.push(this._t(x, ty, def.text ?? '', { ...F(7, C.sub), wordWrap: { width: this.tipW } }));
   }
 
-  _quests() {
+  _quests(g) {
     const s = this.scene, b = this.box, qs = questState(s.save);
     let y = b.y + 28;
-    const show = QUESTS.filter((q) => (qs[q.id].started || qs[q.id].done) && questVisible(q, s.character));
+    const show = QUESTS.filter((q) => (qs[q.id].started || qs[q.id].done) && questVisible(q, s.character)), bottom = b.y + b.h - 8;
     if (!show.length) this._t(b.x + 14, y, 'Nothing yet.', F(8, C.sub));
-    for (const q of show) {
-      const st = qs[q.id];
+    const L = this.scroller.list('quests', { n: show.length, per: 0, select: false });
+    let shown = 0;
+    for (const q of show.slice(L.top)) {
+      const st = qs[q.id], n0 = this.root.list.length;
       // Every quest looks the same (Trevor): no main/side markers or labels.
       this._t(b.x + 14, y, `${st.done ? '✓' : '·'} ${q.title}`, F(9, st.done ? C.ok : C.hi)); y += 12;
       if (!st.done) {
         const obj = this._t(b.x + 26, y, `→ ${q.stages[st.stage]?.text ?? ''}`, { ...F(7, '#6fe3e8'), wordWrap: { width: b.w - 50 } }); y += obj.height + 2;
         if (q.why) { const why = this._t(b.x + 26, y, q.why, { ...F(7, C.sub), wordWrap: { width: b.w - 50 } }); y += why.height + 6; } else y += 4;
       }
-      if (y > b.y + b.h - 20) break;
+      if (y - 4 > bottom && shown) { this.root.list.slice(n0).forEach((o) => o.destroy()); break; }   // doesn't fit: next page
+      shown++;
+      if (y > bottom - 10) break;
     }
+    L.fit(shown, L.top + shown >= show.length);
+    this.scroller.bar(g, b.x + b.w - 9, b.y + 30, b.h - 42, L, (x, yy, t) => this._t(x, yy, t, F(6, C.hi)));
   }
 
   // Skill tree: three branches of four tiers meeting at a capstone. Hover for details, click to learn.
@@ -323,11 +380,11 @@ export class GameMenu {
     // messages
     const mx = px + pw + 12, mw = b.x + b.w - mx - 14;
     g.fillStyle(0x10121e).fillRoundedRect(mx, py, mw, ph, 6).lineStyle(1, 0x3a4060).strokeRoundedRect(mx, py, mw, ph, 6);
-    const shown = scripts[this._phoneView];
-    if (shown) {   // a call's transcript, newest lines at the bottom; click the header to go back to messages
-      this._t(mx + 8, py + 6, `◂ ${shown.title.toUpperCase()}`, F(7, C.hi), () => { this._phoneView = null; this.refresh(); });
+    const call = scripts[this._phoneView];
+    if (call) {   // a call's transcript, newest lines at the bottom; click the header to go back to messages
+      this._t(mx + 8, py + 6, `◂ ${call.title.toUpperCase()}`, F(7, C.hi), () => { this._phoneView = null; this.refresh(); });
       const out = [];
-      for (const [who, text, picked] of shown.lines) out.push(`${who ? `${who.toUpperCase()}: ` : ''}${picked ? `▸ ${text}` : text}`);
+      for (const [who, text, picked] of call.lines) out.push(`${who ? `${who.toUpperCase()}: ` : ''}${picked ? `▸ ${text}` : text}`);
       const body = this._t(mx + 8, py + 18, '', { ...F(7, C.text), wordWrap: { width: mw - 16 }, lineSpacing: 1 });
       // Fit the newest lines that fit the pane.
       let lines = out.slice();
@@ -338,14 +395,19 @@ export class GameMenu {
     this._t(mx + 8, py + 6, 'MESSAGES', F(7, C.sub));
     const texts = s.save.world.phone?.texts ?? [];
     if (!texts.length) this._t(mx + 8, py + 18, 'Nothing new.', F(7, '#4a5175'));
-    let y = py + 20;
-    texts.slice(-7).forEach((t) => {
+    let y = py + 20, shown = 0;
+    const newest = [...texts].reverse(), L = this.scroller.list('phone', { n: newest.length, per: 0, select: false }), bottom = py + ph - 16;
+    const bubbles = this._g();   // bubbles under their text; drawn per message so a cut one can go
+    for (const t of newest.slice(L.top)) {
       const tt = this._t(mx + 14, y + 3, t.text, { ...F(7, '#fff0f4'), wordWrap: { width: mw - 40 } });
-      g.fillStyle(0x5a2a44, 0.9).fillRoundedRect(mx + 8, y, Math.min(mw - 20, tt.width + 14), tt.height + 6, 4);
+      if (y + tt.height + 6 > bottom && shown) { tt.destroy(); break; }
+      bubbles.fillStyle(0x5a2a44, 0.9).fillRoundedRect(mx + 8, y, Math.min(mw - 20, tt.width + 14), tt.height + 6, 4);
       this.root.bringToTop(tt);
-      y += tt.height + 10;
-    });
-    if (texts.length) this._t(mx + 8, py + ph - 12, `John Pork · ${texts.length} message${texts.length > 1 ? 's' : ''}`, F(6, C.sub));
+      y += tt.height + 10; shown++;
+    }
+    L.fit(shown, L.top + shown >= newest.length);
+    this.scroller.bar(g, mx + mw - 7, py + 20, ph - 40, L, (x, yy, t) => this._t(x, yy, t, F(6, C.hi)));
+    if (texts.length) this._t(mx + 8, py + ph - 12, `John Pork · ${texts.length} message${texts.length > 1 ? 's' : ''} · newest first`, F(6, C.sub));
   }
 
   _skills(g) {
@@ -449,20 +511,22 @@ export class GameMenu {
   _fab(g) {
     const s = this.scene, b = this.box, c = s.save.party[s.character];
     this._t(b.x + 10, b.y + 7, 'FAB #2 · PRINT', F(9, C.hi));
-    this._t(b.x + b.w - 10, b.y + 7, '[ESC] close', F(8, C.sub)).setOrigin(1, 0);
-    const cw = 120, ch = 92, cols = 3;
-    let k = -1;
-    RECIPES.forEach((r, i) => {
-      if (r.req && !s.save.flags[r.req]) return;
-      k++;
-      const def = ITEMS[r.item], x = b.x + 12 + (k % cols) * (cw + 8), y = b.y + 24 + Math.floor(k / cols) * (ch + 6);
-      const can = canPay(c, r.cost), owned = count(c, r.item) + (worn(c, r.item) ? 1 : 0);
-      g.fillStyle(can ? 0x1a2030 : 0x121521).fillRoundedRect(x, y, cw, ch, 3).lineStyle(1, can ? 0xffb347 : C.dim, can ? 0.9 : 0.5).strokeRoundedRect(x, y, cw, ch, 3);
+    this._t(b.x + b.w - 10, b.y + 8, 'W/S A/D select · wheel scroll · ENTER print · [ESC] close', F(6, C.sub)).setOrigin(1, 0);
+    const cw = 120, ch = 92, cols = 3, gap = 4, top = b.y + 22, per = Math.max(1, Math.floor((b.h - 36 + gap) / (ch + gap)));
+    const avail = RECIPES.map((r, i) => [r, i]).filter(([r]) => !r.req || s.save.flags[r.req]);   // gated recipes stay hidden
+    const L = this.scroller.list('fab', { n: avail.length, per, cols, onPick: (j) => { const [r, i] = avail[j] ?? []; if (r && canPay(c, r.cost)) s.menuCraft(i); } });
+    this.scroller.bar(g, b.x + b.w - 8, top + 6, per * (ch + gap) - gap - 12, L, (x, y, t) => this._t(x, y, t, F(6, C.hi)));
+    avail.forEach(([r, i], j) => {
+      if (j < L.first || j >= L.last) return;
+      const k = j - L.first, def = ITEMS[r.item], x = b.x + 12 + (k % cols) * (cw + 8), y = top + Math.floor(k / cols) * (ch + gap);
+      const can = canPay(c, r.cost), owned = count(c, r.item) + (worn(c, r.item) ? 1 : 0), sel = j === L.sel;
+      g.fillStyle(sel ? 0x23293f : can ? 0x1a2030 : 0x121521).fillRoundedRect(x, y, cw, ch, 3).lineStyle(sel ? 2 : 1, sel ? 0xe8e8f0 : can ? 0xffb347 : C.dim, sel || can ? 0.9 : 0.5).strokeRoundedRect(x, y, cw, ch, 3);
+      const zc = s.add.zone(x, y, cw, ch).setOrigin(0).setInteractive(); zc.on('pointerdown', () => { if (L.sel !== j) { L.sel = j; this.refresh(); } }); this.root.add(zc);
       g.fillStyle(0x0b0d16).fillRect(x + 5, y + 5, 20, 20);
       this._icon(x + 15, y + 15, r.item);
       this._t(x + 30, y + 6, def.name, { ...F(def.name.length > 14 ? 7 : 8, can ? C.text : C.sub), wordWrap: { width: cw - 34 } });
       this._t(x + 30, y + 16, `${SLOT_LABEL[def.slot] ?? 'Food'}${owned ? ` · have ${owned}` : ''}`, F(6, owned ? C.ok : C.sub));
-      this._t(x + 6, y + 29, def.text, { ...F(6, C.sub), wordWrap: { width: cw - 12 } });
+      this._t(x + 6, y + 29, def.text, { ...F(6, C.sub), wordWrap: { width: cw - 12 }, maxLines: 4 });
       // material cost row: icon + have/need
       Object.entries(r.cost).forEach(([mid, n], k) => {
         const have = count(c, mid), mx = x + 5 + k * 28, my = y + ch - 30;
@@ -471,6 +535,7 @@ export class GameMenu {
       });
       this._t(x + 6, y + ch - 13, can ? '› PRINT' : 'need materials', F(8, can ? C.hi : C.bad), can ? () => s.menuCraft(i) : null);
     });
+    this._t(b.x + b.w - 12, b.y + b.h - 12, `${L.sel + 1}/${avail.length}`, F(6, C.sub)).setOrigin(1, 0);
     this._t(b.x + 12, b.y + b.h - 12, 'Materials drop from coderot things and turn up in the world. Shops sell some.', F(6, C.sub));
   }
 
@@ -480,7 +545,7 @@ export class GameMenu {
   _shop(g, id) {
     const s = this.scene, b = this.box, who = s.character, c = s.save.party[who], shop = SHOPS[id]; if (!shop) return;
     const money = s.save.world.money ?? 0, canSell = id === 'pawn';
-    if (this._shopFor !== id) { this._shopFor = id; this.shopMode = 'buy'; this.shopSel = 0; }
+    if (this._shopFor !== id) { this._shopFor = id; this.shopMode = 'buy'; this.scroller.reset('shop'); }
     this._t(b.x + 10, b.y + 6, shop.title, F(10, C.hi));
     this._t(b.x + b.w - 10, b.y + 6, `$${money}   [ESC] close`, F(9, C.hi)).setOrigin(1, 0);
     this._t(b.x + 10, b.y + 19, shop.lines.join(' '), { ...F(7, C.sub), wordWrap: { width: b.w - 20 }, maxLines: 2 });
@@ -488,7 +553,7 @@ export class GameMenu {
     if (canSell) {
       for (const [mode, label] of [['buy', 'BUY'], ['sell', 'SELL']]) {
         const on = this.shopMode === mode, tx = b.x + 12 + (mode === 'sell' ? 44 : 0);
-        const t = this._t(tx, ty, label, F(8, on ? C.hi : C.sub), () => { this.shopMode = mode; this.shopSel = 0; this.refresh(); });
+        const t = this._t(tx, ty, label, F(8, on ? C.hi : C.sub), () => { if (this.shopMode !== mode) this.scroller.reset('shop'); this.shopMode = mode; this.refresh(); });
         if (on) g.fillStyle(0xffb347).fillRect(tx, ty + 10, t.width, 1);
       }
       ty += 14;
@@ -498,10 +563,16 @@ export class GameMenu {
       ? c.inventory.map((it, slot) => it && { id: it.id, qty: it.qty, slot, price: sellPrice(it.id) }).filter(Boolean)
       : shop.stock.map((st, i) => ({ id: st.item, i, st, price: s.priceFor(who, st.price), owned: st.once && has(c, st.item), locked: st.needs && !count(c, st.needs) }));
     const listW = 190, rowH = 15, maxRows = Math.floor((b.y + b.h - 8 - ty) / rowH);
-    this.shopSel = Math.max(0, Math.min(this.shopSel ?? 0, rows.length - 1));
+    const L = this.scroller.list('shop', { n: rows.length, per: maxRows, onPick: (k) => {
+      const r = rows[k]; if (!r) return;
+      if (this.shopMode === 'sell') { if (r.price > 0) s.menuSell(r.slot); }
+      else if (!r.owned && !r.locked && money >= r.price) s.menuBuy(id, r.i);
+    } });
+    this.shopSel = L.sel;
+    this.scroller.bar(g, b.x + 10 + listW + 3, ty + 6, maxRows * rowH - 14, L, (x, y, t) => this._t(x, y, t, F(6, C.hi)));
     if (!rows.length) this._t(b.x + 14, ty + 4, this.shopMode === 'sell' ? 'Nothing to sell.' : 'Sold out.', F(8, C.sub));
-    rows.slice(0, maxRows).forEach((r, k) => {
-      const def = ITEMS[r.id], y = ty + k * rowH, x = b.x + 10, sel = k === this.shopSel;
+    rows.slice(L.first, L.last).forEach((r, j) => {
+      const k = L.first + j, def = ITEMS[r.id], y = ty + j * rowH, x = b.x + 10, sel = k === this.shopSel;
       const ok = this.shopMode === 'sell' ? r.price > 0 : !r.owned && !r.locked && money >= r.price;
       g.fillStyle(sel ? 0x23293f : 0x121521, 1).fillRoundedRect(x, y, listW, rowH - 2, 2);
       if (sel) g.lineStyle(1, 0xffb347, 0.9).strokeRoundedRect(x + 0.5, y + 0.5, listW - 1, rowH - 3, 2);
@@ -510,7 +581,7 @@ export class GameMenu {
       const right = this.shopMode === 'sell' ? (r.price ? `$${r.price}` : '-') : r.owned ? 'owned' : `$${r.price}`;
       this._t(x + listW - 4, y + 2, right, F(7, this.shopMode === 'sell' ? C.ok : r.owned ? C.ok : money >= r.price ? C.hi : C.bad)).setOrigin(1, 0);
       const z = s.add.zone(x, y, listW, rowH - 2).setOrigin(0).setInteractive({ useHandCursor: true });
-      z.on('pointerdown', () => { this.shopSel = k; this.refresh(); });
+      z.on('pointerdown', () => { L.sel = k; this.refresh(); });
       this.root.add(z);
     });
     // detail pane
@@ -573,11 +644,16 @@ export class GameMenu {
     this._t(b.x + 10, b.y + 20, '"Bring it here. I don\'t make new things. I make your things better."', { ...F(7, C.sub), wordWrap: { width: b.w - 20 } });
     const worn = Object.entries(c.equipped).filter(([, id]) => id && ITEMS[id]?.mods && canWear(ITEMS[id], who));
     if (!worn.length) this._t(b.x + 12, b.y + 44, 'You aren\'t wearing anything worth her time.', F(8, C.sub));
-    const rowH = Math.min(24, Math.floor((b.h - 44) / Math.max(1, worn.length)));
-    worn.forEach(([slot, id], i) => {
-      const def = ITEMS[id], lvl = c.upgrades?.[id] ?? 0, y = b.y + 38 + i * rowH, x = b.x + 12, maxed = lvl >= MAX_UPGRADE;
-      const cost = upgradeCost(lvl), mats = Object.entries(cost.mats), can = !maxed && money >= cost.money && mats.every(([m, n]) => count(c, m) >= n);
-      g.fillStyle(can ? 0x1a2030 : 0x121521).fillRoundedRect(x, y, b.w - 24, rowH - 3, 2).lineStyle(1, def.unique ? 0xffd27f : can ? 0xffb347 : C.dim, can ? 0.8 : 0.4).strokeRoundedRect(x, y, b.w - 24, rowH - 3, 2);
+    const rowH = 24, per = Math.floor((b.h - 50) / rowH);
+    const canUp = (id) => { const lvl = c.upgrades?.[id] ?? 0, cost = upgradeCost(lvl); return lvl < MAX_UPGRADE && money >= cost.money && Object.entries(cost.mats).every(([m, n]) => count(c, m) >= n); };
+    const L = this.scroller.list('armorer', { n: worn.length, per, onPick: (i) => { const id = worn[i]?.[1]; if (id && canUp(id)) s.gear.menuUpgrade(id); } });
+    this.scroller.bar(g, b.x + b.w - 9, b.y + 44, per * rowH - 15, L, (x, y, t) => this._t(x, y, t, F(6, C.hi)));
+    if (worn.length) this._t(b.x + b.w - 12, b.y + b.h - 10, 'W/S select · ENTER upgrade', F(6, '#4a5175')).setOrigin(1, 0);
+    worn.slice(L.first, L.last).forEach(([slot, id], j) => {
+      const i = L.first + j, sel = i === L.sel, def = ITEMS[id], lvl = c.upgrades?.[id] ?? 0, y = b.y + 38 + j * rowH, x = b.x + 12, maxed = lvl >= MAX_UPGRADE;
+      const cost = upgradeCost(lvl), mats = Object.entries(cost.mats), can = canUp(id);
+      g.fillStyle(sel ? 0x23293f : can ? 0x1a2030 : 0x121521).fillRoundedRect(x, y, b.w - 24, rowH - 3, 2).lineStyle(1, sel ? 0xe8e8f0 : def.unique ? 0xffd27f : can ? 0xffb347 : C.dim, sel ? 1 : can ? 0.8 : 0.4).strokeRoundedRect(x, y, b.w - 24, rowH - 3, 2);
+      const zr = s.add.zone(x, y, b.w - 160, rowH - 3).setOrigin(0).setInteractive(); zr.on('pointerdown', () => { L.sel = i; this.refresh(); }); this.root.add(zr);
       this._icon(x + 10, y + (rowH - 3) / 2, id).setScale(Math.min(1, (rowH - 5) / 18));
       this._t(x + 24, y + 2, `${def.name} ${lvl ? '+' + lvl : ''}  (${SLOT_NAMES[slot]})`, F(7, def.unique ? '#ffd27f' : C.text));
       this._t(x + 24, y + 11, fit(maxed ? modText(scaleMods(def.mods, lvl)) : `${modText(scaleMods(def.mods, lvl))}  →  ${modText(scaleMods(def.mods, lvl + 1))}`, b.w - 150, 5), F(5, C.sub));
@@ -593,10 +669,13 @@ export class GameMenu {
     this._t(b.x + b.w - 10, b.y + 7, '[ESC] close', F(8, C.hi)).setOrigin(1, 0);
     const dests = (s.save.world.visited ?? []).filter((id) => MAPS[id] && id !== here && id !== 'platform');
     if (!dests.length) this._t(b.x + 12, b.y + 30, 'Nowhere you\'ve been yet.', F(8, C.sub));
-    dests.forEach((id, i) => {
-      const y = b.y + 28 + i * 18, x = b.x + 12;
-      g.fillStyle(0x1a2030).fillRoundedRect(x, y, b.w - 24, 15, 2).lineStyle(1, 0xffb347, 0.7).strokeRoundedRect(x, y, b.w - 24, 15, 2);
-      this._t(x + 8, y + 3, `${i + 1}. ${MAPS[id].name ?? id}`, F(8, C.text), () => { s.gear.travel(id); this.scene._closeMenu(); });
+    const per = Math.floor((b.h - 34) / 18), go = (id) => { s.gear.travel(id); this.scene._closeMenu(); };
+    const L = this.scroller.list('travel', { n: dests.length, per, onPick: (i) => go(dests[i]) });
+    this.scroller.bar(g, b.x + b.w - 9, b.y + 30, per * 18 - 6, L, (x, y, t) => this._t(x, y, t, F(6, C.hi)));
+    dests.slice(L.first, L.last).forEach((id, j) => {
+      const i = L.first + j, y = b.y + 28 + j * 18, x = b.x + 12, sel = i === L.sel;
+      g.fillStyle(sel ? 0x23293f : 0x1a2030).fillRoundedRect(x, y, b.w - 24, 15, 2).lineStyle(1, sel ? 0xe8e8f0 : 0xffb347, sel ? 1 : 0.7).strokeRoundedRect(x, y, b.w - 24, 15, 2);
+      this._t(x + 8, y + 3, `${i + 1}. ${MAPS[id].name ?? id}`, F(8, C.text), () => go(id));
     });
     this._travelKeys = dests;
   }
