@@ -128,7 +128,7 @@ export class Sim {
         const w = generateWarden(this.seed, Math.max(1, this.players.size));
         const def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
         this.enemies.set(id, { id, spawnKey, kind: e.kind, def, boss: true, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 2, cd2: 3, hurtT: 0, kx: 0, ky: 0, dash: 0 });
-        this.events.push({ t: 'boss', name: w.name, epithet: w.epithet });
+        this.events.push({ t: 'boss', kind: e.kind, name: w.name, epithet: w.epithet });
         continue;
       }
       const base = ENEMIES[e.kind];

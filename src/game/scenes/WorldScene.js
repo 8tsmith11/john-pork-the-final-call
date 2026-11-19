@@ -2850,7 +2850,7 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'kill' && !ev.boss && Math.random() < 0.15) this._barkFrom('kill', snap, { by: ev.by });
     if (ev.t === 'hurt' && Math.random() < 0.08) this._barkFrom('allyHurt', snap, { not: ev.id });
     if (ev.t === 'drum') { this.cameras.main.shake(40, ev.beat % 4 === 0 ? 0.006 : 0.002); sfx('hit'); }
-    if (ev.t === 'boss' && !ev.sahur && this.mode !== 'client') this.save.flags['act1.boss.wardenName'] = ev.name;
+    if (ev.t === 'boss' && ev.kind === 'boss.warden' && this.mode !== 'client') this.save.flags['act1.boss.wardenName'] = ev.name;
     // Mid bosses: no ending. The Switchman keeps its flag; bosses from src/content/bosses.js set boss.<id>.down.
     if (ev.t === 'kill' && ev.mini && this.mode !== 'client') this._flag(!ev.kind || ev.kind === 'boss.switchman' ? 'act1.switchman.down' : `boss.${ev.kind.slice(5)}.down`, true);
     if (ev.t === 'kill' && ev.boss && !ev.mini && this.mode !== 'client') { this.save.flags['act1.boss.defeated'] = true; this.save.flags['act1.outbreak.contained'] = true; }

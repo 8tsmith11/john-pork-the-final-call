@@ -975,6 +975,24 @@ try {
   if (savedPhaserForCraft === undefined) delete globalThis.Phaser;
   else globalThis.Phaser = savedPhaserForCraft;
 }
+test('regional boss intros preserve the saved Warden name', () => {
+  const field = 'act1.boss.wardenName';
+  const scene = { mode: 'host', save: { flags: {} }, time: { delayedCall() {} }, _bossIntro() {} };
+  const warden = new Sim(MAPS_FOR_TEST.platform, { seed: 'warden-name' }).events.find((e) => e.t === 'boss');
+  CraftWorldScene.prototype._fx.call(scene, warden, { players: [] });
+  assert.equal(scene.save.flags[field], warden.name);
+
+  const region = new Sim(MAPS_FOR_TEST.greenbelt, { seed: 'warden-name' });
+  const boss = [...region.enemies.values()].find((e) => e.boss);
+  region.addPlayer('host', 'trevor');
+  Object.assign(region.players.get('host'), { x: boss.x - 32, y: boss.y });
+  region.step(1 / 60, new Map());
+  const intro = region.events.find((e) => e.t === 'boss' && e.kind === boss.kind);
+  assert.ok(intro);
+  CraftWorldScene.prototype._fx.call(scene, intro, { players: [] });
+  assert.equal(scene.save.flags[field], warden.name, 'the new intro must preserve the Warden name');
+});
+
 const { RECIPES: CRAFT_RECIPES } = await import('../src/content/items.js');
 const craftFixture = (inventory, weapon = null) => {
   const c = newSave({ seed: 'craft-test', rolls: {}, gameVersion: 'test' }).party.trevor;
