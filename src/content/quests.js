@@ -14,7 +14,7 @@ export const QUESTS = [
       { text: 'Check Manuel\'s closet.', done: (f) => f['act1.balloon.noticedGone'] },
       { text: 'Look at the front door.', done: (f) => f['act1.clue.lockForced'] },
       // Clear next steps (Trevor): name the places and people, and say how many leads are enough.
-      { text: 'Ask around the ASTER lobby. Somebody saw something at 3 a.m.', done: (f) => Object.keys(f).some((k) => k.startsWith('met.npc.') || k.startsWith('act1.halvard') || k.startsWith('act1.leadC') || k.startsWith('act1.leadA')) },
+      { text: 'Ask around the ASTER lobby. Somebody saw something at 3 a.m.', done: (f) => ['met.npc.kess', 'met.npc.dez', 'met.npc.doorman'].some((k) => f[k]) || Object.keys(f).some((k) => k.startsWith('act1.halvard') || k.startsWith('act1.leadC') || k.startsWith('act1.leadA')) },   // the lobby's own people (Kess, Dez, Fenwick), not anyone anywhere (John Pork #582: Tobin satisfied it)
       { text: 'Run down two of the three leads: the phone seller under the metro station steps, the security monitor on the ASTER lobby desk (fix it to see the 3 a.m. footage), or the helium trail (print a sniffer at Fab #1).', done: (f) => [f['act1.halvard.met'], f['act1.leadC.done'], f['act1.leadA.done']].filter(Boolean).length >= 2 || f['act1.cordon.passed'] || f['act1.beat.call'] },
       { text: 'The trail goes down the storm grate into the Green Line. Get past the abatement cordon in the plaza.', done: (f) => f['act1.cordon.passed'] || f['act1.beat.call'] },
       { text: 'Follow the Green Line tunnels east, toward the old platform.', done: (f) => f['act1.fuses.seen'] || f['act1.tunnel.gate'] || f['act1.boss.defeated'] },
