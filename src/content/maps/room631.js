@@ -33,7 +33,7 @@ for (const [x0, y0, w, h] of [[4, 8, 5, 3], [10, 8, 4, 3]]) {
 
 export const room631 = makeMap({
   id: 'room631',
-  propScale: 1.25,   // furniture in proportion with the rooms (Manuel) wear: 'lived',
+  propScale: 1.25, wear: 'lived',   // furniture in proportion with the rooms (Manuel)
   name: 'Room 631, ASTER',
   layout: LAYOUT,
   spawns: [[5, 8], [7, 9], [9, 8]],
