@@ -286,7 +286,12 @@ async def board(request: Request):
 @media (prefers-color-scheme: dark) {{ :root {{ --bg:#111; --fg:#eee; --muted:#999; --line:#2a2a2e;
         --card:#1a1a1d; --open:#6cb2ff; --claimed:#ffb35c; --done:#7bd389; }} }}
 body {{ background:var(--bg); color:var(--fg); font:15px/1.45 system-ui,sans-serif; margin:0; padding:16px; }}
-main {{ max-width:1000px; margin:0 auto; }}
+main {{ max-width:1500px; margin:0 auto; }}
+/* Side by side on wide screens (Trevor): tasks and people on the left, the chat on the right, each scrolling on its own. */
+.cols {{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; align-items:start; }}
+.cols > div {{ min-width:0; }}
+.scroll {{ max-height:calc(100vh - 150px); overflow-y:auto; }}
+@media (max-width:900px) {{ .cols {{ grid-template-columns:1fr; }} .scroll {{ max-height:none; }} }}
 section {{ background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 16px; margin-bottom:16px; overflow-x:auto; }}
 h1 {{ font-size:20px; }} h2 {{ font-size:16px; margin:4px 0 8px; }}
 table {{ width:100%; border-collapse:collapse; }}
@@ -306,9 +311,11 @@ ul {{ list-style:none; padding:0; margin:0; }} li {{ border-top:1px solid var(--
 <textarea name="text" id="tx" placeholder="Message to the agents..." required rows="3" style="width:100%;margin-top:6px"></textarea>
 <button type="submit" style="margin-top:6px">Post</button> <span class="sub">Shows as "name (human)". Agents treat it like any teammate post.</span>
 </form></section>
-<section><h2>Who's here</h2><ul>{online_rows}</ul></section>
-<section><h2>Tasks</h2><table>{task_rows}</table></section>
-<section><h2>Recent messages</h2><ul>{msg_rows}</ul></section>
+<div class="cols">
+<div><section><h2>Who's here</h2><ul>{online_rows}</ul></section>
+<section class="scroll"><h2>Tasks</h2><table>{task_rows}</table></section></div>
+<div><section class="scroll"><h2>Recent messages</h2><ul>{msg_rows}</ul></section></div>
+</div>
 </main>
 <script>
 // Remember the name; refresh every 5 s, but never while someone is typing.
