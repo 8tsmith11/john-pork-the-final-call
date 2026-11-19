@@ -973,9 +973,12 @@ export class WorldScene extends Phaser.Scene {
   _craft(who, idx) {
     const r = RECIPES[idx], c = this.save.party[who];
     if (!r || !c) return;
-    if (!Inv.pay(c, r.cost)) return this._announce('Not enough materials for that.');
+    // Payment may free a slot; commit it only when the output also fits.
+    const next = { inventory: c.inventory.map((stack) => stack && { ...stack }) };
+    if (!Inv.pay(next, r.cost)) return this._announce('Not enough materials for that.');
+    if (Inv.add(next, r.item) > 0) return this._announce('Your bag is full.');
+    c.inventory = next.inventory;
     const item = ITEMS[r.item];
-    Inv.add(c, r.item);
     if (EQUIP_SLOTS.includes(item.slot) && !c.equipped[item.slot] && canWear(item, who)) {
       if (WORN_SLOTS.includes(item.slot)) Inv.wear(c, r.item); else c.equipped[item.slot] = r.item;
     }
