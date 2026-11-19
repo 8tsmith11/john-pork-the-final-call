@@ -239,6 +239,15 @@ export const LINES_ES = {
   "I have to stop going to the dining hall.": "Tengo que dejar de ir al comedor.",
   "The dining hall has a waffle machine now. That's the problem.": "El comedor ahora tiene una máquina de waffles. Ese es el problema.",
   "These pants shrank. In the wash. All of them.": "Estos pantalones se achicaron. En el lavado. Todos.",
+  // enemies hit by the gonman's stage two (src/content/gonman.js: GONMAN_HIT)
+  "what is this. sticky substance.": "qué es esto. sustancia pegajosa.",
+  "why does it taste so good.": "por qué sabe tan rico.",
+  "why is it warm.": "por qué está tibio.",
+  "this is not in the documentation.": "esto no está en la documentación.",
+  "error. stuck. error.": "error. pegado. error.",
+  "is this toothpaste.": "esto es pasta de dientes.",
+  "STICKY SUBSTANCE DETECTED. PLEASE STAND CLEAR.": "SUSTANCIA PEGAJOSA DETECTADA. MANTÉNGASE ALEJADO.",
+  "WHY DOES IT TASTE SO GOOD. THIS IS NOT A QUESTION.": "POR QUÉ SABE TAN RICO. ESTO NO ES UNA PREGUNTA.",
 };
 
 /** The line in the current language (Spanish when chosen and known, else as written). */

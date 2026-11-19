@@ -28,7 +28,7 @@ export const FEEL = { comboWindow: 0.55, finisherDmg: 1.6, finisherKnock: 1.8, f
 // The gonman, stage two (Manuel's own request for his own character; implied only, nothing drawn, D-007/D-015).
 // R while morphed: a wind-up where he can't move, then sticky globs fly toward his aim. A glob slows what it hits
 // and leaves a puddle that slows anything walking through it. Bosses slow less; the Sahur doesn't slow at all.
-export const GONMAN = { windup: 1.4, cd: 30, slow: 0.4, bossSlow: 0.7, slowTime: 4, puddleR: 16, puddleTtl: 7, globs: 5, near: 36, far: 84, dmg: 2 };
+export const GONMAN = { windup: 1.4, cd: 30, slow: 0.06, bossSlow: 0.3, slowTime: 5, shrink: 5.5, puddleR: 16, puddleTtl: 7, globs: 5, near: 36, far: 84, dmg: 2 };
 export const MATE = { buff: 45, crash: 4, speed: 0.15, staRegen: 0.6, crashSpeed: -0.4 };
 // Going under (Michael, 2026-11-19; sealed lore acts-2-3 §4). At 100% code rot a roommate goes
 // under if another roommate is a human player who's up: a code rot zombie that walks at and swings
@@ -455,7 +455,7 @@ export class Sim {
     for (const h of this.hazards) {
       h.ttl -= dt;
       for (const p of this.players.values()) {
-        if (p.downed || Math.hypot(p.x - h.x, p.y - h.y) > h.r) continue;
+        if (p.downed || Math.hypot(p.x - h.x, p.y - h.y) > h.r - this._small(p)) continue;
         this.infect(p, ROT.poolRate * dt);
         if ((p._hazT = (p._hazT ?? 0) - dt) <= 0) { p._hazT = 0.5; const keep = p.iframes; p.iframes = 0; this._hurtPlayer(p, Math.round(h.dps * 0.5)); if (keep > p.iframes) p.iframes = keep; }
       }
@@ -496,7 +496,7 @@ export class Sim {
 
   /** The release: globs in a fan toward where he was aiming. Each one slows what it lands on and leaves a puddle. */
   _gonmanRelease(p) {
-    const n = GONMAN.globs, pts = [];
+    const n = GONMAN.globs, pts = [], hit = new Set();
     for (let i = 0; i < n; i++) {
       const a = (p.gonAim ?? p.aim ?? 0) + (i - (n - 1) / 2) * 0.32, f = ((i * 0.37 + 0.5) % 1);
       let d = GONMAN.near + (GONMAN.far - GONMAN.near) * f, x = p.x + Math.cos(a) * d, y = p.y + Math.sin(a) * d;
@@ -505,12 +505,12 @@ export class Sim {
       this.goo.push({ x, y, r: GONMAN.puddleR, ttl: GONMAN.puddleTtl });
       for (const e of [...this.enemies.values()]) {
         if (e.sahur || Math.hypot(e.x - x, e.y - y) > GONMAN.puddleR + (this._def(e).radius ?? 6)) continue;
-        e.slowT = Math.max(e.slowT ?? 0, GONMAN.slowTime);
+        e.slowT = Math.max(e.slowT ?? 0, GONMAN.slowTime); hit.add(e.id);
         this._hurtEnemy(e, GONMAN.dmg, 0, 0, p.id);
       }
     }
     p.gonSlim = true;                                              // he's thin now, and fills back out as it recharges
-    this.events.push({ t: 'goo', id: p.id, pts });
+    this.events.push({ t: 'goo', id: p.id, pts, hit: [...hit].filter((id) => this.enemies.has(id)) });
   }
 
   _melee(p) {
@@ -607,6 +607,14 @@ export class Sim {
     }
   }
 
+  /** How much smaller a player's hitbox is, in px: gear (mods.small) plus the gonman's thin spell, which starts
+   *  big right after his stage two goes off and fades as it recharges (Manuel: "his hit box decreases by A LOT"). */
+  _small(p) {
+    let s = p?.mods?.small ?? 0;
+    if (p?.gonSlim) s += GONMAN.shrink * Math.max(0, Math.min(1, p.skillCd / (GONMAN.cd * (1 - (p.mods?.skillCd ?? 0)))));
+    return s;
+  }
+
   _hurtPlayer(p, dmg, infection = 0) {
     if (p.ttl !== undefined && p.hp !== undefined && !p.id) { p.hp -= dmg; return; }   // a decoy bust soaking a hit
     if (p.downed) return;
@@ -640,13 +648,15 @@ export class Sim {
     return [best, bd];
   }
 
-  _stepEnemies(dt) {
-    for (const g of this.goo) g.ttl -= dt;
+  _stepEnemies(dt0) {
+    for (const g of this.goo) g.ttl -= dt0;
     this.goo = this.goo.filter((g) => g.ttl > 0);
     for (const e of this.enemies.values()) {
-      if (e.slowT > 0) e.slowT = Math.max(0, e.slowT - dt);
-      if (!e.sahur && this.goo.some((g) => Math.hypot(e.x - g.x, e.y - g.y) < g.r)) e.slowT = Math.max(e.slowT ?? 0, 0.4);   // walked through a puddle
-      const def0 = this._def(e), def = e.slowT > 0 && !e.sahur ? { ...def0, speed: def0.speed * (e.boss ? GONMAN.bossSlow : GONMAN.slow) } : def0;
+      if (e.slowT > 0) e.slowT = Math.max(0, e.slowT - dt0);
+      if (!e.sahur && this.goo.some((g) => Math.hypot(e.x - g.x, e.y - g.y) < g.r)) e.slowT = Math.max(e.slowT ?? 0, 0.6);   // walked through a puddle
+      // Stuck in the gonman's stuff: the enemy's whole clock runs slow (moving, cooling down, winding up): almost frozen.
+      const dt = e.slowT > 0 && !e.sahur ? dt0 * (e.boss ? GONMAN.bossSlow : GONMAN.slow) : dt0;
+      const def = this._def(e);
       e.cd = Math.max(0, e.cd - dt); e.hurtT = Math.max(0, e.hurtT - dt);
       if (e.sahur) { this._stepSahur(e, def, dt); continue; }
       if (e.boss) { this._stepBoss(e, def, dt); continue; }
@@ -679,7 +689,7 @@ export class Sim {
         }
         const dx = ux + sx * 0.65, dy = uy + sy * 0.65, length = Math.max(1, Math.hypot(dx, dy));
         if (e.hurtT <= 0 && !(e.openT > 0)) this._moveBody(e, dx / length * def.speed * dt, dy / length * def.speed * dt, def.radius);
-        if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) {
+        if (d < def.radius + 6 - this._small(target) && e.cd <= 0) {
           this._hurtPlayer(target, def.damage, def.infection); e.cd = def.touchCooldown; e.openT = FEEL.openTime;   // recovery window (combat brief #7)
         }
         continue;
@@ -687,7 +697,7 @@ export class Sim {
       if (def.ai === 'lullaby') {        // hover just out of reach, humming
         const [lo, hi] = def.keepAway ?? [44, 70], dir = d < lo ? -1 : d > hi ? 1 : 0;
         if (e.hurtT <= 0) this._moveBody(e, (ux * dir + uy * Math.sin(this.tick / 40) * 0.6) * def.speed * dt, (uy * dir - ux * Math.sin(this.tick / 40) * 0.6) * def.speed * dt, def.radius);
-        if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd = def.touchCooldown; }
+        if (d < def.radius + 6 - this._small(target) && e.cd <= 0) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd = def.touchCooldown; }
         continue;
       }
       if (def.ai === 'charge') {         // walk in, wind up, dash in a straight line, then reel
@@ -696,7 +706,7 @@ export class Sim {
         else if (e.st === 'windup') { if (e.stT <= 0) { e.st = 'dash'; e.stT = def.dashTime; e.hitOnce = false; } }
         else if (e.st === 'dash') {
           const blocked = this._moveBody(e, e.dx * def.dashSpeed * dt, e.dy * def.dashSpeed * dt, def.radius) === false;
-          if (!e.hitOnce && d < def.radius + 7) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.hitOnce = true; }
+          if (!e.hitOnce && d < def.radius + 7 - this._small(target)) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.hitOnce = true; }
           if (e.stT <= 0 || blocked) { e.st = 'dizzy'; e.stT = def.dizzy; }
         } else if (e.st === 'dizzy') { if (e.stT <= 0) e.st = 'walk'; }
         continue;
@@ -711,7 +721,7 @@ export class Sim {
         }
         if (e.dashT > 0) this._moveBody(e, e.dx * def.dashSpeed * dt, e.dy * def.dashSpeed * dt, def.radius);
         else if (e.hurtT <= 0) this._moveBody(e, ux * def.speed * dt, uy * def.speed * dt, def.radius);
-        if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd = def.touchCooldown; }
+        if (d < def.radius + 6 - this._small(target) && e.cd <= 0) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd = def.touchCooldown; }
         continue;
       }
       if (def.ai === 'lunge') {
@@ -733,7 +743,7 @@ export class Sim {
           if (e.stT <= 0) { e.st = 'lunge'; e.stT = def.lungeTime; e.hitOnce = false; }
         } else if (e.st === 'lunge') {
           this._moveBody(e, e.dx * def.lungeSpeed * dt, e.dy * def.lungeSpeed * dt, def.radius);
-          if (!e.hitOnce && d < def.radius + 7 - (target.mods?.small ?? 0)) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.hitOnce = true; }
+          if (!e.hitOnce && d < def.radius + 7 - this._small(target)) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.hitOnce = true; }
           if (e.stT <= 0) { e.st = 'recover'; e.stT = def.recover; e.cd = def.touchCooldown + Math.random() * 0.6; }
         } else if (e.st === 'recover') {
           if (e.stT <= 0) e.st = 'stalk';
@@ -742,7 +752,7 @@ export class Sim {
       }
       if (def.ai === 'chase') {
         if (e.hurtT <= 0 && !(e.openT > 0)) this._moveBody(e, ux * def.speed * dt, uy * def.speed * dt, def.radius);
-        if (d < def.radius + 6 - (target.mods?.small ?? 0) && e.cd <= 0) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd = def.touchCooldown; e.openT = FEEL.openTime; }
+        if (d < def.radius + 6 - this._small(target) && e.cd <= 0) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd = def.touchCooldown; e.openT = FEEL.openTime; }
       } else if (def.ai === 'kite') {
         // Keep the band: back off when you close in, close in when you're far, strafe sideways between.
         const dir = d < def.range * 0.6 ? -1 : d > def.range ? 1 : 0;
@@ -781,7 +791,7 @@ export class Sim {
     }
     const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
     const rage = e.phase === 3 ? 1.5 : e.phase === 2 ? 1.2 : 1;
-    if (d < def.radius + 7 && e.cd2 <= 0 && e.state !== 'vulnerable') { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd2 = def.touchCooldown; }
+    if (d < def.radius + 7 - this._small(target) && e.cd2 <= 0 && e.state !== 'vulnerable') { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd2 = def.touchCooldown; }
 
     // Phase-wide arena effects
     if (e.phase >= 2 && (e.poolT = (e.poolT ?? 0) - dt) <= 0) {
@@ -805,7 +815,7 @@ export class Sim {
       for (const p of this.players.values()) {
         if (p.downed) continue;
         const rx = p.x - cx, ry = p.y - 4 - cy, along = rx * ux + ry * uy, across = Math.abs(rx * -uy + ry * ux);
-        if (along > 4 && along < LASER.len && across < LASER.half + 4 && (p._laserT = (p._laserT ?? 0) - dt) <= 0) { p._laserT = LASER.tick; this._hurtPlayer(p, Math.round(LASER.dmg * (def.dmgMul ?? 1))); }
+        if (along > 4 && along < LASER.len && across < LASER.half + 4 - this._small(p) * 0.6 && (p._laserT = (p._laserT ?? 0) - dt) <= 0) { p._laserT = LASER.tick; this._hurtPlayer(p, Math.round(LASER.dmg * (def.dmgMul ?? 1))); }
       }
       if (e.laserT <= 0) { e.state = 'vulnerable'; e.vulnT = 1.8; this.events.push({ t: 'vuln', x: e.x, y: e.y }); }
       return;
@@ -872,7 +882,7 @@ export class Sim {
       w.r += SHOCK.speed * dt;
       for (const p of this.players.values()) {
         if (p.downed || w.hit.has(p.id)) continue;
-        if (Math.abs(Math.hypot(p.x - e.x, p.y - e.y) - w.r) < SHOCK.band) { w.hit.add(p.id); this._hurtPlayer(p, Math.round(SHOCK.dmg * k)); }
+        if (Math.abs(Math.hypot(p.x - e.x, p.y - e.y) - w.r) < SHOCK.band - this._small(p) * 0.5) { w.hit.add(p.id); this._hurtPlayer(p, Math.round(SHOCK.dmg * k)); }
       }
     }
     if (e.waves) e.waves = e.waves.filter((w) => w.r < SHOCK.max);
@@ -880,7 +890,7 @@ export class Sim {
       m.t -= dt;
       if (m.t <= 0 && !m.done) {
         m.done = true; this.events.push({ t: 'impact', x: m.x, y: m.y, r: RAIN.r });
-        for (const p of this.players.values()) if (!p.downed && Math.hypot(p.x - m.x, p.y - m.y) < RAIN.r) this._hurtPlayer(p, Math.round(RAIN.dmg * k));
+        for (const p of this.players.values()) if (!p.downed && Math.hypot(p.x - m.x, p.y - m.y) < RAIN.r - this._small(p)) this._hurtPlayer(p, Math.round(RAIN.dmg * k));
       }
     }
     if (e.marks) e.marks = e.marks.filter((m) => !m.done);
@@ -920,7 +930,7 @@ export class Sim {
     const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
     if (e.dash > 0) { e.dash -= dt; this._moveBody(e, e.dx * 190 * dt, e.dy * 190 * dt, def.radius); }
     else if (e.root <= 0) this._moveBody(e, ux * def.speed * dt, uy * def.speed * dt, def.radius);
-    if (d < def.radius + 7 && e.cd2 <= 0) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd2 = def.touchCooldown; }
+    if (d < def.radius + 7 - this._small(target) && e.cd2 <= 0) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd2 = def.touchCooldown; }
     if (e.cd > 0) return;
     e.cd = 0.75; e.beat++;
     for (const p of this.players.values()) this.setRot(p.id, 0);
@@ -955,7 +965,7 @@ export class Sim {
         }
       } else {
         for (const p of this.players.values()) {
-          if (!p.downed && Math.hypot(p.x - s.x, p.y - 6 - s.y) < 7 - (p.mods?.small ?? 0)) { this._hurtPlayer(p, s.dmg, s.rot ?? 0); hit = true; break; }
+          if (!p.downed && Math.hypot(p.x - s.x, p.y - 6 - s.y) < 7 - this._small(p)) { this._hurtPlayer(p, s.dmg, s.rot ?? 0); hit = true; break; }
         }
       }
       if (!hit) keep.push(s);

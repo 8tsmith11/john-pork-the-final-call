@@ -1451,5 +1451,20 @@ test('the gonman leaves Manuel thin, and he fills back out as the move recharges
   assert.equal(growthMod.growthLook(8, 1), 'fx.grow8b1'); assert.equal(growthMod.growthLook(8, 3), 'fx.grow8');
 });
 
+const gonContent = await import('../src/content/gonman.js');
+test('the gonman is overpowered on purpose: a much smaller hitbox while thin, enemies nearly frozen, and they say something', () => {
+  const sim = new Sim(landMaps.metro_plaza, { seed: 'op' }); sim.addPlayer('a', 'manuel');
+  const p = sim.players.get('a'); p.x = 38 * 16 + 8; p.y = 23 * 16 + 8; p.aim = 0; p.skillCd = 0; p.morphed = true; p.morphStage = 2; sim.enemies.clear();
+  sim.enemies.set('e1', { id: 'e1', kind: 'enemy.rotling', x: p.x + 50, y: p.y, hp: 999, cd: 9, hurtT: 0, kx: 0, ky: 0, sleepT: 999 });
+  const go = (inp, n = 1) => { for (let i = 0; i < n; i++) sim.step(1 / 60, new Map([['a', { ...emptyInput(), ...inp }]])); };
+  const base = sim._small(p); go({ skill: true }); go({}, 90);
+  assert.ok(sim._small(p) - base > 4, `the hitbox shrinks a lot right after (${sim._small(p)})`);
+  const e = sim.enemies.get('e1'); e.sleepT = 0; const x0 = e.x, y0 = e.y; go({}, 60);
+  const moved = Math.hypot(e.x - x0, e.y - y0); assert.ok(e.slowT > 0 && moved < 4, `nearly frozen (moved ${moved.toFixed(1)} px in a second)`);
+  go({}, 60 * 30); assert.ok(sim._small(p) - base < 0.5, 'the hitbox is back once recharged');
+  assert.ok(gonContent.GONMAN_HIT.enemy.includes('why does it taste so good.') && gonContent.GONMAN_HIT.enemy.includes('what is this. sticky substance.'));
+  for (const l of [...gonContent.GONMAN_HIT.enemy, ...gonContent.GONMAN_HIT.boss, ...gonContent.GONMAN_LINES.start, ...gonContent.GONMAN_LINES.release]) assert.ok(LINES_ES[l], `no Spanish for: ${l}`);
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

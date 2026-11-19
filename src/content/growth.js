@@ -34,7 +34,7 @@ export const bellyFor = (level = 1) => (level >= 8 ? 3 : level >= 6 ? 2 : level 
 export function gonmanWeight(level, recovered) {
   if (recovered === undefined || recovered === null) return { belly: bellyFor(level), width: 1 };
   const r = Math.max(0, Math.min(1, recovered));
-  return { belly: Math.floor(bellyFor(level) * r + 1e-9), width: 0.84 + 0.16 * r };
+  return { belly: Math.floor(bellyFor(level) * r + 1e-9), width: 0.58 + 0.42 * r * r };   // skinny at first, filling out faster near the end
 }
 
 /** The look id for a character's level (details stop changing after maxDetailLevel; growth goes on to the cap). */

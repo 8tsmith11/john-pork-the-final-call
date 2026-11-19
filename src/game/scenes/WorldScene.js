@@ -49,7 +49,7 @@ import { phaseEnemies } from '../../content/outbreak.js';
 import { dawnLabel, dawnProgress } from '../../content/dawn.js';
 import { makeJob, jobLine, OPEN_JOBS } from '../../content/jobs.js';
 import { BigButt } from '../bigButt.js';
-import { GONMAN_LINES, GONMAN_UNLOCK } from '../../content/gonman.js';
+import { GONMAN_LINES, GONMAN_UNLOCK, GONMAN_HIT } from '../../content/gonman.js';
 import { growthSize, lookStage, gonmanWeight } from '../../content/growth.js';
 import { Beltless } from '../beltless.js';
 import { ToothpasteTalk } from '../toothpaste.js';
@@ -2712,6 +2712,21 @@ export class WorldScene extends Phaser.Scene {
     });
   }
 
+  // The enemies it hit say something about it: one or two of them, a beat after it lands, over their heads.
+  _gonmanHitLines(ids) {
+    const snapE = this._lastRendered?.enemies ?? [];
+    (ids ?? []).slice(0, 2).forEach((id, i) => {
+      const e = snapE.find((x) => x.id === id), boss = !!e?.boss, pool = boss ? GONMAN_HIT.boss : GONMAN_HIT.enemy;
+      const line = esLine(i === 0 && !boss ? pool[(this._gonHitN = ((this._gonHitN ?? -1) + 1)) % 2] : pool[Math.floor(Math.random() * pool.length)]);   // the first alternates "sticky substance" / "taste so good"
+      this.time.delayedCall(650 + i * 900, () => {
+        const spr = this.enemySprites.get(id); if (!spr?.active) return;
+        const txt = this.add.text(spr.x, spr.y - 22, line, { ...FONT, fontSize: '6px', color: boss ? '#ff8a80' : '#d7f0c8', backgroundColor: '#0b0d16cc', padding: { x: 2, y: 1 } }).setOrigin(0.5, 1).setDepth(7000);
+        const follow = this.time.addEvent({ delay: 30, loop: true, callback: () => txt.active && spr.active && txt.setPosition(spr.x, spr.y - 22) });
+        this.tweens.add({ targets: txt, alpha: 0, delay: 2600, duration: 500, onComplete: () => { follow.remove(); txt.destroy(); } });
+      });
+    });
+  }
+
   _gonmanSound(s, ms) {
     const out = audioOut(); if (!out) return;
     const me = this.sprites.get(this.localId), vol = Math.max(0, 1 - (me ? Math.hypot(me.x - s.x, me.y - s.y) : 0) / 220); if (vol <= 0) return;
@@ -2866,7 +2881,7 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'ping') { const r = this.add.circle(ev.x, ev.y - 6, 6, 0x6ff2ff, 0).setStrokeStyle(1, 0x6ff2ff, 0.9).setDepth(5600); this.tweens.add({ targets: r, scale: 25, alpha: 0, duration: 650, onComplete: () => r.destroy() }); sfx('shot'); }
     if (ev.t === 'decoy') sfx('swing');
     if (ev.t === 'gonman') this._gonmanWindup(ev);
-    if (ev.t === 'goo') this._gonmanRelease(ev);
+    if (ev.t === 'goo') { this._gonmanRelease(ev); this._gonmanHitLines(ev.hit); }
     if (ev.t === 'vuln') {
       const t = this.add.text(ev.x, ev.y - 30, 'OVERHEATED: hit it!', { ...FONT, color: '#ffb347' }).setOrigin(0.5).setDepth(6100);
       this.tweens.add({ targets: t, y: t.y - 10, alpha: 0, duration: 1300, onComplete: () => t.destroy() });
