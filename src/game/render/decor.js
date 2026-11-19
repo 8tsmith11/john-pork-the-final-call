@@ -10,7 +10,7 @@ const hash = (s) => {   // FNV-1a, then an avalanche so neighbouring tiles don't
 };
 
 const PAVED = new Set(['p', 'q', 's', 'm']);
-const ROAD = new Set([',']);
+const ROAD = new Set([',', 'z', 'Z']);
 
 /** Seeded decals for one map: [{ frame, x, y }] in tiles. Skips solid tiles and tiles with an object or scenery on them. */
 export function scatterDecals(map) {
@@ -45,15 +45,19 @@ export function scatterDecals(map) {
     let frame = null;
     if (PAVED.has(ch)) {
       if (near(x, y, 'T') && r < 0.3) frame = pick(['dec.leaves_0', 'dec.leaves_1']);          // trees drop leaves
-      else if ((near(x, y, 'g') || near(x, y, '#')) && r < 0.06) frame = 'dec.weeds';         // weeds where paving meets an edge
-      else if (r < 0.022) frame = pick(['dec.crack_0', 'dec.crack_1', 'dec.gum', 'dec.litter_0', 'dec.stain']);
-      else if (r < 0.034) frame = pick(['dec.puddle_0', 'dec.puddle_1']);                    // it has been raining all night
-      else if (r < 0.038) frame = 'dec.litter_1';                                            // a flyer
+      else if ((near(x, y, 'g') || near(x, y, '#')) && r < 0.14) frame = 'dec.weeds';         // weeds where paving meets an edge (nobody weeds now)
+      else if (r < 0.05) frame = pick(['dec.crack_0', 'dec.crack_1', 'dec.crack_2', 'dec.gum', 'dec.stain']);   // years without upkeep
+      else if (r < 0.065) frame = pick(['dec.weeds', 'dec.rubble']);
+      else if (r < 0.077) frame = pick(['dec.puddle_0', 'dec.puddle_1']);                    // it has been raining all night
+      else if (r < 0.085) frame = pick(['dec.litter_0', 'dec.litter_1', 'dec.trash']);
     } else if (ROAD.has(ch)) {
       const interior = [[1, 0], [-1, 0], [0, 1], [0, -1]].every(([dx, dy]) => at(x + dx, y + dy) === ',');
-      if (interior && (x * 31 + y * 17) % 89 === 0) frame = 'dec.manhole';
-      else if (r < 0.02) frame = pick(['dec.oil', 'dec.crack_0', 'dec.crack_1']);
-      else if (r < 0.032) frame = pick(['dec.puddle_0', 'dec.puddle_1']);
+      if (ch === ',' && interior && (x * 31 + y * 17) % 89 === 0) frame = 'dec.manhole';
+      else if (r < 0.06) frame = pick(['dec.crack_0', 'dec.crack_1', 'dec.crack_2', 'dec.crack_2']);   // roads nobody resurfaces
+      else if (ch === ',' && r < 0.085) frame = 'dec.pothole';
+      else if (ch === ',' && r < 0.11) frame = 'dec.patch';                                   // somebody patched it once
+      else if (r < 0.125) frame = pick(['dec.oil', 'dec.weeds']);
+      else if (ch === ',' && r < 0.14) frame = pick(['dec.puddle_0', 'dec.puddle_1', 'dec.rubble']);
     } else if (ch === 'd') {
       if (r < 0.55) frame = 'dec.flowers';                                                     // planting beds are planted
     } else if (ch === 'g') {
@@ -70,10 +74,11 @@ export function mapDecals(map) {
   return [...(map.decals ?? []).map(([frame, x, y]) => ({ frame, x, y })), ...scatterDecals(map)];
 }
 
-/** Which sheet a scenery piece's art lives in, and how it stands on its tile(s). */
-export function sceneryPlacement(s, has) {
-  if (has('big', s.art)) return { sheet: 'big', x: s.x * 16 + 16 * (s.w ?? 1) / 2, y: (s.y + 1) * 16, origin: [0.5, 1], shadow: 26 };
-  if (has('wide', s.art)) return { sheet: 'wide', x: s.x * 16, y: (s.y + 1) * 16, origin: [0, 1], shadow: 28 };
-  if (has('props', s.art)) return { sheet: 'props', x: s.x * 16, y: (s.y + 1) * 16, origin: [0, 1], shadow: 12 };
-  return null;
+/** Which sheet a scenery piece's art lives in, and how it stands: centred on its footprint (w tiles wide), on the
+ *  bottom edge of its tile, drawn k times bigger (the map's propScale). */
+export function sceneryPlacement(s, has, k = 1) {
+  const sheet = has('big', s.art) ? 'big' : has('wide', s.art) ? 'wide' : has('props', s.art) ? 'props' : null;
+  if (!sheet) return null;
+  const w = s.w ?? (sheet === 'props' ? 1 : 2);
+  return { sheet, x: s.x * 16 + 8 * w, y: (s.y + 1) * 16, origin: [0.5, 1], k, shadow: { big: 26, wide: 28, props: 12 }[sheet] * k };
 }

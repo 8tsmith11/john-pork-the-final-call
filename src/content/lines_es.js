@@ -182,7 +182,7 @@ export const LINES_ES = {
   "I should text her. I won't. But I should.": "Debería escribirle. No lo voy a hacer. Pero debería.",
   "We're the good guys, right?": "Somos los buenos, ¿no?",
   "Throw a coin. For the balloon.": "Tiren una moneda. Por el globo.",
-  "That pump has been running since before we were born.": "Esa bomba anda desde antes de que naciéramos.",
+  "That pump stopped before we were born. Look at the water.": "Esa bomba se paró antes de que naciéramos. Mira el agua.",
   "I'm making a wish. Don't ask.": "Estoy pidiendo un deseo. No pregunten.",
   "Somebody lives in that car. Respect.": "Alguien vive en ese auto. Respeto.",
   "Those four are always here. Always.": "Esos cuatro siempre están acá. Siempre.",

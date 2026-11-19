@@ -908,27 +908,29 @@ def ell(c, cx, cy, rx, ry, col, ring=False):
     return c
 
 
-def fountain(f):
+def fountain():
+    """Broken (Manuel: "slightly post-apocalyptic: the fountain shouldn't work"): no jet, stagnant green water with
+    scum and leaves, a cracked rim with a chunk missing, the top bowl snapped off and lying in the pool."""
     c = C(32, 40)
     ell(c, 16, 31, 15.5, 8, "concrete1")                                      # the basin's outer wall
     ell(c, 16, 30, 15.5, 7.5, "concrete2")
-    ell(c, 16, 30, 13, 5.5, "screen0")                                        # the pool
-    ell(c, 16, 30, 11, 4.2, "screen1")
-    for x in range(2, 30): 
-        if c.g[24][x] != ".": c.px(x, 24, "concrete3")                        # lit rim
-    for x, y in ((9 + f, 30), (20 - f, 31), (14, 33), (23, 29 + f)):
-        c.px(x, y, "screen2")                                                 # ripples
-    c.pts("warm4", (11, 32), (19, 29), (22, 32))                              # coins
-    c.rect(14, 13, 4, 17, "concrete2").v_(14, 13, 17, "concrete3").v_(17, 13, 17, "concrete1")   # the column
-    ell(c, 16, 13, 6, 2.2, "concrete2"); c.h_(11, 12, 10, "concrete3")       # the upper bowl
-    for i, (x, y) in enumerate(((16, 5), (15, 6), (17, 6), (14, 8), (18, 8), (13, 10), (19, 10), (12, 12), (20, 12))):
-        c.px(x, y + (f if i % 2 else 0), "screen2" if i % 3 else "bone")      # the jet falling back
-    c.pts("screen2", (12, 15 + f), (20, 16 - f), (11, 19), (21, 20), (12, 24 - f), (20, 23 + f))  # water off the bowl
+    ell(c, 16, 30, 13, 5.5, "yerba0")                                         # the pool, gone green
+    ell(c, 16, 30.5, 11, 4.2, "yerba0")
+    for x, y in ((9, 29), (10, 29), (20, 31), (21, 31), (13, 33), (23, 28), (7, 31)): c.px(x, y, "yerba1")   # scum
+    c.pts("warm2", (12, 31), (19, 28), (24, 31)); c.pts("warm1", (8, 30), (17, 33))                         # leaves
+    for x in range(2, 30):
+        if c.g[24][x] != ".": c.px(x, 24, "concrete3")                        # the rim
+    c.rect(25, 24, 3, 3, "night1").pts("concrete1", (25, 27), (27, 27))       # a chunk out of the rim
+    c.pts("night1", (6, 25), (7, 26), (7, 27), (8, 28), (12, 36), (13, 37))   # cracks
+    c.rect(14, 17, 4, 13, "concrete2").v_(14, 17, 13, "concrete3").v_(17, 17, 13, "concrete1")   # the column, snapped
+    c.pts("concrete3", (14, 16), (16, 16)).px(15, 15, "concrete2")            # jagged top
+    ell(c, 21, 33, 3.2, 1.3, "concrete2"); c.h_(19, 32, 4, "concrete3")       # the top bowl, lying in the water
+    c.px(9, 27, "steel"); c.px(10, 27, "concrete3")                           # a can
+    c.pts("yerba1", (14, 29), (17, 29), (13, 28))                              # weeds round the column's foot
     return c.outline()
 
 
-BIG["obj.fountain"] = fountain(0).rows()
-BIG["obj.fountain#1"] = fountain(1).rows()
+BIG["obj.fountain"] = fountain().rows()
 
 def bin_(recycle=False):
     body, dark = ("tub1", "tub0") if recycle else ("steel", "concrete1")
@@ -1062,6 +1064,13 @@ D("roof.hatch", dc().rect(5, 5, 6, 6, "concrete1").h_(5, 5, 6, "concrete2").h_(5
 D("roof.pipe", dc().h_(0, 7, 16, "steel").h_(0, 8, 16, "concrete1").h_(0, 9, 16, "night0").v_(10, 4, 3, "steel"))
 D("roof.antenna", dc().v_(8, 2, 12, "steel").h_(5, 4, 7, "steel").h_(6, 7, 5, "steel").px(8, 1, "signal").h_(6, 14, 5, "night0"))
 D("roof.garden", dc().rect(2, 2, 12, 12, "warm1").rect(3, 3, 10, 10, "warm0").pts("yerba1", (4, 4), (6, 5), (9, 4), (11, 6), (5, 9), (8, 10), (11, 11)).pts("yerba0", (5, 4), (7, 7), (10, 8), (4, 11)).pts("pork1", (9, 9)))
+# Wear (post-apocalyptic, Manuel): potholes, patch repairs, a long branching crack, rubble, a trash bag.
+D("dec.pothole", ell(ell(ell(dc(), 8, 8, 5.5, 3.6, "concrete1"), 8, 8.4, 4.4, 2.7, "night1"), 8.5, 9, 2.5, 1.3, "screen0").pts("concrete0", (4, 6), (12, 10)).pts("screen1", (8, 9)))
+D("dec.patch", dc().rect(3, 4, 10, 7, "night2").h_(3, 4, 10, "concrete0").v_(12, 4, 7, "concrete0").pts("night1", (5, 6), (9, 8), (7, 9)))
+D("dec.crack_2", dc().pts("night1", (0, 9), (1, 9), (2, 8), (3, 8), (4, 9), (5, 9), (6, 10), (7, 10), (8, 9), (9, 8), (10, 8), (11, 7), (12, 7), (13, 8), (14, 8), (15, 7),
+  (6, 11), (6, 12), (5, 13), (11, 6), (12, 5), (12, 4)).pts("yerba1", (7, 11), (12, 6)))
+D("dec.rubble", dc().rect(4, 9, 3, 2, "concrete2").rect(9, 7, 2, 2, "concrete3").rect(7, 11, 2, 1, "concrete1").pts("concrete3", (5, 9), (12, 11), (3, 12)).pts("night1", (4, 11), (9, 9)))
+D("dec.trash", dc().rect(5, 6, 6, 6, "night2").h_(6, 5, 4, "night3").px(8, 4, "night3").pts("night1", (6, 11), (10, 9)).pts("bone", (11, 11), (12, 11)).px(3, 12, "steel"))
 D("dec.grate_tree", ell(ell(dc(), 8, 8, 7.5, 7.5, "night1", ring=True), 8, 8, 5.5, 5.5, "night2", ring=True).pts("steel", (8, 1), (1, 8), (14, 8), (8, 14)))
 
 write("props", 16, 24, PROPS)

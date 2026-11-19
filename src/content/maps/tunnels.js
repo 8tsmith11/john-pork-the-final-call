@@ -19,6 +19,7 @@ const lamp = (x, y, text) => ({ id: `obj.worklamp_${x}_${y}`, art: 'obj.worklamp
 
 export const tunnel1 = makeMap({
   id: 'tunnel_1', name: 'Green Line maintenance tunnels',
+  propScale: 1.25,
   layout: g.map((r) => r.join('')),
   spawns: [[3, 12], [3, 14], [4, 12]],
   enemies: [
@@ -91,6 +92,7 @@ P(19, 1, 6, 1, ':');                                                           /
 
 export const platform = makeMap({
   id: 'platform', name: 'The dead platform beneath College Park',
+  propScale: 1.25,
   layout: p.map((r) => r.join('')),
   spawns: [[3, 7], [3, 8], [4, 7]],
   enemies: [['boss.warden', 30, 7]],

@@ -93,7 +93,7 @@ export const BARKS = {
   // at: [x, y, w, h] in tiles. Bubbles, not boxes (Manuel: they keep the game moving).
   zones: {
     metro_plaza: [
-      { at: [36, 16, 6, 6], manuel: ["Throw a coin. For the balloon."], trevor: ["That pump has been running since before we were born."], michael: ["I'm making a wish. Don't ask."] },
+      { at: [36, 16, 6, 6], manuel: ["Throw a coin. For the balloon."], trevor: ["That pump stopped before we were born. Look at the water."], michael: ["I'm making a wish. Don't ask."] },
       { at: [30, 37, 24, 12], manuel: ["Somebody lives in that car. Respect."], trevor: ["Those four are always here. Always."], michael: ["Don't make eye contact with the rice guy."] },
       { at: [66, 9, 12, 3], manuel: ["If they had medialunas I would live here."], trevor: ["Their coffee is technically coffee."], michael: ["Pancakes after? Please?"] },
       { at: [2, 37, 26, 9], manuel: ["There it is. The building where I suffer."], trevor: ["Rub the turtle. It's science."], michael: ["Campus at night is creepy."] },

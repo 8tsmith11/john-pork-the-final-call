@@ -6,6 +6,7 @@ const DOOR = 'obj.door';   // shared drawing for apartment doors (see the `art` 
 
 export const asterHall = makeMap({
   id: 'aster_hall', name: 'ASTER, 6th floor',
+  propScale: 1.25,
   layout: [
     '############################################',   // 0
     '#:::########################################',   // 1  stairwell (west)
@@ -55,6 +56,7 @@ export const asterHall = makeMap({
 
 export const asterLobby = makeMap({
   id: 'aster_lobby', name: 'ASTER, lobby',
+  propScale: 1.25,
   layout: [
     '####################################',   // 0  north wall: mailboxes, directory, office, clock
     '#:::#mmmmmmmmmmmmmmmmmmmmmmmmmm#mmm#',   // 1  stairwell (west), elevator alcove (east)

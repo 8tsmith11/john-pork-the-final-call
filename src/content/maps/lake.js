@@ -54,6 +54,7 @@ const lamp = (x, y, text) => ({ id: `obj.lakelamp_${x}_${y}`, art: 'obj.streetla
 
 export const lake = makeMap({
   id: 'lake', name: 'Lake Artemesia',
+  propScale: 1.5,
   outdoor: true,
   layout: g.map((r) => r.join('')),
   spawns: [[2, 21], [2, 22], [3, 22]],

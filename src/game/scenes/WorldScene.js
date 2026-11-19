@@ -724,7 +724,7 @@ export class WorldScene extends Phaser.Scene {
         if (open(x + 1, y) && !wallAt(x + 1, y)) g.fillStyle(0xffffff, 0.06).fillRect(px + TILE - 1, py, 1, TILE);
       }
       // Roads: worn centre-line paint, dashed, stopping at junctions (kerbs and gutters are tile art).
-      for (const d of laneDashes(map.layout, TILE)) g.fillStyle(0xd8d0b8, 0.42).fillRect(d.x, d.y, d.w, d.h);
+      for (const d of laneDashes(map.layout, TILE)) if ((d.x * 7 + d.y * 13) % 5 !== 0) g.fillStyle(0xd8d0b8, 0.24 + ((d.x + d.y) % 3) * 0.05).fillRect(d.x, d.y, d.w, d.h);   // faded, a few worn away
     }
     for (const im of this.propSprites ?? []) im.destroy();
     for (const t of this.propTimers ?? []) t.remove();
@@ -746,11 +746,18 @@ export class WorldScene extends Phaser.Scene {
     // Depth pass (task 13): leaf canopies over trees that have open ground to their north, at the tree's
     // base depth, so anyone walking behind a tree is partly hidden by it (art: fg.canopy in props).
     if (this.textures.exists('props') && this.textures.get('props').has('fg.canopy')) {
-      const open = (x, y) => y >= 0 && x >= 0 && x < map.w && !map.solid(x, y);
+      // Every tree gets a canopy now (natural pass): the woods read as woods, not green squares. Under each trunk the
+      // ground matches its neighbours (grass, a bed, paving) and gets a soft round shadow instead of a dark tile.
+      const ground = (tx, ty) => { for (const [dx, dy] of [[0, 1], [-1, 0], [1, 0], [0, -1]]) { const c = map.layout[ty + dy]?.[tx + dx]; if (c && !'T#=~|f'.includes(c)) return c; } return 'g'; };
       map.layout.forEach((row, ty) => [...row].forEach((ch, tx) => {
-        if (ch !== 'T' || !open(tx, ty - 1)) return;
+        if (ch !== 'T') return;
+        const gc = ground(tx, ty); rt.draw(tileKey(gc, tx, ty, null, null), tx * TILE, ty * TILE);
+        g.fillStyle(0x000000, 0.32).fillEllipse(tx * TILE + 9, ty * TILE + 13, 18, 7);
+      }));
+      map.layout.forEach((row, ty) => [...row].forEach((ch, tx) => {
+        if (ch !== 'T') return;
         const frame = (tx * 7 + ty * 13) % 2 ? 'fg.canopy#1' : 'fg.canopy';
-        this.propSprites.push(this.add.image(tx * TILE + 8, ty * TILE + TILE - 1, 'props', frame).setOrigin(0.5, 1).setDepth(ty * TILE + TILE - 2).setFlipX(((tx * 3 + ty) % 4) < 2));
+        this.propSprites.push(this.add.image(tx * TILE + 8, ty * TILE + TILE - 1, 'props', frame).setOrigin(0.5, 1).setScale(map.propScale ?? 1).setDepth(ty * TILE + TILE - 2).setFlipX(((tx * 3 + ty) % 4) < 2));
       }));
     }
     for (const t of Object.values(this.leverLabels ?? {})) t.destroy(); this.leverLabels = {}; this.leverGfx?.clear();
@@ -761,6 +768,11 @@ export class WorldScene extends Phaser.Scene {
     // little right and down as if lit from the top left. One graphics object per map, under the props.
     const propShadow = this.add.graphics().setDepth(3); this.propSprites.push(propShadow);
     const shadowUnder = (cx, by, w) => { propShadow.fillStyle(0x000000, 0.5).fillEllipse(cx + 1, by - 1, w, Math.max(3, Math.round(w / 4))); propShadow.fillStyle(0x000000, 0.28).fillEllipse(cx + 2, by, w + 4, Math.max(4, Math.round(w / 3))); };
+    // Proportion pass (Manuel: "objects are small compared to the room or street"): standing furniture and scenery
+    // are drawn map.propScale bigger (1.5 outdoors, 1.25 indoors: whole screen pixels at zoom 4), anchored at the
+    // bottom centre of their tile. Wall pieces, doors, exits and people keep their size. Collisions don't change.
+    const PK = map.propScale ?? 1, onWall = (o) => '#='.includes(map.layout[o.y]?.[o.x] ?? '#');
+    const scaled = (o) => (!o.npc && !o.floor && !o.door && o.action !== 'exit' && !onWall(o) ? (o.scale ?? PK) : 1);
     for (const o of map.objects) {
       if (o.romance || o.selfDrawn || o.lever) continue;     // drawn by src/game/romance.js / gear.js / _drawLevers
       const art = o.art ?? o.id;   // several objects can share one drawing
@@ -778,21 +790,26 @@ export class WorldScene extends Phaser.Scene {
         continue;
       }
       if (this.textures.exists('wide') && this.textures.get('wide').has(art)) {
+        if (!onWall(o)) {   // a wide piece standing on the floor (a car): centred on its two tiles, scaled like the rest
+          const k = scaled(o), wim = this.add.image(o.x * TILE + TILE, o.y * TILE + TILE, 'wide', art).setOrigin(0.5, 1).setScale(k).setDepth(o.y * TILE + TILE - 4);
+          shadowUnder(o.x * TILE + TILE, o.y * TILE + TILE, 28 * k); this.propSprites.push(wim); this.propById[o.id] = { im: wim, sheet: 'wide', art };
+          continue;
+        }
         // Wall piece: 32x16, covering this wall tile and the one to its right.
         this.propSprites.push(this.add.image(o.x * TILE, o.y * TILE + TILE + 7, 'wide', art).setOrigin(0, 1).setDepth(o.y * TILE + TILE + 2));
         continue;
       }
       if (this.textures.exists('big') && this.textures.get('big').has(art)) {
         // Big piece: 32x40, centred on its tile and standing on the tile's bottom edge.
-        const bim = this.add.image(o.x * TILE + TILE / 2, o.y * TILE + TILE, 'big', art).setOrigin(0.5, 1).setDepth(o.floor ? 2 : o.y * TILE + TILE - 4);
-        if (!o.floor) shadowUnder(o.x * TILE + TILE / 2, o.y * TILE + TILE, 26);
+        const kb = scaled(o), bim = this.add.image(o.x * TILE + TILE / 2, o.y * TILE + TILE, 'big', art).setOrigin(0.5, 1).setScale(kb).setDepth(o.floor ? 2 : o.y * TILE + TILE - 4);
+        if (!o.floor) shadowUnder(o.x * TILE + TILE / 2, o.y * TILE + TILE, 26 * kb);
         this.propSprites.push(bim); this.propById[o.id] = { im: bim, sheet: 'big', art };
         continue;
       }
       if (props?.has(art)) {
         // Hand-drawn prop: 16x24, standing on its tile. A "#1" frame means a slow two-frame loop.
-        const im = this.add.image(o.x * TILE, o.y * TILE + TILE, 'props', art).setOrigin(0, 1).setDepth(o.floor ? 2 : o.y * TILE + TILE - 4);
-        if (!o.floor && !o.npc) shadowUnder(o.x * TILE + TILE / 2, o.y * TILE + TILE, 12);
+        const kp = scaled(o), im = this.add.image(o.x * TILE + TILE / 2, o.y * TILE + TILE, 'props', art).setOrigin(0.5, 1).setScale(kp).setDepth(o.floor ? 2 : o.y * TILE + TILE - 4);
+        if (!o.floor && !o.npc) shadowUnder(o.x * TILE + TILE / 2, o.y * TILE + TILE, 12 * kp);
         if (props.has(`${art}#1`)) this.propTimers.push(this.time.addEvent({ delay: 420, loop: true, callback: () => im.active && im.setFrame(im.frame.name === art ? `${art}#1` : art) }));
         this.propSprites.push(im); this.propById[o.id] = { im, sheet: 'props', art };
         continue;
@@ -807,9 +824,9 @@ export class WorldScene extends Phaser.Scene {
     // walls to the sim (build.js). A "#1" frame loops, every `anim` ms (default 420).
     const hasArt = (sheet, art) => this.textures.exists(sheet) && this.textures.get(sheet).has(art);
     for (const s of map.scenery ?? []) {
-      const pl = sceneryPlacement(s, hasArt); if (!pl) continue;
-      const im = this.add.image(pl.x, pl.y, pl.sheet, s.art).setOrigin(...pl.origin).setDepth(s.floor ? 2 : pl.y - 4).setFlipX(!!s.flip);
-      if (!s.floor) shadowUnder(pl.sheet === 'big' ? pl.x : s.x * TILE + (pl.sheet === 'wide' ? TILE : TILE / 2), pl.y, pl.shadow);
+      const pl = sceneryPlacement(s, hasArt, s.scale ?? PK); if (!pl) continue;
+      const im = this.add.image(pl.x, pl.y, pl.sheet, s.art).setOrigin(...pl.origin).setScale(pl.k).setDepth(s.floor ? 2 : pl.y - 4).setFlipX(!!s.flip);
+      if (!s.floor) shadowUnder(pl.x, pl.y, pl.shadow);
       if (hasArt(pl.sheet, `${s.art}#1`)) this.propTimers.push(this.time.addEvent({ delay: s.anim ?? 420, loop: true, callback: () => im.active && im.setFrame(im.frame.name === s.art ? `${s.art}#1` : s.art) }));
       this.propSprites.push(im);
     }

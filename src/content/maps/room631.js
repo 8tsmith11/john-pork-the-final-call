@@ -33,6 +33,7 @@ for (const [x0, y0, w, h] of [[4, 8, 5, 3], [10, 8, 4, 3]]) {
 
 export const room631 = makeMap({
   id: 'room631',
+  propScale: 1.25,   // furniture in proportion with the rooms (Manuel)
   name: 'Room 631, ASTER',
   layout: LAYOUT,
   spawns: [[5, 8], [7, 9], [9, 8]],
@@ -72,9 +73,9 @@ export const room631 = makeMap({
     { id: 'obj.plant', x: 14, y: 11, label: 'Plant', text: 'A pothos that has survived three roommates, two coderot scares and one week where everyone forgot it existed.' },
     { id: 'obj.house_rules', x: 6, y: 5, label: 'House rules (taped up)', text: '631 HOUSE RULES: 1. Don\'t touch Manuel\'s statues. 2. Don\'t feed the shrimp, Trevor feeds the shrimp. 3. Whoever finishes the mate makes more. 4. No Continuity people in the apartment. 5. (scribbled out) 6. Rookie Aster mistakes are forgiven once.' },
     { id: 'obj.door', x: 0, y: 8, label: 'Front door (hallway)', action: 'exit', to: 'aster_hall', text: 'The sixth-floor hallway. It smells like someone else\'s dinner.' },
-    { id: 'obj.statue_1', x: 2, y: 6, label: 'Statue', text: 'One of Manuel\'s John Pork statues, guarding the door. The eyes are very well done.' },
-    { id: 'obj.statue_2', x: 2, y: 10, label: 'Statue', text: 'Another statue by the entrance. Its head is turned slightly toward the engineering room. Was it always?' },
-    { id: 'obj.statue_3', x: 5, y: 11, label: 'Statue', text: 'The newest statue. Manuel says he finished it last week. He doesn\'t remember sanding it.' },
+    { id: 'obj.statue_1', scale: 1, x: 2, y: 6, label: 'Statue', text: 'One of Manuel\'s John Pork statues, guarding the door. The eyes are very well done.' },
+    { id: 'obj.statue_2', scale: 1, x: 2, y: 10, label: 'Statue', text: 'Another statue by the entrance. Its head is turned slightly toward the engineering room. Was it always?' },
+    { id: 'obj.statue_3', scale: 1, x: 5, y: 11, label: 'Statue', text: 'The newest statue. Manuel says he finished it last week. He doesn\'t remember sanding it.' },
     { id: 'obj.mate', x: 6, y: 6, label: 'Mate station (heal, refill, caffeine)', action: 'mate', text: 'Manuel\'s mate gear on the counter. Still warm. Someone was up at 3 a.m.' },
     { id: 'obj.fridge', x: 10, y: 6, label: 'Fridge', text: 'A jar labeled DO NOT. Someone has written "I hate 245 lab" in the condensation.' },
     { id: 'obj.table', x: 6, y: 9, label: 'Dining table', text: 'A pacifier nobody will explain.' },
