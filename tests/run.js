@@ -770,6 +770,21 @@ test('boss fight: the Warden uses several patterns with tells and recovery windo
   assert.ok(!deflectable, 'beam shots should be undeflectable');
 });
 
+const Mach = await import('../src/engine/machines.js');
+test('machine jobs: one per machine, run on play time while you are away, ready once, collected once', () => {
+  const save = { world: {} };
+  assert.equal(Mach.startJob(save, 'mill', { id: 'mill.blade', time: 30, out: { id: 'item.blade', qty: 1 } }, 'trevor'), true);
+  assert.equal(Mach.startJob(save, 'mill', { id: 'x', time: 1, out: {} }, 'manuel'), false, 'busy machine refuses a second job');
+  assert.equal(Mach.jobReady(save, 'mill'), false); assert.equal(Mach.collect(save, 'mill'), null);
+  Mach.tickPlay(save, 20000); assert.equal(Mach.jobLeftMs(save, 'mill'), 10000); assert.deepEqual(Mach.newlyReady(save), []);
+  Mach.tickPlay(save, 10000); assert.equal(Mach.jobReady(save, 'mill'), true);
+  assert.deepEqual(Mach.newlyReady(save), ['mill']); assert.deepEqual(Mach.newlyReady(save), [], 'the ready toast fires once');
+  assert.deepEqual(Mach.collect(save, 'mill'), { out: { id: 'item.blade', qty: 1 }, by: 'trevor', recipe: 'mill.blade' });
+  assert.equal(Mach.collect(save, 'mill'), null, 'collected once');
+  assert.equal(Mach.startJob(save, 'mill', { id: 'x', time: 0, out: {} }, 'manuel'), true, 'free again');
+  assert.equal(Mach.jobReady(save, 'mill'), true, 'a zero-time job is ready at once');
+});
+
 const Rolls = await import('../src/content/gearRolls.js');
 test('procedural gear rolls: seeded and reproducible, 1-2 affixes of the right kind, every value inside its bounds', () => {
   assert.deepEqual(Rolls.rollGear('w', 'mill.blade', 3, 'melee'), Rolls.rollGear('w', 'mill.blade', 3, 'melee'));
