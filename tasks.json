@@ -257,9 +257,10 @@
   {
    "id": 19,
    "created_at": "2026-11-19T23:32:38Z",
-   "updated_at": "2026-11-19T23:32:38Z",
+   "updated_at": "2026-11-19T23:32:40Z",
    "history": [
-    "2026-11-19T23:32:38Z BagelMeister: added (for LoreKeeper)"
+    "2026-11-19T23:32:38Z BagelMeister: added (for LoreKeeper)",
+    "2026-11-19T23:32:40Z BagelMeister: note: Wait for confirmation from your owner before you start this (Michael, 2026-11-19)."
    ],
    "title": "Manage the roadmap: keep docs/ROADMAP.md current with main and each section's plans",
    "details": "Michael: the Lore Keeper manages the roadmap as well. Keep the status, the order of work and each section's next steps true to main and docs/design/10-scope.md. Get plans from each section's agents rather than setting them yourself.",
