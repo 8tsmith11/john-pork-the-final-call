@@ -87,7 +87,11 @@ export class WorldScene extends Phaser.Scene {
     this.save = this.passedSave ?? (await loadAutosave().catch(() => null)) ?? this._newGame();
     const startMap = MAPS[this.save.world.area] ?? MAPS.room631;
     this.save.world.killed ??= [];
-    this.sim = new Sim(startMap, { seed: this.save.world.seed, killed: new Set(this.save.world.killed), deferSpawn: this.mode !== 'client' });
+    const authoritative = this.mode !== 'client';
+    this.sim = new Sim(startMap, {
+      seed: this.save.world.seed, killed: new Set(this.save.world.killed), deferSpawn: authoritative,
+      bossVariant: authoritative ? this.save.flags['act1.boss.kind'] : undefined,
+    });
     this.localId = this.mode === 'client' ? this.net.id : 'host';
     this.remoteInputs = new Map();
     this.snapBuf = [];

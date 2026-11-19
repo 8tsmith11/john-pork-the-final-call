@@ -50,6 +50,30 @@ test('startup stays eager by default and deferred spawning preserves killed enem
   assert.equal(loaded.enemies.size, 0); assert.equal(loaded.events.length, 0);
 });
 
+test('recorded constructor settings apply before eager and deferred initial spawning', () => {
+  for (const deferSpawn of [false, true]) {
+    const sim = new Sim(MAPS_FOR_TEST.platform, { bossVariant: 'sahur', deferSpawn });
+    if (deferSpawn) { addSpawnParty(sim); sim.spawnEnemies(); }
+    const boss = [...sim.enemies.values()].find((e) => e.boss);
+    assert.equal(boss.kind, 'boss.sahur');
+    assert.equal(sim.snapshot().enemies.find((e) => e.boss).k, 'boss.sahur');
+    assert.equal(sim.events.filter((e) => e.t === 'boss').length, 1);
+  }
+});
+test('missing or unknown recorded settings preserve defaults and killed spawns stay killed', () => {
+  const map = MAPS_FOR_TEST.platform;
+  for (const bossVariant of [undefined, 'warden', 'future-choice']) {
+    const sim = new Sim(map, { bossVariant, deferSpawn: true });
+    addSpawnParty(sim); sim.spawnEnemies();
+    const boss = [...sim.enemies.values()].find((e) => e.boss);
+    assert.equal(boss.kind, 'boss.warden'); assert.equal(boss.def.hp, 720);
+  }
+  const killed = new Set(map.enemies.map((_, i) => `${map.id}#${i}`));
+  const restored = new Sim(map, { bossVariant: 'sahur', deferSpawn: true, killed });
+  addSpawnParty(restored); restored.spawnEnemies();
+  assert.equal(restored.enemies.size, 0); assert.equal(restored.events.length, 0);
+});
+
 test('authored elite tuples preserve ordinary spawns and cannot replace their coordinates', () => {
   const map = makeMap({ id: 'elite-test', name: 'Test', layout: ['.....'], spawns: [[0, 0]],
     enemies: [['enemy.rotling', 1, 0], ['enemy.spitter', 3, 0, { elite: 'armored', x: -1, kind: 'bad' }]] });
