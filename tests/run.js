@@ -826,6 +826,22 @@ test('registry bosses (defineBoss): each one placed on a map spawns as a sleepin
   assert.equal(placed.size, Object.keys(BossReg.BOSSES).length, 'every registry boss should be placed on some map');
 });
 
+const SideQ = await import('../src/content/sideQuests.js');
+test('side quests (sideQuests.js): every giver, object, item, boss and person they point at exists, so each can be finished', async () => {
+  const { ITEMS } = await import('../src/content/items.js');
+  const ids = new Set(Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.map((o) => o.id)));
+  const bosses = new Set(Object.values(MAPS_FOR_TEST).flatMap((m) => m.enemies.map((e) => e.kind)));
+  for (const q of SideQ.SIDE_QUESTS) {
+    assert.ok(ids.has(q.giver), `${q.id}: giver ${q.giver} is on no map`);
+    if (q.inspect) assert.ok(ids.has(q.inspect.obj), `${q.id}: ${q.inspect.obj} is on no map`);
+    if (q.give) assert.ok(ITEMS[q.give.item], `${q.id}: no item ${q.give.item}`);
+    if (q.target?.boss) assert.ok(bosses.has(q.target.boss), `${q.id}: ${q.target.boss} is on no map`);
+    if (q.target?.npc) assert.ok(ids.has(q.target.npc), `${q.id}: ${q.target.npc} is on no map`);
+    assert.ok(q.inspect || q.give || q.target, `${q.id}: nothing to do`);
+  }
+  assert.equal(new Set(SideQ.SIDE_QUESTS.map((q) => q.id)).size, SideQ.SIDE_QUESTS.length, 'side quest ids are unique');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));

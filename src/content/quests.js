@@ -7,6 +7,8 @@
 // second, advances, toasts, and pays rewards. Side quests start when `start` passes (usually a flag
 // set by talking to the giver). Writers (gonman / docs/design/05-quests.md) extend this table.
 
+import { SIDE_QUESTS } from './sideQuests.js';
+
 export const QUESTS = [
   {
     id: 'main.balloon', why: "Someone forced the front door tonight and took Manuel\'s orange balloon from his closet. Get it back before morning: Continuity\'s vans are sniffing for it, and the code rot under the station could get College Park walled in.", title: 'The balloon', main: true, act: 1,
@@ -143,3 +145,6 @@ export function questState(save) {
   for (const q of QUESTS) s[q.id] ??= { stage: 0, started: !!q.main, done: false };
   return s;
 }
+
+// [SCAFFOLD] Acts 2 and 3 side quests, built from compact specs (src/content/sideQuests.js).
+QUESTS.push(...SIDE_QUESTS);

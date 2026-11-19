@@ -1,6 +1,9 @@
 // Spanish for quests (task #28, trevor's share). Keys are the exact English in src/content/quests.js:
 // if you change an English string there, change its key here too (tests/run.js checks coverage).
+import { ES_SIDE_QUESTS } from '../content/sideQuests.js';
+
 export const ES_QUESTS = {
+  ...ES_SIDE_QUESTS,   // Acts 2 and 3 side quests keep their Spanish beside the English
   'The balloon': 'El globo',
   "Someone forced the front door tonight and took Manuel's orange balloon from his closet. Get it back before morning: Continuity's vans are sniffing for it, and the code rot under the station could get College Park walled in.": "Alguien forzó la puerta esta noche y se llevó el globo naranja del clóset de Manuel. Recupéralo antes de la mañana: las camionetas de Continuidad lo están rastreando, y la podredumbre bajo la estación podría hacer que amurallen College Park.",
   "Check Manuel's closet.": 'Revisa el clóset de Manuel.',
