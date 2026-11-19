@@ -9,9 +9,9 @@ import * as Settings from '../../settings.js';
 import { sellPrice, ITEMS, RECIPES, SKILLS, SHOPS, playerMods, ARMOR_SLOTS, GEAR_SLOTS, WEAPON_SLOTS, SLOT_NAMES, MAX_UPGRADE, upgradeCost, scaleMods, canWear } from '../../content/items.js';
 import { MAPS } from '../../content/maps/index.js';
 import { GUIDE_PEOPLE, guideText } from '../../content/guide.js';
-import { ABILITIES, ABILITY_KEYS, MAX_SCORE, modOf, fmtMod, scoresOf } from '../../content/abilities.js';
+import { ABILITIES, ABILITY_KEYS, MAX_SCORE, modOf, fmtMod, scoresOf, raiseCost } from '../../content/abilities.js';
 import { canPay, count, has, worn } from '../../engine/inventory.js';
-import { SKILL_TREE, skillOpen } from '../../content/skills.js';
+import { SKILL_TREE, skillOpen, tierLevel } from '../../content/skills.js';
 import { ROOMMATES } from '../scenes/BootScene.js';
 import { looksFor, wearTexture } from '../render/wearables.js';
 import { QUESTS, questState, questVisible } from '../../content/quests.js';
@@ -460,7 +460,8 @@ export class GameMenu {
     this.tip.push(this._t(t.x, t.y, n.name, { ...F(9, C.hi), wordWrap: { width: t.w } }));
     this.tip.push(this._t(t.x, t.y + 12, `rank ${r}/${n.max}`, F(7, r >= n.max ? C.ok : C.sub)));
     this.tip.push(this._t(t.x, t.y + 24, n.text, { ...F(7, C.text), wordWrap: { width: t.w } }));
-    const foot = r >= n.max ? 'Maxed.' : !open ? `Needs: ${need.join(', ')}` : (c.skillPoints ?? 0) > 0 ? 'Click to learn (1 point).' : 'No points. Level up.';
+    const lvNeed = tierLevel(n), lowLv = (c.level ?? 1) < lvNeed;
+    const foot = r >= n.max ? 'Maxed.' : lowLv ? `Opens at level ${lvNeed}.` : !open ? `Needs: ${need.join(', ')}` : (c.skillPoints ?? 0) > 0 ? 'Click to learn (1 point).' : 'No points. Level up.';
     this.tip.push(this._t(t.x, t.y + 92, foot, { ...F(7, !open ? C.bad : C.ok), wordWrap: { width: t.w } }));
   }
 
@@ -733,16 +734,17 @@ export class GameMenu {
   _stats(g) {
     const s = this.scene, b = this.box, who = s.character, c = s.save.party[who], sc = scoresOf(c, who), pts = c.abilityPoints ?? 0;
     this._t(b.x + 14, b.y + 26, `${ROOMMATES[who].name} · level ${c.level}`, F(9, C.text));
-    this._t(b.x + b.w - 14, b.y + 26, pts ? `${pts} point${pts > 1 ? 's' : ''} to spend` : 'no points to spend (2 per level)', F(8, pts ? C.hi : C.sub)).setOrigin(1, 0);
+    this._t(b.x + b.w - 14, b.y + 26, pts ? `${pts} point${pts > 1 ? 's' : ''} to spend` : 'no points to spend (1 per level, 2 every 5th)', F(8, pts ? C.hi : C.sub)).setOrigin(1, 0);
     ABILITY_KEYS.forEach((k, i) => {
-      const y = b.y + 44 + i * 28, x = b.x + 14, score = sc[k], m = modOf(score), can = pts > 0 && score < MAX_SCORE;
+      const y = b.y + 44 + i * 28, x = b.x + 14, score = sc[k], m = modOf(score), cost = raiseCost(score), can = pts >= cost && score < MAX_SCORE;
       g.fillStyle(0x151827).fillRoundedRect(x, y, b.w - 28, 24, 3).lineStyle(1, can ? 0xffb347 : C.dim, can ? 0.7 : 0.4).strokeRoundedRect(x, y, b.w - 28, 24, 3);
       this._t(x + 8, y + 4, ABILITIES[k].short, F(10, C.hi));
       this._t(x + 40, y + 3, ABILITIES[k].name, F(8, C.text));
       this._t(x + 40, y + 13, ABILITIES[k].does, F(6, C.sub));
       this._t(x + b.w - 120, y + 5, `${score}`, F(11, C.text)).setOrigin(1, 0);
       this._t(x + b.w - 112, y + 7, `(${fmtMod(m)})`, F(8, m > 0 ? C.ok : m < 0 ? C.bad : C.sub));
-      if (can) this._t(x + b.w - 40, y + 5, '+ 1', F(10, C.hi), () => s.menuAbility(k)).setOrigin(1, 0);
+      if (score >= MAX_SCORE) this._t(x + b.w - 40, y + 7, 'max', F(8, C.ok)).setOrigin(1, 0);
+      else this._t(x + b.w - 40, y + 5, `+1 (${cost} pt${cost > 1 ? 's' : ''})`, F(can ? 9 : 8, can ? C.hi : '#4a5175'), can ? () => s.menuAbility(k) : undefined).setOrigin(1, 0);   // higher scores cost more
     });
   }
 }

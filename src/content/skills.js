@@ -14,6 +14,8 @@
 //   reviveHeal              HP a roommate you pick up gets on top of the usual
 // Layout: col 0-2 (branch), row 0-3 (tier); the capstone sits at col 1, row 4.
 
+import { TIER_LEVEL } from './progression.js';
+
 export const SKILL_TREE = {
   trevor: {
     branches: ['LOUD', 'SCRAPPY', 'SHRIMP DAD'],
@@ -71,8 +73,14 @@ export const SKILL_TREE = {
   },
 };
 
+// A deeper tree (Trevor: "too low of a ceiling"): first-row nodes go to 5 ranks and second-row nodes to 3, so a
+// tree holds ~32 ranks against 29 points by the level cap. You can't take everything; rows open by level.
+for (const t of Object.values(SKILL_TREE)) for (const n of t.nodes) { if (n.row === 0 && n.max === 3) n.max = 5; else if (n.row === 1 && n.max === 2) n.max = 3; }
+
 export const skillNode = (who, id) => SKILL_TREE[who]?.nodes.find((n) => n.id === id);
-export const skillOpen = (who, char, n) => (n.req || []).every((r) => (char.skills?.[r] ?? 0) > 0);
+/** A node opens when its prerequisites have a rank and the roommate is high enough level for its row. */
+export const skillOpen = (who, char, n) => (char.level ?? 1) >= tierLevel(n) && (n.req || []).every((r) => (char.skills?.[r] ?? 0) > 0);
+export const tierLevel = (n) => TIER_LEVEL[n.row] ?? 1;
 
 /** Old flat skills (before the trees): refund their points so nobody loses progress. */
 export function migrateSkills(char, who) {

@@ -58,13 +58,13 @@ import { RunningGags } from '../runningGags.js';
 import { Approach } from '../approach.js';
 import { Pacifier } from '../pacifier.js';
 import { GuitarStands } from '../guitarStands.js';
-import { ABILITY_KEYS, BASE_SCORES, MAX_SCORE } from '../../content/abilities.js';
+import { ABILITY_KEYS, BASE_SCORES, MAX_SCORE, raiseCost } from '../../content/abilities.js';
+import { addXp, xpToNext, xpScale } from '../../content/progression.js';
 import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
 import { puzzleFor } from '../../content/puzzles.js';
 import { use as usePuzzle } from '../../content/puzzleKit.js';
 
 const STEP = 1 / 60;
-const XP_PER_LEVEL = 30;
 const TRAIT_LABEL = { sprinter: 'fast', armored: 'armored', splitter: 'splits', puddler: 'leaks coderot', blinker: 'blinks' };
 const MORPH_UNLOCK = {
   trevor: 'Trevor\'s supplement stack finally hits all at once. Morph stage 1 unlocked. [M]',
@@ -1127,8 +1127,9 @@ export class WorldScene extends Phaser.Scene {
     const c = this.save.party[who];
     if (!c || !(c.abilityPoints > 0) || !ABILITY_KEYS.includes(key)) return;
     c.abilities ??= { ...(BASE_SCORES[who] ?? {}) };
-    if ((c.abilities[key] ?? 10) >= MAX_SCORE) return;
-    c.abilities[key] = (c.abilities[key] ?? 10) + 1; c.abilityPoints--;
+    const now = c.abilities[key] ?? 10, cost = raiseCost(now);
+    if (now >= MAX_SCORE || c.abilityPoints < cost) return;
+    c.abilities[key] = now + 1; c.abilityPoints -= cost;
     this._syncParty();
   }
   menuLearn(id) { if (this.mode === 'client') this.net.send({ t: 'skill', id }); else this._learn(this.character, id); }
@@ -1353,7 +1354,7 @@ export class WorldScene extends Phaser.Scene {
       if (st.stage >= q.stages.length) {
         st.done = true;
         if (this.mode !== 'client') { W.addEach(this.save, q.reward?.money ?? 0, (w) => questVisible(q, w));   // each roommate gets the reward
- for (const [who, c] of Object.entries(this.save.party)) if (questVisible(q, who)) c.xp += q.reward?.xp ?? 0; if (q.reward?.item) Inv.add(this.save.party[q.owner ?? this.character], q.reward.item); this._partyDirty = true; }
+ for (const [who, c] of Object.entries(this.save.party)) if (questVisible(q, who)) this._levelsReached(who, c, addXp(c, (q.reward?.xp ?? 0) * xpScale(q.act))); if (q.reward?.item) Inv.add(this.save.party[q.owner ?? this.character], q.reward.item); this._partyDirty = true; }
         if (mine) this._questBanner('QUEST COMPLETE', q.title, [q.reward?.money ? `+$${q.reward.money}` : '', q.reward?.xp ? `+${q.reward.xp} xp` : '', q.reward?.item ? ITEMS[q.reward.item]?.name : ''].filter(Boolean).join('   '));
         if (this._trackedQuest === q.id) this._trackedQuest = null;
         if (q.reward?.line && mine) this._say(q.reward.line);
@@ -1397,11 +1398,19 @@ export class WorldScene extends Phaser.Scene {
     this._say(head + J.open.map((j) => `${this._jobDone(j) ? '✓' : '·'} ${jobLine(j, es)}`).join('\n'));
   }
   _grantXp(n) {
-    for (const [who, c] of Object.entries(this.save.party)) {
-      c.xp += n;
-      while (c.xp >= c.level * XP_PER_LEVEL) { c.xp -= c.level * XP_PER_LEVEL; c.level++; c.skillPoints++; c.abilityPoints = (c.abilityPoints ?? 0) + 2; this._announce(`${who} reached level ${c.level}. (+1 skill point)`); }
-    }
+    for (const [who, c] of Object.entries(this.save.party)) this._levelsReached(who, c, addXp(c, n));
     this._partyDirty = true;
+  }
+
+  // One place for what reaching a level announces and unlocks (src/content/progression.js has the numbers).
+  _levelsReached(who, c, levels) {
+    for (const lv of levels) {
+      this._announce(`${who} reached level ${lv}. (+1 skill point, +${lv % 5 === 0 ? 2 : 1} ability point${lv % 5 === 0 ? 's' : ''})`);
+      if (lv >= 3 && c.morph && c.morph.stage < 1) { c.morph.stage = 1; this._announce(MORPH_UNLOCK[who]); }
+      if (who === 'manuel' && lv >= 6 && c.morph && c.morph.stage < 2) {   // Manuel only: stage two
+        c.morph.stage = 2; const p = [...(this.sim?.players.values() ?? [])].find((q) => q.character === who); if (p) p.morphStage = 2; this._announce(GONMAN_UNLOCK);
+      }
+    }
   }
 
   // Side-view cutscene (CinematicScene) over a paused world; resumes when it ends or is skipped.
@@ -2092,13 +2101,7 @@ export class WorldScene extends Phaser.Scene {
         // XP is shared by the party (co-op), levels grant skill points.
         for (const p of this.sim.players.values()) {
           const c = this.save.party[p.character]; if (!c) continue;
-          c.xp += ev.xp;
-          while (c.xp >= c.level * XP_PER_LEVEL) {
-            c.xp -= c.level * XP_PER_LEVEL; c.level++; c.skillPoints++; c.abilityPoints = (c.abilityPoints ?? 0) + 2;   // D-017
-            this._announce(`${p.character} reached level ${c.level}. (+1 skill point)`);
-            if (c.level >= 3 && c.morph.stage < 1) { c.morph.stage = 1; this._announce(MORPH_UNLOCK[p.character]); }
-            if (p.character === 'manuel' && c.level >= 6 && c.morph.stage < 2) { c.morph.stage = 2; p.morphStage = 2; this._announce(GONMAN_UNLOCK); }   // Manuel only: stage two
-          }
+          this._levelsReached(p.character, c, addXp(c, ev.xp * xpScale(this.map.act)));   // Acts 2-3 kills are worth more
         }
       }
     }
@@ -3081,7 +3084,7 @@ export class WorldScene extends Phaser.Scene {
         .setPosition(this.hot.x0 - 6, this.hot.y0 + this.hot.S / 2).setVisible(true);
     } else this.hudAmmo.setVisible(false);
     // Top-right: XP and money, compact.
-    const lines = [`xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `   ◆ ${c.skillPoints} skill pt [K]` : ''}`, `$${W.money(this.save, this.character)}${snap.enemies?.length ? `   coderot ${snap.enemies.length}` : ''}`];
+    const lines = [`xp ${c.xp}/${xpToNext(c.level)}${c.skillPoints ? `   ◆ ${c.skillPoints} skill pt [K]` : ''}`, `$${W.money(this.save, this.character)}${snap.enemies?.length ? `   coderot ${snap.enemies.length}` : ''}`];
     if ((this.save.world.act ?? 1) === 1) lines.unshift(dawnLabel(this.save.flags));   // the dawn clock (P-004): moves with the story only
     this.hudText.setText(lines.join('\n'));
     this.objText ??= this.add.text(VIEW.w - 6, 60, '', { ...FONT, fontSize: '7px', color: '#ffd27f', align: 'right', stroke: '#0b0d16', strokeThickness: 2, wordWrap: { width: 130 } }).setOrigin(1, 0).setScrollFactor(0).setDepth(9001);

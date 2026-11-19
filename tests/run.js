@@ -880,6 +880,28 @@ test('puzzle kit: cycle (fixed, seeded, check), order resets on a wrong part, ti
   for (const p of PUZZLES) for (const o of p.parts) assert.ok(ids.has(o), `puzzle ${p.id}: part ${o} is on no map`);
 });
 
+const Prog = await import('../src/content/progression.js');
+const SkillsP = await import('../src/content/skills.js');
+const Abil = await import('../src/content/abilities.js');
+test('progression (Trevor: too easy, too low a ceiling): steeper curve, costed scores, level-gated tree rows, a tree you cannot finish', () => {
+  // a 14 score to 20 costs 13 points; at one point a level that's well into Act 2, not the Switchman
+  let cost = 0; for (let sc = 14; sc < 20; sc++) cost += Abil.raiseCost(sc);
+  assert.equal(cost, 13);
+  let pts = 0; for (let lv = 2; lv <= 5; lv++) pts += Prog.abilityPointsAt(lv);
+  assert.ok(pts < cost / 2, 'level 5 is nowhere near a maxed score');
+  assert.ok(Prog.xpToNext(1) === 30 && Prog.xpToNext(10) > 1000 && Prog.xpToNext(20) > 3000);
+  const c = { level: 1, xp: 0, skillPoints: 0, abilityPoints: 0 };
+  assert.deepEqual(Prog.addXp(c, 30 + 91), [2, 3]); assert.equal(c.skillPoints, 2); assert.equal(c.abilityPoints, 2);
+  const capped = { level: 29, xp: 0 }; Prog.addXp(capped, 1e9); assert.equal(capped.level, Prog.LEVEL_CAP); assert.equal(capped.xp, 0);
+  assert.ok(Prog.xpScale(3) > Prog.xpScale(2) && Prog.xpScale(2) > Prog.xpScale(1));
+  for (const [who, t] of Object.entries(SkillsP.SKILL_TREE)) {
+    const ranks = t.nodes.reduce((n, x) => n + x.max, 0);
+    assert.ok(ranks > Prog.LEVEL_CAP - 1, `${who}: ${ranks} ranks should outnumber the ${Prog.LEVEL_CAP - 1} points by the cap`);
+    const row1 = t.nodes.find((n) => n.row === 1), lowly = { level: 3, skills: Object.fromEntries((row1.req || []).map((r) => [r, 1])) };
+    assert.ok(!SkillsP.skillOpen(who, lowly, row1), `${who}: row two waits for level ${Prog.TIER_LEVEL[1]}`);
+  }
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
@@ -1248,7 +1270,8 @@ test('skill trees: valid links, capstone needs all three branches, mods sum, old
     const c = { skills: {}, skillPoints: 0, equipped: {} };
     assert.ok(!skillOpen(who, c, cap));
     for (const n of t.nodes) c.skills[n.id] = n.max;
-    assert.ok(skillOpen(who, c, cap));
+    c.level = 19; assert.ok(!skillOpen(who, c, cap), `${who}: the capstone waits for level 20`);
+    c.level = 20; assert.ok(skillOpen(who, c, cap));
     const m = pmods(c, who); assert.ok(m.abilityPower > 0 && m.armor <= (who === 'manuel' ? 0.75 : 0.6));   // Manuel's edge raises his cap
   }
   const old = { skills: { 'skill.trevor.stack': 2, 'tr.amp': 1 }, skillPoints: 1 };

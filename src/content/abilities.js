@@ -1,7 +1,8 @@
 // Ability scores, D&D style (Michael's request, D-017). Six scores per roommate; each gives a
 // modifier = floor((score - 10) / 2), so 10-11 is +0, 14 is +2, 8 is -1. Modifiers feed the sim through
 // playerMods (src/content/items.js) and ability checks (d20 + modifier vs a difficulty, DC).
-// Every level up gives POINTS_PER_LEVEL points to spend (STATS tab); a score caps at MAX_SCORE.
+// Every level gives ability points (src/content/progression.js: one, two on every fifth level). Raising a score
+// costs more the higher it is (raiseCost), up to MAX_SCORE (Trevor: "maxed out str after just switchman").
 
 export const ABILITIES = {
   str: { name: 'Strength', short: 'STR', does: 'melee damage, knockback · Intimidate' },
@@ -12,8 +13,10 @@ export const ABILITIES = {
   cha: { name: 'Charisma', short: 'CHA', does: 'shop prices · Charm, Deceive' },
 };
 export const ABILITY_KEYS = Object.keys(ABILITIES);
-export const POINTS_PER_LEVEL = 2;
-export const MAX_SCORE = 20;
+export const POINTS_PER_LEVEL = 1;   // kept for old readers; the real rule is progression.abilityPointsAt
+export const MAX_SCORE = 26;
+/** Points to raise a score by one from `score`: 1 up to 15, 2 up to 18, 3 up to 22, 4 after (14 to 20 costs 13). */
+export const raiseCost = (score) => (score < 15 ? 1 : score < 18 ? 2 : score < 22 ? 3 : 4);
 
 // Starting spreads (each sums to 68) drawn from who they are: Trevor lifts and plays guitar; Manuel
 // is the engineer who sculpts at 3 a.m.; Michael talks to everyone and reads the signal.
