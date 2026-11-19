@@ -4,6 +4,7 @@
 // be translated piece by piece (dialogue and quests: hub task). Stored per browser.
 import { ES_QUESTS } from './i18n/es-quests.js';
 import { ES_ITEMS } from './i18n/es-items.js';
+import { ES_631 } from './i18n/es-631.js';
 import { ITEMS } from './content/items.js';
 const KEY = 'jpfc.lang';
 let lang = 'en';
@@ -68,6 +69,7 @@ const ES_RX = [
   [/^Armor · (.+)$/, 'Armadura · $1'], [/^Gear · (.+)$/, 'Equipo · $1'],
   [/^→ (.+)$/s, (m, a) => `→ ${ES_ALL[a] ?? a}`],
   [/^\[E\] Talk to (.+)$/, '[E] Hablar con $1'],
+  [/^\[E\] (.+?)( \((?:open|close)\))?$/, (m, a, oc) => `[E] ${ES_ALL[a] ?? a}${oc === ' (open)' ? ' (abrir)' : oc === ' (close)' ? ' (cerrar)' : ''}`],
   [/^Talk to (.+)$/, 'Hablar con $1'],
   [/^(.+) \(too far\)$/, '$1 (muy lejos)'],
   [/^ROOM CODE: (\S+) {3}\(others: Join and type it\)$/, 'CÓDIGO DE SALA: $1   (los demás: Unirse y escribirlo)'],
@@ -91,7 +93,7 @@ for (const [id, def] of Object.entries(ITEMS)) {
   if (def.name) ES_ITEM_STRINGS[def.name] = es[0];
   if (def.text) ES_ITEM_STRINGS[def.text] = es[1];
 }
-const ES_ALL = { ...ES, ...ES_QUESTS, ...ES_ITEM_STRINGS };
+const ES_ALL = { ...ES, ...ES_QUESTS, ...ES_ITEM_STRINGS, ...ES_631 };
 function trOne(s) {
   if (ES_ALL[s] !== undefined) return ES_ALL[s];
   for (const [rx, rep] of ES_RX) if (rx.test(s)) return s.replace(rx, rep);
