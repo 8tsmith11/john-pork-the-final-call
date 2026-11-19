@@ -590,6 +590,10 @@ export class WorldScene extends Phaser.Scene {
     const props = this.textures.exists('props') ? this.textures.get('props') : null;
     for (const s of this.doorVis ?? []) s.vis.destroy();
     this.doorVis = [];
+    // Depth pass (task 13): a soft contact shadow under everything that stands on the floor, offset a
+    // little right and down as if lit from the top left. One graphics object per map, under the props.
+    const propShadow = this.add.graphics().setDepth(3); this.propSprites.push(propShadow);
+    const shadowUnder = (cx, by, w) => { propShadow.fillStyle(0x000000, 0.32).fillEllipse(cx + 1, by - 1, w, Math.max(3, Math.round(w / 4))); propShadow.fillStyle(0x000000, 0.18).fillEllipse(cx + 2, by, w + 4, Math.max(4, Math.round(w / 3))); };
     for (const o of map.objects) {
       if (o.romance || o.selfDrawn || o.lever) continue;     // drawn by src/game/romance.js / gear.js / _drawLevers
       const art = o.art ?? o.id;   // several objects can share one drawing
@@ -614,12 +618,14 @@ export class WorldScene extends Phaser.Scene {
       if (this.textures.exists('big') && this.textures.get('big').has(art)) {
         // Big piece: 32x40, centred on its tile and standing on the tile's bottom edge.
         const bim = this.add.image(o.x * TILE + TILE / 2, o.y * TILE + TILE, 'big', art).setOrigin(0.5, 1).setDepth(o.floor ? 2 : o.y * TILE + TILE - 4);
+        if (!o.floor) shadowUnder(o.x * TILE + TILE / 2, o.y * TILE + TILE, 26);
         this.propSprites.push(bim); this.propById[o.id] = { im: bim, sheet: 'big', art };
         continue;
       }
       if (props?.has(art)) {
         // Hand-drawn prop: 16x24, standing on its tile. A "#1" frame means a slow two-frame loop.
         const im = this.add.image(o.x * TILE, o.y * TILE + TILE, 'props', art).setOrigin(0, 1).setDepth(o.floor ? 2 : o.y * TILE + TILE - 4);
+        if (!o.floor && !o.npc) shadowUnder(o.x * TILE + TILE / 2, o.y * TILE + TILE, 12);
         if (props.has(`${art}#1`)) this.propTimers.push(this.time.addEvent({ delay: 420, loop: true, callback: () => im.active && im.setFrame(im.frame.name === art ? `${art}#1` : art) }));
         this.propSprites.push(im); this.propById[o.id] = { im, sheet: 'props', art };
         continue;
@@ -1904,6 +1910,8 @@ export class WorldScene extends Phaser.Scene {
   _render(snap) {
     const seen = new Set();
     this._reviveCleared = false; if (!snap.players.some((p) => p.dn)) this.reviveGfx?.clear();
+    (this.charShadow ??= this.add.graphics().setDepth(3)).clear();
+    for (const p of snap.players) if (!p.dn) this.charShadow.fillStyle(0x000000, 0.38).fillEllipse(Math.round(p.x) + 1, Math.round(p.y) + 3, 11, 4);
     for (const p of snap.players) {
       seen.add(p.id);
       let s = this.sprites.get(p.id);
