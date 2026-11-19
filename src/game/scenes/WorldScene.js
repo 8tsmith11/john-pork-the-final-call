@@ -24,8 +24,9 @@ import { CompanionBrain, isAi } from '../../engine/companion.js';
 import * as Inv from '../../engine/inventory.js';
 import { syncWear } from '../render/wearables.js';
 import { CallCard } from '../ui/CallCard.js';
-import { tr } from '../../i18n.js';
+import { tr, getLang } from '../../i18n.js';
 import * as Settings from '../../settings.js';
+import { bossTalk } from '../../content/bossTalk.js';
 import { BoardGame } from '../ui/BoardGame.js';
 import { Neon } from '../render/neon.js';
 import { skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
@@ -2382,6 +2383,39 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
+  // Live talk (Trevor): the boss says a line in a bubble over its head and a roommate in the fight answers
+  // by themselves. Nothing pauses, nothing waits for a click; lines queue so two never overlap.
+  _bossTalk(trigger, snap, kind) {
+    const boss = snap?.enemies?.find((e) => e.boss);
+    kind ??= boss?.boss?.sahur ? 'sahur' : 'warden';
+    const t = bossTalk(kind, trigger, getLang());
+    if (!t) return;
+    if (boss) this._liveLine(() => this.enemySprites.get(boss.id), t.line, '#f2a6b8');
+    const up = (snap?.players ?? []).filter((p) => !p.dn && t.reply?.[p.c]);
+    const p = up[Math.floor(Math.random() * up.length)];
+    if (p) this._liveLine(() => this.sprites.get(p.id), t.reply[p.c], '#e8e8f0', p.c);
+  }
+
+  _liveLine(target, text, color, who) {
+    const q = (this._liveQ ??= []);
+    q.push({ target, text, color, who });
+    if (q.length === 1) this._liveNext();
+  }
+
+  _liveNext() {
+    const item = this._liveQ?.[0];
+    if (!item) return;
+    const s = item.target();
+    const ms = 1400 + item.text.length * 55;
+    if (s?.active) {
+      const t = this.add.text(s.x, s.y - 34, item.text, { ...FONT, fontSize: '7px', color: item.color, backgroundColor: '#0b0d16dd', padding: { x: 3, y: 2 }, align: 'center', wordWrap: { width: 160 } }).setOrigin(0.5, 1).setDepth(7100);
+      if (item.who) babble(item.who, item.text);
+      const follow = this.time.addEvent({ delay: 30, loop: true, callback: () => { const z = item.target(); if (t.active && z?.active) t.setPosition(z.x, z.y - 34); } });
+      this.tweens.add({ targets: t, alpha: 0, delay: ms, duration: 300, onComplete: () => { follow.remove(); t.destroy(); } });
+    }
+    this.time.delayedCall(s?.active ? ms * 0.8 : 0, () => { this._liveQ.shift(); this._liveNext(); });
+  }
+
   _bossBar(e) {
     const W = VIEW.w;
     if (!this.bossUi) {
@@ -2466,8 +2500,9 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'boss' && !ev.sahur && this.mode !== 'client') this.save.flags['act1.boss.wardenName'] = ev.name;
     if (ev.t === 'kill' && ev.boss && this.mode !== 'client') { this.save.flags['act1.boss.defeated'] = true; this.save.flags['act1.outbreak.contained'] = true; }
     if (ev.t === 'kill' && ev.boss && !this._endingPlayed) { this._endingPlayed = true; this.time.delayedCall(900, () => this._playEnding(true)); }
-    if (ev.t === 'phase') { this.cameras.main.shake(300, 0.01); this._say(ev.phase === 3 ? 'The Warden overloads. The platform starts rendering wrong.' : 'It changes how it moves.'); }
+    if (ev.t === 'phase') { this.cameras.main.shake(300, 0.01); this._bossTalk(`phase${ev.phase}`, snap); }   // live, never pauses (Trevor)
     if (ev.t === 'tell' && ev.kind) {
+      if (ev.line) { const boss = snap.enemies?.find((e) => e.boss); if (boss) this._liveLine(() => this.enemySprites.get(boss.id), tr(ev.line), '#f2a6b8'); }
       // Boss pattern tells (bossPatterns.js): red = can't deflect or parry, dodge it; amber = deflectable.
       const g = this.add.graphics().setDepth(5500), dur = (ev.dur ?? 0.7) * 1000, col = ev.red ? 0xff4d4d : 0xffb347;
       if (ev.kind === 'charge' || ev.kind === 'beam') {
@@ -2506,7 +2541,7 @@ export class WorldScene extends Phaser.Scene {
     }
     if (ev.t === 'impact') { const c = this.add.circle(ev.x, ev.y, ev.r, 0xffe6ee, 0.8).setDepth(5450); this.tweens.add({ targets: c, scale: 1.6, alpha: 0, duration: 260, onComplete: () => c.destroy() }); sfx('hit'); }
     if (ev.t === 'overload') { this.cameras.main.shake(500, 0.012); this.cameras.main.flash(250, 214, 93, 177); }
-    if (ev.t === 'boss') this._bossIntro(ev);
+    if (ev.t === 'boss') { this._bossIntro(ev); this.time.delayedCall(1900, () => this._bossTalk('intro', this._lastRendered, ev.sahur ? 'sahur' : 'warden')); }
     // Combat feel (docs/research/combat.md): pops for finishers, deflects, perfect dodges, slams.
     const pop = (x, y, text, color) => { const t = this.add.text(x, y, text, { heading: true, fontSize: '7px', color }).setOrigin(0.5).setDepth(6060); this.tweens.add({ targets: t, y: y - 10, alpha: 0, duration: 650, onComplete: () => t.destroy() }); };
     // No screen shake from your own attacks (Trevor): swings, finishers, dash-strikes, parries, slams and hits.
