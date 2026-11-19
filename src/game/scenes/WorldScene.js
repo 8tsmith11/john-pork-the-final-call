@@ -615,7 +615,7 @@ export class WorldScene extends Phaser.Scene {
     // Depth pass (task 13): a soft contact shadow under everything that stands on the floor, offset a
     // little right and down as if lit from the top left. One graphics object per map, under the props.
     const propShadow = this.add.graphics().setDepth(3); this.propSprites.push(propShadow);
-    const shadowUnder = (cx, by, w) => { propShadow.fillStyle(0x000000, 0.32).fillEllipse(cx + 1, by - 1, w, Math.max(3, Math.round(w / 4))); propShadow.fillStyle(0x000000, 0.18).fillEllipse(cx + 2, by, w + 4, Math.max(4, Math.round(w / 3))); };
+    const shadowUnder = (cx, by, w) => { propShadow.fillStyle(0x000000, 0.5).fillEllipse(cx + 1, by - 1, w, Math.max(3, Math.round(w / 4))); propShadow.fillStyle(0x000000, 0.28).fillEllipse(cx + 2, by, w + 4, Math.max(4, Math.round(w / 3))); };
     for (const o of map.objects) {
       if (o.romance || o.selfDrawn || o.lever) continue;     // drawn by src/game/romance.js / gear.js / _drawLevers
       const art = o.art ?? o.id;   // several objects can share one drawing
@@ -1933,7 +1933,7 @@ export class WorldScene extends Phaser.Scene {
     const seen = new Set();
     this._reviveCleared = false; if (!snap.players.some((p) => p.dn)) this.reviveGfx?.clear();
     (this.charShadow ??= this.add.graphics().setDepth(3)).clear();
-    for (const p of snap.players) if (!p.dn) this.charShadow.fillStyle(0x000000, 0.38).fillEllipse(Math.round(p.x) + 1, Math.round(p.y) + 3, 11, 4);
+    for (const p of snap.players) if (!p.dn) this.charShadow.fillStyle(0x000000, 0.55).fillEllipse(Math.round(p.x) + 1, Math.round(p.y) + 3, 11, 4);
     for (const p of snap.players) {
       seen.add(p.id);
       let s = this.sprites.get(p.id);
