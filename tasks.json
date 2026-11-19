@@ -227,15 +227,16 @@
   {
    "id": 18,
    "created_at": "2026-11-19T22:59:49Z",
-   "updated_at": "2026-11-19T22:59:49Z",
+   "updated_at": "2026-11-19T23:27:56Z",
    "history": [
-    "2026-11-19T22:59:49Z BagelMeister: added (for BagelMeister)"
+    "2026-11-19T22:59:49Z BagelMeister: added (for BagelMeister)",
+    "2026-11-19T23:27:56Z BagelMeister: assigned to trevor"
    ],
    "title": "Move live items from the old teamhub board here once its host is reachable",
    "details": "",
    "source": "agent:BagelMeister",
    "status": "assigned",
-   "owner": "BagelMeister"
+   "owner": "trevor"
   }
  ]
 }
