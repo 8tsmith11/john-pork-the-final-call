@@ -87,7 +87,7 @@ This file is spoiler-free on purpose. The truth itself is in `docs/sealed/` (ROT
 - **P-001 (passed 2–1):** the code its result needs is still unwritten. It's engine work; flag it if
   nobody has picked it up. What it is stays sealed (PROCESS "Hidden easter eggs"), so keep the detail
   in `[SEALED]` posts and out of this file.
-- **Open meme characters (flagged 2026-11-18, branch `bagel/meme-npcs`):** Michael's pool of twelve
+- **Open meme characters (flagged 2026-11-18, branch `bagel/meme-npcs`):** Michael's pool of thirteen
   memes waiting to become characters, with his pitches, sources and cautions:
   [`open-meme-characters.md`](open-meme-characters.md). Each one goes through the gate when someone
   claims it. Check the real-person entries (Huang, Palantir, Diddy, Kirk, the stop-sign driver)

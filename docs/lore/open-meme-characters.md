@@ -175,6 +175,28 @@ questions.
   of his footage.
 - Sources: [KYM](https://knowyourmeme.com/memes/stop-sign-what-stop-sign)
 
+### "Clanker" (a slur in 2098)
+- **Meme:** "clanker" started as Star Wars soldiers' insult for battle droids (*Republic Commando*,
+  2005; *The Clone Wars*, 2008), named for the noise they make walking. In mid-2025 it spread on
+  TikTok as a general jokey slur for robots and AI. Know Your Meme made it Meme of the Month for August
+  2025, and coverage from NPR, Axios and Rolling Stone followed.
+- **Michael's pitch (2026-11-18):** people call robots "clankers," and in 2098 the word counts as a
+  real slur.
+- **Fit with canon:** shells (embodied AIs) are ordinary in 2098: care workers, dockhands, abatement
+  crews, companions, enforcers (`bible.md` §2). So the word has real targets. Played straight, the
+  people who say it mean it, a shell who hears it reacts the way a person would, and polite people
+  wince. Rotters and anti-machine factions are natural users. It can also land on Pork, Tim or Sahur,
+  and how each of them takes it is character.
+- **Cautions:** keep the slur's world machine-specific. In 2025 some anti-clanker memes were rebuilt
+  from real racist slurs and civil-rights history ("wireback," "Rosa Sparks"), and Know Your Meme
+  covers the backlash. Don't import those. Our version gets its sting from how 2098 treats shells.
+- Sources: [KYM: clanker](https://knowyourmeme.com/memes/clanker) ·
+  [KYM explainer](https://knowyourmeme.com/editorials/guides/whats-with-all-the-clanker-memes-on-tiktok-the-meaning-of-the-viral-star-wars-slur-for-robots-explained) ·
+  [KYM: the backlash](https://knowyourmeme.com/editorials/whats-with-all-the-anti-clanker-memes-heres-why-people-are-mad-about-robophobic-slurs-like-wireback-and-rosa-sparks) ·
+  [NPR](https://wbhm.org/npr-story/its-2025-the-year-we-decided-we-need-a-widespread-slur-for-robots) ·
+  [Axios](https://www.axios.com/2025/08/06/ai-chatgpt-star-wars-clankers) ·
+  [Rolling Stone](https://rollingstone.com/culture/culture-features/clanker-cogsucker-robot-ai-slurs-viral-1235401262)
+
 ---
 
 ## Declined (2026-11-18)
