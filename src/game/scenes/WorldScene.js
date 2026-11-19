@@ -158,11 +158,20 @@ export class WorldScene extends Phaser.Scene {
   // story scenes reach everyone, NPC talks reach roommates nearby (D-018 via #296/#306/#307).
   async startDialogue(sceneName, nodeId, onDone, label = '') {
     if (this.dlg) return;
-    if (this.mode === 'solo' || this._inShared) return this._startLocal(sceneName, nodeId, onDone);
+    if (this._inShared) return this._startLocal(sceneName, nodeId, onDone);
     const sc = await loadScene(sceneName), node = sc.nodes[nodeId ?? sc.start];
     const scope = node?.scope ?? sc.scope ?? SCOPE_DEFAULT[`${sceneName}:${nodeId ?? sc.start}`] ?? SCOPE_DEFAULT[sceneName] ?? 'nearby';
+    this._dlgScope = scope;
+    if (this.mode === 'solo') return this._startLocal(sceneName, nodeId, () => { this._dlgScope = null; onDone?.(); });
     this._inShared = true;
     try { return await this.shared.start(sceneName, nodeId, onDone, scope, label); } finally { this._inShared = false; }
+  }
+
+  // A story scene (scope 'all') is on someone's screen: the host doesn't step the world, so nobody gets
+  // hit while the party is reading. Ordinary NPC talks don't pause anything.
+  _storyPaused() {
+    const sh = this.shared;
+    return (!!this.dlg && this._dlgScope === 'all') || sh?.active?.scope === 'all' || sh?.watching?.scope === 'all';
   }
 
   async _startLocal(sceneName, nodeId, onDone) {
@@ -1615,7 +1624,7 @@ export class WorldScene extends Phaser.Scene {
           inputs.set(peer, rinp);
           if (rinp.dodge) this.remoteInputs.set(peer, { ...rinp, dodge: false });
         }
-        this.sim.step(STEP, inputs);
+        if (!this._storyPaused()) this.sim.step(STEP, inputs);   // story scenes hold the world still for everyone
         events = events.concat(this.sim.events);
         this.acc -= STEP; first = false;
       }

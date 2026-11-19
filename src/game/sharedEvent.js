@@ -51,7 +51,7 @@ export class SharedEvents {
     this.active = { id, last: '', scope };
     const me = s._lastRendered?.players?.find((p) => p.id === s.localId);
     if (scope !== 'self') this._send({ t: 'evStart', id, main: s.character, scope, map: s.map?.id, x: me?.x ?? 0, y: me?.y ?? 0, label });
-    await s._startLocal(sceneName, nodeId, () => { this._send({ t: 'evEnd', id }); this.active = null; onDone?.(); });
+    await s._startLocal(sceneName, nodeId, () => { this._send({ t: 'evEnd', id }); this.active = null; s._dlgScope = null; onDone?.(); });
     this._pump();
     return true;
   }
