@@ -19,7 +19,7 @@ export function clueFor(objId, sol, drained = false) {
   if (objId === 'obj.work_order') return `\n\nAt the bottom, in pencil: "Yard reset for pump access. A to the ${sol.a.toUpperCase()}. Don't touch B or C. -R."`;
   if (objId === 'obj.sunk_vending') return drained
     ? `\n\nWith the water down you can read what was scratched into the side, deep, like someone had time: "B ${sol.b === 'left' ? '<<<' : '>>>'}"`
-    : '\n\nSomething is scratched into the side, below the waterline. You can see the marks but not read them. If the water were lower...';
+    : '\n\nSomething is scratched into the side, below the waterline. You can see the marks but not read them. If the water were lower... A drain hose runs out of the bay and away north, up toward the pump room.';
   if (objId === 'obj.ledger') return `\n\nThe last entry isn't a name. In the same formal hand: "Lever C, set ${sol.c}, as it was when they stopped coming."`;
   return '';
 }
