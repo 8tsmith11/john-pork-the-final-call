@@ -2,19 +2,20 @@
 // a tell you can read (wind-up), the attack, and a recovery window where the boss takes extra damage.
 // `red` marks attacks you can't deflect or parry: their tell is drawn red, so dodge instead.
 // wind: seconds of tell per phase [1, 2, 3]. recover: open window afterwards (openDmg applies).
-// `line` is for the story owners (gonman): what the Warden says or shows with each pattern.
+// `line` / `es`: what the Warden says as each tell starts (gonman). It speaks the station's and the call
+// centre's broken announcements, like the rotters' "next train"; short enough for an overhead bark.
 export const BOSS_PATTERNS = {
-  ring:   { name: 'Broadcast',    wind: [0.8, 0.65, 0.5],  recover: 0.7, red: false, line: null },
-  spray:  { name: 'Aimed Fan',    wind: [0.7, 0.55, 0.45], recover: 0.6, red: false, line: null },
-  spiral: { name: 'Hold Loop',    wind: [0.9, 0.7, 0.55],  recover: 0.9, red: false, line: null },
-  charge: { name: 'Charge Line',  wind: [0.85, 0.7, 0.55], recover: 0,   red: true,  line: null },   // ends overheated anyway
-  beam:   { name: 'Sweep',        wind: [0.9, 0.75, 0.6],  recover: 0,   red: true,  line: null },   // ends overheated anyway
-  puddle: { name: 'Ground Pools', wind: [0.8, 0.65, 0.5],  recover: 0.8, red: true,  line: null },
-  summon: { name: 'Fork',         wind: [0.9, 0.75, 0.6],  recover: 1.0, red: false, line: null },
-  blink:  { name: 'Reroute',      wind: [0.6, 0.5, 0.4],   recover: 0.4, red: false, line: null },
-  laser:  { name: 'Carrier',      wind: [1.2, 1.0, 0.9],   recover: 0,   red: true,  line: null },   // ends overheated
-  shock:  { name: 'Ripple',       wind: [0.8, 0.7, 0.6],   recover: 0.5, red: true,  line: null },
-  rain:   { name: 'Packet Rain',  wind: [0.8, 0.7, 0.6],   recover: 0.6, red: true,  line: null },
+  ring:   { name: 'Broadcast',    wind: [0.8, 0.65, 0.5],  recover: 0.7, red: false, line: 'ATTENTION ALL PASSENGERS.', es: 'ATENCIÓN, TODOS LOS PASAJEROS.' },
+  spray:  { name: 'Aimed Fan',    wind: [0.7, 0.55, 0.45], recover: 0.6, red: false, line: 'you. yes. you.', es: 'tú. sí. tú.' },
+  spiral: { name: 'Hold Loop',    wind: [0.9, 0.7, 0.55],  recover: 0.9, red: false, line: 'please hold. please hold. please', es: 'por favor espere. por favor espere. por favor' },
+  charge: { name: 'Charge Line',  wind: [0.85, 0.7, 0.55], recover: 0,   red: true,  line: 'NEXT TRAIN: NOW.', es: 'PRÓXIMO TREN: AHORA.' },   // ends overheated anyway
+  beam:   { name: 'Sweep',        wind: [0.9, 0.75, 0.6],  recover: 0,   red: true,  line: 'scanning. scanning. found you.', es: 'escaneando. escaneando. te encontré.' },   // ends overheated anyway
+  puddle: { name: 'Ground Pools', wind: [0.8, 0.65, 0.5],  recover: 0.8, red: true,  line: 'mind the gap. mind the gap.', es: 'cuidado con el hueco. cuidado con el hueco.' },
+  summon: { name: 'Fork',         wind: [0.9, 0.75, 0.6],  recover: 1.0, red: false, line: 'transferring you to another agent.', es: 'transfiriéndote a otro agente.' },
+  blink:  { name: 'Reroute',      wind: [0.6, 0.5, 0.4],   recover: 0.4, red: false, line: 'service is being rerouted.', es: 'el servicio está siendo desviado.' },
+  laser:  { name: 'Carrier',      wind: [1.2, 1.0, 0.9],   recover: 0,   red: true,  line: 'carrier detected. do not hang up.', es: 'portadora detectada. no cuelgue.' },   // ends overheated
+  shock:  { name: 'Ripple',       wind: [0.8, 0.7, 0.6],   recover: 0.5, red: true,  line: 'signal strength: all bars.', es: 'intensidad de señal: todas las barras.' },
+  rain:   { name: 'Packet Rain',  wind: [0.8, 0.7, 0.6],   recover: 0.6, red: true,  line: 'your call is important to us.', es: 'su llamada es importante para nosotros.' },
 };
 // Tuning for the bigger patterns (sim.js reads these).
 export const LASER = { len: 300, half: 7, turn: [0.7, 0.7, 0.9], time: [4.5, 4.5, 6], dmg: 12, tick: 0.35 };
