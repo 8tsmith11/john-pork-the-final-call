@@ -1,22 +1,18 @@
-// Hidden easter egg (Michael's request; 18+, crude humor is always on). NOT in the controls list on
-// purpose: the humans tell each other about it in person. [O] next to an NPC, a crowd person, or another
-// player: your roommate gives them a hand job, it makes a mess on the floor, and the NPC/target pays you $1.
-// Updated per P-001: targets all NPCs (men and women) and other players.
-// Per Trevor's amended approval on message board (#480), Trevor consents to the O key egg (excluding family romance).
+// Optional interaction. See docs/PROPOSALS.md (P-001) and docs/lore/roommates.md.
 import * as W from '../engine/wallet.js';
 import { TILE } from '../engine/sim.js';
 import { audioOut } from '../audio/audio.js';
 
-/** Roommates whose human said their character may be a target (P-001 amended D-007; Manuel, Michael, Trevor #480). */
-export const TARGET_OK = { manuel: true, michael: true, trevor: true };
+/** Roommates who opted in to being targets. */
+export const TARGET_OK = { manuel: true, michael: true, trevor: false };
 /** Roommates whose human said their character may do it to another roommate or player. */
-export const DOER_ON_ROOMMATE_OK = { michael: true, manuel: true, trevor: true };
-/** Never a doer at all (empty following Trevor's consent in #480). */
-export const NEVER_DOER = new Set();
+export const DOER_ON_ROOMMATE_OK = { michael: true, manuel: true, trevor: false };
+/** Roommates whose recorded boundary excludes taking part. */
+export const NEVER_DOER = new Set(['trevor']);
 
 /** Can `doer` (a roommate id) target roommate `target`? Pure, for tests. */
 export function roommateTargetOk(doer, target) {
-  return doer !== target && !NEVER_DOER.has(doer) && TARGET_OK[target] !== false && DOER_ON_ROOMMATE_OK[doer] !== false;
+  return doer !== target && !NEVER_DOER.has(doer) && TARGET_OK[target] === true && DOER_ON_ROOMMATE_OK[doer] === true;
 }
 
 const RANGE = 18, PER_TARGET_COOLDOWN = 20000, ANIM_MS = 1400, PUDDLE_S = 25;

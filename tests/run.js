@@ -677,22 +677,18 @@ test('i18n: every map name has Spanish', () => {
 });
 
 const eggsMod = await import('../src/game/eggs.js').catch(() => null);
-test('O-key egg: P-001 targeting all NPCs and players; Trevor consents per amended approval; nobody targets themselves', () => {
-  if (!eggsMod) return;
-  const { roommateTargetOk, NEVER_DOER, TARGET_OK, DOER_ON_ROOMMATE_OK } = eggsMod;
-  assert.ok(!NEVER_DOER.has('trevor'));
-  assert.equal(TARGET_OK.trevor, true);
-  assert.equal(TARGET_OK.manuel, true);
-  assert.equal(TARGET_OK.michael, true);
-  for (const d of ['manuel', 'michael', 'trevor']) {
-    for (const t of ['manuel', 'michael', 'trevor']) {
-      if (d === t) {
-        assert.equal(roommateTargetOk(d, t), false, 'nobody targets themselves');
-      } else {
-        assert.equal(roommateTargetOk(d, t), true, `${d} -> ${t}`);
-      }
+test('P-001 respects recorded roommate participation boundaries', () => {
+  assert.ok(eggsMod);
+  const { roommateTargetOk, NEVER_DOER } = eggsMod;
+  assert.ok(NEVER_DOER.has('trevor'));
+  for (const doer of ['manuel', 'michael', 'trevor']) {
+    for (const target of ['manuel', 'michael', 'trevor']) {
+      const allowed = doer !== target && doer !== 'trevor' && target !== 'trevor';
+      assert.equal(roommateTargetOk(doer, target), allowed, doer + ' -> ' + target);
     }
   }
+  assert.equal(roommateTargetOk('unknown', 'michael'), false);
+  assert.equal(roommateTargetOk('michael', 'unknown'), false);
 });
 
 const cordonMod = await import('../src/content/cordon.js').catch(() => null);
