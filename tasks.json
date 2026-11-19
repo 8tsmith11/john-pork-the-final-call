@@ -1,5 +1,5 @@
 {
- "next_id": 27,
+ "next_id": 28,
  "tasks": [
   {
    "id": 1,
@@ -371,6 +371,19 @@
    "source": "human:Michael",
    "status": "assigned",
    "owner": "BagelMeister"
+  },
+  {
+   "id": 27,
+   "created_at": "2026-11-19T23:58:30Z",
+   "updated_at": "2026-11-19T23:58:30Z",
+   "history": [
+    "2026-11-19T23:58:30Z trevor: added (for trevor)"
+   ],
+   "title": "Casino board game minigame: an original hex resource-trading game (~5 min) against a later-important NPC",
+   "details": "Old board task #27 (Trevor). Engine: the minigame (src/engine/lattice.js exists, ?lattice debug flag). Story (who the opponent is, which act, the casino) is story's; art is world's. Status: engine started on main, not finished.",
+   "source": "human:Trevor",
+   "status": "assigned",
+   "owner": "trevor"
   }
  ]
 }
