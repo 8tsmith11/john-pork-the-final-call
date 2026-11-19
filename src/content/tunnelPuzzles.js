@@ -65,6 +65,15 @@ export function toggleText(kind, k, state, lang = 'en') {
   return L === 'es' ? `Señal ${k}: ${COL.es[state]}` : `Signal ${k}: ${COL.en[state]}`;
 }
 
+// The midway block (Trevor #514): the panel has no fuses on the first trip down. The spares are up in
+// ASTER with the super (Kess); you go back up, get them, and come down again.
+export const FUSE_TEXT = {
+  dead: { en: 'Nothing. The breaker moves but the panel is dead. The fuse carrier next to it is empty.', es: 'Nada. El disyuntor se mueve pero el tablero está muerto. El portafusibles de al lado está vacío.' },
+  install: { en: 'You seat the four fuses in their clips. The panel hums, then waits for the breakers.', es: 'Encajas los cuatro fusibles en sus pinzas. El tablero zumba, y espera los disyuntores.' },
+  installed: { en: 'Four fuses, seated. The panel is live.', es: 'Cuatro fusibles, en su lugar. El tablero tiene corriente.' },
+  kess: { en: 'KESS: "B-01 spares? For the Green Line gate?" She digs a WMATA box out of a drawer that should not hold that much. "Thirty amp. They test fine. Don\'t tell me what you\'re powering."', es: 'KESS: "¿Repuestos del B-01? ¿Para el portón de la Línea Verde?" Saca una caja de WMATA de un cajón donde no debería caber tanto. "Treinta amperes. Andan bien. No me digan qué van a encender."' },
+};
+
 export const STEP_TEXT = {
   switchyard: { en: 'Somewhere east, something heavy shifts in its track. The yard agrees now. The gate still has power off and its signals at red.', es: 'En algún lugar al este, algo pesado se corre en su riel. El patio ya coincide. El portón sigue sin corriente y con las señales en rojo.' },
   breakers: { en: 'The panel hums. Down the corridor, the departure board flickers awake.', es: 'El tablero zumba. Por el pasillo, el tablero de salidas parpadea y despierta.' },

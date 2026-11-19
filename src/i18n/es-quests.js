@@ -6,9 +6,11 @@ export const ES_QUESTS = {
   "Check Manuel's closet.": 'Revisa el clóset de Manuel.',
   'Look at the front door.': 'Mira la puerta de entrada.',
   'Ask around the ASTER lobby. Somebody saw something at 3 a.m.': 'Pregunta en el lobby de ASTER. Alguien vio algo a las 3 a. m.',
-  'Run down two leads: Halvard under the metro stairs, the lobby camera footage, or the helium trail (print a sniffer at Fab #1).': 'Sigue dos pistas: Halvard bajo las escaleras del metro, el video de la cámara del lobby o el rastro de helio (imprime un rastreador en Fab #1).',
+  "Run down two leads: whoever is selling under the metro stairs, the lobby camera footage, or the helium trail (print a sniffer at Fab #1).": "Sigue dos pistas: quien vende bajo las escaleras del metro, el video de la cámara del lobby o el rastro de helio (imprime un rastreador en Fab #1).",
   "The trail goes down the storm grate into the Green Line. Get past the abatement cordon in the plaza.": "El rastro baja por la rejilla de desagüe hacia la Línea Verde. Pasa el cordón de saneamiento de la plaza.",
-  "Open the gate to the dead platform: set the switchyard, power the breakers, set the signals.": "Abre el portón al andén muerto: pon el patio de maniobras, da corriente a los disyuntores, pon las señales.",
+  "Follow the Green Line tunnels east, toward the old platform.": "Sigue los túneles de la Línea Verde hacia el este, rumbo al andén viejo.",
+  "The gate panel has no fuses. Its sticker says the spares are with the ASTER super, B-01.": "El tablero del portón no tiene fusibles. Su etiqueta dice que los repuestos los tiene la encargada de ASTER, B-01.",
+  "Open the gate to the dead platform. The breaker panel is live now; the gate itself says what else it needs.": "Abre el portón al andén muerto. El tablero de disyuntores ya tiene corriente; el portón mismo dice qué más le falta.",
   "Reach the dead platform. The balloon is down there, and so is the heart of the outbreak.": "Llega al andén muerto. El globo está ahí abajo, y también el corazón del brote.",
 
   'Soup on the landing': 'Sopa en el descanso',

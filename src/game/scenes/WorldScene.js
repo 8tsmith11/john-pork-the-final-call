@@ -32,7 +32,7 @@ import { Neon } from '../render/neon.js';
 import { skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
-import { LAMP_COLORS, GATE_FLAG, breakerState, lampState, breakersSet, lampsSet, gateOpen, puzzleClue, toggleText, STEP_TEXT } from '../../content/tunnelPuzzles.js';
+import { FUSE_TEXT, LAMP_COLORS, GATE_FLAG, breakerState, lampState, breakersSet, lampsSet, gateOpen, puzzleClue, toggleText, STEP_TEXT } from '../../content/tunnelPuzzles.js';
 import { SharedEvents } from '../sharedEvent.js';
 import { Performances } from '../performances.js';
 import { Romance } from '../romance.js';
@@ -590,7 +590,8 @@ export class WorldScene extends Phaser.Scene {
           const prev = this.remoteInputs.get(peer);
           this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, interact: false });
         }
-        if (msg.t === 'flag' && typeof msg.key === 'string' && /^(act\d|dlg\.)/.test(msg.key)) this.save.flags[msg.key] = msg.value ?? true;
+        if (msg.t === 'flag' && typeof msg.key === 'string' && /^(act\d|dlg\.)/.test(msg.key)) this.save.flags[msg.key] = msg.value ?? true
+        if (msg.t === 'flag' && msg.key === 'act1.fuses.in') this._seatFuses();
         if (msg.t === 'item' && this.save.party[msg.who] && ITEMS[`item.${msg.item}`]) { Inv.add(this.save.party[msg.who], `item.${msg.item}`, Math.min(99, msg.n | 0 || 1)); this._syncParty(); }
         if (msg.t === 'standing' && msg.faction in this.save.standing) this.save.standing[msg.faction] += Number(msg.n) || 0;
         if (msg.t === 'exit') this._tryExit(this.sim.map.objects.find((o) => o.id === msg.obj));
@@ -1492,7 +1493,15 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // Task #33: the other two holds on the platform gate (src/content/tunnelPuzzles.js).
+  /** The fuses leave whoever carried them (the host owns inventories; a client's flag lands here too). */
+  _seatFuses() {
+    if (this.mode === 'client') return;
+    const owner = Object.values(this.save.party).find((pc) => Inv.count(pc, 'item.wmata_fuses') > 0);
+    if (owner) { Inv.remove(owner, 'item.wmata_fuses'); this._syncParty(); }
+  }
   _breaker(k) {
+    const L = getLang() === 'es' ? 'es' : 'en';
+    if (!this.save.flags['act1.fuses.in']) { this._flag('act1.fuses.seen', true); sfx('swing'); this._say(FUSE_TEXT.dead[L]); return; }   // midway block (Trevor #514)
     const key = `act1.breaker.${k}`, now = breakerState(this.save.flags, k) === 'down' ? 'up' : 'down', was = breakersSet(this.save.flags, this.save.world.seed);
     this._flag(key, now); sfx('hit'); this.cameras.main.shake(60, 0.002);
     this._toast(toggleText('breaker', k, now, getLang()));
@@ -1994,6 +2003,10 @@ export class WorldScene extends Phaser.Scene {
       return;
     }
     if (near.npc && this.perf?.asleep(near)) { this._say(`${near.label} is fast asleep.`); return; }
+    if (near.id === 'npc.kess' && this.save.flags['act1.fuses.seen'] && !this.save.flags['act1.fuses.got']) {   // Trevor #514
+      this._flag('act1.fuses.got', true); this._grant('item.wmata_fuses');
+      this._say(FUSE_TEXT.kess[getLang() === 'es' ? 'es' : 'en']); return;
+    }
     if (this.romance?.interact(near) || this.gear?.interact(near) || this.stands?.interact(near)) return;
     if (this.approach?.intercept(near)) return;   // D-017: choose how to approach an NPC
     // Story first, quest second: the first talk plays the scene; after that a quest step (pitch,
@@ -2018,6 +2031,15 @@ export class WorldScene extends Phaser.Scene {
       this._flag(near.grantFlag ?? `got.${near.id}`, true); this._grant(near.grant); this._say(near.text ?? ''); return;
     }
     if (/^obj\.switch_[abc]$/.test(near.id)) { this._lever(near.id.slice(-1)); return; }
+    if (near.id === 'obj.fuse_carrier') {               // the midway block: fuses from the ASTER super (Trevor #514)
+      const L = getLang() === 'es' ? 'es' : 'en', f = this.save.flags;
+      if (f['act1.fuses.in']) { this._say(FUSE_TEXT.installed[L]); return; }
+      if (Object.values(this.save.party).some((pc) => Inv.count(pc, 'item.wmata_fuses') > 0)) {   // anyone in the party can be carrying them
+        this._flag('act1.fuses.in', true); this._seatFuses(); sfx('kill');
+        this._say(FUSE_TEXT.install[L]); return;
+      }
+      this._flag('act1.fuses.seen', true); this._say(tr(near.text ?? '')); return;
+    }
     if (near.breaker) { this._breaker(near.breaker); return; }
     if (near.siglamp) { this._siglamp(near.siglamp); return; }
     if (['obj.locker', 'obj.signal_chair', 'obj.departures'].includes(near.id)) { this._say(tr(near.text ?? '') + puzzleClue(near.id, this.save.world.seed, this.save.flags, getLang())); return; }

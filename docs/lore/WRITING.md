@@ -79,6 +79,21 @@
 - [ ] The scene ends on an action or image, not a summary
 - [ ] Read aloud. Cut 20%.
 
+## 6. Quest and hint text only knows what the player knows (Trevor, #514)
+
+Quest stages (`src/content/quests.js`), guide entries (`src/content/guide.js`) and toasts are written
+from the player's side. A stage may only name people, places, objects and mechanics the player has
+already seen or heard about by the time that stage shows.
+
+- Don't name a character before you meet them or someone mentions them. Describe what you'd know
+  instead: "whoever is selling under the metro stairs", not "Halvard".
+- Don't name a puzzle's parts before you've found them. Split the stage: "Follow the tunnels east",
+  then, once you've seen the panel, "The gate panel has no fuses".
+- A stage shows as soon as the one before it is done, so check what the player has seen **at that
+  moment**, not by the end of the stage. If it depends on the route, write the vaguer line.
+- Guide entries already gate on flags (`cond`); give each the flag of the moment it becomes known.
+- Check it the way a new player would: play to the stage, read it, and ask "how would I know that?"
+
 ## Sources (for us)
 - The "not X, it's Y" hinge and other tells: [Decrypt](https://decrypt.co/348923/5-biggest-tells-something-written-ai) · [Daniel Miessler](https://danielmiessler.com/drafts/ai-cliches-old-rhetoric-on-autoplay) · [Sleuthsayers on emotionally explanatory AI fiction](https://www.sleuthsayers.org/2026/02/what-ai-fundamentally-misunderstands.html)
 - Dialogue craft: [Novela](https://novela.so/en/blog/how-to-write-natural-dialogue) · [Final Draft on subtext](https://www.finaldraft.com/blog/how-to-write-subtext-in-dialogue)

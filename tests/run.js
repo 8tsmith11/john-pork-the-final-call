@@ -1094,5 +1094,27 @@ test('the Switchman (Act 1 mid boss): sleeps until you come close, starter gear 
   } finally { Math.random = random; }
 });
 
+const fuseMod = await import('../src/content/tunnelPuzzles.js');
+const fuseQuests = await import('../src/content/quests.js');
+const fuseItems = await import('../src/content/items.js');
+const fuseTunnels = await import('../src/content/maps/tunnels.js');
+test('the fuse errand (Trevor #514): the carrier is in the signal room, the fuses are a key item, and the quest only names the panel once it is seen', () => {
+  const tun = fuseTunnels.tunnel1;
+  const carrier = tun.objects.find((o) => o.id === 'obj.fuse_carrier');
+  assert.ok(carrier, 'no fuse carrier in the tunnels');
+  const b1 = tun.objects.find((o) => o.id === 'obj.breaker_1');
+  assert.ok(Math.abs(carrier.x - b1.x) + Math.abs(carrier.y - b1.y) <= 2, 'the carrier should sit next to the breakers');
+  assert.equal(fuseItems.ITEMS['item.wmata_fuses']?.slot, 'key');
+  for (const k of ['dead', 'install', 'installed', 'kess']) assert.ok(fuseMod.FUSE_TEXT[k].en && fuseMod.FUSE_TEXT[k].es, `FUSE_TEXT.${k}`);
+  const st = fuseQuests.QUESTS.find((q) => q.id === 'main.balloon').stages;
+  const shown = (f) => st.find((s) => !s.done(f, {}))?.text ?? '';
+  const base = { 'act1.balloon.noticedGone': true, 'act1.clue.lockForced': true, 'met.npc.dez': true, 'act1.cordon.passed': true };
+  assert.ok(!/fuse|breaker|panel/i.test(shown(base)), 'the first tunnel stage names the panel before it is seen: ' + shown(base));
+  assert.ok(/fuses/.test(shown({ ...base, 'act1.fuses.seen': true })));
+  assert.ok(/gate/i.test(shown({ ...base, 'act1.fuses.seen': true, 'act1.fuses.in': true })));
+  const leads = st.find((s) => /leads/.test(s.text)).text;
+  assert.ok(!/Halvard/.test(leads), 'the leads stage names Halvard before you meet him');
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

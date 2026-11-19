@@ -35,6 +35,7 @@ export const ES_ITEMS = {
   mat_gel: ['Gel de coderot', 'Lo que queda cuando una cosa de coderot se detiene. Brilla un cuadro detrás de sí mismo.'],
   mat_glass: ['Esquirla de vidrio', 'Pantalla de teléfono, casi siempre. Tu cara te devuelve la mirada, un poco tarde.'],
   scooter: ['Scooter', 'Usado, con la base rajada. [Q] para andar afuera. Los rieles son más rápidos de lo que parecen.'],
+  wmata_fuses: ['Caja de fusibles de 30A', 'Cuatro fusibles de cerámica en una caja de WMATA, el cartón blando de viejo. Kess jura que andan bien.'],
   scooter_hicap: ['Batería de alta capacidad', 'Duplica la autonomía de tu scooter. Se atornilla bajo la base.'],
   lake_bust: ['Bustito blanco', 'John Pork, del tamaño de un puño, tallado en algo blanco que no es piedra. De la isla. Siempre está un poco más tibio que tu mano.'],
   ozzie_lure: ['Señuelo de Ozzie', 'Atado a mano, rojo y blanco, de hace cuarenta años. "No pesca más peces. Pesca mejores."'],

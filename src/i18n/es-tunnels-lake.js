@@ -50,6 +50,8 @@ export const ES_TUNNELS_LAKE = {
   'The tunnel opens onto a platform nobody has used in decades. The drumming stops. Something else is here.': 'El túnel se abre a un andén que nadie usa hace décadas. El tamborileo se detiene. Hay algo más aquí.',
   'A rolling gate across the line, held three ways: the yard upstream, the power in the signal room, and the signals on this wall.': 'Un portón corredizo cruza la vía, trabado de tres formas: el patio de maniobras, la corriente en la sala de señales y las señales en esta pared.',
   // Task #33, the gate puzzles (gonman)
+  'Fuse carrier': 'Portafusibles',
+  'The gate panel\'s fuse carrier, hanging open. Four empty clips, 30A. A sticker inside the door: SPARES: ASTER, SUPER, B-01.': 'El portafusibles del tablero del portón, abierto y colgando. Cuatro pinzas vacías, 30A. Una etiqueta dentro de la puerta: REPUESTOS: ASTER, ENCARGADA, B-01.',
   'Breaker 1': 'Disyuntor 1', 'Breaker 2': 'Disyuntor 2', 'Breaker 3': 'Disyuntor 3', 'Breaker 4': 'Disyuntor 4',
   'A heavy breaker on the gate panel, painted the yellow of things you are not supposed to touch.': 'Un disyuntor pesado en el tablero del portón, pintado del amarillo de las cosas que no hay que tocar.',
   'Signal 1': 'Señal 1', 'Signal 2': 'Señal 2', 'Signal 3': 'Señal 3',

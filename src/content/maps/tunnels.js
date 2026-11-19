@@ -70,6 +70,7 @@ export const tunnel1 = makeMap({
     { id: 'obj.ledger', art: 'obj.security_desk', x: 56, y: 24, label: 'A ledger on a desk', text: 'Names, in a formal hand, one line each, with a time beside every one. Thousands. The last entry is tonight\'s date and has no name yet.' },
     { id: 'obj.signal_chair', art: 'obj.bench', x: 49, y: 24, label: 'A chair', text: 'Wooden. Far too tall for anyone you know. The seat is worn.' },
     // Signal room: the gate's breaker panel (src/content/tunnelPuzzles.js)
+    { id: 'obj.fuse_carrier', art: 'obj.chute', x: 54, y: 21, label: 'Fuse carrier', text: 'The gate panel\'s fuse carrier, hanging open. Four empty clips, 30A. A sticker inside the door: SPARES: ASTER, SUPER, B-01.' },
     ...['1', '2', '3', '4'].map((k, i) => ({ id: `obj.breaker_${k}`, art: 'obj.breaker_dn', x: 55 + i, y: 21, label: `Breaker ${k}`, breaker: k, text: 'A heavy breaker on the gate panel, painted the yellow of things you are not supposed to touch.' })),
     // The approach
     lamp(60, 11, 'The last lamp. Past it, the dark has a shape.'),
