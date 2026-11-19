@@ -24,7 +24,7 @@ OUT = REPO / "src" / "content" / "dialogue" / "act1"
 
 NODE = re.compile(r"^###\s+node:\s*`?([\w.\-]+)`?")
 BLOCK = re.compile(r"^(####|#####)\s+(if|else|otherwise|always|end|then)\b[,:]?\s*(.*)$", re.I)
-LINE = re.compile(r"^\*\*([A-Z][A-Z .'\-]*?)(?:\s*\([^)]*\))?:\*\*\s*(.+)$")
+LINE = re.compile(r"^\*\*([A-Z][A-Z0-9 .'\-]*?)(?:\s*\([^)]*\))?:\*\*\s*(.+)$")
 INSPECT = re.compile(r"^\**INSPECT:?\**:?\s*(.+)$")
 EFFECT = re.compile(r"^\*\s*(sets?|gives?|standing|pay)\s+([^*]+)\*\s*$", re.I)   # "*Set x*" and "*Sets x.*" both apply
 GOTO = re.compile(r"Next:\**\s*->\s*`?([\w.\-]+)`?")
@@ -59,6 +59,16 @@ def parse(text):
             buf = t; continue
         joined.append(raw)
     if buf is not None: joined.append(buf)
+    # Spoken lines wrap too: **NAME:** text... / ...rest. Glue plain continuation lines onto the line
+    # above, or the box shows the line cut mid-sentence.
+    glued = []
+    for raw in joined:
+        t = raw.strip()
+        if (t and glued and LINE.match(glued[-1].strip())
+                and not re.match(r"^(\*|-|#|>|<!--|\||Choices|Next:|INSPECT)", t, re.I)):
+            glued[-1] = glued[-1].rstrip() + " " + t; continue
+        glued.append(raw)
+    joined = glued
     for raw in joined:
         line = raw.strip()
         fs = SCOPE_FILE.match(line)

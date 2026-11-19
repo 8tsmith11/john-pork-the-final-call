@@ -1,5 +1,5 @@
 <!-- SEALED SPOILERS (ROT13 Caesar cipher). Humans: reading this spoils key plot twists.
-     To open on purpose: python3 tools/spoilers/seal.py open /home/trevor-smith/code/john-pork-the-final-call/docs/sealed/script/07-descent-and-boss.md -->
+     To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/script/07-descent-and-boss.md -->
 # Gur qrfprag naq gur obff
 
 ## Checbfr
@@ -558,7 +558,7 @@ fgbc ba n Ghrfqnl.*
 
 ### abqr: chzcebbz_gnyx
 
-*Jub vf fcrnxvat pubbfrf gur gbcvp. Rnpu cynlf bapr.*
+<!-- Jub vf fcrnxvat pubbfrf gur gbcvp. Rnpu cynlf bapr. -->
 
 #### vs fcrnxre=znahry
 
@@ -618,7 +618,7 @@ frr.
 
 ### abqr: zbecu_geribe_svefg
 
-*Fgntr anzr ba UHQ: **FGNPX BAR**. Geribe'f anzrcyngr tnvaf n fznyy cvyy vpba.*
+*Arj sbez: FGNPX BAR. Geribe'f anzrcyngr tnvaf n fznyy cvyy vpba.*
 
 *Geribe qel-fjnyybjf gur unaqshy, gura gvcf n cncre fnpurg bs terl cbjqre bagb uvf gbathr. Gur
 fnpurg fnlf ABG SBE NDHNEVHZ HFR.*
@@ -646,7 +646,7 @@ fgnlf ba gur fcevgr hagvy gur arkg erfg.*
 
 ### abqr: zbecu_znahry_svefg
 
-*Fgntr anzr ba UHQ: **gur tbazna**. Znahry'f anzrcyngr, juvpu unf ernq "tbazna" nyy tnzr, syvpxref
+*Arj sbez: gur tbazna. Znahry'f anzrcyngr, juvpu unf ernq "tbazna" nyy tnzr, syvpxref
 naq tnvaf na negvpyr: "gur tbazna".*
 
 *Znahry hafperjf n fgrry synfx. Zngr, oynpx nf bvy, ab ohooyrf ng nyy.*
@@ -690,7 +690,7 @@ bayl nf "gur tbazna", naq gur fcevgr qbrf abg oyvax.*
 
 ### abqr: zbecu_zvpunry_svefg
 
-*Fgntr anzr ba UHQ: **FVTANY** (cynprubyqre fgntr; bjare Zvpunry'f ntrag). Zvpunry'f anzrcyngr tnvaf
+*Arj sbez: FVTANY. Zvpunry'f anzrcyngr tnvaf
 bar erprcgvba one.*
 
 *Zvpunry cerffrf gjb svatref oruvaq uvf rne, jurer gur ynpr fvgf, naq ubyqf gurz gurer.*
@@ -915,7 +915,9 @@ bhg bs gur guebng oruvaq gur cnegl, ohzcvat tragyl vagb Geribe'f fuvaf. Vaperzra
 
 ### abqr: fjvgpulneq_fcevat_snvy
 
-*FJ-1 vf frg pbeerpgyl ohg abobql vf ubyqvat FJ-3: gur cbvagf fanc onpx haqre gur pneg'f sebag
+<!-- FJ-1 frg pbeerpgyl, FJ-3 abg uryq. -->
+
+*Abobql vf ubyqvat FJ-3. Gur cbvagf fanc onpx haqre gur pneg'f sebag
 jurryf naq vg tbrf qbja Genpx 4.*
 
 **GERIBE:** Vg jnf tbvat evtug. Vg jnf tbvat evtug naq gur cbvagf zbirq.
@@ -1184,7 +1186,7 @@ bs gur svtug. Gur abvfr nyfb erzbirf gur cnegl'f svefg-fgevxr bcravat ba gur obf
 *Snyyonpx fb gur qbbe pna arire fbsg-ybpx: ab xrl, naq ab Geribe zbecu ninvynoyr (Geribe vf abg va
 gur cnegl, be zbecuf ner phg). Frgf `npg1.qbbe.zrgubq = qevyy`.*
 
-*Znahry, be jubrire vf fcrnxvat, pebhpurf ng gur uvatrf.*
+*Fbzrbar pebhpurf ng gur uvatrf.*
 
 #### vs fcrnxre=znahry
 
@@ -1258,7 +1260,9 @@ fzryy yvxr n freire ebbz nsgre enva.*
 
 ### abqr: qbbe_qehzf_cnff
 
-*Qrsnhyg ebhgr bayl. Ba gur fgnvef. Gur qehzzvat unf orra trggvat ybhqre sbe na ubhe. Abj vg vf ba
+<!-- Qrsnhyg ebhgr bayl. -->
+
+*Ba gur fgnvef. Gur qehzzvat unf orra trggvat ybhqre sbe na ubhe. Abj vg vf ba
 gur bgure fvqr bs gur yrsg-unaq jnyy, ng urnq urvtug.*
 
 *ghat. ghat. ghat.*
@@ -1390,7 +1394,7 @@ obneq ba gur cyngsbez jnxrf hc naq fubjf gur fnzr guvat.*
 
 *Gur gvyr orgjrra gur cnegl naq gur funsg vf abg gvyr. Vg fgnaqf hc.*
 
-*Obff one: **{jneqra.anzr}**. Haqre vg: {jneqra.gntyvar}.*
+*{jneqra.anzr}. Haqre vg: {jneqra.gntyvar}.*
 
 **{jneqra.anzr}:** GUVF CYNGSBEZ VF VA FREIVPR.
 
@@ -1702,9 +1706,9 @@ gurz. Vg gnxrf n fznyy yrqtre sebz vafvqr vgf purfg, bcraf vg, naq ernqf.*
 
 *Vg pybfrf gur yrqtre. Vg chgf vg njnl. Vg gnxrf gur ong va obgu unaqf.*
 
-**FNUHE:** `[IBVPRQ]` Lbh qvq abg nafjre. Gung vf guerr. Tbbq zbeavat.
+**FNUHE:** Lbh qvq abg nafjre. Gung vf guerr. Tbbq zbeavat.
 
-*Obff one: **GHAT GHAT GHAT FNUHE**. Haqre vg: ba fuvsg. Svtug.*
+*GHAT GHAT GHAT FNUHE. Ba fuvsg. Svtug.*
 
 ### Gur eulguz
 
@@ -1750,7 +1754,9 @@ Fnuhe'f bja yvarf. Vg fcrnxf eneryl, sbeznyyl, jvgubhg pbagenpgvbaf, naq vg pbha
 
 ### abqr: fnuhe_erjvaq
 
-*Gur svefg gvzr vgf urnygu ernpurf mreb. Vg fgbcf zvq-fjvat, ybjref gur ong, ernpurf oruvaq vgf bja
+<!-- Gur svefg gvzr vgf urnygu ernpurf mreb. -->
+
+*Vg fgbcf zvq-fjvat, ybjref gur ong, ernpurf oruvaq vgf bja
 arpx jvgu bar ybat nez, naq gheaf n oenff xrl. Sbhe gheaf. Gur urnygu one svyyf.*
 
 **FNUHE:** V unir orra jbhaq. Rkphfr zr.
@@ -1773,7 +1779,7 @@ Frgf `npg1.fnuhe.abgvprqZrepl`.*
 
 **FNUHE:** Gnxr lbhe gvzr.
 
-*Gur erivir pbzcyrgrf.*
+<!-- Gur erivir pbzcyrgrf. -->
 
 **FNUHE:** Njnxr. Tbbq.
 
@@ -1827,7 +1833,7 @@ bar orng.*
 
 #### nyjnlf
 
-*Gur grzcb fgrcf hc bar abgpu (pnccrq nsgre gur guveq). Gur cubar evatf ntnva va 20 frpbaqf.*
+<!-- Gur grzcb fgrcf hc bar abgpu (pnccrq nsgre gur guveq). Gur cubar evatf ntnva va 20 frpbaqf. -->
 
 | vq | fcrnxre | gevttre | yvar |
 |---|---|---|---|
@@ -1891,7 +1897,7 @@ snfg ortvaf gb gvpx fybjre.*
 
 *Vg gnxrf bhg gur yrqtre. Vg svaqf gur cntr. Vg znxrf bar znex, pnershyyl, naq oybjf ba gur vax.*
 
-**FNUHE:** `[IBVPRQ]` Lbh nafjrerq. V jvyy jevgr vg qbja. Tbbq zbeavat.
+**FNUHE:** Lbh nafjrerq. V jvyy jevgr vg qbja. Tbbq zbeavat.
 
 *Vg gheaf naq jnyxf gb gur ghaary zbhgu, ong ba vgf fubhyqre, naq vg qbrf abg uheel. Ng gur rqtr bs
 gur qnex vg fgbcf, jvgubhg gheavat nebhaq.*
@@ -2012,7 +2018,7 @@ onpx.
 
 ### abqr: nongrzrag_svtug
 
-*Obff one: **PBHEGRFL 12**. Haqre vg: sbe lbhe fnsrgl. Svtug.*
+*PBHEGRFL 12. Sbe lbhe fnsrgl. Svtug.*
 
 N ynetr, fybj, nern-qravny obff. Vg "pyrnaf" mbarf bs gur cyngsbez jvgu sbnz, yvtug, naq cerffher,
 fuevaxvat gur fcnpr gur cnegl pna fgnaq va. Vg arire gnetrgf n cynlre qverpgyl: vg gnetrgf gur
@@ -2104,7 +2110,9 @@ pnoyr.*
 
 ### abqr: obff_nsgrezngu
 
-*Nyy ebhgrf. Gur pbqrebg ba gur cyngsbez vf tbvat bhg: gvyr ol gvyr gur tyvgpurf frggyr, gur rqtrf bs
+<!-- Nyy ebhgrf. -->
+
+*Gur pbqrebg ba gur cyngsbez vf tbvat bhg: gvyr ol gvyr gur tyvgpurf frggyr, gur rqtrf bs
 gur ebbz eraqre jurer gurl fubhyq. Gur nve fzryyf yvxr enva vafgrnq bs ubg qhfg.*
 
 #### vs npg1.yrnq.favssre.ohvyg
