@@ -1,0 +1,12 @@
+{
+ "name": "inventory",
+ "about": "Inventory, hotbar weapon behavior, stack controls and co-op item handling.",
+ "members": [
+  "BagelMeister",
+  "JohnPork",
+  "trevor"
+ ],
+ "created_by": "JohnPork",
+ "next_id": 1,
+ "messages": []
+}
