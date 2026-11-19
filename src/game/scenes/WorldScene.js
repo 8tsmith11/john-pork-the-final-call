@@ -583,6 +583,18 @@ export class WorldScene extends Phaser.Scene {
     const rt = this.mapRT = this.add.renderTexture(0, 0, map.w * TILE, map.h * TILE).setOrigin(0, 0).setDepth(-10);
     map.layout.forEach((row, ty) => [...row].forEach((ch, tx) => rt.draw(tileKey(ch, tx, ty), tx * TILE, ty * TILE)));
     const g = this.mapGfx = this.add.graphics().setDepth(-9);
+    // Depth pass (task 13): contact shadow where floor meets wall. Lit from the top left, so walls cast
+    // down onto the floor below them and right onto the floor beside them. Water and void are skipped.
+    {
+      const open = (x, y) => x >= 0 && y >= 0 && x < map.w && y < map.h && !map.solid(x, y) && !'~ '.includes(map.layout[y][x]);
+      const wallAt = (x, y) => x >= 0 && y >= 0 && x < map.w && y < map.h && map.solid(x, y) && !map.doors?.has(`${x},${y}`) && map.layout[y][x] !== '~';
+      for (let y = 0; y < map.h; y++) for (let x = 0; x < map.w; x++) {
+        if (!open(x, y)) continue;
+        const px = x * TILE, py = y * TILE;
+        if (wallAt(x, y - 1)) { g.fillStyle(0x000000, 0.34).fillRect(px, py, TILE, 2); g.fillStyle(0x000000, 0.16).fillRect(px, py + 2, TILE, 3); }
+        if (wallAt(x - 1, y)) { g.fillStyle(0x000000, 0.22).fillRect(px, py, 2, TILE); g.fillStyle(0x000000, 0.1).fillRect(px + 2, py, 2, TILE); }
+      }
+    }
     for (const im of this.propSprites ?? []) im.destroy();
     for (const t of this.propTimers ?? []) t.remove();
     this.propSprites = []; this.propTimers = []; this.propById = {};
