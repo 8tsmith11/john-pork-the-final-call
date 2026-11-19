@@ -603,5 +603,13 @@ test('every bark and crowd line has Spanish', () => {
   assert.deepEqual(missing, [], 'add these to src/content/lines_es.js');
 });
 
+const { laneDashes } = await import('../src/game/render/tiles.js');
+test('roads get centre-line dashes that stop at junctions', () => {
+  const lay = ['ssssss,,,,ssssss', ',,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,', ',,,,,,,,,,,,,,,,', 'ssssss,,,,ssssss', 'ssssss,,,,ssssss', 'ssssss,,,,ssssss', 'ssssss,,,,ssssss'];
+  const d = laneDashes(lay);
+  assert.ok(d.some((r) => r.h === 2 && r.y === 2 * 16 - 1 + 8), 'horizontal road has a centre line');
+  assert.ok(!d.some((r) => r.x >= 6 * 16 && r.x < 10 * 16 && r.h === 2), 'no horizontal dash inside the junction');
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

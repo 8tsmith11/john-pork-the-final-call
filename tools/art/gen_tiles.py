@@ -74,8 +74,8 @@ def asphalt(r, v):
         for i, x in enumerate(range(3, 12)):
             put(g, x, 8 + (i // 3), "night1")                                                # a crack
     if v == 2:
-        for y in range(N):
-            put(g, 7, y, "concrete2") if y % 8 < 5 else None                                 # worn lane paint
+        for x, y in ((4, 5), (5, 5), (5, 6), (10, 11), (11, 11)):
+            put(g, x, y, "night1")                                                           # a patched pothole
     return g
 
 
@@ -437,6 +437,41 @@ def water_mask(m):
         for y in range(N): g[y][N - 1] = "screen2"; g[y][N - 2] = "screen1"
     return g
 
+# Kerbs and gutters (task 13): sidewalk (s) and asphalt (,) get edge frames tile_<code>_m<mask> for
+# every mask except 15. Fully surrounded tiles keep the hashed variants, so big areas don't repeat.
+# Sidewalk: a raised kerb on every side that isn't more sidewalk, lit lip on N/W, drop shadow on S/E.
+def sidewalk_mask(m):
+    N_, E_, S_, W_ = m & 1, m & 2, m & 4, m & 8
+    g = sidewalk(random.Random(f"s-body-{m}"), m % 3)
+    if not N_:
+        for x in range(N): g[0][x] = "bone"; g[1][x] = "concrete3"
+    if not W_:
+        for y in range(N): g[y][0] = "bone"; g[y][1] = "concrete3"
+    if not S_:
+        for x in range(N): g[N - 2][x] = "concrete3"; g[N - 1][x] = "night1"
+    if not E_:
+        for y in range(N): g[y][N - 2] = "concrete3"; g[y][N - 1] = "night1"
+    return g
+
+# Asphalt: a darker gutter band along every side that isn't more road, where water and grit collect.
+def asphalt_mask(m):
+    N_, E_, S_, W_ = m & 1, m & 2, m & 4, m & 8
+    r = random.Random(f"a-body-{m}")
+    g = asphalt(r, m % 2)
+    if not N_:
+        for x in range(N): g[0][x] = "night1"; g[1][x] = r.choice(["night1", "night2", "concrete0"])
+    if not S_:
+        for x in range(N): g[N - 1][x] = "night1"; g[N - 2][x] = r.choice(["night2", "concrete0"])
+    if not W_:
+        for y in range(N): g[y][0] = "night1"; g[y][1] = r.choice(["night1", "night2", "concrete0"])
+    if not E_:
+        for y in range(N): g[y][N - 1] = "night1"; g[y][N - 2] = r.choice(["night2", "concrete0"])
+    return g
+
+for code, fn in ((115, sidewalk_mask), (44, asphalt_mask)):
+    for m in range(15):
+        out.append(f"@frame tile_{code}_m{m}")
+        out.extend("".join(L[c] for c in row) for row in fn(m))
 for code, fn in ((103, grass_mask), (126, water_mask)):
     for m in range(16):
         out.append(f"@frame tile_{code}_m{m}")

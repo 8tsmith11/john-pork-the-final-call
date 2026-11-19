@@ -94,3 +94,24 @@ export function tileKey(ch, tx, ty, layout = null, has = null) {
   }
   return `tile_${ch.charCodeAt(0)}_${((tx * 7 + ty * 13) & 0xffff) % VARIANTS}`;
 }
+
+// Depth pass (task 13): worn centre-line dashes for roads. A road (`,`) band 3-8 tiles across that runs
+// at least three times as long as it is wide gets a dashed line down its middle. Intersections (big in
+// both directions) and plazas are skipped, so lines stop at junctions instead of running through them.
+// Returns [{x, y, w, h}] in pixels.
+export function laneDashes(layout, tile = 16, road = ',') {
+  const H = layout.length, W = layout[0]?.length ?? 0, at = (x, y) => layout[y]?.[x] === road;
+  const out = [];
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if (!at(x, y)) continue;
+    let y0 = y, y1 = y, x0 = x, x1 = x;
+    while (at(x, y0 - 1)) y0--; while (at(x, y1 + 1)) y1++;
+    while (at(x0 - 1, y)) x0--; while (at(x1 + 1, y)) x1++;
+    const across = y1 - y0 + 1, along = x1 - x0 + 1, acrossV = along, alongV = across;
+    if (y === y0 && across >= 3 && across <= 8 && along >= across * 3 && x % 2 === 0)          // horizontal road
+      out.push({ x: x * tile + 3, y: Math.round(((y0 + y1 + 1) / 2) * tile) - 1, w: tile - 6, h: 2 });
+    if (x === x0 && acrossV >= 3 && acrossV <= 8 && alongV >= acrossV * 3 && y % 2 === 0)       // vertical road
+      out.push({ x: Math.round(((x0 + x1 + 1) / 2) * tile) - 1, y: y * tile + 3, w: 2, h: tile - 6 });
+  }
+  return out;
+}

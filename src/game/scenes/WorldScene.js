@@ -13,7 +13,7 @@ import { GAME_VERSION } from '../../version.js';
 import { loadScene, Conversation, evalCond } from '../../engine/dialogue.js';
 import { babble, setArea, sfx, ring, speak, hush, setInstrumentFocus } from '../../audio/audio.js';
 import { sellPrice, LOOT, DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods, EQUIP_SLOTS, canWear } from '../../content/items.js';
-import { tileKey } from '../render/tiles.js';
+import { tileKey, laneDashes } from '../render/tiles.js';
 import { GameMenu, TABS } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
 import { BARKS, pickBark } from '../../content/barks.js';
@@ -633,6 +633,8 @@ export class WorldScene extends Phaser.Scene {
         if (open(x, y - 1)) g.fillStyle(0xffffff, 0.12).fillRect(px, py, TILE, 1);
         if (open(x + 1, y) && !wallAt(x + 1, y)) g.fillStyle(0xffffff, 0.06).fillRect(px + TILE - 1, py, 1, TILE);
       }
+      // Roads: worn centre-line paint, dashed, stopping at junctions (kerbs and gutters are tile art).
+      for (const d of laneDashes(map.layout, TILE)) g.fillStyle(0xd8d0b8, 0.42).fillRect(d.x, d.y, d.w, d.h);
     }
     for (const im of this.propSprites ?? []) im.destroy();
     for (const t of this.propTimers ?? []) t.remove();
