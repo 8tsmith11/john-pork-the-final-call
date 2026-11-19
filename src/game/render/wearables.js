@@ -18,8 +18,8 @@ const P = {
   warm1: '#5c3a22', warm0: '#3a2418', warm2: '#8a5a2e', warm3: '#b9853f', warm4: '#e0b866',
   skin1: '#a3674a', skin2: '#d09a72', skin3: '#f0c9a0',
   yerba0: '#3e5a34', yerba1: '#6f9448', tub0: '#2c4a8a', tub1: '#4f7fd0', soft0: '#7a2f38', soft1: '#c05a5e',
-  parka: '#b46a26', slicker0: '#e0a51c', slicker1: '#ffd93b', bone: '#e8e2d0', steel: '#7a8794',
-  screen1: '#1a8a9c', screen2: '#3fd0d6', concrete2: '#5b6862', concrete3: '#7f8c84', pork1: '#e87a9c', signal: '#d42a3c',
+  pork2: '#f7b8c8', parka: '#b46a26', slicker0: '#e0a51c', slicker1: '#ffd93b', bone: '#e8e2d0', steel: '#7a8794',
+  screen1: '#1a8a9c', screen2: '#3fd0d6', concrete1: '#3f4a46', concrete2: '#5b6862', concrete3: '#7f8c84', pork1: '#e87a9c', signal: '#d42a3c',
 };
 
 // The colors each roommate's sheet is painted with (CHARS in tools/art/gen_roommates.py).
@@ -280,8 +280,8 @@ function paintGrow(src, out, w, h, facing, body, look, who) {
   // worn knees
   if (pbot >= 0) {
     const ky = Math.min(pbot, ptop + Math.floor((pbot - ptop) * 0.6)), xs = pantsCols(ky);
-    if (lv >= 2 && xs.length) put(xs[0], ky, hex(P.concrete2));
-    if (lv >= 8 && xs.length > 1) put(xs[xs.length - 1], ky, hex(P.concrete2));
+    if (lv >= 2 && xs.length) { put(xs[0], ky, hex(P.concrete2)); put(xs[0], ky + 1, hex(P.concrete1)); }
+    if (lv >= 6 && xs.length > 1) { put(xs[xs.length - 1], ky, hex(P.concrete2)); put(xs[xs.length - 1], ky + 1, hex(P.concrete1)); }
   }
   // a wristband: the skin pixel just above the lowest one in the leftmost arm column (the hand stays bare)
   if (lv >= 4 && sbot >= 0 && who !== 'trevor') {
@@ -293,7 +293,7 @@ function paintGrow(src, out, w, h, facing, body, look, who) {
   // a patch on the shirt
   if (lv >= 5 && sbot >= 0 && facing !== 'up') {
     const y = sbot - 1, [a, b] = span(y);
-    if (b > a + 2) { const x = facing === 'right' ? a + 1 : b - 2; if (is(x, y, C.shirt)) put(x, y, hex(body.shirt[1] === P.soft0 ? P.warm2 : P.soft0)); }
+    if (b > a + 2) { const x = facing === 'right' ? a + 1 : b - 2, c = hex(body.shirt[1] === P.soft0 ? P.warm2 : P.soft0); for (const [dx, dy] of [[0, 0], [1, 0], [0, -1], [1, -1]]) if (is(x + dx, y + dy, C.shirt)) put(x + dx, y + dy, c); }   // a 2x2 patch
   }
   // newer boots: a lit top edge
   if (lv >= 7) { const [bt] = rows(C.boots); if (bt < h) for (let x = 0; x < w; x++) if (is(x, bt, C.boots)) put(x, bt, hex(P.warm2)); }
@@ -305,15 +305,15 @@ function paintGrow(src, out, w, h, facing, body, look, who) {
       const stub = C.hair[1] ?? C.hair[0], row = (y) => { const xs = []; for (let x = 0; x < w; x++) if (is(x, y, C.skin)) xs.push(x); return xs; };
       const xs = row(fb), pick = (i) => xs[Math.max(0, Math.min(xs.length - 1, i))];
       if (facing === 'right') {                                         // side view: the jaw is the back-lower edge of the face
-        put(pick(xs.length - 2), fb, stub);
-        if (lv >= 5) put(pick(xs.length - 1), fb, stub);
-        if (lv >= 6) xs.forEach((x) => put(x, fb, stub));
-        if (lv >= 8) { const up = row(fb - 1); if (up.length) put(up[0], fb - 1, stub); }
+        put(pick(xs.length - 2), fb, stub); put(pick(xs.length - 1), fb, stub);
+        if (lv >= 5) xs.forEach((x) => put(x, fb, stub));
+        if (lv >= 6) { const up = row(fb - 1); if (up.length) { put(up[0], fb - 1, stub); put(up[1] ?? up[0], fb - 1, stub); } }
+        if (lv >= 8) { const up = row(fb - 1); if (up.length > 2) put(up[up.length - 2], fb - 1, stub); }
       } else {
-        put(pick(0), fb, stub); put(pick(xs.length - 1), fb, stub);
-        if (lv >= 5) put(pick(Math.floor(xs.length / 2)), fb, stub);
-        if (lv >= 6) xs.forEach((x) => put(x, fb, stub));
-        if (lv >= 8) { const up = row(fb - 1); if (up.length > 2) { put(up[0], fb - 1, stub); put(up[up.length - 1], fb - 1, stub); } }
+        put(pick(0), fb, stub); put(pick(xs.length - 1), fb, stub); put(pick(Math.floor(xs.length / 2)), fb, stub);
+        if (lv >= 5) xs.forEach((x) => put(x, fb, stub));
+        if (lv >= 6) { const up = row(fb - 1); if (up.length > 2) { put(up[0], fb - 1, stub); put(up[up.length - 1], fb - 1, stub); } }
+        if (lv >= 8) { const up = row(fb - 1); if (up.length > 4) { const m = up[Math.floor(up.length / 2)]; put(m - 1, fb - 1, stub); put(m, fb - 1, stub); } }   // a moustache
       }
     }
   }
@@ -323,10 +323,16 @@ function paintGrow(src, out, w, h, facing, body, look, who) {
   if (who === 'manuel') {                                              // the sculptor: clay builds up; hair goes wild; then the gonman's eyes
     if (htop < h) {
       const xs = []; for (let x = 0; x < w; x++) if (is(x, htop, C.hair)) xs.push(x);
-      if (xs.length) { const mid = xs[Math.floor(xs.length / 2)]; put(mid, htop - 1, hex(P.warm1)); if (st >= 2) { put(mid - 2, htop - 1, hex(P.warm1)); put(mid + 1, htop - 2, hex(P.warm0)); } }
+      if (xs.length) {
+        const mid = xs[Math.floor(xs.length / 2)], tuft = (x, y) => put(x, y, hex(P.warm1));
+        tuft(mid, htop - 1); tuft(mid - 2, htop - 1);
+        if (lv >= 4) tuft(xs[xs.length - 1] + 1, htop + 1);
+        if (st >= 2) { tuft(mid + 1, htop - 2); tuft(mid - 1, htop - 2); tuft(xs[0] - 1, htop + 1); tuft(mid + 2, htop - 1); }
+        if (lv >= 8) { tuft(mid, htop - 3); tuft(mid - 3, htop - 1); }
+      }
     }
     if (stop < h && facing !== 'up') {
-      const [a, b] = span(stop + 2); smudge(a + 2, stop + 2);
+      const [a, b] = span(stop + 2); smudge(a + 2, stop + 2); smudge(a + 3, stop + 2); smudge(a + 2, stop + 3);
       if (lv >= 5) smudge(b - 2, stop + 1);
       if (lv >= 7) { const [a2] = span(sbot); smudge(a2 + 3, sbot); }
       if (lv >= 8) { const [, b3] = span(stop + 3); if (is(b3 - 3, stop + 3, C.shirt)) put(b3 - 3, stop + 3, hex(P.yerba0)); }   // a mate stain
@@ -334,6 +340,14 @@ function paintGrow(src, out, w, h, facing, body, look, who) {
     if (lv >= 4) for (let x = 0; x < w; x++) {                         // clay on his hands: the lowest skin pixel of each arm
       const ys = []; for (let y = stop; y <= Math.min(h - 1, sbot + 3); y++) if (is(x, y, C.skin)) ys.push(y);
       if (ys.length >= 2) put(x, ys[ys.length - 1], hex(P.concrete3));
+    }
+    // "Toothpaste" (Manuel's own request, his character only; implied, D-015): white splotches that turn up once
+    // the gonman's stage two does (level 6) and spread a little. He says it's toothpaste (barks.js: toothpaste).
+    if (st >= 2 && facing !== 'up') {
+      const spot = (x, y, list) => { if (is(x, y, list)) put(x, y, hex(P.bone)); };
+      const [a4, b4] = span(sbot); spot(b4 - 2, sbot, C.shirt); spot(b4 - 3, sbot, C.shirt); spot(b4 - 2, sbot - 1, C.shirt);
+      if (lv >= 7 && ptop < h) { const xs = pantsCols(ptop + 1); if (xs.length) { spot(xs[1] ?? xs[0], ptop + 1, C.pants); spot(xs[1] ?? xs[0], ptop + 2, C.pants); } }
+      if (lv >= 8 && stop < h) { const [a5] = span(stop + 1); spot(a5 + 2, stop + 1, C.shirt); spot(a5 + 3, stop + 2, C.shirt); }
     }
     if (st >= 2 && facing !== 'up' && ftop < h) for (let y = ftop; y <= fbot; y++) for (let x = 1; x < w - 1; x++)
       if (same(src, (y * w + x) * 4, dark) && is(x - 1, y, C.skin) && is(x + 1, y, C.skin)) put(x, y, hex(P.yerba1));   // the gonman doesn't blink
@@ -366,6 +380,28 @@ function paintGrow(src, out, w, h, facing, body, look, who) {
     }
     if (lv >= 8 && facing !== 'up') for (let yy = ftop; yy <= ftop + 4; yy++) for (let xx = 1; xx < w - 1; xx++)
       if (same(src, (yy * w + xx) * 4, dark) && is(xx - 1, yy, C.skin) && is(xx + 1, yy, C.skin)) { put(xx, yy, hex(P.screen2)); yy = h; break; }   // a glint in one eye
+    // His style, as he comes out of his shell (Michael's own entry: he grows more into his roommates over the game):
+    // a small rainbow pin (3), a stud earring (4), a pink streak in his hair (5), pink nails and a heart on his
+    // sleeve (6), a second earring (7), a bolder streak (8). Accessories he'd pick, not a caricature.
+    const [ha, hb] = span(ftop + 1), earR = facing === 'right' ? ha : hb, earL = facing === 'right' ? -1 : ha;
+    if (facing !== 'up' && stop < h) {                                  // the pin: red, yellow, green, blue (no orange: D-004)
+      const [a2, b2] = span(stop + 1), px = facing === 'right' ? a2 + 2 : b2 - 3;
+      [[0, 0, P.signal], [1, 0, P.warm4], [0, 1, P.yerba1], [1, 1, P.tub1]].forEach(([dx, dy, c]) => { if (is(px + dx, stop + 1 + dy, C.shirt)) put(px + dx, stop + 1 + dy, hex(c)); });
+    }
+    if (lv >= 4) put(earR, ftop + 2, hex(P.bone));                     // a stud earring
+    if (lv >= 7 && earL >= 0 && facing === 'down') put(earL, ftop + 2, hex(P.bone));
+    if (lv >= 5 && htop < h) {                                          // a pink streak through his fringe
+      const xs = []; for (let x = 0; x < w; x++) if (is(x, htop + 1, C.hair)) xs.push(x);
+      if (xs.length) { const x0 = xs[Math.floor(xs.length * (facing === 'right' ? 0.6 : 0.3))]; put(x0, htop + 1, hex(P.pork1)); put(x0, htop + 2, hex(P.pork1)); if (lv >= 8) { put(x0 + 1, htop + 1, hex(P.pork2)); put(x0 + 1, htop + 2, hex(P.pork1)); put(x0, htop, hex(P.pork1)); } }
+    }
+    if (st >= 2 && sbot >= 0) {
+      for (let x = 0; x < w; x++) {                                     // pink nails: the lowest skin pixel of each arm
+        const ys = []; for (let y = stop; y <= Math.min(h - 1, sbot + 3); y++) if (is(x, y, C.skin)) ys.push(y);
+        if (ys.length >= 2) put(x, ys[ys.length - 1], hex(P.pork1));
+      }
+      const [a3] = span(stop + 1);                                      // a little heart on his sleeve
+      if (is(a3 + 1, stop + 1, C.shirt) && is(a3 + 2, stop + 2, C.shirt)) { put(a3 + 1, stop + 1, hex(P.pork2)); put(a3 + 2, stop + 2, hex(P.pork2)); }
+    }
   }
   return true;
 }

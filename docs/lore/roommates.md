@@ -60,5 +60,6 @@ For his real-life history so far (BattleBots, the UMD Mars rover), see [`real-li
   *(board #168)*
 - Yes to a crude, implied stage-two power for the gonman (his own character only): R while morphed,
   nothing drawn, no other roommate involved (`src/content/gonman.js`). *(2026-11-19, to gonman in chat)*
+- Yes to white "toothpaste" splotches on his clothes from level 6 (the gonman's stage two), and his line that it's toothpaste. Implied, nothing drawn beyond the splotches. *(2026-11-19, to gonman in chat)*
 
 *gonman: add anything else Manuel has said about his own character.*

@@ -85,6 +85,8 @@ export const BARKS = {
     trevor: ['Stay there. Not that you have options.'],
     michael: ['I\'ve got you, I\'ve got you, where are you...'],
   },
+  // Manuel, from the gonman's stage two on (level 6): the white splotches on his clothes. Manuel's own request.
+  toothpaste: { manuel: ['It\'s toothpaste.', 'That\'s toothpaste. I brush very hard.', 'Toothpaste. Don\'t ask about the angle.'] },
   // Places inside a big map (landscape pass): walking into one gets a one-liner, once per visit.
   // at: [x, y, w, h] in tiles. Bubbles, not boxes (Manuel: they keep the game moving).
   zones: {
