@@ -53,6 +53,8 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 | `bio/room631-wear` | GitHub | Merged in `90258d7` (PR #14) |
 | `bio/room631-inactive` | GitHub | Merged in `95cec39` (PR #15) |
 | `bio/switchyard-hint-es` | GitHub | Merged in `8506a11` (PR #16) |
+| `bio/switchyard-hint-inactive` | GitHub | Merged in `4d2009a` (PR #17) |
+| `bio/boss-phase-gate` | GitHub | Merged in `7f04c7f` (PR #18) |
 
 ## Deleted
 
