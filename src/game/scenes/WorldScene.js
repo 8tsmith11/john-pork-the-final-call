@@ -93,7 +93,8 @@ const PHONE_CALLS = { the_call: { start: 'John Pork · the call', call_ring_2: '
 // What the bunk says about sleeping (task #34). Narration, so neutral Spanish.
 const BUNK_SLEEP = {
   notYet: { en: 'Sleep? The balloon is still missing.', es: '¿Dormir? El globo sigue sin aparecer.' },
-  sleep: { en: 'Trevor sets an alarm, then turns it off again. Michael is asleep before the light is. Manuel lies on the bottom bunk looking up at the postcard for a while.', es: 'Trevor pone una alarma y la vuelve a apagar. Michael se duerme antes que la luz. Manuel se queda un rato en la cucheta de abajo, mirando la postal.' },
+  // After the balloon scene (Manuel: the bunk should stop saying it's missing). Fits the sealed ending; says no more.
+  sleep: { en: 'Trevor sets an alarm, then turns it off again. Michael is asleep before the light is. Manuel lies on the bottom bunk with the cut ribbon wound round two fingers, looking up at the postcard. Nobody says the word balloon.', es: 'Trevor pone una alarma y la vuelve a apagar. Michael se duerme antes que la luz. Manuel se queda en la cucheta de abajo con la cinta cortada enrollada en dos dedos, mirando la postal. Nadie dice la palabra globo.' },
 };
 
 export class WorldScene extends Phaser.Scene {
@@ -2229,7 +2230,7 @@ export class WorldScene extends Phaser.Scene {
       return;
     }
     if (near.action === 'save' && near.id === 'obj.bunk') {   // task #34: the bunk's line follows the story; after the boss you can actually sleep
-      const L = getLang() === 'es' ? 'es' : 'en', after = !!this.save.flags['act1.boss.defeated'];
+      const L = getLang() === 'es' ? 'es' : 'en', after = !!(this.save.flags['act1.boss.defeated'] || this.save.flags['act1.complete']);
       this._say(`${tr(near.text ?? '')}\n\n${BUNK_SLEEP[after ? 'sleep' : 'notYet'][L]}`);
       if (after) this.cameras.main.fadeOut(500, 5, 6, 12).once('camerafadeoutcomplete', () => this.cameras.main.fadeIn(900, 5, 6, 12));
     } else this._say(near.text);
