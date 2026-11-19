@@ -679,6 +679,20 @@ test('O-key egg: P-001 targeting all NPCs and players; Trevor consents per amend
   }
 });
 
+const cordonMod = await import('../src/content/cordon.js').catch(() => null);
+test('cordon (task #36/#38): trooper lines before and after the Call have Spanish', () => {
+  if (!cordonMod) return;
+  const { CORDON_LINES, CORDON_LINES_AFTER, PLAZA_CORDON } = cordonMod;
+  assert.ok(CORDON_LINES.length >= 6);
+  assert.ok(CORDON_LINES_AFTER.length >= 6);
+  for (const line of [...CORDON_LINES, ...CORDON_LINES_AFTER]) {
+    assert.ok(line.en && line.en.trim().length > 0, 'non-empty en line');
+    assert.ok(line.es && line.es.trim().length > 0, 'non-empty es line');
+  }
+  assert.ok(PLAZA_CORDON.barriers.length >= 3);
+  assert.ok(PLAZA_CORDON.closing.length >= 10);
+});
+
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
 test('pipe puzzle: every seed is solvable and starts unsolved', () => {
   if (!PipePuzzle) return;
