@@ -13,9 +13,11 @@ export const QUESTS = [
     stages: [
       { text: 'Check Manuel\'s closet.', done: (f) => f['act1.balloon.noticedGone'] },
       { text: 'Look at the front door.', done: (f) => f['act1.clue.lockForced'] },
-      { text: 'Ask around ASTER and the College Park plaza. Someone saw something.', done: (f) => Object.keys(f).some((k) => k.startsWith('act1.halvard') || k.startsWith('act1.leadC') || k.startsWith('act1.leadA')) },
-      { text: 'Follow the trail: Halvard under the metro stairs, the lobby camera, the helium.', done: (f) => f['act1.beat.call'] },
-      { text: 'Get through the Green Line tunnels. The switchyard is set wrong.', done: (f) => f['act1.switchyard.solved'] },
+      // Clear next steps (Trevor): name the places and people, and say how many leads are enough.
+      { text: 'Ask around the ASTER lobby. Somebody saw something at 3 a.m.', done: (f) => Object.keys(f).some((k) => k.startsWith('met.npc.') || k.startsWith('act1.halvard') || k.startsWith('act1.leadC') || k.startsWith('act1.leadA')) },
+      { text: 'Run down two leads: Halvard under the metro stairs, the lobby camera footage, or the helium trail (print a sniffer at Fab #1).', done: (f) => [f['act1.halvard.met'], f['act1.leadC.done'], f['act1.leadA.done']].filter(Boolean).length >= 2 || f['act1.cordon.passed'] || f['act1.beat.call'] },
+      { text: 'Get past the abatement cordon at the storm grate in the plaza.', done: (f) => f['act1.cordon.passed'] || f['act1.beat.call'] },
+      { text: 'Get through the Green Line tunnels: set the switchyard levers right.', done: (f) => f['act1.switchyard.solved'] },
       { text: 'Reach the dead platform.', done: (f) => f['act1.boss.defeated'] || f['act1.complete'] },
     ],
     reward: { xp: 60 },
