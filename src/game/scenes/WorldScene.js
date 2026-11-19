@@ -2348,6 +2348,17 @@ export class WorldScene extends Phaser.Scene {
       const r = Math.max(12, (ev.r ?? 20) - 4), half = (ev.arc ?? 1.8) / 2;   // the weapon's real reach and arc
       g.lineStyle(2, 0xe8e8f0, 0.8).beginPath().arc(p.x, p.y - 8, r, ev.a - half, ev.a + half).strokePath();
       this.tweens.add({ targets: g, alpha: 0, duration: 140, onComplete: () => g.destroy() });
+      // The weapon itself sweeps through the arc (Trevor: swinging the crowbar swings a crowbar). Icons are drawn
+      // handle bottom-left to head top-right, so +45 degrees points the head outward along the swing.
+      const weapon = this.save.party[p.c]?.equipped?.weapon;
+      if (weapon && this.textures.get('icons')?.has?.(weapon)) {
+        const im = this.add.image(p.x, p.y - 8, 'icons', weapon).setOrigin(0.15, 0.85).setDepth(p.y + 2);
+        const from = ev.a - half, to = ev.a + half, flip = Math.cos(ev.a) < 0;   // swing toward the facing side
+        const sweep = { t: 0 };
+        this.tweens.add({ targets: sweep, t: 1, duration: ev.combo === 3 ? 190 : 140, ease: 'Cubic.out',
+          onUpdate: () => { const ang = flip ? to - (to - from) * sweep.t : from + (to - from) * sweep.t; im.setRotation(ang + Math.PI / 4); },
+          onComplete: () => this.tweens.add({ targets: im, alpha: 0, duration: 80, onComplete: () => im.destroy() }) });
+      }
     }
     if (ev.t === 'morph') { const p = snap.players.find((q) => q.id === ev.id); if (p) { this.cameras.main.flash(120, 180, 255, 160); if (ev.id === this.localId) this._say(ev.on ? `${MORPH_LOOK[p.c][1]}. Stronger. Faster. Softer in the wrong places.` : 'You come back to yourself. Mostly.'); } }
     if (ev.t === 'down' && ev.id === this.localId) this._say('You\'re down. A roommate can pick you up by staying next to you for a few seconds.');
