@@ -1422,7 +1422,7 @@ test('the Switchman (Act 1 mid boss): sleeps until you come close, starter gear 
     assert.ok(sim.snapshot().enemies[0].boss.idle, 'boss bar should stay hidden while it sleeps');
     for (const p of sim.players.values()) { p.x = sw.x - 60; p.y = sw.y; }
     const brain = new CompanionBrain(sim), h = sim.players.get('host'), bot = new BalanceBot(sim, brain);
-    let woke = false, kill = null, wokeAt = null, killAt = null, tellsBeforePhase2 = 0, phase2 = false;
+    let woke = false, kill = null, wokeAt = null, killAt = null, tellsBeforePhase2 = 0, phase2 = false, sawLane = false;
     for (let t = 0; t < 60 * 240 && !kill; t++) {
       const inputs = new Map([['host', bot.input(h)]]); for (const [id, i] of brain.inputs()) inputs.set(id, i);
       sim.step(1 / 60, inputs);
@@ -1430,6 +1430,7 @@ test('the Switchman (Act 1 mid boss): sleeps until you come close, starter gear 
         if (e.t === 'boss' && e.kind === 'boss.switchman') { woke = true; wokeAt = t; }
         if (e.t === 'kill' && e.boss) { kill = e; killAt = t; }
         if (e.t === 'tell' && e.kind && !phase2) tellsBeforePhase2++;
+        if (e.t === 'tell' && e.kind === 'lane') sawLane = true;
         if (e.t === 'phase' && e.phase === 2) phase2 = true;
       }
       if (sim.wiped) for (const p of sim.players.values()) { p.downed = false; p.hp = sim.maxHp(p); }   // a wipe brings everyone back (death rules)
@@ -1437,6 +1438,7 @@ test('the Switchman (Act 1 mid boss): sleeps until you come close, starter gear 
     assert.ok(woke, 'it never woke up'); assert.ok(kill, 'starter gear could not beat the Switchman');
     assert.ok((killAt - wokeAt) / 60 >= 12, `the fight lasted only ${((killAt - wokeAt) / 60).toFixed(1)} s (Trevor: under 5 s was too fast)`);
     assert.ok(tellsBeforePhase2 >= 1, 'phase 2 came before the first attack tell');
+    assert.ok(sawLane, 'his signature lane sweep never came up');
     assert.equal(kill.mini, true, 'its kill must be flagged as the mid boss, so it never starts the ending');
   } finally { Math.random = random; }
 });

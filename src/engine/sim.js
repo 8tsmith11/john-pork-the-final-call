@@ -883,6 +883,8 @@ export class Sim {
     if (e.cd > 0) return;
     // Pattern library (task #32): pick from this phase's pool, never the same move twice running.
     e.next = pickPattern(def.pool ? def.pool[Math.max(0, Math.min(2, e.phase - 1))] : bossPool(def.modules, e.phase), e.last); e.last = e.next;
+    // A boss's signature move comes up within its first two attacks, so the fight is recognizable every run (John Pork #591).
+    if (def.signature && !e.sigShown && ((e.attacks = (e.attacks ?? 0) + 1) >= 2 || e.next === def.signature)) { e.next = def.signature; e.last = e.next; e.sigShown = true; }
     e.state = 'windup'; e.windT = windFor(e.next, e.phase);
     e.aimA = Math.atan2(uy, ux);
     const pat = BOSS_PATTERNS[e.next];

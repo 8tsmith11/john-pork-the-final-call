@@ -29,6 +29,7 @@ export function defineEnemy({ id, name, hp, speed, damage, ai, radius = 6, xp = 
  * A boss. Required: name, hp, phases: three pattern lists (phase 1, 2, 3), each from BOSS_PATTERNS.
  * Optional: epithet, perPlayer (extra HP per extra roommate), guard, damage, speed, radius, mini (mid boss: no
  * act ending), wake (sleeps until someone is this close, px), phaseGate (each phase shows a tell before the next).
+ * signature: a pattern guaranteed within the boss's first two attacks.
  * Returns a function (playerCount) => def, like switchmanDef.
  */
 export function defineBoss({ name, epithet = '', hp, perPlayer = Math.round(hp / 2), phases, guard = 0, damage = 14, speed = 30, radius = 10, color = 0xd8b060, mini = false, wake = 0, phaseGate = true, ...rest }) {

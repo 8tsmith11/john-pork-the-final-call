@@ -41,7 +41,7 @@ export function switchmanDef(playerCount = 1) {
     modules: ['charge', 'spray'], pool: [['charge', 'spray', 'lane'], ['charge', 'lane', 'shock', 'blink'], ['charge', 'lane', 'shock', 'blink', 'ring']],   // 'lane': the yard sweep
     // Tuned (Trevor via John Pork #584: beaten in under 5 s with starter gear): more HP, a light guard, and a
     // phase gate, so every phase shows at least one tell before it can be pushed into the next.
-    maxHp: 700 + 350 * Math.max(0, playerCount - 1), radius: 10, speed: 30, damage: 14, mini: true, wake: 150, guard: 5, phaseGate: true,
+    maxHp: 700 + 350 * Math.max(0, playerCount - 1), radius: 10, speed: 30, damage: 14, mini: true, wake: 150, guard: 5, signature: 'lane', phaseGate: true,
   };
 }
 
