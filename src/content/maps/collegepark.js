@@ -71,6 +71,7 @@ for (let y = 10; y < 28; y++) for (let x = 22; x < 54; x++) {                // 
   if (n < 2) g[y][x] = 'p';
 }
 R(32, 3, 14, 6, '#'); R(32, 3, 1, 2, 'g'); R(45, 3, 1, 2, 'g'); R(36, 9, 6, 1, 'p');   // the station (corners stepped back) and its steps
+R(32, 9, 4, 1, 'p');                                                        // a worn apron west of the steps: Halvard's stall is under them
 R(23, 24, 8, 2, '#');                                                       // the row of shuttered stalls
 
 // ASTER and its forecourt (the building's corners step back; the forecourt's corners are rounded)
@@ -207,7 +208,7 @@ export const metroPlaza = makeMap({
     { id: 'obj.station_entrance', art: 'obj.tunnel_on', x: 38, y: 8, label: 'Metro entrance', text: 'The gates are down for the night. The departure board behind them lists a train to a station that was never built.' },
     { id: 'npc.mina', eggOk: true, later: [{ if: "act1.beat.call", text: "\"Every phone on the plaza rang at once, right in the middle of a song.\" She retunes. \"I finished the song.\"" }, { if: "act1.complete", text: "She is playing the one everybody asks for. She stops when she sees you listening. \"Don't tell anyone.\"" }], x: 41, y: 10, label: 'Mina', npc: true, age: 'adult', text: '"I do requests. I don\'t do the one everybody asks for." She retunes something wooden that was not out of tune.' },
     { id: 'npc.rotter_1', eggNo: true, later: [{ if: "act1.beat.call", text: "coderot. it rang. it rang for everyone. coderot." }], x: 30, y: 18, label: 'Code rotter', npc: true, age: 'adult', text: 'coderot. coderot. coderot.' },
-    { id: 'npc.halvard', eggOk: true, x: 26, y: 26, label: 'Halvard', npc: true, age: 'adult', talk: 'lead_b_halvard', doneFlag: 'act1.halvard.sellerDescribed', doneText: 'The shutter comes up two inches. Halvard\'s eye, then the television behind him, then the shutter again.\n\n"You paid for one rumor. That was it."' },
+    { id: 'npc.halvard', eggOk: true, x: 34, y: 9, label: 'Halvard', npc: true, age: 'adult', talk: 'lead_b_halvard', doneFlag: 'act1.halvard.sellerDescribed', doneText: 'The shutter comes up two inches. Halvard\'s eye, then the television behind him, then the shutter again.\n\n"You paid for one rumor. That was it."' },
     { id: 'obj.purple_sign', x: 40, y: 27, label: 'Purple Line sign', text: 'PURPLE LINE: OPENING SOON.' },
     { id: 'obj.plaza_clock', art: 'obj.clock_6f', x: 46, y: 9, label: 'Station clock', text: '19:01. Under it, somebody has taped a paper clock with the right time and a note: USE THIS ONE.' },
     { id: 'obj.van', x: 45, y: 20, label: 'Abatement van', text: 'White, unmarked except for a mast on the roof. The mast is turning. It is pointed at the ground.' },
@@ -222,7 +223,7 @@ export const metroPlaza = makeMap({
     ...[[57, 5], [57, 17], [57, 27], [57, 38], [57, 47], [64, 11], [64, 22], [64, 37], [64, 46], [8, 30], [22, 30], [38, 30], [50, 30], [14, 35], [44, 35], [18, 15], [5, 16]]
       .map(([x, y]) => ({ id: `obj.lamp_${x}_${y}`, art: 'obj.streetlamp', x, y, label: 'Streetlamp', light: 0.9, text: 'Sodium orange. Moths, and something that is not a moth.' })),
     { id: 'obj.neon_diner', art: 'obj.neon', x: 74, y: 8, label: 'Neon sign', light: 1.2, text: 'EAT. The A has been out so long the regulars call it the Et.' },
-    { id: 'obj.neon_stalls', art: 'obj.neon', x: 29, y: 25, label: 'Neon sign', light: 1.1, text: 'PHONES FIXED · UNLOCKED · FORGOTTEN. The last word was added by hand.' },
+    { id: 'obj.neon_stalls', art: 'obj.neon', x: 33, y: 8, label: 'Neon sign', light: 1.1, text: 'PHONES FIXED · UNLOCKED · FORGOTTEN. The last word was added by hand.' },
     { id: 'obj.neon_yard', art: 'obj.neon', x: 67, y: 17, label: 'Neon sign', light: 1.0, text: 'RAY\'S. The apostrophe is a different colour. It was a gift.' },
     // The plaza's furniture: where people wait, and what they wait under
     { id: 'obj.shelter', x: 34, y: 11, label: 'Bus shelter', light: 0.6, text: 'A timetable behind cracked plastic. Every bus is listed as DUE.' },

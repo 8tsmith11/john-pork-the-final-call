@@ -1683,18 +1683,6 @@ export class WorldScene extends Phaser.Scene {
     return NEWS[this._newsIdx];
   }
 
-  _objectives() {
-    const f = this.save.flags, out = [];
-    const did = (k) => !!f[k];
-    out.push(did('act1.balloon.noticedGone') ? '✓ The balloon is gone from Manuel\'s closet.' : '· Check Manuel\'s closet.');
-    out.push(did('act1.clue.lockForced') ? '✓ Someone forced the front door.' : '· Look at the front door.');
-    out.push(Object.keys(f).some((k) => k.startsWith('act1.halvard')) ? '✓ Talked to the fence under the metro.' : '· Ask around the metro plaza.');
-    out.push(Object.keys(f).some((k) => k.startsWith('act1.leadA')) ? '✓ Followed the helium.' : '· Print a sniffer (Fab #1) and follow the helium.');
-    out.push(Object.keys(f).some((k) => k.startsWith('act1.leadC')) ? '✓ Watched the camera footage.' : '· Fix the hallway security monitor.');
-    out.push(did('act1.complete') ? '✓ Act 1 complete.' : did('act1.beat.call') ? '· Get through the tunnels.' : '· Find where it went.');
-    return 'WHAT WE\'RE DOING (whiteboard)\n\n' + out.join('\n');
-  }
-
   _mateBreak() {
     if (this.mode === 'client') { this.net.send({ t: 'mate' }); return; }
     for (const p of this.sim.players.values()) { this.sim.heal(p.id, 999); this.sim.mate(p.id); }   // and everyone gets the caffeine
