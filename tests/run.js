@@ -770,6 +770,27 @@ test('boss fight: the Warden uses several patterns with tells and recovery windo
   assert.ok(!deflectable, 'beam shots should be undeflectable');
 });
 
+const Wallet = await import('../src/engine/wallet.js');
+test('money per roommate (Trevor #515): own wallets, pay, shared finds to each, send between roommates', () => {
+  const save = { party: { trevor: { money: 25 }, manuel: { money: 25 }, michael: { money: 25 } } };
+  assert.equal(Wallet.pay(save, 'trevor', 30), false); assert.equal(Wallet.money(save, 'trevor'), 25);
+  assert.equal(Wallet.pay(save, 'trevor', 20), true); assert.equal(Wallet.money(save, 'trevor'), 5);
+  Wallet.addEach(save, 10); assert.deepEqual(Object.values(save.party).map((c) => c.money), [15, 35, 35]);
+  assert.equal(Wallet.send(save, 'manuel', 'trevor', 50), 35, 'sends only what they have');
+  assert.equal(Wallet.money(save, 'manuel'), 0); assert.equal(Wallet.money(save, 'trevor'), 50);
+  assert.equal(Wallet.send(save, 'trevor', 'trevor', 5), 0); assert.equal(Wallet.send(save, 'trevor', 'nobody', 5), 0);
+  assert.equal(Wallet.addMoney(save, 'michael', -999), 0, 'never below zero');
+});
+test('schema 6 -> 7: the shared wallet splits evenly into each roommate\'s, remainder to the first', () => {
+  const old = newSave({ seed: 'm7', rolls: {}, gameVersion: 't' });
+  old.schemaVersion = 6; old.world.money = 100;
+  for (const c of Object.values(old.party)) delete c.money;
+  const m = migrate(JSON.parse(JSON.stringify(old)));
+  const ids = Object.keys(m.party);
+  assert.equal(m.party[ids[0]].money, 34); assert.equal(m.party[ids[1]].money, 33); assert.equal(m.party[ids[2]].money, 33);
+  assert.ok(!('money' in m.world));
+});
+
 const { CompanionBrain } = await import('../src/engine/companion.js');
 const { ITEMS: ITEMS_T } = await import('../src/content/items.js');
 test('AI companions follow the human, fight, and never trigger exits', () => {
@@ -814,9 +835,12 @@ test('slot inventory: stacks, backpack-first (hotbar only when full), remove, mo
 test('schema 1 -> 2 migration: scrap becomes money, list inventory becomes 36 slots', () => {
   const old = newSave({ seed: 'm', rolls: {}, gameVersion: 't' });
   old.schemaVersion = 1; old.world.scrap = 10; delete old.world.money;
+  for (const c of Object.values(old.party)) delete c.money;   // schema-1 saves had no wallets
   old.party.trevor.inventory = [{ id: 'item.mate_flask', qty: 1 }, { id: 'item.wooden_bat', qty: 1 }];
   const m = migrate(JSON.parse(JSON.stringify(old)));
-  assert.equal(m.schemaVersion, CURRENT_SCHEMA); assert.equal(m.world.money, 55); assert.ok(!('scrap' in m.world));
+  // 25 + 10 scrap x3 = 55, then schema 7 splits it across the three wallets (remainder to the first).
+  const total = Object.values(m.party).reduce((t, c) => t + c.money, 0);
+  assert.equal(m.schemaVersion, CURRENT_SCHEMA); assert.equal(total, 55); assert.ok(!('money' in m.world)); assert.ok(!('scrap' in m.world));
   assert.equal(m.party.trevor.inventory.length, 36); assert.equal(m.party.trevor.inventory[1].id, 'item.wooden_bat');
   assert.equal(m.party.manuel.inventory.length, 36);
 });

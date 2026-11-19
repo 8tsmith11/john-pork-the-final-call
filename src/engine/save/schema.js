@@ -7,7 +7,7 @@ import { BASE_SCORES } from '../../content/abilities.js';
 
 export const FORMAT = 'jpfc-save';
 export const SLOTS = 36;   // inventory slots per character: 0..8 hotbar, 9..35 backpack
-export const CURRENT_SCHEMA = 6;
+export const CURRENT_SCHEMA = 7;
 
 /** migrations[n] upgrades a schema-n save to schema n+1. Append only. */
 export const migrations = {
@@ -64,6 +64,15 @@ export const migrations = {
     }
     save.schemaVersion = 6; return save;
   },
+  // 6 -> 7 (Trevor #515): money is per roommate. The old shared wallet is split evenly (the remainder goes to
+  // the first roommate), and every roommate has a money field.
+  6: (save) => {
+    const ids = Object.keys(save.party ?? {}), total = save.world?.money ?? 0;
+    const each = ids.length ? Math.floor(total / ids.length) : 0;
+    ids.forEach((id, i) => { save.party[id].money = (save.party[id].money ?? 0) + each + (i === 0 ? total - each * ids.length : 0); });
+    if (save.world) delete save.world.money;
+    save.schemaVersion = 7; return save;
+  },
 };
 
 export function newCharacter(id) {
@@ -74,6 +83,7 @@ export function newCharacter(id) {
     morph: { line: id, stage: 0 },
     hp: null,                   // null = full
     rot: 0,
+    money: 25,                  // own wallet (schema 7, Trevor #515)
     inventory: new Array(SLOTS).fill(null),   // fixed slots: { id, qty } | null (engine/inventory.js)
     equipped: { weapon: null, ranged: null, gadget: null, charm: null,
       helmet: null, chestplate: null, leggings: null, boots: null,          // armor
@@ -90,7 +100,7 @@ export function newSave({ seed, rolls, gameVersion }) {
     schemaVersion: CURRENT_SCHEMA,
     savedAt: new Date().toISOString(),
     meta: { gameVersion, playtimeSec: 0, slotName: 'Room 631' },
-    world: { seed, act: 1, area: 'room631', rolls, money: 25 },   // money: the party's shared wallet ($)
+    world: { seed, act: 1, area: 'room631', rolls },   // money is per roommate since schema 7 (party[who].money)
     flags: {},                  // namespaced: 'act1.balloon.ribbonInspected'
     standing: { continuity: 0, callers: 0, analogists: 0, archivists: 0 },
     // Multiplayer: the save lives on the HOST only. It remembers who played whom, so the lobby can

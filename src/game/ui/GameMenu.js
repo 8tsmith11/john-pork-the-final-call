@@ -185,17 +185,27 @@ export class GameMenu {
     col(WEAPON_SLOTS, b.x + 110, 'HANDS');
     // stats: armor points come from the four armor pieces
     const armorPts = Math.round(ARMOR_SLOTS.reduce((t, sl) => { const d = ITEMS[c.equipped[sl]]; return t + (canWear(d, who) ? scaleMods(d.mods, c.upgrades?.[d.id ?? c.equipped[sl]] ?? 0).armor ?? 0 : 0); }, 0) * 100);
-    const stat = [`HP ${100 + (mods.maxHp || 0)}   Armor ${armorPts} pts (${Math.round((mods.armor || 0) * 100)}%)`, `Melee +${mods.melee}   Ranged ${mods.gun ? '+' + mods.shot : '-'}   Speed ${mods.speed >= 0 ? '+' : ''}${Math.round((mods.speed || 0) * 100)}%`, `$${s.save.world.money ?? 0}   XP ${c.xp}/${c.level * 30}   lv ${c.level}`];
+    const stat = [`HP ${100 + (mods.maxHp || 0)}   Armor ${armorPts} pts (${Math.round((mods.armor || 0) * 100)}%)`, `Melee +${mods.melee}   Ranged ${mods.gun ? '+' + mods.shot : '-'}   Speed ${mods.speed >= 0 ? '+' : ''}${Math.round((mods.speed || 0) * 100)}%`, `$${c.money ?? 0}   XP ${c.xp}/${c.level * 30}   lv ${c.level}`];
     stat.forEach((line, k) => this._t(b.x + 8, b.y + 142 + k * 9, line, F(6, k === 2 ? C.hi : C.sub)));
+    // Send money to a roommate (Trevor #515): $5 a click, from your own wallet.
+    {
+      let x = b.x + 8; const y = b.y + 142 + stat.length * 9;
+      x += this._t(x, y, 'SEND $5 →', F(6, C.sub)).width + 4;
+      for (const to of Object.keys(s.save.party)) {
+        if (to === who) continue;
+        x += this._t(x, y, to[0].toUpperCase() + to.slice(1), F(6, (c.money ?? 0) >= 1 ? C.hi : C.sub), () => s.menuSendMoney(to, 5)).width + 6;
+      }
+    }
     // BUFFS: what is boosting you right now beyond plain gear (partners nearby, unique items)
     const buffs = [...(s.romance?.activeBuffs?.() ?? []).map((v) => `♥ ${v.name}: ${v.buffText}`),
       ...Object.values(c.equipped).filter((id) => ITEMS[id]?.unique && canWear(ITEMS[id], who)).map((id) => `★ ${ITEMS[id].name}: ${modText(scaleMods(ITEMS[id].mods, c.upgrades?.[id] ?? 0))}`)];
-    this._t(b.x + 8, b.y + 172, 'BUFFS  (hover gear for details)', F(6, C.sub));
-    const rows = Math.floor((b.h - 182) / 7);
-    if (!buffs.length) this._t(b.x + 8, b.y + 180, 'none right now', F(6, '#4a5175'));
+    const BY = b.y + 181;   // below the send-money row
+    this._t(b.x + 8, BY, 'BUFFS  (hover gear for details)', F(6, C.sub));
+    const rows = Math.floor((b.h - 191) / 7);
+    if (!buffs.length) this._t(b.x + 8, BY + 8, 'none right now', F(6, '#4a5175'));
     const BL = this.scroller.list('buffs', { n: buffs.length, per: rows, select: false });   // wheel / W-S scroll it
-    buffs.slice(BL.first, BL.last).forEach((line, k) => this._t(b.x + 8, b.y + 180 + k * 7, fit(line, 124, 5), F(5, '#f2a6b8')));
-    this.scroller.bar(g, b.x + 133, b.y + 182, rows * 7 - 4, BL);
+    buffs.slice(BL.first, BL.last).forEach((line, k) => this._t(b.x + 8, BY + 8 + k * 7, fit(line, 124, 5), F(5, '#f2a6b8')));
+    this.scroller.bar(g, b.x + 133, BY + 10, rows * 7 - 4, BL);
     // grid + hotbar
     const gx = b.x + 140, gy = b.y + 36;
     const used = inv.slice(9).filter(Boolean).length;
@@ -544,7 +554,7 @@ export class GameMenu {
   // text, what it does, how it compares with what you're wearing). The pawn also buys.
   _shop(g, id) {
     const s = this.scene, b = this.box, who = s.character, c = s.save.party[who], shop = SHOPS[id]; if (!shop) return;
-    const money = s.save.world.money ?? 0, canSell = id === 'pawn';
+    const money = s.save.party[s.character]?.money ?? 0, canSell = id === 'pawn';
     if (this._shopFor !== id) { this._shopFor = id; this.shopMode = 'buy'; this.scroller.reset('shop'); }
     this._t(b.x + 10, b.y + 6, shop.title, F(10, C.hi));
     this._t(b.x + b.w - 10, b.y + 6, `$${money}   [ESC] close`, F(9, C.hi)).setOrigin(1, 0);
@@ -638,7 +648,7 @@ export class GameMenu {
 
   // MASTER ARMORER: upgrade anything you're wearing, +1 to +5. Each level is +15% of its bonuses.
   _armorer(g) {
-    const s = this.scene, b = this.box, who = s.character, c = s.save.party[who], money = s.save.world.money ?? 0;
+    const s = this.scene, b = this.box, who = s.character, c = s.save.party[who], money = c?.money ?? 0;
     this._t(b.x + 10, b.y + 7, 'OTTOLINE BRACK · MASTER ARMORER', F(10, C.hi));
     this._t(b.x + b.w - 10, b.y + 7, `$${money}   [ESC] close`, F(8, C.hi)).setOrigin(1, 0);
     this._t(b.x + 10, b.y + 20, '"Bring it here. I don\'t make new things. I make your things better."', { ...F(7, C.sub), wordWrap: { width: b.w - 20 } });

@@ -7,6 +7,7 @@
 //
 // Debug: ?gear=debug gives every roommate a set of ordinary gear and Michael his four unique items
 // (they're not obtainable in play before late Act 2).
+import * as W from '../engine/wallet.js';
 import { MAPS } from '../content/maps/index.js';
 import { ITEMS, MAX_UPGRADE, upgradeCost, playerMods, canWear } from '../content/items.js';
 import * as Inv from '../engine/inventory.js';
@@ -50,7 +51,7 @@ export class Gear {
       for (const [id, def] of Object.entries(ITEMS)) if (def.unique && def.owner === who && !Inv.has(c, id)) { Inv.add(c, id); if (!Inv.wear(c, id)) c.equipped[def.slot] = id; }
       for (const m of ['item.mat_scrap', 'item.mat_circuit']) Inv.add(c, m, 20);
     }
-    s.save.world.money = Math.max(s.save.world.money ?? 0, 500);
+    for (const w of Object.keys(s.save.party)) s.save.party[w].money = Math.max(s.save.party[w].money ?? 0, 500);
     s._syncParty?.();
     globalThis.__gear = this;
   }
@@ -74,9 +75,9 @@ export class Gear {
     const lvl = (c.upgrades ??= {})[id] ?? 0;
     if (lvl >= MAX_UPGRADE) return;
     const cost = upgradeCost(lvl);
-    if ((s.save.world.money ?? 0) < cost.money) return s._announce('Ottoline: "Money first."');
+    if (W.money(s.save, who) < cost.money) return s._announce('Ottoline: "Money first."');
     if (!Inv.pay(c, cost.mats)) return s._announce('Ottoline: "Bring me the scrap and I\'ll do it."');
-    s.save.world.money -= cost.money;
+    W.addMoney(s.save, who, -cost.money);
     c.upgrades[id] = lvl + 1;
     sfx('hit');
     s._announce(`Ottoline works it over on the anvil. ${def.name} is +${lvl + 1} now.`);

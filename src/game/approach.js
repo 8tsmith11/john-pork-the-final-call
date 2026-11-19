@@ -1,6 +1,7 @@
 // NPC approaches at runtime (content and rules: src/content/approaches.js, abilities.js).
 // Talking to an NPC first asks HOW: Talk carries on exactly as before; the rest roll d20 + modifier
 // on the host, which owns pockets, money and items, and sends the result back as a say box.
+import * as W from '../engine/wallet.js';
 import { APPROACHES, ROLE_OF, DC, ALLOWED, POCKETS, LINES, GUARD_LINES, TELLS, WARY_MS } from '../content/approaches.js';
 import { ABILITIES, check, modOf, scoresOf, fmtMod } from '../content/abilities.js';
 import { ITEMS } from '../content/items.js';
@@ -82,7 +83,7 @@ export class Approach {
     const s = this.s, pk = this.pockets(o), c = s.save.party[who], out = [];
     for (let k = 0; k < n && pk.length; k++) {
       const i = Math.floor(Math.random() * pk.length), it = pk.splice(i, 1)[0];
-      if (it.id === 'money') { s.save.world.money = (s.save.world.money ?? 0) + it.qty; out.push(`$${it.qty}`); }
+      if (it.id === 'money') { W.addMoney(s.save, who, it.qty); out.push(`$${it.qty}`); }
       else { Inv.add(c, it.id, it.qty); out.push(`${ITEMS[it.id]?.name.toLowerCase() ?? it.id}${it.qty > 1 ? ` ×${it.qty}` : ''}`); }
     }
     if (out.length) { s._syncParty(); sfx('kill'); }

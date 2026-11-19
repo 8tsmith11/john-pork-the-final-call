@@ -8,6 +8,7 @@
 //   - Manuelita joins when the story sets REUNITED_FLAG; her reunion plays once, shared.
 //   - The guitars start on their stands in 631, not in anyone's bag (src/game/guitarStands.js).
 // Debug: ?romance=debug reunites Manuelita and hands every roommate flowers, chocolates and a guitar.
+import * as W from '../engine/wallet.js';
 import { MAPS } from '../content/maps/index.js';
 import { ITEMS, SHOPS } from '../content/items.js';
 import * as Inv from '../engine/inventory.js';
@@ -87,8 +88,8 @@ export class Romance {
       if (Inv.has(c, item)) return true;
       const st = Object.values(SHOPS).flatMap((sh) => sh.stock).find((x) => x.item === item); if (!st) return false;
       const price = s.priceFor ? s.priceFor(who, st.price) : st.price;
-      if ((s.save.world.money ?? 0) < price) { s._say(`${Who}: "I need ${ITEMS[item].name.toLowerCase()} first, and we're broke."`); return false; }
-      s.save.world.money -= price; Inv.add(c, item); s._syncParty(); s._toast(`${Who} buys ${ITEMS[item].name.toLowerCase()} (-$${price})`);
+      if (W.money(s.save, who) < price) { s._say(`${Who}: "I need ${ITEMS[item].name.toLowerCase()} first, and we're broke."`); return false; }
+      W.addMoney(s.save, who, -price); Inv.add(c, item); s._syncParty(); s._toast(`${Who} buys ${ITEMS[item].name.toLowerCase()} (-$${price})`);
       return true;
     };
     const run = (node, onDone) => {

@@ -26,6 +26,7 @@ import { syncWear } from '../render/wearables.js';
 import { CallCard } from '../ui/CallCard.js';
 import { tr, getLang } from '../../i18n.js';
 import * as Settings from '../../settings.js';
+import * as W from '../../engine/wallet.js';
 import { bossTalk } from '../../content/bossTalk.js';
 import { BoardGame } from '../ui/BoardGame.js';
 import { Neon } from '../render/neon.js';
@@ -152,7 +153,7 @@ export class WorldScene extends Phaser.Scene {
     this.time.delayedCall(500, () => this._spawnBot());
     if (new URLSearchParams(location.search).has('lattice')) this.time.delayedCall(800, () => this.openBoardGame());   // debug: open the board game
     { const c = new URLSearchParams(location.search).get('cinematic'); if (c) this.time.delayedCall(600, () => this.playCinematic(c)); }   // debug: ?cinematic=demo
-    this.save.world.money ??= 25;
+    for (const c of Object.values(this.save.party ?? {})) c.money ??= W.START_MONEY;   // own wallets (schema 7)
     this.save.flags['settings.crudeHumor'] = 'on';   // always on (Trevor); scripts branch on it
     for (const [who, c] of Object.entries(this.save.party)) { Inv.normalize(c); migrateSkills(c, who); }
     this._makeMenu();
@@ -203,7 +204,7 @@ export class WorldScene extends Phaser.Scene {
     return {
       speaker: this._speakerOverride ?? this.character, present: present.length ? present : [this.character], flags: this.save.flags,
       inventory: Inv.ids(me), seed: this.save.world.rolls?.twistVariant ?? 'A',
-      morph: me.morph.stage, standing: this.save.standing, money: this.save.world.money ?? 0,
+      morph: me.morph.stage, standing: this.save.standing, money: W.money(this.save, this._speakerOverride ?? this.character),
     };
   }
 
@@ -234,7 +235,7 @@ export class WorldScene extends Phaser.Scene {
     const sink = {
       flag: (k, v) => this._flag(k, v),
       item: (item, n = 1) => { if (this.mode === 'client') this.net.send({ t: 'item', who: this.character, item, n }); else { Inv.add(this.save.party[this.character], `item.${item}`, n); this._syncParty(); } this._toast(`★ ${ITEMS[`item.${item}`]?.name ?? item}${n > 1 ? ' ×' + n : ''}`); },
-      pay: (n) => { this.save.world.money = Math.max(0, (this.save.world.money ?? 0) - n); this._partyDirty = true; this._toast(`-$${n}`); },
+      pay: (n) => { W.addMoney(this.save, this._speakerOverride ?? this.character, -n); this._partyDirty = true; this._toast(`-$${n}`); },
       standing: (f, n) => { if (f in this.save.standing) this.save.standing[f] += n; if (this.mode === 'client') this.net.send({ t: 'standing', faction: f, n }); },
     };
     this.dlg = new Conversation(scene, nodeId, this._dialogueCtx(), sink);
@@ -633,6 +634,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'move' && this.save.party[this._charOf(peer)]) { Inv.moveSlot(this.save.party[this._charOf(peer)], msg.a | 0, msg.b | 0, !!msg.half); this._syncParty(); }
         if (msg.t === 'buy') this._buy(this._charOf(peer), msg.shop, msg.idx);
         if (msg.t === 'sell') this._sell(this._charOf(peer), msg.slot | 0);
+        if (msg.t === 'sendMoney') this._sendMoney(this._charOf(peer), String(msg.to), msg.n | 0);
         if (msg.t === 'scooter') this._scooter(peer);
       });
       on('leave', (peer) => {
@@ -649,7 +651,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
         if (msg.t === 'say') this._say(msg.text);
         if (msg.t === 'reload') { this.scene.restart({ mode: 'client', net: this.net, save: msg.save, character: this.character }); return; }
-        if (msg.t === 'party') { this.save.party = msg.party; this.save.world.money = msg.money; this._refreshMenu(); }
+        if (msg.t === 'party') { this.save.party = msg.party; this._refreshMenu(); }   // wallets ride along in party
         if (msg.t === 'world') this._applyWorld(msg);
       });
       on('close', () => this._say('The host closed the game.'));
@@ -937,7 +939,7 @@ export class WorldScene extends Phaser.Scene {
       this.sim.setMods(p.id, playerMods(c, p.character));
       p.analogCharm = !!ITEMS[c.equipped?.charm]?.analog;
     }
-    if (this.mode === 'host') this.net.broadcast({ t: 'party', party: this.save.party, money: this.save.world.money });
+    if (this.mode === 'host') this.net.broadcast({ t: 'party', party: this.save.party });
     this._refreshMenu();
   }
 
@@ -1033,12 +1035,19 @@ export class WorldScene extends Phaser.Scene {
   menuMove(a, b, half) { if (this.mode === 'client') this.net.send({ t: 'move', a, b, half }); else { Inv.moveSlot(this.save.party[this.character], a, b, half); this._syncParty(); } }
   // Manuel's Haggler's Eye: the best haggler in the party gets everyone the discount.
   priceFor(who, base) { const h = Math.max(0, ...Object.entries(this.save.party).map(([k, c]) => playerMods(c, k).haggle ?? 0)); return Math.max(1, Math.round(base * (1 - h))); }
+  // Money between roommates (Trevor #515): host-authoritative, like selling.
+  menuSendMoney(to, n) { if (this.mode === 'client') this.net.send({ t: 'sendMoney', to, n }); else this._sendMoney(this.character, to, n); }
+  _sendMoney(from, to, n) {
+    const amt = W.send(this.save, from, to, n);
+    if (!amt) return this._toast('Not enough money.');
+    sfx('pickup'); this._toast(`Sent $${amt} to ${to[0].toUpperCase() + to.slice(1)}`); this._syncParty();
+  }
   menuSell(slot) { if (this.mode === 'client') this.net.send({ t: 'sell', slot }); else this._sell(this.character, slot); }
   _sell(who, slot) {
     const c = this.save.party[who], it = c?.inventory[slot]; if (!it) return;
     if ([c.equipped?.weapon, c.equipped?.ranged].includes(it.id) && Inv.count(c, it.id) <= 1) return this._toast('Put it away first.');   // worn gear isn't in the bag
     const price = sellPrice(it.id); if (!price) return this._toast('Wick won\'t take that.');
-    Inv.takeSlot(c, slot); this.save.world.money = (this.save.world.money ?? 0) + price;
+    Inv.takeSlot(c, slot); W.addMoney(this.save, who, price);
     sfx('pickup'); this._toast(`Sold: ${ITEMS[it.id]?.name} (+$${price})`); this._syncParty();
   }
     menuBuy(shop, idx) { if (this.mode === 'client') this.net.send({ t: 'buy', shop, idx }); else this._buy(this.character, shop, idx); }
@@ -1047,9 +1056,9 @@ export class WorldScene extends Phaser.Scene {
     if (st.once && Inv.has(c, st.item)) return;
     if (st.needs && !Inv.has(c, st.needs)) return;
     const price = this.priceFor(who, st.price);
-    if ((this.save.world.money ?? 0) < price) return;
+    if (W.money(this.save, who) < price) return;
     if (Inv.add(c, st.item) > 0) return this._toast('Your bag is full.');
-    this.save.world.money -= price;
+    W.addMoney(this.save, who, -price);
     sfx('pickup'); this._toast(`Bought: ${ITEMS[st.item].name} (-$${price})`);
     this._syncParty();
   }
@@ -1222,7 +1231,7 @@ export class WorldScene extends Phaser.Scene {
     }
     const c = this.save.party[L.to ?? who], parts = [];   // L.to: it belongs to one roommate, whoever opens it
     for (const [id, n] of got) {
-      if (id === 'money') { this.save.world.money = (this.save.world.money ?? 0) + n; parts.push(`$${n}`); }
+      if (id === 'money') { W.addMoney(this.save, L.to ?? who, n); parts.push(`$${n}`); }
       else { Inv.add(c, id, n); parts.push(`${ITEMS[id]?.name ?? id}${n > 1 ? ' ×' + n : ''}`); }
     }
     this._partyDirty = true; this._syncParty?.(); sfx('pickup');
@@ -1273,7 +1282,8 @@ export class WorldScene extends Phaser.Scene {
       }
       if (st.stage >= q.stages.length) {
         st.done = true;
-        if (this.mode !== 'client') { this.save.world.money = (this.save.world.money ?? 0) + (q.reward?.money ?? 0); for (const [who, c] of Object.entries(this.save.party)) if (questVisible(q, who)) c.xp += q.reward?.xp ?? 0; if (q.reward?.item) Inv.add(this.save.party[q.owner ?? this.character], q.reward.item); this._partyDirty = true; }
+        if (this.mode !== 'client') { W.addEach(this.save, q.reward?.money ?? 0, (w) => questVisible(q, w));   // each roommate gets the reward
+ for (const [who, c] of Object.entries(this.save.party)) if (questVisible(q, who)) c.xp += q.reward?.xp ?? 0; if (q.reward?.item) Inv.add(this.save.party[q.owner ?? this.character], q.reward.item); this._partyDirty = true; }
         if (mine) this._questBanner('QUEST COMPLETE', q.title, [q.reward?.money ? `+$${q.reward.money}` : '', q.reward?.xp ? `+${q.reward.xp} xp` : '', q.reward?.item ? ITEMS[q.reward.item]?.name : ''].filter(Boolean).join('   '));
         if (this._trackedQuest === q.id) this._trackedQuest = null;
         if (q.reward?.line && mine) this._say(q.reward.line);
@@ -1478,7 +1488,7 @@ export class WorldScene extends Phaser.Scene {
     }
     const r = Math.random();
     if (r < 0.33) {
-      if (this.mode !== 'client') { const c = this.save.party[this.character]; Inv.add(c, 'item.mat_wire'); Inv.add(c, 'item.mat_scrap'); this.save.world.money += 1; this._partyDirty = true; }
+      if (this.mode !== 'client') { const c = this.save.party[this.character]; Inv.add(c, 'item.mat_wire'); Inv.add(c, 'item.mat_scrap'); W.addMoney(this.save, this.character, 1); this._partyDirty = true; }
       return this._say('You kick it. Something rattles loose: a bent coil, a bracket, and a coin. (+copper wire, +scrap metal, +$1)');
     }
     if (r < 0.45) {
@@ -1929,10 +1939,10 @@ export class WorldScene extends Phaser.Scene {
       if (ev.t === 'kill') {
         if (ev.key && !this.save.world.killed.includes(ev.key)) this.save.world.killed.push(ev.key);
         if (ev.kind) { const g = this._guide().e[ev.kind] ??= { seen: 1, kills: 0 }; g.kills++; }
-        // Drops: money to the shared wallet, a material to whoever landed the kill.
+        // Drops: the cash to each roommate (everyone pays their own way now), a material to whoever landed the kill.
         const drop = ev.boss ? DROPS.boss : DROPS.default;
         const cash = drop.money[0] + Math.floor(Math.random() * (drop.money[1] - drop.money[0] + 1));
-        this.save.world.money = (this.save.world.money ?? 0) + cash;
+        W.addEach(this.save, cash);
         const killer = this.sim.players.get(ev.by) ?? this.sim.players.get(this.localId), kc = killer && this.save.party[killer.character];
         if (killer?.mods?.lifesteal) this.sim.heal(killer.id, killer.mods.lifesteal);
         if (kc) {
@@ -2802,7 +2812,7 @@ export class WorldScene extends Phaser.Scene {
         .setPosition(this.hot.x0 - 6, this.hot.y0 + this.hot.S / 2).setVisible(true);
     } else this.hudAmmo.setVisible(false);
     // Top-right: XP and money, compact.
-    const lines = [`xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `   ◆ ${c.skillPoints} skill pt [K]` : ''}`, `$${this.save.world.money ?? 0}${snap.enemies?.length ? `   coderot ${snap.enemies.length}` : ''}`];
+    const lines = [`xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `   ◆ ${c.skillPoints} skill pt [K]` : ''}`, `$${W.money(this.save, this.character)}${snap.enemies?.length ? `   coderot ${snap.enemies.length}` : ''}`];
     this.hudText.setText(lines.join('\n'));
     this.objText ??= this.add.text(VIEW.w - 6, 60, '', { ...FONT, fontSize: '7px', color: '#ffd27f', align: 'right', stroke: '#0b0d16', strokeThickness: 2, wordWrap: { width: 130 } }).setOrigin(1, 0).setScrollFactor(0).setDepth(9001);
     // Only the key hint under the minimap (Trevor: the objective line was too much UI). Objectives live in the quests menu.

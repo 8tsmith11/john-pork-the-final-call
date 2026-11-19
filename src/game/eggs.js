@@ -4,6 +4,7 @@
 // NPCs, plus roommates who said yes for their own character (D-007): each side of a roommate-on-roommate
 // O needs that roommate's own yes, given through their own agent (#457).
 // Trevor's character is never involved, as doer or target (his floor in docs/lore/roommates.md).
+import * as W from '../engine/wallet.js';
 import { TILE } from '../engine/sim.js';
 import { audioOut } from '../audio/audio.js';
 
@@ -57,7 +58,7 @@ export class Eggs {
     if (!target) return;
     if ((this.cool.get(target.key) ?? 0) > s.time.now) { this._tell(playerId, `${target.name} needs a minute.`); return; }
     this.cool.set(target.key, s.time.now + PER_TARGET_COOLDOWN);
-    s.save.world.money = (s.save.world.money ?? 0) + 1;     // the target pays $1 (the party wallet)
+    W.addMoney(s.save, me.character, 1);     // the target pays $1 (the doer's own wallet)
     s._partyDirty = true;
     const ev = { t: 'eggO', id: playerId, x: Math.round(me.x), y: Math.round(me.y), tx: Math.round(target.x), ty: Math.round(target.y), tk: target.key, name: target.name, seed: Math.floor(Math.random() * 1e6) };
     s.sim.emit(ev);
