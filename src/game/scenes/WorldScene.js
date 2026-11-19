@@ -1334,10 +1334,14 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _restAtSave(peer, objectId) {
-    if (this.mode === 'client' || !this.sim.restAtSave(peer, objectId)) return;
+    if (this.mode === 'client') return;
+    const actor = this.sim.players.get(peer), bed = this.sim.map.objects.find((o) => o.id === objectId && o.action === 'save');
+    if (!actor || !bed || this.sim.map.id !== 'room631'
+      || Math.hypot(actor.x - (bed.x * TILE + 8), actor.y - (bed.y * TILE + 8)) > 34) return;
+    const rested = this.sim.restAtSave(peer, objectId);
     for (const p of this.sim.players.values()) this.save.party[p.character].rot = p.rot ?? 0;
-    this._save('✓ saved · rest eased the coderot');
-    if (peer !== this.localId) this.net?.send(peer, { t: 'say', text: 'Rested. Coderot exposure halved.' });
+    this._save(rested ? '✓ saved · rest eased the code rot' : '✓ saved');
+    if (peer !== this.localId) this.net?.send(peer, { t: 'say', text: rested ? 'Rested. Code rot exposure halved.' : '✓ saved' });
   }
 
   // Descriptions stay up until E or a click outside the box.
@@ -2106,11 +2110,11 @@ export class WorldScene extends Phaser.Scene {
     // Exposure is only shown while present, below the teammate cards.
     this.hudRot ??= this.add.text(7, 0, '', { ...FONT, fontSize: '6px', color: '#e8e2d0' }).setScrollFactor(0).setDepth(9002);
     const rot = me?.rot ?? 0, ry = 44 + (snap.players.length - 1) * 7;
-    this.hudRot.setPosition(7, ry).setText(`ROT ${Math.ceil(rot)}%`).setVisible(rot > 0);
+    this.hudRot.setPosition(7, ry).setText(`CODE ROT ${Math.ceil(rot)}%`).setVisible(rot > 0);
     if (rot > 0) {
       g.fillStyle(0x0d0b1a, 0.9).fillRect(4, ry - 1, 112, 8);
-      g.fillStyle(0x332e57).fillRect(48, ry + 1, 62, 4);
-      g.fillStyle(rot >= 60 ? 0xd417c8 : 0xc8e619).fillRect(48, ry + 1, 62 * Math.min(1, rot / 100), 4);
+      g.fillStyle(0x332e57).fillRect(76, ry + 1, 34, 4);
+      g.fillStyle(rot >= 60 ? 0xd417c8 : 0xc8e619).fillRect(76, ry + 1, 34 * Math.min(1, rot / 100), 4);
     }
     // Top-right: XP and money, compact.
     const lines = [`xp ${c.xp}/${c.level * XP_PER_LEVEL}${c.skillPoints ? `   ◆ ${c.skillPoints} skill pt [K]` : ''}`, `$${this.save.world.money ?? 0}${snap.enemies?.length ? `   coderot ${snap.enemies.length}` : ''}`];

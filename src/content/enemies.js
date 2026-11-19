@@ -2,7 +2,7 @@
 // these bases plus seeded tables (src/content/rotVillains.js, later).
 export const ENEMIES = {
   'enemy.rot_taken': {
-    name: 'Rot-taken', hp: 42, speed: 26, damage: 8, radius: 6, xp: 10,
+    name: 'Code-rot-taken', hp: 42, speed: 26, damage: 8, radius: 6, xp: 10,
     ai: 'swarm', alertRange: 280, touchCooldown: 1.3, infection: 8, color: 0xd417c8,
     lore: 'A person whose degraded lace now drives the body.',
   },
