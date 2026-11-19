@@ -1,5 +1,5 @@
 <!-- SEALED SPOILERS (ROT13 Caesar cipher). Humans: reading this spoils key plot twists.
-     To open on purpose: python3 tools/spoilers/seal.py open /home/trevor-smith/code/john-pork-the-final-call/docs/sealed/script/08-ending.md -->
+     To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/script/08-ending.md -->
 # Raqvat phgfprar: Zvffrq Pnyyf
 
 ## Checbfr
@@ -44,6 +44,8 @@ ba checbfr fb gung yvar naq gur ynfg fubg ner jung gur cynlre erzrzoref.
 - `npg1.pbzcyrgr`
 
 ---
+
+Fpbcr: nyy
 
 ### abqr: raqvat_obff_snyyf
 
@@ -332,7 +334,9 @@ naq gur gvpxvat tbrf jvgu vg.*
 *Wbua Cbex yvzcf gb gur gvpxrg znpuvar. Ur ybbxf hc ng gur onyybba, gura ng Znahry, naq sbe n zbzrag ur
 qbrf abg unir n wbxr.*
 
-**WBUA CBEX:** Znahry. Lbh xrcg vg va gur pybfrg fb vg'q or gur svefg guvat lbh fnj. V xabj. V'ir orra purpxvat ba vg gbb.
+**WBUA CBEX:** Znahry. Lbh xrcg vg va gur pybfrg fb vg'q or gur svefg guvat lbh fnj.
+
+**WBUA CBEX:** V xabj. V'ir orra purpxvat ba vg gbb.
 
 *Znahry pyvzof qbja. Vg gnxrf uvz n juvyr. Abobql urycf, orpnhfr ur jbhyq abg jnag vg.*
 
@@ -399,7 +403,9 @@ zvyqyl fhecevfrq.*
 
 #### vs synt npg1.raqvat.jnez
 
-**WBUA CBEX:** Gurer'f na beqre jvgu Pbyyrtr Cnex'f anzr ba vg. Qensgrq Ghrfqnl. Jnyyf, purpxcbvagf. Vg tbrf onpx va n qenjre abj. Abobql'f tbvat gb gunax lbh sbe gung.
+**WBUA CBEX:** Gurer'f na beqre jvgu Pbyyrtr Cnex'f anzr ba vg. Qensgrq Ghrfqnl. Jnyyf, purpxcbvagf.
+
+**WBUA CBEX:** Vg tbrf onpx va n qenjre abj. Abobql'f tbvat gb gunax lbh sbe gung.
 
 *Orng.*
 
@@ -407,7 +413,9 @@ zvyqyl fhecevfrq.*
 
 #### ryfr
 
-**WBUA CBEX:** Gurl unq na beqre qensgrq gb jnyy guvf gbja va. Vg tbrf onpx va n qenjre abj. Lbh qvq gung. V'q unir gbyq lbh fbbare. V gevrq gur cubar.
+**WBUA CBEX:** Gurl unq na beqre qensgrq gb jnyy guvf gbja va. Vg tbrf onpx va n qenjre abj. Lbh qvq gung.
+
+**WBUA CBEX:** V'q unir gbyq lbh fbbare. V gevrq gur cubar.
 
 #### raq
 
@@ -425,7 +433,7 @@ zvyqyl fhecevfrq.*
 Pubvprf:
 - "(Chapu uvz.)" -> raqvat_chapu
 - "Jung qvq gur Pnyy fnl?" -> raqvat_nfx_pnyy
-- "Qvq lbh gnxr vg? Bhg bs zl pybfrg." -> raqvat_nfx_bggbzna
+- "Qvq lbh gnxr vg?" -> raqvat_nfx_bggbzna
 - "(Fnl abguvat.)" -> raqvat_fnl_abguvat
 
 ---
@@ -563,7 +571,7 @@ fabhg, n yvggyr bss-prager.*
 
 **ZNAHRY:** Crbcyr cenl gb vg. Jung lbh fnvq. Gurer ner crbcyr jub *cenl* gb vg.
 
-**WBUA CBEX:** V xabj. V'ir nfxrq gurz gb fgbc. Vg gheaf bhg gung'f gur bar guvat V pna'g trg nalbar ba gur cubar nobhg.
+**WBUA CBEX:** V xabj. V'ir nfxrq gurz gb fgbc. Vg'f gur bar guvat V pna'g trg nalbar ba gur cubar nobhg.
 
 #### vs fcrnxre=geribe
 
@@ -571,7 +579,9 @@ fabhg, n yvggyr bss-prager.*
 
 **WBUA CBEX:** Lrf.
 
-**WBUA CBEX:** V'ir tbg gur vgrzvmrq ovyy. V ernq vg zbfg avtugf. Nfx zr ntnva jura V'ir tbg n orggre obql naq lbh'ir tbg n jbefr riravat.
+**WBUA CBEX:** V'ir tbg gur vgrzvmrq ovyy. V ernq vg zbfg avtugf.
+
+**WBUA CBEX:** Nfx zr ntnva jura V'ir tbg n orggre obql naq lbh'ir tbg n jbefr riravat.
 
 **GERIBE:** Gung'f n qrsyrpgvba.
 
@@ -683,7 +693,7 @@ uvf cbpxrg naq jvaqf vg bapr nebhaq uvf svatref.*
 
 *Ur abqf ng gur evooba.*
 
-**WBUA CBEX:** Fur unq tbbq unaqjevgvat. Gur abgr, va gur cnepry. V fubhyqa'g unir ernq vg. V ernq rirelguvat. Vg'f n jubyr ceboyrz.
+**WBUA CBEX:** Fur unq tbbq unaqjevgvat. Gur abgr, va gur cnepry. V fubhyqa'g unir ernq vg. V ernq rirelguvat.
 
 *Znahry qbrf abg nfx ubj. Wbua Cbex frrzf tengrshy.*
 
@@ -700,7 +710,9 @@ onpx, gur jnl ur ernqf n jngre grfg.*
 
 *Geribe fnlf abguvat.*
 
-**WBUA CBEX:** Lbhe fuevzc ner svar, ol gur jnl. V pna'g trg va gur gnax. V purpxrq gur chzc vafgrnq. Pyrna yvggyr znpuvar. Lbh ohvyg gung jryy.
+**WBUA CBEX:** Lbhe fuevzc ner svar, ol gur jnl. V pna'g trg va gur gnax. V purpxrq gur chzc vafgrnq.
+
+**WBUA CBEX:** Pyrna yvggyr znpuvar. Lbh ohvyg gung jryy.
 
 *Geribe nyzbfg fnlf fbzrguvat. Ur abqf vafgrnq.*
 
@@ -742,7 +754,7 @@ hfrq ner erzbirq. Vs gur gbar vf pbyq, Wbua Cbex cebzcgf vg jvgu yrff cngvrapr.*
 Pubvprf:
 - "(Chapu uvz.)" -> raqvat_chapu
 - [!synt npg1.raqvat.nfxrqPnyy] "Jung qvq gur Pnyy fnl?" -> raqvat_nfx_pnyy_fubeg
-- [!synt npg1.raqvat.nfxrqBggbzna] "Qvq lbh gnxr vg? Bhg bs zl pybfrg." -> raqvat_nfx_bggbzna_fubeg
+- [!synt npg1.raqvat.nfxrqBggbzna] "Qvq lbh gnxr vg?" -> raqvat_nfx_bggbzna_fubeg
 - "(Fnl abguvat.)" -> raqvat_fnl_abguvat
 
 ---
@@ -829,7 +841,9 @@ Pubvprf:
 
 #### vs synt npg1.raqvat.jnez
 
-**WBUA CBEX:** Tb ubzr gur ybat jnl. Abg npebff gur cynmn. Fyrrc. Srrq gur fuevzc. Fbzrobql ybbx ng gur bggbzna va gur zbeavat naljnl, vg'f fgvyy gur orfg sberpnfg va gur ohvyqvat.
+**WBUA CBEX:** Tb ubzr gur ybat jnl. Abg npebff gur cynmn. Fyrrc. Srrq gur fuevzc.
+
+**WBUA CBEX:** Fbzrobql ybbx ng gur bggbzna va gur zbeavat naljnl. Vg'f fgvyy gur orfg sberpnfg va gur ohvyqvat.
 
 **WBUA CBEX:** Znahry.
 
@@ -841,7 +855,9 @@ Pubvprf:
 
 **WBUA CBEX:** Tb ubzr gur ybat jnl. Abg npebff gur cynmn.
 
-**WBUA CBEX:** V'z tbvat gb pnyy ntnva. V'z gryyvat lbh abj fb vg vfa'g n fhecevfr. Lbh pna yrg vg evat. Crbcyr qb.
+**WBUA CBEX:** V'z tbvat gb pnyy ntnva. V'z gryyvat lbh abj fb vg vfa'g n fhecevfr.
+
+**WBUA CBEX:** Lbh pna yrg vg evat. Crbcyr qb.
 
 *Ur gheaf gb Znahry. Jungrire jnf pbyq va uvz vf abg gurer sbe n frpbaq.*
 

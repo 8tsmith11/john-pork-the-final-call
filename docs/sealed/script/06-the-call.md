@@ -42,6 +42,8 @@ Frgf:
 
 ## Cneg 1: Gur frvmr
 
+Fpbcr: nyy
+
 ### abqr: pnyy_frvmr
 
 *Gevttre: gur frpbaq yrnq pbzcyrgrf naq gur cnegl vf bhg bs pbzong naq bhg bs qvnybthr. Jurerire gurl ner.*
@@ -170,7 +172,7 @@ Bar cre ebbzzngr ng zbfg, va nal beqre, fcnprq bhg. Gurl qb abg oybpx vachg.
 Pubvprf:
 - [abg synt npg1.pnyy.nfxrq.jurer] "Jurer'f zl onyybba?" -> nafjre_znahry_jurer
 - [abg synt npg1.pnyy.nfxrq.gbbx] "Qvq lbh gnxr vg?" -> nafjre_znahry_gbbx
-- [abg synt npg1.pnyy.nfxrq.fgnghrf] "Gur fgnghrf. Unir lbh frra gurz?" -> nafjre_znahry_fgnghrf
+- [abg synt npg1.pnyy.nfxrq.fgnghrf] "Frra gur fgnghrf?" -> nafjre_znahry_fgnghrf
 - "(Fnl abguvat.)" -> nafjre_znahry_fvyrapr
 
 ### abqr: nafjre_znahry_jurer
@@ -204,7 +206,7 @@ Pubvprf:
 
 **ZNAHRY:** Fb fbzrobql oebxr va.
 
-**WBUA CBEX:** Fbzrobql fgnegrq gb. Pbhag gur znexf ba gur cyngr jura lbh'er ubzr. Vg gnxrf zber guna gung gb bcra gung qbbe.
+**WBUA CBEX:** Fbzrobql fgnegrq gb. Pbhag gur znexf ba gur cyngr jura lbh'er ubzr. Gung qbbe gnxrf zber guna gung.
 
 **ZNAHRY:** Jung qbrf gung zrna?
 
@@ -271,7 +273,7 @@ Pubvprf:
 
 **ZNAHRY:** Jung inaf?
 
-**WBUA CBEX:** Gur barf gung'ir orra va Pbyyrtr Cnex nyy jrrx jvgu gurve abfrf va gur nve. Nfgre ceb yvxr lbh, V svtherq lbh'q pybpxrq gurz.
+**WBUA CBEX:** Gur barf va Pbyyrtr Cnex nyy jrrx, abfrf va gur nve. Nfgre ceb yvxr lbh, V svtherq lbh'q pybpxrq gurz.
 
 *Frg `npg1.inaf.jnearq`.*
 
@@ -427,7 +429,7 @@ Pubvprf:
 
 **GERIBE:** Gung'f abg na nafjre.
 
-**WBUA CBEX:** Vg'f zbfg bs bar. Naq Geribe, gurer'f n ina jvgu n znfg ba vg fzryyvat sbe gur fnzr guvat lbh ner. Orng vg gurer.
+**WBUA CBEX:** Vg'f zbfg bs bar. Naq Geribe, n ina jvgu n znfg vf fzryyvat sbe gur fnzr guvat. Orng vg gurer.
 
 *Frg `npg1.inaf.jnearq`.*
 
@@ -478,7 +480,7 @@ Pubvprf:
 - [abg synt npg1.pnyy.nfxrq.jurer] "Jurer'f Znahry'f onyybba?" -> nafjre_zvpunry_jurer
 - [abg synt npg1.pnyy.nfxrq.gbbx] "Qvq lbh gnxr vg?" -> nafjre_zvpunry_gbbx
 - [abg synt npg1.pnyy.nfxrq.ure] "Qvq lbh pnyy ure?" -> nafjre_zvpunry_ure
-- [abg synt npg1.pnyy.nfxrq.friraglBar] "Jung qvq lbh fnl? Va '71?" -> nafjre_zvpunry_friraglbar
+- [abg synt npg1.pnyy.nfxrq.friraglBar] "Jung qvq lbh fnl?" -> nafjre_zvpunry_friraglbar
 - "(Gung'f nyy.)" -> nafjre_zvpunry_pybfr
 
 ### abqr: nafjre_zvpunry_jurer
@@ -585,7 +587,9 @@ Pubvprf:
 
 **ZVPUNRY:** Bxnl.
 
-**WBUA CBEX:** Naq gurer ner inaf bhg gbavtug, gur xvaq jvgu n znfg. Vs lbh frr bar, lbh qvqa'g frr gur onyybba. Lbh'er guerr thlf jub ybfg n fpbbgre.
+**WBUA CBEX:** Naq gurer ner inaf bhg gbavtug, gur xvaq jvgu n znfg.
+
+**WBUA CBEX:** Vs lbh frr bar, lbh qvqa'g frr gur onyybba. Lbh'er guerr thlf jub ybfg n fpbbgre.
 
 *Frg `npg1.inaf.jnearq`.*
 
@@ -880,7 +884,7 @@ Pubvprf:
 
 **WBUA CBEX:** Yvfgra. Gurer'f fbzrguvat qbja gurer gung xrrcf pbhag. Cvpx hc naq vg fgbcf pbhagvat.
 
-**WBUA CBEX:** Vg'f gur bar jub pbzrf jura lbh qba'g... ybbx. V'q cvpx hc. Vs V jrer lbh. Juvpu V'z abg. V purpxrq.
+**WBUA CBEX:** Vg'f gur bar jub pbzrf jura lbh qba'g... ybbx. V'q cvpx hc. Vs V jrer lbh. V'z abg. V purpxrq.
 
 *Gur sbbgfgrcf ba zrgny. Bar bs gurz vf urnivre guna gur bgure.*
 
