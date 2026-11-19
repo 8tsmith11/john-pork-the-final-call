@@ -133,7 +133,7 @@ export const room631 = makeMap({
     { id: 'obj.michael_closet', art: 'obj.manuel_closet', loot: 'michael_closet', x: 16, y: 4, label: 'Michael\'s closet',
       text: 'Michael\'s closet. Hoodies, a few shirts, and a hook by the door that only ever holds one thing.' },
     { id: 'obj.manuel_closet', x: 22, y: 4, label: 'Manuel\'s closet', flag: 'act1.balloon.noticedGone',
-      text: 'Manuel\'s closet. His orange balloon, the one his abuela sent him, the one he checks on every morning, is gone. Someone took it. A length of orange ribbon is still knotted around the clothes rail, cut clean. On the shelf above, his white hat with the blue brim. Taped inside the door, a card in her handwriting: "Tenelo al sol. Miralo cada mañana. Te va a decir el tiempo." (Keep it in the sun. Check on it every morning. It will tell you the weather.)' },
+      text: 'Manuel\'s closet. The orange balloon his abuela sent him is gone. A length of ribbon is still knotted on the rail, cut clean. His white hat with the blue brim is on the shelf. Taped inside the door, a card in her handwriting: "Tenelo al sol. Miralo cada mañana. Te va a decir el tiempo." (Keep it in the sun. Check on it every morning. It will tell you the weather.)' },
     { id: 'obj.front_lock', x: 1, y: 8, label: 'Front-door lock', flag: 'act1.clue.lockForced',
       text: 'The deadbolt plate is bent and the strike is splintered. Someone forced it from the hallway side, quietly, and pulled the door shut behind them.' },
     { id: 'obj.mm_mirror', x: 26, y: 1, label: 'Bathroom mirror', text: 'Two toothbrushes and a third one nobody claims.' },
