@@ -876,13 +876,27 @@ test('skill trees: valid links, capstone needs all three branches, mods sum, old
   assert.equal(migrateSkills(old, 'trevor'), 2); assert.equal(old.skillPoints, 3); assert.deepEqual(Object.keys(old.skills), ['tr.amp']);
 });
 
+// tts/item-names: in tests/run.js, add one test that loops over ITEMS in src/content/items.js
+// and checks that every item has a non-empty name and text. List any that don't.
+test('every item in ITEMS has a non-empty name and text', () => {
+  const bad = [];
+  for (const [id, it] of Object.entries(BALANCE_ITEMS)) {
+    const missing = [];
+    if (!it || typeof it.name !== 'string' || !it.name.trim()) missing.push('name');
+    if (!it || typeof it.text !== 'string' || !it.text.trim()) missing.push('text');
+    if (missing.length) bad.push(`${id} (${missing.join(', ')})`);
+  }
+  assert.equal(bad.length, 0, `Items with missing name/text: ${bad.join('; ')}`);
+});
+
 // Every source file must at least parse. A file the tests don't import (map dressing, scenes) can
 // otherwise carry a syntax error straight to a black screen in the browser.
 {
   const { execFileSync } = await import('node:child_process');
   const { readdirSync, statSync } = await import('node:fs');
+  const { fileURLToPath } = await import('node:url');
   const walk = (d) => readdirSync(d).flatMap((n) => { const p = `${d}/${n}`; return statSync(p).isDirectory() ? walk(p) : p.endsWith('.js') ? [p] : []; });
-  const root = new URL('../src', import.meta.url).pathname;
+  const root = fileURLToPath(new URL('../src', import.meta.url));
   test('every file under src/ parses', () => {
     const bad = [];
     for (const f of walk(root)) { try { execFileSync(process.execPath, ['--check', f], { stdio: 'pipe' }); } catch (e) { bad.push(`${f.slice(root.length + 1)}: ${String(e.stderr).split('\n').find((l) => l.includes('SyntaxError')) ?? 'syntax error'}`); } }
