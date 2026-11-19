@@ -73,4 +73,17 @@ export const ES_QUESTS = {
   'Print a drive module, a spinner bar and a control board at the fab.': 'Imprime un módulo de tracción, una barra giratoria y una placa de control en el fab.',
   "Install the parts on the combat robot in Trevor's room.": 'Instala las piezas en el robot de combate del cuarto de Trevor.',
   'The bot twitches, spins its bar up to a whine, and rolls off the desk on its own. It parks itself at your heel and waits.': 'El bot se sacude, hace girar la barra hasta que chilla y baja solo del escritorio. Se estaciona a tus pies y espera.',
+
+  // Courtships (src/content/romance.js builds these from a template: if the English there changes,
+  // change the keys here too).
+  'Brooke': 'Brooke',
+  'Trevor: bring Brooke flowers (the corner store sells them).': 'Trevor: llévale flores a Brooke (las venden en la tienda de la esquina).',
+  'Trevor: clear out 6 coderot things, then go back to Brooke.': 'Trevor: limpia 6 cosas de coderot y vuelve con Brooke.',
+  'Trevor: bring Brooke chocolates.': 'Trevor: llévale bombones a Brooke.',
+  'Trevor: play Brooke a song on a guitar, close by.': 'Trevor: tócale una canción a Brooke en una guitarra, bien cerca.',
+  'Inés': 'Inés',
+  'Manuel: bring Inés flowers (the corner store sells them).': 'Manuel: llévale flores a Inés (las venden en la tienda de la esquina).',
+  'Manuel: clear out 6 coderot things, then go back to Inés.': 'Manuel: limpia 6 cosas de coderot y vuelve con Inés.',
+  'Manuel: bring Inés chocolates.': 'Manuel: llévale bombones a Inés.',
+  'Manuel: play Inés a song on a guitar, close by.': 'Manuel: tócale una canción a Inés en una guitarra, bien cerca.',
 };

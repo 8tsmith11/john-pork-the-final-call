@@ -137,4 +137,9 @@ export const ES_PLAZA = {
   "\"How many days are in a week if you count the weekend.\"": "\"Cuántos días tiene una semana si cuentas el fin de semana.\"",
   "\"What's the fastest way to learn Verilog without learning anything.\" He writes your silence down.": "\"Cuál es la forma más rápida de aprender Verilog sin aprender nada.\" Anota tu silencio.",
   "\"Am I the asshole.\" He does not say for what.": "\"Soy el imbécil acá.\" No dice por qué.",
+
+  // People the romance and gear modules place in the plaza (src/content/romance.js, src/game/gear.js).
+  'Brooke': 'Brooke',
+  'Inés': 'Inés',
+  'Ottoline, master armorer': 'Ottoline, maestra armera',
 };
