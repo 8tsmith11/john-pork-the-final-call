@@ -73,6 +73,8 @@ export const greenbelt = fromGrid({
 }).enemy('boss.gb_receiver', 16, 5)
   .exit('gb_dishes', 29, 0, { id: 'obj.greenbelt_to_gb_dishes', selfDrawn: true, stepOn: true, pair: 'obj.gb_dishes_out', label: 'Up the hill to the dishes', text: 'The dish control room. The door is propped open with a tape reel.' })   // act2_more.js
   .exit('gb_coop', 3, 11, { id: 'obj.greenbelt_to_gb_coop', selfDrawn: true, stepOn: true, pair: 'obj.gb_coop_out', label: 'Down the path to the co-op', text: 'The co-op. OPEN, by a vote of 4 to 3.' })   // act2_more.js
+  
+  .exit('gb_center', 5, 0, { id: 'obj.greenbelt_to_gb_center', selfDrawn: true, stepOn: true, pair: 'obj.gb_center_out', label: 'Up to the town center', text: 'The curved streets climb toward the theater.' })   // stretch.js
   .build();
 
 // ---- 7. Beltsville: the farms ----
@@ -101,6 +103,8 @@ export const beltsville = fromGrid({
   },
 }).enemy('boss.bv_shell', 21, 4)
   .exit('bv_barn', 12, 10, { id: 'obj.beltsville_to_bv_barn', selfDrawn: true, stepOn: true, pair: 'obj.bv_barn_out', label: "A barn the map doesn't show", text: "A barn that isn't on any map. It has an airlock." })   // act2_more.js
+  
+  .exit('bv_lab', 6, 0, { id: 'obj.beltsville_to_bv_lab', art: 'obj.door', pair: 'obj.bv_lab_out', label: 'The tissue lab', text: 'Long, low, airlocked.' })   // stretch.js
   .build();
 
 // ---- 8. The refuge: no signal, timber and lamps ----
@@ -127,6 +131,9 @@ export const refuge = fromGrid({
   },
 })
   .exit('rf_settlement', 8, 0, { id: 'obj.refuge_to_rf_settlement', selfDrawn: true, stepOn: true, pair: 'obj.rf_settlement_out', label: 'Up the boardwalk to the settlement', text: 'Timber walls, lamps in the windows.' })   // act2_more.js
+  
+  .exit('rf_fringe', 26, 0, { id: 'obj.refuge_to_rf_fringe', selfDrawn: true, stepOn: true, pair: 'obj.rf_fringe_out', label: 'Deeper into the forest', text: "A day's walk in, they say. It's less." })   // stretch.js
+  .exit('rf_marsh', 15, 9, { id: 'obj.refuge_to_rf_marsh', selfDrawn: true, stepOn: true, pair: 'obj.rf_marsh_out', label: 'Down to the marsh boardwalk', text: 'Boardwalks over black water.' })   // stretch.js
   .build();
 
 // ---- 9. The Meade (perimeter in Act 2) ----
@@ -153,6 +160,8 @@ export const meade = fromGrid({
   },
 }).enemy('boss.md_fence', 27, 3)
   .exit('meade_inside', 10, 8, { id: 'obj.meade_to_meade_inside', selfDrawn: true, stepOn: true, requiresFlag: 'act2.complete', lockedText: 'The gate does not acknowledge you. Not yet.', pair: 'obj.meade_inside_out', label: 'The Meade gate', text: 'Black glass behind the berm. The gate is open.' })   // act3_more.js
+  
+  .exit('md_lot', 4, 8, { id: 'obj.meade_to_md_lot', selfDrawn: true, stepOn: true, pair: 'obj.md_lot_out', label: 'The parking lot', text: 'Ten thousand spaces.' })   // stretch.js
   .build();
 
 // ---- 10. Baltimore: the port, an outbreak in progress ----
@@ -212,4 +221,8 @@ export const annapolis = fromGrid({
   },
 }).enemy('boss.ann_tide', 16, 2)
   .exit('ann_harbor', 31, 7, { id: 'obj.annapolis_to_ann_harbor', selfDrawn: true, stepOn: true, pair: 'obj.ann_harbor_out', label: 'Down the pier to the harbor', text: 'Sailboats moored to second-floor windows. The harbor.' })   // act2_more.js
+  
+  .exit('ann_statehouse', 6, 8, { id: 'obj.annapolis_to_ann_statehouse', art: 'obj.door', pair: 'obj.ann_statehouse_out', label: 'The statehouse', text: 'A wooden dome above the waterline.' })   // stretch.js
+  .exit('ann_bridge', 28, 8, { id: 'obj.annapolis_to_ann_bridge', selfDrawn: true, stepOn: true, pair: 'obj.ann_bridge_out', label: 'Out to the broken bridge', text: 'The bridge east, with a span missing.' })   // stretch.js
+  .exit('ann_chapel', 3, 0, { id: 'obj.annapolis_to_ann_chapel', art: 'obj.door', pair: 'obj.ann_chapel_out', label: 'The academy chapel', text: 'Its doors are open. They always are.' })   // stretch.js
   .build();

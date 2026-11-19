@@ -92,6 +92,8 @@ export const gaithersburg = fromGrid({
   },
 }).enemy('boss.gt_clock', 6, 4)
   .exit('gt_clockroom', 20, 3, { id: 'obj.gaithersburg_to_gt_clockroom', art: 'obj.door', pair: 'obj.gt_clockroom_out', label: 'Down to the clock vault', text: 'Stairs down. A tick, from below.' })   // act3_more.js
+  
+  .exit('gt_labs', 23, 3, { id: 'obj.gaithersburg_to_gt_labs', art: 'obj.door', pair: 'obj.gt_labs_out', label: 'The measurement labs', text: 'Every faction checks its clocks here.' })   // stretch.js
   .build();
 
 // ---- 14. Frederick and the Smelter: a market town, potlines turned server halls, a switchyard like a forest ----
@@ -121,6 +123,8 @@ export const frederick = fromGrid({
   },
 }).enemy('boss.fr_potline', 22, 1)
   .exit('fr_switchyard', 35, 8, { id: 'obj.frederick_to_fr_switchyard', selfDrawn: true, stepOn: true, pair: 'obj.fr_switchyard_out', label: 'East into the switchyard', text: 'Steel towers like a forest.' })   // act3_more.js
+  
+  .exit('fr_market', 5, 0, { id: 'obj.frederick_to_fr_market', art: 'obj.door', pair: 'obj.fr_market_out', label: 'The market hall', text: 'Brick, a bell over the door.' })   // stretch.js
   .build();
 
 // ---- 15. The Enclave: Washington inside the wall; everything works, nobody on the grass ----
@@ -149,4 +153,7 @@ export const enclave = fromGrid({
   },
 }).enemy('boss.en_gate', 32, 5)
   .exit('en_archive', 4, 9, { id: 'obj.enclave_to_en_archive', selfDrawn: true, stepOn: true, pair: 'obj.en_archive_out', label: 'The national archive', text: 'Marble steps. The doors open on schedule.' })   // act3_more.js
+  
+  .exit('en_mall', 10, 0, { id: 'obj.enclave_to_en_mall', selfDrawn: true, stepOn: true, pair: 'obj.en_mall_out', label: 'North to the mall', text: 'Long and green and empty.' })   // stretch.js
+  .exit('en_metro', 14, 9, { id: 'obj.enclave_to_en_metro', selfDrawn: true, stepOn: true, pair: 'obj.en_metro_out', label: 'Down to the metro', text: 'On time. Always.' })   // stretch.js
   .build();
