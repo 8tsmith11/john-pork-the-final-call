@@ -438,7 +438,7 @@ export class Sim {
       const n = 1 + (p.mods?.decoys ?? 0);
       for (let i = 0; i < n; i++) {
         const a = p.aim + (i - (n - 1) / 2) * 0.9;
-        this.decoys.push({ x: p.x + Math.cos(a) * 14, y: p.y + Math.sin(a) * 14, ttl: 6 * ap, hp: Math.round(40 * ap) });
+        this.decoys.push({ x: p.x + Math.cos(a) * 14, y: p.y + Math.sin(a) * 14, ttl: 6 * ap, hp: Math.round(40 * ap), mhp: Math.round(40 * ap) });
       }
       this.events.push({ t: 'decoy', id: p.id });
     } else {
@@ -892,7 +892,7 @@ export class Sim {
         mk: e.marked > 0, zz: e.sleepT > 0, sg: !!this._def(e).lullaby && !(e.sleepT > 0), st: e.st ?? null,
         ...(e.def && !e.boss ? { vn: e.def.vname, tr: e.def.trait, c: e.def.color, mh: e.def.hp, r: e.def.radius } : {}),
         ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, ring: !!e.sahur && e.fightT > 10 } } : {}) })),
-      decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y) })),
+      decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
       allies: (this.allies ?? []).map((a) => ({ x: Math.round(a.x), y: Math.round(a.y), hp: a.hp, mhp: a.maxHp, dn: a.down > 0, st: a.st })),
       hazards: this.hazards.map((h) => ({ x: Math.round(h.x), y: Math.round(h.y), r: h.r, t: Math.round(h.ttl * 10) / 10 })),
       ring: [...this.enemies.values()].find((e) => e.ringR != null)?.ringR ?? null,

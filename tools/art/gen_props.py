@@ -719,6 +719,26 @@ def bot_live(f):
 P("bot.live", bot_live(0))
 P("bot.live#1", bot_live(1))
 
+
+# Manuel's Decoy Bust (R): a Pork bust thrown in a hurry, still wet clay, no plinth, slumped a little.
+# Frame 2 is the same bust cracked, for when it has soaked most of its hits.
+def decoy(cracked=False):
+    c = C()
+    c.rect(4, 21, 8, 2, "warm0")                                                              # wet base, slip pooling
+    c.rect(3, 17, 10, 4, "warm2").v_(12, 17, 4, "warm1").h_(4, 17, 8, "warm3")                 # shoulders
+    c.rect(6, 15, 4, 2, "warm2")                                                              # neck
+    c.rect(4, 8, 8, 7, "warm2").v_(11, 9, 6, "warm1").h_(5, 8, 6, "warm3")                     # head, shaded side
+    c.pts("warm2", (3, 7), (4, 7), (3, 8), (12, 7), (11, 7), (12, 8))                          # ears
+    c.pts("night1", (6, 10), (9, 10))                                                         # thumb-pressed eyes
+    c.rect(6, 12, 4, 2, "pork1").pts("pork0", (6, 13), (9, 13)).pts("night1", (7, 12), (8, 12))  # snout: the one pink bit
+    c.pts("warm4", (5, 9), (4, 18), (8, 18))                                                  # wet shine
+    c.pts("warm3", (2, 22), (13, 22))                                                         # thumbprints in the slip
+    if cracked:
+        c.pts("night1", (8, 8), (8, 9), (9, 10), (9, 11), (10, 11), (5, 17), (6, 18), (6, 19), (11, 16), (10, 17))
+    return c.outline()
+P("decoy.bust", decoy())
+P("decoy.bust#crack", decoy(True))
+
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)
 write("big", 32, 40, BIG)

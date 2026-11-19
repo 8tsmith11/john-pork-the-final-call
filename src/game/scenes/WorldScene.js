@@ -2083,9 +2083,12 @@ export class WorldScene extends Phaser.Scene {
       else this._drawDoor(d.vis, d.o);
     }
     this.shotGfx.clear();
-    for (const d of snap.decoys || []) {   // decoy bust (placeholder: a little pink plaster figure)
-      this.shotGfx.fillStyle(0xe8d8d0).fillRect(d.x - 4, d.y - 10, 8, 9).fillStyle(0xf2a6b8).fillRect(d.x - 2, d.y - 7, 4, 3).fillStyle(0x5a4a44).fillRect(d.x - 5, d.y - 1, 10, 2);
-    }
+    this.decoySpr ??= [];
+    (snap.decoys || []).forEach((d, i) => {   // Manuel's decoy bust: wet clay, cracked once it has soaked most of its hits
+      const spr = (this.decoySpr[i] ??= this.add.image(0, 0, 'props', 'decoy.bust').setOrigin(0.5, 1));
+      spr.setVisible(true).setFrame(d.cr ? 'decoy.bust#crack' : 'decoy.bust').setPosition(d.x, d.y + 2).setDepth(d.y);
+    });
+    for (const s of this.decoySpr.slice((snap.decoys || []).length)) s.setVisible(false);
     for (const a of snap.allies || []) {   // Trevor's combat robot (prop art, small), hp bar when hurt
       this.allySpr ??= [];
       const i = (snap.allies || []).indexOf(a);
