@@ -11,7 +11,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 PAL = [k for k in json.loads((REPO / "tools/art/palette.json").read_text()) if not k.startswith("_")]
-LETTERS = "0123abcdefghijklmnopqrstuvwxyzABCDEF"
+LETTERS = "0123abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP"   # one letter per palette colour; room for 48
 L = dict(zip(PAL, LETTERS))
 assert len(PAL) <= len(LETTERS)
 
@@ -451,6 +451,10 @@ c.rect(7, 5, 2, 18, "steel").v_(8, 5, 18, "concrete2").h_(5, 22, 6, "concrete2")
 c.rect(5, 5, 6, 2, "warm4").pts("night0", (6, 6), (9, 6)).rect(6, 3, 4, 2, "steel")
 c.pts("bone", (10, 3), (11, 2), (12, 2), (13, 1), (14, 1), (15, 0))
 P("obj.zip_anchor", c.outline())
+# An old phone lying face up on the floor, screen lit, one pale dot on it.
+c = C()
+c.rect(5, 15, 6, 8, "night2").rect(6, 16, 4, 6, "screen0").rect(6, 16, 4, 2, "screen1").pts("bone", (8, 19), (7, 20), (8, 20)).px(9, 17, "screen2").pts("concrete3", (6, 21), (9, 16))
+P("obj.old_phone", c.outline())
 P("npc.rotter_1", person("concrete2", "concrete1", "skin1", "night2", lace="rot0"))
 P("npc.rotter_2", person("warm1", "warm0", "skin2", "concrete3", lace="rot1"))
 P("npc.rotter_3", person("concrete1", "concrete0", "skin2", "warm0", lace="rot0", look_up=True))

@@ -6,6 +6,7 @@ import { autosave, loadAutosave, exportFile } from '../../engine/save/storage.js
 import { rollWorld } from '../../engine/worldRolls.js';
 import { newSeed, Rng } from '../../engine/rng.js';
 import { MAPS, worldPos } from '../../content/maps/index.js';
+import { OLD_PHONE } from '../../content/eggs_gonman.js';
 import { TILE_COLORS } from '../../content/maps/build.js';
 import { ENEMIES } from '../../content/enemies.js';
 import { GAME_VERSION } from '../../version.js';
@@ -1603,6 +1604,11 @@ export class WorldScene extends Phaser.Scene {
     if (BUST_ORDER.includes(near.id)) { this._turnBust(near); return; }
     if (near.id === 'obj.manuel_table') { this._say(near.text + BUST_HINT); return; }
     if (near.id === 'obj.shrimp_tank') { this._say(near.text + '\n\n' + this._shrimpReading()); return; }
+    if (near.id === 'obj.old_phone') {   // egg, see docs/SECRETS.md
+      const n = (this._phoneLooks = (this._phoneLooks ?? 0) + 1), mine = OLD_PHONE[this.character] ?? [];
+      if (!this.save.flags['secrets.nacre.found']) this._flag('secrets.nacre.found', true);
+      this._say(`${OLD_PHONE.base}\n\n${mine.length ? mine[(n - 1) % mine.length] : ''}${n > 2 ? '\n\n' + OLD_PHONE.later : ''}`); return;
+    }
     if (near.id === 'obj.yard_map') { this._say(`${YARD_MAP_TEXT}\n\nCurrent: ${LEVERS.map((k) => `${k.toUpperCase()} ${(this.save.flags[`act1.switch.${k}`] ?? 'left').toUpperCase()}`).join(' · ')}${this.save.flags['act1.switchyard.solved'] ? '\nThe east gate is open.' : ''}`); return; }
     if (['obj.work_order', 'obj.sunk_vending', 'obj.ledger'].includes(near.id)) { this._say((near.text ?? '') + clueFor(near.id, yardSolution(this.save.world.seed), !!this.save.flags['act1.bay.drained'])); return; }
     if (near.id === 'obj.pump') {
