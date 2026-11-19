@@ -628,6 +628,21 @@ await (async () => {
   } catch (e) { failed++; console.log(`FAIL dialogue\n     ${e.message}`); }
 })();
 
+test('every door has wall on both sides (no doors standing on an open patch)', () => {
+  for (const m of Object.values(MAPS_FOR_TEST)) {
+    const walk = (x, y) => x >= 0 && y >= 0 && x < m.w && y < m.h && !m.solid(x, y);
+    for (const [k, d] of m.doors ?? []) {
+      const [x, y] = k.split(',').map(Number), wall = (a, b) => m.solid(a, b) && !m.doors.has(`${a},${b}`);
+      assert.ok((wall(x - 1, y) && wall(x + 1, y)) || (wall(x, y - 1) && wall(x, y + 1)), `${m.id} ${d.id} at ${k} has no wall on one side`);
+    }
+    for (const o of m.objects) {
+      if (o.action !== 'exit' || !walk(o.x, o.y) || !/door/i.test(o.id + (o.art ?? '') + (o.label ?? ''))) continue;   // walk-through doorways
+      let l = o.x, r = o.x; while (walk(l - 1, o.y)) l--; while (walk(r + 1, o.y)) r++;
+      let u = o.y, dn = o.y; while (walk(o.x, u - 1)) u--; while (walk(o.x, dn + 1)) dn++;
+      assert.ok(r - l + 1 <= 2 || dn - u + 1 <= 2, `${m.id} ${o.id}: the doorway is wider than the doors (${r - l + 1} tiles)`);
+    }
+  }
+});
 const { BOSS_PATTERNS, bossPool, pickPattern } = await import('../src/engine/bossPatterns.js');
 const { MODULES: WARDEN_MODULES } = await import('../src/content/rotVillains.js');
 test('boss pattern library: every module has a pattern, pools grow by phase, no move twice running', () => {
@@ -832,6 +847,9 @@ test('stepping onto the lobby street doors leaves the building', () => {
   const p = sim.players.get('a'); p.x = 17 * 16 + 8; p.y = 12 * 16 + 8;
   sim.events.length = 0; sim._moveAxis(p, 0, 16);
   assert.ok(sim.events.some((e) => e.t === 'bumpExit' && e.id === 'obj.street_doors'));
+  const q = sim.players.get('a'); q.x = 18 * 16 + 8; q.y = 12 * 16 + 8; q.onTile = null;   // the right-hand door too
+  sim.events.length = 0; sim._moveAxis(q, 0, 16);
+  assert.ok(sim.events.some((e) => e.t === 'bumpExit' && e.id === 'obj.street_doors'), 'right-hand door tile does nothing');
 });
 
 const yard = await import('../src/content/switchyard.js');

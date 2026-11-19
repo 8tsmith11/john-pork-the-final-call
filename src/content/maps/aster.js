@@ -68,8 +68,8 @@ export const asterLobby = makeMap({
     '#cccccccmmmmmmmmuuuummmmmmmmccccccc#',   // 9  seating on carpet, either side
     '#cccccccmmmmmmmmuuuummmmmmmmccccccc#',   // 10
     '#cccccccmmmmmmmmuuuummmmmmmmccccccc#',   // 11
-    '#######=========mmmm=========#######',   // 12 street glass with the doorway
-    '################,,,,################',   // 13 the step outside
+    '#######==========mm==========#######',   // 12 street glass; the doorway is exactly the doors' width
+    '#################,,#################',   // 13 the doors (glass on both sides, no open patch)
     '####################################',   // 14
   ],
   spawns: [[17, 10], [18, 10], [17, 9]],
@@ -115,6 +115,6 @@ export const asterLobby = makeMap({
       'CONTINUITY AUTHORITY: ROUTINE ABATEMENT IN YOUR AREA. Residents may notice vans. Residents need not notice anything else.',
       'REMINDER. Display of the designated likeness (JP-1) in any medium is an offence: flags, figures, drawings, and descriptions sufficient to identify.\n\nThe notice then describes him, for four lines, so that you will know what not to display.',
       'Somebody has added, in biro, at the bottom: he called my mother in \'71. she still sets a place.' ] },
-    { id: 'obj.street_doors', x: 17, y: 13, label: 'Street doors', action: 'exit', floor: true, stepOn: true, to: 'metro_plaza', text: 'Out into the plaza. Sodium light and wet concrete.' },
+    { id: 'obj.street_doors', x: 17, y: 13, w: 2, label: 'Street doors', action: 'exit', floor: true, stepOn: true, to: 'metro_plaza', text: 'Out into the plaza. Sodium light and wet concrete.' },
   ],
 });

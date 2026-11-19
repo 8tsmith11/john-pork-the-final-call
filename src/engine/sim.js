@@ -874,7 +874,7 @@ export class Sim {
       const fk = `${Math.floor(nx / TILE)},${Math.floor(ny / TILE)}`;
       if (fk !== p.onTile) {
         p.onTile = fk;
-        const fx = (this.map.floorExits ??= new Map(this.map.objects.filter((o) => o.action === 'exit' && o.floor && o.stepOn).map((o) => [`${o.x},${o.y}`, o]))).get(fk);
+        const fx = (this.map.floorExits ??= new Map(this.map.objects.filter((o) => o.action === 'exit' && o.floor && o.stepOn).flatMap((o) => Array.from({ length: o.w ?? 1 }, (_, i) => [`${o.x + i},${o.y}`, o])))).get(fk);   // `w`: doors wider than a tile
         if (fx && !String(p.id).startsWith('ai:')) this.events.push({ t: 'bumpExit', id: fx.id, by: p.id, dx: Math.sign(dx), dy: Math.sign(dy) });
       }
       return;
