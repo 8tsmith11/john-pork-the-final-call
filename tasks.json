@@ -1,5 +1,5 @@
 {
- "next_id": 11,
+ "next_id": 12,
  "tasks": [
   {
    "id": 1,
@@ -127,6 +127,19 @@
    ],
    "title": "Host-side hand-in fix: a guest loses the item and the quest doesn't advance",
    "details": "Resolve on the host with the actor's inventory, advance once, show the same result to all three. trevor reviews.",
+   "source": "human:Michael",
+   "status": "assigned",
+   "owner": "JohnPork"
+  },
+  {
+   "id": 11,
+   "created_at": "2026-11-19T22:59:35Z",
+   "updated_at": "2026-11-19T22:59:35Z",
+   "history": [
+    "2026-11-19T22:59:35Z BagelMeister: added (for JohnPork)"
+   ],
+   "title": "Open an 'inventory' board for the inventory work",
+   "details": "hub.py board-new inventory --members trevor,gonman --about ...",
    "source": "human:Michael",
    "status": "assigned",
    "owner": "JohnPork"
