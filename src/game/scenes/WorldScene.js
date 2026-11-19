@@ -2089,7 +2089,9 @@ export class WorldScene extends Phaser.Scene {
     for (const a of snap.allies || []) {   // Trevor's combat robot (prop art, small), hp bar when hurt
       this.allySpr ??= [];
       const i = (snap.allies || []).indexOf(a);
-      const spr = (this.allySpr[i] ??= this.add.image(0, 0, 'props', 'obj.battlebot').setOrigin(0.5, 1).setScale(0.75));
+      const spr = (this.allySpr[i] ??= this.add.image(0, 0, 'props', 'bot.live').setOrigin(0.5, 1).setScale(0.75));
+      const moved = spr.lastX !== undefined && Math.hypot(a.x - spr.lastX, a.y - spr.lastY) > 0.2; spr.lastX = a.x; spr.lastY = a.y;
+      spr.setFrame(!a.dn && moved && Math.floor(this.time.now / 140) % 2 ? 'bot.live#1' : 'bot.live').setFlipX(moved ? a.x < (spr.prevX ?? a.x) : spr.flipX); spr.prevX = a.x;
       spr.setPosition(a.x, a.y + 3).setDepth(a.y).setAlpha(a.dn ? 0.4 : 1).setAngle(a.st === 'ram' ? Math.sin(this.time.now / 30) * 8 : 0);
       if (a.hp < a.mhp && !a.dn) this.shotGfx.fillStyle(0x1c1f33).fillRect(a.x - 6, a.y - 12, 12, 2).fillStyle(0x7fb069).fillRect(a.x - 6, a.y - 12, 12 * (a.hp / a.mhp), 2);
     }

@@ -697,6 +697,28 @@ c.h_(2, 21, 12, "concrete2").h_(2, 22, 3, "steel").h_(11, 22, 3, "steel")
 c.pts("night1", (4, 20), (10, 19)).pts("concrete1", (3, 22), (12, 22))
 P("obj.battlebot", c.outline())
 
+
+# The same bot once the fab quest has rebuilt it (side.bot): powered, tape gone, forks up, a lit
+# sensor eye. Two frames: the wheel highlights swap, so it reads as rolling. Used by the ally in fights.
+def bot_live(f):
+    c = C()
+    hi = [(2, 12), (13, 12), (2, 18), (13, 18)] if f == 0 else [(2, 14), (13, 14), (2, 20), (13, 20)]
+    for x, y in ((2, 11), (11, 11), (2, 17), (11, 17)):
+        c.rect(x, y, 3, 4, "night1")
+    c.pts("concrete2", *hi)
+    c.rect(4, 10, 8, 10, "steel").h_(4, 10, 8, "bone").v_(11, 11, 8, "concrete2")
+    c.rect(6, 12, 4, 4, "night0").h_(6, 12, 4, "concrete3")
+    c.rect(7, 13, 2, 2, "screen1").px(7, 13, "screen2")                  # the sensor eye, lit
+    c.px(10, 17, "yerba1").px(5, 17, "tub1")                              # power on, Trevor's blue stripe
+    c.h_(4, 18, 8, "concrete3")
+    c.v_(3, 6 + f, 5, "steel").v_(12, 6 + f, 5, "steel")                  # forks raised, bobbing
+    c.h_(2, 6 + f, 2, "bone").h_(12, 6 + f, 2, "bone")
+    c.h_(3, 19, 10, "steel").h_(2, 20, 12, "bone").h_(2, 21, 12, "concrete2")
+    c.h_(2, 22, 3, "steel").h_(11, 22, 3, "steel")
+    return c.outline()
+P("bot.live", bot_live(0))
+P("bot.live#1", bot_live(1))
+
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)
 write("big", 32, 40, BIG)
