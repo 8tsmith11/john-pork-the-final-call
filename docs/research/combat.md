@@ -93,6 +93,57 @@ Cost: S = an hour or less, M = a few hours, L = a day or more. Every item gets a
 **Build order:** 1–5 now, since they're cheap and change how every fight feels. Then 12 (Trevor
 asked for it), then 6–8. 9–11 come after Act 1 is playable end to end.
 
+## Parry and block (researched separately, as Trevor asked)
+
+**What the sources say:**
+- **Window size is the whole design.** Dead Cells allows up to half a second, which the analysts call
+  generous. DMC5's Royalguard allows about a tenth of a second, and Street Fighter 6's Drive Parry
+  two frames. SF6's was still too strong in skilled hands and got weakened in a patch *(obs, Mumola)*.
+  Sekiro's deflect is generous, about half a second, and shrinks if you mash; a missed deflect becomes
+  a normal guard *(obs, Parry Everything)*.
+- **Keep it tight, or it isn't a parry.** ULTRAKILL's developer: if an early parry still counts, "it
+  just feels like a counter" *(dev, Arsi "Hakita" Patala, Game Developer)*.
+- **The reward must match the risk.** Patala: "putting yourself at high risk for a high reward based
+  purely on your own skill." In Steel Carnelian a parry refills ammo, boost and score multiplier
+  *(dev, Ben Safford, Catbird Soft)*. In Sekiro, deflects drain the enemy's posture rather than
+  dealing damage *(dev interview via Red Bull)*.
+- **Failure should cost something.** Tails of Iron: "we felt this was important to make the player
+  feel like they were actually there in the combat" *(dev, Jack Bennett, Odd Bug)*. Nine Sols tiers
+  it: a precise parry negates the hit and opens a counter, while a slightly-off parry still interrupts
+  but costs health *(dev, Red Candle)*.
+- **Telegraph what can be parried.** In Tails of Iron, red attacks must be dodged and white attacks
+  can be blocked *(dev)*.
+- **Make it feel huge.** In ULTRAKILL, "the entire game, including all sound and music, freezes for a
+  moment on a successful parry" *(dev)*.
+- **Don't let it eat the game.** Safford: "The worst kind of parry is one that's too good." When
+  everything can be parried, positioning stops mattering *(dev)*. Mumola calls parrying "a
+  distinctively passive and sedentary form of defense" that punishes movement *(obs)*.
+
+**What that means for us.** We're a top-down co-op game built on movement: dodge, perfect dodge, and
+deflect on swing. A block stance would be the passive, sedentary defense the sources warn about, and
+it would need a new button. So:
+
+- **Build a clash parry on the attack button (recommended).** A swing that lands on an enemy while
+  it's committed to an attack cancels that attack:
+  - it covers a rotling's lunge and a captcha's charge dash;
+  - the enemy is stunned for 1 s and takes double damage;
+  - the player gets Focus;
+  - the game freezes for 80 ms.
+  The window is the enemy's own commit time (0.26 s for a lunge), so it's tight without an arbitrary
+  frame count. If you swing early or late, the lunge still hits you: that's the failure cost. It
+  rewards aggression, not waiting.
+- **Mark what can't be parried.** Boss attacks and the Sahur can't be parried. When unparryable
+  enemy tells are added, they get a red tell, following Tails of Iron.
+- **No block stance for now.** We'll revisit it as a Terraria-style shield accessory if fights need a
+  slower defensive option.
+- **Shots are already handled.** Deflect on swing works as the projectile parry.
+
+**Sources:** [What goes into a good parry system? (Game Developer)](https://www.gamedeveloper.com/design/what-goes-into-a-good-parry-system-),
+[Defensive Mechanics (Chris Mumola, Game Sense)](https://gamesense15.substack.com/p/defensive-mechanics),
+[FromSoft and the Taxonomy of a Parry](https://parryeverything.com/2021/11/05/fromsoft-and-the-taxonomy-of-a-parry/),
+[Miyazaki interview (Red Bull)](https://www.redbull.com/us-en/sekiro-shadows-die-twice-interview),
+[Nine Sols interview (Into Indie Games)](https://intoindiegames.com/features/nine-sols-an-interview-with-red-candle-games/).
+
 ## The bestiary (Terraria model, adapted)
 
 - **Unlocking:** an enemy entry unlocks when you first see one (on screen, within about 10 tiles).

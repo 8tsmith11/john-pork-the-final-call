@@ -16,7 +16,7 @@ export const BLINK = { dist: 112, cooldown: 1.1 };   // winged boots (D-014)
 export const LULLABY = { range: 128, mothRange: 64, expose: 3, sleep: 8, babySleep: 12 };   // babySleep: Manuel with the smart pacifier in
 // Combat feel (docs/research/combat.md): combo chain, deflects, perfect dodges, wall slams, hit-stop.
 export const FEEL = { comboWindow: 0.55, finisherDmg: 1.6, finisherKnock: 1.8, finisherArc: 1.25,
-  deflectDmg: 1.5, perfectWindow: 0.15, focusTime: 1.5, focusDmg: 1.5, slamSpeed: 140, slamDmg: 8, slamStun: 0.6, hitStop: 0.05 };
+  deflectDmg: 1.5, parryStun: 1.0, parryStop: 0.08, perfectWindow: 0.15, focusTime: 1.5, focusDmg: 1.5, slamSpeed: 140, slamDmg: 8, slamStun: 0.6, hitStop: 0.05 };
 export const COMBAT = {
   maxHp: 100, hurtIframes: 0.6, reviveTime: 4.0, reviveRange: 18, reviveHp: 40,
   melee: { cooldown: 0.38, range: 20, arc: Math.PI * 0.6, damage: 12, knockback: 120 },
@@ -428,6 +428,13 @@ export class Sim {
       if (d > m.range + def.radius) continue;
       let da = Math.atan2(dy, dx) - p.aim; da = Math.atan2(Math.sin(da), Math.cos(da));
       if (Math.abs(da) > m.arc / 2 && d > def.radius + 4) continue;
+      // Clash parry (docs/research/combat.md): hitting an enemy while it's committed to its lunge or charge
+      // cancels the attack, stuns it and grants Focus. Bosses and the Sahur can't be parried.
+      if (!e.boss && !e.sahur && ((e.st === 'lunge' && !e.hitOnce) || (e.st === 'dash' && !e.hitOnce))) {
+        e.hitOnce = true; e.st = def.ai === 'charge' ? 'dizzy' : 'recover'; e.stT = Math.max(e.stT ?? 0, FEEL.parryStun); e.stunT = FEEL.parryStun; e.parried = FEEL.parryStun;
+        p.focusT = FEEL.focusTime; this.hitStop = FEEL.parryStop;
+        this.events.push({ t: 'parry', x: e.x, y: e.y, by: p.id });
+      }
       const crit = Math.random() < (p.mods?.crit ?? 0);
       if (crit) this.events.push({ t: 'crit', x: e.x, y: e.y });
       if (fin) this.hitStop = FEEL.hitStop;
@@ -452,6 +459,7 @@ export class Sim {
     else if (e.boss && e.state === 'vulnerable') dmg *= 2;
     if (this._def(e).armor && e.st !== 'dizzy') dmg = Math.max(1, Math.round(dmg * (1 - this._def(e).armor)));
     if (e.st === 'dizzy') dmg *= 2;   // a Captcha reeling after its charge
+    else if (e.parried > 0) dmg *= 2;   // parried: open for a second
     if (e.marked > 0) dmg = Math.round(dmg * (1.5 + (this.players.get(by)?.mods?.markDmg ?? 0)));
     if (e.def?.trait === 'blinker' && Math.random() < 0.35 && e.hp - dmg > 0) {
       const a = Math.random() * Math.PI * 2, nx = e.x + Math.cos(a) * 40, ny = e.y + Math.sin(a) * 40;
@@ -524,6 +532,7 @@ export class Sim {
         }
         e.kx *= 0.82; e.ky *= 0.82; if (Math.hypot(e.kx, e.ky) < 5) { e.kx = e.ky = 0; e.slammed = false; }
       }
+      if (e.parried > 0) e.parried = Math.max(0, e.parried - dt);
       if (e.stunT > 0) { e.stunT = Math.max(0, e.stunT - dt); continue; }
       const [target, d] = this._nearestPlayer(e.x, e.y);
       if (!target || d > 220) continue;

@@ -124,6 +124,12 @@ test('combat: knocked hard into a wall, an enemy is slammed and stunned', () => 
   for (let i = 0; i < 10 && !(e.stunT > 0); i++) sim._stepEnemies(1 / 60);
   assert.ok(e.stunT > 0, 'stunned'); assert.equal(e.hp, 100 - FEEL.slamDmg);
 });
+test('combat: hitting a lunging enemy parries it (attack cancelled, stunned, focus)', () => {
+  const { sim, p } = combatSim(); const e = dummy(sim, p.x + 14, p.y); e.st = 'lunge'; e.hitOnce = false; e.stT = 0.2; e.dx = -1; e.dy = 0;
+  sim._melee(p);
+  assert.ok(e.hitOnce && e.stunT > 0 && p.focusT > 0, 'parried');
+  assert.ok(sim.events.some((v) => v.t === 'parry'));
+});
 test('combat: hit-stop freezes enemies and shots for a moment', () => {
   const { sim, p } = combatSim(); const e = dummy(sim, p.x + 60, p.y); e.cd = 0;
   sim.shots.push({ x: p.x + 40, y: p.y - 30, vx: 0, vy: -50, life: 2, dmg: 1, from: 'enemy' });

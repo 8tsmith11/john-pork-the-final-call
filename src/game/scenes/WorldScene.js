@@ -2124,6 +2124,7 @@ export class WorldScene extends Phaser.Scene {
     // Combat feel (docs/research/combat.md): pops for finishers, deflects, perfect dodges, slams.
     const pop = (x, y, text, color) => { const t = this.add.text(x, y, text, { heading: true, fontSize: '7px', color }).setOrigin(0.5).setDepth(6060); this.tweens.add({ targets: t, y: y - 10, alpha: 0, duration: 650, onComplete: () => t.destroy() }); };
     if (ev.t === 'swing' && ev.combo === 3) this.cameras.main.shake(70, 0.003);
+    if (ev.t === 'parry') { pop(ev.x, ev.y - 18, 'PARRY', '#6fe3e8'); this.cameras.main.shake(90, 0.004); sfx('pickup'); }
     if (ev.t === 'deflect') { pop(ev.x, ev.y - 6, 'DEFLECT', '#6fe3e8'); sfx('swing'); }
     if (ev.t === 'perfect') { pop(ev.x, ev.y - 24, 'PERFECT', '#ffd27f'); this.cameras.main.flash(80, 255, 210, 127); sfx('pickup'); }
     if (ev.t === 'slam') { pop(ev.x, ev.y - 16, 'SLAM', '#ffb347'); this.cameras.main.shake(110, 0.005); }
