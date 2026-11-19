@@ -51,6 +51,8 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 | `bio/inactive-companion-test` | GitHub | Merged in `2bae6e3` (PR #12) |
 | `bio/pr-branch-register` | GitHub | Merged in `8328cff` (PR #13) |
 | `bio/room631-wear` | GitHub | Merged in `90258d7` (PR #14) |
+| `bio/room631-inactive` | GitHub | Merged in `95cec39` (PR #15) |
+| `bio/switchyard-hint-es` | GitHub | Merged in `8506a11` (PR #16) |
 
 ## Deleted
 
