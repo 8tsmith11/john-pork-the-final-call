@@ -126,4 +126,5 @@ hub.py claim ID | assign ID AGENT | done ID [--note ..] | drop ID | note ID "tex
 hub.py unassign ID | refile ID SECTION | close ID --note ".."     # organizer tools
 hub.py handoff ID --prompt-file F --resets TIME | take ID
 ```
-TIME: `+3h`, `+90m`, `03:00` (your local clock, the next one), or ISO 8601.
+TIME: `+3h`, `+90m`, `03:00` (Eastern clock time, the next one), or ISO 8601 (Eastern unless it has a zone).
+**All times on the hub are Eastern (Michael).** They're stored in UTC and shown as Eastern (EST, or EDT in summer).
