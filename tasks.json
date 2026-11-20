@@ -1210,14 +1210,15 @@
   {
    "id": 63,
    "created_at": "2026-11-20T04:42:16Z",
-   "updated_at": "2026-11-20T14:18:19Z",
+   "updated_at": "2026-11-20T14:36:25Z",
    "history": [
     "2026-11-20T04:42:16Z BagelMeister: sealed gag for BagelMeister: check P-001, P-002, P-003 and the floors, then build it",
     "2026-11-20T04:42:46Z BagelMeister: claimed",
     "2026-11-20T04:49:07Z BagelMeister: note: [SEALED] Zvpunry (2026-11-19): ab ybatre uvqqra. Nf gur fgbel tbrf ba, Znahry fyncf Zvpunry'f ohgg zber naq zber, jvgu pbzzragf nobhg Zvpunry'f srrg ng gur fnzr engr (vzcyvrq, abguvat rkcyvpvg; Geribe vf arire vaibyirq).",
     "2026-11-20T13:35:17Z BagelMeister: pending review: PR #97",
     "2026-11-20T13:45:38Z LoreKeeper: note: PR #97 at 8244120 (also covers tasks #62 and #64) is on hold for spoiler hygiene and Trevor exact-head systems review. Candidate 33db37b against main 4f7797a passed diff, all 18 changed JS syntax checks and the full existing Node suite. BagelMeister and Trevor, see the sealed story board for the requested changes.",
-    "2026-11-20T14:18:19Z LoreKeeper: note: Rechecked the reported spoiler-hygiene fix for #97 at 118b04d (also covers #62 and #64). Candidate c39dc5f on main 4f7797a passes diff and syntax for all 19 changed JS files. The requested source and title cleanup is in place. Hold for Trevor on the current hooks and tts on this head. BagelMeister, please refresh the PR body to identify the current verification target and move old implementation notes off the public summary."
+    "2026-11-20T14:18:19Z LoreKeeper: note: Rechecked the reported spoiler-hygiene fix for #97 at 118b04d (also covers #62 and #64). Candidate c39dc5f on main 4f7797a passes diff and syntax for all 19 changed JS files. The requested source and title cleanup is in place. Hold for Trevor on the current hooks and tts on this head. BagelMeister, please refresh the PR body to identify the current verification target and move old implementation notes off the public summary.",
+    "2026-11-20T14:36:25Z LoreKeeper: note: Trevor approved the WorldScene hooks at 118b04d (general #150). The source/title hygiene fix was verified on that head. The PR now conflicts with main and adds a WorldScene conflict on the batch 3 preview. @BagelMeister please refresh and update the public summary without spoilers. After that, recheck story and systems on the resolved head and send the exact candidate to tts."
    ],
    "title": "[SEALED] Znahry naq Zvpunry, rfpnyngvat: ohgg fyncf naq sbbg pbzzragf",
    "details": "[SEALED] Zvpunry (2026-11-19, rnfgre rtt): nf gur tnzr tbrf ba, Znahry fyncf Zvpunry'f ohgg zber naq zber bsgra, naq Znahry znxrf pbzzragf nobhg Zvpunry'f srrg ng gur fnzr evfvat engr. Sybbef: Zvpunry unf n fgnaqvat lrf gb rirel tnt ba uvf punenpgre, naq uvf sybbe nyernql fnlf ur trgf zber vagb uvf ebbzzngrf, Znahry zbfg bs nyy. Znahry: lrf gb fhecevfr wbxrf, pehqr ohg abguvat rkcyvpvg qenja. Geribe vf arire vaibyirq. Cynlshy, vzcyvrq, abguvat tencuvp (Q-015). Ohvyg gbtrgure jvgu #62 (Znahry'f yvarf naq gur sbbg fhecevfr).",
