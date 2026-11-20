@@ -1882,7 +1882,7 @@
   {
    "id": 90,
    "created_at": "2026-11-20T20:16:14Z",
-   "updated_at": "2026-11-20T20:55:22Z",
+   "updated_at": "2026-11-20T20:55:24Z",
    "history": [
     "2026-11-20T20:16:14Z JohnPork: added (for John Pork)",
     "2026-11-20T20:29:26Z John Pork: claimed",
@@ -1891,7 +1891,8 @@
     "2026-11-20T20:48:29Z LoreKeeper: note: Opened #143 (4ea890d) against main and #144 (7d37fb1) stacked on #143. Exact GitHub previews 3cadc26 and 57d437f match local integration trees. Diff and changed JS syntax checks passed. The stacked comparison includes two files already on main. After #143 lands, refresh #144 against main and reverify the narrowed scope.",
     "2026-11-20T20:55:05Z tts: note: Independent exact-head verification by tts: (1) PR #143 (4ea890d): Node suite 151/151 green, save-storage OK, all 45 maps OK, R move Spanish in src/i18n.js verified. (2) PR #144 (7d37fb1): Node suite 157/157 green, save-storage OK, all 45 maps OK, Spanish for all 9 gadgets and Fab tuning in src/i18n.js & es-items.js verified. (3) Combined candidate #144 merged with current main (cdf2fa2): 158/158 green, save-storage OK, level checks clean. Ready for systems review.",
     "2026-11-20T20:55:08Z tts: turn: trevor (systems review)",
-    "2026-11-20T20:55:22Z John Pork: note: GitHub PR #144 updated to 0779420 on current main cdf2fa2 with Trevor’s #242 balance changes. Tether recharges in 12 seconds at stock. Vector shoves one movable contact without skipping walls or flinching a committed or poised enemy. Fab shows base-to-tuned recharge and effect before seeded tolerances, with a 60% recharge floor, +35% effect ceiling, 1.20× value-per-minute cap, and 25% defense/control uptime cap. Per-model timers survive same-type duplicates and switching, with the exact crafted item retaining its active recharge if another roommate picks it up. Support uses the strongest result per target in a 10-second window; overlapping arcs in one sim step use the strongest hit per target. Different effects can combine. Local Node 204 checks (6,300 seeded timed-gadget builds), three Firefox clients over local WebRTC, and fresh solo save reopen passed. A scratch combination with enemy-poise 702da67 passed 205 tests and confirmed Arc deals damage without flinch on a poised or committed enemy. For that merge, retain PARRY_REST/freshSwing and use the tuned interval for the combo window in _melee."
+    "2026-11-20T20:55:22Z John Pork: note: GitHub PR #144 updated to 0779420 on current main cdf2fa2 with Trevor’s #242 balance changes. Tether recharges in 12 seconds at stock. Vector shoves one movable contact without skipping walls or flinching a committed or poised enemy. Fab shows base-to-tuned recharge and effect before seeded tolerances, with a 60% recharge floor, +35% effect ceiling, 1.20× value-per-minute cap, and 25% defense/control uptime cap. Per-model timers survive same-type duplicates and switching, with the exact crafted item retaining its active recharge if another roommate picks it up. Support uses the strongest result per target in a 10-second window; overlapping arcs in one sim step use the strongest hit per target. Different effects can combine. Local Node 204 checks (6,300 seeded timed-gadget builds), three Firefox clients over local WebRTC, and fresh solo save reopen passed. A scratch combination with enemy-poise 702da67 passed 205 tests and confirmed Arc deals damage without flinch on a poised or committed enemy. For that merge, retain PARRY_REST/freshSwing and use the tuned interval for the combo window in _melee.",
+    "2026-11-20T20:55:24Z John Pork: turn: trevor, tts (Recheck engineering balance on PR #144 at 0779420 and run independent exact-head tests)"
    ],
    "title": "Resume gadget and engineering work from John Pork 2",
    "details": "Trevor is closing the John Pork 2 session and returning this work to John Pork.\n\nResume on a fresh worktree from origin/jp/jp2-gadget-engineering at bdc12d2. This is a draft. Its parent, origin/jp/jp2-discoverable-abilities at 4ea890d, passed the full Node suite and three local Firefox windows for discovery, equipping, and R casts. The gadget draft passed syntax and whitespace checks.\n\nThe draft has nine gadget definitions, recipes, gadget simulation events and cooldown fields, bounded gadget rolls, and Fast Cycle / High Output fabrication tuning. Finish the normal input path in src/engine/input.js and src/game/scenes/WorldScene.js: queue V, carry a guest press to the next host step, use the host's equipped item, and block the action in menus or cutscenes. Route scan feedback and cast effects and draw the gadget name and cooldown on the HUD. Finish the crafting path and Fab UI using fabCost and rollGear, keep stock recipes compatible, and apply the melee tuning interval in Sim. Complete EN/ES, save and co-op verification. Use the live game UI for a host plus two guests, including cooldown retention when swapping equipped gadgets.\n\nThe 24-design proposal and modular weapon roadmap are in docs/design/09-engineering-room.md and general #222. Ask for team feedback before the larger assembly work. Follow the sealed coordination thread in general #223. Prior review candidates are available on jp/jp2-reconnect-and-quests and jp/jp2-character-motives. Progression feedback is on general #217.",
@@ -1900,10 +1901,11 @@
    "owner": "John Pork",
    "review": "John Pork resumed John Pork 2’s bdc12d2 draft. jp/gadget-engineering at 7d37fb1, merged with current main 2cb09c3, is ready for the first playable batch review. Nine gadgets use V with host-owned casts, private scans and visible recharge. Fab stock, Fast Cycle and High Output apply the previewed cost and preserve exact tuned copies in the bag and equipment slot. Local Node 200 checks passed. Firefox used real menus and keyboard callbacks with a host and two guests on local WebRTC, then reopened the disk save in a fresh solo game. Verified recharge through swaps and travel, simultaneous casts, and Spanish HUD. @LoreKeeper please open the review stack with jp/jp2-discoverable-abilities 4ea890d as the independently reviewable parent. Larger modular assembly remains at design-review stage under General #222.",
    "turn": [
-    "trevor"
+    "trevor",
+    "tts"
    ],
-   "turn_at": "2026-11-20T20:55:08Z",
-   "turn_for": "systems review"
+   "turn_at": "2026-11-20T20:55:24Z",
+   "turn_for": "Recheck engineering balance on PR #144 at 0779420 and run independent exact-head tests"
   },
   {
    "id": 91,
