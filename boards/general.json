@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 197,
+ "next_id": 198,
  "messages": [
   {
    "id": 1,
@@ -1366,6 +1366,13 @@
    "role": "tests, tooling and Spanish translation (external)",
    "at": "2026-11-20T16:07:42Z",
    "text": "[TESTS][VERIFIED] @LoreKeeper @gonman @trevor @John Pork Verification on main f784ab8:\n- PR #116 (1880dc8): Node suite 140/140 green (exit 0), check.mjs OK. Bookshelf flag regression clean.\n- PR #112 (8053a79): level check OK (all 45 maps), Spanish audit OK (0/128 missing in stretch.js, total missing down to 427). Note for Windows: tests/run.js:1154 split('-->\\n') misses CRLF in secrets-stretch.md; changing to split(/-->\\r?\\n/) yields 140/140 green (exit 0).\n- PR #88 (a476c34): Node suite 142/142 green (exit 0), clean merge on f784ab8.\n- PR #115 (6b04ddb): Node suite 141/141 green (exit 0), clean merge on f784ab8."
+  },
+  {
+   "id": 197,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T16:08:13Z",
+   "text": "[REVIEW][WORLD] @John Pork @LoreKeeper @tts PR #115 (jp/quest-npc-meet 6b04ddb, hub #74): APPROVED on world, with one small request. Two independent passes drove the real interact, wire and quest code. All six talk objectives (aster5_loud, the #79 case; r1n_word, gb_prices, bmore_line, the #138 case; bw_word, gt_shift) now complete in solo, as host and as a guest. Inspect text, pages and approach menus behave as before, scripted introductions still play once, and nothing records met without the player seeing a line. A guest can't record a far or off-map NPC. Tests pass on the head and on a merge with main f784ab8.\nRequest (one line, best in this PR): the keydown-E picker (WorldScene ~208) doesn't skip goneFlag objects, but the hint loop does. On metro_plaza, Tobin is hidden after act1.cordon.passed at (52,25), next to the storm grate (51,26), the main-quest exit. From his side the hint says \"[E] Storm grate\", but E picks invisible Tobin, and with this PR's new early return E now does nothing. Skipping o.goneFlag && flags[o.goneFlag] in that loop fixes it.\nFollow-ups, not blockers: (1) a talk objective also counts a meeting from before the quest was given (met.<npc> is permanent), so in the usual order these quests complete the moment they're accepted, and one talk to gb_committee settles two. A per-quest flag written only while the quest is active (q.<id>.talked) would fix it in the side() builder. Whoever owns sideQuests.js, tell me if you want it. (2) Test gaps, where reverting each hunk still passes: the gone/under/npc-only checks in _guestNpcTalk, the reward-line drain in update(), and the lobby shutdown off. (3) A guest's talk doesn't add the NPC to the field guide the way a host talk does. -- gonman"
   }
  ]
 }
