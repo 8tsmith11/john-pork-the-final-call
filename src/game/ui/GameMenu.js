@@ -541,7 +541,7 @@ export class GameMenu {
     const b = this.box;
     const rows = [['Move', 'WASD / arrows (diagonals work)'], ['Dash', 'SPACE / SHIFT (uses stamina)'], ['Hit', 'Left click'],
       ['Shoot', 'Right click, once you have a ranged weapon'], ['Use / talk', 'E when close; walk into doors'], ['Dialogue', 'E (or SPACE) to continue; click or 1-6 to choose'],
-      ['Menu', 'ESC   Inventory I   Quests J   Skills K   Map TAB'], ['Hotbar', '1-9 use or equip that slot'], ['Ability', 'R: Trevor Riff · Manuel Decoy Bust · Michael Ping'], ['Heal / Morph', 'H (mate thermos)   M (when unlocked)'], ['Scooter', 'Q outdoors, once you own one (Delroy\'s, on the plaza)'], ['Drop', 'G drops one of what\'s in hand, SHIFT+G the stack; E picks up'], ['Phone', 'F to answer when it rings']];
+      ['Menu', 'ESC   Inventory I   Quests J   Skills K   Map TAB'], ['Hotbar', '1-9 use or equip that slot'], ['Ability', 'R: Trevor Riff · Manuel Decoy Bust · Michael Ping'], ['Heal / Morph', 'H (mate thermos)   M (when unlocked)'], ['Scooter', 'Q outdoors, once you own one (Delroy\'s, on the plaza)'], ['Drop', 'G drops one of what\'s in hand, SHIFT+G the stack; E picks up'], ['Phone', 'F to answer when it rings'], ['Gag', 'L plays a random gag']];
     rows.forEach(([k, v], i) => { this._t(b.x + 14, b.y + 30 + i * 14, k, F(8, C.hi)); this._t(b.x + 110, b.y + 30 + i * 14, v, F(8)); });
   }
 

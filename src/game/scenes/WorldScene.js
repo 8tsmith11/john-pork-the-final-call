@@ -63,6 +63,7 @@ import { growthSize, lookStage, gonmanWeight } from '../../content/growth.js';
 import { Beltless } from '../beltless.js';
 import { ToothpasteTalk } from '../toothpaste.js';
 import { RunningGags } from '../runningGags.js';
+import { GagButton } from '../gagButton.js';
 import { Approach } from '../approach.js';
 import { Pacifier } from '../pacifier.js';
 import { GuitarStands } from '../guitarStands.js';
@@ -160,7 +161,7 @@ export class WorldScene extends Phaser.Scene {
     this._wireNet();
     this._makeDialogueUi();
     // D-014: shared events, instruments, romance (src/game/sharedEvent.js, performances.js, romance.js)
-    this.shared = new SharedEvents(this); this.stage = new Stage(this); this.retry = new RetryLine(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.cordon = new Cordon(this); this.bigButt = new BigButt(this); this.beltless = new Beltless(this); this.toothpaste = new ToothpasteTalk(this); this.gags = new RunningGags(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this); this.stands = new GuitarStands(this);
+    this.shared = new SharedEvents(this); this.stage = new Stage(this); this.retry = new RetryLine(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.cordon = new Cordon(this); this.bigButt = new BigButt(this); this.beltless = new Beltless(this); this.toothpaste = new ToothpasteTalk(this); this.gags = new RunningGags(this); this.gagBtn = new GagButton(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this); this.stands = new GuitarStands(this);
     this._pageIdx = {};
     this.vignette = this._makeVignette();
     if (this.mode !== 'client') for (const p of this.sim.players.values()) {
@@ -663,6 +664,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'rest') this._restAtSave(peer, msg.obj);
         if (msg.t === 'use') { this._useWhat = msg.id ?? null; this._use(this._charOf(peer), peer); }
         if (msg.t === 'morph') this._morph(peer);
+        if (msg.t === 'gagBtn') this.gagBtn?.press();   // a guest pressed the gag button (src/game/gagButton.js)
         if (msg.t === 'questUse') {
           const o = this.map.objects.find((x) => x.id === msg.id);
           if (o && msg.quest === undefined) this._questInteract(o, this._charOf(peer), peer);

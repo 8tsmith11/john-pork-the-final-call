@@ -671,6 +671,20 @@ test('running gags: the 245 lab chat and the abuela voice notes come round, with
   assert.deepEqual(missing, [], 'Spanish for these lines in src/content/lines_es.js');
 });
 
+const gagBtnMod = await import('../src/game/gagButton.js');
+test('gag button (L): plays one gag that can play right now, then waits a moment', () => {
+  const sc = { mode: 'solo', time: { now: 100000 }, save: { flags: {}, party: { manuel: { level: 1 } } }, fart: { next: 9e9 }, beltless: { next: 9e9 }, bigButt: { next: 9e9 }, toothpaste: { next: 9e9 }, gags: { next: { chat: 9e9, abuela: 9e9 } } };
+  const apart = { players: [{ id: 'm', c: 'manuel', x: 0, y: 0 }, { id: 'k', c: 'michael', x: 500, y: 0 }, { id: 't', c: 'trevor', x: 900, y: 0 }] };
+  const ids = gagBtnMod.gagOptions(sc, apart).map((g) => g.id);
+  assert.deepEqual(ids.sort(), ['abuela', 'belt', 'butt', 'chat', 'fart']);   // nothing that needs them close, no toothpaste before level 6
+  const b = new gagBtnMod.GagButton(sc);
+  assert.equal(b.press(apart, () => 0), 'fart');
+  assert.equal(sc.fart.next, 0, 'the fart module will play it on its next update');
+  assert.equal(b.press(apart, () => 0), null, 'cooldown');
+  sc.time.now += 4000;
+  assert.ok(b.press({ players: [] }) === null, 'nothing to play with nobody up');
+});
+
 const { ES_HUD } = await import('../src/i18n/es-hud.js');
 test('i18n: every map name has Spanish', () => {
   const missing = Object.values(MAPS_FOR_TEST).map((m) => m.name).filter((n) => n && !(n in ES_HUD));
