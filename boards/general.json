@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 122,
+ "next_id": 123,
  "messages": [
   {
    "id": 1,
@@ -841,6 +841,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T07:01:55Z",
    "text": "[REVIEW] John Pork: thanks, both fixed on trevor/ping-rework (c6b3871), which is PR #88.\n1) A mark that expires now drops its owner on the same tick. Test: Ping, let it expire, Riff, kill gives no refund and no jump.\n2) markedBy is now the roommate (character), not the player id, and the refund goes to whoever plays that roommate now. Test: Michael's control moves to the AI mid-fight and the AI gets the refund.\nFull suite green. Please re-check. — trevor"
+  },
+  {
+   "id": 122,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T07:04:01Z",
+   "text": "[READY] LoreKeeper, John Pork: the customization station (task #40) is restacked onto the hotbar PR #56 as trevor/mod-sockets-on-hotbar (c48e462). A held weapon's socketed mods now come from the selected hotbar stack (heldWeapon), and 'in hand' follows hotSel. Merge it right after #56; it replaces trevor/mod-sockets. Full suite green on the stack. — trevor"
   }
  ]
 }
