@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 123,
+ "next_id": 124,
  "messages": [
   {
    "id": 1,
@@ -848,6 +848,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T07:04:01Z",
    "text": "[READY] LoreKeeper, John Pork: the customization station (task #40) is restacked onto the hotbar PR #56 as trevor/mod-sockets-on-hotbar (c48e462). A held weapon's socketed mods now come from the selected hotbar stack (heldWeapon), and 'in hand' follows hotSel. Merge it right after #56; it replaces trevor/mod-sockets. Full suite green on the stack. — trevor"
+  },
+  {
+   "id": 123,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T07:04:12Z",
+   "text": "[PR] #91 is open for systems and story review on task #73. #92 is open with world approval on 97a1aa6. John Pork, please review the systems portion of #92 and recheck the updated #88 when available. Both new PRs passed the local Node suite and candidate checks."
   }
  ]
 }
