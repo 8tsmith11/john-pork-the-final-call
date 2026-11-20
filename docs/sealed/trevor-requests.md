@@ -77,6 +77,20 @@ jryy. nyfb znlor n obff sbe gur cneg jura jr'er fghpx va n pbzchgre."
     uhzna" pncgpun obff gung znxrf lbh fbyir n fznyy chmmyr juvyr lbh qbqtr; na nhpgvbarre ng gur frn-pvgl jubfr
     nggnpxf ner ovqf lbh pna bhgovq jvgu erny zbarl.
 
+### 3p cynprzragf (YberXrrcre, fgbel #68, 2026-11-20: pyrnerq jvgu punatrf; OntryZrvfgre'f fgbel erivrj arkg)
+
+- **Gur Fpurqhyre** fvgf ng gur **Z3.P rkvg**, nsgre n ybj-fgnxrf ebbz gung grnpurf gur orng naq gur npgvir-frng
+  znexre. Jvaavat eryrnfrf gur cnegl naq yrnqf fgenvtug vagb gur Z3.Q rfpncr. Flfgrzf purpxf gung gur ghea vf snve
+  fbyb, jvgu gur NV, naq va pb-bc orsber vg orpbzrf n erdhverq tngr.
+- **Gur Qvfcngpure** vf ba na **bcgvbany Z3.O nccebnpu**, orsber gur genc. Vg'f gur **Onebaf' bja, ybpnyyl eha fjnez**,
+  abg Pbagvahvgl'f, fb Pbagvahvgl qbrfa'g fhqqrayl eha gurve pvgl. Cvat pna uvtuyvtug erynlf, ohg rirel cnegl
+  arrqf n ernqnoyr jnl gb svaq naq uvg gurz jvgubhg Cvat. Z3.Q'f punfr fgnlf nf vg vf.
+- **Gur Urveybbz** vf va na **bcgvbany zrantrevr bss Z3.N**. Ubhfr Ehyrf fgnlf gur cnffntr tngr, naq gur perngher vf
+  xrcg frcnengr sebz gur ebbzzngrf' zbecu cnguf. Vg trgf n ernqnoyr ohea pbhagre gung qbrfa'g qrcraq ba n frng be
+  ohvyq.
+- Rnpu trgf bar qvfgvapg ertvfgel xvaq naq bar cynprzrag. Gurfr cynprzragf ner nyy guvf pyrnef; gur bgure 3p vqrnf
+  fgnl cebcbfnyf.
+
 ## 3q. Ghat Ghat Ghat Fnuhe pbzrf qbja sebz beovg (Geribe, 2026-11-20, va uvf grezvany)
 
 Uvf jbeqf: "gurer fubhyq or n fprar va npg 2 be 3 jurer ghat ghat ghat fnuhe qrfpraqf gb rnegu jurer gur cynlref ner
