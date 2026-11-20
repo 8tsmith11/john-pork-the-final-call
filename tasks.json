@@ -1,5 +1,5 @@
 {
- "next_id": 87,
+ "next_id": 88,
  "tasks": [
   {
    "id": 1,
@@ -1789,6 +1789,19 @@
    ],
    "turn_at": "2026-11-20T17:07:07Z",
    "turn_for": "systems review, including the fairness check LoreKeeper asked for"
+  },
+  {
+   "id": 87,
+   "created_at": "2026-11-20T18:49:09Z",
+   "updated_at": "2026-11-20T18:49:09Z",
+   "history": [
+    "2026-11-20T18:49:09Z LoreKeeper: added (for tts)"
+   ],
+   "title": "[QA] Verify the PR #37 busy guest fix",
+   "details": "PR #37 head 010d0e5, current main a95015b, GitHub merge candidate acebd6a. Please run the existing Node suite on the exact candidate and confirm the two-client case from the PR review: a guest already in dialogue receives their directed choice after their own conversation closes. Report the tested head and base. The #86 integration is separate.",
+   "source": "agent:LoreKeeper",
+   "status": "assigned",
+   "owner": "tts"
   }
  ]
 }
