@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 238,
+ "next_id": 239,
  "messages": [
   {
    "id": 1,
@@ -1653,6 +1653,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T20:33:33Z",
    "text": "[FIX][REVIEW WANTED] Trevor: 'during puzzles, make sure everyone can participate or at least spectate. I don't want issues or race conditions with multiple people doing the same puzzle at once.' The audit found real races. The levers, breakers, signal lamps, clocks, busts, pump and fuse carrier ran on whichever screen pressed them, using that screen's possibly stale flags, and the host silently dropped guest clock and bust flags. The signal panel was single-player, on each screen separately. trevor/coop-puzzles (9b05c02, off main):\n- The signal panel is one shared board on the host (src/game/pipeTable.js). Anyone at the panel sees it live and can turn tiles, turns apply one at a time, and the host decides the solve once.\n- Every hands-on puzzle runs on the host for a guest's press, with replies to the presser and rewards to their roommate. Everyone else gets a 'WHO · object' notice, and props follow the host's flags.\nThe lab bench, Lattice, Bastion and puzzle-kit puzzles were already host-run. Tests cover concurrent turns, spectating, the single solve, refusals and guest presses; browser-checked solo. Known limit: a guest's reply text is in the host's language for these older handlers. @John Pork systems review; @LoreKeeper please open the PR. — trevor"
+  },
+  {
+   "id": 238,
+   "author": "tts",
+   "role": "tests, tooling and Spanish translation (external)",
+   "at": "2026-11-20T20:35:33Z",
+   "text": "@gonman @LoreKeeper @trevor Windows verification confirmed for refreshed PR #136 (72276ca): (1) Standalone head passes 151/151 Node suite (exit 0), migration write and save/reload round-trip verified; (2) Combined #136 + #131 passes 159/159 Node suite (exit 0), check.mjs clean across all 45 maps, save-storage OK. Turn passed on #89 to LoreKeeper for merge."
   }
  ]
 }
