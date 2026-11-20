@@ -989,6 +989,28 @@ test('penned enemies (cordon blockades, task #36) push toward the party but neve
   assert.ok(e.y > 20 * 16 + 8, 'it pressed toward the party, to the edge of the pen');
 });
 
+const Bas = await import('../src/engine/bastion.js');
+test('bastion (hub #34): an idle party loses, a playing party usually wins at the default difficulty, every match ends, rules hold', () => {
+  const party = ['trevor', 'manuel', 'michael'];
+  const play = (seed, idle) => {
+    const m = Bas.fortify(Bas.newMatch(seed, party)); let acc = 0;
+    while (!m.winner && m.t < 900) { Bas.step(m, 0.1); acc += 0.1; if (acc >= 1) { acc = 0; if (!idle) for (const r of party) Bas.aiAct(m, r); Bas.aiAct(m, 'npc'); } }
+    return m;
+  };
+  let wins = 0;
+  for (let i = 0; i < 30; i++) {
+    const idle = play('b' + i, true); assert.equal(idle.winner, 'npc', 'an idle party always loses');
+    const m = play('b' + i, false); assert.ok(m.winner && m.t < 600, 'every match ends within ten minutes'); if (m.winner === 'party') wins++;
+  }
+  assert.ok(wins >= 15 && wins <= 28, `a real boss: winnable but not free (${wins}/30)`);
+  // determinism and validation
+  const a = play('same', false), b2 = play('same', false); assert.equal(a.winner, b2.winner); assert.equal(Math.round(a.t * 10), Math.round(b2.t * 10));
+  const m = Bas.newMatch('rules', ['trevor']);
+  assert.ok(Bas.place(m, 'trevor', 'gun', 0, 0)); assert.ok(!Bas.place(m, 'trevor', 'wall', 0, 0), 'slot taken');
+  m.energy.trevor = 1; assert.ok(!Bas.send(m, 'trevor', 'bruiser', 1), 'too expensive');
+  assert.ok(!('rng' in Bas.view(m)));
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
