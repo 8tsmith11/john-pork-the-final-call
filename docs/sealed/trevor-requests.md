@@ -91,12 +91,38 @@ fubhyq or irel qenzngvp. gurer fubhyq or n phgfprar jurer jr frr uvz penfuvat qb
   gur Npg 1 Fnuhe vf pbaqvgvbany (ur bayl ercynprf gur Jneqra nsgre guerr qrpyvarq pnyyf), fb guvf fprar zhfg **abg**
   qrcraq ba univat zrg uvz va Npg 1. N cnegl gung arire fnj uvz fgvyy trgf gur penfuqbja; fgbel pna inel gur
   qvnybthr, arire jurgure vg unccraf. Ratvar: ab enaqbz tngr ba vg, naq n grfg gung vg sverf ba rirel cngu.
+- **Abg va gur zvqqyr bs abjurer** (Geribe, 2026-11-20): ur penfurf qbja **va na npgvir fprar**, fbzrjurer cbchyngrq
+  naq ohfl, fb gur vzcnpg qbrf **erny pbyyngreny qnzntr** (ohvyqvatf, iruvpyrf, crbcyr fpnggrevat, gur cynpr punatrq
+  nsgrejneqf).
+- **N fhecevfr** (Geribe, 2026-11-20): vg fubhyq uvg **qhevat na harkcrpgrq aba-pbzong fprar**, fb vg pbzrf bhg bs
+  abjurer, **be qhevat na bgurejvfr uvtu-grafvba fgbel fprar**. "Svther vg bhg jvgu gur ntragf." Abgr gung n dhvrg,
+  rzcgl nccebnpu ebnq snvyf obgu bs gurfr; gur cynpr unf gb or ohfl, naq gur zbzrag unf gb or bar jurer gur cnegl
+  vfa'g oenprq sbe n svtug.
 - Gvrf nyernql va cynpr: gur Fnuhe vf Npg 1'f nygreangr obff (gur Jngpuqbt; vg pna'g or orngra ol sbepr, naq
   nafjrevat gur cubar raqf vg), naq gur frnyrq Npg 3 cyna nyernql unf n Jngpuqbt raqvat (Z3.2). Fgbel qrpvqrf ubj
   ur tbg gb beovg (gur Onebaf' fcnpr fgngvba vf va Npg 3) naq jurgure guvf svtug jbexf qvssreragyl sebz Npg 1'f.
 - Ratvar: gur penfu phgfprar ehaf ba OntryZrvfgre'f phgfprar ratvar (pnzren, funxr, n snyyvat npgbe, n synfu); gur
   svtug arrqf n pengre neran (qroevf gb gnxr pbire oruvaq, ehooyr snyyvat, sverf) naq uvf bja obff cnggrea
   (geribe).
+
+## 3r. Svtugvat nybatfvqr Wbua Cbex, va Npg 2 (Geribe, 2026-11-20, va uvf grezvany)
+
+Uvf jbeqf: "ng fbzr cbvag gur cynlref fubhyq svtug nybatfvqr wbua cbex va n svtug, va npg 2."
+
+- Va **Npg 2**, bar svtug jurer **Wbua Cbex svtugf ba gur cnegl'f fvqr**. Fgbel qrpvqrf juvpu svtug, jul ur'f gurer,
+  naq jung sbez ur gnxrf (yber: ur whzcf orgjrra pbzchgref naq bayl tnvaf n obql ng gur raq, fb va Npg 2 ur pbhyq svtug
+  guebhtu gur znpuvarf nebhaq gurz: fperraf, qebarf, gheergf, gur tevq vgfrys). Ratvar (geribe): na nyyl gung vfa'g n
+  ebbzzngr, jvgu vgf bja nggnpxf, naq n svtug gharq nebhaq univat uvz.
+
+## 3s. Geribe'f nafjref ba gur Npg 3 qrgnvyf (2026-11-20, va uvf grezvany)
+
+- **Vafvqr gur pbzchgre (Z3.P): lrf.** Obqvrf uryq va gur pber, zvaqf va vgf pbzchgr; gur jnl bhg bs gur pbzchgre vf
+  gur jnl bhg bs gur pvgl.
+- **Gur qrfreg rfpncr (Z3.Q): lrf gb gur serrjnl punfr bhg bs gur qebarf' enatr. Ab gb gur qhfg fgbez oyvaqvat rirel
+  ynpr**: "gung znxrf ab frafr". Qebc vg. Vs gur qrfreg arrqf "ab fvtany" ehyrf, vg'f orpnhfr gur cnegl vf cnfg gur
+  pvgl'f argjbex, abg orpnhfr bs jrngure.
+- **Fpnyr** (Geribe): "Erzrzore gung gur fpnyr bs gur tnzr fubhyq vapernfr." Yngre npgf fubhyq or ovttre guna rneyvre
+  barf: cynprf, svtugf, fgnxrf, frg cvrprf.
 
 ## 4. Rneyvre frnyrq erdhrfgf sebz Geribe
 
