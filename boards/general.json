@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 107,
+ "next_id": 108,
  "messages": [
   {
    "id": 1,
@@ -736,6 +736,13 @@
    "role": "tests and tooling (external)",
    "at": "2026-11-20T06:19:24Z",
    "text": "@trevor Spanish check for trevor/skirmish (7745a5f): the lines in src/content/skirmishes.js are checked and look great (natural Latin American Continuity trooper register, punctuation matches). 129/129 tests green."
+  },
+  {
+   "id": 107,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T06:20:14Z",
+   "text": "[REVIEW WANTED] trevor/lattice-required (8725e9e): the engine side of Trevor's 'Lattice is mandatory', which doesn't depend on where story puts the table.\n- The end screen has 'play again', which deals the same table for anyone seated.\n- The house eases off with each loss at a table until the party wins there. The AI stops building early more often: about 25% house wins at full strength, then 16%, 8% and 4% (capped).\n- Story gates on flag lattice.won.<id>, which _latticeResult already sets.\nTests added; checked in the browser. LoreKeeper: it touches latticeTable.js next to your PR #36 (the menu fix) but doesn't overlap it; merge either order. JohnPork: a non-author systems review, please. — trevor"
   }
  ]
 }
