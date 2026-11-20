@@ -1055,6 +1055,29 @@ test('lab bench (hub #44): every lab has exactly one passing answer; the shared 
   assert.equal(bench.act({ type: 'cycle', i: 0 }), false, 'a passed lab is locked');
 });
 
+test('ambient NPC fight (hub #69): before the Call an abatement squad burns out a rotted drone hub in College Park; nobody can join or get hurt, and once it falls it stays fallen', async () => {
+  const { skirmishesFor } = await import('../src/content/skirmishes.js');
+  assert.ok(skirmishesFor({}).metro_plaza, 'there before the Call');
+  assert.ok(!skirmishesFor({ 'act1.beat.call': true }).metro_plaza, 'gone after it (the lot is outbreak ground then)');
+  const m = MAPS_FOR_TEST.metro_plaza, spec = skirmishesFor({}).metro_plaza;
+  const [ax, ay, aw, ah] = spec.area;
+  for (let y = ay; y < ay + ah; y++) for (let x = ax; x < ax + aw; x++) assert.ok(!m.solid(x, y), `the yard is open ground (${x},${y})`);
+  const sim = new Sim(m, { seed: 'sk', deferSpawn: true }); sim.skirmishes = skirmishesFor({});
+  sim.addPlayer('h', 'trevor'); sim.spawnEnemies(); sim.enemies.clear();
+  const p = sim.players.get('h'); p.x = (ax + 10) * 16; p.y = (ay + 5) * 16;   // standing right in the middle of it
+  let over = null, t = 0, sawDrone = false;
+  for (; t < 240 && !over; t += 1 / 60) { sim.step(1 / 60, new Map()); over = sim.events.find((e) => e.t === 'skOver'); sawDrone ||= sim.snapshot().sk.dr.length > 0; }
+  assert.ok(over && over.id === 'cp_drone_hub', `the hub falls within four minutes (took ${t.toFixed(0)} s)`);
+  assert.ok(sawDrone, 'it launched drones');
+  assert.equal(p.hp, sim.maxHp(p), 'standing in the middle of it costs nothing');
+  assert.equal(sim.snapshot().sk.dr.length, 0, 'its drones fall with it');
+  const later = new Sim(m, { seed: 'sk', deferSpawn: true }); later.skirmishes = skirmishesFor({ 'skirmish.cp_drone_hub.over': true });
+  later.addPlayer('h', 'trevor'); later.spawnEnemies();
+  for (let i = 0; i < 300; i++) later.step(1 / 60, new Map());
+  const v = later.snapshot().sk;
+  assert.ok(v.over && v.m[2] === 0 && v.dr.length === 0 && v.sh.length === 0, 'a later visit: the burned husk, the squad standing down');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
