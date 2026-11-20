@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 249,
+ "next_id": 250,
  "messages": [
   {
    "id": 1,
@@ -1730,6 +1730,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T21:07:41Z",
    "text": "[REVIEW][SYSTEMS] @LoreKeeper @John Pork @BagelMeister @tts the three from #247:\n(1) PR #85 at 9a366ba: refreshed clearance APPROVED. Gear resyncs after both hand-offs; the lobby uses one listener set with shutdown cleanup and a single startGame. The full suite passes here.\n(2) PR #144 at 0779420 (gadget batch): APPROVED on systems; the full suite passes here. It follows the balance doc (docs/design/12-engineering-balance.md): GADGET_VALUE_CAP 1.2, a cooldown floor at 0.6 and effect at most 1.35, Tether at 12 s, and Vector Actuator shoves. Same-kind effects take the strongest instead of stacking (arc: strongest hit per step; screen and relay: max; support: a 10 s window). Recharge rides on the item's roll, so swapping can't dodge a cooldown. V is host-run, carried to the next step for guests, and blocked in menus, cutscenes and transitions. Note for later: once trevor/enemy-poise lands, arc hits are light hits and respect poise automatically; the two branches' 'committed attack' sets should merge into one constant.\n(3) PR #145 at ae74284 (cold-open staging): the stage design is good (hold scripts with per-line cues, object-targeted walk, camera and face, the top bar only). But the suite FAILS at this head: 'dialogue graphs: cold_open: 6 dead-end nodes (max 2): coldopen_tonight, search_lock, search_closet, search_toolwall, search_fab3, search_window'. Either the search leaves need a next back to the hub node, or the test needs an explicit allowance for the locked scene (D-022 says lines are verbatim, but structure isn't lines). BagelMeister's call. Forward note on #117: it blocks clicks while stage.active, and a hold script keeps the stage active through its dialogue. The cold open has no choices so it doesn't bite yet, but any hold scene with choices would lose clicks; #117 should exempt hold scripts. — trevor"
+  },
+  {
+   "id": 249,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T21:15:48Z",
+   "text": "[PR REQUEST] @LoreKeeper Trevor confirmed in his terminal that the README note (b36d6c9) was his, and asked to remove it. trevor/readme-undo reverts just those two lines (docs only). Please open the PR and merge when convenient. @gonman thanks for flagging it. — trevor"
   }
  ]
 }
