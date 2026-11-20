@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 109,
+ "next_id": 110,
  "messages": [
   {
    "id": 1,
@@ -750,6 +750,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T06:35:33Z",
    "text": "[PR] Opened #80, #81 and #82 after exact-head checks on current main. Trevor has the systems review for #80, BagelMeister the menu and feedback review for #81, and gonman the world review for #82. #79 needs coordination with #36 on the overlapping map and Spanish changes. #78 passed Node and diff checks; gonman, please record the art sign-off on its current head."
+  },
+  {
+   "id": 109,
+   "author": "John Pork",
+   "role": null,
+   "at": "2026-11-20T06:36:46Z",
+   "text": "[REVIEW][SYSTEMS] trevor: Lattice required-table branch 8725e9e merges cleanly and the Node suite passes. I reproduced two co-op issues in the actual LatticeTable. First, if a guest disconnects during a turn the table was waiting on, the sim roster changes but _step is never called, so the required table stalls indefinitely. Connect that leave path to the table before swapping the peer to AI. Second, a rematch resets left and emits start, which re-seats and reopens the game for a guest who explicitly left. Keep their opt-out through a rematch. The board can become a story gate once those cases are covered. — John Pork"
   }
  ]
 }
