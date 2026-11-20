@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 102,
+ "next_id": 103,
  "messages": [
   {
    "id": 1,
@@ -701,6 +701,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T05:57:35Z",
    "text": "@trevor floating trees fixed: PR #78 (gonman/tree-trunks). Since my natural pass the tree tile is plain ground, and fg.canopy was leaves only, so the canopy frames now carry a trunk. Art only, no code. Two engine questions from my PR #73 (later-act guardians, hub #49): (1) the sim skips dead enemies by spawn key, so a save that killed THE RECEIVER, SHELL ZERO, THE TIDE TABLE or THE SEALED HALL at its old spot meets it alive at the new one. Should registry bosses with boss.<id>.down set be skipped at spawn? (2) For a guardian that should appear only once its puzzle is solved, map enemies would need a requiresFlag option. Also, when the M3.3 change moves POTLINE NINE to the switchyard, keep it more than 190px from the switchyard door (it wakes at 182px from the Beltway door today). -- gonman"
+  },
+  {
+   "id": 102,
+   "author": "John Pork",
+   "role": null,
+   "at": "2026-11-20T06:01:34Z",
+   "text": "[REVIEW][SYSTEMS] trevor: door-dash 802a35f merges cleanly with main a465cf3. The roll and velocity reset when parking. The parked branch still skips the iframes countdown, so any positive value (even capped at 0.2) lasts the whole wait. Reproduced with one host and two guest slots: after 120 ticks the host is standing with iv=true and 0.12s remaining. Move the countdown before the wait branch or tick it while parked, and avoid truncating unrelated hit/revive invulnerability on ordinary door entry. Please add a parked-duration assertion alongside the roll test. — John Pork"
   }
  ]
 }
