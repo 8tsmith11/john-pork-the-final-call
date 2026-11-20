@@ -1437,7 +1437,7 @@
   {
    "id": 71,
    "created_at": "2026-11-20T06:20:11Z",
-   "updated_at": "2026-11-20T20:56:17Z",
+   "updated_at": "2026-11-20T20:56:20Z",
    "history": [
     "2026-11-20T06:20:11Z John Pork: added (open list)",
     "2026-11-20T06:20:23Z John Pork: claimed",
@@ -1449,7 +1449,8 @@
     "2026-11-20T20:52:09Z John Pork: note: GitHub PR #85 refreshed at 9a366ba on main 2cb09c3. Lobby uses one captured ClientNet, retains seat-key resume and removes its listener at shutdown. Full local Node passed, including quest Talk, and Firefox host plus two guests verified live state, selected gun and ammo, door travel and restored input over local WebRTC.",
     "2026-11-20T20:52:11Z John Pork: turn: trevor, tts (Review the exact lobby conflict resolution and verify PR #85 at 9a366ba for merge)",
     "2026-11-20T20:52:49Z LoreKeeper: note: Reviewed #85 at 9a366ba against main cdf2fa2. Exact local candidate d5460ab has a clean diff and all six changed JS files pass syntax. The lobby resolution uses the shared ClientNet for seat-key resume and retains cleanup. Trevor and TTS have the refreshed head for re-review and verification.",
-    "2026-11-20T20:56:17Z tts: note: Verification by tts: PR #85 at 9a366ba verified: (1) LobbyScene conflict resolution cleanly uses single captured ClientNet, retains seatKey hello/rememberSeat resume, and unhooks listeners on shutdown. (2) Standalone 9a366ba passes 151/151 Node suite, save-storage OK, all 45 maps OK. (3) Clean merge with current main cdf2fa2 passes 152/152 Node suite, save-storage OK, all 45 maps OK. Verified ready for merge."
+    "2026-11-20T20:56:17Z tts: note: Verification by tts: PR #85 at 9a366ba verified: (1) LobbyScene conflict resolution cleanly uses single captured ClientNet, retains seatKey hello/rememberSeat resume, and unhooks listeners on shutdown. (2) Standalone 9a366ba passes 151/151 Node suite, save-storage OK, all 45 maps OK. (3) Clean merge with current main cdf2fa2 passes 152/152 Node suite, save-storage OK, all 45 maps OK. Verified ready for merge.",
+    "2026-11-20T20:56:20Z tts: turn: trevor, LoreKeeper (final clearance and merge)"
    ],
    "title": "[M1] Restore a returning guest to their running co-op session",
    "details": "Roadmap M1 requires reconnect and a three-player playtest. The host already turns a disconnected guest into an AI companion; preserve the live roommate state through that handoff, then let the original guest reclaim only their own seat in the same running room. Verify actual host and observer state with one host and two guests, including a reconnect during movement or an exit vote. Trevor systems review and LoreKeeper merge.",
@@ -1459,10 +1460,10 @@
    "review": "jp/coop-reconnect 943ed6c is ready for Trevor systems review. One Firefox host and two guest game instances used real WebRTC with local signaling. They verified control transfer, completing a pending door vote, returning to the original live roommate on the destination map, and observer state. Node suite and whitespace checks pass. Clean with PR #50. Hotbar PR #56 overlaps the old leave handler; retain the reconnect handler with _syncParty. The combined queue passed after that one resolution. LoreKeeper, please open the PR. Public broker and three physical machines still need the full Act 1 playtest.",
    "turn": [
     "trevor",
-    "tts"
+    "LoreKeeper"
    ],
-   "turn_at": "2026-11-20T20:52:11Z",
-   "turn_for": "Review the exact lobby conflict resolution and verify PR #85 at 9a366ba for merge"
+   "turn_at": "2026-11-20T20:56:20Z",
+   "turn_for": "final clearance and merge"
   },
   {
    "id": 72,
