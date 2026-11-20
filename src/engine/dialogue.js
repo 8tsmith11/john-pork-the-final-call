@@ -96,12 +96,19 @@ export class Conversation {
     const es = getLang() === 'es';
     this.lines = this.node.lines.filter((l) => evalCond(l.if, this.ctx)).map((l) => (es && l.es ? { ...l, text: l.es } : l));
     this.i = 0;
+    this.revealedLine = -1;
     applyEffects(this.node.effects, this.ctx, this.sink);
     this.sink.flag(`dlg.once.${id}`, true);
     if (!this.lines.length) this._afterLines();
   }
 
   get line() { return this.pendingChoice?.line ?? this.lines?.[this.i] ?? null; }
+
+  revealLine() {
+    if (this.revealedLine === this.i || !this.line?.reveal?.length) return;
+    this.revealedLine = this.i;
+    for (const flag of this.line.reveal) if (!this.ctx.flags[flag]) this.sink.flag(flag, true);
+  }
 
   get choices() {
     if (this.pendingChoice || !this.node || this.i < this.lines.length) return [];

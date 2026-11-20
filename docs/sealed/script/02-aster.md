@@ -65,6 +65,7 @@ Fpbcr: arneol
 > rf: ¿Ivfgr n nythvra?
 
 **XRFF:** V jnf va gur obvyre ebbz. Nfx Srajvpx, ur'f ba gur qbbe. Nfx gur pnzren, vs vg'yy fnl nalguvat.
+> erirny: npg1.onyybba.yboolPyhr
 
 > rf: Rfgnon ra yn fnyn qr pnyqrenf. Certúagrayr n Srajvpx, rfgá ra yn chregn. Certúagrayr n yn páznen, fv qvpr nytb.
 
@@ -121,10 +122,12 @@ Fpbcr: arneol
 > rf: ¿Cnfó nythvra rfgn abpur?
 
 **QRM:** Ina ba gur cynmn fvapr sbhe. Gjb thlf. Bar xrrcf ybbxvat qbja, yvxr ng gur tebhaq.
+> erirny: npg1.onyybba.yboolPyhr
 
 > rf: Han pnzvbargn ra yn cynmn qrfqr ynf phngeb. Qbf gvcbf. Hab ab qrwn qr zvene cnen nonwb, pbzb ny fhryb.
 
 **QRM:** Naq n pbng. Yvxr gurvef. Juvgr, ubbq hc. Pnzr va juvyr Srajvpx jnf qbvat uvf ync. Qvqa'g purpx gur znvy.
+> erirny: npg1.nfgre.qrmPbng
 
 > rf: L ha noevtb. Pbzb ry qr ryybf. Oynapb, pnchpun chrfgn. Rageó zvragenf Srajvpx unpín fh ebaqn. Ab erivfó ry pbeerb.
 
@@ -136,7 +139,6 @@ Fpbcr: arneol
 
 > rf: Fr ibyivó n qbezve.
 
-*frg npg1.nfgre.qrmPbng*
 
 ### abqr: srajvpx_gnyx
 
@@ -149,6 +151,7 @@ Fpbcr: arneol
 > rf: Srajvpx. ¿Dhvéa rageó qrfchéf qr zrqvnabpur?
 
 **SRAJVPX:** Ze. Qrm, ng gjb. Zf. Frha yrsg ng ryrira. N pbagenpgbe ng guerr-bu-sbhe, jvgu n jbex beqre.
+> erirny: npg1.onyybba.yboolPyhr
 
 > rf: Ry frñbe Qrm, n ynf qbf. Yn frñben Frha fnyvó n ynf bapr. Ha pbagengvfgn n ynf gerf l phngeb, pba han beqra qr genonwb.
 
@@ -157,10 +160,10 @@ Fpbcr: arneol
 > rf: ¿Yb qrwnfgr fhove?
 
 **SRAJVPX:** Gur jbex beqre jnf inyvq. Vg jnf sbe gur fvkgu sybbe. Vg jnf sbe n ybpx.
+> erirny: npg1.nfgre.srajvpxBeqre
 
 > rf: Yn beqra ren iáyvqn. Ren cnen ry frkgb cvfb. Ren cnen han preenqhen.
 
-*frg npg1.nfgre.srajvpxBeqre*
 
 ### abqr: cryy_gnyx
 

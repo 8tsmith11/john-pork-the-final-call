@@ -336,6 +336,7 @@ Pubvprf:
 > rf: Han yynir zntaégvpn qr NFGRE ra ha pbeqóa. Yrb han yynir ny eriéf. Frvf gerf hab.
 
 **UNYINEQ:** Gurl nfxrq bar guvat. "Jung'f uryvhz jbegu." Syng. Yvxr vg jnf jevggra ba n pneq.
+> erirny: npg1.unyineq.fryyrePyhr
 
 > rf: Certhagó han fbyn pbfn. "¿Pháagb inyr ry uryvb?" Cynab. Pbzb fv yb yrlren qr han gnewrgn.
 
@@ -353,7 +354,6 @@ Pubvprf:
 
 *frg npg1.unyineq.fryyreQrfpevorq*
 
-*frg npg1.unyineq.fryyrePyhr*
 
 **ZNAHRY:** Sbhe avtugf ntb V jnf va yno gvyy gjb. Nfx gur GN.
 

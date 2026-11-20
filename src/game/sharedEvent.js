@@ -47,14 +47,15 @@ export class SharedEvents {
   /** Start a shared scene with the local player as the main player.
    * scope: 'all' (every screen, story scenes), 'nearby' (roommates within 8 tiles watch; others get a
    * toast and can press T to watch), 'self' (nobody else). Choices go to the node's decider. */
-  async start(sceneName, nodeId = null, onDone = null, scope = 'all', label = '') {
+  async start(sceneName, nodeId = null, onDone = null, scope = 'all', label = '', presentation) {
     const s = this.s;
     if (s.dlg?.spectator) { s.dlg.done = true; s._drawDialogue(); this.watching = null; }   // driving beats watching
     if (s.dlg) return false;
     const id = `${s.localId}:${Date.now().toString(36)}`;
     this.active = { id, last: '', scope, turn: 0 };
-    const me = s._lastRendered?.players?.find((p) => p.id === s.localId);
-    if (scope !== 'self') this._send({ t: 'evStart', id, main: s.character, scope, map: s.map?.id, x: me?.x ?? 0, y: me?.y ?? 0, label });
+    const me = s._lastRendered?.players?.find((p) => p.id === s.localId)
+      ?? (presentation ? s.sim?.players.get(s.localId) : null);
+    if (scope !== 'self') this._send({ t: 'evStart', id, main: s.character, scope, map: s.map?.id, x: me?.x ?? 0, y: me?.y ?? 0, label, presentation });
     await s._startLocal(sceneName, nodeId, () => {
       if (scope !== 'self') this._send({ t: 'evEnd', id });
       this.active = null;
@@ -114,6 +115,7 @@ export class SharedEvents {
   onMsg(msg, fromPeer = null) {
     if (!msg || !/^ev(Start|State|End|Choose)$/.test(msg.t)) return false;
     const s = this.s;
+    if (s.mode === 'host' && fromPeer && msg.presentation) msg = { ...msg, presentation: undefined };
     if (msg.t === 'evChoose' && s.mode === 'host' && fromPeer) {
       const who = s._charOf(fromPeer);
       if (!who) return true;
@@ -135,6 +137,11 @@ export class SharedEvents {
       }
     }
     if (msg.t === 'evStart') {
+      if (msg.presentation === 'act1-finale') {
+        this._prepareFinale(msg);
+        this._watch(msg);
+        return true;
+      }
       if (s.dlg) return true;                        // already reading something: can't watch
       const me = s._lastRendered?.players?.find((p) => p.id === s.localId);
       const near = msg.scope === 'all' || (msg.map === s.map?.id && me && Math.hypot(me.x - msg.x, me.y - msg.y) <= 128);
@@ -150,11 +157,27 @@ export class SharedEvents {
     return true;
   }
 
+  _prepareFinale({ x, y }) {
+    const s = this.s;
+    // A party-wide ending may interrupt a guest's local conversation. Its unfinished callbacks stay unrun.
+    if (this.active && this.active.scope !== 'self') this._send({ t: 'evEnd', id: this.active.id });
+    this.active = this.watching = this.offer = null;
+    if (s.dlg) {
+      s.dlgDone = null;
+      s.dlg.done = true;
+      s._drawDialogue();
+    }
+    if (s.menu) s._closeMenu();
+    s._closeSayAll();
+    s.dlgFree = false;
+    s._showActOneArrival(x, y);
+  }
+
   _watch(msg) {
     const s = this.s;
     this.watching = { id: msg.id, main: msg.main, scope: msg.scope };
     s.dlg = new Mirror(msg.main, (i, turn) => this._send({ t: 'evChoose', id: msg.id, i, turn, who: s.character }));
-    s.dlgDone = null; s.dlgVoiced = false;
+    s.dlgDone = null; s.dlgVoiced = msg.presentation === 'act1-finale';
     if (this.latest?.[msg.id]) s.dlg.set(this.latest[msg.id]);
     this.banner.setText(msg.scope === 'all' ? `${String(msg.main).toUpperCase()}'s scene` : `Watching ${String(msg.main).toUpperCase()}  ·  [X] skip`).setVisible(true);
     s._drawDialogue();
