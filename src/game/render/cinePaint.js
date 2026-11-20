@@ -56,7 +56,7 @@ const PAINT = {
     g.lineStyle(4, 0x6fc6ff, 0.12).strokeCircle(cx, cy, R + 4);
     if (L.sunrise) g.fillStyle(0xffc070, 0.25).fillEllipse(cx - R * 0.7, cy - R * 0.72, R * 0.5, R * 0.08);
   },
-  // A tall carved figure holding a staff upright, seen from the side: wood, grain, two eyes that can open and glow.
+  // A carved standing figure seen from the side (wood, grain, a held staff, eyes that can glow), tilt to any angle.
   figure(g, L, t, now) {
     const x = at(L.x, t), y = at(L.y, t), s = at(L.s ?? 3, t), tilt = at(L.tilt ?? 0, t), eyes = at(L.eyes ?? 0, t);
     const rot = (dx, dy) => [x + dx * Math.cos(tilt) - dy * Math.sin(tilt), y + dx * Math.sin(tilt) + dy * Math.cos(tilt)];
@@ -90,7 +90,7 @@ const PAINT = {
       }
     } else for (const ex of [-3.2, 1.2]) box(ex * u, -20.4 * u, 2 * u, 0.4 * u, 0x3a2414);
   },
-  // Re-entry: a cone of plasma and a trail of fire behind whatever is falling at (x, y).
+  // A moving fireball: a hot front at (x, y) and a trail of fire and sparks behind it along `ang`.
   flames(g, L, t, now) {
     const x = at(L.x, t), y = at(L.y, t), s = at(L.s ?? 3, t), k = at(L.k ?? 1, t), ang = at(L.ang ?? -Math.PI / 2, t);
     const r = rng(Math.floor(now / 40)), ca = Math.cos(ang), sa = Math.sin(ang);
@@ -108,7 +108,7 @@ const PAINT = {
     g.fillStyle(0xffd27f, 0.28 * k).fillCircle(x, y, 13 * s * k);
     g.fillStyle(0xff8a3a, 0.12 * k).fillCircle(x, y, 22 * s * k);
   },
-  // The sky from high up: black at the top, deepening blue, a bright haze at the horizon, far clouds below it.
+  // A high-altitude sky: a vertical gradient into a hazy horizon at `horizon`, far clouds below it.
   atmo(g, L, t) {
     const hy = at(L.horizon ?? 200, t), bands = [[0x000000, 0], [0x050b1c, 0.25], [0x0c1c40, 0.5], [0x1f3f7a, 0.7], [0x4f7fc0, 0.85], [0xbfe0ff, 1]];
     const mix = (c1, c2, k) => ((Math.round(((c1 >> 16) & 255) + (((c2 >> 16) & 255) - ((c1 >> 16) & 255)) * k) << 16) |
@@ -133,7 +133,7 @@ const PAINT = {
       if (dir === 'up') g.lineBetween(x, y, x, y - len); else g.lineBetween(x, y, x + len, y);
     }
   },
-  // Cloud banks scrolling past (upward: falling through them).
+  // Cloud banks scrolling past.
   clouds(g, L, t) {
     const r = rng(L.seed ?? 5), off = at(L.off ?? 0, t), a = at(L.a ?? 0.85, t);
     for (let i = 0; i < 22; i++) {

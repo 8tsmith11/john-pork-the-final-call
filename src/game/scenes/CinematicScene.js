@@ -29,6 +29,7 @@ export class CinematicScene extends Phaser.Scene {
 
   init(data) {
     this.cine = data.cine; this.ctx = data.ctx ?? {}; this.onDone = data.onDone;
+    this._done = false; this._busy = false; this.paint = null; this.shakeAmt = 0; this.score = null;   // the scene object is reused between launches
     this.shots = this.cine.shots.filter((s) => !s.if || s.if(this.ctx));
   }
 
@@ -44,6 +45,7 @@ export class CinematicScene extends Phaser.Scene {
     this.add.text(w - 6, 6, tr(this.cine.noClick ? 'ESC: skip' : 'click: next · ESC: skip'), { fontFamily: 'VT323', fontSize: '7px', color: '#5a5d6b' }).setOrigin(1, 0).setDepth(910);
     if (!this.cine.noClick) this.input.on('pointerdown', () => this._next());
     if (this.cine.score) { setMusicDuck(true); this.score = playScore(audioOut()?.ctx, this.cine.score); }   // the area music steps back
+    this.events.once('shutdown', () => { if (this.score) { this.score.stop(); this.score = null; setMusicDuck(false); } });   // even if something else stops the scene
     this.input.keyboard.on('keydown-ESC', () => this._finish());
     if (!this.cine.noClick) this.input.keyboard.on('keydown-SPACE', () => this._next());
     this.i = -1; this._next();
@@ -68,7 +70,7 @@ export class CinematicScene extends Phaser.Scene {
     this.stage.removeAll(true);
     // A painted shot draws every frame (update()); it sits under the cast, over the backdrop.
     this.paint = shot.paint ? { fn: painter(shot.paint), g: this.add.graphics(), t0: this.time.now, dur: (shot.dur ?? 3) * 1000 } : null;
-    this.shakeAmt = shot.shake ?? 0;   // shakes the picture only, so the letterbox bars hold still
+    this.shakeAmt = Settings.get('shake') === false ? 0 : (shot.shake ?? 0);   // the picture only (the bars hold still), and only if shake is on
     // Backdrop layers, far to near, with parallax by factor.
     const layers = (BACKDROPS[shot.bg] ?? BACKDROPS.black)(this).map((L) => ({ ...L, img: this.add.image(0, 0, L.key).setOrigin(0) }));
     for (const L of layers) this.stage.add(L.img);

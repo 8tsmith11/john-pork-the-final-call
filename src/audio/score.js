@@ -64,17 +64,14 @@ function kit(ctx, out) {
 
 // Scores: (k, T) => schedules notes, T = start time. Times below are seconds from the start.
 const SCORES = {
-  // A slow, huge build: space, three drum hits, a driving fall, a long rise, one impact, then silence.
+  // A long build into one hit (timings: the sealed shot list).
   descent(k, T) {
     const D = 38, A = 45, F = 41, C = 48, Bb = 46;   // D minor
-    // 0-13: the drone and a far choir
     k.strings(T + 0, D, 13, 0.05); k.strings(T + 0, D + 12, 13, 0.035);
     k.choir(T + 2, 81, 6, 0.03); k.choir(T + 6, 86, 7, 0.03); k.choir(T + 9, 84, 4, 0.025);
     k.strings(T + 9, A + 12, 4, 0.04);
-    // 13-16: three drum hits, far apart
     for (const s of [13.0, 13.9, 14.8]) k.drum(T + s, 55, 1.0, 1.4);
     k.brass(T + 14.8, D, 1.6, 0.08);
-    // 16-25: the fall: an ostinato, power chords, strings rising
     const chords = [[D, A], [Bb, F], [F, C], [C, 52]];
     for (let i = 0; i < 9 / 0.25; i++) {
       const t = T + 16 + i * 0.25;
@@ -84,12 +81,10 @@ const SCORES = {
     chords.forEach(([a, b], i) => { const t = T + 16 + i * 2.25; k.brass(t, a, 2.1, 0.11); k.brass(t, b, 2.1, 0.08); k.brass(t, a - 12, 2.1, 0.07); });
     [62, 64, 65, 67, 69, 72].forEach((m, i) => k.strings(T + 16.5 + i * 1.4, m, 1.6, 0.045));
     k.choir(T + 20, 74, 5, 0.05); k.choir(T + 20, 77, 5, 0.04);
-    // 25-32: everything, faster, rising into the hit
     for (let i = 0; i < 7 / 0.125; i++) { const t = T + 25 + i * 0.125; if (i % 4 === 0) k.drum(t, 60, 0.75, 0.5); else k.tom(t, 130 + (i % 3) * 20, 0.16 + i * 0.002); if (i > 40) k.snare(t, 0.12 + (i - 40) * 0.01); }
     [[D, A], [Bb, F], [C, 55], [A, 52]].forEach(([a, b], i) => { const t = T + 25 + i * 1.75; k.brass(t, a + 12, 1.7, 0.1); k.brass(t, b + 12, 1.7, 0.08); k.brass(t, a, 1.7, 0.09); });
     k.strings(T + 25, 74, 7, 0.05); k.strings(T + 25, 81, 7, 0.04); k.choir(T + 25, 86, 7, 0.06);
     k.riser(T + 28, 4, 0.2);
-    // 32: the impact, then nothing
     k.drum(T + 32, 40, 1.2, 2.4); k.drum(T + 32.02, 70, 0.9, 1.2); k.crash(T + 32, 0.5); k.brass(T + 32, D - 12, 1.2, 0.12);
   },
 };
