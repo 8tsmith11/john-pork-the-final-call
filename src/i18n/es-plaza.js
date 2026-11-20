@@ -162,7 +162,7 @@ export const ES_PLAZA = {
   "coderot. it rang. it rang for everyone. coderot.": "podredumbre. sonó. sonó para todos. podredumbre.",
   // campus.js (Compute Hall B)
   'Lab bench (245)': 'Mesa de laboratorio (245)',
-  "[scaffold] Manuel's bench in 245. A half-finished head sculpt under a dust cover, ears marked lower than you'd think.": '[scaffold] Una cabeza esculpida a medio terminar bajo una funda antipolvo, con las orejas marcadas más abajo de lo que pensarías.',
+  "[scaffold] Manuel's bench in 245. A half-finished head sculpt under a dust cover, ears marked lower than you'd think.": '[scaffold] La mesa de Manuel en el 245. Una cabeza esculpida a medio terminar bajo una funda antipolvo, con las orejas marcadas más abajo de lo que pensarías.',
   'Lab bench': 'Mesa de laboratorio',
   "[scaffold] Somebody's project, abandoned mid-solder. The iron is still plugged in.": '[scaffold] El proyecto de alguien, abandonado a mitad de soldar. El soldador sigue enchufado.',
   'Storage crate': 'Caja de almacenamiento',
