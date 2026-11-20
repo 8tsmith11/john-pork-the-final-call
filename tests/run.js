@@ -2145,7 +2145,7 @@ test('the story beat\'s film: painted shots with known painters, and the score\'
   for (const sh of film) for (const t of [0, 0.5, 1]) painter(sh.paint)(g, t, 1000);
   assert.ok(calls.length > 100, 'every shot paints at its start, middle and end without throwing');
   const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/CinematicScene.js', import.meta.url), 'utf8');
-  assert.ok(/init\(data\) \{[^}]*this\._done = false/.test(src), 'a second cinematic launch starts clean, so it can finish');
+  assert.ok(/init\(data\) \{[\s\S]{0,200}?this\._done = false/.test(src), 'a second cinematic launch starts clean, so it can finish');
   assert.ok(/events\.once\('shutdown'[^\n]*score\.stop\(\)[^\n]*setMusicDuck\(false\)/.test(src), 'the score and the music duck end however the scene stops');
   assert.ok(/Settings\.get\('shake'\) === false \? 0/.test(src), 'shake follows the player setting');
 });
