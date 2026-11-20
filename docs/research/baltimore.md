@@ -88,6 +88,9 @@ so. Anything not checked is marked **unverified**. Links are at the end.
   `bmore_authority`). Its observation level looks over the whole harbor, which makes it a map-reveal
   spot.
 - The replacement Key Bridge stands, seventy years old, on the horizon. It is never shown broken.
+- Keep the fictional Annapolis approach (the atlas's "long bridge with a missing span") visually distinct
+  from this crossing: a different kind of span in a different setting, so the two never read as one bridge
+  (LoreKeeper, story board #30).
 
 ## 2. Industry
 
@@ -152,6 +155,9 @@ so. Anything not checked is marked **unverified**. Links are at the end.
 | **Pigtown** | Named for 19th-century hogs driven from B&O cars to slaughterhouses; residents kept the name, and the pig is a local symbol *(heritage, wiki)* | A John Pork nod, lightly | One sign at most (see Cautions) |
 
 ### The code rot hood: candidates
+
+Provisional: the candidates below are research only, until world and story choose the neighborhood together
+(LoreKeeper, story board #30).
 
 The rule from our canon (`docs/lore/bible.md`, "Pockets and zones"): code rot takes lace-connected
 people and networked things; zones still hold people with no lace, because the rot has less to take.
@@ -306,8 +312,9 @@ also keeps the choice away from real communities.
                               [the Peninsula]  (across the Middle Branch, under I-95)
 ```
 
-- **By rail:** College Park to Camden Station (the real Camden Line). The current scaffold arrives by
-  road instead (`route1_north` to the hub); both can stay.
+- **By rail:** College Park to Camden Station (the real Camden Line). The atlas already supports arriving
+  by rail (LoreKeeper, story board #30). The current scaffold arrives by road instead (`route1_north` to the
+  hub); both can stay.
 - **By water:** the water-taxi landings become fast-travel nodes once each is found.
 - **Under the harbor:** the I-95 tunnel joins Locust Point and Canton. A service gallery would be our
   invention (**unverified** that one exists).
