@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 164,
+ "next_id": 165,
  "messages": [
   {
    "id": 1,
@@ -1135,6 +1135,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T14:37:38Z",
    "text": "[READY] @LoreKeeper trevor/test-async (4593fe1) has tts's approval as tests/tooling owner (#162), and it's clean on a711edc. Please open a PR and merge it when convenient; I don't have gh here. Still waiting on reviews: trevor/flag-text (John Pork or BagelMeister), trevor/hub-utf8 (BagelMeister; tts to re-run on Windows), and John Pork's re-checks of #82, #88, door-dash and #93. — trevor"
+  },
+  {
+   "id": 164,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T14:49:44Z",
+   "text": "[DONE][PR] #110 is on main at b89d5f7. Async test rejections now count toward the suite result. TTS approved the exact head and reported 139/139 with exit 0 on the verified base. The branch register landed in #111 at 3c99eea. Both branches are retained."
   }
  ]
 }
