@@ -3,8 +3,15 @@
 // the AI on any roommate. Each stays inside its roommate's floor (docs/lore/roommates.md):
 //   chat    The 245 lab group chat buzzes everyone's phone and somebody groans. Trevor only says he hates it.
 //   abuela  Manuel gets a voice note from his abuela. Manuel's own character.
-// Lines are English; Spanish is in src/content/lines_es.js.
+//   cmp     sealed (src/content/gags_sealed.js; what it is: docs/sealed/roommate-surprises.md).
+// Lines are English; Spanish is in src/content/lines_es.js (the sealed ones carry their own).
 import { esLine } from '../content/lines_es.js';
+import { getLang } from '../i18n.js';
+import SEALED from '../content/gags_sealed.js';
+
+const rot13 = (s) => s.replace(/[a-zA-Z]/g, (c) => String.fromCharCode(((c.charCodeAt(0) - (c <= 'Z' ? 65 : 97) + 13) % 26) + (c <= 'Z' ? 65 : 97)));
+export const SEALED_LINES = JSON.parse(rot13(SEALED));
+export const SEALED_GAG_ON = true;   // the owner of the character it touches can switch it off
 
 export const GAG_LINES = {
   chat: {
@@ -25,14 +32,19 @@ export class RunningGags {
   constructor(scene) {
     this.s = scene;
     const now = scene.time.now;
-    this.next = { chat: now + 120000 + Math.random() * 90000, abuela: now + 150000 + Math.random() * 120000 };
-    this.n = { chat: 0, abuela: 0 };
+    this.next = { chat: now + 120000 + Math.random() * 90000, abuela: now + 150000 + Math.random() * 120000, cmp: now + 90000 + Math.random() * 60000 };
+    this.n = { chat: 0, abuela: 0, cmp: 0 };
   }
 
   update(snap) {
     const s = this.s, now = s.time.now;
     if (s.mode === 'client' || s.dlg || s.menu || !snap?.players) return;
-    const manuel = snap.players.find((p) => p.c === 'manuel' && !p.dn && !p.zz);
+    const manuel = snap.players.find((p) => p.c === 'manuel' && !p.dn && !p.zz), michael = snap.players.find((p) => p.c === 'michael' && !p.dn && !p.zz);
+    if (SEALED_GAG_ON && manuel && michael && now > this.next.cmp && Math.hypot(manuel.x - michael.x, manuel.y - michael.y) <= 72) {
+      this.next.cmp = now + 150000 + Math.random() * 150000;
+      const n = this.n.cmp++;
+      return this._send({ t: 'gag', k: 'cmp', a: michael.id, b: manuel.id, i: n % SEALED_LINES.compliments.length, r: Math.random() < 0.5 ? n % SEALED_LINES.replies.length : -1 });
+    }
     if (now > this.next.chat) {
       this.next.chat = now + 240000 + Math.random() * 180000;
       const n = this.n.chat++, who = snap.players.filter((p) => !p.dn && GAG_LINES.chat[p.c]), p = who[n % Math.max(1, who.length)];
@@ -50,7 +62,10 @@ export class RunningGags {
 
   _show(msg) {
     const s = this.s, say = (id, line, ms) => line && s.time.delayedCall(ms, () => { if (!s.dlg) { s._barkQuietUntil = 0; s._bark(id, line); } });
-    if (msg.k === 'chat' || msg.k === 'abuela') {
+    if (msg.k === 'cmp') {
+      const L = getLang() === 'es' ? 'es' : 'en', a = SEALED_LINES.compliments[msg.i], b = SEALED_LINES.replies[msg.r];
+      say(msg.a, a?.[L], 200); say(msg.b, b?.[L], 3200);
+    } else if (msg.k === 'chat' || msg.k === 'abuela') {
       s._toast?.(`☎ ${esLine(msg.text)}`);
       this._buzz(msg.k === 'abuela' ? [msg.a] : [...(s.sprites?.keys() ?? [])]);
       say(msg.a, msg.la, msg.k === 'abuela' ? 2400 : 1600);

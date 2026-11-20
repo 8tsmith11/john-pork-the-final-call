@@ -82,7 +82,7 @@ export class Crush {
     const s = this.s;
     if (msg.text) { s._barkQuietUntil = 0; s._bark(msg.id, msg.text); }
     if (msg.g) this._gesture(msg.id, msg.g);
-    if (msg.reply && msg.replyId) s.time.delayedCall(msg.g ? 2200 : 3200, () => { s._barkQuietUntil = 0; s._bark(msg.replyId, msg.reply); });
+    if (msg.reply && msg.replyId) s.time.delayedCall(msg.g ? 3100 : 3200, () => { s._barkQuietUntil = 0; s._bark(msg.replyId, msg.reply); });
   }
 
   // The gesture, drawn out so it reads (Manuel, 2026-11-19: "last longer so they are noticeable"): about two
@@ -92,13 +92,13 @@ export class Crush {
     if (!a || !b) return;
     const dir = Math.sign(b.x - a.x || 1);
     a.offX = 0; b.offY = 0; b.offX = 0;
-    s.tweens.add({ targets: a, offX: dir * 4, duration: 260, hold: 900, yoyo: true, ease: 'Sine.easeOut', onComplete: () => { a.offX = 0; } });
+    s.tweens.add({ targets: a, offX: dir * 4, duration: 260, hold: 2000, yoyo: true, ease: 'Sine.easeOut', onComplete: () => { a.offX = 0; } });   // ~3 s in all (Manuel, 2026-11-20)
     s.tweens.add({ targets: b, offY: -4, duration: 110, yoyo: true, repeat: 1, delay: 300, onComplete: () => { b.offY = 0; } });
-    s.tweens.add({ targets: b, offX: dir * 2, duration: 140, yoyo: true, delay: 300, onComplete: () => { b.offX = 0; } });
+    s.tweens.add({ targets: b, offX: dir * 2, duration: 140, yoyo: true, delay: 300, onComplete: () => { b.offX = dir; s.tweens.add({ targets: b, offX: -dir, duration: 70, yoyo: true, repeat: 9, onComplete: () => { b.offX = 0; } }); } });
     s.time.delayedCall(300, () => {
       const bang = s.add.text(b.x, b.y - 30, '!', { fontFamily: 'monospace', fontSize: '10px', color: '#ffd166', stroke: '#0b0d16', strokeThickness: 2 }).setOrigin(0.5).setDepth(7001);
-      s.tweens.add({ targets: bang, y: bang.y - 4, duration: 200, yoyo: true, hold: 1100, onComplete: () => bang.destroy() });
-      for (let i = 0; i < 3; i++) {
+      s.tweens.add({ targets: bang, y: bang.y - 4, duration: 200, yoyo: true, hold: 2200, onComplete: () => bang.destroy() });
+      for (let i = 0; i < 4; i++) {
         const h = s.add.text(b.x + (i - 1) * 6, b.y - 24, '♥', { fontFamily: 'monospace', fontSize: '9px', color: '#f2a6b8' }).setOrigin(0.5).setDepth(7000).setAlpha(0);
         s.tweens.add({ targets: h, alpha: 1, y: h.y - 14 - i * 3, duration: 1700, delay: 200 + i * 260, ease: 'Sine.easeOut', onComplete: () => s.tweens.add({ targets: h, alpha: 0, duration: 400, onComplete: () => h.destroy() }) });
       }
