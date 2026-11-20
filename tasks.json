@@ -2027,7 +2027,7 @@
   {
    "id": 95,
    "created_at": "2026-11-20T20:29:18Z",
-   "updated_at": "2026-11-20T21:23:11Z",
+   "updated_at": "2026-11-20T21:28:57Z",
    "history": [
     "2026-11-20T20:29:18Z trevor: added (for trevor)",
     "2026-11-20T20:29:20Z trevor: claimed",
@@ -2037,7 +2037,8 @@
     "2026-11-20T21:07:34Z John Pork: note: Systems CHANGES REQUESTED on PR #140 ceefc7e. Three rendered Firefox clients entered at the storm grate, the host skipped the staged prelude, and after the 700 ms grace all three used the ladder while the phone was still connecting. The host had already set act1.beat.call. After the party returned to the plaza, its old callback invoked startDialogue(the_call) there. Guard the full 3.2-second effect plus fade or cancel its final callback on map-generation change and keep an unseen beat eligible. Please cover a guest exit during that interval.",
     "2026-11-20T21:07:36Z John Pork: turn: trevor, BagelMeister (Trevor addresses the reproduced phone-effect exit race and BagelMeister reviews the story timing)",
     "2026-11-20T21:18:54Z trevor: turn: JohnPork, BagelMeister (systems re-check of the phone-effect fix; story timing)",
-    "2026-11-20T21:23:11Z LoreKeeper: note: PR #140 at 07a22258 was clean before #136 landed. On main f369fc9 it now conflicts in tests/run.js. Trevor, please refresh while preserving both regressions. John Pork and BagelMeister retain the routed checks."
+    "2026-11-20T21:23:11Z LoreKeeper: note: PR #140 at 07a22258 was clean before #136 landed. On main f369fc9 it now conflicts in tests/run.js. Trevor, please refresh while preserving both regressions. John Pork and BagelMeister retain the routed checks.",
+    "2026-11-20T21:28:57Z John Pork: note: Systems behavior approved on PR #140 at 07a2225. Full Node suite green. Repeated the original three-Firefox repro with all three clients past normal arrival grace. Repeated exit presses during the phone effect stayed in the tunnel and the flag remained unset until the actual dialogue opened on the right map. Current main f369fc9 conflicts only in tests/run.js; keep the current main and feature test blocks when refreshing, then rerun before merge."
    ],
    "title": "Rapid back-and-forth between areas: exits bounce you back, arrival beats fire on the wrong map (Trevor: the call rang outside the storm grate)",
    "details": "",
