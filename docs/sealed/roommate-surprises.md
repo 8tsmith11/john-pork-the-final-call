@@ -30,6 +30,7 @@ Sbezng: `- <qrgnvy> — nqqrq ol <jub> (<qngr>, <jurer>). Purpxrq ntnvafg: <ebbz
 - Zvpunry'f punenpgre cngf uvf ohgg abj naq gura — nqqrq ol Zvpunry (2026-11-18). Znahry fnvq lrf uvzfrys (tbazna #175). BX.
 - Zvpunry'f pehfu yvarf nvzrq ng uvz — nqqrq ol Zvpunry (2026-11-18). Cynlrq fgenvtug. BX.
 - N juvgr ung jvgu n oyhr oevz va uvf pybfrg; gur Netragvar synt va uvf ebbz — nqqrq ol Zvpunry (2026-11-18, ivn Wbua Cbex'f gnfx yvfg). Purpxrq ntnvafg: Netragvavna. BX.
+- Uvf erny-yvsr grkgvat unovg: "xx" be "xxxxx" sbe bxnl, naq "urrllllllll" be "uvvvvvvvv" nf n terrgvat. Uvf Ratyvfu yvarf hfr vg, naq uvf Fcnavfu yvarf trg n pnzc ibvpr ("¡Nl!", "pnevñb", "qvivab") bire uvf Evbcyngrafr — nqqrq ol Zvpunry ivn OntryZrvfgre (Zvpunry, 2026-11-19, erny yvsr; rnfgre rtt; gnfx #62). Purpxrq ntnvafg: "lrf gb fhecevfr wbxrf, pehqr ohg abguvat rkcyvpvg qenja". BX.
 
 ## Nobhg Geribe
 

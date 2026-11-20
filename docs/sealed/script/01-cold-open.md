@@ -102,7 +102,7 @@ Arkg: -> pbyqbcra_pybfrg
 
 **ZNAHRY:** Pur. Jub zbirq vg.
 
-> rf: Pur. ¿Dhvéa yb zbivó?
+> rf: ¡Nl, pur! ¿Dhvéa yb zbivó? ¿Dhvéa fr ngerivó?
 
 *Znahry ubyqf hc gur raq bs gur evooba. Vg unf orra phg. Gur phg vf fdhner.*
 
@@ -110,7 +110,7 @@ Arkg: -> pbyqbcra_pybfrg
 
 **ZNAHRY:** Fpvffbef qba'g qb gung. Fpvffbef pehfu vg svefg. Gung'f bar chyy jvgu fbzrguvat funec.
 
-> rf: Han gvwren ab unpr rfb. Yn gvwren cevzreb ncynfgn. Rfgb rf ha fbyb gveóa pba nytb svybfb.
+> rf: Nl, ab, pnevñb. Han gvwren ab unpr rfb: yn gvwren cevzreb ncynfgn. Rfgb rf ha fbyb gveóa pba nytb svybfb. Ha pbegr qvivab, l ha rfcnagb.
 
 **GERIBE:** Be syhfu phggref.
 
@@ -154,7 +154,7 @@ Arkg: -> pbyqbcra_qbbe
 
 **ZNAHRY:** Zl tenaqzbgure gvrq gung xabg. Fvk lrnef, sbhe ncnegzragf. V zbirq gur envy jvgu gur xabg fgvyy ba vg.
 
-> rf: Rfr ahqb yb uvmb zv nohryn. Frvf nñbf, phngeb qrcnegnzragbf. Zr zhqé pba ry crepureb l ry ahqb chrfgb.
+> rf: Rfr ahqb yb uvmb zv nohryn, ¡zv nohryn! Frvf nñbf, phngeb qrcnegnzragbf, zv nzbe. Zr zhqé pba ry crepureb l ry ahqb chrfgb, pbzb han eryvdhvn.
 
 Pubvprf:
 - "Gur punva jnf bss." -> pbyqbcra_punva
@@ -217,7 +217,7 @@ Pubvprf:
 
 **ZNAHRY:** V qvqa'g eha nalguvat.
 
-> rf: Lb ab znaqé anqn.
+> rf: ¿Lb? Av ra fhrñbf, dhrevqb. Lb ab znaqé anqn.
 
 **GERIBE:** V jnf nfyrrc. Lbh obgu urneq gur nynez.
 
@@ -253,11 +253,11 @@ Pubvprf:
 
 **ZNAHRY:** Abg Pbagvahvgl.
 
-> rf: N Pbagvahvqnq ab.
+> rf: ¡Nl, ab! N Pbagvahvqnq ab, av zhregb.
 
 **ZNAHRY:** Gurer'f n synt ba gung jnyy naq guerr urnqf ol gur qbbe.
 
-> rf: Unl han onaqren ra rfn cnerq l gerf pnormnf ny ynqb qr yn chregn.
+> rf: Pnevñb, unl han onaqren ra rfn cnerq l gerf pnormnf ny ynqb qr yn chregn. Ha rfpáaqnyb.
 
 **ZVPUNRY:** V'yy nfx Xrff.
 
@@ -276,7 +276,7 @@ Pubvprf:
 
 **ZNAHRY:** Uryvhz qbrfa'g fgnl chg. Va gur ohvyqvat, vg'f ba n prvyvat. Bhgfvqr, vg'f tbar ol zbeavat.
 
-> rf: Ry uryvb ab fr dhrqn dhvrgb. Fv rfgá ra ry rqvsvpvb, rfgá ra ha grpub. Fv rfgá nshren, n yn znñnan ln ab rfgá.
+> rf: Ry uryvb ab fr dhrqn dhvrgb, zv ivqn, rf han qvin. Fv rfgá ra ry rqvsvpvb, rfgá ra ha grpub. Fv rfgá nshren, n yn znñnan ln ab rfgá. ¡Chs!
 
 **GERIBE:** Gura jr'ir tbg gvyy zbeavat.
 

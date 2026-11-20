@@ -42,7 +42,7 @@ Fpbcr: arneol
 
 **ZNAHRY:** Xrff vf hc. Xrff vf nyjnlf hc.
 
-> rf: Xrff rfgá qrfcvregn. Xrff fvrzcer rfgá qrfcvregn.
+> rf: Xrff rfgá qrfcvregn, boivb. Xrff fvrzcer rfgá qrfcvregn, yn ervan qr yn abpur.
 
 *Fbzrjurer orybj, guerr xabpxf, n ybat jnl bss. Gura abguvat.*
 
@@ -198,7 +198,7 @@ Fpbcr: arneol
 
 **ZNAHRY:** Qvq lbhe crbcyr frr n onyybba? Benatr. Vg jnf va bhe ncnegzrag.
 
-> rf: ¿Gh tragr ivb ha tybob? Anenawn. Rfgnon ra ahrfgeb qrcnegnzragb.
+> rf: Dhrevqb, ¿gh tragr ivb ha tybob? Anenawn, qvivab. Rfgnon ra ahrfgeb qrcnegnzragb.
 
 **CEHVGG:** N onyybba.
 

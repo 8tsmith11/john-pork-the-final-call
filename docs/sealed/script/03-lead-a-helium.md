@@ -33,7 +33,7 @@ Fpbcr: arneol
 
 **ZNAHRY:** Vg jnf gvrq gb guvf sbe fvk lrnef. Yngrk yrnxf. Gurer'f uryvhz va gur jrnir.
 
-> rf: Rfghib ngnqn n rfgb frvf nñbf. Ry yágrk cvreqr. Unl uryvb ra yn genzn.
+> rf: Rfghib ngnqn n rfgb frvf nñbf, ¡frvf! Ry yágrk cvreqr, han gentrqvn. Unl uryvb ra yn genzn, pnevñb.
 
 **ZVPUNRY:** Va n evooba.
 
@@ -41,7 +41,7 @@ Fpbcr: arneol
 
 **ZNAHRY:** Cnegf cre ovyyvba. Rabhtu.
 
-> rf: Cnegrf cbe zvy zvyybarf. Nypnamn.
+> rf: Cnegrf cbe zvy zvyybarf. Nypnamn l fboen, zv nzbe.
 
 **GERIBE:** Lbh jnag n yrnx qrgrpgbe. Jr cevag gur ubhfvat. Gur frafbe'f n ubg-jver oevqtr. V'ir tbg bar sebz yno.
 
@@ -87,7 +87,7 @@ Arkg: -> favssre_ohvyq
 
 **ZNAHRY:** Gurer.
 
-> rf: Nuí.
+> rf: ¡Nuí! Nuí rfgá, qvivab.
 
 **GERIBE:** Ebbxvr Nfgre zvfgnxr, pryroengvat orsber vg'f mrebrq.
 
@@ -113,7 +113,7 @@ Arkg: -> favssre_ernq
 
 **ZNAHRY:** Vg jrag bhg gur sebag. Pneevrq ybj. Pybfr gb gur sybbe.
 
-> rf: Fnyvó cbe nqrynagr. Yb yyrineba onwb. Prepn qry cvfb.
+> rf: Fnyvó cbe nqrynagr, ¡dhé qrfpneb! Yb yyrineba onwb, prepn qry cvfb, cboerpvgb.
 
 *Ur ubyqf vg gb gur tnc haqre gur sebag qbbe. Gur yvar oraqf.*
 
@@ -125,7 +125,7 @@ Arkg: -> favssre_ernq
 
 **ZNAHRY:** Gura bhg. Gura shegure qbja guna gur fgerrg.
 
-> rf: Qrfchéf nshren. Qrfchéf záf nonwb dhr yn pnyyr.
+> rf: Qrfchéf nshren. L qrfchéf záf nonwb dhr yn pnyyr. ¡Nl, dhé qenzn!
 
 **ZVPUNRY:** Gurer'f abguvat haqre gur fgerrg.
 

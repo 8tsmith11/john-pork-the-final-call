@@ -48,7 +48,7 @@ Fpbcr: arneol
 
 **ZNAHRY:** Gung'f na nongrzrag pbng.
 
-> rf: Rfr rf ha noevtb qr fnarnzvragb.
+> rf: ¡Nl! Rfr rf ha noevtb qr fnarnzvragb.
 
 *Gur svther jbexf gur one vagb gur senzr. Bapr. Gjvpr.*
 
@@ -84,7 +84,7 @@ Fpbcr: arneol
 
 **ZNAHRY:** Gung'f vg. Haqre gur pbng. Gung'f vg.
 
-> rf: Rf rfr. Qronwb qry noevtb. Rf rfr.
+> rf: ¡Rf rfr! Qronwb qry noevtb, zv nzbe. ¡Rf rfr!
 
 *Gur svther jnyxf onpx gb gur fgnvejryy. Abg uheelvat.*
 
@@ -122,7 +122,7 @@ Pubvprf:
 
 **ZNAHRY:** Qba'g.
 
-> rf: Ab.
+> rf: ¡Ab! Av yb qvtnf, zv ivqn.
 
 *frg npg1.yrnqP.ybpxNfxrq*
 
@@ -178,7 +178,7 @@ Arkg: -> sbbgntr_uho
 
 **ZNAHRY:** Gbjneq gur cynmn. Gbjneq gur inaf.
 
-> rf: Unpvn yn cynmn. Unpvn ynf pnzvbargnf.
+> rf: Unpvn yn cynmn. Unpvn ynf pnzvbargnf. ¡Inzbf, inzbf!
 
 *frg npg1.yrnqP.jurerNfxrq*
 

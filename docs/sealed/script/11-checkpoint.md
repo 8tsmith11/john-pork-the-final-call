@@ -25,7 +25,7 @@ Fpbcr: arneol
 
 **ZNAHRY:** Fnzcyvat jung?
 
-> rf: ¿Zhrfgenf qr dhé?
+> rf: ¿Zhrfgenf qr dhé, dhrevqb?
 
 **GBOVA:** V ubyq gur wne bire gur ubyr. Fbzrobql ryfr svaqf bhg jung.
 
