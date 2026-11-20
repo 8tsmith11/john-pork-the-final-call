@@ -102,14 +102,14 @@ export const ES_ROUTE1 = {
     '2071. El día y el mes quedaron bajo una huella de aceite de motor.\n\n22:40. Circuito local, solo. Tres aterrizajes. Calma. Manga de viento caída.\n\nOBSERVACIONES: Otra vez la lechuza en el poste de la manga de viento. No le impresionaron mis aterrizajes.',
   'The next entry has the same date, in another hand, and nothing in the time column.\n\nEvery phone in the box by the door rang at once. Nobody got to it in time. Then the power went out across the county. Lit the strip with kerosene lamps from the shed. Two planes came in on them before morning.':
     'La entrada siguiente tiene la misma fecha, con otra letra, y nada en la columna de la hora.\n\nTodos los teléfonos de la caja junto a la puerta sonaron a la vez. Nadie llegó a tiempo. Después se cortó la luz en todo el condado. Iluminamos la pista con faroles de queroseno del cobertizo. Dos aviones aterrizaron guiándose por ellos antes del amanecer.',
-  'The last entry is tonight\'s. No flights. Wind light and variable. Under REMARKS somebody has drawn a windsock, and a kid has colored it in.':
-    'La última entrada es de esta noche. Sin vuelos. Viento leve y variable. Bajo OBSERVACIONES alguien dibujó una manga de viento, y un niño la pintó.',
+  'The last entry is tonight\'s. No flights. Wind calm. Under REMARKS somebody has drawn a windsock, and a kid has colored it in.':
+    'La última entrada es de esta noche. Sin vuelos. Viento en calma. Bajo OBSERVACIONES alguien dibujó una manga de viento, y un niño la pintó.',
   'Jar of keys': 'Frasco de llaves',
   'A pickle jar of keys on a stool by the door. House keys, padlock keys, a mailbox key, a key for a car nobody has built since the 2050s. A card: IF YOU FIND THE DOOR ONE OF THESE OPENS, TELL US WHERE. People keep adding keys. Nobody has found a door.':
     'Un frasco de pepinillos lleno de llaves, sobre un banquito junto a la puerta. Llaves de casa, de candado, de un buzón, la llave de un auto que nadie fabrica desde los años 2050. Una tarjeta: SI ENCUENTRAS LA PUERTA QUE ABRE ALGUNA DE ESTAS, DINOS DÓNDE. La gente sigue agregando llaves. Nadie ha encontrado una puerta.',
   'Box by the door': 'Caja junto a la puerta',
-  'A cardboard box full of phones, screens down, a strip of tape with a name on each. One of them is buzzing against the others. Nobody gets up.':
-    'Una caja de cartón llena de teléfonos, con la pantalla hacia abajo y una tira de cinta con un nombre en cada uno. Uno vibra contra los demás. Nadie se levanta.',
+  'A cardboard box full of phones, screens down, a strip of tape with a name on each. The box is the rule: nothing with a chip goes past the door.':
+    'Una caja de cartón llena de teléfonos, con la pantalla hacia abajo y una tira de cinta con un nombre en cada uno. La caja es la regla: nada con chip pasa de la puerta.',
   'Chalkboard by the door': 'Pizarrón junto a la puerta',
   'In a careful hand, gone over so often the letters have thickened: SUNDAYS, 7 P.M. BRING A CHAIR. POTLUCK THE FIRST SUNDAY.\n\nUnder it, fresh, pressed so hard the chalk snapped: NO MEETING TONIGHT. THEY FENCED THE TOWN. IF YOU NEED THE FLOOR, TAKE IT. A.R.':
     'Con letra cuidadosa, repasada tantas veces que los trazos se engrosaron: LOS DOMINGOS, 7 P. M. TRAE UNA SILLA. EL PRIMER DOMINGO, CADA QUIEN TRAE UN PLATO.\n\nDebajo, reciente, escrito con tanta fuerza que la tiza se partió: HOY NO HAY REUNIÓN. CERCARON LA CIUDAD. SI NECESITAS UN LUGAR EN EL PISO, TÓMALO. A.R.',

@@ -270,13 +270,13 @@ export const SHOPS = {
   // come by the scoop as scrap, adapters with the wire. Tool repair is a service she talks about, not a menu.
   hardware: { title: 'HOLLIS HARDWARE', lines: ['Prices are on the chalkboard. Repairs while you wait.'],
     stock: [
-      { item: 'item.mat_scrap', price: 3 },
-      { item: 'item.mat_wire', price: 4 },
-      { item: 'item.mat_cell', price: 12 },
+      { item: 'item.mat_scrap', price: 3, limit: 6 },   // a fallback, not a faucet (trevor, general #118): limit needs trevor/shop-stock
+      { item: 'item.mat_wire', price: 4, limit: 4 },
+      { item: 'item.mat_cell', price: 12, limit: 1 },
       { item: 'item.work_gloves', price: 9 },
       { item: 'item.hardhat', price: 16 },
       { item: 'item.work_pants', price: 20 },
-      { item: 'item.pipe_wrench', price: 30 },
+      { item: 'item.pipe_wrench', price: 30, once: true },
     ] },
   feed: { title: 'PARDO FEED & AQUARIUM', lines: ['Feed by the scoop. Please don\'t tap the glass.'],
     stock: [
