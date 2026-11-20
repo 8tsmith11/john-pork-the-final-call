@@ -1,10 +1,13 @@
 // Node test runner (no dependencies): `node tests/run.js`. Must pass before pushing.
 import assert from 'node:assert/strict';
+import { webcrypto } from 'node:crypto';
+import { EventEmitter } from 'node:events';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { makeStreams, Rng } from '../src/engine/rng.js';
 import { rollWorld } from '../src/engine/worldRolls.js';
 import { newSave, migrate, CURRENT_SCHEMA } from '../src/engine/save/schema.js';
+import { HostNet } from '../src/engine/net/net.js';
 import { Sim, MOVE, ROT, MATE, UNDER, LULLABY as BOT_LULLABY, emptyInput } from '../src/engine/sim.js';
 import { ENEMIES } from '../src/content/enemies.js';
 import { ITEMS } from '../src/content/items.js';
@@ -2060,6 +2063,66 @@ test("Manuel's edge: with the same gear and no skills, Manuel is the toughest an
   for (const other of ['trevor', 'michael']) {
     assert.ok(m.manuel.maxHp > m[other].maxHp && m.manuel.armor > m[other].armor && m.manuel.melee > m[other].melee && m.manuel.speed > m[other].speed, other);
   }
+});
+
+test('co-op rejoin accepts only a vacant seat with its original room key', () => {
+  const net = new HostNet();
+  const connect = (peer) => {
+    const connection = Object.assign(new EventEmitter(), {
+      peer, messages: [], send(msg) { this.messages.push(structuredClone(msg)); }, close() { this.emit('close'); },
+    });
+    net._trackConnection(connection);
+    connection.emit('open');
+    return connection;
+  };
+  const guest = connect('guest'), observer = connect('observer'), other = connect('other');
+  const save = newSave({ seed: 'reconnect', rolls: {}, gameVersion: 'test' });
+  const assignments = { host: 'trevor', guest: 'manuel', observer: 'michael' };
+  const hasBrowserCrypto = !!globalThis.crypto;
+  if (!hasBrowserCrypto) globalThis.crypto = webcrypto;
+  try { net.startGame(save, assignments); }
+  finally { if (!hasBrowserCrypto) delete globalThis.crypto; }
+  const key = guest.messages[0].seatKey;
+  assert.match(key, /^[a-f0-9]{32}$/);
+  assert.notEqual(observer.messages[0].seatKey, key);
+  assert.equal(other.messages[0].t, 'say');
+
+  const sim = new Sim(MAPS_FOR_TEST.room631);
+  for (const [peer, who] of Object.entries(assignments)) sim.addPlayer(peer, who);
+  const original = sim.players.get('guest');
+  original.ammo = 4;
+  const exits = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', localId: 'host', net, sim, save, remoteInputs: new Map(),
+    events: { once() {} }, time: { addEvent() {} }, _tryExit: (exit) => exits.push(exit.id),
+  });
+  host._wireNet();
+  other.emit('data', { t: 'hello', seatKey: key });
+  assert.equal(sim.players.has('other'), false, 'a connected player cannot be taken over');
+  net.broadcast({ t: 'snap', snap: sim.snapshot() });
+  net.send('other', { t: 'evState', state: {} });
+  assert.equal(other.messages.some(msg => msg.t === 'snap'), false, 'unseated connections receive no world snapshots');
+  assert.equal(other.messages.some(msg => msg.t === 'evState'), false, 'direct game traffic also stays in the party');
+
+  guest.emit('data', { t: 'input', inp: { mx: 1 } });
+  const exit = sim.map.objects.find(o => o.action === 'exit');
+  for (const peer of ['host', 'observer']) sim.waitAtExit(peer, exit.id, 0, -1);
+  guest.close();
+  assert.equal(host.remoteInputs.has('guest'), false);
+  assert.equal(sim.players.get('ai:manuel'), original);
+  assert.deepEqual(exits, [exit.id]);
+  const returned = connect('returned');
+  returned.emit('data', { t: 'hello', seatKey: 'wrong' });
+  returned.emit('data', { t: 'flag', key: 'act1.test', value: true });
+  assert.equal(save.flags['act1.test'], undefined);
+  assert.equal(sim.players.has('returned'), false);
+  returned.emit('data', { t: 'hello', seatKey: key });
+  const start = returned.messages.at(-1);
+  assert.equal(start.t, 'start');
+  assert.deepEqual(start.assignments, { returned: 'manuel' });
+  assert.equal(start.snapshot.players.find(p => p.id === 'returned').am, 4);
+  assert.equal(sim.players.get('returned'), original);
+  assert.equal(sim.players.size, 3);
 });
 
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }

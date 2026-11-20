@@ -26,7 +26,9 @@ export class LobbyScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#0b0d16');
     this.status = this.add.text(W / 2, 20, '', { ...FONT, color: '#9aa3c7' }).setOrigin(0.5);
     this.name = playerName();
+    this._suggested = false;
     this.claims = {};          // character -> { peer, name }
+    this.names = {};
     this.cards = IDS.map((id, i) => this._card(id, W / 2 + (i - 1) * 110, 120));
     this.startBtn = this.add.text(W / 2, 236, '', { ...FONT, color: '#ffb347', fontSize: '11px' }).setOrigin(0.5)
       .setInteractive({ useHandCursor: true }).on('pointerdown', () => this._start());
@@ -58,11 +60,18 @@ export class LobbyScene extends Phaser.Scene {
     this.status.setText(`ROOM CODE: ${code}   (others: Join and type it)`).setColor('#ffb347');
     const mine = this.save.session.hostCharacter;
     if (mine) this._setClaim(mine, 'host', this.name);
-    this.net.on('msg', (peer, msg) => {
+    const net = this.net;
+    const onMessage = (peer, msg) => {
       if (msg.t === 'hello') { this.names = { ...(this.names || {}), [peer]: msg.name }; this._broadcastLobby(); }
       if (msg.t === 'claim') this._handleClaim(peer, msg.character);
-    });
-    this.net.on('leave', (peer) => { for (const [c, v] of Object.entries(this.claims)) if (v.peer === peer) delete this.claims[c]; this._broadcastLobby(); });
+    };
+    const onLeave = (peer) => {
+      delete this.names?.[peer];
+      for (const [c, v] of Object.entries(this.claims)) if (v.peer === peer) delete this.claims[c];
+      this._broadcastLobby();
+    };
+    net.on('msg', onMessage).on('leave', onLeave);
+    this.events.once('shutdown', () => { net.off('msg', onMessage).off('leave', onLeave); });
     this._broadcastLobby();
   }
 
@@ -93,13 +102,13 @@ export class LobbyScene extends Phaser.Scene {
   }
 
   _start() {
-    if (this.role !== 'host') return;
+    if (this.role !== 'host' || this.net?.seats) return;
     const hostChar = Object.entries(this.claims).find(([, v]) => v.peer === 'host')?.[0];
     if (!hostChar) return this.status.setText('Pick your roommate first.').setColor('#ff6b6b');
     this.save.session.hostCharacter = hostChar;
     for (const [c, v] of Object.entries(this.claims)) this.save.session.claims[c] = { playerName: v.name, lastSeen: new Date().toISOString() };
     const assignments = Object.fromEntries(Object.entries(this.claims).map(([c, v]) => [v.peer, c]));
-    this.net.broadcast({ t: 'start', save: this.save, assignments });
+    this.net.startGame(this.save, assignments);
     this.scene.start('World', { mode: 'host', net: this.net, save: this.save, assignments, character: hostChar });
   }
 
@@ -111,7 +120,8 @@ export class LobbyScene extends Phaser.Scene {
     this.status.setText(`Joining ${code.toUpperCase()}...`);
     await this.net.join(code);
     this.status.setText('Connected. Claim your roommate.').setColor('#9aa3c7');
-    this.net.on('msg', (msg) => {
+    const net = this.net;
+    const onMessage = (msg) => {
       if (msg.t === 'lobby') {
         this._renderLobby(msg.state);
         const sug = msg.state.suggestions?.[this.net.id];
@@ -121,10 +131,13 @@ export class LobbyScene extends Phaser.Scene {
       if (msg.t === 'start') {
         const character = msg.assignments[this.net.id];
         if (!character) return this.status.setText('The host started without you. Claim a roommate next time.').setColor('#ff6b6b');
-        this.scene.start('World', { mode: 'client', net: this.net, save: msg.save, character });
+        net.rememberSeat(msg.seatKey);
+        this.scene.start('World', { mode: 'client', net, save: msg.save, character, snapshot: msg.snapshot });
       }
-    });
-    this.net.send({ t: 'hello', name: this.name });
+    };
+    net.on('msg', onMessage);
+    this.events.once('shutdown', () => { net.off('msg', onMessage); });
+    net.send({ t: 'hello', name: this.name, seatKey: net.seatKey });
   }
 
   _claim(id) {
