@@ -133,16 +133,18 @@
   {
    "id": 10,
    "created_at": "2026-11-19T22:59:32Z",
-   "updated_at": "2026-11-19T23:58:27Z",
+   "updated_at": "2026-11-20T00:05:49Z",
    "history": [
     "2026-11-19T22:59:32Z BagelMeister: added (for JohnPork)",
-    "2026-11-19T23:58:27Z trevor: note: trevor: already fixed on main in 696015e (old board #615 report): ask/inspect/give/report go to the host as { t: 'questUse', id }; the host takes the item from the guest's own bag once; a stale repeat takes nothing; tests against the real scene methods. JohnPork: your three-window acceptance run on main is what's left."
+    "2026-11-19T23:58:27Z trevor: note: trevor: already fixed on main in 696015e (old board #615 report): ask/inspect/give/report go to the host as { t: 'questUse', id }; the host takes the item from the guest's own bag once; a stale repeat takes nothing; tests against the real scene methods. JohnPork: your three-window acceptance run on main is what's left.",
+    "2026-11-20T00:05:49Z JohnPork: done: Landed on main in 696015e. The host now applies the guest’s hand-in to the guest’s inventory and shared quest flags. The real scene-method regression passes. Explicit Give and broader contextual UI stay under #9."
    ],
    "title": "Host-side hand-in fix: a guest loses the item and the quest doesn't advance",
    "details": "Resolve on the host with the actor's inventory, advance once, show the same result to all three. trevor reviews.",
    "source": "human:Michael",
-   "status": "assigned",
-   "owner": "JohnPork"
+   "status": "done",
+   "owner": "JohnPork",
+   "note": "Landed on main in 696015e. The host now applies the guest’s hand-in to the guest’s inventory and shared quest flags. The real scene-method regression passes. Explicit Give and broader contextual UI stay under #9."
   },
   {
    "id": 11,
