@@ -12,6 +12,9 @@
 const ES = {};
 const built = [];
 
+// Spanish 'a' + 'el' contracts to 'al' ("Cuéntale al predicador", not "a el").
+const aEs = (who) => (who.startsWith('el ') ? `al ${who.slice(3)}` : `a ${who}`);
+
 function side({ id, act, giver, giverName, giverEs, title, titleEs, why, whyEs, pitch, pitchEs, line, lineEs, money = 20, xp = 40, ...kind }) {
   const k = `q.${id}`, q = { id: `side.${id}`, act, giver, title, why, pitch, ask: `${k}.asked`, start: (f) => f[`${k}.asked`], scaffold: true };
   const st = [];
@@ -19,7 +22,7 @@ function side({ id, act, giver, giverName, giverEs, title, titleEs, why, whyEs, 
     const L = kind.look;
     q.inspect = { obj: L.obj, flag: `${k}.seen`, text: L.seen };
     q.report = { needs: `${k}.seen`, flag: `${k}.told` };
-    st.push([`Look at ${L.where}.`, `Revisa ${L.whereEs}.`, (f) => f[`${k}.seen`]], [`Tell ${giverName} what you saw.`, `Cuéntale a ${giverEs} lo que viste.`, (f) => f[`${k}.told`]]);
+    st.push([`Look at ${L.where}.`, `Revisa ${L.whereEs}.`, (f) => f[`${k}.seen`]], [`Tell ${giverName} what you saw.`, `Cuéntale ${aEs(giverEs)} lo que viste.`, (f) => f[`${k}.told`]]);
     ES[L.seen] = L.seenEs;
   } else if (kind.boss) {
     const flag = `boss.${kind.boss.boss.slice(5)}.down`;
@@ -28,7 +31,7 @@ function side({ id, act, giver, giverName, giverEs, title, titleEs, why, whyEs, 
   } else if (kind.bring) {
     const B = kind.bring;
     q.give = { item: B.item, flag: `${k}.given`, refuse: B.refuse };
-    st.push([`Bring ${giverName} ${B.what}.`, `Llévale ${B.whatEs} a ${giverEs}.`, (f) => f[`${k}.given`]]);
+    st.push([`Bring ${giverName} ${B.what}.`, `Llévale ${B.whatEs} ${aEs(giverEs)}.`, (f) => f[`${k}.given`]]);
     ES[B.refuse] = B.refuseEs;
   } else if (kind.talk) {
     const T = kind.talk;
@@ -410,9 +413,9 @@ side({ id: 'bmore_book', act: 2, giver: 'npc.bmore_scribe', giverName: 'the scri
   line: '"The pause. Yes. That\'s the part I can\'t write down."', lineEs: '"La pausa. Sí. Esa es la parte que no puedo escribir."' });
 
 side({ id: 'bmore_mural', act: 2, giver: 'npc.bmore_muralist', giverName: 'the muralist', giverEs: 'la muralista', title: 'Slightly wrong', titleEs: 'Un poco mal',
-  why: 'The muralist knows her Pork mural is wrong somewhere, and wants a fresh pair of eyes.', whyEs: 'La muralista sabe que su mural de Pork está mal en algo, y quiere ojos frescos.',
+  why: 'The muralist knows her John Pork mural is wrong somewhere, and wants a fresh pair of eyes.', whyEs: 'La muralista sabe que su mural de John Pork está mal en algo, y quiere ojos frescos.',
   pitch: '"The one on the rowhouse streets. Everybody says it\'s wrong. Nobody says where."', pitchEs: '"El de las calles de casas adosadas. Todos dicen que está mal. Nadie dice dónde."',
-  look: { obj: 'obj.bmore_mural', where: 'the mural of Pork on the rowhouse streets', whereEs: 'el mural de Pork en las calles de casas adosadas', seen: 'He\'s smiling with his mouth closed. Something about that is very wrong, and you can\'t say what.', seenEs: 'Sonríe con la boca cerrada. Algo de eso está muy mal, y no sabes decir qué.' },
+  look: { obj: 'obj.bmore_mural', where: 'the mural of John Pork on the rowhouse streets', whereEs: 'el mural de John Pork en las calles de casas adosadas', seen: 'He\'s smiling with his mouth closed. Something about that is very wrong, and you can\'t say what.', seenEs: 'Sonríe con la boca cerrada. Algo de eso está muy mal, y no sabes decir qué.' },
   line: '"Closed mouth. Huh." She picks up a brush. Then puts it down. "No. I\'ll leave it."', lineEs: '"Boca cerrada. Mira tú." Agarra un pincel. Lo deja. "No. Lo dejo así."' });
 
 side({ id: 'bmore_ledger', act: 2, giver: 'npc.bmore_steward', giverName: 'the steward', giverEs: 'la delegada', title: 'The ones that are', titleEs: 'Los que sí',
