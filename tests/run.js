@@ -726,6 +726,26 @@ test('pipe puzzle: every seed is solvable and starts unsolved', () => {
 // Every generated scene (romance and checkpoint included), so a new scene can't skip this check.
 const SCENES = fs.readdirSync(new URL('../src/content/dialogue/act1/', import.meta.url)).filter((f) => f.endsWith('.js')).map((f) => f.replace(/\.js$/, ''));
 const { loadScene, Conversation, evalCond } = await import('../src/engine/dialogue.js');
+test('a shared choice becomes an actor line before its branch effects apply', () => {
+  const scene = { start: 'start', nodes: {
+    start: { lines: [], choices: [{ text: '*Take the left door.*', go: 'left' }, { text: 'Take the right door.', go: 'right' }] },
+    left: { lines: [{ who: 'Guard', text: 'Go ahead.' }], choices: [], effects: [{ op: 'set', arg: 'door.left' }] },
+    right: { lines: [{ who: 'Guard', text: 'Room is locked.' }], choices: [] },
+  } };
+  const flags = {}, ctx = { flags }, sink = { flag: (key, value) => { flags[key] = value; } };
+  const conv = new Conversation(scene, null, ctx, sink);
+  conv.choose(0, 'manuel');
+  assert.deepEqual(conv.line, { who: 'manuel', text: 'Take the left door.', choice: true });
+  assert.deepEqual(conv.choices, []);
+  assert.equal(flags['door.left'], undefined);
+  conv.choose(1, 'michael');
+  conv.advance();
+  assert.deepEqual(conv.line, { who: 'Guard', text: 'Go ahead.' });
+  assert.equal(flags['door.left'], true);
+  const solo = new Conversation(scene, null, ctx, sink);
+  solo.choose(1);
+  assert.equal(solo.nodeId, 'right');
+});
 await (async () => {
   try {
     for (const name of SCENES) {

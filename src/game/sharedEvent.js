@@ -2,13 +2,11 @@
 //
 //   scene.shared.start('romance_trevor', 'finale', onDone)
 //
-// The local player is the MAIN player: their dialogue runs as usual (their choices, their effects),
-// and they can't skip it. Everyone else gets a live mirror of the main player's dialogue box: same
-// speaker, line and choices, updated as the main player reads. Watchers can't advance or choose,
-// and they can skip with X (or Esc), which closes it on their screen only.
+// The main player advances the scene and applies its effects. Other players see the same speaker,
+// line and choices. A choice assigned to a roommate can be made from that roommate's screen.
 //
 // Wire format (host relays client messages to the other clients):
-//   { t: 'evStart', id, main }  { t: 'evState', id, state: { who, text, choices: [text] } }  { t: 'evEnd', id }
+//   evStart → evState (line or choices and turn) → evChoose (turn and index) → evState → evEnd
 // Works in solo too (it's just a normal dialogue then).
 import { VIEW } from '../view.js';
 
@@ -16,13 +14,19 @@ class Mirror {
   constructor(main, onChoose = null) { this.spectator = true; this.main = main; this.done = false; this.line = null; this._choices = []; this.nodeId = null; this.decider = null; this.onChoose = onChoose; }
   get choices() { return this._choices; }
   set(state) {
-    this.line = state.text || state.who ? { who: state.who, text: state.text } : null;   // a new object = a new line
+    this.line = state.text || state.who ? { who: state.who, text: state.text, choice: state.choice } : null;
     this._choices = (state.choices ?? []).map((text) => ({ text }));
     this.nodeId = state.nodeId ?? null;
     this.decider = state.decider ?? null;
+    this.turn = state.turn ?? null;
+    this.pending = false;
   }
   advance() {}
-  choose(i) { this.onChoose?.(i); }   // only the decider's mirror forwards a pick to the main player
+  choose(i) {
+    if (this.pending) return;
+    this.pending = true;
+    this.onChoose?.(i, this.turn);
+  }
 }
 
 export class SharedEvents {
@@ -48,10 +52,15 @@ export class SharedEvents {
     if (s.dlg?.spectator) { s.dlg.done = true; s._drawDialogue(); this.watching = null; }   // driving beats watching
     if (s.dlg) return false;
     const id = `${s.localId}:${Date.now().toString(36)}`;
-    this.active = { id, last: '', scope };
+    this.active = { id, last: '', scope, turn: 0 };
     const me = s._lastRendered?.players?.find((p) => p.id === s.localId);
     if (scope !== 'self') this._send({ t: 'evStart', id, main: s.character, scope, map: s.map?.id, x: me?.x ?? 0, y: me?.y ?? 0, label });
-    await s._startLocal(sceneName, nodeId, () => { this._send({ t: 'evEnd', id }); this.active = null; s._dlgScope = null; onDone?.(); });
+    await s._startLocal(sceneName, nodeId, () => {
+      if (scope !== 'self') this._send({ t: 'evEnd', id });
+      this.active = null;
+      s._dlgScope = null;
+      onDone?.();
+    });
     this._pump();
     return true;
   }
@@ -60,7 +69,8 @@ export class SharedEvents {
   // otherwise the main player. 'speaker' means whoever holds the conversation.
   deciderFor(node) {
     const s = this.s, want = node?.decider;
-    if (!want || want === 'speaker' || want === s.character) return s.character;
+    if (s._aiDecider) return s._aiDecider;
+    if (!want || want === 'speaker' || want === s.character || this.active?.scope === 'self') return s.character;
     const humans = (s._lastRendered?.players ?? []).filter((p) => !String(p.id).startsWith('ai:')).map((p) => p.c);
     return humans.includes(want) ? want : s.character;
   }
@@ -72,9 +82,6 @@ export class SharedEvents {
     if (who === s.character) return true;
     s._toast(`${who.toUpperCase()} decides`); return false;
   }
-  // Everyone sees what was picked, and by whom.
-  picked(who, text) { if (this.active) this._send({ t: 'evPick', id: this.active.id, who, text }); }
-
   skip() {
     const s = this.s;
     if (!s.dlg?.spectator) return;
@@ -86,13 +93,14 @@ export class SharedEvents {
   // Main player: mirror the dialogue box to everyone whenever it changes.
   _pump() {
     const s = this.s;
-    if (!this.active || !s.dlg || s.dlg.spectator) return;
+    if (!this.active || this.active.scope === 'self' || !s.dlg || s.dlg.spectator) return;
     const d = s.dlg, line = d.line, choices = d.choices;
     const state = choices.length ? { who: null, text: '', choices: choices.map((c) => c.text.replace(/\*/g, '')), nodeId: d.nodeId, decider: this.deciderFor(d.node) }
-      : { who: line?.who ?? null, text: line?.text ?? '', choices: [], nodeId: d.nodeId };
+      : { who: line?.who ?? null, text: line?.text ?? '', choices: [], nodeId: d.nodeId, line: d.i, choice: !!line?.choice };
     const key = JSON.stringify(state);
     if (key === this.active.last) return;
     this.active.last = key;
+    if (choices.length) state.turn = ++this.active.turn;
     this._send({ t: 'evState', id: this.active.id, state });
   }
 
@@ -104,17 +112,28 @@ export class SharedEvents {
 
   /** Network hook. Host: pass the sending peer id so it relays to the others. Returns true if handled. */
   onMsg(msg, fromPeer = null) {
-    if (!msg || !/^ev(Start|State|End|Choose|Pick)$/.test(msg.t)) return false;
+    if (!msg || !/^ev(Start|State|End|Choose)$/.test(msg.t)) return false;
     const s = this.s;
+    if (msg.t === 'evChoose' && s.mode === 'host' && fromPeer) {
+      const who = s._charOf(fromPeer);
+      if (!who) return true;
+      msg = { ...msg, who };
+    }
     if (s.mode === 'host' && fromPeer) for (const peer of s.net.conns.keys()) if (peer !== fromPeer) s.net.send(peer, msg);
     // The decider picked on their screen: the main player applies it.
     if (msg.t === 'evChoose' && this.active?.id === msg.id) {
-      if (s.dlg && !s.dlg.spectator && s.dlg.choices[msg.i]) { this.picked(msg.who, s.dlg.choices[msg.i].text.replace(/\*/g, '')); s.dlg.choose(msg.i); s._drawDialogue(); }
+      if (s.dlg && !s.dlg.spectator && Number.isInteger(msg.i) && msg.turn === this.active.turn &&
+          msg.who !== s._aiDecider && msg.who === this.deciderFor(s.dlg.node)) s._commitDialogueChoice(msg.i, msg.who);
       return true;
     }
-    if (msg.t === 'evPick') { if (msg.who !== s.character) s._toast(`${String(msg.who).toUpperCase()}: "${msg.text}"`); return true; }
     if (this.active?.id === msg.id) return true;   // our own event coming back
-    if (msg.t === 'evState') (this.latest ??= {})[msg.id] = msg.state;
+    if (msg.t === 'evState') {
+      (this.latest ??= {})[msg.id] = msg.state;
+      if (this.offer?.id === msg.id && msg.state.decider === s.character && !s.dlg) {
+        this.joinOffer();
+        return true;
+      }
+    }
     if (msg.t === 'evStart') {
       if (s.dlg) return true;                        // already reading something: can't watch
       const me = s._lastRendered?.players?.find((p) => p.id === s.localId);
@@ -124,6 +143,7 @@ export class SharedEvents {
     } else if (msg.t === 'evState' && this.watching?.id === msg.id && s.dlg?.spectator) {
       s.dlg.set(msg.state); s._lineAt = 0; s._drawDialogue();
     } else if (msg.t === 'evEnd') {
+      if (this.latest) delete this.latest[msg.id];
       if (this.offer?.id === msg.id) this.offer = null;
       if (this.watching?.id === msg.id) { if (s.dlg?.spectator) { s.dlg.done = true; s._drawDialogue(); } this.watching = null; this.banner.setVisible(false); }
     }
@@ -133,7 +153,7 @@ export class SharedEvents {
   _watch(msg) {
     const s = this.s;
     this.watching = { id: msg.id, main: msg.main, scope: msg.scope };
-    s.dlg = new Mirror(msg.main, (i) => this._send({ t: 'evChoose', id: msg.id, i, who: s.character }));
+    s.dlg = new Mirror(msg.main, (i, turn) => this._send({ t: 'evChoose', id: msg.id, i, turn, who: s.character }));
     s.dlgDone = null; s.dlgVoiced = false;
     if (this.latest?.[msg.id]) s.dlg.set(this.latest[msg.id]);
     this.banner.setText(msg.scope === 'all' ? `${String(msg.main).toUpperCase()}'s scene` : `Watching ${String(msg.main).toUpperCase()}  ·  [X] skip`).setVisible(true);
