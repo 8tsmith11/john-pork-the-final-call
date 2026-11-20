@@ -7,7 +7,8 @@ import { BASE_SCORES } from '../../content/abilities.js';
 
 export const FORMAT = 'jpfc-save';
 export const SLOTS = 36;   // inventory slots per character: 0..8 hotbar, 9..35 backpack
-export const CURRENT_SCHEMA = 7;
+export const HOTBAR = 9;
+export const CURRENT_SCHEMA = 8;
 
 /** migrations[n] upgrades a schema-n save to schema n+1. Append only. */
 export const migrations = {
@@ -73,6 +74,15 @@ export const migrations = {
     if (save.world) delete save.world.money;
     save.schemaVersion = 7; return save;
   },
+  // 7 -> 8: weapon equipment entries were references to items in the bag.
+  7: (save) => {
+    for (const c of Object.values(save.party ?? {})) {
+      if (!c.equipped) continue;
+      delete c.equipped.weapon;
+      delete c.equipped.ranged;
+    }
+    save.schemaVersion = 8; return save;
+  },
 };
 
 export function newCharacter(id) {
@@ -85,7 +95,8 @@ export function newCharacter(id) {
     rot: 0,
     money: 25,                  // own wallet (schema 7, Trevor #515)
     inventory: new Array(SLOTS).fill(null),   // fixed slots: { id, qty } | null (engine/inventory.js)
-    equipped: { weapon: null, ranged: null, gadget: null, charm: null,
+    hotSel: 0,
+    equipped: { gadget: null, charm: null,
       helmet: null, chestplate: null, leggings: null, boots: null,          // armor
       goggles: null, parka: null, gloves: null, socks: null, backpack: null }, // gear on top
     upgrades: {},               // { 'item.id': level } from the master armorer (0..5)
