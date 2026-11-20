@@ -975,6 +975,20 @@ test('lattice table (Trevor: everyone plays, AI for whoever is not there): seats
   t2._step(); assert.equal(results.length, 1, 'recorded once');
 });
 
+test('penned enemies (cordon blockades, task #36) push toward the party but never leave their pen', () => {
+  const m = MAPS_FOR_TEST.metro_plaza;
+  const sim = new Sim({ ...m, enemies: [{ kind: 'enemy.rot_taken', x: 30 * 16 + 8, y: 20 * 16 + 8, pen: [29, 19, 3, 2] }] }, { seed: 'pen' });
+  sim.addPlayer('host', 'trevor');
+  const p = sim.players.get('host'); p.x = 30 * 16 + 8; p.y = 26 * 16 + 8;   // the party, a few tiles away
+  const e = [...sim.enemies.values()][0];
+  assert.ok(e.pen);
+  for (let i = 0; i < 600; i++) {
+    sim.step(1 / 60, new Map());
+    assert.ok(e.x >= 29 * 16 && e.x <= 32 * 16 && e.y >= 19 * 16 && e.y <= 21 * 16, 'stays in its pen at step ' + i);
+  }
+  assert.ok(e.y > 20 * 16 + 8, 'it pressed toward the party, to the edge of the pen');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));

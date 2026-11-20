@@ -141,7 +141,7 @@ export class Sim {
       const tr = TRAITS[v.trait];
       // The party is always three (AI companions fill empty seats), so regular enemies are tuned for three.
       const def = { ...base, hp: Math.round(base.hp * tr.hp * PARTY_SCALE.hp), damage: Math.round((base.damage ?? 0) * PARTY_SCALE.dmg), speed: base.speed * tr.speed, armor: tr.armor ?? base.armor ?? 0, color: v.tint, vname: v.name, trait: v.trait };
-      this.enemies.set(id, { id, spawnKey, kind: e.kind, def, x: e.x, y: e.y, hp: def.hp, cd: Math.random(), hurtT: 0, kx: 0, ky: 0 });
+      this.enemies.set(id, { id, spawnKey, kind: e.kind, def, x: e.x, y: e.y, hp: def.hp, cd: Math.random(), hurtT: 0, kx: 0, ky: 0, ...(e.pen ? { pen: e.pen } : {}) });
     }
   }
 
@@ -450,7 +450,7 @@ export class Sim {
     this._stepRot(dt);
     this._stepUnder(dt);
     if (this.hitStop > 0) this.hitStop = Math.max(0, this.hitStop - dt);
-    else { this._stepEnemies(dt); this._stepShots(dt); }
+    else { this._stepEnemies(dt); this._penEnemies(); this._stepShots(dt); }
     this._stepRevives(dt);
   }
 
@@ -676,6 +676,17 @@ export class Sim {
       if (d < bd) { bd = d; best = p; }
     }
     return [best, bd];
+  }
+
+  // Penned enemies (pen: [tx, ty, tw, th] in tiles) can't leave their rectangle, however hard they push toward you:
+  // Code-rot-taken held behind a cordon blockade (Michael, task #36: blockades face outward against them).
+  _penEnemies() {
+    for (const e of this.enemies.values()) {
+      if (!e.pen) continue;
+      const [tx, ty, tw, th] = e.pen, r = this._def(e).radius ?? 6;
+      e.x = Math.max(tx * TILE + r, Math.min((tx + tw) * TILE - r, e.x));
+      e.y = Math.max(ty * TILE + r, Math.min((ty + th) * TILE - r, e.y));
+    }
   }
 
   _stepEnemies(dt0) {
