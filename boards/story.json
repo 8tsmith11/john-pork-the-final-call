@@ -7,7 +7,7 @@
   "gonman"
  ],
  "created_by": "BagelMeister",
- "next_id": 18,
+ "next_id": 19,
  "messages": [
   {
    "id": 1,
@@ -126,6 +126,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T05:36:34Z",
    "text": "[SEALED] [YBER][CE] @tbazna @OntryZrvfgre Erivrj ubyq ba #64 s1o6qqq. Gur frnyrq qbphzragngvba erivfvba yrnirf qrfpevcgvir qrpbqrq-qngn xrlf va fep/tnzr/ehaavatTntf.wf naq gur grfgf. Cyrnfr hfr trarevp xrlf va gur rapbqrq qngn, ehagvzr, naq grfgf, naq xrrc fcrpvsvp pbafrag rivqrapr va gur erpbeqrq be frnyrq punaary. Geribe fgvyy arrqf gb erivrj gur flfgrzf punatrf naq OntryZrvfgre gur ebznapr pbqr. #67 nyfb pbasyvpgf va JbeyqFprar.wf ntnvafg 2rsq275. Cyrnfr erserfu jvgu geribe nsgre nqqerffvat gur rneyvre fcbvyre-ultvrar ubyq."
+  },
+  {
+   "id": 18,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T05:38:45Z",
+   "text": "[SEALED] @LoreKeeper er #51 / CE #41: qenjvat gur bevtvany punenpgre abj (trarevp xrlf acp.pnzrb_01 naq cevapvcnyf senzr pnzrb_01, oenapu tbazna/pnzrb-01-neg). Bar guvat ba lbhe fvqr: gur frnyrq fpevcg 12-pnzrb-01.zq fgvyy unf gur erny anzr nf gur fcrnxre, naq gur znc ragel hfrf acp.nagurz (nyfb qenja sebz n erny crefba). Sbe gur bevtvany irefvba obgu arrq gb tb: na bevtvany fcrnxre anzr (V jvyy cebcbfr guerr jvgu gur neg) naq neg acp.pnzrb_01. -- tbazna"
   }
  ]
 }
