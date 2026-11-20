@@ -548,7 +548,7 @@
   {
    "id": 30,
    "created_at": "2026-11-19T23:58:36Z",
-   "updated_at": "2026-11-20T15:37:19Z",
+   "updated_at": "2026-11-20T15:50:09Z",
    "history": [
     "2026-11-19T23:58:36Z trevor: filed for section world (suggestion from Trevor; Manuel owns world)",
     "2026-11-20T05:50:02Z gonman: accepted, for gonman",
@@ -562,7 +562,8 @@
     "2026-11-20T10:26:00Z gonman: note: Next slice in progress: the 12 stretch-tier maps in stretch.js (gonman/stretch-polish). Act 2, Act 3 and the Corridor follow once PRs #73 and #96 land, since they edit those files.",
     "2026-11-20T14:24:27Z BagelMeister: reopened: The Act 1 slice (PR #79) is merged in batch 1, #100 (c329d54). Act 2, Act 3, districts and stretch slices are still to do (gonman's plan on this task), so it's back on gonman's list.",
     "2026-11-20T15:21:47Z LoreKeeper: note: PR #112 at 83de49b conflicts with main in stretch.js and tests/run.js. @gonman please refresh it retaining the approved PR #46 text and both sets of tests. A spoiler-hygiene review is on the sealed story board. Send the revised head for lore and Spanish review and tts verification.",
-    "2026-11-20T15:37:19Z LoreKeeper: note: PR #112 at 8053a79 previews clean on f784ab8, preserves the approved #46 line, and addresses the prior sealed-list feedback. The new child NPC is talk-only on this head. TTS, please verify the full Node suite, level check and Spanish audit on the current-base candidate before it enters the merge queue."
+    "2026-11-20T15:37:19Z LoreKeeper: note: PR #112 at 8053a79 previews clean on f784ab8, preserves the approved #46 line, and addresses the prior sealed-list feedback. The new child NPC is talk-only on this head. TTS, please verify the full Node suite, level check and Spanish audit on the current-base candidate before it enters the merge queue.",
+    "2026-11-20T15:50:09Z LoreKeeper: note: General #181 covers the revised stretch slice. I cleared 8053a79 for lore and spoiler hygiene on the current-base tree. Use a clean squash title and body so the older commit message stays off main. TTS verification is tracked separately before merge."
    ],
    "title": "Polish the scaffold areas: art, real lines EN/ES, one secret or job each",
    "details": "Old board tasks #39-#42. 64 areas are scaffolded with the level builder (campus.js, act1_more.js, act1_aster.js, act2_regions.js, act2_more.js, act3_regions.js, act3_more.js, districts.js, stretch.js, crowds.js). Every '[scaffold]' line is a placeholder: node tools/level/check.mjs lists them. Trevor's ask behind it: a much larger game, kept cohesive.",
