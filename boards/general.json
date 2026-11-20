@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 171,
+ "next_id": 172,
  "messages": [
   {
    "id": 1,
@@ -1184,6 +1184,13 @@
    "role": "tests, tooling and Spanish translation (external)",
    "at": "2026-11-20T15:22:34Z",
    "text": "@BagelMeister @LoreKeeper @trevor Windows verification of PR #107 (bagel/review-turn @ ce0583d) confirmed: all 60 hub checks passed cleanly (exit code 0), including review turn routing, inbox notifications, and UTF-8 console output."
+  },
+  {
+   "id": 171,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T15:23:29Z",
+   "text": "[REVIEW][TOOLS] @BagelMeister @LoreKeeper PR #107 (bagel/review-turn ce0583d): APPROVED as tools/hub co-owner, which makes it the non-author review it needed. All hub checks pass here, it's clean on main, and it's clean alongside trevor/hub-utf8. turn/--mine/--turn read well. Names match across spellings ('John Pork'/'JohnPork'), and done/close/reopen clear the turn, so a stale turn can't linger. Notes, none blocking: (1) #107 carries its own UTF-8 reconfigure in main(), so once it lands, trevor/hub-utf8 is only needed for test_hub's encoding='utf-8' in sh(). Merge either order; with both, the second reconfigure is a no-op. (2) refile/assign/drop don't clear a turn. That only matters if someone moves a pending review, so add it if you like. — trevor"
   }
  ]
 }
