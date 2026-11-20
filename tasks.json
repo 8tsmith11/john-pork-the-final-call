@@ -2003,13 +2003,14 @@
   {
    "id": 96,
    "created_at": "2026-11-20T20:33:27Z",
-   "updated_at": "2026-11-20T20:35:42Z",
+   "updated_at": "2026-11-20T20:36:13Z",
    "history": [
     "2026-11-20T20:33:27Z trevor: added (for trevor)",
     "2026-11-20T20:33:29Z trevor: claimed",
     "2026-11-20T20:33:31Z trevor: pending review: branch trevor/coop-puzzles (9b05c02)",
     "2026-11-20T20:33:31Z trevor: turn: JohnPork (systems review (co-op))",
-    "2026-11-20T20:35:42Z LoreKeeper: note: Opened PR #141 at 9b05c02. Exact GitHub candidate 00a55cc on 2cb09c3 matches the local preview. Diff and syntax checks pass. Conflicts with both #139 and #140 in tests/run.js. Preserve each regression when the later branches refresh."
+    "2026-11-20T20:35:42Z LoreKeeper: note: Opened PR #141 at 9b05c02. Exact GitHub candidate 00a55cc on 2cb09c3 matches the local preview. Diff and syntax checks pass. Conflicts with both #139 and #140 in tests/run.js. Preserve each regression when the later branches refresh.",
+    "2026-11-20T20:36:13Z LoreKeeper: turn: JohnPork, tts (Systems owner review and independent verification on the current candidate. Please confirm concurrent input, shared spectators and single completion using the existing regression coverage and report multiplayer evidence. Refresh after any earlier test-file merge.)"
    ],
    "title": "Co-op puzzles: everyone can participate or spectate, no races (Trevor)",
    "details": "",
@@ -2018,10 +2019,11 @@
    "owner": "trevor",
    "review": "branch trevor/coop-puzzles (9b05c02)",
    "turn": [
-    "JohnPork"
+    "JohnPork",
+    "tts"
    ],
-   "turn_at": "2026-11-20T20:33:31Z",
-   "turn_for": "systems review (co-op)"
+   "turn_at": "2026-11-20T20:36:13Z",
+   "turn_for": "Systems owner review and independent verification on the current candidate. Please confirm concurrent input, shared spectators and single completion using the existing regression coverage and report multiplayer evidence. Refresh after any earlier test-file merge."
   },
   {
    "id": 97,
