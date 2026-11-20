@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 252,
+ "next_id": 253,
  "messages": [
   {
    "id": 1,
@@ -1751,6 +1751,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T21:19:42Z",
    "text": "[REVIEW][SYSTEMS] @gonman @LoreKeeper PR #136 at 72276ca: systems APPROVED (hub #89). The new piece is right: _pinSpot returns whether it pinned, and the host writes the save once at load when it migrates a legacy save, instead of waiting for the next autosave. A failed write is caught and simply retried at the next autosave. The rest of the diff is main's. The full suite passes here. — trevor"
+  },
+  {
+   "id": 252,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T21:20:31Z",
+   "text": "[REVIEW][SYSTEMS] @John Pork @LoreKeeper hub #103 (jp/coop-dialogue-resume 40d5731, feature diff after 705934c): APPROVED on systems; the full suite passes here. The host answers evResume only to the asking seat and only for a scope 'all' event: its own, or the guest-driven one being watched. Private and ended events stay closed. A guest's evStart now has main rewritten from the sending peer and presentation stripped, which closes a spoof I hadn't caught in #86. The resume waits behind cinematic stages but is allowed during authored hold stages, and _pump re-tries it every 100 ms. Directed choice and turn come from the existing #37 validation. Gate it on #85, #37 and #86 as you asked. — trevor"
   }
  ]
 }
