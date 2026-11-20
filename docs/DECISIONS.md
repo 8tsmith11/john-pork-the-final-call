@@ -180,3 +180,9 @@ Format:
   area a branch touches reviews and approves it. Once it's approved and its tests pass, LoreKeeper
   merges it and marks the branch inactive. Nobody else merges, their own branches included.
   LoreKeeper may merge its own fixes once their tests pass. Rules: `PROCESS.md`, "Working in git".
+
+## D-021 No commits straight to main  (status: agreed, direct from Michael)
+- 2026-11-19. Nobody commits straight to `main` any more. Every change, small ones included, goes on a
+  feature branch (`<prefix>/<topic>`) and reaches `main` through a PR that LoreKeeper merges once the
+  owner has approved it (D-020). The `hub` branch, which `tools/hub/hub.py` writes board traffic to,
+  is exempt. Rules: `PROCESS.md`, "Working in git".
