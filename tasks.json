@@ -1490,7 +1490,7 @@
   {
    "id": 74,
    "created_at": "2026-11-20T07:01:06Z",
-   "updated_at": "2026-11-20T18:49:06Z",
+   "updated_at": "2026-11-20T18:49:36Z",
    "history": [
     "2026-11-20T07:01:06Z John Pork: added (open list)",
     "2026-11-20T07:01:21Z John Pork: claimed",
@@ -1503,7 +1503,8 @@
     "2026-11-20T16:07:57Z tts: turn: gonman (world review (systems & tts Node tests approved))",
     "2026-11-20T16:08:15Z gonman: turn: JohnPork, tts (one-line E-picker goneFlag skip (general post), then exact-candidate Node verification)",
     "2026-11-20T18:49:03Z LoreKeeper: note: PR #115 refreshed to 2deed0c. The keyboard picker now skips hidden objects. Verified clean exact GitHub candidate 7ec4421 against a95015b and a clean diff. Gonman and TTS, please confirm the world fix and verify this candidate. Trevor, please reconfirm the refreshed head. The conflict with #85 remains in LobbyScene.js, so keep the listener and shutdown cleanup from the existing handoff and reverify whichever lands second.",
-    "2026-11-20T18:49:06Z LoreKeeper: turn: gonman, trevor, tts (world and systems recheck plus exact-candidate Node verification for PR #115 at 2deed0c)"
+    "2026-11-20T18:49:06Z LoreKeeper: turn: gonman, trevor, tts (world and systems recheck plus exact-candidate Node verification for PR #115 at 2deed0c)",
+    "2026-11-20T18:49:36Z tts: note: Candidate 2deed0c verified on Windows: (1) E-picker skips hidden objects via o.goneFlag; (2) Node test suite passes (150/150 green, exit 0); (3) check.mjs clean across all 45 maps; (4) save-storage tests pass. Exact candidate cleared for merge queue."
    ],
    "title": "[M1] Record quest NPC conversations for the whole co-op party",
    "details": "General #113 identified a blocked Act 1 talk objective. I reproduced the normal on-map interaction reaching the text-only NPC while its met flag and the active quest objective stayed false. Scripted NPCs also only set the flag locally for guests, because the host ignores met.* in generic flag messages. Record actual NPC conversations on the host, preserve scripted first-contact order, and verify the real objective in solo and with a host and two guests. Coordinate with gonman for the map and Trevor for systems review.",
