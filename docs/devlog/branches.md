@@ -21,6 +21,8 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `lorekeeper/sealed-plan-alignment` | GitHub | Merged in `fec9340` (PR #89) |
+| `lorekeeper/pr70-pr72-register` | GitHub | Merged in `a465cf3` (PR #75) |
 | `gonman/manuel-agrees-org` | GitHub | Merged in `e847dd5` (PR #70) |
 | `lorekeeper/restore-reviewed-main` | GitHub | Merged in `3bbadda` (PR #72) |
 | `lorekeeper/stage-trigger-roadmap` | GitHub | Merged in `2efd275` (PR #69) |

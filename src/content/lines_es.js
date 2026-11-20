@@ -167,7 +167,7 @@ export const LINES_ES = {
   "If anyone asks, I was never here.": "Si alguien pregunta, yo nunca estuve acá.",
   "My feet are wet. My soul is wet.": "Tengo los pies mojados. El alma también.",
   "I need mate. Medically.": "Necesito mate. Por prescripción médica.",
-  "I can smell the diner from here. Cruel.": "Desde acá se siente el olor del diner. Qué crueldad.",
+  "I can smell the diner from here. Cruel.": "Desde acá se siente el olor de la cafetería. Qué crueldad.",
   "Who walks this slow? Oh. Me.": "¿Quién camina tan lento? Ah. Yo.",
   "After this I sleep for three days.": "Después de esto duermo tres días seguidos.",
   "My step count is going to be insane.": "Voy a tener una cantidad de pasos ridícula.",
