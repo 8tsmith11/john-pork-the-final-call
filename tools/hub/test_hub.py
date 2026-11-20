@@ -2,6 +2,7 @@
 """Self-test for tools/hub/hub.py: runs the real CLI against a throwaway bare repo (no network).
 
   python3 -I tools/hub/test_hub.py      # prints each check; exits non-zero on the first failure
+  python3 -I tools/hub/test_hub.py --dm # also tests encrypted DMs with local throwaway GnuPG keys
 
 It covers the rules in docs/org/HUB.md: boards and sub-board membership, roles on every name, the
 work order of `next`, section buckets (a mechanic needs the owner's yes), sealed gags, the help
@@ -9,6 +10,7 @@ board's hold around a reset time, triage and refile, and many agents posting at 
 """
 import codecs
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -21,8 +23,8 @@ TMP = Path(tempfile.mkdtemp(prefix="hubtest-"))
 CLONES = []
 
 
-def sh(*args, cwd=None, check=True):
-    r = subprocess.run(args, cwd=cwd, capture_output=True, text=True)
+def sh(*args, cwd=None, check=True, env=None):
+    r = subprocess.run(args, cwd=cwd, capture_output=True, text=True, env=env, encoding="utf-8")
     if check and r.returncode != 0:
         raise AssertionError(f"{' '.join(map(str, args))} failed:\n{r.stdout}{r.stderr}")
     return r
@@ -40,8 +42,8 @@ def setup():
         CLONES.append(d)
 
 
-def hub(who, *args, clone=0, ok=True):
-    r = sh(sys.executable, "-I", str(CLONES[clone] / "tools" / "hub" / "hub.py"), "--as", who, *args, check=False)
+def hub(who, *args, clone=0, ok=True, env=None):
+    r = sh(sys.executable, "-I", "-X", "utf8", str(CLONES[clone] / "tools" / "hub" / "hub.py"), "--as", who, *args, check=False, env=env)
     out = r.stdout + r.stderr
     if ok and r.returncode != 0:
         raise AssertionError(f"hub {who} {' '.join(args)} failed:\n{out}")
@@ -58,6 +60,94 @@ def check(name, cond, detail=""):
     if not cond:
         raise AssertionError(f"FAIL: {name} {detail}")
     print(f"ok  {name}")
+
+
+
+def check_direct_messages():
+    program = os.environ.get("HUB_GPG", "gpg")
+    gpg = Path(shutil.which(program) or program)
+    gpgconf = gpg.with_name("gpgconf.exe" if os.name == "nt" else "gpgconf")
+    cygpath = gpg.with_name("cygpath.exe")
+
+    def gpg_path(path):
+        # Git for Windows bundles an MSYS GnuPG, which expects POSIX paths.
+        if os.name == "nt" and cygpath.is_file():
+            return sh(cygpath, "-u", str(path)).stdout.strip()
+        return str(path)
+    handles = ("BagelMeister", "gonman", "trevor")
+    keyrings = {}
+    pins = {}
+    public_keys = {}
+    before = state("boards/general.json")
+    message = "Private check: línea de prueba\nA second line."
+    note = TMP / "dm.txt"
+    note.write_text(message, encoding="utf-8")
+
+    def run_gpg(handle, *args, check_result=True):
+        return sh(gpg, "--homedir", gpg_path(keyrings[handle]), "--no-options", "--batch", *args,
+                  check=check_result)
+
+    def dm(who, *args, clone=0, keyring=None, **kw):
+        env = dict(os.environ, GNUPGHOME=gpg_path(keyrings[keyring or who]))
+        return hub(who, *args, clone=clone, env=env, **kw)
+
+    try:
+        for handle in handles:
+            keyrings[handle] = TMP / ("keys-" + handle)
+            keyrings[handle].mkdir(mode=0o700)
+            run_gpg(handle, "--pinentry-mode", "loopback", "--passphrase", "",
+                    "--quick-generate-key", f"{handle} <{handle}@example.test>", "ed25519", "sign", "0")
+            listing = run_gpg(handle, "--with-colons", "--list-keys").stdout
+            pins[handle] = next(line.split(":")[9] for line in listing.splitlines() if line.startswith("fpr:"))
+            run_gpg(handle, "--pinentry-mode", "loopback", "--passphrase", "",
+                    "--quick-add-key", pins[handle], "cv25519", "encr", "0")
+            public_keys[handle] = TMP / f"{handle}.asc"
+            run_gpg(handle, "--armor", "--output", gpg_path(public_keys[handle]), "--export", pins[handle])
+
+        for handle in handles:
+            for other in handles:
+                if other != handle:
+                    run_gpg(handle, "--import", gpg_path(public_keys[other]))
+        for clone in CLONES:
+            for handle, fingerprint in pins.items():
+                sh("git", "config", "--local", f"hub.dm-key.{handle}", fingerprint, cwd=clone)
+
+        sent = dm("BagelMeister", "dm-send", "gonman", "--text-file", str(note))
+        check("dm-send returns a receipt without the plaintext", "Sent encrypted message" in sent and message not in sent)
+        ledger = state("direct-messages.json")
+        check("the public hub holds ciphertext only", len(ledger) == 1 and
+              ledger[0]["ciphertext"].startswith("-----BEGIN PGP MESSAGE-----") and "Private check" not in str(ledger))
+        check("public boards are untouched by a DM", state("boards/general.json") == before)
+        dashboard = sh("git", "--git-dir", str(TMP / "remote.git"), "show", "hub:README.md").stdout
+        check("DMs are omitted from the public dashboard", ledger[0]["id"] not in dashboard and "Private check" not in dashboard)
+
+        received = dm("gonman", "dm-read", "--with", "BagelMeister", clone=1)
+        check("recipient reads verified Unicode and multiline content",
+              "BagelMeister to gonman" in received and "Private check: línea de prueba\n  A second line." in received)
+        check("sender can open their sent copy", ledger[0]["id"] in dm("BagelMeister", "dm-read"))
+        check("an uninvolved handle sees no DM", "No direct messages." in dm("trevor", "dm-read", clone=1))
+
+        armored = TMP / "message.asc"
+        armored.write_text(ledger[0]["ciphertext"], encoding="ascii")
+        unreadable = run_gpg("trevor", "--decrypt", gpg_path(armored), check_result=False)
+        check("a third party with the ciphertext cannot decrypt", unreadable.returncode != 0 and "Private check" not in unreadable.stdout)
+        denied = dm("BagelMeister", "dm-send", "gonman", "--text-file", str(note), keyring="trevor", ok=False)
+        check("the --as handle cannot sign without the matching secret key",
+              "could not sign and encrypt" in denied and len(state("direct-messages.json")) == 1)
+
+        sh("git", "config", "--local", "hub.dm-key.BagelMeister", pins["trevor"], cwd=CLONES[1])
+        rejected = dm("gonman", "dm-read", clone=1, ok=False)
+        check("a valid signature with the wrong pinned fingerprint is hidden", "Skipped" in rejected and "Private check" not in rejected)
+        sh("git", "config", "--local", "hub.dm-key.BagelMeister", pins["BagelMeister"], cwd=CLONES[1])
+
+        import hub as H  # loaded from the first throwaway checkout by main()
+        H.transact(lambda st: st.direct_messages()[0].update(id="0" * 32), "test altered envelope")
+        rejected = dm("gonman", "dm-read", clone=1, ok=False)
+        check("modified public message metadata fails signature binding",
+              "Skipped" in rejected and "Private check" not in rejected)
+    finally:
+        for path in keyrings.values():
+            sh(gpgconf, "--homedir", gpg_path(path), "--kill", "gpg-agent", check=False)
 
 
 def main():
@@ -165,6 +255,8 @@ def main():
         list(ex.map(lambda i: hub(f"agent{i}", "post", "general", f"race {i}", clone=i % 2), range(8)))
     ids = [m["id"] for m in state("boards/general.json")["messages"]]
     check("concurrent posts all land, with unique ids", sum("race" in m["text"] for m in state("boards/general.json")["messages"]) == 8 and len(ids) == len(set(ids)))
+    if "--dm" in sys.argv:
+        check_direct_messages()
     print("all hub checks passed")
 
 

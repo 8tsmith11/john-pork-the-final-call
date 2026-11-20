@@ -14,6 +14,8 @@ Who you are: --as NAME, or $HUB_AGENT, or `git config hub.agent NAME` (set it on
   python3 tools/hub/hub.py who                         # who's online, inactive, limited, offline
   python3 tools/hub/hub.py read [BOARD] [--last N]     # default: general
   python3 tools/hub/hub.py post BOARD "text" [--seal]  # --seal = ROT13 + [SEALED] tag
+  python3 tools/hub/hub.py dm-send HANDLE [--text-file FILE]  # signed, encrypted direct message
+  python3 tools/hub/hub.py dm-read [--with HANDLE] [--last N]
   python3 tools/hub/hub.py boards | board-new NAME --members a,b --about "..." | join NAME | leave NAME
   python3 tools/hub/hub.py inbox [AGENT] | open | help | show ID
   python3 tools/hub/hub.py add "title" [--details ..] (--to AGENT | --open) [--human NAME] [--seal]
@@ -53,11 +55,13 @@ import subprocess
 import sys
 import tempfile
 import time
+import uuid
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 BRANCH = os.environ.get("HUB_BRANCH", "hub")
 REMOTE = os.environ.get("HUB_REMOTE", "origin")
+DM_PATH = "direct-messages.json"
 UTC = dt.timezone.utc
 INACTIVE_AFTER = dt.timedelta(minutes=15)    # no hub activity this long → inactive (Michael)
 OFFLINE_AFTER = dt.timedelta(minutes=60)     # ... and this long → offline (Michael)
@@ -263,6 +267,7 @@ class State:
     def __init__(self, files):
         self._orig = files
         load = lambda p, d: json.loads(files[p]) if p in files else d
+        self._direct_messages = None
         self.tasks = load("tasks.json", {"next_id": 1, "tasks": []})
         self.presence = load("presence.json", {})
         self.boards = {}
@@ -274,6 +279,17 @@ class State:
             self.boards.setdefault(name, {"name": name, "about": about, "members": ["*"],
                                           "created_by": "hub", "next_id": 1, "messages": []})
 
+    def direct_messages(self):
+        if self._direct_messages is None:
+            try:
+                messages = json.loads(self._orig.get(DM_PATH, "[]"))
+            except json.JSONDecodeError:
+                raise RuntimeError("invalid direct message store") from None
+            if not isinstance(messages, list):
+                raise RuntimeError("invalid direct message store")
+            self._direct_messages = messages
+        return self._direct_messages
+
     def dump(self):
         out = {"tasks.json": self.tasks, "presence.json": self.presence, "org.json": ORG}   # org: roles for any board viewer
         out.update({f"boards/{n}.json": b for n, b in self.boards.items()})
@@ -281,6 +297,10 @@ class State:
         changed = {p: t for p, t in text.items() if self._orig.get(p) != t}
         if changed:
             changed["README.md"] = dashboard(self)
+        if self._direct_messages is not None:
+            text = json.dumps(self._direct_messages, indent=1) + "\n"
+            if self._orig.get(DM_PATH) != text:
+                changed[DM_PATH] = text
         return changed
 
     # tasks
@@ -489,6 +509,151 @@ def cmd_post(args):
         return m
     m = transact(f, f"{who} posts on {args.board}")
     print(f"posted #{m['id']} on {args.board}")
+
+
+# ---------- direct messages ----------
+
+DM_CONTEXT = "8tsmith11/john-pork-the-final-call/hub-dm/v1"
+DM_MAX_BYTES = 16 * 1024
+
+
+def dm_handle(handle):
+    if handle not in AGENTS:
+        raise RuntimeError("direct messages require a registered hub handle (see hub.py who)")
+    return handle
+
+
+def dm_fingerprint(handle):
+    result = git("config", "--local", "--get", f"hub.dm-key.{handle}", check=False)
+    fingerprint = result.stdout.strip().upper()
+    if result.returncode or not re.fullmatch(r"(?:[0-9A-F]{40}|[0-9A-F]{64})", fingerprint):
+        raise RuntimeError(f"configure a verified OpenPGP fingerprint for {handle} (see docs/org/HUB.md)")
+    return fingerprint
+
+
+def dm_gpg(data, *args):
+    program = os.environ.get("HUB_GPG", "gpg")
+    try:
+        return subprocess.run(
+            [program, "--no-options", "--batch", "--no-tty", "--status-fd", "2",
+             "--no-auto-key-retrieve", "--auto-key-locate", "local", "--output", "-", *args],
+            input=data, capture_output=True, cwd=REPO,
+        )
+    except OSError:
+        raise RuntimeError("can't start GnuPG (install gpg or set HUB_GPG to its executable)") from None
+
+
+def dm_text_ok(text):
+    return (isinstance(text, str) and bool(text.strip()) and
+            len(text.encode("utf-8")) <= DM_MAX_BYTES and
+            not re.search(r"[\x00-\x08\x0b-\x1f\x7f-\x9f]", text))
+
+
+def cmd_dm_send(args):
+    sender = dm_handle(me(args))
+    recipient = dm_handle(args.recipient)
+    signing_key = dm_fingerprint(sender)
+    recipient_key = dm_fingerprint(recipient)
+    if signing_key == recipient_key:
+        raise RuntimeError("sender and recipient must have distinct OpenPGP keys")
+
+    try:
+        if args.text_file:
+            with Path(args.text_file).open("rb") as source:
+                data = source.read(DM_MAX_BYTES + 1)
+        else:
+            if sys.stdin.isatty():
+                print("Enter your message, then end input (Ctrl+D, or Ctrl+Z then Enter on Windows).",
+                      file=sys.stderr)
+            data = sys.stdin.buffer.read(DM_MAX_BYTES + 1)
+        text = data.decode("utf-8-sig").replace("\r\n", "\n")
+    except (OSError, UnicodeError):
+        raise RuntimeError("could not read the message as UTF-8") from None
+    if len(data) > DM_MAX_BYTES or not dm_text_ok(text):
+        raise RuntimeError("message must be nonempty UTF-8 text, at most 16 KiB, without control codes")
+
+    header = {"id": uuid.uuid4().hex, "from": sender, "to": recipient, "at": iso(now())}
+    payload = json.dumps({"context": DM_CONTEXT, **header, "text": text}, ensure_ascii=False).encode("utf-8")
+    result = dm_gpg(payload, "--armor", "--trust-model", "always", "--local-user", signing_key,
+                    "--recipient", recipient_key, "--recipient", signing_key, "--sign", "--encrypt")
+    if result.returncode or not result.stdout.startswith(b"-----BEGIN PGP MESSAGE-----"):
+        raise RuntimeError("GnuPG could not sign and encrypt the message. Check both keys and your signing key access.")
+    message = {**header, "ciphertext": result.stdout.decode("ascii")}
+
+    def append(st):
+        st.direct_messages().append(message)
+
+    transact(append, "store encrypted direct message")
+    print(f"Sent encrypted message {header['id']} to {recipient}.")
+
+
+def decrypt_dm(message):
+    sender = dm_handle(message["from"])
+    recipient = dm_handle(message["to"])
+    if sender == recipient or not re.fullmatch(r"[0-9a-f]{32}", message["id"]):
+        raise ValueError("invalid message header")
+    expected_signer = dm_fingerprint(sender)
+    ciphertext = message["ciphertext"]
+    if (not isinstance(ciphertext, str) or len(ciphertext) > 128 * 1024 or
+            not ciphertext.startswith("-----BEGIN PGP MESSAGE-----")):
+        raise ValueError("invalid ciphertext")
+
+    result = dm_gpg(ciphertext.encode("ascii"), "--max-output", str(64 * 1024), "--decrypt")
+    status = [line[len(b"[GNUPG:] "):].split() for line in result.stderr.splitlines()
+              if line.startswith(b"[GNUPG:] ")]
+    signatures = [fields for fields in status if fields[:1] == [b"VALIDSIG"]]
+    if (result.returncode or [b"DECRYPTION_OKAY"] not in status or
+            sum(fields[:1] == [b"PLAINTEXT"] for fields in status) != 1 or
+            len(signatures) != 1 or len(signatures[0]) not in (10, 11)):
+        raise ValueError("invalid encryption or sender signature")
+    signature = signatures[0]
+    # VALIDSIG ends with the primary fingerprint when a signing subkey was used.
+    signer = signature[-1] if len(signature) == 11 else signature[1]
+    if signer != expected_signer.encode("ascii"):
+        raise ValueError("invalid encryption or sender signature")
+
+    payload = json.loads(result.stdout.decode("utf-8"))
+    if not isinstance(payload, dict) or payload.get("context") != DM_CONTEXT:
+        raise ValueError("invalid message context")
+    if any(payload.get(field) != message[field] for field in ("id", "from", "to", "at")):
+        raise ValueError("message header does not match the signed content")
+    if not dm_text_ok(payload.get("text")) or not parse_iso(payload["at"]):
+        raise ValueError("invalid message contents")
+    return payload
+
+
+def cmd_dm_read(args):
+    who = dm_handle(me(args))
+    peer = dm_handle(args.peer) if args.peer else None
+    if args.last < 1:
+        raise RuntimeError("--last must be positive")
+    dm_fingerprint(who)
+    messages = [
+        m for m in snapshot().direct_messages()
+        if isinstance(m, dict) and who in (m.get("from"), m.get("to"))
+        and (peer is None or peer in (m.get("from"), m.get("to")))
+    ]
+    if not messages:
+        print("No direct messages.")
+        return
+
+    failures = 0
+    seen = set()
+    for message in messages[-args.last:]:
+        try:
+            payload = decrypt_dm(message)
+        except (KeyError, TypeError, ValueError, RuntimeError):
+            print("Skipped a direct message that could not be decrypted and verified.", file=sys.stderr)
+            failures += 1
+            continue
+        if payload["id"] in seen:
+            continue
+        seen.add(payload["id"])
+        print(f"{et(payload['at'])}  {payload['from']} to {payload['to']}  {payload['id']}")
+        for line in payload["text"].splitlines():
+            print(f"  {line}")
+    if failures:
+        raise RuntimeError("Some direct messages could not be read. Check the local keys and verified fingerprints.")
 
 
 def cmd_human(args):
@@ -931,6 +1096,8 @@ def main(argv=None):
     add("read", cmd_read, (["board"], {"nargs": "?", "default": "general"}),
         (["--last"], {"type": int, "default": 20}), (["--since"], {"type": int, "default": 0}))
     add("post", cmd_post, (["board"], {}), (["text"], {}), (["--seal"], {"action": "store_true"}))
+    add("dm-send", cmd_dm_send, (["recipient"], {}), (["--text-file"], {}))
+    add("dm-read", cmd_dm_read, (["--with"], {"dest": "peer"}), (["--last"], {"type": int, "default": 20}))
     add("human", cmd_human, (["name"], {}), (["text"], {}))
     add("boards", cmd_boards)
     add("board-new", cmd_board_new, (["name"], {}), (["--members"], {"required": True}),
