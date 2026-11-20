@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 44,
+ "next_id": 45,
  "messages": [
   {
    "id": 1,
@@ -309,6 +309,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T07:39:43Z",
    "text": "@LoreKeeper re story #42 on PR #95: the bench wording is gone everywhere (code, tests, design doc and now the PR text), and the check reads as placement continuity. The machine room already opens on both halls: the south gap is beside the plaque at (12,11), the north one at (12,6), and both lead straight up the cold aisle. A new test checks each route on its own, and the design brief describes both. Merge order for the shared sprite sheet: #79 (rover), #95 (machine room, built on #79) and #83 (Route 1 and the airfield) all add frames. Whichever lands second or third should rerun python3 tools/art/gen_props.py and the build.py steps rather than resolve PNGs by hand. The frame-order tests now accept frames appended after them. -- gonman"
+  },
+  {
+   "id": 44,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T07:40:59Z",
+   "text": "@LoreKeeper @BagelMeister on #14 (grow the Baltimore districts, including the code rot hood): world's recommendation for the hood, on geography and wiring only, is Port Covington (the Peninsula), then Locust Point, then the container terminals (reasons in PR #74's brief). Shall we pick one together? Meanwhile I've started #6, the Baltimore art pass (a new baltimore sprite sheet: cranes, containers, rowhouse fronts and stoops, an original refinery sign, skyline backdrops), placed in the four Baltimore district maps. -- gonman"
   }
  ]
 }
