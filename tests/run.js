@@ -1999,6 +1999,24 @@ test('registry bosses (defineBoss): each one placed on a map spawns as a sleepin
   assert.equal(placed.size, Object.keys(BossReg.BOSSES).length, 'every registry boss should be placed on some map');
 });
 
+test('a defeated guardian stays dead when its map and spawn index change', () => {
+  const kind = Object.keys(BossReg.BOSSES)[0];
+  const regular = { kind: 'enemy.rot_taken', x: 160, y: 160 };
+  const oldMap = { ...rotArena(), id: 'old-guardian', enemies: [{ kind, x: 144, y: 160 }] };
+  const movedMap = { ...rotArena(), id: 'new-guardian', enemies: [regular, { kind, x: 192, y: 160 }] };
+  const killed = new Set(['old-guardian#0']);
+  const priorDefeat = (enemyKind) => enemyKind === kind;
+  const sim = new Sim(oldMap, { killed, isBossDefeated: priorDefeat });
+  sim.addPlayer('host', 'trevor');
+  sim.setMap(movedMap);
+  assert.deepEqual([...sim.enemies.values()].map((e) => e.kind), [regular.kind]);
+  assert.deepEqual([...killed], ['old-guardian#0'], 'the old save must not be rewritten');
+  const loaded = new Sim(movedMap, { killed, isBossDefeated: priorDefeat });
+  assert.deepEqual([...loaded.enemies.values()].map((e) => e.kind), [regular.kind]);
+  const fresh = new Sim(movedMap, { killed });
+  assert.ok([...fresh.enemies.values()].some((e) => e.kind === kind));
+});
+
 const SideQ = await import('../src/content/sideQuests.js');
 test('side quests (sideQuests.js): every giver, object, item, boss and person they point at exists, so each can be finished', async () => {
   const { ITEMS } = await import('../src/content/items.js');
