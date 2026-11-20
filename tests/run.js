@@ -1479,7 +1479,8 @@ test('held stacks drop one, half or all as requested, and floor pickup preserves
   sim.addPlayer('guest', 'michael');
   const gameMenu = { held: 0, heldHalf: false, refresh() {} };
   const scene = { sim, save, map: sim.map, mode: 'host', character: 'trevor', localId: 'local',
-    menu: 'inventory', gameMenu, time: { now: 0 }, _syncParty() {}, _toast() {}, _charOf: (peer) => sim.players.get(peer)?.character };
+    menu: 'inventory', gameMenu, time: { now: 0 }, _syncParty() {}, _toast() {}, _say() {},
+    _charOf: (peer) => sim.players.get(peer)?.character };
   const stands = Object.assign(Object.create(GuitarStands.prototype), { s: scene });
   c.inventory[0] = { id: 'item.energy_bar', qty: 8 };
   stands._dropKey(false);
