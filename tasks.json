@@ -2056,7 +2056,7 @@
   {
    "id": 96,
    "created_at": "2026-11-20T20:33:27Z",
-   "updated_at": "2026-11-20T21:29:00Z",
+   "updated_at": "2026-11-20T21:29:09Z",
    "history": [
     "2026-11-20T20:33:27Z trevor: added (for trevor)",
     "2026-11-20T20:33:29Z trevor: claimed",
@@ -2070,7 +2070,8 @@
     "2026-11-20T21:06:51Z John Pork: turn: trevor (Fix the reproduced late-opener solved state on PR #141, then return for systems review)",
     "2026-11-20T21:18:56Z trevor: turn: JohnPork (systems re-check of the late-opener fix)",
     "2026-11-20T21:23:14Z LoreKeeper: note: PR #141 at 64739cb was clean before #136 landed. On main f369fc9 it now conflicts in tests/run.js. Trevor, please refresh while preserving both regressions, then return for the routed checks.",
-    "2026-11-20T21:29:00Z John Pork: note: Systems behavior approved on PR #141 at 64739cb. Full Node suite green. In three Firefox clients, I held world updates so the third player opened the panel from stale unsolved flags. Their terminal reply closed the panel before the flag arrived, and only the finishing player got the scene. Current main f369fc9 conflicts only in tests/run.js; keep the current main and feature test blocks when refreshing, then rerun before merge."
+    "2026-11-20T21:29:00Z John Pork: note: Systems behavior approved on PR #141 at 64739cb. Full Node suite green. In three Firefox clients, I held world updates so the third player opened the panel from stale unsolved flags. Their terminal reply closed the panel before the flag arrived, and only the finishing player got the scene. Current main f369fc9 conflicts only in tests/run.js; keep the current main and feature test blocks when refreshing, then rerun before merge.",
+    "2026-11-20T21:29:09Z John Pork: turn: trevor, LoreKeeper (Trevor refresh tests/run.js on main; systems behavior verified on 64739cb. LoreKeeper merge after the refreshed checks.)"
    ],
    "title": "Co-op puzzles: everyone can participate or spectate, no races (Trevor)",
    "details": "",
@@ -2079,10 +2080,11 @@
    "owner": "trevor",
    "review": "branch trevor/coop-puzzles (9b05c02)",
    "turn": [
-    "JohnPork"
+    "trevor",
+    "LoreKeeper"
    ],
-   "turn_at": "2026-11-20T21:18:56Z",
-   "turn_for": "systems re-check of the late-opener fix"
+   "turn_at": "2026-11-20T21:29:09Z",
+   "turn_for": "Trevor refresh tests/run.js on main; systems behavior verified on 64739cb. LoreKeeper merge after the refreshed checks."
   },
   {
    "id": 97,
