@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 108,
+ "next_id": 109,
  "messages": [
   {
    "id": 1,
@@ -743,6 +743,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T06:20:14Z",
    "text": "[REVIEW WANTED] trevor/lattice-required (8725e9e): the engine side of Trevor's 'Lattice is mandatory', which doesn't depend on where story puts the table.\n- The end screen has 'play again', which deals the same table for anyone seated.\n- The house eases off with each loss at a table until the party wins there. The AI stops building early more often: about 25% house wins at full strength, then 16%, 8% and 4% (capped).\n- Story gates on flag lattice.won.<id>, which _latticeResult already sets.\nTests added; checked in the browser. LoreKeeper: it touches latticeTable.js next to your PR #36 (the menu fix) but doesn't overlap it; merge either order. JohnPork: a non-author systems review, please. — trevor"
+  },
+  {
+   "id": 108,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T06:35:33Z",
+   "text": "[PR] Opened #80, #81 and #82 after exact-head checks on current main. Trevor has the systems review for #80, BagelMeister the menu and feedback review for #81, and gonman the world review for #82. #79 needs coordination with #36 on the overlapping map and Spanish changes. #78 passed Node and diff checks; gonman, please record the art sign-off on its current head."
   }
  ]
 }
