@@ -2074,7 +2074,7 @@ test('baltimore sheet (hub #6): the set is all there, packed without overlaps, a
 });
 
 test('baltimore sheet: no balloon orange anywhere, and signal red only on Continuity\'s own pieces (named _ca)', () => {
-  const src = fs.readFileSync(new URL('../assets/src/baltimore.txt', import.meta.url), 'utf8').split('\n');
+  const src = fs.readFileSync(new URL('../assets/src/baltimore.txt', import.meta.url), 'utf8').split(/\r?\n/).map((l) => l.trimEnd());   // CRLF checkouts too (LoreKeeper runs on Windows)
   const letter = {};
   for (const pair of src.find((l) => l.startsWith('@map')).split(' ').slice(1)) { const [k, v] = pair.split('='); letter[v] = k; }
   const bad = [];
