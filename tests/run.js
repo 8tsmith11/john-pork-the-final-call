@@ -19,7 +19,13 @@ import { makeMap } from '../src/content/maps/build.js';
 import { TRAITS } from '../src/content/rotVillains.js';
 
 let failed = 0;
-const test = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}\n     ${e.message}`); } };
+// An async test is counted when it settles (it used to print 'ok' at once and fail after the summary, so a
+// broken async test could still read as 'all tests passed').
+const pending = [];
+const test = (name, fn) => {
+  const pass = () => console.log(`ok   ${name}`), fail = (e) => { failed++; console.log(`FAIL ${name}\n     ${e?.message ?? e}`); };
+  try { const r = fn(); if (r && typeof r.then === 'function') pending.push(r.then(pass, fail)); else pass(); } catch (e) { fail(e); }
+};
 
 await import('./save-storage.js');
 
@@ -1620,6 +1626,44 @@ test('co-op: dashing into a door parks you standing, not frozen mid-roll, and st
   assert.ok(!back, 'no leftover roll throws you back into the door');
 });
 
+test('Ping rework (hub #66): the pulse jolts, a marked kill hands the pinger cooldown back, and the mark jumps on', async () => {
+  const { PING } = await import('../src/engine/sim.js');
+  const sim = new Sim(MAPS_FOR_TEST.metro_plaza, { seed: 'ping', deferSpawn: true });
+  sim.addPlayer('mi', 'michael'); sim.addPlayer('tr', 'trevor');
+  const mi = sim.players.get('mi'), tr = sim.players.get('tr'); sim.enemies.clear();
+  const foe = (id, dx, hp) => sim.enemies.set(id, { id, kind: 'enemy.rotling', x: mi.x + dx, y: mi.y, hp, cd: 9, hurtT: 0, sleepT: 99 });
+  foe('near', 30, 200); foe('weak', 60, 3); foe('far', 400, 200);
+  sim._ability(mi);
+  const near = sim.enemies.get('near');
+  assert.ok(near.hp < 200 && near.hurtT >= PING.stagger - 1e-9, 'the pulse lands damage and a stagger');
+  assert.ok(!sim.enemies.has('weak'), 'the jolt can finish something weak');
+  assert.ok(Math.abs(mi.skillCd - (PING.cd - PING.refund)) < 1e-9, 'killing a marked thing handed time back');
+  assert.ok(!(sim.enemies.get('far').marked > 0), 'out of reach: not marked');
+  // Trevor kills a marked one: cooldown goes back to Michael (who pinged it), and the mark jumps to the nearest unmarked
+  sim.enemies.clear(); mi.skillCd = 5;
+  foe('a', 30, 1); foe('b', 60, 200); sim.enemies.get('a').marked = 3; sim.enemies.get('a').markedBy = 'michael';
+  sim._hurtEnemy(sim.enemies.get('a'), 10, 0, 0, 'tr');
+  assert.ok(Math.abs(mi.skillCd - (5 - PING.refund)) < 1e-9, 'the pinger is refunded, whoever lands the kill');
+  assert.ok(sim.enemies.get('b').marked > 0 && sim.enemies.get('b').markedBy === 'michael', 'the mark jumped on');
+  assert.ok(sim.events.some((e) => e.t === 'pingJump'));
+  // Riff's rattle (no owner) neither refunds nor jumps
+  sim.enemies.clear(); mi.skillCd = 5; foe('c', 30, 1); foe('d', 60, 200); sim.enemies.get('c').marked = 3;
+  sim._hurtEnemy(sim.enemies.get('c'), 10, 0, 0, 'tr');
+  assert.equal(mi.skillCd, 5); assert.ok(!(sim.enemies.get('d').marked > 0));
+  // John Pork: Ping, let the mark expire, Riff-rattle it, kill it: no refund, no jump
+  sim.enemies.clear(); foe('e', 30, 200); foe('f', 60, 200); mi.skillCd = 0; sim._ability(mi);
+  for (let i = 0; i < Math.ceil(PING.mark * 60) + 5; i++) sim.step(1 / 60, new Map());
+  const e = sim.enemies.get('e'); assert.ok(!(e.marked > 0) && !e.markedBy, 'the mark and its owner expire together');
+  mi.skillCd = 3; e.marked = 3;   // what Riff's rattle does: a mark with no owner
+  sim._hurtEnemy(e, 999, 0, 0, 'tr');
+  assert.equal(mi.skillCd, 3, 'no refund from an expired Ping'); assert.ok(!(sim.enemies.get('f')?.marked > 0), 'no jump either');
+  // the owner is the roommate: control of Michael changing hands keeps the credit
+  sim.enemies.clear(); foe('g', 30, 1); sim.enemies.get('g').marked = 3; sim.enemies.get('g').markedBy = 'michael';
+  sim.removePlayer('mi'); sim.addPlayer('ai:michael', 'michael'); const ai = sim.players.get('ai:michael'); ai.skillCd = 4;
+  sim._hurtEnemy(sim.enemies.get('g'), 10, 0, 0, 'tr');
+  assert.ok(Math.abs(ai.skillCd - (4 - PING.refund)) < 1e-9, 'whoever runs Michael now gets the refund');
+});
+
 test('Lake Artemesia\'s enemies hit harder and last longer than the same kind elsewhere (map enemyPower)', () => {
   const lake = MAPS_FOR_TEST.lake;
   assert.ok(lake.enemyPower?.hp > 1 && lake.enemyPower?.dmg > 1);
@@ -2004,6 +2048,12 @@ test('casino board game in co-op: the host records a finished game for the party
   assert.deepEqual(guest.save.flags, {}, 'a guest never records it locally; it reports to the host');
 });
 
+test('room 631: reading the 245 textbook on the bookshelf sets lab.book (trevor, general #179)', () => {
+  const shelf = room631.objects.find((o) => o.id === 'obj.bookshelf');
+  assert.equal(shelf.action, 'pages');
+  assert.equal(shelf.flag, 'lab.book', 'the pages action sets this flag on the first press');
+  assert.ok(/^The 245 lab textbook\./.test(shelf.pages[0]), 'and the first press shows the textbook');
+});
 const { Approach } = await import('../src/game/approach.js');
 test('a caught pickpocket changes that roommate\'s NPC actions across saves until they apologize', () => {
   const save = newSave({ seed: 'npc-memory', rolls: {}, gameVersion: 'test' });
@@ -2648,6 +2698,7 @@ test('both Act 1 victories queue exactly one host finale and checkpoint its comp
       mode: 'host', localId: 'host', save, sim, map, time: { now: 100 },
       net: { broadcast: msg => broadcasts.push(msg) }, _announce() {}, _showActOneArrival() {}, _closeSayAll() {},
       _showActOneCard() { cards++; }, _save() { writes++; }, _fxPop() {}, _levelsReached() {}, _syncParty() {},
+      stage: { after: (_id, then) => then() },   // the staged beat (#104) runs, then the scene
       startDialogue: async (name, _node, done) => { starts.push({ name, done }); return true; },
     });
     if (variant === 'sahur') {
@@ -2907,5 +2958,6 @@ test("Manuel's edge: with the same gear and no skills, Manuel is the toughest an
   }
 });
 
+await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

@@ -58,7 +58,7 @@ export const SKILL_TREE = {
     nodes: [
       { id: 'mi.ping', col: 0, row: 0, name: 'Wide Ping', max: 3, mods: { abilityPower: 0.25 }, text: 'Ping reaches further and marks for longer. +25% per rank.' },
       { id: 'mi.lock', col: 0, row: 1, name: 'Lock-On', max: 2, req: ['mi.ping'], mods: { markDmg: 0.25 }, text: 'Marked things take another 25% per rank.' },
-      { id: 'mi.refresh', col: 0, row: 2, name: 'Refresh Rate', max: 2, req: ['mi.lock'], mods: { skillCd: 0.15 }, text: 'Ping comes back 15% sooner per rank.' },
+      { id: 'mi.refresh', col: 0, row: 2, name: 'Refresh Rate', max: 2, req: ['mi.lock'], mods: { skillCd: 0.15 }, text: 'Ping comes back 15% sooner per rank. Kills on marked things still hand time back on top.' },
       { id: 'mi.read', col: 0, row: 3, name: 'Read Receipts', max: 1, req: ['mi.refresh'], mods: { loot: 0.3, markDmg: 0.2 }, text: 'Marked things drop more, and take another 20%.' },
       { id: 'mi.signal', col: 1, row: 0, name: 'Clean Signal', max: 3, mods: { shot: 3 }, text: '+3 shot damage per rank (once you have a ranged weapon).' },
       { id: 'mi.hands', col: 1, row: 1, name: 'Quick Hands', max: 2, req: ['mi.signal'], mods: { shotCd: -0.05 }, text: 'Fire 10% faster per rank.' },
