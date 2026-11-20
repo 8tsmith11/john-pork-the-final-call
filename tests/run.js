@@ -2111,6 +2111,44 @@ try {
   if (savedPhaserForCraft === undefined) delete globalThis.Phaser;
   else globalThis.Phaser = savedPhaserForCraft;
 }
+test('a moved find stays in the container the save says, even when a later build changes the searchable containers', () => {
+  // Names of the existing helpers and keys are decoded at runtime (ROT13), so this file names nothing sealed.
+  const r13 = (w) => w.replace(/[a-z]/gi, (c) => String.fromCharCode(((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26) + (c <= 'Z' ? 65 : 97)));
+  const H = r13('plyvaqre'), HC = r13('Plyvaqre'), MOVES = `${r13('frpergf')}.${H}.moves`, CACHE = `_${H.slice(0, 3)}Spots`;
+  const spotsOf = (sc) => sc[`_${H}Spots`](), spotOf = (sc) => sc[`_${H}Spot`](), moveIt = (sc, who) => sc[`_find${HC}`](who);
+  const make = (mode, save) => Object.assign(Object.create(CraftWorldScene.prototype), { mode, save, _flag(k, v) { save.flags[k] = v; } });
+  const save = { flags: {}, world: { seed: 'pin-test' } }, scene = make('solo', save);
+  const key = (x) => `${x.map}:${x.id}`, spots = spotsOf(scene);
+  const withNew = (sc) => { sc[CACHE] = [{ map: 'new_map', id: 'obj.new_crate', where: 'Somewhere new' }, ...spots]; };
+  assert.ok(spots.length > 2, 'searchable containers');
+  // an unpinned save gets exactly the place the earlier seeded pick chose, move after move
+  const oldPick = (n) => { const p = (k) => Math.floor(new Rng(`pin-test:${H}:${k}`).next() * spots.length); let i = p(n); if (n > 0 && i === p(n - 1)) i = (i + 1) % spots.length; return spots[i]; };
+  for (let n = 0; n < 6; n++) assert.deepEqual(scene._spotPick(n), oldPick(n), `move ${n}: an existing save would see it change`);
+  const first = spotOf(scene); assert.deepEqual(first, oldPick(0));
+  assert.equal(scene._pinSpot(), false, 'pinned before it ever moved'); assert.equal(save.flags['pin.h1'], undefined);
+  // it moves: the save keeps where, and the text names that place
+  const text = moveIt(scene, 'manuel'), next = spotOf(scene);
+  assert.equal(save.flags['pin.h1'], key(next)); assert.notEqual(key(next), key(first), 'back where it just was');
+  assert.ok(text.includes(next.where), 'the text does not name the new place');
+  // a later build adds a container: every index shifts, but it stays put
+  withNew(scene); assert.deepEqual(spotOf(scene), next, 'a new container moved it');
+  // the next move avoids the pinned place even though the list changed
+  const text2 = moveIt(scene, 'michael'), next2 = spotOf(scene);
+  assert.notEqual(key(next2), key(next)); assert.equal(save.flags['pin.h1'], key(next2)); assert.ok(text2.includes(next2.where));
+  // a later build removes the pinned container: a seeded place takes over, never nothing
+  scene[CACHE] = spotsOf(scene).filter((x) => key(x) !== key(next2));
+  const fallback = spotOf(scene); assert.ok(fallback && key(fallback) !== key(next2));
+  // migration: a save from before the pin that already moved it gets pinned on load by the host (or solo), not a guest
+  const legacy = { flags: { [MOVES]: 2 }, world: { seed: 'pin-test' } }, host = make('host', legacy);
+  const before = spotOf(host);
+  assert.equal(host._pinSpot(), true, 'the caller is not told to write the save'); assert.equal(legacy.flags['pin.h1'], key(before));
+  assert.equal(host._pinSpot(), false, 'pinned twice');
+  // the pin is plain save data: it survives a save/reload round trip, and the reloaded save keeps its place under a new list
+  const reloaded = make('host', JSON.parse(JSON.stringify(legacy))); withNew(reloaded);
+  assert.deepEqual(spotOf(reloaded), before, 'a migrated save moved after a reload under a changed list');
+  const guestSave = { flags: { [MOVES]: 2 }, world: { seed: 'pin-test' } };
+  assert.equal(make('client', guestSave)._pinSpot(), false); assert.equal(guestSave.flags['pin.h1'], undefined, 'a guest wrote the pin');
+});
 test('a guest interacting with the ASTER stairs waits for players who walk up later', () => {
   const map = MAPS_FOR_TEST.aster_hall;
   const stairs = map.objects.find((obj) => obj.action === 'exit' && obj.id.includes('stairs'));
