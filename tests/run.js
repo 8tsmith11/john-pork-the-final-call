@@ -2084,6 +2084,27 @@ try {
   if (savedPhaserForCraft === undefined) delete globalThis.Phaser;
   else globalThis.Phaser = savedPhaserForCraft;
 }
+
+test('rapid back-and-forth between areas (Trevor): exits wait after arriving, and an arrival beat never fires on the wrong map or gets lost', () => {
+  let afterFn = null, calls = 0, exits = 0, now = 10000;
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'solo', save: { flags: {} }, map: { id: 'tunnel_1' }, time: { get now() { return now; }, delayedCall() {} },
+    stage: { active: null, after: (_id, fn) => { afterFn = fn; } }, _hackCall: () => { calls++; }, startDialogue() {},
+    sim: { players: new Map([['host', { x: 8, y: 8 }]]), waitAtExit: () => true, clearWaiting() {} }, _tryExit: () => { exits++; },
+  });
+  const exit = { id: 'obj.back', action: 'exit', to: 'metro_plaza', x: 0, y: 0 };
+  sc._mapGen = 1; sc._arrivedAt = now; sc._onEnterMap(sc.map);
+  // straight back out: held while the beat starts, and for a moment after arriving anyway
+  sc._requestExit(exit, 'host'); assert.equal(exits, 0, 'no leaving while the call is starting');
+  // even if they did get out (say, a guest's exit), the queued call doesn't ring on the plaza, and isn't lost
+  sc.map = { id: 'metro_plaza' }; sc._mapGen = 2; afterFn();
+  assert.equal(calls, 0, 'no call on the wrong map'); assert.ok(!sc.save.flags['act1.beat.call'], 'and the beat is still owed');
+  sc.map = { id: 'tunnel_1' }; sc._mapGen = 3; sc._beatPending = null; sc._onEnterMap(sc.map); afterFn();
+  assert.equal(calls, 1, 'it rings on the way back in'); assert.ok(sc.save.flags['act1.beat.call']);
+  // the arrival grace on its own
+  sc._beatPending = null; sc._arrivedAt = now; sc._requestExit(exit, 'host'); assert.equal(exits, 0, 'a second E right after arriving does nothing');
+  now += 800; sc._requestExit(exit, 'host'); assert.equal(exits, 1, 'a moment later the exit works');
+});
 test('a guest interacting with the ASTER stairs waits for players who walk up later', () => {
   const map = MAPS_FOR_TEST.aster_hall;
   const stairs = map.objects.find((obj) => obj.action === 'exit' && obj.id.includes('stairs'));
