@@ -1932,6 +1932,38 @@ test('cordon, trevor\'s half of #36: a trooper at every checkpoint faces out, wi
   for (const p of sim.players.values()) assert.ok(Math.floor(p.y / 16) > ex.y, `${p.id} landed at row ${Math.floor(p.y / 16)}, beyond the barrier`);
 });
 
+test('combat takes thought (Trevor: "I just walk into the robots and click and everything dies"): poise, committed attacks, deliberate parries', async () => {
+  const { ITEMS } = await import('../src/content/items.js');
+  const arena = () => ({ id: 'thought', w: 60, h: 60, objects: [], enemies: [], spawns: [{ x: 400, y: 400 }], solid: () => false });
+  const rotling = (sim, id, x, y) => sim.enemies.set(id, { id, kind: 'enemy.rotling', def: { ...ENEMIES['enemy.rotling'] }, x, y, hp: ENEMIES['enemy.rotling'].hp, cd: 0, hurtT: 0, kx: 0, ky: 0 });
+  const sim = new Sim(arena(), { seed: 'poise' }); sim.addPlayer('h', 'trevor');
+  rotling(sim, 'a', 420, 400); const e = sim.enemies.get('a');
+  sim._hurtEnemy(e, 5, 100, 0, 'h'); assert.ok(e.kx !== 0 && e.hurtT > 0, 'the first hit staggers');
+  sim._hurtEnemy(e, 5, 100, 0, 'h'); assert.equal(e.kx, 0, 'the next light hit is shrugged off');
+  sim._hurtEnemy(e, 5, 100, 0, 'h', { heavy: true }); assert.ok(e.kx !== 0, 'a finisher breaks through');
+  e.poiseT = 0; e.st = 'windup'; e.kx = 0; sim._hurtEnemy(e, 5, 100, 0, 'h'); assert.equal(e.kx, 0, 'an enemy winding up doesn\'t flinch from a light hit');
+  // mashing the attack into a pack now costs you; the old way cost about a tenth of your health
+  let taken = 0;
+  for (let s = 0; s < 6; s++) {
+    const m = new Sim(arena(), { seed: 'mash' + s }); m.addPlayer('h', 'trevor'); const p = m.players.get('h'); p.x = 400; p.y = 400;
+    p.held = 'melee'; p.mods = { ...(p.mods ?? {}), swing: ITEMS['item.pry_bar'].swing };
+    for (let i = 0; i < 3; i++) rotling(m, 'r' + i, 430 + i * 6, 395 + i * 6);
+    const hp0 = p.hp;
+    for (let t = 0; t < 60 * 20 && m.enemies.size && !p.downed; t++) {
+      let best = null, bd = 1e9; for (const q of m.enemies.values()) { const d = Math.hypot(q.x - p.x, q.y - p.y); if (d < bd) { bd = d; best = q; } }
+      m.step(1 / 60, new Map([['h', { ...emptyInput(), aim: best ? Math.atan2(best.y - p.y, best.x - p.x) : 0, attack: true }]]));
+    }
+    taken += hp0 - Math.max(0, p.hp);
+  }
+  assert.ok(taken / 6 >= 25, `button-mashing three rotlings costs real health now (avg ${Math.round(taken / 6)})`);
+  // a swing after a rest still parries a lunge; a swing in the middle of a flurry doesn't
+  const q = new Sim(arena(), { seed: 'parry' }); q.addPlayer('h', 'trevor'); const p = q.players.get('h'); p.x = 400; p.y = 400; p.aim = 0;
+  p.held = 'melee'; p.mods = { ...(p.mods ?? {}), swing: ITEMS['item.pry_bar'].swing };
+  rotling(q, 'l', 414, 400); const l = q.enemies.get('l'); l.st = 'lunge'; l.hitOnce = false;
+  p.lastSwingAt = q.tick / 60 - 0.2; q._melee(p); assert.ok(!(l.parried > 0), 'mid-flurry: no parry');
+  l.st = 'lunge'; l.hitOnce = false; l.poiseT = 0; p.lastSwingAt = q.tick / 60 - 1; q._melee(p); assert.ok(l.parried > 0, 'a deliberate swing parries');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));

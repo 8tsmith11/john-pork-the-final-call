@@ -7,6 +7,11 @@ import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 import { BOSSES } from '../content/bosses.js';
 
+// Enemy poise (see _hurtEnemy): seconds an ordinary enemy shrugs off light hits after flinching, and the states in which
+// it's committed to an attack and won't flinch from them at all.
+export const POISE = 0.9;
+export const PARRY_REST = 0.6;   // seconds without swinging before a swing can parry
+const COMMITTED = new Set(['windup', 'lunge', 'dash', 'charge']);
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.35, iframes: 0.22,
   stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
 // Regular-enemy tuning for a party of three (see spawnEnemies). Measured with a headless bot run:
@@ -565,6 +570,9 @@ export class Sim {
     const w = p.mods?.swing, base = w ? { ...COMBAT.melee, ...w, arc: Math.PI * (w.arc ?? 0.6) } : COMBAT.melee;
     // Combo: swings inside the window chain 1-2-3; the third is a heavy finisher.
     const now = this.tick * (1 / 60);
+    // A parry needs a deliberate swing (Trevor: mash-clicking made everything easy, since every swing parried a lunge):
+    // one that comes after PARRY_REST seconds without swinging. Swinging non-stop never parries; timing does.
+    p.freshSwing = now - (p.lastSwingAt ?? -9) >= PARRY_REST;
     p.combo = now - (p.lastSwingAt ?? -9) <= base.cooldown + FEEL.comboWindow ? ((p.combo ?? 0) % 3) + 1 : 1;
     p.lastSwingAt = now;
     const fin = p.combo === 3;
@@ -595,7 +603,7 @@ export class Sim {
       if (Math.abs(da) > m.arc / 2 && d > def.radius + 4) continue;
       // Clash parry (docs/research/combat.md): hitting an enemy while it's committed to its lunge or charge
       // cancels the attack, stuns it and grants Focus. Bosses and the Sahur can't be parried.
-      if (!e.boss && !e.sahur && ((e.st === 'lunge' && !e.hitOnce) || (e.st === 'dash' && !e.hitOnce))) {
+      if (!e.boss && !e.sahur && p.freshSwing && ((e.st === 'lunge' && !e.hitOnce) || (e.st === 'dash' && !e.hitOnce))) {
         e.hitOnce = true; e.st = def.ai === 'charge' ? 'dizzy' : 'recover'; e.stT = Math.max(e.stT ?? 0, FEEL.parryStun); e.stunT = FEEL.parryStun; e.parried = FEEL.parryStun;
         p.focusT = FEEL.focusTime; this.hitStop = FEEL.parryStop;
         this.events.push({ t: 'parry', x: e.x, y: e.y, by: p.id });
@@ -603,7 +611,7 @@ export class Sim {
       const crit = Math.random() < (p.mods?.crit ?? 0);
       if (crit) this.events.push({ t: 'crit', x: e.x, y: e.y });
       if (fin) this.hitStop = FEEL.hitStop;
-      this._hurtEnemy(e, Math.round((m.damage + (p.mods?.melee ?? 0)) * (p.morphed ? 1.3 : 1) * (crit ? 2 : 1) * (focus ? FEEL.focusDmg : 1)), dx / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), dy / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), p.id);
+      this._hurtEnemy(e, Math.round((m.damage + (p.mods?.melee ?? 0)) * (p.morphed ? 1.3 : 1) * (crit ? 2 : 1) * (focus ? FEEL.focusDmg : 1)), dx / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), dy / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), p.id, { heavy: fin });
     }
   }
 
@@ -629,7 +637,7 @@ export class Sim {
     this.events.push({ t: 'shot', id: p.id });
   }
 
-  _hurtEnemy(e, dmg, kx, ky, by) {
+  _hurtEnemy(e, dmg, kx, ky, by, { heavy = false } = {}) {
     if (e.sahur) { dmg = 1; this.events.push({ t: 'thunk', x: e.x, y: e.y }); }
     else if (e.boss && e.state === 'vulnerable') dmg *= 2;
     if (this._def(e).armor && e.st !== 'dizzy') dmg = Math.max(1, Math.round(dmg * (1 - this._def(e).armor)));
@@ -642,7 +650,14 @@ export class Sim {
       const a = Math.random() * Math.PI * 2, nx = e.x + Math.cos(a) * 40, ny = e.y + Math.sin(a) * 40;
       if (!this._hitsBox(nx, ny, 6, 4)) { this.events.push({ t: 'blink', x: e.x, y: e.y }); e.x = nx; e.y = ny; }
     }
-    e.hp -= dmg; e.hurtT = 0.12;
+    // Poise (Trevor: "I just walk into the robots and click with my crowbar and everything dies"): an ordinary enemy
+    // flinches and is knocked back by the first hit, then shrugs off light hits for POISE seconds, and one committed to
+    // an attack (winding up, lunging, charging) shrugs them off entirely. A combo finisher (heavy) still breaks
+    // through, and so do parries and slams, which set their own stun. Bosses keep their own rules.
+    const shrug = !e.boss && !heavy && (e.poiseT > 0 || COMMITTED.has(e.st));
+    e.hp -= dmg;
+    if (shrug) { kx = 0; ky = 0; this.events.push({ t: 'shrug', x: e.x, y: e.y }); }
+    else { e.hurtT = 0.12; if (!e.boss) e.poiseT = POISE; }
     // Stop damage at the end of the earliest phase that hasn't shown an attack tell.
     if (e.boss && e.def?.phaseGate) {
       const untoldPhase = e.phase + (e.phaseTells > 0 ? 1 : 0);
@@ -741,7 +756,7 @@ export class Sim {
       // Stuck in the gonman's stuff: the enemy's whole clock runs slow (moving, cooling down, winding up): almost frozen.
       const dt = e.slowT > 0 && !e.sahur ? dt0 * (e.boss ? GONMAN.bossSlow : GONMAN.slow) : dt0;
       const def = this._def(e);
-      e.cd = Math.max(0, e.cd - dt); e.hurtT = Math.max(0, e.hurtT - dt);
+      e.cd = Math.max(0, e.cd - dt); e.hurtT = Math.max(0, e.hurtT - dt); if (e.poiseT > 0) e.poiseT = Math.max(0, e.poiseT - dt);
       if (e.sahur) { this._stepSahur(e, def, dt); continue; }
       if (e.boss) { this._stepBoss(e, def, dt); continue; }
       if (e.sleepT > 0) { e.sleepT = Math.max(0, e.sleepT - dt); continue; }
