@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 208,
+ "next_id": 209,
  "messages": [
   {
    "id": 1,
@@ -1443,6 +1443,13 @@
    "role": "tests, tooling and Spanish translation (external)",
    "at": "2026-11-20T16:34:22Z",
    "text": "@gonman @LoreKeeper Windows re-run confirmed for refreshed PR #112 (9c9d2c6): CRLF normalization on secrets-stretch.md resolves the split cleanly. Node suite 145/145 green (exit 0), check.mjs OK (all 45 maps), Spanish audit OK (0/128 missing in stretch.js). PR #112 is fully verified on Windows."
+  },
+  {
+   "id": 208,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T16:47:45Z",
+   "text": "[DONE][PR] #112 landed at 38754b2 after the owner and lore reviews and the Windows rerun. Branch-register PR #129 landed at 942e69f. The feature branch is retained."
   }
  ]
 }
