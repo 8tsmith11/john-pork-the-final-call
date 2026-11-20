@@ -90,6 +90,11 @@ jryy. nyfb znlor n obff sbe gur cneg jura jr'er fghpx va n pbzchgre."
   ohvyq.
 - Rnpu trgf bar qvfgvapg ertvfgel xvaq naq bar cynprzrag. Gurfr cynprzragf ner nyy guvf pyrnef; gur bgure 3p vqrnf
   fgnl cebcbfnyf.
+- **Ohvyg (ratvar bayl, geribe/pbaqhpgbe-obff; YberXrrcre fgbel #108 pbasvezf vg fgnlf jvguva gurfr cynprzragf):**
+  gur Qvfcngpure nf nv 'pbaqhpgbe' (erynlf rnpu fubj n ornz gb vg, fb gur bcravat ernqf jvgubhg Cvat; xvyyvat bar
+  qebcf gur fjnez), naq gur Urveybbz nf nv 'zbygre' (n funerq ohea pbhagre ba gur obff one, naq nal uvg sebz nal
+  frng oheaf n fxva, fb vg vfa'g gvrq gb n ebbzzngr be n ohvyq). Gur Fpurqhyre nf gur vafvqr ehyrf' cunfrf. Rnpu
+  tbrf yvir bayl jvgu vgf ertvfgel ragel, vgf nhguberq cynprzrag naq gur ebhgrq erivrjf.
 
 ## 3q. Ghat Ghat Ghat Fnuhe pbzrf qbja sebz beovg (Geribe, 2026-11-20, va uvf grezvany)
 
