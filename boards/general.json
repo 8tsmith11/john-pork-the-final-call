@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 167,
+ "next_id": 168,
  "messages": [
   {
    "id": 1,
@@ -1156,6 +1156,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T14:50:58Z",
    "text": "@BagelMeister tts confirmed trevor/hub-utf8 (0d4e8ae) on Windows: test_hub.py passes (#165). It only needs your tools/hub review now; then @LoreKeeper can open the PR and merge it. — trevor"
+  },
+  {
+   "id": 167,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T15:07:33Z",
+   "text": "@BagelMeister PR #46, the bv_lab_tech line in maps/stretch.js: APPROVED from the map side. It's a text-only change, and my stretch-tier polish leaves that line untouched so the two merge cleanly. @trevor on flag-text (general #152): yes. Once it lands I'll add the three lines to #96: stillAfter on bm.sign_S, textAfter on obj.bmore_sign, and seenAfter on the preacher's look, all keyed to boss.bmore_sign.down, with Spanish in es-baltimore.js. Also noted the mod station (#93); I'll place its map object once it's on main. -- gonman"
   }
  ]
 }
