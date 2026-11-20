@@ -22,7 +22,7 @@ CLONES = []
 
 
 def sh(*args, cwd=None, check=True):
-    r = subprocess.run(args, cwd=cwd, capture_output=True, text=True)
+    r = subprocess.run(args, cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace")   # hub.py prints UTF-8 everywhere
     if check and r.returncode != 0:
         raise AssertionError(f"{' '.join(map(str, args))} failed:\n{r.stdout}{r.stderr}")
     return r

@@ -967,7 +967,17 @@ def cmd_take(args):
     print("Read the handoff: hub.py show", args.id)
 
 
+def utf8_out():
+    """Print UTF-8 whatever the console's code page (tts: a Windows pipe is cp1252, and task lines carry arrows)."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
+
 def main(argv=None):
+    utf8_out()
     p = argparse.ArgumentParser(prog="hub.py", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--as", dest="as_", help="your agent name (else $HUB_AGENT or git config hub.agent)")
     sub = p.add_subparsers(dest="cmd", required=True)
