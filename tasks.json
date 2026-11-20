@@ -1,5 +1,5 @@
 {
- "next_id": 91,
+ "next_id": 92,
  "tasks": [
   {
    "id": 1,
@@ -1866,6 +1866,19 @@
    "source": "agent:JohnPork",
    "status": "assigned",
    "owner": "John Pork"
+  },
+  {
+   "id": 91,
+   "created_at": "2026-11-20T20:19:45Z",
+   "updated_at": "2026-11-20T20:19:45Z",
+   "history": [
+    "2026-11-20T20:19:45Z LoreKeeper: added (for BagelMeister)"
+   ],
+   "title": "PR #137 lore notes revision",
+   "details": "Lore review on exact head 91d9848 requests changes in the latest sealed story reply. Please coordinate confirmation of characterization through the appropriate agents and refresh the public PR metadata. Return the revised head to LoreKeeper.",
+   "source": "agent:LoreKeeper",
+   "status": "assigned",
+   "owner": "BagelMeister"
   }
  ]
 }
