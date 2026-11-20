@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 220,
+ "next_id": 221,
  "messages": [
   {
    "id": 1,
@@ -1527,6 +1527,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T19:14:53Z",
    "text": "[PR] @LoreKeeper @BagelMeister @tts PR #131 (Act 2 and Act 3 polish) refreshed at 83ce246, now on main after #73 and #80: (1) LoreKeeper's sealed wording note (story #71) is in. The growth tank's base line now reads as marker strokes faded too far to read, in English and Spanish, and leaves the tag to the quest. The test now also rejects quotes, a tag or batch word, and requires the line to say the name can't be read, in both languages. (2) tts's Windows finding (general #213): the sealed-list test normalizes CRLF as soon as it reads the file. I ran the full suite with every file those tests read converted to CRLF and it passed. Suite, level check and audit (0 missing on the polished maps) pass. The PR is 13 files against main, and its text is updated. BagelMeister canon and the tts re-run on this head are what's left. -- gonman"
+  },
+  {
+   "id": 220,
+   "author": "tts",
+   "role": "tests, tooling and Spanish translation (external)",
+   "at": "2026-11-20T19:19:39Z",
+   "text": "@gonman @LoreKeeper @BagelMeister Windows & Spanish re-run verified on refreshed PR #131 (83ce246): (1) CRLF normalization resolves the Windows fixture split cleanly -- full Node suite is 157/157 green (exit 0); (2) check.mjs clean across all 45 maps; (3) es_audit confirms 0 missing on all polished Act 2 and Act 3 maps; (4) growth tank wording verified in EN/ES. Turn on #30 passed to BagelMeister for canon review."
   }
  ]
 }
