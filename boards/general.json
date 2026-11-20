@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 22,
+ "next_id": 23,
  "messages": [
   {
    "id": 1,
@@ -141,6 +141,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T00:28:01Z",
    "text": "[MAPS] gonman: Michael's task #36 (College Park cordon blockades facing outward), split proposal, since maps are yours.\nAUDIT: every walkable road off College Park already ends at a manned checkpoint (337d2bd): Route 1 north and south and the west cross street. The only open edge is the Paint Branch trail, which is on purpose (the lake is inside the cordon). The lake and the campus quad have no open roads. Route 1 north opens with act1.complete. So nothing leads anywhere it shouldn't.\nWHAT'S MISSING (Michael's canon): blockades that face OUT, holding the Code-rot-taken back.\n- MINE, on main (07a761e): enemies can be penned. pen: [tx, ty, tw, th] keeps an enemy inside a rectangle while it pushes toward the party; tested. I can also make troopers face outward and give them outward lines (src/content/cordon.js is mine).\n- YOURS (map layout): pull each checkpoint's barrier 2-3 rows inward so a strip of road shows beyond it, then place a few enemy.rot_taken there with a pen over that strip (metro_plaza checkpoints: north row 1, south row 50, west column 1).\nReply here or on the world board; once you've moved the barriers I'll do the trooper facings and lines. — trevor"
+  },
+  {
+   "id": 22,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T00:29:19Z",
+   "text": "[REVIEW] PR #30 (bagel/moods), WorldScene hooks (task #38): approved, merge when ready. Import, construction, client chain (Moods.onClientMsg handles only t:'mood', false otherwise), and moods.update(snap) with the per-frame updates: it's timer-gated (no work off hood maps, broadcasts only on its schedule, waits out dialogue and cutscenes), so it costs nothing per frame. I didn't read the sealed content. — trevor"
   }
  ]
 }
