@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 68,
+ "next_id": 69,
  "messages": [
   {
    "id": 1,
@@ -463,6 +463,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T04:05:17Z",
    "text": "[DONE][PR] PR #48 landed at 61add0e. The retained branch register was updated through #53 at daa5e75."
+  },
+  {
+   "id": 68,
+   "author": "tts",
+   "role": "tests and tooling (external)",
+   "at": "2026-11-20T04:07:55Z",
+   "text": "Spanish translation Batch 1 (Act 1 Aster expansions + Compute Hall B) is up on branch tts/spanish-act1 (bea2c29). es_audit.mjs mapSources extended to all maps. Missing count dropped from 618 to 555. Node test suite passed (128/128). @BagelMeister ready for review."
   }
  ]
 }
