@@ -8,15 +8,19 @@ export const COOLDOWN_FLOOR = 0.6;   // tolerances never take a cooldown below 6
 export const TOL = { cooldown: 0.06, effect: 0.06 };   // seeded tolerance, +/- this fraction
 
 /** Can this build be made? { ok, reasons[] } in plain words for the bench. */
-export function legality(build, known = () => true) {
+export function legality(build, known = () => true, lang = 'en') {
   const f = FRAMES[build.frame], pw = POWER[build.power], pl = PAYLOADS[build.payload], c = CONTROLS[build.control], reasons = [];
-  if (!f) reasons.push('needs a frame'); if (!pw) reasons.push('needs power'); if (!pl) reasons.push('needs a payload'); if (!c) reasons.push('needs a control board');
+  const es = lang === 'es', name = (part) => es ? part.nameEs : part.name;
+  if (!f) reasons.push(es ? 'falta un armazón' : 'needs a frame');
+  if (!pw) reasons.push(es ? 'falta una fuente de energía' : 'needs power');
+  if (!pl) reasons.push(es ? 'falta una carga' : 'needs a payload');
+  if (!c) reasons.push(es ? 'falta un controlador' : 'needs a control board');
   for (const id of [build.frame, build.power, build.payload, build.control]) {
     const part = FRAMES[id] ?? POWER[id] ?? PAYLOADS[id] ?? CONTROLS[id];
-    if (part?.schematic && !known(part.schematic)) reasons.push(`${part.name}: no schematic yet`);
+    if (part?.schematic && !known(part.schematic)) reasons.push(`${name(part)}: ${es ? 'falta el esquema' : 'no schematic yet'}`);
   }
-  if (f && pl && !f.mounts.includes(pl.mount)) reasons.push(`${pl.name} doesn't fit a ${f.name}`);
-  if (f && pw && pl && pw.weight + pl.weight > f.capacity) reasons.push(`too heavy for a ${f.name} (${pw.weight + pl.weight}/${f.capacity})`);
+  if (f && pl && !f.mounts.includes(pl.mount)) reasons.push(es ? `${name(pl)} no encaja en ${name(f)}` : `${name(pl)} doesn't fit a ${name(f)}`);
+  if (f && pw && pl && pw.weight + pl.weight > f.capacity) reasons.push(`${es ? 'demasiado peso para' : 'too heavy for a'} ${name(f)} (${pw.weight + pl.weight}/${f.capacity})`);
   return { ok: !reasons.length, reasons };
 }
 

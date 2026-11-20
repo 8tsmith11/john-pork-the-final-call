@@ -2202,7 +2202,7 @@ test('AI companions follow the human, fight, and never trigger exits', () => {
 const Inv = await import('../src/engine/inventory.js');
 test('modular printing validates parts and schematics, commits material costs atomically and saves the exact build', async () => {
   const { BUILT_GADGET } = await import('../src/content/gadgets.js');
-  const { printBuild, previewBuild } = await import('../src/engine/gadgetBuilds.js');
+  const { printBuild, previewBuild, serviceController, wornController } = await import('../src/engine/gadgetBuilds.js');
   const save = newSave({ seed: 'workbench', rolls: {}, gameVersion: 'test' });
   const c = save.party.trevor;
   const selection = { frame: 'part.bracket', power: 'part.cell', payload: 'part.arc', control: 'part.autoboard' };
@@ -2230,6 +2230,93 @@ test('modular printing validates parts and schematics, commits material costs at
   assert.equal(restored.party.trevor.equipped.gadget, BUILT_GADGET);
   assert.deepEqual(restored.party.trevor.rolled.gadget, first.roll);
   assert.equal(restored.world.gearMade[BUILT_GADGET], 1);
+  assert.deepEqual(restored.party.trevor.gadgetPattern, selection);
+  const restoredCharacter = restored.party.trevor;
+  const fitted = restoredCharacter.rolled.gadget;
+  fitted.uses = 40;
+  assert.ok(wornController(restoredCharacter).chance > 0.03);
+  assert.ok(serviceController(restoredCharacter));
+  assert.equal(restoredCharacter.rolled.gadget, fitted, 'service must keep the exact rechargeable instance');
+  assert.equal(fitted.uses, 0);
+  assert.equal(wornController(restoredCharacter).chance, 0.03);
+});
+
+test('modular casts spend their own charges after aiming, keep the recharge through swaps, and honor payload limits', async () => {
+  const { BUILT_GADGET, GADGETS, gadgetEffectValue } = await import('../src/content/gadgets.js');
+  const { equippedBuildStats } = await import('../src/engine/gadgetBuilds.js');
+  const arena = { id: 'gadget-bench', w: 60, h: 60, solid: () => false, objects: [], enemies: [], spawns: [{ x: 400, y: 400 }] };
+  const s = new Sim(arena, { seed: 'gadget-bench' });
+  s.addPlayer('host', 'trevor');
+  const p = s.players.get('host');
+  const equip = (options = {}) => {
+    const build = { frame: 'part.conduit', power: 'part.pack', payload: 'part.arc', control: 'part.handboard', ...options };
+    const roll = { build, uses: 0 };
+    Object.assign(p, { gadget: BUILT_GADGET, gadgetRoll: roll, gadgetBuild: equippedBuildStats(build) });
+    return roll;
+  };
+  const enemy = { id: 'target', kind: 'enemy.rotling', x: p.x + 20, y: p.y, hp: 200, kx: 0, ky: 0, cd: 0, hurtT: 0, sleepT: 2 };
+  s.enemies.set(enemy.id, enemy);
+  const step = (input = {}) => s.step(1 / 60, new Map([['host', { ...emptyInput(), aim: 0, ...input }]]));
+  const waitAim = () => { for (let i = 0; i < 45 && p.gadgetAim; i++) step(); };
+  const view = () => s.snapshot().players[0];
+  const arc = equip();
+  step({ gadget: true });
+  assert.ok(view().gadgetAiming);
+  assert.equal(view().gadgetCharges, 2);
+  waitAim();
+  assert.equal(view().gadgetCharges, 1);
+  assert.ok(enemy.hp < 200 && arc.uses === 1);
+  step({ gadget: true }); waitAim();
+  assert.equal(view().gadgetCharges, 0);
+  assert.equal(arc.uses, 2);
+  const other = equip({ power: 'part.fusebank' });
+  step({ gadget: true });
+  assert.equal(view().gadgetCharges, 0, 'a second copy of the same payload cannot bypass the existing charge timer');
+  assert.ok(!p.gadgetAim && other.uses === 0);
+  Object.assign(p, { gadget: 'item.arc_splicer', gadgetRoll: null, gadgetBuild: null });
+  step({ gadget: true });
+  assert.ok(!s.events.some((event) => event.t === 'gadgetCast'), 'the stock Arc also respects recharge after an assembled Arc');
+  p.gadget = BUILT_GADGET;
+  p.gadgetRoll = arc; p.gadgetBuild = equippedBuildStats(arc.build);
+  assert.equal(view().gadgetCharges, 0, 'charges follow the original item');
+  s.setMap(arena);
+  assert.equal(view().gadgetCharges, 0, 'travel preserves recharge');
+  s.playTime += p.gadgetBuild.cooldown;
+  assert.equal(view().gadgetCharges, 1, 'one charge replenishes per interval');
+  s.playTime += p.gadgetBuild.cooldown;
+  assert.equal(view().gadgetCharges, 2);
+
+  const burst = equip({ payload: 'part.burst' });
+  Object.assign(enemy, { x: p.x + 20, y: p.y, poiseT: 0.5, kx: 0 });
+  s.enemies.set(enemy.id, enemy);
+  s._fireBuiltGadget(p, new Map());
+  assert.equal(enemy.kx, 0, 'the burst respects active poise');
+  enemy.poiseT = 0;
+  s._fireBuiltGadget(p, new Map());
+  assert.equal(enemy.kx, equippedBuildStats(burst.build).effect);
+
+  const gel = equip({ payload: 'part.gel', power: 'part.fusebank' });
+  s._fireBuiltGadget(p, new Map());
+  assert.equal(s.gadgetFields.length, 1);
+  const fieldStats = equippedBuildStats(gel.build);
+  assert.ok(fieldStats.effect / fieldStats.cooldown <= 0.25);
+  s.playTime += fieldStats.effect + 0.1;
+  step();
+  assert.equal(s.gadgetFields.length, 0, 'the slow field expires');
+
+  const lens = equip({ payload: 'part.lens', control: 'part.autoboard' });
+  step({ gadget: true });
+  step({ gadgetBlocked: true });
+  assert.ok(!p.gadgetAim && lens.uses === 0, 'a blocked aim cancels without spending the charge');
+  step({ gadget: true });
+  const random = Math.random;
+  try { Math.random = () => 0; waitAim(); } finally { Math.random = random; }
+  assert.ok(s.events.some((event) => event.t === 'gadgetGlitch'));
+  assert.ok(!s.events.some((event) => event.t === 'gadgetScan') && lens.uses === 1);
+  s._fireBuiltGadget(p, new Map());
+  assert.ok(s.events.some((event) => event.t === 'gadgetScan' && event.range === 160));
+  const tuned = equippedBuildStats({ ...arc.build, power: 'part.fusebank', tol: { effect: 10, cooldown: -10 } });
+  assert.ok(gadgetEffectValue(GADGETS['item.arc_splicer'], tuned.effect) / tuned.cooldown <= 5.4);
 });
 // Exercise the real scene method without starting Phaser's browser renderer.
 const savedPhaserForCraft = globalThis.Phaser;
