@@ -1190,6 +1190,19 @@ test('i18n: every Route 1 shop and airfield line, label, page and shop header ha
   finally { i18nMod.setLang(was); }
 });
 
+const hostPickMod = await import('../src/game/hostPick.js');
+test('sealed (hub #67): picks one that can play now, then cools down', () => {
+  const sc = { mode: 'solo', time: { now: 100000 }, save: { flags: {}, party: { manuel: { level: 1 } } }, fart: { next: 9e9 }, beltless: { next: 9e9 }, bigButt: { next: 9e9 }, toothpaste: { next: 9e9 }, gags: { next: { chat: 9e9, abuela: 9e9 } } };
+  const apart = { players: [{ id: 'm', c: 'manuel', x: 0, y: 0 }, { id: 'k', c: 'michael', x: 500, y: 0 }, { id: 't', c: 'trevor', x: 900, y: 0 }] };
+  assert.deepEqual(hostPickMod.pickOptions(sc, apart).map((g) => g.id).sort(), ['abuela', 'belt', 'butt', 'chat', 'fart']);
+  const b = new hostPickMod.HostPick(sc);
+  assert.equal(b.press(apart, () => 0), 'fart');
+  assert.equal(sc.fart.next, 0);
+  assert.equal(b.press(apart, () => 0), null, 'cooldown');
+  sc.time.now += 4000;
+  assert.equal(b.press({ players: [] }), null);
+});
+
 const { ES_HUD } = await import('../src/i18n/es-hud.js');
 test('i18n: every map name has Spanish', () => {
   const missing = Object.values(MAPS_FOR_TEST).map((m) => m.name).filter((n) => n && !(n in ES_HUD));
