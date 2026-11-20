@@ -21,6 +21,9 @@ Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `c1ea62a`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `trevor/readme-undo` | GitHub | Merged in `8c402b0` (PR #147) |
+| `jp/coop-reconnect` | GitHub | Merged in `4098ca4` (PR #85) |
+| `lorekeeper/pr134-branch-register` | GitHub | Merged in `cdf2fa2` (PR #146) |
 | `bagel/opening-fixes` | GitHub | Squash-merged in `c1ea62a` (PR #134) |
 | `lorekeeper/pr115-branch-register` | GitHub | Merged in `2cb09c3` (PR #138) |
 | `jp/quest-npc-meet` | GitHub | Merged in `a43424f` (PR #115) |
