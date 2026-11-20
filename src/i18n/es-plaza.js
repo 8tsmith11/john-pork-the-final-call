@@ -110,7 +110,7 @@ export const ES_PLAZA = {
   'Finland, with his eyes shut. A tear gets under the glasses.\n\n"Don\'t talk during Finland."': 'Finlandia, con los ojos cerrados. Una lágrima se le mete bajo los lentes.\n\n"No hables durante Finlandia."',
   'Paraguay. Between verses: "I have a 245 lab due at nine." He checks nothing and starts the next verse. "Paraguay first."': 'Paraguay. Entre estrofas: "Tengo que entregar el laboratorio 245 a las nueve." No revisa nada y empieza la siguiente estrofa. "Primero Paraguay."',
   'He is humming something you half know and he stops when he sees you listening.\n\n"That one\'s Maryland\'s. They retired it. I don\'t retire anthems."': 'Tararea algo que medio conoces y se detiene cuando ve que escuchas.\n\n"Ese es el de Maryland. Lo retiraron. Yo no retiro himnos."',
-  'Compute Hall B': 'Pabellón de Cómputo B',
+  'Compute Hall B': 'Edificio de Cómputo B',
   'Badge reader. It knows you. It says your section is 245 and your section is late.': 'Lector de credenciales. Te conoce. Dice que tu sección es la 245 y que tu sección llega tarde.',
   'Car': 'Auto',
   'It still thinks it is driving. The dashboard shows a road in another state.': 'Todavía cree que está manejando. El tablero muestra una ruta en otro estado.',
@@ -161,9 +161,8 @@ export const ES_PLAZA = {
   "\"Scooter dash lit up with a pig and a missed call. There's no phone in a scooter.\" Big Ray taps the dash. \"There's no phone in me either.\"": "\"El tablero del scooter se prendió con un cerdo y una llamada perdida. Un scooter no tiene teléfono.\" Big Ray golpea el tablero. \"Yo tampoco.\"",
   "coderot. it rang. it rang for everyone. coderot.": "podredumbre. sonó. sonó para todos. podredumbre.",
   // campus.js (Compute Hall B)
-  'Compute Hall B': 'Edificio de Cómputo B',
   'Lab bench (245)': 'Mesa de laboratorio (245)',
-  "[scaffold] Manuel's bench in 245. A half-finished head sculpt under a dust cover, ears marked lower than you'd think.": '[scaffold] La mesa de Manuel en el 245. La escultura a medio terminar de una cabeza bajo una funda antipolvo, con las orejas marcadas más abajo de lo que pensarías.',
+  "[scaffold] Manuel's bench in 245. A half-finished head sculpt under a dust cover, ears marked lower than you'd think.": '[scaffold] Una cabeza esculpida a medio terminar bajo una funda antipolvo, con las orejas marcadas más abajo de lo que pensarías.',
   'Lab bench': 'Mesa de laboratorio',
   "[scaffold] Somebody's project, abandoned mid-solder. The iron is still plugged in.": '[scaffold] El proyecto de alguien, abandonado a mitad de soldar. El soldador sigue enchufado.',
   'Storage crate': 'Caja de almacenamiento',
@@ -173,7 +172,7 @@ export const ES_PLAZA = {
   'Student, stuck': 'Estudiante, atascado',
   '[scaffold] "The doors only unlock on the hour. I\'ve been here since the eleven o\'clock."': '[scaffold] "Las puertas solo se abren a las horas en punto. Llevo aquí desde las once."',
   'Back out to the campus walk': 'De vuelta al paseo del campus',
-  'Out into the night.': 'Hacia la noche.',
+  'Out into the night.': 'Afuera, a la noche.',
   'Out to the quad': 'Hacia el patio central',
   'The back doors, out to the campus quad.': 'Las puertas traseras, hacia el patio central del campus.',
 };
