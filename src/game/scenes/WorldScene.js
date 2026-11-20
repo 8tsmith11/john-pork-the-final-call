@@ -671,7 +671,7 @@ export class WorldScene extends Phaser.Scene {
           if (o && typeof msg.quest === 'string') this._giveQuestItem(o, msg.quest, this._charOf(peer), peer);
         }
         if (msg.t === 'puzzle') { const o = this.map.objects.find((x) => x.id === msg.id), pz = o && puzzleFor(o.id); if (pz) this._usePuzzle(pz, o, this._charOf(peer), peer); }   // puzzle kit, host side
-        if (msg.t === 'search') { const o = this.map.objects.find((x) => x.id === msg.id && x.loot); if (o) this._search(o, this._charOf(peer)); }
+        if (msg.t === 'search') { const o = this.map.objects.find((x) => x.id === msg.id && x.loot); if (o) this._search(o, this._charOf(peer), peer); }
         if (msg.t === 'zip') { const o = this.map.objects.find((x) => x.id === msg.id && x.zip); if (o) this._zip(o, peer); }
         if (msg.t === 'useSlot') { this._useSlot = msg.i | 0; this._use(this._charOf(peer), peer); }
         if (msg.t === 'move' && this.save.party[this._charOf(peer)]) { Inv.moveSlot(this.save.party[this._charOf(peer)], msg.a, msg.b, msg.half === true); this._syncParty(); }
@@ -699,7 +699,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'lab') { this._lab().onClientMsg(msg); return; }
         if (this.shared?.onMsg(msg) || this.stage?.onClientMsg(msg) || this.retry?.onClientMsg(msg) || this.moods?.onClientMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg)) return;
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
-        if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text, msg.questRead);
+        if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text, msg.questRead, msg.itemIcons);
         if (msg.t === 'caption') this._caption(msg.text);
         if (msg.t === 'reload') { this.scene.restart({ mode: 'client', net: this.net, save: msg.save, character: this.character }); return; }
         if (msg.t === 'party') { this.save.party = msg.party; this._refreshMenu(); }   // wallets ride along in party
@@ -1324,13 +1324,18 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // Procedural loot: search a container once; what's inside is seeded by the world seed + object id.
-  _search(o, who = this.character) {
+  _search(o, who = this.character, peer = this.localId) {
     if (this.mode === 'client') { this.net.send({ t: 'search', id: o.id }); return; }
+    if (!this.save.party[who]) return;
+    const reply = (text, itemIcons) => {
+      if (peer === this.localId) this._say(text, undefined, itemIcons);
+      else this.net?.send(peer, { t: 'say', text, itemIcons });
+    };
     const key = `loot.${this.map.id}.${o.id}`, base = o.text ?? o.label;
     // Trevor's floor (roommates.md, 2026-11-19): no crude humor on his character, so he never finds it.
     const cyl = who !== 'trevor' && this._cylinderHere(o) ? this._findCylinder(who) : '';
-    if (this.save.flags[key]) return this._say(`${base}\n\nPicked clean.${cyl}`);
-    const L = LOOT[o.loot]; if (!L) return this._say(base);
+    if (this.save.flags[key]) return reply(`${base}\n\nPicked clean.${cyl}`);
+    const L = LOOT[o.loot]; if (!L) return reply(base);
     this._flag(key, true);
     const rng = new Rng(`${this.save.world.seed}:${key}`);
     const total = L.table.reduce((t, e) => t + e[1], 0), got = new Map();
@@ -1338,14 +1343,19 @@ export class WorldScene extends Phaser.Scene {
       let r = rng.next() * total; const [id, , lo, hi] = L.table.find((e) => (r -= e[1]) < 0) ?? L.table[0];
       got.set(id, (got.get(id) ?? 0) + lo + Math.floor(rng.next() * (hi - lo + 1)));
     }
-    const c = this.save.party[L.to ?? who], parts = [];   // L.to: it belongs to one roommate, whoever opens it
+    const c = this.save.party[L.to ?? who], parts = [], itemIcons = [];   // L.to names the recipient
     for (const [id, n] of got) {
       if (id === 'money') { W.addMoney(this.save, L.to ?? who, n); parts.push(`$${n}`); }
-      else { Inv.add(c, id, n); parts.push(`${ITEMS[id]?.name ?? id}${n > 1 ? ' ×' + n : ''}`); }
+      else {
+        const added = n - Inv.add(c, id, n);
+        if (added === 0) continue;
+        parts.push(`${ITEMS[id]?.name ?? id}${added > 1 ? ' ×' + added : ''}`);
+        itemIcons.push(id);
+      }
     }
     this._partyDirty = true; this._syncParty?.(); sfx('pickup');
     const into = L.to && L.to !== who ? `Into ${L.to[0].toUpperCase()}${L.to.slice(1)}'s bag` : 'You find';
-    this._say(`${base}\n\n${into}: ${parts.join(', ')}.${cyl}`);
+    reply(`${base}\n\n${parts.length ? `${into}: ${parts.join(', ')}.` : 'The bag is full.'}${cyl}`, itemIcons);
   }
 
   // ---------- quests (src/content/quests.js) ----------
@@ -1661,9 +1671,9 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode === 'client') { this.net.send({ t: 'puzzle', id: o.id }); return; }
     const ctx = { seed: this.save.world.seed, t: this.time.now / 1000 };
     const r = usePuzzle(p, o.id, this.save.flags, { ...ctx, lang: 'en' }), rEs = usePuzzle(p, o.id, this.save.flags, { ...ctx, lang: 'es' });
-    const reply = (text, textEs = text) => {
-      if (peer === this.localId) this._say(getLang() === 'es' ? textEs : text);
-      else this.net?.send(peer, { t: 'say', text, textEs });
+    const reply = (text, textEs = text, itemIcons) => {
+      if (peer === this.localId) this._say(getLang() === 'es' ? textEs : text, undefined, itemIcons);
+      else this.net?.send(peer, { t: 'say', text, textEs, itemIcons });
     };
     const item = r.solved && r.reward.item;
     const pc = this.save.party[who];
@@ -1672,14 +1682,13 @@ export class WorldScene extends Phaser.Scene {
     for (const [k, v] of Object.entries(r.set)) this.save.flags[k] = v;
     sfx(r.wrong ? 'hit' : 'swing');
     if (r.solved) {
-      if (item) this._toast(`★ ${ITEMS[item]?.name ?? item}`);
       if (r.reward.money) W.addMoney(this.save, who, r.reward.money);
       this._syncParty?.(); this._partyDirty = true;
       this.cameras.main.shake(300, 0.005); this._tickQuests(true);
     }
     const base = o.text ?? o.label ?? '';
     const text = `${base}\n\n${r.say}`, textEs = `${tr(base)}\n\n${rEs.say}`;
-    reply(text, textEs);
+    reply(text, textEs, item ? [item] : undefined);
   }
 
   // Hard optional: turn Manuel's busts to face the flag, in the right order.
@@ -2055,8 +2064,13 @@ export class WorldScene extends Phaser.Scene {
   // dialogue box; past ~60% of the screen it caps and the font steps down a size.
   // The say box (object text, quest pitches, hints): same text size always, paged at 6 lines;
   // E or a click turns the page, and closes it after the last one.
-  _say(text, questRead) {
+  _say(text, questRead, itemIcons) {
     const W = VIEW.w, H = VIEW.h, bottom = H - 5;
+    const icons = Array.isArray(itemIcons) ? itemIcons.filter((id) => Object.hasOwn(ITEMS, id)).slice(0, 4) : [];
+    this._sayIcons ??= [];
+    for (const icon of this._sayIcons) icon.setVisible(false);
+    const gutter = icons.length ? 4 + 17 * icons.length : 0;
+    this.boxText.setX(18 + gutter).setWordWrapWidth(W - 36 - gutter);
     this._sayPages = this._paginate(tr(String(text ?? '')), this.boxText, 6); this._sayPage = 0;   // translate before wrapping
     this._sayQuestRead = questRead;
     this.boxText.setText(this._sayPages[0] + (this._sayPages.length > 1 ? `   ▼ 1/${this._sayPages.length}` : '')).setVisible(true).setAlpha(0);
@@ -2064,6 +2078,11 @@ export class WorldScene extends Phaser.Scene {
     this.box.setSize(W - 20, h).setPosition(W / 2, bottom - h / 2).setVisible(true);
     this.box.geom?.setSize?.(W - 20, h); this.box.updateDisplayOrigin?.();
     this.boxText.setY(bottom - h + 7);
+    for (const [i, id] of icons.entries()) {
+      const icon = this._sayIcons[i] ??= this.add.image(0, 0, 'icons', 'generic').setOrigin(0).setScrollFactor(0).setDepth(9002);
+      icon.setFrame(icon.texture.has(id) ? id : 'generic').setDisplaySize(14, 14)
+        .setPosition(18 + 17 * i, this.boxText.y).setVisible(true);
+    }
     this.sayOpen = true;
     this._drawSayRich();
   }
@@ -2073,7 +2092,12 @@ export class WorldScene extends Phaser.Scene {
     this._sayLineH ??= (() => { const m = this.add.text(0, 0, 'A\nA', { ...FONT, fontSize: '8px' }).setVisible(false); const h2 = m.height; m.setText('A'); const h = h2 - m.height; m.destroy(); return h; })();
     this._richRuns(this._sayRich, this.boxText.text, this.boxText.x, this.boxText.y, this._sayLineH, { ...FONT, fontSize: '8px' }, '#e8e8f0', 9002);
   }
-  _closeSayAll() { this._sayPages = null; this._sayQuestRead = null; this.box.setVisible(false); this.boxText.setVisible(false); this.sayOpen = false; this._drawSayRich(); }
+  _closeSayAll() {
+    this._sayPages = null; this._sayQuestRead = null;
+    this.box.setVisible(false); this.boxText.setVisible(false); this.sayOpen = false;
+    for (const icon of this._sayIcons ?? []) icon.setVisible(false);
+    this._drawSayRich();
+  }
   _closeSay() {
     if (this._sayPages && this._sayPage < this._sayPages.length - 1) {   // next page first
       this._sayPage++;
