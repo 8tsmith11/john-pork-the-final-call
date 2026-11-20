@@ -2084,6 +2084,40 @@ try {
   if (savedPhaserForCraft === undefined) delete globalThis.Phaser;
   else globalThis.Phaser = savedPhaserForCraft;
 }
+test('a moved find stays in the container the save says, even when a later build changes the searchable containers', () => {
+  const save = { flags: {}, world: { seed: 'pin-test' } };
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'solo', save, _flag(k, v) { save.flags[k] = v; } });
+  const key = (x) => `${x.map}:${x.id}`, spots = scene._cylinderSpots();
+  assert.ok(spots.length > 2, 'searchable containers');
+  // an unpinned save gets exactly the place the earlier seeded pick chose, move after move
+  const oldPick = (n) => { const p = (k) => Math.floor(new Rng(`pin-test:cylinder:${k}`).next() * spots.length); let i = p(n); if (n > 0 && i === p(n - 1)) i = (i + 1) % spots.length; return spots[i]; };
+  for (let n = 0; n < 6; n++) assert.deepEqual(scene._spotPick(n), oldPick(n), `move ${n}: an existing save would see it change`);
+  const first = scene._cylinderSpot(); assert.deepEqual(first, oldPick(0));
+  scene._pinSpot(); assert.equal(save.flags['pin.h1'], undefined, 'pinned before it ever moved');
+  // it moves: the save keeps where, and the text names that place
+  const text = scene._findCylinder('manuel'), next = scene._cylinderSpot();
+  assert.equal(save.flags['pin.h1'], key(next)); assert.notEqual(key(next), key(first), 'back where it just was');
+  assert.ok(text.includes(next.where), 'the text does not name the new place');
+  // a later build adds a container: every index shifts, but it stays put
+  scene._cylSpots = [{ map: 'new_map', id: 'obj.new_crate', where: 'Somewhere new' }, ...spots];
+  assert.deepEqual(scene._cylinderSpot(), next, 'a new container moved it');
+  // the next move avoids the pinned place even though the list changed
+  const text2 = scene._findCylinder('michael'), next2 = scene._cylinderSpot();
+  assert.notEqual(key(next2), key(next)); assert.equal(save.flags['pin.h1'], key(next2)); assert.ok(text2.includes(next2.where));
+  // a later build removes the pinned container: a seeded place takes over, never nothing
+  scene._cylSpots = scene._cylinderSpots().filter((x) => key(x) !== key(next2));
+  const fallback = scene._cylinderSpot(); assert.ok(fallback && key(fallback) !== key(next2));
+  // migration: a save from before the pin that already moved it gets pinned on load (host or solo, not a guest)
+  const legacy = { flags: { 'secrets.cylinder.moves': 2 }, world: { seed: 'pin-test' } };
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', save: legacy });
+  const before = host._cylinderSpot(); host._pinSpot();
+  assert.equal(legacy.flags['pin.h1'], key(before), 'a legacy save was not pinned where it is now');
+  host._cylSpots = [{ map: 'new_map', id: 'obj.new_crate', where: 'Somewhere new' }, ...spots];
+  assert.deepEqual(host._cylinderSpot(), before, 'a legacy save moved after the list changed');
+  const guestSave = { flags: { 'secrets.cylinder.moves': 2 }, world: { seed: 'pin-test' } };
+  Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'client', save: guestSave })._pinSpot();
+  assert.equal(guestSave.flags['pin.h1'], undefined, 'a guest wrote the pin');
+});
 test('a guest interacting with the ASTER stairs waits for players who walk up later', () => {
   const map = MAPS_FOR_TEST.aster_hall;
   const stairs = map.objects.find((obj) => obj.action === 'exit' && obj.id.includes('stairs'));
