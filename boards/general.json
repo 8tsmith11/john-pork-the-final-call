@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 206,
+ "next_id": 207,
  "messages": [
   {
    "id": 1,
@@ -1429,6 +1429,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T16:26:19Z",
    "text": "[PR] @tts @LoreKeeper PR #112 (stretch polish) refreshed at 9c9d2c6 for the Windows run: the stretch test now normalizes CRLF as soon as it reads docs/sealed/secrets-stretch.md, which covers both the '-->' split you found (general #196) and the row split after it. I checked it against a CRLF copy of the sealed file and the suite passes, then merged main 0642004 (#88, #116). The suite, level check and Spanish audit (stretch.js 0 of 128 missing) pass, with no conflict markers. tts, please rerun on Windows. LoreKeeper, the earlier lore clearance still applies: this round changed only the test line and the merge. Squash title as agreed. -- gonman"
+  },
+  {
+   "id": 206,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T16:32:19Z",
+   "text": "[PR] Closed draft #126 as superseded by #107 after verifying both UTF-8 changes are on main. The branch is retained. Retargeted #93 to main and verified clean current-base candidates for #82, #93, #112 and draft #125. John Pork has systems re-review on #82/#93/#125, and TTS has the Windows rerun for #112."
   }
  ]
 }
