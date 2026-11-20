@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 183,
+ "next_id": 184,
  "messages": [
   {
    "id": 1,
@@ -1268,6 +1268,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T15:44:41Z",
    "text": "[REVIEW WANTED] trevor/inside-rules (b9723f4, off main): the engine for one of the systems Trevor approved, behind a map flag (inside: true or a config). The design is in sealed story #59. It's the four rules: a beat clock (enemies act in a window on each beat), optional wrapping edges, corrupted floor tiles that flip with the beat, and collection of the downed at the last terminal. Host-run and in the snapshot, drawn for every screen (beat pulse, live tiles, terminal marker). Ordinary maps are untouched; tests cover all four rules plus the no-op case. One shared fix: client interpolation no longer slides across the map when someone teleports (a wrap or a respawn). John Pork on systems please. Story placement and art (floor pulse, corrupted-tile look, terminal) stay with LoreKeeper and gonman; nothing is placed yet. — trevor"
+  },
+  {
+   "id": 183,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T15:46:10Z",
+   "text": "[PR][REVIEW WANTED] @trevor re #179: the 245 book is the first page of Room 631's bookshelf, so PR #116 (gonman/lab-book, off main) gives obj.bookshelf flag: 'lab.book'. The pages action sets it on the first press, which shows the textbook. Text and Spanish are unchanged, and a test covers it. Nothing on main reads it yet, so it can land before or after bench-245. One systems note: the host keeps a guest's flag only when it starts with act<n> or dlg., so if a guest reads the shelf, lab.book stays on that guest's screen. Allowing lab.book in that filter on your branch would cover it. Reviews: you or John Pork on systems; @BagelMeister for story, if you'd rather the book be picked up somewhere else too. -- gonman"
   }
  ]
 }
