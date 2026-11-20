@@ -107,6 +107,8 @@ const BUNK_SLEEP = {
   sleep: { en: 'Trevor sets an alarm, then turns it off again. Michael is asleep before the light is. Manuel lies on the bottom bunk with the cut ribbon wound round two fingers, looking up at the postcard. Nobody says the word balloon.', es: 'Trevor pone una alarma y la vuelve a apagar. Michael se duerme antes que la luz. Manuel se queda en la cucheta de abajo con la cinta cortada enrollada en dos dedos, mirando la postal. Nadie dice la palabra globo.' },
 };
 
+let nextQuestRead = 0;
+
 export class WorldScene extends Phaser.Scene {
   constructor() { super('World'); }
 
@@ -1385,8 +1387,9 @@ export class WorldScene extends Phaser.Scene {
     const act = (fn) => { if (client) this.net.send({ t: 'questUse', id: near.id }); else fn(); return true; };
     for (const q of QUESTS) {
       const st = qs[q.id];
-      if (q.inspect && near.id === q.inspect.obj && st.started && questVisible(q, who)) {
-        const { flag, text, fact } = q.inspect;
+      const inspect = q.inspections?.find((entry) => entry.obj === near.id) ?? (q.inspect?.obj === near.id ? q.inspect : null);
+      if (inspect && st.started && questVisible(q, who)) {
+        const { flag, text, fact } = inspect;
         const unread = fact && !knowsQuestFact(this.save, who, fact);
         if ((!st.done && !f[flag]) || unread) {
           return act(() => {
@@ -1457,7 +1460,7 @@ export class WorldScene extends Phaser.Scene {
       this._say(text, clue);
       return;
     }
-    const questRead = this._nextQuestRead = (this._nextQuestRead ?? 0) + 1;
+    const questRead = ++nextQuestRead;
     (this._questReading ??= new Map()).set(peer, { ...clue, read: questRead });
     this.net?.send(peer, { t: 'say', text, questRead });
   }

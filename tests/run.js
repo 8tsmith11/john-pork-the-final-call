@@ -1286,7 +1286,11 @@ test('quest hooks in co-op: Talk keeps the item and an explicit hand-in uses the
 test('inspected quest clues reach only the reader and survive a save round trip', async () => {
   const { QUESTS, questState, questLeads } = await import('../src/content/quests.js');
   const q = {
-    id: 'qa.reading', stages: [], inspect: { obj: 'qa.log', flag: 'q.qa.read', text: 'A line at the end.', fact: 'qa.log' },
+    id: 'qa.reading', stages: [],
+    inspections: [
+      { obj: 'qa.log', flag: 'q.qa.read', text: 'A line at the end.', fact: 'qa.log' },
+      { obj: 'qa.relay', flag: 'q.qa.relay', text: 'The relay is here.', fact: 'qa.relay' },
+    ],
     leads: [{ id: 'log', text: 'Check the log', fact: 'qa.log' }, { id: 'relay', text: 'Find the relay', fact: 'qa.relay' }],
   };
   QUESTS.push(q);
@@ -1331,6 +1335,12 @@ test('inspected quest clues reach only the reader and survive a save round trip'
     assert.deepEqual(questLeads(q, save, 'michael'), []);
     host._finishQuestReading('one', read);
     assert.deepEqual(questLeads(q, migrate(JSON.parse(JSON.stringify(save))), 'manuel').map((lead) => lead.id), ['log']);
+    host._questInteract({ ...log, id: 'qa.relay' }, 'manuel', 'one');
+    const relayRead = messages.at(-1).message.questRead;
+    host._finishQuestReading('one', read);
+    assert.deepEqual(questLeads(q, save, 'manuel').map((lead) => lead.id), ['log']);
+    host._finishQuestReading('one', relayRead);
+    assert.deepEqual(questLeads(q, save, 'manuel').map((lead) => lead.id), ['log', 'relay']);
     questState(save)[q.id].done = true;
     host._questInteract(log, 'michael', 'two');
     host._finishQuestReading('two', messages.at(-1).message.questRead);
