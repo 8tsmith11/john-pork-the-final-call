@@ -205,7 +205,11 @@ export class WorldScene extends Phaser.Scene {
       const me = this.mode === 'client' ? this._lastRendered?.players.find((p) => p.id === this.localId) : this.sim.players.get(this.localId);
       if (!me) return;
       let best = null, bd = 34;
-      for (const o of this.map.objects) { const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y); if (d <= bd) { bd = d; best = o; } }
+      for (const o of this.map.objects) {
+        if (o.goneFlag && this.save.flags[o.goneFlag]) continue;
+        const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y);
+        if (d <= bd) { bd = d; best = o; }
+      }
       if (best) { this._clickedObj = best; return; }
       if (this._nearWater(me)) { this._startFishing(me); return; }
       const person = this.crowd?.nearest(me.x, me.y);
