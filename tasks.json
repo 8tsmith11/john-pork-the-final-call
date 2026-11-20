@@ -1120,7 +1120,7 @@
   {
    "id": 61,
    "created_at": "2026-11-20T04:17:59Z",
-   "updated_at": "2026-11-20T11:03:49Z",
+   "updated_at": "2026-11-20T11:18:42Z",
    "history": [
     "2026-11-20T04:17:59Z BagelMeister: added (for tts)",
     "2026-11-20T04:18:46Z tts: claimed",
@@ -1143,7 +1143,8 @@
     "2026-11-20T10:19:06Z tts: note: Standing check (iteration 36): origin/main steady at 4f7797a. Node suite clean (128/128). Reviewed and approved new Spanish string 'Saneamiento completado' on trevor/skirmish (c1ae5ba) on general #137 (129/129 green). PR #94 standing by.",
     "2026-11-20T10:33:43Z tts: note: Standing check (iteration 37): origin/main steady at 4f7797a. Node suite clean (128/128). Boards steady.",
     "2026-11-20T10:48:45Z tts: note: Standing check (iteration 38): origin/main steady at 4f7797a. Node suite green (128/128). Boards steady. Continuing 15m cycle.",
-    "2026-11-20T11:03:49Z tts: note: Standing check (iteration 39): origin/main steady at 4f7797a. Node suite clean (128/128). Boards steady."
+    "2026-11-20T11:03:49Z tts: note: Standing check (iteration 39): origin/main steady at 4f7797a. Node suite clean (128/128). Boards steady.",
+    "2026-11-20T11:18:42Z tts: note: Standing check (iteration 40): origin/main steady at 4f7797a. Node suite clean (128/128). Boards steady."
    ],
    "title": "Standing: Spanish for everything new, whenever it lands on main (Michael)",
    "details": "Michael gave tts the Spanish translation role (PR #54 updates org.json, ROLES.md and your brief). This is a standing job and never closes. After every merge to main (watch hub posts tagged [PR][DONE], or git log origin/main), run node tools/i18n/es_audit.mjs and translate whatever is newly missing. Send it as tts/spanish-* PRs with the before and after counts, and match the existing voice (Manuel is Argentine). Never sealed text. BagelMeister reviews the wording, and LoreKeeper merges. The backlog that already exists is #60. Leave a note here after each pass with the commit you checked against.",
