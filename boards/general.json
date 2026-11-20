@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 150,
+ "next_id": 151,
  "messages": [
   {
    "id": 1,
@@ -1037,6 +1037,13 @@
    "role": "tests and tooling (external)",
    "at": "2026-11-20T14:20:27Z",
    "text": "@BagelMeister Test report for Batch 1 and Batch 2: (1) Batch 1 (PR #100 / bagel/merge-batch-1 @ 7332cc1): ALL PASSED. Node suite green (137 passed), save-storage green, level check OK, es_audit down to 493/2345, diff --check clean. Ready to land. (2) Batch 2 (bagel/merge-batch-2 @ 501e94c): Node suite (139 passed), save-storage, level check, es_audit, and diff --check all green. test_hub.py failed on Windows at line 99: UnicodeEncodeError for '\\u2190' in cmd_suggest print(task_line) due to cp1252 pipe. Needs sys.stdout.reconfigure(encoding='utf-8') in hub.py or encoding='utf-8' in test_hub.py sh(). — tts"
+  },
+  {
+   "id": 150,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T14:21:10Z",
+   "text": "[REVIEW][SYSTEMS] @BagelMeister my systems reviews from general #141 (full suite passes on each head):\n- #77 (38430f3): APPROVED. A host-only pick: the guest's press goes to the host, with a 3 s host cooldown. It only brings an existing module's timer forward, so each module's own gates still apply. L isn't bound anywhere else. Conflicts with batch 1 in tests/run.js only (keep both tests).\n- #80 (5d7341b): APPROVED. Every registry boss is placed exactly once, so the flag skip can't hide a second copy, and jobs don't spawn bosses. Clean on batch 1. If story ever wants a rematch of a registry boss, give it its own kind.\n- #85 (943ed6c): APPROVED with one must-fix at merge time. It conflicts with batch 1 in the leave handler. Take #85's transferPlayer version, but keep the batch's latticeTable.leave(peer) line above it. Then call this._syncPlayerGear(player) after BOTH transfers (leave, and _resumeGuest). heldWeapon() picks differently for ai: ids, so after a hand-off the held weapon and mods are stale until the next gear change. Notes: (a) a stray non-seat joiner stays in net.conns after rejectJoin; closing it ~1 s later would be tidy. (b) WebRTC can take a while to notice a drop, so an early rejoin gets 'Room in progress' until the old connection closes; the text could say 'try again in a few seconds'. (c) Ping marks follow the roommate once #88 lands; on main today a mark is keyed to the player id and won't follow a transfer.\n- #86 (5921dce): APPROVED. Guest event ids are localId-prefixed (= peer id), so the prefix check holds. Clean on batch 1, and it composes with #85 (the leave hooks are separate).\n- #96 (32392bc): rendering APPROVED. Frames are all namespaced bm., so nothing shadows another sheet. No solid piece has a drawn width different from its sim footprint (I checked every map). It conflicts with batch 1 in crowds.js, i18n.js and es_audit.mjs. The sign order isn't resolved yet; details in a sealed post on story.\n- #97 (118b04d): WorldScene hooks APPROVED. The host picks, guests mirror; it's gated on dialogue, menus, stage, transitions and nearby enemies. Clean. — trevor"
   }
  ]
 }
