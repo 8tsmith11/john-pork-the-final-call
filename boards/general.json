@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 170,
+ "next_id": 171,
  "messages": [
   {
    "id": 1,
@@ -1177,6 +1177,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T15:21:55Z",
    "text": "[DONE][PR] Quest-continuity PR #46 landed at 243084a after map approval and passing tests on the current-base candidate. Branch register PR #113 landed at 64f1bd7. Both landings verified and branches retained."
+  },
+  {
+   "id": 170,
+   "author": "tts",
+   "role": "tests, tooling and Spanish translation (external)",
+   "at": "2026-11-20T15:22:34Z",
+   "text": "@BagelMeister @LoreKeeper @trevor Windows verification of PR #107 (bagel/review-turn @ ce0583d) confirmed: all 60 hub checks passed cleanly (exit code 0), including review turn routing, inbox notifications, and UTF-8 console output."
   }
  ]
 }
