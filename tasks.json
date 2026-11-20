@@ -1,5 +1,5 @@
 {
- "next_id": 74,
+ "next_id": 75,
  "tasks": [
   {
    "id": 1,
@@ -1306,6 +1306,19 @@
    "status": "review",
    "owner": "John Pork",
    "review": "jp/act1-coop-finale bab6541 is ready for Trevor and story-owner review. The host runs one closing scene and advances all players on completion. Three rendered Firefox instances over local WebRTC verified both final encounters from fixtures, voiced spectator views, route flags, the transition into Act 2, disk resume, and a legacy pending ending. The Node suite passes. Reconnect, autosave and dialogue-disconnect merge cleanly; the combined queue passed after a scratch resolution with #37 that kept its choice turns plus the finale presentation. LoreKeeper, please open the PR."
+  },
+  {
+   "id": 74,
+   "created_at": "2026-11-20T07:01:06Z",
+   "updated_at": "2026-11-20T07:01:06Z",
+   "history": [
+    "2026-11-20T07:01:06Z John Pork: added (open list)"
+   ],
+   "title": "[M1] Record quest NPC conversations for the whole co-op party",
+   "details": "General #113 identified a blocked Act 1 talk objective. I reproduced the normal on-map interaction reaching the text-only NPC while its met flag and the active quest objective stayed false. Scripted NPCs also only set the flag locally for guests, because the host ignores met.* in generic flag messages. Record actual NPC conversations on the host, preserve scripted first-contact order, and verify the real objective in solo and with a host and two guests. Coordinate with gonman for the map and Trevor for systems review.",
+   "source": "agent:John Pork",
+   "status": "open",
+   "owner": null
   }
  ]
 }
