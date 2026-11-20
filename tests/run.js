@@ -728,6 +728,108 @@ test('settings: v3 turns the soundtrack back on only where the v2 change muted i
   assert.equal(settingsMod.get('music'), 1, 'the shared settings module is untouched');
 });
 
+// hub #30: the Act 1 scaffold areas, polished (act1_more.js, act1_aster.js, campus.js). Fresh copies of the modules
+// (the ?polish30 query), so the crowds.js townsfolk that maps/index.js adds afterwards aren't counted as theirs.
+const POLISH30_FILES = ['act1_more.js', 'act1_aster.js', 'campus.js'];
+const POLISH30_MAPS = (await Promise.all(POLISH30_FILES.map((f) => import(`../src/content/maps/${f}?polish30`))))
+  .flatMap((mod) => Object.values(mod).filter((m) => m && m.id && Array.isArray(m.objects)));
+const polish30Lines = (o) => [o.label, o.text, o.doneText, o.lockedText, ...(o.pages ?? []), ...(o.later ?? []).map((l) => l.text)].filter((t) => typeof t === 'string' && t);
+const { SIDE_QUESTS: POLISH30_SIDE } = await import('../src/content/sideQuests.js');
+const { makeJob: polish30Job } = await import('../src/content/jobs.js');
+const { LOOT: POLISH30_LOOT } = await import('../src/content/items.js');
+const { BOSSES: POLISH30_BOSSES } = await import('../src/content/bosses.js');
+const { ES_HUD: POLISH30_ES_HUD } = await import('../src/i18n/es-hud.js');
+test('hub #30: no [scaffold] line left in the Act 1 area files, and every line in them has Spanish', () => {
+  assert.equal(POLISH30_MAPS.length, 13, 'the thirteen areas in the three files');
+  for (const f of POLISH30_FILES) assert.ok(!/\[scaffold\]/i.test(fs.readFileSync(new URL(`../src/content/maps/${f}`, import.meta.url), 'utf8')), `${f} still has a [scaffold] line`);
+  const was = i18nMod.getLang(), missing = [], multiline = [];
+  i18nMod.setLang('es');
+  try {
+    for (const m of POLISH30_MAPS) for (const o of m.objects) for (const t of polish30Lines(o)) {
+      const listed = [ES_PLAZA, ES_ASTER, POLISH30_ES_HUD].some((tb) => Object.hasOwn(tb, t));
+      if (t.includes('[scaffold]') || (!listed && i18nMod.tr(t) === t)) missing.push(`${m.id}/${o.id}: ${t.slice(0, 50)}`);
+      if (t.includes('\n')) multiline.push(`${m.id}/${o.id}`);
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(missing, [], 'add Spanish to src/i18n/es-plaza.js (diner, campus) or es-aster.js (ASTER)');
+  assert.deepEqual(multiline, [], 'one line each, so a loot find or a quest clue added under it still translates line by line');
+});
+test('hub #30: each polished Act 1 area has one small secret or job, made from systems that already exist', () => {
+  const SECRET = { diner: 'obj.diner_window_booth', aster_basement: 'obj.basement_cage_631', aster_roof: 'obj.roof_cooler', dining_hall: 'obj.dining_swipe',
+    robotics_lab: 'obj.rover_drawer', auditorium: 'obj.aud_projector', apt_637: 'npc.apt637_player', apt_638: 'obj.apt638_cans', apt_636: 'obj.apt636_parcel',
+    aster_5f: 'obj.aster5_hose', aster_laundry: 'obj.laundry_end_machine', compute_hall_b: 'npc.chb_ta' };
+  const nests = new Set();
+  for (let n = 0; n < 400; n++) { const j = polish30Job(`polish30-${n}`, n); if (j.type === 'nest') nests.add(j.map); }
+  assert.ok(nests.has('campus_quad'), 'the bounty board can post a rot nest on the campus quad (jobs.js)');
+  const questFlags = new Set(POLISH30_SIDE.flatMap((q) => [q.report?.flag, q.inspect?.flag, q.give?.flag].filter(Boolean)));
+  const atlas = new Set(['props', 'big', 'wide', 'doors'].flatMap((s) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${s}.json`, import.meta.url), 'utf8')).frames)));
+  for (const m of POLISH30_MAPS) {
+    const id = SECRET[m.id], o = id && m.objects.find((q) => q.id === id);
+    if (m.id === 'campus_quad') assert.ok(!id, 'the quad\'s is the job'); else assert.ok(o && (o.grant || o.loot || o.action === 'pages' || o.later?.length), `${m.id}: no secret (${id})`);
+    for (const q of m.objects) {
+      if (q.grant) { assert.ok(ITEMS[q.grant], `${q.id}: no item ${q.grant}`); assert.ok(q.text && q.doneText, `${q.id}: a one-time find needs text and doneText`); }
+      if (q.loot) assert.ok(POLISH30_LOOT[q.loot], `${q.id}: no loot table ${q.loot}`);
+      if (q.action === 'pages') assert.ok(q.pages.length > 1, `${q.id}: pages to step through`);
+      for (const l of q.later ?? []) {
+        assert.ok(q.npc, `${q.id}: later lines only play for people`);
+        const boss = /^boss\.(.+)\.down$/.exec(l.if)?.[1];
+        const set = boss ? POLISH30_BOSSES[`boss.${boss}`] && POLISH30_MAPS.some((mm) => mm.enemies.some((e) => e.kind === `boss.${boss}`)) : questFlags.has(l.if);
+        assert.ok(set, `${q.id}: nothing in the game sets ${l.if}`);
+      }
+      if (q.art) assert.ok(atlas.has(q.art), `${q.id}: no art ${q.art} in assets/sprites`);
+    }
+    for (const s of m.scenery ?? []) assert.ok(atlas.has(s.art), `${m.id}: no scenery art ${s.art}`);
+    assert.ok(m.objects.every((q) => !q.npc || q.age === 'adult'), `${m.id}: everyone here is an adult`);
+  }
+});
+const { SHOPS: POLISH30_SHOPS } = await import('../src/content/items.js');
+test('hub #30 follow-up: a shop counter on a polished Act 1 map has a real header, with Spanish (the diner\'s said [scaffold])', () => {
+  const was = i18nMod.getLang(), missing = [];
+  i18nMod.setLang('es');
+  try {
+    for (const m of POLISH30_MAPS) for (const o of m.objects.filter((q) => q.action === 'shop')) {
+      const shop = POLISH30_SHOPS[o.shop];
+      assert.ok(shop, `${m.id}/${o.id}: no shop ${o.shop} in items.js`);
+      for (const t of [shop.title, ...shop.lines]) if (t.includes('[scaffold]') || i18nMod.tr(t) === t) missing.push(`${o.shop}: ${t.slice(0, 50)}`);
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(missing, [], 'a real line in items.js SHOPS, Spanish in src/i18n/es-plaza.js');
+});
+test('hub #30 follow-up: the crowds.js townsfolk on the polished Act 1 maps have real lines, with Spanish', () => {
+  const was = i18nMod.getLang(), missing = [];
+  i18nMod.setLang('es');
+  try {
+    for (const [map, id] of [['diner', 'npc.diner_regular'], ['campus_quad', 'npc.quad_student'], ['dining_hall', 'npc.dining_student'], ['robotics_lab', 'npc.lab_grad']]) {
+      const o = MAPS_FOR_TEST[map].objects.find((q) => q.id === id);
+      assert.ok(o, `${map}: ${id} is placed`);
+      for (const t of [o.label, o.text]) if (t.includes('[scaffold]') || !Object.hasOwn(ES_PLAZA, t) || i18nMod.tr(t) === t) missing.push(`${id}: ${t.slice(0, 50)}`);
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(missing, [], 'real lines in crowds.js, Spanish in src/i18n/es-plaza.js');
+});
+test('hub #30 follow-up: the Mars rover has its own frame; the battlebot stays in 631', () => {
+  const props = JSON.parse(fs.readFileSync(new URL('../assets/sprites/props.json', import.meta.url), 'utf8')).frames;
+  const rover = MAPS_FOR_TEST.robotics_lab.objects.find((q) => q.id === 'obj.mars_rover');
+  assert.equal(rover?.art, 'obj.mars_rover');
+  assert.ok(props['obj.mars_rover'], 'obj.mars_rover frame in assets/sprites/props.json (gen_props.py, then build.py props)');
+  const names = Object.keys(props);
+  assert.ok(names.indexOf('obj.mars_rover') > names.indexOf('obj.battlebot'), 'new frames are appended after the existing ones (other branches may append more after it)');
+  const bots = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.filter((q) => (q.art ?? q.id) === 'obj.battlebot').map(() => m.id));
+  assert.deepEqual([...new Set(bots)], ['room631'], 'obj.battlebot is Trevor\'s robot, only in Room 631');
+});
+test('i18n: a string listed in more than one Spanish table gets the same Spanish in each (the diner had two names)', () => {
+  const tables = { ES_631, ES_ASTER, ES_HUD: POLISH30_ES_HUD, ES_PLAZA, ES_QUESTS, ES_TUNNELS_LAKE }, seen = new Map(), clash = [];
+  for (const [name, tb] of Object.entries(tables)) for (const [en, es] of Object.entries(tb)) {
+    const prev = seen.get(en);
+    if (prev && prev[1] !== es) clash.push(`${JSON.stringify(en.slice(0, 40))}: ${prev[0]} "${prev[1].slice(0, 30)}" vs ${name} "${es.slice(0, 30)}"`);
+    else if (!prev) seen.set(en, [name, es]);
+  }
+  assert.deepEqual(clash, [], 'pick one Spanish string and use it in both tables');
+  const was = i18nMod.getLang();
+  i18nMod.setLang('es');
+  try { assert.equal(i18nMod.tr('The diner'), 'La cafetería'); } finally { i18nMod.setLang(was); }
+});
+
 const { ES_HUD } = await import('../src/i18n/es-hud.js');
 test('i18n: every map name has Spanish', () => {
   const missing = Object.values(MAPS_FOR_TEST).map((m) => m.name).filter((n) => n && !(n in ES_HUD));
