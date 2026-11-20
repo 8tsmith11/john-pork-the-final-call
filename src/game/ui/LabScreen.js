@@ -9,11 +9,11 @@ import { getLang } from '../../i18n.js';
 const es = () => getLang() === 'es';
 const T = (en, sp) => (es() ? sp : en);
 const F = (size, color = '#e8e8f0', extra = {}) => ({ fontFamily: 'monospace', fontSize: `${size}px`, color, ...extra });
-const KEYWORDS = /\b(module|endmodule|input|output|logic|assign|always_ff|posedge|if|else|case|endcase|typedef|enum)\b/;
+const KEYWORDS = /\b(module|endmodule|input|output|logic|assign|always_ff|posedge|if|else|case|endcase|typedef|enum|begin|end)\b/;
 
 export class LabScreen {
   constructor(scene, { act = () => {}, leave = () => {} } = {}) {
-    this.s = scene; this.act = act; this.onLeave = leave; this.closed = false; this.hover = null; this.bench = null;
+    this.s = scene; this.act = act; this.onLeave = leave; this.closed = false; this.hover = null; this.bench = null; this.tab = 'tests';
     this.root = scene.add.container(0, 0).setScrollFactor(0).setDepth(9770);
     this.esc = (ev) => { if (ev.key === 'Escape') this.leave(); };
     scene.input.keyboard.on('keydown', this.esc);
@@ -62,14 +62,23 @@ export class LabScreen {
         x += t.width + 6;
       }
     });
-    const hint = this.hover != null ? lab.blanks[this.hover] : null;
-    add(s.add.text(ex, ey + 154, hint ? `// ${es() ? hint.hintEs : hint.hint}` : T('// click a blue chip to try another option', '// haz clic en un recuadro azul para probar otra opción'), { ...F(7, '#7f848e'), wordWrap: { width: ew } }));
+    const hint = this.hover != null ? V.hintsFor(b, this.hover, es()) : null;
+    add(s.add.text(ex, ey + 154, hint ? hint.map((h) => `// ${h}`).join('\n') : T('// click a blue chip to try another option', '// haz clic en un recuadro azul para probar otra opción'), { ...F(7, '#7f848e'), wordWrap: { width: ew } }));
     // the testbench
     const tx = 300, ty = 26, tw = VIEW.w - tx - 12;
     g.fillStyle(0x0b0e16, 1).fillRect(tx, ty, tw, 196);
-    add(s.add.text(tx + 6, ty + 4, T('TESTBENCH', 'BANCO DE PRUEBAS'), F(7, '#61afef')));
-    if (!b.results) add(s.add.text(tx + 6, ty + 18, T('Not run yet.', 'Todavía no se ejecutó.'), F(7, '#7f848e')));
-    else b.results.forEach((r, i) => {
+    // A lab with a reference card (the story bench) gets a second tab; the card is always there, book or not.
+    const tabs = lab.ref ? [['tests', T('TESTBENCH', 'BANCO DE PRUEBAS')], ['ref', T('REFERENCE', 'REFERENCIA')]] : [['tests', T('TESTBENCH', 'BANCO DE PRUEBAS')]];
+    let tabX = tx + 6;
+    for (const [id, label] of tabs) {
+      const t = add(s.add.text(tabX, ty + 4, label, F(7, this.tab === id ? '#61afef' : '#4a5175')));
+      if (tabs.length > 1) t.setInteractive({ useHandCursor: true }).on('pointerdown', () => { this.tab = id; this.redraw(); });
+      tabX += t.width + 10;
+    }
+    if (this.tab === 'ref' && lab.ref) {
+      lab.ref.forEach(([en, sp], i) => add(s.add.text(tx + 6, ty + 18 + i * 34, `• ${es() ? sp : en}`, { ...F(6, '#c9cde0'), wordWrap: { width: tw - 12 } })));
+    } else if (!b.results) add(s.add.text(tx + 6, ty + 18, T('Not run yet.', 'Todavía no se ejecutó.'), F(7, '#7f848e')));
+    else if (this.tab !== 'ref') b.results.forEach((r, i) => {
       const y = ty + 18 + i * 12;
       add(s.add.text(tx + 6, y, r.ok ? '✓' : '✗', F(8, r.ok ? '#98c379' : '#e06c75')));
       add(s.add.text(tx + 16, y + 1, r.inputs, F(6, '#abb2bf')));

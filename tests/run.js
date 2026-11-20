@@ -1639,6 +1639,26 @@ test('cordon, trevor\'s half of #36: a trooper at every checkpoint faces out, wi
   for (const p of sim.players.values()) assert.ok(Math.floor(p.y / 16) > ex.y, `${p.id} landed at row ${Math.floor(p.y / 16)}, beyond the barrier`);
 });
 
+test('the story bench (245): harder, a reference card always there, the book adds a hint per blank only when the party has it', () => {
+  const lab = VLab.labById('reader');
+  assert.ok(lab.blanks.length >= 5 && lab.blanks.length > VLab.labById('fsm').blanks.length, 'harder than labs 1-3');
+  assert.ok(lab.ref.length >= 3 && lab.ref.every(([en, es]) => en && es), 'a reference card, in English and Spanish');
+  for (const b of lab.blanks) assert.ok(b.hint && b.hintEs && b.book && b.bookEs, 'every blank: a hint and a book hint, both languages');
+  assert.ok(lab.title && lab.titleEs && lab.goal && lab.goalEs);
+  assert.ok(lab.code.length <= 13 && lab.run(VLab.solve('reader')).length <= 14, 'fits the editor and the testbench panel');
+  const plain = VLab.newBench('reader'), booked = VLab.newBench('reader', { book: true });
+  assert.equal(VLab.hintsFor(plain, 0).length, 1, 'without the book: the bench hint only');
+  assert.deepEqual(VLab.hintsFor(booked, 0, true), [lab.blanks[0].hintEs, `Libro: ${lab.blanks[0].bookEs}`], 'with it: the book too');
+  // the shared bench picks the book up from the story flag, also on reopening
+  const scene = { mode: 'host', save: { flags: {} }, net: { broadcast() {} }, _labPassed() {} };
+  const bench = new LBench.LabBench(scene, {});
+  bench.open('reader'); assert.equal(bench.bench.book, false);
+  scene.save.flags['lab.book'] = true; bench.open('reader'); assert.equal(bench.bench.book, true, 'found the book later: the bench knows');
+  // unlimited attempts: wrong runs never lock it
+  for (let i = 0; i < 25; i++) VLab.runTests(bench.bench);
+  assert.ok(!bench.bench.passed && VLab.cycle(bench.bench, 0), 'still open after many failed runs');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
