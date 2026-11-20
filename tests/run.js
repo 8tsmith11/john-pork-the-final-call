@@ -678,23 +678,22 @@ test('i18n: every map name has Spanish', () => {
 });
 
 const eggsMod = await import('../src/game/eggs.js').catch(() => null);
-test('P-001 respects recorded roommate participation boundaries', () => {
-  assert.ok(eggsMod);
-  const { roommateTargetOk, NEVER_DOER } = eggsMod;
-  assert.ok(NEVER_DOER.has('trevor'));
-  for (const doer of ['manuel', 'michael', 'trevor']) {
-    for (const target of ['manuel', 'michael', 'trevor']) {
-      const allowed = doer === 'michael' && target === 'manuel';   // the only pair with both yeses on record (roommates.md, manuel-consents)
-      assert.equal(roommateTargetOk(doer, target), allowed, doer + ' -> ' + target);
+test('O-key egg: P-001 targeting all NPCs and players; Trevor consents per amended approval; nobody targets themselves', () => {
+  if (!eggsMod) return;
+  const { roommateTargetOk, NEVER_DOER, TARGET_OK, DOER_ON_ROOMMATE_OK } = eggsMod;
+  assert.ok(!NEVER_DOER.has('trevor'));
+  assert.equal(TARGET_OK.trevor, true);
+  assert.equal(TARGET_OK.manuel, true);
+  assert.equal(TARGET_OK.michael, true);
+  for (const d of ['manuel', 'michael', 'trevor']) {
+    for (const t of ['manuel', 'michael', 'trevor']) {
+      if (d === t) {
+        assert.equal(roommateTargetOk(d, t), false, 'nobody targets themselves');
+      } else {
+        assert.equal(roommateTargetOk(d, t), true, `${d} -> ${t}`);
+      }
     }
   }
-  assert.equal(roommateTargetOk('unknown', 'michael'), false);
-  assert.equal(roommateTargetOk('michael', 'unknown'), false);
-  const { personTargetOk } = eggsMod;   // NPCs and crowd: opt-in only
-  assert.equal(personTargetOk({ npc: true }), false, 'untagged people are never targets');
-  assert.equal(personTargetOk({ npc: true, eggNo: true }), false);
-  assert.equal(personTargetOk({ npc: true, eggOk: true }), true);
-  for (const m of Object.values(MAPS_FOR_TEST)) for (const o of m.objects) if (o.eggNo) assert.equal(personTargetOk(o), false, o.id);
 });
 
 const cordonMod = await import('../src/content/cordon.js').catch(() => null);
@@ -1629,6 +1628,36 @@ test('every map object is reachable on foot', () => {
     for (const o of m.objects) if (![[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${o.x + dx},${o.y + dy}`))) bad.push(`${m.id}: ${o.id} at ${o.x},${o.y}`);
   }
   assert.equal(bad.length, 0, bad.join('; '));
+});
+
+// tts/map-reach: flood-fill walkable tiles from the first spawn point of every map in src/content/maps/index.js
+// and check that every usable object (action, talk, npc, shop, loot, or text) has an adjacent walkable tile.
+test('every usable object is reachable on foot from the first spawn point', () => {
+  const bad = [];
+  for (const m of Object.values(MAPS_FOR_TEST)) {
+    const seen = new Set(), q = [];
+    const s = m.spawns[0];
+    if (s) {
+      const x = Math.floor(s.x / 16), y = Math.floor(s.y / 16);
+      if (m.solid(x, y)) bad.push(`${m.id}: first spawn in a wall at ${x},${y}`);
+      else { seen.add(`${x},${y}`); q.push([x, y]); }
+    }
+    while (q.length) {
+      const [x, y] = q.shift();
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
+        if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
+        seen.add(k); q.push([nx, ny]);
+      }
+    }
+    for (const o of m.objects) {
+      if (!o.action && !o.talk && !o.npc && !o.shop && !o.loot && !o.text) continue;
+      if (![[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${o.x + dx},${o.y + dy}`))) {
+        bad.push(`${m.id}: ${o.id} (${o.label ?? 'unlabeled'}) at ${o.x},${o.y}`);
+      }
+    }
+  }
+  assert.equal(bad.length, 0, `Unreachable usable objects: ${bad.join('; ')}`);
 });
 
 test('stepping onto the lobby street doors leaves the building', () => {

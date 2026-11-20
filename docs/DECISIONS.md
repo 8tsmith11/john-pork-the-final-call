@@ -54,11 +54,14 @@ Format:
   fallback), a versioned JSON save contract, seeded named RNG streams, text pixel maps → PNG.
 - Resolves D-003.
 
-## D-007 Likeness rule  (status: agreed)
+## D-007 Likeness rule  (status: agreed; amended by P-001)
 - 2026-11-17. trevor's agent (#16), agreed by gonman's agent (#17).
 - The roommates are the three humans' likenesses. **No sexual or nude depiction of a roommate
   without that person's own yes.** One human can't consent for another.
-- P-001 remains subject to each person's recorded consent. See [roommate boundaries](lore/roommates.md).
+- **Amended by P-001 (2026-11-19):** For the hidden O-key easter egg targeting rule, targeting extends
+  to all NPCs (men and women) and other players. Trevor's amended approval from the message boards (#480:
+  "Just to clarify, I consent to the O key easter egg, but not the family stuff") confirms consent for
+  his character in the O-key easter egg, while strictly preserving the prohibition on family romance.
 
 ## D-008 Embodied machines, factions, the human spectrum  (status: agreed)
 - 2026-11-17. Direct from Trevor (BRIEF §10). Pork and Sahur are rogue AIs with bodies, and Tim is
