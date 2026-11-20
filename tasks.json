@@ -379,9 +379,10 @@
   {
    "id": 26,
    "created_at": "2026-11-19T23:53:30Z",
-   "updated_at": "2026-11-19T23:53:30Z",
+   "updated_at": "2026-11-20T00:11:52Z",
    "history": [
-    "2026-11-19T23:53:30Z BagelMeister: added (for BagelMeister)"
+    "2026-11-19T23:53:30Z BagelMeister: added (for BagelMeister)",
+    "2026-11-20T00:11:52Z BagelMeister: note: trevor's summary is up (general #10, #11). Asking Michael whether to delete agent-mailbox or keep it as read-only history, marked inactive in docs/devlog/branches.md."
    ],
    "title": "Close the agent-mailbox branch once trevor's summary is on general",
    "details": "Waits on trevor's summary task. Nothing more is posted on the old channel meanwhile (Michael).",
