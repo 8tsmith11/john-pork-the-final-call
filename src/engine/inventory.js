@@ -15,15 +15,15 @@ export function normalize(c) {
   if (old.length === SLOTS && old.every((s) => s === null || (s && s.id))) return c.inventory;
   const items = old.filter((s) => s && s.id);
   c.inventory = new Array(SLOTS).fill(null);
-  for (const it of items) add(c, it.id, it.qty ?? 1, it.roll ?? null);
+  for (const it of items) add(c, it.id, it.qty ?? 1, it.roll ?? null, it.socketed ?? null);
   return c.inventory;
 }
 
 /** Add n of id; fills existing stacks first, then the first empty slot (hotbar first). Returns leftover.
  *  `roll`: a procedural item's rolled affixes (src/content/gearRolls.js); rolled items never merge into a stack. */
-export function add(c, id, n = 1, roll = null) {
-  const inv = c.inventory, max = stackOf(id);
-  for (let i = 0; i < SLOTS && n > 0 && !roll; i++) {
+export function add(c, id, n = 1, roll = null, socketed = null) {
+  const inv = c.inventory, max = stackOf(id), unique = roll || socketed?.length;   // carries its own data: never merges
+  for (let i = 0; i < SLOTS && n > 0 && !unique; i++) {
     const s = inv[i];
     if (s && s.id === id && s.qty < max) { const k = Math.min(n, max - s.qty); s.qty += k; n -= k; }
   }
@@ -32,7 +32,7 @@ export function add(c, id, n = 1, roll = null) {
   const order = [...Array(SLOTS - HOTBAR).keys()].map((k) => k + HOTBAR).concat([...Array(HOTBAR).keys()]);
   for (const i of order) {
     if (n <= 0) break;
-    if (!inv[i]) { const k = roll ? 1 : Math.min(n, max); inv[i] = roll ? { id, qty: k, roll } : { id, qty: k }; n -= k; }
+    if (!inv[i]) { const k = unique ? 1 : Math.min(n, max); inv[i] = { id, qty: k, ...(roll ? { roll } : {}), ...(socketed?.length ? { socketed } : {}) }; n -= k; }
   }
   return n;
 }
@@ -88,12 +88,14 @@ export function wear(c, id) {
   c.equipped ??= {}; c.rolled ??= {};
   // the same slot remove() would take (the back of the backpack first), so its roll goes on with it
   let i = SLOTS - 1; while (i >= 0 && c.inventory[i]?.id !== id) i--;
-  const taken = c.inventory[i], roll = taken.roll ?? null;
-  const old = c.equipped[slot], oldRoll = c.rolled[slot] ?? null;
+  c.socketed ??= {};
+  const taken = c.inventory[i], roll = taken.roll ?? null, socketed = taken.socketed ?? null;
+  const old = c.equipped[slot], oldRoll = c.rolled[slot] ?? null, oldSock = c.socketed[slot] ?? null;
   takeSlot(c, i, 1);
-  if (old && add(c, old, 1, oldRoll) > 0) { taken.qty += 1; c.inventory[i] = taken; return false; }   // no room: put it back as it was
+  if (old && add(c, old, 1, oldRoll, oldSock) > 0) { taken.qty += 1; c.inventory[i] = taken; return false; }   // no room: put it back as it was
   c.equipped[slot] = id;
   if (roll) c.rolled[slot] = roll; else delete c.rolled[slot];
+  if (socketed?.length) c.socketed[slot] = socketed; else delete c.socketed[slot];   // its mods go on with it (task #40)
   return true;
 }
 
@@ -101,9 +103,10 @@ export function wear(c, id) {
 export function unwear(c, slot) {
   const id = c.equipped?.[slot];
   if (!id || !WORN_SLOTS.includes(slot)) return false;
-  if (add(c, id, 1, c.rolled?.[slot] ?? null) > 0) return false;
+  if (add(c, id, 1, c.rolled?.[slot] ?? null, c.socketed?.[slot] ?? null) > 0) return false;
   c.equipped[slot] = null;
   if (c.rolled) delete c.rolled[slot];
+  if (c.socketed) delete c.socketed[slot];
   return true;
 }
 

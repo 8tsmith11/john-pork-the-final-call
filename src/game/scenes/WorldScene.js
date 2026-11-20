@@ -39,6 +39,8 @@ import { BastionTable } from '../bastionTable.js';
 import { BastionScreen } from '../ui/BastionScreen.js';
 import { LabBench } from '../labBench.js';
 import { LabScreen } from '../ui/LabScreen.js';
+import { ModStation } from '../ui/ModStation.js';
+import * as Sockets from '../../engine/sockets.js';
 import { rollGear, rolledName } from '../../content/gearRolls.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
 import { FUSE_TEXT, LAMP_COLORS, GATE_FLAG, breakerState, lampState, breakersSet, lampsSet, gateOpen, puzzleClue, toggleText, STEP_TEXT } from '../../content/tunnelPuzzles.js';
@@ -176,6 +178,7 @@ export class WorldScene extends Phaser.Scene {
     if (new URLSearchParams(location.search).has('lattice')) this.time.delayedCall(800, () => this.openBoardGame());   // debug: open the board game
     if (new URLSearchParams(location.search).has('bastion')) this.time.delayedCall(800, () => this.openBastion('debug'));   // debug: hub #34
     { const l = new URLSearchParams(location.search).get('lab'); if (l) this.time.delayedCall(800, () => this.openLab(l)); }   // debug: ?lab=mux|counter|fsm
+    if (new URLSearchParams(location.search).has('mods')) this.time.delayedCall(800, () => this.openModStation());   // debug: task #40
     { const c = new URLSearchParams(location.search).get('cinematic'); if (c) this.time.delayedCall(600, () => this.playCinematic(c)); }   // debug: ?cinematic=demo
     for (const c of Object.values(this.save.party ?? {})) c.money ??= W.START_MONEY;   // own wallets (schema 7)
     this.save.flags['settings.crudeHumor'] = 'on';   // always on (Trevor); scripts branch on it
@@ -638,6 +641,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'lattice') { this._table().onHostMsg(peer, msg); return; }   // the casino board game (host runs it)
         if (msg.t === 'bastion') { this._bastion().onHostMsg(peer, msg); return; }   // hub #34 (host runs it)
         if (msg.t === 'lab') { this._lab().onHostMsg(peer, msg); return; }   // hub #44 (host keeps the bench)
+        if (msg.t === 'mod') { this._modAct(this._charOf(peer), msg.op, msg.ref, msg.arg); return; }   // task #40
         if (this.shared?.onMsg(msg, peer) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg)) return;
         if (msg.t === 'questRead') this._finishQuestReading(peer, msg.read);
         if (msg.t === 'input') {
@@ -1010,6 +1014,17 @@ export class WorldScene extends Phaser.Scene {
   openLab(id = 'mux') { this._lab().open(id); }
   _lab() { return (this.labBench ??= new LabBench(this, { makeView: (o) => new LabScreen(this, o) })); }
   _labPassed(id) { if (this.mode === 'client') return; this.save.flags[`lab.passed.${id}`] = true; this._tickQuests(true); }
+  // The customization station (task #40): any map object with `station: 'mods'` opens it. Moves are host-applied.
+  openModStation() { if (!this.modStation) this.modStation = new ModStation(this); }
+  menuMod(op, ref, arg) { if (this.mode === 'client') this.net.send({ t: 'mod', op, ref, arg }); else this._modAct(this.character, op, ref, arg); }
+  _modAct(who, op, ref, arg) {
+    const c = this.save.party[who]; if (!c || !ref || typeof ref !== 'object') return false;
+    const r = ref.bag != null ? { bag: ref.bag | 0 } : typeof ref.worn === 'string' ? { worn: ref.worn } : null; if (!r) return false;
+    const ok = op === 'insert' ? Sockets.insert(c, r, String(arg)) : op === 'extract' ? Sockets.extract(c, r, arg | 0) : false;
+    if (ok) { this._partyDirty = true; this._syncParty(); sfx('swing'); }
+    else if (op === 'extract') this._toast(T_FULL());
+    return ok;
+  }
   _bastion() { return (this.bastionTable ??= new BastionTable(this, { makeView: (o) => new BastionScreen(this, o) })); }
   /** Host: record a finished match (story flags: bastion.played / .games.<id> / .won.<id> / .lost.<id>). */
   _bastionResult(id, won) {
@@ -2379,6 +2394,7 @@ export class WorldScene extends Phaser.Scene {
     if (near.boardgame) { this.openBoardGame(near.boardgame, near.id); return; }
     if (near.bastion) { this.openBastion(near.bastion); return; }
     if (near.lab) { this.openLab(near.lab); return; }
+    if (near.station === 'mods') { this.openModStation(); return; }
     if (near.action === 'toolwall' && this.mode !== 'client') {
       // One pry bar for every roommate who has no weapon yet; it goes in their hand.
       const got = [];
@@ -3235,3 +3251,5 @@ export class WorldScene extends Phaser.Scene {
     if (ht) { const wdt = this.hint.width + 12; this.hintBg.fillStyle(0x0b0d16, 0.85).fillRoundedRect(VIEW.w / 2 - wdt / 2, this.hint.y - 7, wdt, 14, 4).lineStyle(1, 0xffb347, 0.6).strokeRoundedRect(VIEW.w / 2 - wdt / 2, this.hint.y - 7, wdt, 14, 4); }
   }
 }
+
+const T_FULL = () => (getLang() === 'es' ? 'La mochila está llena.' : 'Your bag is full.');
