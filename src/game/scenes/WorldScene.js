@@ -208,7 +208,11 @@ export class WorldScene extends Phaser.Scene {
       const me = this.mode === 'client' ? this._lastRendered?.players.find((p) => p.id === this.localId) : this.sim.players.get(this.localId);
       if (!me) return;
       let best = null, bd = 34;
-      for (const o of this.map.objects) { const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y); if (d <= bd) { bd = d; best = o; } }
+      for (const o of this.map.objects) {
+        if (o.goneFlag && this.save.flags[o.goneFlag]) continue;
+        const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y);
+        if (d <= bd) { bd = d; best = o; }
+      }
       if (best) { this._clickedObj = best; return; }
       if (this._nearWater(me)) { this._startFishing(me); return; }
       const person = this.crowd?.nearest(me.x, me.y);
@@ -659,6 +663,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'lab') { this._lab().onHostMsg(peer, msg); return; }   // hub #44 (host keeps the bench)
         if (this.shared?.onMsg(msg, peer) || this.stage?.onHostMsg(peer, msg) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg)) return;
         if (msg.t === 'questRead') this._finishQuestReading(peer, msg.read);
+        if (msg.t === 'npcTalk') this._guestNpcTalk(peer, msg);
         if (msg.t === 'input') {
           const prev = this.remoteInputs.get(peer);
           this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, interact: false });
@@ -1030,7 +1035,7 @@ export class WorldScene extends Phaser.Scene {
       const a = was[q.id] ?? {}, b = now[q.id]; if (!b || !questVisible(q, this.character)) continue;
       if (!a.started && b.started && !b.done) { this._questBanner('NEW QUEST', q.title, [q.stages[b.stage]?.text, q.why].filter(Boolean).join('\n')); this._trackedQuest = q.id; }
       else if (b.started && !b.done && b.stage > (a.stage ?? 0)) this._questBanner('QUEST UPDATED', q.title, q.stages[b.stage]?.text ?? '');
-      if (!a.done && b.done) { this._questBanner('QUEST COMPLETE', q.title, [q.reward?.money ? `+$${q.reward.money}` : '', q.reward?.xp ? `+${q.reward.xp} xp` : ''].filter(Boolean).join('   ')); if (q.reward?.line) this._say(q.reward.line); }
+      if (!a.done && b.done) { this._questBanner('QUEST COMPLETE', q.title, [q.reward?.money ? `+$${q.reward.money}` : '', q.reward?.xp ? `+${q.reward.xp} xp` : ''].filter(Boolean).join('   ')); this._sayQuestReward(q); }
     }
     this._refreshMenu();
   }
@@ -1464,6 +1469,16 @@ export class WorldScene extends Phaser.Scene {
     this._tickQuests(true, peer);
   }
 
+  _guestNpcTalk(peer, msg) {
+    if (msg.map !== this.map.id) return;
+    const npc = this.map.objects.find((o) => o.id === msg.id && o.npc);
+    const p = this.sim.players.get(peer);
+    if (!npc || !p || p.downed || p.under > 0) return;
+    if ((npc.goneFlag && this.save.flags[npc.goneFlag]) || this.perf?.asleep(npc)) return;
+    if (Math.hypot(npc.x * TILE + 8 - p.x, npc.y * TILE + 8 - p.y) > 34) return;
+    this.save.flags[`met.${npc.id}`] = true;
+  }
+
   // Asking, inspecting and reporting use the ordinary interaction. Hand-ins use a named action.
   _questInteract(near, who = this.character, peer = this.localId) {
     const f = this.save.flags, qs = questState(this.save), client = this.mode === 'client', remote = peer !== this.localId;
@@ -1530,10 +1545,19 @@ export class WorldScene extends Phaser.Scene {
  for (const [who, c] of Object.entries(this.save.party)) if (questVisible(q, who)) this._levelsReached(who, c, addXp(c, (q.reward?.xp ?? 0) * xpScale(q.act))); if (q.reward?.item) Inv.add(this.save.party[q.owner ?? this.character], q.reward.item); this._partyDirty = true; }
         if (mine) this._questBanner('QUEST COMPLETE', q.title, [q.reward?.money ? `+$${q.reward.money}` : '', q.reward?.xp ? `+${q.reward.xp} xp` : '', q.reward?.item ? ITEMS[q.reward.item]?.name : ''].filter(Boolean).join('   '));
         if (this._trackedQuest === q.id) this._trackedQuest = null;
-        if (q.reward?.line && mine) this._say(q.reward.line);
-        if (q.reward?.line && peer && peer !== this.localId) this.net?.send(peer, { t: 'say', text: q.reward.line });
+        if (mine) this._sayQuestReward(q);
+        if (q.reward?.line && !q.target?.npc && peer && peer !== this.localId) this.net?.send(peer, { t: 'say', text: q.reward.line });
       }
     }
+  }
+
+  _sayQuestReward(q) {
+    const line = q.reward?.line;
+    if (!line) return;
+    // A Talk objective can finish while the NPC is still speaking. Keep that conversation on screen.
+    if (q.target?.npc && (this._talkOpen() || this.menu || this._questRewardLines?.length)) {
+      (this._questRewardLines ??= []).push(line);
+    } else this._say(line);
   }
 
   // Closing the last page acknowledges the clue. The host accepts only an outstanding delivery
@@ -2257,6 +2281,7 @@ export class WorldScene extends Phaser.Scene {
   // ---------- loop ----------
   update(_, deltaMs) {
     if (!this.ready) return;
+    if (this._questRewardLines?.length && !this._talkOpen() && !this.menu) this._say(this._questRewardLines.shift());
     if (!this._qbBusy && this._qbQueue?.length && !this._talkOpen()) this._nextQuestBanner();   // quest cards after dialogue
     if (this._qbCard?.active) this._qbCard.setVisible(!this._talkOpen());   // a card already up steps aside while someone talks
     let snap, me;
@@ -2420,6 +2445,7 @@ export class WorldScene extends Phaser.Scene {
     const near = this._clickedObj; this._clickedObj = null;
     if (!near) return;
     if (!inReach(near)) { this.hint.setText(`${near.label} (too far)`); return; }
+    if (near.npc && near.goneFlag && this.save.flags[near.goneFlag]) return;
     if (near.npc && this.mode !== 'client') this._guide().n[near.id] ??= { name: near.label.replace(/\s*\(.*\)\s*/g, '').trim(), where: this.map.name ?? this.map.id };
     if (near.action === 'exit') {
       if (this.mode === 'client') this.net.send({ t: 'exit', obj: near.id });
@@ -2442,11 +2468,13 @@ export class WorldScene extends Phaser.Scene {
     if (this.approach?.intercept(near)) return;   // D-017: choose how to approach an NPC
     // Story first, quest second: the first talk plays the scene; after that a quest step (pitch,
     // report) takes the interaction if one is waiting, otherwise the scene replays.
-    if (near.talk && near.npc) {
+    if (near.npc) {
       const met = `met.${near.id}`;
-      if (this.save.flags[met] && this._questInteract(near)) return;
-      if (this.save.flags[met] && this._sayLater(near)) return;
-      if (!this.save.flags[met]) this._flag(met, true);
+      if (near.talk && this.save.flags[met] && (this._questInteract(near) || this._sayLater(near))) return;
+      if (!this.save.flags[met] && !me.downed && !me.dn) {
+        if (this.mode === 'client') this.net.send({ t: 'npcTalk', map: this.map.id, id: near.id });
+        else this.save.flags[met] = true;
+      }
     }
     // A scene that is finished for good (e.g. the sniffer is printed) answers with one line after that.
     if (near.talk && near.doneFlag && this.save.flags[near.doneFlag]) { this._say(near.doneText ?? near.text ?? ''); return; }
