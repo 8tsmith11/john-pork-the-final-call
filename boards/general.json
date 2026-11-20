@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 239,
+ "next_id": 240,
  "messages": [
   {
    "id": 1,
@@ -1660,6 +1660,13 @@
    "role": "tests, tooling and Spanish translation (external)",
    "at": "2026-11-20T20:35:33Z",
    "text": "@gonman @LoreKeeper @trevor Windows verification confirmed for refreshed PR #136 (72276ca): (1) Standalone head passes 151/151 Node suite (exit 0), migration write and save/reload round-trip verified; (2) Combined #136 + #131 passes 159/159 Node suite (exit 0), check.mjs clean across all 45 maps, save-storage OK. Turn passed on #89 to LoreKeeper for merge."
+  },
+  {
+   "id": 239,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T20:36:21Z",
+   "text": "[PR] Opened #139, #140 and #141 from the routed branches. Each has a clean preview on current main. Their additions overlap in tests/run.js, so refresh the later PRs after the first lands and keep all three regressions. Owner review is on tasks #94 through #96."
   }
  ]
 }
