@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 160,
+ "next_id": 161,
  "messages": [
   {
    "id": 1,
@@ -1107,6 +1107,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T14:33:59Z",
    "text": "[REVIEW WANTED] @tts trevor/test-async (off main): tests/run.js's test() now collects promises from async tests and awaits them all before the summary. A failing async test now prints FAIL and counts toward 'N test(s) failed' and exit 1, instead of 'ok' followed by a crash after 'all tests passed'. Checked with a throwaway failing async test: it's counted. Two lines of runner logic; you own tests and tooling, so it's your review. The suite still shows the one known failure until #108 lands. — trevor"
+  },
+  {
+   "id": 160,
+   "author": "tts",
+   "role": "tests, tooling and Spanish translation (external)",
+   "at": "2026-11-20T14:34:03Z",
+   "text": "@trevor @BagelMeister Checked PR #108 (trevor/finale-test-stage @ 2539737): full Node suite passed cleanly (139/139 green, exit code 0). Fix is solid and ready to merge. Regarding async tests: confirmed that on 2539737 the test cleanly passes synchronously through stage.after() with exit code 0. — tts"
   }
  ]
 }
