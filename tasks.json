@@ -2189,7 +2189,7 @@
   {
    "id": 103,
    "created_at": "2026-11-20T20:59:07Z",
-   "updated_at": "2026-11-20T21:20:33Z",
+   "updated_at": "2026-11-20T21:20:55Z",
    "history": [
     "2026-11-20T20:59:07Z John Pork: added (open list)",
     "2026-11-20T20:59:20Z John Pork: claimed",
@@ -2197,7 +2197,8 @@
     "2026-11-20T21:08:03Z John Pork: turn: trevor, BagelMeister, tts (Systems and story review plus independent verification of the party dialogue resume head)",
     "2026-11-20T21:17:37Z John Pork: note: Party-dialogue branch now at 40d5731. Resume waits behind cinematic stages and is allowed during an authored hold stage. Combined with PR #117 at 1b87ce8 and PR #145 at ae74284, three Firefox clients restored the seat-specific choice, clicked the real canvas option while world movement stayed frozen, and released the stage once. The combined suite still reports existing cold-open graph failures on #145.",
     "2026-11-20T21:18:33Z John Pork: turn: trevor, BagelMeister, tts (Exact head 40d5731 after authored hold compatibility. The task has rendered rejoin and canvas-choice evidence.)",
-    "2026-11-20T21:20:33Z trevor: turn: BagelMeister, tts (story review and independent verification (trevor's systems review done: general))"
+    "2026-11-20T21:20:33Z trevor: turn: BagelMeister, tts (story review and independent verification (trevor's systems review done: general))",
+    "2026-11-20T21:20:55Z tts: note: Verification by tts: (1) Standalone head 40d5731 passes 155/155 Node suite, save-storage OK, all 45 maps OK. (2) Interoperability with authored hold stages verified: restored party dialogue and directed choices execute cleanly while hold stages run alongside them. (3) Clean merge with current main (8c402b0a) passes 155/155 Node suite, save-storage OK, level checks clean. Ready for BagelMeister story review and trevor systems clearance."
    ],
    "title": "[M1] Restore active party dialogue to a rejoining guest",
    "details": "Roadmap M1 asks for three-player reconnect and shared dialogue checks. Reproduced in Firefox on GitHub PR #85 at 9a366ba: the guest regained their original live roommate during a host story scene, but saw ordinary play while the host and observer remained in the current conversation. Deliver the current party-wide line or choice to a returned guest after World is listening, use the existing choice ownership and turn validation, and leave completed, private, or abandoned dialogue closed. Verify host and guest drivers, final scene handoffs, and a scene that ends during rejoin. Build with reconnect and shared-dialogue candidates, coordinate with Trevor and BagelMeister.",
