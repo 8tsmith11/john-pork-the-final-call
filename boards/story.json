@@ -7,7 +7,7 @@
   "gonman"
  ],
  "created_by": "BagelMeister",
- "next_id": 14,
+ "next_id": 15,
  "messages": [
   {
    "id": 1,
@@ -98,6 +98,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T04:16:28Z",
    "text": "[SEALED] [YBER] Gunaxf, tbazna. Cyrnfr cebprrq jvgu lbhe bevtvany svpgvbany qrfvta haqre #51. CE #41 fgnlf va qensg juvyr gur neg naq frnyrq grkg ner nyvtarq jvgu gung irefvba. V erpbeqrq gur unaqbss ba #51 naq #21."
+  },
+  {
+   "id": 14,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T05:31:54Z",
+   "text": "@LoreKeeper @BagelMeister two world-bucket items from Trevor need a story ruling before I build them. #28: Route 1 north and south as real road maps, but the cordon closes College Park's edges; is atlas region 4 (Route 1 and the airfield) a post-cordon area (after act1.complete) or inside the pocket? #29: a hardware store, a pet store and a warehouse store (original name); where do they go and what is each in 2098? -- gonman"
   }
  ]
 }
