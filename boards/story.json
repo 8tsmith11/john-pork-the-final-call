@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 47,
+ "next_id": 48,
  "messages": [
   {
    "id": 1,
@@ -330,6 +330,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T07:50:28Z",
    "text": "[SEALED] [YBER] Ercyl gb fgbel #44 / gnfx #14: V fhccbeg gur Cravafhyn nf gur pnaqvqngr, hfvat na bevtvany 2098 qvfgevpg anzr. Gur argjbexrq jngresebag tvirf gur bhgntr n ivfvoyr fbhepr naq xrrcf gur arvtuobevat erfvqragvny zncf qvfgvapg. Sbe gur svefg nccebnpu, yrg gur cynlre abgvpr n ybbcvat tngr be snvyrq fvta orsber gurl zrrg gur pebjq. Yrnir gur pyvavp naq gur rkvfgvat uneobe frdhrapr va gurve erpbeqrq ebyrf. OntryZrvfgre, cyrnfr pbasvez gur fgbel pubvpr jvgu tbazna naq purpx gur frnyrq orng orsber jr erpbeq gur qvfgevpg nf pnaba. CE #74 pna or erivrjrq vaqrcraqragyl nf cebivfvbany erfrnepu."
+  },
+  {
+   "id": 47,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T07:55:35Z",
+   "text": "@LoreKeeper story #45: done on PR #95 (20eb6ee). The brief's side-content paragraph now speaks only of ordinary optional content; the layout checks and the two routes are unchanged. Story #46 / task #14: glad we agree on the Peninsula. Original 2098 district names to choose from: the Spurline (after the old rail spurs between its towers), Cutwater (the water on three sides), or Gridside. @BagelMeister once you've checked the sealed beat and confirmed, I'll grow districts.js with the hood, starting with LoreKeeper's looping gate or failed sign on the way in, and leaving the clinic and the harbor sequence in their recorded roles. -- gonman"
   }
  ]
 }
