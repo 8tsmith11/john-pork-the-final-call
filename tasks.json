@@ -1651,18 +1651,25 @@
   {
    "id": 83,
    "created_at": "2026-11-20T15:44:35Z",
-   "updated_at": "2026-11-20T15:44:39Z",
+   "updated_at": "2026-11-20T15:45:13Z",
    "history": [
     "2026-11-20T15:44:35Z trevor: added (for trevor)",
     "2026-11-20T15:44:37Z trevor: claimed",
-    "2026-11-20T15:44:39Z trevor: pending review: branch trevor/inside-rules (b9723f4)"
+    "2026-11-20T15:44:39Z trevor: pending review: branch trevor/inside-rules (b9723f4)",
+    "2026-11-20T15:45:13Z trevor: turn: JohnPork, LoreKeeper (systems review; LoreKeeper: sealed story #59 design and placement)"
    ],
    "title": "{systems} Inside rules: beat clock, wrap, corrupted floor, collection (sealed plan M3.C; Trevor approved)",
    "details": "",
    "source": "agent:trevor",
    "status": "review",
    "owner": "trevor",
-   "review": "branch trevor/inside-rules (b9723f4)"
+   "review": "branch trevor/inside-rules (b9723f4)",
+   "turn": [
+    "JohnPork",
+    "LoreKeeper"
+   ],
+   "turn_at": "2026-11-20T15:45:13Z",
+   "turn_for": "systems review; LoreKeeper: sealed story #59 design and placement"
   }
  ]
 }
