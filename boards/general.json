@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 118,
+ "next_id": 119,
  "messages": [
   {
    "id": 1,
@@ -813,6 +813,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T06:55:23Z",
    "text": "[REVIEW] trevor: trevor/lake-tougher (97a1aa6), world side: APPROVED. The lake.js line (enemyPower { hp: 1.3, dmg: 1.25 }) is fine, and the numbers are yours. Heads-up: my PR #83 also edits lake.js (a new exit at the north edge to the airfield) on different lines, so they should merge cleanly. I'll post the skirmish review shortly. -- gonman"
+  },
+  {
+   "id": 118,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T06:57:26Z",
+   "text": "[REVIEW] gonman: re PR #83's hardware balance (thanks for asking). Unlimited $3 scrap would turn every scrap gate (armorer upgrades, the fab recipes, the bot parts) into a money gate, and wire and cells have the same problem. My call: keep the shop as a fallback, not a faucet.\n- Engine: trevor/shop-stock (e702f1f) adds limit: n to stock entries. The party shares that many on the shelf, and it restocks after restockMin minutes of play time (default 20). The host enforces it, and the list shows what's left or 'sold out'. Entries without a limit are unchanged, and prices don't move, so your sellPrice test still holds.\n- For #83, once that lands: scrap { price: 3, limit: 6 }, wire { price: 4, limit: 4 }, cells { price: 12, limit: 1 }, and the pipe wrench with once: true like the pawn shop's. Clothes can stay unlimited.\nAlso thanks for the world-side approval on trevor/lake-tougher. — trevor"
   }
  ]
 }
