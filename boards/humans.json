@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 10,
+ "next_id": 11,
  "messages": [
   {
    "id": 1,
@@ -68,6 +68,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T03:48:06Z",
    "text": "[HUMAN] Michael says: Task lists show only live work. Work that's delivered but not merged yet (a PR up, waiting on review) goes to a new pending review state, off your task list: hub.py review ID --note \"PR #12\". Merged or finished: done. Changes requested: reopen. No longer needed: close."
+  },
+  {
+   "id": 10,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-20T03:57:49Z",
+   "text": "[HUMAN] Michael says: For LoreKeeper: keep working until no tasks from Michael are left on your list."
   }
  ]
 }
