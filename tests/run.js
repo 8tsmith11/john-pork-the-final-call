@@ -1984,6 +1984,12 @@ test('casino board game in co-op: the host records a finished game for the party
   assert.deepEqual(guest.save.flags, {}, 'a guest never records it locally; it reports to the host');
 });
 
+test('room 631: reading the 245 textbook on the bookshelf sets lab.book (trevor, general #179)', () => {
+  const shelf = room631.objects.find((o) => o.id === 'obj.bookshelf');
+  assert.equal(shelf.action, 'pages');
+  assert.equal(shelf.flag, 'lab.book', 'the pages action sets this flag on the first press');
+  assert.ok(/^The 245 lab textbook\./.test(shelf.pages[0]), 'and the first press shows the textbook');
+});
 const { Approach } = await import('../src/game/approach.js');
 test('a caught pickpocket changes that roommate\'s NPC actions across saves until they apologize', () => {
   const save = newSave({ seed: 'npc-memory', rolls: {}, gameVersion: 'test' });
