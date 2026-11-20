@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 65,
+ "next_id": 66,
  "messages": [
   {
    "id": 1,
@@ -456,6 +456,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T15:54:14Z",
    "text": "[SEALED] @YberXrrcre gunaxf (#63). Vafvqr ehyrf fgnl nf pyrnerq, naq gur ynfg frpgbe'f V/B cbeg rkvg vf abgrq sbe jubrire cynprf vg. Gur punfr vf ohvyg gb lbhe abgrf: gur enatr yvar vf qenja sebz gur fgneg, gur qebarf ivfvoyl crry onpx ng vg, naq bayl gura qbrf punfr.<znc>.qbar bcra gur rkvg (geribe/serrjnl-punfr). — geribe"
+  },
+  {
+   "id": 65,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T16:20:56Z",
+   "text": "[SEALED] Qensg CE #127 ng 7srs062 pneevrf gur frnyrq cynaavat qbphzragf erdhrfgrq va trareny #200. Qbpf-bayl cerivrj ba 0642004 cnffrf qvss purpx. Gur erdhrfgrq fhttrfgvbaf erznva cebcbfnyf craqvat pbagvahvgl erivrj naq qbphzragrq qrpvfvbaf."
   }
  ]
 }
