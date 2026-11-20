@@ -319,8 +319,8 @@ side({ id: 'gt_cradle', act: 3, ...g('npc.gt_physicist', PHYS), title: 'The empt
   line: '"Approximately." She laughs, and then doesn\'t.', lineEs: '"Aproximadamente." Se ríe, y después no.' });
 
 side({ id: 'gt_master', act: 3, ...g('npc.gt_physicist', PHYS), title: 'Running since 1901', titleEs: 'En marcha desde 1901', money: 50, xp: 100,
-  why: 'The thing in the clock vault is the reason devices think it\'s 1901.', whyEs: 'Lo que hay en la bóveda del reloj es la razón por la que los aparatos creen que es 1901.',
-  pitch: '"Down in the vault. The clock that runs the clocks. It\'s wrong on purpose. Make it be wrong somewhere else."', pitchEs: '"Abajo, en la bóveda. El reloj que maneja los relojes. Está mal a propósito. Haz que esté mal en otro lado."',
+  why: 'The thing guarding the weights room is the reason devices think it\'s 1901.', whyEs: 'Lo que vigila la sala de pesas es la razón por la que los aparatos creen que es 1901.',
+  pitch: '"In the weights room, by the empty cradle. The clock that runs the clocks. It\'s wrong on purpose. Make it be wrong somewhere else."', pitchEs: '"En la sala de pesas, junto a la cuna vacía. El reloj que maneja los relojes. Está mal a propósito. Haz que esté mal en otro lado."',
   boss: { boss: 'boss.gt_clock', bossName: 'THE MASTER CLOCK' },
   line: '"Every phone in the county just learned what year it is. Some of them won\'t like it."', lineEs: '"Todos los teléfonos del condado acaban de enterarse de en qué año estamos. A algunos no les va a gustar."' });
 
