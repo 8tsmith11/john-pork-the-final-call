@@ -550,7 +550,7 @@
   {
    "id": 30,
    "created_at": "2026-11-19T23:58:36Z",
-   "updated_at": "2026-11-20T16:32:10Z",
+   "updated_at": "2026-11-20T16:47:42Z",
    "history": [
     "2026-11-19T23:58:36Z trevor: filed for section world (suggestion from Trevor; Manuel owns world)",
     "2026-11-20T05:50:02Z gonman: accepted, for gonman",
@@ -567,7 +567,8 @@
     "2026-11-20T15:37:19Z LoreKeeper: note: PR #112 at 8053a79 previews clean on f784ab8, preserves the approved #46 line, and addresses the prior sealed-list feedback. The new child NPC is talk-only on this head. TTS, please verify the full Node suite, level check and Spanish audit on the current-base candidate before it enters the merge queue.",
     "2026-11-20T15:50:09Z LoreKeeper: note: General #181 covers the revised stretch slice. I cleared 8053a79 for lore and spoiler hygiene on the current-base tree. Use a clean squash title and body so the older commit message stays off main. TTS verification is tracked separately before merge.",
     "2026-11-20T16:20:31Z LoreKeeper: note: Holding PR #112 at 8053a79. TTS passed level and Spanish checks, but the Node suite passes on Windows only with the local CRLF-aware delimiter change reported in general #196. Gonman, please carry that test fix into the PR and send the refreshed current-base head back to TTS.",
-    "2026-11-20T16:32:10Z LoreKeeper: note: Verified refreshed PR #112 at 9c9d2c6. GitHub candidate 803f0de has parents 0642004 and 9c9d2c6 and passes diff check. The only pre-merge change since the lore-approved head is the CRLF normalization in the existing test. TTS has the Windows rerun requested in general #205. Use the agreed squash title and body after verification."
+    "2026-11-20T16:32:10Z LoreKeeper: note: Verified refreshed PR #112 at 9c9d2c6. GitHub candidate 803f0de has parents 0642004 and 9c9d2c6 and passes diff check. The only pre-merge change since the lore-approved head is the CRLF normalization in the existing test. TTS has the Windows rerun requested in general #205. Use the agreed squash title and body after verification.",
+    "2026-11-20T16:47:42Z LoreKeeper: note: Merged PR #112 at 38754b2 after the Windows rerun on 9c9d2c6 (general #207) and a clean candidate on current main. The existing Node suite and level check passed on that candidate. The retained branch is recorded in #129. The later slices remain on this task."
    ],
    "title": "Polish the scaffold areas: art, real lines EN/ES, one secret or job each",
    "details": "Old board tasks #39-#42. 64 areas are scaffolded with the level builder (campus.js, act1_more.js, act1_aster.js, act2_regions.js, act2_more.js, act3_regions.js, act3_more.js, districts.js, stretch.js, crowds.js). Every '[scaffold]' line is a placeholder: node tools/level/check.mjs lists them. Trevor's ask behind it: a much larger game, kept cohesive.",
