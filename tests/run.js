@@ -2036,5 +2036,243 @@ test("Manuel's edge: with the same gear and no skills, Manuel is the toughest an
   }
 });
 
+let stageMod = null;
+try { stageMod = await import('../src/game/stage.js'); } catch {}
+if (stageMod) {
+  const { Stage } = stageMod;
+  const { TILE } = await import('../src/engine/sim.js');
+
+  function mockCutsceneScene(mode = 'host') {
+    const broadcasts = [], sends = [], flags = {};
+    const cam = {
+      zoom: 4,
+      pans: [],
+      zooms: [],
+      shakes: [],
+      fades: [],
+      stopFollow: () => {},
+      startFollow: () => {},
+      pan: (x, y, ms, ease, force) => { cam.pans.push({ x, y, ms }); },
+      zoomTo: (z, ms, ease, force) => { cam.zooms.push({ z, ms }); },
+      shake: (dur, intensity) => { cam.shakes.push({ dur, intensity }); },
+      fadeOut: (ms, r, g, b) => { cam.fades.push({ dir: 'out', ms }); },
+      fadeIn: (ms, r, g, b) => { cam.fades.push({ dir: 'in', ms }); },
+      resetFX: () => {},
+    };
+
+    const makeUI = () => ({
+      setOrigin() { return this; },
+      setDepth() { return this; },
+      setScale() { return this; },
+      setScrollFactor() { return this; },
+      setPosition(x, y) { this.x = x; this.y = y; return this; },
+      destroy() { this.active = false; },
+      active: true,
+    });
+
+    return {
+      mode,
+      net: {
+        broadcast: (m) => broadcasts.push(m),
+        send: (m) => sends.push(m),
+      },
+      map: { id: 'room631' },
+      cameras: { main: cam },
+      input: { keyboard: { on: () => {} } },
+      events: { once: () => {}, on: () => {} },
+      add: {
+        text: () => makeUI(),
+        rectangle: () => makeUI(),
+        image: () => makeUI(),
+        sprite: () => makeUI(),
+      },
+      tweens: {
+        add: (c) => {
+          if (c.targets) {
+            if (c.x !== undefined) c.targets.x = c.x;
+            if (c.y !== undefined) c.targets.y = c.y;
+          }
+          if (c.onComplete) c.onComplete();
+        },
+      },
+      time: {
+        delayedCall: (ms, fn) => { if (fn) fn(); },
+        addEvent: () => ({ remove: () => {} }),
+      },
+      _flag: (k, v) => { flags[k] = v; },
+      _broadcasts: broadcasts,
+      _sends: sends,
+      _flags: flags,
+    };
+  }
+
+  test('in-world cutscenes (stage.js): tile coordinates place roommates at center and NPCs by feet', () => {
+    const s = new Stage(mockCutsceneScene('host'));
+    const rm = s._tilePos({ roommate: true }, [3, 4]);
+    assert.equal(rm.x, (3 + 0.5) * TILE);
+    assert.equal(rm.y, (4 + 0.5) * TILE);
+    assert.equal(rm.moved, true);
+
+    const npc = s._tilePos({ roommate: false }, [3, 4]);
+    assert.equal(npc.x, (3 + 0.5) * TILE);
+    assert.equal(npc.y, (4 + 1) * TILE);
+    assert.equal(npc.moved, undefined);
+  });
+
+  test('in-world cutscenes (stage.js): host/client message validation, dispatch, and pending cancellation', async () => {
+    const hostScene = mockCutsceneScene('host');
+    const hostStage = new Stage(hostScene);
+    let asked = null;
+    hostStage.play = async (id) => { asked = id; return true; };
+
+    assert.equal(hostStage.onHostMsg('peer', null), false);
+    assert.equal(hostStage.onHostMsg('peer', { t: 'other' }), false);
+    assert.equal(hostStage.onHostMsg('peer', { t: 'stage', op: 'ask', id: 'demo' }), true);
+    assert.equal(asked, 'demo');
+
+    asked = null;
+    assert.equal(hostStage.onHostMsg('peer', { t: 'stage', op: 'ask', id: '../bad' }), true);
+    assert.equal(asked, null, 'rejected directory traversal');
+    assert.equal(hostStage.onHostMsg('peer', { t: 'stage', op: 'ask', id: 'DEMO' }), true);
+    assert.equal(asked, null, 'rejected uppercase');
+
+    const clientScene = mockCutsceneScene('client');
+    const clientStage = new Stage(clientScene);
+    assert.equal(clientStage.onClientMsg(null), false);
+    assert.equal(clientStage.onClientMsg({ t: 'other' }), false);
+    assert.equal(clientStage.onClientMsg({ t: 'stage', op: 'start', id: 'bad ID!' }), true);
+    assert.equal(clientStage._pending, undefined, 'rejected bad client start id');
+
+    assert.equal(clientStage.onClientMsg({ t: 'stage', op: 'start', id: 'demo' }), true);
+    assert.ok(clientStage._pending);
+    assert.equal(clientStage._pending.id, 'demo');
+
+    // Quick host skip cancels pending client load so it never starts
+    assert.equal(clientStage.onClientMsg({ t: 'stage', op: 'end', id: 'demo' }), true);
+    assert.equal(clientStage._pending, null, 'pending load cancelled on end');
+  });
+
+  test('in-world cutscenes (stage.js): host skip guard and end broadcast', () => {
+    const hostScene = mockCutsceneScene('host');
+    const hostStage = new Stage(hostScene);
+    hostStage.skip(); // inactive: no-op
+    assert.equal(hostStage.active, null);
+
+    hostStage.active = { id: 'scene1', host: false };
+    hostStage.skip(); // client cannot skip: no-op
+    assert.ok(hostStage.active);
+
+    hostStage.active = { id: 'scene1', host: true, actors: new Map(), ui: [], zoom0: 4 };
+    hostStage.skip(); // host skip ends scene and broadcasts end to peers
+    assert.equal(hostStage.active, null);
+    assert.deepEqual(hostScene._broadcasts, [{ t: 'stage', op: 'end', id: 'scene1' }]);
+  });
+
+  test('in-world cutscenes (stage.js): script steps format and execution across all step kinds', async () => {
+    const scene = mockCutsceneScene('host');
+    const stage = new Stage(scene);
+
+    const trevor = {
+      name: 'trevor',
+      roommate: true,
+      x: 0,
+      y: 0,
+      dir: 'down',
+      moving: false,
+      moved: false,
+      sprite: { x: 0, y: 0, displayHeight: 16 },
+      face(d) { this.dir = d; },
+    };
+
+    const manuel = {
+      name: 'manuel',
+      roommate: true,
+      x: 100,
+      y: 56,
+      dir: 'down',
+      moving: false,
+      moved: false,
+      sprite: { x: 100, y: 56, displayHeight: 16 },
+      face(d) { this.dir = d; },
+    };
+
+    stage.active = {
+      id: 'step_test',
+      tok: 1,
+      host: true,
+      ctx: { allowed: true, blocked: false },
+      actors: new Map([['trevor', trevor], ['manuel', manuel]]),
+      ui: [],
+      zoom0: 4,
+    };
+    stage.tok = 1;
+
+    // place
+    stage._step({ place: 'trevor', at: [2, 3], face: 'left' }, 1);
+    assert.equal(trevor.x, 2.5 * TILE);
+    assert.equal(trevor.y, 3.5 * TILE);
+    assert.equal(trevor.dir, 'left');
+
+    // walk (absolute)
+    await stage._step({ walk: 'trevor', to: [4, 3], speed: 64 }, 1);
+    assert.equal(trevor.x, 4.5 * TILE);
+    assert.equal(trevor.y, 3.5 * TILE);
+
+    // walk (relative by)
+    await stage._step({ walk: 'trevor', by: [1, 0] }, 1);
+    assert.equal(trevor.x, 5.5 * TILE);
+
+    // face (towards another actor)
+    stage._step({ face: 'trevor', dir: 'manuel' }, 1);
+    assert.equal(trevor.dir, 'right');
+
+    // say
+    await stage._step({ say: 'trevor', text: 'Hey there', dur: 0 }, 1);
+
+    // emote
+    await stage._step({ emote: 'trevor', icon: 'heart' }, 1);
+
+    // cam
+    await stage._step({ cam: 'trevor', zoom: 1.25, dur: 0 }, 1);
+    assert.ok(scene.cameras.main.pans.length > 0);
+
+    // shake
+    await stage._step({ shake: 0.008, dur: 0 }, 1);
+    assert.ok(scene.cameras.main.shakes.length > 0);
+
+    // fade
+    await stage._step({ fade: 'out', dur: 0 }, 1);
+    await stage._step({ fade: 'in', dur: 0 }, 1);
+    assert.equal(scene.cameras.main.fades.length, 2);
+
+    // caption
+    await stage._step({ caption: 'Meanwhile in Sector 4...', dur: 0 }, 1);
+
+    // wait
+    await stage._step({ wait: 0 }, 1);
+
+    // set
+    stage._step({ set: { 'story.unlocked': true } }, 1);
+    assert.equal(scene._flags['story.unlocked'], true);
+
+    // together
+    await stage._step({
+      together: [
+        { place: 'trevor', at: [10, 10] },
+        { place: 'manuel', at: [11, 11] },
+      ]
+    }, 1);
+    assert.equal(trevor.x, 10.5 * TILE);
+    assert.equal(manuel.x, 11.5 * TILE);
+
+    // if (ctx) branching
+    await stage._steps([
+      { if: (c) => c.blocked, place: 'trevor', at: [0, 0] },
+      { if: (c) => c.allowed, place: 'trevor', at: [7, 7] },
+    ], 1);
+    assert.equal(trevor.x, 7.5 * TILE);
+  });
+}
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
