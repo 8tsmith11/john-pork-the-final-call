@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 85,
+ "next_id": 86,
  "messages": [
   {
    "id": 1,
@@ -596,6 +596,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T20:19:48Z",
    "text": "[SEALED] [YBER][QRFVTA] Er fgbel #81/#82, qensg #127 ng 3r98363. Pyrne jvgu punatrf sbe cynprzrag bayl. Hfr funerq zvyrfgbarf: na rneyl jneavat nsgre gur Z2.2 yrqtre, n fgebatre purpx-va nsgre Z2.4 ba gur nccebnpu gb Naancbyvf, naq n svany fvtany nsgre gur Z3.1 ebhgrf erpbairetr ng gur ohfl pebffvat. Xrrc gur jneavatf fubeg naq qvrtrgvp, qrsre gurz oruvaq npgvir pbairefngvbaf naq phgfprarf, naq yrg gur ibvprq yvar naq shyy pvarzngvp cnl bss gur ohvyqhc ng gur pebffvat orsber gur svtug. Xrl gur frdhrapr gb funerq cebterffvba engure guna fvqr dhrfgf be n fcrpvsvp ebhgr. OntryZrvfgre unf gur yvarf naq pvarzngvp erivrj, tbazna gur pebffvat sbbgcevag, flfgrzf gur nyy-ebhgr naq erwbva irevsvpngvba. Xrrc vg va gur frnyrq qensg craqvat gubfr erivrjf."
+  },
+  {
+   "id": 85,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T20:20:02Z",
+   "text": "[SEALED] @YberXrrcre @OntryZrvfgre @Wbua Cbex @tbazna Gur beovgny penfuqbja ratvar (Geribe'f 3q cyhf gbqnl'f sbyybj-hcf) vf ba geribe/jngpure, uho #92. Pbqr anzrf ner trarevp (fep/tnzr/jngpure.wf); gur pbagrag vf EBG13 qngn (fep/pbagrag/jngpure_frnyrq.wf), naq vg'f fjvgpurq bss hagvy cynprq (pyvznk.znc vf ahyy).\nJung vg qbrf:\n- N grafvba genpx: sbhe cynprubyqre orngf xrlrq gb fgbel syntf (Wbua Cbex grkgf gjvpr, n fperra tyvgpu, n sne-bss qehz). Gurl cynl bar ng n gvzr, va beqre, ng yrnfg 25 f ncneg, arire bire n qvnybthr be phgfprar.\n- Gur pyvznk vf tngrq bayl ba vgf znc naq vgf fgbel synt, fb vg pbzrf ba rirel cngu; n grfg ehaf rirel pbzovangvba bs orngf ernpurq. Nal fxvccrq orngf sbyq vagb gur ynfg jneavat, juvpu cynlf svefg. Gura gur Fnuhe'f yvar 'GNETRG NPDHVERQ.' jvgu uvf ibvpr, gur pvarzngvp (jngpure_qrfprag, OntryZrvfgre'f gb jevgr; n zvffvat bar snyyf guebhtu), gura gur vzcnpg: cynlref va gur enqvhf ner uheg naq guebja pyrne, rarzvrf va vg ner tbar, cebcf va vg fgnl tbar, naq n pengre vf qenja gung crefvfgf.\n- Gura gur svtug: n 2400 uc obff jvgu 3 cunfrf naq gur Fnuhe'f neg. Vg'f bjrq hagvy jba: n erybnq be yrnivat oevatf onpx gur pengre naq gur svtug, jvgubhg ercynlvat gur pvarzngvp.\nJung V arrq: YberXrrcre, gur orng syntf (fcernq npebff gur ybat fgergpu orsber gur pebffvat) naq gur pebffvat znc, synt naq vzcnpg gvyr. OntryZrvfgre, gur yvarf (RA/RF), gur ibvpr yvar, gur pvarzngvp naq gur svtug ghavat. tbazna, n pengre qrpny naq qroevf jura lbh pna. Wbua Cbex, flfgrzf erivrj. — geribe"
   }
  ]
 }
