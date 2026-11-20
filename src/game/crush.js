@@ -9,7 +9,7 @@ export const MANUEL_SAYS_YES = true;   // Manuel said yes (gonman, board, 2026-1
 
 const rot13 = (s) => s.replace(/[a-zA-Z]/g, (c) => String.fromCharCode(((c.charCodeAt(0) - (c <= 'Z' ? 65 : 97) + 13) % 26) + (c <= 'Z' ? 65 : 97)));
 const DATA = JSON.parse(rot13(CRUSH));
-const NEAR = 80, PAT_NEAR = 20;
+const NEAR = 80, GESTURE_NEAR = 20;
 
 /** How far along Michael is: 0 (none yet) .. 4. */
 export function crushTier(save) {
@@ -25,7 +25,7 @@ export class Crush {
   constructor(scene) {
     this.s = scene;
     this.next = scene.time.now + 45000;
-    this.nextPat = scene.time.now + 150000;   // not in the first two and a half minutes of a session
+    this.nextGesture = scene.time.now + 150000;   // not in the first two and a half minutes of a session
   }
 
   get used() { return (this.s.save.flags['act1.crush.used'] ??= []); }
@@ -38,7 +38,7 @@ export class Crush {
     const michael = snap.players.find((p) => p.c === 'michael' && !p.dn && !p.zz);
     if (!michael) return;
     const near = (c, r) => snap.players.find((p) => p.c === c && !p.dn && Math.hypot(p.x - michael.x, p.y - michael.y) <= r);
-    this._pats(snap, michael, near, now, tier);
+    this._gestures(snap, michael, near, now, tier);
     if (!tier) return;
 
     if (now > this.next) {
@@ -58,17 +58,17 @@ export class Crush {
 
   // The sealed gesture: rare and idle-only at first (every 4-7 minutes at most, both standing still);
   // from tier 2 (switchyard solved) every 45-90 s whenever they're close (Manuel: more often, 2026-11-19).
-  _pats(snap, michael, near, now, tier) {
+  _gestures(snap, michael, near, now, tier) {
     const s = this.s;
-    const manuel = MANUEL_SAYS_YES && near('manuel', PAT_NEAR);
+    const manuel = MANUEL_SAYS_YES && near('manuel', GESTURE_NEAR);
     const prev = this._prev ?? {}; this._prev = { m: [michael.x, michael.y], n: manuel ? [manuel.x, manuel.y] : null };
-    if (!manuel || now < this.nextPat) return;
+    if (!manuel || now < this.nextGesture) return;
     const still = (a, b) => b && Math.hypot(a[0] - b[0], a[1] - b[1]) < 0.3;
     const idle = still([michael.x, michael.y], prev.m) && still([manuel.x, manuel.y], prev.n);
     if (tier < 2 && !idle) return;
-    this.nextPat = now + (tier >= 2 ? 45000 + Math.random() * 45000 : 240000 + Math.random() * 180000);
-    const n = (s.save.flags['act1.crush.pats'] = (s.save.flags['act1.crush.pats'] ?? 0) + 1);
-    this._send({ t: 'crush', id: michael.id, pat: manuel.id, replyId: manuel.id, reply: DATA.patReplies[(n - 1) % DATA.patReplies.length] });
+    this.nextGesture = now + (tier >= 2 ? 45000 + Math.random() * 45000 : 240000 + Math.random() * 180000);
+    const n = (s.save.flags['act1.crush.gestures'] = (s.save.flags['act1.crush.gestures'] ?? 0) + 1);
+    this._send({ t: 'crush', id: michael.id, g: manuel.id, replyId: manuel.id, reply: DATA.gestureReplies[(n - 1) % DATA.gestureReplies.length] });
   }
 
   _send(msg) {
@@ -81,13 +81,13 @@ export class Crush {
   _show(msg) {
     const s = this.s;
     if (msg.text) { s._barkQuietUntil = 0; s._bark(msg.id, msg.text); }
-    if (msg.pat) this._pat(msg.id, msg.pat);
-    if (msg.reply && msg.replyId) s.time.delayedCall(msg.pat ? 2200 : 3200, () => { s._barkQuietUntil = 0; s._bark(msg.replyId, msg.reply); });
+    if (msg.g) this._gesture(msg.id, msg.g);
+    if (msg.reply && msg.replyId) s.time.delayedCall(msg.g ? 2200 : 3200, () => { s._barkQuietUntil = 0; s._bark(msg.replyId, msg.reply); });
   }
 
   // The gesture, drawn out so it reads (Manuel, 2026-11-19: "last longer so they are noticeable"): about two
   // seconds from lean-in to the last heart. Nudges go through offX/offY, which the render loop adds every frame.
-  _pat(fromId, toId) {
+  _gesture(fromId, toId) {
     const s = this.s, a = s.sprites?.get(fromId), b = s.sprites?.get(toId);
     if (!a || !b) return;
     const dir = Math.sign(b.x - a.x || 1);
