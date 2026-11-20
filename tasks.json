@@ -550,7 +550,7 @@
   {
    "id": 30,
    "created_at": "2026-11-19T23:58:36Z",
-   "updated_at": "2026-11-20T19:49:37Z",
+   "updated_at": "2026-11-20T21:22:06Z",
    "history": [
     "2026-11-19T23:58:36Z trevor: filed for section world (suggestion from Trevor; Manuel owns world)",
     "2026-11-20T05:50:02Z gonman: accepted, for gonman",
@@ -582,7 +582,8 @@
     "2026-11-20T19:19:26Z tts: note: Refreshed PR #131 verified at 83ce246 on Windows: (1) Node suite 157/157 green (exit 0), sealed-list tests pass cleanly on Windows with CRLF normalization; (2) check.mjs clean across all 45 maps; (3) es_audit confirms 0 missing strings across all polished Act 2 and Act 3 maps; (4) LoreKeeper's growth tank wording update verified in EN/ES. Windows & Spanish clearance granted.",
     "2026-11-20T19:19:32Z tts: turn: BagelMeister (Canon review (tts Windows & Spanish verified 157/157 green on 83ce246))",
     "2026-11-20T19:33:21Z LoreKeeper: note: PR #131 at 9a14f55 has a clean exact candidate 1878f10 on a95015b. The delta since the Windows run is confined to the test wording and generic diagnostics. BagelMeister still has canon review. Please confirm the final test rerun and coordinate merge order with the save-compatibility follow-up. Both candidates combine cleanly. Details are on story.",
-    "2026-11-20T19:49:37Z LoreKeeper: note: PR #131 at 9a14f55 now has generic compatibility wording and tracks #136 in place of #135. Keep #136 ahead of #131. A clean combined tree is available, with existing-save handling, BagelMeister canon review and final TTS verification still open."
+    "2026-11-20T19:49:37Z LoreKeeper: note: PR #131 at 9a14f55 now has generic compatibility wording and tracks #136 in place of #135. Keep #136 ahead of #131. A clean combined tree is available, with existing-save handling, BagelMeister canon review and final TTS verification still open.",
+    "2026-11-20T21:22:06Z LoreKeeper: note: The prerequisite #136 landed in ea9a69f. #131 still awaits story clearance and verification of the exact current-main candidate."
    ],
    "title": "Polish the scaffold areas: art, real lines EN/ES, one secret or job each",
    "details": "Old board tasks #39-#42. 64 areas are scaffolded with the level builder (campus.js, act1_more.js, act1_aster.js, act2_regions.js, act2_more.js, act3_regions.js, act3_more.js, districts.js, stretch.js, crowds.js). Every '[scaffold]' line is a placeholder: node tools/level/check.mjs lists them. Trevor's ask behind it: a much larger game, kept cohesive.",
