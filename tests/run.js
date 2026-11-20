@@ -1819,6 +1819,65 @@ test('the platform gate needs the yard, the breakers and the signals; no world s
   assert.ok(tunPuz.puzzleClue('obj.locker', seed, f, 'es').includes('TABLERO'));
 });
 
+test('both Act 1 victories queue exactly one host finale and checkpoint its completion', () => {
+  for (const variant of ['warden', 'sahur']) {
+    const save = newSave({ seed: 'act-one-finale', rolls: {}, gameVersion: 'test' });
+    save.world.killed = [];
+    save.flags['act1.boss.kind'] = variant;
+    save.flags['act1.call.declines'] = variant === 'sahur' ? 3 : 0;
+    save.flags['act1.call.answered'] = variant === 'warden';
+    const map = MAPS_FOR_TEST.platform;
+    const sim = new Sim(map, { bossVariant: variant });
+    sim.addPlayer('host', 'trevor');
+    const boss = [...sim.enemies.values()].find(e => e.boss);
+    const broadcasts = [], starts = [];
+    let cards = 0, writes = 0;
+    const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+      mode: 'host', localId: 'host', save, sim, map, time: { now: 100 },
+      net: { broadcast: msg => broadcasts.push(msg) }, _announce() {}, _showActOneArrival() {}, _closeSayAll() {},
+      _showActOneCard() { cards++; }, _save() { writes++; }, _fxPop() {}, _levelsReached() {}, _syncParty() {},
+      startDialogue: async (name, _node, done) => { starts.push({ name, done }); return true; },
+    });
+    if (variant === 'sahur') {
+      boss.fightT = 11;
+      host._answer();
+      assert.equal(save.flags['act1.call.answered'], true);
+    } else host._hostEvents([{ t: 'kill', boss: true, mini: false, kind: boss.kind, key: boss.spawnKey, xp: 1 }]);
+    assert.ok(save.world.killed.includes(boss.spawnKey));
+    assert.equal(save.flags['act1.boss.defeated'], true);
+    assert.equal(save.flags['act1.outbreak.contained'], true);
+    host._tickActOneEnding();
+    assert.equal(starts.length, 0, 'keep the post-fight beat');
+    host.time.now = 4000;
+    host.dlg = {};
+    host._tickActOneEnding();
+    assert.equal(starts.length, 0, 'wait for the host to finish an open conversation');
+    host.dlg = null;
+    host._tickActOneEnding();
+    host._tickActOneEnding();
+    assert.equal(starts.length, 1);
+    assert.equal(starts[0].name, 'ending');
+    assert.equal(save.world.act, 1);
+    starts[0].done();
+    assert.equal(save.flags['act1.complete'], true);
+    assert.equal(save.flags['act1.boss.sahur'], variant === 'sahur');
+    assert.equal(save.flags['act1.ending.warm'], variant === 'warden');
+    assert.equal(save.world.act, 2);
+    assert.equal(cards, 1);
+    assert.equal(writes, 1);
+    assert.deepEqual(broadcasts, [{ t: 'act1Complete' }]);
+
+    const timers = [], shape = { setOrigin() { return this; }, setDepth() { return this; } };
+    const guest = Object.assign(Object.create(CraftWorldScene.prototype), {
+      mode: 'client', localId: 'guest', save: { flags: {} }, time: { delayedCall: (...args) => timers.push(args) },
+      add: { rectangle: () => shape, text: () => shape }, tweens: { add() {} },
+    });
+    guest._fx({ t: 'kill', boss: true, mini: false, kind: boss.kind, by: 'host' }, { players: [] });
+    assert.deepEqual(timers, [], 'a guest renders the kill without scheduling their own ending');
+    assert.deepEqual(guest.save.flags, {});
+  }
+});
+
 test('burst damage cannot skip a gated boss phase or its first tell', () => {
   const sim = new Sim(MAPS_FOR_TEST.tunnel_1, { seed: 'phase-gate' });
   const boss = [...sim.enemies.values()].find((e) => e.kind === 'boss.switchman');

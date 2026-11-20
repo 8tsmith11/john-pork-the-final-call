@@ -99,6 +99,7 @@ const CONTROLS_TEXT = 'WASD move · mouse aim · click: use held item\nSpace / S
 // (E advances, 1-6 choose, Space still dodges, clicks outside the box still attack). A scene or node can
 // override with `mode: 'story' | 'free'` once the scripts carry it.
 const STORY_SCENES = new Set(['cold_open', 'the_call', 'descent_and_boss', 'ending', 'first_death', 'checkpoint', 'lead_b_halvard']);
+const ACT_ONE_HOST_FLAGS = new Set(['act1.boss.defeated', 'act1.outbreak.contained', 'act1.complete']);
 
 // Dialogue scenes that happen on the phone, and the title each call gets in the phone tab's transcripts.
 const PHONE_CALLS = { the_call: { start: 'John Pork · the call', call_ring_2: 'John Pork · second call', call_ring_3: 'John Pork · third call', butt_dial: 'John Pork · pocket dial' } };
@@ -130,8 +131,14 @@ export class WorldScene extends Phaser.Scene {
     const startMap = MAPS[this.save.world.area] ?? MAPS.room631;
     this.save.world.killed ??= [];
     const authoritative = this.mode !== 'client';
+    const killed = new Set(this.save.world.killed);
+    if (this.save.flags['act1.boss.defeated']) {
+      // Older saves could record the phone outcome without the defeated spawn's key.
+      const index = MAPS.platform.enemies.findIndex(e => e.kind === 'boss.warden');
+      if (index >= 0) killed.add(`platform#${index}`);
+    }
     this.sim = new Sim(startMap, {
-      seed: this.save.world.seed, killed: new Set(this.save.world.killed), deferSpawn: authoritative,
+      seed: this.save.world.seed, killed, deferSpawn: authoritative,
       bossVariant: authoritative ? this.save.flags['act1.boss.kind'] : undefined,
     });
     this.localId = this.mode === 'client' ? this.net.id : 'host';
@@ -242,11 +249,12 @@ export class WorldScene extends Phaser.Scene {
     if (this.dlg) return;
     if (this._inShared) return this._startLocal(sceneName, nodeId, onDone);
     const sc = await loadScene(sceneName), node = sc.nodes[nodeId ?? sc.start];
-    const scope = node?.scope ?? sc.scope ?? SCOPE_DEFAULT[`${sceneName}:${nodeId ?? sc.start}`] ?? SCOPE_DEFAULT[sceneName] ?? 'nearby';
+    const presentation = this.mode === 'host' && sceneName === 'ending' ? 'act1-finale' : undefined;
+    const scope = presentation ? 'all' : node?.scope ?? sc.scope ?? SCOPE_DEFAULT[`${sceneName}:${nodeId ?? sc.start}`] ?? SCOPE_DEFAULT[sceneName] ?? 'nearby';
     this._dlgScope = scope;
     if (this.mode === 'solo') return this._startLocal(sceneName, nodeId, () => { this._dlgScope = null; onDone?.(); });
     this._inShared = true;
-    try { return await this.shared.start(sceneName, nodeId, onDone, scope, label); } finally { this._inShared = false; }
+    try { return await this.shared.start(sceneName, nodeId, onDone, scope, label, presentation); } finally { this._inShared = false; }
   }
 
   // A story scene (scope 'all') is on someone's screen: the host doesn't step the world, so nobody gets
@@ -648,7 +656,7 @@ export class WorldScene extends Phaser.Scene {
           const prev = this.remoteInputs.get(peer);
           this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, interact: false });
         }
-        if (msg.t === 'flag' && typeof msg.key === 'string' && /^(act\d|dlg\.)/.test(msg.key)) this.save.flags[msg.key] = msg.value ?? true
+        if (msg.t === 'flag' && typeof msg.key === 'string' && /^(act\d|dlg\.)/.test(msg.key) && !ACT_ONE_HOST_FLAGS.has(msg.key)) this.save.flags[msg.key] = msg.value ?? true
         if (msg.t === 'flag' && msg.key === 'act1.fuses.in') this._seatFuses();
         if (msg.t === 'item' && this.save.party[msg.who] && ITEMS[`item.${msg.item}`]) { Inv.add(this.save.party[msg.who], `item.${msg.item}`, Math.min(99, msg.n | 0 || 1)); this._syncParty(); }
         if (msg.t === 'standing' && msg.faction in this.save.standing) this.save.standing[msg.faction] += Number(msg.n) || 0;
@@ -701,6 +709,11 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'reload') { this.scene.restart({ mode: 'client', net: this.net, save: msg.save, character: this.character }); return; }
         if (msg.t === 'party') { this.save.party = msg.party; this._refreshMenu(); }   // wallets ride along in party
         if (msg.t === 'world') this._applyWorld(msg);
+        if (msg.t === 'act1Complete') {
+          this.save.flags['act1.complete'] = true;
+          this.save.world.act = Math.max(2, this.save.world.act ?? 1);
+          this._showActOneCard();
+        }
       });
       on('close', () => this._say('The host closed the game.'));
     }
@@ -882,31 +895,57 @@ export class WorldScene extends Phaser.Scene {
     this.enemySprites.clear();
   }
 
-  async _playEnding(fromBoss = false) {
-    if (!fromBoss && this.mode !== 'client' && !this.sim.cleared) return this._announce('Something down here is still moving.');
-    // John Pork arrives in person: climbs down from the back of the platform and stands with the party.
+  _showActOneArrival(x, y) {
     if (this.anims.exists('pork') && !this.porkSprite) {
-      const me = this.sim.players?.get(this.localId) ?? this._lastRendered?.players.find((p) => p.id === this.localId);
-      const tx = (me?.x ?? 160) + 40, ty = (me?.y ?? 80);
+      const tx = x + 40, ty = y;
       this.porkSprite = this.add.sprite(tx, ty - 60, 'principals').setOrigin(0.5, 1).play('pork').setAlpha(0).setDepth(ty);
       this.tweens.add({ targets: this.porkSprite, y: ty + 4, alpha: 1, duration: 1400, ease: 'Sine.out' });
     }
+  }
+
+  _showActOneCard() {
+    if (this._actOneCardShown) return;
+    this._actOneCardShown = true;
+    const card = this.add.text(VIEW.w / 2, VIEW.h / 2, 'ACT 1\nMISSED CALLS', { fontFamily: 'monospace', fontSize: '18px', color: '#f2a6b8', align: 'center' })
+      .setOrigin(0.5).setScrollFactor(0).setDepth(9999).setAlpha(0);
+    this.tweens.add({ targets: card, alpha: 1, duration: 1600, hold: 2600, yoyo: true, onComplete: () => card.destroy() });
+  }
+
+  _markActOneBossDefeated(delay) {
+    if (this.save.flags['act1.boss.defeated']) return;
+    this.save.flags['act1.boss.defeated'] = true;
+    this.save.flags['act1.outbreak.contained'] = true;
+    this._actOneEndingAt = this.time.now + delay;
+  }
+
+  _tickActOneEnding() {
+    const f = this.save.flags;
+    if (this.map.id !== 'platform' || !f['act1.boss.defeated'] || f['act1.complete'] || this._endingPlayed
+      || this.dlg || this.menu || this.stage?.active || this._transitioning || this._rotReload
+      || this.time.now < (this._actOneEndingAt ?? 0)) return;
+    this._endingPlayed = true;
+    this._closeSayAll();
+    this._playEnding();
+  }
+
+  async _playEnding() {
+    if (this.mode === 'client') return;
+    const me = this._lastRendered?.players.find(p => p.id === this.localId) ?? this.sim.players.get(this.localId);
+    this._showActOneArrival(me?.x ?? 160, me?.y ?? 80);
     // The ending script branches on these; nothing else sets them. Warm = the party picked up the
     // first time the phone rang (script note: any decline makes Pork cold, including the Sahur route).
-    if (this.mode !== 'client') {
-      const f = this.save.flags;
-      this._flag('act1.boss.sahur', f['act1.boss.kind'] === 'sahur');
-      this._flag('act1.ending.warm', !!f['act1.call.answered'] && !Number(f['act1.call.declines'] || 0));
-      if (f['q.van.seen']) this._flag('act1.leadA.vanSeen', true);
-    }
-    this.startDialogue('ending', null, () => {
+    const f = this.save.flags;
+    this._flag('act1.boss.sahur', f['act1.boss.kind'] === 'sahur');
+    this._flag('act1.ending.warm', !!f['act1.call.answered'] && !Number(f['act1.call.declines'] || 0));
+    if (f['q.van.seen']) this._flag('act1.leadA.vanSeen', true);
+    const started = await this.startDialogue('ending', null, () => {
       this._flag('act1.complete', true);
-      const W = VIEW.w, H = VIEW.h;
-      const card = this.add.text(W / 2, H / 2, 'ACT 1\nMISSED CALLS', { fontFamily: 'monospace', fontSize: '18px', color: '#f2a6b8', align: 'center' })
-        .setOrigin(0.5).setScrollFactor(0).setDepth(9999).setAlpha(0);
-      this.tweens.add({ targets: card, alpha: 1, duration: 1600, hold: 2600, yoyo: true });
-      if (this.mode !== 'client') { this.save.world.act = 2; this._save(); }
+      this.save.world.act = 2;
+      this._showActOneCard();
+      if (this.mode === 'host') this.net.broadcast({ t: 'act1Complete' });
+      this._save();
     });
+    if (started === false) this._endingPlayed = false;
   }
 
   // ---------- crafting, skills, items (host-authoritative) ----------
@@ -963,13 +1002,14 @@ export class WorldScene extends Phaser.Scene {
   // Host -> clients: flags and quest progress, whenever they change (checked twice a second).
   _broadcastWorld() {
     if (this.mode !== 'host') return;
-    const msg = { t: 'world', flags: this.save.flags, quests: questState(this.save), guide: this._guide(), drops: this.save.world.drops ?? [], jobs: this.save.world.jobs };
+    const msg = { t: 'world', act: this.save.world.act, flags: this.save.flags, quests: questState(this.save), guide: this._guide(), drops: this.save.world.drops ?? [], jobs: this.save.world.jobs };
     const sig = JSON.stringify(msg);
     if (sig === this._worldSig) return;
     this._worldSig = sig; this.net.broadcast(msg);
   }
   _applyWorld(msg) {
     const before = questState(this.save), was = JSON.parse(JSON.stringify(before));
+    if (Number.isInteger(msg.act)) this.save.world.act = msg.act;
     Object.assign(this.save.flags, msg.flags ?? {});
     if (msg.guide) this.save.world.guide = msg.guide;
     if (msg.drops) this.save.world.drops = msg.drops;   // items on the floor (src/game/guitarStands.js)
@@ -1875,11 +1915,10 @@ export class WorldScene extends Phaser.Scene {
   _answer() {
     if (this.sim.answerSahur()) {
       this.save.flags['act1.call.answered'] = true;
-      this.save.flags['act1.boss.defeated'] = true; this.save.flags['act1.outbreak.contained'] = true;   // scene 07: the boss falling contains the outbreak (Act 2 reads this)
+      const key = this.sim.events.at(-1)?.key;
+      if (key && !this.save.world.killed.includes(key)) this.save.world.killed.push(key);
+      this._markActOneBossDefeated(2600);
       this._announce('You answer. The drumming stops mid-beat. The tall wooden figure tilts its head, listening to something only it can hear, and walks back into the dark.');
-      // The sim clears its event list at the start of every step, so the 'kill' event answerSahur()
-      // pushes from this key handler never reaches _fx. Start the ending from here instead.
-      if (!this._endingPlayed) { this._endingPlayed = true; this.time.delayedCall(2600, () => { this._closeSayAll(); this._playEnding(true); }); }
     }
   }
 
@@ -2165,6 +2204,7 @@ export class WorldScene extends Phaser.Scene {
       for (const p of this.sim.players.values()) this.save.party[p.character].rot = p.rot ?? 0;
       this._hostEvents(events);
       if (this.sim.rotDeath && !this._rotReload) this._rotReloadSoon();
+      this._tickActOneEnding();
       snap = this._lastSnap = { ...this.sim.snapshot(), events, doors: [...this.map.doors.values()].filter((d) => d.open).map((d) => d.id) };
     }
     if (snap.map !== this.map.id && MAPS[snap.map]) { this._showMap(MAPS[snap.map]); this._onEnterMap(MAPS[snap.map]); if (this.mode === 'client') this.cameras.main.fadeIn(220, 5, 6, 12); }
@@ -2210,6 +2250,7 @@ export class WorldScene extends Phaser.Scene {
         if (ev.id === this.localId) this._toast(ev.dead ? 'Battery dead.' : ev.knocked ? 'Knocked off your scooter!' : ev.on ? 'On the scooter. [Q] to hop off' : 'Off the scooter.');
       }
       if (ev.t === 'kill') {
+        if (ev.kind === 'boss.warden' && ev.boss && !ev.mini) this._markActOneBossDefeated(900);
         if (ev.key && !this.save.world.killed.includes(ev.key)) this.save.world.killed.push(ev.key);
         const jm = /#job\.(\d+)\./.exec(ev.key ?? ''); if (jm) { const job = this._jobs().open.find((j) => j.n === +jm[1]); if (job) job.killed = (job.killed ?? 0) + 1; }
         if (ev.kind) { const g = this._guide().e[ev.kind] ??= { seen: 1, kills: 0 }; g.kills++; }
@@ -2328,7 +2369,6 @@ export class WorldScene extends Phaser.Scene {
     // A scene that is finished for good (e.g. the sniffer is printed) answers with one line after that.
     if (near.talk && near.doneFlag && this.save.flags[near.doneFlag]) { this._say(near.doneText ?? near.text ?? ''); return; }
     if (near.talk) { const [scene, node] = near.talk.split(':'); this.startDialogue(scene, node || null, near.after ? () => this._flag(near.after, true) : null); return; }
-    if (near.action === 'ending') { this._playEnding(); return; }
     if (near.action === 'fab') { this._openFab(); return; }
     if (this._questInteract(near)) return;
     if (near.npc && this._sayLater(near)) return;
@@ -3043,8 +3083,6 @@ export class WorldScene extends Phaser.Scene {
         this._toast(tr('The Beltway road is open.'));
       }
     }
-    if (ev.t === 'kill' && ev.boss && !ev.mini && this.mode !== 'client') { this.save.flags['act1.boss.defeated'] = true; this.save.flags['act1.outbreak.contained'] = true; }
-    if (ev.t === 'kill' && ev.boss && !ev.mini && !this._endingPlayed) { this._endingPlayed = true; this.time.delayedCall(900, () => this._playEnding(true)); }
     if (ev.t === 'phase') { this.cameras.main.shake(300, 0.01); this._bossTalk(`phase${ev.phase}`, snap); }   // live, never pauses (Trevor)
     if (ev.t === 'tell' && ev.kind) {
       // The Warden's line for this pattern (gonman, #481): lowercase in rot magenta, all caps in Continuity red.

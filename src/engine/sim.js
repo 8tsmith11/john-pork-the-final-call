@@ -1000,7 +1000,7 @@ export class Sim {
   /** The party answers the phone mid-fight: the Sahur stops, tilts its head, and leaves. */
   answerSahur() {
     for (const e of this.enemies.values()) {
-      if (e.sahur && e.fightT > 10) { this.enemies.delete(e.id); if (e.spawnKey) this.killed?.add(e.spawnKey); this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, xp: 80, boss: true, sahurLeft: true }); return true; }
+      if (e.sahur && e.fightT > 10) { this.enemies.delete(e.id); if (e.spawnKey) this.killed?.add(e.spawnKey); this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, key: e.spawnKey, xp: 80, boss: true, sahurLeft: true }); return true; }
     }
     return false;
   }
