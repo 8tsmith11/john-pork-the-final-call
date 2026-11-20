@@ -30,6 +30,7 @@ export class SharedEvents {
     this.s = scene;
     this.active = null;     // the event this player is driving
     this.watching = null;   // the event this player is mirroring
+    this.guestEvents = new Map();
     scene.input.keyboard.on('keydown', (ev) => {
       if ((ev.key === 't' || ev.key === 'T') && !this.s.dlg) { this.joinOffer(); return; }
       if (!this.s.dlg?.spectator) return;
@@ -103,6 +104,28 @@ export class SharedEvents {
     else if (s.mode === 'client') s.net.send(msg);
   }
 
+  /** Track each guest's dialogue even when the host is watching something else. */
+  onHostMsg(peer, msg) {
+    if (msg?.t === 'evStart') {
+      if (typeof msg.id !== 'string' || !msg.id.startsWith(`${peer}:`)) return true;
+      if (this.guestEvents.get(peer) !== msg.id) this.endGuestDialogue(peer);
+      this.guestEvents.set(peer, msg.id);
+    } else if (msg?.t === 'evState' || msg?.t === 'evEnd' || msg?.t === 'evPick') {
+      if (typeof msg.id !== 'string' || this.guestEvents.get(peer) !== msg.id) return true;
+      if (msg.t === 'evEnd') this.guestEvents.delete(peer);
+    }
+    return this.onMsg(msg, peer);
+  }
+
+  endGuestDialogue(peer) {
+    const id = this.guestEvents.get(peer);
+    if (!id) return;
+    this.guestEvents.delete(peer);
+    const end = { t: 'evEnd', id };
+    this.onMsg(end);
+    this._send(end);
+  }
+
   /** Network hook. Host: pass the sending peer id so it relays to the others. Returns true if handled. */
   onMsg(msg, fromPeer = null) {
     if (!msg || !/^ev(Start|State|End|Choose|Pick)$/.test(msg.t)) return false;
@@ -131,6 +154,7 @@ export class SharedEvents {
     } else if (msg.t === 'evState' && this.watching?.id === msg.id && s.dlg?.spectator) {
       s.dlg.set(msg.state); s._lineAt = 0; s._drawDialogue();
     } else if (msg.t === 'evEnd') {
+      if (this.latest) delete this.latest[msg.id];
       if (this.offer?.id === msg.id) this.offer = null;
       if (this.watching?.id === msg.id) { if (s.dlg?.spectator) { s.dlg.done = true; s._drawDialogue(); } this.watching = null; this.banner.setVisible(false); }
     }
