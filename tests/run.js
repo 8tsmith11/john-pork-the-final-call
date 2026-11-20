@@ -677,25 +677,38 @@ test('settings: the soundtrack plays by default (Manuel, 2026-11-20)', () => {
   assert.equal(settingsMod.get('sfx'), 1);
 });
 
-// Load a fresh copy of settings.js against a stubbed browser store, once per saved state, then put node's own back.
-const realLocalStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
-const settingsAfterLoad = {};
-for (const [name, saved] of [['v2 muted start', { v: 2, music: 0, sfx: 0.25 }], ['v2 turned up', { v: 2, music: 0.5 }],
-  ['older save chose 0', { music: 0 }], ['v3 chose 0', { v: 3, music: 0 }]]) {
-  const store = new Map([['jpfc.settings', JSON.stringify(saved)]]);
-  Object.defineProperty(globalThis, 'localStorage', { configurable: true,
+// The v3 step runs when settings.js loads, so load a fresh copy of it over each saved state.
+let settingsLoads = 0;
+const settingsAfter = async (saved) => {
+  const store = new Map(saved ? [['jpfc.settings', JSON.stringify(saved)]] : []);
+  const before = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, writable: true,
     value: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, String(v)) } });
-  const fresh = await import(`../src/settings.js?saved=${encodeURIComponent(name)}`);
-  settingsAfterLoad[name] = { music: fresh.get('music'), sfx: fresh.get('sfx'), stored: JSON.parse(store.get('jpfc.settings')) };
-}
-if (realLocalStorage) Object.defineProperty(globalThis, 'localStorage', realLocalStorage); else delete globalThis.localStorage;
-test('settings: v3 turns the music back on once for saves the v2 muted start silenced, and keeps every other choice', () => {
-  const r = settingsAfterLoad;
-  assert.deepEqual([r['v2 muted start'].music, r['v2 muted start'].sfx, r['v2 muted start'].stored.v], [1, 0.25, 3]);
-  assert.equal(r['v2 muted start'].stored.music, 1, 'the unmute is saved, so it happens once');
-  assert.equal(r['v2 turned up'].music, 0.5);
-  assert.equal(r['older save chose 0'].music, 0, 'a choice made before v2 is kept');
-  assert.equal(r['v3 chose 0'].music, 0, 'a choice made after v3 is kept');
+  try {
+    const m = await import(`../src/settings.js?load=${++settingsLoads}`);
+    return { music: m.get('music'), v: m.get('v'), stored: JSON.parse(store.get('jpfc.settings')) };
+  } finally {
+    if (before) Object.defineProperty(globalThis, 'localStorage', before); else delete globalThis.localStorage;
+  }
+};
+const settingsCases = {
+  fresh: await settingsAfter(null),
+  mutedByV2: await settingsAfter({ music: 0, sfx: 1, voice: 1, shake: true, textSpeed: 'normal', v: 2 }),
+  raisedUnderV2: await settingsAfter({ music: 0.5, v: 2 }),
+  chosenBeforeV2: await settingsAfter({ music: 0.25 }),
+  silencedBeforeV2: await settingsAfter({ music: 0 }),
+  silencedUnderV3: await settingsAfter({ music: 0, v: 3 }),
+};
+test('settings: v3 turns the soundtrack back on only where the v2 change muted it; player choices are kept', () => {
+  const c = settingsCases;
+  assert.deepEqual([c.fresh.music, c.fresh.stored.music, c.fresh.stored.v], [1, 1, 3], 'a new player hears music');
+  assert.deepEqual([c.mutedByV2.music, c.mutedByV2.stored.music, c.mutedByV2.stored.v], [1, 1, 3], 'v2 muted it, v3 undoes that');
+  assert.equal(c.raisedUnderV2.music, 0.5, 'turned up under v2: kept');
+  assert.equal(c.chosenBeforeV2.music, 0.25, 'chosen before v2: kept');
+  assert.equal(c.silencedBeforeV2.music, 0, 'silenced before v2: kept');
+  assert.equal(c.silencedUnderV3.music, 0, 'silenced under v3: kept');
+  for (const r of Object.values(c)) assert.equal(r.v, 3);
+  assert.equal(settingsMod.get('music'), 1, 'the shared settings module is untouched');
 });
 
 const { ES_HUD } = await import('../src/i18n/es-hud.js');
