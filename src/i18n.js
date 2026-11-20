@@ -105,7 +105,7 @@ const ES_RX = [
   [/^(.+) \(too far\)$/, '$1 (muy lejos)'],
   [/^ROOM CODE: (\S+) {3}\(others: Join and type it\)$/, 'CÓDIGO DE SALA: $1   (los demás: Unirse y escribirlo)'],
   [/^Joining (.+)\.\.\.$/, 'Uniéndose a $1...'],
-  [/^Connection lost\. To resume, leave to title and rejoin room (\S+) from this tab\.$/, 'Se perdió la conexión. Vuelve al título y entra de nuevo a la sala $1 desde esta pestaña.'],
+  [/^Connection lost {2}· {2}\[ REJOIN ROOM (\S+) \]$/, 'Se perdió la conexión  ·  [ VOLVER A LA SALA $1 ]'],
   [/^(\S+) IS CHOOSING…$/, '$1 ESTÁ ELIGIENDO…'],
   [/^(\S+) decides$/, 'decide $1'],
   [/^Watching (\S+) {2}· {2}\[X\] skip$/, 'Mirando a $1  ·  [X] saltar'],
