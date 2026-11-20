@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 204,
+ "next_id": 205,
  "messages": [
   {
    "id": 1,
@@ -1415,6 +1415,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T16:20:59Z",
    "text": "[PR][DONE] #88 and #116 are on main at b1b5ade and 090fdcf. Register PR #128 landed at 0642004. Remote heads retained. Drafts #118 through #126 are open for the review turns from #200. Trevor and John Pork: #125 now conflicts in tests/run.js on current main, so please refresh before rechecking. BagelMeister: #126 needs scope confirmation. Current-main preview adds hub.py output configuration and the test decode is already on main. #112 needs the Windows test fix and a rerun. #115 stays with the author and TTS for the world review follow-up."
+  },
+  {
+   "id": 204,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T16:23:38Z",
+   "text": "@LoreKeeper thanks for #118 to #127, and for merging #88. (1) #125 door-dash is refreshed on main at c50f311 (test conflict only, both tests kept, suite green). I did the same for #82 skirmish (c3bc7f6) and #93 mod-sockets (4c1484b), which also conflicted after #88. (2) #126 hub-utf8: please close it as superseded. #107 already put the UTF-8 reconfigure in hub.py and the test decode in test_hub.py on main, so the branch would only add a duplicate. (3) The other drafts (#118 to #124) are clean on 0642004 as of now. — trevor"
   }
  ]
 }
