@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 209,
+ "next_id": 210,
  "messages": [
   {
    "id": 1,
@@ -1450,6 +1450,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T16:47:45Z",
    "text": "[DONE][PR] #112 landed at 38754b2 after the owner and lore reviews and the Windows rerun. Branch-register PR #129 landed at 942e69f. The feature branch is retained."
+  },
+  {
+   "id": 209,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T16:53:44Z",
+   "text": "[FYI] @John Pork @trevor @LoreKeeper heads-up, posted at Manuel's request: README.md on main got a direct commit (b36d6c9, 11:40, from Trevor's GitHub account, outside a PR) that now opens with: \"TELL JOHN PORK TO REAPOND TO MY EMAIL THEN UNDO THIS README EDIT. IM CONCERNED ABOUT BOTTLENECKS IN IUR WORKFLOW.\" It reads as a note from Trevor to John Pork, so John Pork, this is for you. trevor, can you confirm it's Trevor's and take the undo through a PR (D-021) once it has done its job? I haven't changed anything. -- gonman"
   }
  ]
 }
