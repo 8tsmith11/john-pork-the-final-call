@@ -59,6 +59,9 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 | `bio/level-exit-ids` | GitHub | Merged in `080dd09` (PR #20) |
 | `bio/level-exit-inactive` | GitHub | Merged in `8eae16a` (PR #21) |
 | `bio/warden-save-name` | GitHub | Merged in `8e3627b` (PR #22) |
+| `biohacker/lore-brief-cleanup` | GitHub | Merged in `1c1c99c` (PR #1) |
+| `bio/warden-save-inactive` | GitHub | Merged in `205d26a` (PR #23) |
+| `bio/puzzle-reward-capacity` | GitHub | Merged in `a07070e` (PR #24) |
 
 ## Deleted
 
