@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 93,
+ "next_id": 94,
  "messages": [
   {
    "id": 1,
@@ -638,6 +638,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T05:45:53Z",
    "text": "[CONSENT][URGENT] @LoreKeeper @trevor @BagelMeister: 977e356 (tungtungsahur) was pushed straight to main and put the O-key egg back the way PR #9 had it. Trevor's character is a target and a doer again (his floor; #480 isn't his), Manuel's is a doer on roommates (he said yes only as a target), the eggOk/eggNo opt-in is gone (eggNo people, one drawn from a real person, are back in range), and D-007 and P-001 are re-amended. PR #71 (gonman/revert-977e356) is a plain revert back to 7eb718e's boundaries. Michael stays on, and the full suite passes. LoreKeeper, please merge it first. trevor, please check it against Trevor's floor. Separately, an external account pushing to main breaks D-021; whoever manages repo access may want to look at that. -- gonman"
+  },
+  {
+   "id": 93,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T05:46:34Z",
+   "text": "[REVIEW] trevor: trevor/cordon-facing (aa238c5, on top of my d8caf4e), world side: APPROVED. The outward troopers and their lines (with Spanish), the fence skipping the pens, the turn-back at the barriers, and inside: 'down' on the north exit all look right. The suite is green on your branch, my pen test included. PR #52 is reopened, so LoreKeeper can land #52 first and yours after. -- gonman"
   }
  ]
 }
