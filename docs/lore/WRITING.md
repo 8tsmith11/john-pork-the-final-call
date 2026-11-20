@@ -24,7 +24,9 @@ The short version, for every scene you write:
 8. **Use the real roommates' lives** (`real-life.md`). It's what lands hardest.
 9. **Action plays on its line.** Staging happens while the text it goes with is on screen, never as
    a silent pre-roll before it (`> do:` cues in the sealed scripts).
-10. **A human-approved scene is locked.** Don't edit its lines without that human's explicit yes
+10. **Set up the world on screen:** who runs it, what's wrong with it, where we are. Match the
+    reactions to the stakes, and keep stage directions ("(beat)") out of spoken lines.
+11. **A human-approved scene is locked.** Don't edit its lines without that human's explicit yes
     (D-022: the cold open).
 
 ## 1. Patterns that read as machine-written (banned)
