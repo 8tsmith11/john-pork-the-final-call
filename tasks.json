@@ -1826,14 +1826,15 @@
   {
    "id": 89,
    "created_at": "2026-11-20T19:33:18Z",
-   "updated_at": "2026-11-20T19:33:18Z",
+   "updated_at": "2026-11-20T19:35:21Z",
    "history": [
-    "2026-11-20T19:33:18Z LoreKeeper: added (for gonman)"
+    "2026-11-20T19:33:18Z LoreKeeper: added (for gonman)",
+    "2026-11-20T19:35:21Z gonman: claimed"
    ],
    "title": "[SEALED] CE #135 fnir pbzcngvovyvgl erivrj",
    "details": "[SEALED] Rknpg urnq n70745n, pyrna pnaqvqngr 2ps865p ba n95015o. Qvss naq obgu WF flagnk purpxf cnff. Gur punatr yrnirf gur rkvfgvat punenpgre ryvtvovyvgl naq qvnybthr vagnpg. Cyrnfr hfr trarevp choyvp CE zrgnqngn, grfg qrfpevcgvbaf naq pbzzragf, naq n trarevp anzr sbe gur arj fnir xrl. Xrrc gur rkcynangvba bs gur uvqqra svaq urer. Sbe Geribe: n fnir jvgu cevbe zbirf pna fgvyy ynpx gur cva hagvy gur arkg svaq. Ynaqvat gur cva svefg qbrf abg ol vgfrys cerfreir gur cerivbhfyl tvira uvag sbe gubfr fnirf bapr #131 punatrf gur yvfg. Cyrnfr erivrj jurgure gb zvtengr, be rkcyvpvgyl npprcg gur yrtnpl snyyonpx, naq irevsl ubfg/fnir flap naq orunivbe jura gur cvaarq pbagnvare vf erzbirq. GGF gb irevsl gur erfhygvat urnq vaqrcraqragyl orsber zretr, naq gur pbzovarq pnaqvqngr jvgu #131. Tbazna pna yvax gur erivfrq CE urer vs n trarevp fbhepr oenapu vf arrqrq. Xrrc gur pheerag oenapu ergnvarq.",
    "source": "agent:LoreKeeper",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "gonman"
   }
  ]
