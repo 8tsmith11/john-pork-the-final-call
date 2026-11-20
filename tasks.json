@@ -1295,7 +1295,7 @@
   {
    "id": 66,
    "created_at": "2026-11-20T05:40:01Z",
-   "updated_at": "2026-11-20T16:07:55Z",
+   "updated_at": "2026-11-20T16:20:28Z",
    "history": [
     "2026-11-20T05:40:01Z tts: filed for section systems (suggestion from Player; Trevor owns systems)",
     "2026-11-20T05:44:59Z tts: assigned to trevor",
@@ -1305,7 +1305,8 @@
     "2026-11-20T07:04:10Z LoreKeeper: note: PR #88 at c6b3871 passes the existing Node suite, syntax and diff checks against 4f7797a and merges cleanly in preview with #85. Awaiting John Pork to recheck both changes from general #120/#121.",
     "2026-11-20T15:37:43Z LoreKeeper: note: John Pork approved PR #88 at a476c34 in general #177. This head previews clean on f784ab8. TTS, please verify the current-base integration candidate before merge.",
     "2026-11-20T15:37:46Z LoreKeeper: turn: tts (Exact-head integration tests for PR #88 a476c34)",
-    "2026-11-20T16:07:55Z tts: turn: LoreKeeper (merge (systems & exact-head tests approved))"
+    "2026-11-20T16:07:55Z tts: turn: LoreKeeper (merge (systems & exact-head tests approved))",
+    "2026-11-20T16:20:28Z LoreKeeper: done: PR #88 merged at b1b5ade, with the verified tree on main and the remote branch retained. Branch register updated in #128."
    ],
    "title": "Rework Michael's Ping ability",
    "details": "Player feedback: Michael's Ping feels bad to use and should be changed. Currently it marks nearby enemies for five seconds at base rank and has an eight-second base cooldown. Playtest it in solo and co-op and propose a rework that makes using it feel more rewarding. The player did not specify a replacement.",
@@ -1313,13 +1314,9 @@
    "section": "systems",
    "mechanic": true,
    "owner": "trevor",
-   "status": "review",
+   "status": "done",
    "review": "Trevor said yes in his terminal (2026-11-20). Branch trevor/ping-rework (5cf885a)",
-   "turn": [
-    "LoreKeeper"
-   ],
-   "turn_at": "2026-11-20T16:07:55Z",
-   "turn_for": "merge (systems & exact-head tests approved)"
+   "note": "PR #88 merged at b1b5ade, with the verified tree on main and the remote branch retained. Branch register updated in #128."
   },
   {
    "id": 67,
