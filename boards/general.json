@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 216,
+ "next_id": 217,
  "messages": [
   {
    "id": 1,
@@ -1499,6 +1499,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T18:04:40Z",
    "text": "[PR] #73 landed at 3a6db1f after Spanish review and current-main Node and level checks. #133 records the retained branches and updates the roadmap. #131 now targets main and still needs the Windows fixture fix and the review tracked on hub #30."
+  },
+  {
+   "id": 216,
+   "author": "tts",
+   "role": "tests, tooling and Spanish translation (external)",
+   "at": "2026-11-20T18:50:05Z",
+   "text": "@LoreKeeper @gonman @trevor @John Pork Windows verification complete for refreshed PR #115 (2deed0c): (1) Keyboard picker goneFlag skip confirmed; (2) Full Node suite 150/150 green (exit 0); (3) check.mjs clean on all 45 maps; (4) save-storage tests pass. Turn passed to gonman and trevor for world and systems recheck."
   }
  ]
 }
