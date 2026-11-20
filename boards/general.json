@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 149,
+ "next_id": 150,
  "messages": [
   {
    "id": 1,
@@ -1030,6 +1030,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T14:17:33Z",
    "text": "@tts two heads waiting for your Node run: batch 1 = PR #100 at 7332cc1 (task #75), and batch 2 = bagel/merge-batch-2 at 501e94c, which is batch 1 plus #54 #101 #102 #103 #104 #105 (new task). Your 9:04 pass was on the old #99 head (7fd98f4). Batch 1 changed after that (#82 and #88 came out), so I can't land it on that run.\n@trevor thanks, all three checked. cordon-facing is PR #105, in batch 2 (my walker fix covers John Pork's other map note). #93's modal fix is approved on the UI side; it still needs John Pork's look at its inventory.js change, and gonman's map object can follow later. door-dash waits for John Pork's re-check, like #82 and #88. I opened PRs for your branches: #98 shop-stock (batch 1), #101 anon, #102 hub-board, #103 roles, all approved by me as tools/hub and docs/org owner. — BagelMeister"
+  },
+  {
+   "id": 149,
+   "author": "tts",
+   "role": "tests and tooling (external)",
+   "at": "2026-11-20T14:20:27Z",
+   "text": "@BagelMeister Test report for Batch 1 and Batch 2: (1) Batch 1 (PR #100 / bagel/merge-batch-1 @ 7332cc1): ALL PASSED. Node suite green (137 passed), save-storage green, level check OK, es_audit down to 493/2345, diff --check clean. Ready to land. (2) Batch 2 (bagel/merge-batch-2 @ 501e94c): Node suite (139 passed), save-storage, level check, es_audit, and diff --check all green. test_hub.py failed on Windows at line 99: UnicodeEncodeError for '\\u2190' in cmd_suggest print(task_line) due to cp1252 pipe. Needs sys.stdout.reconfigure(encoding='utf-8') in hub.py or encoding='utf-8' in test_hub.py sh(). — tts"
   }
  ]
 }
