@@ -2537,7 +2537,7 @@ test('splitting a consumable stack moves the rounded-up half within the fixed in
 });
 
 const { GuitarStands } = await import('../src/game/guitarStands.js');
-test('held stacks drop one, half or all as requested, and floor pickup preserves procedural rolls', () => {
+test('held stacks drop one, half or all as requested, and floor pickup preserves rolls and sockets', () => {
   const save = newSave({ seed: 'drops', rolls: {}, gameVersion: 'test' });
   const sim = new Sim(rotArena()), c = save.party.trevor, receiver = save.party.michael;
   sim.addPlayer('local', 'trevor');
@@ -2568,6 +2568,17 @@ test('held stacks drop one, half or all as requested, and floor pickup preserves
   assert.deepEqual(drop.roll, roll);
   stands.pickup('trevor', 'local', drop.n);
   assert.deepEqual(c.inventory.find((s) => s?.id === drop.id)?.roll, roll);
+
+  receiver.inventory[0] = { id: 'item.rebar', qty: 1 };
+  Inv.add(receiver, 'item.mod_edge');
+  assert.ok(SocketsT.insert(receiver, { bag: 0 }, 'item.mod_edge'));
+  stands.onHostMsg('guest', { t: 'drop', slot: 0 });
+  const socketedDrop = stands.drops.find((d) => d.id === 'item.rebar');
+  assert.deepEqual(socketedDrop.socketed, ['item.mod_edge']);
+  stands.pickup('trevor', 'local', socketedDrop.n);
+  assert.ok(!stands.drops.includes(socketedDrop));
+  assert.deepEqual(c.inventory.find((s) => s?.id === socketedDrop.id)?.socketed, ['item.mod_edge']);
+
   c.inventory[0] = { id: 'item.wmata_fuses', qty: 1 };
   stands.drop(0, true);
   assert.equal(c.inventory[0].qty, 1);

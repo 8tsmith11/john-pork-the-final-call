@@ -25,7 +25,7 @@ export function add(c, id, n = 1, roll = null, socketed = null) {
   const inv = c.inventory, max = stackOf(id), unique = roll || socketed?.length;   // carries its own data: never merges
   for (let i = 0; i < SLOTS && n > 0 && !unique; i++) {
     const s = inv[i];
-    if (s && s.id === id && !s.roll && s.qty < max) { const k = Math.min(n, max - s.qty); s.qty += k; n -= k; }
+    if (s && s.id === id && !s.roll && !s.socketed?.length && s.qty < max) { const k = Math.min(n, max - s.qty); s.qty += k; n -= k; }
   }
   // New stacks go to the backpack first (Trevor: items shouldn't auto-fill the hotbar); the hotbar
   // only takes them when the backpack is full. Stacking onto an existing stack still happens anywhere.
@@ -71,7 +71,7 @@ export function moveSlot(c, a, b, half = false) {
   const moving = half ? splitQuantity(src.qty) : src.qty;
   if (!dst) {
     inv[b] = { ...src, qty: moving }; src.qty -= moving; if (src.qty <= 0) inv[a] = null;
-  } else if (dst.id === src.id && !src.roll && !dst.roll && dst.qty < max) {
+  } else if (dst.id === src.id && !src.roll && !dst.roll && !src.socketed?.length && !dst.socketed?.length && dst.qty < max) {
     const k = Math.min(moving, max - dst.qty); dst.qty += k; src.qty -= k; if (src.qty <= 0) inv[a] = null;
   } else if (!half) {
     inv[a] = dst; inv[b] = src;
