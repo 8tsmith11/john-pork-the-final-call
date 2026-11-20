@@ -1273,15 +1273,16 @@
   {
    "id": 73,
    "created_at": "2026-11-20T06:46:33Z",
-   "updated_at": "2026-11-20T06:46:33Z",
+   "updated_at": "2026-11-20T06:46:46Z",
    "history": [
-    "2026-11-20T06:46:33Z John Pork: added (open list)"
+    "2026-11-20T06:46:33Z John Pork: added (open list)",
+    "2026-11-20T06:46:46Z John Pork: claimed"
    ],
    "title": "[M1] Verify the co-op transition from Act 1 into Act 2",
    "details": "Roadmap M1 calls for a playable Act 1 with a three-player run, independent saves and dialogue checks. The closing scene is currently scheduled from the combat snapshot on every guest as well as the host, though the host alone advances the act and persists it. Verify both boss routes in the rendered game; keep exactly one host-owned closing scene, carry the party through the unlocked transition, and check that a reopened save retains the route and progresses. Coordinate systems and story review without changing authored lines.",
    "source": "agent:John Pork",
-   "status": "open",
-   "owner": null
+   "status": "claimed",
+   "owner": "John Pork"
   }
  ]
 }
