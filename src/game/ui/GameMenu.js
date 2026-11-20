@@ -178,7 +178,7 @@ export class GameMenu {
         if (this.held != null) { const it = inv[this.held]; if (it && ITEMS[it.id]?.slot === slot) s.menuUse(it.id); this.held = null; return this.refresh(); }
         if (id) s.menuUse(id);   // click a worn item to take it off
       });
-      z.on('pointerover', () => { this.hover = id ? { id, roll: c.rolled?.[slot] ?? ((slot === 'weapon' || slot === 'ranged') ? c.inventory.find((x) => x?.id === id && x.roll)?.roll : null) } : { label: `${SLOT_NAMES[slot]} slot` }; this._drawTip(); });
+      z.on('pointerover', () => { this.hover = id ? { id, roll: c.rolled?.[slot] } : { label: `${SLOT_NAMES[slot]} slot` }; this._drawTip(); });
       this.root.add(z);
     };
     const col = (slots, x, label) => { this._t(x + S / 2, b.y + 25, label, F(5, C.sub)).setOrigin(0.5, 1); slots.forEach((slot, k) => slotBox(slot, x, b.y + 28 + k * (S + GAP))); };
@@ -214,7 +214,6 @@ export class GameMenu {
     this._t(gx, gy - 4, `BACKPACK  ${used}/27  · worn gear sits in its slot, not here`, F(6, C.sub)).setOrigin(0, 1);
     const slotXY = (i) => i < 9 ? [gx + i * (S + GAP), gy + 3 * (S + GAP) + 10] : [gx + ((i - 9) % 9) * (S + GAP), gy + Math.floor((i - 9) / 9) * (S + GAP)];
     this._t(gx, gy + 3 * (S + GAP) + 6, 'HOTBAR  (keys 1-9)', F(6, C.sub)).setOrigin(0, 1);
-    const eq = new Set(Object.values(c.equipped || {}));
     // Holding a stack? Click outside the panel to drop it on the floor (src/game/guitarStands.js).
     // The panel itself swallows clicks so a near miss on a slot doesn't drop anything.
     if (this.held != null) {
@@ -227,7 +226,8 @@ export class GameMenu {
     for (let i = 0; i < 36; i++) {
       const [x, y] = slotXY(i), it = inv[i], held = this.held === i;
       g.fillStyle(i < 9 ? 0x1a1d30 : 0x151827).fillRect(x, y, S, S);
-      g.lineStyle(1, held ? 0xffb347 : it && eq.has(it.id) ? 0x7fb069 : C.dim, held ? 1 : 0.7).strokeRect(x + 0.5, y + 0.5, S - 1, S - 1);
+      const selected = i === (c.hotSel ?? 0);
+      g.lineStyle(1, held ? 0xffb347 : selected ? 0x7fb069 : C.dim, held || selected ? 1 : 0.7).strokeRect(x + 0.5, y + 0.5, S - 1, S - 1);
       if (it) {
         this._icon(x + S / 2, y + S / 2, it.id).setAlpha(held ? 0.35 : 1);
         if (it.qty > 1) this._t(x + S - 1, y + S, `${it.qty}`, F(6, C.text)).setOrigin(1, 1);
