@@ -1151,19 +1151,24 @@ test('hub #30 (stretch): every stretch map can be reached from Room 631, and eve
     for (const e of m.enemies) assert.ok(seen.has(`${Math.floor(e.x / 16)},${Math.floor(e.y / 16)}`), `${id}: ${e.kind} is walled off`);
   }
 });
-test('hub #30 (stretch): each stretch area has one small secret, made from systems that already exist, listed in docs/SECRETS.md', () => {
-  const SECRET = { rf_fringe: 'obj.rf_fringe_crate', rf_marsh: 'obj.rf_marsh_locker', md_lot: 'obj.md_lot_sedan', ann_statehouse: 'obj.ann_minutes', ann_chapel: 'obj.ann_chapel_box',
-    ann_bridge: 'obj.ann_bridge_tackle', bv_lab: 'obj.bv_lab_fridge', gb_center: 'obj.gb_center_jar', gt_labs: 'obj.gt_register', fr_market: 'npc.fr_market_kid',
-    en_mall: 'obj.en_mall_viewer', en_metro: 'obj.en_metro_help' };
-  const secrets = fs.readFileSync(new URL('../docs/SECRETS.md', import.meta.url), 'utf8').split('## Acts 2 and 3, small finds in the stretch areas')[1] ?? '';
+// The finds are listed sealed (docs/sealed/secrets-stretch.md, ROT13), so this test reads their object ids from there.
+const STRETCH30_SEALED = fs.readFileSync(new URL('../docs/sealed/secrets-stretch.md', import.meta.url), 'utf8').split('-->\n').slice(1).join('-->\n')
+  .replace(/[a-z]/gi, (c) => String.fromCharCode(((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26) + (c <= 'Z' ? 65 : 97)));
+const { Approach: STRETCH30_Approach } = await import('../src/game/approach.js');
+test('hub #30 (stretch): each stretch area has its finds in the sealed list, built from systems that already exist', () => {
+  const listed = new Set(STRETCH30_SEALED.split('\n').filter((l) => l.startsWith('| **')).map((l) => l.split('|')[2].trim().replace(/`/g, '')));
+  assert.ok(listed.size >= STRETCH30_MAPS.length, 'docs/sealed/secrets-stretch.md: a row per find, with its object id');
+  const onStretch = new Set(STRETCH30_MAPS.flatMap((m) => m.objects.map((o) => o.id)));
+  for (const id of listed) assert.ok(onStretch.has(id), `${id}: in docs/sealed/secrets-stretch.md but on no stretch map`);
+  const isFind = (o) => o.grant || o.loot || o.action === 'pages' || o.later?.length;
   const questFlags = new Set(STRETCH30_SIDE.flatMap((q) => [q.report?.flag, q.inspect?.flag, q.give?.flag].filter(Boolean)));
   const atlas = new Set(['props', 'big', 'wide', 'doors'].flatMap((s) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${s}.json`, import.meta.url), 'utf8')).frames)));
   const everyId = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.map((o) => o.id));
   for (const m of STRETCH30_MAPS) {
-    const o = m.objects.find((q) => q.id === SECRET[m.id]);
-    assert.ok(o && (o.grant || o.loot || o.action === 'pages' || o.later?.length), `${m.id}: no secret (${SECRET[m.id]})`);
-    assert.ok(secrets.includes(`| ${m.name}`) || secrets.includes(` ${m.name} (`) || secrets.includes(` ${m.name},`), `docs/SECRETS.md has no row for ${m.name}`);
+    assert.ok(m.objects.some((q) => listed.has(q.id)), `${m.id}: no row in docs/sealed/secrets-stretch.md`);
     for (const q of m.objects) {
+      if (listed.has(q.id)) assert.ok(isFind(q), `${q.id}: listed in the sealed file, but built from no existing system`);
+      else assert.ok(!isFind(q), `${m.id}/${q.id}: add its row to docs/sealed/secrets-stretch.md`);
       if (q.grant) { assert.ok(ITEMS[q.grant], `${q.id}: no item ${q.grant}`); assert.ok(q.text && q.doneText, `${q.id}: a one-time find needs text and doneText`); }
       if (q.loot) assert.ok(STRETCH30_LOOT[q.loot], `${q.id}: no loot table ${q.loot}`);
       if (q.action === 'pages') assert.ok(q.pages.length > 1, `${q.id}: pages to step through`);
@@ -1174,8 +1179,17 @@ test('hub #30 (stretch): each stretch area has one small secret, made from syste
     }
     for (const s of m.scenery ?? []) assert.ok(atlas.has(s.art), `${m.id}: no scenery art ${s.art}`);
   }
-  const kid = STRETCH30_MAPS.find((m) => m.id === 'fr_market').objects.find((q) => q.id === 'npc.fr_market_kid');
-  assert.ok(kid.age === 'child' && kid.eggNo, 'the kid minding a stall is a child, and no gag picks them');
+});
+test('hub #30 (stretch): children are talk only, like the airfield kids, and no gag picks them', () => {
+  const kids = STRETCH30_MAPS.flatMap((m) => m.objects.filter((q) => q.npc && q.age === 'child'));
+  assert.ok(kids.some((q) => q.id === 'npc.fr_market_kid'), 'the kid minding a stall is a child');
+  const approach = new STRETCH30_Approach({ save: { party: { manuel: {} }, world: {} }, character: 'manuel', input: { keyboard: { on() {} } }, _questHandIns: () => [] });
+  for (const q of kids) {
+    assert.equal(q.approach, false, `${q.id}: talk only, nobody pickpockets or intimidates a kid`);
+    assert.deepEqual(approach.options(q).map((a) => a.id), ['talk'], `${q.id}: Talk is the only approach`);
+    assert.equal(approach.intercept(q), false, `${q.id}: no approach menu opens, so pressing E just talks`);
+    assert.ok(q.eggNo, `${q.id}: no gag picks a child`);
+  }
 });
 test('hub #30 (stretch): the side-quest objects, givers, exits and spawns on the stretch maps are where they were', () => {
   const WAS = { 'npc.rf_counter': [7, 5], 'obj.rf_blind': [22, 5], 'npc.md_attendant': [14, 5], 'obj.md_lot_sign': [26, 4], 'npc.ann_clerk': [10, 5], 'obj.ann_tideline': [11, 3],

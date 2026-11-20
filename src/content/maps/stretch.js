@@ -1,7 +1,8 @@
 // Stretch-tier areas (10-scope.md; Trevor: "this game must be much larger scale"): eight more for Act 2, four more
 // for Act 3, each one a place the atlas names. Layouts from the scaffold batch, built with the level builder from text
-// grids; lines, prop art and one small secret per area from the polish pass (hub #30, gonman). Spanish:
-// src/i18n/es-stretch.js. The finds are listed in docs/SECRETS.md.
+// grids; lines, prop art and a small find per area from the polish pass (hub #30, gonman). Spanish:
+// src/i18n/es-stretch.js. The finds are listed sealed in docs/sealed/secrets-stretch.md (open it with
+// python3 tools/spoilers/seal.py open docs/sealed/secrets-stretch.md).
 import { fromGrid } from './builder.js';
 
 const back = (to, id, label, tile, art = false) => ({ exit: to, id: `obj.${id}_out`, pair: `obj.${to}_to_${id}`, ...(art ? { art: 'obj.door' } : { selfDrawn: true }), label, stepOn: true, text: 'Back the way you came.', ...(tile ? { tile } : {}) });
@@ -11,7 +12,6 @@ const R1 = 'npc.rotter_1', R2 = 'npc.rotter_2', R3 = 'npc.rotter_3';
 // ======================= Act 2 =======================
 
 // ---- The refuge, deeper: the violent fringe, a day's walk in ----
-// Secret: the crate inside the west hut, where the camp breaks whatever lace it takes off people (searchable once).
 export const rfFringe = fromGrid({
   id: 'rf_fringe', name: 'The fringe camp', fill: 'g', outdoor: true, act: 2,
   rows: [
@@ -37,7 +37,6 @@ export const rfFringe = fromGrid({
 }).scenery('obj.worklamp', 7, 4, { light: 0.7 }).scenery('obj.worklamp', 21, 4, { light: 0.7 }).scenery('obj.boxes', 2, 4).build();
 
 // ---- The refuge marsh: boardwalks and bird blinds ----
-// Secret: the volunteers' locker at the far west end of the boardwalk holds a rain parka (one per save).
 export const rfMarsh = fromGrid({
   id: 'rf_marsh', name: 'The marsh boardwalk', fill: '~', outdoor: true, act: 2,
   rows: [
@@ -62,7 +61,6 @@ export const rfMarsh = fromGrid({
 }).build();
 
 // ---- The Meade: ten thousand spaces, forty cars ----
-// Secret: the grey sedan by the east fence has been idling since '94, with cold brew on the seat (one per save).
 export const mdLot = fromGrid({
   id: 'md_lot', name: 'The Meade parking lot', fill: ',', outdoor: true, act: 2,
   rows: [
@@ -92,7 +90,6 @@ export const mdLot = fromGrid({
 }).build();
 
 // ---- Annapolis: the wooden statehouse, above the waterline ----
-// Secret: the clerk's minute books (paged, four Tuesdays). After his errand, the clerk has a new pencil line to show.
 export const annStatehouse = fromGrid({
   id: 'ann_statehouse', name: 'The statehouse', fill: '.', act: 2,
   rows: [
@@ -123,7 +120,6 @@ export const annStatehouse = fromGrid({
 }).build();
 
 // ---- Annapolis: the academy chapel ----
-// Secret: the box of things left in the pews, under the back pew (searchable once).
 export const annChapel = fromGrid({
   id: 'ann_chapel', name: 'The academy chapel', fill: '.', act: 2,
   rows: [
@@ -150,7 +146,6 @@ export const annChapel = fromGrid({
 // ---- The bay bridge, with a missing span ----
 // The span was lifted out on purpose, years ago (a closed road, nothing more). LoreKeeper: this bridge must look and
 // read nothing like the real 2024 collapse in Baltimore, so no ship, no wreckage, no night of it: cones and a sign.
-// Secret: the shared tackle box wired to the rail beside the person fishing (searchable once).
 export const annBridge = fromGrid({
   id: 'ann_bridge', name: 'The broken bridge', fill: '~', outdoor: true, act: 2,
   rows: [
@@ -173,7 +168,6 @@ export const annBridge = fromGrid({
   .scenery('obj.streetlamp', 5, 2, { light: 0.8 }).scenery('obj.streetlamp', 15, 2, { light: 0.8 }).scenery('obj.streetlamp', 28, 2, { light: 0.8 }).build();
 
 // ---- Beltsville: the tissue lab ----
-// Secret: the sample fridge in the corner is down to its last vial of tank sedative (a sleeping potion, one per save).
 export const bvLab = fromGrid({
   id: 'bv_lab', name: 'The tissue lab', fill: 'e', act: 2,
   rows: [
@@ -200,7 +194,6 @@ export const bvLab = fromGrid({
 }).scenery('obj.microscope', 3, 2).scenery('obj.microscope', 8, 2).build();
 
 // ---- Greenbelt's old town center: curved streets, a theater, the co-op's first storefront ----
-// Secret: the honor jar on the co-op's first counter (a butterscotch, one per save).
 export const gbCenter = fromGrid({
   id: 'gb_center', name: 'Greenbelt town center', fill: 'g', outdoor: true, act: 2,
   rows: [
@@ -229,7 +222,6 @@ export const gbCenter = fromGrid({
 // ======================= Act 3 =======================
 
 // ---- Gaithersburg: the labs, where every faction's clocks are checked ----
-// Secret: the clock-check register by the door (paged: four factions' visits).
 export const gtLabs = fromGrid({
   id: 'gt_labs', name: 'The measurement labs', fill: 'e', act: 3,
   rows: [
@@ -258,7 +250,6 @@ export const gtLabs = fromGrid({
 }).scenery('obj.microscope', 3, 2).scenery('obj.solder', 6, 4).scenery('obj.microscope', 17, 4).scenery('obj.solder', 20, 2).build();
 
 // ---- Frederick: the market hall ----
-// Secret: the kid minding a stall has more to say each time you ask (paged).
 export const frMarket = fromGrid({
   id: 'fr_market', name: 'The market hall', fill: '.', act: 3,
   rows: [
@@ -276,7 +267,7 @@ export const frMarket = fromGrid({
     '%': { scenery: 'obj.boxes', solid: true, tile: '.' },
     '?': { prop: 'obj.lab_board', id: 'obj.fr_prices', label: 'Price board', text: 'Prices in chalk on a blackboard behind the stalls. Most are up a few cents from last week, and the chalk in the tray is down to a stub.' },
     N: npc('fr_grocer', R3, 'A grocer', '"Ridge apples. Best in the county." He shines one on his apron and sets it back shine-out. "The ridge itself, I wouldn\'t know. I only go up as far as the orchard."'),
-    M: { npc: 'npc.fr_market_kid', art: R1, label: 'A kid minding a stall', age: 'child', eggNo: true, action: 'pages', pages: [
+    M: { npc: 'npc.fr_market_kid', art: R1, label: 'A kid minding a stall', age: 'child', eggNo: true, approach: false, action: 'pages', pages: [
       '"My mom says don\'t talk to people from outside." The kid looks you over. "You\'re from outside. Pears are two dollars."',
       '"The spotty ones are a dollar. Same pears. People are weird about spots."',
       '"The church bells go when the campus changes shift. Mom says don\'t count them." The kid is counting them.',
@@ -288,7 +279,6 @@ export const frMarket = fromGrid({
 }).build();
 
 // ---- The Enclave: the long green mall, monuments at each end, nobody on the grass ----
-// Secret: somebody's old coin in the coin viewer by the west monument (one per save).
 export const enMall = fromGrid({
   id: 'en_mall', name: 'The mall', fill: 'g', outdoor: true, act: 3,
   rows: [
@@ -315,7 +305,6 @@ export const enMall = fromGrid({
   .scenery('obj.bench', 10, 5).scenery('obj.bench', 28, 5).build();
 
 // ---- The Enclave metro: on time, one calm voice ----
-// Secret: the help point at the west end answers every press in the same calm voice (paged).
 export const enMetro = fromGrid({
   id: 'en_metro', name: 'The Enclave metro', fill: ':', act: 3,
   rows: [

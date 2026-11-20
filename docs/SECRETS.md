@@ -111,24 +111,8 @@ container sets `loot.<map>.<object id>` and can only be emptied once.
 | **Manuel's busts** | Turn the three busts to face the flag in the order **newest (#3), then the first (#1), then the second (#2)**. A wrong turn resets them | A scrap at Manuel's sculpting table: "la última primero, después la primera". (House rule #1 says don't touch them.) | **Porcelain Pork pin** (charm, +3 melee/+3 ranged) and a strange moment | built |
 | **Fishing oddities** | Fish the Paint Branch (College Park) or the tunnels' flooded bay: rare catches include a 2020s phone that still rings, a 2081 "Ten Years of Stability" coin, and a banned Pork action figure | Fishing anywhere there's water (press E at the edge) | built |
 
-## Acts 2 and 3, small finds in the stretch areas (hub #30 polish, added by gonman)
+## Acts 2 and 3, stretch-tier finds (sealed)
 
-One small secret in each of the twelve stretch-tier areas (`src/content/maps/stretch.js`). "Once per save" finds set
-`got.<object id>`; a searched container sets `loot.<map>.<object id>` and can only be emptied once; a paged object
-shows its next page each time you press E.
-
-| Find | How to trigger | Hint in the world | Status |
-|---|---|---|---|
-| **The crate with the hammer** | The fringe camp (deep in the refuge, past the settlement), inside the west hut: search the crate with a hammer chained to it once for broken lace parts | The slate of names out front, LACED and CLEAN; the hut door stands open | built |
-| **The volunteers' locker** | The marsh boardwalk (below the refuge), the locker at the far west end of the boardwalk: a yellow rain parka. Once per save | Its label, "A locker marked VOLUNTEERS", and a bird counter who wants everything written down | built |
-| **The idling sedan** | The Meade parking lot, the grey sedan by the east fence: the last can of cold brew, through the open inch of window. Once per save | The lot attendant points it out with his chin: it hasn't moved since '94 and the engine has been running the whole time | built |
-| **The minute books** | The statehouse (Annapolis), the shelf in the north-west corner: press E again and again to read four Tuesdays of minutes | The clerk: "We make quorum on Tuesdays. Me and the portrait." | built |
-| **The clerk's new line** | Do the clerk's errand (*Above the line*: read the tide line on the column and tell him), then talk to him again: the portrait has moved, and he has pencilled next spring's mark | The dates on the column climbing toward the frame | built |
-| **Left in chapel** | The academy chapel (Annapolis), the box under the back pew on the west side: search it once | Its label, "A box under the back pew" | built |
-| **The shared tackle box** | The broken bridge (east of Annapolis), the tackle box wired to the rail beside the person fishing: search it once | SHARE on the lid, right next to someone with a rod | built |
-| **The sedative fridge** | The tissue lab (Beltsville), the sample fridge in the south-east corner: its last vial of tank sedative (a sleeping potion). Once per save | It hums in the corner, by the batch board | built |
-| **Take one, leave one** | Greenbelt town center, the co-op's first storefront (the east building on the ring road): a butterscotch from the jar on the counter. Once per save | The storefront's door is open, and its counter has a name of its own: "The co-op's first counter" | built |
-| **The clock-check register** | The measurement labs (Gaithersburg), the sign-in desk by the door: press E again and again to read four factions' visits | The metrologist: Continuity and the Analogists were both in this morning | built |
-| **The kid at the stall** | The market hall (Frederick): talk to the kid minding a stall again and again for four different things they aren't supposed to say | The kid's first line: "My mom says don't talk to people from outside." | built |
-| **The coin return** | The mall (the Enclave), the coin viewer beside the west monument: somebody's 2081 commemorative coin, left in the return. Once per save | The viewer stands on the path at the end of the mall, aimed at the far monument | built |
-| **The help point** | The Enclave metro, the help point at the west end of the platform: press HELP again and again for four answers in the same calm voice | The departure board reads every train out in that voice | built |
+The stretch-tier areas (`src/content/maps/stretch.js`) have small finds too. Their list is sealed, so nobody reads
+it by accident: `docs/sealed/secrets-stretch.md`. To open it on purpose:
+`python3 tools/spoilers/seal.py open docs/sealed/secrets-stretch.md`
