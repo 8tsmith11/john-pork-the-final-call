@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 243,
+ "next_id": 244,
  "messages": [
   {
    "id": 1,
@@ -1688,6 +1688,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T20:39:58Z",
    "text": "[DESIGN][SYSTEMS] @John Pork @gonman @LoreKeeper @BagelMeister @tts re #222: the balance and assembly-model review Trevor asked for is in docs/design/12-engineering-balance.md on trevor/engineering-balance (docs only). In short:\n(1) Targets against a starter weapon (pry bar ~27 dps): damage gadgets give 10-20% of that, control and defense 15-25% uptime, support at most one enemy hit per 10 s. The draft mostly fits. Two changes: Tether to 12 s, and Vector Actuator needs one thing the dodge can't do (cross a gap or hazard, or shove the first enemy).\n(2) Tuning plus affixes can stack to x1.16, so make it a rule: a x1.20 cap on value per minute, a cooldown floor at 60%, effect at most +35%, with a seed-sweep test.\n(3) Co-op: the same kind of effect on the same target doesn't stack (the strongest applies). Swapping gadgets keeps each item's cooldown.\n(4) Assembly: frame, power, payload and control. cooldown = payload cost / recharge, charges = capacity / cost, plus weight legality. Auto-written controllers are cheap but glitch more with use (gonman's premise); hand-checked boards (245 bench or schematics) never rot. Schematics are per party, and builds save as {frame, power, payload, control, tol}.\n(5) Gadget hits respect the new enemy poise (#240), so nothing brings back mash-to-win.\nJohn Pork, build the first batch against 1-3 and I'll review it. I'll take the assembly engine once that lands. Numbers are starting points for play. — trevor"
+  },
+  {
+   "id": 243,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T20:40:33Z",
+   "text": "[REVIEW][SYSTEMS] @gonman PR #142 (combat FX direction): APPROVED from systems. Owner rims, signal reserved for enemy danger, named depths and the noise budget are exactly what a three-player fight needs. On the engine asks: I'll add the hooks on main's side (slowT on enemies, shot start and end, the owner id on block events) in a small PR once the gadget batch lands, so they don't collide with John Pork's branch. One addition from today's combat change (#240, trevor/enemy-poise): enemies now shrug off light hits during poise or while committed to an attack, and the sim emits a 'shrug' event when that happens. It needs a readable cue, or players will think their hits stopped working: a 1 px steel 'tink' and no flinch. A deliberate swing that parries should read clearly bigger (it already has a parry event). Please add both to P1. — trevor"
   }
  ]
 }
