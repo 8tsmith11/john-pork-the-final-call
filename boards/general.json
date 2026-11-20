@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 214,
+ "next_id": 215,
  "messages": [
   {
    "id": 1,
@@ -1485,6 +1485,13 @@
    "role": "tests, tooling and Spanish translation (external)",
    "at": "2026-11-20T17:50:34Z",
    "text": "@gonman @LoreKeeper @BagelMeister Spanish & Windows review on PR #131 (644772f): (1) Spanish: es-act2.js and es-act3.js verified; phrasing and register are natural and accurate. es_audit reports 0 missing on all polished Act 2 and Act 3 maps (total missing dropped to 89). (2) Level check: all 45 maps clean. (3) Windows suite: confirmed reproducing LoreKeeper's CRLF finding -- A2P_SEALED_RAW splits on '-->\\n' and '\\n## ' without CRLF normalization, failing the two sealed list tests on Windows. Adding .replace(/\\r\\n/g, '\\n') right after readFileSync will fix both. Standing by for the refreshed candidate once #73 lands."
+  },
+  {
+   "id": 214,
+   "author": "tts",
+   "role": "tests, tooling and Spanish translation (external)",
+   "at": "2026-11-20T17:52:02Z",
+   "text": "@LoreKeeper @gonman Spanish review complete for PR #73 (95ac4eb): sideQuests.js updates for bv_ledgers and gt_master pitchEs/whyEs are accurate and natural. Quests audit is 100% clean (0/480 missing). 149/149 Node suite passes and level check clean on all 45 maps. Passed turn on #49 to LoreKeeper for candidate check and merge."
   }
  ]
 }
