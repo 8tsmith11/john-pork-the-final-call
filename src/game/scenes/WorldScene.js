@@ -648,7 +648,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'flag' && msg.key === 'act1.fuses.in') this._seatFuses();
         if (msg.t === 'item' && this.save.party[msg.who] && ITEMS[`item.${msg.item}`]) { Inv.add(this.save.party[msg.who], `item.${msg.item}`, Math.min(99, msg.n | 0 || 1)); this._syncParty(); }
         if (msg.t === 'standing' && msg.faction in this.save.standing) this.save.standing[msg.faction] += Number(msg.n) || 0;
-        if (msg.t === 'exit') this._tryExit(this.sim.map.objects.find((o) => o.id === msg.obj));
+        if (msg.t === 'exit') this._requestExit(this.sim.map.objects.find((o) => o.id === msg.obj), peer);
         if (msg.t === 'answer') this._answer();
         if (msg.t === 'door') this._toggleDoor(msg.id);
         if (msg.t === 'craft') this._craft(this._charOf(peer), msg.idx);
@@ -1944,12 +1944,30 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
-  _tryExit(obj) {
-    if (!obj || obj.action !== 'exit' || this._transitioning) return;
+  _requestExit(obj, playerId, walk) {
+    const p = this.sim.players.get(playerId);
+    if (obj?.action !== 'exit' || !p || p.downed || isAi(playerId) || this._transitioning) return;
+    const dx = obj.x * TILE + 8 - p.x, dy = obj.y * TILE + 8 - p.y;
+    if (!walk && Math.hypot(dx, dy) > 34) return;
     if (obj.requiresClear && !this.sim.cleared) return this._announce('Something down here is still moving.');
-    if (obj.requiresFlag && !this.save.flags[obj.requiresFlag]) return this._announce(obj.lockedText ?? 'It won\'t open.');
+    if (obj.requiresFlag && !this.save.flags[obj.requiresFlag]) {
+      const text = obj.lockedText ?? 'It won\'t open.';
+      if (!walk) return this._announce(text);
+      if (!this._lockedSaid || this.time.now - this._lockedSaid > 3000) {
+        this._lockedSaid = this.time.now;
+        this._toast(text);
+      }
+      return;
+    }
+    if (!MAPS[obj.to]) return this._announce(obj.text);
+    if (this.sim.waitAtExit(playerId, obj.id, walk?.dx ?? dx, walk?.dy ?? dy)) {
+      this.sim.clearWaiting();
+      this._tryExit(obj);
+    }
+  }
+
+  _tryExit(obj) {
     const to = MAPS[obj.to];
-    if (!to) return this._announce(obj.text);
     if (to.id === 'platform') {
       const sahur = Number(this.save.flags['act1.call.declines'] || 0) >= 3;
       this.sim.bossVariant = sahur ? 'sahur' : 'warden';
@@ -2194,10 +2212,7 @@ export class WorldScene extends Phaser.Scene {
     for (const ev of events) {
       if (ev.t === 'bumpExit' && !this.dlg) {
         const exit = this.map.objects.find((o) => o.id === ev.id);
-        if (exit?.requiresClear && !this.sim.cleared) { this._announce('Something down here is still moving.'); continue; }
-        if (exit?.requiresFlag && !this.save.flags[exit.requiresFlag]) { if (!this._lockedSaid || this.time.now - this._lockedSaid > 3000) { this._lockedSaid = this.time.now; this._toast(exit.lockedText ?? 'It won\'t open.'); } continue; }
-        // Solo goes straight through. In co-op the party gathers at the door first.
-        if ([...this.sim.players.keys()].filter((id) => !isAi(id)).length <= 1 || this.sim.waitAtExit(ev.by, ev.id, ev.dx, ev.dy)) { this.sim.clearWaiting(); this._tryExit(exit); }
+        this._requestExit(exit, ev.by, ev);
       }
       if (ev.t === 'door' || ev.t === 'doorClose') sfx('swing');
       if (ev.t === 'grind' && ev.id === this.localId && !this.save.flags['secrets.grind.found']) { this._flag('secrets.grind.found', true); this._toast('★ Rail grind! (scooters fly along the tracks)'); }
@@ -2295,7 +2310,7 @@ export class WorldScene extends Phaser.Scene {
     if (near.npc && this.mode !== 'client') this._guide().n[near.id] ??= { name: near.label.replace(/\s*\(.*\)\s*/g, '').trim(), where: this.map.name ?? this.map.id };
     if (near.action === 'exit') {
       if (this.mode === 'client') this.net.send({ t: 'exit', obj: near.id });
-      else this._tryExit(near);
+      else this._requestExit(near, this.localId);
       return;
     }
     if (near.puzzle === 'pipes' && !this.save.flags[near.solvedFlag]) {
