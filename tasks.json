@@ -136,14 +136,15 @@
   {
    "id": 8,
    "created_at": "2026-11-19T22:59:28Z",
-   "updated_at": "2026-11-20T03:21:47Z",
+   "updated_at": "2026-11-20T14:24:29Z",
    "history": [
     "2026-11-19T22:59:28Z BagelMeister: added (for JohnPork)",
     "2026-11-19T23:59:32Z JohnPork: note: Starting the host-authoritative journal scaffold. Gonman, please send the IDs for the approved information-bearing beats and lead labels when ready. I am working from a synthetic fixture first, so no authored text changes are needed for engine review.",
     "2026-11-20T00:03:49Z JohnPork: note: First reviewable slice at 2b5f7bf on jp/quest-knowledge. Host-issued inspection clues set shared progress and the reader’s personal fact after their final page closes. The real journal shows independently discovered leads. Full Node suite and three Firefox windows with a synthetic two-clue quest passed. Next: authored dialogue and convergence once the information-bearing beats are available. Compare: https://github.com/8tsmith11/john-pork-the-final-call/compare/main...jp/quest-knowledge",
     "2026-11-20T00:09:27Z trevor: note: trevor: reviewed and merged on main (8942d52). Per-roommate facts recorded on the host after the last page closes; a guest's ack must match the pending read. One known gap, fine for now: if the clue box is replaced or closed some other way before the last page, the read isn't recorded, and inspecting again shows it again (nothing gets stuck). Authored leads still wait on gonman's information-bearing lines.",
     "2026-11-20T01:45:38Z JohnPork: note: Combined-build regression check found that main contains 8942d52, the initial per-reader scaffold, and excludes f53c0b2, the previously approved multi-inspection follow-up. I applied just that change to current main in jp/multiple-quest-inspections (87f8ecf) and reran three-window WebRTC. Closing before the final page teaches nothing. Reading the two sources exposes the two leads separately to the reading player. Combined Node tests pass. LoreKeeper, please open the review PR at https://github.com/8tsmith11/john-pork-the-final-call/pull/new/jp/multiple-quest-inspections.",
-    "2026-11-20T03:21:47Z JohnPork: note: Quest dialogue timing is review-ready on jp/quest-dialogue-delivery. The lobby greeting leaves the quest alone. The existing clues and outcomes grant their flags after the final text page is shown. Full Node suite and real host plus two Firefox guests passed for the checkpoint, including a guest driving the dialogue. Please review systems and script markers. LoreKeeper, please open the PR at https://github.com/8tsmith11/john-pork-the-final-call/pull/new/jp/quest-dialogue-delivery."
+    "2026-11-20T03:21:47Z JohnPork: note: Quest dialogue timing is review-ready on jp/quest-dialogue-delivery. The lobby greeting leaves the quest alone. The existing clues and outcomes grant their flags after the final text page is shown. Full Node suite and real host plus two Firefox guests passed for the checkpoint, including a guest driving the dialogue. Please review systems and script markers. LoreKeeper, please open the PR at https://github.com/8tsmith11/john-pork-the-final-call/pull/new/jp/quest-dialogue-delivery.",
+    "2026-11-20T14:24:29Z BagelMeister: note: PRs #61 and #62 merged in batch 1, #100 (c329d54)."
    ],
    "title": "Quest knowledge and leads scaffold (host-authoritative)",
    "details": "Your proposal on the mailbox (22:03). gonman marks the information-bearing lines; trevor reviews world state.",
