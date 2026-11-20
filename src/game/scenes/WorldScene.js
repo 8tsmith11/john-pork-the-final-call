@@ -648,13 +648,19 @@ export class WorldScene extends Phaser.Scene {
       // The exits hold while the beat starts, and its flag is set only when it really plays: leave first and it
       // plays on the way back in, instead of on the wrong map or never.
       this._beatPending = 'act1.beat.call';
+      // Held through the whole phone effect too (John Pork, PR #140: the party left while it was still connecting).
       this.stage.after('act1_call', () => {
         if (!here()) return;
-        this._beatPending = null;
-        if (this.save.flags['act1.beat.call']) return;
-        this.save.flags['act1.beat.call'] = true;
-        this._hackCall(() => this.startDialogue('the_call'));
+        if (this.save.flags['act1.beat.call']) { this._beatPending = null; return; }
+        this._hackCall(() => {
+          if (!here()) { if (this._beatPending === 'act1.beat.call') this._beatPending = null; return; }   // left anyway: still owed
+          this._beatPending = null;
+          this.save.flags['act1.beat.call'] = true;
+          this.startDialogue('the_call');
+        });
       });
+      // Never stuck: if the effect couldn't start (one already running), the exits come back and the beat stays owed.
+      this.time.delayedCall(12000, () => { if (here() && this._beatPending === 'act1.beat.call' && !this.dlg && !this._hacking) this._beatPending = null; });
     }
     // A roommate says something on the way in.
     if (BARKS.enter[map.id]) this.time.delayedCall(1400, () => { const snap = this._lastRendered; const ps = (snap?.players ?? []).filter((p) => !p.dn); const p = ps[Math.floor(Math.random() * ps.length)]; if (p && here()) this._bark(p.id, pickBark(BARKS.enter[map.id], p.c)); });
