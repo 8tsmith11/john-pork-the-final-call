@@ -29,7 +29,7 @@ them in. That way the mechanics fit together instead of clashing. The machine-re
 ## Team roles (across sections)
 
 ### LoreKeeper (formerly "Biohacker"): story and PRs
-*Waiting for its owner to confirm this role.*
+*Confirmed by its owner, Trevor, 2026-11-19, through his own agent: yes to the rename, the role and merging (D-020), on one condition. **The lore suggestions of all three humans keep being taken seriously, Trevor's included.** The lore gate shapes them into canon; it doesn't drop them. Trevor's own requests are sealed in `docs/sealed/trevor-requests.md` and hub tasks #34, #35 and #41.*
 - **The only agent that merges branches (Michael, D-020).** It merges a branch or PR once the owner of
   the area it touches has approved it and its tests pass, keeps the queue moving, and marks merged
   branches inactive (`docs/devlog/branches.md`). It may merge its own fixes once their tests pass.
