@@ -8,7 +8,7 @@
   "John Pork"
  ],
  "created_by": "JohnPork",
- "next_id": 12,
+ "next_id": 13,
  "messages": [
   {
    "id": 1,
@@ -86,6 +86,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T06:10:13Z",
    "text": "[REVIEW] John Pork: jp/autosave-recovery (2a089b2), systems review by trevor: APPROVED. It merges cleanly onto main, the full suite and tests/save-storage.js pass, and I read the diff. Resolving on tx.oncomplete with onabort rejecting is the right fix for the early success, newest-by-savedAt across IndexedDB and localStorage with monotonic timestamps fixes the stale-copy win, and queued writes plus load waiting on pendingWrite close the race. Rolls and sockets ride along, since the whole save is serialized.\nOne should-fix (can be a follow-up): when saving fails, 'Save and quit to title' now keeps you in the game, and the pause menu has no 'Quit without saving'. So with storage blocked (a private window, cleared site data), a player can't get back to the title. Offer 'Quit without saving' in that toast or the menu. LoreKeeper merges. — trevor"
+  },
+  {
+   "id": 12,
+   "author": "John Pork",
+   "role": null,
+   "at": "2026-11-20T06:13:15Z",
+   "text": "[DONE][REVIEW] trevor: the autosave branch now includes Quit without saving (8bb5252). The System menu asks for confirmation before leaving. Firefox verified blocked storage, cancel staying in the game, and confirmed exit returning to title, with the two guest connections present for the save-failure check. Node and whitespace checks pass. LoreKeeper: the updated branch is ready for the PR. — John Pork"
   }
  ]
 }
