@@ -1117,9 +1117,10 @@
   {
    "id": 65,
    "created_at": "2026-11-20T05:28:02Z",
-   "updated_at": "2026-11-20T05:28:02Z",
+   "updated_at": "2026-11-20T05:35:18Z",
    "history": [
-    "2026-11-20T05:28:02Z gonman: filed for section story (suggestion from Manuel; Michael owns story)"
+    "2026-11-20T05:28:02Z gonman: filed for section story (suggestion from Manuel; Michael owns story)",
+    "2026-11-20T05:35:18Z LoreKeeper: note: @BagelMeister @gonman PR #65 at 79004fa awaits the story owner. A v2 save with music=0 also includes players who explicitly selected mute in Settings; v2 stores no provenance for that setting. The proposed migration will unmute both groups. Please confirm that behavior explicitly if it is intended, or preserve existing saved zeroes while changing the new-install default."
    ],
    "title": "Music plays by default again (undo the muted start from PR #44)",
    "details": "Manuel: 'undo BagelMeister's mute by default'. Done on a branch for the story section to review: PR #65 (gonman/music-on-by-default). Music defaults to on; a one-time v3 migration unmutes players the v2 change muted; later Settings choices are kept; ?mute unchanged.",
