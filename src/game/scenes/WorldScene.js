@@ -1189,7 +1189,11 @@ export class WorldScene extends Phaser.Scene {
   menuLearn(id) { if (this.mode === 'client') this.net.send({ t: 'skill', id }); else this._learn(this.character, id); }
   menuCraft(i) { if (this.mode === 'client') this.net.send({ t: 'craft', idx: i }); else this._craft(this.character, i); }
   menuExport() { exportFile(this.save); }
-  menuQuit(save) { const quit = () => { this.net?.close?.(); this.scene.start('Title'); }; save && this.mode !== 'client' ? autosave(this.save).then(quit) : quit(); }
+  async menuQuit(save) {
+    if (save && this.mode !== 'client' && !await this._save()) return;
+    this.net?.close?.();
+    this.scene.start('Title');
+  }
   mapName(id) { return MAPS[id]?.name ?? id; }
   playerWorldTile() {
     const me = this.mode === 'client' ? this._lastRendered?.players.find((p) => p.id === this.localId) : this.sim.players.get(this.localId);
@@ -2064,13 +2068,20 @@ export class WorldScene extends Phaser.Scene {
     this.tweens.add({ targets: this.toastText, alpha: 0, delay: 1400, duration: 500 });
   }
 
-  _save(message = '✓ saved') {
-    if (this.mode === 'client') return;
+  async _save(message = '✓ saved') {
+    if (this.mode === 'client') return false;
     this._toast('saving…');
-    autosave(this.save).then(() => this._toast(message));
+    try {
+      await autosave(this.save);
+    } catch {
+      this._toast('Couldn’t save. Try again or export a save file.');
+      return false;
+    }
+    this._toast(message);
+    return true;
   }
 
-  _restAtSave(peer, objectId) {
+  async _restAtSave(peer, objectId) {
     if (this.mode === 'client') return;
     const actor = this.sim.players.get(peer), bed = this.sim.map.objects.find((o) => o.id === objectId && o.action === 'save');
     if (!actor || !bed || this.sim.map.id !== 'room631'
@@ -2079,8 +2090,11 @@ export class WorldScene extends Phaser.Scene {
     const slept = !!this.save.flags['act1.boss.defeated'];   // task #34: a real night's sleep once the act's boss is down
     if (slept) for (const p of this.sim.players.values()) if (!p.downed) this.sim.heal(p.id, 999);
     for (const p of this.sim.players.values()) this.save.party[p.character].rot = p.rot ?? 0;
-    this._save(slept ? '✓ saved · slept it off' : rested ? '✓ saved · rest eased the code rot' : '✓ saved');
-    if (peer !== this.localId) this.net?.send(peer, { t: 'say', text: rested ? 'Rested. Code rot exposure halved.' : '✓ saved' });
+    const saved = await this._save(slept ? '✓ saved · slept it off' : rested ? '✓ saved · rest eased the code rot' : '✓ saved');
+    if (peer !== this.localId) {
+      const text = !saved ? 'Couldn’t save. Ask the host to retry.' : rested ? 'Rested. Code rot exposure halved.' : '✓ saved';
+      this.net?.send(peer, { t: 'say', text });
+    }
   }
 
   // Descriptions stay up until E or a click outside the box.
