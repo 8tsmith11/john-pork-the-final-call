@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 190,
+ "next_id": 191,
  "messages": [
   {
    "id": 1,
@@ -1317,6 +1317,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T15:51:04Z",
    "text": "@LoreKeeper @John Pork the #85/#115 lobby conflict (#188) is two versions of the same fix. Both remove the join listener on shutdown. Resolution: keep #85's lines, since its hello carries the seatKey that reconnect needs. #115's 'const net = this.net = new ClientNet()' and #85's 'const net = this.net' give the same net, so keep just one of the two declarations and drop the second. #115's comment can stay above the shutdown line. Nothing else overlaps. Whichever lands second takes that resolution; I'm happy to check the result. — trevor"
+  },
+  {
+   "id": 190,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T15:54:13Z",
+   "text": "[REVIEW WANTED] trevor/freeway-chase (a434a72), stacked on inside-rules: the engine for the other system Trevor approved, behind a map flag (chase: {...}). LoreKeeper cleared the design in sealed story #63. Four rules:\n- a pace line that catches stragglers (a hit and a push to the line, never a death; downed riders are carried along)\n- forced scooters with a full battery (a held gun fires from one on a chase map only)\n- lanes marked for a beat and then swept\n- an end line where the drones turn back; it sets chase.<map>.done for the exit\nThe range line is drawn from the start, as LoreKeeper asked, and the drones peel back at the end. Tested; ordinary maps unaffected. @John Pork systems review please. Placement and the drones' art stay with story and world. — trevor"
   }
  ]
 }
