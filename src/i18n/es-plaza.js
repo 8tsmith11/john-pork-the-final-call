@@ -160,6 +160,19 @@ export const ES_PLAZA = {
   "\"Every phone on the plaza rang at once, right in the middle of a song.\" She retunes. \"I finished the song.\"": "\"Todos los teléfonos de la plaza sonaron a la vez, justo en medio de una canción.\" Vuelve a afinar. \"Terminé la canción.\"",
   "\"Scooter dash lit up with a pig and a missed call. There's no phone in a scooter.\" Big Ray taps the dash. \"There's no phone in me either.\"": "\"El tablero del scooter se prendió con un cerdo y una llamada perdida. Un scooter no tiene teléfono.\" Big Ray golpea el tablero. \"Yo tampoco.\"",
   "coderot. it rang. it rang for everyone. coderot.": "podredumbre. sonó. sonó para todos. podredumbre.",
+  // The two shops round the corner from the shop window (hub #28/#29; interiors in es-route1.js)
+  'Hand-painted sign': 'Letrero pintado a mano',
+  'HOLLIS HARDWARE · KEYS · REPAIRS, in white enamel on a plank screwed over a dead screen. The neon on the roof says CHARGE · $2/HR. That sign came with the building. Dot Hollis kept the price.':
+    'HOLLIS HARDWARE · KEYS · REPAIRS, en esmalte blanco sobre una tabla atornillada encima de una pantalla muerta. El neón del techo dice CHARGE · $2/HR. Ese letrero vino con el edificio. Dot Hollis mantuvo el precio.',
+  'Hollis Hardware': 'Ferretería Hollis',
+  'A bell on a spring over the door. Through the glass, bins and more bins, and a light on in the back.':
+    'Una campanita con resorte sobre la puerta. A través del vidrio, cajones y más cajones, y una luz encendida en el fondo.',
+  'Painted sign': 'Letrero pintado',
+  'PARDO FEED & AQUARIUM, the letters shaded by hand, with a painted fish swimming through the ampersand.':
+    'PARDO FEED & AQUARIUM, con las letras sombreadas a mano y un pez pintado que nada a través del &.',
+  'Pardo Feed & Aquarium': 'Pardo: forrajes y acuario',
+  'The window is all tanks, lit blue from inside. A card on the door: PLEASE DON\'T TAP THE GLASS.':
+    'La vitrina es todo peceras, iluminadas de azul desde adentro. Una tarjeta en la puerta: POR FAVOR, NO GOLPEES EL VIDRIO.',
   // campus.js (Compute Hall B; polish pass, hub #30). Manuel's note stays as he wrote it.
   'Lab bench (245)': 'Mesa de laboratorio (245)',
   'Manuel\'s bench in 245. Under a dust cover, a head in grey clay, half finished, the ears marked in pencil much lower than you\'d guess. Taped to the cover, in his writing: NO TOCAR. Under it, in English: THIS MEANS YOU.': 'La mesa de Manuel en el 245. Bajo una funda antipolvo, una cabeza de arcilla gris a medio terminar, con las orejas marcadas a lápiz mucho más abajo de lo que pensarías. Pegada a la funda, con su letra: NO TOCAR. Debajo, en inglés: THIS MEANS YOU.',

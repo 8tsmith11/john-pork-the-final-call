@@ -265,6 +265,27 @@ export const SHOPS = {
       { item: 'item.sleep_potion', price: 15 },
       { item: 'item.caffeine', price: 8 },
     ] },
+  // Route 1 (hub #28/#29; maps in src/content/maps/act1_route1.js). Prices match the chalkboard on the shop wall,
+  // and are set so sellPrice() pays exactly what it paid before for every item (tests/run.js checks). Fasteners
+  // come by the scoop as scrap, adapters with the wire. Tool repair is a service she talks about, not a menu.
+  hardware: { title: 'HOLLIS HARDWARE', lines: ['Prices are on the chalkboard. Repairs while you wait.'],
+    stock: [
+      { item: 'item.mat_scrap', price: 3, limit: 6 },   // a fallback, not a faucet (trevor, general #118): limit needs trevor/shop-stock
+      { item: 'item.mat_wire', price: 4, limit: 4 },
+      { item: 'item.mat_cell', price: 12, limit: 1 },
+      { item: 'item.work_gloves', price: 9 },
+      { item: 'item.hardhat', price: 16 },
+      { item: 'item.work_pants', price: 20 },
+      { item: 'item.pipe_wrench', price: 30, once: true },
+    ] },
+  feed: { title: 'PARDO FEED & AQUARIUM', lines: ['Feed by the scoop. Please don\'t tap the glass.'],
+    stock: [
+      { item: 'item.flowers', price: 7 },
+      { item: 'item.mat_cloth', price: 2 },
+      { item: 'item.wool_socks', price: 6 },
+      { item: 'item.work_gloves', price: 8 },
+      { item: 'item.rain_parka', price: 20 },
+    ] },
 };
 
 // Skill trees live in ./skills.js (SKILL_TREE). SKILLS is kept as an alias of each tree's node list.

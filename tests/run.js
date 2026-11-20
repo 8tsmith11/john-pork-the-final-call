@@ -921,6 +921,180 @@ test('i18n: a string listed in more than one Spanish table gets the same Spanish
   try { assert.equal(i18nMod.tr('The diner'), 'La cafetería'); } finally { i18nMod.setLang(was); }
 });
 
+// ---- Route 1 shops and the airfield (hub #28/#29): src/content/maps/act1_route1.js, act1_airfield.js ----
+const R1_MAPS = ['hardware', 'feed_store', 'airfield', 'hangar'];
+const r1Regions = await import('../src/content/regions.js');
+const { ES_ROUTE1 } = await import('../src/i18n/es-route1.js');
+const { SHOPS: R1_SHOPS, sellPrice: r1SellPrice } = await import('../src/content/items.js');
+const { PLAZA_CORDON: R1_CORDON } = await import('../src/content/cordon.js');
+const r1Walk = (m, starts) => {   // tiles reachable on foot from `starts` (doors open on contact, as in the reachability test)
+  const seen = new Set(starts.map(([x, y]) => `${x},${y}`)), q = [...starts];
+  while (q.length) {
+    const [x, y] = q.shift();
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
+      if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
+      seen.add(k); q.push([nx, ny]);
+    }
+  }
+  return seen;
+};
+const r1Near = (seen, o) => [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${o.x + dx},${o.y + dy}`));
+test('Route 1 and the airfield (hub #28/#29): the new maps are registered in the route1 region, and College Park and the lake lead to them', () => {
+  const route1 = r1Regions.REGIONS.find((r) => r.id === 'route1');
+  for (const id of R1_MAPS) { assert.ok(MAPS_FOR_TEST[id], `${id} is registered in maps/index.js`); assert.ok(route1.maps.includes(id), `${id} is in the route1 region`); }
+  assert.equal(route1.act, 1);
+  const leads = (from, to) => MAPS_FOR_TEST[from].objects.some((o) => o.action === 'exit' && o.to === to && !o.requiresFlag);
+  assert.ok(leads('metro_plaza', 'hardware') && leads('metro_plaza', 'feed_store'), 'the shop doors are on the Route 1 strip');
+  assert.ok(leads('lake', 'airfield') && leads('airfield', 'hangar'), 'the airfield is off the lake, the hangar off the airfield');
+  assert.ok(!MAPS_FOR_TEST.metro_plaza.objects.some((o) => o.action === 'exit' && o.to === 'airfield'), 'the airfield is reached through the lake, not straight from the plaza');
+});
+test('Route 1 and the airfield: every new map is walkable from each entrance, with every object in reach', () => {
+  const bad = [];
+  for (const id of R1_MAPS) {
+    const m = MAPS_FOR_TEST[id];
+    for (const back of m.objects.filter((o) => o.action === 'exit')) {   // arrive the way the game does, through the matching door
+      const from = MAPS_FOR_TEST[back.to], via = from.objects.find((o) => o.action === 'exit' && o.to === id && o.pair === back.id);
+      if (!via) { bad.push(`${id}: nothing in ${back.to} leads to ${back.id}`); continue; }
+      const sim = new Sim(from, { seed: 'r1' });
+      for (const [pid, c] of [['a', 'manuel'], ['b', 'trevor'], ['c', 'michael']]) sim.addPlayer(pid, c);
+      sim.setMap(m, back.to, via.id);
+      const starts = [...sim.players.values()].map((p) => [Math.floor(p.x / 16), Math.floor(p.y / 16)]);
+      for (const [x, y] of starts) if (m.solid(x, y)) bad.push(`${id}: arriving from ${back.to} lands in a wall at ${x},${y}`);
+      for (const [x, y] of starts) if (Math.abs(x - back.x) + Math.abs(y - back.y) > 2) bad.push(`${id}: arriving from ${back.to} lands far from ${back.id}`);
+      const seen = r1Walk(m, starts);
+      for (const o of m.objects) if (!r1Near(seen, o)) bad.push(`${id}: ${o.id} can't be reached from ${back.id}`);
+      let open = 0; for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) if (!m.solid(x, y)) open++;
+      const cut = open - [...seen].filter((k) => { const [x, y] = k.split(',').map(Number); return !m.solid(x, y); }).length;
+      if (cut > 0 && id !== 'airfield') bad.push(`${id}: ${cut} floor tiles can't be walked to from ${back.id}`);   // outdoors, a tree can close off a corner
+    }
+  }
+  // ...and on the maps you enter them from, the doors and the trail sign can be walked up to from where you start.
+  for (const [mapId, ids] of [['metro_plaza', ['obj.hardware_door', 'obj.hardware_sign', 'obj.feed_door', 'obj.feed_sign']], ['lake', ['obj.lake_airfield']]]) {
+    const m = MAPS_FOR_TEST[mapId], seen = r1Walk(m, m.spawns.map((s) => [Math.floor(s.x / 16), Math.floor(s.y / 16)]));
+    for (const oid of ids) { const o = m.objects.find((q) => q.id === oid); if (!o) bad.push(`${mapId}: no ${oid}`); else if (!r1Near(seen, o)) bad.push(`${mapId}: ${oid} out of reach`); }
+  }
+  assert.deepEqual(bad, []);
+});
+test('Route 1 and the airfield: every exit to or from the new maps is paired both ways, and the shop doors sit in a wall like the diner\'s', () => {
+  const bad = [];
+  const exits = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.filter((o) => o.action === 'exit' && (R1_MAPS.includes(o.to) || R1_MAPS.includes(m.id))).map((o) => [m, o]));
+  assert.ok(exits.length >= 8, 'four maps, eight door sides');
+  for (const [m, o] of exits) {
+    const there = MAPS_FOR_TEST[o.to]?.objects.find((q) => q.id === o.pair);
+    if (!there) { bad.push(`${m.id}/${o.id}: its pair ${o.pair} is not in ${o.to}`); continue; }
+    if (there.action !== 'exit' || there.to !== m.id || there.pair !== o.id) bad.push(`${m.id}/${o.id}: ${o.to}/${there.id} doesn't lead back to it`);
+  }
+  const plaza = MAPS_FOR_TEST.metro_plaza;
+  for (const id of ['obj.hardware_door', 'obj.feed_door']) {
+    const o = plaza.objects.find((q) => q.id === id);
+    assert.equal(plaza.layout[o.y][o.x], '#', `${id} is set in a building wall`);
+    assert.ok(!plaza.solid(o.x, o.y + 1), `${id} opens onto pavement`);
+    assert.ok(!o.stepOn && !o.floor && !o.requiresFlag, `${id} works like the diner's door`);
+  }
+  assert.deepEqual(bad, []);
+});
+test('Route 1 and the airfield: no new way out through the cordon; Act 1 exits from College Park stay inside ring one', () => {
+  const plaza = MAPS_FOR_TEST.metro_plaza, opening = (o) => R1_CORDON.openings.some(([x, y, w, h]) => o.x >= x - 1 && o.x < x + w && o.y >= y - 1 && o.y < y + h);
+  for (const o of plaza.objects.filter((q) => q.action === 'exit' && (q.x <= 1 || q.y <= 1 || q.x >= plaza.w - 2 || q.y >= plaza.h - 2))) {
+    assert.ok(opening(o) || o.requiresFlag === 'act1.complete', `${o.id} leaves College Park through the cordon`);
+  }
+  assert.ok(!plaza.objects.some((o) => o.action === 'exit' && o.y >= plaza.h - 2), 'the south perimeter stays closed');
+  // Every exit you can use before Act 1 is complete, followed from College Park, stays in ring one.
+  const seen = new Set(['metro_plaza']), q = ['metro_plaza'];
+  while (q.length) for (const o of MAPS_FOR_TEST[q.shift()].objects) if (o.action === 'exit' && MAPS_FOR_TEST[o.to] && o.requiresFlag !== 'act1.complete' && !seen.has(o.to)) { seen.add(o.to); q.push(o.to); }
+  for (const id of R1_MAPS) assert.ok(seen.has(id), `${id} can be reached in Act 1`);
+  for (const id of seen) assert.equal(r1Regions.regionOfMap(id)?.ring, 1, `${id} is reachable in Act 1 but sits outside ring one`);
+  // The airfield's only ways out are the hangar and the trail back to the lake; the hangar's only door is back to the field.
+  assert.deepEqual(MAPS_FOR_TEST.airfield.objects.filter((o) => o.action === 'exit').map((o) => o.to).sort(), ['hangar', 'lake']);
+  assert.deepEqual(MAPS_FOR_TEST.hangar.objects.filter((o) => o.action === 'exit').map((o) => o.to), ['airfield']);
+  for (const id of ['hardware', 'feed_store']) assert.deepEqual(MAPS_FOR_TEST[id].objects.filter((o) => o.action === 'exit').map((o) => o.to), ['metro_plaza']);
+});
+test('Route 1 shops: the counters open the ordinary shop menu, the chalkboard matches the shelf, and the pawn pays what it paid before', () => {
+  for (const [mapId, shop] of [['hardware', 'hardware'], ['feed_store', 'feed']]) {
+    const counter = MAPS_FOR_TEST[mapId].objects.find((o) => o.action === 'shop');
+    assert.equal(counter?.shop, shop, `${mapId} has a counter for SHOPS.${shop}`);
+    assert.ok(R1_SHOPS[shop].stock.length >= 4, `SHOPS.${shop} has stock`);
+    for (const st of R1_SHOPS[shop].stock) { assert.ok(ITEMS[st.item], `${shop} sells ${st.item}, which exists`); assert.ok(st.price > 0); }
+  }
+  const board = MAPS_FOR_TEST.hardware.objects.find((o) => o.id === 'obj.hardware_chalkboard').text;
+  assert.deepEqual([...board.matchAll(/\$(\d+)/g)].map((m) => Number(m[1])).sort((a, b) => a - b), R1_SHOPS.hardware.stock.map((s) => s.price).sort((a, b) => a - b), 'chalkboard prices = shelf prices');
+  const ids = [...new Set(['hardware', 'feed'].flatMap((s) => R1_SHOPS[s].stock.map((st) => st.item)))], now = ids.map((id) => r1SellPrice(id));
+  const saved = { hardware: R1_SHOPS.hardware, feed: R1_SHOPS.feed };
+  try { delete R1_SHOPS.hardware; delete R1_SHOPS.feed; assert.deepEqual(now, ids.map((id) => r1SellPrice(id)), 'adding the shops changed what the pawn pays'); }
+  finally { Object.assign(R1_SHOPS, saved); }
+});
+test('Route 1 and the airfield: people have an age, kids are never egg targets, and no new NPC opts into the eggs', () => {
+  for (const id of R1_MAPS) for (const o of MAPS_FOR_TEST[id].objects.filter((q) => q.npc)) {
+    assert.ok(['adult', 'child'].includes(o.age), `${o.id} has an age`);
+    assert.ok(!o.eggOk, `${o.id} is not tagged eggOk`);
+  }
+  assert.ok(R1_MAPS.some((id) => MAPS_FOR_TEST[id].objects.some((o) => o.npc && o.age === 'child')), 'Analogist families bring their kids');
+  for (const id of R1_MAPS) for (const o of MAPS_FOR_TEST[id].objects.filter((q) => q.npc && q.age === 'child')) assert.equal(o.approach, false, `${o.id}: talk only, nobody pickpockets or intimidates a kid`);
+  for (const m of Object.values(MAPS_FOR_TEST)) for (const o of m.objects) if (o.npc && o.age === 'child') assert.ok(!o.eggOk, `${m.id}/${o.id}: a child is never tagged eggOk`);
+});
+test('Route 1 and the airfield: the windsock, the flight log, the jar of keys and the paper maps are there, with art for everything', () => {
+  const find = (mapId, art) => MAPS_FOR_TEST[mapId].objects.find((o) => o.art === art);
+  assert.ok(find('airfield', 'obj.windsock'), 'it still has a windsock');
+  const log = find('hangar', 'obj.flight_log');
+  assert.ok(log?.pages?.some((p) => p.startsWith('2071.')), 'the flight log has an entry on the night of the Call');
+  assert.ok(find('hangar', 'obj.key_jar') && find('hangar', 'obj.bookshelf'), 'a jar of keys and the paper maps');
+  const atlas = new Set(['props', 'wide', 'big'].flatMap((f) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${f}.json`, import.meta.url), 'utf8')).frames)));
+  for (const id of [...R1_MAPS, 'metro_plaza']) for (const s of MAPS_FOR_TEST[id].scenery ?? []) assert.ok(atlas.has(s.art), `${id}: scenery ${s.art} has art`);
+});
+test('Route 1 and the airfield: phones go in the box inside the hangar door, and the corkboard and the deacon agree with it', () => {
+  const hangar = MAPS_FOR_TEST.hangar, box = hangar.objects.find((o) => o.id === 'obj.hangar_phone_box');
+  assert.ok(box && /phones/i.test(box.text), 'the box of phones is inside the hangar, by the door');
+  assert.match(hangar.objects.find((o) => o.id === 'obj.hangar_rules').text, /PHONES IN THE BOX/);
+  const reed = hangar.objects.find((o) => o.id === 'npc.deacon_reed');
+  for (const t of [reed.text, ...(reed.later ?? []).map((l) => l.text)]) assert.ok(!/nothing in here rang/i.test(t), 'the box by the door rang with everyone else\'s');
+  const cork = MAPS_FOR_TEST.feed_store.objects.find((o) => o.id === 'obj.feed_corkboard').text;
+  assert.ok(!/windsock/i.test(cork) && /PHONE AT THE DOOR/.test(cork), 'the corkboard sends phones to the door, where the box is');
+});
+test('Route 1 and the airfield (LoreKeeper on #83): Sunday meetings vs tonight\'s shelter, 22:40 is the circuit and the Call has no time, and ringing in the hangar comes from the box at the door', () => {
+  const hangar = MAPS_FOR_TEST.hangar, es = (t) => ES_ROUTE1[t] ?? '';
+  // (a) The ordinary schedule matches the corkboard at Pardo's, and tonight the families are here to sleep, not to meet.
+  const board = hangar.objects.find((o) => o.id === 'obj.hangar_schedule');
+  assert.ok(board, 'a schedule board in the hangar');
+  const cork = MAPS_FOR_TEST.feed_store.objects.find((o) => o.id === 'obj.feed_corkboard').text;
+  assert.ok(/SUNDAYS/.test(board.text) && /SUNDAYS/.test(cork), 'the hangar board and the corkboard give the same meeting day');
+  assert.match(board.text, /NO MEETING TONIGHT/);
+  assert.match(board.text, /FLOOR/, 'tonight they are sheltering');
+  assert.ok(/DOMINGOS/.test(es(board.text)) && /HOY NO HAY REUNIÓN/.test(es(board.text)), 'and the Spanish says the same');
+  // (b) The flight log: 22:40 is an ordinary local circuit, and the Call is a later entry with no time.
+  const pages = hangar.objects.find((o) => o.id === 'obj.hangar_flight_log').pages;
+  const clock = /\b\d{1,2}:\d{2}\b/, ringsEn = /\b(rang|ring|rings|ringing|buzz\w*|went off)\b/i;
+  const timed = pages.filter((p) => clock.test(p));
+  assert.equal(timed.length, 1, 'only one entry in the log has a time');
+  assert.ok(/\b22:40\. Local circuit\b/.test(timed[0]) && !ringsEn.test(timed[0]), '22:40 is the local circuit, and nothing rings in it');
+  const callPage = pages.findIndex((p) => ringsEn.test(p));
+  assert.ok(callPage > pages.indexOf(timed[0]), 'the Call is a later entry than the 22:40 circuit');
+  assert.ok(!clock.test(pages[callPage]), 'the Call is untimed in the log');
+  assert.ok(/22:40\. Circuito local/.test(es(timed[0])) && !/son[óa]/i.test(es(timed[0])), 'the Spanish circuit entry keeps the time and rings nothing');
+  assert.ok(es(pages[callPage]) && !clock.test(es(pages[callPage])), 'the Spanish Call entry has no time either');
+  // (c) Any ringing in the hangar came from the phones in the box at the door; nobody in here has a phone on them.
+  for (const o of hangar.objects) for (const t of [o.text, ...(o.pages ?? []), ...((o.later ?? []).map((l) => l.text))]) {
+    if (typeof t !== 'string') continue;
+    assert.ok(!/pocket/i.test(t), `${o.id}: no phone rings in a pocket in the hangar`);
+    if (!ringsEn.test(t)) continue;
+    const where = `${o.label} ${t}`, whereEs = `${es(o.label)} ${es(t)}`;
+    assert.ok(/\bbox\b/i.test(where) && /\bdoor\b/i.test(where), `${o.id}: the ringing came from the box at the door: ${t.slice(0, 50)}`);
+    assert.ok(/caja/i.test(whereEs) && /puerta/i.test(whereEs), `${o.id}: the Spanish puts the ringing in the box at the door too`);
+  }
+});
+test('i18n: every Route 1 shop and airfield line, label, page and shop header has Spanish', () => {
+  const missing = [];
+  for (const id of R1_MAPS) for (const o of MAPS_FOR_TEST[id].objects) {
+    for (const t of [o.label, o.text, ...(o.pages ?? []), ...((o.later ?? []).map((l) => l.text)), o.lockedText, o.doneText]) if (typeof t === 'string' && t && !(t in ES_ROUTE1)) missing.push(`${id}: ${t.slice(0, 40)}`);
+    if (o.later?.length && !(o.label.toUpperCase() in ES_ROUTE1)) missing.push(`${id}: ${o.label.toUpperCase()} (speaker line)`);
+  }
+  for (const s of ['hardware', 'feed']) for (const t of [R1_SHOPS[s].title, R1_SHOPS[s].lines.join(' ')]) if (!(t in ES_ROUTE1)) missing.push(`SHOPS.${s}: ${t}`);
+  assert.deepEqual(missing, [], 'add these to src/i18n/es-route1.js');
+  const was = i18nMod.getLang(); i18nMod.setLang('es');
+  try { assert.equal(i18nMod.tr('The airfield'), 'El aeródromo'); assert.equal(i18nMod.tr(R1_SHOPS.hardware.title), 'FERRETERÍA HOLLIS'); }
+  finally { i18nMod.setLang(was); }
+});
+
 const { ES_HUD } = await import('../src/i18n/es-hud.js');
 test('i18n: every map name has Spanish', () => {
   const missing = Object.values(MAPS_FOR_TEST).map((m) => m.name).filter((n) => n && !(n in ES_HUD));
@@ -1466,9 +1640,12 @@ const Regions = await import('../src/content/regions.js');
 test('world regions: every built map belongs to exactly one region, each region sits in its act\'s ring, states follow the act', () => {
   for (const id of Object.keys(MAPS_FOR_TEST)) assert.equal(Regions.REGIONS.filter((r) => r.maps.includes(id)).length, 1, `${id} must belong to one region`);
   for (const r of Regions.REGIONS) assert.equal(Regions.RINGS.find((q) => q.ring === r.ring)?.act, r.act, `${r.id} ring/act mismatch`);
-  const aster = Regions.REGIONS.find((r) => r.id === 'aster'), campus = Regions.REGIONS.find((r) => r.id === 'route1'), balt = { ...Regions.REGIONS.find((r) => r.id === 'corridor'), maps: [] };   // an act-3 region, maps cleared
+  // route1 has maps now (hub #28/#29), so the "this act, nothing built" case uses a copy with its maps cleared.
+  const aster = Regions.REGIONS.find((r) => r.id === 'aster'), route1 = Regions.REGIONS.find((r) => r.id === 'route1'), campus = { ...route1, maps: [] }, balt = { ...Regions.REGIONS.find((r) => r.id === 'corridor'), maps: [] };   // an act-3 region, maps cleared
   assert.equal(Regions.regionState(aster, 1, 'room631'), 'here');
   assert.equal(Regions.regionState(campus, 1, 'room631'), 'closed');
+  assert.equal(Regions.regionState(route1, 1, 'room631'), 'open');
+  assert.equal(Regions.regionState(route1, 1, 'airfield'), 'here');
   assert.equal(Regions.regionState(balt, 1, 'room631'), 'locked');
   assert.equal(Regions.regionState(balt, 3, 'room631'), 'closed');
 });
