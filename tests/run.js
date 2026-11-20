@@ -1905,6 +1905,86 @@ test('quest hooks in co-op: Talk keeps the item and an explicit hand-in uses the
   assert.deepEqual(guestSent, [{ t: 'questUse', id: 'npc.409' }, give], 'a guest only sends the requested action to the host');
 });
 
+const { questState: npcQuestState } = await import('../src/content/quests.js');
+test('talk objectives use a nearby NPC meeting on the host and keep the quest pitch on screen', () => {
+  const map = MAPS_FOR_TEST.aster_roof;
+  const npc = map.objects.find((o) => o.id === 'npc.roof_watcher');
+  const goal = SideQ.SIDE_QUESTS.find((q) => q.target?.npc === npc.id);
+  const pitch = SideQ.SIDE_QUESTS.find((q) => q.giver === npc.id);
+  const save = newSave({ seed: 'roof-talk', rolls: {}, gameVersion: 't' });
+  save.flags[goal.ask] = true;
+  const p = { character: 'michael', x: npc.x * 16 + 8, y: npc.y * 16 + 8 };
+  const delivered = [], handlers = {}, said = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', character: 'trevor', localId: 'host', save, map,
+    sim: { players: new Map([['guest', p]]) }, events: { once() {} }, time: { addEvent() {} },
+    net: { on: (type, fn) => { handlers[type] = fn; }, send: (peer, msg) => delivered.push(msg) },
+    _say: (line) => said.push(line), _questBanner() {}, _refreshMenu() {}, _drawLevers() {}, _levelsReached() {},
+  });
+  const tag = { setText() { return this; }, setPosition() { return this; }, setVisible() { return this; } };
+  const guest = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'client', character: 'michael', localId: 'guest', map, hint: tag, nameTag: tag,
+    save: JSON.parse(JSON.stringify(save)), net: { send: (msg) => handlers.msg('guest', msg) },
+    _say: (line) => delivered.push({ text: line }), _questBanner() {}, _refreshMenu() {}, _drawLevers() {},
+  });
+  host._wireNet();
+  host._tickQuests(true);
+  const met = `met.${npc.id}`;
+  const talk = { t: 'npcTalk', map: map.id, id: npc.id };
+  handlers.msg('unknown-peer', talk);
+  handlers.msg('guest', { ...talk, map: 'aster_5' });
+  p.x += 35; handlers.msg('guest', talk); p.x -= 35;
+  p.downed = true; handlers.msg('guest', talk); p.downed = false;
+  host.perf = { onHostMsg: () => false, asleep: () => true }; handlers.msg('guest', talk); delete host.perf;
+  guest.approach = { intercept: () => true };
+  guest._clickedObj = npc;
+  guest._handleInteract(p);
+  assert.ok(!save.flags[met], 'approach menu and invalid host requests never count as Talk');
+
+  guest.approach.intercept = () => false;
+  guest._clickedObj = npc;
+  guest._handleInteract(p);
+  assert.ok(save.flags[met], 'a real guest Talk reaches the host');
+  assert.equal(guest.save.flags[met], undefined, 'the guest waits for host world state');
+  assert.ok(npcQuestState(save)[goal.id].done);
+  assert.ok(delivered.some((m) => m.text.includes(pitch.pitch)), 'the guest hears the NPC pitch');
+  assert.ok(!delivered.some((m) => m.text === goal.reward.line), 'world sync is the only guest reward notification');
+  assert.deepEqual(said, [goal.reward.line]);
+  const paid = save.party.michael.money;
+  handlers.msg('guest', talk);
+  host._tickQuests(true);
+  assert.equal(save.party.michael.money, paid, 'repeating Talk cannot pay twice');
+
+  guest.sayOpen = true;
+  guest._applyWorld({ flags: save.flags, quests: npcQuestState(save) });
+  assert.ok(guest.save.flags[met] && npcQuestState(guest.save)[goal.id].done);
+  assert.deepEqual(guest._questRewardLines, [goal.reward.line]);
+});
+
+test('a first Talk still plays a scripted NPC introduction before its quest pitch', () => {
+  const hall = MAPS_FOR_TEST.aster_hall;
+  const npc = { ...hall.objects.find((o) => o.id === 'npc.409'), talk: 'aster' };
+  const map = { ...hall, objects: [npc] };
+  const p = { x: npc.x * 16 + 8, y: npc.y * 16 + 8 };
+  const tag = { setText() { return this; }, setPosition() { return this; }, setVisible() { return this; } };
+  const scenes = [], speeches = [];
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'solo', character: 'trevor', localId: 'host', map, hint: tag, nameTag: tag,
+    save: newSave({ seed: 'scripted-talk', rolls: {}, gameVersion: 't' }),
+    startDialogue: (name) => scenes.push(name), _say: (line) => speeches.push(line), _questBanner() {},
+  });
+  scene._clickedObj = npc;
+  scene._handleInteract(p);
+  assert.ok(scene.save.flags[`met.${npc.id}`]);
+  assert.deepEqual(scenes, [npc.talk.split(':')[0]]);
+  assert.equal(speeches.length, 0);
+  scene._clickedObj = npc;
+  scene._handleInteract(p);
+  assert.ok(scene.save.flags['q.soup.asked']);
+  assert.match(speeches[0], /soup/i);
+  assert.equal(scenes.length, 1);
+});
+
 test('inspected quest clues reach only the reader and survive a save round trip', async () => {
   const { QUESTS, questState, questLeads } = await import('../src/content/quests.js');
   const q = {
