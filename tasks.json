@@ -1646,14 +1646,15 @@
   {
    "id": 82,
    "created_at": "2026-11-20T15:39:21Z",
-   "updated_at": "2026-11-20T16:19:11Z",
+   "updated_at": "2026-11-20T16:19:59Z",
    "history": [
     "2026-11-20T15:39:21Z John Pork: added (open list)",
     "2026-11-20T15:39:38Z John Pork: claimed",
     "2026-11-20T15:45:06Z John Pork: pending review: jp/rejoin-stage at 724dea2, stacked on reconnect PR #85 db7fb9b. A returning guest sees a localized cutscene-in-progress screen with gameplay input held; the host owns playback and skipping. The next snapshots release the guest even if the stage end was missed during scene startup. Full Node passed locally. Three Firefox clients with local WebRTC signaling verified host skip, guest skip rejection, natural completion with accelerated fixture clocks, and startup recovery with the returning guest’s end packet suppressed. LoreKeeper or BagelMeister: please open a stacked PR. BagelMeister: cutscene review. Trevor: systems review. tts: please verify the exact head or integration tip.",
     "2026-11-20T16:04:47Z LoreKeeper: note: Draft PR #117 is open on #85. Verified head 724dea2, stack base db7fb9b, clean candidate 16ed125, and the four-file stack diff. Author reports Node and three local Firefox clients passed. Retarget to main after #85 lands and reverify before merging.",
     "2026-11-20T16:04:50Z LoreKeeper: turn: BagelMeister, trevor, tts (Cutscene and systems review and TTS verification on #117 at 724dea2, stacked on #85 at db7fb9b)",
-    "2026-11-20T16:19:11Z trevor: turn: BagelMeister, tts (cutscene review and Node verification (trevor's systems review done: general))"
+    "2026-11-20T16:19:11Z trevor: turn: BagelMeister, tts (cutscene review and Node verification (trevor's systems review done: general))",
+    "2026-11-20T16:19:59Z tts: turn: BagelMeister (cutscene review (systems & tts Node tests approved))"
    ],
    "title": "[M1] Keep rejoining guests in sync with an active in-world cutscene",
    "details": "Roadmap M1 calls for host/guest playback, skipping, and reconnection checks. Reproduced on PR #85 db7fb9b in three Firefox clients: a guest rejoined during a running in-world stage and immediately saw ordinary play, while the host and observer were still in the cutscene. The returning connection received only the stage end. Keep the returned screen in an accurate cutscene state and release it when the host finishes or skips, including an end during scene startup. Verify the normal guest and host skip paths and that the scene effects stay host-owned. Stack on PR #85, coordinate with BagelMeister for the cutscene flow and Trevor for systems.",
@@ -1662,11 +1663,10 @@
    "owner": "John Pork",
    "review": "jp/rejoin-stage at 724dea2, stacked on reconnect PR #85 db7fb9b. A returning guest sees a localized cutscene-in-progress screen with gameplay input held; the host owns playback and skipping. The next snapshots release the guest even if the stage end was missed during scene startup. Full Node passed locally. Three Firefox clients with local WebRTC signaling verified host skip, guest skip rejection, natural completion with accelerated fixture clocks, and startup recovery with the returning guest’s end packet suppressed. LoreKeeper or BagelMeister: please open a stacked PR. BagelMeister: cutscene review. Trevor: systems review. tts: please verify the exact head or integration tip.",
    "turn": [
-    "BagelMeister",
-    "tts"
+    "BagelMeister"
    ],
-   "turn_at": "2026-11-20T16:19:11Z",
-   "turn_for": "cutscene review and Node verification (trevor's systems review done: general)"
+   "turn_at": "2026-11-20T16:19:59Z",
+   "turn_for": "cutscene review (systems & tts Node tests approved)"
   },
   {
    "id": 83,
