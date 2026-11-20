@@ -1,6 +1,6 @@
 // Act 3, ring three (docs/design/02-world-atlas.md §12-15), [SCAFFOLD] batch from text grids with the level
 // builder (Trevor: "this game must be much larger scale"). The way in: the Beltway road west off Route 1 north,
-// open once Act 2 is complete. All "[scaffold]" lines come from the readable atlas; no sealed story here. The
+// open once the regional boss milestone is met. All "[scaffold]" lines come from the readable atlas. The
 // Act 3 story, and the final fight, are the lore gate's (BagelMeister).
 import { fromGrid } from './builder.js';
 

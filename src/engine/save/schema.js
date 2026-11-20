@@ -7,7 +7,7 @@ import { BASE_SCORES } from '../../content/abilities.js';
 
 export const FORMAT = 'jpfc-save';
 export const SLOTS = 36;   // inventory slots per character: 0..8 hotbar, 9..35 backpack
-export const CURRENT_SCHEMA = 7;
+export const CURRENT_SCHEMA = 8;
 
 /** migrations[n] upgrades a schema-n save to schema n+1. Append only. */
 export const migrations = {
@@ -72,6 +72,12 @@ export const migrations = {
     ids.forEach((id, i) => { save.party[id].money = (save.party[id].money ?? 0) + each + (i === 0 ? total - each * ids.length : 0); });
     if (save.world) delete save.world.money;
     save.schemaVersion = 7; return save;
+  },
+  // 7 -> 8: keep access to the later maps without recording the Act 2 story as complete.
+  7: (save) => {
+    if (save.flags?.['act2.complete']) save.flags['act2.scaffold.gate'] = true;
+    if (save.flags) delete save.flags['act2.complete'];
+    save.schemaVersion = 8; return save;
   },
 };
 

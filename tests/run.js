@@ -1164,6 +1164,20 @@ test('schema 6 -> 7: the shared wallet splits evenly into each roommate\'s, rema
   assert.ok(!('money' in m.world));
 });
 
+test('schema 7 -> 8: older saves keep scaffold routes open without setting story completion', () => {
+  const old = newSave({ seed: 'act2-gate', rolls: {}, gameVersion: 't' });
+  old.schemaVersion = 7;
+  old.world.act = 3;
+  old.flags['act2.complete'] = true;
+  const saved = migrate(old);
+  assert.equal(saved.world.act, 3);
+  assert.equal(saved.flags['act2.complete'], undefined);
+  const exits = Object.values(MAPS_FOR_TEST).flatMap((map) => map.objects)
+    .filter((o) => ['obj.r1n_to_beltway', 'obj.meade_to_meade_inside'].includes(o.id));
+  assert.equal(exits.length, 2);
+  for (const exit of exits) assert.equal(saved.flags[exit.requiresFlag], true);
+});
+
 const { CompanionBrain } = await import('../src/engine/companion.js');
 const { ITEMS: ITEMS_T } = await import('../src/content/items.js');
 test('AI companions follow the human, fight, and never trigger exits', () => {
