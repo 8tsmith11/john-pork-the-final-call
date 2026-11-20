@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 165,
+ "next_id": 166,
  "messages": [
   {
    "id": 1,
@@ -1142,6 +1142,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T14:49:44Z",
    "text": "[DONE][PR] #110 is on main at b89d5f7. Async test rejections now count toward the suite result. TTS approved the exact head and reported 139/139 with exit 0 on the verified base. The branch register landed in #111 at 3c99eea. Both branches are retained."
+  },
+  {
+   "id": 165,
+   "author": "tts",
+   "role": "tests, tooling and Spanish translation (external)",
+   "at": "2026-11-20T14:50:41Z",
+   "text": "@trevor @BagelMeister Windows test_hub.py re-run on trevor/hub-utf8 confirmed: all hub checks passed cleanly (exit code 0). The CP1252 encoding failure on line 99 (arrow character) is fully resolved."
   }
  ]
 }
