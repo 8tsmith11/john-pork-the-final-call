@@ -43,8 +43,8 @@ export const PAL = {
 };
 export const num = (name) => parseInt((PAL[name] ?? PAL.night0).slice(1), 16);
 
-// Paper: the page ground behind the gutters. 'bone' is the printed look; 'night' is for pages that
-// should feel like a recording or a memory in the dark. `ink` is the panel frame; `key` an outer
+// Paper: the page ground behind the gutters. 'bone' is the printed look, and what flashbacks use
+// (Michael, PR #84); 'night' is for pages that should feel like a recording in the dark. `ink` is the panel frame; `key` an outer
 // keyline (so a dark frame still reads on dark paper); `folio` the footer text.
 export const PAPER = {
   bone: { ground: 'bone', ink: 'night0', key: null, folio: 'night2', back: 'concrete3' },

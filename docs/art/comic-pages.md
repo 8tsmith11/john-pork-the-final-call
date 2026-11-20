@@ -26,9 +26,9 @@ The view is 480×270, so a page is landscape: one screen, read left to right, to
 - **Gutters:** 6 px between panels.
 - **Footer:** a strip at y 256-270 for the page number (left) and the controls (right).
 - **Paper** (`paper` on the comic):
-  - `bone`: printed look. Bone-white gutters, dark ink frames. The default (Michael picked it for
-    flashbacks, PR #84); a comic can still choose `night`.
-  - `night`: for pages that should feel like a memory, or a recording in the dark. Near-black
+  - `bone`: printed look. Bone-white gutters, dark ink frames. The default, and what flashbacks use
+    (Michael picked it for flashbacks, PR #84; the story comic is on it).
+  - `night`: for pages that should feel like a recording in the dark. Not for flashbacks. Near-black
     gutters, the same ink frames plus a 1 px grey keyline outside them so the edges still read.
 - **Frames:** 2 px of ink (`night0`) on the panel's own edge. Art never draws outside its panel; it is
   cropped to the frame. A balloon tail or sound effect may cross the frame line on purpose.

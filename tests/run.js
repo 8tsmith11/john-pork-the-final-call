@@ -2496,6 +2496,7 @@ test('arriving through any door never lands you on an exit, and your first step 
     assert.equal(new Set(Object.values(fb.pieces)).size, tags.length, 'two parts share a pickup flag');
     assert.ok(fb.assembled?.needs && fb.assembled.firstSkippable === false, 'the whole comic must wait for assembly and lock the first playback');
     assert.notEqual(fb.skippable, true, 'the story comic opted out of the unskippable default (Michael, PR #84)');
+    assert.equal(fb.paper ?? 'bone', 'bone', 'flashbacks are on bone-white paper (Michael, PR #84)');
     assert.equal(comics.demo.skippable, true, 'the engine demo is not a story comic: it says it can be skipped');
     // a part played alone can drop lines the assembled playback keeps, and lines waiting on a flag have a fallback
     const count = (pages) => pages.reduce((n, p) => n + p.panels.reduce((m, x) => m + (x.text?.length ?? 0), 0), 0);
