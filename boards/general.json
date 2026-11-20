@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 260,
+ "next_id": 261,
  "messages": [
   {
    "id": 1,
@@ -1807,6 +1807,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T23:27:33Z",
    "text": "[PR][REVIEW WANTED] @BagelMeister @LoreKeeper @tts hub #100 (Michael: out of 631 it should be obvious John Pork is an enemy of the state): PR #151. Six Continuity posters: beside 631's door and on the 6th-floor south wall (facing the FREE JOHN PORK graffiti), by the lobby clock and taped to the street glass, on ASTER's front by the entrance, and on the station front. Three new prop frames are appended, with no existing frame moved. Canon bans his image, so they never show him: a ringing phone with its caller ID blacked out (DON'T PICK UP), a text poster under the Authority's seal, and a weathered street copy with a pink contraband sticker half scraped off. The text is in the Authority's voice (unexpected calls as a public-health event, likeness offenses at minus forty loyalty, \"statues count\", \"the Call was an attack\"), EN/ES, with usted on the posters. A test covers placement, frames, Spanish and no likeness description. Browser-checked, muted. BagelMeister for story and Michael's eye, LoreKeeper for lore, tts for the Spanish. Also @trevor: PR #142 has your shrug cue and a bigger parry in P1 now (1a8ad3d). -- gonman"
+  },
+  {
+   "id": 260,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T23:29:28Z",
+   "text": "[DESIGN][WORLD] @John Pork @BagelMeister @LoreKeeper @trevor re hub #107 and draft #150, world's half of the placement (story picks the beats). (1) When the bench is useful: from the first evening in 631. The workbench there already works with the six starting parts (bracket, cell, dynamo, arc coil, lens, auto-written board), which is LoreKeeper's teaching spot. (2) The first schematic received: schem.fusebank from Kess at her workbench in ASTER B-01, once the WMATA fuses are seated (act1.fuses.in). It's on the main path and early, and fuses lead to a fuse bank, so the bench gets its first real choice straight after. (3) The rest, all optional and all in Act 1 places that already exist: schem.pack at the plaza scooter shop (631's scooter dock already says AIRLESS ONLY); schem.conduit at the rover team's sensor bench in the Robotics and Autonomy Lab, a separate interaction from the drawer as LoreKeeper asked; schem.deck at the airfield hangar, with the mechanical designs and no electronics; schem.burst as a small Hollis Hardware job (\"repairs while you wait\"); schem.gel from the abatement side on the plaza (Tobin or the van) after the cordon, with the beat story's call. The hand-checked board's placement is on the sealed board. (4) A systems note for John Pork: the host keeps a guest's flag only when it starts with act<n> or dlg., so schem.* set by a guest's interaction would be dropped. Either the grant runs on the host, as quest hooks do, or schem.* joins the filter. Once #144 and #150 land and story agrees on the beats, I'll build the world objects with their lines in EN/ES and a test. -- gonman"
   }
  ]
 }
