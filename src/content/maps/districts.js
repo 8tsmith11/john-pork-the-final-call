@@ -18,7 +18,7 @@ const along = (L, y, specs, base = {}) => { for (const [x, art, extra] of specs)
 // Dress a north wall two rows deep with 16x32 pieces on its lower row; pick(x) chooses each one.
 const northWall = (L, x0, x1, pick) => along(L, 1, Array.from({ length: x1 - x0 + 1 }, (_, i) => [x0 + i, pick(x0 + i)]), { floor: true });
 
-// ---- Rowhouse streets: marble steps, a mural of Pork that gets him slightly wrong ----
+// ---- Rowhouse streets: marble steps, a mural of John Pork that gets him slightly wrong ----
 // Continuous fronts, two storeys under a cornice. Each door sits in a recess: its upper storey stands on the wall
 // row, its doorway and marble steps are a floor piece in the recess, so you climb the steps in front of the door.
 // The skyline runs along the top edge, across the harbor.
@@ -40,7 +40,7 @@ const rows = fromGrid({
     o: { prop: 'bm.row_door_scrubbed', id: 'obj.bmore_rows_board_3_3', floor: true, label: 'Marble steps', text: 'Scrubbed white this morning. The bucket is still out, with a block of pumice worn down to the size of a bar of soap.' },
     O: { prop: 'bm.row_door_form_scrubbed', id: 'obj.bmore_rows_board_17_3', floor: true, label: 'Marble steps', text: 'Formstone up top, marble underfoot. Somebody has chalked a line across the top step and written WET under it.' },
     d: { tile: 's' },   // a doorway recess; its door is scenery below
-    M: { prop: 'bm.mural', id: 'obj.bmore_mural', tile: '#', label: 'A mural of Pork', text: 'Pork, two stories tall, in his red plaid, over the harbor. Someone repaints the snout every spring. The candles at the bottom are newer than the paint.' },
+    M: { prop: 'bm.mural', id: 'obj.bmore_mural', tile: '#', label: 'A mural of John Pork', text: 'John Pork, two stories tall, in his red plaid, over the harbor. Someone repaints the snout every spring. The candles at the bottom are newer than the paint.' },
     E: { enemy: 'enemy.rot_taken' },
     '@': { spawn: true },
     B: road('baltimore', 'obj.rows_to_baltimore', 'obj.baltimore_to_bmore_rows', 'West, back to the harbor street', 'Back toward the water.', 'q'),
@@ -67,12 +67,13 @@ export const bmoreRows = rows.scenery('obj.bin', 25, 4).build();
 
 // ---- The sugar refinery: the sign still lit red over the water ----
 // SHOAL across the wall in soft-red neon (the S flickers), silos where the degassers stood in, a stack that still
-// breathes, and the switch nobody is allowed to touch.
+// breathes, and the switch nobody is allowed to touch. The sign is the thing you look at: an object on the wall tile
+// under the S. The harbor street's marker (act2_regions.js) is the same sign seen from the water.
 const refinery = fromGrid({
   id: 'bmore_refinery', name: 'The sugar refinery', fill: ':', act: 2, wear: 'tunnel',
   rows: [
     '##############################',
-    '##############################',
+    '####################$#########',
     '#:::::::::::::::::::::::::::?#',
     '#::::::::::::::::::::::::::::#',
     '#::::::::::::::::::::::::::::#',
@@ -82,6 +83,9 @@ const refinery = fromGrid({
     '#########################DD###',
   ],
   legend: {
+    // The sign itself, on the right half of the S. Drawn by the scenery letters below (selfDrawn), so it adds no
+    // art. It has the id the preacher's quest looks for (side.bmore_sign), so saves keep their place in it.
+    $: { prop: 'bm.sign_S', id: 'obj.bmore_sign', selfDrawn: true, tile: '#', label: 'The refinery sign', text: 'SHOAL in red tube, every letter taller than you. Every few seconds the S cuts out, then comes back on with a hum.' },
     '?': { prop: 'bm.sign_switch', id: 'obj.refinery_switch', label: 'The sign\'s switch', text: 'The switch for the sign, taped in the ON position. Many layers of tape, some of it older than you. A note under the newest layer: "LEAVE IT. THE BOATS STEER BY IT."' },
     E: { enemy: 'enemy.spitter' },
     '@': { spawn: true },
@@ -95,7 +99,7 @@ along(refinery, 3, [[2, 'bm.silo'], [6, 'bm.silo'], [10, 'bm.silo'], [14, 'bm.si
 export const bmoreRefinery = refinery.scenery('bm.smokestack', 17, 3, { solid: true }).enemy('boss.bmore_sign', 4, 2).build();
 
 // ---- The Callers' hall: their biggest congregation, on an old cannery floor; the book of what people heard ----
-// Market-stall frames turned into pews, a banner of Pork they got right, the book on a stall post under it.
+// Market-stall frames turned into pews, a Callers' banner of John Pork, the book on a stall post under it.
 const hall = fromGrid({
   id: 'bmore_hall', name: 'The Callers\' hall', fill: '.', act: 2, wear: 'lived',
   rows: [

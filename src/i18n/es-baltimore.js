@@ -1,5 +1,6 @@
 // Spanish for the Baltimore district maps (districts.js: the rowhouse streets, the refinery, the Callers' hall, the
-// port authority) and their townsfolk (crowds.js), hub #6. Keyed by the exact English; tests/run.js checks coverage.
+// port authority), their townsfolk (crowds.js) and the refinery sign's marker on the harbor street (act2_regions.js),
+// hub #6. Keyed by the exact English; tests/run.js checks coverage.
 // Neutral Latin American Spanish, tú. SHOAL is the refinery's name and stays as it is.
 export const ES_BALTIMORE = {
   // the rowhouse streets
@@ -15,9 +16,9 @@ export const ES_BALTIMORE = {
     'Fregados hasta quedar blancos esta mañana. El balde sigue afuera, con una piedra pómez gastada hasta el tamaño de un jabón.',
   'Formstone up top, marble underfoot. Somebody has chalked a line across the top step and written WET under it.':
     'Piedra falsa arriba, mármol bajo los pies. Alguien trazó una línea de tiza en el escalón de arriba y escribió MOJADO debajo.',
-  'A mural of Pork': 'Un mural de Pork',
-  'Pork, two stories tall, in his red plaid, over the harbor. Someone repaints the snout every spring. The candles at the bottom are newer than the paint.':
-    'Pork, de dos pisos de alto, con su camisa a cuadros roja, sobre el puerto. Alguien le repinta el hocico cada primavera. Las velas de abajo son más nuevas que la pintura.',
+  'A mural of John Pork': 'Un mural de John Pork',
+  'John Pork, two stories tall, in his red plaid, over the harbor. Someone repaints the snout every spring. The candles at the bottom are newer than the paint.':
+    'John Pork, de dos pisos de alto, con su camisa a cuadros roja, sobre el puerto. Alguien le repinta el hocico cada primavera. Las velas de abajo son más nuevas que la pintura.',
   'A gran scrubbing the steps': 'Una abuela fregando los escalones',
   '"Pumice first, then the powder, then cold water. Hot yellows it. Mind the wet one."':
     '"Primero la piedra pómez, después el polvo, después agua fría. La caliente lo pone amarillo. Cuidado con el mojado."',
@@ -25,6 +26,9 @@ export const ES_BALTIMORE = {
   '"That one\'s Lieutenant. That one\'s also Lieutenant. I lost track in March."':
     '"Ese es el Teniente. Ese también es el Teniente. Perdí la cuenta en marzo."',
   // the refinery
+  'The refinery sign': 'El cartel de la refinería',
+  'SHOAL in red tube, every letter taller than you. Every few seconds the S cuts out, then comes back on with a hum.':
+    'SHOAL en tubo rojo, cada letra más alta que tú. Cada pocos segundos la S se apaga y después vuelve a prenderse con un zumbido.',
   "The sign's switch": 'El interruptor del cartel',
   'The switch for the sign, taped in the ON position. Many layers of tape, some of it older than you. A note under the newest layer: "LEAVE IT. THE BOATS STEER BY IT."':
     'El interruptor del cartel, pegado con cinta en ENCENDIDO. Muchas capas de cinta, algunas más viejas que tú. Una nota bajo la más nueva: "NO LO TOQUES. LOS BARCOS SE GUÍAN POR ÉL."',
@@ -43,6 +47,10 @@ export const ES_BALTIMORE = {
   'A singer in the back row': 'Una cantante de la última fila',
   '"We come in late. On purpose. Last week the drummer came in on time and we had to start over."':
     '"Entramos tarde. A propósito. La semana pasada el baterista entró a tiempo y tuvimos que empezar de nuevo."',
+  // the harbor street (act2_regions.js): the same sign, seen from the water
+  'The refinery sign, far off': 'El cartel de la refinería, a lo lejos',
+  "SHOAL, in red letters on the sugar refinery, up past the rowhouse streets. The S keeps going out. You'd have to get a lot closer to see what's left.":
+    'SHOAL, en letras rojas sobre la refinería de azúcar, más allá de las calles de casas adosadas. La S se sigue apagando. Tendrías que acercarte mucho más para ver qué queda.',
   // the port authority
   'Port ledger': 'Registro del puerto',
   "The port ledger, printing as you watch: shifts and berths in Continuity's typeface. A coffee ring on page one got scanned years ago, so now it's on every copy.":

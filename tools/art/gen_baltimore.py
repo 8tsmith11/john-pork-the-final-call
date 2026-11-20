@@ -336,8 +336,8 @@ def door_column(kind="brick", door="warm1", cor="grey", style="plain", seed=0):
 
 
 def mural():
-    """The Pork mural on a blank end wall: two storeys of him in his plaid, the snout repainted every spring. He's
-    smiling with his mouth closed (see the bmore_mural side quest: that's what's wrong)."""
+    """The John Pork mural on a blank end wall: two storeys of him in his plaid, the snout repainted every spring.
+    The face matches what the bmore_mural side quest's look step says about it (src/content/sideQuests.js)."""
     r = random.Random("mural")
     c = C(48, 32)
     brick(c, 0, 4, 48, 24, "mural-wall")
@@ -362,7 +362,7 @@ def mural():
                 plaid = "night2" if (x % 4 == 1 and y % 4 == 3) else "soft0"
             c.px(x, y, plaid)
     c.rect(21, 21, 6, 7, "concrete2").pts("concrete3", (22, 21), (25, 21))       # the tee
-    # the head: a pink dome, dark ears hanging down, the snout, eyes, a closed smile
+    # the head: a pink dome, dark ears hanging down, the snout, eyes, the mouth
     c.ell(24, 13.5, 8.5, 7.5, "pork1")
     for x, y in ((19, 8), (20, 7), (22, 6), (23, 6)):
         c.px(x, y, "pork2")                                                     # the dome catching the light
@@ -374,7 +374,7 @@ def mural():
     c.rect(21, 13, 6, 4, "pork2").h_(22, 12, 4, "pork2").h_(22, 17, 4, "pork0")  # snout
     c.pts("pork0", (22, 14), (25, 14))                                          # nostrils
     c.pts("night0", (20, 11), (28, 11)).pts("bone", (20, 10), (28, 10))         # eyes
-    c.h_(22, 19, 4, "pork0").pts("pork0", (21, 18), (26, 18))                   # mouth shut, smiling anyway
+    c.h_(22, 19, 4, "pork0").pts("pork0", (21, 18), (26, 18))                   # the mouth (see the docstring)
     c.rect(20, 20, 8, 1, "pork1")                                               # chin
     # drips and offerings: candle stubs and a folded note at the foot
     for x in (13, 30, 34):
@@ -879,7 +879,7 @@ def wall_hall(kind="window"):
 
 
 def banner_pork():
-    """A Callers' banner, hand painted on sailcloth. Here they got his smile right."""
+    """A Callers' banner of John Pork, hand painted on sailcloth."""
     c = C(32, 32)
     c.h_(2, 0, 28, "warm1").pts("warm2", (2, 0), (29, 0))                       # the rod
     c.rect(5, 1, 22, 16, "bone").v_(26, 1, 16, "concrete3").h_(5, 16, 22, "concrete3")
@@ -889,7 +889,7 @@ def banner_pork():
     c.pts("night2", (11, 4), (10, 5), (11, 5), (10, 6), (10, 7), (9, 8), (20, 4), (20, 5), (21, 5), (21, 6), (21, 7), (22, 8))   # ears
     c.rect(14, 7, 4, 3, "pork2").pts("pork0", (14, 8), (17, 8))                 # snout
     c.pts("night1", (13, 5), (19, 5))
-    c.h_(12, 11, 8, "night1").pts("night1", (11, 10), (20, 10))                 # the long smile
+    c.h_(12, 11, 8, "night1").pts("night1", (11, 10), (20, 10))                 # the mouth
     for x0, w in ((7, 6), (14, 4), (19, 6)):
         c.h_(x0, 14, w, "warm1")                                                # hand lettering
     c.pts("warm1", (8, 15), (12, 15), (17, 15), (22, 15))

@@ -182,6 +182,8 @@ The refinery is called **SHOAL** (our own name, no real brand). Its rooftop lett
 on a `bone` core with a `soft0` halo, dark tubes when off. `signal` stays Continuity's (their containers, banners
 and ledger carry it, and their frames are named `_ca`); a test fails if `signal` turns up anywhere else in the
 Baltimore set, or balloon orange anywhere at all. At sign scale soft red reads as neon, never as Michael's clothes.
+The letters are scenery. What you look at is `obj.bmore_sign`, a `selfDrawn` object on the wall tile under the S
+(the preacher's quest looks at it); the harbor street's marker is the same sign seen from the water and points there.
 
 ## Pipeline (built)
 

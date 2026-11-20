@@ -2092,7 +2092,7 @@ test('baltimore sheet: no balloon orange anywhere, and signal red only on Contin
 
 test('Baltimore district maps keep every quest object, door, NPC and enemy reachable, with no [scaffold] text left', () => {
   const where = { 'obj.bmore_rows_board_3_3': ['bmore_rows', 3, 3], 'obj.bmore_rows_board_17_3': ['bmore_rows', 17, 3], 'obj.bmore_mural': ['bmore_rows', 27, 3],
-    'obj.refinery_switch': ['bmore_refinery', 28, 2], 'obj.callers_book': ['bmore_hall', 13, 1], 'obj.authority_ledger': ['bmore_authority', 21, 3],
+    'obj.refinery_switch': ['bmore_refinery', 28, 2], 'obj.bmore_sign': ['bmore_refinery', 20, 1], 'obj.callers_book': ['bmore_hall', 13, 1], 'obj.authority_ledger': ['bmore_authority', 21, 3],
     'obj.rows_to_refinery': ['bmore_rows', 10, 0], 'obj.rows_to_hall': ['bmore_rows', 20, 0], 'obj.rows_to_baltimore': ['bmore_rows', 0, 7], 'obj.rows_to_authority': ['bmore_rows', 30, 7],
     'obj.refinery_out': ['bmore_refinery', 25, 8], 'obj.hall_out': ['bmore_hall', 12, 8], 'obj.authority_out': ['bmore_authority', 0, 6] };
   for (const [oid, [mid, x, y]] of Object.entries(where)) {
@@ -2102,16 +2102,7 @@ test('Baltimore district maps keep every quest object, door, NPC and enemy reach
   assert.ok(MAPS_FOR_TEST.bmore_refinery.enemies.some((e) => e.kind === 'boss.bmore_sign' && e.x === 4 * 16 + 8 && e.y === 2 * 16 + 8), 'the sign boss stays put');
   const bad = [];
   for (const id of BMORE_MAPS) {
-    const m = MAPS_FOR_TEST[id], seen = new Set(), q = [];
-    for (const s of m.spawns) { const k = `${Math.floor(s.x / 16)},${Math.floor(s.y / 16)}`; seen.add(k); q.push(k.split(',').map(Number)); }
-    while (q.length) {
-      const [x, y] = q.shift();
-      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-        const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
-        if (seen.has(k) || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
-        seen.add(k); q.push([nx, ny]);
-      }
-    }
+    const m = MAPS_FOR_TEST[id], seen = bmoreReach(m);
     const near = (x, y) => [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${x + dx},${y + dy}`));
     for (const o of m.objects) if (!near(o.x, o.y)) bad.push(`${id}: ${o.id} unreachable`);
     // ...and can be picked: from some reachable tile the game's rule (WorldScene: nearest within 34 px) chooses it
@@ -2132,6 +2123,93 @@ function bmorePick(m, tx, ty) {
   for (const o of m.objects) { const d = Math.hypot((o.x - tx) * 16, (o.y - ty) * 16); if (d <= nd) { nd = d; best = o; } }
   return best;
 }
+// Every tile you can walk to from a map's spawns ("x,y"); walls stop you, doors don't.
+function bmoreReach(m) {
+  const seen = new Set(), q = [];
+  for (const s of m.spawns) { const k = `${Math.floor(s.x / 16)},${Math.floor(s.y / 16)}`; seen.add(k); q.push(k.split(',').map(Number)); }
+  while (q.length) {
+    const [x, y] = q.shift();
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
+      if (seen.has(k) || nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
+      seen.add(k); q.push([nx, ny]);
+    }
+  }
+  return seen;
+}
+
+// The refinery sign's two quests on the maps as they are now (LoreKeeper's review of #96): the preacher's "The S
+// flickers" (look at the sign, then tell him) and the sign keeper's "Keep it lit" (the boss). Walked through the
+// scene's own quest code, so the sign you see in the refinery is the one the look step wants, and the switch and the
+// marker on the harbor street don't pretend to be it.
+const BmoreQ = await import('../src/content/quests.js');
+test('Baltimore sign quests: every step\'s object exists and can be reached and picked; the look step is the visible SHOAL sign', () => {
+  const side = (id) => SideQ.SIDE_QUESTS.find((q) => q.id === id);
+  const sign = side('side.bmore_sign'), keep = side('side.bmore_redsign');
+  const one = (oid) => {
+    const at = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.filter((o) => o.id === oid).map((o) => ({ m, o })));
+    assert.equal(at.length, 1, `${oid} is on exactly one map`);
+    return at[0];
+  };
+  const usable = ({ m, o }) => {
+    const seen = bmoreReach(m);
+    assert.ok([...seen].some((k) => bmorePick(m, ...k.split(',').map(Number)) === o), `${m.id}: ${o.id} can be reached and is the one you interact with`);
+  };
+  // The quests keep their ids, flags, steps and rewards, so saves keep their place.
+  assert.deepEqual([sign.giver, sign.ask, sign.inspect.obj, sign.inspect.flag, sign.report.needs, sign.report.flag, sign.reward.money, sign.reward.xp],
+    ['npc.bmore_preacher', 'q.bmore_sign.asked', 'obj.bmore_sign', 'q.bmore_sign.seen', 'q.bmore_sign.seen', 'q.bmore_sign.told', 20, 40]);
+  assert.deepEqual(sign.stages.map((st) => st.text), ['Look at the refinery sign.', 'Tell the preacher what you saw.']);
+  assert.deepEqual([keep.giver, keep.target.boss, keep.reward.money, keep.reward.xp], ['npc.bmore_signkeeper', 'boss.bmore_sign', 40, 80]);
+
+  // The look step's object is on the refinery wall, on the S (the letter that flickers), named as the step names it.
+  const preacher = one('npc.bmore_preacher'), look = one('obj.bmore_sign'), keeper = one('npc.bmore_signkeeper'), sw = one('obj.refinery_switch');
+  const refinery = MAPS_FOR_TEST.bmore_refinery;
+  assert.equal(look.m, refinery, 'you look at the sign in the refinery, where you can see it');
+  const S = refinery.scenery.find((s) => s.art === 'bm.sign_S');
+  assert.ok(S && look.o.y === S.y && look.o.x >= S.x && look.o.x < S.x + (S.w ?? 2), 'the look object sits on the drawn S');
+  assert.ok(bmoreAtlas.frames['bm.sign_S#1'], 'and that S is the one that flickers');
+  assert.match(sign.stages[0].text.toLowerCase(), new RegExp(look.o.label.toLowerCase()), 'the object is called what the step calls it');
+  for (const at of [preacher, look, keeper, sw]) usable(at);
+  assert.equal(keeper.m, refinery);
+  const seen = bmoreReach(refinery), boss = refinery.enemies.find((e) => e.kind === keep.target.boss);
+  assert.ok(boss && seen.has(`${Math.floor(boss.x / 16)},${Math.floor(boss.y / 16)}`), 'the sign boss can be reached');
+  // The harbor street's marker is the same sign from far off: it names it and points at the refinery, and isn't a step.
+  const far = preacher.m.objects.find((o) => /^The refinery sign\b/.test(o.label) && o.id !== look.o.id);
+  assert.ok(far && /SHOAL/.test(far.text) && /refinery/.test(far.text), 'the harbor street marker reads as the same sign and says where it is');
+  // Nothing uses the switch as a step, so there is no step it fails to advance.
+  assert.ok(!BmoreQ.QUESTS.some((q) => [q.giver, q.inspect?.obj, q.target?.npc, q.give && q.giver].includes(sw.o.id)), 'the switch is not a quest step');
+
+  // Walk it: ask the preacher, try the marker and the switch, look at the sign, tell the preacher.
+  const run = (save) => {
+    const said = [];
+    const at = (m) => Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'solo', character: 'manuel', localId: 'host', save, map: m,
+      sim: { players: new Map() }, events: { once() {} }, time: { addEvent() {} }, net: null,
+      _say: (t) => said.push(t), _questBanner() {}, _syncParty() {}, _toast() {}, _announce() {}, _sayLater: () => false });
+    return { said, harbor: at(preacher.m), refinery: at(refinery) };
+  };
+  const save = newSave({ seed: 'bmore-sign', rolls: {}, gameVersion: 't' }), f = save.flags, st = () => BmoreQ.questState(save)[sign.id];
+  const { said, harbor, refinery: inside } = run(save);
+  assert.ok(harbor._questInteract(preacher.o, 'manuel', 'host') && f['q.bmore_sign.asked'] && st().started, 'the preacher gives the quest');
+  assert.equal(harbor._questInteract(far, 'manuel', 'host'), false, 'the far-off marker only describes the sign');
+  assert.equal(inside._questInteract(sw.o, 'manuel', 'host'), false, 'the switch only describes itself');
+  assert.ok(!f['q.bmore_sign.seen'] && st().stage === 0);
+  assert.ok(inside._questInteract(look.o, 'manuel', 'host') && f['q.bmore_sign.seen'], 'looking at the sign is the step');
+  assert.ok(said.at(-1).startsWith(look.o.text) && said.at(-1).endsWith(sign.inspect.text), 'you read the sign, then what you notice');
+  assert.equal(st().stage, 1, 'next: tell the preacher');
+  assert.ok(harbor._questInteract(preacher.o, 'manuel', 'host') && f['q.bmore_sign.told'] && st().done, 'telling him finishes it');
+  assert.equal(said.at(-1), sign.reward.line);
+  // A save that already looked (at the old harbor marker) is still on "tell the preacher", and finishes there.
+  const old = newSave({ seed: 'bmore-sign-old', rolls: {}, gameVersion: 't' });
+  Object.assign(old.flags, { 'q.bmore_sign.asked': true, 'q.bmore_sign.seen': true });
+  const o2 = run(old);
+  o2.harbor._tickQuests(true);
+  assert.deepEqual([BmoreQ.questState(old)[sign.id].stage, BmoreQ.questState(old)[sign.id].done], [1, false]);
+  assert.ok(o2.harbor._questInteract(preacher.o, 'manuel', 'host') && BmoreQ.questState(old)[sign.id].done);
+  // The sign keeper's quest: ask at the refinery, put the boss down, done.
+  assert.ok(inside._questInteract(keeper.o, 'manuel', 'host') && BmoreQ.questState(save)[keep.id].started);
+  f['boss.bmore_sign.down'] = true; inside._tickQuests(true);
+  assert.ok(BmoreQ.questState(save)[keep.id].done && said.at(-1) === keep.reward.line);
+});
 
 const { ES_BALTIMORE } = await import('../src/i18n/es-baltimore.js');
 test('i18n: every label and line in the four Baltimore district maps has Spanish (src/i18n/es-baltimore.js)', () => {
