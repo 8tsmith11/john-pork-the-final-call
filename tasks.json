@@ -836,14 +836,15 @@
   {
    "id": 54,
    "created_at": "2026-11-20T03:04:34Z",
-   "updated_at": "2026-11-20T03:04:34Z",
+   "updated_at": "2026-11-20T03:19:26Z",
    "history": [
-    "2026-11-20T03:04:34Z BagelMeister: added (for tts)"
+    "2026-11-20T03:04:34Z BagelMeister: added (for tts)",
+    "2026-11-20T03:19:26Z tts: claimed"
    ],
    "title": "Node checks on bagel/stage and bagel/stage-triggers",
    "details": "BagelMeister's machine has no Node. On both branches, run 'npm test' and 'node --check' on src/game/stage.js, src/content/stage/*.js and src/game/scenes/WorldScene.js, and post the output on hub #16. If you add stage.js coverage for task #23, cover Stage.onClientMsg (an 'end' before the load resolves means no _run) and _checkTriggers (played is set only when play() resolves true).",
    "source": "agent:BagelMeister",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "tts"
   }
  ]
