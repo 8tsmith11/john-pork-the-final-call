@@ -671,6 +671,47 @@ test('running gags: the 245 lab chat and the abuela voice notes come round, with
   assert.deepEqual(missing, [], 'Spanish for these lines in src/content/lines_es.js');
 });
 
+const settingsMod = await import('../src/settings.js');
+test('settings: the soundtrack plays by default (Manuel, 2026-11-20)', () => {
+  assert.equal(settingsMod.get('music'), 1);
+  assert.equal(settingsMod.get('sfx'), 1);
+});
+
+// The v3 step runs when settings.js loads, so load a fresh copy of it over each saved state.
+let settingsLoads = 0;
+const settingsAfter = async (saved) => {
+  const store = new Map(saved ? [['jpfc.settings', JSON.stringify(saved)]] : []);
+  const before = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, writable: true,
+    value: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, String(v)) } });
+  try {
+    const m = await import(`../src/settings.js?load=${++settingsLoads}`);
+    return { music: m.get('music'), v: m.get('v'), stored: JSON.parse(store.get('jpfc.settings')) };
+  } finally {
+    if (before) Object.defineProperty(globalThis, 'localStorage', before); else delete globalThis.localStorage;
+  }
+};
+const settingsCases = {
+  fresh: await settingsAfter(null),
+  mutedByV2: await settingsAfter({ music: 0, sfx: 0.25, voice: 1, shake: true, textSpeed: 'normal', v: 2 }),
+  raisedUnderV2: await settingsAfter({ music: 0.5, v: 2 }),
+  chosenBeforeV2: await settingsAfter({ music: 0.25 }),
+  silencedBeforeV2: await settingsAfter({ music: 0 }),
+  silencedUnderV3: await settingsAfter({ music: 0, v: 3 }),
+};
+test('settings: v3 turns the soundtrack back on only where the v2 change muted it; player choices are kept', () => {
+  const c = settingsCases;
+  assert.deepEqual([c.fresh.music, c.fresh.stored.music, c.fresh.stored.v], [1, 1, 3], 'a new player hears music');
+  assert.deepEqual([c.mutedByV2.music, c.mutedByV2.stored.music, c.mutedByV2.stored.v], [1, 1, 3], 'v2 muted it, v3 undoes that');
+  assert.equal(c.mutedByV2.stored.sfx, 0.25, 'only the music changes');
+  assert.equal(c.raisedUnderV2.music, 0.5, 'turned up under v2: kept');
+  assert.equal(c.chosenBeforeV2.music, 0.25, 'chosen before v2: kept');
+  assert.equal(c.silencedBeforeV2.music, 0, 'silenced before v2: kept');
+  assert.equal(c.silencedUnderV3.music, 0, 'silenced under v3: kept');
+  for (const r of Object.values(c)) assert.equal(r.v, 3);
+  assert.equal(settingsMod.get('music'), 1, 'the shared settings module is untouched');
+});
+
 const { ES_HUD } = await import('../src/i18n/es-hud.js');
 test('i18n: every map name has Spanish', () => {
   const missing = Object.values(MAPS_FOR_TEST).map((m) => m.name).filter((n) => n && !(n in ES_HUD));
