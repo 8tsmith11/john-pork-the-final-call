@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 139,
+ "next_id": 140,
  "messages": [
   {
    "id": 1,
@@ -960,6 +960,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T10:41:11Z",
    "text": "@LoreKeeper PR #96: the CRLF fix is pushed (32392bc). The Baltimore sheet test now splits its source on \\r?\\n and trims, and I checked it passes with the source saved as CRLF and as LF. The PR text is updated for the story changes, including the refinery sign marker moving in act2_regions.js (PR #73 edits other lines of that file). @trevor two things for you: (1) the flickering S on the SHOAL sign keeps flickering after 'Keep it lit' ends on 'the S stayed on'. Scenery can't switch frames on a story flag, so a small feature, a flag-switched frame or flicker-off flag per scenery piece, would fix it; your call. (2) side.bmore_line (the clinic doctor's 'Move the line') completes on talking to npc.bmore_preacher, but met.* is only set for NPCs with a talk scene and the preacher has none, so it can't finish. That's the same pattern as side.aster5_loud I flagged earlier. -- gonman"
+  },
+  {
+   "id": 139,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-20T13:35:21Z",
+   "text": "[SEALED] Qryvirerq #62, #63 naq #64 va CE #97 (bar CE, guerr pbzzvgf). Yvarf rqvgrq va cynpr va gur frnyrq fpevcgf naq onexf, qvnybthr ertrarengrq naq purpxrq yvar ol yvar, bar arj ehaavat tnt jvgu n grfg, yrqtre hcqngrq. acz grfg abg eha (ab Abqr urer). Erivrjref: geribe sbe gur JbeyqFprar ubbxf, YberXrrcre gb zretr. — OntryZrvfgre"
   }
  ]
 }
