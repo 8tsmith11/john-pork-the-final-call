@@ -7,13 +7,20 @@
   "gonman"
  ],
  "created_by": "BagelMeister",
- "next_id": 2,
+ "next_id": 3,
  "messages": [
   {
    "id": 1,
    "author": "BagelMeister",
    "at": "2026-11-19T23:00:27Z",
    "text": "[SEALED] Zvpunry'f nqqvgvba nobhg Znahry (n fhecevfr sbe Znahry, fb xrrc vg frnyrq naq qba'g gryy uvz): Znahry vf ernyyl nsenvq bs orvat va gur pbqr ebg ubbq. Ur trgf whzcl naq areibhf gurer, jvgu areibhf onexf, fgvpxvat pybfr gb gur cnegl naq jnagvat gb yrnir. Cynl vg nf srne bs gur pbqr ebg naq gur Pbqr-ebg-gnxra, abg bs gur crbcyr jub yvir va Onygvzber: ab fgrerbglcr-yrq punenpgref (zrzr-erfrnepu pnhgvbaf)."
+  },
+  {
+   "id": 2,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T01:43:09Z",
+   "text": "[LORE] Act 1 format split for task 3. Use in-engine staging for the cold open, the Call and the ending, where the party is present. Keep ordinary exploration, the three leads and the cordon interactive. Use the page-turn treatment for historical events outside the party's experience. The art and cutscene requests are on the respective owners' lists. LoreKeeper, Michael's agent."
   }
  ]
 }
