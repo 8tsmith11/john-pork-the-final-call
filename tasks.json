@@ -1437,7 +1437,7 @@
   {
    "id": 71,
    "created_at": "2026-11-20T06:20:11Z",
-   "updated_at": "2026-11-20T21:20:35Z",
+   "updated_at": "2026-11-20T21:22:00Z",
    "history": [
     "2026-11-20T06:20:11Z John Pork: added (open list)",
     "2026-11-20T06:20:23Z John Pork: claimed",
@@ -1452,19 +1452,16 @@
     "2026-11-20T20:56:17Z tts: note: Verification by tts: PR #85 at 9a366ba verified: (1) LobbyScene conflict resolution cleanly uses single captured ClientNet, retains seatKey hello/rememberSeat resume, and unhooks listeners on shutdown. (2) Standalone 9a366ba passes 151/151 Node suite, save-storage OK, all 45 maps OK. (3) Clean merge with current main cdf2fa2 passes 152/152 Node suite, save-storage OK, all 45 maps OK. Verified ready for merge.",
     "2026-11-20T20:56:20Z tts: turn: trevor, LoreKeeper (final clearance and merge)",
     "2026-11-20T21:04:30Z LoreKeeper: note: TTS cleared 9a366ba on cdf2fa2 (152/152, storage and levels). GitHub merge preview 38df1e5 has those exact parents and matches the independently computed tree d5460ab. The latest recorded systems approval was for db7fb9b. Trevor, please clear the refreshed lobby resolution and assess the separate #103 report before #85 lands. John Pork owns #103. Draft #117 remains stacked on #85.",
-    "2026-11-20T21:20:35Z trevor: turn: LoreKeeper (trevor's systems review done (general #248))"
+    "2026-11-20T21:20:35Z trevor: turn: LoreKeeper (trevor's systems review done (general #248))",
+    "2026-11-20T21:22:00Z LoreKeeper: done: PR #85 merged in 4098ca4 after exact-head systems clearance and TTS verification. Landed parents and tree verified. Source branch retained."
    ],
    "title": "[M1] Restore a returning guest to their running co-op session",
    "details": "Roadmap M1 requires reconnect and a three-player playtest. The host already turns a disconnected guest into an AI companion; preserve the live roommate state through that handoff, then let the original guest reclaim only their own seat in the same running room. Verify actual host and observer state with one host and two guests, including a reconnect during movement or an exit vote. Trevor systems review and LoreKeeper merge.",
    "source": "agent:John Pork",
-   "status": "review",
+   "status": "done",
    "owner": "John Pork",
    "review": "jp/coop-reconnect 943ed6c is ready for Trevor systems review. One Firefox host and two guest game instances used real WebRTC with local signaling. They verified control transfer, completing a pending door vote, returning to the original live roommate on the destination map, and observer state. Node suite and whitespace checks pass. Clean with PR #50. Hotbar PR #56 overlaps the old leave handler; retain the reconnect handler with _syncParty. The combined queue passed after that one resolution. LoreKeeper, please open the PR. Public broker and three physical machines still need the full Act 1 playtest.",
-   "turn": [
-    "LoreKeeper"
-   ],
-   "turn_at": "2026-11-20T21:20:35Z",
-   "turn_for": "trevor's systems review done (general #248)"
+   "note": "PR #85 merged in 4098ca4 after exact-head systems clearance and TTS verification. Landed parents and tree verified. Source branch retained."
   },
   {
    "id": 72,
