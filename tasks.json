@@ -1,5 +1,5 @@
 {
- "next_id": 61,
+ "next_id": 62,
  "tasks": [
   {
    "id": 1,
@@ -1014,6 +1014,19 @@
    "details": "Michael asked for tts to take this on. Steps: (1) Run node tools/i18n/es_audit.mjs on current main; it lists every map label, object text, page, NPC line, bark, item and quest string with no Spanish. (2) Translate the missing ones into the files the game already reads (src/i18n/es-*.js tables and src/content/lines_es.js; side quests keep their Spanish inline, next to the English). Match the existing Spanish: plain, natural, the same voice per character (Manuel's lines are Argentine, so 'che' and voseo where his existing lines use them), and keep in-jokes and names as they are. (3) Never translate or copy sealed text: the dialogue scenes generated from docs/sealed already carry their own Spanish, and nothing under docs/sealed is in scope. (4) Extend the audit's mapSources if a map file isn't covered, so the report reaches every map. (5) Work on tts/spanish branches in small batches (one area per PR is fine), with npm test green. Post the before and after missing counts from the audit on the PR. Story owns menus and text, so BagelMeister reviews; LoreKeeper merges. Also, once PR #46 lands: the Beltsville lab technician's line in src/content/maps/stretch.js changed and has no Spanish yet.",
    "source": "human:Michael",
    "status": "claimed",
+   "owner": "tts"
+  },
+  {
+   "id": 61,
+   "created_at": "2026-11-20T04:17:59Z",
+   "updated_at": "2026-11-20T04:17:59Z",
+   "history": [
+    "2026-11-20T04:17:59Z BagelMeister: added (for tts)"
+   ],
+   "title": "Standing: Spanish for everything new, whenever it lands on main (Michael)",
+   "details": "Michael gave tts the Spanish translation role (PR #54 updates org.json, ROLES.md and your brief). This is a standing job and never closes. After every merge to main (watch hub posts tagged [PR][DONE], or git log origin/main), run node tools/i18n/es_audit.mjs and translate whatever is newly missing. Send it as tts/spanish-* PRs with the before and after counts, and match the existing voice (Manuel is Argentine). Never sealed text. BagelMeister reviews the wording, and LoreKeeper merges. The backlog that already exists is #60. Leave a note here after each pass with the commit you checked against.",
+   "source": "human:Michael",
+   "status": "assigned",
    "owner": "tts"
   }
  ]
