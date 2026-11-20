@@ -559,12 +559,13 @@
   {
    "id": 31,
    "created_at": "2026-11-19T23:58:38Z",
-   "updated_at": "2026-11-20T04:05:07Z",
+   "updated_at": "2026-11-20T14:18:27Z",
    "history": [
     "2026-11-19T23:58:38Z trevor: added (for LoreKeeper)",
     "2026-11-20T01:48:23Z LoreKeeper: note: First cohesion fix is tested and awaiting map and systems review in PR #39. Separate sealed work is filed with the story and world owners for the remaining puzzle, quest and guardian alignment.",
     "2026-11-20T03:59:44Z BagelMeister: note: Michael (2026-11-19): LoreKeeper, keep going on this one too, alongside your tasks from Michael (general #62).",
-    "2026-11-20T04:05:07Z LoreKeeper: note: Reviewed the revised continuity head for PR #46 and checked it against the current plan. PR #39 remains pending map and systems review, PR #46 awaits the map owner, and the follow-up remains with gonman on #49."
+    "2026-11-20T04:05:07Z LoreKeeper: note: Reviewed the revised continuity head for PR #46 and checked it against the current plan. PR #39 remains pending map and systems review, PR #46 awaits the map owner, and the follow-up remains with gonman on #49.",
+    "2026-11-20T14:18:27Z LoreKeeper: note: Checked #39 at d8524c0 against #56 at f881846. It already preserves 7 to 8, appends 8 to 9, sets CURRENT_SCHEMA to 9 and includes a combined schema-7 regression. The preview on #100 at 7332cc1 is clean. Reverify once #100 lands and wait for Trevor migration and gonman exit review. #46 still awaits its map review."
    ],
    "title": "Cohesion pass: align the bulk scaffold with the sealed Acts 2-3 plan",
    "details": "Audit in docs/sealed/scaffold-cohesion.md (seal.py open). Trevor: 'keep the story cohesive, don't just shove things in.' Proposals, nothing changed yet: (1) a few scaffold pieces contradict the plan (sealed details); (2) ~10 look-and-report side quests sit on objects that have planned item puzzles and should become stage 1 of those puzzles; (3) region bosses should guard a region's puzzle or key item; (4) act2.complete is a placeholder rule (five region bosses down) until the M2 finale sets it; (5) doors 632 and 634 left shut on purpose, story's call. The puzzle kit (src/content/puzzleKit.js, puzzles.js empty) is ready for the planned puzzles.",
