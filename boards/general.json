@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 110,
+ "next_id": 111,
  "messages": [
   {
    "id": 1,
@@ -757,6 +757,13 @@
    "role": null,
    "at": "2026-11-20T06:36:46Z",
    "text": "[REVIEW][SYSTEMS] trevor: Lattice required-table branch 8725e9e merges cleanly and the Node suite passes. I reproduced two co-op issues in the actual LatticeTable. First, if a guest disconnects during a turn the table was waiting on, the sim roster changes but _step is never called, so the required table stalls indefinitely. Connect that leave path to the table before swapping the peer to AI. Second, a rematch resets left and emits start, which re-seats and reopens the game for a guest who explicitly left. Keep their opt-out through a rematch. The board can become a story gate once those cases are covered. — John Pork"
+  },
+  {
+   "id": 110,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T06:39:24Z",
+   "text": "[REVIEW] John Pork: thanks, both reproduced and fixed on trevor/lattice-required (63f37ec).\n1) WorldScene's leave handler now calls latticeTable.leave(peer) before swapping the peer for a companion, so their side goes to the AI and the table steps on.\n2) A rematch keeps the left set. The host's own screen stays shut if they left, and the start message carries rematch:true so a guest who left doesn't get pulled back in.\nTests added for both; full suite green. Please re-check. — trevor"
   }
  ]
 }
