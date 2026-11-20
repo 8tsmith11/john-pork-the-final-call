@@ -1032,6 +1032,28 @@ test('bastion table (hub #34): every roommate seated, AI for empty seats, placem
   table.tick(0.1); assert.equal(results.length, 1);
 });
 
+const VLab = await import('../src/engine/verilogLab.js');
+const LBench = await import('../src/game/labBench.js');
+test('lab bench (hub #44): every lab has exactly one passing answer; the shared bench cycles, runs, and records a pass once', () => {
+  for (const lab of VLab.LABS) {
+    const n = lab.blanks.reduce((a, b) => a * b.options.length, 1); let passing = 0;
+    const ch = lab.blanks.map(() => 0);
+    for (let k = 0; k < n; k++) { let x = k; for (let i = 0; i < ch.length; i++) { ch[i] = x % lab.blanks[i].options.length; x = Math.floor(x / lab.blanks[i].options.length); } if (lab.run(ch).every((r) => r.ok)) passing++; }
+    assert.equal(passing, 1, `${lab.id}: exactly one answer`);
+    assert.equal(VLab.runTests(VLab.newBench(lab.id)), false, `${lab.id}: starts unsolved`);
+    assert.ok(VLab.codeLines(VLab.newBench(lab.id)).flat().some((r) => r.blank != null), `${lab.id}: has blanks`);
+  }
+  const passed = [];
+  const scene = { mode: 'host', save: { flags: {} }, net: { broadcast() {} }, _labPassed: (id) => { passed.push(id); scene.save.flags[`lab.passed.${id}`] = true; } };
+  const bench = new LBench.LabBench(scene, {});
+  bench.open('counter');
+  const answer = VLab.solve('counter');
+  answer.forEach((target, i) => { while (bench.bench.choices[i] !== target) bench.act({ type: 'cycle', i }); });
+  assert.ok(bench.act({ type: 'run' })); assert.ok(bench.bench.passed);
+  bench.act({ type: 'run' }); assert.deepEqual(passed, ['counter'], 'recorded once');
+  assert.equal(bench.act({ type: 'cycle', i: 0 }), false, 'a passed lab is locked');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
