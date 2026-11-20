@@ -704,6 +704,15 @@ test('sealed (hub #67): picks one that can play now, then cools down', () => {
   assert.equal(b.press(apart, () => 0), null, 'cooldown');
   sc.time.now += 4000;
   assert.equal(b.press({ players: [] }), null);
+  // every option must reach its module's real timer: a picked one plays on that module's next update
+  const sc2 = { mode: 'solo', time: { now: 300000 }, save: { flags: { 'act1.switchyard.solved': true }, world: { act: 1 }, party: { manuel: { level: 1 } } } };
+  const sent2 = []; sc2.crush = new Crush(sc2); sc2.crush._send = (m) => sent2.push(m);
+  const close = { players: [{ id: 'm', c: 'manuel', x: 0, y: 0 }, { id: 'k', c: 'michael', x: 10, y: 0 }] };
+  sc2.crush.update(close);
+  assert.equal(sent2.length, 0, 'not due yet');
+  assert.equal(new hostPickMod.HostPick(sc2).press(close, () => 0), 'g');
+  sc2.crush.update(close);
+  assert.equal(sent2.filter((m) => m.g).length, 1, 'the picked one plays');
 });
 
 const settingsMod = await import('../src/settings.js');

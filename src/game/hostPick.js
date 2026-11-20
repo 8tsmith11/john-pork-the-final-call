@@ -17,7 +17,7 @@ export function pickOptions(s, snap) {
   if (snap?.players?.some((p) => !p.dn) && s.gags?.next && 'chat' in s.gags.next) out.push({ id: 'chat', fire: () => { s.gags.next.chat = 0; } });
   if (manuel && s.gags?.next && 'abuela' in s.gags.next) out.push({ id: 'abuela', fire: () => { s.gags.next.abuela = 0; } });
   if (d <= 72 && s.gags?.next && 'sg' in s.gags.next) out.push({ id: 'sg', fire: () => { s.gags.next.sg = 0; } });
-  if (d <= 20 && s.crush && s.save && crushTier(s.save) >= 2) out.push({ id: 'g', fire: () => { s.crush.nextPat = 0; } });
+  if (d <= 20 && s.crush && s.save && crushTier(s.save) >= 2) out.push({ id: 'g', fire: () => { s.crush.nextGesture = 0; } });
   return out;
 }
 
