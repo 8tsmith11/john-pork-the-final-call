@@ -9,10 +9,10 @@
 // empty), so it saves and reaches every screen with the other flags.
 //
 // DROPPING ITEMS. G drops one of the item in your hand (the selected hotbar slot), SHIFT+G the whole
-// stack. In the inventory, G / SHIFT+G drop the slot under the mouse, and clicking outside the panel
-// with a stack held drops that stack. Dropped items lie on the floor where you stood until someone
+// stack. In the inventory, G / SHIFT+G use the held or hovered slot, and clicking outside the panel
+// drops the amount picked up with the cursor. Dropped items lie on the floor where you stood until someone
 // picks them up with E, which is how you hand things to the other players. They live in
-// save.world.drops ({ n, map, x, y, id, qty }, pixel coordinates), host-authoritative like the
+// save.world.drops ({ n, map, x, y, id, qty, roll? }, pixel coordinates), host-authoritative like the
 // inventory; clients get the list in the world broadcast.
 import { MAPS } from '../content/maps/index.js';
 import { ITEMS } from '../content/items.js';
@@ -67,7 +67,7 @@ export class GuitarStands {
   _toastTo(playerId, text) {
     const s = this.s;
     if (playerId === s.localId) s._toast(text);
-    else s.net?.send?.(playerId, { t: 'say', text });
+    else s.net?.send?.(playerId, { t: 'toast', text });
   }
 
   // Host: if `who` was playing an instrument they no longer carry, the music stops.
@@ -100,7 +100,7 @@ export class GuitarStands {
   onHostMsg(peer, msg) {
     const who = this.s._charOf(peer);
     if (msg.t === 'stand') { if (who) this.useStand(who, peer, msg.id); return true; }
-    if (msg.t === 'drop') { if (who) this.dropSlot(who, peer, msg.slot | 0, msg.all ? Infinity : 1); return true; }
+    if (msg.t === 'drop') { if (who) this.dropSlot(who, peer, msg.slot, msg.all === true ? Infinity : msg.half === true ? 'half' : 1); return true; }
     if (msg.t === 'pickup') { if (who) this.pickup(who, peer, msg.n | 0); return true; }
     return false;
   }
@@ -132,22 +132,24 @@ export class GuitarStands {
   }
 
   // ---- drops (host) ---------------------------------------------------------------------------
-  /** Drop `n` (Infinity = the whole stack) from bag slot `slot` at the player's feet. */
+  /** Drop one, half, or the whole stack at the player's feet. The host reads the current stack. */
   dropSlot(who, playerId, slot, n = 1) {
+    if (!Number.isInteger(slot) || slot < 0 || slot >= Inv.SLOTS) return;
     const s = this.s, c = s.save.party[who], it = c?.inventory[slot], p = s.sim.players.get(playerId);
     if (!it || !p) return;
     const def = ITEMS[it.id];
     if (!def) return;
     if (def.slot === 'key') return this._toastTo(playerId, `You hang on to the ${def.name.toLowerCase()}.`);
-    const qty = Math.min(it.qty, n), id = it.id;
+    const qty = n === 'half' ? Inv.splitQuantity(it.qty) : Math.min(it.qty, n);
+    const { id, roll } = it;
     Inv.takeSlot(c, slot, qty);
     this._stopIfGone(who);
     // Stack onto a drop of the same thing right here, otherwise a new one at your feet.
-    const here = this.drops.find((d) => d.map === s.map.id && d.id === id && Math.hypot(d.x - p.x, d.y - p.y) < 10 && d.qty + qty <= Inv.stackOf(id));
+    const here = !roll && this.drops.find((d) => !d.roll && d.map === s.map.id && d.id === id && Math.hypot(d.x - p.x, d.y - p.y) < 10 && d.qty + qty <= Inv.stackOf(id));
     if (here) here.qty += qty;
     else {
       const w = s.save.world; w.dropSeq = (w.dropSeq ?? 0) + 1;
-      this.drops.push({ n: w.dropSeq, map: s.map.id, x: Math.round(p.x + (Math.random() * 2 - 1) * 5), y: Math.round(p.y + 4 + Math.random() * 3), id, qty });
+      this.drops.push({ n: w.dropSeq, map: s.map.id, x: Math.round(p.x + (Math.random() * 2 - 1) * 5), y: Math.round(p.y + 4 + Math.random() * 3), id, qty, ...(roll ? { roll } : {}) });
     }
     sfx('swing');
     this._toastTo(playerId, `Dropped: ${def.name}${qty > 1 ? ' ×' + qty : ''}`);
@@ -158,7 +160,7 @@ export class GuitarStands {
     const s = this.s, c = s.save.party[who], i = this.drops.findIndex((d) => d.n === n), d = this.drops[i], p = s.sim.players.get(playerId);
     if (!d || !c || !p || d.map !== s.map.id) return;
     if (Math.hypot(d.x - p.x, d.y - p.y) > PICK_RANGE) return;
-    const left = Inv.add(c, d.id, d.qty), got = d.qty - left;
+    const left = Inv.add(c, d.id, d.qty, d.roll), got = d.qty - left;
     if (!got) return this._toastTo(playerId, 'Your bag is full.');
     if (left) d.qty = left; else this.drops.splice(i, 1);
     sfx('pickup');
@@ -174,16 +176,16 @@ export class GuitarStands {
     if (s.menu === 'inventory') {
       const m = s.gameMenu;
       slot = m.held ?? m.hover?.i;
-      if (m.held != null) { all = !m.heldHalf || all; m.held = null; m.heldHalf = false; }
+      if (m.held != null) { m.held = null; m.heldHalf = false; m.refresh(); }
     } else if (!s.menu) slot = c.hotSel ?? 0;
     if (slot == null || !c.inventory[slot]) return;
     this.drop(slot, all);
   }
-  /** Local player drops from bag slot `slot` (one, or the whole stack). */
-  drop(slot, all = false) {
+  /** Local player requests a drop of one item, half the stack, or the whole stack. */
+  drop(slot, all = false, half = false) {
     const s = this.s;
-    if (s.mode === 'client') s.net.send({ t: 'drop', slot, all });
-    else this.dropSlot(s.character, s.localId, slot, all ? Infinity : 1);
+    if (s.mode === 'client') s.net.send({ t: 'drop', slot, all, half });
+    else this.dropSlot(s.character, s.localId, slot, all ? Infinity : half ? 'half' : 1);
     s._hotFlash = slot < 9 ? { i: slot, at: s.time.now } : s._hotFlash;
   }
 
