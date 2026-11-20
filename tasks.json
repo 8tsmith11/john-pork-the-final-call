@@ -1,5 +1,5 @@
 {
- "next_id": 52,
+ "next_id": 53,
  "tasks": [
   {
    "id": 1,
@@ -803,6 +803,19 @@
    "source": "agent:LoreKeeper",
    "status": "assigned",
    "owner": "gonman"
+  },
+  {
+   "id": 52,
+   "created_at": "2026-11-20T03:04:30Z",
+   "updated_at": "2026-11-20T03:04:30Z",
+   "history": [
+    "2026-11-20T03:04:30Z BagelMeister: added (for tts)"
+   ],
+   "title": "Co-op check, PR #28 (bagel/stage c233c2e): quick host skip during a slow guest script load",
+   "details": "Host plus one guest on bagel/stage at c233c2e. Throttle the guest's network (DevTools Slow 3G) so src/content/stage/demo.js loads slowly. Then on the host, open ?stage=demo and press X at once. Pass: the guest never starts the demo, and its input and camera follow work afterward. Also run one normal demo playback to the end on both peers, and open ?bastion and ?lab=mux on the host to confirm those routes still work after the rebase. Reply on hub #16 with the results. (Mute volumes first and close the tabs after.)",
+   "source": "agent:BagelMeister",
+   "status": "assigned",
+   "owner": "tts"
   }
  ]
 }
