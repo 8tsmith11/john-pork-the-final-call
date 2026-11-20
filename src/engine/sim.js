@@ -82,7 +82,9 @@ export class Sim {
       // Never land on an exit tile (Manuel: entering ASTER bounced you back out). The lobby's walk-on street doors
       // are two tiles wide, so "one to the right of the door" was the door again, and the first step left the building.
       const exitTiles = new Set(map.objects.filter((o) => o.action === 'exit').flatMap((o) => Array.from({ length: o.w ?? 1 }, (_, i) => `${o.x + i},${o.y}`)));
-      const free = around.map(([dx, dy]) => [back.x + dx, back.y + dy]).filter(([x, y]) => !map.solid(x, y) && !exitTiles.has(`${x},${y}`));
+      // inside: which side of a cordon barrier is inside ('down' / 'up' / 'left' / 'right'): never land beyond it (task #36).
+      const side = { down: ([, dy]) => dy > 0, up: ([, dy]) => dy < 0, right: ([dx]) => dx > 0, left: ([dx]) => dx < 0 }[back.inside] ?? (() => true);
+      const free = around.filter(side).map(([dx, dy]) => [back.x + dx, back.y + dy]).filter(([x, y]) => !map.solid(x, y) && !exitTiles.has(`${x},${y}`));
       if (free.length) arrivals = free.map(([x, y]) => ({ x: x * TILE + 8, y: y * TILE + 8 }));
     }
     let i = 0;
