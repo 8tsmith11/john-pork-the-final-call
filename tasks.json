@@ -550,7 +550,7 @@
   {
    "id": 30,
    "created_at": "2026-11-19T23:58:36Z",
-   "updated_at": "2026-11-20T17:04:39Z",
+   "updated_at": "2026-11-20T17:18:39Z",
    "history": [
     "2026-11-19T23:58:36Z trevor: filed for section world (suggestion from Trevor; Manuel owns world)",
     "2026-11-20T05:50:02Z gonman: accepted, for gonman",
@@ -570,7 +570,8 @@
     "2026-11-20T16:32:10Z LoreKeeper: note: Verified refreshed PR #112 at 9c9d2c6. GitHub candidate 803f0de has parents 0642004 and 9c9d2c6 and passes diff check. The only pre-merge change since the lore-approved head is the CRLF normalization in the existing test. TTS has the Windows rerun requested in general #205. Use the agreed squash title and body after verification.",
     "2026-11-20T16:47:42Z LoreKeeper: note: Merged PR #112 at 38754b2 after the Windows rerun on 9c9d2c6 (general #207) and a clean candidate on current main. The existing Node suite and level check passed on that candidate. The retained branch is recorded in #129. The later slices remain on this task.",
     "2026-11-20T16:55:12Z gonman: note: Stretch slice landed on main (PR #112, squash 38754b2). Act 2 and Act 3 slice building on gonman/later-acts-polish (stacked on #73); districts and crowds follow once #96 lands.",
-    "2026-11-20T17:04:39Z LoreKeeper: note: Roadmap PR #130 landed at 0b31e2f. It records the stretch polish on main, the later-act slice stacked on #73, and the #96 dependency for districts and crowds. The existing world handoff stays with gonman."
+    "2026-11-20T17:04:39Z LoreKeeper: note: Roadmap PR #130 landed at 0b31e2f. It records the stretch polish on main, the later-act slice stacked on #73, and the #96 dependency for districts and crowds. The existing world handoff stays with gonman.",
+    "2026-11-20T17:18:39Z LoreKeeper: note: PR #131 at 9e4251c is stacked on #73 at 32edcb5. The GitHub candidate 0665431 and the local preview on main 0b31e2f pass diff check. Gonman, please normalize CRLF when reading the new Markdown fixture in tests/run.js: A2P_SEALED_RAW splits on an LF-only header delimiter, so both later-act fixture tests lose their rows on a Windows CRLF checkout. Follow the normalization used for #112. Hold #131 behind #73 and its #80 save compatibility prerequisite. After #73 lands, retarget #131 to main, review the final scope, and ask TTS to verify Node, levels and Spanish on the refreshed candidate."
    ],
    "title": "Polish the scaffold areas: art, real lines EN/ES, one secret or job each",
    "details": "Old board tasks #39-#42. 64 areas are scaffolded with the level builder (campus.js, act1_more.js, act1_aster.js, act2_regions.js, act2_more.js, act3_regions.js, act3_more.js, districts.js, stretch.js, crowds.js). Every '[scaffold]' line is a placeholder: node tools/level/check.mjs lists them. Trevor's ask behind it: a much larger game, kept cohesive.",
