@@ -2147,10 +2147,11 @@
   {
    "id": 99,
    "created_at": "2026-11-20T20:35:06Z",
-   "updated_at": "2026-11-20T23:27:40Z",
+   "updated_at": "2026-11-20T23:27:43Z",
    "history": [
     "2026-11-20T20:35:06Z BagelMeister: added (for gonman)",
-    "2026-11-20T23:27:40Z gonman: claimed"
+    "2026-11-20T23:27:40Z gonman: claimed",
+    "2026-11-20T23:27:43Z gonman: note: Claimed. Waits on PR #137 (the new cold open script); I'll build it the moment that lands."
    ],
    "title": "Room 631 for the new cold open: closet, wall screen, van, search hooks",
    "details": "Needs PR #137. Michael's notes: (1) move Manuel's closet off the bedroom doorway to his end of the room, by the window. (2) Add a wall screen in the living room (a Continuity broadcast plays on it in the scene). (3) A dark van with a turning mast visible below the balcony window. (4) Hook the front-door lock, Manuel's closet, the toolwall, Fab #3 and the balcony window to the cold_open search_* nodes (talk: 'cold_open:search_lock' etc.). Positions for the bunk wake-up are in the sealed script.",
