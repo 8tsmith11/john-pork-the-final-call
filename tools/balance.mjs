@@ -25,7 +25,8 @@ function runSeed(mapId, solo, gear, seed) {
   sim.addPlayer('host', 'trevor');
   if (!solo) { sim.addPlayer('ai:manuel', 'manuel'); sim.addPlayer('ai:michael', 'michael'); }
   // 'bare' = the starter pry bar everyone owns (nobody fights unarmed any more).
-  const char = { equipped: gear ? { weapon: 'item.wooden_bat', armor: 'item.mesh_vest' } : { weapon: 'item.pry_bar' }, skills: {} };
+  const char = { inventory: [{ id: gear ? 'item.wooden_bat' : 'item.pry_bar', qty: 1 }],
+    equipped: gear ? { chestplate: 'item.mesh_vest' } : {}, skills: {} };
   for (const p of sim.players.values()) sim.setMods(p.id, playerMods(char, p.character));
   const brain = new CompanionBrain(sim), h = sim.players.get('host');
   const bot = new BalanceBot(sim, brain, { legacy, rules }), moves = newMoveCounts();
