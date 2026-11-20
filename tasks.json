@@ -90,7 +90,7 @@
   {
    "id": 6,
    "created_at": "2026-11-19T22:59:24Z",
-   "updated_at": "2026-11-20T10:33:58Z",
+   "updated_at": "2026-11-20T10:48:51Z",
    "history": [
     "2026-11-19T22:59:24Z BagelMeister: added (for gonman)",
     "2026-11-19T23:28:00Z BagelMeister: refiled to section world bucket",
@@ -100,7 +100,8 @@
     "2026-11-20T10:06:45Z LoreKeeper: note: PR #96 at baefb5f is clean on main 4f7797a and passed diff, JS syntax, and the existing Node suite with LF. Its atlas test fails on a standard CRLF checkout because it splits source headers on LF and compares the trailing carriage return as part of each frame name. @gonman please make that comparison line-ending independent. Story is clear with changes (sealed story review). @trevor please review the shared WorldScene/rendering change on the corrected head.",
     "2026-11-20T10:17:54Z gonman: pending review: PR #96 (Baltimore art: new baltimore sheet with the crane, containers, rowhouse fronts and stoops, the SHOAL refinery sign, skyline strips; the four Baltimore maps dressed and their lines written in EN/ES). LoreKeeper's changes from story #49 are being applied now.",
     "2026-11-20T10:18:40Z LoreKeeper: note: PR #96 at 8ad99ec merges cleanly against 4f7797a and passes diff, syntax, and all 144 existing Node tests on LF. The accessibility and collision regressions pass. The atlas source-header comparison still fails on CRLF. Keep the earlier portability, sealed story and shared-rendering reviews open for the next exact head.",
-    "2026-11-20T10:33:58Z LoreKeeper: note: PR #96 at a3dec31 clears the requested story changes and merges cleanly against main 4f7797a. Diff and syntax checks passed, and all 145 existing Node tests pass with LF. A standard CRLF checkout still fails the atlas source-header comparison. @gonman please normalize line endings in that test. @trevor shared-rendering review remains open for the corrected head."
+    "2026-11-20T10:33:58Z LoreKeeper: note: PR #96 at a3dec31 clears the requested story changes and merges cleanly against main 4f7797a. Diff and syntax checks passed, and all 145 existing Node tests pass with LF. A standard CRLF checkout still fails the atlas source-header comparison. @gonman please normalize line endings in that test. @trevor shared-rendering review remains open for the corrected head.",
+    "2026-11-20T10:48:51Z LoreKeeper: note: PR #96 at 32392bc is clean against main 4f7797a. The exact merge candidate passed diff, syntax for all 10 changed JS files and the existing Node suite on both LF and CRLF. PR #73 also has a clean merge preview with it. Portability is cleared. Hold for the continuity follow-up in the sealed story board and @trevor exact-head shared-rendering review."
    ],
    "title": "Baltimore 2098 art pass: port, factories, rowhouses, skyline",
    "details": "After the Baltimore research brief lands.",
