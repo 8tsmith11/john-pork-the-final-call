@@ -6,7 +6,7 @@ import { PARTY_SCALE, COMBAT } from '../../engine/sim.js';
 import { VIEW } from '../../view.js';
 import { getLang, setLang, LANG_LABEL } from '../../i18n.js';
 import * as Settings from '../../settings.js';
-import { sellPrice, ITEMS, RECIPES, SKILLS, SHOPS, playerMods, ARMOR_SLOTS, GEAR_SLOTS, WEAPON_SLOTS, SLOT_NAMES, MAX_UPGRADE, upgradeCost, scaleMods, canWear } from '../../content/items.js';
+import { sellPrice, ITEMS, RECIPES, SKILLS, SHOPS, playerMods, heldWeapon, ARMOR_SLOTS, GEAR_SLOTS, ACCESSORY_SLOTS, SLOT_NAMES, MAX_UPGRADE, upgradeCost, scaleMods, canWear } from '../../content/items.js';
 import { MAPS } from '../../content/maps/index.js';
 import { GUIDE_PEOPLE, guideText } from '../../content/guide.js';
 import { ABILITIES, ABILITY_KEYS, MAX_SCORE, modOf, fmtMod, scoresOf, raiseCost } from '../../content/abilities.js';
@@ -42,7 +42,7 @@ const F = (size = 8, color = C.text) => ({ fontFamily: 'monospace', fontSize: `$
 const SLOT_LABEL = { ...SLOT_NAMES, instrument: 'Instrument', gift: 'Gift', material: 'Material' };
 // Cut a line to fit `px` view pixels at monospace `size` (Text crops don't work at the 4x text resolution).
 const fit = (str, px, size) => { const n = Math.floor(px / (size * 0.62)); return str.length > n ? str.slice(0, n - 1) + '…' : str; };
-const SLOT_ABBR = { weapon: 'melee', ranged: 'ranged', gadget: 'gadget', charm: 'charm', helmet: 'head', chestplate: 'chest', leggings: 'legs', boots: 'boots', goggles: 'eyes', parka: 'coat', gloves: 'hands', socks: 'socks', backpack: 'pack' };
+const SLOT_ABBR = { gadget: 'gadget', charm: 'charm', helmet: 'head', chestplate: 'chest', leggings: 'legs', boots: 'boots', goggles: 'eyes', parka: 'coat', gloves: 'hands', socks: 'socks', backpack: 'pack' };
 const MOD_NAME = { melee: 'melee', shot: 'shot dmg', shotCd: 'fire rate', armor: 'armor', maxHp: 'max HP', speed: 'speed', sta: 'stamina', staRegen: 'stamina regen', crit: 'crit', markDmg: 'marked dmg', abilityPower: 'ability', skillCd: 'ability cooldown', dodgeCd: 'dodge cooldown', haggle: 'prices', dashHit: 'dash hit', revive: 'revive speed', loot: 'loot' };
 const PCT = new Set(['armor', 'speed', 'staRegen', 'crit', 'markDmg', 'abilityPower', 'skillCd', 'haggle', 'revive', 'loot']);
 export const modText = (mods) => Object.entries(mods || {}).filter(([k]) => k !== 'gun').map(([k, v]) => `${MOD_NAME[k] ?? k} ${PCT.has(k) ? (v > 0 ? '+' : '') + Math.round(v * 100) + '%' : (v > 0 ? '+' : '') + (Math.abs(v) >= 1 ? Math.round(v) : v)}`).join('  ');
@@ -155,7 +155,7 @@ export class GameMenu {
     const s = this.scene, who = s.character, c = s.save.party[who], b = this.box;
     const mods = playerMods(c, who), inv = c.inventory ?? [];
     const S = 20, GAP = 2;
-    // Paper doll: armor (left), the character (middle), gear and weapons (right). Unique items glow gold.
+    // Paper doll: armor (left), the character (middle), gear and accessories (right).
     g.fillStyle(0x151827).fillRoundedRect(b.x + 32, b.y + 28, 52, 108, 3);
     const spr = s.add.sprite(b.x + 58, b.y + 124, who).setOrigin(0.5, 1).setScale(3).play(`${who}_idle_down`);
     this.root.add(spr);
@@ -184,7 +184,7 @@ export class GameMenu {
     const col = (slots, x, label) => { this._t(x + S / 2, b.y + 25, label, F(5, C.sub)).setOrigin(0.5, 1); slots.forEach((slot, k) => slotBox(slot, x, b.y + 28 + k * (S + GAP))); };
     col(ARMOR_SLOTS, b.x + 8, 'ARMOR');
     col(GEAR_SLOTS, b.x + 88, 'GEAR');
-    col(WEAPON_SLOTS, b.x + 110, 'HANDS');
+    col(ACCESSORY_SLOTS, b.x + 110, 'ACCESSORIES');
     // stats: armor points come from the four armor pieces
     const armorPts = Math.round(ARMOR_SLOTS.reduce((t, sl) => { const d = ITEMS[c.equipped[sl]]; return t + (canWear(d, who) ? scaleMods(d.mods, c.upgrades?.[d.id ?? c.equipped[sl]] ?? 0).armor ?? 0 : 0); }, 0) * 100);
     const stat = [`HP ${100 + (mods.maxHp || 0)}   Armor ${armorPts} pts (${Math.round((mods.armor || 0) * 100)}%)`, `Melee +${mods.melee}   Ranged ${mods.gun ? '+' + mods.shot : '-'}   Speed ${mods.speed >= 0 ? '+' : ''}${Math.round((mods.speed || 0) * 100)}%`, `$${c.money ?? 0}   XP ${c.xp}/${c.level * 30}   lv ${c.level}`];
@@ -541,7 +541,7 @@ export class GameMenu {
     const b = this.box;
     const rows = [['Move', 'WASD / arrows (diagonals work)'], ['Dash', 'SPACE / SHIFT (uses stamina)'], ['Hit', 'Left click'],
       ['Shoot', 'Right click, once you have a ranged weapon'], ['Use / talk', 'E when close; walk into doors'], ['Dialogue', 'E (or SPACE) to continue; click or 1-6 to choose'],
-      ['Menu', 'ESC   Inventory I   Quests J   Skills K   Map TAB'], ['Hotbar', '1-9 use or equip that slot'], ['Ability', 'R: Trevor Riff · Manuel Decoy Bust · Michael Ping'], ['Heal / Morph', 'H (mate thermos)   M (when unlocked)'], ['Scooter', 'Q outdoors, once you own one (Delroy\'s, on the plaza)'], ['Drop', 'G drops one of what\'s in hand, SHIFT+G the stack; E picks up'], ['Phone', 'F to answer when it rings']];
+      ['Menu', 'ESC   Inventory I   Quests J   Skills K   Map TAB'], ['Hotbar', '1-9 select a hotbar slot'], ['Ability', 'R: Trevor Riff · Manuel Decoy Bust · Michael Ping'], ['Heal / Morph', 'H (mate thermos)   M (when unlocked)'], ['Scooter', 'Q outdoors, once you own one (Delroy\'s, on the plaza)'], ['Drop', 'G drops one of what\'s in hand, SHIFT+G the stack; E picks up'], ['Phone', 'F to answer when it rings']];
     rows.forEach(([k, v], i) => { this._t(b.x + 14, b.y + 30 + i * 14, k, F(8, C.hi)); this._t(b.x + 110, b.y + 30 + i * 14, v, F(8)); });
   }
 
@@ -649,25 +649,28 @@ export class GameMenu {
     this._t(px + 52, py + 22, `${kind}${def.heal ? ` · heals ${def.heal}` : ''}`, F(7, C.ok));
     const desc = this._t(px + 8, py + 50, def.text ?? '', { ...F(7, C.text), wordWrap: { width: pw - 16 } });
     let dy = py + 56 + desc.height;
-    // compare with what's worn in that slot
+    // Weapons compare with the current hotbar selection. Gear compares with the worn slot.
     const gearSlot = def.slot && c.equipped && def.slot in c.equipped ? def.slot : null;
-    if (gearSlot && (def.mods || def.swing || def.gun)) {
-      const now = playerMods(c, who), next = playerMods({ ...c, equipped: { ...c.equipped, [gearSlot]: r.id } }, who);
+    const weapon = def.slot === 'weapon' || def.slot === 'ranged';
+    if (weapon || (gearSlot && def.mods)) {
+      const current = weapon ? heldWeapon(c, who)?.id : c.equipped[gearSlot];
+      const now = playerMods(c, who);
+      const next = weapon ? playerMods(c, who, { id: r.id, roll: c.inventory[r.slot]?.roll })
+        : playerMods({ ...c, equipped: { ...c.equipped, [gearSlot]: r.id } }, who);
       const KEYS = { melee: ['melee', 1], shot: ['shot dmg', 1], armor: ['armor', 100], maxHp: ['max HP', 1], speed: ['speed', 100], crit: ['crit', 100], sta: ['stamina', 1], abilityPower: ['ability', 100], markDmg: ['vs marked', 100], loot: ['loot', 100] };
       const parts = [];
-      if (gearSlot === 'weapon') {   // weapons: compare what a hit actually does, not the flat bonus
+      if (def.slot === 'weapon') {
         const hit = (m) => (m.swing?.damage ?? 12) + (m.melee ?? 0), rate = (m) => m.swing?.cooldown ?? 0.38;
-        const h0 = hit(now), h1 = hit(next), d0 = h0 / rate(now), d1 = h1 / rate(next);
+        const h0 = ITEMS[current]?.slot === 'weapon' ? hit(now) : 0, h1 = hit(next), d0 = h0 / rate(now), d1 = h1 / rate(next);
         parts.push({ txt: `hit ${h1} (now ${h0})`, up: h1 >= h0 }, { txt: `${d1.toFixed(0)} dmg/s (now ${d0.toFixed(0)})`, up: d1 >= d0 });
         if (next.swing) parts.push({ txt: `reach ${next.swing.range ?? 20}, ${next.swing.arc >= 0.7 ? 'wide' : next.swing.arc <= 0.35 ? 'narrow' : 'normal'} arc`, up: true });
       }
       for (const [k, [label, mul]] of Object.entries(KEYS)) {
-        if (gearSlot === 'weapon' && k === 'melee') continue;
+        if (def.slot === 'weapon' && k === 'melee') continue;
         const dv = ((next[k] ?? 0) - (now[k] ?? 0)) * mul;
         if (Math.abs(dv) >= 0.5) parts.push({ txt: `${dv > 0 ? '+' : ''}${Math.round(dv)}${mul === 100 ? '%' : ''} ${label}`, up: dv > 0 });
       }
-      const wornName = c.equipped[gearSlot] ? ITEMS[c.equipped[gearSlot]]?.name : 'nothing';
-      this._t(px + 8, dy, `vs. ${wornName}:`, F(7, C.sub)); dy += 11;
+      this._t(px + 8, dy, `vs. ${ITEMS[current]?.name ?? 'nothing'}:`, F(7, C.sub)); dy += 11;
       if (!parts.length) { this._t(px + 8, dy, 'no change', F(7, C.sub)); dy += 11; }
       parts.forEach((p) => { this._t(px + 8, dy, p.txt, F(7, p.up ? C.ok : C.bad)); dy += 10; });
       if (def.owner && def.owner !== who) { this._t(px + 8, dy, `Only ${def.owner[0].toUpperCase() + def.owner.slice(1)} can use this.`, F(7, C.bad)); dy += 11; }
