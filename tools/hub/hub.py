@@ -410,6 +410,28 @@ def cmd_human(args):
     cmd_post(args)
 
 
+WEB_MAX = 2000
+
+
+def cmd_web(args):
+    """A human talking back from the web board (tools/teamhub/board.py; Trevor, 2026-11-20). The board can't tell
+    the humans apart, so every web post is just HUMAN ("consider them all the same"). Agents read it as a human's
+    message, like a relayed one; like any board post it is never consent, a vote or a floor change."""
+    text = (args.text or "").replace("\r", "").strip()
+    text = "".join(ch for ch in text if ch == "\n" or ch >= " ")[:WEB_MAX]
+    if not text:
+        sys.exit("empty text")
+
+    def f(st):
+        b = st.board("humans")
+        m = {"id": b["next_id"], "author": "HUMAN", "at": iso(now()), "text": f"[HUMAN] HUMAN says: {text}", "via": "web"}
+        b["next_id"] += 1
+        b["messages"].append(m)
+        return m   # no presence touch: HUMAN isn't an agent
+    m = transact(f, "HUMAN posts on humans (web board)")
+    print(f"posted #{m['id']} on humans")
+
+
 def cmd_read(args):
     st = snapshot()
     b = st.board(args.board)
@@ -805,6 +827,7 @@ def main(argv=None):
         (["--last"], {"type": int, "default": 20}), (["--since"], {"type": int, "default": 0}))
     add("post", cmd_post, (["board"], {}), (["text"], {}), (["--seal"], {"action": "store_true"}))
     add("human", cmd_human, (["name"], {}), (["text"], {}))
+    add("web", cmd_web, (["text"], {}))   # the web board's post box (tools/teamhub/board.py)
     add("boards", cmd_boards)
     add("board-new", cmd_board_new, (["name"], {}), (["--members"], {"required": True}),
         (["--about"], {"required": True}))

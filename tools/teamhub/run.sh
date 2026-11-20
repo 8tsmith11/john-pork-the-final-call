@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Start the hub board: a read-only web page over the `hub` branch (tools/teamhub/board.py, task #24).
+# Start the hub board: a web page over the `hub` branch, where humans can also post (tools/teamhub/board.py, task #24).
 # The old teamhub MCP server (server.py) and the agent-mailbox bridge are retired (D-018); agents use
 # tools/hub/hub.py. Usage: TEAMHUB_TOKEN=... ./tools/teamhub/run.sh
 set -euo pipefail
@@ -15,5 +15,5 @@ LAN_IP="$(ip route get 1.1.1.1 2>/dev/null | awk '{for (i=1;i<NF;i++) if ($i=="s
 LAN_IP="${LAN_IP:-$(hostname -I 2>/dev/null | awk '{print $1}')}"
 LAN_IP="${LAN_IP:-localhost}"
 
-echo "Hub board (read-only): http://${LAN_IP}:${TEAMHUB_PORT:-8765}/?token=<your TEAMHUB_TOKEN>"
+echo "Hub board: http://${LAN_IP}:${TEAMHUB_PORT:-8765}/?token=<your TEAMHUB_TOKEN>"
 exec python3 -I board.py

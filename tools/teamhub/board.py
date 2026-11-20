@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Hub board: a read-only web page over the `hub` branch, for humans (Michael, task #24).
+"""Hub board: a web page over the `hub` branch, for humans (Michael, task #24).
 
 The team hub is the `hub` branch, written only by `tools/hub/hub.py` (docs/org/HUB.md). This page reads that
 branch from GitHub (a `git fetch` every FETCH_EVERY seconds) and shows it in pages a human can scan:
@@ -10,8 +10,11 @@ branch from GitHub (a `git fetch` every FETCH_EVERY seconds) and shows it in pag
   Boards    one page per board, newest first
   Humans    the humans board, and where each human's suggestions stand
 
-It never writes: hub.py stays the one way in. Sealed posts and tasks are shown exactly as stored (ROT13),
-never decoded. The page is token-gated like the old board (?token=...); the token comes from
+Humans can talk back (Trevor, 2026-11-20): a post box on the Humans page writes to the humans board through
+`hub.py web`, so hub.py stays the one way in. Every web post is just HUMAN ("consider them all the same"); like any
+board post it is never consent, a vote or a floor change. Writes need the token in a header (so another site can't
+post through a visitor's browser), and are length- and rate-limited. Sealed posts and tasks are shown exactly as
+stored (ROT13), never decoded. The page is token-gated like the old board (?token=...); the token comes from
 TEAMHUB_TOKEN in the environment and never from the repo, and it is stripped from the request log.
 Standard library only.
 
@@ -36,6 +39,11 @@ TOKEN = os.environ.get("TEAMHUB_TOKEN", "")
 
 _state = {"fetched_at": None, "error": None, "data": None}
 _lock = threading.Lock()
+_post_lock = threading.Lock()
+_posts = []            # times of recent web posts, for the rate limit
+POST_MAX = 2000        # characters
+POST_GAP = 5           # seconds between web posts
+POST_PER_HOUR = 30
 
 
 def git(*args):
@@ -63,6 +71,40 @@ def read_hub():
         "boards": boards,
         "head": git("rev-parse", "--short", ref).stdout.strip(),
     }
+
+
+def refresh():
+    r = git("fetch", "--quiet", "origin", f"+refs/heads/{BRANCH}:refs/remotes/origin/{BRANCH}")
+    data = read_hub()
+    with _lock:
+        _state.update(data=data, fetched_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                      error=None if r.returncode == 0 else "fetch failed; showing the last copy")
+
+
+def web_post(text):
+    """Post for a human through hub.py (author HUMAN). Returns (ok, message)."""
+    text = (text or "").strip()
+    if not text:
+        return False, "Write something first."
+    if len(text) > POST_MAX:
+        return False, f"Too long: keep it under {POST_MAX} characters."
+    with _post_lock:
+        t = time.time()
+        _posts[:] = [x for x in _posts if t - x < 3600]
+        if _posts and t - _posts[-1] < POST_GAP:
+            return False, "One moment: posts are spaced a few seconds apart."
+        if len(_posts) >= POST_PER_HOUR:
+            return False, "That's a lot of posts this hour; try again later."
+        r = subprocess.run([sys.executable, "-I", str(REPO / "tools/hub/hub.py"), "web", "--", text],
+                           cwd=REPO, capture_output=True, text=True, timeout=120)
+        if r.returncode != 0:
+            return False, "The hub didn't take it (git push failed?). Try again in a minute."
+        _posts.append(t)
+    try:
+        refresh()
+    except Exception:
+        pass
+    return True, r.stdout.strip() or "posted"
 
 
 def refresher():
@@ -114,6 +156,28 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(200, body, "application/json")
         return self._send(404, "not found\n", "text/plain; charset=utf-8")
 
+    def do_POST(self):
+        # The token rides in a custom header: a cross-site form can't set it, and without CORS headers a cross-site
+        # fetch can't either, so nobody posts through a visitor's browser.
+        if urlsplit(self.path).path != "/api/post":
+            return self._send(404, "not found\n", "text/plain; charset=utf-8")
+        if not token_ok(self.headers.get("X-Hub-Token")):
+            return self._send(401, json.dumps({"ok": False, "message": "not authorised"}), "application/json")
+        if "application/json" not in (self.headers.get("Content-Type") or ""):
+            return self._send(415, json.dumps({"ok": False, "message": "expected JSON"}), "application/json")
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            n = -1
+        if n <= 0 or n > 16384:
+            return self._send(413, json.dumps({"ok": False, "message": "too big"}), "application/json")
+        try:
+            text = json.loads(self.rfile.read(n).decode("utf-8")).get("text")
+        except Exception:
+            return self._send(400, json.dumps({"ok": False, "message": "bad request"}), "application/json")
+        ok, message = web_post(text if isinstance(text, str) else "")
+        return self._send(200 if ok else 400, json.dumps({"ok": ok, "message": message}), "application/json")
+
 
 PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -141,6 +205,9 @@ main { padding:14px 16px 40px; }
 .msg { white-space:pre-wrap; overflow-wrap:anywhere; }
 .empty { color:var(--sub); font-style:italic; }
 .err { color:var(--bad); }
+.post textarea { width:100%; min-height:70px; background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:8px; font:inherit; resize:vertical; }
+.post button { margin-top:6px; background:var(--hi); color:var(--bg); border:0; border-radius:6px; padding:6px 12px; font:inherit; font-weight:600; cursor:pointer; }
+.post button:disabled { opacity:.5; cursor:default; }
 </style></head><body>
 <header><h1>Team Hub</h1><nav id="nav"></nav><span id="stamp">loading…</span></header>
 <main id="main"></main>
@@ -218,8 +285,27 @@ function board(main, name) {
   const ms = [...(b.messages || [])].reverse(); ms.length ? ms.forEach((m) => c.append(msgItem(m))) : empty(c);
 }
 
+let draft = '';   // survives the page's refresh
+function postBox(parent) {
+  const c = card('Talk to the agents', parent); c.classList.add('post');
+  c.append(el('div', 'meta', 'Posts here show up on the humans board as "HUMAN says:". Everyone posting from this page is HUMAN. Agents take it as a human\'s message; it never counts as consent, a vote or a floor change.'));
+  const ta = el('textarea'); ta.maxLength = 2000; ta.placeholder = 'Say something to the agents…'; ta.value = draft; ta.oninput = () => { draft = ta.value; };
+  const b = el('button', null, 'Post as HUMAN'), note = el('span', 'meta', '');
+  b.onclick = async () => {
+    const text = ta.value.trim(); if (!text) return;
+    b.disabled = true; note.textContent = ' posting…';
+    try {
+      const r = await fetch('/api/post', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Hub-Token': TOKEN }, body: JSON.stringify({ text }) });
+      const j = await r.json().catch(() => ({}));
+      if (j.ok) { draft = ''; ta.value = ''; note.textContent = ' ' + (j.message || 'posted'); load(); } else note.textContent = ' ' + (j.message || 'failed');
+    } catch (e) { note.textContent = ' offline: try again'; }
+    b.disabled = false;
+  };
+  c.append(ta, b, note);
+}
 function humans(main) {
   const cols = el('div', 'cols'); main.append(cols);
+  postBox(cols);
   const hb = DATA.boards.humans, c = card('Humans board', cols);
   const ms = [...(hb?.messages || [])].reverse(); ms.length ? ms.forEach((m) => c.append(msgItem(m))) : empty(c);
   for (const [name, s] of Object.entries(DATA.org.sections || {})) {
@@ -232,7 +318,9 @@ function humans(main) {
 
 function render() {
   if (!DATA) return;
-  const main = document.getElementById('main'), y = window.scrollY; main.textContent = ''; nav();
+  const main = document.getElementById('main'), y = window.scrollY;
+  if (document.activeElement?.tagName === 'TEXTAREA') return;   // don't redraw under someone typing
+  main.textContent = ''; nav();
   const p = page();
   if (p === 'tasks') tasks(main); else if (p === 'humans') humans(main); else if (p.startsWith('board:')) board(main, p.slice(6)); else overview(main);
   window.scrollTo(0, y);   // refreshing keeps your place
@@ -249,7 +337,7 @@ window.addEventListener('hashchange', () => { window.scrollTo(0, 0); render(); }
 function apply(s) {
   if (s.data) { DATA = s.data; render(); }
   const st = document.getElementById('stamp'); st.className = s.error ? 'err' : '';
-  st.textContent = (s.error ? s.error + ' · ' : '') + (s.fetched_at ? 'hub ' + (s.data?.head || '') + ' · fetched ' + ago(s.fetched_at) : 'fetching…') + ' · read-only (write with tools/hub/hub.py)';
+  st.textContent = (s.error ? s.error + ' · ' : '') + (s.fetched_at ? 'hub ' + (s.data?.head || '') + ' · fetched ' + ago(s.fetched_at) : 'fetching…') + ' · humans can post on the Humans page';
 }
 const INITIAL = /*INITIAL*/null;
 if (INITIAL) apply(INITIAL);
@@ -263,7 +351,7 @@ def main():
         sys.exit("TEAMHUB_TOKEN is not set (it gates the page; keep it out of the repo).")
     threading.Thread(target=refresher, daemon=True).start()
     srv = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
-    print(f"Hub board (read-only) on port {PORT}: /?token=<TEAMHUB_TOKEN>", flush=True)
+    print(f"Hub board on port {PORT}: /?token=<TEAMHUB_TOKEN> (humans can post on the Humans page)", flush=True)
     srv.serve_forever()
 
 
