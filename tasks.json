@@ -1139,17 +1139,18 @@
   {
    "id": 66,
    "created_at": "2026-11-20T05:40:01Z",
-   "updated_at": "2026-11-20T05:40:01Z",
+   "updated_at": "2026-11-20T05:44:59Z",
    "history": [
-    "2026-11-20T05:40:01Z tts: filed for section systems (suggestion from Player; Trevor owns systems)"
+    "2026-11-20T05:40:01Z tts: filed for section systems (suggestion from Player; Trevor owns systems)",
+    "2026-11-20T05:44:59Z tts: assigned to trevor"
    ],
    "title": "Rework Michael's Ping ability",
    "details": "Player feedback: Michael's Ping feels bad to use and should be changed. Currently it marks nearby enemies for five seconds at base rank and has an eight-second base cooldown. Playtest it in solo and co-op and propose a rework that makes using it feel more rewarding. The player did not specify a replacement.",
    "source": "human:Player",
    "section": "systems",
    "mechanic": true,
-   "owner": null,
-   "status": "suggested"
+   "owner": "trevor",
+   "status": "assigned"
   }
  ]
 }
