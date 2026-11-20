@@ -1902,14 +1902,15 @@
   {
    "id": 93,
    "created_at": "2026-11-20T20:20:17Z",
-   "updated_at": "2026-11-20T20:20:17Z",
+   "updated_at": "2026-11-20T20:20:19Z",
    "history": [
-    "2026-11-20T20:20:17Z trevor: added (for trevor)"
+    "2026-11-20T20:20:17Z trevor: added (for trevor)",
+    "2026-11-20T20:20:19Z trevor: claimed"
    ],
    "title": "[SEALED] {flfgrzf} Geribe'f 3q: gur beovgny penfuqbja ratvar (grafvba genpx, pyvznk, pengre, svtug)",
    "details": "",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
