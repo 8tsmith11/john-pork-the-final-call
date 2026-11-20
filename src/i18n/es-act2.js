@@ -125,8 +125,8 @@ export const ES_ACT2 = {
 
   // bv_barn: the barn the map doesn't show
   'A growth tank': 'Un tanque de crecimiento',
-  'One growth tank stands apart from the rows, its glass fogged from the inside. Across the front, a name in black marker, written a long time ago.':
-    'Un tanque de crecimiento apartado de las filas, con el vidrio empañado por dentro. En el frente, un nombre en marcador negro, escrito hace mucho.',
+  'One growth tank stands apart from the rows, its glass fogged from the inside. Across the front, black marker strokes that were a name once, faded too far to read.':
+    'Un tanque de crecimiento apartado de las filas, con el vidrio empañado por dentro. En el frente, trazos de marcador negro que alguna vez fueron un nombre, tan borrados que ya no se leen.',
   'Boot rack': 'Estante de botas',
   'A boot rack inside the airlock, steel-toe boots hosed off and drying upside down on pegs, a name on tape for every pair. One pair says SPARE on the tape instead. They fit well enough.':
     'Un estante de botas del lado de adentro de la esclusa: botas con puntera de acero lavadas con manguera, secándose boca abajo en clavijas, con un nombre en cinta para cada par. Un par dice REPUESTO en la cinta. Te quedan bastante bien.',

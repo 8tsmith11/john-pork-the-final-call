@@ -98,7 +98,7 @@ export const bvBarn = fromGrid({
   legend: {
     T: { scenery: 'obj.degasser', solid: true, tile: ':' },   // growth tanks, in rows
     K: { prop: 'obj.degasser', id: 'obj.bv_named_tank', label: 'A growth tank',
-      text: 'One growth tank stands apart from the rows, its glass fogged from the inside. Across the front, a name in black marker, written a long time ago.' },
+      text: 'One growth tank stands apart from the rows, its glass fogged from the inside. Across the front, black marker strokes that were a name once, faded too far to read.' },
     R: { prop: 'obj.shoes', id: 'obj.bv_boot_rack', label: 'Boot rack', grant: 'item.steel_toes',
       text: 'A boot rack inside the airlock, steel-toe boots hosed off and drying upside down on pegs, a name on tape for every pair. One pair says SPARE on the tape instead. They fit well enough.',
       doneText: 'The rack, and two empty pegs with SPARE on the tape.' },

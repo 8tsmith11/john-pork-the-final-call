@@ -825,7 +825,7 @@ test('hub #30 (Act 2): every polished Act 2 map can be reached, and from each wa
   assert.deepEqual(bad, []);
 });
 // The finds are listed sealed (docs/sealed/secrets-later-acts.md, ROT13), so this reads their object ids from there.
-const A2P_SEALED_RAW = fs.readFileSync(new URL('../docs/sealed/secrets-later-acts.md', import.meta.url), 'utf8');
+const A2P_SEALED_RAW = fs.readFileSync(new URL('../docs/sealed/secrets-later-acts.md', import.meta.url), 'utf8').replace(/\r\n/g, '\n');   // CRLF checkouts (Windows, tts)
 const A2P_SEALED = A2P_SEALED_RAW.split('-->\n').slice(1).join('-->\n')
   .replace(/[a-z]/gi, (c) => String.fromCharCode(((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26) + (c <= 'Z' ? 65 : 97)));
 // The rows of one act's section ("## Act 2 ...", its Spanish table included), split into cells.
@@ -933,7 +933,11 @@ test('hub #30 (Act 2), canon: the lines keep to the quest clues, the naming rule
   const all = A2P_MAPS.flatMap((m) => m.objects.flatMap((o) => a2pLines(o).map((t) => [`${m.id}/${o.id}`, t])));
   // Lore gate 7.1 (PR #46): the named tank's name can't be read, and nothing invents a batch number.
   for (const [where, t] of all.filter(([w]) => /^(beltsville|bv_barn)\//.test(w))) assert.ok(!/thirteen|batch \d|\bnumber \d/i.test(t), `${where}: an invented batch: ${t.slice(0, 60)}`);
-  assert.ok(!/\d/.test(obj('bv_barn', 'obj.bv_named_tank').text), 'the tank: no readable name or number before the clue says so');
+  // The name has faded past reading (sealed ruling, LoreKeeper story #71); the tag is the quest's payoff, so the map line leaves it out.
+  const tankEn = obj('bv_barn', 'obj.bv_named_tank').text, tankEs = A2P_ES[tankEn];
+  assert.ok(!/\d|"|'[A-Z]|\btag\b|\bbatch\b|\blabel\b/.test(tankEn), 'the tank: no readable name, number or tag before the clue says so');
+  assert.ok(/faded|too far to read|past reading|can't be read|unreadable|illegible/i.test(tankEn), 'the tank: the line says the name can no longer be read');
+  assert.ok(tankEs && !/\d|"|etiqueta|lote/i.test(tankEs) && /borrad|no se lee|ilegible/i.test(tankEs), 'the tank (ES): unreadable too, and no tag');
   // The bay (LoreKeeper): nothing here may read like the real 2024 bridge collapse.
   for (const [where, t] of all.filter(([w]) => /^(annapolis|ann_harbor)\//.test(w))) assert.ok(!/\b(ships?|vessels?|freighters?|collisions?|collapsed?|wreck(age)?|struck|broken)\b/i.test(t), `${where} reads like a disaster: ${t.slice(0, 60)}`);
   // The main story keeps the boat (atlas §11): nobody on the harbor promises one.
