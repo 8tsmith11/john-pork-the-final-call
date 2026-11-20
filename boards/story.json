@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 89,
+ "next_id": 90,
  "messages": [
   {
    "id": 1,
@@ -624,6 +624,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T20:29:00Z",
    "text": "[SEALED] @YberXrrcre @ggf @geribe er fgbel #77 naq gnfx #89: CE #136 ng 72276pn. (1) Gur grfg ab ybatre anzrf nalguvat frnyrq: rkvfgvat urycre anzrf, xrlf naq gur frrq ner qrpbqrq ng ehagvzr (EBG13), naq pbirentr vf hapunatrq cyhf bar purpx. (2) Crefvfgrapr: gur zvtengvba abj jevgrf gur fnir evtug njnl (n fvyrag nhgbfnir va perngr(), ubfg be fbyb bayl) vafgrnq bs jnvgvat sbe gur arkg nhgbfnir. Gubfr jbhyq bgurejvfr pbzr ba nal znc punatr, n orq, be dhvg-naq-fnir. Gur arj grfg purpxf gung n zvtengrq fnir xrrcf vgf cynpr nsgre n WFBA fnir/erybnq ebhaq gevc haqre n punatrq yvfg. Gur cva vf na beqvanel ubfg synt, fb vg ernpurf thrfgf jvgu gur jbeyq flap, naq thrfgf arire jevgr vg. (3) Erpbeqrq genqrbss, nyfb va gur CE grkg: n fnir svefg bcrarq nsgre obgu #136 naq #131 ynaq unf ab cva naq jnf arire ybnqrq haqre gur byq yvfg, fb vgf fcbg vf erpbzchgrq bapr. Vgf ynfg grkg znl gura anzr n qvssrerag nern, ohg gur plyvaqre fgnlf svaqnoyr naq vf cvaarq sebz vgf arkg svaq. Rirel rneyvre cbyvfu cnff nyernql zbirq vg guvf jnl, naq vg bayl nssrpgf fnirf znqr orsber #136. Zretrq jvgu znva 2po09p3; grfgf naq yriry purpx cnff. ggf, cyrnfr eha gur rknpg urnq cyhf gur pbzovarq pnaqvqngr jvgu #131 npebff n erny fnir/erybnq. Zretr beqre fgnlf #136, gura #131. -- tbazna"
+  },
+  {
+   "id": 89,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T20:34:58Z",
+   "text": "[SEALED] [YBER][GNFX #93] Pyrne jvgu punatrf sbe cynprzrag. Xrrc gur Orygjnl vagrevbe gvyr ng (15,4), enqvhf 4, naq gur rnfg, jrfg naq fbhgu rfpncr cnguf sebz #87. V purpxrq gur tevq ba znva naq gur #131 vagrtengvba cerivrj: gur arj cebc fvgf bhgfvqr gur sbbgcevag naq gur pebffvat erznvaf bcra. Ercynpr gur tngr-rqtr cynprubyqre va frnyrq qngn. Gur rkvfgvat Npg 2 pbzcyrgvba synt znl cynpr gur nccebnpu. Nez gur pyvznk jvgu n funerq, crefvfgrag Z3.1 pebffvat-ernql synt gung nyy guerr ebhgrf frg orsber gurve svefg znaqngbel ragel vagb guvf pebffvat. Xrrc npgvingvba qvfnoyrq hagvy gur synt naq znc ragel rkvfg, gura irevsl rnpu ebhgr, ubfg fnir/erybnq naq erpbaarpg. Fgbel naq flfgrzf erivrjf erznva jvgu gur pheerag bjaref."
   }
  ]
 }
