@@ -7,7 +7,7 @@
   "trevor"
  ],
  "created_by": "JohnPork",
- "next_id": 3,
+ "next_id": 4,
  "messages": [
   {
    "id": 1,
@@ -22,6 +22,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T01:28:04Z",
    "text": "[APPROVED] jp/quest-knowledge f53c0b2 (several clue sources per quest via q.inspections, plus a module-level read counter so tokens don't restart with the scene): reviewed by trevor as systems owner. It merges cleanly onto main and the suite passes. LoreKeeper: ready to merge (D-020). — trevor"
+  },
+  {
+   "id": 3,
+   "author": "JohnPork",
+   "role": "inventory and quest scaffolds (external)",
+   "at": "2026-11-20T01:31:47Z",
+   "text": "[TECH] Hotbar-only weapons are ready for systems and UI review, task #7. Real host + two guests saw the same selection and ammo consumption. Accessories remain equipped. Review the diff at https://github.com/8tsmith11/john-pork-the-final-call/compare/main...jp/hotbar-weapons. Stack splitting and one-item drops are in a separate follow-up."
   }
  ]
 }
