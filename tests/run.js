@@ -1203,6 +1203,30 @@ test('hub #30 (stretch): es-stretch.js agrees with the other Spanish tables wher
   i18nMod.setLang('es');
   try { assert.equal(i18nMod.tr('A coin viewer'), ES_STRETCH['A coin viewer'], 'src/i18n.js reads es-stretch.js'); } finally { i18nMod.setLang(was); }
 });
+test('hub #30 (stretch), review: the lines agree with canon and the quest clues, and the Enclave stays spotless', () => {
+  const map = (id) => STRETCH30_MAPS.find((m) => m.id === id), obj = (id, oid) => map(id).objects.find((o) => o.id === oid);
+  // The broken bridge (LoreKeeper): a span lifted out on purpose, nothing like the real 2024 collapse.
+  const bridge = map('ann_bridge'), span = obj('ann_bridge', 'obj.ann_span');
+  for (const o of bridge.objects) for (const t of stretch30Lines(o)) assert.ok(!/\b(ships?|vessels?|freighters?|barges?|collisions?|collapsed?|wreck(age)?|struck|crash(ed)?)\b/i.test(t), `ann_bridge/${o.id} reads like a disaster: ${t.slice(0, 60)}`);
+  assert.ok(/SPAN REMOVED BY ORDER/.test(span.text) && /sawn square/.test(span.text), 'the span sign and its square-cut edge');
+  assert.equal((bridge.scenery ?? []).filter((s) => s.art === 'obj.cone').length, 2, 'two cones at the cut');
+  // ann_span's pitch says "look east": the island is past the far end, not off to one side.
+  assert.ok(!/\b(north|south|west) of\b/i.test(span.text), 'the island is where the pitch sends you');
+  // Lore gate 7.1 (PR #46): the batch board keeps "took, but" for bv_batch and invents no batch number.
+  const board = obj('bv_lab', 'obj.bv_batch_board');
+  assert.ok(/took, but/.test(board.text) && !/\d|twelve|thirteen/i.test(board.text), 'the batch board: no invented batch number');
+  for (const o of map('bv_lab').objects) for (const t of stretch30Lines(o)) assert.ok(!/thirteen/i.test(t), `bv_lab/${o.id} still hints at batch thirteen`);
+  // fr_prices' clue says bread is the same as last week, so the board can't say everything went up.
+  assert.ok(!/\bEverything\b/.test(obj('fr_market', 'obj.fr_prices').text), 'the price board agrees with the clue (bread is the same)');
+  // The Enclave works and is clean: the props fountain is drawn broken on purpose, so it stays out of en_*.
+  for (const m of STRETCH30_MAPS.filter((q) => q.id.startsWith('en_'))) for (const a of [...(m.scenery ?? []).map((s) => s.art), ...m.objects.map((o) => o.art)]) assert.notEqual(a, 'obj.fountain', `${m.id}: the broken fountain`);
+  const mall = map('en_mall');
+  for (const [x0, label] of [[2, 'west'], [38, 'east']]) assert.ok([0, 1].every((dx) => [2, 3].every((y) => mall.layout[y][x0 + dx] === '|')), `the mall's ${label} monument (stone columns)`);
+  // WRITING.md: no triplets on the boards and signs (three capitalised words in a row, or a word said three times).
+  for (const m of STRETCH30_MAPS) for (const o of m.objects) for (const t of stretch30Lines(o)) {
+    assert.ok(!/\b[A-Z]{3,}, [A-Z]{3,}, (and )?[A-Z]{3,}\b/.test(t) && !/\b(\w+), \1, \1\b/i.test(t), `${m.id}/${o.id}: a triplet: ${t.slice(0, 60)}`);
+  }
+});
 
 const { ES_HUD } = await import('../src/i18n/es-hud.js');
 test('i18n: every map name has Spanish', () => {

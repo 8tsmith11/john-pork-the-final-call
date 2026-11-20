@@ -52,7 +52,7 @@ export const rfMarsh = fromGrid({
   ],
   legend: {
     N: npc('rf_counter', R1, 'A bird counter', '"Herons, thirty-one. Ospreys, none for three years." He doesn\'t lower the binoculars. "Herons are up. Write that down if you\'ve got a pencil."', { tile: 'b' }),
-    '?': { prop: 'obj.shelter', id: 'obj.rf_blind', tile: 'b', label: 'A bird blind', text: 'A plywood blind with a viewing slot of thick glass, and a tally board inside in pencil: HERON, EGRET, CORMORANT. The newest column was ruled in later. It is headed THINGS THAT AREN\'T BIRDS.' },
+    '?': { prop: 'obj.shelter', id: 'obj.rf_blind', tile: 'b', label: 'A bird blind', text: 'A plywood blind with a viewing slot of thick glass, and inside it a tally board in pencil, a column for each kind of bird. The newest column was ruled in later. It is headed THINGS THAT AREN\'T BIRDS.' },
     V: { prop: 'obj.crate', id: 'obj.rf_marsh_locker', tile: 'b', label: 'A locker marked VOLUNTEERS', grant: 'item.rain_parka',
       text: 'A wooden locker bolted to the rail, VOLUNTEERS painted on the door. Inside, a yellow rain parka on a hanger and a card in pencil: IF YOU\'RE WEARING THIS, YOU\'RE COUNTING. You put it on.',
       doneText: 'The empty hanger and the card. You\'re counting now.' },
@@ -163,7 +163,7 @@ export const annBridge = fromGrid({
   ],
   legend: {
     N: npc('ann_fisher', R2, 'Someone fishing off the bridge', '"Rockfish come right up to the cut for the shade off the far half." She checks an empty hook and casts again. "Nobody\'s crossed since they lifted the span out. The fish go back and forth all day."', { tile: ',' }),
-    '?': { prop: 'obj.cordon_sign', id: 'obj.ann_span', tile: ',', label: 'The end of the span', text: 'The road stops at two cones and a sign: SPAN REMOVED BY ORDER, 2061. TO BE REINSTATED. The edge is sawn square. Across the gap the bridge carries on east with its lamps lit, and north of it, where the old charts put an island, there is open water.' },
+    '?': { prop: 'obj.cordon_sign', id: 'obj.ann_span', tile: ',', label: 'The end of the span', text: 'The road stops at two cones and a sign: SPAN REMOVED BY ORDER, 2061. TO BE REINSTATED. The edge is sawn square. Across the gap the bridge carries on east with its lamps lit. Past its far end, where the old charts put an island, there is open water.' },
     K: { prop: 'obj.toolbox', id: 'obj.ann_bridge_tackle', tile: ',', label: 'A tackle box on the rail', loot: 'tackle',
       text: 'A tackle box wired to the guardrail, SHARE stenciled on the lid. Hooks sorted by size, and a tide table in pencil that disagrees with the printed one.' },
     '@': { spawn: true, tile: ',' },
@@ -189,7 +189,7 @@ export const bvLab = fromGrid({
   legend: {
     T: { scenery: 'obj.degasser', solid: true, tile: 'e' },
     N: npc('bv_lab_tech', R2, 'A lab technician', '"We grow them in batches. Every batch has a line on the board. One line got scrubbed, and nobody will say why."'),
-    '?': { prop: 'obj.whiteboard', id: 'obj.bv_batch_board', label: 'Batch board', text: 'A whiteboard beside the tanks, ruled in marker: batch, date, TOOK. Down the TOOK column it says yes, yes, yes. One row says took, but, and nothing after it.' },
+    '?': { prop: 'obj.whiteboard', id: 'obj.bv_batch_board', label: 'Batch board', text: 'A whiteboard beside the tanks, a row for every batch and a column headed TOOK. Most rows say yes. One row says took, but, and nothing after it.' },
     F: { prop: 'obj.fridge', id: 'obj.bv_lab_fridge', label: 'Sample fridge', grant: 'item.sleep_potion',
       text: 'A sample fridge humming in the corner. Racks of blue vials, TANK SEDATIVE, DO NOT REMOVE. One rack is down to a single vial, and nobody has signed for the others. You don\'t sign either.',
       doneText: 'The fridge hums. The empty rack has a new label on it: SEE ME.' },
@@ -274,7 +274,7 @@ export const frMarket = fromGrid({
   legend: {
     $: { scenery: 'obj.cart', solid: true, tile: '.' },
     '%': { scenery: 'obj.boxes', solid: true, tile: '.' },
-    '?': { prop: 'obj.lab_board', id: 'obj.fr_prices', label: 'Price board', text: 'Prices in chalk on a blackboard behind the stalls. Everything is up a few cents from last week, and the chalk in the tray is down to a stub.' },
+    '?': { prop: 'obj.lab_board', id: 'obj.fr_prices', label: 'Price board', text: 'Prices in chalk on a blackboard behind the stalls. Most are up a few cents from last week, and the chalk in the tray is down to a stub.' },
     N: npc('fr_grocer', R3, 'A grocer', '"Ridge apples. Best in the county." He shines one on his apron and sets it back shine-out. "The ridge itself, I wouldn\'t know. I only go up as far as the orchard."'),
     M: { npc: 'npc.fr_market_kid', art: R1, label: 'A kid minding a stall', age: 'child', eggNo: true, action: 'pages', pages: [
       '"My mom says don\'t talk to people from outside." The kid looks you over. "You\'re from outside. Pears are two dollars."',
@@ -294,21 +294,21 @@ export const enMall = fromGrid({
   rows: [
     '##########################################',
     '#qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq#',
-    '#qqqqggggggggggggggggggggggggggggggggqqqq#',
-    '#qMqVggggggggggggggggggggggggggggggggqMqq#',
+    '#q||qggggggggggggggggggggggggggggggggq||q#',
+    '#q||Vggggggggggggggggggggggggggggggggq||q#',
     '#qqqqqqqqqqqqqqqqqqNqqqqqqqqqqqqqqqqqq?qq#',
     '#qqqqqqqqqqqqqqqqqq@qqqqqqqqqqqqqqqqqqqqq#',
     '###################SS#####################',
   ],
   legend: {
-    // A monument at each end: one fountain, two tiles by two (its footprint runs up from this tile).
-    M: { scenery: 'obj.fountain', solid: true, w: 2, h: 2, tile: 'q' },
+    // A monument at each end: a block of stone columns (pillar tiles), two by two. Not the props fountain: that one
+    // is drawn broken and green on purpose, and the Enclave's monuments are spotless (the tourist says so).
     '?': { prop: 'obj.cordon_sign', id: 'obj.en_keep_off', tile: 'q', label: 'KEEP OFF THE GRASS', text: 'A sign at the edge of the lawn: KEEP OFF THE GRASS. Under it, smaller, BY ORDER. Under that, smaller still and in fresher paint, PLEASE.' },
     N: npc('en_tourist', R2, 'A tourist with a paper map', '"I came to see the monuments." The paper map is folded to the mall, worn through along the crease. "They\'re very clean. The guidebook had pigeons in it."', { tile: 'q' }),
     V: { prop: 'obj.balcony_view', id: 'obj.en_mall_viewer', tile: 'q', label: 'A coin viewer', grant: 'item.relic_coin',
       text: 'A coin viewer on a post, aimed down the mall at the far monument. In the coin return, somebody\'s coin: a 2081 commemorative, TEN YEARS OF STABILITY. The viewer only takes new coins. You keep it.',
       doneText: 'The far monument through the glass, very clean. The coin return is empty.' },
-    '@': { spawn: true },
+    '@': { spawn: true, tile: 'q' },
     S: back('enclave', 'en_mall', 'Back to the Enclave streets', 'q'),
   },
 }).scenery('obj.streetlamp', 9, 1, { light: 0.8 }).scenery('obj.streetlamp', 16, 1, { light: 0.8 }).scenery('obj.streetlamp', 23, 1, { light: 0.8 }).scenery('obj.streetlamp', 30, 1, { light: 0.8 })
