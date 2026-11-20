@@ -2028,7 +2028,7 @@ const Rolls = await import('../src/content/gearRolls.js');
 test('procedural gear rolls: seeded and reproducible, 1-2 affixes of the right kind, every value inside its bounds', () => {
   assert.deepEqual(Rolls.rollGear('w', 'mill.blade', 3, 'melee'), Rolls.rollGear('w', 'mill.blade', 3, 'melee'));
   const seen = new Set();
-  for (const kind of ['melee', 'gun', 'armor', 'gear']) for (let i = 0; i < 400; i++) {
+  for (const kind of ['melee', 'gun', 'armor', 'gear', 'gadget']) for (let i = 0; i < 400; i++) {
     const r = Rolls.rollGear(`seed-${i}`, 'recipe', i, kind);
     assert.ok(r.affixes.length >= 1 && r.affixes.length <= 2, `${kind} #${i}: ${r.affixes.length} affixes`);
     const lo = {}, hi = {};
@@ -2561,6 +2561,121 @@ test('procedural gear (task #39): procedural recipes roll seeded variants that c
   // a plain recipe never rolls, and old saves without rolls load as before
   const plain = make('world-a', 'item.mate_flask', 1).c.inventory.find((x) => x?.id === 'item.mate_flask');
   assert.equal(plain.roll, undefined);
+});
+
+test('Fab tuning charges its material once and equipping a specific build preserves rolls in a save', () => {
+  const id = 'item.phase_screen';
+  const idx = CRAFT_RECIPES.findIndex((r) => r.item === id);
+  const recipe = CRAFT_RECIPES[idx], wire = 'item.mat_wire';
+  const f = craftFixture(Array(Inv.SLOTS).fill(null));
+  f.scene.save.world = { seed: 'tuning' };
+  for (const [part, needed] of Object.entries(recipe.cost)) Inv.add(f.c, part, 3 * needed + 4);
+  Inv.add(f.c, 'item.mat_cell');
+  const craft = (tune) => CraftWorldScene.prototype._craft.call(f.scene, 'trevor', idx, tune);
+  const initialWire = Inv.count(f.c, wire);
+  craft('unknown'); craft(['cycle']);
+  assert.equal(Inv.count(f.c, wire), initialWire);
+  assert.equal(f.scene.save.world.gearMade, undefined);
+  craft('cycle');
+  const cycle = f.c.rolled.gadget;
+  assert.deepEqual(cycle, Rolls.rollGear('tuning', id, 0, 'gadget', 'cycle'));
+  assert.equal(Inv.count(f.c, wire), initialWire - recipe.cost[wire] - 1);
+  craft('output');
+  const outputSlot = f.c.inventory.findIndex((it) => it?.id === id);
+  const output = f.c.inventory[outputSlot].roll;
+  assert.equal(output.tune, 'output');
+  assert.ok(cycle.mods.gadgetCd < 0 && output.mods.gadgetCd > 0);
+  assert.ok(cycle.mods.gadgetEffect < 0 && output.mods.gadgetEffect > 0);
+  CraftWorldScene.prototype._equip.call(f.scene, 'trevor', id, outputSlot);
+  assert.equal(f.c.equipped.gadget, id);
+  assert.deepEqual(f.c.rolled.gadget, output);
+  assert.deepEqual(f.c.inventory.find((it) => it?.id === id).roll, cycle);
+  const save = newSave({ seed: 'tuning', rolls: {}, gameVersion: 't' });
+  save.party.trevor = f.c;
+  const loaded = migrate(JSON.parse(JSON.stringify(save))).party.trevor;
+  assert.equal(loaded.equipped.gadget, id);
+  assert.deepEqual(loaded.rolled.gadget, output);
+  assert.deepEqual(loaded.inventory.find((it) => it?.id === id).roll, cycle);
+  const locked = CRAFT_RECIPES.findIndex((r) => r.req);
+  for (const [part, needed] of Object.entries(CRAFT_RECIPES[locked].cost)) Inv.add(f.c, part, needed);
+  const before = JSON.stringify(f.c.inventory);
+  CraftWorldScene.prototype._craft.call(f.scene, 'trevor', locked);
+  assert.equal(JSON.stringify(f.c.inventory), before, 'host enforces the same recipe lock as the Fab menu');
+});
+
+test('a guest V press survives newer input until one host step and keeps its cooldown across a swap and map change', () => {
+  const save = newSave({ seed: 'gadget-coop', rolls: {}, gameVersion: 't' });
+  const map = MAPS_FOR_TEST.room631, sim = new Sim(map);
+  sim.addPlayer('host', 'trevor'); sim.addPlayer('guest', 'michael');
+  save.party.michael.equipped.gadget = 'item.phase_screen';
+  const sent = [], local = [], handlers = {};
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', character: 'trevor', localId: 'host', map, sim, save, ready: true, acc: 0,
+    input2: { read: emptyInput }, remoteInputs: new Map(), events: { once() {} }, time: { addEvent() {} },
+    net: { on: (type, cb) => { handlers[type] = cb; }, broadcast: (msg) => sent.push(msg) },
+    _gadgetFx: (ev) => local.push(ev), _handleInteract() {}, _render() {}, _tickActOneEnding() {},
+  });
+  host._wireNet(); host._syncParty();
+  const input = (gadget) => handlers.msg('guest', { t: 'input', inp: { ...emptyInput(), gadget } });
+  input(true); input(false);
+  assert.equal(host.remoteInputs.get('guest').gadget, true);
+  host.update(0, 50);
+  const pawn = sim.players.get('guest'), count = () => sent.filter((msg) => msg.t === 'gadgetFx').length;
+  assert.equal(count(), 1); assert.equal(local[0].kind, 'screen');
+  assert.ok(pawn.gadgetCd > 0);
+  assert.equal(host.remoteInputs.get('guest').gadget, false);
+  assert.equal(sim.snapshot().players.find((p) => p.id === 'guest').gadget, 'item.phase_screen');
+  const remaining = pawn.gadgetCd;
+  save.party.michael.equipped.gadget = 'item.patch_mesh'; host._syncParty();
+  sim.setMap(map); assert.equal(pawn.gadgetCd, remaining);
+  input(true); host.update(0, 50); assert.equal(count(), 1);
+  pawn.gadgetCd = 0;
+  host.stage = { active: true, onHostMsg: () => false, update() {} };
+  input(true); host.update(0, 50); assert.equal(count(), 1);
+  assert.equal(host._frozen({ ...emptyInput(), gadget: true }).gadget, false);
+  host.stage.active = false;
+  input(true); host.update(0, 50);
+  assert.equal(local.at(-1).kind, 'patch'); assert.equal(count(), 2);
+});
+
+test('melee and ranged tuning keep positive intervals and use the live item roll', () => {
+  const sim = new Sim(rotArena()); sim.addPlayer('p', 'trevor');
+  const p = sim.players.get('p');
+  const tuned = (id, kind, tune) => ({ id, roll: Rolls.rollGear('tuning', id, 0, kind, tune) });
+  const melee = tuned('item.rebar', 'melee', 'cycle');
+  sim.setMods('p', { swing: ITEMS[melee.id].swing, ...melee.roll.mods });
+  sim._melee(p);
+  assert.ok(Math.abs(p.meleeCd - (ITEMS[melee.id].swing.cooldown - 0.05)) < 1e-9);
+  p.mods.meleeCd = -1; sim._melee(p); assert.ok(p.meleeCd >= 0.12);
+  const range = tuned('item.nail_gun', 'gun', 'output');
+  sim.setMods('p', { gun: 1, gunStats: ITEMS[range.id].gun, ...range.roll.mods });
+  sim._fire(p);
+  assert.ok(p.shotCd >= 0.12 && p.shotCd >= ITEMS[range.id].gun.cooldown - 0.05);
+});
+
+test('gadget scans give a private reading from host state and leave all quest and loot flags alone', () => {
+  const map = MAPS_FOR_TEST.room631, sim = new Sim(map);
+  sim.addPlayer('guest', 'michael');
+  const box = map.objects.find((o) => o.id === 'obj.parts_bins');
+  Object.assign(sim.players.get('guest'), { x: box.x * 16 + 8, y: box.y * 16 + 8 });
+  const save = newSave({ seed: 'readings', rolls: {}, gameVersion: 't' });
+  const messages = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    localId: 'host', sim, map, save, net: { send: (to, msg) => messages.push([to, msg]) },
+  });
+  host._gadgetScan({ id: 'guest', kind: 'sniffer' });
+  assert.equal(messages.at(-1)[0], 'guest');
+  assert.match(messages.at(-1)[1].text, /Calibrate/);
+  assert.deepEqual(save.flags, {});
+  save.flags['act1.leadA.done'] = true;
+  host._gadgetScan({ id: 'guest', kind: 'sniffer' });
+  assert.match(messages.at(-1)[1].text, /Helium trail/);
+  host._gadgetScan({ id: 'guest', kind: 'survey' });
+  assert.equal(messages.at(-1)[1].label, box.label);
+  save.flags[`loot.${map.id}.${box.id}`] = true;
+  host._gadgetScan({ id: 'guest', kind: 'survey' });
+  assert.notEqual(messages.at(-1)[1].label, box.label);
+  assert.deepEqual(Object.keys(save.flags).sort(), ['act1.leadA.done', `loot.${map.id}.${box.id}`].sort());
 });
 
 const fullCraftBag = () => Array.from({ length: Inv.SLOTS }, () => ({ id: 'item.wooden_bat', qty: 1 }));

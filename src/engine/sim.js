@@ -682,9 +682,10 @@ export class Sim {
 
   _melee(p) {
     const w = p.mods?.swing, base = w ? { ...COMBAT.melee, ...w, arc: Math.PI * (w.arc ?? 0.6) } : COMBAT.melee;
+    const interval = Math.max(0.12, base.cooldown + (p.mods?.meleeCd ?? 0));
     // Combo: swings inside the window chain 1-2-3; the third is a heavy finisher.
     const now = this.tick * (1 / 60);
-    p.combo = now - (p.lastSwingAt ?? -9) <= base.cooldown + FEEL.comboWindow ? ((p.combo ?? 0) % 3) + 1 : 1;
+    p.combo = now - (p.lastSwingAt ?? -9) <= interval + FEEL.comboWindow ? ((p.combo ?? 0) % 3) + 1 : 1;
     p.lastSwingAt = now;
     const fin = p.combo === 3;
     // Dash-strike (Hades, Hyper Light Drifter): attack right out of a dodge for a fast lunging stab.
@@ -693,7 +694,7 @@ export class Sim {
     let m = fin ? { ...base, damage: base.damage * FEEL.finisherDmg, knockback: base.knockback * FEEL.finisherKnock, arc: base.arc * FEEL.finisherArc } : base;
     if (dash) m = { ...m, damage: m.damage * FEEL.dashDmg, range: m.range + FEEL.dashRange, arc: m.arc * 0.7 };
     const focus = p.focusT > 0; if (focus) p.focusT = 0;
-    p.meleeCd = m.cooldown * (fin ? 1.25 : 1); p.swingT = 0.2;   // long enough for both attack frames (12 fps)
+    p.meleeCd = interval * (fin ? 1.25 : 1); p.swingT = 0.2;   // long enough for both attack frames (12 fps)
     this.events.push({ t: 'swing', id: p.id, a: p.aim, r: m.range, arc: m.arc, combo: p.combo, weapon: p.mods?.weaponId });
     // Deflect: enemy shots inside the swing go back the way they came, as the player's.
     for (const s of this.shots) {
@@ -1302,7 +1303,9 @@ export class Sim {
       tick: this.tick,
       players: [...this.players.values()].map((p) => ({
         ...(p.skillCd > 0 && p.skillMaxCd ? { skMax: p.skillMaxCd } : {}),
+        ...(p.gadget ? { gadget: p.gadget } : {}),
         ...(p.gadgetCd > 0 ? { gadgetCd: Math.ceil(p.gadgetCd * 10) / 10, gadgetMaxCd: p.gadgetMaxCd } : {}),
+        ...(p.screenT > 0 ? { screen: true } : {}),
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
         hp: Math.round(p.hp), mhp: this.maxHp(p), rot: Math.round((p.rot ?? 0) * 10) / 10, weapon: p.mods.weaponId ?? null, am: p.ammo ?? null, rl: p.reloadT > 0 ? Math.round(p.reloadT * 10) / 10 : 0, st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, ...(p.gonSlim ? { gs: Math.max(0, Math.min(1, Math.round((1 - p.skillCd / (GONMAN.cd * (1 - (p.mods?.skillCd ?? 0)))) * 100) / 100)) } : {}), pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0, un: p.under > 0 ? Math.ceil(p.under) : 0, pu: p.under > 0 ? Math.round(((p.pullT ?? 0) / UNDER.pullTime) * 100) / 100 : 0, mt: Math.ceil(p.mateT ?? 0), cr: p.crashT > 0,

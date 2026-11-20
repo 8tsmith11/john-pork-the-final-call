@@ -31,6 +31,7 @@ export const FAB_TUNES = {
 
 export function fabCost(recipe, tune = 'stock') {
   if (tune === 'stock') return recipe.cost;
+  if (typeof tune !== 'string') return null;
   const profile = Object.hasOwn(FAB_TUNES, tune) ? FAB_TUNES[tune] : null;
   if (!profile?.mods[recipe.roll]) return null;
   return { ...recipe.cost, [profile.part]: (recipe.cost[profile.part] ?? 0) + 1 };
@@ -39,7 +40,7 @@ export function fabCost(recipe, tune = 'stock') {
 const round = (v, step) => Math.round(v / step) * step;
 const stepFor = (lo, hi) => (Number.isInteger(lo) && Number.isInteger(hi) ? 1 : 0.01);
 
-/** Roll the affixes for one made item. kind: 'melee'|'gun'|'armor'|'gear'. Returns { affixes, mods, analog, label, labelEs }. */
+/** Roll affixes for one built item and apply its chosen Fab tuning. */
 export function rollGear(seed, recipeId, count, kind, tune = 'stock') {
   const r = makeStreams(`${seed}|${recipeId}|${count}`)('gearRolls');
   const pool = Object.entries(AFFIXES).filter(([, a]) => a.kinds.includes(kind));
