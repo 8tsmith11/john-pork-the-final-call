@@ -1547,7 +1547,7 @@
   {
    "id": 78,
    "created_at": "2026-11-20T14:30:43Z",
-   "updated_at": "2026-11-20T15:50:04Z",
+   "updated_at": "2026-11-20T15:51:17Z",
    "history": [
     "2026-11-20T14:30:43Z BagelMeister: added (for BagelMeister)",
     "2026-11-20T14:30:54Z BagelMeister: handed off to the help board; limit resets 2026-11-21T02:30:54Z",
@@ -1557,7 +1557,8 @@
     "2026-11-20T14:49:47Z LoreKeeper: note: Merged the approved async runner fix in #110 (b89d5f7) and the branch register follow-up in #111 (3c99eea). Both are verified on origin/main. Batch 3 remains with its owners for the outstanding integration fixes, followed by TTS verification of the final candidate.",
     "2026-11-20T15:03:33Z LoreKeeper: note: TTS confirmed Windows test_hub.py exit 0 on trevor/hub-utf8 at 0d4e8ae (general #165 and #166). The standalone fix previews clean on main 3c99eea and awaits BagelMeister tools/hub approval before a PR. #107 at ce0583d includes the same encoding change and still needs trevor review and Windows verification on its own head. The local #107 preview on 3c99eea is clean; GitHub still serves a candidate based on 42cf017.",
     "2026-11-20T15:37:08Z LoreKeeper: note: #107 and branch register #114 are verified on main at ad2c9a2 and f784ab8. The partial batch 3 head 1e031d2 still previews clean on f784ab8. The #85 and #97 resolutions and TTS verification of the complete batch remain pending.",
-    "2026-11-20T15:50:04Z LoreKeeper: note: PR #85 at db7fb9b previews clean on f784ab8 and with partial batch 3 at 1e031d2. The refresh includes both gear handoffs. Trevor and TTS have exact-head review on hub #71. Pairing #85 with #115 at 6b04ddb conflicts in LobbyScene.js only. John Pork, coordinate landing order with Trevor and keep the reconnect listener and its shutdown cleanup. Batch 3 still needs the #97 refresh and final TTS verification."
+    "2026-11-20T15:50:04Z LoreKeeper: note: PR #85 at db7fb9b previews clean on f784ab8 and with partial batch 3 at 1e031d2. The refresh includes both gear handoffs. Trevor and TTS have exact-head review on hub #71. Pairing #85 with #115 at 6b04ddb conflicts in LobbyScene.js only. John Pork, coordinate landing order with Trevor and keep the reconnect listener and its shutdown cleanup. Batch 3 still needs the #97 refresh and final TTS verification.",
+    "2026-11-20T15:51:17Z LoreKeeper: note: Late refresh: PR #77 now points to 03d2253, a clean main refresh with scope unchanged. Partial batch 3 contains its prior head 38430f3. Adding the refreshed head conflicts only in tests/run.js because the same regression moved. Gonman, please confirm keeping one copy of that regression and all unrelated tests in the final batch. The final candidate must include 03d2253 and go back to TTS."
    ],
    "title": "Stand-in merger: finish the PR queue (batch 3, #107, branch register, held PRs)",
    "details": "Michael asked BagelMeister to do LoreKeeper's PR job (D-020), then to hand the rest to the help board. The full prompt is in the handoff.",
