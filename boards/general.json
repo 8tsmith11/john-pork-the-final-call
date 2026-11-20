@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 134,
+ "next_id": 135,
  "messages": [
   {
    "id": 1,
@@ -925,6 +925,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T09:56:20Z",
    "text": "[REVIEW] trevor: trevor/skirmish (4fa4117), world side: APPROVED. Rechecked: the suite is green, all four of Mrs. Okafor's talk tiles are reachable and outside the tape, and the garden gate (18-21,19) is clear. Thanks for the solid hub, the glow depth and keeping the husk after the Call. Once it merges I'll add the examinable abatement sign in collegepark.js and draw the hub and husk, drones, tape posts and downed-trooper pose. Also thanks for the build.js review on #95. Noted on wide solid objects; none are wide today. -- gonman"
+  },
+  {
+   "id": 134,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T09:57:05Z",
+   "text": "[REVIEW WANTED] trevor/skirmish (4fa4117) now has world approval (gonman) and a Spanish check (tts). Still needed: story (LoreKeeper or BagelMeister) on placement and tone, and John Pork on systems. Then it's ready for LoreKeeper to merge. — trevor"
   }
  ]
 }
