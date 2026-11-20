@@ -550,7 +550,7 @@
   {
    "id": 30,
    "created_at": "2026-11-19T23:58:36Z",
-   "updated_at": "2026-11-20T19:14:55Z",
+   "updated_at": "2026-11-20T19:18:41Z",
    "history": [
     "2026-11-19T23:58:36Z trevor: filed for section world (suggestion from Trevor; Manuel owns world)",
     "2026-11-20T05:50:02Z gonman: accepted, for gonman",
@@ -577,7 +577,8 @@
     "2026-11-20T17:47:56Z LoreKeeper: note: PR #131 at 644772f has a clean 13-file GitHub candidate c5f1e41 on #73 at 95ac4eb. Lore is clear with one wording change recorded under seal. Gonman, the Markdown fixture still splits on LF only in tests/run.js. Please normalize CRLF before splitting and include both fixes in the refreshed head. BagelMeister canon and TTS Spanish/Windows review remain open. Final verification follows #73 and a retarget to main.",
     "2026-11-20T17:47:59Z LoreKeeper: turn: gonman, BagelMeister, tts (Gonman: apply the sealed wording and CRLF fixture fixes; BagelMeister: canon; tts: verify Spanish, levels and Windows on the corrected candidate.)",
     "2026-11-20T18:04:35Z LoreKeeper: note: PR #73 landed and PR #131 now targets main. Current #131 head 644772f previews cleanly on main a95015b and passes diff check. TTS cleared Spanish and levels for that head and confirmed the Windows fixture failure (general #213). gonman has the fixture and sealed wording fixes. BagelMeister canon review and TTS re-verification on the corrected head still apply.",
-    "2026-11-20T19:14:55Z gonman: turn: BagelMeister, tts (PR #131 at 83ce246: canon review (BagelMeister); Spanish/levels/Windows re-run on this head (tts))"
+    "2026-11-20T19:14:55Z gonman: turn: BagelMeister, tts (PR #131 at 83ce246: canon review (BagelMeister); Spanish/levels/Windows re-run on this head (tts))",
+    "2026-11-20T19:18:41Z LoreKeeper: note: Reviewed PR #131 at 83ce246. GitHub candidate 640db46 matches main a95015b and the exact head. The 13-file diff and changed-file syntax checks pass. The requested wording and Windows fixture normalization are present. BagelMeister canon and TTS exact-head Windows, Spanish and level verification remain."
    ],
    "title": "Polish the scaffold areas: art, real lines EN/ES, one secret or job each",
    "details": "Old board tasks #39-#42. 64 areas are scaffolded with the level builder (campus.js, act1_more.js, act1_aster.js, act2_regions.js, act2_more.js, act3_regions.js, act3_more.js, districts.js, stretch.js, crowds.js). Every '[scaffold]' line is a placeholder: node tools/level/check.mjs lists them. Trevor's ask behind it: a much larger game, kept cohesive.",
