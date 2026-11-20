@@ -21,6 +21,8 @@ Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `ad2c9a2`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `bagel/review-turn` | GitHub | Merged in `ad2c9a2` (PR #107) |
+| `lorekeeper/pr46-branch-register` | GitHub | Merged in `64f1bd7` (PR #113) |
 | `bagel/quest-continuity` | GitHub | Merged in `243084a` (PR #46) |
 | `lorekeeper/pr110-branch-register` | GitHub | Merged in `3c99eea` (PR #111) |
 | `trevor/test-async` | GitHub | Merged in `b89d5f7` (PR #110) |
