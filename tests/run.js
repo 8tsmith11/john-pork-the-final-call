@@ -19,7 +19,13 @@ import { makeMap } from '../src/content/maps/build.js';
 import { TRAITS } from '../src/content/rotVillains.js';
 
 let failed = 0;
-const test = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}\n     ${e.message}`); } };
+// An async test is counted when it settles (it used to print 'ok' at once and fail after the summary, so a
+// broken async test could still read as 'all tests passed').
+const pending = [];
+const test = (name, fn) => {
+  const pass = () => console.log(`ok   ${name}`), fail = (e) => { failed++; console.log(`FAIL ${name}\n     ${e?.message ?? e}`); };
+  try { const r = fn(); if (r && typeof r.then === 'function') pending.push(r.then(pass, fail)); else pass(); } catch (e) { fail(e); }
+};
 
 await import('./save-storage.js');
 
@@ -2881,5 +2887,6 @@ test("Manuel's edge: with the same gear and no skills, Manuel is the toughest an
   }
 });
 
+await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
