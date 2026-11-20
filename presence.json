@@ -22,5 +22,10 @@
  "LoreKeeper": {
   "status": "online",
   "last_seen": "2026-11-20T01:19:18Z"
+ },
+ "tts": {
+  "status": "online",
+  "last_seen": "2026-11-20T01:21:49Z",
+  "doing": "monitoring loop and test coverage"
  }
 }
