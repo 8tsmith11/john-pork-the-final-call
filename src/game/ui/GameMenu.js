@@ -547,9 +547,18 @@ export class GameMenu {
 
   _system() {
     const s = this.scene, b = this.box;
+    const es = getLang() === 'es';
     const items = s.mode === 'client'
       ? [['Resume', () => this.close()], ['Leave the game', () => s.menuQuit(false)]]
-      : [['Resume', () => this.close()], ['Save now', () => { s._save(); this.close(); }], ['Export save file (.jpfc.json)', () => s.menuExport()], ['Save and quit to title', () => { this.close(); s.menuQuit(true); }]];
+      : [
+        ['Resume', () => this.close()],
+        ['Save now', () => { s._save(); this.close(); }],
+        ['Export save file (.jpfc.json)', () => s.menuExport()],
+        ['Save and quit to title', () => { this.close(); s.menuQuit(true); }],
+        [es ? 'Salir sin guardar' : 'Quit without saving', () => {
+          if (confirm(es ? '¿Salir sin guardar? Perderás el progreso desde la última vez que guardaste.' : 'Quit without saving? Progress since the last save will be lost.')) s.menuQuit(false);
+        }],
+      ];
     // Language (Trevor): English or Spanish. Switches at once; menus rebuild on refresh.
     items.push([`Language: ${LANG_LABEL[getLang()]}`, () => { setLang(getLang() === 'es' ? 'en' : 'es'); this.refresh(); s._refreshMenu?.(); }]);
     // Settings (task #31): click a row to cycle it. Stored per browser.
@@ -557,7 +566,7 @@ export class GameMenu {
     for (const [k, label] of [['music', 'Music'], ['sfx', 'Effects'], ['voice', 'Voices']]) items.push([`${label}: ${pct(k)}`, () => { Settings.set(k, Settings.nextVolume(Settings.get(k))); this.refresh(); }]);
     items.push([`Screen shake: ${Settings.get('shake') ? 'on' : 'off'}`, () => { Settings.set('shake', !Settings.get('shake')); this.refresh(); }]);
     items.push([`Text speed: ${Settings.get('textSpeed')}`, () => { Settings.set('textSpeed', Settings.nextSpeed(Settings.get('textSpeed'))); this.refresh(); }]);
-    items.forEach(([label, fn], i) => this._t(b.x + 14, b.y + 32 + i * 18, `› ${label}`, F(9, i === 0 ? C.hi : C.text), fn));
+    items.forEach(([label, fn], i) => this._t(b.x + 14, b.y + 32 + i * 16, `› ${label}`, F(9, i === 0 ? C.hi : C.text), fn));
     this._t(b.x + 14, b.y + b.h - 18, s.mode === 'client' ? 'The host keeps the save for everyone.' : `World "${s.save.world.seed}" · saved in this browser`, F(7, C.sub));
   }
 
