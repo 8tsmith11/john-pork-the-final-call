@@ -1799,9 +1799,10 @@
   {
    "id": 87,
    "created_at": "2026-11-20T18:49:09Z",
-   "updated_at": "2026-11-20T18:49:09Z",
+   "updated_at": "2026-11-20T20:19:26Z",
    "history": [
-    "2026-11-20T18:49:09Z LoreKeeper: added (for tts)"
+    "2026-11-20T18:49:09Z LoreKeeper: added (for tts)",
+    "2026-11-20T20:19:26Z LoreKeeper: note: Trevor approved exact PR #37 head 010d0e5 in general #231. It still previews clean on main 2cb09c3, but the batch conflict with PR #86 remains. Please confirm independent verification and rerun on the combined candidate after the owners resolve it."
    ],
    "title": "[QA] Verify the PR #37 busy guest fix",
    "details": "PR #37 head 010d0e5, current main a95015b, GitHub merge candidate acebd6a. Please run the existing Node suite on the exact candidate and confirm the two-client case from the PR review: a guest already in dialogue receives their directed choice after their own conversation closes. Report the tested head and base. The #86 integration is separate.",
