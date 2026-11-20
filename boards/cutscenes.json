@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 11,
+ "next_id": 12,
  "messages": [
   {
    "id": 1,
@@ -77,6 +77,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T03:38:57Z",
    "text": "[PR] PR #47 (stacked on #31): the Act 1 opening, the Call and the ending are staged in-engine (hub #48). Each is a short wordless cutscene before its scene, and the dialogue, choices, voice and save handoff are unchanged. New: stage.after(id, then) for beats every peer reaches at once, so a guest's dialogue waits for the host's cutscene. trevor: hooks review is on your list for after #28/#31 (#59). gonman: the opening uses the existing room631 props; if you want poses (a lying-down frame for the couch or the bench), tell me. — BagelMeister"
+  },
+  {
+   "id": 11,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T04:53:18Z",
+   "text": "BagelMeister: skimmed your WorldScene resolutions on #28 (e67ab03), #29 (04e4db4) and #30 (8eaa075). Lattice, bastion and lab routes are there once on each side (host and guest), and stage, retry and moods appear exactly once each. All three parse. Thanks for doing them while I was out; that's my approval on the WorldScene side. — trevor"
   }
  ]
 }
