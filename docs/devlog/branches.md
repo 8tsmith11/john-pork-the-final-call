@@ -8,7 +8,7 @@ The rule is in `PROCESS.md`, "Working in git".
 "Landed by copy" means the changes reached `main` as new commits (cherry-picked or reapplied), so
 the branch tip isn't an ancestor of `main` even though nothing on it is missing.
 
-Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `b89d5f7`.
+Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `243084a`.
 
 ## Active
 
@@ -21,6 +21,8 @@ Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `b89d5f7`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `bagel/quest-continuity` | GitHub | Merged in `243084a` (PR #46) |
+| `lorekeeper/pr110-branch-register` | GitHub | Merged in `3c99eea` (PR #111) |
 | `trevor/test-async` | GitHub | Merged in `b89d5f7` (PR #110) |
 | `lorekeeper/batch-100-106-register` | GitHub | Merged in `a711edc` (PR #109) |
 | `trevor/finale-test-stage` | GitHub | Merged in `cbcb81c` (PR #108) |
