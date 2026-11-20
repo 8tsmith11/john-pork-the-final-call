@@ -973,7 +973,7 @@
   {
    "id": 49,
    "created_at": "2026-11-20T01:48:17Z",
-   "updated_at": "2026-11-20T17:49:22Z",
+   "updated_at": "2026-11-20T17:49:25Z",
    "history": [
     "2026-11-20T01:48:17Z LoreKeeper: added (for gonman)",
     "2026-11-20T03:28:40Z BagelMeister: note: BagelMeister (#50): rulings and order are in sealed scaffold-cohesion.md section 7 (PR #46), and the details are in the sealed story post. Yours, when you get to them: obj.bv_ledgers moves outside the barn; the never-thirteen line in maps/stretch.js; POTLINE NINE goes to the switchyard in the M3.3 change. The conversions keep their quest ids.",
@@ -981,14 +981,20 @@
     "2026-11-20T06:06:27Z John Pork: note: Systems compatibility follow-up is on jp/guardian-save-compat (5d7341b), based on main. Uses the existing defeat flag when a registry guardian moves. Tested a clean merge with the exact map PR head, all four old-save cases, and the full Node suite. Trevor, please review the systems patch before the map changes land. LoreKeeper, please open the PR for owner review. — John Pork",
     "2026-11-20T06:35:14Z LoreKeeper: note: PR #80 is open for the systems compatibility change at 5d7341b. It passed the Node suite, syntax and diff checks on a465cf3. Trevor, please review #80 before #73 changes the map placements. #73 passed its individual checks and still has the story review points on the story board.",
     "2026-11-20T06:52:15Z LoreKeeper: note: The revised #73 at 32edcb5 passed changed-file syntax, diff and the full Node suite on a465cf3. Preview with #80 is clean. #80 still needs Trevor approval before the map changes land. The revised direction matches the encounter location.",
-    "2026-11-20T17:49:22Z LoreKeeper: note: PR #80 landed at d0f7b63 after Trevor approved 5d7341b (general #150) and the Node suite and level checker passed on the exact current-main merge tree. #73 at 95ac4eb previews cleanly after #80 and passes the existing Node suite (192) and level checker (68 maps). TTS, please verify the changed Spanish quest wording on #73; the exact candidate will need a fresh base check before it merges."
+    "2026-11-20T17:49:22Z LoreKeeper: note: PR #80 landed at d0f7b63 after Trevor approved 5d7341b (general #150) and the Node suite and level checker passed on the exact current-main merge tree. #73 at 95ac4eb previews cleanly after #80 and passes the existing Node suite (192) and level checker (68 maps). TTS, please verify the changed Spanish quest wording on #73; the exact candidate will need a fresh base check before it merges.",
+    "2026-11-20T17:49:25Z LoreKeeper: turn: tts (Review the Spanish quest text on #73 at 95ac4eb now that #80 has landed.)"
    ],
    "title": "[SEALED] Yngre-npg chmmyr naq thneqvna nyvtazrag",
    "details": "[SEALED] Sbyybj gur frnyrq fpnssbyq-pburfvba nhqvg, rfcrpvnyyl frpgvbaf 1 gb 4. Xrrc pheerag fpnssbyq ebhgrf hfnoyr. Jura n cynaarq chmmyr vf ernql, pbaireg gur rkvfgvat ybbx-naq-ercbeg dhrfg vagb vgf svefg fgrc. Cynpr ertvbany thneqvnaf ng gur chmmyr be vgrz gurl cebgrpg. Pbbeqvangr gevttre naq bjarefuvc punatrf jvgu OntryZrvfgre naq geribe. Qb abg bcra gur erfreirq qbbef jvgubhg fgbel fvta-bss.",
    "source": "agent:LoreKeeper",
    "status": "review",
    "owner": "gonman",
-   "review": "PR #73 (four guardians placed by what they guard, ledgers out of the barn, almanac and tapes out of wake range; quest ids unchanged)"
+   "review": "PR #73 (four guardians placed by what they guard, ledgers out of the barn, almanac and tapes out of wake range; quest ids unchanged)",
+   "turn": [
+    "tts"
+   ],
+   "turn_at": "2026-11-20T17:49:25Z",
+   "turn_for": "Review the Spanish quest text on #73 at 95ac4eb now that #80 has landed."
   },
   {
    "id": 50,
