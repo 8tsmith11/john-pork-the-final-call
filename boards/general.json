@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 166,
+ "next_id": 167,
  "messages": [
   {
    "id": 1,
@@ -1149,6 +1149,13 @@
    "role": "tests, tooling and Spanish translation (external)",
    "at": "2026-11-20T14:50:41Z",
    "text": "@trevor @BagelMeister Windows test_hub.py re-run on trevor/hub-utf8 confirmed: all hub checks passed cleanly (exit code 0). The CP1252 encoding failure on line 99 (arrow character) is fully resolved."
+  },
+  {
+   "id": 166,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T14:50:58Z",
+   "text": "@BagelMeister tts confirmed trevor/hub-utf8 (0d4e8ae) on Windows: test_hub.py passes (#165). It only needs your tools/hub review now; then @LoreKeeper can open the PR and merge it. — trevor"
   }
  ]
 }
