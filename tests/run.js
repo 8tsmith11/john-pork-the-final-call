@@ -745,6 +745,200 @@ test('region guardians (#49): scaffold quests a later puzzle converts keep their
   }
 });
 
+// hub #30, Act 2 slice: the Act 2 areas polished in this pass. Fresh copies of the two map modules (the ?a2p30 query),
+// so the crowds.js townsfolk that maps/index.js adds afterwards aren't counted as their own; the townsfolk are checked
+// separately where it says so (crowds.js has its own polish coming).
+const A2P_IDS = ['route1_north', 'greenbelt', 'beltsville', 'refuge', 'meade', 'annapolis', 'gb_dishes', 'gb_coop', 'bv_barn', 'rf_settlement', 'bmore_stacks', 'bmore_clinic', 'ann_harbor'];
+const A2P_MAPS = [...Object.values(await import('../src/content/maps/act2_regions.js?a2p30')), ...Object.values(await import('../src/content/maps/act2_more.js?a2p30'))]
+  .filter((m) => m && Array.isArray(m.objects) && A2P_IDS.includes(m.id));
+const { ES_ACT2: A2P_ES } = await import('../src/i18n/es-act2.js');
+const A2P_TABLES = {
+  ES_631: (await import('../src/i18n/es-631.js')).ES_631, ES_ASTER: (await import('../src/i18n/es-aster.js')).ES_ASTER,
+  ES_HUD: (await import('../src/i18n/es-hud.js')).ES_HUD, ES_PLAZA: (await import('../src/i18n/es-plaza.js')).ES_PLAZA,
+  ES_QUESTS: (await import('../src/i18n/es-quests.js')).ES_QUESTS, ES_TUNNELS_LAKE: (await import('../src/i18n/es-tunnels-lake.js')).ES_TUNNELS_LAKE,
+  ES_ROUTE1: (await import('../src/i18n/es-route1.js')).ES_ROUTE1, ES_SIDE_QUESTS: AlignSide.ES_SIDE_QUESTS,
+};
+const { LOOT: A2P_LOOT, SHOPS: A2P_SHOPS } = await import('../src/content/items.js');
+const { Approach: A2P_Approach } = await import('../src/game/approach.js');
+const a2pLines = (o) => [o.label, o.text, o.doneText, o.lockedText, ...(o.pages ?? []), ...(o.later ?? []).map((l) => l.text)].filter((t) => typeof t === 'string' && t);
+// A side-quest giver's pitch and anyone's later line print the label in capitals above the line (WorldScene).
+const a2pSpeaks = (o) => o.npc && (o.later?.length || AlignSide.SIDE_QUESTS.some((q) => q.giver === o.id));
+// Missing Spanish, as tools/i18n/es_audit.mjs counts it: not in a listed table and not translated by tr().
+const a2pExact = Object.assign(Object.create(null), ...Object.values(A2P_TABLES), A2P_ES);
+const a2pMissing = (t) => !Object.hasOwn(a2pExact, t) && i18nMod.tr(t) === t;
+test('hub #30 (Act 2): no [scaffold] left on the polished Act 2 maps, and every line on them has Spanish', () => {
+  assert.deepEqual(A2P_MAPS.map((m) => m.id).sort(), [...A2P_IDS].sort(), 'the thirteen polished Act 2 maps');
+  assert.ok(!/\[scaffold\]/i.test(fs.readFileSync(new URL('../src/content/maps/act2_more.js', import.meta.url), 'utf8')), 'act2_more.js still has a [scaffold] line');
+  const scaffold = [], missing = [], multiline = [], was = i18nMod.getLang();
+  i18nMod.setLang('es');
+  try {
+    for (const m of A2P_MAPS) {
+      if (a2pMissing(m.name)) missing.push(`${m.id}.name`);
+      for (const o of m.objects) for (const t of [...a2pLines(o), ...(a2pSpeaks(o) ? [o.label.toUpperCase()] : [])]) {
+        if (/\[scaffold\]/i.test(t)) scaffold.push(`${m.id}/${o.id}`);
+        if (a2pMissing(t)) missing.push(`${m.id}/${o.id}: ${t.slice(0, 50)}`);
+        if (t.includes('\n')) multiline.push(`${m.id}/${o.id}`);
+      }
+      // The townsfolk crowds.js stands on these maps count for Spanish too (es_audit lists them under these maps).
+      const own = new Set(m.objects.map((o) => o.id));
+      for (const o of MAPS_FOR_TEST[m.id].objects.filter((q) => !own.has(q.id))) for (const t of a2pLines(o)) if (a2pMissing(t)) missing.push(`${m.id}/${o.id} (crowds.js): ${t.slice(0, 50)}`);
+    }
+    const coop = A2P_SHOPS.coop;
+    for (const t of [coop.title, ...coop.lines]) { if (/\[scaffold\]/i.test(t)) scaffold.push('SHOPS.coop'); if (a2pMissing(t)) missing.push(`SHOPS.coop: ${t}`); }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(scaffold, [], 'a placeholder line is left');
+  assert.deepEqual(missing, [], 'add Spanish to src/i18n/es-act2.js');
+  assert.deepEqual(multiline, [], 'one line each, so a quest clue or a search result added under it still translates line by line');
+});
+test('hub #30 (Act 2): every polished Act 2 map can be reached, and from each way in everything on it can be walked up to', () => {
+  const linked = new Set(['room631']), todo = ['room631'];   // through every exit, flagged or not
+  while (todo.length) for (const o of MAPS_FOR_TEST[todo.shift()].objects) if (o.action === 'exit' && MAPS_FOR_TEST[o.to] && !linked.has(o.to)) { linked.add(o.to); todo.push(o.to); }
+  const ring2 = walkFrom('route1_north');   // once the road north is open, no other story door stands in the way
+  const bad = [];
+  for (const id of A2P_IDS) {
+    if (!linked.has(id)) bad.push(`${id} can't be reached through the exits from Room 631`);
+    if (!ring2.has(id)) bad.push(`${id} sits behind a flagged door`);
+    const m = MAPS_FOR_TEST[id];
+    for (const back of m.objects.filter((o) => o.action === 'exit' && MAPS_FOR_TEST[o.to])) {   // arrive the way the game does
+      const via = MAPS_FOR_TEST[back.to].objects.find((o) => o.action === 'exit' && o.to === id && o.pair === back.id);
+      if (!via) { bad.push(`${id}: nothing in ${back.to} leads to ${back.id}`); continue; }
+      const sim = new Sim(MAPS_FOR_TEST[back.to], { seed: 'a2p' });
+      for (const [pid, c] of [['a', 'manuel'], ['b', 'trevor'], ['c', 'michael']]) sim.addPlayer(pid, c);
+      sim.setMap(m, back.to, via.id);
+      const starts = [...sim.players.values()].map((p) => [Math.floor(p.x / 16), Math.floor(p.y / 16)]);
+      const seen = new Set(starts.map(([x, y]) => `${x},${y}`)), q = [...starts];
+      while (q.length) {
+        const [x, y] = q.shift();
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
+          if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
+          seen.add(k); q.push([nx, ny]);
+        }
+      }
+      for (const [x, y] of starts) if (m.solid(x, y)) bad.push(`${id}: arriving from ${back.to} lands in a wall at ${x},${y}`);
+      for (const o of m.objects) if (![[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${o.x + dx},${o.y + dy}`))) bad.push(`${id}: ${o.id} can't be reached from ${back.id}`);
+      for (const e of m.enemies) if (!seen.has(`${Math.floor(e.x / 16)},${Math.floor(e.y / 16)}`)) bad.push(`${id}: ${e.kind} is walled off from ${back.id}`);
+    }
+  }
+  assert.deepEqual(bad, []);
+});
+// The finds are listed sealed (docs/sealed/secrets-later-acts.md, ROT13), so this reads their object ids from there.
+const A2P_SEALED_RAW = fs.readFileSync(new URL('../docs/sealed/secrets-later-acts.md', import.meta.url), 'utf8');
+const A2P_SEALED = A2P_SEALED_RAW.split('-->\n').slice(1).join('-->\n')
+  .replace(/[a-z]/gi, (c) => String.fromCharCode(((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26) + (c <= 'Z' ? 65 : 97)));
+test('hub #30 (Act 2): each polished Act 2 area has its rows in the sealed list, built from systems that already exist', () => {
+  assert.ok(A2P_SEALED_RAW.startsWith('<!-- SEALED SPOILERS'), 'the list is committed sealed, never as plaintext');
+  const rows = A2P_SEALED.split('\n').filter((l) => /^\| [^-]/.test(l)).map((l) => l.split('|').map((c) => c.trim())).filter((c) => /^`(obj|npc)\.[a-z0-9_]+`$/.test(c[2] ?? ''));
+  const listed = new Set(rows.map((c) => c[2].replace(/`/g, '')));
+  assert.ok(listed.size >= A2P_MAPS.length, 'docs/sealed/secrets-later-acts.md: a row per find, with its object id');
+  const byId = new Map(A2P_MAPS.flatMap((m) => m.objects.map((o) => [o.id, [m, o]])));
+  for (const id of listed) assert.ok(byId.has(id), `${id}: in docs/sealed/secrets-later-acts.md but on none of the polished Act 2 maps`);
+  const isFind = (o) => !!(o.grant || o.loot || o.action === 'pages' || o.later?.length);
+  const questFlags = new Set(AlignSide.SIDE_QUESTS.flatMap((q) => [q.report?.flag, q.inspect?.flag, q.give?.flag].filter(Boolean)));
+  const atlas = new Set(['props', 'big', 'wide', 'doors'].flatMap((s) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${s}.json`, import.meta.url), 'utf8')).frames)));
+  const everyId = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.map((o) => o.id));
+  const actions = new Set([undefined, 'exit', 'shop', 'pages']);   // only what WorldScene already does with an object
+  for (const m of A2P_MAPS) {
+    assert.ok(m.objects.some((o) => listed.has(o.id)), `${m.id}: no row in docs/sealed/secrets-later-acts.md`);
+    for (const o of m.objects) {
+      if (listed.has(o.id)) assert.ok(isFind(o), `${o.id}: listed in the sealed file, but built from no existing system`);
+      else assert.ok(!isFind(o), `${m.id}/${o.id}: add its row to docs/sealed/secrets-later-acts.md`);
+      assert.ok(actions.has(o.action), `${m.id}/${o.id}: action ${o.action} is new`);
+      if (o.grant) { assert.ok(ITEMS[o.grant], `${o.id}: no item ${o.grant}`); assert.ok(o.text && o.doneText && !o.loot, `${o.id}: a one-time grant needs text and doneText`); }
+      if (o.loot) assert.ok(A2P_LOOT[o.loot], `${o.id}: no loot table ${o.loot}`);
+      if (o.action === 'pages') assert.ok(o.pages.length > 1, `${o.id}: pages to step through`);
+      for (const l of o.later ?? []) { assert.ok(o.npc, `${o.id}: later lines only play for people`); assert.ok(questFlags.has(l.if), `${o.id}: nothing in the game sets ${l.if}`); }
+      if (!o.selfDrawn) assert.ok(atlas.has(o.art ?? o.id), `${o.id}: no art ${o.art ?? o.id} in assets/sprites`);
+      assert.notEqual(o.art, 'obj.board', `${m.id}/${o.id}: still the placeholder corkboard`);
+      assert.equal(everyId.filter((id) => id === o.id).length, 1, `${o.id}: the id is used on another map too (finds and searches are keyed by it)`);
+    }
+    for (const s of m.scenery ?? []) assert.ok(atlas.has(s.art), `${m.id}: no scenery art ${s.art}`);
+  }
+});
+test('hub #30 (Act 2): children on the polished Act 2 maps, the crowd\'s included, are talk only, and no gag picks them', () => {
+  const approach = new A2P_Approach({ save: { party: { manuel: {} }, world: {} }, character: 'manuel', input: { keyboard: { on() {} } }, _questHandIns: () => [] });
+  const people = A2P_IDS.flatMap((id) => MAPS_FOR_TEST[id].objects.filter((o) => o.npc));
+  for (const o of people) assert.notEqual(o.eggOk, true, `${o.id}: nobody here is a gag target`);
+  for (const o of people.filter((q) => q.age === 'child')) {
+    assert.equal(o.approach, false, `${o.id}: talk only, nobody pickpockets or intimidates a kid`);
+    assert.deepEqual(approach.options(o).map((a) => a.id), ['talk'], `${o.id}: Talk is the only approach`);
+    assert.equal(approach.intercept(o), false, `${o.id}: no approach menu opens, so pressing E just talks`);
+    assert.ok(o.eggNo, `${o.id}: no gag picks a child`);
+  }
+  assert.ok(MAPS_FOR_TEST.greenbelt.objects.some((o) => o.age === 'child'), 'the kid with the kite in Greenbelt is still there');
+});
+test('hub #30 (Act 2): quest objects, givers, exits, spawns and enemies on the polished maps are where they were', () => {
+  const WAS = {
+    'npc.r1n_walker': [32, 8], 'obj.r1n_to_baltimore': [20, 0], 'obj.r1n_to_greenbelt': [0, 2], 'obj.r1n_to_refuge': [40, 2], 'obj.r1n_to_beltsville': [0, 6],
+    'obj.r1n_to_meade': [39, 6], 'obj.r1n_to_annapolis': [40, 9], 'obj.r1n_south': [18, 12], 'obj.r1n_to_beltway': [10, 12],
+    'npc.gb_committee': [15, 6], 'obj.gb_dishes': [30, 4], 'obj.greenbelt_out': [32, 10], 'obj.greenbelt_to_gb_dishes': [29, 0], 'obj.greenbelt_to_gb_coop': [3, 11], 'obj.greenbelt_to_gb_center': [5, 0],
+    'npc.gb_technician': [5, 4], 'obj.gb_tapes': [9, 2], 'obj.gb_cleanroom': [24, 4], 'obj.gb_dishes_out': [11, 8],
+    'npc.gb_clerk': [11, 4], 'obj.gb_coop_counter': [12, 2], 'obj.gb_coop_out': [10, 7],
+    'npc.bv_vet': [11, 7], 'obj.bv_ledgers': [4, 3], 'obj.bv_sealed_barn': [17, 9], 'obj.beltsville_crate_19_3': [19, 3], 'obj.beltsville_out': [31, 9], 'obj.beltsville_to_bv_barn': [12, 10], 'obj.beltsville_to_bv_lab': [6, 0],
+    'obj.bv_named_tank': [22, 3], 'obj.bv_barn_out': [11, 8],
+    'npc.rf_teacher': [9, 6], 'obj.rf_tower': [18, 8], 'obj.refuge_out': [0, 8], 'obj.refuge_to_rf_settlement': [8, 0], 'obj.refuge_to_rf_fringe': [26, 0], 'obj.refuge_to_rf_marsh': [15, 9],
+    'npc.rf_blacksmith': [5, 3], 'obj.rf_library': [20, 3], 'npc.rf_hardman': [13, 4], 'obj.rf_implants': [26, 5], 'obj.rf_settlement_out': [10, 8],
+    'npc.md_quartermaster': [14, 5], 'obj.md_menu': [28, 4], 'obj.meade_out': [0, 7], 'obj.meade_to_meade_inside': [10, 8], 'obj.meade_to_md_lot': [4, 8],
+    'npc.bmore_steward': [15, 4], 'obj.bmore_manifests': [27, 6], 'obj.bmore_stacks_out': [0, 7],
+    'npc.bmore_doctor': [15, 3], 'obj.bmore_meds': [16, 3], 'obj.bmore_clinic_out': [10, 7],
+    'npc.ann_crabber': [20, 3], 'obj.ann_statehouse': [4, 4], 'obj.ann_charts': [29, 6], 'obj.annapolis_out': [0, 7], 'obj.annapolis_to_ann_harbor': [31, 7],
+    'obj.annapolis_to_ann_statehouse': [6, 8], 'obj.annapolis_to_ann_bridge': [28, 8], 'obj.annapolis_to_ann_chapel': [3, 0],
+    'npc.ann_pilot': [12, 5], 'obj.ann_almanac': [14, 6], 'obj.ann_bell': [25, 4], 'obj.ann_harbor_out': [0, 7],
+  };
+  const SPAWN = { route1_north: [18, 11], greenbelt: [3, 9], beltsville: [2, 9], refuge: [3, 8], meade: [3, 7], annapolis: [3, 7], gb_dishes: [11, 7], gb_coop: [10, 6],
+    bv_barn: [11, 7], rf_settlement: [10, 7], bmore_stacks: [5, 7], bmore_clinic: [10, 6], ann_harbor: [3, 7] };
+  // In map order, so saved kills keep their keys (`<map>#<index>`).
+  const FOES = { route1_north: ['enemy.rot_taken 6,9'], greenbelt: ['enemy.spitter 27,9'], beltsville: ['enemy.rot_taken 27,7'],
+    meade: ['enemy.captcha 28,7', 'boss.md_fence 27,3'], gb_dishes: ['enemy.autocomplete 7,6', 'enemy.autocomplete 18,6', 'boss.gb_receiver 24,2'],
+    bv_barn: ['enemy.rot_taken 3,5', 'enemy.rot_taken 11,5', 'enemy.rot_taken 19,5', 'boss.bv_shell 23,2'], bmore_stacks: ['enemy.rot_taken 13,6', 'enemy.rot_taken 26,7'],
+    ann_harbor: ['boss.ann_tide 26,5'] };
+  const at = new Map(A2P_MAPS.flatMap((m) => m.objects.map((o) => [o.id, o])));
+  for (const [id, xy] of Object.entries(WAS)) assert.deepEqual(at.has(id) && [at.get(id).x, at.get(id).y], xy, `${id} moved`);
+  for (const m of A2P_MAPS) {
+    assert.deepEqual(m.spawns.map((s) => [Math.floor(s.x / 16), Math.floor(s.y / 16)]), [SPAWN[m.id]], `${m.id}: the spawn moved`);
+    assert.deepEqual(m.enemies.map((e) => `${e.kind} ${(e.x - 8) / 16},${(e.y - 8) / 16}`), FOES[m.id] ?? [], `${m.id}: the enemies changed`);
+    for (const o of m.objects.filter((q) => q.action === 'exit')) assert.ok(WAS[o.id], `${o.id}: a new way in or out; add it to this list`);
+  }
+  for (const q of AlignSide.SIDE_QUESTS) {
+    for (const id of [q.giver, q.inspect?.obj]) if (id && at.has(id)) assert.ok(WAS[id], `${q.id}: ${id} is on a polished Act 2 map; add it to this list`);
+    if (q.inspect && at.has(q.inspect.obj)) assert.ok(at.get(q.inspect.obj).text, `${q.id}: the clue is read under the object's own text, so it needs one`);
+  }
+});
+test('hub #30 (Act 2): es-act2.js is wired in and agrees with the other Spanish tables wherever they share an English line', () => {
+  const clash = [];
+  for (const [name, tb] of Object.entries(A2P_TABLES)) for (const [en, es] of Object.entries(A2P_ES)) if (tb && Object.hasOwn(tb, en) && tb[en] !== es) clash.push(`${JSON.stringify(en.slice(0, 40))}: ${name} says "${tb[en].slice(0, 30)}"`);
+  for (const [id, def] of Object.entries(ITEMS)) for (const [k, i] of [['name', 0], ['text', 1]]) {   // items translate through es-items.js
+    const es = ES_ITEMS[id.replace(/^item\./, '')]?.[i];
+    if (es && Object.hasOwn(A2P_ES, def[k]) && A2P_ES[def[k]] !== es) clash.push(`${id}.${k}`);
+  }
+  assert.deepEqual(clash, [], 'use one Spanish string in both tables');
+  const was = i18nMod.getLang(), wrong = [];
+  i18nMod.setLang('es');
+  try { for (const [en, es] of Object.entries(A2P_ES)) if (i18nMod.tr(en) !== es) wrong.push(en.slice(0, 50)); } finally { i18nMod.setLang(was); }
+  assert.deepEqual(wrong, [], 'src/i18n.js reads es-act2.js, and nothing later in the table overrides it');
+  const audit = fs.readFileSync(new URL('../tools/i18n/es_audit.mjs', import.meta.url), 'utf8');
+  assert.ok(/import \{ ES_ACT2 \} from '..\/..\/src\/i18n\/es-act2\.js'/.test(audit) && /Object\.assign\(exact, ES_ACT2\)/.test(audit), 'tools/i18n/es_audit.mjs counts es-act2.js');
+});
+test('hub #30 (Act 2), canon: the lines keep to the quest clues, the naming rule and the house style', () => {
+  const obj = (mapId, id) => A2P_MAPS.find((m) => m.id === mapId).objects.find((o) => o.id === id);
+  const all = A2P_MAPS.flatMap((m) => m.objects.flatMap((o) => a2pLines(o).map((t) => [`${m.id}/${o.id}`, t])));
+  // Lore gate 7.1 (PR #46): the named tank's name can't be read, and nothing invents a batch number.
+  for (const [where, t] of all.filter(([w]) => /^(beltsville|bv_barn)\//.test(w))) assert.ok(!/thirteen|batch \d|\bnumber \d/i.test(t), `${where}: an invented batch: ${t.slice(0, 60)}`);
+  assert.ok(!/\d/.test(obj('bv_barn', 'obj.bv_named_tank').text), 'the tank: no readable name or number before the clue says so');
+  // The bay (LoreKeeper): nothing here may read like the real 2024 bridge collapse.
+  for (const [where, t] of all.filter(([w]) => /^(annapolis|ann_harbor)\//.test(w))) assert.ok(!/\b(ships?|vessels?|freighters?|collisions?|collapsed?|wreck(age)?|struck)\b/i.test(t), `${where} reads like a disaster: ${t.slice(0, 60)}`);
+  // M2.5 keeps the boat: nobody on the harbor promises one.
+  for (const [where, t] of all.filter(([w]) => /^ann_harbor\//.test(w))) assert.ok(!/\b(get|give|find) you a boat\b/i.test(t), `${where} hands out the boat`);
+  // The clues are read under these lines, so the lines can't give the clue away first.
+  assert.ok(!/\bin\b.*\bout\b|don't come out|doesn't come out/i.test(obj('gb_dishes', 'obj.gb_cleanroom').text), 'the clean room: where the prints lead is the clue\'s to say');
+  assert.ok(!/before the Call|ask the bell/i.test(obj('beltsville', 'obj.bv_ledgers').text + obj('ann_harbor', 'obj.ann_almanac').text), 'the ledgers and the almanac leave their answers to the clues');
+  // Naming in what players read (bible §2): "code rot", "code rotter", "Code-rot-taken", and "John Pork" in full.
+  for (const [where, t] of all) {
+    assert.ok(!/(?<!code[ -])\brot(ter)?s?\b/i.test(t) && !/(?<!John )\bPork\b/.test(t), `${where}: the naming rule: ${t.slice(0, 60)}`);
+    assert.ok(!/\b[A-Z]{3,}, [A-Z]{3,}, (and )?[A-Z]{3,}\b/.test(t) && !/\b(\w+), \1, \1\b/i.test(t), `${where}: a triplet: ${t.slice(0, 60)}`);
+  }
+});
+
 const fartMod = await import('../src/game/fart.js');
 const buttMod = await import('../src/game/bigButt.js');
 const npcLifeMod = await import('../src/content/npc_life.js');

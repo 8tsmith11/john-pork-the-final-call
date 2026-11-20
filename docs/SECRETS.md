@@ -82,6 +82,16 @@ entries turn into one-line hints. The full answers stay in this file.
 | **Shrimp canary** | Check Trevor's shrimp tank in 631: their behavior tells you how rotted the tunnels still are | The tank text says they act up before rot spikes | built |
 | **Sump pump** (puzzle step) | Restart the pump in the tunnels' pump room to drain the flooded bay and read the B switch clue | The vending-machine marks "below the waterline" | built |
 
+## Later acts, small finds (sealed)
+
+The later acts' areas have small finds too. Their list is sealed, so nobody reads it by accident:
+`docs/sealed/secrets-later-acts.md`. To open it on purpose:
+`python3 tools/spoilers/seal.py open docs/sealed/secrets-later-acts.md`
+
+*En español:* las zonas de los actos siguientes también tienen hallazgos pequeños. La lista está sellada para que nadie
+la lea sin querer: `docs/sealed/secrets-later-acts.md`. Para abrirla a propósito:
+`python3 tools/spoilers/seal.py open docs/sealed/secrets-later-acts.md`
+
 ## Act 1, small finds (hub #30 polish, added by gonman)
 
 One small secret or job in each of the Act 1 side areas. "Once per save" finds set `got.<object id>`; a searched

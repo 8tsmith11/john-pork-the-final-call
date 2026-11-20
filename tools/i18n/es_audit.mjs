@@ -5,6 +5,7 @@ import { ES_ASTER } from '../../src/i18n/es-aster.js';
 import { ES_HUD } from '../../src/i18n/es-hud.js';
 import { ES_ITEMS } from '../../src/i18n/es-items.js';
 import { ES_PLAZA } from '../../src/i18n/es-plaza.js';
+import { ES_ACT2 } from '../../src/i18n/es-act2.js';
 import { ES_QUESTS } from '../../src/i18n/es-quests.js';
 import { ES_TUNNELS_LAKE } from '../../src/i18n/es-tunnels-lake.js';
 import { ES_ROUTE1 } from '../../src/i18n/es-route1.js';
@@ -110,6 +111,7 @@ function checkLines(file, location, value) {
     for (const [key, child] of Object.entries(value)) checkLines(file, `${location}.${key}`, child);
   }
 }
+Object.assign(exact, ES_ACT2);   // the Act 2 areas (hub #30), after the others as in src/i18n.js, on a line of their own
 
 setLang('es');
 
