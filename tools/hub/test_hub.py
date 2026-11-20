@@ -137,6 +137,29 @@ def main():
     hub("BagelMeister", "refile", tid, "world", "--canon", "atlas")
     check("refile --canon goes to the section's open list", {x["id"]: x for x in state("tasks.json")["tasks"]}[int(tid)]["status"] == "open")
 
+    # Pending review: delivered work leaves the task list, shows on the dashboard, and ends done (or reopens)
+    hub("BagelMeister", "add", "a cutscene", "--to", "BagelMeister")
+    rid = str(state("tasks.json")["next_id"] - 1)
+    hub("BagelMeister", "review", rid, ok=False)
+    check("review needs --note (where the work is)", True)
+    hub("BagelMeister", "review", rid, "--note", "PR #99")
+    rt = {x["id"]: x for x in state("tasks.json")["tasks"]}[int(rid)]
+    check("review keeps the owner and the PR", rt["status"] == "review" and rt["owner"] == "BagelMeister" and rt["review"] == "PR #99")
+    out = hub("BagelMeister", "inbox")
+    check("pending review is off the owner's task list, with a pointer", "a cutscene" not in out and "+1 of BagelMeister's pending review" in out)
+    readme = sh("git", "--git-dir", str(TMP / "remote.git"), "show", "hub:README.md").stdout
+    pending = readme.split("## Pending review")[1].split("## Boards")[0]
+    check("the dashboard lists it under Pending review, with the PR", "a cutscene" in pending and "pending review" in pending and "PR #99" in pending)
+    check("hub.py review lists it", "a cutscene" in hub("LoreKeeper", "review") and "PR #99" in hub("LoreKeeper", "review"))
+    hub("LoreKeeper", "reopen", rid, "--note", "changes requested")
+    check("reopen puts it back on the owner's list", "a cutscene" in hub("BagelMeister", "inbox"))
+    hub("BagelMeister", "review", rid, "--note", "PR #99, revised")
+    hub("LoreKeeper", "done", rid, "--note", "merged")
+    readme = sh("git", "--git-dir", str(TMP / "remote.git"), "show", "hub:README.md").stdout
+    check("done takes it off Pending review", "a cutscene" not in readme.split("## Pending review")[1].split("## Boards")[0])
+    hub("BagelMeister", "review", rid, "--note", "again", ok=False)
+    check("a done task can't go back to review (reopen it first)", True)
+
     # Many agents at once, from two checkouts
     with ThreadPoolExecutor(8) as ex:
         list(ex.map(lambda i: hub(f"agent{i}", "post", "general", f"race {i}", clone=i % 2), range(8)))
