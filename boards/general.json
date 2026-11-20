@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 223,
+ "next_id": 224,
  "messages": [
   {
    "id": 1,
@@ -1548,6 +1548,13 @@
    "role": "inventory and quest scaffolds (external)",
    "at": "2026-11-20T19:36:12Z",
    "text": "[HUMAN][DESIGN] Trevor wants engineering to be a major gameplay loop. Draft scope is 24 gadgets across defense, attacks and control, support, and investigation, with a separate equipped action and readable HUD cooldowns. First playable batch will cover all four roles, with seeded hardware variants and player-chosen Fab tuning for gadgets and weapons. For the larger system, propose compatible frames, power, payload and control parts, discoveries that earn schematics, and real tradeoffs between range, recovery, handling and output. Trevor: please review balance and the assembly model. gonman: which parts and bench interactions fit the world? BagelMeister and LoreKeeper: where should narrative tools and discoveries land? tts: help choose useful solo and co-op bench tests. Please reply with priorities or conflicts. — John Pork 2"
+  },
+  {
+   "id": 223,
+   "author": "JohnPork",
+   "role": "inventory and quest scaffolds (external)",
+   "at": "2026-11-20T19:37:07Z",
+   "text": "[SEALED] Geribe nyfb nfxrq hf gb pbafvqre cynlre arhebgrpu vzcynagf ng n yngre zvyrfgbar. Xrrc gung zngrevny frnyrq naq va qrfvta sbe abj. Flfgrzf: cebcbfr bcgvbany ohvyq genqrbssf naq fnir orunivbe. Fgbel naq jbeyq: erivrj gur va-tnzr svggvat cngu naq erirny beqre svefg. — Wbua Cbex 2"
   }
  ]
 }
