@@ -2575,6 +2575,9 @@ export class WorldScene extends Phaser.Scene {
     g.fillStyle(0x3fd0d6, 0.10 * fade).fillRect(v.x, v.y, v.width, v.height);
     for (const [x, y] of ins.live) g.fillStyle(0xd417c8, 0.28 + 0.12 * fade).fillRect(x * TILE, y * TILE, TILE, TILE).lineStyle(1, 0xff5ef0, 0.7).strokeRect(x * TILE + 0.5, y * TILE + 0.5, TILE - 1, TILE - 1);
     if (ins.cp) g.lineStyle(1, 0x3fd0d6, 0.5 + 0.4 * fade).strokeRect(ins.cp.x - 6, ins.cp.y - 6, 12, 12);
+    // the active seat (time-slicing): a ring under whoever may move this beat
+    const seat = ins.seat && this._lastRendered?.players?.find((p) => p.id === ins.seat);
+    if (seat) g.lineStyle(2, 0xffd27f, 0.9).strokeEllipse(seat.x, seat.y + 2, 18, 7);
   }
 
   // The chase on screen (src/engine/chase.js): the drones riding the pace line, a lane being marked, and the end

@@ -6,7 +6,7 @@ import { BOSS_PATTERNS, bossPool, pickPattern, windFor, LASER, SHOCK, RAIN, LANE
 import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 import { BOSSES } from '../content/bosses.js';
-import { newInside, stepInside, insideView } from './inside.js';
+import { newInside, stepInside, insideView, heldBySlice } from './inside.js';
 import { newChase, stepChase, chaseView } from './chase.js';
 
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.35, iframes: 0.22,
@@ -321,7 +321,8 @@ export class Sim {
     this.tick++;
     this.events = this._pending ?? []; this._pending = [];
     for (const p of this.players.values()) {
-      const inp = p.under > 0 && !p.downed ? this._underInput(p) : inputs.get(p.id) || emptyInput();
+      // Inside, under time-slicing, only the seat-holder's controls are live this beat (src/engine/inside.js).
+      const inp = p.under > 0 && !p.downed ? this._underInput(p) : heldBySlice(this.inside, p) ? emptyInput() : inputs.get(p.id) || emptyInput();
       if (p.arriveHold) {   // the arrival grace ends the moment the movement input changes (or is released)
         if (p.arriveMx === null) { p.arriveMx = inp.mx ?? 0; p.arriveMy = inp.my ?? 0; }
         else if ((inp.mx ?? 0) !== p.arriveMx || (inp.my ?? 0) !== p.arriveMy) p.arriveHold = false;

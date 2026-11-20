@@ -1710,6 +1710,43 @@ test('chase rules (src/engine/chase.js): the pace line catches stragglers, every
   const o = new Sim(rotArena(), { seed: 'plain' }); o.addPlayer('h', 'trevor'); assert.equal(o.chase, null); assert.equal(o.snapshot().ch, undefined);
 });
 
+test('the Scheduler\'s rules (inside.js): faster beats, skipped beats, and fair time-slicing for solo, AI and co-op', async () => {
+  const I = await import('../src/engine/inside.js');
+  const box = { id: 'sched-test', w: 20, h: 12, objects: [], enemies: [], spawns: [{ x: 48, y: 48 }], inside: { beat: 1, terminals: [[2, 2]] }, solid: (tx, ty) => tx < 0 || ty < 0 || tx >= 20 || ty >= 12 };
+  const run = (sim, secs, inp = new Map()) => { const ev = []; for (let i = 0; i < Math.round(secs * 60); i++) { sim.step(1 / 60, inp); ev.push(...sim.events); } return ev; };
+  const sim = new Sim(box, { seed: 'sched' });
+  sim.addPlayer('h', 'trevor'); sim.addPlayer('ai:manuel', 'manuel'); sim.addPlayer('ai:michael', 'michael');
+  for (const [i, p] of [...sim.players.values()].entries()) { p.x = 60 + i * 60; p.y = 100; }
+  // phase 2: a faster beat
+  I.schedulerPhase(sim.inside, 2); const b2 = run(sim, 3).filter((e) => e.t === 'beat').length;
+  assert.ok(b2 >= 3, `faster beats (${b2} in 3 s)`);
+  // phase 3: every third beat is skipped, and the seat goes round everyone, AI roommates included
+  I.schedulerPhase(sim.inside, 3);
+  const seats = [], ev = [];
+  for (let i = 0; i < 6 * 60; i++) { sim.step(1 / 60, new Map([['h', { ...emptyInput(), mx: 1 }]])); ev.push(...sim.events); if (sim.events.some((e) => e.t === 'beat')) seats.push(sim.inside.seat); }
+  assert.ok(ev.some((e) => e.t === 'beat' && e.skip), 'some beats are skipped');
+  assert.deepEqual(new Set(seats), new Set(['h', 'ai:manuel', 'ai:michael']), 'everyone gets the seat in turn: solo with AI is the same as co-op');
+  // held: no input, no damage; the seat-holder moves
+  const h = sim.players.get('h');
+  while (sim.inside.seat === 'h') sim.step(1 / 60, new Map());
+  const x0 = h.x; sim.step(1 / 60, new Map([['h', { ...emptyInput(), mx: 1 }]]));
+  assert.equal(h.x, x0, 'held out of the slice: your input waits');
+  const hp0 = h.hp; h.iframes = 0; sim.step(1 / 60, new Map()); sim._hurtPlayer(h, 10, 0);
+  assert.equal(h.hp, hp0, 'and nothing can touch you while held');
+  assert.ok(sim.snapshot().ins.seat === sim.inside.seat, 'every screen knows whose turn it is');
+  // idle with the seat: the floor under you is deallocated; held roommates never are
+  const deallocs = [];
+  for (let i = 0; i < 8 * 60; i++) { sim.step(1 / 60, new Map()); deallocs.push(...sim.events.filter((e) => e.t === 'dealloc')); }
+  assert.ok(deallocs.length > 0, 'an idle seat-holder loses the tile under them');
+  assert.ok(sim.snapshot().ins.live.length > 0, 'and it shows as corrupted');
+  // moving through your slice keeps the floor
+  const s2 = new Sim(box, { seed: 'sched2' }); s2.addPlayer('h', 'trevor'); const q = s2.players.get('h'); q.x = 60; q.y = 100;
+  I.schedulerPhase(s2.inside, 3); let mine = 0, dir = 1;
+  for (let i = 0; i < 6 * 60; i++) { if (i % 60 === 0) dir = -dir; s2.step(1 / 60, new Map([['h', { ...emptyInput(), mx: dir }]])); mine += s2.events.filter((e) => e.t === 'dealloc').length; }
+  assert.equal(mine, 0, 'keep moving on your turn and nothing is taken');
+  I.schedulerPhase(s2.inside, 1); assert.equal(s2.inside.seat, null, 'back to phase 1: no slicing');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
