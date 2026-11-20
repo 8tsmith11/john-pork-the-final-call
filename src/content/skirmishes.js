@@ -8,10 +8,10 @@ import { outbreakPhase } from './outbreak.js';
 
 export const SKIRMISHES = [
   {
-    id: 'cp_drone_hub', map: 'metro_plaza', phases: ['before'],
-    area: [10, 20, 13, 8],           // the yard below ASTER, between its fence and the railway (Mrs. Okafor watches from the west edge)
-    machine: [21, 23],               // the rotted hub, east end of the yard
-    troopers: [[12, 21], [11, 23], [12, 25], [11, 26]],   // a firing line at the west end
+    id: 'cp_drone_hub', map: 'metro_plaza', phases: ['before'], husk: ['after', 'contained'],   // after the Call only the burned husk is left
+    area: [13, 22, 9, 6],            // the south-east of the garden below ASTER, clear of its gate and of Mrs. Okafor (gonman)
+    machine: [20, 25],               // the rotted hub, east end
+    troopers: [[14, 23], [15, 24], [14, 25], [15, 26]],   // a firing line at the west end
     label: 'Abatement in progress', labelEs: 'Saneamiento en curso',
     lines: [
       { en: 'Abatement in progress. Back behind the tape.', es: 'Saneamiento en curso. Atrás de la cinta.' },
@@ -29,7 +29,10 @@ export const SKIRMISHES = [
 /** For the sim: { mapId: spec } for the current phase, with `over` set for fights already finished. */
 export function skirmishesFor(flags = {}) {
   const phase = outbreakPhase(flags), out = {};
-  for (const s of SKIRMISHES) if (s.phases.includes(phase)) out[s.map] = { ...s, over: !!flags[`skirmish.${s.id}.over`] };
+  for (const s of SKIRMISHES) {
+    if (s.phases.includes(phase)) out[s.map] = { ...s, over: !!flags[`skirmish.${s.id}.over`] };
+    else if (s.husk?.includes(phase)) out[s.map] = { ...s, over: true };   // burned out by morning, seen or not
+  }
   return out;
 }
 export const skirmishById = (id) => SKIRMISHES.find((s) => s.id === id);

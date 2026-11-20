@@ -12,8 +12,8 @@ export class SkirmishView {
   constructor(scene) { this.s = scene; this.id = null; this.troops = []; this.g = null; this.tape = null; this.over = null; this.nextLine = 0; this.lineIx = 0; }
 
   _clear() {
-    for (const o of [this.g, this.tape, this.mg, this.label, ...this.troops]) o?.destroy();
-    this.g = this.tape = this.mg = this.label = null; this.troops = []; this.id = null; this.over = null;
+    for (const o of [this.g, this.tape, this.mg, this.glow, this.label, ...this.troops]) o?.destroy();
+    this.g = this.tape = this.mg = this.glow = this.label = null; this.troops = []; this.id = null; this.over = null;
   }
 
   _build(sk) {
@@ -30,7 +30,8 @@ export class SkirmishView {
     if (spec?.label) this.label = s.add.text(x0 + 4, y0 - 9, (es ? spec.labelEs : spec.label).toUpperCase(), { fontFamily: 'monospace', fontSize: '6px', color: '#f2c94c', backgroundColor: '#15171fcc', padding: { x: 2, y: 1 } }).setDepth(4);
     const art = s.textures.exists('props') && s.textures.get('props').has('npc.trooper_side');
     this.troops = sk.tr.map(([x, y]) => (art ? s.add.image(x, y + 8, 'props', 'npc.trooper_side') : s.add.image(x, y + 7, troopTexture(s))).setOrigin(0.5, 1).setDepth(y + 7));
-    this.mg = s.add.graphics();   // the machine, redrawn each frame (it pulses)
+    this.glow = s.add.graphics().setDepth(2.5);   // the rot's glow on the ground, under everyone (gonman)
+    this.mg = s.add.graphics();   // the machine, redrawn each frame (it pulses), y-sorted
     this.g = s.add.graphics().setDepth(6000);   // drones and tracers fly above everything on the ground
   }
 
@@ -42,11 +43,12 @@ export class SkirmishView {
     const t = s.time.now / 1000, [mx, my, hp, max] = sk.m;
     // The machine: a rotted drone hub. Cracks pulse while it stands; afterwards a black husk that smokes.
     const mg = this.mg.clear().setDepth(my + 8);
+    const gl = this.glow.clear();
     if (!sk.over) {   // the rot's glow on the ground, and tendrils out across the yard
       const pulse = 0.5 + 0.5 * Math.sin(t * 3);
-      mg.fillStyle(0x7cff6b, 0.10 + 0.08 * pulse).fillCircle(mx, my, 34 + pulse * 6);
-      mg.lineStyle(1, 0x7cff6b, 0.35 + 0.25 * pulse);
-      for (let i = 0; i < 6; i++) { const a = i * 1.05 + 0.3, l = 22 + (i % 3) * 8; mg.lineBetween(mx + Math.cos(a) * 12, my + 6 + Math.sin(a) * 4, mx + Math.cos(a) * l, my + 6 + Math.sin(a) * l * 0.45); }
+      gl.fillStyle(0x7cff6b, 0.10 + 0.08 * pulse).fillCircle(mx, my, 34 + pulse * 6);
+      gl.lineStyle(1, 0x7cff6b, 0.35 + 0.25 * pulse);
+      for (let i = 0; i < 6; i++) { const a = i * 1.05 + 0.3, l = 22 + (i % 3) * 8; gl.lineBetween(mx + Math.cos(a) * 12, my + 6 + Math.sin(a) * 4, mx + Math.cos(a) * l, my + 6 + Math.sin(a) * l * 0.45); }
     }
     mg.fillStyle(0x000000, 0.35).fillEllipse(mx, my + 8, 44, 10);
     mg.fillStyle(sk.over ? 0x1d1f24 : 0x46403a, 1).fillRect(mx - 17, my - 30, 34, 38);   // the hub's cabinet

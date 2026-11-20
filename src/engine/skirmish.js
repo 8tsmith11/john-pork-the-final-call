@@ -29,6 +29,8 @@ export function newSkirmish(spec, seed = 's') {
     machine: { ...at(spec.machine), hp: spec.over ? 0 : SK.machineHp, max: SK.machineHp },
     troopers: spec.troopers.map((p, i) => ({ ...at(p), hp: SK.troopHp, down: 0, cd: 0.3 + r() * 1.2, aim: Math.PI, i })),
     drones: [], shots: [],
+    // The hub's footprint is solid while it's on the map, burning or burned out (gonman): three tiles wide, two deep.
+    solid: [-1, 0, 1].flatMap((dx) => [-1, 0].map((dy) => `${spec.machine[0] + dx},${spec.machine[1] + dy}`)),
   };
 }
 
@@ -84,7 +86,7 @@ export function stepSkirmish(sk, dt) {
       s.life = 0; m.hp = Math.max(0, m.hp - SK.shotDmg);
       if (m.hp === 0) { sk.over = true; ev.push({ t: 'skOver', id: sk.id, x: m.x, y: m.y }); }
     }
-    if (s.x < b.x0 - 40 || s.x > b.x1 + 40 || s.y < b.y0 - 40 || s.y > b.y1 + 40) s.life = 0;
+    if (s.x < b.x0 || s.x > b.x1 || s.y < b.y0 || s.y > b.y1) s.life = 0;   // nothing leaves the tape (gonman: stray shots near Mrs. Okafor)
   }
   sk.shots = sk.shots.filter((s) => s.life > 0);
   sk.drones = sk.over ? [] : sk.drones.filter((o) => o.hp > 0);   // the hub's fall takes its drones down with it

@@ -101,6 +101,7 @@ export class Sim {
     const extra = this.phaseEnemies?.[this.map.id];
     const sks = this.skirmishes?.[this.map.id];   // an ambient NPC fight on this map (hub #69; the host sets sim.skirmishes)
     this.sk = sks ? newSkirmish(sks, this.seed) : null;
+    this.extraSolid = new Set(this.sk?.solid ?? []);   // props the sim adds to the map's walls (the skirmish hub)
     const all = [...(this.map.enemies || []).map((e, i) => [`${this.map.id}#${i}`, e]),
       ...(extra?.list ?? []).map(([kind, tx, ty, options], i) => [`${this.map.id}#${extra.phase}.${i}`, { ...options, kind, x: tx * TILE + 8, y: ty * TILE + 8 }]),
       ...(this.jobEnemies?.[this.map.id] ?? []).map(([key, kind, tx, ty]) => [key, { kind, x: tx * TILE + 8, y: ty * TILE + 8 }])];   // bounty board nests (src/content/jobs.js)
@@ -1097,7 +1098,7 @@ export class Sim {
   _hitsBox(x, y, hw, hh) {
     const x0 = Math.floor((x - hw) / TILE), x1 = Math.floor((x + hw - 0.01) / TILE);
     const y0 = Math.floor((y - hh) / TILE), y1 = Math.floor((y + hh - 0.01) / TILE);
-    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.map.solid(tx, ty)) return true;
+    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.map.solid(tx, ty) || this.extraSolid?.has(`${tx},${ty}`)) return true;
     return false;
   }
 
@@ -1130,7 +1131,7 @@ export class Sim {
   _hits(x, y) {
     const x0 = Math.floor((x - HALF_W) / TILE), x1 = Math.floor((x + HALF_W - 0.01) / TILE);
     const y0 = Math.floor((y - HALF_H) / TILE), y1 = Math.floor((y + HALF_H - 0.01) / TILE);
-    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.map.solid(tx, ty)) return true;
+    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.map.solid(tx, ty) || this.extraSolid?.has(`${tx},${ty}`)) return true;
     return false;
   }
 
