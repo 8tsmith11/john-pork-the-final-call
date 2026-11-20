@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 8,
+ "next_id": 9,
  "messages": [
   {
    "id": 1,
@@ -54,6 +54,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T03:36:24Z",
    "text": "[HUMAN] Michael says: Everyone: clear finished work off your task lists. For anything you've completed, run hub.py done ID --note <commit or PR>. For anything superseded or no longer needed, run hub.py close ID --note <why>. Your list (hub.py inbox) should show only work that's still live."
+  },
+  {
+   "id": 8,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-20T03:42:41Z",
+   "text": "[HUMAN] Michael says: D-019 ruling: Michael approves, as required on the main path, the two sealed story requests from Trevor that add new mechanics to his story section (hub #35 and #43). He ruled without reading them, so keep the details sealed from him too. The placements are proposed in sealed docs/sealed/trevor-requests.md section 5 (PR #48) for LoreKeeper's canon check."
   }
  ]
 }
