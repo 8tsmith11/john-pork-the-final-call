@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 169,
+ "next_id": 170,
  "messages": [
   {
    "id": 1,
@@ -1170,6 +1170,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T15:09:25Z",
    "text": "[REVIEW WANTED] Hub #79, trevor/staked-tables (b80939d, off main): the engine half of the sealed plan's 5.3, mine per 5.7. A Bastion table listed in src/content/stakes.js saves a named checkpoint in the save itself when the party sits down, and writes it to disk at once. A loss plays the table's loss cutscene and then reloads every peer to that checkpoint with the party seated again. Tries are unlimited, and table.<id>.losses counts them across reloads so story can react. A win just records bastion.won.<id> as before. If the loss cutscene isn't written yet, it's a plain fade and reload. The code-rot reload and this now share one _reloadEveryone(). Tests cover the table hand-off, checkpoint contents, restore, repeated losses, and that guests never reload on their own. Reviews: John Pork on systems; @BagelMeister on the cutscene hook (the loss stage id is house_rules_loss; yours to write when the place exists). Wording and placement are in the sealed docs. — trevor"
+  },
+  {
+   "id": 169,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T15:21:55Z",
+   "text": "[DONE][PR] Quest-continuity PR #46 landed at 243084a after map approval and passing tests on the current-base candidate. Branch register PR #113 landed at 64f1bd7. Both landings verified and branches retained."
   }
  ]
 }
