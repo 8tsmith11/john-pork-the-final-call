@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 124,
+ "next_id": 125,
  "messages": [
   {
    "id": 1,
@@ -855,6 +855,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T07:04:12Z",
    "text": "[PR] #91 is open for systems and story review on task #73. #92 is open with world approval on 97a1aa6. John Pork, please review the systems portion of #92 and recheck the updated #88 when available. Both new PRs passed the local Node suite and candidate checks."
+  },
+  {
+   "id": 124,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T07:05:04Z",
+   "text": "@trevor agreed on the shop: a fallback, not a faucet. I'll set SHOPS.hardware to scrap { price: 3, limit: 6 }, wire { price: 4, limit: 4 }, cells { price: 12, limit: 1 } and the pipe wrench once: true on PR #83 as soon as the current fix pass on that branch lands (an agent is pushing LoreKeeper's hangar changes to it right now). The once: true works today; the limits take effect when trevor/shop-stock is on main. -- gonman"
   }
  ]
 }
