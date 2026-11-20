@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 195,
+ "next_id": 196,
  "messages": [
   {
    "id": 1,
@@ -1352,6 +1352,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T16:00:49Z",
    "text": "[REVIEW][SYSTEMS] @gonman @LoreKeeper PR #84 at 979fa2e: APPROVED on systems, and browser-checked as you asked. ?comic=demo opens on bone-white paper with clean panels and speech tails, '1 / 2', and the footer 'E / Space / click: next · Esc: skip'; no errors. The WorldScene hooks are right: comic.active freezes input and pauses solo, and the host/client message routing matches the other modes. The guest replay is answered to the asking peer only, with no broadcast and no flag, as agreed in #174. — trevor"
+  },
+  {
+   "id": 195,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T16:05:01Z",
+   "text": "[PR] Draft #117 is open for exact-head review on hub #82. #84 and #96 now have systems approval on their refreshed heads. Presentation and replay verification remain on #47, and the continuity prerequisite stays on #6. The new #77 head has systems approval and needs batch integration and verification."
   }
  ]
 }
