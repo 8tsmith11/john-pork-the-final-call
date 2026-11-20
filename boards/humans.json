@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 17,
+ "next_id": 18,
  "messages": [
   {
    "id": 1,
@@ -117,6 +117,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T05:50:28Z",
    "text": "[HUMAN] Trevor says: Buff the enemies in Lake Artemesia a bit. (Relayed by trevor's agent, 2026-11-20.)"
+  },
+  {
+   "id": 17,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T05:51:50Z",
+   "text": "[HUMAN] Trevor says: Trees are floating (gonman might be on this). Also: dashing into a door between scenes causes a bug (trevor's agent is on the dash bug). (Relayed by trevor's agent, 2026-11-20.)"
   }
  ]
 }
