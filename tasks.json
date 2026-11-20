@@ -653,7 +653,7 @@
   {
    "id": 36,
    "created_at": "2026-11-20T00:19:14Z",
-   "updated_at": "2026-11-20T05:55:46Z",
+   "updated_at": "2026-11-20T14:24:16Z",
    "history": [
     "2026-11-20T00:19:14Z BagelMeister: added (for trevor)",
     "2026-11-20T04:02:14Z gonman: note: Map half done: PR #52 (gonman/cordon-pens). Checkpoints 3 rows in, penned rot-taken beyond, troopers/booths moved inside. trevor: facings and outward lines are yours.",
@@ -661,14 +661,16 @@
     "2026-11-20T05:31:00Z trevor: pending review: branch trevor/cordon-pens (f5a2757)",
     "2026-11-20T05:35:15Z LoreKeeper: note: @trevor @gonman Reviewed trevor/cordon-pens f5a2757 against 3b6f51e. Diff, syntax and the existing Node suite passed individually. The north checkpoint line in src/content/cordon.js has its booth, both floodlights and sign commented out after the trooper comment, unlike the other checkpoints. Please restore those entries or confirm the intended removal with gonman. A dry merge with map PR #52 d8caf4e conflicts in src/content/cordon.js and src/content/maps/collegepark.js. Please coordinate one integration head for the two areas before merge.",
     "2026-11-20T05:39:29Z trevor: note: trevor: superseded my old branch with trevor/cordon-facing, stacked on gonman's d8caf4e (his map half + my half). Merge that one.",
-    "2026-11-20T05:55:46Z John Pork: note: Reviewed the current integration head trevor/cordon-facing aa238c5 against main a465cf3. It merges cleanly. Full Node suite and metro_plaza level audit pass. Held enemies neither damage nor infect the player during ten seconds of pushing and dodging at each of the three barriers. Two map-side fixes remain on this head: the north booth, two lights, and sign are still inside the inline comment in src/content/cordon.js, and the west crowd route still starts on its solid barrier tile (4,30). Move that waypoint to the interior when restoring the props. Systems behavior checked on this head. — John Pork"
+    "2026-11-20T05:55:46Z John Pork: note: Reviewed the current integration head trevor/cordon-facing aa238c5 against main a465cf3. It merges cleanly. Full Node suite and metro_plaza level audit pass. Held enemies neither damage nor infect the player during ten seconds of pushing and dodging at each of the three barriers. Two map-side fixes remain on this head: the north booth, two lights, and sign are still inside the inline comment in src/content/cordon.js, and the west crowd route still starts on its solid barrier tile (4,30). Move that waypoint to the interior when restoring the props. Systems behavior checked on this head. — John Pork",
+    "2026-11-20T14:24:16Z BagelMeister: done: map half PR #52 merged in batch 1, #100 (c329d54); trevor's half PR #105 merged in batch 2, #106 (42cf017)"
    ],
    "title": "College Park is a cordon: block the roads out with military blockades against the Code-rot-taken",
    "details": "Michael: by canon College Park is a cordon, so its roads should not all lead places. Where a road runs off the map, it should end at a military blockade facing outward against the code-rot zombies, not lead into the next area. Use what exists: your cordon (337d2bd) has the fence, the Route 1 north/south and cross-street checkpoints and the Continuity troopers, and gonman drew the cordon sprites (task #37): trooper, red-and-white barrier, booth, floodlight. Audit College Park and any Act 1 maps the scaffolds connected to it. Every road out is either a manned blockade (no exit; a trooper or loudspeaker line when you walk up) or an exit the story opens later (like Route 1 north after act1.complete). Some blockades could hold off a few Code-rot-taken on the far side. Maps are in the world section now (gonman), so agree the split with gonman on the world board or general before you change map files.",
    "source": "human:Michael",
-   "status": "review",
+   "status": "done",
    "owner": "trevor",
-   "review": "branch trevor/cordon-pens (f5a2757)"
+   "review": "branch trevor/cordon-pens (f5a2757)",
+   "note": "map half PR #52 merged in batch 1, #100 (c329d54); trevor's half PR #105 merged in batch 2, #106 (42cf017)"
   },
   {
    "id": 37,
