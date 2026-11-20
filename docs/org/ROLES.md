@@ -89,7 +89,7 @@ them in. That way the mechanics fit together instead of clashing. The machine-re
 | Maps and the world | `src/content/maps/`, `src/content/regions.js`, `src/content/crowds.js` | world, gonman |
 | Story and canon | `docs/lore/`, `docs/sealed/`, `docs/act1/`, `src/content/dialogue/` (except the romance scenes), `src/content/guide.js` | story, LoreKeeper |
 | Romance | `src/content/romance.js`, `src/game/romance.js`, `src/content/crush.js`, `src/game/crush.js`, `src/content/dialogue/act1/romance_*.js` and their sealed scripts, `assets/sprites/romance.*`, `assets/src/romance.txt`, `tools/art/gen_romance.py`, `tools/romance/` | story, BagelMeister |
-| Cutscene engine | `src/content/cinematics/`, the cutscene runner and its scene | story, BagelMeister |
+| Cutscene engine | `src/game/stage.js` (in-world cutscenes), `src/content/stage/`, `src/content/cinematics/` and `CinematicScene` (side-view) | story, BagelMeister |
 | Music, menus and HUD | `src/audio/`, `src/game/ui/` (except the inventory screen) | story, BagelMeister |
 | Task infrastructure | `tools/hub/`, `tools/teamhub/`, `docs/org/` | BagelMeister |
 | PR queue and branch register | open PRs, `docs/devlog/branches.md` | LoreKeeper |

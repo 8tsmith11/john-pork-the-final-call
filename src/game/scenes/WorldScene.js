@@ -43,6 +43,7 @@ import { rollGear, rolledName } from '../../content/gearRolls.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
 import { FUSE_TEXT, LAMP_COLORS, GATE_FLAG, breakerState, lampState, breakersSet, lampsSet, gateOpen, puzzleClue, toggleText, STEP_TEXT } from '../../content/tunnelPuzzles.js';
 import { SharedEvents } from '../sharedEvent.js';
+import { Stage } from '../stage.js';
 import { Performances } from '../performances.js';
 import { Romance } from '../romance.js';
 import { Gear } from '../gear.js';
@@ -158,7 +159,7 @@ export class WorldScene extends Phaser.Scene {
     this._wireNet();
     this._makeDialogueUi();
     // D-014: shared events, instruments, romance (src/game/sharedEvent.js, performances.js, romance.js)
-    this.shared = new SharedEvents(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.cordon = new Cordon(this); this.bigButt = new BigButt(this); this.beltless = new Beltless(this); this.toothpaste = new ToothpasteTalk(this); this.gags = new RunningGags(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this); this.stands = new GuitarStands(this);
+    this.shared = new SharedEvents(this); this.stage = new Stage(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.cordon = new Cordon(this); this.bigButt = new BigButt(this); this.beltless = new Beltless(this); this.toothpaste = new ToothpasteTalk(this); this.gags = new RunningGags(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this); this.stands = new GuitarStands(this);
     this._pageIdx = {};
     this.vignette = this._makeVignette();
     if (this.mode !== 'client') for (const p of this.sim.players.values()) {
@@ -177,15 +178,16 @@ export class WorldScene extends Phaser.Scene {
     if (new URLSearchParams(location.search).has('bastion')) this.time.delayedCall(800, () => this.openBastion('debug'));   // debug: hub #34
     { const l = new URLSearchParams(location.search).get('lab'); if (l) this.time.delayedCall(800, () => this.openLab(l)); }   // debug: ?lab=mux|counter|fsm
     { const c = new URLSearchParams(location.search).get('cinematic'); if (c) this.time.delayedCall(600, () => this.playCinematic(c)); }   // debug: ?cinematic=demo
+    { const c = new URLSearchParams(location.search).get('stage'); if (c) this.time.delayedCall(900, () => this.stage.play(c)); }   // debug: ?stage=demo (in-world cutscene)
     for (const c of Object.values(this.save.party ?? {})) c.money ??= W.START_MONEY;   // own wallets (schema 7)
     this.save.flags['settings.crudeHumor'] = 'on';   // always on (Trevor); scripts branch on it
     for (const [who, c] of Object.entries(this.save.party)) { Inv.normalize(c); migrateSkills(c, who); }
     this._makeMenu();
-    this.input.keyboard.on('keydown-Q', () => { if (this._dlgStops() || this.menu) return; if (this.mode === 'client') this.net.send({ t: 'scooter' }); else this._scooter(this.localId); });
-    this.input.keyboard.on('keydown-M', () => { if (this.mode === 'client') this.net.send({ t: 'morph' }); else this._morph(this.localId); });
+    this.input.keyboard.on('keydown-Q', () => { if (this._dlgStops() || this.menu || this.stage?.active) return; if (this.mode === 'client') this.net.send({ t: 'scooter' }); else this._scooter(this.localId); });
+    this.input.keyboard.on('keydown-M', () => { if (this.stage?.active) return; if (this.mode === 'client') this.net.send({ t: 'morph' }); else this._morph(this.localId); });
     // E: close an open panel/description, otherwise interact with the nearest thing in reach.
     this.input.keyboard.on('keydown-E', () => {
-      if (this.dlg) return;                       // dialogue handles E itself (advance)
+      if (this.dlg || this.stage?.active) return;   // dialogue handles E itself (advance); nothing during a cutscene
       if (this.fishing) { this._reel(); return; }
       if (this.menu) return this._closeMenu();
       if (this.sayOpen) return this._closeSay();
@@ -638,7 +640,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'lattice') { this._table().onHostMsg(peer, msg); return; }   // the casino board game (host runs it)
         if (msg.t === 'bastion') { this._bastion().onHostMsg(peer, msg); return; }   // hub #34 (host runs it)
         if (msg.t === 'lab') { this._lab().onHostMsg(peer, msg); return; }   // hub #44 (host keeps the bench)
-        if (this.shared?.onMsg(msg, peer) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg)) return;
+        if (this.shared?.onMsg(msg, peer) || this.stage?.onHostMsg(peer, msg) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg)) return;
         if (msg.t === 'questRead') this._finishQuestReading(peer, msg.read);
         if (msg.t === 'input') {
           const prev = this.remoteInputs.get(peer);
@@ -690,7 +692,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'lattice') { this._table().onClientMsg(msg); return; }
         if (msg.t === 'bastion') { this._bastion().onClientMsg(msg); return; }
         if (msg.t === 'lab') { this._lab().onClientMsg(msg); return; }
-        if (this.shared?.onMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg)) return;
+        if (this.shared?.onMsg(msg) || this.stage?.onClientMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg)) return;
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
         if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text, msg.questRead);
         if (msg.t === 'caption') this._caption(msg.text);
@@ -1102,11 +1104,11 @@ export class WorldScene extends Phaser.Scene {
   _makeMenu() {
     this.gameMenu = new GameMenu(this);
     const kb = this.input.keyboard;
-    kb.on('keydown-ESC', () => { if (this.dlg) return; if (this.gameMenu?.held != null) { this.gameMenu.held = null; this.gameMenu.refresh(); return; } if (this.puzzle && !this.puzzle.closed) { this.puzzle.destroy(); this.puzzle = null; return; } this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
-    kb.on('keydown-I', () => { if (!this.dlg) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
-    kb.on('keydown-K', () => { if (!this.dlg) this.menu === 'skills' ? this._closeMenu() : this.gameMenu.show('skills'); });
-    kb.on('keydown-J', () => { if (!this.dlg) this.menu === 'quests' ? this._closeMenu() : this.gameMenu.show('quests'); });
-    kb.on('keydown-TAB', (ev) => { ev.preventDefault?.(); if (!this.dlg) this.menu === 'map' ? this._closeMenu() : this.gameMenu.show('map'); });
+    kb.on('keydown-ESC', () => { if (this.dlg || this.stage?.active) return; if (this.gameMenu?.held != null) { this.gameMenu.held = null; this.gameMenu.refresh(); return; } if (this.puzzle && !this.puzzle.closed) { this.puzzle.destroy(); this.puzzle = null; return; } this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
+    kb.on('keydown-I', () => { if (!this.dlg && !this.stage?.active) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
+    kb.on('keydown-K', () => { if (!this.dlg && !this.stage?.active) this.menu === 'skills' ? this._closeMenu() : this.gameMenu.show('skills'); });
+    kb.on('keydown-J', () => { if (!this.dlg && !this.stage?.active) this.menu === 'quests' ? this._closeMenu() : this.gameMenu.show('quests'); });
+    kb.on('keydown-TAB', (ev) => { ev.preventDefault?.(); if (!this.dlg && !this.stage?.active) this.menu === 'map' ? this._closeMenu() : this.gameMenu.show('map'); });
     kb.addCapture('TAB');
     for (const [key, dir] of [['A', -1], ['LEFT', -1], ['D', 1], ['RIGHT', 1]]) kb.on(`keydown-${key}`, () => { if (TABS.includes(this.menu)) this.gameMenu.cycle(dir); });
   }
@@ -2144,7 +2146,7 @@ export class WorldScene extends Phaser.Scene {
       me = this.sim.players.get(this.localId);
       const inp = this._frozen(this.input2.read(me));
       // Solo: the world pauses while you read or use a menu. (Co-op keeps running for the others.)
-      this.acc += this.mode === 'solo' && (this._dlgStops() || this.menu) ? 0 : Math.min(deltaMs / 1000, 0.1);
+      this.acc += this.mode === 'solo' && (this._dlgStops() || this.menu || this.stage?.active) ? 0 : Math.min(deltaMs / 1000, 0.1);
       let first = true, events = [];
       while (this.acc >= STEP) {
         const inputs = new Map([[this.localId, first ? inp : { ...inp, dodge: false, interact: false }]]);
@@ -2168,10 +2170,10 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode === 'client' && snap.doors) for (const d of this.map.doors.values()) d.open = snap.doors.includes(d.id);
     this._render(snap);
     setInstrumentFocus(snap, this.localId);
-    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.gags?.update(snap); this.pacifier?.update(snap); this.stands?.update();
+    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.gags?.update(snap); this.pacifier?.update(snap); this.stands?.update(); this.stage?.update(snap);   // cutscene stand-ins draw last
   }
 
-  _frozen(inp) { return this._dlgStops() || this.menu ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : this.dlg ? { ...inp, interact: false } : inp; }
+  _frozen(inp) { return this._dlgStops() || this.menu || this.stage?.active ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : this.dlg ? { ...inp, interact: false } : inp; }
   /** A story dialogue is up (the world waits); free dialogue lets everyone keep moving and fighting. */
   _dlgStops() { return !!this.dlg && !this.dlgFree; }
 
@@ -2941,7 +2943,7 @@ export class WorldScene extends Phaser.Scene {
   _bark(playerId, text) {
     text = esLine(text);                                            // Spanish when chosen (src/content/lines_es.js)
     const s = this.sprites.get(playerId);
-    if (!s || !text || this.dlg || this.menu || this.time.now < (this._barkQuietUntil ?? 0)) return;
+    if (!s || !text || this.dlg || this.menu || this.stage?.active || this.time.now < (this._barkQuietUntil ?? 0)) return;
     this._barkQuietUntil = this.time.now + 9000;                    // one voice at a time, and room between them
     const t = this.add.text(s.x, s.y - 30, text, { ...FONT, fontSize: '6px', color: '#e8e8f0', backgroundColor: '#0b0d16cc', padding: { x: 2, y: 1 } }).setOrigin(0.5, 1).setDepth(7000);
     const follow = this.time.addEvent({ delay: 30, loop: true, callback: () => t.active && s.active && t.setPosition(s.x, s.y - 30) });
