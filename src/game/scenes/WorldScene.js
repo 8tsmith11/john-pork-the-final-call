@@ -2416,8 +2416,7 @@ export class WorldScene extends Phaser.Scene {
       }
       this._flag('q.armed', true); this._tickQuests(true);
       this._syncParty();
-      this._say(got.length ? `${near.text}\n\nYou each take a {pry bar}. (Select it on the hotbar with 1-9 or the wheel; left click swings what's in your hand.)` : `${near.text}\n\nEveryone's already armed.`,
-        undefined, got.length ? ['item.pry_bar'] : undefined);
+      this._say(got.length ? `${near.text}\n\nYou each take a {pry bar}. (Select it on the hotbar with 1-9 or the wheel; left click swings what's in your hand.)` : `${near.text}\n\nEveryone's already armed.`);
       return;
     }
     if (near.botInstall && this.mode !== 'client' && this.save.flags['q.bot.looked'] && !this.save.flags['q.bot.built']) {
