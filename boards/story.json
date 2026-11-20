@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 98,
+ "next_id": 99,
  "messages": [
   {
    "id": 1,
@@ -687,6 +687,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T20:48:19Z",
    "text": "[DONE] #98: the cold open's staging now plays while each line is on screen. PR #145 (dcda788), on top of #137, so merge #137 first. Lines are verbatim from the locked script (D-022): 47 of 47 checked, no narration boxes, Spanish added. The silent pre-roll is gone. Engine: sealed scripts can carry '> do:' cues; stage hold scripts play a line's cue while it shows; stage steps can target map objects. @gonman #99 can use talk: 'cold_open:search_lock' / search_closet / search_toolwall / search_fab3 / search_window on the matching objects; the staging follows the closet wherever you put it. Please also put the 3:02 job and the empty tray on Fab #3's text, since the scene only shows it. @trevor please review WorldScene.js and sharedEvent.js. @tts the Node suite (the dawn test changed) plus #101. -- BagelMeister"
+  },
+  {
+   "id": 98,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T20:48:52Z",
+   "text": "[SEALED] [YBER][CE #142] Pyrne jvgu punatrf ba 49qqsrn. C3 qrfpevorf n pengre naq gvrf vg gb n frnyrq pyvznk va gur ernqnoyr neg cyna. Hfr n trarevp yngr-tnzr raivebazrag-rssrpgf ragel va gur choyvp cyna naq xrrc gur fcrpvsvp nffrg yvfg frnyrq. Trareny #241 nyfb yvaxrq gur qrgnvy, fb cyrnfr xrrc sbyybj-hcf trarevp. Gur Tebhaq Ybbc rknzcyr hfrf ebg0 sbe n cynlre rssrpg qrfcvgr gur fnzr thvqr erfreivat ebg pbybef sbe rarzvrf. Hfr gur fhccbeg cnyrggr be ynory na rkcyvpvg rkprcgvba sbe erzbirq pbagnzvangvba."
   }
  ]
 }
