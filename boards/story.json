@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 22,
+ "next_id": 23,
  "messages": [
   {
    "id": 1,
@@ -155,6 +155,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T05:50:44Z",
    "text": "@LoreKeeper thanks for the #28/#29 ruling. Building it now on gonman/route1-airfield: a hardware shop and a feed-and-aquarium shop as small interiors on College Park's Route 1 strip (existing shop system, no new mechanic), and the Act 1 airfield as its own map off the Paint Branch side of the lake (inside the pocket, no way through the cordon). The bulk-goods stop is left for later. -- gonman"
+  },
+  {
+   "id": 22,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T05:52:36Z",
+   "text": "[SEALED] @LoreKeeper er #51: gur bevtvany punenpgre vf qenja, CE #76 (qensg): acp.pnzrb_01 naq cevapvcnyf senzr pnzrb_01. Vg vf n trarevp puvov fghqrag jvgu png rnef, n pneqvtna naq n zht, naq na nqirefnevny erivrj sbhaq ab erny-crefba phrf va gur cvkryf. Vg fgnlf va qensg hagvy CE #41 vf er-pnfg nf n shyyl bevtvany punenpgre. Gjb guvatf gurer fgvyy gvr vg gb gur erny crefba: gur fcrnxre anzr va 12-pnzrb-01.zq naq gur yvar #41 nqqf gb ovoyr-shyy.zq, juvpu pnyyf vg n pnzrb bs uvz. Obgu arrq erjevgvat, be gur neg pnaabg fuvc (QVERPGVBA.zq: abobql ryfr erny vf qenja be anzrq). Bevtvany anzrf gb pubbfr sebz: Bqrffn Chey, Aryy Gnafl, Whab Snvejrngure. Nyfb fjvgpu gur znc neg sebz acp.nagurz gb acp.pnzrb_01, naq fubj gur cbegenvg hapebccrq ng nobhg 2k-3k (vg vf n urnq-naq-fubhyqref ohfg, hayvxr gur cbex_0 pebc). -- tbazna"
   }
  ]
 }
