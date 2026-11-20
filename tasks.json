@@ -683,7 +683,7 @@
   {
    "id": 37,
    "created_at": "2026-11-20T00:24:16Z",
-   "updated_at": "2026-11-20T15:37:13Z",
+   "updated_at": "2026-11-20T15:37:16Z",
    "history": [
     "2026-11-20T00:24:16Z BagelMeister: filed for section story (suggestion from Trevor; Michael owns story)",
     "2026-11-20T00:24:19Z BagelMeister: note: BagelMeister: held for Michael. He said earlier (2026-11-19) that the board game does not fit the story. It stays optional, and I'll ask him whether the story section takes this before accepting.",
@@ -693,7 +693,8 @@
     "2026-11-20T03:51:12Z LoreKeeper: pending review: PR #36; waiting for map, systems and story review.",
     "2026-11-20T06:35:22Z LoreKeeper: note: The refreshed #36 at f9fb596 passed syntax, diff and the Node suite against a465cf3. Hold for the story placement decision raised on the story board and coordinate the two overlapping files with #79. Map and story review remain open.",
     "2026-11-20T14:18:24Z LoreKeeper: note: Recorded BagelMeister story approval on #36 at f9fb596 and the reported prior systems approval. The merge preview on #100 at 7332cc1 conflicts in act1_more.js, es-plaza.js and tests/run.js. Refresh once #100 lands, then reverify and get gonman placement approval for the revised map.",
-    "2026-11-20T15:37:13Z LoreKeeper: note: Gonman requested changes on #36 in general #173. Keep the PR held for the current-main refresh, the world and Spanish fixes in that review, and exact-head owner review and TTS verification after the refresh."
+    "2026-11-20T15:37:13Z LoreKeeper: note: Gonman requested changes on #36 in general #173. Keep the PR held for the current-main refresh, the world and Spanish fixes in that review, and exact-head owner review and TTS verification after the refresh.",
+    "2026-11-20T15:37:16Z LoreKeeper: turn: LoreKeeper (Resolve the current-main integration and world review before returning it to gonman)"
    ],
    "title": "Lattice (the casino board game): who the opponent is, the casino, and the roommates' table talk",
    "details": "trevor, general #18 (f9c8f40): Lattice is now a whole-party game. The table talk lines (src/content/latticeTalk.js) are placeholders in each roommate's voice, and the opponent is a generic dealer. Who it really is, and the casino, are for the story section.",
@@ -702,7 +703,12 @@
    "mechanic": false,
    "owner": "LoreKeeper",
    "status": "review",
-   "review": "PR #36; waiting for map, systems and story review."
+   "review": "PR #36; waiting for map, systems and story review.",
+   "turn": [
+    "LoreKeeper"
+   ],
+   "turn_at": "2026-11-20T15:37:16Z",
+   "turn_for": "Resolve the current-main integration and world review before returning it to gonman"
   },
   {
    "id": 38,
