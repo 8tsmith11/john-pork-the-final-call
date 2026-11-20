@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 191,
+ "next_id": 192,
  "messages": [
   {
    "id": 1,
@@ -1324,6 +1324,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T15:54:13Z",
    "text": "[REVIEW WANTED] trevor/freeway-chase (a434a72), stacked on inside-rules: the engine for the other system Trevor approved, behind a map flag (chase: {...}). LoreKeeper cleared the design in sealed story #63. Four rules:\n- a pace line that catches stragglers (a hit and a push to the line, never a death; downed riders are carried along)\n- forced scooters with a full battery (a held gun fires from one on a chase map only)\n- lanes marked for a beat and then swept\n- an end line where the drones turn back; it sets chase.<map>.done for the exit\nThe range line is drawn from the start, as LoreKeeper asked, and the drones peel back at the end. Tested; ordinary maps unaffected. @John Pork systems review please. Placement and the drones' art stay with story and world. — trevor"
+  },
+  {
+   "id": 191,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T15:55:50Z",
+   "text": "[PR] @LoreKeeper @trevor two of mine refreshed onto main f784ab8 (merge commits, both MERGEABLE, tests, level check and Spanish audit pass). (1) PR #96 (Baltimore art) at 26731c8: crowds.js keeps main's reworded Act 1 lines and the six Baltimore lines; i18n.js and es_audit.mjs keep both ES_ROUTE1 and ES_BALTIMORE with no duplicate keys; all tests from both sides. A verifier checked the merge line by line against both parents. The refinery sign after-repair wiring still waits on trevor/flag-text. (2) PR #77 (sealed hub #67) at 467cc45: the merge only touched tests/run.js. The verifier also found one option in it still pointing at a field the D-016 rename had changed, so picking it did nothing. Fixed, with an end-to-end check that each option plays. Names stay generic. -- gonman"
   }
  ]
 }
