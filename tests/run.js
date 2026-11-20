@@ -3297,6 +3297,10 @@ test('a disconnected dialogue driver releases only their scene on the host and o
   hostNet.emit('msg', 'driver', { t: 'evState', id, state: { choices: ['Continue'], decider: 'michael' } });
   assert.equal(host.shared.watching.id, id);
   assert.equal(observer.shared.watching.id, id);
+  const beforeSync = posted.length;
+  hostNet.emit('msg', 'observer', { t: 'evSync' });
+  assert.deepEqual(posted.slice(beforeSync).map((msg) => [msg.t, msg.id]), [['evStart', id], ['evState', id]]);
+  assert.equal(posted.at(-1).state.choices[0], 'Continue');
   hostNet.emit('msg', 'observer', { t: 'evEnd', id });
   assert.equal(host.shared.watching.id, id, 'another guest cannot end the driver’s dialogue');
 
@@ -3308,6 +3312,9 @@ test('a disconnected dialogue driver releases only their scene on the host and o
   assert.equal(observer.shared.latest[id], undefined);
   assert.equal(posted.filter(msg => msg.t === 'evEnd' && msg.id === id).length, 1);
   assert.ok(host.sim.players.has('ai:manuel'));
+  const afterEnd = posted.length;
+  hostNet.emit('msg', 'observer', { t: 'evSync' });
+  assert.equal(posted.length, afterEnd, 'ended dialogue is not replayed to returning guests');
 
   connect('returning');
   host.sim.removePlayer('ai:manuel');
@@ -3379,6 +3386,7 @@ test('co-op rejoin accepts only a vacant seat with its original room key', () =>
   guest.emit('data', { t: 'input', inp: { mx: 1 } });
   const exit = sim.map.objects.find(o => o.action === 'exit');
   for (const peer of ['host', 'observer']) sim.waitAtExit(peer, exit.id, 0, -1);
+  host.dlg = {};
   guest.close();
   assert.equal(host.remoteInputs.has('guest'), false);
   assert.equal(sim.players.get('ai:manuel'), original);
@@ -3386,6 +3394,9 @@ test('co-op rejoin accepts only a vacant seat with its original room key', () =>
   assert.equal(original.held, 'melee', 'the companion switches to an available melee weapon');
   assert.equal(original.mods.gun, 0);
   assert.equal(save.party.manuel.hotSel ?? 0, 0, 'the original selection belongs to the returning guest');
+  assert.deepEqual(exits, [], 'the exit waits until the dialogue closes');
+  host.dlg = null;
+  host._finishWaitingExit();
   assert.deepEqual(exits, [exit.id]);
   const returned = connect('returned');
   returned.emit('data', { t: 'hello', seatKey: 'wrong' });

@@ -222,6 +222,7 @@ export class WorldScene extends Phaser.Scene {
     this._showMap(startMap);
     this.stage.holdForHost(this.initialSnapshot?.stageId);
     this.ready = true;
+    if (this.initialSnapshot) this.net.send({ t: 'evSync' });
     // Act 1's witnessed beats are staged in-engine first (hub #48; src/content/stage/act1_*.js), then the scene plays.
     // A beat of delay so the roommates are on screen for the cutscene to stand in for them.
     if (!this.initialSnapshot) {
@@ -738,12 +739,8 @@ export class WorldScene extends Phaser.Scene {
         if (p && this.sim.transferPlayer(peer, `ai:${p.character}`)) {
           this._syncPlayerGear(p);
           this._lastSnap = null;
-          const waiting = [...this.sim.players.values()].find(q => !isAi(q.id) && !q.downed && q.waitExit)?.waitExit;
-          if (!this.dlg && !this._transitioning && waiting && this.sim.allWaiting(waiting)) {
-            const exit = this.sim.map.objects.find(o => o.id === waiting && o.action === 'exit');
-            this.sim.clearWaiting();
-            if (exit) this._tryExit(exit);
-          }
+          this._recheckPartyExit = true;
+          this._finishWaitingExit();
         }
       });
       this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot(), stageId: this.stage?.active?.id ?? null }) });
@@ -2113,6 +2110,16 @@ export class WorldScene extends Phaser.Scene {
     });
   }
 
+  _finishWaitingExit() {
+    if (!this._recheckPartyExit || this.dlg || this.stage?.active || this._transitioning) return;
+    this._recheckPartyExit = false;
+    const waiting = [...this.sim.players.values()].find((p) => !isAi(p.id) && !p.downed && p.waitExit)?.waitExit;
+    if (!waiting || !this.sim.allWaiting(waiting)) return;
+    const exit = this.sim.map.objects.find((o) => o.id === waiting && o.action === 'exit');
+    this.sim.clearWaiting();
+    if (exit) this._tryExit(exit);
+  }
+
   _announce(text) { this._say(text); if (this.mode === 'host') this.net.broadcast({ t: 'say', text }); }
 
   // ---------- UI ----------
@@ -2306,6 +2313,7 @@ export class WorldScene extends Phaser.Scene {
       this._handleInteract(me);
       this._tickGuide();
     } else {
+      this._finishWaitingExit();
       me = this.sim.players.get(this.localId);
       const inp = this._frozen(this.input2.read(me));
       // Solo: the world pauses while you read or use a menu. (Co-op keeps running for the others.)

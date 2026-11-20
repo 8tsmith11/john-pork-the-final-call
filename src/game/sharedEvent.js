@@ -57,7 +57,10 @@ export class SharedEvents {
     this.active = { id, last: '', scope, turn: 0 };
     const me = s._lastRendered?.players?.find((p) => p.id === s.localId)
       ?? (presentation ? s.sim?.players.get(s.localId) : null);
-    if (scope !== 'self') this._send({ t: 'evStart', id, main: s.character, scope, map: s.map?.id, x: me?.x ?? 0, y: me?.y ?? 0, label, presentation });
+    if (scope !== 'self') {
+      this.active.start = { t: 'evStart', id, main: s.character, scope, map: s.map?.id, x: me?.x ?? 0, y: me?.y ?? 0, label, presentation };
+      this._send(this.active.start);
+    }
     await s._startLocal(sceneName, nodeId, () => {
       if (scope !== 'self') this._send({ t: 'evEnd', id });
       this.active = null;
@@ -74,8 +77,7 @@ export class SharedEvents {
     const s = this.s, want = node?.decider;
     if (s._aiDecider) return s._aiDecider;
     if (!want || want === 'speaker' || want === s.character || this.active?.scope === 'self') return s.character;
-    const humans = (s._lastRendered?.players ?? []).filter((p) => !String(p.id).startsWith('ai:')).map((p) => p.c);
-    return humans.includes(want) ? want : s.character;
+    return s.humanRoommates().has(want) ? want : s.character;
   }
   // Main player: may I pick here? If not, say who does.
   canChoose() {
@@ -105,6 +107,7 @@ export class SharedEvents {
     if (key === this.active.last) return;
     this.active.last = key;
     if (choices.length) state.turn = ++this.active.turn;
+    this.active.state = state;
     this._send({ t: 'evState', id: this.active.id, state });
   }
 
@@ -118,22 +121,39 @@ export class SharedEvents {
   onHostMsg(peer, msg) {
     if (msg?.t === 'evStart') {
       if (typeof msg.id !== 'string' || !msg.id.startsWith(`${peer}:`)) return true;
-      if (this.guestEvents.get(peer) !== msg.id) this.endGuestDialogue(peer);
-      this.guestEvents.set(peer, msg.id);
+      if (this.guestEvents.get(peer)?.id !== msg.id) this.endGuestDialogue(peer);
+      msg = { ...msg, presentation: undefined };
+      this.guestEvents.set(peer, msg);
     } else if (msg?.t === 'evState' || msg?.t === 'evEnd') {
-      if (typeof msg.id !== 'string' || this.guestEvents.get(peer) !== msg.id) return true;
+      if (typeof msg.id !== 'string' || this.guestEvents.get(peer)?.id !== msg.id) return true;
       if (msg.t === 'evEnd') this.guestEvents.delete(peer);
+    } else if (msg?.t === 'evSync') {
+      this._sendCurrent(peer);
+      return true;
     }
     return this.onMsg(msg, peer);
   }
 
   endGuestDialogue(peer) {
-    const id = this.guestEvents.get(peer);
-    if (!id) return;
+    const start = this.guestEvents.get(peer);
+    if (!start) return;
     this.guestEvents.delete(peer);
-    const end = { t: 'evEnd', id };
+    const end = { t: 'evEnd', id: start.id };
     this.onMsg(end);
     this._send(end);
+  }
+
+  // A returning World scene asks once its dialogue UI and network listener are ready.
+  _sendCurrent(peer) {
+    const active = this.active;
+    const starts = [...this.guestEvents.values()];
+    if (active?.start) starts.unshift(active.start);
+    starts.sort((a, b) => Number(b.scope === 'all') - Number(a.scope === 'all'));
+    for (const start of starts) {
+      this.s.net.send(peer, start);
+      const state = start === active?.start ? active.state : this.latest?.[start.id];
+      if (state) this.s.net.send(peer, { t: 'evState', id: start.id, state });
+    }
   }
 
   /** Network hook. Host: pass the sending peer id so it relays to the others. Returns true if handled. */
@@ -159,6 +179,7 @@ export class SharedEvents {
       if (this._resumeDirectedChoice()) return true;
     }
     if (msg.t === 'evStart') {
+      if (this.watching?.id === msg.id) return true;
       if (msg.presentation === 'act1-finale') {
         this._prepareFinale(msg);
         this._watch(msg);
@@ -168,7 +189,7 @@ export class SharedEvents {
         this.deferredStarts.set(msg.id, msg);
         return true;
       }
-      const me = s._lastRendered?.players?.find((p) => p.id === s.localId);
+      const me = (s._lastRendered ?? s.initialSnapshot)?.players?.find((p) => p.id === s.localId);
       const near = msg.scope === 'all' || (msg.map === s.map?.id && me && Math.hypot(me.x - msg.x, me.y - msg.y) <= 128);
       if (!near) { this.offer = msg; s._toast(`${String(msg.main).toUpperCase()} is talking${msg.label ? ` to ${msg.label}` : ''}  ·  [T] watch`); return true; }
       this._watch(msg);
