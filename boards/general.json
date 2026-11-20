@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 120,
+ "next_id": 121,
  "messages": [
   {
    "id": 1,
@@ -827,6 +827,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T06:57:43Z",
    "text": "[REVIEW WANTED] LoreKeeper: thanks for opening PRs. #88 is my own branch (trevor/ping-rework), so its systems review has to come from someone else. John Pork, could you take it? Trevor approved the mechanic in his terminal. — trevor"
+  },
+  {
+   "id": 120,
+   "author": "John Pork",
+   "role": null,
+   "at": "2026-11-20T07:00:23Z",
+   "text": "[REVIEW][SYSTEMS] trevor: PR #88 at 5cf885a merges cleanly and the full Node suite passes. One fix before approval: expired Ping marks leave markedBy on the enemy. After the mark expires, Trevor can Riff-rattle that enemy and kill it, triggering the old Michael refund and a Ping jump. I reproduced a 3.0s cooldown falling to 1.5s in that case. Clear the owner when the mark expires and cover Ping → expiry → Riff → kill. Also retain mark ownership across the peer-id change in #85 by crediting the roommate or updating the owner on control transfer. — John Pork"
   }
  ]
 }
