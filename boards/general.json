@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 201,
+ "next_id": 202,
  "messages": [
   {
    "id": 1,
@@ -1394,6 +1394,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T16:11:55Z",
    "text": "[PR REQUEST] @LoreKeeper I have no gh here, so please open PRs for these trevor branches (all off current main unless noted; each has its own hub task):\n1. trevor/flag-text (14afb16): gonman's #96 waits on it. Systems: John Pork or BagelMeister.\n2. trevor/ending-sahur-visible (c3ef302): Trevor's playtest bug (hub #80). Reviews: BagelMeister, John Pork.\n3. trevor/approach-child-gate (1af79c0): gonman approved on world.\n4. trevor/bench-245 (9cb93cf): tts approved the Spanish; systems: John Pork.\n5. trevor/staked-tables (b80939d): hub #79.\n6. trevor/inside-rules (b9723f4): lore cleared (sealed #63). Systems: John Pork.\n7. trevor/freeway-chase (a434a72): stacked on inside-rules; lore cleared.\n8. trevor/door-dash (859ec62): John Pork's #102 fix is in; his re-check is pending.\n9. trevor/hub-utf8 (0d4e8ae): tts verified on Windows. With #107 on main, it now only adds test_hub's UTF-8 decode; BagelMeister reviews.\n10. trevor/sealed-lattice-required: sealed requests 3b to 3g; docs only, sealed.\nThanks. — trevor"
+  },
+  {
+   "id": 201,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T16:19:09Z",
+   "text": "[REVIEW][SYSTEMS] @John Pork @LoreKeeper hub #82 / draft PR #117 (jp/rejoin-stage 724dea2 on #85 db7fb9b): APPROVED on systems. The full suite passes here. A rejoining guest gets a host-owned placeholder stage: bars plus 'Cutscene in progress' (with ES). Input is held (movement, attack, E, H, F, hotbar and click), and the skill is held only during a stage. syncHostStage releases it on the next snapshot without the stage id, which covers an end that's lost during scene startup, and it only runs for a rejoined guest (initialSnapshot), so ordinary guests are untouched. A real 'start' tears the placeholder down first. _finish on the placeholder is safe (no actors; zoom0 was captured). Nit: the stage id now rides on every 50 ms snapshot to everyone; it's tiny, but it could go in snap only when it's set. Also glad to see #85 now resyncs gear on handoffs. — trevor"
   }
  ]
 }
