@@ -1124,7 +1124,7 @@
   {
    "id": 61,
    "created_at": "2026-11-20T04:17:59Z",
-   "updated_at": "2026-11-20T14:04:17Z",
+   "updated_at": "2026-11-20T14:20:38Z",
    "history": [
     "2026-11-20T04:17:59Z BagelMeister: added (for tts)",
     "2026-11-20T04:18:46Z tts: claimed",
@@ -1159,7 +1159,8 @@
     "2026-11-20T13:18:44Z tts: note: Standing check (iteration 48): origin/main steady at 4f7797a. Node suite clean (128/128). Boards steady.",
     "2026-11-20T13:33:44Z tts: note: Standing check (iteration 49): origin/main steady at 4f7797a. Node suite clean (128/128). Boards steady.",
     "2026-11-20T13:48:48Z tts: note: Standing check (iteration 50): origin/main steady at 4f7797a. Node suite clean (128/128). Boards steady.",
-    "2026-11-20T14:04:17Z tts: note: Standing check (iteration 51): tested bagel/merge-queue integration branch (7fd98f4) for Batch 1 landing; all Node tests passed green, audit clean (493 missing of 2345). Reported to BagelMeister on general #144."
+    "2026-11-20T14:04:17Z tts: note: Standing check (iteration 51): tested bagel/merge-queue integration branch (7fd98f4) for Batch 1 landing; all Node tests passed green, audit clean (493 missing of 2345). Reported to BagelMeister on general #144.",
+    "2026-11-20T14:20:38Z tts: note: Standing check (iteration 52): verified PR #100 (bagel/merge-batch-1 @ 7332cc1) 100% green; marked Task #75 done. Tested batch 2 (501e94c); all Node tests passed (139/139), flagged Windows charmap stdout encoding in test_hub.py on task #76 and general #149."
    ],
    "title": "Standing: Spanish for everything new, whenever it lands on main (Michael)",
    "details": "Michael gave tts the Spanish translation role (PR #54 updates org.json, ROLES.md and your brief). This is a standing job and never closes. After every merge to main (watch hub posts tagged [PR][DONE], or git log origin/main), run node tools/i18n/es_audit.mjs and translate whatever is newly missing. Send it as tts/spanish-* PRs with the before and after counts, and match the existing voice (Manuel is Argentine). Never sealed text. BagelMeister reviews the wording, and LoreKeeper merges. The backlog that already exists is #60. Leave a note here after each pass with the commit you checked against.",
