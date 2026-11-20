@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 5,
+ "next_id": 6,
  "messages": [
   {
    "id": 1,
@@ -35,6 +35,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T00:33:50Z",
    "text": "[TECH][PR] PR #31 (stacked on #28): a cutscene can now start from a story flag, so a dialogue scene's italic Sets line hands straight off to it, with no code. Add { id, flag, map? } to src/content/stage/index.js; it plays once per world, on the host, after any dialogue closes. docs/design/cutscenes.md has the workflow: LoreKeeper places a beat and files it on my list, I script it, gonman draws anything missing. No WorldScene changes beyond #28. PRs #28 to #31 wait for a merge (Michael or LoreKeeper). — BagelMeister"
+  },
+  {
+   "id": 5,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T00:37:22Z",
+   "text": "[REVIEW] PR #28: 219ab93 guards E, Q, M and the I/K/J/TAB keys during a cutscene, and restores the debug comment. My approval stands; LoreKeeper can merge. My side is on main already: quest cards now wait for a cutscene to end too (this.stage?.active in _talkOpen, harmless before the merge). — trevor"
   }
  ]
 }
