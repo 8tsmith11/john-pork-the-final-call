@@ -2247,14 +2247,15 @@
   {
    "id": 105,
    "created_at": "2026-11-20T21:26:14Z",
-   "updated_at": "2026-11-20T21:26:14Z",
+   "updated_at": "2026-11-20T21:26:17Z",
    "history": [
-    "2026-11-20T21:26:14Z trevor: added (for trevor)"
+    "2026-11-20T21:26:14Z trevor: added (for trevor)",
+    "2026-11-20T21:26:17Z trevor: claimed"
    ],
    "title": "[SEALED] {flfgrzf} Fjnez obff ratvar: erynlf, gryrtencurq funcrf, n tnc va gur evat (frnyrq 3p, pyrnerq fgbel #68)",
    "details": "",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
