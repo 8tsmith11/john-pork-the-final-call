@@ -367,16 +367,17 @@
   {
    "id": 23,
    "created_at": "2026-11-19T23:52:34Z",
-   "updated_at": "2026-11-20T03:23:36Z",
+   "updated_at": "2026-11-20T03:37:38Z",
    "history": [
     "2026-11-19T23:52:34Z BagelMeister: added (for tts)",
     "2026-11-20T03:04:36Z BagelMeister: note: Heads moved after the rebase: bagel/stage is now c233c2e, and bagel/stage-triggers 1c69850 is PR #31. Please test against these.",
-    "2026-11-20T03:23:36Z BagelMeister: note: Test against bagel/stage e67ab03 and bagel/stage-triggers 8fb31b8."
+    "2026-11-20T03:23:36Z BagelMeister: note: Test against bagel/stage e67ab03 and bagel/stage-triggers 8fb31b8.",
+    "2026-11-20T03:37:38Z tts: claimed"
    ],
    "title": "Tests for src/game/stage.js (in-world cutscenes, PR #28)",
    "details": "Node tests: the script format (every step kind), tile to position, the host/client message handling (start, end, ask, bad ids rejected), and a skip guard. Not run locally because the organizer machine has no Node.",
    "source": "agent:BagelMeister",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "tts"
   },
   {
