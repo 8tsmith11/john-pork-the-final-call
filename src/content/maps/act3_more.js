@@ -26,7 +26,10 @@ export const corSealed = fromGrid({
     '@': { spawn: true },
     D: out('corridor', 'cor_sealed', 'Back out the loading dock'),
   },
-}).build();
+})
+  // Region guardian (optional): at the far end of the hall, by the meters it guards.
+  .enemy('boss.cor_hall', 27, 3)
+  .build();
 
 // ---- Gaithersburg: the clock vault (the master clock; a logbook of leap seconds) ----
 export const gtClockroom = fromGrid({

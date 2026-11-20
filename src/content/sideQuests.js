@@ -159,7 +159,7 @@ side({ id: 'bv_tank', act: 2, ...g('npc.bv_vet', VET), title: 'A name in marker'
 
 side({ id: 'bv_ledgers', act: 2, ...g('npc.bv_vet', VET), title: 'Before the Call', titleEs: 'Antes de la Llamada',
   why: 'The breeding ledgers go back further than anyone admits.', whyEs: 'Los registros de cría van más atrás de lo que nadie admite.',
-  pitch: '"The ledgers in the barn. Check the first date. Tell me it\'s after the Call."', pitchEs: '"Los registros del granero. Mira la primera fecha. Dime que es posterior a la Llamada."',
+  pitch: '"The ledgers on the shelf in my office. Check the first date. Tell me it\'s after the Call."', pitchEs: '"Los registros del estante de mi oficina. Mira la primera fecha. Dime que es posterior a la Llamada."',
   look: { obj: 'obj.bv_ledgers', where: 'the breeding ledgers', whereEs: 'los registros de cría', seen: 'The first date is before the Call. Years before.', seenEs: 'La primera fecha es anterior a la Llamada. Años antes.' },
   line: '"Then they knew." She folds her gloves very carefully.', lineEs: '"Entonces sabían." Dobla los guantes con mucho cuidado.' });
 
