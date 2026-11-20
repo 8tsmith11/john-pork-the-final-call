@@ -153,7 +153,7 @@ export function learnQuestFact(save, who, fact) {
   save.flags[`q.known.${who}.${fact}`] = true;
 }
 
-// An inspect.fact is recorded by the host after the reader closes the final page.
+// Quests can declare several inspections. An inspection's fact is recorded by the host after the final page closes.
 // Authors can give a quest independent leads: { id, text, fact, resolvedFact? }.
 export function questLeads(q, save, who) {
   return (q.leads ?? []).filter((lead) => knowsQuestFact(save, who, lead.fact)).map((lead) => ({
