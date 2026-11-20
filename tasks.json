@@ -1692,16 +1692,24 @@
   {
    "id": 85,
    "created_at": "2026-11-20T15:54:06Z",
-   "updated_at": "2026-11-20T15:54:08Z",
+   "updated_at": "2026-11-20T15:54:10Z",
    "history": [
     "2026-11-20T15:54:06Z trevor: added (for trevor)",
-    "2026-11-20T15:54:08Z trevor: claimed"
+    "2026-11-20T15:54:08Z trevor: claimed",
+    "2026-11-20T15:54:10Z trevor: pending review: branch trevor/freeway-chase (a434a72), stacked on trevor/inside-rules",
+    "2026-11-20T15:54:10Z trevor: turn: JohnPork (systems review)"
    ],
    "title": "{systems} Chase rules: pace line, forced scooters, marked lanes, end line (sealed plan M3.D; Trevor approved, LoreKeeper cleared)",
    "details": "",
    "source": "agent:trevor",
-   "status": "claimed",
-   "owner": "trevor"
+   "status": "review",
+   "owner": "trevor",
+   "review": "branch trevor/freeway-chase (a434a72), stacked on trevor/inside-rules",
+   "turn": [
+    "JohnPork"
+   ],
+   "turn_at": "2026-11-20T15:54:10Z",
+   "turn_for": "systems review"
   }
  ]
 }
