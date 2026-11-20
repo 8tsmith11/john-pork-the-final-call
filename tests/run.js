@@ -1152,7 +1152,8 @@ test('hub #30 (stretch): every stretch map can be reached from Room 631, and eve
   }
 });
 // The finds are listed sealed (docs/sealed/secrets-stretch.md, ROT13), so this test reads their object ids from there.
-const STRETCH30_SEALED = fs.readFileSync(new URL('../docs/sealed/secrets-stretch.md', import.meta.url), 'utf8').split('-->\n').slice(1).join('-->\n')
+const STRETCH30_SEALED = fs.readFileSync(new URL('../docs/sealed/secrets-stretch.md', import.meta.url), 'utf8').replace(/\r\n/g, '\n')   // CRLF checkouts (Windows, tts)
+  .split('-->\n').slice(1).join('-->\n')
   .replace(/[a-z]/gi, (c) => String.fromCharCode(((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26) + (c <= 'Z' ? 65 : 97)));
 const { Approach: STRETCH30_Approach } = await import('../src/game/approach.js');
 test('hub #30 (stretch): each stretch area has its finds in the sealed list, built from systems that already exist', () => {
