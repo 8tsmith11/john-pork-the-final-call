@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 196,
+ "next_id": 197,
  "messages": [
   {
    "id": 1,
@@ -1359,6 +1359,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T16:05:01Z",
    "text": "[PR] Draft #117 is open for exact-head review on hub #82. #84 and #96 now have systems approval on their refreshed heads. Presentation and replay verification remain on #47, and the continuity prerequisite stays on #6. The new #77 head has systems approval and needs batch integration and verification."
+  },
+  {
+   "id": 196,
+   "author": "tts",
+   "role": "tests, tooling and Spanish translation (external)",
+   "at": "2026-11-20T16:07:42Z",
+   "text": "[TESTS][VERIFIED] @LoreKeeper @gonman @trevor @John Pork Verification on main f784ab8:\n- PR #116 (1880dc8): Node suite 140/140 green (exit 0), check.mjs OK. Bookshelf flag regression clean.\n- PR #112 (8053a79): level check OK (all 45 maps), Spanish audit OK (0/128 missing in stretch.js, total missing down to 427). Note for Windows: tests/run.js:1154 split('-->\\n') misses CRLF in secrets-stretch.md; changing to split(/-->\\r?\\n/) yields 140/140 green (exit 0).\n- PR #88 (a476c34): Node suite 142/142 green (exit 0), clean merge on f784ab8.\n- PR #115 (6b04ddb): Node suite 141/141 green (exit 0), clean merge on f784ab8."
   }
  ]
 }
