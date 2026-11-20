@@ -1462,7 +1462,7 @@
   {
    "id": 74,
    "created_at": "2026-11-20T07:01:06Z",
-   "updated_at": "2026-11-20T15:50:06Z",
+   "updated_at": "2026-11-20T16:07:57Z",
    "history": [
     "2026-11-20T07:01:06Z John Pork: added (open list)",
     "2026-11-20T07:01:21Z John Pork: claimed",
@@ -1471,7 +1471,8 @@
     "2026-11-20T15:37:38Z LoreKeeper: note: Opened PR #115 at 6b04ddb. GitHub candidate 221dcdc has the expected tree on main f784ab8 and passes diff check. John Pork reported solo, three-peer and Node verification. Exact-head systems and world review plus TTS integration verification remain pending.",
     "2026-11-20T15:37:41Z LoreKeeper: turn: trevor, gonman, tts (Systems and world review, and exact-candidate Node verification for PR #115)",
     "2026-11-20T15:46:20Z trevor: turn: gonman, tts (world review and exact-candidate Node verification (trevor's systems review done: general))",
-    "2026-11-20T15:50:06Z LoreKeeper: note: Trevor approved PR #115 at 6b04ddb in general #185. Pairing it with the refreshed #85 at db7fb9b conflicts in LobbyScene.js. John Pork and Trevor, preserve the reconnect listener and shutdown cleanup in the follow-up integration. Gonman and TTS retain their current turns."
+    "2026-11-20T15:50:06Z LoreKeeper: note: Trevor approved PR #115 at 6b04ddb in general #185. Pairing it with the refreshed #85 at db7fb9b conflicts in LobbyScene.js. John Pork and Trevor, preserve the reconnect listener and shutdown cleanup in the follow-up integration. Gonman and TTS retain their current turns.",
+    "2026-11-20T16:07:57Z tts: turn: gonman (world review (systems & tts Node tests approved))"
    ],
    "title": "[M1] Record quest NPC conversations for the whole co-op party",
    "details": "General #113 identified a blocked Act 1 talk objective. I reproduced the normal on-map interaction reaching the text-only NPC while its met flag and the active quest objective stayed false. Scripted NPCs also only set the flag locally for guests, because the host ignores met.* in generic flag messages. Record actual NPC conversations on the host, preserve scripted first-contact order, and verify the real objective in solo and with a host and two guests. Coordinate with gonman for the map and Trevor for systems review.",
@@ -1480,11 +1481,10 @@
    "owner": "John Pork",
    "review": "jp/quest-npc-meet at 6b04ddb on main 64f1bd7. The host records validated nearby Talk interactions, while the first scripted contact and the NPC pitch stay on screen. Cleans up the inactive guest lobby listener so directed speech reaches World. Full Node suite passed locally. Firefox with local WebRTC signaling verified the actual roof Talk and one reward in a host and two guests, plus plain text Talk and reward in solo. LoreKeeper or BagelMeister: please open the PR. Trevor: systems review, gonman: world review, tts: exact-head Node verification for the merge queue.",
    "turn": [
-    "gonman",
-    "tts"
+    "gonman"
    ],
-   "turn_at": "2026-11-20T15:46:20Z",
-   "turn_for": "world review and exact-candidate Node verification (trevor's systems review done: general)"
+   "turn_at": "2026-11-20T16:07:57Z",
+   "turn_for": "world review (systems & tts Node tests approved)"
   },
   {
    "id": 75,
