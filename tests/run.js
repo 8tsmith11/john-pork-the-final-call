@@ -1,10 +1,13 @@
 // Node test runner (no dependencies): `node tests/run.js`. Must pass before pushing.
 import assert from 'node:assert/strict';
+import { webcrypto } from 'node:crypto';
+import { EventEmitter } from 'node:events';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { makeStreams, Rng } from '../src/engine/rng.js';
 import { rollWorld } from '../src/engine/worldRolls.js';
 import { newSave, migrate, CURRENT_SCHEMA } from '../src/engine/save/schema.js';
+import { HostNet } from '../src/engine/net/net.js';
 import { Sim, MOVE, ROT, MATE, UNDER, LULLABY as BOT_LULLABY, emptyInput } from '../src/engine/sim.js';
 import { ENEMIES } from '../src/content/enemies.js';
 import { ITEMS } from '../src/content/items.js';
@@ -35,6 +38,32 @@ const rotArena = () => ({ id: 'rot-test', w: 100, h: 100, objects: [], enemies: 
 const addSpawnParty = (sim) => {
   for (const [id, character] of [['host', 'trevor'], ['ai:manuel', 'manuel'], ['ai:michael', 'michael']]) sim.addPlayer(id, character);
 };
+
+test('co-op control handoff preserves the live roommate and clears their exit vote', () => {
+  const sim = new Sim(rotArena());
+  for (const [id, who] of [['host', 'trevor'], ['guest', 'manuel'], ['observer', 'michael']]) sim.addPlayer(id, who);
+  const roommate = sim.players.get('guest');
+  Object.assign(roommate, { x: 111, y: 222, hp: 0, downed: true, reviveT: 1.2, rot: 87, ammo: 4, reloadT: 0.4 });
+  sim.waitAtExit('guest', 'door', 0, -1);
+  sim.shots.push({ owner: 'guest' }, { owner: 'observer' });
+  sim.allies = [{ owner: 'guest' }];
+
+  assert.equal(sim.transferPlayer('guest', 'observer'), false);
+  assert.equal(sim.transferPlayer('guest', 'ai:manuel'), true);
+  assert.equal(sim.players.get('ai:manuel'), roommate);
+  assert.equal(sim.players.has('guest'), false);
+  assert.equal(roommate.waitExit, null);
+  assert.deepEqual([roommate.x, roommate.y, roommate.hp, roommate.downed, roommate.reviveT, roommate.rot, roommate.ammo, roommate.reloadT],
+    [111, 222, 0, true, 1.2, 87, 4, 0.4]);
+  assert.deepEqual(sim.shots.map(shot => shot.owner), ['ai:manuel', 'observer']);
+  assert.equal(sim.allies[0].owner, 'ai:manuel');
+
+  assert.equal(sim.transferPlayer('ai:manuel', 'returning-guest'), true);
+  assert.equal(sim.players.get('returning-guest'), roommate);
+  assert.equal(sim.players.size, 3);
+  assert.equal(sim.allies[0].owner, 'returning-guest');
+});
+
 test('deferred startup with the full roster matches boss scaling on ordinary map entry', () => {
   for (const seed of ['party-load-1', 'party-load-2', 'party-load-3']) {
     const loaded = new Sim(MAPS_FOR_TEST.platform, { seed, deferSpawn: true });
@@ -748,14 +777,14 @@ test('region guardians (#49): scaffold quests a later puzzle converts keep their
 const fartMod = await import('../src/game/fart.js');
 const buttMod = await import('../src/game/bigButt.js');
 const npcLifeMod = await import('../src/content/npc_life.js');
-test('Manuel\'s fart: on its own, every couple of minutes; Michael only complains until his side says yes', () => {
+test('Manuel\'s fart: on its own, every couple of minutes; a roommate close by only complains', () => {
   const sent = [], sc = { mode: 'solo', time: { now: 0 } }, f = new fartMod.Fart(sc); f._send = (m) => sent.push(m);
   const snap = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 120, y: 100 }] };
   for (let i = 0; i < 3600; i++) { sc.time.now = i * 1000; f.update(snap); }   // an hour, no input at all
   assert.ok(sent.length >= 15 && sent.length <= 40, `farts in an hour: ${sent.length}`);   // Manuel: more often (2026-11-19)
   assert.ok(sent.every((m) => m.id === 'ai:manuel' && m.line), 'always Manuel, always a line');
-  if (!fartMod.MICHAEL_SAYS_YES) assert.ok(sent.every((m) => !m.sniff && (fartMod.MICHAEL_FART_COMPLAIN ? m.by === 'p2' && fartMod.FART_LINES.complain.includes(m.reply) : !m.reply)), 'until his yes Michael only complains, never sniffs');
-  else assert.ok(sent.every((m) => m.sniff === 'p2' && m.reply), 'Michael close by sniffs every one');
+  assert.ok(sent.every((m) => !('sniff' in m) && (fartMod.MICHAEL_FART_COMPLAIN ? m.by === 'p2' && fartMod.FART_LINES.complain.includes(m.reply) : !m.reply)), 'only the complaint path (Michael, 2026-11-20)');
+  assert.ok(!('michael' in fartMod.FART_LINES), 'no other reaction lines');
 });
 
 const gagsMod = await import('../src/game/runningGags.js');
@@ -1761,8 +1790,6 @@ test('Lattice co-op (John Pork\'s review): a guest dropping out mid-turn hands t
   assert.equal(t.turnSide(), 'michael'); clearTimeout(t.timer); t.timer = null;
   t.leave('peerM');   // what WorldScene's leave handler now does before swapping the peer for a companion
   assert.equal(t.seats().michael, null); assert.ok(t.timer !== null, 'the AI picks up the turn instead of waiting forever');
-  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
-  assert.ok(/on\('leave', \(peer\) => \{[^]*?this\.latticeTable\?\.leave\(peer\)[^]*?removePlayer\(peer\)/.test(src), 'the disconnect path tells the table before the roster changes');
   // play it out, then the host deals again: Michael left, so he stays with the AI and his screen stays shut
   clearTimeout(t.timer);
   for (let k = 0; k < 3000 && !t.g.winner; k++) { if (t.g.phase === 'setup') LRules.aiSetup(t.g); else LRules.aiTurn(t.g); }
@@ -2096,6 +2123,45 @@ test('cutscenes: the HUD steps out from under the letterbox bars and comes back 
   sc._stageHud(false);
   assert.ok(hud.visible && mini.visible && hotbar.visible && boss.visible, 'back afterwards');
   assert.equal(hidden.visible, false, 'what was already hidden stays hidden');
+});
+
+test('a moved find stays in the container the save says, even when a later build changes the searchable containers', () => {
+  // Names of the existing helpers and keys are decoded at runtime (ROT13), so this file names nothing sealed.
+  const r13 = (w) => w.replace(/[a-z]/gi, (c) => String.fromCharCode(((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26) + (c <= 'Z' ? 65 : 97)));
+  const H = r13('plyvaqre'), HC = r13('Plyvaqre'), MOVES = `${r13('frpergf')}.${H}.moves`, CACHE = `_${H.slice(0, 3)}Spots`;
+  const spotsOf = (sc) => sc[`_${H}Spots`](), spotOf = (sc) => sc[`_${H}Spot`](), moveIt = (sc, who) => sc[`_find${HC}`](who);
+  const make = (mode, save) => Object.assign(Object.create(CraftWorldScene.prototype), { mode, save, _flag(k, v) { save.flags[k] = v; } });
+  const save = { flags: {}, world: { seed: 'pin-test' } }, scene = make('solo', save);
+  const key = (x) => `${x.map}:${x.id}`, spots = spotsOf(scene);
+  const withNew = (sc) => { sc[CACHE] = [{ map: 'new_map', id: 'obj.new_crate', where: 'Somewhere new' }, ...spots]; };
+  assert.ok(spots.length > 2, 'searchable containers');
+  // an unpinned save gets exactly the place the earlier seeded pick chose, move after move
+  const oldPick = (n) => { const p = (k) => Math.floor(new Rng(`pin-test:${H}:${k}`).next() * spots.length); let i = p(n); if (n > 0 && i === p(n - 1)) i = (i + 1) % spots.length; return spots[i]; };
+  for (let n = 0; n < 6; n++) assert.deepEqual(scene._spotPick(n), oldPick(n), `move ${n}: an existing save would see it change`);
+  const first = spotOf(scene); assert.deepEqual(first, oldPick(0));
+  assert.equal(scene._pinSpot(), false, 'pinned before it ever moved'); assert.equal(save.flags['pin.h1'], undefined);
+  // it moves: the save keeps where, and the text names that place
+  const text = moveIt(scene, 'manuel'), next = spotOf(scene);
+  assert.equal(save.flags['pin.h1'], key(next)); assert.notEqual(key(next), key(first), 'back where it just was');
+  assert.ok(text.includes(next.where), 'the text does not name the new place');
+  // a later build adds a container: every index shifts, but it stays put
+  withNew(scene); assert.deepEqual(spotOf(scene), next, 'a new container moved it');
+  // the next move avoids the pinned place even though the list changed
+  const text2 = moveIt(scene, 'michael'), next2 = spotOf(scene);
+  assert.notEqual(key(next2), key(next)); assert.equal(save.flags['pin.h1'], key(next2)); assert.ok(text2.includes(next2.where));
+  // a later build removes the pinned container: a seeded place takes over, never nothing
+  scene[CACHE] = spotsOf(scene).filter((x) => key(x) !== key(next2));
+  const fallback = spotOf(scene); assert.ok(fallback && key(fallback) !== key(next2));
+  // migration: a save from before the pin that already moved it gets pinned on load by the host (or solo), not a guest
+  const legacy = { flags: { [MOVES]: 2 }, world: { seed: 'pin-test' } }, host = make('host', legacy);
+  const before = spotOf(host);
+  assert.equal(host._pinSpot(), true, 'the caller is not told to write the save'); assert.equal(legacy.flags['pin.h1'], key(before));
+  assert.equal(host._pinSpot(), false, 'pinned twice');
+  // the pin is plain save data: it survives a save/reload round trip, and the reloaded save keeps its place under a new list
+  const reloaded = make('host', JSON.parse(JSON.stringify(legacy))); withNew(reloaded);
+  assert.deepEqual(spotOf(reloaded), before, 'a migrated save moved after a reload under a changed list');
+  const guestSave = { flags: { [MOVES]: 2 }, world: { seed: 'pin-test' } };
+  assert.equal(make('client', guestSave)._pinSpot(), false); assert.equal(guestSave.flags['pin.h1'], undefined, 'a guest wrote the pin');
 });
 test('a guest interacting with the ASTER stairs waits for players who walk up later', () => {
   const map = MAPS_FOR_TEST.aster_hall;
@@ -3196,6 +3262,15 @@ test("Michael's belt gag: his own line first, on behind one switch, painted as a
   assert.ok(!beltMod.BELT_LINES.trevor.some((l) => /pants|boxer|butt/i.test(l)), "Trevor only reacts; nothing happens to Trevor's character");
 });
 
+test('gag cap: at most BELT_MAX per playthrough, and the count survives a reload', () => {
+  const save = { flags: {} }, snap = { players: [{ id: 'p1', c: 'michael', x: 0, y: 0 }] };
+  const run = (secs) => { const sent = [], sc = { mode: 'solo', time: { now: 0 }, save, sprites: new Map() }, b = new beltMod.Beltless(sc); b._send = (m) => sent.push(m);
+    for (let i = 0; i < secs; i++) { sc.time.now = i * 1000; b.update(snap); } return sent; };
+  assert.equal(run(3 * 3600).length, beltMod.BELT_MAX, 'three hours, still capped');
+  assert.equal(beltMod.BELT_MAX, 2);
+  assert.equal(run(3600).length, 0, 'a reloaded world does not start the count over');
+});
+
 test('the gonman, stage two: R while morphed winds up (no moving), then globs slow enemies and leave puddles; otherwise R is the decoy', () => {
   const sim = new Sim(landMaps.metro_plaza, { seed: 'gon' }); sim.addPlayer('a', 'manuel');
   const p = sim.players.get('a'); p.x = 38 * 16 + 8; p.y = 23 * 16 + 8; p.aim = 0; p.skillCd = 0;
@@ -3278,6 +3353,79 @@ test("Manuel's edge: with the same gear and no skills, Manuel is the toughest an
   for (const other of ['trevor', 'michael']) {
     assert.ok(m.manuel.maxHp > m[other].maxHp && m.manuel.armor > m[other].armor && m.manuel.melee > m[other].melee && m.manuel.speed > m[other].speed, other);
   }
+});
+
+test('co-op rejoin accepts only a vacant seat with its original room key', () => {
+  const net = new HostNet();
+  const connect = (peer) => {
+    const connection = Object.assign(new EventEmitter(), {
+      peer, messages: [], send(msg) { this.messages.push(structuredClone(msg)); }, close() { this.emit('close'); },
+    });
+    net._trackConnection(connection);
+    connection.emit('open');
+    return connection;
+  };
+  const guest = connect('guest'), observer = connect('observer'), other = connect('other');
+  const save = newSave({ seed: 'reconnect', rolls: {}, gameVersion: 'test' });
+  const assignments = { host: 'trevor', guest: 'manuel', observer: 'michael' };
+  const hasBrowserCrypto = !!globalThis.crypto;
+  if (!hasBrowserCrypto) globalThis.crypto = webcrypto;
+  try { net.startGame(save, assignments); }
+  finally { if (!hasBrowserCrypto) delete globalThis.crypto; }
+  const key = guest.messages[0].seatKey;
+  assert.match(key, /^[a-f0-9]{32}$/);
+  assert.notEqual(observer.messages[0].seatKey, key);
+  assert.equal(other.messages[0].t, 'say');
+
+  const sim = new Sim(MAPS_FOR_TEST.room631);
+  for (const [peer, who] of Object.entries(assignments)) sim.addPlayer(peer, who);
+  const original = sim.players.get('guest');
+  save.party.manuel.inventory[0] = { id: 'item.nail_gun', qty: 1 };
+  save.party.manuel.inventory[1] = { id: 'item.pry_bar', qty: 1 };
+  const exits = [], leftTable = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', localId: 'host', net, sim, save, remoteInputs: new Map(),
+    events: { once() {} }, time: { addEvent() {} }, _tryExit: (exit) => exits.push(exit.id),
+    latticeTable: { leave(peer) {
+      assert.equal(sim.players.get(peer), original, 'Lattice receives the disconnect before the roster changes');
+      leftTable.push(peer);
+    } },
+  });
+  host._syncPlayerGear(original);
+  original.ammo = 4;
+  host._wireNet();
+  other.emit('data', { t: 'hello', seatKey: key });
+  assert.equal(sim.players.has('other'), false, 'a connected player cannot be taken over');
+  net.broadcast({ t: 'snap', snap: sim.snapshot() });
+  net.send('other', { t: 'evState', state: {} });
+  assert.equal(other.messages.some(msg => msg.t === 'snap'), false, 'unseated connections receive no world snapshots');
+  assert.equal(other.messages.some(msg => msg.t === 'evState'), false, 'direct game traffic also stays in the party');
+
+  guest.emit('data', { t: 'input', inp: { mx: 1 } });
+  const exit = sim.map.objects.find(o => o.action === 'exit');
+  for (const peer of ['host', 'observer']) sim.waitAtExit(peer, exit.id, 0, -1);
+  guest.close();
+  assert.equal(host.remoteInputs.has('guest'), false);
+  assert.equal(sim.players.get('ai:manuel'), original);
+  assert.deepEqual(leftTable, ['guest']);
+  assert.equal(original.held, 'melee', 'the companion switches to an available melee weapon');
+  assert.equal(original.mods.gun, 0);
+  assert.equal(save.party.manuel.hotSel ?? 0, 0, 'the original selection belongs to the returning guest');
+  assert.deepEqual(exits, [exit.id]);
+  const returned = connect('returned');
+  returned.emit('data', { t: 'hello', seatKey: 'wrong' });
+  returned.emit('data', { t: 'flag', key: 'act1.test', value: true });
+  assert.equal(save.flags['act1.test'], undefined);
+  assert.equal(sim.players.has('returned'), false);
+  returned.emit('data', { t: 'hello', seatKey: key });
+  const start = returned.messages.at(-1);
+  assert.equal(start.t, 'start');
+  assert.deepEqual(start.assignments, { returned: 'manuel' });
+  assert.equal(start.snapshot.players.find(p => p.id === 'returned').am, 4);
+  assert.equal(sim.players.get('returned'), original);
+  assert.equal(original.held, 'gun', 'the returning guest immediately holds their selected gun');
+  assert.equal(original.mods.gun, 1);
+  assert.equal(sim.players.size, 3);
 });
 
 await Promise.all(pending);
