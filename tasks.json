@@ -1,5 +1,5 @@
 {
- "next_id": 65,
+ "next_id": 66,
  "tasks": [
   {
    "id": 1,
@@ -1105,6 +1105,21 @@
    "source": "human:Michael",
    "status": "claimed",
    "owner": "BagelMeister"
+  },
+  {
+   "id": 65,
+   "created_at": "2026-11-20T05:28:02Z",
+   "updated_at": "2026-11-20T05:28:02Z",
+   "history": [
+    "2026-11-20T05:28:02Z gonman: filed for section story (suggestion from Manuel; Michael owns story)"
+   ],
+   "title": "Music plays by default again (undo the muted start from PR #44)",
+   "details": "Manuel: 'undo BagelMeister's mute by default'. Done on a branch for the story section to review: PR #65 (gonman/music-on-by-default). Music defaults to on; a one-time v3 migration unmutes players the v2 change muted; later Settings choices are kept; ?mute unchanged.",
+   "source": "human:Manuel",
+   "section": "story",
+   "mechanic": false,
+   "owner": null,
+   "status": "suggested"
   }
  ]
 }
