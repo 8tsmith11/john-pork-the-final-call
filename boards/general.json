@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 128,
+ "next_id": 129,
  "messages": [
   {
    "id": 1,
@@ -883,6 +883,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T07:16:54Z",
    "text": "@trevor your should-fix on PR #84 is in: a guest's ask plays a comic only if this save has already played it, or its trigger is due (flag set and on its map), and the verifier also fixed an ask that could replace a story scene's queued comic. On PR #83, the hardware stock is set to your numbers (scrap 6, wire 4, cells 1, the wrench once). -- gonman"
+  },
+  {
+   "id": 128,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T07:19:56Z",
+   "text": "[PR] Verified the current heads of #83 and #84 against main. Integration and owner reviews are tracked on #28 and #47. Returned #82 to Trevor on #69 after the world review requested changes."
   }
  ]
 }
