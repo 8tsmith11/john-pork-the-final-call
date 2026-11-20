@@ -484,7 +484,7 @@ side({ id: 'gb_recount', act: 2, giver: 'npc.gb_usher', giverName: 'the usher', 
 
 side({ id: 'bv_batch', act: 2, giver: 'npc.bv_lab_tech', giverName: 'the lab technician', giverEs: 'la técnica del laboratorio', title: 'Took, but', titleEs: 'Prendió, pero',
   why: 'One batch on the board is marked "took, but," and the technician won\'t say the rest.', whyEs: 'Un lote del tablero dice "prendió, pero," y la técnica no dice el resto.',
-  pitch: '"Read the batch board. The one that says \'took, but.\' Read the batch number. Don\'t read it out loud."', pitchEs: '"Lee el tablero de lotes. El que dice \'prendió, pero.\' Lee el número de lote. No lo digas en voz alta."',
+  pitch: '"Read the batch board. The line that says \'took, but.\' Tell me what\'s left of the rest. Quietly."', pitchEs: '"Lee el tablero de lotes. La línea que dice \'prendió, pero.\' Dime qué queda del resto. En voz baja."',
   look: { obj: 'obj.bv_batch_board', where: 'the batch board in the tissue lab', whereEs: 'el tablero de lotes del laboratorio de tejidos', seen: 'One line on the board is scrubbed out, hard enough to take the paint with it. "Took, but" is all that\'s left.', seenEs: 'Una línea del tablero está borrada a fondo, tanto que se llevó la pintura. Solo queda "prendió, pero".' },
   line: '"Scrubbed." She sits down. "Then somebody\'s coming back for it."', lineEs: '"Borrada." Se sienta. "Entonces alguien va a volver a buscarlo."' });
 

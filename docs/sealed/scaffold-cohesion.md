@@ -86,7 +86,7 @@ bayl va gur punatr gung fhccyvrf gur dhrfg zrnag gb ercynpr vg, naq gung punatr 
 | `oi_ongpu` ("ongpu guvegrra") | **Erjevggra va cynpr abj**: gur yvar ba gur obneq vf fpehoorq bhg ("gbbx, ohg" vf nyy gung'f yrsg); ab vairagrq ongpu. Ergverq vagb Z2.2 jura Z2.2 ynaqf, juvpu pneevrf gur erny erirny (fbzrbar beqrerq n fcrpvsvp obql sbe 631) | abj, gura Z2.2 | OntryZrvfgre |
 | `oi_gnax` (n anzr va znexre) | **Erjevggra va cynpr abj**: gur anzr vf haernqnoyr, gur ongpu gnt haqre vg vfa'g; ab vairagrq anzr. Sbyqrq vagb Z2.2 (gur gnt vf gur yrnq gb gur onea) | abj, gura Z2.2 | OntryZrvfgre |
 | `oi_yrqtref` | Orpbzrf fgntr 1 bs gur onea chmmyr (pebff-ersrerapr yrqtref ntnvafg srapr cbfgf). tbazna zbirf `bow.oi_yrqtref` **bhgfvqr** gur onea (gur irg'f bssvpr), fvapr lbh ernq gurz gb svaq gur onea. Gur yrqtre vgfrys vf arire unaqrq bhg ol n fvqr dhrfg: vg'f Z2.2'f xrl vgrz | onea chmmyr punatr | tbazna (#49), grkg OntryZrvfgre |
-| `acp.oi_yno_grpu` znc yvar "arire guvegrra" (zncf/fgergpu.wf) | Fnzr vairagrq ongpu; punatr gur yvar gb zngpu gur fpehoorq obneq | jvgu gur arkg Orygfivyyr znc punatr | tbazna |
+| `acp.oi_yno_grpu` znc yvar "arire guvegrra" (zncf/fgergpu.wf) | Fnzr vairagrq ongpu. **Punatrq va CE #46** (YberXrrcre'f erivrj) gb zngpu gur fpehoorq obneq; tbazna erivrjf vg nf gur znc'f bjare | abj | OntryZrvfgre, tbazna erivrjf |
 | Serqrevpx'f byq jbzna (`se_thrfgobbx`, `se_cbgyvarf`, `se_qnfuobneq`, `se_cbgyvar`) | Fur vf Qe. Erlrf. `se_cbgyvarf`, `se_qnfuobneq` naq `se_cbgyvar` ner **ergverq va gur Z3.3 punatr**; gur Z3.3 fprarf fhccyl jung gurl trfgherq ng. `se_thrfgobbx` orpbzrf fgntr 1 bs gur thrfg-obbx chmmyr (ernq jub ivfvgrq, va beqre; svaq gur anzr gung ercrngf), vgf cvgpu erjevggra jvgubhg gur vairagrq "2041". Hagvy Z3.3, nyy sbhe fgnl cynlnoyr (tbazna: xrrc ebhgrf hfnoyr) | Z3.3 | fgbel (Z3.3), tbazna (chmmyr) |
 | CBGYVAR AVAR va Serqrevpx | Zbirq bhg bs gbja gb thneq gur fjvgpulneq (frpgvba 1'f cebcbfny), va gur Z3.3 punatr fb `se_cbgyvar` ergverf ng gur fnzr gvzr. Gur Fzrygre xrrcf gur svany svtugf | Z3.3 | tbazna |
 | `ra_nepuvir` ("bar jbeq punatrq") | **Erjevggra va cynpr abj** gb frg hc gur cnepuzrag: gur nqqerffrf dhbgr gur bevtvanyf, rirel dhbgr unf na nepuvir fgnzc, naq gur fgnzcf ner xrcg jvgu gur cnepuzrag | abj | OntryZrvfgre |
@@ -98,7 +98,8 @@ bayl va gur punatr gung fhccyvrf gur dhrfg zrnag gb ercynpr vg, naq gung punatr 
 
 ### 7.2 Beqre (cebcbfrq gb tbazna ba gur obneq)
 
-1. **Abj:** gur va-cynpr erjevgrf nobir (`oi_ongpu`, `oi_gnax`, `ra_nepuvir`), grkg bayl, RA naq RF.
+1. **Abj:** gur va-cynpr erjevgrf nobir (`oi_ongpu`, `oi_gnax`, `ra_nepuvir`), grkg bayl, RA naq RF, cyhf gur yno
+   grpuavpvna'f znc yvar, fb abguvat fgvyy uvagf ng na vairagrq ongpu ahzore.
 2. **Chmmyr pbairefvbaf gung arrq ab znva dhrfg**, nal beqre: gur oryy (`gvzrq`), gur penqyr jrvtugf (`plpyr` +
    `purpx`), gerr evatf (`beqre`; gur ylvat ynory vf n pyhr bowrpg, abg n cneg), gur sbbgcevagf (`gvzrq`), gur
    pnsrgrevn zrah (`plpyr` qvnyf nf pbqr ragel), gur frnyrq unyy (cvcr HV be `plpyr`), gura gur cnepuzrag.
