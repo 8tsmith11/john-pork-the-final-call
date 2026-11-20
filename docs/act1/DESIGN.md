@@ -40,6 +40,10 @@ the tunnels is waiting. They win, **but** the balloon still isn't theirs to keep
 | 5. Boss | The dead platform | It **varies** with what you did |
 | 6. Ending | Platform → sky | A voiced cutscene, then the save |
 
+At the Route 1 diner, the roommates can take a booth for a whole-party game of Lattice.
+Nia deals. A win earns local knowledge relevant to the cordon, and the checkpoint still offers
+its usual routes to anyone who skips the table.
+
 ## Systems Act 1 needs
 8-way movement + dodge + mouse aim, melee and ranged combat, gear printed at the fabs, skill points,
 morph stage 1 (Trevor's supplements, Manuel's "the gonman", Michael's "signal"), scooters, fishing

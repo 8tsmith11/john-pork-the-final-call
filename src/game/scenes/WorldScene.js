@@ -1098,21 +1098,32 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- in-game menu (src/game/ui/GameMenu.js) ----------
-  get menu() { return this.gameMenu?.tab ?? (this.puzzle && !this.puzzle.closed ? 'puzzle' : this.boardGame && !this.boardGame.closed ? 'lattice' : null); }
+  get menu() {
+    const tableView = this.latticeTable?.view;
+    if (tableView && !tableView.closed) return 'lattice';
+    return this.gameMenu?.tab ?? (this.puzzle && !this.puzzle.closed ? 'puzzle' : null);
+  }
   _makeMenu() {
     this.gameMenu = new GameMenu(this);
     const kb = this.input.keyboard;
     kb.on('keydown-ESC', () => { if (this.dlg) return; if (this.gameMenu?.held != null) { this.gameMenu.held = null; this.gameMenu.refresh(); return; } if (this.puzzle && !this.puzzle.closed) { this.puzzle.destroy(); this.puzzle = null; return; } this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
-    kb.on('keydown-I', () => { if (!this.dlg) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
-    kb.on('keydown-K', () => { if (!this.dlg) this.menu === 'skills' ? this._closeMenu() : this.gameMenu.show('skills'); });
-    kb.on('keydown-J', () => { if (!this.dlg) this.menu === 'quests' ? this._closeMenu() : this.gameMenu.show('quests'); });
-    kb.on('keydown-TAB', (ev) => { ev.preventDefault?.(); if (!this.dlg) this.menu === 'map' ? this._closeMenu() : this.gameMenu.show('map'); });
+    for (const [key, tab] of [['I', 'inventory'], ['K', 'skills'], ['J', 'quests'], ['TAB', 'map']]) {
+      kb.on(`keydown-${key}`, (ev) => {
+        if (key === 'TAB') ev.preventDefault?.();
+        if (this.dlg || this.menu === 'lattice') return;
+        if (this.menu === tab) this._closeMenu();
+        else this.gameMenu.show(tab);
+      });
+    }
     kb.addCapture('TAB');
     for (const [key, dir] of [['A', -1], ['LEFT', -1], ['D', 1], ['RIGHT', 1]]) kb.on(`keydown-${key}`, () => { if (TABS.includes(this.menu)) this.gameMenu.cycle(dir); });
   }
   _openFab() { this.gameMenu.show('fab'); }
   _openSkills() { this.gameMenu.show('skills'); }
-  _closeMenu() { this.gameMenu.close(); }
+  _closeMenu() {
+    if (this.menu === 'lattice') this.latticeTable.view.leave();
+    else this.gameMenu.close();
+  }
   _refreshMenu() { this.gameMenu?.refresh(); }
 
   // Menu actions (host-authoritative; clients ask the host).

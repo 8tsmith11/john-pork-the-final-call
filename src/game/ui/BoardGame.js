@@ -51,7 +51,10 @@ export class BoardGame {
     g.fillStyle(0x11131f, 1).fillRoundedRect(VIEW.w / 2 - 70, 3, 140, 15, 4).lineStyle(1, 0xc9a24a, 0.9).strokeRoundedRect(VIEW.w / 2 - 70, 3, 140, 15, 4);
     this.table.add(s.add.text(VIEW.w / 2, 6, 'L A T T I C E', F(9, '#f2d48a', { heading: true })).setOrigin(0.5, 0));
     const leave = s.add.text(VIEW.w - 6, 6, T('[ESC] leave', '[ESC] salir'), F(7, '#9aa3c7')).setOrigin(1, 0).setInteractive({ useHandCursor: true });
-    leave.on('pointerdown', () => this.leave());
+    leave.on('pointerdown', (_pointer, _x, _y, event) => {
+      event.stopPropagation();
+      this.leave();
+    });
     this.table.add(leave);
   }
 

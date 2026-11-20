@@ -160,4 +160,9 @@ export const ES_PLAZA = {
   "\"Every phone on the plaza rang at once, right in the middle of a song.\" She retunes. \"I finished the song.\"": "\"Todos los teléfonos de la plaza sonaron a la vez, justo en medio de una canción.\" Vuelve a afinar. \"Terminé la canción.\"",
   "\"Scooter dash lit up with a pig and a missed call. There's no phone in a scooter.\" Big Ray taps the dash. \"There's no phone in me either.\"": "\"El tablero del scooter se prendió con un cerdo y una llamada perdida. Un scooter no tiene teléfono.\" Big Ray golpea el tablero. \"Yo tampoco.\"",
   "coderot. it rang. it rang for everyone. coderot.": "podredumbre. sonó. sonó para todos. podredumbre.",
+  'Play Lattice': 'Jugar a Lattice',
+  '"I walk past the storm grate every night. Beat me at Lattice and I’ll tell you what I’ve seen."': '"Paso por la rejilla todas las noches. Gánenme al Lattice y les cuento lo que vi."',
+  '"I’ll leave the board out. Your seat’s still warm."': '"Dejo el tablero acá. Sus asientos todavía están calientes."',
+  '"The man on the cooler watches the van. When the patrol light hits it, he gets up. That’s your moment."': '"El tipo de la conservadora vigila la camioneta. Cuando la luz de patrulla la ilumina, se levanta. Ahí es cuando pueden pasar."',
+  '"You’re back. Good. Pick a seat if you’ve got time."': '"Volvieron. Bien. Si tienen tiempo, siéntense."',
 };
