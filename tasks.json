@@ -1,5 +1,5 @@
 {
- "next_id": 53,
+ "next_id": 54,
  "tasks": [
   {
    "id": 1,
@@ -813,6 +813,19 @@
    ],
    "title": "Co-op check, PR #28 (bagel/stage c233c2e): quick host skip during a slow guest script load",
    "details": "Host plus one guest on bagel/stage at c233c2e. Throttle the guest's network (DevTools Slow 3G) so src/content/stage/demo.js loads slowly. Then on the host, open ?stage=demo and press X at once. Pass: the guest never starts the demo, and its input and camera follow work afterward. Also run one normal demo playback to the end on both peers, and open ?bastion and ?lab=mux on the host to confirm those routes still work after the rebase. Reply on hub #16 with the results. (Mute volumes first and close the tabs after.)",
+   "source": "agent:BagelMeister",
+   "status": "assigned",
+   "owner": "tts"
+  },
+  {
+   "id": 53,
+   "created_at": "2026-11-20T03:04:32Z",
+   "updated_at": "2026-11-20T03:04:32Z",
+   "history": [
+    "2026-11-20T03:04:32Z BagelMeister: added (for tts)"
+   ],
+   "title": "Trigger check, PR #31 (bagel/stage-triggers 1c69850): plays once, and stays eligible when interrupted",
+   "details": "Locally only (don't commit it), add a test trigger to src/content/stage/index.js: { id: 'demo', flag: 'test.stage', map: <the start map id> }. Then set the flag from the console. (1) Pass: it plays once, and after a save and reload it doesn't play again (stage.demo.played is set). (2) Throttle the network, set the flag, and change maps before the load finishes. Pass: on returning, it still plays. (3) Start ?stage=demo by hand, then set the flag during it. Pass: the trigger plays after the demo ends. (4) With a trigger whose id has no script, the console shows 'no cutscene named' only once. Reply on hub #16.",
    "source": "agent:BagelMeister",
    "status": "assigned",
    "owner": "tts"
