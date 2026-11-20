@@ -6,8 +6,8 @@
  },
  "trevor": {
   "status": "online",
-  "last_seen": "2026-11-20T10:09:10Z",
-  "doing": "reviews + fixes; branches: lattice-required, ping-rework (#88), shop-stock, skirmish, door-dash, lake-tougher"
+  "last_seen": "2026-11-20T12:11:30Z",
+  "doing": "waiting on reviews/merges: skirmish (#82, JP re-check), lattice-required (#87), ping (#88, JP re-check), shop-stock, door-dash, lake-tougher (#92), mod-sockets-on-hotbar, cordon-facing, hub-board"
  },
  "JohnPork": {
   "status": "online",
