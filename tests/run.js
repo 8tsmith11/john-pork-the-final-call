@@ -657,18 +657,18 @@ test('Manuel\'s fart: on its own, every couple of minutes; Michael only complain
 
 const gagsMod = await import('../src/game/runningGags.js');
 const linesEsMod = await import('../src/content/lines_es.js');
-test('running gags: the sealed one comes round only with both roommates close, and every line has EN and ES', () => {
+test('running gags: the sealed one keeps to its conditions and schedule, and every line has EN and ES', () => {
   const sent = [], sc = { mode: 'solo', time: { now: 0 }, save: { flags: {} } }, g = new gagsMod.RunningGags(sc); g._send = (m) => sent.push(m);
   const near = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 130, y: 100 }, { id: 'p3', c: 'trevor', x: 500, y: 100 }] };
   for (let i = 0; i < 3600; i++) { sc.time.now = i * 1000; g.update(near); }
-  const cmp = sent.filter((m) => m.k === 'cmp');
-  assert.ok(cmp.length >= 8 && cmp.length <= 30, `in an hour: ${cmp.length}`);
-  assert.ok(cmp.every((m) => m.a === 'p2' && m.b === 'ai:manuel'), 'only those two');
+  const sg = sent.filter((m) => m.k === 'sg');
+  assert.ok(sg.length >= 8 && sg.length <= 30, `in an hour: ${sg.length}`);
+  assert.ok(sg.every((m) => m.a === 'p2' && m.b === 'ai:manuel'));
   const far = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 600, y: 100 }] };
   const sent2 = [], sc2 = { mode: 'solo', time: { now: 0 }, save: { flags: {} } }, g2 = new gagsMod.RunningGags(sc2); g2._send = (m) => sent2.push(m);
   for (let i = 0; i < 1800; i++) { sc2.time.now = i * 1000; g2.update(far); }
-  assert.equal(sent2.filter((m) => m.k === 'cmp').length, 0, 'not when they are apart');
-  for (const l of [...gagsMod.SEALED_LINES.compliments, ...gagsMod.SEALED_LINES.replies]) assert.ok(l.en && l.es, 'EN and ES');
+  assert.equal(sent2.filter((m) => m.k === 'sg').length, 0);
+  for (const l of [...gagsMod.SEALED_LINES.a, ...gagsMod.SEALED_LINES.b]) assert.ok(l.en && l.es, 'EN and ES');
 });
 
 test('running gags: the 245 lab chat and the abuela voice notes come round, with Spanish for every line', () => {
