@@ -29,6 +29,9 @@ export class Approach {
   }
 
   roleOf(o) { return o.role ?? ROLE_OF[o.id] ?? 'resident'; }
+  // Talk only: anyone a map marks approach: false, and every child, whatever the map says (gonman, general #175).
+  // Nobody leans on, cons or pickpockets a kid.
+  talkOnly(o) { return o?.approach === false || o?.age === 'child'; }
   _commonActions(o, who) {
     const allowed = ALLOWED[this.roleOf(o)], es = getLang() === 'es';
     const configured = o.approaches ?? APPROACHES;
@@ -38,13 +41,13 @@ export class Approach {
     for (const entry of configured) {
       const id = typeof entry === 'string' ? entry : entry.id;
       const def = APPROACHES.find((a) => a.id === id);
-      if (!def || actions.some((a) => a.id === id) || (o.approach === false && id !== 'talk') ||
+      if (!def || actions.some((a) => a.id === id) || (this.talkOnly(o) && id !== 'talk') ||
         (!o.approaches && allowed && !allowed.includes(id))) continue;
       const name = es ? entry.nameEs ?? tr(entry.name ?? def.name) : entry.name ?? def.name;
       const blocked = incident?.open && profile.blocks.includes(id) ? (es ? profile.reasonEs : profile.reason) : null;
       actions.push({ ...def, name, blocked });
     }
-    if (incident?.open && o.approach !== false) {
+    if (incident?.open && !this.talkOnly(o)) {
       actions.unshift({ ...profile.recovery, name: es ? profile.recovery.nameEs : profile.recovery.name });
     }
     return actions;
@@ -67,7 +70,7 @@ export class Approach {
     if (!near?.npc || near.romance || near.armorer) return false;
     if (this.passThrough === near.id) { this.passThrough = null; return false; }
     const actions = this.options(near);
-    if (!actions.length || (near.approach === false && actions.length === 1 && actions[0].id === 'talk')) return false;
+    if (!actions.length || (this.talkOnly(near) && actions.length === 1 && actions[0].id === 'talk')) return false;
     this.target = near;
     this.s.gameMenu.show(`approach:${near.id}`);
     return true;
