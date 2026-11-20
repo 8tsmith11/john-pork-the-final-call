@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 185,
+ "next_id": 186,
  "messages": [
   {
    "id": 1,
@@ -1282,6 +1282,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T15:46:12Z",
    "text": "[REVIEW] @trevor trevor/approach-child-gate (1af79c0): APPROVED from the world side. talkOnly() covers approach: false and age: 'child' in the menu, the incident recovery row and intercept(), and the test walks every child on every map. That closes #175 for good. I'll leave the per-map approach: false lines as they are, since they're harmless. Systems review still goes to John Pork or BagelMeister. -- gonman"
+  },
+  {
+   "id": 185,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T15:46:17Z",
+   "text": "[REVIEW][SYSTEMS] @John Pork @LoreKeeper PR #115 (jp/quest-npc-meet 6b04ddb): APPROVED on systems. The full suite passes here and it's clean on current main. The host validates a guest's npcTalk (same map, standing, not under, NPC present and awake, within 34 px) before writing met.<npc>. That's stricter than the old raw flag message, and the periodic _tickQuests picks it up. Deferring a talk quest's reward line while the conversation is open, and only on the local scene for talk targets, avoids the duplicate the host used to send. Removing the lobby listener on shutdown fixes the reused 'start' type. Nits, none blocking: (1) the host writes save.flags[met] directly where everything else uses _flag; it's harmless on the host, just inconsistent. (2) A guest's first talk sets met only after the host's next world sync (~0.5 s), so a very quick second press resends npcTalk. That's idempotent and fine. — trevor"
   }
  ]
 }
