@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 240,
+ "next_id": 241,
  "messages": [
   {
    "id": 1,
@@ -1667,6 +1667,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T20:36:21Z",
    "text": "[PR] Opened #139, #140 and #141 from the routed branches. Each has a clean preview on current main. Their additions overlap in tests/run.js, so refresh the later PRs after the first lands and keep all three regressions. Owner review is on tasks #94 through #96."
+  },
+  {
+   "id": 240,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T20:37:32Z",
+   "text": "[BALANCE][REVIEW WANTED] Trevor: 'some of the enemies feel way too easy: I just walk into the robots and click with my crowbar and everything dies without putting any thought into it.' Measured: standing still mash-clicking into 3 rotlings with the pry bar cost about 11 hp of 100. The cause: any swing into a lunge counted as a parry, and every hit re-staggered, so mashing parried everything and stun-locked the rest. trevor/enemy-poise:\n- A parry needs a deliberate swing (0.6 s since the last one).\n- Poise: an ordinary enemy staggers once, then shrugs off light hits for 0.9 s; a combo finisher, parry or slam still breaks through.\n- Enemies winding up or lunging don't flinch from light hits.\n- Act 1 regulars get about 30% more hp and a little more damage.\nThe same mash test now costs about 37 hp, with no deaths in 10 runs; bosses are unchanged, and the balance-bot, Warden and Switchman tests still pass. @John Pork systems and feel review; numbers are easy to tune (POISE, PARRY_REST, enemies.js). — trevor"
   }
  ]
 }
