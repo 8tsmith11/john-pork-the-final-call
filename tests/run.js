@@ -726,6 +726,25 @@ test('pipe puzzle: every seed is solvable and starts unsolved', () => {
 // Every generated scene (romance and checkpoint included), so a new scene can't skip this check.
 const SCENES = fs.readdirSync(new URL('../src/content/dialogue/act1/', import.meta.url)).filter((f) => f.endsWith('.js')).map((f) => f.replace(/\.js$/, ''));
 const { loadScene, Conversation, evalCond } = await import('../src/engine/dialogue.js');
+await (async () => {
+  try {
+    for (const name of SCENES) {
+      const scene = await loadScene(name);
+      for (const speaker of ['michael', 'trevor', 'manuel']) for (const pick of [0, 1, 2, 99]) {
+        const ctx = { speaker, present: ['michael', 'trevor', 'manuel'], flags: {}, inventory: [], seed: pick % 2 ? 'B' : 'A', morph: 0, standing: {} };
+        const sink = { flag: (k, v) => { ctx.flags[k] = v; }, item: (i) => ctx.inventory.push(i), standing: (f, n) => { ctx.standing[f] = (ctx.standing[f] ?? 0) + n; } };
+        const conv = new Conversation(scene, scene.start, ctx, sink);
+        let steps = 0;
+        while (!conv.done && steps < 2000) { if (conv.choices.length) conv.choose(Math.min(pick, conv.choices.length - 1)); else conv.advance(); steps++; }
+        assert.ok(conv.done, `${name} as ${speaker} never ended (stuck at ${conv.nodeId})`);
+      }
+    }
+    assert.equal(evalCond('speaker=trevor && flag act1.x', { speaker: 'trevor', flags: { 'act1.x': true }, present: [], inventory: [], standing: {} }), true);
+    assert.equal(evalCond('not flag act1.x', { speaker: 'trevor', flags: { 'act1.x': true }, present: [], inventory: [], standing: {} }), false);
+    console.log(`ok   dialogue: all ${SCENES.length} scenes play to an end for every speaker, first/second/third/last choice`);
+  } catch (e) { failed++; console.log(`FAIL dialogue\n     ${e.message}`); }
+})();
+
 const checkpointDialogue = await loadScene('checkpoint');
 const asterDialogue = await loadScene('aster');
 test('balloon quest credits the delivered lobby clue and checkpoint outcome, never the greeting', () => {
@@ -763,25 +782,6 @@ test('balloon quest credits the delivered lobby clue and checkpoint outcome, nev
     assert.equal(balloon.stages[4].done(flags), true, node);
   }
 });
-
-await (async () => {
-  try {
-    for (const name of SCENES) {
-      const scene = await loadScene(name);
-      for (const speaker of ['michael', 'trevor', 'manuel']) for (const pick of [0, 1, 2, 99]) {
-        const ctx = { speaker, present: ['michael', 'trevor', 'manuel'], flags: {}, inventory: [], seed: pick % 2 ? 'B' : 'A', morph: 0, standing: {} };
-        const sink = { flag: (k, v) => { ctx.flags[k] = v; }, item: (i) => ctx.inventory.push(i), standing: (f, n) => { ctx.standing[f] = (ctx.standing[f] ?? 0) + n; } };
-        const conv = new Conversation(scene, scene.start, ctx, sink);
-        let steps = 0;
-        while (!conv.done && steps < 2000) { if (conv.choices.length) conv.choose(Math.min(pick, conv.choices.length - 1)); else conv.advance(); steps++; }
-        assert.ok(conv.done, `${name} as ${speaker} never ended (stuck at ${conv.nodeId})`);
-      }
-    }
-    assert.equal(evalCond('speaker=trevor && flag act1.x', { speaker: 'trevor', flags: { 'act1.x': true }, present: [], inventory: [], standing: {} }), true);
-    assert.equal(evalCond('not flag act1.x', { speaker: 'trevor', flags: { 'act1.x': true }, present: [], inventory: [], standing: {} }), false);
-    console.log(`ok   dialogue: all ${SCENES.length} scenes play to an end for every speaker, first/second/third/last choice`);
-  } catch (e) { failed++; console.log(`FAIL dialogue\n     ${e.message}`); }
-})();
 
 test('every door has wall on both sides (no doors standing on an open patch)', () => {
   for (const m of Object.values(MAPS_FOR_TEST)) {
