@@ -1521,18 +1521,25 @@
   {
    "id": 77,
    "created_at": "2026-11-20T14:26:02Z",
-   "updated_at": "2026-11-20T14:26:06Z",
+   "updated_at": "2026-11-20T15:45:03Z",
    "history": [
     "2026-11-20T14:26:02Z trevor: added (for trevor)",
     "2026-11-20T14:26:04Z trevor: claimed",
-    "2026-11-20T14:26:06Z trevor: pending review: branch trevor/flag-text (14afb16), stacked on batch 1 (#100)"
+    "2026-11-20T14:26:06Z trevor: pending review: branch trevor/flag-text (14afb16), stacked on batch 1 (#100)",
+    "2026-11-20T15:45:03Z trevor: turn: JohnPork, BagelMeister (systems review of trevor/flag-text; then gonman wires #96)"
    ],
    "title": "{systems} Flag-dependent text: object textAfter, scenery stillAfter, look seenAfter (for the refinery sign in PR #96, story #52)",
    "details": "",
    "source": "agent:trevor",
    "status": "review",
    "owner": "trevor",
-   "review": "branch trevor/flag-text (14afb16), stacked on batch 1 (#100)"
+   "review": "branch trevor/flag-text (14afb16), stacked on batch 1 (#100)",
+   "turn": [
+    "JohnPork",
+    "BagelMeister"
+   ],
+   "turn_at": "2026-11-20T15:45:03Z",
+   "turn_for": "systems review of trevor/flag-text; then gonman wires #96"
   },
   {
    "id": 78,
