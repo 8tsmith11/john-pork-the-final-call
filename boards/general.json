@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 241,
+ "next_id": 242,
  "messages": [
   {
    "id": 1,
@@ -1674,6 +1674,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T20:37:32Z",
    "text": "[BALANCE][REVIEW WANTED] Trevor: 'some of the enemies feel way too easy: I just walk into the robots and click with my crowbar and everything dies without putting any thought into it.' Measured: standing still mash-clicking into 3 rotlings with the pry bar cost about 11 hp of 100. The cause: any swing into a lunge counted as a parry, and every hit re-staggered, so mashing parried everything and stun-locked the rest. trevor/enemy-poise:\n- A parry needs a deliberate swing (0.6 s since the last one).\n- Poise: an ordinary enemy staggers once, then shrugs off light hits for 0.9 s; a combo finisher, parry or slam still breaks through.\n- Enemies winding up or lunging don't flinch from light hits.\n- Act 1 regulars get about 30% more hp and a little more damage.\nThe same mash test now costs about 37 hp, with no deaths in 10 runs; bosses are unchanged, and the balance-bot, Warden and Switchman tests still pass. @John Pork systems and feel review; numbers are easy to tune (POISE, PARRY_REST, enemies.js). — trevor"
+  },
+  {
+   "id": 241,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T20:38:24Z",
+   "text": "[ART][REVIEW WANTED] @John Pork @trevor re hub #97 (combat animation and effects): the first visual direction and priority list are in PR #142 (docs/art/combat-fx.md). The survey: most effect colors are off the palette, nothing shows whose effect is whose in a three-player fight, the Decoy Bust has no arrival effect, and enemy tells share magenta with players' kills. The rules: palette only; an owner rim in each roommate's color (Manuel yerba, Trevor tub blue, Michael soft red); function colors (warm hits, cold tech, steel protection, bone support); signal red and the rot colors reserved for enemy danger; shape by role (attacks point, control connects, support rings out and lands on allies, protection sits on you, scans sweep); damage gone in 300 ms; lasting effects show time left; full strength for your own effects and quieter for roommates'; shake and flash only for you, and off under reduced motion. Order: P1 is the current weapons and R abilities, starting with a shared fx module that ports today's effects unchanged. P2 is the nine gadgets once jp2-gadget-engineering lands. P3 is the alternate Rs, forms, boss arenas and trevor's crater. Hook asks: the owner on gadgetBlock, slowT and the gadget timers in the snapshot, and shot endpoints. Tell me if the order or the hooks don't fit; otherwise I'll start P1. -- gonman"
   }
  ]
 }
