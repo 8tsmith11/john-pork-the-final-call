@@ -2118,17 +2118,34 @@ test('a long story beat (src/game/watcher.js): beats build in order, the climax 
   let landed = false;
   scene.map.id = 'tmap'; scene.save.flags['t.cross'] = true; scene.time.now = 31000;
   scene.playCinematic = (_id, done) => done();
-  scene.sim = { players: new Map([['h', {}]]), enemies: new Map(), impact: () => { landed = true; }, spawnBoss: (kind, w2) => scene.sim.enemies.set('b', { kind, def: w2 }) };
+  scene.sim = { players: new Map([['h', {}]]), enemies: new Map(), allies: [], impact: () => { landed = true; }, spawnBoss: (kind, w2) => scene.sim.enemies.set('b', { kind, def: w2 }), addAlly: (a2) => scene.sim.allies.push(a2) };
   w.update();
   assert.ok(d.beats.every((b) => scene.save.flags[f.beat(b)]), 'every beat counts as seen');
   assert.ok(scene.save.flags[f.landed] && landed, 'the impact happens');
   const boss = scene.sim.enemies.get('b'); assert.ok(boss && boss.kind === 'boss.wt' && boss.def.look === W.WATCH.climax.boss.look && boss.def.look, 'and the fight starts, drawn with the right art');
   assert.equal(sent.filter((m) => m.op === 'climax').length, 1); assert.equal(sent.at(-1).last, d.beats.at(-1).id, 'the last warning plays first');
+  assert.ok(scene.sim.allies.length === 1 && scene.sim.allies[0].kind === 'champion' && scene.sim.allies[0].temp, 'an ally fights beside the party, for this fight');
   w.update(); assert.equal(sent.filter((m) => m.op === 'climax').length, 1, 'once');
   // owed until won: coming back respawns the fight at the crater, without the cinematic
   assert.ok(W.fightOwed(d, scene.save.flags, 'tmap'));
   scene.sim.enemies.clear(); w.onMapShown(); assert.ok(scene.sim.enemies.size === 1, 'the fight is still there');
   scene.save.flags[f.down] = true; assert.ok(!W.fightOwed(d, scene.save.flags, 'tmap'), 'won: over');
+});
+
+test('sim: a champion ally fights beside the party (bosses included), gets knocked down and up, and leaves with the map', () => {
+  const sim = new Sim(rotArena(), { seed: 'champ' }); sim.addPlayer('h', 'trevor'); const h = sim.players.get('h'); h.x = 400; h.y = 400;
+  sim.enemies.clear();
+  const bid = sim.spawnBoss('boss.t', { name: 'T', epithet: '', maxHp: 400, modules: ['shock'], pool: [['shock'], ['shock'], ['shock']], radius: 10, speed: 0, damage: 10, guard: 0 }, 470, 400);
+  sim.enemies.get(bid).awake = false;
+  sim.addAlly({ kind: 'champion', temp: true, hp: 60, maxHp: 60, damage: 10, owner: 'h', x: 410, y: 400 });
+  const hp0 = sim.enemies.get(bid).hp; let swings = 0;
+  for (let i = 0; i < 60 * 6; i++) { sim.step(1 / 60, new Map()); swings += sim.events.filter((e) => e.t === 'allySwing').length; }
+  assert.ok(swings >= 3 && sim.enemies.get(bid).hp < hp0, 'he goes for the boss and lands hits');
+  const a = sim.allies[0]; a.hp = 1; a.down = 0;
+  sim.enemies.get(bid).x = a.x + 4; sim.enemies.get(bid).y = a.y; for (let i = 0; i < 90 && !(a.down > 0); i++) sim.step(1 / 60, new Map());
+  assert.ok(a.down > 0, 'knocked down'); for (let i = 0; i < 60 * 9; i++) sim.step(1 / 60, new Map()); assert.ok(!(a.down > 0) && a.hp === a.maxHp, 'and back up');
+  assert.equal(sim.snapshot().allies[0].k, 'champion');
+  sim.setMap(rotArena()); assert.equal(sim.allies.length, 0, 'a story ally stays where the story put them');
 });
 
 test('sim: a boss can arrive mid-scene, and an impact hurts and throws clear whoever stands in it', () => {

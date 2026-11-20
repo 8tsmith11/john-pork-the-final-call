@@ -75,6 +75,7 @@ export class Sim {
   /** Swap maps. `fromId` = the map we came from: players arrive beside the exit that leads back there. */
   setMap(map, fromId = null, viaId = null) {
     this.map = map; this.shots = []; this.hazards = []; this.decoys = []; this.goo = []; this.enemies.clear();
+    this.allies = (this.allies ?? []).filter((a) => !a.temp);   // a story ally stays where the story put them
     for (const a of this.allies ?? []) a.relocate = true;
     // Arrive at the counterpart of the exit you used: an explicit `pair`, else the same kind (stairs to stairs,
     // elevator to elevator), else the first exit back. (John Pork #577: the elevator dropped you at the stairs.)
@@ -441,9 +442,35 @@ export class Sim {
     (this.allies ??= []).push({ hp: 40, maxHp: 40, cd: 0, st: 'follow', stT: 0, down: 0, vx: 0, vy: 0, ...spec });
   }
 
+  // A champion: a person fighting beside the party (a story ally). Goes for the nearest enemy, bosses included,
+  // strikes on a steady rhythm (light hits, so enemy poise applies), gets knocked down by hard hits and gets back up.
+  _stepChampion(a, owner, dt) {
+    if (a.relocate) { a.relocate = false; a.x = owner.x + 14; a.y = owner.y + 6; }
+    if (a.down > 0) { a.down -= dt; if (a.down <= 0) { a.hp = a.maxHp; this.events.push({ t: 'allyUp', x: a.x, y: a.y, kind: 'champion' }); } return; }
+    a.cd = Math.max(0, a.cd - dt);
+    let foe = null, fd = 220;
+    for (const e of this.enemies.values()) { if (e.sahur) continue; const d = Math.hypot(e.x - a.x, e.y - a.y); if (d < fd) { fd = d; foe = e; } }
+    if (foe) {
+      const reach = this._def(foe).radius + 12, ux = (foe.x - a.x) / (fd || 1), uy = (foe.y - a.y) / (fd || 1);
+      if (fd > reach) this._moveBody(a, ux * 70 * dt, uy * 70 * dt, 5);
+      else if (a.cd <= 0) { a.cd = 1.1; a.st = 'strike'; this._hurtEnemy(foe, a.damage ?? 10, ux * 60, uy * 60, a.owner); this.events.push({ t: 'allySwing', x: a.x, y: a.y, kind: 'champion' }); }
+    } else {
+      a.st = 'follow';
+      const tx = owner.x + 16, ty = owner.y + 6, d = Math.hypot(tx - a.x, ty - a.y);
+      if (d > 260) { a.x = tx; a.y = ty; } else if (d > 10) this._moveBody(a, ((tx - a.x) / d) * 80 * dt, ((ty - a.y) / d) * 80 * dt, 5);
+    }
+    for (const e of this.enemies.values()) {   // what's next to him hits him too
+      if (Math.hypot(e.x - a.x, e.y - a.y) < this._def(e).radius + 6 && (e.cdAlly = (e.cdAlly ?? 0) - dt) <= 0) {
+        e.cdAlly = 1.2; a.hp -= Math.round((this._def(e).damage ?? 6) * 0.5);
+        if (a.hp <= 0) { a.hp = 0; a.down = 8; this.events.push({ t: 'allyDown', x: a.x, y: a.y, kind: 'champion' }); break; }
+      }
+    }
+  }
+
   _stepAllies(dt) {
     for (const a of this.allies ?? []) {
       const owner = this.players.get(a.owner) ?? [...this.players.values()][0]; if (!owner) continue;
+      if (a.kind === 'champion') { this._stepChampion(a, owner, dt); continue; }
       if (a.relocate) { a.relocate = false; a.x = owner.x - 12; a.y = owner.y + 10; if (this._hitsBox(a.x, a.y, 4, 3)) { a.x = owner.x; a.y = owner.y; } }
       if (a.down > 0) { a.down -= dt; if (a.down <= 0) { a.hp = a.maxHp; this.events.push({ t: 'allyUp', x: a.x, y: a.y }); } continue; }
       a.cd = Math.max(0, a.cd - dt); a.stT -= dt;
@@ -1210,7 +1237,7 @@ export class Sim {
         ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, ...(e.def.look ? { lk: e.def.look } : {}), la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
       goo: this.goo.map((g) => ({ x: Math.round(g.x), y: Math.round(g.y), r: g.r, t: Math.round(g.ttl * 10) / 10 })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
-      allies: (this.allies ?? []).map((a) => ({ x: Math.round(a.x), y: Math.round(a.y), hp: a.hp, mhp: a.maxHp, dn: a.down > 0, st: a.st })),
+      allies: (this.allies ?? []).map((a) => ({ x: Math.round(a.x), y: Math.round(a.y), hp: a.hp, mhp: a.maxHp, dn: a.down > 0, st: a.st, ...(a.kind ? { k: a.kind, lk: a.look } : {}) })),
       hazards: this.hazards.map((h) => ({ x: Math.round(h.x), y: Math.round(h.y), r: h.r, t: Math.round(h.ttl * 10) / 10 })),
       ring: [...this.enemies.values()].find((e) => e.ringR != null)?.ringR ?? null,
       shots: this.shots.map((s) => ({ x: Math.round(s.x), y: Math.round(s.y), f: s.from === 'player' ? 1 : 0 })),

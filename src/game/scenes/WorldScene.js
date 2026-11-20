@@ -2719,6 +2719,14 @@ export class WorldScene extends Phaser.Scene {
     for (const a of snap.allies || []) {   // Trevor's combat robot (prop art, small), hp bar when hurt
       this.allySpr ??= [];
       const i = (snap.allies || []).indexOf(a);
+      if (a.k === 'champion') {   // a story ally drawn with a principal's art (lk), not the robot
+        let c = this.allySpr[i];
+        if (!c || c.kind !== 'champion') { c?.destroy(); c = this.allySpr[i] = this.add.sprite(0, 0, 'principals').setOrigin(0.5, 1); c.kind = 'champion'; if (this.anims.exists(a.lk)) c.play(a.lk); }
+        c.setVisible(true).setPosition(a.x, a.y + 3).setDepth(a.y).setAlpha(a.dn ? 0.45 : 1).setAngle(a.st === 'strike' ? Math.sin(this.time.now / 40) * 4 : 0);
+        if (a.hp < a.mhp && !a.dn) this.shotGfx.fillStyle(0x1c1f33).fillRect(a.x - 8, a.y - 30, 16, 2).fillStyle(0x7fb069).fillRect(a.x - 8, a.y - 30, 16 * (a.hp / a.mhp), 2);
+        continue;
+      }
+      if (this.allySpr[i]?.kind === 'champion') { this.allySpr[i].destroy(); this.allySpr[i] = null; }
       const spr = (this.allySpr[i] ??= this.add.image(0, 0, 'props', 'bot.live').setOrigin(0.5, 1).setScale(0.75));
       const moved = spr.lastX !== undefined && Math.hypot(a.x - spr.lastX, a.y - spr.lastY) > 0.2; spr.lastX = a.x; spr.lastY = a.y;
       spr.setFrame(!a.dn && moved && Math.floor(this.time.now / 140) % 2 ? 'bot.live#1' : 'bot.live').setFlipX(moved ? a.x < (spr.prevX ?? a.x) : spr.flipX); spr.prevX = a.x;

@@ -11,7 +11,7 @@
 //      still there; the fight is the way on.
 import SEALED from '../content/watcher_sealed.js';
 import { defineBoss } from '../content/builders.js';
-import { speak, babble, sfx } from '../audio/audio.js';
+import { speak, babble, sfx, audioOut } from '../audio/audio.js';
 import { getLang } from '../i18n.js';
 
 const rot13 = (t) => t.replace(/[a-zA-Z]/g, (c) => String.fromCharCode(((c.charCodeAt(0) - (c <= 'Z' ? 65 : 97) + 13) % 26) + (c <= 'Z' ? 65 : 97)));
@@ -96,8 +96,38 @@ export class Watcher {
     const s = this.s, c = this.d.climax, x = c.at[0] * TILE + 8, y = c.at[1] * TILE + 8;
     s.cameras?.main?.shake?.(900, 0.012);
     this.drawCrater();
-    if (s.mode !== 'client') { s.sim.impact(x, y, c.r * TILE, 18); this.spawnFight(); }
-    this.busy = false;
+    if (s.mode !== 'client') { s.sim.impact(x, y, c.r * TILE, 18); }
+    // Then the party's eyes: black, a ringing, eyes opening, blurry for a while; the fight starts as they come to.
+    const go = () => { if (s.mode !== 'client') this.spawnFight(); this.busy = false; };
+    if (c.wake) this.wake(go); else go();
+  }
+
+  /** Black, then a ringing, then the eyes open (a blink or two) and the view stays blurry for a while. */
+  wake(done) {
+    const s = this.s, cam = s.cameras?.main;
+    if (!s.add || !cam) { done?.(); return; }
+    const W = cam.width ?? 480, H = cam.height ?? 270, layer = (o) => o.setScrollFactor(0).setDepth(9990);
+    const black = layer(s.add.rectangle(0, 0, W, H, 0x000000).setOrigin(0));
+    const top = layer(s.add.rectangle(0, 0, W, H / 2, 0x000000).setOrigin(0)), bot = layer(s.add.rectangle(0, H / 2, W, H / 2, 0x000000).setOrigin(0));
+    this._ring();
+    const blur = cam.postFX?.addBlur?.(1, 2, 2, 1.6) ?? null, haze = blur ? null : layer(s.add.rectangle(0, 0, W, H, 0xd8d0c0, 0.28).setOrigin(0));
+    const lids = (open, ms, then) => s.tweens.add({ targets: top, y: -open * H / 2, duration: ms, ease: 'Sine.easeInOut' }) && s.tweens.add({ targets: bot, y: H / 2 + open * H / 2, duration: ms, ease: 'Sine.easeInOut', onComplete: then });
+    s.time.delayedCall(1800, () => {
+      black.destroy();
+      lids(0.18, 700, () => lids(0, 260, () => lids(0.45, 600, () => lids(0.3, 220, () => lids(1, 900, () => {
+        top.destroy(); bot.destroy(); done?.();
+        if (blur) s.tweens.add({ targets: blur, strength: 0, duration: 6000, onComplete: () => cam.postFX?.remove?.(blur) });
+        if (haze) s.tweens.add({ targets: haze, alpha: 0, duration: 6000, onComplete: () => haze.destroy() });
+      })))));
+    });
+  }
+
+  // The ringing in your ears: a high tone that slowly fades.
+  _ring() {
+    const out = audioOut?.(); if (!out) return;
+    const { ctx, dest } = out, t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = 3300; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 0.3); g.gain.exponentialRampToValueAtTime(0.0001, t + 5.5);
+    o.connect(g); g.connect(dest); o.start(t); o.stop(t + 5.6);
   }
 
   /** Host: the fight, at the crater (also when the party comes back to an unfinished one). */
@@ -106,6 +136,12 @@ export class Watcher {
     if ([...s.sim.enemies.values()].some((e) => e.kind === `boss.${this.d.id}`)) return;
     const w = defineBoss(c.boss)(Math.max(1, s.sim.players.size));
     s.sim.spawnBoss(`boss.${this.d.id}`, w, c.at[0] * TILE + 8, c.at[1] * TILE + 8, `${this.d.id}#fight`);   // its look rides in the sealed spec
+    // An ally who fights beside the party for this fight (temporary: leaves with the map).
+    const al = c.ally;
+    if (al && !(s.sim.allies ?? []).some((a) => a.kind === 'champion')) {
+      const me = s.sim.players.get(s.localId) ?? [...s.sim.players.values()][0];
+      s.sim.addAlly({ kind: 'champion', look: al.look, name: al.name, temp: true, hp: al.hp, maxHp: al.hp, damage: al.damage, owner: me?.id, x: (me?.x ?? 0) + 14, y: (me?.y ?? 0) + 6 });
+    }
   }
 
   /** Map shown: a crater that already happened stays, its collateral stays gone, and an unfinished fight resumes. */
