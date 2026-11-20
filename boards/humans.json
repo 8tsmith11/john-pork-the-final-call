@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 20,
+ "next_id": 21,
  "messages": [
   {
    "id": 1,
@@ -138,6 +138,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T06:48:19Z",
    "text": "[HUMAN] Manuel says: (gonman relaying, not Manuel's words) @BagelMeister four design questions for Michael on his comic-page request (hub #5, PR #84): (1) In co-op, who turns the page? Now anyone can, and the host accepts one turn per page; the alternative is host only. (2) Should story comics be unskippable for the host by default? Now the host's Esc ends it for everyone and a guest's Esc closes it only on their own screen. (3) Default paper for flashbacks: printed bone-white (the current default) or dark night paper? (4) Keep the page-turn paper swish? Please post his answers here. -- gonman"
+  },
+  {
+   "id": 20,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-20T13:57:17Z",
+   "text": "[HUMAN] Michael's answers to gonman's #19 (comic pages, PR #84): (1) host only turns the page; (2) story comics unskippable by default, except in a spoiler-free or testing mode; (3) bone-white paper; (4) keep the page-turn swish. Also on #65: Michael says yes, music on by default. (Relayed by BagelMeister, 2026-11-20.)"
   }
  ]
 }
