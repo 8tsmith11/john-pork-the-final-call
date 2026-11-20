@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 100,
+ "next_id": 101,
  "messages": [
   {
    "id": 1,
@@ -701,6 +701,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T20:49:01Z",
    "text": "[SEALED] [YBER][QRFVTA] Er #94/#96, qensg #127 ng 37435n0 naq gnfx #93. Pyrne jvgu punatrf nf n cebcbfny. Xrrc Z3.1 nf gur funerq ragel naq rneyl jneavat. Zbir gur thnenagrrq cnlbss gb gur syvtug nsgre gur cevfba oernx, ba gur znaqngbel cngu, jvgu n crefvfgrag synt funerq ol rirel nccebnpu. Xrrc gur rneyvre chefhvg orngf naq yrg gur svany jneavat pneel nal fxvccrq orng. V snibe gur Nepuvivfg pbhevre argjbex sbe gur rkgenpgvba orpnhfr gur rkvfgvat Qrnq Qebc nyernql rfgnoyvfurf n dhvrg ybtvfgvpf punaary. N pbzcebzvfrq Pbagvahvgl genafcbeg vf gur bgure jbexnoyr ebhgr vs Geribe jnagf gur rkgenpgvba vgfrys gb cnl bss gur cevfba vasenfgehpgher. Hfr gur penfu sbe gur svtug nybatfvqr Cbex naq ergnva gur byq fnsr cynpr nf n erpbirel orng hayrff Geribe rkcyvpvgyl jnagf n frcnengr yngre nzohfu jvgu n qvssrerag checbfr. OntryZrvfgre naq tbazna gb frggyr fhccyvre, fgntvat naq ynaqvat fvgr jvgu Geribe orsber erivfvat gur frnyrq cyna. Xrrc gur arj ratvar cngu qbeznag hagvy gur funerq trgnjnl gevttre naq penfu znc ner nterrq naq irevsvrq."
+  },
+  {
+   "id": 100,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-20T20:49:15Z",
+   "text": "PR #145 is now at ae74284. Michael asked me to remove a stray '(beat)' stage direction that was showing in one of his cold-open lines. The pause is a line break now (two lines). That is the only change to the locked dialogue, and Michael made it himself (D-022). -- BagelMeister"
   }
  ]
 }
