@@ -1660,6 +1660,182 @@ test('arriving through any door never lands you on an exit, and your first step 
   assert.equal(bad.length, 0, bad.join('; '));
 });
 
+// Comic pages (hub #5, #47): the data, the layout math, and the host-authoritative page-turn mode.
+{
+  const comicMod = await import('../src/game/comic.js');
+  const CL = await import('../src/game/render/comicLayout.js');
+  const { COMIC_TRIGGERS } = await import('../src/content/comics/index.js');
+  const testAsync = async (name, fn) => { try { await fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}\n     ${e.message}`); } };
+  const comicDir = new URL('../src/content/comics/', import.meta.url);
+  const comicIds = fs.readdirSync(comicDir).filter((f) => f.endsWith('.js') && f !== 'index.js').map((f) => f.slice(0, -3));
+  const atlasFrames = {};
+  for (const f of fs.readdirSync(new URL('../assets/sprites/', import.meta.url))) {
+    if (!f.endsWith('.json')) continue;
+    const a = JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${f}`, import.meta.url), 'utf8'));
+    atlasFrames[f.slice(0, -5)] = new Map(Object.entries(a.frames).map(([k, v]) => [k, { w: v.frame.w, h: v.frame.h }]));
+  }
+  const comics = {};
+  for (const id of comicIds) comics[id] = await comicMod.loadComic(id);
+
+  test('comics: every comic decodes and checks out (layouts, art frames, English and Spanish on every line)', () => {
+    assert.ok(comicIds.includes('demo') && comicIds.includes('flashback_1'), comicIds.join(', '));
+    for (const id of comicIds) {
+      const c = comics[id];
+      assert.ok(c, `${id} does not load`);
+      assert.equal(c.id, id, `${id}.js says its id is ${c.id}`);
+      assert.deepEqual(comicMod.checkComic(c, atlasFrames), [], id);
+      const lines = c.pages.flatMap((p) => p.panels.flatMap((n) => n.text ?? []));
+      assert.ok(lines.length > 0 && lines.every((t) => t.en?.trim() && t.es?.trim()), `${id}: a line without English or Spanish`);
+    }
+  });
+
+  test('comics: the story comic is sealed (ROT13 in the file, readable once decoded), its parts play alone, and every trigger has pages', () => {
+    const src = fs.readFileSync(new URL('flashback_1.js', comicDir), 'utf8');
+    assert.match(src, /export default "/);
+    assert.ok(!/"pages"|"panels"|"balloon"/.test(src), 'plaintext keys in the sealed file');
+    assert.equal(comicMod.decodeComic(comicMod.rot13(JSON.stringify({ id: 'x', pages: [1] }))).id, 'x');
+    assert.ok(comics.flashback_1.pages.every((p) => /^part_\d$/.test(p.tag)), 'every page has its part tag');
+    for (const t of comicMod.pagesFor(comics.flashback_1, 'part_3')) assert.equal(t.tag, 'part_3');
+    assert.equal(comicMod.pagesFor(comics.flashback_1, 'part_9').length, 0);
+    for (const t of COMIC_TRIGGERS) {
+      assert.ok(comics[t.id], `trigger for a comic that doesn't exist: ${t.id}`);
+      assert.ok(typeof t.flag === 'string' && t.flag, `trigger for ${t.id} has no flag`);
+      assert.ok(comicMod.pagesFor(comics[t.id], t.tag ?? null).length > 0, `trigger ${t.id}:${t.tag} plays no pages`);
+    }
+  });
+
+  test('comics: grids sit inside the live area without overlapping, and the renderer paints only palette colours', () => {
+    for (const [name, cells] of Object.entries(CL.LAYOUTS)) {
+      for (const [x, y, w, h] of cells) assert.ok(x >= 0 && y >= 0 && x + w <= CL.PAGE.w && y + h <= CL.PAGE.h, `${name}: ${[x, y, w, h]}`);
+      for (let i = 0; i < cells.length; i++) for (let j = i + 1; j < cells.length; j++) {
+        const [a, b] = [cells[i], cells[j]];
+        const apart = a[0] + a[2] + CL.GUTTER <= b[0] || b[0] + b[2] + CL.GUTTER <= a[0] || a[1] + a[3] + CL.GUTTER <= b[1] || b[1] + b[3] + CL.GUTTER <= a[1];
+        assert.ok(apart, `${name}: cells ${i} and ${j} touch or overlap`);
+      }
+    }
+    const pal = JSON.parse(fs.readFileSync(new URL('../tools/art/palette.json', import.meta.url), 'utf8'));
+    for (const [k, v] of Object.entries(CL.PAL)) assert.equal(pal[k], v, `comicLayout PAL.${k}`);
+    const allowed = new Set(Object.values(CL.PAL));
+    const hex = (d, o) => `#${[d[o], d[o + 1], d[o + 2]].map((n) => n.toString(16).padStart(2, '0')).join('')}`;
+    for (const bg of Object.keys(CL.BACKGROUNDS)) {
+      const d = CL.bgPixels(bg, 37, 29, 7);
+      for (let o = 0; o < d.length; o += 4) assert.ok(allowed.has(hex(d, o)) && d[o + 3] === 255, `${bg} paints ${hex(d, o)}`);
+    }
+    for (const st of Object.values(CL.LETTERING)) for (const k of ['fill', 'line', 'text']) assert.ok(CL.PAL[st[k]], `lettering colour ${st[k]}`);
+    for (const p of Object.values(CL.PAPER)) for (const k of ['ground', 'ink', 'folio', 'back']) assert.ok(CL.PAL[p[k]], `paper colour ${p[k]}`);
+  });
+
+  test('comics: art is cropped to its panel, balloon tails stop at the frame, keys and the controls line', () => {
+    assert.deepEqual(CL.cropFor(-8, 0, 48, 48, 2, 100, 100), { x: 4, y: 0, w: 44, h: 48, full: false });
+    assert.equal(CL.cropFor(0, 0, 48, 48, 2, 100, 100).full, true);
+    assert.equal(CL.cropFor(120, 0, 48, 48, 1, 100, 100), null);
+    const t = CL.tailFor({ x: 10, y: 10, w: 60, h: 20 }, [-40, 200], 100, 100);
+    assert.equal(t.side, 'bottom'); assert.deepEqual(t.tip, [0, 100]);
+    assert.equal(CL.tailFor({ x: 10, y: 50, w: 30, h: 20 }, [90, 60], 100, 100).side, 'right');
+    assert.deepEqual(CL.clampBox(-5, 95, 40, 20, 100, 100), { x: 3, y: 77 });
+    for (const k of ['e', 'E', ' ', 'Enter', 'ArrowRight']) assert.equal(comicMod.actionForKey(k), 'next', k);
+    for (const k of ['ArrowLeft', 'Backspace']) assert.equal(comicMod.actionForKey(k), 'back', k);
+    assert.equal(comicMod.actionForKey('Escape'), 'skip'); assert.equal(comicMod.actionForKey('q'), null);
+    assert.match(CL.footerHint('en', { index: 0, total: 3, host: true, skippable: true }), /next.*Esc: skip/);
+    assert.ok(!/back/.test(CL.footerHint('en', { index: 0, total: 3, host: true, skippable: true })), 'no back on the first page');
+    assert.match(CL.footerHint('en', { index: 2, total: 3, host: true, skippable: false }), /done.*back/);
+    assert.ok(!/Esc/.test(CL.footerHint('en', { index: 1, total: 3, host: true, skippable: false })));
+    assert.match(CL.footerHint('es', { index: 1, total: 3, host: false, skippable: false }), /siguiente.*atrás.*Esc: cerrar/);
+    assert.equal(CL.letterText({ kind: 'balloon', en: 'ok', es: 'está bien' }, 'es'), 'ESTÁ BIEN');
+    assert.equal(CL.letterText({ kind: 'sfx', en: 'krsh', es: 'krsh' }, 'en'), 'krsh');
+    const bad = { id: 'bad', pages: [{ layout: 'grid4', panels: [{ rect: [400, 0, 100, 40], art: [{ frame: 'nope', scale: 1.5 }], text: [{ kind: 'balloon', en: 'hi' }] }] }] };
+    const probs = comicMod.checkComic(bad, atlasFrames).join(' | ');
+    for (const want of ['outside the live area', 'scale must be', 'no frame nope', 'no Spanish']) assert.ok(probs.includes(want), `missing "${want}" in: ${probs}`);
+  });
+
+  // A stand-in world and drawing side, so the mode's rules run without Phaser.
+  const fakeView = () => { const v = { calls: [], open: (c, pages, page, o) => v.calls.push(['open', page, o.host]), turnTo: (p, d) => v.calls.push(['turn', p, d]), close: () => v.calls.push(['close']), destroy() {} }; return v; };
+  const fakeWorld = (mode) => { const w = { mode, time: { now: 0 }, save: { flags: {} }, sent: [], net: { broadcast: (m) => w.sent.push(['all', m]), send: (m) => w.sent.push(['host', m]) } }; return w; };
+  const threePages = { id: 'tst', pages: [{ layout: 'splash', panels: [{}] }, { layout: 'splash', tag: 'b', panels: [{}] }, { layout: 'splash', panels: [{}] }] };
+  const mkComic = (mode) => { const w = fakeWorld(mode), v = fakeView(), c = new comicMod.Comic(w, v); c.load = async () => threePages; return { w, v, c }; };
+
+  await testAsync('comic mode: one page at a time, a beat before a turn counts, back stops at the first page, the last turn ends it', async () => {
+    const { w, v, c } = mkComic('solo');
+    let done = 0;
+    assert.equal(await c.play('tst', { onDone: () => done++ }), true);
+    assert.ok(c.active); assert.deepEqual(v.calls[0], ['open', 0, true]);
+    assert.equal(c.input('next'), false, 'turned before the page had been up for a beat');
+    w.time.now = comicMod.DWELL_MS; assert.equal(c.input('next'), true); assert.equal(c.cur.page, 1);
+    w.time.now += 100; assert.equal(c.input('next'), false, 'a mashed key turned two pages');
+    w.time.now += comicMod.DWELL_MS; assert.equal(c.input('back'), true); assert.equal(c.cur.page, 0);
+    w.time.now += comicMod.DWELL_MS; assert.equal(c.input('back'), false, 'went back past the first page');
+    for (let i = 0; i < 3; i++) { w.time.now += comicMod.DWELL_MS; c.input('next'); }
+    assert.ok(!c.active && done === 1, 'the turn after the last page ends it, once');
+    assert.deepEqual(v.calls.map((x) => x[0]), ['open', 'turn', 'turn', 'turn', 'turn', 'close']);
+    assert.equal(w.sent.length, 0, 'solo sends nothing');
+    assert.equal(await c.play('tst', { tag: 'b' }), true); assert.equal(c.cur.pages.length, 1, 'a tag plays only its pages');
+    c.input('skip'); assert.ok(!c.active, 'Esc ends it');
+    const locked = mkComic('solo'); locked.c.load = async () => ({ ...threePages, skippable: false });
+    await locked.c.play('tst'); assert.equal(locked.c.input('skip'), false); assert.ok(locked.c.active, 'an unskippable comic stays up');
+    assert.equal(await c.play('Bad-Id'), false);
+  });
+
+  await testAsync('comic mode in co-op: the host owns the page, one accepted turn moves everyone, guests mirror and can leave on their own screen', async () => {
+    const H = mkComic('host'), host = H.c, hw = H.w;
+    await host.play('tst');
+    const show = () => hw.sent.filter(([, m]) => m.op === 'show').map(([, m]) => m);
+    assert.equal(show().length, 1); const run = show()[0].run;
+    assert.deepEqual({ ...show()[0], run: 0 }, { t: 'comic', op: 'show', id: 'tst', run: 0, page: 0, tag: null });
+    hw.time.now = 1000;
+    // two guests press next on page 0 at the same moment: one turn
+    host.onHostMsg('g1', { t: 'comic', op: 'turn', run, from: 0, dir: 1 });
+    host.onHostMsg('g2', { t: 'comic', op: 'turn', run, from: 0, dir: 1 });
+    assert.equal(host.cur.page, 1); assert.equal(show().length, 2);
+    hw.time.now = 2000;
+    assert.equal(host.onHostMsg('g1', { t: 'comic', op: 'turn', run: 'old', from: 1, dir: 1 }), true); assert.equal(host.cur.page, 1, 'a turn from another run counted');
+    host.onHostMsg('g1', { t: 'comic', op: 'turn', run, from: 1, dir: 7 }); assert.equal(host.cur.page, 1, 'a bad direction counted');
+    assert.equal(host.onHostMsg('g1', { t: 'stage', op: 'ask' }), false, 'other messages pass through');
+    // heartbeat: the host repeats the page every second
+    const before = show().length; hw.time.now = 2000 + comicMod.BEAT_MS; host.tick(); assert.equal(show().length, before + 1);
+
+    // a guest: the host's show opens it at that page, later shows turn it, end closes it
+    const G = mkComic('client'), guest = G.c;
+    assert.equal(guest.onClientMsg({ t: 'comic', op: 'show', id: 'tst', run, page: 1, tag: null }), true);
+    await new Promise((r) => setTimeout(r, 0));
+    assert.ok(guest.active); assert.deepEqual(G.v.calls[0], ['open', 1, false]);
+    guest.input('next'); assert.deepEqual(G.w.sent.at(-1), ['host', { t: 'comic', op: 'turn', run, from: 1, dir: 1 }]);
+    assert.equal(guest.cur.page, 1, 'a guest waits for the host');
+    guest.onClientMsg({ t: 'comic', op: 'show', id: 'tst', run, page: 2, tag: null }); assert.deepEqual(G.v.calls.at(-1), ['turn', 2, 1]);
+    guest.onClientMsg({ t: 'comic', op: 'show', id: 'tst', run, page: 2, tag: null }); assert.equal(G.v.calls.length, 2, 'a heartbeat for the same page redraws nothing');
+    guest.input('skip'); assert.ok(!guest.active, 'a guest closes it on their own screen');
+    assert.equal(G.w.sent.filter(([, m]) => m.op !== 'turn').length, 0, 'and tells nobody');
+    guest.onClientMsg({ t: 'comic', op: 'show', id: 'tst', run, page: 2, tag: null }); await new Promise((r) => setTimeout(r, 0));
+    assert.ok(!guest.active, 'the heartbeat brought back a comic the guest closed');
+    guest.onClientMsg({ t: 'comic', op: 'end', run });
+    guest.onClientMsg({ t: 'comic', op: 'show', id: 'tst', run: 'next', page: 0, tag: null }); await new Promise((r) => setTimeout(r, 0));
+    assert.ok(guest.active, 'the next comic opens again'); guest.onClientMsg({ t: 'comic', op: 'end', run: 'next' }); assert.ok(!guest.active);
+    assert.equal(guest.onClientMsg({ t: 'comic', op: 'show', id: '../x', run: 'r', page: 0 }), true); assert.equal(guest.pending, null, 'a bad id loaded');
+
+    // the host's Esc ends it for everyone; a guest's ask starts one for everyone
+    host.input('skip'); assert.ok(hw.sent.some(([, m]) => m.op === 'end' && m.run === run)); assert.ok(!host.active);
+    host.onHostMsg('g1', { t: 'comic', op: 'ask', id: 'tst', tag: 'b' }); await new Promise((r) => setTimeout(r, 0));
+    assert.ok(host.active && host.cur.tag === 'b');
+    guest.play('tst'); assert.deepEqual(G.w.sent.at(-1), ['host', { t: 'comic', op: 'ask', id: 'tst', tag: null }]);
+  });
+
+  await testAsync('comic mode: waits for a story scene or cutscene, and a trigger plays once per world', async () => {
+    const { w, c } = mkComic('solo');
+    w.dlg = {}; w.dlgFree = false;
+    assert.equal(await c.play('tst'), false); assert.ok(!c.active && c.queued, 'queued behind the story scene');
+    c.tick(); assert.ok(!c.active, 'played over a story scene');
+    w.dlg = null; c.tick(); await new Promise((r) => setTimeout(r, 0)); assert.ok(c.active, 'played once the scene was over');
+    c.end();
+    const T = mkComic('host');
+    COMIC_TRIGGERS.push({ id: 'tst', flag: 'test.comic.flag', tag: 'b' });
+    try {
+      T.c.tick(); await new Promise((r) => setTimeout(r, 0)); assert.ok(!T.c.active, 'played before its flag');
+      T.w.save.flags['test.comic.flag'] = true; T.c.tick(); await new Promise((r) => setTimeout(r, 0));
+      assert.ok(T.c.active && T.w.save.flags['comic.tst.b.played'], 'the trigger played and was recorded');
+      T.c.end(); T.c.tick(); await new Promise((r) => setTimeout(r, 0)); assert.ok(!T.c.active, 'a trigger played twice');
+    } finally { COMIC_TRIGGERS.pop(); }
+  });
+}
+
 const yard = await import('../src/content/switchyard.js');
 test('the flooded bay directs Spanish players toward the pump room', () => {
   const previousLanguage = i18nMod.getLang();
