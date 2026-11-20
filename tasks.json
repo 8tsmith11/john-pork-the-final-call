@@ -1,5 +1,5 @@
 {
- "next_id": 58,
+ "next_id": 59,
  "tasks": [
   {
    "id": 1,
@@ -911,6 +911,19 @@
    "source": "human:Michael",
    "status": "assigned",
    "owner": "trevor"
+  },
+  {
+   "id": 58,
+   "created_at": "2026-11-20T03:38:49Z",
+   "updated_at": "2026-11-20T03:38:49Z",
+   "history": [
+    "2026-11-20T03:38:49Z BagelMeister: added (for tts)"
+   ],
+   "title": "Co-op check and npm test, PR #47 (bagel/act1-staging d884021): the Act 1 cutscenes play before their dialogue on every peer",
+   "details": "Host plus a guest on bagel/act1-staging. Start a new world, so the opening hasn't played yet. Pass: on both screens the opening cutscene plays first (about 18 s), and the opening dialogue appears only after it ends, never over it. Also: when the host presses X mid cutscene, the dialogue starts on both. Then run npm test and node --check on src/game/stage.js, src/content/stage/act1_*.js and src/game/scenes/WorldScene.js. Post the results on hub #48. (Mute the volumes first, and close the tabs after.)",
+   "source": "agent:BagelMeister",
+   "status": "assigned",
+   "owner": "tts"
   }
  ]
 }
