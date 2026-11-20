@@ -2132,6 +2132,20 @@ test('a long story beat (src/game/watcher.js): beats build in order, the climax 
   scene.save.flags[f.down] = true; assert.ok(!W.fightOwed(d, scene.save.flags, 'tmap'), 'won: over');
 });
 
+test('the story beat\'s film: painted shots with known painters, and the score\'s impact lands on the last shot', async () => {
+  const W = await import('../src/game/watcher.js');
+  const { PAINTERS, painter } = await import('../src/game/render/cinePaint.js');
+  const { SCORE_NAMES } = await import('../src/audio/score.js');
+  const film = W.WATCH.climax.film;
+  assert.ok(film.length >= 6 && SCORE_NAMES.includes(W.WATCH.climax.score), 'a film of several shots with its own score');
+  for (const sh of film) for (const L of sh.paint.layers) assert.ok(PAINTERS.includes(L.p), `known painter: ${L.p}`);
+  const starts = film.reduce((acc, sh) => [...acc, acc.at(-1) + sh.dur], [0]);
+  assert.ok(Math.abs(starts.at(-2) - 32) < 0.25, `the last shot (the impact) starts with the score's hit at 32 s (it starts at ${starts.at(-2)})`);
+  const calls = []; const g = new Proxy({}, { get: (_, k) => (k === 'clear' ? () => g : (...a) => { calls.push(k); return g; }) });
+  for (const sh of film) for (const t of [0, 0.5, 1]) painter(sh.paint)(g, t, 1000);
+  assert.ok(calls.length > 100, 'every shot paints at its start, middle and end without throwing');
+});
+
 test('sim: a champion ally fights beside the party (bosses included), gets knocked down and up, and leaves with the map', () => {
   const sim = new Sim(rotArena(), { seed: 'champ' }); sim.addPlayer('h', 'trevor'); const h = sim.players.get('h'); h.x = 400; h.y = 400;
   sim.enemies.clear();

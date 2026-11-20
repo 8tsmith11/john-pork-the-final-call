@@ -1598,6 +1598,14 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // Side-view cutscene (CinematicScene) over a paused world; resumes when it ends or is skipped.
+  /** Play a cinematic given as data (a story beat's painted film) rather than a file in content/cinematics. */
+  playCinematicData(cine, onDone) {
+    const ctx = { flags: this.save.flags, character: this.character, present: this.humanRoommates?.() ?? [this.character] };
+    this.scene.pause();
+    this.scene.launch('Cinematic', { cine, ctx, onDone: () => { this.scene.resume(); onDone?.(); } });
+    this.scene.bringToTop('Cinematic');
+  }
+
   async playCinematic(name, onDone) {
     let mod;
     try { mod = await import(`../../content/cinematics/${name}.js`); } catch { console.info(`[cinematic] none named ${name}`); return onDone?.(); }

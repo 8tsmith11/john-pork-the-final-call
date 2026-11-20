@@ -84,7 +84,9 @@ export class Watcher {
       const go = () => {
         if (!(this.s.dlgVoiced !== false && speak(c.line.who, line))) babble(c.line.who, line);
         s._caption?.(`${String(c.line.who).toUpperCase()}: ${line}`);
-        s.time.delayedCall(2600, () => s.playCinematic ? s.playCinematic(c.cinematic, () => this._land()) : this._land());
+        // The film (painted shots in the sealed data, with its own score) if there is one, else a cinematic file.
+        const film = c.film && s.playCinematicData ? () => s.playCinematicData({ id: c.cinematic, noClick: true, score: c.score, shots: c.film }, () => this._land()) : null;
+        s.time.delayedCall(2600, () => film ? film() : s.playCinematic ? s.playCinematic(c.cinematic, () => this._land()) : this._land());
       };
       const last = d.beats.find((x) => x.id === msg.last);
       if (last) { this._present({ op: 'beat', id: last.id }); s.time.delayedCall(2200, go); } else go();
