@@ -6,6 +6,7 @@ import { ES_HUD } from '../../src/i18n/es-hud.js';
 import { ES_ITEMS } from '../../src/i18n/es-items.js';
 import { ES_PLAZA } from '../../src/i18n/es-plaza.js';
 import { ES_ACT2 } from '../../src/i18n/es-act2.js';
+import { ES_ACT3 } from '../../src/i18n/es-act3.js';
 import { ES_QUESTS } from '../../src/i18n/es-quests.js';
 import { ES_TUNNELS_LAKE } from '../../src/i18n/es-tunnels-lake.js';
 import { ES_ROUTE1 } from '../../src/i18n/es-route1.js';
@@ -112,6 +113,7 @@ function checkLines(file, location, value) {
   }
 }
 Object.assign(exact, ES_ACT2);   // the Act 2 areas (hub #30), after the others as in src/i18n.js, on a line of their own
+Object.assign(exact, ES_ACT3);   // the Act 3 areas (hub #30), the same way
 
 setLang('es');
 

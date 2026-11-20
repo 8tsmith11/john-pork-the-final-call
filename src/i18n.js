@@ -7,6 +7,7 @@ import { ES_ITEMS } from './i18n/es-items.js';
 import { ES_631 } from './i18n/es-631.js';
 import { ES_TUNNELS_LAKE } from './i18n/es-tunnels-lake.js';
 import { ES_ACT2 } from './i18n/es-act2.js';
+import { ES_ACT3 } from './i18n/es-act3.js';
 import { ES_PLAZA } from './i18n/es-plaza.js';
 import { ES_ASTER } from './i18n/es-aster.js';
 import { ES_HUD } from './i18n/es-hud.js';
@@ -144,6 +145,7 @@ export function tr(s) {
 // The Act 2 areas (act2_regions.js, act2_more.js; hub #30) join the table after the others, as es-route1.js does,
 // on a line of their own so other tables can be added to the list above without touching this one.
 Object.assign(ES_ALL, ES_ACT2);
+Object.assign(ES_ALL, ES_ACT3);   // the Act 3 areas (act3_regions.js, act3_more.js; hub #30), the same way
 
 // A small "EN · ES" switch for the title and lobby screens. onChange runs after the language flips.
 export function langToggle(scene, x, y, onChange) {

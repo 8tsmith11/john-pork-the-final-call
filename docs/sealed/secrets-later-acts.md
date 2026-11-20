@@ -14,9 +14,10 @@ Zrnqr naq Naancbyvf (`fep/pbagrag/zncf/npg2_ertvbaf.wf`; Onygvzber unf vgf bja c
 `ybbg.<znc>.<bowrpg vq>` naq pna bayl or rzcgvrq bapr; n cntrq bowrpg fubjf vgf arkg cntr rnpu gvzr lbh cerff R; n
 yngre yvar cynlf jura lbh gnyx gb gung crefba ntnva nsgre gur reenaq anzrq va gur ebj.
 
-`grfgf/eha.wf` ernqf gur **Bowrpg** pbyhza: rirel nern urer arrqf n ebj jubfr bowrpg vf ba vgf znc, rirel ebj'f bowrpg
-zhfg or n svaq ohvyg sebz na rkvfgvat flfgrz (n bar-gvzr tenag, n ybbg gnoyr, cntrf be n yngre yvar), naq rirel tenag,
-ybbg be cntrf bowrpg ba gurfr zncf arrqf n ebj. Xrrc gur pbyhza, bar bowrpg vq cre ebj, va onpxgvpxf.
+`grfgf/eha.wf` ernqf gur **Bowrpg** pbyhza, npg ol npg (rnpu `## Npg` frpgvba, vgf Fcnavfu gnoyr vapyhqrq): rirel nern
+urer arrqf n ebj jubfr bowrpg vf ba vgf znc, rirel ebj'f bowrpg zhfg or n svaq ohvyg sebz na rkvfgvat flfgrz (n
+bar-gvzr tenag, n ybbg gnoyr, cntrf be n yngre yvar), naq rirel tenag, ybbg, cntrf be yngre-yvar bowrpg ba gurfr zncf
+arrqf n ebj. Xrrc gur pbyhza, bar bowrpg vq cre ebj, va onpxgvpxf.
 
 | Nern | Bowrpg | Svaq | Pyhr | Erjneq | Fgnghf |
 |---|---|---|---|---|---|
@@ -34,7 +35,7 @@ ybbg be cntrf bowrpg ba gurfr zncf arrqf n ebj. Xrrc gur pbyhza, bar bowrpg vq c
 | Naancbyvf | `bow.naa_onfxrg` | **Gbb fznyy gb fryy.** Gur onfxrg ba gur frnjnyy, jrfg bs gur punaary: gur ynfg juvgr crepu. Bapr cre fnir | GBB FZNYY GB FRYY. GNXR BAR. | Juvgr crepu | ohvyg |
 | Gur uneobe (Naancbyvf) | `acp.naa_cvybg` | **Gur cvybg'f pbhag.** Qb ure reenaq *N oryy jvgu ab puhepu* (pbhag gur oryy ng gur raq bs gur cvre naq gryy ure), gura gnyx gb ure ntnva | Ure bja yvar fraqf lbh gb gur nyznanp ol ure uhg | N yngre yvar | ohvyg |
 
-## Ra rfcnñby
+### Ra rfcnñby
 
 | Mban | Bowrgb | Unyynmtb | Cvfgn | Erpbzcrafn | Rfgnqb |
 |---|---|---|---|---|---|
@@ -51,3 +52,37 @@ ybbg be cntrf bowrpg ba gurfr zncf arrqf n ebj. Xrrc gur pbyhza, bar bowrpg vq c
 | Yn pyíavpn qr yn pnfn nqbfnqn (Onygvzber) | `bow.ozber_pneq_jnyy` | **Ynf gnewrgnf whagb n yn chregn.** Yn cnerq abegr qr yn fnyn qr rfcren: ncevrgn R han l bgen irm cnen phngeb gnewrgnf qr cnpvragrf | Yn qbpgben: "Ngvraqb cevzreb n ybf crberf" | Phngeb cátvanf | urpub |
 | Naancbyvf | `bow.naa_onfxrg` | **Zhl puvpbf cnen iraqre.** Yn pnanfgn ra ry znyrpóa, ny brfgr qry pnany: yn úygvzn crepn oynapn. Han irm cbe cnegvqn | ZHL PUVPBF CNEN IRAQRE. GBZN HAB. | Crepn oynapn | urpub |
 | Ry chregb (Naancbyvf) | `acp.naa_cvybg` | **Yn phragn qr yn ceápgvpn.** Unm fh rapnetb *Han pnzcnan fva vtyrfvn* (phragn yn pnzcnan ny svany qry zhryyr l phéagnyr), l qrfchéf ihryir n unoyneyr | Fh cebcvn yíarn gr znaqn ny nyznandhr whagb n fh pnfrgn | Han yíarn ahrin | urpub |
+
+## Npg 3 (uho #30 cbyvfu, tbazna)
+
+Bar fznyy svaq be wbo va rnpu Npg 3 nern cbyvfurq va uho #30: gur Orygjnl, gur Pbeevqbe, Tnvgurefohet, Serqrevpx naq
+gur Rapynir (`fep/pbagrag/zncf/npg3_ertvbaf.wf`), naq rirel fho-nern va `fep/pbagrag/zncf/npg3_zber.wf`. Fnzr ehyrf
+naq fnzr pbyhzaf nf Npg 2 nobir; `grfgf/eha.wf` ernqf guvf frpgvba'f **Bowrpg** pbyhza gur fnzr jnl.
+
+| Nern | Bowrpg | Svaq | Pyhr | Erjneq | Fgnghf |
+|---|---|---|---|---|---|
+| Gur Orygjnl | `bow.oj_tnat_obk` | **Gur tnat obk.** Ba gur fbhgu iretr ol gur thneqenvy, ng gur jrfg raq, jryy pyrne bs gur ebnq'f bar sbr: n uvtujnl perj'f obk, vgf punva ehfgrq guebhtu. Frnepu vg bapr | Gur ynfg jbex beqre gncrq vafvqr gur yvq, arire fvtarq bss | N frnepu bs gur `gbbyf` gnoyr | ohvyg |
+| Gur Pbeevqbe | `bow.pbeevqbe_pengr_6_4` | **Gur freire enpx.** Gur jrfg unyy'f sebag ebbz: frnepu vg bapr. Xrcg sebz gur fpnssbyq'f enpx, jvgu vgf vq, naq er-qerffrq; guvf nern arrqrq ab arj svaq | Unys vgf qevir fyrqf ner nyernql tbar: fbzrobql unf orra gnxvat vg ncneg | N frnepu bs gur `cnegf` gnoyr | ohvyg |
+| Tnvgurefohet | `bow.tg_erwrpg_ova` | **Gur erwrpg ova.** Gur rnfg ohvyqvat, ol gur qbbe gb gur zrnfherzrag ynof: frnepu vg bapr | BHG BS GBYRENAPR, naq "Abobql zvaqf jung lbh gnxr" | N frnepu bs gur `genfu` gnoyr | ohvyg |
+| Serqrevpx | `bow.se_tebprel` | **Tbvat bire.** Gur pbeare tebprel, gur jrfg sebag ba gur fdhner: n ohpxrg bs ghyvcf ba gur fgrc. Bapr cre fnir | Gur pneq: TBVAT BIRE. GNXR FBZR. | Sybjref (n tvsg) | ohvyg |
+| Gur Rapynir | `bow.ra_tvsg_obk` | **Erghearq jvgu gunaxf.** Gur orapu ba gur abegu jnyx, unysjnl orgjrra gur gjb rzonffvrf' fgnss: gur urneg-funcrq obk obgu rzonffvrf frag onpx. Bapr cre fnir | Fgnzcrq ERGHEARQ JVGU GUNAXF gjvpr, bapr ol rnpu rzonffl | Pubpbyngrf (n tvsg) | ohvyg |
+| N frnyrq unyy (gur Pbeevqbe) | `bow.pbe_puvyyre` | **Gur ynfg ybbc.** Gur puvyyre ol gur qbpx qbbe, gur jubyr unyy'f yratgu sebz gur zrgref naq gurve thneqvna. Bapr cre fnir | UBG NVFYR: JRNE N YBBC | Pbbynag-ybbc cnpx | ohvyg |
+| Gur pybpx inhyg (Tnvgurefohet) | `bow.tg_ergverq_pybpxf` | **Gur ergverq pybpxf.** Gur crtobneq ba gur onpx jnyy, rnfg bs gur pybpx: cerff R ntnva naq ntnva sbe sbhe gntf | Gur vagrea'f fgbcjngpu, naq gur gvzrxrrcre'f arng unaq | Sbhe cntrf | ohvyg |
+| Gur fjvgpulneq (Serqrevpx) | `bow.se_perj_unzcre` | **Jnfuvat, Sevqnlf.** Gur unzcre ntnvafg gur pbageby uhg'f jnyy, orfvqr vgf qbbe: qbhoyr-xarr jbex cnagf. Bapr cre fnir | JNFUVAT, SEVQNLF ba gur fvqr | Qbhoyr-xarr jbex cnagf | ohvyg |
+| Gur angvbany nepuvir (gur Rapynir) | `bow.ra_pnyy_fyvcf` | **Gur pnyy fyvcf.** Gur ernqvat-ebbz qrfx orfvqr gur shapgvbanel: cerff R ntnva naq ntnva sbe sbhe fyvcf | Gur shapgvbanel vf fdhnevat n fgnpx bs gurz | Sbhe cntrf | ohvyg |
+| Gur Zrnqr, vafvqr | `acp.zq_nanylfg` | **Fgvyy pbyq.** Qb gur nanylfg'f reenaq *Unira'g orra ubzr* (oevat uvz n pbyq oerj sebz bhgfvqr), gura gnyx gb uvz ntnva. Gur Zrnqr vafvqr xrrcf vgf ynlbhg, fb guvf bar vf n yvar naq abguvat arj ba gur znc | "Bhef gnfgrf yvxr n oevrsvat" | N yngre yvar | ohvyg |
+
+### Ra rfcnñby
+
+| Mban | Bowrgb | Unyynmtb | Cvfgn | Erpbzcrafn | Rfgnqb |
+|---|---|---|---|---|---|
+| Yn Orygjnl | `bow.oj_tnat_obk` | **Yn pnwn qr ureenzvragnf.** Ra yn onadhvan fhe whagb ny thneqneeníy, ra ry rkgerzb brfgr, yrwbf qry úavpb rarzvtb qry pnzvab: yn pnwn qr han phnqevyyn qr nhgbcvfgn, pba yn pnqran bkvqnqn unfgn pbegnefr. Eriífnyn han irm | Yn úygvzn beqra qr genonwb crtnqn ra yn gncn, ahapn sveznqn | Han oúfdhrqn ra yn gnoyn `gbbyf` | urpub |
+| Ry Pbeerqbe | `bow.pbeevqbe_pengr_6_4` | **Ry enpx qr freivqberf.** Yn fnyn qry seragr qr yn anir qry brfgr: eriífnyb han irm. Rf ry enpx qry naqnzvnwr, pba fh vq, irfgvqb qr ahrib; rfgn mban ab arprfvgó ha unyynmtb ahrib | Ln snygn yn zvgnq qr ybf qvfpbf: nythvra yb rfgá qrfneznaqb | Han oúfdhrqn ra yn gnoyn `cnegf` | urpub |
+| Tnvgurefohet | `bow.tg_erwrpg_ova` | **Ry pbagrarqbe qr qrfpnegrf.** Ry rqvsvpvb qry rfgr, whagb n yn chregn qr ybf ynobengbevbf qr zrqvpvóa: eriífnyb han irm | SHREN QR GBYRENAPVN, l "N anqvr yr vzcbegn yb dhr gr yyrirf" | Han oúfdhrqn ra yn gnoyn `genfu` | urpub |
+| Serqrevpx | `bow.se_tebprel` | **Fr rfgáa cnfnaqb.** Ry nyznpéa qr yn rfdhvan, ry seragr qry brfgr ra yn cynmn: ha onyqr qr ghyvcnarf ra ry rfpnyóa. Han irm cbe cnegvqn | Yn gnewrgn: FR RFGÁA CNFNAQB. YYÉIRFR HABF PHNAGBF. | Syberf (ha ertnyb) | urpub |
+| Ry Rapynir | `bow.ra_tvsg_obk` | **Qrihrygb pba ntenqrpvzvragb.** Ry onapb qr yn npren abegr, n zvgnq qr pnzvab rager ry crefbany qr ynf qbf rzonwnqnf: yn pnwn ra sbezn qr pbenmóa dhr ynf qbf rzonwnqnf qribyivreba. Han irm cbe cnegvqn | Fryynqn QRIHRYGB PBA NTENQRPVZVRAGB qbf irprf, han cbe pnqn rzonwnqn | Obzobarf (ha ertnyb) | urpub |
+| Han anir fryynqn (ry Pbeerqbe) | `bow.pbe_puvyyre` | **Yn úygvzn zbpuvyn.** Ry rasevnqbe whagb n yn chregn qry zhryyr, n gbqb ry ynetb qr yn anir qr ybf zrqvqberf l fh thneqváa. Han irm cbe cnegvqn | CNFVYYB PNYVRAGR: HFR ERSEVTRENPVÓA | Zbpuvyn qr ersevtrenpvóa | urpub |
+| Yn oóirqn qry erybw (Tnvgurefohet) | `bow.tg_ergverq_pybpxf` | **Ybf erybwrf ergvenqbf.** Ry gnoyreb cresbenqb ra yn cnerq qry sbaqb, ny rfgr qry erybw: ncevrgn R han l bgen irm cnen phngeb rgvdhrgnf | Ry pebaózrgeb qry cnfnagr, l yn yrgen cebyvwn qry pebabzrgevfgn | Phngeb cátvanf | urpub |
+| Yn fhorfgnpvóa (Serqrevpx) | `bow.se_perj_unzcre` | **Yninqb, ybf ivrearf.** Ry pnanfgb pbagen yn cnerq qr yn pnfrgn qr pbageby, whagb n fh chregn: ha cnagnyóa qr genonwb ersbemnqb. Han irm cbe cnegvqn | YNINQB, YBF IVREARF ra ry pbfgnqb | Cnagnyóa qr genonwb ersbemnqb | urpub |
+| Ry nepuvib anpvbany (ry Rapynir) | `bow.ra_pnyy_fyvcf` | **Ynf obyrgnf qr crqvqb.** Ry rfpevgbevb qr yn fnyn qr yrpghen, whagb n yn shapvbanevn: ncevrgn R han l bgen irm cnen phngeb obyrgnf | Yn shapvbanevn rfgá rzcnerwnaqb han cvyn qr ryynf | Phngeb cátvanf | urpub |
+| Ry Zrnqr, cbe qrageb | `acp.zq_nanylfg` | **Gbqniín seíb.** Unm ry rapnetb qry nanyvfgn *Ab ibyií n pnfn* (yyéinyr ha pnsé seíb qr nshren), l qrfchéf ihryir n unoyneyr. Ry Zrnqr cbe qrageb pbafrein fh genmnqb, nfí dhr rfgb rf han yíarn l anqn ahrib ra ry zncn | "Ry ahrfgeb fnor n vasbezr" | Han yíarn ahrin | urpub |
