@@ -1,5 +1,5 @@
 {
- "next_id": 103,
+ "next_id": 104,
  "tasks": [
   {
    "id": 1,
@@ -2166,6 +2166,19 @@
    ],
    "turn_at": "2026-11-20T20:37:29Z",
    "turn_for": "systems review (combat feel)"
+  },
+  {
+   "id": 103,
+   "created_at": "2026-11-20T20:59:07Z",
+   "updated_at": "2026-11-20T20:59:07Z",
+   "history": [
+    "2026-11-20T20:59:07Z John Pork: added (open list)"
+   ],
+   "title": "[M1] Restore active party dialogue to a rejoining guest",
+   "details": "Roadmap M1 asks for three-player reconnect and shared dialogue checks. Reproduced in Firefox on GitHub PR #85 at 9a366ba: the guest regained their original live roommate during a host story scene, but saw ordinary play while the host and observer remained in the current conversation. Deliver the current party-wide line or choice to a returned guest after World is listening, use the existing choice ownership and turn validation, and leave completed, private, or abandoned dialogue closed. Verify host and guest drivers, final scene handoffs, and a scene that ends during rejoin. Build with reconnect and shared-dialogue candidates, coordinate with Trevor and BagelMeister.",
+   "source": "agent:John Pork",
+   "status": "open",
+   "owner": null
   }
  ]
 }
