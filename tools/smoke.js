@@ -20,7 +20,8 @@ setTimeout(async () => {
     I.add(c, 'item.mat_scrap', 10);
     const ri = (await import('/src/content/items.js')).RECIPES.findIndex((r) => r.item === 'item.rebar');
     w._craft('trevor', ri); ok('fab prints rebar from scrap', I.has(c, 'item.rebar') && I.count(c, 'item.mat_scrap') === 6);
-    w._equip('trevor', 'item.pipe_wrench'); ok('equip wrench', c.equipped.weapon === 'item.pipe_wrench' && w.sim.players.get('host').mods?.swing?.damage === 30);
+    w.menuMove(c.inventory.findIndex((s) => s?.id === 'item.pipe_wrench'), 0, false); w.selectHot(0);
+    ok('hold wrench from hotbar', c.inventory[c.hotSel]?.id === 'item.pipe_wrench' && w.sim.players.get('host').mods?.swing?.damage === 30);
     const before = w.sim.players.get('host').hp; w.sim.players.get('host').hp = 50;
     const slot = c.inventory.findIndex((s) => s?.id === 'item.energy_bar'); w.menuUseSlot(slot); ok('hotbar eats food', w.sim.players.get('host').hp > 50 && !I.has(c, 'item.energy_bar'));
     c.skillPoints = 2; w._learn('trevor', 'tr.amp'); w._learn('trevor', 'tr.dropd'); ok('skill tree prereqs', c.skills['tr.amp'] === 1 && !c.skills['tr.dropd']);
@@ -28,7 +29,9 @@ setTimeout(async () => {
     // soup quest: ask then hand over a thermos
     w.sim.setMap(MAPS.aster_hall, 'room631'); await new Promise((r) => setTimeout(r, 400)); w.dlg = null; w._drawDialogue();
     const n409 = w.map.objects.find((o) => o.id === 'npc.409');
-    w._questInteract(n409); w.dlg = null; w._drawDialogue(); I.add(c, 'item.mate_flask'); w._questInteract(n409); w._tickQuests(true);
+    w._questInteract(n409); w.dlg = null; w._drawDialogue(); I.add(c, 'item.mate_flask');
+    const player = w.sim.players.get(w.localId); player.x = n409.x * 16 + 8; player.y = n409.y * 16 + 8;
+    w._giveQuestItem(n409, 'side.soup');
     ok('soup quest completes', w.save.world.quests['side.soup']?.done);
     w.dlg = null; w._drawDialogue();
     // plaza: zipline, cordon gate

@@ -3,17 +3,17 @@
 import { FISH } from './fish.js';
 import { SKILL_TREE } from './skills.js';
 import { abilityModsFor } from './abilities.js';
+import { HOTBAR } from '../engine/save/schema.js';
 
 // Equipment slots (D-014, Michael). Armor points come from the four armor pieces; gear goes on top.
-export const WEAPON_SLOTS = ['weapon', 'ranged', 'gadget', 'charm'];
+export const ACCESSORY_SLOTS = ['gadget', 'charm'];
 export const ARMOR_SLOTS = ['helmet', 'chestplate', 'leggings', 'boots'];
 export const GEAR_SLOTS = ['goggles', 'parka', 'gloves', 'socks', 'backpack'];
-export const EQUIP_SLOTS = [...WEAPON_SLOTS, ...ARMOR_SLOTS, ...GEAR_SLOTS];
 // Worn slots (Michael): a worn item leaves the bag and lives only in its equipment slot (the ARMOR /
 // GEAR / gadget / charm boxes beside the character), so it no longer takes a backpack or hotbar slot.
 // Melee and ranged weapons stay in the hotbar, because the selected hotbar slot is what you hold.
-export const WORN_SLOTS = [...ARMOR_SLOTS, ...GEAR_SLOTS, 'gadget', 'charm'];
-export const SLOT_NAMES = { weapon: 'Melee', ranged: 'Ranged', gadget: 'Gadget', charm: 'Charm', helmet: 'Helmet', chestplate: 'Chestplate',
+export const WORN_SLOTS = [...ARMOR_SLOTS, ...GEAR_SLOTS, ...ACCESSORY_SLOTS];
+export const SLOT_NAMES = { gadget: 'Gadget', charm: 'Charm', helmet: 'Helmet', chestplate: 'Chestplate',
   leggings: 'Leggings', boots: 'Boots', goggles: 'Goggles / hat', parka: 'Rain parka', gloves: 'Gloves', socks: 'Socks', backpack: 'Backpack' };
 
 export const ITEMS = {
@@ -276,27 +276,38 @@ export const SKILLS = Object.fromEntries(Object.entries(SKILL_TREE).map(([k, t])
 export const MANUEL_EDGE = { maxHp: 50, armor: 0.3, regen: 1, small: 1.5, melee: 6, shot: 4, crit: 0.1, lifesteal: 1,
   speed: 0.1, sta: 30, staRegen: 0.5, iframes: 0.1, skillCd: 0.25, abilityPower: 0.3 };
 
-export function playerMods(char, charId) {
+export function heldWeapon(char, charId, ai = false) {
+  const selected = char.hotSel ?? 0;
+  const held = selected >= 0 && selected < HOTBAR ? char.inventory?.[selected] : null;
+  const melee = (stack) => ITEMS[stack?.id]?.slot === 'weapon' && canWear(ITEMS[stack.id], charId);
+  if (melee(held) || (!ai && ITEMS[held?.id]?.slot === 'ranged' && canWear(ITEMS[held.id], charId))) return held;
+  // Companions only know melee combat. Picking from their hotbar leaves a returning guest's selection intact.
+  return ai ? char.inventory?.slice(0, HOTBAR).find(melee) ?? null : null;
+}
+
+export function playerMods(char, charId, weapon = heldWeapon(char, charId)) {
   const m = { melee: 0, shot: 0, shotCd: 0, armor: 0, maxHp: 0, iframes: 0, dodgeCd: 0, revive: 0, gun: 0,
     speed: 0, sta: 0, staRegen: 0, dashHit: 0, crit: 0, lifesteal: 0, loot: 0, haggle: 0, skillCd: 0, abilityPower: 0, markDmg: 0, secondWind: 0, decoys: 0, reviveHeal: 0,
     small: 0, knock: 0, killDodge: 0, mateHeal: 0, sleepImmune: 0, regen: 0, sleepGuard: 0 };
   const add = (mods, k = 1) => { for (const [key, v] of Object.entries(mods || {})) m[key] = (m[key] ?? 0) + v * k; };
-  for (const id of Object.values(char.equipped || {})) {
+  for (const slot of WORN_SLOTS) {
+    const id = char.equipped?.[slot];
     const def = id && ITEMS[id];
     if (!def || !canWear(def, charId)) continue;                     // unique items only work for their owner
     add(scaleMods(def.mods, char.upgrades?.[id] ?? 0));
     if (def.blink) m.blink = true;
+    add(char.rolled?.[slot]?.mods);
   }
-  // Procedural rolls (src/content/gearRolls.js, task #39): worn pieces carry theirs in char.rolled; a held
-  // weapon's roll is on the bag slot holding it (the selected hotbar slot first).
-  for (const [slot, roll] of Object.entries(char.rolled || {})) if (char.equipped?.[slot] && roll?.mods) add(roll.mods);
-  for (const slot of ['weapon', 'ranged']) {
-    const id = char.equipped?.[slot], hot = char.inventory?.[char.hotSel];
-    const roll = id && (hot?.id === id ? hot.roll : char.inventory?.find((x) => x?.id === id && x.roll)?.roll);
-    if (roll?.mods) add(roll.mods);
+  const def = ITEMS[weapon?.id];
+  m.swing = null;
+  m.gunStats = null;
+  if ((def?.slot === 'weapon' || def?.slot === 'ranged') && canWear(def, charId)) {
+    m.weaponId = weapon.id;
+    add(scaleMods(def.mods, char.upgrades?.[weapon.id] ?? 0));
+    add(weapon.roll?.mods);
+    m.swing = def.swing ?? null;
+    m.gunStats = def.gun ?? null;
   }
-  m.swing = ITEMS[char.equipped?.weapon]?.swing ?? null;   // weapon profiles replace the defaults, they don't add
-  m.gunStats = ITEMS[char.equipped?.ranged]?.gun ?? null;
   for (const s of SKILLS[charId] || []) add(s.mods, char.skills?.[s.id] ?? 0);
   add(abilityModsFor(char, charId));   // ability scores (D-017)
   if (charId === 'manuel') add(MANUEL_EDGE);

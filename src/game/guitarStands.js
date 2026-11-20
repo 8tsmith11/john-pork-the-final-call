@@ -141,8 +141,6 @@ export class GuitarStands {
     if (def.slot === 'key') return this._toastTo(playerId, `You hang on to the ${def.name.toLowerCase()}.`);
     const qty = Math.min(it.qty, n), id = it.id;
     Inv.takeSlot(c, slot, qty);
-    // A weapon or gun you no longer carry isn't in your hands any more.
-    for (const sl of ['weapon', 'ranged']) if (c.equipped?.[sl] === id && Inv.count(c, id) === 0) c.equipped[sl] = null;
     this._stopIfGone(who);
     // Stack onto a drop of the same thing right here, otherwise a new one at your feet.
     const here = this.drops.find((d) => d.map === s.map.id && d.id === id && Math.hypot(d.x - p.x, d.y - p.y) < 10 && d.qty + qty <= Inv.stackOf(id));

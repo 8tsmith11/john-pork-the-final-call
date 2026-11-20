@@ -3,9 +3,8 @@
 // Slots 0..8 are the hotbar; 9..35 the backpack grid. Pure JS (Node-tested).
 import { ITEMS, WORN_SLOTS } from '../content/items.js';
 
-import { SLOTS } from './save/schema.js';
-export { SLOTS };
-export const HOTBAR = 9;
+import { SLOTS, HOTBAR } from './save/schema.js';
+export { SLOTS, HOTBAR };
 
 export const stackOf = (id) => ITEMS[id]?.stack ?? (ITEMS[id]?.slot === 'material' ? 99 : ITEMS[id]?.slot === 'consumable' ? 16 : ITEMS[id]?.slot === 'junk' ? 16 : 1);
 
@@ -68,8 +67,8 @@ export function moveSlot(c, a, b, half = false) {
   const src = inv[a], dst = inv[b], max = stackOf(src.id);
   const moving = half ? Math.ceil(src.qty / 2) : src.qty;
   if (!dst) {
-    inv[b] = { id: src.id, qty: moving }; src.qty -= moving; if (src.qty <= 0) inv[a] = null;
-  } else if (dst.id === src.id && dst.qty < max) {
+    inv[b] = { ...src, qty: moving }; src.qty -= moving; if (src.qty <= 0) inv[a] = null;
+  } else if (dst.id === src.id && !src.roll && !dst.roll && dst.qty < max) {
     const k = Math.min(moving, max - dst.qty); dst.qty += k; src.qty -= k; if (src.qty <= 0) inv[a] = null;
   } else if (!half) {
     inv[a] = dst; inv[b] = src;

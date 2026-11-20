@@ -1511,10 +1511,66 @@ test('regional boss intros preserve the saved Warden name', () => {
   assert.equal(scene.save.flags[field], warden.name, 'the new intro must preserve the Warden name');
 });
 
-const { RECIPES: CRAFT_RECIPES } = await import('../src/content/items.js');
-const craftFixture = (inventory, weapon = null) => {
+const { RECIPES: CRAFT_RECIPES, playerMods: hotbarMods } = await import('../src/content/items.js');
+test('the host derives guest combat from the selected hotbar slot and broadcasts changes to the party', () => {
+  const save = newSave({ seed: 'hotbar-peer', rolls: {}, gameVersion: 'test' });
+  const sim = new Sim(rotArena()), handlers = {}, updates = [];
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', save, sim, remoteInputs: new Map(),
+    net: { on: (type, fn) => { handlers[type] = fn; }, broadcast: (msg) => updates.push(structuredClone(msg)) },
+    events: { once() {} }, time: { addEvent() {} }, _refreshMenu() {},
+  });
+  sim.addPlayer('host', 'trevor');
+  sim.addPlayer('guest', 'michael');
+  sim.addPlayer('ai:manuel', 'manuel');
+  const guest = save.party.michael, companion = save.party.manuel, p = sim.players.get('guest');
+  guest.inventory[0] = { id: 'item.wooden_bat', qty: 1, roll: { mods: { melee: 3 } } };
+  guest.inventory[1] = { id: 'item.nail_gun', qty: 1 };
+  guest.inventory[2] = { id: 'item.energy_bar', qty: 2 };
+  guest.equipped.chestplate = 'item.mesh_vest';
+  guest.upgrades['item.wooden_bat'] = 2;
+  companion.hotSel = 3;
+  companion.inventory[0] = { id: 'item.pry_bar', qty: 1 };
+  scene._wireNet();
+  scene._syncParty();
+
+  const select = (i) => handlers.msg('guest', { t: 'hotSel', i });
+  const attack = (controls) => {
+    sim.events.length = 0;
+    handlers.msg('guest', { t: 'input', inp: { ...emptyInput(), ...controls } });
+    sim.step(1 / 60, scene.remoteInputs);
+    return sim.events.filter((event) => event.id === 'guest');
+  };
+  const base = hotbarMods(guest, 'michael', null);
+  assert.ok(p.mods.melee > base.melee + ITEMS['item.wooden_bat'].mods.melee + 3, 'the exact held roll and upgrade apply');
+  assert.equal(p.mods.armor, base.armor);
+  assert.equal(attack({ fire: true }).some((e) => e.t === 'shot'), false);
+  assert.equal(attack({ attack: true }).find((e) => e.t === 'swing')?.weapon, 'item.wooden_bat');
+  assert.equal(sim.players.get('ai:manuel').mods.weaponId, 'item.pry_bar');
+  assert.equal(companion.hotSel, 3);
+
+  select(1);
+  assert.equal(updates.at(-1).party.michael.hotSel, 1);
+  assert.equal(p.mods.melee, base.melee);
+  assert.equal(p.ammo, ITEMS['item.nail_gun'].gun.clip);
+  assert.ok(attack({ fire: true }).some((e) => e.t === 'shot'));
+  const ammo = p.ammo;
+  for (const i of [2, 3]) {
+    select(i);
+    assert.equal(p.mods.weaponId, undefined);
+    assert.equal(attack({ attack: true, fire: true }).length, 0);
+  }
+  select(1);
+  assert.equal(p.ammo, ammo);
+  assert.equal(sim.snapshot().players.find((player) => player.id === 'guest').weapon, 'item.nail_gun');
+  handlers.msg('guest', { t: 'move', a: 1, b: 9 });
+  assert.equal(p.mods.gunStats, null);
+  assert.equal(guest.inventory[9].id, 'item.nail_gun');
+});
+
+const craftFixture = (inventory, selected = 0) => {
   const c = newSave({ seed: 'craft-test', rolls: {}, gameVersion: 'test' }).party.trevor;
-  c.inventory = inventory; c.equipped.weapon = weapon;
+  c.inventory = inventory; c.hotSel = selected;
   const notices = [], scene = { save: { party: { trevor: c } }, syncs: 0,
     _announce: (text) => notices.push(text), _syncParty() { this.syncs++; } };
   return { c, scene, notices, craft: (id) => CraftWorldScene.prototype._craft.call(scene, 'trevor', CRAFT_RECIPES.findIndex((r) => r.item === id)) };
@@ -1537,7 +1593,9 @@ test('procedural gear (task #39): procedural recipes roll seeded variants that c
   assert.ok(a.notices.some((n) => /rebar/i.test(n) && /\(/.test(n)), 'the fab names the roll');
   // held: the selected hotbar rebar's roll adds to the stats
   const c = a.c, i = c.inventory.findIndex((x) => x?.id === 'item.rebar'), roll = c.inventory[i].roll;
-  [c.inventory[0], c.inventory[i]] = [c.inventory[i], c.inventory[0]]; c.hotSel = 0; c.equipped.weapon = 'item.rebar';
+  c.inventory[0] = null;
+  Inv.moveSlot(c, i, 0);
+  assert.deepEqual(c.inventory[0].roll, roll, 'moving into an empty hotbar slot retains the roll');
   const withRoll = pm(c, 'trevor'), bare = pm({ ...c, inventory: c.inventory.map((x) => x && { id: x.id, qty: x.qty }) }, 'trevor');
   for (const [k, v] of Object.entries(roll.mods)) assert.ok(Math.abs((withRoll[k] - bare[k]) - v) < 1e-9, `held roll adds ${k}`);
   // worn: wearing a rolled vest keeps its roll on, and taking it off puts it back on the slot
@@ -1556,9 +1614,9 @@ test('procedural gear (task #39): procedural recipes roll seeded variants that c
 
 const fullCraftBag = () => Array.from({ length: Inv.SLOTS }, () => ({ id: 'item.wooden_bat', qty: 1 }));
 test('crafting rejects a full bag without payment, a phantom equipped item or a success broadcast', () => {
-  for (const weapon of [null, 'item.wooden_bat']) {
+  for (const selected of [0, 1]) {
     const inv = fullCraftBag(); inv[0] = { id: 'item.mat_scrap', qty: 99, extra: 'preserve' };
-    const f = craftFixture(inv, weapon), before = structuredClone(f.c);
+    const f = craftFixture(inv, selected), before = structuredClone(f.c);
     f.craft('item.rebar');
     assert.deepEqual(f.c, before); assert.equal(f.c.inventory, inv);
     assert.equal(f.scene.syncs, 0); assert.deepEqual(f.notices, ['Your bag is full.']);
@@ -1568,7 +1626,7 @@ test('crafting can use a slot freed by payment and can fill an existing stack in
   const inv = fullCraftBag(); inv[0] = { id: 'item.mat_scrap', qty: 4 };
   const f = craftFixture(inv); f.craft('item.rebar');
   assert.equal(Inv.count(f.c, 'item.mat_scrap'), 0); assert.equal(Inv.count(f.c, 'item.rebar'), 1);
-  assert.equal(f.c.equipped.weapon, 'item.rebar'); assert.equal(f.scene.syncs, 1);
+  assert.equal(f.c.inventory[0].id, 'item.rebar'); assert.equal(f.scene.syncs, 1);
   const stacked = fullCraftBag(); stacked[0] = { id: 'item.mat_plastic', qty: 99 }; stacked[1] = { id: 'item.mat_scrap', qty: 99 };
   stacked[2] = { id: 'item.mate_flask', qty: Inv.stackOf('item.mate_flask') - 1 };
   const g = craftFixture(stacked); g.craft('item.mate_flask');
@@ -1623,6 +1681,24 @@ test('schema 2 -> 3 migration: worn armor moves to the chestplate slot (D-014)',
   assert.equal(m.schemaVersion, CURRENT_SCHEMA);
   assert.equal(m.party.trevor.equipped.chestplate, 'item.mesh_vest'); assert.ok(!('armor' in m.party.trevor.equipped));
   assert.equal(m.party.trevor.equipped.boots, null); assert.deepEqual(m.party.trevor.upgrades, {});
+});
+
+test('schema 7 -> 8 removes weapon references while preserving a full bag, worn gear and selection', () => {
+  const save = newSave({ seed: 'hotbar-migration', rolls: {}, gameVersion: 'test' });
+  save.schemaVersion = 7;
+  const c = save.party.trevor;
+  c.inventory = fullCraftBag();
+  c.inventory[8] = { id: 'item.nail_gun', qty: 1, roll: { mods: { shot: 2 }, affixes: ['test'] } };
+  c.hotSel = 8;
+  c.upgrades['item.nail_gun'] = 3;
+  c.equipped = { ...c.equipped, weapon: 'item.wooden_bat', ranged: 'item.nail_gun', chestplate: 'item.mesh_vest', futureSlot: 'example' };
+  const before = structuredClone(c);
+  delete before.equipped.weapon;
+  delete before.equipped.ranged;
+  const upgraded = migrate(JSON.parse(JSON.stringify(save)));
+  assert.equal(upgraded.schemaVersion, CURRENT_SCHEMA);
+  assert.deepEqual(upgraded.party.trevor, before);
+  assert.equal(hotbarMods(upgraded.party.trevor, 'trevor').weaponId, 'item.nail_gun');
 });
 
 test('worn gear leaves the bag and sits in its equipment slot (Michael)', () => {
@@ -1907,8 +1983,8 @@ const tunPuz = await import('../src/content/tunnelPuzzles.js');
 const { playerMods: playerModsT } = await import('../src/content/items.js');
 const wardenFight = (loadout, seed) => {
   const L = {
-    bare: () => ({ equipped: { weapon: 'item.pry_bar' }, skills: {} }),
-    good: (who) => ({ equipped: { weapon: 'item.pipe_wrench', chestplate: 'item.mesh_vest', helmet: 'item.hardhat', leggings: 'item.work_pants', boots: 'item.steel_toes' },
+    bare: () => ({ inventory: [{ id: 'item.pry_bar', qty: 1 }], skills: {} }),
+    good: (who) => ({ inventory: [{ id: 'item.pipe_wrench', qty: 1 }], equipped: { chestplate: 'item.mesh_vest', helmet: 'item.hardhat', leggings: 'item.work_pants', boots: 'item.steel_toes' },
       skills: { trevor: { 'tr.jab': 3, 'tr.tank': 3, 'tr.amp': 2 }, manuel: { 'ma.hands': 3, 'ma.shoulders': 2, 'ma.clay': 2 }, michael: { 'mi.ping': 3, 'mi.lock': 2, 'mi.luck': 2 } }[who] }),
   }[loadout];
   const random = Math.random, rng = new Rng(`boss:${loadout}:${seed}`); Math.random = () => rng.next();
@@ -2001,7 +2077,7 @@ test('the Switchman (Act 1 mid boss): sleeps until you come close, starter gear 
   try {
     const sim = new Sim(MAPS_FOR_TEST.tunnel_1, { seed: 'sw', deferSpawn: true });
     sim.addPlayer('host', 'trevor'); sim.addPlayer('ai:manuel', 'manuel'); sim.addPlayer('ai:michael', 'michael');
-    for (const p of sim.players.values()) sim.setMods(p.id, playerModsT({ equipped: { weapon: 'item.pry_bar' }, skills: {} }, p.character));
+    for (const p of sim.players.values()) sim.setMods(p.id, playerModsT({ inventory: [{ id: 'item.pry_bar', qty: 1 }], skills: {} }, p.character));
     sim.spawnEnemies();
     for (const [id, e] of [...sim.enemies]) if (e.kind !== 'boss.switchman') sim.enemies.delete(id);   // just the boss
     const sw = [...sim.enemies.values()][0];
@@ -2170,7 +2246,7 @@ test('the gonman is overpowered on purpose: a much smaller hitbox while thin, en
 });
 
 test("Manuel's edge: with the same gear and no skills, Manuel is the toughest and hits hardest of the three", () => {
-  const bare = () => ({ skills: {}, equipped: { weapon: 'item.pry_bar' }, abilities: {} });
+  const bare = () => ({ skills: {}, inventory: [{ id: 'item.pry_bar', qty: 1 }], abilities: {} });
   const m = Object.fromEntries(['manuel', 'trevor', 'michael'].map((w) => [w, pmods(bare(), w)]));
   for (const other of ['trevor', 'michael']) {
     assert.ok(m.manuel.maxHp > m[other].maxHp && m.manuel.armor > m[other].armor && m.manuel.melee > m[other].melee && m.manuel.speed > m[other].speed, other);

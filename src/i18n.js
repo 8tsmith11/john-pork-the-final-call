@@ -32,7 +32,8 @@ const ES = {
   // tab labels kept about as long as the English so the bar fits
   INVENTORY: 'OBJETOS', QUESTS: 'MISIONES', GUIDE: 'GUÍA', PHONE: 'TELÉFONO', SKILLS: 'HABIL.', STATS: 'DATOS',
   MAP: 'MAPA', CONTROLS: 'TECLAS', SYSTEM: 'SISTEMA', '[ESC]': '[ESC]', '[ESC] close': '[ESC] cerrar',
-  BACKPACK: 'MOCHILA', 'HOTBAR  (keys 1-9)': 'BARRA  (teclas 1-9)', ARMOR: 'ARMADURA', GEAR: 'EQUIPO', HANDS: 'MANOS',
+  BACKPACK: 'MOCHILA', 'HOTBAR  (keys 1-9)': 'BARRA  (teclas 1-9)', ARMOR: 'ARMADURA', GEAR: 'EQUIPO', ACCESSORIES: 'ACCESORIOS',
+  '1-9 select a hotbar slot': '1-9 selecciona una casilla de la barra',
   'BUFFS  (hover gear for details)': 'MEJORAS  (pasa el ratón por el equipo)', 'none right now': 'ninguna ahora',
   // slot labels must fit their 13px boxes
   head: 'cabeza', chest: 'pecho', legs: 'pier.', boots: 'botas', eyes: 'ojos', coat: 'abrigo', hands: 'manos', socks: 'medias', pack: 'moch.',

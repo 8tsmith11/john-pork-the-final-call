@@ -1,5 +1,5 @@
 import { ACT2_REGION_BOSSES } from '../../content/bosses.js';
-import { Sim, TILE, UNDER } from '../../engine/sim.js';
+import { Sim, TILE, UNDER, COMBAT } from '../../engine/sim.js';
 import { VIEW, setupCameras, toView } from '../../view.js';
 import { InputReader } from '../../engine/input.js';
 import { newSave } from '../../engine/save/schema.js';
@@ -13,7 +13,7 @@ import { ENEMIES } from '../../content/enemies.js';
 import { GAME_VERSION } from '../../version.js';
 import { loadScene, Conversation, evalCond } from '../../engine/dialogue.js';
 import { babble, setArea, sfx, ring, speak, hush, setInstrumentFocus, audioOut } from '../../audio/audio.js';
-import { sellPrice, LOOT, DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods, EQUIP_SLOTS, WORN_SLOTS, canWear } from '../../content/items.js';
+import { sellPrice, LOOT, DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods, heldWeapon, WORN_SLOTS, canWear } from '../../content/items.js';
 import { tileKey, laneDashes } from '../render/tiles.js';
 import { mapDecals, sceneryPlacement } from '../render/decor.js';
 import { GameMenu, TABS, modText } from '../ui/GameMenu.js';
@@ -166,9 +166,7 @@ export class WorldScene extends Phaser.Scene {
     this.vignette = this._makeVignette();
     if (this.mode !== 'client') for (const p of this.sim.players.values()) {
       const c = this.save.party[p.character];
-      this.sim.setMods(p.id, playerMods(c, p.character));
       this.sim.setRot(p.id, c.rot ?? 0);
-      p.analogCharm = !!ITEMS[c.equipped?.charm]?.analog;
     }
     // No default punch (Trevor). Nobody starts armed: weapons are found, bought, printed, or taken
     // off the 631 toolwall (obj.toolwall). How the first one is earned is still being discussed (#hub).
@@ -685,7 +683,7 @@ export class WorldScene extends Phaser.Scene {
         this.latticeTable?.leave(peer);   // their side goes to the AI now, or a turn waiting on them stalls the table (John Pork)
         // A roommate who drops out keeps walking with the party as a companion.
         const p = this.sim.players.get(peer); this.sim.removePlayer(peer);
-        if (p) { this.sim.addPlayer(`ai:${p.character}`, p.character); const a = this.sim.players.get(`ai:${p.character}`); Object.assign(a, { x: p.x, y: p.y, hp: p.hp, rot: p.rot ?? 0, rotQuiet: p.rotQuiet ?? 0, analogCharm: p.analogCharm }); this.sim.setMods(a.id, playerMods(this.save.party[p.character], p.character)); }
+        if (p) { this.sim.addPlayer(`ai:${p.character}`, p.character); const a = this.sim.players.get(`ai:${p.character}`); Object.assign(a, { x: p.x, y: p.y, hp: p.hp, rot: p.rot ?? 0, rotQuiet: p.rotQuiet ?? 0 }); this._syncPlayerGear(a); }
       });
       this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
       this.time.addEvent({ delay: 500, loop: true, callback: () => this._broadcastWorld() });
@@ -913,15 +911,12 @@ export class WorldScene extends Phaser.Scene {
   // ---------- crafting, skills, items (host-authoritative) ----------
   _charOf(peer) { return this.sim.players.get(peer)?.character; }
 
-  // What each roommate has in hand: the selected hotbar slot for humans, the equipped weapon for AI.
-  _heldKind(c, ai) {
-    if (ai) return c.equipped?.weapon ? 'melee' : null;
-    const def = ITEMS[c.inventory?.[c.hotSel ?? 0]?.id];
-    return def?.slot === 'weapon' ? 'melee' : def?.slot === 'ranged' ? 'gun' : null;
-  }
-  _syncHeld() {
-    if (this.mode === 'client') return;
-    for (const p of this.sim.players.values()) p.held = this._heldKind(this.save.party[p.character], String(p.id).startsWith('ai:'));
+  _syncPlayerGear(p) {
+    const c = this.save.party[p.character];
+    const weapon = heldWeapon(c, p.character, isAi(p.id));
+    p.held = weapon ? (ITEMS[weapon.id].slot === 'ranged' ? 'gun' : 'melee') : null;
+    this.sim.setMods(p.id, playerMods(c, p.character, weapon));
+    p.analogCharm = !!ITEMS[c.equipped?.charm]?.analog;
   }
   // Select a hotbar slot (1-9 / wheel). A weapon or gun in that slot becomes the one you hold.
   selectHot(i) {
@@ -934,9 +929,7 @@ export class WorldScene extends Phaser.Scene {
   }
   _setHot(who, i) {
     const c = this.save.party[who]; if (!c) return;
-    c.hotSel = Math.max(0, Math.min(8, i | 0));
-    const def = ITEMS[c.inventory[c.hotSel]?.id];
-    if (def && (def.slot === 'weapon' || def.slot === 'ranged') && canWear(def, who)) c.equipped[def.slot] = def === ITEMS[c.inventory[c.hotSel].id] ? c.inventory[c.hotSel].id : c.equipped[def.slot];
+    c.hotSel = Math.max(0, Math.min(Inv.HOTBAR - 1, i | 0));
     this._syncParty();
   }
   // Minecraft-style: the name of what's now in your hand, just above the hotbar, fading after a moment.
@@ -1036,12 +1029,12 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _syncParty() {
-    this._syncHeld();
-    if (this.mode !== 'client' && !this.save.flags['q.armed'] && Object.values(this.save.party).some((c) => c.equipped?.weapon)) this.save.flags['q.armed'] = true;   // armed any way at all
-    for (const p of this.sim.players.values()) {
-      const c = this.save.party[p.character];
-      this.sim.setMods(p.id, playerMods(c, p.character));
-      p.analogCharm = !!ITEMS[c.equipped?.charm]?.analog;
+    if (this.mode !== 'client') {
+      for (const p of this.sim.players.values()) this._syncPlayerGear(p);
+      if (!this.save.flags['q.armed'] && Object.entries(this.save.party).some(([who, c]) => c.inventory.some((it) => {
+        const def = ITEMS[it?.id];
+        return (def?.slot === 'weapon' || def?.slot === 'ranged') && canWear(def, who);
+      }))) this.save.flags['q.armed'] = true;
     }
     if (this.mode === 'host') this.net.broadcast({ t: 'party', party: this.save.party });
     this._refreshMenu();
@@ -1060,9 +1053,7 @@ export class WorldScene extends Phaser.Scene {
     c.inventory = next.inventory;
     if (r.roll) made[r.item] = (made[r.item] ?? 0) + 1;
     const item = ITEMS[r.item];
-    if (EQUIP_SLOTS.includes(item.slot) && !c.equipped[item.slot] && canWear(item, who)) {
-      if (WORN_SLOTS.includes(item.slot)) Inv.wear(c, r.item); else c.equipped[item.slot] = r.item;
-    }
+    if (WORN_SLOTS.includes(item.slot) && !c.equipped[item.slot] && canWear(item, who)) Inv.wear(c, r.item);
     this._announce(`The fab hums. ${who} gets: ${rolledName(item.name, rolled)}${rolled ? ` (${modText(rolled.mods)})` : ''}.`);
     this._syncParty();
   }
@@ -1140,7 +1131,11 @@ export class WorldScene extends Phaser.Scene {
       if (this.mode === 'client') this.net.send({ t: 'useSlot', i }); else { this._useSlot = i; this._use(this.character, this.localId); }
       return;
     }
-    if ([...EQUIP_SLOTS, 'instrument', 'gift'].includes(def.slot)) return this.menuUse(it.id);
+    if (def.slot === 'weapon' || def.slot === 'ranged') {
+      if (i < Inv.HOTBAR) this.selectHot(i);
+      return;
+    }
+    if (WORN_SLOTS.includes(def.slot) || def.slot === 'instrument' || def.slot === 'gift') return this.menuUse(it.id);
     if (def.slot === 'junk' || def.slot === 'key') this._say(`${def.name}\n${def.text}`);
   }
   menuMove(a, b, half) { if (this.mode === 'client') this.net.send({ t: 'move', a, b, half }); else { Inv.moveSlot(this.save.party[this.character], a, b, half); this._syncParty(); } }
@@ -1156,7 +1151,6 @@ export class WorldScene extends Phaser.Scene {
   menuSell(slot) { if (this.mode === 'client') this.net.send({ t: 'sell', slot }); else this._sell(this.character, slot); }
   _sell(who, slot) {
     const c = this.save.party[who], it = c?.inventory[slot]; if (!it) return;
-    if ([c.equipped?.weapon, c.equipped?.ranged].includes(it.id) && Inv.count(c, it.id) <= 1) return this._toast('Put it away first.');   // worn gear isn't in the bag
     const price = sellPrice(it.id); if (!price) return this._toast('Wick won\'t take that.');
     Inv.takeSlot(c, slot); W.addMoney(this.save, who, price);
     sfx('pickup'); this._toast(`Sold: ${ITEMS[it.id]?.name} (+$${price})`); this._syncParty();
@@ -1196,13 +1190,10 @@ export class WorldScene extends Phaser.Scene {
 
   _equip(who, id) {
     const c = this.save.party[who], def = ITEMS[id];
-    if (!c || !def || !Inv.has(c, id) || !EQUIP_SLOTS.includes(def.slot)) return;
+    if (!c || !def || !Inv.has(c, id) || !WORN_SLOTS.includes(def.slot)) return;
     if (!canWear(def, who)) return this._announce(`${def.name}: only ${def.owner[0].toUpperCase() + def.owner.slice(1)} can wear that.`);
-    if (WORN_SLOTS.includes(def.slot)) {
-      // Worn gear moves between the bag and its equipment slot (it doesn't take a bag slot while worn).
-      if (c.equipped[def.slot] === id) { if (!Inv.unwear(c, def.slot)) return this._toast('Your bag is full. Make room to take it off.'); }
-      else if (!Inv.wear(c, id)) return this._toast('Your bag is full. Make room to swap.');
-    } else c.equipped[def.slot] = c.equipped[def.slot] === id ? null : id;   // weapons: click again to unequip
+    if (c.equipped[def.slot] === id) { if (!Inv.unwear(c, def.slot)) return this._toast('Your bag is full. Make room to take it off.'); }
+    else if (!Inv.wear(c, id)) return this._toast('Your bag is full. Make room to swap.');
     this._syncParty();
   }
 
@@ -2393,11 +2384,12 @@ export class WorldScene extends Phaser.Scene {
         // Taken off the wall into your hand: the first free hotbar slot (new items otherwise go to the backpack).
         const free = c.inventory.slice(0, 9).findIndex((x) => !x);
         if (free >= 0) c.inventory[free] = { id: 'item.pry_bar', qty: 1 }; else if (Inv.add(c, 'item.pry_bar') > 0) continue;
-        c.equipped.weapon ??= 'item.pry_bar'; got.push(who);
+        got.push(who);
         if (free >= 0) c.hotSel = free;
       }
-      this._flag('q.armed', true); this._tickQuests(true);
       this._syncParty();
+      this._tickQuests(true);
+      if (!got.length && !this.save.flags['q.armed']) { this._say('Your bag is full.'); return; }
       this._say(got.length ? `${near.text}\n\nYou each take a {pry bar}. (Select it on the hotbar with 1-9 or the wheel; left click swings what's in your hand.)` : `${near.text}\n\nEveryone's already armed.`);
       return;
     }
@@ -3141,7 +3133,7 @@ export class WorldScene extends Phaser.Scene {
       this.tweens.add({ targets: g, alpha: 0, duration: 140, onUpdate: () => { const q = at(); g.setPosition(q.x, q.y - 8).setDepth(q.y + 1); }, onComplete: () => g.destroy() });
       // The weapon itself sweeps through the arc (Trevor: swinging the crowbar swings a crowbar). Icons are drawn
       // handle bottom-left to head top-right, so +45 degrees points the head outward along the swing.
-      const weapon = this.save.party[p.c]?.equipped?.weapon;
+      const weapon = ev.weapon;
       if (weapon && this.textures.get('icons')?.has?.(weapon)) {
         const im = this.add.image(p.x, p.y - 8, 'icons', weapon).setOrigin(0.15, 0.85).setDepth(p.y + 2);
         const from = ev.a - half, to = ev.a + half, flip = Math.cos(ev.a) < 0;   // swing toward the facing side
@@ -3210,10 +3202,12 @@ export class WorldScene extends Phaser.Scene {
     }
     // Ammo for the gun you carry, left of the hotbar (combat brief #8): count, or RELOADING.
     this.hudAmmo ??= this.add.text(0, 0, '', { ...FONT, fontSize: '8px', color: '#e8e8f0', stroke: '#0b0d16', strokeThickness: 3 }).setOrigin(1, 0.5).setScrollFactor(0).setDepth(9003);
-    const gunId = c.equipped?.ranged, gunDef = ITEMS[gunId]?.gun;
-    if (gunId && this.hot && !this.menu && !this.dlg) {
-      const clip = gunDef?.clip ?? 6, am = me?.am ?? clip;
-      this.hudAmmo.setText(me?.rl > 0 ? 'RELOADING' : `${'▮'.repeat(Math.min(am, 8))}${am > 8 ? '+' : ''} ${am}/${clip}`).setColor(me?.rl > 0 ? '#ffb347' : '#e8e8f0')
+    const held = heldWeapon(c, this.character);
+    const gunDef = ITEMS[held?.id];
+    if (gunDef?.slot === 'ranged' && this.hot && !this.menu && !this.dlg) {
+      const clip = gunDef.gun?.clip ?? COMBAT.shot.clip;
+      const matching = me?.weapon === held.id, am = matching ? me.am ?? clip : clip, reloading = matching && me.rl > 0;
+      this.hudAmmo.setText(reloading ? 'RELOADING' : `${'▮'.repeat(Math.min(am, 8))}${am > 8 ? '+' : ''} ${am}/${clip}`).setColor(reloading ? '#ffb347' : '#e8e8f0')
         .setPosition(this.hot.x0 - 6, this.hot.y0 + this.hot.S / 2).setVisible(true);
     } else this.hudAmmo.setVisible(false);
     // Top-right: XP and money, compact.
