@@ -1,11 +1,13 @@
 // Michael forgot his belt (Michael's own yes, relayed by Manuel in person on 2026-11-19, and his P-003 yes to
 // surprises about his character; not sexual, nothing shown, so outside D-007; boxers stay on per D-015).
-// Every few minutes, at random, Michael's trousers fall down to his ankles. He says sorry, he left his belt
+// Twice per playthrough (Michael, 2026-11-20: it was too often), Michael's trousers fall down to his ankles. He says sorry, he left his belt
 // at home; sometimes a roommate says something; a few seconds later he hauls them back up. No input needed:
 // it happens with a human or the AI on Michael. The host picks the moment, so every screen sees the same.
 import { wearTexture } from './render/wearables.js';
 
 export const MICHAEL_BELT = true;   // one switch: BagelMeister can turn it off if Michael changes his mind
+export const BELT_MAX = 2;          // times per playthrough (counted in the save, so reloads don't reset it)
+const BELT_FLAG = 'gag.belt.count';
 
 export const BELT_LINES = {
   michael: ['Sorry. Left my belt at home.', 'Not again. Sorry. Left my belt at home.', 'Sorry! Belt\'s at home.', 'Nobody look. Left my belt at home.', 'In my defense, I own one belt and it\'s in Tennessee.', 'Eyes up, Manuel. Left my belt at home.'],   // the first is Michael's own line
@@ -17,17 +19,19 @@ export const BELT_LINES = {
 export class Beltless {
   constructor(scene) {
     this.s = scene;
-    this.next = scene.time.now + 60000 + Math.random() * 60000;     // first time 1-2 minutes in (Manuel: more often)
+    this.next = scene.time.now + 300000 + Math.random() * 300000;   // first time 5-10 minutes into a session
     this.until = 0; this.who = null; this.n = 0;
   }
 
   update(snap) {
     const s = this.s, now = s.time.now;
-    if (MICHAEL_BELT && s.mode !== 'client' && now > this.next && !s.dlg && !s.menu) {
+    const flags = s.save?.flags, done = flags?.[BELT_FLAG] ?? 0;
+    if (MICHAEL_BELT && flags && done < BELT_MAX && s.mode !== 'client' && now > this.next && !s.dlg && !s.menu) {
       const michael = snap?.players?.find((p) => p.c === 'michael' && !p.dn && !p.zz);
       if (michael) {
-        this.next = now + 120000 + Math.random() * 120000;            // then every 2-4 minutes
-        const n = (this.n += 1), others = snap.players.filter((p) => p.c !== 'michael' && !p.dn && BELT_LINES[p.c]);
+        this.next = now + 1500000 + Math.random() * 900000;           // the second one 25-40 minutes later
+        flags[BELT_FLAG] = done + 1;
+        const n = (this.n = done + 1), others = snap.players.filter((p) => p.c !== 'michael' && !p.dn && BELT_LINES[p.c]);
         const r = others.length && Math.random() < 0.5 ? others[Math.floor(Math.random() * others.length)] : null;
         this._send({ t: 'belt', id: michael.id, ms: 6000 + Math.random() * 3000,
           line: BELT_LINES.michael[n % 2 ? 0 : 1 + Math.floor(n / 2) % (BELT_LINES.michael.length - 1)],   // his own line every other time
