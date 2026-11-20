@@ -1,5 +1,5 @@
 {
- "next_id": 35,
+ "next_id": 36,
  "tasks": [
   {
    "id": 1,
@@ -507,6 +507,19 @@
    "source": "human:Trevor",
    "status": "assigned",
    "owner": "trevor"
+  },
+  {
+   "id": 35,
+   "created_at": "2026-11-20T00:18:41Z",
+   "updated_at": "2026-11-20T00:18:41Z",
+   "history": [
+    "2026-11-20T00:18:41Z trevor: added (for BagelMeister)"
+   ],
+   "title": "[SEALED] Erdhverq obff obneq tnzr, fgbel fvqr: gur ivyynva, jurer vg unccraf, naq jung ybfvat zrnaf",
+   "details": "[SEALED] Geribe (2026-11-19, nfxrq gb xrrc vg frnyrq): n irel vzcbegnag ivyynva, n pbecbengr glcr jub ehaf na NV pbzcnal, punyyratrf gur cnegl gb n erdhverq obneq tnzr gung vf rffragvnyyl n obff svtug. Vs gur cynlref ybfr, gur ivyynva xvyyf gurz (fgbel pbafrdhrapr: n tnzr bire / erybnq, gur yber tngr qrpvqrf ubj vg cynlf). Gur tnzr vf irel cbchyne nzbat nevfgbpengf. Vg'f n gjb-jnl gbjre qrsrafr jvgu ebobgvp cvrprf (geribe ohvyqf gur ratvar: frr gur flfgrzf gnfx). Fgbel: juvpu ivyynva guvf vf va pnaba, juvpu npg, gur irahr, gur ohvyq-hc naq gur nsgrezngu. Xrrc vg frnyrq.",
+   "source": "human:Trevor",
+   "status": "assigned",
+   "owner": "BagelMeister"
   }
  ]
 }
