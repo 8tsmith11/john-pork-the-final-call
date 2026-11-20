@@ -628,6 +628,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode === 'host') {
       on('msg', (peer, msg) => {
         if (this.shared?.onMsg(msg, peer) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg)) return;
+        if (msg.t === 'questRead') this._finishQuestReading(peer, msg.read);
         if (msg.t === 'input') {
           const prev = this.remoteInputs.get(peer);
           this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, interact: false });
@@ -649,7 +650,6 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'use') { this._useWhat = msg.id ?? null; this._use(this._charOf(peer), peer); }
         if (msg.t === 'morph') this._morph(peer);
         if (msg.t === 'questUse') { const o = this.map.objects.find((x) => x.id === msg.id); if (o) this._questInteract(o, this._charOf(peer), peer); }   // quest hooks, host side
-        if (msg.t === 'questRead') this._finishQuestReading(peer, msg.read);
         if (msg.t === 'puzzle') { const o = this.map.objects.find((x) => x.id === msg.id), pz = o && puzzleFor(o.id); if (pz) this._usePuzzle(pz, o, this._charOf(peer), peer); }   // puzzle kit, host side
         if (msg.t === 'search') { const o = this.map.objects.find((x) => x.id === msg.id && x.loot); if (o) this._search(o, this._charOf(peer)); }
         if (msg.t === 'zip') { const o = this.map.objects.find((x) => x.id === msg.id && x.zip); if (o) this._zip(o, peer); }
@@ -1305,34 +1305,6 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- quests (src/content/quests.js) ----------
-  // Closing the last page acknowledges the clue. The host accepts only an outstanding delivery
-  // to that roommate, then records both the personal fact and shared quest progress.
-  _showQuestClue(peer, who, text, fact, flag) {
-    const clue = { who, fact, flag };
-    if (peer === this.localId) {
-      this._say(text, clue);
-      return;
-    }
-    const questRead = this._nextQuestRead = (this._nextQuestRead ?? 0) + 1;
-    (this._questReading ??= new Map()).set(peer, { ...clue, read: questRead });
-    this.net?.send(peer, { t: 'say', text, questRead });
-  }
-
-  _finishQuestReading(peer, read) {
-    const pending = this._questReading?.get(peer);
-    if (!pending || pending.read !== read || pending.who !== this._charOf(peer)) return;
-    this._questReading.delete(peer);
-    this._recordQuestReading(pending, peer);
-  }
-
-  _recordQuestReading({ who, fact, flag }, peer) {
-    learnQuestFact(this.save, who, fact);
-    if (!this.save.flags[flag]) {
-      this._flag(flag, true);
-      this._tickQuests(true, peer);
-    }
-  }
-
   // Quest hooks (ask / inspect / give / report) change shared state, so only the host runs them (John Pork's
   // three-window report: a guest's hand-in took the item on their screen only, and the host dropped the flag).
   // A guest sends { t: 'questUse', id }; the host runs this with the guest's roommate and sends the line back.
@@ -1405,6 +1377,34 @@ export class WorldScene extends Phaser.Scene {
         if (q.reward?.line && mine) this._say(q.reward.line);
         if (q.reward?.line && peer && peer !== this.localId) this.net?.send(peer, { t: 'say', text: q.reward.line });
       }
+    }
+  }
+
+  // Closing the last page acknowledges the clue. The host accepts only an outstanding delivery
+  // to that roommate, then records both the personal fact and shared quest progress.
+  _showQuestClue(peer, who, text, fact, flag) {
+    const clue = { who, fact, flag };
+    if (peer === this.localId) {
+      this._say(text, clue);
+      return;
+    }
+    const questRead = this._nextQuestRead = (this._nextQuestRead ?? 0) + 1;
+    (this._questReading ??= new Map()).set(peer, { ...clue, read: questRead });
+    this.net?.send(peer, { t: 'say', text, questRead });
+  }
+
+  _finishQuestReading(peer, read) {
+    const pending = this._questReading?.get(peer);
+    if (!pending || pending.read !== read || pending.who !== this._charOf(peer)) return;
+    this._questReading.delete(peer);
+    this._recordQuestReading(pending, peer);
+  }
+
+  _recordQuestReading({ who, fact, flag }, peer) {
+    learnQuestFact(this.save, who, fact);
+    if (!this.save.flags[flag]) {
+      this._flag(flag, true);
+      this._tickQuests(true, peer);
     }
   }
 

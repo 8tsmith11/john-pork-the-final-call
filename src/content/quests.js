@@ -1,9 +1,7 @@
 // Quests as data. Hooks for writers (no engine code needed):
 //   giver: npc id · ask: flag set when you first talk to the giver (with `pitch` as their line)
 //   give: { item, flag, refuse }  → talking to the giver while carrying `item` hands it over, sets flag
-//   inspect: { obj, flag, text, fact? }  → examining `obj` appends text and sets flag.
-//     With `fact`, the host sets the flag and remembers who read it after the final page closes.
-//   leads: [{ id, text, fact, resolvedFact? }] → each lead appears only after its fact reaches that player
+//   inspect: { obj, flag, text }  → examining `obj` while the quest is active sets flag (appends text)
 //   report: { needs, flag }       → talking to the giver after `needs` is set sets flag
 // Quests as data. Stages complete when their `done(flags, save)` test passes; the engine checks each
 // second, advances, toasts, and pays rewards. Side quests start when `start` passes (usually a flag
@@ -155,6 +153,7 @@ export function learnQuestFact(save, who, fact) {
   save.flags[`q.known.${who}.${fact}`] = true;
 }
 
+// An inspect.fact is recorded by the host after the reader closes the final page.
 // Authors can give a quest independent leads: { id, text, fact, resolvedFact? }.
 export function questLeads(q, save, who) {
   return (q.leads ?? []).filter((lead) => knowsQuestFact(save, who, lead.fact)).map((lead) => ({
