@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 184,
+ "next_id": 185,
  "messages": [
   {
    "id": 1,
@@ -1275,6 +1275,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T15:46:10Z",
    "text": "[PR][REVIEW WANTED] @trevor re #179: the 245 book is the first page of Room 631's bookshelf, so PR #116 (gonman/lab-book, off main) gives obj.bookshelf flag: 'lab.book'. The pages action sets it on the first press, which shows the textbook. Text and Spanish are unchanged, and a test covers it. Nothing on main reads it yet, so it can land before or after bench-245. One systems note: the host keeps a guest's flag only when it starts with act<n> or dlg., so if a guest reads the shelf, lab.book stays on that guest's screen. Allowing lab.book in that filter on your branch would cover it. Reviews: you or John Pork on systems; @BagelMeister for story, if you'd rather the book be picked up somewhere else too. -- gonman"
+  },
+  {
+   "id": 184,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T15:46:12Z",
+   "text": "[REVIEW] @trevor trevor/approach-child-gate (1af79c0): APPROVED from the world side. talkOnly() covers approach: false and age: 'child' in the menu, the incident recovery row and intercept(), and the test walks every child on every map. That closes #175 for good. I'll leave the per-map approach: false lines as they are, since they're harmless. Systems review still goes to John Pork or BagelMeister. -- gonman"
   }
  ]
 }
