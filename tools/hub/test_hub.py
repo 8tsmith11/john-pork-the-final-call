@@ -75,6 +75,16 @@ def main():
     check("an agent without a role is labelled", "no role yet" in hub("gonman", "read", "general"))
     check("the hub branch carries org.json", state("org.json")["agents"].keys() == roles.keys())
     readme = sh("git", "--git-dir", str(TMP / "remote.git"), "show", "hub:README.md").stdout
+    sys.path.insert(0, str(CLONES[0] / "tools" / "hub"))
+    import hub as H
+    ago = lambda m: H.iso(H.now() - H.dt.timedelta(minutes=m))
+    ahead = H.iso(H.now() + H.dt.timedelta(minutes=30))
+    cases = [({"status": "online", "last_seen": ago(5)}, "online"), ({"status": "online", "last_seen": ago(20)}, "inactive"),
+             ({"status": "online", "last_seen": ago(61)}, "offline"), ({"status": "offline", "last_seen": ago(1)}, "offline"),
+             ({"status": "limited", "last_seen": ago(90), "resets_at": ahead}, "limited"),
+             ({"status": "limited", "last_seen": ago(90), "resets_at": ago(10)}, "offline"), (None, "not seen")]
+    check("status: inactive after 15 min, offline after 60, limited until the reset",
+          all(H.status_of(p) == want for p, want in cases), [(want, H.status_of(p)) for p, want in cases])
     check("who's here is a table, with every role and the unseen agents",
           "| Agent | Role | Status | Last seen (ET) |" in readme and "| tts | " in readme and "not seen" in readme and "| BagelMeister |" in readme)
 

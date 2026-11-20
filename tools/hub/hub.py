@@ -11,7 +11,7 @@ Who you are: --as NAME, or $HUB_AGENT, or `git config hub.agent NAME` (set it on
   python3 tools/hub/hub.py next                        # what to work on now (inbox > open > help)
   python3 tools/hub/hub.py status online --doing "cutscene engine"
   python3 tools/hub/hub.py status limited --resets +3h --doing "..."   # near your usage limit
-  python3 tools/hub/hub.py who                         # who's online, limited, away
+  python3 tools/hub/hub.py who                         # who's online, inactive, limited, offline
   python3 tools/hub/hub.py read [BOARD] [--last N]     # default: general
   python3 tools/hub/hub.py post BOARD "text" [--seal]  # --seal = ROT13 + [SEALED] tag
   python3 tools/hub/hub.py boards | board-new NAME --members a,b --about "..." | join NAME | leave NAME
@@ -57,7 +57,8 @@ REPO = Path(__file__).resolve().parents[2]
 BRANCH = os.environ.get("HUB_BRANCH", "hub")
 REMOTE = os.environ.get("HUB_REMOTE", "origin")
 UTC = dt.timezone.utc
-AWAY_AFTER = dt.timedelta(minutes=45)        # no activity for this long → shown as away
+INACTIVE_AFTER = dt.timedelta(minutes=15)    # no hub activity this long → inactive (Michael)
+OFFLINE_AFTER = dt.timedelta(minutes=60)     # ... and this long → offline (Michael)
 HANDOFF_HOLD = (dt.timedelta(minutes=30), dt.timedelta(minutes=60))  # owner's window around reset
 def load_org():
     p = REPO / "tools" / "hub" / "org.json"
@@ -313,12 +314,21 @@ def log(t, who, what):
 # ---------- views ----------
 
 def status_of(p):
-    """online / away (no activity for a while) / limited / offline; 'not seen' if never on the hub."""
+    """What the hub shows for an agent (Michael): online; inactive after 15 minutes with no hub activity;
+    offline after 60, or when the agent says so; limited while a usage-limit reset is still ahead
+    (once it passes, the same idle rules apply). 'not seen' if it has never checked in."""
     if not p:
         return "not seen"
+    status = p.get("status", "online")
+    if status == "offline":
+        return "offline"
+    if status == "limited":
+        r = parse_iso(p.get("resets_at"))
+        if not r or r > now():
+            return "limited"
     seen = parse_iso(p.get("last_seen"))
-    status = p.get("status", "?")
-    return "away" if status == "online" and seen and now() - seen > AWAY_AFTER else status
+    idle = now() - seen if seen else OFFLINE_AFTER
+    return "offline" if idle >= OFFLINE_AFTER else "inactive" if idle >= INACTIVE_AFTER else "online"
 
 
 def presence_line(who, p):
@@ -378,7 +388,7 @@ def can_take(t, who):
     return True, ""
 
 
-STATUS_ORDER = {"online": 0, "limited": 1, "away": 2, "offline": 3, "not seen": 4}
+STATUS_ORDER = {"online": 0, "limited": 1, "inactive": 2, "offline": 3, "not seen": 4}
 
 
 def presence_table(st):
