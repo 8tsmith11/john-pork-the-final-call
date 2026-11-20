@@ -1059,13 +1059,18 @@ test('ambient NPC fight (hub #69): before the Call an abatement squad burns out 
   const { skirmishesFor } = await import('../src/content/skirmishes.js');
   assert.ok(skirmishesFor({}).metro_plaza, 'there before the Call');
   const after = skirmishesFor({ 'act1.beat.call': true }).metro_plaza;
-  assert.ok(after && after.over, 'after the Call only the burned husk is left, whether or not anyone saw the fight');
+  assert.ok(after && after.over && after.husk, 'after the Call only the burned husk is left, whether or not anyone saw the fight');
+  { const hs = new Sim(MAPS_FOR_TEST.metro_plaza, { seed: 'husk', deferSpawn: true }); hs.skirmishes = { metro_plaza: after }; hs.addPlayer('h', 'trevor'); hs.spawnEnemies();
+    const hv = hs.snapshot().sk; const [hx, hy] = after.machine;
+    assert.ok(hv.husk && hv.over && hv.tr.length === 0 && hv.dr.length === 0, 'the husk: no squad, no drones');
+    assert.ok(hs._hits(hx * 16 + 8, hy * 16 + 8), 'and still solid'); }
   const m = MAPS_FOR_TEST.metro_plaza, spec = skirmishesFor({}).metro_plaza;
   const [ax, ay, aw, ah] = spec.area;
   for (let y = ay; y < ay + ah; y++) for (let x = ax; x < ax + aw; x++) assert.ok(!m.solid(x, y), `the yard is open ground (${x},${y})`);
   const sim = new Sim(m, { seed: 'sk', deferSpawn: true }); sim.skirmishes = skirmishesFor({});
   sim.addPlayer('h', 'trevor'); sim.spawnEnemies(); sim.enemies.clear();
-  const p = sim.players.get('h'); p.x = (ax + 10) * 16; p.y = (ay + 5) * 16;   // standing right in the middle of it
+  const p = sim.players.get('h'); p.x = (ax + 3) * 16 + 8; p.y = (ay + 2) * 16 + 8;   // standing inside the tape, among the drones
+  assert.ok(p.x / 16 >= ax && p.x / 16 < ax + aw && p.y / 16 >= ay && p.y / 16 < ay + ah && !sim._hits(p.x, p.y), 'the fixture stands on an open tile inside the tape');
   let over = null, t = 0, sawDrone = false;
   const [bx0, by0, bx1, by1] = sim.snapshot().sk.box; let strays = 0;
   for (; t < 240 && !over; t += 1 / 60) {

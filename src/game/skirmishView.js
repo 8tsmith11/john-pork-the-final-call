@@ -21,13 +21,14 @@ export class SkirmishView {
     const [x0, y0, x1, y1] = sk.box;
     // Yellow tape around the lot, on short posts.
     this.tape = s.add.graphics().setDepth(3);
-    this.tape.lineStyle(1, 0xf2c94c, 0.9);
-    for (let x = x0; x < x1; x += 8) { this.tape.lineBetween(x, y0, Math.min(x + 5, x1), y0); this.tape.lineBetween(x, y1, Math.min(x + 5, x1), y1); }
-    for (let y = y0; y < y1; y += 8) { this.tape.lineBetween(x0, y, x0, Math.min(y + 5, y1)); this.tape.lineBetween(x1, y, x1, Math.min(y + 5, y1)); }
+    this.tape.lineStyle(1, 0xf2c94c, sk.husk ? 0.35 : 0.9);   // after the Call the tape is old and torn
+    const torn = (i) => sk.husk && (i * 7) % 5 < 2;   // gaps where it's been torn down
+    for (let x = x0, i = 0; x < x1; x += 8, i++) { if (!torn(i)) this.tape.lineBetween(x, y0, Math.min(x + 5, x1), y0); if (!torn(i + 3)) this.tape.lineBetween(x, y1, Math.min(x + 5, x1), y1); }
+    for (let y = y0, i = 0; y < y1; y += 8, i++) { if (!torn(i + 1)) this.tape.lineBetween(x0, y, x0, Math.min(y + 5, y1)); if (!torn(i + 4)) this.tape.lineBetween(x1, y, x1, Math.min(y + 5, y1)); }
     this.tape.fillStyle(0x4a5060, 1);
     for (const [px, py] of [[x0, y0], [x1, y0], [x0, y1], [x1, y1]]) this.tape.fillRect(px - 1, py - 6, 2, 7);
     const spec = skirmishById(sk.id), es = getLang() === 'es';
-    if (spec?.label) this.label = s.add.text(x0 + 4, y0 - 9, (es ? spec.labelEs : spec.label).toUpperCase(), { fontFamily: 'monospace', fontSize: '6px', color: '#f2c94c', backgroundColor: '#15171fcc', padding: { x: 2, y: 1 } }).setDepth(4);
+    if (spec?.label && !sk.husk) this.label = s.add.text(x0 + 4, y0 - 9, (es ? spec.labelEs : spec.label).toUpperCase(), { fontFamily: 'monospace', fontSize: '6px', color: '#f2c94c', backgroundColor: '#15171fcc', padding: { x: 2, y: 1 } }).setDepth(4);
     const art = s.textures.exists('props') && s.textures.get('props').has('npc.trooper_side');
     this.troops = sk.tr.map(([x, y]) => (art ? s.add.image(x, y + 8, 'props', 'npc.trooper_side') : s.add.image(x, y + 7, troopTexture(s))).setOrigin(0.5, 1).setDepth(y + 7));
     this.glow = s.add.graphics().setDepth(2.5);   // the rot's glow on the ground, under everyone (gonman)
@@ -86,6 +87,8 @@ export class SkirmishView {
       for (let i = 0; i < 8; i++) this._puff(mx + (Math.random() * 24 - 12), my - 10 - Math.random() * 16, i % 2 ? 0xffb347 : 0x3a3d45);
       if (close) { s.cameras.main.shake(180, 0.004); sfx('kill'); }
     }
+    // The sign follows the operation: in progress, then complete once the hub falls (before the Call).
+    if (this.label && sk.over !== this.over) { const spec = skirmishById(sk.id), es = getLang() === 'es'; this.label.setText((sk.over ? (es ? spec.labelOverEs : spec.labelOver) : (es ? spec.labelEs : spec.label)).toUpperCase()); }
     this.over = sk.over;
     this._talk(snap, sk);
   }
@@ -101,6 +104,7 @@ export class SkirmishView {
     if (!me || me.dn || s.time.now < this.nextLine) return;
     const [x0, y0, x1, y1] = sk.box, pad = 28;
     if (me.x < x0 - pad || me.x > x1 + pad || me.y < y0 - pad || me.y > y1 + pad) return;
+    if (sk.husk) return;   // nobody left to say anything
     const spec = skirmishById(sk.id), lines = sk.over ? spec?.linesOver : spec?.lines;
     if (!lines?.length) return;
     this.nextLine = s.time.now + LINE_CD;

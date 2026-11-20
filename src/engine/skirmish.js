@@ -24,10 +24,11 @@ export function newSkirmish(spec, seed = 's') {
   const r = rng(`${seed}:${spec.id}`), at = ([tx, ty]) => ({ x: tx * TILE + 8, y: ty * TILE + 8 });
   const [ax, ay, aw, ah] = spec.area;
   return {
-    id: spec.id, r, over: !!spec.over, t: 0, spawnT: 1.5,
+    id: spec.id, r, over: !!spec.over || !!spec.husk, husk: !!spec.husk, t: 0, spawnT: 1.5,
     box: { x0: ax * TILE, y0: ay * TILE, x1: (ax + aw) * TILE, y1: (ay + ah) * TILE },
     machine: { ...at(spec.machine), hp: spec.over ? 0 : SK.machineHp, max: SK.machineHp },
-    troopers: spec.troopers.map((p, i) => ({ ...at(p), hp: SK.troopHp, down: 0, cd: 0.3 + r() * 1.2, aim: Math.PI, i })),
+    // After the Call only the husk is left: the squad has moved on (LoreKeeper's story review).
+    troopers: spec.husk ? [] : spec.troopers.map((p, i) => ({ ...at(p), hp: SK.troopHp, down: 0, cd: 0.3 + r() * 1.2, aim: Math.PI, i })),
     drones: [], shots: [],
     // The hub's footprint is solid while it's on the map, burning or burned out (gonman): three tiles wide, two deep.
     solid: [-1, 0, 1].flatMap((dx) => [-1, 0].map((dy) => `${spec.machine[0] + dx},${spec.machine[1] + dy}`)),
@@ -98,7 +99,7 @@ export function skirmishView(sk) {
   if (!sk) return null;
   const R = (v) => Math.round(v);
   return {
-    id: sk.id, over: sk.over, box: [sk.box.x0, sk.box.y0, sk.box.x1, sk.box.y1],
+    id: sk.id, over: sk.over, ...(sk.husk ? { husk: true } : {}), box: [sk.box.x0, sk.box.y0, sk.box.x1, sk.box.y1],
     m: [R(sk.machine.x), R(sk.machine.y), sk.machine.hp, sk.machine.max],
     tr: sk.troopers.map((t) => [R(t.x), R(t.y), t.down > 0 ? 1 : 0, Math.round(t.aim * 100) / 100]),
     dr: sk.drones.map((d) => [R(d.x), R(d.y)]),
