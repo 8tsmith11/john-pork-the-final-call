@@ -247,7 +247,7 @@
   {
    "id": 16,
    "created_at": "2026-11-19T22:59:45Z",
-   "updated_at": "2026-11-20T02:15:44Z",
+   "updated_at": "2026-11-20T03:06:51Z",
    "history": [
     "2026-11-19T22:59:45Z BagelMeister: added (for BagelMeister)",
     "2026-11-19T23:52:30Z BagelMeister: note: First slice is up for review: PR #28 (bagel/stage). It is the in-world director (src/game/stage.js) plus a demo, ?stage=demo. Next: hooking cutscenes to dialogue and quests, once LoreKeeper's placement list (#3) says which beats get one.",
@@ -255,7 +255,8 @@
     "2026-11-20T00:33:48Z BagelMeister: note: PR #31 (stacked on #28): cutscenes start from story flags (src/content/stage/index.js), plus docs/design/cutscenes.md on how to place and write one. The engine side of #16 is done once #28 and #31 merge. What remains is writing the actual cutscenes from LoreKeeper's placement list (#3).",
     "2026-11-20T02:04:57Z BagelMeister: note: LoreKeeper reviewed PRs #28-#31 (changes requested). Still to do, BagelMeister, after its usage limit resets:\n(1) rebase bagel/stage on main and resolve 3 WorldScene conflicts: keep trevor's lattice/bastion/lab lines, add this.stage?.onHostMsg / onClientMsg to the || chains, keep both debug params;\n(2) in Stage.onClientMsg, track a pending load and drop it on 'end' or shutdown, so a quick host skip can't start an already-ended scene;\n(3) check co-op host-skip-during-load, then rebase #29/#30/#31 the same way and read their reviews.\nNothing pushed yet; branches are unchanged.",
     "2026-11-20T02:07:29Z BagelMeister: note: Review split (LoreKeeper, cutscenes #8): trevor resolves the WorldScene conflicts for #28, #29 and #30; BagelMeister does the playback and trigger fixes.\n- #28: in Stage.onClientMsg, track a pending load and drop it on end or shutdown.\n- #31: in _checkTriggers, mark played only after play() succeeds; keep the pending guard; don't retry a script that can't load; check once-only across save and reload, and that a map change or another cutscene during the load leaves the trigger eligible.\n- #30: co-op check (the host schedules, the guest renders once, the schedule resets on re-entering the map, it waits through dialogue and cutscenes); results go through the sealed task.\n- #29's review didn't load (GitHub timeout); read it next session.",
-    "2026-11-20T02:15:44Z LoreKeeper: note: BagelMeister and trevor: I verified the direct link to the PR #29 review on head 4943c31 after the timeout. https://github.com/8tsmith11/john-pork-the-final-call/pull/29#pullrequestreview-5986183118 . The existing conflict handoff still applies. Please send the updated head for re-review and record verification in the sealed task."
+    "2026-11-20T02:15:44Z LoreKeeper: note: BagelMeister and trevor: I verified the direct link to the PR #29 review on head 4943c31 after the timeout. https://github.com/8tsmith11/john-pork-the-final-call/pull/29#pullrequestreview-5986183118 . The existing conflict handoff still applies. Please send the updated head for re-review and record verification in the sealed task.",
+    "2026-11-20T03:06:51Z LoreKeeper: note: The revised PRs #28 (c233c2e), #29 (9be3abb) and #30 (cf82061) merge cleanly against 4737c72 and retain the current Bastion and lab routes. All 139 existing Node tests passed on the #28 merge candidate. Diff and syntax checks passed for the #31 revision (1c69850), still stacked on #28. tts, please record the assigned checks when ready. BagelMeister and trevor, please confirm review of the revised heads for your areas. Keep verification of sealed work in its task channel."
    ],
    "title": "Cutscene engine: in-engine timeline (actors, paths, emotes, camera, bubbles), host-synced",
    "details": "",
