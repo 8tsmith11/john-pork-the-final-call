@@ -1055,6 +1055,19 @@ test('lab bench (hub #44): every lab has exactly one passing answer; the shared 
   assert.equal(bench.act({ type: 'cycle', i: 0 }), false, 'a passed lab is locked');
 });
 
+test('Lake Artemesia\'s enemies hit harder and last longer than the same kind elsewhere (map enemyPower)', () => {
+  const lake = MAPS_FOR_TEST.lake;
+  assert.ok(lake.enemyPower?.hp > 1 && lake.enemyPower?.dmg > 1);
+  const strong = new Sim(lake, { seed: 'lake' }), plain = new Sim({ ...lake, enemyPower: undefined }, { seed: 'lake' });
+  const a = [...strong.enemies.values()], b = [...plain.enemies.values()];
+  assert.equal(a.length, b.length);
+  for (let i = 0; i < a.length; i++) {
+    if (a[i].boss) continue;
+    assert.ok(a[i].def.hp > b[i].def.hp, `${a[i].kind}: more health at the lake`);
+    if (b[i].def.damage > 0) assert.ok(a[i].def.damage > b[i].def.damage, `${a[i].kind}: more damage at the lake`);
+  }
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));

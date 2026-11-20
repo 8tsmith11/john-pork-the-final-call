@@ -83,6 +83,7 @@ const lamp = (x, y, text) => ({ id: `obj.lakelamp_${x}_${y}`, art: 'obj.streetla
 
 export const lake = makeMap({
   id: 'lake', name: 'Lake Artemesia',
+  enemyPower: { hp: 1.3, dmg: 1.25 },   // Trevor (2026-11-20): "buff the enemies in lake artemesia a bit"
   propScale: 1.5,
   outdoor: true,
   layout: g.map((r) => r.join('')),

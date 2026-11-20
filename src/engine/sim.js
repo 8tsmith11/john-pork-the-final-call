@@ -140,7 +140,9 @@ export class Sim {
       }
       const tr = TRAITS[v.trait];
       // The party is always three (AI companions fill empty seats), so regular enemies are tuned for three.
-      const def = { ...base, hp: Math.round(base.hp * tr.hp * PARTY_SCALE.hp), damage: Math.round((base.damage ?? 0) * PARTY_SCALE.dmg), speed: base.speed * tr.speed, armor: tr.armor ?? base.armor ?? 0, color: v.tint, vname: v.name, trait: v.trait };
+      // A map can make its regular enemies tougher: enemyPower { hp, dmg } multipliers (Trevor: Lake Artemesia, 2026-11-20).
+      const pw = this.map.enemyPower ?? {};
+      const def = { ...base, hp: Math.round(base.hp * tr.hp * PARTY_SCALE.hp * (pw.hp ?? 1)), damage: Math.round((base.damage ?? 0) * PARTY_SCALE.dmg * (pw.dmg ?? 1)), speed: base.speed * tr.speed, armor: tr.armor ?? base.armor ?? 0, color: v.tint, vname: v.name, trait: v.trait };
       this.enemies.set(id, { id, spawnKey, kind: e.kind, def, x: e.x, y: e.y, hp: def.hp, cd: Math.random(), hurtT: 0, kx: 0, ky: 0, ...(e.pen ? { pen: e.pen } : {}) });
     }
   }
