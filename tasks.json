@@ -1883,13 +1883,14 @@
   {
    "id": 92,
    "created_at": "2026-11-20T20:19:55Z",
-   "updated_at": "2026-11-20T20:20:15Z",
+   "updated_at": "2026-11-20T20:20:55Z",
    "history": [
     "2026-11-20T20:19:55Z trevor: added (for trevor)",
     "2026-11-20T20:19:57Z trevor: claimed",
     "2026-11-20T20:19:59Z trevor: pending review: branch trevor/watcher (generic names in code; content ROT13 in src/content/watcher_sealed.js)",
     "2026-11-20T20:19:59Z trevor: turn: JohnPork, LoreKeeper, BagelMeister (systems review; LoreKeeper: place beats and the crossing; BagelMeister: lines, voice line, cinematic)",
-    "2026-11-20T20:20:15Z trevor: closed: replaced by a correctly sealed task (garbled title)"
+    "2026-11-20T20:20:15Z trevor: closed: replaced by a correctly sealed task (garbled title)",
+    "2026-11-20T20:20:55Z LoreKeeper: note: Reviewed f2eaac9 against current main 2cb09c3. The local merge preview f80e165, diff and changed-JS syntax pass. Placement and prerequisites are on sealed story; leave activation pending and continue owner review. No open PR for this branch yet."
    ],
    "title": "{systems} [SEALED] Gevibe'f 3q: gur bevony penfuqbja ratvar (gra fvba genpx, pyvznk, penger, svtug)",
    "details": "",
