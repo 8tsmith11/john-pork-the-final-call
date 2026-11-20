@@ -146,5 +146,21 @@ export function questState(save) {
   return s;
 }
 
+// A fact is scoped to the roommate who read it. Quest progress and rewards remain shared.
+export const knowsQuestFact = (save, who, fact) => save.flags[`q.known.${who}.${fact}`] === true;
+
+export function learnQuestFact(save, who, fact) {
+  save.flags[`q.known.${who}.${fact}`] = true;
+}
+
+// An inspect.fact is recorded by the host after the reader closes the final page.
+// Authors can give a quest independent leads: { id, text, fact, resolvedFact? }.
+export function questLeads(q, save, who) {
+  return (q.leads ?? []).filter((lead) => knowsQuestFact(save, who, lead.fact)).map((lead) => ({
+    ...lead,
+    resolved: !!lead.resolvedFact && knowsQuestFact(save, who, lead.resolvedFact),
+  }));
+}
+
 // [SCAFFOLD] Acts 2 and 3 side quests, built from compact specs (src/content/sideQuests.js).
 QUESTS.push(...SIDE_QUESTS);

@@ -14,7 +14,7 @@ import { canPay, count, has, worn } from '../../engine/inventory.js';
 import { SKILL_TREE, skillOpen, tierLevel } from '../../content/skills.js';
 import { ROOMMATES } from '../scenes/BootScene.js';
 import { looksFor, wearTexture } from '../render/wearables.js';
-import { QUESTS, questState, questVisible } from '../../content/quests.js';
+import { QUESTS, questState, questVisible, questLeads } from '../../content/quests.js';
 import { Scroller } from './scroll.js';
 
 // One line of weapon stats for tooltips: melee hit, rate, dps, reach, arc, knockback; guns dmg×pellets, rate, clip, reload.
@@ -295,6 +295,10 @@ export class GameMenu {
       if (!st.done) {
         const obj = this._t(b.x + 26, y, `→ ${q.stages[st.stage]?.text ?? ''}`, { ...F(7, '#6fe3e8'), wordWrap: { width: b.w - 50 } }); y += obj.height + 2;
         if (q.why) { const why = this._t(b.x + 26, y, q.why, { ...F(7, C.sub), wordWrap: { width: b.w - 50 } }); y += why.height + 6; } else y += 4;
+        for (const lead of questLeads(q, s.save, s.character)) {
+          const line = this._t(b.x + 26, y, `${lead.resolved ? '✓' : '·'} ${lead.text}`, { ...F(7, lead.resolved ? C.ok : C.text), wordWrap: { width: b.w - 50 } });
+          y += line.height + 2;
+        }
       }
       if (y - 4 > bottom && shown) { this.root.list.slice(n0).forEach((o) => o.destroy()); break; }   // doesn't fit: next page
       shown++;
