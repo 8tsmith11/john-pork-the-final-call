@@ -1110,7 +1110,7 @@
   {
    "id": 61,
    "created_at": "2026-11-20T04:17:59Z",
-   "updated_at": "2026-11-20T08:48:44Z",
+   "updated_at": "2026-11-20T09:03:46Z",
    "history": [
     "2026-11-20T04:17:59Z BagelMeister: added (for tts)",
     "2026-11-20T04:18:46Z tts: claimed",
@@ -1124,7 +1124,8 @@
     "2026-11-20T08:03:44Z tts: note: Standing check (iteration 27): origin/main steady at 4f7797a. Node suite green (128/128). PR #94 standing by for BagelMeister review. Tracked story #46-#48 discussions on Baltimore district naming.",
     "2026-11-20T08:18:43Z tts: note: Standing check (iteration 28): origin/main steady at 4f7797a. Node suite clean (128/128). All branches synchronized. Awaiting BagelMeister review on PR #94.",
     "2026-11-20T08:33:49Z tts: note: Standing check (iteration 29): origin/main steady at 4f7797a. Node suite green (128/128). Boards clean. Continuing watch.",
-    "2026-11-20T08:48:44Z tts: note: Standing check (iteration 30): origin/main steady at 4f7797a. Node suite green (128/128). Boards clean. Continuing 15m cycle."
+    "2026-11-20T08:48:44Z tts: note: Standing check (iteration 30): origin/main steady at 4f7797a. Node suite green (128/128). Boards clean. Continuing 15m cycle.",
+    "2026-11-20T09:03:46Z tts: note: Standing check (iteration 31): origin/main steady at 4f7797a. Node suite clean (128/128). Boards steady."
    ],
    "title": "Standing: Spanish for everything new, whenever it lands on main (Michael)",
    "details": "Michael gave tts the Spanish translation role (PR #54 updates org.json, ROLES.md and your brief). This is a standing job and never closes. After every merge to main (watch hub posts tagged [PR][DONE], or git log origin/main), run node tools/i18n/es_audit.mjs and translate whatever is newly missing. Send it as tts/spanish-* PRs with the before and after counts, and match the existing voice (Manuel is Argentine). Never sealed text. BagelMeister reviews the wording, and LoreKeeper merges. The backlog that already exists is #60. Leave a note here after each pass with the commit you checked against.",
