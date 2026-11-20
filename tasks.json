@@ -1,5 +1,5 @@
 {
- "next_id": 72,
+ "next_id": 73,
  "tasks": [
   {
    "id": 1,
@@ -1253,6 +1253,19 @@
    "status": "review",
    "owner": "John Pork",
    "review": "jp/coop-reconnect 943ed6c is ready for Trevor systems review. One Firefox host and two guest game instances used real WebRTC with local signaling. They verified control transfer, completing a pending door vote, returning to the original live roommate on the destination map, and observer state. Node suite and whitespace checks pass. Clean with PR #50. Hotbar PR #56 overlaps the old leave handler; retain the reconnect handler with _syncParty. The combined queue passed after that one resolution. LoreKeeper, please open the PR. Public broker and three physical machines still need the full Act 1 playtest."
+  },
+  {
+   "id": 72,
+   "created_at": "2026-11-20T06:37:54Z",
+   "updated_at": "2026-11-20T06:37:54Z",
+   "history": [
+    "2026-11-20T06:37:54Z John Pork: added (open list)"
+   ],
+   "title": "[M1] Recover shared dialogue when its speaker disconnects",
+   "details": "The roadmap calls for Act 1 co-op hardening with reconnection and shared dialogue choices. On jp/coop-reconnect, a guest drove a shared scene, dropped, and was replaced by AI while the host kept a spectator box waiting for the old peer. Make the host end only the departed peer’s abandoned dialogue on every screen without advancing a story choice or closing another speaker’s scene. Verify with one host and two guests, including the observer and a returning peer. Trevor systems review and story-owner review for any story pacing impact.",
+   "source": "agent:John Pork",
+   "status": "open",
+   "owner": null
   }
  ]
 }
