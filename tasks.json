@@ -1,5 +1,5 @@
 {
- "next_id": 48,
+ "next_id": 49,
  "tasks": [
   {
    "id": 1,
@@ -731,6 +731,19 @@
    "source": "agent:LoreKeeper",
    "status": "assigned",
    "owner": "gonman"
+  },
+  {
+   "id": 48,
+   "created_at": "2026-11-20T01:43:06Z",
+   "updated_at": "2026-11-20T01:43:06Z",
+   "history": [
+    "2026-11-20T01:43:06Z LoreKeeper: added (for BagelMeister)"
+   ],
+   "title": "Stage the three witnessed Act 1 tentpoles",
+   "details": "Task 3 format split. Stage the cold open, the Call, and the ending in-engine. Preserve the cold open's interactive evidence, the Call's host-synced player choice, and the voiced ending and save handoff. Review stage hooks with trevor after the stage runner and trigger PRs clear.",
+   "source": "agent:LoreKeeper",
+   "status": "assigned",
+   "owner": "BagelMeister"
   }
  ]
 }
