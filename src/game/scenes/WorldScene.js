@@ -708,7 +708,14 @@ export class WorldScene extends Phaser.Scene {
         this.latticeTable?.leave(peer);   // their side goes to the AI now, or a turn waiting on them stalls the table (John Pork)
         // A roommate who drops out keeps walking with the party as a companion.
         const p = this.sim.players.get(peer); this.sim.removePlayer(peer);
-        if (p) { this.sim.addPlayer(`ai:${p.character}`, p.character); const a = this.sim.players.get(`ai:${p.character}`); Object.assign(a, { x: p.x, y: p.y, hp: p.hp, rot: p.rot ?? 0, rotQuiet: p.rotQuiet ?? 0, gadgetCd: p.gadgetCd, gadgetMaxCd: p.gadgetMaxCd }); this._syncPlayerGear(a); }
+        if (p) {
+          const id = `ai:${p.character}`;
+          this.sim.addPlayer(id, p.character);
+          const a = this.sim.players.get(id);
+          Object.assign(a, { x: p.x, y: p.y, hp: p.hp, rot: p.rot ?? 0, rotQuiet: p.rotQuiet ?? 0,
+            gadgetTimers: p.gadgetTimers, gadgetSupport: p.gadgetSupport, screenT: p.screenT, relayT: p.relayT });
+          this._syncPlayerGear(a);
+        }
       });
       this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
       this.time.addEvent({ delay: 500, loop: true, callback: () => this._broadcastWorld() });
@@ -979,6 +986,8 @@ export class WorldScene extends Phaser.Scene {
     p.held = weapon ? (ITEMS[weapon.id].slot === 'ranged' ? 'gun' : 'melee') : null;
     const gadget = c.equipped?.gadget;
     p.gadget = Object.hasOwn(GADGETS, gadget) && canWear(ITEMS[gadget], p.character) ? gadget : null;
+    const roll = c.rolled?.gadget;
+    p.gadgetRoll = p.gadget && roll && typeof roll === 'object' ? roll : null;
     p.activeAbility = ai ? null : selectedAbility(p.character, c);
     this.sim.setMods(p.id, playerMods(c, p.character, weapon));
     p.analogCharm = !!ITEMS[c.equipped?.charm]?.analog;
@@ -2467,6 +2476,7 @@ export class WorldScene extends Phaser.Scene {
       wave.strokeCircle(ev.x, ev.y - 6, ev.r ?? 13);
       if (ev.r && ev.kind !== 'arc' && ev.kind !== 'tether') wave.lineStyle(1, color, 0.45).strokeCircle(ev.x, ev.y - 6, ev.r * 0.68);
     }
+    if (ev.shove) wave.strokeCircle(ev.shove[0], ev.shove[1] - 6, 7);
     this.tweens.add({ targets: wave, alpha: 0, duration: 380, onComplete: () => wave.destroy() });
     if (ev.id === this.localId) sfx(ev.kind === 'arc' ? 'shot' : 'pickup');
   }

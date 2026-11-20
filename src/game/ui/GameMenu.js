@@ -18,6 +18,7 @@ import { looksFor, wearTexture } from '../render/wearables.js';
 import { QUESTS, questState, questVisible, questLeads } from '../../content/quests.js';
 import { Scroller } from './scroll.js';
 import { FAB_TUNES, fabCost, rolledName } from '../../content/gearRolls.js';
+import { GADGETS, gadgetStats } from '../../content/gadgets.js';
 
 // One line of weapon stats for tooltips: melee hit, rate, dps, reach, arc, knockback; guns dmg×pellets, rate, clip, reload.
 export function weaponStats(def, lvl = 0, roll = null) {
@@ -653,7 +654,15 @@ export class GameMenu {
       const choice = this._t(x, y, label, F(6, key === current ? C.hi : C.sub), () => choose(key));
       x += choice.width + 12;
     }
-    if (current !== 'stock') this._t(x, y, modText(FAB_TUNES[current].mods[selected.roll]), F(6, C.text));
+    const profile = FAB_TUNES[current]?.mods[selected.roll];
+    const gadget = GADGETS[selected.item];
+    if (gadget?.cooldown) {
+      const base = gadgetStats(gadget), tuned = gadgetStats(gadget, profile);
+      const format = (value) => Number(value.toFixed(2));
+      const change = (a, b) => current === 'stock' ? format(a) : `${format(a)} → ${format(b)}`;
+      const unit = ({ screen: ' s', tether: ' s', relay: ' s', vector: ' px', patch: ` ${tr('HP')}` })[gadget.kind] ?? '';
+      this._t(x, y, `${tr('Recharge')} ${change(base.cooldown, tuned.cooldown)} s  ·  ${tr('Effect')} ${change(base.power, tuned.power)}${unit}`, F(6, C.text));
+    } else if (profile) this._t(x, y, modText(profile), F(6, C.text));
   }
 
   // ---- shops: buy with money ----

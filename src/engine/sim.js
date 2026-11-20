@@ -6,7 +6,7 @@ import { BOSS_PATTERNS, bossPool, pickPattern, windFor, LASER, SHOCK, RAIN, LANE
 import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 import { BOSSES } from '../content/bosses.js';
-import { GADGETS } from '../content/gadgets.js';
+import { ARC_HITS, GADGETS, GADGET_SUPPORT_WINDOW, arcDamage, gadgetStats } from '../content/gadgets.js';
 
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.35, iframes: 0.22,
   stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
@@ -48,6 +48,7 @@ export const COMBAT = {
   shot: { cooldown: 0.5, speed: 210, damage: 8, life: 0.9, clip: 6, reload: 1.2 },   // clip/reload: Gungeon's rhythm (combat brief #8)
 };
 const HALF_W = 5, HALF_H = 4; // feet hitbox (characters are 16x24; collide at the feet)
+const COMMITTED_ATTACK = new Set(['windup', 'lunge', 'dash', 'charge']);
 
 export function emptyInput() {
   return { mx: 0, my: 0, aim: 0, dodge: false, attack: false, fire: false, interact: false, skill: false, gadget: false };
@@ -68,6 +69,8 @@ export class Sim {
     this.goo = [];            // the gonman's puddles: {x, y, r, ttl}
     this.events = [];         // this tick's events for rendering: hits, deaths, shots
     this.tick = 0;
+    this.playTime = 0;
+    this.gadgetRecharges = new WeakMap();
     this._nextId = 1;
     if (!opts.deferSpawn) this.spawnEnemies();
   }
@@ -322,10 +325,11 @@ export class Sim {
 
   step(dt, inputs) {
     this.tick++;
+    this.playTime += dt;
     this.events = this._pending ?? []; this._pending = [];
+    const arcHits = new Map();
     for (const p of this.players.values()) {
       const inp = p.under > 0 && !p.downed ? this._underInput(p) : inputs.get(p.id) || emptyInput();
-      if (p.gadgetCd > 0) p.gadgetCd = Math.max(0, p.gadgetCd - dt);
       if (p.screenT > 0) p.screenT = Math.max(0, p.screenT - dt);
       if (p.relayT > 0) p.relayT = Math.max(0, p.relayT - dt);
       if (p.arriveHold) {   // the arrival grace ends the moment the movement input changes (or is released)
@@ -405,7 +409,7 @@ export class Sim {
       if (p.gonSlim && p.skillCd <= 0 && !(p.gonT > 0)) p.gonSlim = false;
       const busy = p.gonT > 0;                                       // the gonman is occupied
       if (inp.skill && !p.riding && !p.playing && !busy && p.skillCd <= 0) this._ability(p);
-      if (inp.gadget && !p.riding && !p.playing && !(p.gonT > 0)) this._useGadget(p);
+      if (inp.gadget && !p.riding && !p.playing && !(p.gonT > 0)) this._useGadget(p, arcHits);
       // Terraria-style: the attack button uses what's in hand. A melee weapon swings, a gun fires, anything
       // else is used by the scene (consumables etc.). No weapon in hand, no punch.
       const held = p.held ?? 'melee';
@@ -418,6 +422,10 @@ export class Sim {
       const toFacing = (x, y) => (Math.abs(x) > Math.abs(y) ? (x > 0 ? 'right' : 'left') : (y > 0 ? 'down' : 'up'));
       if (inp.fire && p.mods?.gun) p.facing = toFacing(Math.cos(p.aim), Math.sin(p.aim));
       else if (p.moving) p.facing = toFacing(p.vx, p.vy);
+    }
+    // Two arcs in one simulation step can draw their own paths, but only the strongest hit lands.
+    for (const [enemy, hit] of arcHits) {
+      if (this.enemies.has(enemy.id)) this._hurtEnemy(enemy, hit.damage, 0, 0, hit.by);
     }
     this._afterPlayers(dt);
   }
@@ -582,31 +590,42 @@ export class Sim {
     return best;
   }
 
-  _useGadget(p) {
+  _gadgetRecharge(p) {
+    const model = p.gadgetTimers?.[p.gadget], item = this.gadgetRecharges.get(p.gadgetRoll);
+    const latest = (item?.until ?? 0) > (model?.until ?? 0) ? item : model;
+    return latest?.until > this.playTime ? latest : null;
+  }
+
+  _gadgetSnapshot(p) {
+    if (!p.gadget) return {};
+    const recharge = this._gadgetRecharge(p);
+    if (!recharge) return { gadget: p.gadget };
+    return { gadget: p.gadget, gadgetCd: Math.ceil((recharge.until - this.playTime) * 10) / 10, gadgetMaxCd: recharge.total };
+  }
+
+  _useGadget(p, arcHits) {
     const def = GADGETS[p.gadget];
     if (!def || p.downed || p.under > 0) return;
     if (!def.cooldown) {
       this.events.push({ t: 'gadgetScan', id: p.id, kind: def.kind });
       return;
     }
-    if (p.gadgetCd > 0) return;
-    p.gadgetCd = p.gadgetMaxCd = def.cooldown * Math.max(0.65, Math.min(1.4, 1 + (p.mods.gadgetCd ?? 0)));
-    const power = def.power * Math.max(0.7, Math.min(1.4, 1 + (p.mods.gadgetEffect ?? 0)));
+    if (this._gadgetRecharge(p)) return;
+    const { cooldown, power } = gadgetStats(def, p.mods);
+    const recharge = { until: this.playTime + cooldown, total: cooldown };
+    (p.gadgetTimers ??= Object.create(null))[p.gadget] = recharge;
+    // Recharge follows the exact build's roll when it is unworn, dropped or picked up.
+    if (p.gadgetRoll) this.gadgetRecharges.set(p.gadgetRoll, recharge);
     const r = def.range;
     const ev = { t: 'gadgetCast', kind: def.kind, id: p.id, x: p.x, y: p.y, r, power };
     switch (def.kind) {
       case 'screen':
-        p.screenT = power;
+        p.screenT = Math.max(p.screenT ?? 0, power);
         break;
-      case 'vector': {
-        const steps = Math.ceil(power / 4), dx = Math.cos(p.aim) * power / steps, dy = Math.sin(p.aim) * power / steps;
-        for (let i = 0; i < steps; i++) {
-          this._moveAxis(p, dx, 0);
-          this._moveAxis(p, 0, dy);
-        }
+      case 'vector':
+        ev.shove = this._gadgetLunge(p, power);
         ev.points = [[p.x, p.y]];
         break;
-      }
       case 'tether': {
         const target = this._aimedTarget(p, r, Math.PI / 7);
         if (target) {
@@ -616,28 +635,58 @@ export class Sim {
         break;
       }
       case 'arc':
-        ev.points = this._gadgetArc(p, r, power);
+        ev.points = this._gadgetArc(p, r, power, arcHits);
         break;
       default:
         for (const ally of this.players.values()) {
           if (ally.downed || ally.under > 0 || Math.hypot(ally.x - p.x, ally.y - p.y) > r || !this._abilityPathClear(p, ally)) continue;
           if (def.kind === 'relay') ally.relayT = Math.max(ally.relayT ?? 0, power);
-          if (def.kind === 'patch') this.heal(ally.id, Math.round(power));
-          if (def.kind === 'ground') this.setRot(ally.id, Math.max(0, (ally.rot ?? 0) - power));
+          if (def.kind === 'patch' || def.kind === 'ground') this._gadgetSupport(ally, def.kind, power);
         }
         break;
     }
     this.events.push(ev);
   }
 
-  _gadgetArc(p, range, power) {
+  _gadgetLunge(p, distance) {
+    const steps = Math.ceil(distance / 4), ux = Math.cos(p.aim), uy = Math.sin(p.aim);
+    const dx = ux * distance / steps, dy = uy * distance / steps;
+    const x0 = p.x, y0 = p.y;
+    let contact, shove;
+    for (let i = 0; i < steps; i++) {
+      if (this._hits(p.x + dx, p.y + dy)) break;
+      this._moveAxis(p, dx, dy);
+      if (contact) continue;
+      contact = [...this.enemies.values()].find((e) => (e.x - x0) * ux + (e.y - y0) * uy > 0
+        && Math.hypot(e.x - p.x, e.y - p.y) <= this._def(e).radius + HALF_W && this._abilityPathClear(p, e));
+      if (contact && !contact.boss && !contact.sahur && !(contact.poiseT > 0) && !COMMITTED_ATTACK.has(contact.st)) {
+        // Displace one enemy without damage, flinch, or enough speed to slam it into a wall.
+        contact.kx = ux * 120; contact.ky = uy * 120;
+        shove = [contact.x, contact.y];
+      }
+    }
+    return shove;
+  }
+
+  _gadgetSupport(ally, kind, power) {
+    const limits = (ally.gadgetSupport ??= {}), previous = limits[kind];
+    const strength = kind === 'patch' ? Math.round(power) : power;
+    const best = previous?.until > this.playTime ? previous.strength : 0;
+    const gain = Math.max(0, strength - best);
+    limits[kind] = { until: this.playTime + GADGET_SUPPORT_WINDOW, strength: Math.max(strength, best) };
+    if (kind === 'patch') this.heal(ally.id, gain);
+    else this.setRot(ally.id, (ally.rot ?? 0) - gain);
+  }
+
+  _gadgetArc(p, range, power, arcHits) {
     const targets = new Set(), points = [];
     let next = this._aimedTarget(p, range, Math.PI / 7);
-    for (let i = 0; i < 3 && next; i++) {
+    for (let i = 0; i < ARC_HITS && next; i++) {
       const hit = next;
       targets.add(hit.id);
       points.push([hit.x, hit.y]);
-      this._hurtEnemy(hit, Math.round(power * 0.65 ** i), 0, 0, p.id);
+      const damage = arcDamage(power, i);
+      if (damage > (arcHits.get(hit)?.damage ?? 0)) arcHits.set(hit, { damage, by: p.id });
       let nearest = 52;
       next = null;
       for (const e of this.enemies.values()) {
@@ -1303,8 +1352,7 @@ export class Sim {
       tick: this.tick,
       players: [...this.players.values()].map((p) => ({
         ...(p.skillCd > 0 && p.skillMaxCd ? { skMax: p.skillMaxCd } : {}),
-        ...(p.gadget ? { gadget: p.gadget } : {}),
-        ...(p.gadgetCd > 0 ? { gadgetCd: Math.ceil(p.gadgetCd * 10) / 10, gadgetMaxCd: p.gadgetMaxCd } : {}),
+        ...this._gadgetSnapshot(p),
         ...(p.screenT > 0 ? { screen: true } : {}),
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,

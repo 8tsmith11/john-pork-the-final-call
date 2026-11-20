@@ -9,7 +9,7 @@ export const ES_ITEMS = {
   sniffer: ['Rastreador de helio', 'Toma una muestra del aire para seguir el rastro de helio. El Fab #1 lo calibra.'],
   salvage_array: ['Radar de repuestos', 'Busca el contenedor de repuestos sin abrir más cercano de la zona.'],
   phase_screen: ['Pantalla de fase', 'Bloquea por un momento los disparos comunes. Los golpes cuerpo a cuerpo y los ataques pesados la atraviesan.'],
-  vector_actuator: ['Actuador vectorial', 'Te impulsa hacia donde apuntas. Las paredes te frenan y todavía puedes recibir golpes.'],
+  vector_actuator: ['Actuador vectorial', 'Te impulsa hacia donde apuntas y empuja al primer enemigo que encuentres si se puede mover. Las paredes te frenan y todavía puedes recibir golpes.'],
   arc_splicer: ['Puente de arco', 'Apunta a un enemigo. El arco salta a dos enemigos cercanos y pierde potencia con cada salto.'],
   phase_tether: ['Ancla de fase', 'Ralentiza a un enemigo en la dirección a la que apuntas. Los jefes resisten el ancla.'],
   overclock_relay: ['Relé de impulso', 'Por un rato, los compañeros cercanos recuperan aguante y recargan R más rápido.'],

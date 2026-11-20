@@ -58,6 +58,7 @@ const ES = {
   Stock: 'Estándar', 'Fast cycle': 'Ciclo rápido', 'High output': 'Alta potencia', Owned: 'tienes',
   '› PRINT': '› IMPRIMIR', 'need materials': 'faltan materiales', 'Not enough materials for that.': 'Faltan materiales.',
   'V: use the equipped gadget': 'V: usar el dispositivo equipado', 'Gadget ready': 'Listo',
+  Recharge: 'Recarga', Effect: 'Efecto',
   'gadget cooldown': 'recarga del dispositivo', 'gadget power': 'potencia del dispositivo',
   'swing cooldown': 'recarga del golpe', 'shot cooldown': 'recarga del disparo', 'shot dmg': 'daño de disparo',
   'melee damage': 'daño cuerpo a cuerpo', knock: 'empuje', 'stamina regen': 'recuperación de aguante',
