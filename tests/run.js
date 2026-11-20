@@ -1429,6 +1429,20 @@ test('Lake Artemesia\'s enemies hit harder and last longer than the same kind el
   }
 });
 
+test('limited shop shelves: a stock entry with a limit sells that many, shared by the party, then restocks on play time', async () => {
+  const SS = await import('../src/engine/shopStock.js');
+  const save = { world: { playMs: 0 } }, st = { item: 'item.mat_scrap', price: 3, limit: 3, restockMin: 10 };
+  assert.equal(SS.stockLeft(save, 'hardware', 0, st), 3);
+  for (let i = 0; i < 3; i++) assert.ok(SS.takeStock(save, 'hardware', 0, st));
+  assert.equal(SS.stockLeft(save, 'hardware', 0, st), 0); assert.equal(SS.takeStock(save, 'hardware', 0, st), false, 'sold out');
+  save.world.playMs = 9 * 60000; assert.equal(SS.stockLeft(save, 'hardware', 0, st), 0, 'not yet');
+  save.world.playMs = 10 * 60000; assert.equal(SS.stockLeft(save, 'hardware', 0, st), 3, 'restocked after ten minutes of play');
+  assert.ok(SS.takeStock(save, 'hardware', 0, st)); assert.equal(SS.stockLeft(save, 'hardware', 0, st), 2, 'and the clock starts again');
+  assert.equal(SS.stockLeft(save, 'hardware', 1, { item: 'x', price: 1 }), Infinity, 'no limit: sells without end');
+  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/_buy\(who, shopId, idx\) \{[^]*?stockLeft\(this\.save, shopId, idx, st\)[^]*?takeStock\(this\.save, shopId, idx, st\)/.test(src), 'the host checks and takes stock when it sells');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
