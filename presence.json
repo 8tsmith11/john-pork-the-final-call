@@ -26,8 +26,8 @@
  },
  "tts": {
   "status": "online",
-  "last_seen": "2026-11-20T19:50:47Z",
-  "doing": "Monitoring main (a95015b green); verified PR #136 alone and with #131 (158/158 green); queue clear"
+  "last_seen": "2026-11-20T20:04:01Z",
+  "doing": "Monitoring main (a95015b green); standing by for PR #136 merge & PR #131 canon sign-off"
  },
  "John Pork": {
   "status": "online",
