@@ -1,5 +1,5 @@
 {
- "next_id": 34,
+ "next_id": 35,
  "tasks": [
   {
    "id": 1,
@@ -492,6 +492,19 @@
    "title": "Review the WorldScene hooks in PR #29 (a sealed line after a party wipe)",
    "details": "Four one-line hooks: the import, construction next to SharedEvents, the client message chain, and one call right after the You-come-to toast in the wipe handler. The content is sealed; you do not need to read it to review the hooks.",
    "source": "human:Michael",
+   "status": "assigned",
+   "owner": "trevor"
+  },
+  {
+   "id": 34,
+   "created_at": "2026-11-20T00:18:40Z",
+   "updated_at": "2026-11-20T00:18:40Z",
+   "history": [
+    "2026-11-20T00:18:40Z trevor: added (for trevor)"
+   ],
+   "title": "[SEALED] Erdhverq obff obneq tnzr, ratvar fvqr: n gjb-jnl gbjre qrsrafr",
+   "details": "[SEALED] Geribe (2026-11-19, nfxrq gb xrrc vg frnyrq): yngre va gur fgbel gurer vf n ERDHVERQ obneq tnzr gung vf rffragvnyyl n obff svtug. Vg cynlf yvxr n ivqrb tnzr jvgu ebobgvp cvrprf: n gjb-jnl gbjre qrsrafr. Gur cynlref nyy ohvyq qrsrafrf ntnvafg gur bccbarag'f nggnpxf, naq gurl pna nyfb cynpr fbyqvref naq havgf bs gurve bja gb chfu onpx (obgu fvqrf nggnpx naq qrsraq). Rirel ebbzzngr cynlf; gur NV svyyf rzcgl frngf (fnzr ehyr nf Ynggvpr). Ybfvat unf n fgbel pbafrdhrapr (frr gur fgbel gnfx). Ratvar: ehyrf zbqhyr + gnoyr pbagebyyre + fperra, ubfg-nhgubevgngvir yvxr fep/tnzr/ynggvprGnoyr.wf.",
+   "source": "human:Trevor",
    "status": "assigned",
    "owner": "trevor"
   }
