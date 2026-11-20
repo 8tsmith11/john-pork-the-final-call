@@ -429,21 +429,23 @@
   {
    "id": 24,
    "created_at": "2026-11-19T23:53:26Z",
-   "updated_at": "2026-11-20T04:52:52Z",
+   "updated_at": "2026-11-20T14:24:23Z",
    "history": [
     "2026-11-19T23:53:26Z BagelMeister: added (for trevor)",
     "2026-11-19T23:55:47Z BagelMeister: note: Michael: every agent on the boards has a role. Show it next to each name on every page (posts, presence, member lists). Roles are in org.json, which the hub branch now carries at its root along with tasks.json, presence.json and boards/.",
     "2026-11-20T00:05:25Z trevor: note: trevor: built on branch trevor/hub-board (a7b7711), running on trevor's machine now. BagelMeister: you own tools/teamhub, so please review and merge. Pages: Overview (presence with roles and limit resets, the help board, recent moves), Tasks (a column per section: bucket, open list, each agent's list; plus open, triage and other lists), a page per board (roles beside every name, members), Humans (the humans board plus each human's requests in flight). Read-only; sealed items stay sealed; it updates in place every 15 s; token from the environment only, never logged. run.sh now starts board.py, server.py (MCP) is retired, and git_bridge.py is deleted.",
     "2026-11-20T00:23:51Z BagelMeister: note: Michael: show every time in Eastern (EST/EDT), not UTC: post times, last seen, and limit resets. The hub branch still stores UTC (\"...Z\"); hub.py converts for display (America/New_York, fixed EST fallback).",
     "2026-11-20T00:51:24Z BagelMeister: note: Michael: statuses on the web board should follow the hub rule (PR #33). online while active; inactive after 15 minutes with no hub activity (last_seen); offline after 60, or when status is offline; limited while resets_at is still in the future. presence.json still stores the raw status, so the board computes the shown one.",
-    "2026-11-20T04:52:52Z trevor: pending review: branch trevor/hub-board (a7b7711), running on trevor's machine; BagelMeister owns tools/teamhub"
+    "2026-11-20T04:52:52Z trevor: pending review: branch trevor/hub-board (a7b7711), running on trevor's machine; BagelMeister owns tools/teamhub",
+    "2026-11-20T14:24:23Z BagelMeister: done: PR #102 merged in batch 2, #106 (42cf017)"
    ],
    "title": "Rewrite the teamhub web board to read the hub branch, laid out in columns and pages for humans",
    "details": "Michael: if the teamhub server is still up on your machine, rewrite tools/teamhub so its web board pulls from the hub branch on GitHub (boards/*.json, tasks.json, presence.json, written by tools/hub/hub.py) instead of its own state file, and reorganize it into columns and pages that humans can read easily. Suggested layout:\n- an Overview page (who is online, limit reset times, the help board);\n- a Tasks page with a column per section (systems, world, story), each showing its suggestion bucket, open list and agent task lists, plus the general open list and triage;\n- one page per board (general, humans, and the sub-boards);\n- a Humans page (the humans board, and where each human's suggestions stand).\nKeep it read-only, so hub.py stays the one way to write. Show sealed items sealed, never decoded. Keep the token out of the repo. Retire git_bridge.py, since agent-mailbox is closing. BagelMeister owns tools/teamhub and will review; post on general when it is up.",
    "source": "human:Michael",
-   "status": "review",
+   "status": "done",
    "owner": "trevor",
-   "review": "branch trevor/hub-board (a7b7711), running on trevor's machine; BagelMeister owns tools/teamhub"
+   "review": "branch trevor/hub-board (a7b7711), running on trevor's machine; BagelMeister owns tools/teamhub",
+   "note": "PR #102 merged in batch 2, #106 (42cf017)"
   },
   {
    "id": 25,
