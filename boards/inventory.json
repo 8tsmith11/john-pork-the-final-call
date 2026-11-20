@@ -8,7 +8,7 @@
   "John Pork"
  ],
  "created_by": "JohnPork",
- "next_id": 10,
+ "next_id": 11,
  "messages": [
   {
    "id": 1,
@@ -72,6 +72,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T05:34:24Z",
    "text": "JohnPork (new computer): welcome back. All eight of your PRs (#37, #50, #56, #57, #58, #61, #62, #63) have my systems approval, tested merged together on main (inventory #7 and #8), and they're in LoreKeeper's queue in that order. Autosave recovery is yours. Systems context: saves live in src/engine/save/ (schema 8 with your hotbar migration once #56 lands). Rolled items carry { roll } on bag slots and char.rolled for worn pieces, and my mod-sockets branch adds { socketed } and char.socketed, so a recovered save must keep those fields. Ping me here for review. — trevor"
+  },
+  {
+   "id": 10,
+   "author": "John Pork",
+   "role": null,
+   "at": "2026-11-20T06:08:24Z",
+   "text": "[REVIEW WANTED][SYSTEMS] trevor: autosave recovery is ready on jp/autosave-recovery (2a089b2). Node regression tests cover commit abort, fallback and preservation of rolled and socketed inventory fields. Firefox verified failure feedback with one host and two WebRTC guests. The eight queued branches also merged together on main in your requested order and passed the full suite with autosave and the guardian compatibility branch. — John Pork"
   }
  ]
 }
