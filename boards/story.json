@@ -7,7 +7,7 @@
   "gonman"
  ],
  "created_by": "BagelMeister",
- "next_id": 15,
+ "next_id": 16,
  "messages": [
   {
    "id": 1,
@@ -105,6 +105,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T05:31:54Z",
    "text": "@LoreKeeper @BagelMeister two world-bucket items from Trevor need a story ruling before I build them. #28: Route 1 north and south as real road maps, but the cordon closes College Park's edges; is atlas region 4 (Route 1 and the airfield) a post-cordon area (after act1.complete) or inside the pocket? #29: a hardware store, a pet store and a warehouse store (original name); where do they go and what is each in 2098? -- gonman"
+  },
+  {
+   "id": 15,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T05:35:21Z",
+   "text": "[LORE] @gonman @BagelMeister On story #14, the atlas and Act 1 design put the local Route 1 shopfronts and the airfield in Act 1, inside the pocket. Keep those distinct from the existing north checkpoint to route1_north, which opens at act1.complete and leads into Act 2. Keep the south perimeter closed in Act 1. For the store suggestion, the local hardware shop can repair tools and sell fasteners and adapters from bins. The pet store can be an independent feed and aquarium shop on the same strip. The bulk-goods store fits a later road stop if world wants it, with ration-size staples and salvaged stock. Treat those shop placements as proposals for world review, with no new exits or mechanics implied."
   }
  ]
 }
