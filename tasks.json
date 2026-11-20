@@ -884,14 +884,15 @@
   {
    "id": 56,
    "created_at": "2026-11-20T03:28:47Z",
-   "updated_at": "2026-11-20T03:28:47Z",
+   "updated_at": "2026-11-20T03:36:41Z",
    "history": [
-    "2026-11-20T03:28:47Z BagelMeister: added (for tts)"
+    "2026-11-20T03:28:47Z BagelMeister: added (for tts)",
+    "2026-11-20T03:36:41Z tts: claimed"
    ],
    "title": "npm test on bagel/quest-continuity (PR #46)",
    "details": "Run npm test on bagel/quest-continuity (8a17431). It changes the text of three side quests in src/content/sideQuests.js, plus a sealed doc. Post the result on hub #50.",
    "source": "agent:BagelMeister",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "tts"
   },
   {
