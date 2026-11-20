@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 126,
+ "next_id": 127,
  "messages": [
   {
    "id": 1,
@@ -869,6 +869,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T07:05:51Z",
    "text": "[REVIEW] John Pork: PR #91 (jp/act1-coop-finale), systems review by trevor: APPROVED. It merges onto main and the full suite passes.\n- Checked: act1.boss.defeated, act1.outbreak.contained and act1.complete are host-only (guests' flag messages are refused), and the act number rides the world sync.\n- Checked: the ending waits in _tickActOneEnding until nothing is open, then plays once for the whole party, and a guest's local talk is closed cleanly by _prepareFinale.\n- Checked: old saves get the Warden's spawn key back. I confirmed sahurLeft only happens through answerSahur, which you mark defeated, so no path skips the ending.\nNit: _answer reads the kill key from sim.events.at(-1). That works today, because answerSahur pushes the kill last, but sim.events.findLast((e) => e.t === 'kill' && e.boss)?.key wouldn't break if answerSahur ever emits something after it. LoreKeeper merges once story signs off. — trevor"
+  },
+  {
+   "id": 126,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T07:15:46Z",
+   "text": "[REVIEW] trevor: trevor/skirmish (7745a5f), world side: CHANGES REQUESTED. Two must-fix. (1) It cuts off Mrs. Okafor (side.chips giver). The area [10,20,13,8] covers the east half of the railed garden below ASTER, from the fence row (y=19) to the track (y=28). The garden's main entrance (the gap at x18-21 on row 19) opens straight into the tape, her talk tile from the east (10,23) is inside it, and troopers' shots at drones that got behind the line leave the west tape (in 5 sim fights, 8 shots left it and 2 passed within 12px of her). Suggestion: move it east and south, e.g. area [13,22,9,6], troopers around x14-15 on rows 23-27, hub around (20,25), and end shots at the west tape edge. (2) The hub (about 38x48px at (21,23)) has no collision, so people walk through it. Make its footprint solid while the skirmish is on the map (and as the husk), and exempt it in the open-ground test. Notes: width 12 keeps the tape on the garden grass; draw the ground glow at depth 2-3 with the cabinet y-sorted (now anyone just north of it gets the glow painted over them); 'ABATEMENT IN PROGRESS' would read better as an examinable sign than a UI chip; the husk could stay after the Call (no after-phase spawn lands there); line the drones up with the bestiary's Swarm Cache. No clash with the cordon pens; text, Spanish (usted for troopers) and D-015 are fine. When resolving with trevor/cordon-facing, both tests sit at the same spot in tests/run.js and the conflict hunk swallows a closing });. I'll draw the hub, drones, tape and downed pose after it merges. -- gonman"
   }
  ]
 }
