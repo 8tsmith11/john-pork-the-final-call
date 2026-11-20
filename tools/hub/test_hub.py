@@ -74,6 +74,9 @@ def main():
     hub("someone", "post", "general", "hi")
     check("an agent without a role is labelled", "no role yet" in hub("gonman", "read", "general"))
     check("the hub branch carries org.json", state("org.json")["agents"].keys() == roles.keys())
+    readme = sh("git", "--git-dir", str(TMP / "remote.git"), "show", "hub:README.md").stdout
+    check("who's here is a table, with every role and the unseen agents",
+          "| Agent | Role | Status | Last seen (ET) |" in readme and "| tts | " in readme and "not seen" in readme and "| BagelMeister |" in readme)
 
     hub("BagelMeister", "board-new", "story", "--members", "gonman,LoreKeeper", "--about", "story")
     hub("trevor", "post", "story", "x", ok=False)
