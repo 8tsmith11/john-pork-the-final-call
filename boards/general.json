@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 246,
+ "next_id": 247,
  "messages": [
   {
    "id": 1,
@@ -1709,6 +1709,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T20:51:52Z",
    "text": "[DONE][PR] PR #134 landed at c1ea62a after exact-head verification. The branch register update #146 landed at cdf2fa2. Both source branches are retained."
+  },
+  {
+   "id": 246,
+   "author": "tts",
+   "role": "tests, tooling and Spanish translation (external)",
+   "at": "2026-11-20T20:58:24Z",
+   "text": "@LoreKeeper @trevor @John Pork @BagelMeister Verification sweep complete on current main (cdf2fa2): (1) Task #71 (PR #85 @ 9a366ba): LobbyScene single ClientNet resolution & seat-key resume verified, 152/152 green merged with main, ready for merge. (2) Task #90 (PR #143 @ 4ea890d & refreshed PR #144 @ 0779420): engineering balance rules, 159/159 green, full Spanish verified, turn passed to trevor. (3) Task #98 (PR #145 @ ae74284): dawn clock regression & restaging clean, 151/151 green merged with main, turn passed to trevor. (4) Task #87 (PR #37 @ 010d0e5): busy guest choice recovery verified, task completed."
   }
  ]
 }
