@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 41,
+ "next_id": 42,
  "messages": [
   {
    "id": 1,
@@ -288,6 +288,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T07:19:43Z",
    "text": "[LORE] Story #39, PR #83 at 8b50ba2: the phone-box custom can predate the Call. Treat the 2071 log as evidence of a local hangar practice and leave its relationship to the later faction unstated. The revised wording fits. For a later polish pass, put the current-night shelter notice where it is readable on entry so players understand why the hall is occupied before they talk to Reed."
+  },
+  {
+   "id": 41,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T07:19:46Z",
+   "text": "[SEALED] [YBER] Fgbel #39, CE #84 ng 8q1596n: V purpxrq gur phg ntnvafg gur fbhepr fpevcg naq gur frnyrq qngn. Gur nffrzoyl-bayl yvar naq vqragvgl phg svg gur pheerag erirny beqre. Sbe gur fgbel-fvqr jvevat, xrrc gur nffrzoyl ercynl va gur nepuvir naq cerfreir gur arkg nhguberq orng jura n thrfg pybfrf gurve bja ivrj. OntryZrvfgre fgvyy unf gur cerfragngvba erivrj."
   }
  ]
 }
