@@ -66,11 +66,18 @@ try {
 
   abortWrite = true;
   writeRequestSucceeded = false;
-  await autosave(save('fallback'));
+  const fallbackSave = save('fallback');
+  const character = fallbackSave.party.trevor;
+  character.inventory[0] = { id: 'item.rebar', qty: 1, roll: { tier: 2 }, socketed: ['mod.test'] };
+  character.rolled = { helmet: { tier: 1 } };
+  character.socketed = { helmet: ['mod.test'] };
+  await autosave(fallbackSave);
   assert.equal(writeRequestSucceeded, true);
   assert.equal(JSON.parse(primary).world.seed, 'original');
   assert.equal(JSON.parse(fallback).world.seed, 'fallback');
-  assert.equal((await loadAutosave()).world.seed, 'fallback');
+  const recovered = await loadAutosave();
+  assert.equal(recovered.world.seed, 'fallback');
+  assert.deepEqual(recovered.party.trevor, character);
 
   fallbackFull = true;
   const unsaved = save('unsaved');
