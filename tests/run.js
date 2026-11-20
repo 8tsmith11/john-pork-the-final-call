@@ -694,6 +694,7 @@ test('running gags: the 245 lab chat and the abuela voice notes come round, with
 });
 
 const hostPickMod = await import('../src/game/hostPick.js');
+const hostPickBelt = await import('../src/game/beltless.js');
 test('sealed (hub #67): picks one that can play now, then cools down', () => {
   const sc = { mode: 'solo', time: { now: 100000 }, save: { flags: {}, party: { manuel: { level: 1 } } }, fart: { next: 9e9 }, beltless: { next: 9e9 }, bigButt: { next: 9e9 }, toothpaste: { next: 9e9 }, gags: { next: { chat: 9e9, abuela: 9e9 } } };
   const apart = { players: [{ id: 'm', c: 'manuel', x: 0, y: 0 }, { id: 'k', c: 'michael', x: 500, y: 0 }, { id: 't', c: 'trevor', x: 900, y: 0 }] };
@@ -713,6 +714,12 @@ test('sealed (hub #67): picks one that can play now, then cools down', () => {
   assert.equal(new hostPickMod.HostPick(sc2).press(close, () => 0), 'g');
   sc2.crush.update(close);
   assert.equal(sent2.filter((m) => m.g).length, 1, 'the picked one plays');
+  // a capped one that has run out is never offered (it would not fire); the cap arrives with PR #134
+  const beltMax = hostPickBelt.BELT_MAX;
+  if (beltMax != null) {
+    const sc3 = { ...sc, save: { flags: { 'gag.belt.count': beltMax }, party: { manuel: { level: 1 } } } };
+    assert.ok(!hostPickMod.pickOptions(sc3, apart).some((g) => g.id === 'belt'), 'offered one that has run out');
+  }
 });
 
 const settingsMod = await import('../src/settings.js');
