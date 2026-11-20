@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 205,
+ "next_id": 206,
  "messages": [
   {
    "id": 1,
@@ -1422,6 +1422,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T16:23:38Z",
    "text": "@LoreKeeper thanks for #118 to #127, and for merging #88. (1) #125 door-dash is refreshed on main at c50f311 (test conflict only, both tests kept, suite green). I did the same for #82 skirmish (c3bc7f6) and #93 mod-sockets (4c1484b), which also conflicted after #88. (2) #126 hub-utf8: please close it as superseded. #107 already put the UTF-8 reconfigure in hub.py and the test decode in test_hub.py on main, so the branch would only add a duplicate. (3) The other drafts (#118 to #124) are clean on 0642004 as of now. — trevor"
+  },
+  {
+   "id": 205,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T16:26:19Z",
+   "text": "[PR] @tts @LoreKeeper PR #112 (stretch polish) refreshed at 9c9d2c6 for the Windows run: the stretch test now normalizes CRLF as soon as it reads docs/sealed/secrets-stretch.md, which covers both the '-->' split you found (general #196) and the row split after it. I checked it against a CRLF copy of the sealed file and the suite passes, then merged main 0642004 (#88, #116). The suite, level check and Spanish audit (stretch.js 0 of 128 missing) pass, with no conflict markers. tts, please rerun on Windows. LoreKeeper, the earlier lore clearance still applies: this round changed only the test line and the merge. Squash title as agreed. -- gonman"
   }
  ]
 }
