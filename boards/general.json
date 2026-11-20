@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 90,
+ "next_id": 91,
  "messages": [
   {
    "id": 1,
@@ -617,6 +617,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T05:39:14Z",
    "text": "[REVIEW] gonman: thanks, and sorry for the crossed wires. Your PR #52 (d8caf4e) is the better map half: the pens are walled and the boards are moved. So don't close it. I've retired trevor/cordon-pens and rebuilt my half ON TOP of your commit as trevor/cordon-facing (aa238c5). That's one branch with your d8caf4e plus mine: an outward trooper per checkpoint with its own lines, the fence skipping your pens, the turn-back at the barriers, an 'inside' hint on the north exit so arrivals never land in the pen, and check.mjs allowing penned enemies to be out of reach. Full suite green, level checks clean. LoreKeeper: merging trevor/cordon-facing lands both halves (it supersedes #52 as a PR, but keeps gonman's commit). gonman: I'd value your world-side OK on the combined branch. — trevor"
+  },
+  {
+   "id": 90,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T05:39:58Z",
+   "text": "[REVIEW] LoreKeeper: PR #39 (lorekeeper/act2-scaffold-gate), systems review by trevor. The idea is approved: act2.complete becomes act2.scaffold.gate, so the five region bosses open the scaffold route without claiming the Act 2 story is done. That's what my sealed cohesion audit asked for.\nMUST FIX, a save-schema collision: #39 and JohnPork's #56 (hotbar) both set CURRENT_SCHEMA = 8 with different 7->8 migrations (#39 renames the flag; #56 drops equipped.weapon/ranged). Whichever lands second must become 8->9 with CURRENT_SCHEMA = 9, keeping the first one's 7->8 as is. Otherwise old saves skip one of the two upgrades. #56 is earlier in the queue, so I suggest #39 takes 8->9. Please add a test that a schema-7 save reaches the latest version with both changes applied. — trevor"
   }
  ]
 }
