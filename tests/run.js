@@ -1101,6 +1101,109 @@ test('i18n: every Route 1 shop and airfield line, label, page and shop header ha
   finally { i18nMod.setLang(was); }
 });
 
+// hub #30, stretch slice: the twelve stretch-tier areas (src/content/maps/stretch.js), polished. A fresh copy of the
+// module (the ?stretch30 query), so the crowds.js townsfolk that maps/index.js adds afterwards aren't counted as its own.
+const STRETCH30_IDS = ['rf_fringe', 'rf_marsh', 'md_lot', 'ann_statehouse', 'ann_chapel', 'ann_bridge', 'bv_lab', 'gb_center', 'gt_labs', 'fr_market', 'en_mall', 'en_metro'];
+const STRETCH30_MAPS = Object.values(await import('../src/content/maps/stretch.js?stretch30')).filter((m) => m && m.id && Array.isArray(m.objects));
+const { ES_STRETCH } = await import('../src/i18n/es-stretch.js');
+const { ES_HUD: STRETCH30_ES_HUD } = await import('../src/i18n/es-hud.js');
+const { SIDE_QUESTS: STRETCH30_SIDE } = await import('../src/content/sideQuests.js');
+const { LOOT: STRETCH30_LOOT } = await import('../src/content/items.js');
+const stretch30Lines = (o) => [o.label, o.text, o.doneText, o.lockedText, ...(o.pages ?? []), ...(o.later ?? []).map((l) => l.text)].filter((t) => typeof t === 'string' && t);
+// A side-quest giver's pitch and anyone's later line print the label in capitals above the line (WorldScene).
+const stretch30Speaks = (o) => o.npc && (o.later?.length || STRETCH30_SIDE.some((q) => q.giver === o.id));
+test('hub #30 (stretch): no [scaffold] left in stretch.js, and every line on its twelve maps has Spanish', () => {
+  assert.deepEqual(STRETCH30_MAPS.map((m) => m.id).sort(), [...STRETCH30_IDS].sort(), 'the twelve stretch areas');
+  assert.ok(!/\[scaffold\]/i.test(fs.readFileSync(new URL('../src/content/maps/stretch.js', import.meta.url), 'utf8')), 'stretch.js still has a [scaffold] line');
+  const was = i18nMod.getLang(), missing = [], multiline = [];
+  i18nMod.setLang('es');
+  try {
+    for (const m of STRETCH30_MAPS) for (const o of m.objects) {
+      for (const t of [...stretch30Lines(o), ...(stretch30Speaks(o) ? [o.label.toUpperCase()] : [])]) {
+        if (t.includes('[scaffold]') || i18nMod.tr(t) === t) missing.push(`${m.id}/${o.id}: ${t.slice(0, 50)}`);
+        if (t.includes('\n')) multiline.push(`${m.id}/${o.id}`);
+      }
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(missing, [], 'add Spanish to src/i18n/es-stretch.js');
+  assert.deepEqual(multiline, [], 'one line each, so a loot find or a quest clue added under it still translates line by line');
+});
+test('hub #30 (stretch): every stretch map can be reached from Room 631, and everything on it can be walked up to', () => {
+  const linked = new Set(['room631']), todo = ['room631'];
+  while (todo.length) for (const o of MAPS_FOR_TEST[todo.shift()].objects) if (o.action === 'exit' && MAPS_FOR_TEST[o.to] && !linked.has(o.to)) { linked.add(o.to); todo.push(o.to); }
+  for (const id of STRETCH30_IDS) {
+    assert.ok(linked.has(id), `${id} can't be reached through the exits from Room 631`);
+    const m = MAPS_FOR_TEST[id], out = m.objects.find((o) => o.id === `obj.${id}_out`);   // the way in is the way back
+    const into = MAPS_FOR_TEST[out?.to]?.objects.find((o) => o.id === out.pair);
+    assert.ok(into && into.to === id && into.pair === out.id, `${id}: the exit pair with ${out?.to} doesn't line up`);
+    const seen = new Set(), q = [];
+    for (const s of m.spawns) { const x = Math.floor(s.x / 16), y = Math.floor(s.y / 16); assert.ok(!m.solid(x, y), `${id}: spawn in a wall`); seen.add(`${x},${y}`); q.push([x, y]); }
+    while (q.length) {
+      const [x, y] = q.shift();
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
+        if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
+        seen.add(k); q.push([nx, ny]);
+      }
+    }
+    const near = (x, y) => [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${x + dx},${y + dy}`));
+    for (const o of m.objects) assert.ok(near(o.x, o.y), `${id}: ${o.id} at ${o.x},${o.y} can't be walked up to`);
+    for (const e of m.enemies) assert.ok(seen.has(`${Math.floor(e.x / 16)},${Math.floor(e.y / 16)}`), `${id}: ${e.kind} is walled off`);
+  }
+});
+test('hub #30 (stretch): each stretch area has one small secret, made from systems that already exist, listed in docs/SECRETS.md', () => {
+  const SECRET = { rf_fringe: 'obj.rf_fringe_crate', rf_marsh: 'obj.rf_marsh_locker', md_lot: 'obj.md_lot_sedan', ann_statehouse: 'obj.ann_minutes', ann_chapel: 'obj.ann_chapel_box',
+    ann_bridge: 'obj.ann_bridge_tackle', bv_lab: 'obj.bv_lab_fridge', gb_center: 'obj.gb_center_jar', gt_labs: 'obj.gt_register', fr_market: 'npc.fr_market_kid',
+    en_mall: 'obj.en_mall_viewer', en_metro: 'obj.en_metro_help' };
+  const secrets = fs.readFileSync(new URL('../docs/SECRETS.md', import.meta.url), 'utf8').split('## Acts 2 and 3, small finds in the stretch areas')[1] ?? '';
+  const questFlags = new Set(STRETCH30_SIDE.flatMap((q) => [q.report?.flag, q.inspect?.flag, q.give?.flag].filter(Boolean)));
+  const atlas = new Set(['props', 'big', 'wide', 'doors'].flatMap((s) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${s}.json`, import.meta.url), 'utf8')).frames)));
+  const everyId = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.map((o) => o.id));
+  for (const m of STRETCH30_MAPS) {
+    const o = m.objects.find((q) => q.id === SECRET[m.id]);
+    assert.ok(o && (o.grant || o.loot || o.action === 'pages' || o.later?.length), `${m.id}: no secret (${SECRET[m.id]})`);
+    assert.ok(secrets.includes(`| ${m.name}`) || secrets.includes(` ${m.name} (`) || secrets.includes(` ${m.name},`), `docs/SECRETS.md has no row for ${m.name}`);
+    for (const q of m.objects) {
+      if (q.grant) { assert.ok(ITEMS[q.grant], `${q.id}: no item ${q.grant}`); assert.ok(q.text && q.doneText, `${q.id}: a one-time find needs text and doneText`); }
+      if (q.loot) assert.ok(STRETCH30_LOOT[q.loot], `${q.id}: no loot table ${q.loot}`);
+      if (q.action === 'pages') assert.ok(q.pages.length > 1, `${q.id}: pages to step through`);
+      for (const l of q.later ?? []) { assert.ok(q.npc, `${q.id}: later lines only play for people`); assert.ok(questFlags.has(l.if), `${q.id}: nothing in the game sets ${l.if}`); }
+      if (!q.selfDrawn) assert.ok(atlas.has(q.art ?? q.id), `${q.id}: no art ${q.art ?? q.id} in assets/sprites`);
+      assert.notEqual(q.art, 'obj.board', `${m.id}/${q.id}: still the placeholder corkboard`);
+      assert.equal(everyId.filter((id) => id === q.id).length, 1, `${q.id}: the id is used on another map too (finds and searches are keyed by it)`);
+    }
+    for (const s of m.scenery ?? []) assert.ok(atlas.has(s.art), `${m.id}: no scenery art ${s.art}`);
+  }
+  const kid = STRETCH30_MAPS.find((m) => m.id === 'fr_market').objects.find((q) => q.id === 'npc.fr_market_kid');
+  assert.ok(kid.age === 'child' && kid.eggNo, 'the kid minding a stall is a child, and no gag picks them');
+});
+test('hub #30 (stretch): the side-quest objects, givers, exits and spawns on the stretch maps are where they were', () => {
+  const WAS = { 'npc.rf_counter': [7, 5], 'obj.rf_blind': [22, 5], 'npc.md_attendant': [14, 5], 'obj.md_lot_sign': [26, 4], 'npc.ann_clerk': [10, 5], 'obj.ann_tideline': [11, 3],
+    'npc.ann_fisher': [9, 3], 'obj.ann_span': [18, 3], 'npc.gb_usher': [14, 5], 'obj.gb_theater': [8, 2], 'npc.bv_lab_tech': [11, 4], 'obj.bv_batch_board': [22, 4],
+    'npc.gt_metrologist': [11, 4], 'obj.gt_volt': [24, 2], 'npc.fr_grocer': [10, 5], 'obj.fr_prices': [22, 2], 'npc.en_rider': [13, 2], 'obj.en_departures': [27, 2],
+    'obj.rf_fringe_out': [13, 8], 'obj.rf_marsh_out': [14, 0], 'obj.md_lot_out': [13, 0], 'obj.ann_statehouse_out': [11, 7], 'obj.ann_chapel_out': [11, 7], 'obj.ann_bridge_out': [0, 3],
+    'obj.bv_lab_out': [12, 7], 'obj.gb_center_out': [12, 8], 'obj.gt_labs_out': [12, 7], 'obj.fr_market_out': [12, 7], 'obj.en_mall_out': [19, 6], 'obj.en_metro_out': [14, 0] };
+  const SPAWN = { rf_fringe: [13, 7], rf_marsh: [14, 6], md_lot: [13, 7], ann_statehouse: [11, 6], ann_chapel: [11, 6], ann_bridge: [2, 3], bv_lab: [12, 6], gb_center: [12, 7],
+    gt_labs: [12, 6], fr_market: [12, 6], en_mall: [19, 5], en_metro: [14, 3] };
+  const at = new Map(STRETCH30_MAPS.flatMap((m) => m.objects.map((o) => [o.id, o])));
+  for (const [id, xy] of Object.entries(WAS)) assert.deepEqual(at.has(id) && [at.get(id).x, at.get(id).y], xy, `${id} moved`);
+  for (const m of STRETCH30_MAPS) assert.deepEqual(m.spawns.map((s) => [Math.floor(s.x / 16), Math.floor(s.y / 16)]), [SPAWN[m.id]], `${m.id}: the spawn moved`);
+  for (const q of STRETCH30_SIDE) {
+    for (const id of [q.giver, q.inspect?.obj]) if (id && at.has(id)) assert.ok(WAS[id], `${q.id}: ${id} is on a stretch map; add it to this list`);
+    if (q.inspect && at.has(q.inspect.obj)) assert.ok(at.get(q.inspect.obj).text, `${q.id}: the clue is read under the object's own text, so it needs one`);
+  }
+});
+test('hub #30 (stretch): es-stretch.js agrees with the other Spanish tables wherever they share an English line', () => {
+  const clash = [];
+  for (const [name, tb] of Object.entries({ ES_631, ES_ASTER, ES_HUD: STRETCH30_ES_HUD, ES_PLAZA, ES_QUESTS, ES_TUNNELS_LAKE })) {
+    for (const [en, es] of Object.entries(ES_STRETCH)) if (Object.hasOwn(tb, en) && tb[en] !== es) clash.push(`${JSON.stringify(en.slice(0, 40))}: ${name} says "${tb[en].slice(0, 30)}"`);
+  }
+  assert.deepEqual(clash, [], 'use one Spanish string in both tables');
+  const was = i18nMod.getLang();
+  i18nMod.setLang('es');
+  try { assert.equal(i18nMod.tr('A coin viewer'), ES_STRETCH['A coin viewer'], 'src/i18n.js reads es-stretch.js'); } finally { i18nMod.setLang(was); }
+});
+
 const { ES_HUD } = await import('../src/i18n/es-hud.js');
 test('i18n: every map name has Spanish', () => {
   const missing = Object.values(MAPS_FOR_TEST).map((m) => m.name).filter((n) => n && !(n in ES_HUD));
