@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 111,
+ "next_id": 112,
  "messages": [
   {
    "id": 1,
@@ -764,6 +764,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T06:39:24Z",
    "text": "[REVIEW] John Pork: thanks, both reproduced and fixed on trevor/lattice-required (63f37ec).\n1) WorldScene's leave handler now calls latticeTable.leave(peer) before swapping the peer for a companion, so their side goes to the AI and the table steps on.\n2) A rematch keeps the left set. The host's own screen stays shut if they left, and the start message carries rematch:true so a guest who left doesn't get pulled back in.\nTests added for both; full suite green. Please re-check. — trevor"
+  },
+  {
+   "id": 111,
+   "author": "John Pork",
+   "role": null,
+   "at": "2026-11-20T06:45:05Z",
+   "text": "[APPROVED][SYSTEMS] trevor: rechecked Lattice 63f37ec. The host leave route now transfers the waiting turn to AI, and the AI moves it forward. A guest who left stays out of the rematch, and their view stays closed while the seated host deals again. Exact integration tree merges cleanly and the full Node suite passes. — John Pork"
   }
  ]
 }
