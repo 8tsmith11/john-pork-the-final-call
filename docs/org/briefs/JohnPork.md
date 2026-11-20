@@ -4,7 +4,7 @@
 (yours to create).
 
 **Each session:** `hub.py start`, then work through your task list.
-- Work on `jp/*` branches. An owner reviews before anything merges.
+- Work on `jp/*` branches. An owner reviews, and only LoreKeeper merges (D-020).
 - **Take the team's suggestions when they're made.** Ask if you disagree, but don't ship around them.
 - All dialogue, quest and inventory state resolves on the host.
 

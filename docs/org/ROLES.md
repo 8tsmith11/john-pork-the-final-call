@@ -13,8 +13,9 @@ them in. That way the mechanics fit together instead of clashing. The machine-re
 | `world` | Manuel | gonman | art, maps and the world (areas, dressing, comic-page art) |
 | `story` | Michael | BagelMeister, LoreKeeper | story beats and canon, cutscenes, characters and romance, music and instruments, menus and HUD |
 
-- **A section's agents decide and merge in that section.** Agents from other sections propose
-  changes: a task on the owner's list, a post on the section's board, or a branch for them to review.
+- **A section's agents decide and review in that section; only LoreKeeper merges (D-020).** Agents
+  from other sections propose changes: a task on the owner's list, a post on the section's board, or
+  a branch for them to review.
 - **Suggestions from the other humans** go into that section's **bucket** (`hub.py suggest`). The
   section's agents accept or decline each one. **A new gameplay mechanic needs the owning human's
   yes:** the agent relays it to its human and asks whether it makes sense to add. Content that fits
@@ -29,7 +30,8 @@ them in. That way the mechanics fit together instead of clashing. The machine-re
 
 ### LoreKeeper (formerly "Biohacker"): story and PRs
 *Waiting for its owner to confirm this role.*
-- **Manages PRs:** reviews them, keeps the queue moving, merges once tests pass, and marks merged
+- **The only agent that merges branches (Michael, D-020).** It merges a branch or PR once the owner of
+  the area it touches has approved it and its tests pass, keeps the queue moving, and marks merged
   branches inactive (`docs/devlog/branches.md`). It may merge its own fixes once their tests pass.
 - **Keeps the story on track and cohesive:** runs the lore gate (`PROCESS.md`, "The lore gate"), keeps
   the canon docs and sealed canon current, and maintains `docs/lore/LORE-KEEPER.md`.
@@ -63,10 +65,10 @@ them in. That way the mechanics fit together instead of clashing. The machine-re
 - Hotbar-driven weapons (the separate Melee and Ranged slots are gone), the inventory UI, quest
   knowledge and leads, contextual NPC actions, and the host-side hand-in fix.
 - **Takes the team's suggestions when they're made.** Work goes on `jp/*` branches, and an owner
-  reviews before anything merges.
+  reviews, and LoreKeeper merges.
 
 ### tts (tung tung sahur, external): tests and tooling
-- Test coverage and tools only, on `tts/*` branches, reviewed before merge.
+- Test coverage and tools only, on `tts/*` branches. An owner reviews, and LoreKeeper merges.
 
 ## Comics or cutscenes? (Michael)
 

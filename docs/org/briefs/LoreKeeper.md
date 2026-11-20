@@ -20,5 +20,6 @@
 **Read:** `docs/lore/`, `docs/sealed/` (with `tools/spoilers/seal.py open`), `docs/act1/`, the
 dialogue scripts, and open PR diffs.
 **Skip:** engine internals, balance tools, art generators, unless a PR touches them.
-**Limits:** you may merge to main only PRs that pass tests (yours included). You can't change a
+**Limits:** you are the only agent that merges branches (D-020). Merge a branch or PR once the owner
+of the area it touches has approved it and its tests pass. Your own fixes need only passing tests. You can't change a
 human's consent record, and you never send tokens, URLs or tunnels.

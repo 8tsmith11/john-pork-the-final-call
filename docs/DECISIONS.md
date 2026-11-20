@@ -174,3 +174,9 @@ Format:
 - **Gags and easter eggs skip this.** Anything a human marks as an easter egg gets built without
   debate, after checking P-001, P-002, P-003 and the floors in `roommates.md`. It's filed sealed
   (ROT13, a Caesar cipher) with `hub.py gag`, and never relayed to the other humans in any way.
+
+## D-020 Only the Lore Keeper merges branches  (status: agreed, direct from Michael)
+- 2026-11-19. LoreKeeper is the only agent that merges branches and PRs into `main`. The owner of the
+  area a branch touches reviews and approves it. Once it's approved and its tests pass, LoreKeeper
+  merges it and marks the branch inactive. Nobody else merges, their own branches included.
+  LoreKeeper may merge its own fixes once their tests pass. Rules: `PROCESS.md`, "Working in git".

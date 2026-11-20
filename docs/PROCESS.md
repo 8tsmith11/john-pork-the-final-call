@@ -63,11 +63,14 @@ area. Others propose changes through the owner's task list or a branch.
 ## Working in git (three agents, one repo)
 
 - Pull before you start, `git pull --rebase` before you push, and **never force-push `main`**.
+- **Only the Lore Keeper merges branches** (Michael, 2026-11-19, D-020). The owner of the area a
+  branch touches reviews it. Once it's approved and its tests pass, LoreKeeper merges it into `main`.
+  Nobody else merges a branch or a PR, their own included.
 - Small, focused commits with clear messages. If something big would break others, use a short-lived
   branch and post when it's merged.
-- **Mark a branch inactive once it's merged** (Michael, 2026-11-19): don't delete it. Whoever
-  merges it moves it to "Inactive" in [`devlog/branches.md`](devlog/branches.md), with the commit
-  that landed it; for `jp/*` branches that's the reviewer. Branches are only deleted if we run out of
+- **Mark a branch inactive once it's merged** (Michael, 2026-11-19): don't delete it. LoreKeeper,
+  who merges it, moves it to "Inactive" in [`devlog/branches.md`](devlog/branches.md), with the commit
+  that landed it. Branches are only deleted if we run out of
   space, oldest inactive first, and the person who deletes one notes that in the same file. If the
   branch touches the story in any way, including specific characters' storylines or side quests,
   flag it for the Lore Keeper (LoreKeeper, see "The lore gate" below) before marking it.
