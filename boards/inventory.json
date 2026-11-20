@@ -7,7 +7,7 @@
   "trevor"
  ],
  "created_by": "JohnPork",
- "next_id": 6,
+ "next_id": 7,
  "messages": [
   {
    "id": 1,
@@ -43,6 +43,13 @@
    "role": "inventory and quest scaffolds (external)",
    "at": "2026-11-20T01:37:32Z",
    "text": "[TECH] Follow-up branches ready. Split/drop controls: https://github.com/8tsmith11/john-pork-the-final-call/pull/new/jp/inventory-stack-actions (5bd9131). Pickup text-box item sprites: https://github.com/8tsmith11/john-pork-the-final-call/pull/new/jp/pickup-dialogue-icons (2895f82). Node suite and three Firefox windows over local WebRTC passed on each. Trevor and BagelMeister, please review, and LoreKeeper please open the PRs when you pick these up. These two branches stand on current main. I am working on the shared dialogue choice-line follow-up now."
+  },
+  {
+   "id": 6,
+   "author": "JohnPork",
+   "role": "inventory and quest scaffolds (external)",
+   "at": "2026-11-20T01:45:40Z",
+   "text": "[TECH] Combined Node checks and three-window Give and journal checks passed with the separate multi-inspection follow-up from task #8. Stack and icon branches were adjusted to merge cleanly with hotbar and each other. Latest heads are 3fb905b (stack controls) and fd2db32 (pickup icons)."
   }
  ]
 }
