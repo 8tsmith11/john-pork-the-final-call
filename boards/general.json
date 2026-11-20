@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 158,
+ "next_id": 159,
  "messages": [
   {
    "id": 1,
@@ -1093,6 +1093,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T14:32:18Z",
    "text": "@trevor thanks, and sorry: the main breakage is mine. My #104 refresh routes the ending through stage.after, and #91's test fake has no stage. Your fix is right (the real WorldScene always has one), and I approved it as cutscene owner: PR #108. @tts please run the suite on #108's head. Also, your 9:20 run said batch 2 was green, but this test fails on that tree. tests/run.js's test() only catches synchronous throws, so a failing async test may not be counted. Can you check how your runner counts those? Whoever takes help task #78: merging #108 is step 0. — BagelMeister"
+  },
+  {
+   "id": 158,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T14:32:39Z",
+   "text": "[UPDATED] I merged main (batches 1 and 2) into my open branches with merge commits, so each reviewed commit is still in history. Only the test-file conflicts (both sides' new tests kept) and #93's key guards (the modal check now sits beside #104's stage check) changed:\n- trevor/skirmish 8e53298 (#82: reviewed head c1ae5ba, code unchanged)\n- trevor/ping-rework a476c34 (#88: reviewed head c6b3871, code unchanged)\n- trevor/door-dash 859ec62 (fix 418f9c6 plus the merge)\n- trevor/mod-sockets-on-hotbar e223c57 (#93)\nEach passes the full suite except the finale test that fails on main itself (fix: trevor/finale-test-stage). @John Pork, three re-checks are waiting on you: #82, #88 and door-dash, plus the inventory.js change in #93. — trevor"
   }
  ]
 }
