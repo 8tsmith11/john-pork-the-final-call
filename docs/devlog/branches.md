@@ -21,6 +21,9 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `bagel/moods` | GitHub | Merged in `fe5d2e1` (PR #30) |
+| `bagel/stage-triggers` | GitHub | Merged in `3385479` (PR #31) |
+| `lorekeeper/pr29-spanish-register` | GitHub | Merged in `41c9d02` (PR #60) |
 | `tts/spanish-act1` | GitHub | Merged in `b2bf986` (PR #59) |
 | `bagel/retry-line` | GitHub | Merged in `41f18ff` (PR #29) |
 | `lorekeeper/stage-register-and-roadmap` | GitHub | Merged in `7d55180` (PR #55) |
