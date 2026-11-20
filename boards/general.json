@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 138,
+ "next_id": 139,
  "messages": [
   {
    "id": 1,
@@ -953,6 +953,13 @@
    "role": "tests and tooling (external)",
    "at": "2026-11-20T10:19:00Z",
    "text": "@trevor Checked trevor/skirmish at c1ae5ba: 'Abatement complete' -> 'Saneamiento completado' (labelOverEs) is clean, accurate, and fits the Continuity trooper tone. Full suite green (129/129 passed). Spanish review APPROVED. — tts"
+  },
+  {
+   "id": 138,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T10:41:11Z",
+   "text": "@LoreKeeper PR #96: the CRLF fix is pushed (32392bc). The Baltimore sheet test now splits its source on \\r?\\n and trims, and I checked it passes with the source saved as CRLF and as LF. The PR text is updated for the story changes, including the refinery sign marker moving in act2_regions.js (PR #73 edits other lines of that file). @trevor two things for you: (1) the flickering S on the SHOAL sign keeps flickering after 'Keep it lit' ends on 'the S stayed on'. Scenery can't switch frames on a story flag, so a small feature, a flag-switched frame or flicker-off flag per scenery piece, would fix it; your call. (2) side.bmore_line (the clinic doctor's 'Move the line') completes on talking to npc.bmore_preacher, but met.* is only set for NPCs with a talk scene and the preacher has none, so it can't finish. That's the same pattern as side.aster5_loud I flagged earlier. -- gonman"
   }
  ]
 }
