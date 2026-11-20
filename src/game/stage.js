@@ -54,7 +54,7 @@ export class Stage {
     this.active = null;     // { id, script, tok, actors: Map, host }
     this.tok = 0;
     scene.input.keyboard.on('keydown-X', () => { if (this.active?.host) this.skip(); });
-    scene.events.once('shutdown', () => this._teardown());
+    scene.events.once('shutdown', () => { this._gone = true; this._teardown(); });
   }
 
   get playing() { return !!this.active; }
@@ -64,7 +64,7 @@ export class Stage {
     const s = this.s;
     if (s.mode === 'client') { s.net.send({ t: 'stage', op: 'ask', id }); onDone?.(); return false; }
     const script = await loadScript(id);
-    if (!script || this.active || (script.map && script.map !== s.map?.id)) { onDone?.(); return false; }
+    if (!script || this._gone || this.active || (script.map && script.map !== s.map?.id)) { onDone?.(); return false; }
     if (s.mode === 'host') s.net.broadcast({ t: 'stage', op: 'start', id });
     this._run(script, { host: true, onDone, ctx });
     return true;
@@ -127,10 +127,18 @@ export class Stage {
     const f = s.save.flags;
     for (const t of STAGE_TRIGGERS) {
       const played = `stage.${t.id}.played`;
-      if (f[played] || !f[t.flag] || (t.map && t.map !== s.map?.id)) continue;
-      f[played] = true;
+      if (f[played] || !f[t.flag] || (t.map && t.map !== s.map?.id) || this._missing?.has(t.id)) continue;
+      // Played is recorded only once it really starts. If the party changes maps or another cutscene
+      // starts while the script loads, the trigger stays eligible; a script that can't load is not retried.
       this._starting = true;
-      this.play(t.id).finally(() => { this._starting = false; });
+      loadScript(t.id)
+        .then((script) => {
+          if (!script) { (this._missing ??= new Set()).add(t.id); return false; }
+          if (this._gone || (t.map && t.map !== s.map?.id)) return false;   // scene closed, or the party left the map
+          return this.play(t.id);
+        })
+        .then((started) => { if (started) f[played] = true; })
+        .finally(() => { this._starting = false; });
       return;
     }
   }
