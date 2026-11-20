@@ -2084,6 +2084,31 @@ try {
   if (savedPhaserForCraft === undefined) delete globalThis.Phaser;
   else globalThis.Phaser = savedPhaserForCraft;
 }
+test('the purple cylinder stays where it was hidden, even when a later build changes the searchable containers', () => {
+  const save = { flags: {}, world: { seed: 'cyl-pin' } };
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'solo', save, _flag(k, v) { save.flags[k] = v; } });
+  const key = (x) => `${x.map}:${x.id}`, spots = scene._cylinderSpots();
+  assert.ok(spots.length > 2, 'searchable containers to hide in');
+  // an unpinned save gets exactly the place the old seeded pick chose, move after move
+  const oldPick = (n) => { const p = (k) => Math.floor(new Rng(`cyl-pin:cylinder:${k}`).next() * spots.length); let i = p(n); if (n > 0 && i === p(n - 1)) i = (i + 1) % spots.length; return spots[i]; };
+  for (let n = 0; n < 6; n++) assert.deepEqual(scene._cylinderPick(n), oldPick(n), `move ${n}: an existing save would see it move`);
+  const first = scene._cylinderSpot();
+  assert.deepEqual(first, oldPick(0));
+  // found: it's hidden again, the save keeps where, and the hint names that place
+  const text = scene._findCylinder('manuel'), next = scene._cylinderSpot();
+  assert.equal(save.flags['secrets.cylinder.at'], key(next), 'the new hiding place is kept in the save');
+  assert.notEqual(key(next), key(first), 'hidden back where it was just found');
+  assert.ok(text.includes(next.where), 'the hint does not name where it went');
+  // a later build adds a container: every index shifts, but the cylinder stays where the hint said
+  scene._cylSpots = [{ map: 'new_map', id: 'obj.new_crate', where: 'Somewhere new' }, ...spots];
+  assert.deepEqual(scene._cylinderSpot(), next, 'a new container moved it');
+  // the next find avoids the pinned place even though the list changed
+  const text2 = scene._findCylinder('michael'), next2 = scene._cylinderSpot();
+  assert.notEqual(key(next2), key(next)); assert.equal(save.flags['secrets.cylinder.at'], key(next2)); assert.ok(text2.includes(next2.where));
+  // a later build removes the pinned container: it falls back to a seeded place, never to nothing
+  scene._cylSpots = scene._cylinderSpots().filter((x) => key(x) !== key(next2));
+  const fallback = scene._cylinderSpot(); assert.ok(fallback && key(fallback) !== key(next2), 'lost when its container was removed');
+});
 test('a guest interacting with the ASTER stairs waits for players who walk up later', () => {
   const map = MAPS_FOR_TEST.aster_hall;
   const stairs = map.objects.find((obj) => obj.action === 'exit' && obj.id.includes('stairs'));
