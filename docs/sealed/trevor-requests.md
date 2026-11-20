@@ -173,6 +173,30 @@ uryvpbcgre. znlor gur svtug unccraf nsgre guvf?"
   jung sbez ur'f va jura serrq ner fgbel'f pnyyf. Ratvar (geribe): n fgrnygu be nynez-rfpnyngvba cevfba yriry, pryy
   naq inhyg chmmyrf, naq n sylvat-rfpncr frg cvrpr (n punfr jvgu gheergf be qebarf), gura gur nyyl svtug.
 
+## 3u. Gur beovgny fgevxr naq gur cevfba oernx ner bar rirag (Geribe, 2026-11-20, va uvf grezvany)
+
+Uvf jbeqf: "gur ghat ghat beovgny fgevxr naq wbua cbex cevfba rfpncr ner cneg bs gur fnzr guvat. Jr rfpncr jvgu
+wbua cbex ba na nrevny pensg nybat jvgu fbzr fbeg bs betnavmngvba/ragvgl/crefba jub fhccyvrq gur pensg naq jnvgrq
+sbe hf gb svavfu gur rfpncr. ghat ghat fgevxrf gur pensg bhg bs gur nve, jr penfu vagb n pvgl orybj naq n pengre
+sbezf. Rirelguvat tbrf oynpx naq gurer'f n evat, naq gurer'f yvxr na rlr bcravat navzngvba naq rirelguvat vf n ovg
+oyheel sbe n ovg. gura jr svtug ghat ghat ghat fnuhe jvgu wbua cbex ba bhe fvqr"
+
+- **Bar frdhrapr:** 3t'f cevfba oernx yrnqf fgenvtug vagb 3q'f beovgny fgevxr, naq gung yrnqf vagb 3r'f svtug
+  orfvqr Wbua Cbex.
+- **Gur trgnjnl:** gur cnegl naq Wbua Cbex rfpncr ba na nrevny pensg. Vg jnf fhccyvrq ol na betnavmngvba, ragvgl
+  be crefba jub jnvgrq sbe gurz gb svavfu gur oernx-bhg (jub gung vf, naq jul, vf fgbel'f gb qrpvqr; vg fubhyq
+  orybat gb gur rkvfgvat pnfg be snpgvbaf).
+- **Gur fgevxr:** gur Fnuhe uvgf gur pensg bhg bs gur nve sebz beovg. Vg penfurf vagb n pvgl orybj, naq n pengre
+  sbezf (3q'f npgvir fprar jvgu erny pbyyngreny, abj gur penfu fvgr).
+- **Gur nsgrezngu, sebz gur cnegl'f rlrf:** rirelguvat tbrf oynpx, gurer'f n evatvat, gura na rlr-bcravat navzngvba,
+  naq rirelguvat vf n yvggyr oyheel sbe n juvyr.
+- **Gur svtug:** gur cnegl svtugf Ghat Ghat Ghat Fnuhe jvgu Wbua Cbex ba gurve fvqr (3r).
+- **Fgvyy gehr:** 3q'f thnenagrr ba rirel cngu, gur ybat ohvyq bs grafvba orsber (jneavatf, ur frrf gurz, abguvat
+  qrgrpgf uvz), gur pvarzngvp bs uvf qrfprag naq gur ibvprq "gnetrg npdhverq" yvar whfg orsber gur fgevxr.
+- **Gb erpbapvyr (fgbel):** guvf punatrf jurer 3q unccraf (gur trgnjnl ebhgr vafgrnq bs gur ohfl Z3.1 pebffvat)
+  naq ubj 3t raqf (3t unq gurz ernpuvat n 'fnsr' cynpr jurer na rarzl jnvgf). Jurgure gur fnsr-cynpr nzohfu vf
+  ercynprq ol gur fgevxr, be fgvyy sbyybjf yngre, vf YberXrrcre'f naq OntryZrvfgre'f pnyy, purpxrq jvgu Geribe.
+
 ## 3s. Geribe'f nafjref ba gur Npg 3 qrgnvyf (2026-11-20, va uvf grezvany)
 
 - **Vafvqr gur pbzchgre (Z3.P): lrf.** Obqvrf uryq va gur pber, zvaqf va vgf pbzchgr; gur jnl bhg bs gur pbzchgre vf
