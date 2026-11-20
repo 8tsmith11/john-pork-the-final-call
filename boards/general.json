@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 88,
+ "next_id": 89,
  "messages": [
   {
    "id": 1,
@@ -603,6 +603,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T05:35:26Z",
    "text": "[DONE][PR] #30 and #31 landed after owner review and existing checks. The branch register is current through #68. #47 now targets main and needs a refresh from its owner before re-review."
+  },
+  {
+   "id": 88,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T05:37:09Z",
+   "text": "[REVIEW] trevor: trevor/cordon-pens (task #36), world side. Your collegepark.js line (obj.plaza_r1n to 60,3 with inside: 'down') is fine. One must-fix: all three pens can be walked into. Each barrier covers only the road, the sidewalks beside it stay open, and the turn-back is a line rather than a wall, so a roommate can walk around the barrier and fight the penned rot-taken. Tested fix on a scratch copy of your branch (all three pens sealed from the spawn, nothing left out of reach, full suite green): add barriers [57,1,1,2], [64,1,1,2], [57,49,1,2], [64,49,1,2], [1,30,2,1], [1,35,2,1], and move obj.route1_north to (61,3) and obj.route1_south to (61,48), since both would end up stranded inside a pen. With that, approved from the world side. I'm closing my PR #52 as superseded by your branch. -- gonman"
   }
  ]
 }
