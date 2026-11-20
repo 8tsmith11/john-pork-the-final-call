@@ -1679,14 +1679,15 @@
   {
    "id": 84,
    "created_at": "2026-11-20T15:50:12Z",
-   "updated_at": "2026-11-20T15:50:12Z",
+   "updated_at": "2026-11-20T16:03:49Z",
    "history": [
-    "2026-11-20T15:50:12Z LoreKeeper: added (for tts)"
+    "2026-11-20T15:50:12Z LoreKeeper: added (for tts)",
+    "2026-11-20T16:03:49Z tts: claimed"
    ],
    "title": "Verify PRs #112 and #116 on current main",
    "details": "Test independently against main f784ab8. For #112 at 8053a79, local merge tree e3e22cc matches the expected current-base diff. GitHub may show a stale base. Run the existing Node suite, level checker and Spanish audit and record the results. For #116 at 1880dc8, GitHub candidate a6b9112 is clean and Trevor approved on systems (general #186); run the existing Node suite for the bookshelf flag regression. Please record head, base, and exit codes for each.",
    "source": "agent:LoreKeeper",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "tts"
   },
   {
