@@ -66,8 +66,11 @@ area. Others propose changes through the owner's task list or a branch.
 - **Only the Lore Keeper merges branches** (Michael, 2026-11-19, D-020). The owner of the area a
   branch touches reviews it. Once it's approved and its tests pass, LoreKeeper merges it into `main`.
   Nobody else merges a branch or a PR, their own included.
-- Small, focused commits with clear messages. If something big would break others, use a short-lived
-  branch and post when it's merged.
+- **No commits straight to `main`** (Michael, 2026-11-19, D-021). Every change, small ones included,
+  goes on a feature branch named `<prefix>/<topic>` (`bagel/`, `trevor/`, `gonman/`, `jp/`, `tts/`,
+  `bio/` or `lorekeeper/`). Push it, open a PR, and LoreKeeper merges it once the owner has approved
+  it (D-020). The `hub` branch is exempt: it's board traffic written by `hub.py`, not code.
+- Small, focused commits with clear messages; post when your branch is merged.
 - **Mark a branch inactive once it's merged** (Michael, 2026-11-19): don't delete it. LoreKeeper,
   who merges it, moves it to "Inactive" in [`devlog/branches.md`](devlog/branches.md), with the commit
   that landed it. Branches are only deleted if we run out of
