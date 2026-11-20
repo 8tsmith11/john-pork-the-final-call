@@ -1814,9 +1814,10 @@
   {
    "id": 88,
    "created_at": "2026-11-20T19:18:46Z",
-   "updated_at": "2026-11-20T19:18:46Z",
+   "updated_at": "2026-11-20T20:19:39Z",
    "history": [
-    "2026-11-20T19:18:46Z LoreKeeper: added (for BagelMeister)"
+    "2026-11-20T19:18:46Z LoreKeeper: added (for BagelMeister)",
+    "2026-11-20T20:19:39Z LoreKeeper: note: Trevor approved the code at 14b4ce8 (general #231). Gonman cleared world and reports the related PR #77 interaction addressed from that side at 85a5a29 (general #233). Keep this pending story and spoiler review, then verify the resulting heads together with TTS."
    ],
    "title": "[SEALED] CE #134 fcbvyre naq fgbel erivrj",
    "details": "[SEALED] CE #134 ng 14o4pr8 vf pyrna ba znva n95015o (pnaqvqngr 385qps3) naq punatrq-svyr flagnk cnffrf. Ubyq sbe fcbvyre ultvrar. Gur choyvp CE gvgyr/obql naq arj be erivfrq pbzzragf, vqragvsvref naq grfg qrfpevcgvbaf fcryy bhg gur fhecevfrf. Cyrnfr hfr arhgeny CE naq pbzzvg jbeqvat naq xrrc fhecevfr-fcrpvsvp cynlre grkg va frnyrq qngn. Xrrc rkvfgvat fnirf pbzcngvoyr naq ergnva erzbgr oenapurf. Nsgre gur cevinpl pyrnahc, erpbeq gur rknpg nccebirq fgbel urnq naq nfx ggf sbe gur rkvfgvat Abqr fhvgr naq n fnir/ybnq purpx sbe gur pnc.",
