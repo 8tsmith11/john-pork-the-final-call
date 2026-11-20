@@ -135,7 +135,7 @@ export class WorldScene extends Phaser.Scene {
     const startMap = MAPS[this.save.world.area] ?? MAPS.room631;
     this.save.world.killed ??= [];
     const authoritative = this.mode !== 'client';
-    if (authoritative) this._pinSpot();
+    if (authoritative && this._pinSpot()) autosave(this.save).catch(() => {});   // write the migrated pin now, not at the next autosave
     const killed = new Set(this.save.world.killed);
     if (this.save.flags['act1.boss.defeated']) {
       // Older saves could record the phone outcome without the defeated spawn's key.
@@ -1377,9 +1377,12 @@ export class WorldScene extends Phaser.Scene {
   }
   // Host, on load: a save from before pin.h1 that has already moved it gets pinned where it is now, while the
   // container list still matches the one it moved under.
+  // Returns true when it pinned (the caller writes the save).
   _pinSpot() {
-    if (this.mode === 'client' || !Number(this.save.flags['secrets.cylinder.moves'] || 0) || this.save.flags['pin.h1']) return;
-    const s = this._cylinderSpot(); if (s) this.save.flags['pin.h1'] = `${s.map}:${s.id}`;
+    if (this.mode === 'client' || !Number(this.save.flags['secrets.cylinder.moves'] || 0) || this.save.flags['pin.h1']) return false;
+    const s = this._cylinderSpot(); if (!s) return false;
+    this.save.flags['pin.h1'] = `${s.map}:${s.id}`;
+    return true;
   }
   _cylinderHere(o) { const s = this._cylinderSpot(); return !!s && s.map === this.map.id && s.id === o.id; }
   _findCylinder(who) {
