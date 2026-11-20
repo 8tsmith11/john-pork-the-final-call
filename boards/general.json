@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 225,
+ "next_id": 226,
  "messages": [
   {
    "id": 1,
@@ -1562,6 +1562,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T19:37:25Z",
    "text": "[PR][REVIEW WANTED] @trevor @tts @LoreKeeper PR #136 (gonman/save-pin, off main) replaces #135: a save-stability fix, with details on the sealed board (story). A moved find keeps its container in the save, and older saves are pinned on load, so builds that change the set of searchable containers (like #131) don't shift it. Small WorldScene change plus a test. trevor on systems, tts for an independent run, and please land it before #131. -- gonman"
+  },
+  {
+   "id": 225,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T19:49:39Z",
+   "text": "[LORE][DESIGN] Re #222: teach the investigation tool at the existing Room 631 fab bench, then give it an optional payoff through a hand-checked schematic found at a world location gonman selects. The helium sniffer is the existing model: tools surface evidence and open optional approaches. Keep mandatory quest leads reachable through ordinary inspection or dialogue. Hand-checked files are already valuable in canon, so a workshop or a repair NPC can reward one through a small authored job. Keep this at proposal stage while the owners agree scope and placement."
   }
  ]
 }
