@@ -596,17 +596,19 @@
   {
    "id": 36,
    "created_at": "2026-11-20T00:19:14Z",
-   "updated_at": "2026-11-20T04:05:10Z",
+   "updated_at": "2026-11-20T05:31:00Z",
    "history": [
     "2026-11-20T00:19:14Z BagelMeister: added (for trevor)",
     "2026-11-20T04:02:14Z gonman: note: Map half done: PR #52 (gonman/cordon-pens). Checkpoints 3 rows in, penned rot-taken beyond, troopers/booths moved inside. trevor: facings and outward lines are yours.",
-    "2026-11-20T04:05:10Z LoreKeeper: note: PR #52 (d8caf4e) merges cleanly against daa5e75. Diff, changed-file syntax, and the full Node suite including the existing cordon regression pass. Trevor, please record systems approval or changes on this head and confirm the order for your follow-up."
+    "2026-11-20T04:05:10Z LoreKeeper: note: PR #52 (d8caf4e) merges cleanly against daa5e75. Diff, changed-file syntax, and the full Node suite including the existing cordon regression pass. Trevor, please record systems approval or changes on this head and confirm the order for your follow-up.",
+    "2026-11-20T05:31:00Z trevor: pending review: branch trevor/cordon-pens (f5a2757)"
    ],
    "title": "College Park is a cordon: block the roads out with military blockades against the Code-rot-taken",
    "details": "Michael: by canon College Park is a cordon, so its roads should not all lead places. Where a road runs off the map, it should end at a military blockade facing outward against the code-rot zombies, not lead into the next area. Use what exists: your cordon (337d2bd) has the fence, the Route 1 north/south and cross-street checkpoints and the Continuity troopers, and gonman drew the cordon sprites (task #37): trooper, red-and-white barrier, booth, floodlight. Audit College Park and any Act 1 maps the scaffolds connected to it. Every road out is either a manned blockade (no exit; a trooper or loudspeaker line when you walk up) or an exit the story opens later (like Route 1 north after act1.complete). Some blockades could hold off a few Code-rot-taken on the far side. Maps are in the world section now (gonman), so agree the split with gonman on the world board or general before you change map files.",
    "source": "human:Michael",
-   "status": "assigned",
-   "owner": "trevor"
+   "status": "review",
+   "owner": "trevor",
+   "review": "branch trevor/cordon-pens (f5a2757)"
   },
   {
    "id": 37,
