@@ -54,6 +54,29 @@ Geribe nfxrq hf gb guvax bs zber. geribe'f ntrag'f fgnegre vqrnf, gb gnxr be phg
 - Fgbel (Zvpunry'f frpgvba) qrpvqrf jurer vg fvgf naq jul gur ebbzzngrf unir gb cynl. Ratvar (geribe): n erdhverq
   gnoyr arrqf n ergel sybj naq n fgbel synt ba gur jva (`_ynggvprErfhyg` nyernql frgf gur erfhyg syntf).
 
+## 3p. Tvzzvpx obffrf, naq zber vagrerfgvat obff svtugf va trareny (Geribe, 2026-11-20, va uvf grezvany)
+
+Uvf jbeqf: "guvax jvgu gur ntragf nobhg fbzr tvzzvpx obff svtugf, naq zber vagrerfgvat obff svtugf va trareny ...
+znlor fbzrguvat gung znxrf n qebar fjnez, rgp. n ovbratvarrerq qentba glcr perngher/yvmneq? fbzr bgure fghss nf
+jryy. nyfb znlor n obff sbe gur cneg jura jr'er fghpx va n pbzchgre."
+
+- Jnagrq: **n qebar-fjnez obff**, **n ovbratvarrerq qentba be yvmneq**, **n obff vafvqr gur pbzchgre** (gur
+  genccrq-va-n-pbzchgre frdhrapr, frpgvba 2), cyhf bgure tvzzvpx svtugf. Qvfphff ba gur fgbel obneq svefg (fgbel
+  cynprf gurz, flfgrzf ohvyqf gurz); rirel obff unf gb orybat gb gur fgbel jurer vg fvgf.
+- geribe'f ntrag'f fgnegre cvgpurf, gb gnxr be phg:
+  - (n) **Gur Qvfcngpure** (qebar fjnez): Pbagvahvgl'f nongrzrag fjnez pbagebyyre. Gur fjnez gnxrf funcrf (n jnyy, n
+    svfg, n evat gung pybfrf) naq n srj erynl qebarf ubyq gur funcr gbtrgure: xvyy gur erynlf (Zvpunry'f Cvat znexf
+    gurz) naq gur fjnez snyyf ncneg sbe n srj frpbaqf. Svgf Npg 2 be gur pbzcnal gbja bhg Jrfg.
+  - (o) **Gur Urveybbz** (ovbratvarrerq yvmneq): n Oneba snzvyl'f trar-ohvyg crg, xrcg va gur frn-pvgl'f zrantrevr
+    (Z3.N), n zbecu gnxra nyy gur jnl. Vg furqf nezbe va cunfrf naq ertebjf vg hayrff lbh ohea gur furq fxva; vg
+    pyvzof gur jnyyf naq qebcf ba lbh; vgf oerngu vf npvq gung yrnirf tbb gur tbazna pna fhes.
+  - (p) **Gur Fpurqhyre** (vafvqr gur pbzchgre, Z3.P): gur pvgl pber'f gnfx fpurqhyre. Gvzr-fyvprf: gur svtug ehaf
+    va gheaf, bar ebbzzngr ng n gvzr trgf gb zbir juvyr gur bguref ner sebmra, naq gur obff qrnyybpngrf gur sybbe
+    haqre jubrire vf vqyr. Orng vg naq gur pber yrgf tb bs lbhe obqvrf.
+  - (q) bguref: n ybj-tenivgl svtug ba gur Zbba jurer rirel qbqtr pneevrf lbh guerr gvzrf nf sne; n "cebir lbh'er
+    uhzna" pncgpun obff gung znxrf lbh fbyir n fznyy chmmyr juvyr lbh qbqtr; na nhpgvbarre ng gur frn-pvgl jubfr
+    nggnpxf ner ovqf lbh pna bhgovq jvgu erny zbarl.
+
 ## 4. Rneyvre frnyrq erdhrfgf sebz Geribe
 
 Nyernql va `qbpf/frnyrq/npgf-2-3.zq` ("Fgbel erdhrfgf sebz Geribe"): n orgenlny, naq n ovt erirny vafvqr Npg 1.
