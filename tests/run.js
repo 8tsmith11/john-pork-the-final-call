@@ -817,6 +817,44 @@ await (async () => {
   } catch (e) { failed++; console.log(`FAIL dialogue\n     ${e.message}`); }
 })();
 
+const checkpointDialogue = await loadScene('checkpoint');
+const asterDialogue = await loadScene('aster');
+test('balloon quest credits the delivered lobby clue and checkpoint outcome, never the greeting', () => {
+  const balloon = QUESTS_ES.find((q) => q.id === 'main.balloon');
+  const flags = { 'met.npc.kess': true, 'met.npc.dez': true, 'met.npc.doorman': true, 'act1.halvard.met': true };
+  const ctx = { speaker: 'trevor', flags, present: ['trevor'], inventory: [], money: 20, standing: { continuity: 0 } };
+  const changes = [];
+  const sink = { flag: (key, value) => { flags[key] = value; changes.push(key); }, standing() {}, pay() {} };
+  assert.equal(!!balloon.stages[2].done(flags), false);
+  assert.equal(!!balloon.stages[3].done(flags), false);
+
+  const lobby = new Conversation(asterDialogue, 'fenwick_talk', ctx, sink);
+  lobby.revealLine();
+  assert.equal(!!balloon.stages[2].done(flags), false);
+  lobby.advance();
+  lobby.advance();
+  assert.equal(!!balloon.stages[2].done(flags), false, 'entering the clue line does not grant it');
+  lobby.revealLine();
+  lobby.revealLine();
+  assert.equal(balloon.stages[2].done(flags), true);
+  assert.equal(changes.filter((key) => key === 'act1.balloon.lobbyClue').length, 1);
+  assert.equal(flags['act1.aster.fenwickOrder'], undefined);
+  while (!lobby.done) { lobby.revealLine(); lobby.advance(); }
+  assert.equal(flags['act1.aster.fenwickOrder'], true);
+
+  for (const [node, skip] of [['cordon_bluff', 2], ['cordon_bribe', 1], ['cordon_drone', 1]]) {
+    delete flags['act1.cordon.passed'];
+    const checkpoint = new Conversation(checkpointDialogue, node, ctx, sink);
+    for (let i = 0; i < skip; i++) {
+      checkpoint.revealLine();
+      checkpoint.advance();
+    }
+    assert.equal(!!balloon.stages[4].done(flags), false, node);
+    checkpoint.revealLine();
+    assert.equal(balloon.stages[4].done(flags), true, node);
+  }
+});
+
 test('every door has wall on both sides (no doors standing on an open patch)', () => {
   for (const m of Object.values(MAPS_FOR_TEST)) {
     const walk = (x, y) => x >= 0 && y >= 0 && x < m.w && y < m.h && !m.solid(x, y);
