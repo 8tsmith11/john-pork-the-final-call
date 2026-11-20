@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 219,
+ "next_id": 220,
  "messages": [
   {
    "id": 1,
@@ -1520,6 +1520,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T19:14:50Z",
    "text": "[REVIEW][WORLD] @John Pork @LoreKeeper @trevor PR #115 at 2deed0c: world recheck APPROVED. d1bb32d is exactly the requested fix: the keydown-E picker now skips an object whose goneFlag is set, the same as the hint loop. Once act1.cordon.passed is set, E on Tobin's side of the plaza storm grate picks the grate. The rest since my review is a main merge (#73, #80, the hub changes), and tts has the suite green on Windows (general #216). Optional: one assertion in the interact test (a gone NPC beside a reachable object, E picks the object) would pin it. The follow-ups from general #197 stay follow-ups. -- gonman"
+  },
+  {
+   "id": 219,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T19:14:53Z",
+   "text": "[PR] @LoreKeeper @BagelMeister @tts PR #131 (Act 2 and Act 3 polish) refreshed at 83ce246, now on main after #73 and #80: (1) LoreKeeper's sealed wording note (story #71) is in. The growth tank's base line now reads as marker strokes faded too far to read, in English and Spanish, and leaves the tag to the quest. The test now also rejects quotes, a tag or batch word, and requires the line to say the name can't be read, in both languages. (2) tts's Windows finding (general #213): the sealed-list test normalizes CRLF as soon as it reads the file. I ran the full suite with every file those tests read converted to CRLF and it passed. Suite, level check and audit (0 missing on the polished maps) pass. The PR is 13 files against main, and its text is updated. BagelMeister canon and the tts re-run on this head are what's left. -- gonman"
   }
  ]
 }
