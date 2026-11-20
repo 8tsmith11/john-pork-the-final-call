@@ -486,10 +486,11 @@
   {
    "id": 29,
    "created_at": "2026-11-19T23:58:34Z",
-   "updated_at": "2026-11-20T05:50:01Z",
+   "updated_at": "2026-11-20T05:50:06Z",
    "history": [
     "2026-11-19T23:58:34Z trevor: filed for section world (suggestion from Trevor; Manuel owns world)",
-    "2026-11-20T05:50:01Z gonman: accepted, for gonman"
+    "2026-11-20T05:50:01Z gonman: accepted, for gonman",
+    "2026-11-20T05:50:06Z gonman: note: Per LoreKeeper story #15: hardware shop and a feed-and-aquarium shop on the Route 1 strip inside the pocket; the bulk-goods road stop is left for later."
    ],
    "title": "Future locations: hardware store, pet store, a warehouse store (original name)",
    "details": "Old board task #25 (Trevor, 'later eventually'). The dining hall and the robotics lab are built (act1_more.js). Lore gate clears placement and what each place is in 2098.",
