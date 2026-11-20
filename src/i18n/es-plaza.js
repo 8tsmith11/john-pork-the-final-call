@@ -254,7 +254,7 @@ export const ES_PLAZA = {
   'A regular at the counter': 'Un habitual de la barra',
   '"Don\'t take that stool. That\'s Earl\'s." The plate in front of it is going cold. "He\'s running late." He salts his own eggs, then reaches over and salts Earl\'s.': '"No te sientes en ese taburete. Es el de Earl." El plato de enfrente se está enfriando. "Se le hizo tarde." Le pone sal a sus huevos, y después estira el brazo y le pone sal a los de Earl.',
   'A student on the brick path': 'Un estudiante en el camino de ladrillo',
-  '"Stay on the bricks. Rot comes up through the grass, everybody knows that." He picks his way along the path and skips every cracked brick, which is most of them.': '"Quédate en los ladrillos. La podredumbre sale por el pasto, todo el mundo lo sabe." Avanza por el camino esquivando cada ladrillo rajado, que son casi todos.',
+  '"Stay on the bricks. Code rot comes up through the grass, everybody knows that." He picks his way along the path and skips every cracked brick, which is most of them.': '"Quédate en los ladrillos. La podredumbre del código sale por el pasto, todo el mundo lo sabe." Avanza por el camino esquivando cada ladrillo rajado, que son casi todos.',
   'A student with a waffle': 'Un estudiante con un waffle',
   '"I rate every one a two, so it learns." He eats around the university seal and sets it at the edge of his plate, next to the other five.': '"A todos les pongo un dos, así aprende." Se come el waffle alrededor del sello de la universidad y deja el sello en el borde del plato, junto a los otros cinco.',
   'A grad student asleep at a bench': 'Un estudiante de posgrado dormido sobre una mesa',

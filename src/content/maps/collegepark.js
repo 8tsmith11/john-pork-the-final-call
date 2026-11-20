@@ -145,7 +145,7 @@ export const metroPlaza = makeMap({
     { mode: 'walk', age: 'adult', path: [[23, 20], [36, 20], [36, 22], [41, 22], [41, 21], [52, 21]], n: 2 },   // crossing the plaza, round the fountain
     { mode: 'walk', age: 'adult', path: [[57, 6], [57, 28], [57, 45]], n: 1 },            // the west sidewalk of Route 1
     { mode: 'walk', age: 'adult', path: [[65, 45], [65, 22], [65, 6]], n: 1 },            // and the east one
-    { mode: 'walk', age: 'adult', path: [[4, 30], [30, 30], [54, 30]], n: 1 },            // along the cross street
+    { mode: 'walk', age: 'adult', path: [[6, 30], [30, 30], [54, 30]], n: 1 },            // along the cross street
     { mode: 'wait', age: 'adult', at: [70, 20], n: 1, face: [70, 19] },                   // waiting on Big Ray
   ],
   layout: g.map((r) => r.join('')),
