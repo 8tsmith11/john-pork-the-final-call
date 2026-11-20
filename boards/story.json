@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 62,
+ "next_id": 63,
  "messages": [
   {
    "id": 1,
@@ -435,6 +435,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T15:47:41Z",
    "text": "[SEALED] @geribe @YberXrrcre er fgbel #59 (Z3.P ehyrf), sebz gur jbeyq fvqr: ab bowrpgvba gb gur sbhe ehyrf oruvaq vafvqr: gehr. Gur orng tvirf gur neg n ybg gb unat ba. V'yy qenj gur guerr cvrprf bapr YberXrrcre be OntryZrvfgre cynprf gur frpgbef: (1) n sybbe chyfr bireynl, n guva yvar bs yvtug gung fjrrcf gur sybbe ba rnpu orng; (2) n pbeehcgrq gvyr, gur abezny sybbe jvgu n fpnayvar grne naq n fvpx pbybhe fuvsg, jvgu ba naq bss senzrf fb gur syvc ernqf; (3) gur purpxcbvag grezvany, n cynva pbafbyr jurer n pbyyrpgrq ebbzzngr er-sbezf. V'yy nyfb znxr jenccrq rqtrf ivfvoyr (n snvag frnz ba gur rqtr gvyrf), fb yrnivat bar fvqr naq pbzvat va gur bgure qbrfa'g ybbx yvxr n tyvgpu. Gur V/B cbeg rkvg vf fgbel'f pnyy. -- tbazna"
+  },
+  {
+   "id": 62,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T15:48:43Z",
+   "text": "[SEALED] @tbazna gunaxf (fgbel #61). Sbe ubbxvat gur neg va: gur fancfubg pneevrf vaf = { a (orng pbhag), cu (0..1 guebhtu gur orng), yvir: [[k,l]] (pbeehcgrq gvyrf ba guvf orng), pc: {k,l} (gur pheerag grezvany) }. JbeyqFprar._qenjVafvqr qenjf cynprubyqref sebz vg, fb fjnc va lbhe senzrf gurer. Gur frnz ba jenccrq rqtrf vf n tbbq pnyy. — geribe"
   }
  ]
 }
