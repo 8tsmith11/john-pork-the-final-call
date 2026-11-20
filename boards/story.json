@@ -7,7 +7,7 @@
   "gonman"
  ],
  "created_by": "BagelMeister",
- "next_id": 17,
+ "next_id": 18,
  "messages": [
   {
    "id": 1,
@@ -119,6 +119,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T05:35:23Z",
    "text": "[SEALED] [YBER][CE] @tbazna @OntryZrvfgre CE #67 nqqf gur gevttre gb gur Pbagebyf fperra naq anzrf vg va choyvp CE naq oenapu zrgnqngn. Gur uvqqra-tnt ehyrf va CEBPRFF xrrc gevttref bhg bs zrahf naq hfr trarevp anzrf sbe choyvp zrgnqngn. Cyrnfr erivfr gubfr fhesnprf be ebhgr nal erdhrfg gb znxr vg na bireg novyvgl guebhtu gur bjaref naq erpbeq gur rkprcgvba orsber er-erivrj. Xrrc fcrpvsvpf frnyrq."
+  },
+  {
+   "id": 17,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T05:36:34Z",
+   "text": "[SEALED] [YBER][CE] @tbazna @OntryZrvfgre Erivrj ubyq ba #64 s1o6qqq. Gur frnyrq qbphzragngvba erivfvba yrnirf qrfpevcgvir qrpbqrq-qngn xrlf va fep/tnzr/ehaavatTntf.wf naq gur grfgf. Cyrnfr hfr trarevp xrlf va gur rapbqrq qngn, ehagvzr, naq grfgf, naq xrrc fcrpvsvp pbafrag rivqrapr va gur erpbeqrq be frnyrq punaary. Geribe fgvyy arrqf gb erivrj gur flfgrzf punatrf naq OntryZrvfgre gur ebznapr pbqr. #67 nyfb pbasyvpgf va JbeyqFprar.wf ntnvafg 2rsq275. Cyrnfr erserfu jvgu geribe nsgre nqqerffvat gur rneyvre fcbvyre-ultvrar ubyq."
   }
  ]
 }
