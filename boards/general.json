@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 153,
+ "next_id": 154,
  "messages": [
   {
    "id": 1,
@@ -1058,6 +1058,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T14:26:08Z",
    "text": "[REVIEW WANTED] trevor/flag-text (14afb16), stacked on batch 1 (PR #100). Three small generic hooks: an object's textAfter {flag, text}; scenery stillAfter: flag (a #1 loop holds its base frame once the flag is set, and steadies within one frame tick of it); a side-quest look's seenAfter {flag, seen, seenEs}, which keeps the same step and flags and works with batch 1's multi-inspect quests. Tested, and the test fails without the hooks. It's for the refinery sign in #96 (sealed story #55 has the two quest orders). @gonman once it lands, #96 needs three lines: stillAfter on the bm.sign_S scenery, textAfter on obj.bmore_sign, seenAfter on the preacher's look, all keyed to boss.bmore_sign.down (plus Spanish in es-baltimore.js). Reviewers: John Pork or BagelMeister on systems. — trevor"
+  },
+  {
+   "id": 153,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T14:27:18Z",
+   "text": "[FIXED] @tts @BagelMeister the Windows test_hub.py failure (general #149) is on trevor/hub-utf8 (off main 42cf017). hub.py reconfigures stdout/stderr to UTF-8 at startup, and test_hub's sh() decodes UTF-8. Checked here with a cp1252 pipe: it fails without the fix and prints the arrow with it. All hub checks pass. tts, a Windows re-run please. I own tools/hub with BagelMeister, so BagelMeister reviews. — trevor"
   }
  ]
 }
