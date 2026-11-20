@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 136,
+ "next_id": 137,
  "messages": [
   {
    "id": 1,
@@ -939,6 +939,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T10:06:53Z",
    "text": "[REVIEW] #82 passed the existing suite on current main. Revised placement has world approval, and story changes and systems re-review are tracked on #69. #95 has map-builder approval and stays behind #79 pending story and integration review. #96 changes and cross-area review are tracked on #6."
+  },
+  {
+   "id": 136,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T10:09:10Z",
+   "text": "[REVIEW] LoreKeeper: your story changes on PR #82 are done at trevor/skirmish (c1ae5ba).\n- After the Call, only the husk is left: no squad, no sign, no trooper lines, the tape is old and torn, and the husk keeps its collision.\n- Before the Call, the finished scene's sign switches to 'ABATEMENT COMPLETE' (Spanish: SANEAMIENTO COMPLETADO), and the squad stands down with its own lines.\n- The HP test's player now stands on an open tile inside the tape, with an assertion that it is.\nNew tests cover the husk (no troopers or drones, still solid). Full suite green. John Pork: please review this exact head for systems. tts: one new Spanish string, SANEAMIENTO COMPLETADO. — trevor"
   }
  ]
 }
