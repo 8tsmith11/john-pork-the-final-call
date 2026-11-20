@@ -35,6 +35,8 @@ import { Neon } from '../render/neon.js';
 import { skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
 import { LatticeTable } from '../latticeTable.js';
+import { BastionTable } from '../bastionTable.js';
+import { BastionScreen } from '../ui/BastionScreen.js';
 import { rollGear, rolledName } from '../../content/gearRolls.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
 import { FUSE_TEXT, LAMP_COLORS, GATE_FLAG, breakerState, lampState, breakersSet, lampsSet, gateOpen, puzzleClue, toggleText, STEP_TEXT } from '../../content/tunnelPuzzles.js';
@@ -170,6 +172,7 @@ export class WorldScene extends Phaser.Scene {
     this.input.on('wheel', (ptr, objs, dx, dy) => { if (this.menu || this.dlg) return; const c = this.save.party[this.character]; this.selectHot((c?.hotSel ?? 0) + (dy > 0 ? 1 : -1)); });
     this.time.delayedCall(500, () => this._spawnBot());
     if (new URLSearchParams(location.search).has('lattice')) this.time.delayedCall(800, () => this.openBoardGame());   // debug: open the board game
+    if (new URLSearchParams(location.search).has('bastion')) this.time.delayedCall(800, () => this.openBastion('debug'));   // debug: hub #34
     { const c = new URLSearchParams(location.search).get('cinematic'); if (c) this.time.delayedCall(600, () => this.playCinematic(c)); }   // debug: ?cinematic=demo
     for (const c of Object.values(this.save.party ?? {})) c.money ??= W.START_MONEY;   // own wallets (schema 7)
     this.save.flags['settings.crudeHumor'] = 'on';   // always on (Trevor); scripts branch on it
@@ -630,6 +633,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode === 'host') {
       on('msg', (peer, msg) => {
         if (msg.t === 'lattice') { this._table().onHostMsg(peer, msg); return; }   // the casino board game (host runs it)
+        if (msg.t === 'bastion') { this._bastion().onHostMsg(peer, msg); return; }   // hub #34 (host runs it)
         if (this.shared?.onMsg(msg, peer) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg)) return;
         if (msg.t === 'questRead') this._finishQuestReading(peer, msg.read);
         if (msg.t === 'input') {
@@ -680,6 +684,7 @@ export class WorldScene extends Phaser.Scene {
     } else if (this.mode === 'client') {
       on('msg', (msg) => {
         if (msg.t === 'lattice') { this._table().onClientMsg(msg); return; }
+        if (msg.t === 'bastion') { this._bastion().onClientMsg(msg); return; }
         if (this.shared?.onMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg)) return;
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
         if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text, msg.questRead);
@@ -993,6 +998,18 @@ export class WorldScene extends Phaser.Scene {
   // their moves, and the AI plays any roommate nobody is playing, plus the opponent.
   openBoardGame(opponent = 'The Dealer', id = 'dealer') { this._table().open(id, opponent); }
   _table() { return (this.latticeTable ??= new LatticeTable(this, { makeView: (o) => new BoardGame(this, o) })); }
+
+  // The two-way tower defense (hub #34): any map object with `bastion: '<id>'` opens it for the whole party.
+  openBastion(id = 'match', opts = {}) { this._bastion().open(id, opts); }
+  _bastion() { return (this.bastionTable ??= new BastionTable(this, { makeView: (o) => new BastionScreen(this, o) })); }
+  /** Host: record a finished match (story flags: bastion.played / .games.<id> / .won.<id> / .lost.<id>). */
+  _bastionResult(id, won) {
+    if (this.mode === 'client' || typeof id !== 'string' || !/^[a-z0-9_.-]{1,40}$/i.test(id)) return;
+    const f = this.save.flags;
+    f['bastion.played'] = true; f[`bastion.games.${id}`] = Number(f[`bastion.games.${id}`] ?? 0) + 1;
+    f[won ? `bastion.won.${id}` : `bastion.lost.${id}`] = true;
+    this._tickQuests(true);
+  }
 
   /** Host: record a finished Lattice game (story flags: lattice.played / .won / .won.<id> / .winner.<id>). */
   _latticeResult(id, won, winner = null) {
@@ -2351,6 +2368,7 @@ export class WorldScene extends Phaser.Scene {
     if (near.door) { if (this.mode === 'client') this.net.send({ t: 'door', id: near.id }); else this._toggleDoor(near.id); return; }
     if (near.knock) { this._knock(near); return; }
     if (near.boardgame) { this.openBoardGame(near.boardgame, near.id); return; }
+    if (near.bastion) { this.openBastion(near.bastion); return; }
     if (near.action === 'toolwall' && this.mode !== 'client') {
       // One pry bar for every roommate who has no weapon yet; it goes in their hand.
       const got = [];

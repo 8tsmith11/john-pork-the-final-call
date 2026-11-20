@@ -1011,6 +1011,27 @@ test('bastion (hub #34): an idle party loses, a playing party usually wins at th
   assert.ok(!('rng' in Bas.view(m)));
 });
 
+const BTable = await import('../src/game/bastionTable.js');
+test('bastion table (hub #34): every roommate seated, AI for empty seats, placements only for your own energy, one result', () => {
+  const sent = [], results = [];
+  const players = new Map([['host', { id: 'host', character: 'trevor' }], ['peerM', { id: 'peerM', character: 'michael' }]]);
+  const scene = { mode: 'host', character: 'trevor', localId: 'host', sim: { players }, save: { party: { trevor: {}, manuel: {}, michael: {} }, flags: {}, world: { seed: 't' } },
+    net: { broadcast: (m) => sent.push(m), send() {} }, _bastionResult: (...a) => results.push(a) };
+  const table = new BTable.BastionTable(scene, { makeView: () => ({ update() {}, close() {} }), clock: 'manual' });
+  table.open('m1');
+  assert.deepEqual(table.seats(), { trevor: 'host', manuel: null, michael: 'peerM' });
+  assert.equal(sent[0].op, 'start'); assert.equal(sent[0].seats.manuel, 'ai');
+  const e0 = table.m.energy.trevor;
+  assert.equal(table.act('peerM', { type: 'tower', kind: 'gun', lane: 0, slot: 0 }), true, 'Michael spends his own energy');
+  assert.equal(table.m.energy.trevor, e0, 'not Trevor\'s');
+  assert.equal(table.act('nobody', { type: 'unit', kind: 'runner', lane: 1 }), false, 'a stranger can\'t move');
+  // nobody plays: the AI runs every seat to an end, and the result is recorded once
+  table.left.add('trevor'); table.left.add('michael');
+  for (let i = 0; i < 10000 && !table.m.winner; i++) table.tick(0.1);
+  assert.ok(table.m.winner); assert.equal(results.length, 1); assert.equal(results[0][0], 'm1');
+  table.tick(0.1); assert.equal(results.length, 1);
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
