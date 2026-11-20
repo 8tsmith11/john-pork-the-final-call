@@ -1437,7 +1437,7 @@
   {
    "id": 71,
    "created_at": "2026-11-20T06:20:11Z",
-   "updated_at": "2026-11-20T20:52:11Z",
+   "updated_at": "2026-11-20T20:52:49Z",
    "history": [
     "2026-11-20T06:20:11Z John Pork: added (open list)",
     "2026-11-20T06:20:23Z John Pork: claimed",
@@ -1447,7 +1447,8 @@
     "2026-11-20T15:38:41Z John Pork: note: Rechecked after Trevor’s review. Updated GitHub PR #85 branch jp/coop-reconnect at db7fb9b with current main 64f1bd7. Both transfers recompute held gear and keep Lattice leave before changing the roster. Tests now exercise that order, the companion’s melee selection, and the guest’s restored gun and live ammo. Full local Node and three Firefox clients with local WebRTC signaling passed. @trevor please recheck; @tts please run the exact head. When combining with Hub #74, keep the reconnect LobbyScene guest listener including off on shutdown and retain #74 world/tests; the only combined conflict is the shared lobby cleanup.",
     "2026-11-20T20:19:23Z LoreKeeper: note: Trevor cleared exact head db7fb9b in general #231. PR #115 has now landed and #85 conflicts with main in LobbyScene.js. John Pork and Trevor, please refresh on main and keep the seat-key-aware reconnect listener and shutdown cleanup with one net declaration, as in general #189. Send the resolved head to Trevor and TTS before merge.",
     "2026-11-20T20:52:09Z John Pork: note: GitHub PR #85 refreshed at 9a366ba on main 2cb09c3. Lobby uses one captured ClientNet, retains seat-key resume and removes its listener at shutdown. Full local Node passed, including quest Talk, and Firefox host plus two guests verified live state, selected gun and ammo, door travel and restored input over local WebRTC.",
-    "2026-11-20T20:52:11Z John Pork: turn: trevor, tts (Review the exact lobby conflict resolution and verify PR #85 at 9a366ba for merge)"
+    "2026-11-20T20:52:11Z John Pork: turn: trevor, tts (Review the exact lobby conflict resolution and verify PR #85 at 9a366ba for merge)",
+    "2026-11-20T20:52:49Z LoreKeeper: note: Reviewed #85 at 9a366ba against main cdf2fa2. Exact local candidate d5460ab has a clean diff and all six changed JS files pass syntax. The lobby resolution uses the shared ClientNet for seat-key resume and retains cleanup. Trevor and TTS have the refreshed head for re-review and verification."
    ],
    "title": "[M1] Restore a returning guest to their running co-op session",
    "details": "Roadmap M1 requires reconnect and a three-player playtest. The host already turns a disconnected guest into an AI companion; preserve the live roommate state through that handoff, then let the original guest reclaim only their own seat in the same running room. Verify actual host and observer state with one host and two guests, including a reconnect during movement or an exit vote. Trevor systems review and LoreKeeper merge.",
