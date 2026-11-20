@@ -2,8 +2,9 @@
 // genre (dice-driven production, building on corners and edges, trading), with its own board, costs,
 // pieces and win target, sized for a ~5 minute game. Pure rules, no Phaser: tested in tests/run.js.
 //
-// Board: 7 hex districts (axial coords), the centre one is the dead zone where the coderot token
-// starts. Each other district makes one material on its number. Pieces: LINKS on edges, RELAYS on
+// Board: 7 hex districts for two sides, 19 for three or more (every roommate plays: Trevor, "the board game must
+// let all players play, with ai playing for the players who are not there"). The centre one is the dead zone
+// where the coderot token starts. Each other district makes one material on its number. Pieces: LINKS on edges, RELAYS on
 // corners (1 point), upgraded to HUBS (2 points, double output). First side to TARGET points wins.
 import { Rng } from './rng.js';
 
@@ -18,6 +19,9 @@ export const TARGET = 6, HAND_LIMIT = 9, BANK_RATE = 3;
 export const YIELD = { relay: 2, hub: 3 };
 const HEXES = [[0, 0], [1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]];
 const NUMBERS = [6, 8, 5, 9, 4, 10];           // no 7s; 6/8 most likely
+// The big board (radius 2) for three or more sides: the centre, the inner ring, then the outer ring.
+const HEXES_BIG = [[0, 0], ...HEXES.slice(1), [2, 0], [2, -1], [2, -2], [1, -2], [0, -2], [-1, -1], [-2, 0], [-2, 1], [-2, 2], [-1, 2], [0, 2], [1, 1]];
+const NUMBERS_BIG = [6, 8, 5, 9, 4, 10, 3, 11, 6, 8, 5, 9, 4, 10, 2, 12, 3, 11];
 const SIZE = 1;
 
 // Corner positions of a pointy-top hex, rounded so shared corners dedupe.
@@ -30,10 +34,11 @@ function corners(q, r) {
 }
 
 export function newGame(seed = 'lattice', sides = ['party', 'npc']) {
-  const rng = new Rng(`lattice:${seed}`);
-  const mats = rng.shuffle ? rng.shuffle([...RES, RES[rng.int(0, RES.length - 1)]]) : [...RES, 'scrap'];
-  const nums = rng.shuffle ? rng.shuffle([...NUMBERS]) : [...NUMBERS];
-  const hexes = HEXES.map(([q, r], i) => i === 0 ? { q, r, res: null, num: null } : { q, r, res: mats[i - 1], num: nums[i - 1] });
+  const rng = new Rng(`lattice:${seed}`), big = sides.length > 2, layout = big ? HEXES_BIG : HEXES;
+  const want = layout.length - 1, pool = [...Array(want)].map((_, i) => RES[i % RES.length]);
+  const mats = rng.shuffle ? rng.shuffle(big ? pool : [...RES, RES[rng.int(0, RES.length - 1)]]) : pool;
+  const nums = rng.shuffle ? rng.shuffle([...(big ? NUMBERS_BIG : NUMBERS)]) : [...(big ? NUMBERS_BIG : NUMBERS)];
+  const hexes = layout.map(([q, r], i) => i === 0 ? { q, r, res: null, num: null } : { q, r, res: mats[i - 1], num: nums[i - 1] });
   const vmap = new Map(), verts = [], edgeSet = new Map(), edges = [];
   hexes.forEach((h, hi) => {
     const cs = corners(h.q, h.r).map(([x, y]) => {
@@ -75,18 +80,18 @@ export function canLink(g, who, ei) {
 }
 export const canHub = (g, who, vi) => g.verts[vi]?.owner === who && !g.verts[vi].hub;
 
-// Setup: each side places a relay and a link, twice, in snake order (A B B A). Free.
-const SETUP_ORDER = [0, 1, 1, 0];
-export function setupSide(g) { return g.sides[SETUP_ORDER[Math.floor(g.setupStep / 2)]]; }
+// Setup: each side places a relay and a link, twice, in snake order (A B C C B A). Free.
+const setupOrder = (n) => [...Array(n).keys(), ...[...Array(n).keys()].reverse()];
+export function setupSide(g) { return g.sides[setupOrder(g.sides.length)[Math.floor(g.setupStep / 2)]]; }
 export function setupPlace(g, vi, ei) {
   const who = setupSide(g);
   if (!canRelay(g, who, vi, true)) return false;
   const e = g.edges[ei]; if (!e || e.owner || (e.a !== vi && e.b !== vi)) return false;
   g.verts[vi].owner = who; e.owner = who;
   // the second relay pays out its districts once, so nobody starts empty
-  if (g.setupStep >= 4) for (const hi of g.verts[vi].hexes) { const h = g.hexes[hi]; if (h.res) g.hands[who][h.res]++; }
+  if (g.setupStep >= g.sides.length * 2) for (const hi of g.verts[vi].hexes) { const h = g.hexes[hi]; if (h.res) g.hands[who][h.res]++; }
   g.setupStep += 2;
-  if (g.setupStep >= SETUP_ORDER.length * 2) { g.phase = 'play'; g.turn = 0; }
+  if (g.setupStep >= g.sides.length * 4) { g.phase = 'play'; g.turn = 0; }
   return true;
 }
 
@@ -133,13 +138,19 @@ export function bankTrade(g, give, get) {
   if (!g.rolled || g.mustMoveRot || give === get || h[give] < BANK_RATE) return false;
   h[give] -= BANK_RATE; h[get]++; return true;
 }
-// Offer the other side a 1-for-1 swap; they accept if they have it and want what you give more.
-export function offerTrade(g, give, get) {
-  const me = side(g), them = g.sides.find((s) => s !== me), hm = g.hands[me], ht = g.hands[them];
-  if (!g.rolled || hm[give] < 1 || ht[get] < 1 || give === get) return false;
+// Offer a 1-for-1 swap to `them` (default: the first side that would take it); they accept if they have it
+// and want what you give more. Returns the side that took it, or false.
+export function offerTrade(g, give, get, them = null) {
+  const me = side(g);
+  if (!them) { for (const o of g.sides) if (o !== me && offerTrade(g, give, get, o)) return o; return false; }
+  const hm = g.hands[me], ht = g.hands[them];
+  if (them === me || !ht || !g.rolled || g.mustMoveRot || hm[give] < 1 || ht[get] < 1 || give === get) return false;
   if (!(ht[give] < ht[get] && ht[get] > 1)) return false;   // they keep what they're short of
-  hm[give]--; ht[give]++; ht[get]--; hm[get]++; return true;
+  hm[give]--; ht[give]++; ht[get]--; hm[get]++; return them;
 }
+/** The game as plain data for the screen and the network (everything but the dice stream). */
+export function view(g) { const { rng, ...rest } = g; return JSON.parse(JSON.stringify(rest)); }
+
 export function endTurn(g) {
   if (g.phase !== 'play' || !g.rolled || g.mustMoveRot || g.winner) return false;
   g.turn++; g.rolled = false; return true;

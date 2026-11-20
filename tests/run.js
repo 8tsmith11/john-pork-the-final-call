@@ -932,6 +932,49 @@ test('no code plays Phaser sounds by key (none are loaded; a missing key throws 
   assert.deepEqual(bad, [], 'use sfx() from src/audio/audio.js instead');
 });
 
+const LTable = await import('../src/game/latticeTable.js');
+const LRules = await import('../src/engine/lattice.js');
+test('lattice: four sides (every roommate plus the opponent) set up on the big board and always reach a winner', () => {
+  for (let i = 0; i < 25; i++) {
+    const g = LRules.newGame('four' + i, ['trevor', 'manuel', 'michael', 'npc']);
+    assert.equal(g.hexes.length, 19);
+    let n = 0; while (g.phase === 'setup' && n++ < 40) assert.ok(LRules.aiSetup(g), 'setup always finds a spot');
+    assert.equal(g.phase, 'play');
+    let t = 0; while (!g.winner && t++ < 600) LRules.aiTurn(g);
+    assert.ok(g.winner, 'seed four' + i + ' has a winner');
+  }
+  assert.ok(!('rng' in LRules.view(LRules.newGame('v'))), 'the network copy has no dice stream');
+});
+test('lattice table (Trevor: everyone plays, AI for whoever is not there): seats, turn checks, leaving, the result', async () => {
+  const sent = [], results = [];
+  const players = new Map([['host', { id: 'host', character: 'trevor' }], ['peerM', { id: 'peerM', character: 'michael' }]]);
+  const scene = { mode: 'host', character: 'trevor', localId: 'host', sim: { players }, save: { party: { trevor: {}, manuel: {}, michael: {} }, flags: {}, world: { seed: 't' } },
+    net: { broadcast: (m) => sent.push(m), send() {} }, _latticeResult: (...a) => results.push(a) };
+  const views = [];
+  const table = new LTable.LatticeTable(scene, { makeView: (o) => { const v = { o, msgs: [], update(m) { this.msgs.push(m); }, close() { this.closed = true; } }; views.push(v); return v; } });
+  table.fast = true;
+  table.open('dealer', 'The Dealer');
+  assert.deepEqual(table.g.sides, ['trevor', 'manuel', 'michael', 'npc']);
+  assert.deepEqual(table.seats(), { trevor: 'host', manuel: null, michael: 'peerM', npc: null }, 'Manuel has no player: the AI plays him');
+  assert.equal(sent[0].op, 'start'); assert.equal(sent[0].seats.manuel, 'ai');
+  // it's Trevor's setup turn: Michael can't move for him
+  const g = table.g, vi = g.verts.findIndex((_, i) => LRules.canRelay(g, 'trevor', i, true)), ei = g.edges.findIndex((e) => e.a === vi || e.b === vi);
+  assert.equal(table.act('peerM', { type: 'setup', vi, ei }), false, 'out of turn: refused');
+  assert.equal(table.act('host', { type: 'setup', vi, ei }), true);
+  // Trevor walks away: his seat goes to the AI; with Michael gone too, the table closes
+  table.leave('host');
+  assert.equal(table.seats().trevor, null);
+  table.leave('peerM');
+  assert.equal(table.active, false); assert.equal(sent[sent.length - 1].op, 'close');
+  // a fresh table that plays itself out (everyone away but one watcher who never moves) records a result once
+  const t2 = new LTable.LatticeTable({ ...scene, sim: { players: new Map([['host', { id: 'host', character: 'trevor' }]]) } }, { makeView: () => ({ update() {}, close() {} }) });
+  t2.fast = true; t2.open('dealer'); t2.left.add('trevor');
+  for (let k = 0; k < 2000 && !t2.g.winner; k++) { const s = t2.turnSide(); if (t2.g.phase === 'setup') LRules.aiSetup(t2.g); else LRules.aiTurn(t2.g); void s; }
+  t2._step();
+  assert.equal(results.length, 1); assert.equal(results[0][0], 'dealer'); assert.equal(results[0][2], t2.g.winner);
+  t2._step(); assert.equal(results.length, 1, 'recorded once');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));

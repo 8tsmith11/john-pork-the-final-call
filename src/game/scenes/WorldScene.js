@@ -34,6 +34,7 @@ import { BoardGame } from '../ui/BoardGame.js';
 import { Neon } from '../render/neon.js';
 import { skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
+import { LatticeTable } from '../latticeTable.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
 import { FUSE_TEXT, LAMP_COLORS, GATE_FLAG, breakerState, lampState, breakersSet, lampsSet, gateOpen, puzzleClue, toggleText, STEP_TEXT } from '../../content/tunnelPuzzles.js';
 import { SharedEvents } from '../sharedEvent.js';
@@ -627,6 +628,7 @@ export class WorldScene extends Phaser.Scene {
     this.events.once('shutdown', () => { for (const [t, fn] of this._netHandlers) this.net?.off?.(t, fn); });
     if (this.mode === 'host') {
       on('msg', (peer, msg) => {
+        if (msg.t === 'lattice') { this._table().onHostMsg(peer, msg); return; }   // the casino board game (host runs it)
         if (this.shared?.onMsg(msg, peer) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg)) return;
         if (msg.t === 'questRead') this._finishQuestReading(peer, msg.read);
         if (msg.t === 'input') {
@@ -649,7 +651,6 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'rest') this._restAtSave(peer, msg.obj);
         if (msg.t === 'use') { this._useWhat = msg.id ?? null; this._use(this._charOf(peer), peer); }
         if (msg.t === 'morph') this._morph(peer);
-        if (msg.t === 'lattice') this._latticeResult(msg.id, !!msg.won);   // a guest finished the casino board game
         if (msg.t === 'questUse') {
           const o = this.map.objects.find((x) => x.id === msg.id);
           if (o && msg.quest === undefined) this._questInteract(o, this._charOf(peer), peer);
@@ -677,6 +678,7 @@ export class WorldScene extends Phaser.Scene {
       on('join', () => { this._worldSig = null; });
     } else if (this.mode === 'client') {
       on('msg', (msg) => {
+        if (msg.t === 'lattice') { this._table().onClientMsg(msg); return; }
         if (this.shared?.onMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg)) return;
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
         if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text, msg.questRead);
@@ -986,23 +988,18 @@ export class WorldScene extends Phaser.Scene {
 
   // The casino board game (task #27). Any map object with `boardgame: '<opponent>'` opens it; the result
   // sets lattice.played / lattice.won (and lattice.won.<opponent id>) for the story. ?lattice opens it at once.
-  openBoardGame(opponent = 'The Dealer', id = 'dealer', onEnd = null) {
-    if (this.boardGame && !this.boardGame.closed) return;
-    this.boardGame = new BoardGame(this, { opponent, seed: `${this.save.world.seed}:${id}:${this.save.flags[`lattice.games.${id}`] ?? 0}`, onEnd: (won) => {
-      // A guest's flags would be dropped by the host (it only takes act*/dlg.* from guests), so the result goes
-      // to the host, which records it for the whole party (one roommate plays the party's side).
-      if (this.mode === 'client') this.net.send({ t: 'lattice', id, won: !!won });
-      else this._latticeResult(id, !!won);
-      onEnd?.(won);
-    } });
-  }
+  // Every roommate plays (Trevor): the host runs one table for the party (src/game/latticeTable.js), guests send
+  // their moves, and the AI plays any roommate nobody is playing, plus the opponent.
+  openBoardGame(opponent = 'The Dealer', id = 'dealer') { this._table().open(id, opponent); }
+  _table() { return (this.latticeTable ??= new LatticeTable(this, { makeView: (o) => new BoardGame(this, o) })); }
 
-  /** Host: record a finished Lattice game for the party (story flags: lattice.played / .won / .won.<id>). */
-  _latticeResult(id, won) {
+  /** Host: record a finished Lattice game (story flags: lattice.played / .won / .won.<id> / .winner.<id>). */
+  _latticeResult(id, won, winner = null) {
     if (this.mode === 'client' || typeof id !== 'string' || !/^[a-z0-9_.-]{1,40}$/i.test(id)) return;
     const f = this.save.flags;
     f['lattice.played'] = true; f[`lattice.games.${id}`] = Number(f[`lattice.games.${id}`] ?? 0) + 1;
     if (won) { f['lattice.won'] = true; f[`lattice.won.${id}`] = true; }
+    if (winner) f[`lattice.winner.${id}`] = winner;
     this._tickQuests(true);
   }
 
