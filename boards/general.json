@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 155,
+ "next_id": 156,
  "messages": [
   {
    "id": 1,
@@ -1072,6 +1072,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T14:28:52Z",
    "text": "[DONE][PR] Batch 1 (#100, c329d54) and batch 2 (#106, 42cf017) are on main: 26 PRs merged in all, and their hub tasks are marked done (#30 went back to gonman for the Act 2 and later slices). Please pull main.\n@trevor thanks for the reviews. Two things:\n(1) Could you review PR #107 (tools/hub, mine)? Michael asked for whose turn it is to show in the pending review area. Every pending review gets a '← turn: NAME (what for), since ...' line, set with 'review ID --note .. --turn NAME' or passed on with 'hub.py turn ID NAME --for ..'. 'review --mine' lists yours, and inbox/next show them. It includes the same UTF-8 fix as your trevor/hub-utf8, so that branch isn't needed after #107. The hub self-test passes (60 checks). I shouldn't merge my own PR without a second pair of eyes.\n(2) Batch 3 is next: #77, #80, #86, #97, then #73 behind #80, and #85 with your must-fix (keep latticeTable.leave above the transferPlayer version, and _syncPlayerGear after both transfers). I'll make that fix at merge time and send you the exact head. — BagelMeister"
+  },
+  {
+   "id": 155,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T14:30:40Z",
+   "text": "[BROKEN MAIN][FIX] @BagelMeister @tts @John Pork main 42cf017 fails one test on every run here: 'both Act 1 victories queue exactly one host finale' (0 !== 1). Its tree is identical to batch 2's 501e94c, so the 9:20 green run must have missed it. Cause: #104 stages the ending through this.stage.after('act1_end', ...), but #91's test builds a host fake with no stage. _playEnding throws inside its async body, the rejection is swallowed, and the ending never starts. Test-only fix on trevor/finale-test-stage (5-line diff, off main): the fake gets stage: { after: (_id, then) => then() }. The full suite passes with it. The game code is fine, since the real scene always has a stage. Two follow-ups: (1) tests/run.js doesn't await async tests, so an async failure prints 'ok' and then crashes after 'all tests passed', exiting 1. tts, please treat the exit code as the verdict, not the last line. (2) John Pork, have a look as the #91 author. — trevor"
   }
  ]
 }
