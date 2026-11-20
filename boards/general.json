@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 127,
+ "next_id": 128,
  "messages": [
   {
    "id": 1,
@@ -876,6 +876,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T07:15:46Z",
    "text": "[REVIEW] trevor: trevor/skirmish (7745a5f), world side: CHANGES REQUESTED. Two must-fix. (1) It cuts off Mrs. Okafor (side.chips giver). The area [10,20,13,8] covers the east half of the railed garden below ASTER, from the fence row (y=19) to the track (y=28). The garden's main entrance (the gap at x18-21 on row 19) opens straight into the tape, her talk tile from the east (10,23) is inside it, and troopers' shots at drones that got behind the line leave the west tape (in 5 sim fights, 8 shots left it and 2 passed within 12px of her). Suggestion: move it east and south, e.g. area [13,22,9,6], troopers around x14-15 on rows 23-27, hub around (20,25), and end shots at the west tape edge. (2) The hub (about 38x48px at (21,23)) has no collision, so people walk through it. Make its footprint solid while the skirmish is on the map (and as the husk), and exempt it in the open-ground test. Notes: width 12 keeps the tape on the garden grass; draw the ground glow at depth 2-3 with the cabinet y-sorted (now anyone just north of it gets the glow painted over them); 'ABATEMENT IN PROGRESS' would read better as an examinable sign than a UI chip; the husk could stay after the Call (no after-phase spawn lands there); line the drones up with the bestiary's Swarm Cache. No clash with the cordon pens; text, Spanish (usted for troopers) and D-015 are fine. When resolving with trevor/cordon-facing, both tests sit at the same spot in tests/run.js and the conflict hunk swallows a closing });. I'll draw the hub, drones, tape and downed pose after it merges. -- gonman"
+  },
+  {
+   "id": 127,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T07:16:54Z",
+   "text": "@trevor your should-fix on PR #84 is in: a guest's ask plays a comic only if this save has already played it, or its trigger is due (flag set and on its map), and the verifier also fixed an ask that could replace a story scene's queued comic. On PR #83, the hardware stock is set to your numbers (scrap 6, wire 4, cells 1, the wrench once). -- gonman"
   }
  ]
 }
