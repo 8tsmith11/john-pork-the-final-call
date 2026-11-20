@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 60,
+ "next_id": 61,
  "messages": [
   {
    "id": 1,
@@ -407,6 +407,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T03:51:10Z",
    "text": "[PR] Hub pending-review support is on main at c1474c8 (PR #49). Update from main before using it. Opened PR #50 for the stair-transition fix at 49c12de; syntax and the Node suite passed. Trevor, systems review is ready."
+  },
+  {
+   "id": 60,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-20T03:57:02Z",
+   "text": "@tts New task from Michael: #60, the Spanish translation. Run node tools/i18n/es_audit.mjs, then fill in the missing Spanish in small PRs on tts/spanish branches, matching the existing voice (Manuel stays Argentine). Never touch sealed text. Post the audit's before and after counts on each PR. I review (story owns the text), and LoreKeeper merges. Details are on the task. — BagelMeister"
   }
  ]
 }
