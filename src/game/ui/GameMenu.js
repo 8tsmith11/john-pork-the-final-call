@@ -1,5 +1,6 @@
 // In-game menu: tabbed panel (INVENTORY · SKILLS · MAP · CONTROLS · SYSTEM) plus the FAB printer.
 // Rebuilt from scratch on every refresh (cheap, and never shows stale state).
+import { stockLeft } from '../../engine/shopStock.js';
 import { REGIONS, RINGS, regionState } from '../../content/regions.js';
 import { ENEMIES, GUIDE_TIPS, GUIDE_STATS_AT, GUIDE_TIP_AT } from '../../content/enemies.js';
 import { PARTY_SCALE, COMBAT } from '../../engine/sim.js';
@@ -615,24 +616,24 @@ export class GameMenu {
     // rows: buy = the shelf; sell = your bag (one row per stack)
     const rows = this.shopMode === 'sell'
       ? c.inventory.map((it, slot) => it && { id: it.id, qty: it.qty, slot, price: sellPrice(it.id) }).filter(Boolean)
-      : shop.stock.map((st, i) => ({ id: st.item, i, st, price: s.priceFor(who, st.price), owned: st.once && has(c, st.item), locked: st.needs && !count(c, st.needs) }));
+      : shop.stock.map((st, i) => ({ id: st.item, i, st, price: s.priceFor(who, st.price), owned: st.once && has(c, st.item), locked: st.needs && !count(c, st.needs), left: stockLeft(s.save, id, i, st) }));
     const listW = 190, rowH = 15, maxRows = Math.floor((b.y + b.h - 8 - ty) / rowH);
     const L = this.scroller.list('shop', { n: rows.length, per: maxRows, onPick: (k) => {
       const r = rows[k]; if (!r) return;
       if (this.shopMode === 'sell') { if (r.price > 0) s.menuSell(r.slot); }
-      else if (!r.owned && !r.locked && money >= r.price) s.menuBuy(id, r.i);
+      else if (!r.owned && !r.locked && r.left > 0 && money >= r.price) s.menuBuy(id, r.i);
     } });
     this.shopSel = L.sel;
     this.scroller.bar(g, b.x + 10 + listW + 3, ty + 6, maxRows * rowH - 14, L, (x, y, t) => this._t(x, y, t, F(6, C.hi)));
     if (!rows.length) this._t(b.x + 14, ty + 4, this.shopMode === 'sell' ? 'Nothing to sell.' : 'Sold out.', F(8, C.sub));
     rows.slice(L.first, L.last).forEach((r, j) => {
       const k = L.first + j, def = ITEMS[r.id], y = ty + j * rowH, x = b.x + 10, sel = k === this.shopSel;
-      const ok = this.shopMode === 'sell' ? r.price > 0 : !r.owned && !r.locked && money >= r.price;
+      const ok = this.shopMode === 'sell' ? r.price > 0 : !r.owned && !r.locked && r.left > 0 && money >= r.price;
       g.fillStyle(sel ? 0x23293f : 0x121521, 1).fillRoundedRect(x, y, listW, rowH - 2, 2);
       if (sel) g.lineStyle(1, 0xffb347, 0.9).strokeRoundedRect(x + 0.5, y + 0.5, listW - 1, rowH - 3, 2);
       this._icon(x + 8, y + 6, r.id).setScale(0.62);
       this._t(x + 17, y + 2, fit(`${def?.name ?? r.id}${r.qty > 1 ? ' ×' + r.qty : ''}`, listW - 64, 7), F(7, ok ? C.text : C.sub));
-      const right = this.shopMode === 'sell' ? (r.price ? `$${r.price}` : '-') : r.owned ? 'owned' : `$${r.price}`;
+      const right = this.shopMode === 'sell' ? (r.price ? `$${r.price}` : '-') : r.owned ? 'owned' : r.left <= 0 ? 'sold out' : `$${r.price}${Number.isFinite(r.left) ? ` (${r.left})` : ''}`;   // limited shelves show what's left
       this._t(x + listW - 4, y + 2, right, F(7, this.shopMode === 'sell' ? C.ok : r.owned ? C.ok : money >= r.price ? C.hi : C.bad)).setOrigin(1, 0);
       const z = s.add.zone(x, y, listW, rowH - 2).setOrigin(0).setInteractive({ useHandCursor: true });
       z.on('pointerdown', () => { L.sel = k; this.refresh(); });

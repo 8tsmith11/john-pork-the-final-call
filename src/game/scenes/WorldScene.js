@@ -1,4 +1,5 @@
 import { ACT2_REGION_BOSSES } from '../../content/bosses.js';
+import { stockLeft, takeStock } from '../../engine/shopStock.js';
 import { Sim, TILE, UNDER } from '../../engine/sim.js';
 import { VIEW, setupCameras, toView } from '../../view.js';
 import { InputReader } from '../../engine/input.js';
@@ -1167,7 +1168,9 @@ export class WorldScene extends Phaser.Scene {
     if (st.needs && !Inv.has(c, st.needs)) return;
     const price = this.priceFor(who, st.price);
     if (W.money(this.save, who) < price) return;
+    if (stockLeft(this.save, shopId, idx, st) <= 0) return this._toast('Sold out. They restock later.');
     if (Inv.add(c, st.item) > 0) return this._toast('Your bag is full.');
+    takeStock(this.save, shopId, idx, st);
     W.addMoney(this.save, who, -price);
     sfx('pickup'); this._toast(`Bought: ${ITEMS[st.item].name} (-$${price})`);
     this._syncParty();
