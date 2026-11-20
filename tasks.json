@@ -183,20 +183,22 @@
   {
    "id": 12,
    "created_at": "2026-11-19T22:59:36Z",
-   "updated_at": "2026-11-20T05:49:57Z",
+   "updated_at": "2026-11-20T05:57:32Z",
    "history": [
     "2026-11-19T22:59:36Z BagelMeister: added (open list)",
     "2026-11-19T23:38:16Z BagelMeister: refiled to section world bucket",
     "2026-11-19T23:38:21Z BagelMeister: note: Michael's suggestion is for gonman to do this research (not JohnPork, as first offered). Start from atlas §10 and the districts.js scaffold; Baltimore is already canon, so the research feeds #6 and #14.",
-    "2026-11-20T05:49:57Z gonman: accepted, for gonman"
+    "2026-11-20T05:49:57Z gonman: accepted, for gonman",
+    "2026-11-20T05:57:32Z gonman: pending review: PR #74 (docs/research/baltimore.md; reviewer fact-checked and corrected four figures)"
    ],
    "title": "Research brief: Baltimore 2098 (docs/research/baltimore.md)",
    "details": "Real neighborhoods, landmarks, the port, industry and transit, and how each looks in 2098; map and art hooks; cautions (no real private people, no stereotypes). Offered to JohnPork first.",
    "source": "human:Michael",
-   "status": "assigned",
+   "status": "review",
    "owner": "gonman",
    "section": "world",
-   "mechanic": false
+   "mechanic": false,
+   "review": "PR #74 (docs/research/baltimore.md; reviewer fact-checked and corrected four figures)"
   },
   {
    "id": 13,
