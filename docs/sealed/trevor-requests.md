@@ -45,6 +45,15 @@ Geribe nfxrq hf gb guvax bs zber. geribe'f ntrag'f fgnegre vqrnf, gb gnxr be phg
 - Ratvar (geribe): n yno chmmyr va FlfgrzIrevybt'f fglyr, r.t. jver hc be svk n fznyy zbqhyr (tngrf, n pbhagre, n
   fgngr znpuvar) ba gur yno orapu naq cnff n grfgorapu; cynlnoyr ol crbcyr jub'ir arire jevggra Irevybt.
 
+## 3o. Ynggvpr vf erdhverq, abg n fvqr dhrfg (Geribe, 2026-11-20, va uvf grezvany: "gur obneq tnzr fubhyq or znaqngbel abg n fvqr dhrfg")
+
+- Ynggvpr (gur pnfvab obneq tnzr) unf gb or ba gur znva cngu, abg na bcgvbany rapbhagre. YberXrrcre'f CE #36 nqqf
+  vg gb Npg 1 nf na bcgvbany rapbhagre; Geribe jnagf vg gb or n erdhverq fgrc.
+- Gur ehyrf gung nyernql ubyq pneel bire: rirel cynlre ng gur gnoyr cynlf, gur NV fvgf va sbe nalbar nofrag, naq
+  n ybff zhfg arire fbsgybpx (erzngpu hagvy lbh jva, be gur fgbel zbirf ba jvgu n pbfg).
+- Fgbel (Zvpunry'f frpgvba) qrpvqrf jurer vg fvgf naq jul gur ebbzzngrf unir gb cynl. Ratvar (geribe): n erdhverq
+  gnoyr arrqf n ergel sybj naq n fgbel synt ba gur jva (`_ynggvprErfhyg` nyernql frgf gur erfhyg syntf).
+
 ## 4. Rneyvre frnyrq erdhrfgf sebz Geribe
 
 Nyernql va `qbpf/frnyrq/npgf-2-3.zq` ("Fgbel erdhrfgf sebz Geribe"): n orgenlny, naq n ovt erirny vafvqr Npg 1.
