@@ -78,7 +78,7 @@ export const asterRoof = fromGrid({
   legend: {
     L: { exit: 'aster_hall', id: 'obj.roof_hatch', art: 'obj.stairs', label: 'Hatch down to the sixth floor', pair: 'obj.hall_roof', text: 'Back down the ladder.' },
     W: { scenery: 'obj.degasser', solid: true },
-    V: { prop: 'obj.balcony_view', id: 'obj.roof_view', label: 'The view north', text: 'A coin viewer bolted to the rail, aimed north. Through it, the cordon floodlights stand in a ring around College Park, white and evenly spaced. From up here you can see the ring close behind you, with ASTER near the middle.' },
+    V: { prop: 'obj.balcony_view', id: 'obj.roof_view', label: 'The view north', text: 'A coin viewer bolted to the rail, aimed north. Through it, the cordon floodlights stand in a ring around College Park, white against the dark. From up here you can see the ring close behind you, with ASTER near the middle.' },
     N: { npc: 'npc.roof_watcher', art: 'npc.rotter_1', label: 'Someone on the roof', text: '"Start at the water tower and go left. Don\'t count the moon. People count the moon." They keep their eyes on the north the whole time.' },
     K: { prop: 'obj.toolbox', id: 'obj.roof_cooler', label: 'A cooler behind the tank', loot: 'lost', text: 'A cooler wedged behind the water tank, out of the wind. On the lid in marker: IF YOU CAME UP HERE YOU NEED IT MORE THAN ME.' },
     '@': { spawn: true },

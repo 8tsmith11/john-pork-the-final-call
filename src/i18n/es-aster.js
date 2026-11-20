@@ -169,7 +169,7 @@ export const ES_ASTER = {
   'Hatch down to the sixth floor': 'Escotilla, abajo al sexto piso',
   'Back down the ladder.': 'De vuelta escalera abajo.',
   'The view north': 'La vista al norte',
-  'A coin viewer bolted to the rail, aimed north. Through it, the cordon floodlights stand in a ring around College Park, white and evenly spaced. From up here you can see the ring close behind you, with ASTER near the middle.': 'Un visor de monedas atornillado a la baranda, apuntando al norte. A través de él, los reflectores del cordón forman un anillo alrededor de College Park, blancos y a la misma distancia uno del otro. Desde aquí arriba ves cómo el anillo se cierra detrás de ti, con ASTER cerca del centro.',
+  'A coin viewer bolted to the rail, aimed north. Through it, the cordon floodlights stand in a ring around College Park, white against the dark. From up here you can see the ring close behind you, with ASTER near the middle.': 'Un visor de monedas atornillado a la baranda, apuntando al norte. A través de él, los reflectores del cordón forman un anillo alrededor de College Park, blancos contra la oscuridad. Desde aquí arriba ves cómo el anillo se cierra detrás de ti, con ASTER cerca del centro.',
   'Someone on the roof': 'Alguien en la azotea',
   '"Start at the water tower and go left. Don\'t count the moon. People count the moon." They keep their eyes on the north the whole time.': '"Empieza por la torre de agua y sigue hacia la izquierda. No cuentes la luna. La gente cuenta la luna." No aparta la vista del norte en ningún momento.',
   'A cooler behind the tank': 'Una hielera detrás del tanque',
