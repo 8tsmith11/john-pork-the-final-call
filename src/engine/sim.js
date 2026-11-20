@@ -7,6 +7,7 @@ import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 import { BOSSES } from '../content/bosses.js';
 import { newInside, stepInside, insideView } from './inside.js';
+import { newChase, stepChase, chaseView } from './chase.js';
 
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.35, iframes: 0.22,
   stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
@@ -56,6 +57,7 @@ export class Sim {
     this.bossVariant = opts.bossVariant;
     this.map = map;          // { w, h, solid(tx, ty) -> bool, spawns: [{x,y}] }
     this.inside = newInside(map);   // the inside rules, for maps flagged `inside` (src/engine/inside.js)
+    this.chase = newChase(map);     // the chase rules, for maps flagged `chase` (src/engine/chase.js)
     this.players = new Map(); // id -> player
     this.enemies = new Map(); // id -> enemy
     this.shots = [];          // projectiles
@@ -72,7 +74,7 @@ export class Sim {
   /** Swap maps. `fromId` = the map we came from: players arrive beside the exit that leads back there. */
   setMap(map, fromId = null, viaId = null) {
     this.map = map; this.shots = []; this.hazards = []; this.decoys = []; this.goo = []; this.enemies.clear();
-    this.inside = newInside(map);
+    this.inside = newInside(map); this.chase = newChase(map);
     for (const a of this.allies ?? []) a.relocate = true;
     // Arrive at the counterpart of the exit you used: an explicit `pair`, else the same kind (stairs to stairs,
     // elevator to elevator), else the first exit back. (John Pork #577: the elevator dropped you at the stairs.)
@@ -398,7 +400,7 @@ export class Sim {
       // else is used by the scene (consumables etc.). No weapon in hand, no punch.
       const held = p.held ?? 'melee';
       if (inp.attack && held === 'melee' && p.mods?.swing && !p.riding && !p.playing && !busy && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
-      if (inp.attack && held === 'gun' && p.mods?.gun && !p.riding && !p.playing && !busy && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);
+      if (inp.attack && held === 'gun' && p.mods?.gun && (!p.riding || this.chase) && !p.playing && !busy && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);
       if (inp.fire && (held === 'gun' || p.held === undefined) && !p.riding && !p.playing && !busy && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);
 
       // Facing follows the walking direction; it only turns toward the cursor while firing a ranged
@@ -464,6 +466,7 @@ export class Sim {
     this._stepRot(dt);
     this._stepUnder(dt);
     const edt = this.inside ? stepInside(this, this.inside, dt) : dt;   // inside: enemies act on the beat
+    if (this.chase) stepChase(this, this.chase, dt);
     if (this.hitStop > 0) this.hitStop = Math.max(0, this.hitStop - dt);
     else { this._stepEnemies(edt); this._penEnemies(); this._stepShots(dt); }
     this._stepRevives(dt);
@@ -1159,6 +1162,7 @@ export class Sim {
     return {
       tick: this.tick,
       ...(this.inside ? { ins: insideView(this.inside) } : {}),
+      ...(this.chase ? { ch: chaseView(this.chase) } : {}),
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
