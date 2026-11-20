@@ -293,7 +293,7 @@ export class Sim {
     const p = this.players.get(id); if (!p || p.waitExit === exitId) return this.allWaiting(exitId);
     // Parking ends a roll (Trevor: dashing into a door broke things). The park skips the player's update, so a roll in
     // progress froze mid-air, invulnerable, and stepping back out finished it, straight back into the door.
-    Object.assign(p, { waitExit: exitId, waitDx: dx, waitDy: dy, waitTick: this.tick, dodgeT: 0, vx: 0, vy: 0, iframes: Math.min(p.iframes ?? 0, 0.2) });
+    Object.assign(p, { waitExit: exitId, waitDx: dx, waitDy: dy, waitTick: this.tick, dodgeT: 0, vx: 0, vy: 0 });
     return this.allWaiting(exitId);
   }
   // AI companions (ids 'ai:*') don't vote at doors; they're carried along with the party.
@@ -318,7 +318,8 @@ export class Sim {
         p.sleepT = Math.max(0, p.sleepT - dt); p.vx = p.vy = 0; p.moving = false; if (p.sleepT <= 0) this.events.push({ t: 'wake', id: p.id }); continue; }
       if (p.waitExit) {
         // Parked inside a doorway, waiting for the party. Any movement that isn't into the door steps back out.
-        p.vx = p.vy = 0; p.moving = false;
+        // Timers still run while parked (John Pork, hub #102): a roll's invulnerability wears off as it would standing.
+        p.vx = p.vy = 0; p.moving = false; p.dodgeCd = Math.max(0, p.dodgeCd - dt); p.iframes = Math.max(0, p.iframes - dt);
         const intoDoor = (inp.mx || 0) * p.waitDx + (inp.my || 0) * p.waitDy > 0;
         if ((inp.mx || inp.my) && !intoDoor && this.tick - p.waitTick > 12) { p.waitExit = null; this.events.push({ t: 'unwait', id: p.id }); }
         continue;

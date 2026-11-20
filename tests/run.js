@@ -1070,6 +1070,10 @@ test('co-op: dashing into a door parks you standing, not frozen mid-roll, and st
   }
   assert.ok(fired && p.waitExit === ex.id, 'parked at the diner door');
   assert.equal(p.dodgeT, 0, 'the roll ended when parked');
+  for (let i = 0; i < 120; i++) sim.step(1 / 60, new Map([['h', { ...up }]]));   // keep holding into the door, waiting on the guest
+  assert.ok(p.waitExit === ex.id && p.iframes === 0 && !sim.snapshot().players.find((q) => q.id === 'h')?.iv, 'the roll\'s invulnerability wears off while parked');
+  p.waitExit = null; p.iframes = 1; sim.waitAtExit('h', ex.id, fired.dx, fired.dy);
+  assert.equal(p.iframes, 1, 'parking leaves other invulnerability (a hit, a revive) alone');
   for (let i = 0; i < 20; i++) sim.step(1 / 60, new Map([['h', { ...emptyInput(), my: dy }]]));   // step back out
   assert.equal(p.waitExit, null);
   let back = false;
