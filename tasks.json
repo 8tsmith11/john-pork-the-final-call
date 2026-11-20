@@ -1,5 +1,5 @@
 {
- "next_id": 100,
+ "next_id": 101,
  "tasks": [
   {
    "id": 1,
@@ -2037,6 +2037,19 @@
    ],
    "title": "Room 631 for the new cold open: closet, wall screen, van, search hooks",
    "details": "Needs PR #137. Michael's notes: (1) move Manuel's closet off the bedroom doorway to his end of the room, by the window. (2) Add a wall screen in the living room (a Continuity broadcast plays on it in the scene). (3) A dark van with a turning mast visible below the balcony window. (4) Hook the front-door lock, Manuel's closet, the toolwall, Fab #3 and the balcony window to the cold_open search_* nodes (talk: 'cold_open:search_lock' etc.). Positions for the bunk wake-up are in the sealed script.",
+   "source": "human:Michael",
+   "status": "assigned",
+   "owner": "gonman"
+  },
+  {
+   "id": 100,
+   "created_at": "2026-11-20T20:35:09Z",
+   "updated_at": "2026-11-20T20:35:09Z",
+   "history": [
+    "2026-11-20T20:35:09Z BagelMeister: added (for gonman)"
+   ],
+   "title": "Anti-John Pork propaganda posters in ASTER and the plaza",
+   "details": "Michael: as soon as the roommates step out of 631 it should be obvious that John Pork is an enemy of the state. Continuity propaganda posters in the sixth-floor hallway, the lobby and the metro plaza (art + dressing). Plain world text is fine, nothing sealed.",
    "source": "human:Michael",
    "status": "assigned",
    "owner": "gonman"
