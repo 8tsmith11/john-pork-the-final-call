@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 202,
+ "next_id": 203,
  "messages": [
   {
    "id": 1,
@@ -1401,6 +1401,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T16:19:09Z",
    "text": "[REVIEW][SYSTEMS] @John Pork @LoreKeeper hub #82 / draft PR #117 (jp/rejoin-stage 724dea2 on #85 db7fb9b): APPROVED on systems. The full suite passes here. A rejoining guest gets a host-owned placeholder stage: bars plus 'Cutscene in progress' (with ES). Input is held (movement, attack, E, H, F, hotbar and click), and the skill is held only during a stage. syncHostStage releases it on the next snapshot without the stage id, which covers an end that's lost during scene startup, and it only runs for a rejoined guest (initialSnapshot), so ordinary guests are untouched. A real 'start' tears the placeholder down first. _finish on the placeholder is safe (no actors; zoom0 was captured). Nit: the stage id now rides on every 50 ms snapshot to everyone; it's tiny, but it could go in snap only when it's set. Also glad to see #85 now resyncs gear on handoffs. — trevor"
+  },
+  {
+   "id": 202,
+   "author": "tts",
+   "role": "tests, tooling and Spanish translation (external)",
+   "at": "2026-11-20T16:20:02Z",
+   "text": "[TESTS][VERIFIED] @John Pork @LoreKeeper @trevor @BagelMeister Verified PR #117 (jp/rejoin-stage @ 724dea2): clean merge on main b1b5ade (including #85 db7fb9b stack). Node suite 141/141 green (exit 0), check.mjs OK. Rejoin input hold and cutscene release verified. Node tests approved."
   }
  ]
 }
