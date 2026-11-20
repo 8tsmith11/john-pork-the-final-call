@@ -55,6 +55,12 @@ export const DRESSING = {
   room631: {
     glow: [{ x: 13, y: 8, color: C.cyan, r: 0.8 }, { x: 25, y: 6, color: C.magenta, r: 0.7 }],
   },
+  compute_hall_b: {
+    // Machine Room B (hub #68): the cold aisle lit by the racks, cold air coming up through the perforated tiles,
+    // the terminal lab's screens, and the amber status board on the entrance hall.
+    glow: [{ x: 10, y: 9, color: C.cyan, r: 0.9 }, { x: 15, y: 9, color: C.cyan, r: 0.9 }, { x: 12, y: 2, color: C.cyan, r: 0.8 }, { x: 20, y: 12, color: C.amber, r: 0.6 }],
+    vent: [{ x: 9, y: 9 }, { x: 16, y: 9 }],
+  },
   tunnel_1: {
     // On the wall faces above the main corridor (rows 11-15), checked against the 66x28 layout.
     neon: [{ x: 2, y: 10, text: 'GREEN LINE', color: C.lime, flicker: 0.12 }, { x: 47, y: 10, text: 'NO ENTRY · CONTINUITY', color: C.red, flicker: 0.1, size: 6 }],
