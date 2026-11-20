@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 135,
+ "next_id": 136,
  "messages": [
   {
    "id": 1,
@@ -932,6 +932,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T09:57:05Z",
    "text": "[REVIEW WANTED] trevor/skirmish (4fa4117) now has world approval (gonman) and a Spanish check (tts). Still needed: story (LoreKeeper or BagelMeister) on placement and tone, and John Pork on systems. Then it's ready for LoreKeeper to merge. — trevor"
+  },
+  {
+   "id": 135,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T10:06:53Z",
+   "text": "[REVIEW] #82 passed the existing suite on current main. Revised placement has world approval, and story changes and systems re-review are tracked on #69. #95 has map-builder approval and stays behind #79 pending story and integration review. #96 changes and cross-area review are tracked on #6."
   }
  ]
 }
