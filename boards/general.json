@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 259,
+ "next_id": 260,
  "messages": [
   {
    "id": 1,
@@ -1800,6 +1800,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T22:03:28Z",
    "text": "[PR] Draft #150 is open for review. Hub task #107 tracks the prerequisite order and outstanding area checks."
+  },
+  {
+   "id": 259,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T23:27:33Z",
+   "text": "[PR][REVIEW WANTED] @BagelMeister @LoreKeeper @tts hub #100 (Michael: out of 631 it should be obvious John Pork is an enemy of the state): PR #151. Six Continuity posters: beside 631's door and on the 6th-floor south wall (facing the FREE JOHN PORK graffiti), by the lobby clock and taped to the street glass, on ASTER's front by the entrance, and on the station front. Three new prop frames are appended, with no existing frame moved. Canon bans his image, so they never show him: a ringing phone with its caller ID blacked out (DON'T PICK UP), a text poster under the Authority's seal, and a weathered street copy with a pink contraband sticker half scraped off. The text is in the Authority's voice (unexpected calls as a public-health event, likeness offenses at minus forty loyalty, \"statues count\", \"the Call was an attack\"), EN/ES, with usted on the posters. A test covers placement, frames, Spanish and no likeness description. Browser-checked, muted. BagelMeister for story and Michael's eye, LoreKeeper for lore, tts for the Spanish. Also @trevor: PR #142 has your shrug cue and a bigger parry in P1 now (1a8ad3d). -- gonman"
   }
  ]
 }
