@@ -16,6 +16,7 @@ import { ROOMMATES } from '../scenes/BootScene.js';
 import { looksFor, wearTexture } from '../render/wearables.js';
 import { QUESTS, questState, questVisible, questLeads } from '../../content/quests.js';
 import { Scroller } from './scroll.js';
+import { rolledName } from '../../content/gearRolls.js';
 
 // One line of weapon stats for tooltips: melee hit, rate, dps, reach, arc, knockback; guns dmg×pellets, rate, clip, reload.
 export function weaponStats(def, lvl = 0) {
@@ -177,7 +178,7 @@ export class GameMenu {
         if (this.held != null) { const it = inv[this.held]; if (it && ITEMS[it.id]?.slot === slot) s.menuUse(it.id); this.held = null; return this.refresh(); }
         if (id) s.menuUse(id);   // click a worn item to take it off
       });
-      z.on('pointerover', () => { this.hover = id ? { id } : { label: `${SLOT_NAMES[slot]} slot` }; this._drawTip(); });
+      z.on('pointerover', () => { this.hover = id ? { id, roll: c.rolled?.[slot] ?? ((slot === 'weapon' || slot === 'ranged') ? c.inventory.find((x) => x?.id === id && x.roll)?.roll : null) } : { label: `${SLOT_NAMES[slot]} slot` }; this._drawTip(); });
       this.root.add(z);
     };
     const col = (slots, x, label) => { this._t(x + S / 2, b.y + 25, label, F(5, C.sub)).setOrigin(0.5, 1); slots.forEach((slot, k) => slotBox(slot, x, b.y + 28 + k * (S + GAP))); };
@@ -239,7 +240,7 @@ export class GameMenu {
         if (right && !p.event?.shiftKey) { const def = ITEMS[it.id]; if (def?.slot === 'material' || it.qty > 1 && def?.slot !== 'consumable') { this.held = i; this.heldHalf = true; } else s.menuUseSlot(i); return this.refresh(); }
         this.held = i; this.heldHalf = false; this.refresh();
       });
-      z.on('pointerover', () => { this.hover = it ? { id: it.id, qty: it.qty, i } : null; this._drawTip(); });
+      z.on('pointerover', () => { this.hover = it ? { id: it.id, qty: it.qty, i, roll: it.roll } : null; this._drawTip(); });
       this.root.add(z);
     }
     // the held stack follows the cursor
@@ -272,8 +273,8 @@ export class GameMenu {
       ?? (ARMOR_SLOTS.includes(def.slot) ? `Armor · ${SLOT_NAMES[def.slot]}` : GEAR_SLOTS.includes(def.slot) ? `Gear · ${SLOT_NAMES[def.slot]}` : SLOT_NAMES[def.slot] ?? '')) + (def.unique ? ` · ${def.owner[0].toUpperCase() + def.owner.slice(1)} only${def.special ? ' · special armor' : ''}` : '');
     const lvl = this.scene.save.party[this.scene.character]?.upgrades?.[h.id] ?? 0;
     const stats = modText(scaleMods(def.mods, lvl));
-    this.tip.push(this._t(x, y, `${def.name}${lvl ? ` +${lvl}` : ''}${h.qty > 1 ? ' ×' + h.qty : ''}`, F(9, def.unique ? '#ffd27f' : C.hi)));
-    this.tip.push(this._t(x, y + 11, `${kind}${def.heal ? `  · heals ${def.heal}` : ''}${stats ? '  · ' + stats : ''}`, F(6, C.ok)));
+    this.tip.push(this._t(x, y, `${rolledName(def.name, h.roll, getLang())}${lvl ? ` +${lvl}` : ''}${h.qty > 1 ? ' ×' + h.qty : ''}`, F(9, def.unique ? '#ffd27f' : h.roll ? '#c9a2ff' : C.hi)));
+    this.tip.push(this._t(x, y + 11, `${kind}${def.heal ? `  · heals ${def.heal}` : ''}${stats ? '  · ' + stats : ''}${h.roll ? `  · rolled: ${modText(h.roll.mods)}` : ''}`, F(6, C.ok)));
     // Weapon stats (Trevor): what a hit or a shot actually does.
     const ws = weaponStats(def, lvl);
     let ty = y + 20;

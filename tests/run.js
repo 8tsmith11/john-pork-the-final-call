@@ -1312,6 +1312,41 @@ const craftFixture = (inventory, weapon = null) => {
     _announce: (text) => notices.push(text), _syncParty() { this.syncs++; } };
   return { c, scene, notices, craft: (id) => CraftWorldScene.prototype._craft.call(scene, 'trevor', CRAFT_RECIPES.findIndex((r) => r.item === id)) };
 };
+test('procedural gear (task #39): procedural recipes roll seeded variants that count when held or worn and survive wear/unwear', async () => {
+  const { playerMods: pm } = await import('../src/content/items.js');
+  const make = (seed, id, times) => {
+    const f = craftFixture(Array.from({ length: Inv.SLOTS }, () => null));
+    f.c.inventory[0] = { id: 'item.mat_scrap', qty: 99 }; f.c.inventory[1] = { id: 'item.mat_plastic', qty: 99 }; f.c.inventory[2] = { id: 'item.mat_cloth', qty: 99 }; f.c.inventory[3] = { id: 'item.mat_wire', qty: 99 };
+    f.scene.save.world = { seed };
+    for (let k = 0; k < times; k++) f.craft(id);
+    return f;
+  };
+  const a = make('world-a', 'item.rebar', 3), b = make('world-a', 'item.rebar', 3);
+  const rolls = (f) => f.c.inventory.filter((x) => x?.id === 'item.rebar').map((x) => JSON.stringify(x.roll));
+  assert.equal(rolls(a).length, 3, 'three rebars, each its own slot');
+  assert.ok(rolls(a).every((r) => r && r !== 'undefined'), 'every procedural rebar has a roll');
+  assert.deepEqual(rolls(a).sort(), rolls(b).sort(), 'same world, same rolls (co-op screens agree)');
+  assert.equal(a.scene.save.world.gearMade['item.rebar'], 3);
+  assert.ok(a.notices.some((n) => /rebar/i.test(n) && /\(/.test(n)), 'the fab names the roll');
+  // held: the selected hotbar rebar's roll adds to the stats
+  const c = a.c, i = c.inventory.findIndex((x) => x?.id === 'item.rebar'), roll = c.inventory[i].roll;
+  [c.inventory[0], c.inventory[i]] = [c.inventory[i], c.inventory[0]]; c.hotSel = 0; c.equipped.weapon = 'item.rebar';
+  const withRoll = pm(c, 'trevor'), bare = pm({ ...c, inventory: c.inventory.map((x) => x && { id: x.id, qty: x.qty }) }, 'trevor');
+  for (const [k, v] of Object.entries(roll.mods)) assert.ok(Math.abs((withRoll[k] - bare[k]) - v) < 1e-9, `held roll adds ${k}`);
+  // worn: wearing a rolled vest keeps its roll on, and taking it off puts it back on the slot
+  const v = make('world-v', 'item.mesh_vest', 1).c;
+  const vestRoll = (v.inventory.find((x) => x?.id === 'item.mesh_vest') ?? {}).roll ?? v.rolled?.chestplate;
+  assert.ok(vestRoll, 'the vest rolled');
+  if (v.equipped.chestplate !== 'item.mesh_vest') assert.ok(Inv.wear(v, 'item.mesh_vest'));
+  assert.deepEqual(v.rolled.chestplate, vestRoll);
+  assert.ok(Inv.unwear(v, 'chestplate'));
+  assert.deepEqual(v.inventory.find((x) => x?.id === 'item.mesh_vest').roll, vestRoll);
+  assert.equal(v.rolled.chestplate, undefined);
+  // a plain recipe never rolls, and old saves without rolls load as before
+  const plain = make('world-a', 'item.mate_flask', 1).c.inventory.find((x) => x?.id === 'item.mate_flask');
+  assert.equal(plain.roll, undefined);
+});
+
 const fullCraftBag = () => Array.from({ length: Inv.SLOTS }, () => ({ id: 'item.wooden_bat', qty: 1 }));
 test('crafting rejects a full bag without payment, a phantom equipped item or a success broadcast', () => {
   for (const weapon of [null, 'item.wooden_bat']) {

@@ -15,14 +15,15 @@ export function normalize(c) {
   if (old.length === SLOTS && old.every((s) => s === null || (s && s.id))) return c.inventory;
   const items = old.filter((s) => s && s.id);
   c.inventory = new Array(SLOTS).fill(null);
-  for (const it of items) add(c, it.id, it.qty ?? 1);
+  for (const it of items) add(c, it.id, it.qty ?? 1, it.roll ?? null);
   return c.inventory;
 }
 
-/** Add n of id; fills existing stacks first, then the first empty slot (hotbar first). Returns leftover. */
-export function add(c, id, n = 1) {
+/** Add n of id; fills existing stacks first, then the first empty slot (hotbar first). Returns leftover.
+ *  `roll`: a procedural item's rolled affixes (src/content/gearRolls.js); rolled items never merge into a stack. */
+export function add(c, id, n = 1, roll = null) {
   const inv = c.inventory, max = stackOf(id);
-  for (let i = 0; i < SLOTS && n > 0; i++) {
+  for (let i = 0; i < SLOTS && n > 0 && !roll; i++) {
     const s = inv[i];
     if (s && s.id === id && s.qty < max) { const k = Math.min(n, max - s.qty); s.qty += k; n -= k; }
   }
@@ -31,7 +32,7 @@ export function add(c, id, n = 1) {
   const order = [...Array(SLOTS - HOTBAR).keys()].map((k) => k + HOTBAR).concat([...Array(HOTBAR).keys()]);
   for (const i of order) {
     if (n <= 0) break;
-    if (!inv[i]) { const k = Math.min(n, max); inv[i] = { id, qty: k }; n -= k; }
+    if (!inv[i]) { const k = roll ? 1 : Math.min(n, max); inv[i] = roll ? { id, qty: k, roll } : { id, qty: k }; n -= k; }
   }
   return n;
 }
@@ -84,11 +85,15 @@ export function pay(c, cost) { if (!canPay(c, cost)) return false; for (const [i
 export function wear(c, id) {
   const slot = ITEMS[id]?.slot;
   if (!WORN_SLOTS.includes(slot) || count(c, id) < 1) return false;
-  c.equipped ??= {};
-  const old = c.equipped[slot];
-  remove(c, id, 1);
-  if (old && add(c, old) > 0) { remove(c, old, 1); add(c, id); return false; }   // no room: undo
+  c.equipped ??= {}; c.rolled ??= {};
+  // the same slot remove() would take (the back of the backpack first), so its roll goes on with it
+  let i = SLOTS - 1; while (i >= 0 && c.inventory[i]?.id !== id) i--;
+  const taken = c.inventory[i], roll = taken.roll ?? null;
+  const old = c.equipped[slot], oldRoll = c.rolled[slot] ?? null;
+  takeSlot(c, i, 1);
+  if (old && add(c, old, 1, oldRoll) > 0) { taken.qty += 1; c.inventory[i] = taken; return false; }   // no room: put it back as it was
   c.equipped[slot] = id;
+  if (roll) c.rolled[slot] = roll; else delete c.rolled[slot];
   return true;
 }
 
@@ -96,8 +101,9 @@ export function wear(c, id) {
 export function unwear(c, slot) {
   const id = c.equipped?.[slot];
   if (!id || !WORN_SLOTS.includes(slot)) return false;
-  if (add(c, id) > 0) return false;
+  if (add(c, id, 1, c.rolled?.[slot] ?? null) > 0) return false;
   c.equipped[slot] = null;
+  if (c.rolled) delete c.rolled[slot];
   return true;
 }
 

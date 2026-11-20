@@ -40,3 +40,10 @@ export function rollGear(seed, recipeId, count, kind) {
   }
   return { affixes: picked.map(([id]) => id), mods, analog, label: picked.map(([, a]) => a.label).join(', '), labelEs: picked.map(([, a]) => a.es).join(', ') };
 }
+
+/** A rolled item's name: adjectives first in English ("keen rebar"), the phrase after the noun in Spanish
+ *  ("barra de filo fino"). `name` is the base item's name in the current language. */
+export function rolledName(name, roll, lang = 'en') {
+  if (!roll?.affixes?.length) return name;
+  return lang === 'es' ? `${name} ${roll.labelEs}` : `${roll.label} ${name}`;
+}

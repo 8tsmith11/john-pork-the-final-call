@@ -16,7 +16,7 @@ import { babble, setArea, sfx, ring, speak, hush, setInstrumentFocus, audioOut }
 import { sellPrice, LOOT, DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods, EQUIP_SLOTS, WORN_SLOTS, canWear } from '../../content/items.js';
 import { tileKey, laneDashes } from '../render/tiles.js';
 import { mapDecals, sceneryPlacement } from '../render/decor.js';
-import { GameMenu, TABS } from '../ui/GameMenu.js';
+import { GameMenu, TABS, modText } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
 import { BARKS, pickBark } from '../../content/barks.js';
 import { esLine } from '../../content/lines_es.js';
@@ -35,6 +35,7 @@ import { Neon } from '../render/neon.js';
 import { skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
 import { LatticeTable } from '../latticeTable.js';
+import { rollGear, rolledName } from '../../content/gearRolls.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
 import { FUSE_TEXT, LAMP_COLORS, GATE_FLAG, breakerState, lampState, breakersSet, lampsSet, gateOpen, puzzleClue, toggleText, STEP_TEXT } from '../../content/tunnelPuzzles.js';
 import { SharedEvents } from '../sharedEvent.js';
@@ -1021,13 +1022,17 @@ export class WorldScene extends Phaser.Scene {
     // Payment may free a slot; commit it only when the output also fits.
     const next = { inventory: c.inventory.map((stack) => stack && { ...stack }) };
     if (!Inv.pay(next, r.cost)) return this._announce('Not enough materials for that.');
-    if (Inv.add(next, r.item) > 0) return this._announce('Your bag is full.');
+    // Procedural recipes (task #39) roll a seeded variant: world seed + recipe + how many this world has made.
+    const world = (this.save.world ??= {}), made = (world.gearMade ??= {}), roll = r.roll ? rollGear(world.seed ?? 'world', r.item, made[r.item] ?? 0, r.roll) : null;
+    const rolled = roll?.affixes?.length ? roll : null;
+    if (Inv.add(next, r.item, 1, rolled) > 0) return this._announce('Your bag is full.');
     c.inventory = next.inventory;
+    if (r.roll) made[r.item] = (made[r.item] ?? 0) + 1;
     const item = ITEMS[r.item];
     if (EQUIP_SLOTS.includes(item.slot) && !c.equipped[item.slot] && canWear(item, who)) {
       if (WORN_SLOTS.includes(item.slot)) Inv.wear(c, r.item); else c.equipped[item.slot] = r.item;
     }
-    this._announce(`The fab hums. ${who} gets: ${item.name}.`);
+    this._announce(`The fab hums. ${who} gets: ${rolledName(item.name, rolled)}${rolled ? ` (${modText(rolled.mods)})` : ''}.`);
     this._syncParty();
   }
 

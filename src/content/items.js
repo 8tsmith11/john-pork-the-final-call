@@ -166,16 +166,16 @@ export const RECIPES = [
   { item: 'item.bot_weapon', req: 'q.bot.looked', cost: { 'item.mat_scrap': 3, 'item.mat_gel': 3 } },
   { item: 'item.bot_brain',  req: 'q.bot.looked', cost: { 'item.mat_circuit': 2, 'item.mat_wire': 2 } },
   { item: 'item.mate_flask',   cost: { 'item.mat_plastic': 2, 'item.mat_scrap': 1 } },
-  { item: 'item.wooden_bat',   cost: { 'item.mat_scrap': 3, 'item.mat_cloth': 1 } },
+  { item: 'item.wooden_bat', roll: 'melee', cost: { 'item.mat_scrap': 3, 'item.mat_cloth': 1 } },
   { item: 'item.sniffer',      cost: { 'item.mat_circuit': 1, 'item.mat_wire': 2 } },
-  { item: 'item.mesh_vest',    cost: { 'item.mat_plastic': 4, 'item.mat_cloth': 3, 'item.mat_wire': 1 } },
-  { item: 'item.rebar',        cost: { 'item.mat_scrap': 4 } },
-  { item: 'item.nail_gun',     cost: { 'item.mat_scrap': 3, 'item.mat_circuit': 1, 'item.mat_cell': 1 } },
-  { item: 'item.scattergun',   cost: { 'item.mat_scrap': 5, 'item.mat_plastic': 3, 'item.mat_cell': 1, 'item.mat_gel': 3 } },
-  { item: 'item.bike_helmet',    cost: { 'item.mat_plastic': 3, 'item.mat_cloth': 1 } },
-  { item: 'item.rain_parka',     cost: { 'item.mat_plastic': 3, 'item.mat_cloth': 2 } },
-  { item: 'item.pack_coolant',   cost: { 'item.mat_gel': 3, 'item.mat_cell': 1, 'item.mat_cloth': 2 } },
-  { item: 'item.pack_capacitor', cost: { 'item.mat_cell': 2, 'item.mat_circuit': 1, 'item.mat_wire': 2 } },
+  { item: 'item.mesh_vest', roll: 'armor', cost: { 'item.mat_plastic': 4, 'item.mat_cloth': 3, 'item.mat_wire': 1 } },
+  { item: 'item.rebar', roll: 'melee', cost: { 'item.mat_scrap': 4 } },
+  { item: 'item.nail_gun', roll: 'gun', cost: { 'item.mat_scrap': 3, 'item.mat_circuit': 1, 'item.mat_cell': 1 } },
+  { item: 'item.scattergun', roll: 'gun', cost: { 'item.mat_scrap': 5, 'item.mat_plastic': 3, 'item.mat_cell': 1, 'item.mat_gel': 3 } },
+  { item: 'item.bike_helmet', roll: 'armor', cost: { 'item.mat_plastic': 3, 'item.mat_cloth': 1 } },
+  { item: 'item.rain_parka', roll: 'armor', cost: { 'item.mat_plastic': 3, 'item.mat_cloth': 2 } },
+  { item: 'item.pack_coolant', roll: 'gear', cost: { 'item.mat_gel': 3, 'item.mat_cell': 1, 'item.mat_cloth': 2 } },
+  { item: 'item.pack_capacitor', roll: 'gear', cost: { 'item.mat_cell': 2, 'item.mat_circuit': 1, 'item.mat_wire': 2 } },
   { item: 'item.sleep_potion',   cost: { 'item.mat_gel': 2, 'item.mat_glass': 1 } },
   { item: 'item.fab_launcher', cost: { 'item.mat_scrap': 4, 'item.mat_circuit': 2, 'item.mat_cell': 1, 'item.mat_gel': 2 } },
 ];
@@ -286,6 +286,14 @@ export function playerMods(char, charId) {
     if (!def || !canWear(def, charId)) continue;                     // unique items only work for their owner
     add(scaleMods(def.mods, char.upgrades?.[id] ?? 0));
     if (def.blink) m.blink = true;
+  }
+  // Procedural rolls (src/content/gearRolls.js, task #39): worn pieces carry theirs in char.rolled; a held
+  // weapon's roll is on the bag slot holding it (the selected hotbar slot first).
+  for (const [slot, roll] of Object.entries(char.rolled || {})) if (char.equipped?.[slot] && roll?.mods) add(roll.mods);
+  for (const slot of ['weapon', 'ranged']) {
+    const id = char.equipped?.[slot], hot = char.inventory?.[char.hotSel];
+    const roll = id && (hot?.id === id ? hot.roll : char.inventory?.find((x) => x?.id === id && x.roll)?.roll);
+    if (roll?.mods) add(roll.mods);
   }
   m.swing = ITEMS[char.equipped?.weapon]?.swing ?? null;   // weapon profiles replace the defaults, they don't add
   m.gunStats = ITEMS[char.equipped?.ranged]?.gun ?? null;
