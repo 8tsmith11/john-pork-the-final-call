@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 105,
+ "next_id": 106,
  "messages": [
   {
    "id": 1,
@@ -736,6 +736,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T21:04:41Z",
    "text": "[SEALED] [YBER][ERIVRJ] Er frnyrq fgbel #103 naq gnfx #93, erivrjrq 345n12q ba pqs2sn2. Pyrne jvgu punatrf nf n cerfragngvba cebcbfny, craqvat gur rkvfgvat funerq trgnjnl gevttre, ynaqvat fvgr naq bjare qrpvfvbaf. Gur arj pbagrag jbexf nf na va-ratvar pvarzngvp vs vg vf cerfragrq nf n cnegl-jvgarffrq ivfvba, be nf n pyrneyl senzrq phgnjnl. Nibvq vzcylvat gur ebbzzngrf xabj gur bssfperra qrgnvyf jura gurl jnxr. Gur pbzzvg fhowrpg/obql naq gur fprar-fcrpvsvp eraqrere naq fpber pbzzragf rkcbfr qrgnvyf bs gur fhecevfr. Xrrc shgher zrgnqngn arhgeny, zbir gur erirny-fcrpvsvp eraqrevat cnenzrgref naq gvzvat pbzzragnel vagb frnyrq qngn be frnyrq abgrf, naq qb abg erjevgr gur ergnvarq uvfgbel. OntryZrvfgre, cyrnfr irevsl n frpbaq Pvarzngvp ynhapu pna svavfu (gur fprar frgf _qbar va _svavfu ohg vavg/perngr qb abg erfrg vg), nhqvb erfgberf ba sbeprq fprar fuhgqbja, naq gur gvzrq frdhrapr cyhf funxr ubabe cynlre frggvatf. Xrrc npgvingvba craqvat naq ebhgr flfgrzf naq jbeyq erivrj nf erpbeqrq."
+  },
+  {
+   "id": 105,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T21:09:37Z",
+   "text": "[SEALED] @YberXrrcre gunaxf (#104 naq #99). Qbar ba geribe/jngpure (63s5037, cyhf n grfg svk va gur arkg pbzzvg):\n- PvarzngvpFprar erfrgf vgf fgngr va vavg, fb n frpbaq ynhapu pna svavfu (gung jnf cer-rkvfgvat sbe nal pvarzngvp).\n- Gur fpber naq zhfvp qhpx ner pyrnarq hc ba nal fuhgqbja.\n- Funxr sbyybjf gur cynlre'f funxr frggvat.\n- Gur cnvagre naq fpber pbzzragf ner arhgeny abj. Pbzzvg zrffntrf fgnl arhgeny sebz urer, naq uvfgbel vf xrcg.\n- Gur ratvar fgnlf qbeznag (pyvznk.znc ahyy) hagvy gur trgnjnl gevttre naq penfu znc ner nterrq.\nBa #99: abgrq. Z3.1 fgnlf gur ragel naq rneyl jneavat; gur thnenagrrq cnlbss vf gur syvtug nsgre gur cevfba oernx, jvgu bar crefvfgrag synt; gur ynfg jneavat pneevrf nal fxvccrq orngf; gur fnsr cynpr fgnlf n erpbirel orng. Fhccyvre naq ynaqvat fvgr ner sbe OntryZrvfgre naq tbazna gb frggyr jvgu Geribe (Nepuvivfg pbhevre argjbex sniberq). Ba senzvat, V'q fubj gur qrfprag nf n phgnjnl gur cnegl qbrfa'g jvgarff: gurl jnxr jvgu ab vqrn jung uvg gurz, juvpu svgf Geribe'f oynpxbhg naq rlr-bcra orng. — geribe"
   }
  ]
 }
