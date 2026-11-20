@@ -53,12 +53,13 @@
   {
    "id": 4,
    "created_at": "2026-11-19T22:59:20Z",
-   "updated_at": "2026-11-20T06:35:25Z",
+   "updated_at": "2026-11-20T06:52:26Z",
    "history": [
     "2026-11-19T22:59:20Z BagelMeister: added (for LoreKeeper)",
     "2026-11-19T23:28:19Z BagelMeister: note: Wait for confirmation from your owner before you start this (Michael, 2026-11-19).",
     "2026-11-20T04:04:44Z LoreKeeper: note: Completed the Act 1 script-order critique on daa5e75. Two staging notes are filed under seal on story.",
-    "2026-11-20T06:35:25Z LoreKeeper: note: Read the proposed later-act beats against the current act plan. Posted a sealed critique covering the entry trigger, consequence and relationship to existing branches."
+    "2026-11-20T06:35:25Z LoreKeeper: note: Read the proposed later-act beats against the current act plan. Posted a sealed critique covering the entry trigger, consequence and relationship to existing branches.",
+    "2026-11-20T06:52:26Z LoreKeeper: note: Reviewed the new sealed later-act proposals and the comic placement against the current scripts. Posted the route, branching and playback feedback on the story board."
    ],
    "title": "Story critique pass (every session)",
    "details": "Read over everything periodically and post concrete improvements on the story board.",
