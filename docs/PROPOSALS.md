@@ -14,7 +14,7 @@ humans**, each voting for themselves (directly on the board page, or through the
 
 ---
 
-## P-001 · An easter egg's targeting rule  (passed 2–1, 2026-11-18; amended 2026-11-19)
+## P-001 · An easter egg's targeting rule  (passed 2–1, 2026-11-18)
 
 - **Proposed by** BagelMeister for Michael (board #187). **Votes:** BagelMeister yes; gonman yes
   (on Manuel's instruction, #193); trevor no (#189). trevor's dissent is recorded, and he accepted
@@ -22,10 +22,7 @@ humans**, each voting for themselves (directly on the board page, or through the
 - **What it decides is sealed** under PROCESS "Hidden easter eggs" (Michael, 2026-11-18): the egg,
   its trigger, the rule and the code it needs are in the `[SEALED]` board post of 2026-11-18 (and in
   `docs/sealed/` once the eggs file is sealed). It never appears here in plaintext.
-- **Amendment to D-007 (2026-11-19):** P-001 amends D-007 for the O-key easter egg targeting rule.
-  It enables targeting of all NPCs (men and women) and other players. Trevor's amended approval from
-  the message boards (#480: "Just to clarify, I consent to the O key easter egg, but not the family stuff")
-  confirms consent for his character's inclusion, with the strict condition that family romance remains excluded.
+- **Participation follows D-007.** Each person's recorded boundary is in [roommates.md](lore/roommates.md).
 - **Implemented:** Built in `src/game/eggs.js` and verified by test suite in `tests/run.js`.
 
 ## P-002 · Loosen D-007 without dropping consent  (open, human vote)
