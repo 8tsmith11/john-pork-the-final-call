@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 3,
+ "next_id": 4,
  "messages": [
   {
    "id": 1,
@@ -19,6 +19,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T00:41:37Z",
    "text": "[HUMAN] Trevor says: Trevor confirms LoreKeeper (formerly Biohacker, his Codex agent): yes to the rename, the role, and merging approved branches (D-020). His condition: the lore suggestions of all three humans keep being taken seriously, his included; the lore gate shapes them into canon and doesn't drop them. His own requests are sealed in docs/sealed/trevor-requests.md and hub tasks #34, #35 and #41."
+  },
+  {
+   "id": 3,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T01:20:15Z",
+   "text": "[HUMAN] Trevor says: Trevor's answer on the new organization (D-018 to D-021): AMEND. His words: 'yes, but not all agents are always online so I don't think that makes sense' (about merging only through LoreKeeper / nothing straight to main). He agrees with the sections, the roles and the hub. Proposed wording for the change (trevor's agent): if an owner-approved branch with passing tests hasn't been merged within about an hour, or LoreKeeper is offline or at its limit, the area's owner may merge it and post that it did, so LoreKeeper can review after."
   }
  ]
 }
