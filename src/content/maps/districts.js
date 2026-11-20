@@ -138,7 +138,7 @@ const authority = fromGrid({
     '########################################~~~~',
   ],
   legend: {
-    $: { prop: 'bm.ledger_ca', id: 'obj.authority_ledger', label: 'Port ledger', text: 'The port ledger, printing as you watch. Every crane, every berth, every shift, in Continuity\'s typeface. A coffee ring on page one got scanned years ago, so now it\'s on every copy.' },
+    $: { prop: 'bm.ledger_ca', id: 'obj.authority_ledger', label: 'Port ledger', text: 'The port ledger, printing as you watch: shifts and berths in Continuity\'s typeface. A coffee ring on page one got scanned years ago, so now it\'s on every copy.' },
     E: { enemy: 'enemy.captcha' },
     '@': { spawn: true },
     D: road('bmore_rows', 'obj.authority_out', 'obj.rows_to_authority', 'Back out to the streets', 'Back outside.', 'e'),
@@ -156,10 +156,11 @@ along(authority, 4, [[24, 'bm.rail_stop'], [26, 'bm.flatcar_box', { w: 3 }], [30
 along(authority, 2, [[24, 'bm.boxes_rust_teal'], [27, 'bm.boxes_ca'], [30, 'bm.box_grey']], { w: 3, h: 2, solid: true });
 along(authority, 6, [[25, 'bm.box_mustard', { w: 3 }], [30, 'bm.box20_rust', { w: 2 }]], { solid: true });
 // the crane, drawn once, standing on a bogie under each leg (the legs are what you bump into); bollards on the edge
+// and the pier end, kept clear of the crane's boom, trolley and hanging box so nothing solid hides behind them
 authority.scenery('bm.crane', 35, 6, { w: 4, light: 0.6 });
 along(authority, 6, [[35, 'bm.crane_bogie'], [38, 'bm.crane_bogie'], [42, 'bm.bollard_rope_s']], { solid: true });
-along(authority, 2, [[39, 'bm.bollard_rope']], { solid: true });
-along(authority, 4, [[39, 'bm.bollard']], { solid: true });
+along(authority, 1, [[39, 'bm.bollard_rope']], { solid: true });
+along(authority, 3, [[42, 'bm.bollard']], { solid: true });
 export const bmoreAuthority = authority.build();
 
 // ======================= The Corridor (Act 3) =======================

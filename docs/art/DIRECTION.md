@@ -164,8 +164,10 @@ An object picks its frame by `art ?? id`, looked up in `doors`, `baltimore`, `wi
 **The `baltimore` sheet mixes sizes** (`build.py` packs each run of same-size frames as its own band). Its pieces
 are drawn at their final size, so they ignore a map's `propScale`, and they stand on the bottom edge of their tile:
 an object centred on its tile, scenery centred on its footprint (`w` tiles from its x, default as many tiles as the
-frame is wide). Only solid pieces cast a contact shadow; house fronts, walls, floors and skylines don't. Frame
-names are `bm.<thing>`. How the pieces go together:
+frame is wide). Only solid pieces cast a contact shadow; house fronts, walls, floors and skylines don't. A solid
+piece blocks `w` x `h` tiles, and `w` defaults to 1 there, so a solid piece wider than a tile always gives its `w`
+(a test checks it). Keep solid pieces out from under tall art drawn in front of them, like the crane's boom and its
+hanging box. Frame names are `bm.<thing>`. How the pieces go together:
 - **Rowhouse fronts** are 16x32 bays on a two-row wall block. A door sits in a one-tile recess: its upper storey
   (`bm.row_upper*`) stands on the wall row and its doorway with the marble steps (`bm.row_door*`) is a floor piece in
   the recess, so you climb the steps in front of the door. Match the upper storey's cornice to its house.

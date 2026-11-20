@@ -43,7 +43,7 @@ const CROWD = [
   ['bmore_rows', 6, 4, 'bmore_scrubber', 'A gran scrubbing the steps', '"Pumice first, then the powder, then cold water. Hot yellows it. Mind the wet one."', true],
   ['bmore_rows', 22, 6, 'bmore_pigeon', 'A man feeding pigeons', '"That one\'s Lieutenant. That one\'s also Lieutenant. I lost track in March."', true],
   ['bmore_refinery', 20, 4, 'bmore_signkeeper', 'The sign keeper', '"S, H, O, A, L. I replace the tubes on the S every month. It eats them. Hear the hum? That\'s the S too."', true],
-  ['bmore_hall', 12, 2, 'bmore_scribe', 'The scribe of the book', '"I write down what they heard, word for word. Then I fix the spelling. They let me do the spelling."', true],
+  ['bmore_hall', 11, 2, 'bmore_scribe', 'The scribe of the book', '"I write down what they heard, word for word. Then I fix the spelling. They let me do the spelling."', true],
   ['bmore_hall', 18, 3, 'bmore_singer', 'A singer in the back row', '"We come in late. On purpose. Last week the drummer came in on time and we had to start over."', true],
   ['bmore_authority', 10, 3, 'bmore_ca_clerk', 'A Continuity clerk', '"Visitors stay behind the yellow line. There isn\'t a yellow line. Stay behind where it would be."', true],
   // Corridor district (districts.js)

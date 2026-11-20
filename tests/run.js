@@ -2064,6 +2064,13 @@ test('baltimore sheet (hub #6): the set is all there, packed without overlaps, a
     assert.ok((m.scenery ?? []).some((s) => s.art.startsWith('bm.')), `${id} uses the new art`);
   }
   assert.deepEqual(missing, []);
+  // build.js blocks w x h tiles of a solid piece (default 1 x 1), but sceneryPlacement draws a Baltimore piece across
+  // as many tiles as its frame is wide: a solid piece wider than a tile has to give its w, or you walk through it.
+  const loose = [];
+  for (const id of BMORE_MAPS) for (const s of MAPS_FOR_TEST[id].scenery ?? []) {
+    if (s.solid && fr[s.art] && (s.w ?? 1) !== Math.ceil(fr[s.art].frame.w / 16)) loose.push(`${id}: ${s.art} at ${s.x},${s.y}`);
+  }
+  assert.deepEqual(loose, [], 'solid Baltimore pieces block as many tiles as they are drawn wide');
 });
 
 test('baltimore sheet: no balloon orange anywhere, and signal red only on Continuity\'s own pieces (named _ca)', () => {
@@ -2107,12 +2114,24 @@ test('Baltimore district maps keep every quest object, door, NPC and enemy reach
     }
     const near = (x, y) => [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${x + dx},${y + dy}`));
     for (const o of m.objects) if (!near(o.x, o.y)) bad.push(`${id}: ${o.id} unreachable`);
+    // ...and can be picked: from some reachable tile the game's rule (WorldScene: nearest within 34 px) chooses it
+    for (const o of m.objects) if (![...seen].some((k) => bmorePick(m, ...k.split(',').map(Number)) === o)) bad.push(`${id}: ${o.id} is never the one you interact with`);
     for (const e of m.enemies) if (!seen.has(`${Math.floor(e.x / 16)},${Math.floor(e.y / 16)}`)) bad.push(`${id}: ${e.kind} unreachable`);
     for (const o of m.objects) for (const t of [o.label, o.text]) if (typeof t === 'string' && t.includes('[scaffold]')) bad.push(`${id}: ${o.id} still says [scaffold]`);
   }
   assert.deepEqual(bad, []);
-  assert.equal(MAPS_FOR_TEST.bmore_hall.objects.find((o) => o.id === 'npc.bmore_scribe')?.x, 12, 'the scribe stands by the book');
+  // The scribe stands by the book, but standing right in front of the book reads the book, not the scribe.
+  const hall = MAPS_FOR_TEST.bmore_hall, scribe = hall.objects.find((o) => o.id === 'npc.bmore_scribe');
+  assert.ok(scribe && Math.hypot(scribe.x - 13, scribe.y - 1) <= 3, 'the scribe stands by the book');
+  assert.equal(bmorePick(hall, 13, 2)?.id, 'obj.callers_book', 'the tile in front of the book picks the book');
 });
+// WorldScene's interaction pick for a player at the centre of tile (tx, ty): the nearest object within 34 px, a later
+// object winning a tie (crowds are added after a map's own objects).
+function bmorePick(m, tx, ty) {
+  let best = null, nd = 34;
+  for (const o of m.objects) { const d = Math.hypot((o.x - tx) * 16, (o.y - ty) * 16); if (d <= nd) { nd = d; best = o; } }
+  return best;
+}
 
 const { ES_BALTIMORE } = await import('../src/i18n/es-baltimore.js');
 test('i18n: every label and line in the four Baltimore district maps has Spanish (src/i18n/es-baltimore.js)', () => {

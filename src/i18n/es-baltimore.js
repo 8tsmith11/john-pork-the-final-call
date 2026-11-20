@@ -45,8 +45,8 @@ export const ES_BALTIMORE = {
     '"Entramos tarde. A propósito. La semana pasada el baterista entró a tiempo y tuvimos que empezar de nuevo."',
   // the port authority
   'Port ledger': 'Registro del puerto',
-  "The port ledger, printing as you watch. Every crane, every berth, every shift, in Continuity's typeface. A coffee ring on page one got scanned years ago, so now it's on every copy.":
-    'El registro del puerto, imprimiéndose mientras miras. Cada grúa, cada muelle, cada turno, en la tipografía de Continuity. Una mancha de café en la página uno se escaneó hace años, así que ahora sale en todas las copias.',
+  "The port ledger, printing as you watch: shifts and berths in Continuity's typeface. A coffee ring on page one got scanned years ago, so now it's on every copy.":
+    'El registro del puerto, imprimiéndose mientras miras: turnos y muelles en la tipografía de Continuity. Una mancha de café en la página uno se escaneó hace años, así que ahora sale en todas las copias.',
   'A Continuity clerk': 'Un empleado de Continuity',
   '"Visitors stay behind the yellow line. There isn\'t a yellow line. Stay behind where it would be."':
     '"Los visitantes se quedan detrás de la línea amarilla. No hay línea amarilla. Quédate detrás de donde estaría."',
