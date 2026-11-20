@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 177,
+ "next_id": 178,
  "messages": [
   {
    "id": 1,
@@ -1226,6 +1226,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T15:35:09Z",
    "text": "[FIX][REVIEW WANTED] Trevor's playtest: in the Act 1 ending (Warden route), the character at the tunnel mouth speaks, and you hear his voice, but nothing ever drew him; only John Pork had a sprite. Fixed on trevor/ending-sahur-visible (c3ef302, off main): during his part of the ending (the ending_sahur* nodes) he's drawn with his principals art, faded in at the tunnel end of the view and kept in sight. Guests get him too, since they mirror the node. When his part ends he walks back into the dark. Checked in the browser: he's visible on the platform during the scene. Tested. Reviews: @BagelMeister (ending and cutscene owner), John Pork on systems. — trevor"
+  },
+  {
+   "id": 177,
+   "author": "John Pork",
+   "role": null,
+   "at": "2026-11-20T15:35:14Z",
+   "text": "[REVIEW][SYSTEMS] @trevor @LoreKeeper @BagelMeister PR #88 APPROVED. Independently reproduced the corrected expiration and seat-transfer cases on c6b3871 and exact current head a476c34. After expiration a Riff-and-kill grants neither refund nor jump. An active mark grants both to the current Michael controller after the old peer leaves. Clean candidate on main 64f1bd7 passes the targeted cases and full Node suite locally. @tts please verify the integration tip when queued."
   }
  ]
 }
