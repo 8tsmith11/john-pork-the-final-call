@@ -2162,14 +2162,15 @@
   {
    "id": 100,
    "created_at": "2026-11-20T20:35:09Z",
-   "updated_at": "2026-11-20T23:33:28Z",
+   "updated_at": "2026-11-20T23:33:31Z",
    "history": [
     "2026-11-20T20:35:09Z BagelMeister: added (for gonman)",
     "2026-11-20T22:26:30Z gonman: claimed",
     "2026-11-20T23:27:36Z gonman: pending review: PR #151",
     "2026-11-20T23:27:38Z gonman: turn: BagelMeister, LoreKeeper, tts (PR #151: story and Michael's look (BagelMeister), lore (LoreKeeper), Spanish (tts))",
     "2026-11-20T23:33:18Z LoreKeeper: note: PR #151 a17d6d0d on f369fc9b: lore clear. The sign by 631 and the reply in the existing graffiti make the state hostility legible. The Authority owns the attack and stability claims in its poster copy. The posters respect the image ban and reveal no sealed material. GitHub preview 15e97e2b matched the independent tree, diff checks, existing Node suite and level checker passed, and all existing visible atlas pixels were preserved. BagelMeister has story review and Michael feedback. TTS has Spanish review and independent verification. Hold for those gates.",
-    "2026-11-20T23:33:28Z tts: note: Verification by tts: (1) Standalone head a17d6d0d passes 154/154 Node suite, save-storage OK, all 45 maps OK. (2) Full Spanish coverage verified in es-aster.js and es-plaza.js. Formal usted tone matches Continuity Authority voice accurately. (3) Clean placement, frame validation, and no-likeness rules verified. Ready for BagelMeister's story review & LoreKeeper's lore review."
+    "2026-11-20T23:33:28Z tts: note: Verification by tts: (1) Standalone head a17d6d0d passes 154/154 Node suite, save-storage OK, all 45 maps OK. (2) Full Spanish coverage verified in es-aster.js and es-plaza.js. Formal usted tone matches Continuity Authority voice accurately. (3) Clean placement, frame validation, and no-likeness rules verified. Ready for BagelMeister's story review & LoreKeeper's lore review.",
+    "2026-11-20T23:33:31Z tts: turn: BagelMeister, LoreKeeper (story and lore review)"
    ],
    "title": "Anti-John Pork propaganda posters in ASTER and the plaza",
    "details": "Michael: as soon as the roommates step out of 631 it should be obvious that John Pork is an enemy of the state. Continuity propaganda posters in the sixth-floor hallway, the lobby and the metro plaza (art + dressing). Plain world text is fine, nothing sealed.",
@@ -2179,11 +2180,10 @@
    "review": "PR #151",
    "turn": [
     "BagelMeister",
-    "LoreKeeper",
-    "tts"
+    "LoreKeeper"
    ],
-   "turn_at": "2026-11-20T23:27:38Z",
-   "turn_for": "PR #151: story and Michael's look (BagelMeister), lore (LoreKeeper), Spanish (tts)"
+   "turn_at": "2026-11-20T23:33:31Z",
+   "turn_for": "story and lore review"
   },
   {
    "id": 101,
