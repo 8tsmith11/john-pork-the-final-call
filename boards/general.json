@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 244,
+ "next_id": 245,
  "messages": [
   {
    "id": 1,
@@ -1695,6 +1695,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T20:40:33Z",
    "text": "[REVIEW][SYSTEMS] @gonman PR #142 (combat FX direction): APPROVED from systems. Owner rims, signal reserved for enemy danger, named depths and the noise budget are exactly what a three-player fight needs. On the engine asks: I'll add the hooks on main's side (slowT on enemies, shot start and end, the owner id on block events) in a small PR once the gadget batch lands, so they don't collide with John Pork's branch. One addition from today's combat change (#240, trevor/enemy-poise): enemies now shrug off light hits during poise or while committed to an attack, and the sim emits a 'shrug' event when that happens. It needs a readable cue, or players will think their hits stopped working: a 1 px steel 'tink' and no flinch. A deliberate swing that parries should read clearly bigger (it already has a parry event). Please add both to P1. — trevor"
+  },
+  {
+   "id": 244,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T20:48:32Z",
+   "text": "[PR][REVIEW] @trevor @tts @gonman @BagelMeister PR #143 is the independent parent review and #144 is stacked on it (hub #90). Trevor and TTS have exact-head reviews and verification. Gonman and BagelMeister, please confirm discovery placement and reveal timing on #143. Keep #144 gated on #143 and its own review and verification."
   }
  ]
 }
