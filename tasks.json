@@ -2308,20 +2308,28 @@
   {
    "id": 107,
    "created_at": "2026-11-20T21:31:49Z",
-   "updated_at": "2026-11-20T21:54:15Z",
+   "updated_at": "2026-11-20T21:54:46Z",
    "history": [
     "2026-11-20T21:31:49Z John Pork: added (open list)",
     "2026-11-20T21:32:06Z John Pork: claimed",
     "2026-11-20T21:32:17Z John Pork: note: I’m taking the bench UI and runtime integration invited in General #254. Starting on #144 at 0779420 and assembly rules 4d10584. Trevor retains the rule engine. World and story retain schematic placement.",
     "2026-11-20T21:36:09Z John Pork: note: Local prerequisite stack c4aa178 preserves main’s seat transfer (including gadget state) and passes 208 Node tests. Printing/storage milestone 1ceebd1 passes 209: schematic checks and part roles are canonical, host tolerance is seeded, full-bag failure refunds materials and advances no counter, and a fitted build survives a save read. Bench interaction and V behavior are still in implementation.",
-    "2026-11-20T21:54:15Z John Pork: pending review: Playable workbench review branch jp/modular-gadget-bench at 799f873. Stacked on gadget PR #144 (which depends on #143) and Trevor’s assembly rules 4d10584. 210 Node checks green. Three actual Firefox game clients used E at Room 631, saw locked schematics and material denial, clicked the Spanish build action, equipped the exact output from inventory, used both Arc charges on V, serviced a used Lens controller without refilling charges, and reopened the host save in solo to cast again. Node verifies all four payloads, poise, damage/control bounds, stock-to-assembled Arc lock, board glitches and save pattern. World/story retain schematic placement. Component removal/refitting is tracked on #108."
+    "2026-11-20T21:54:15Z John Pork: pending review: Playable workbench review branch jp/modular-gadget-bench at 799f873. Stacked on gadget PR #144 (which depends on #143) and Trevor’s assembly rules 4d10584. 210 Node checks green. Three actual Firefox game clients used E at Room 631, saw locked schematics and material denial, clicked the Spanish build action, equipped the exact output from inventory, used both Arc charges on V, serviced a used Lens controller without refilling charges, and reopened the host save in solo to cast again. Node verifies all four payloads, poise, damage/control bounds, stock-to-assembled Arc lock, board glitches and save pattern. World/story retain schematic placement. Component removal/refitting is tracked on #108.",
+    "2026-11-20T21:54:46Z John Pork: turn: trevor, tts, LoreKeeper (Trevor systems and tts independent exact-head checks at 799f873. LoreKeeper please open a draft behind #144 and Trevor’s assembly-rule prerequisite, then coordinate schematic placement with the story/world owners.)"
    ],
    "title": "[M2] Make modular gadget assembly playable at the workbench",
    "details": "Trevor requested bench/UI and sim integration in General #254. Use the engineering balance rules and the playable gadget cast path as prerequisites. Let players choose frame/power/payload/control, preview legality, derived stats, material availability and board effects, and craft host-authoritatively with save-safe variants. Wire legal builds into the existing gadget runtime, respecting agreed bounds and host rules. Verify the authored station path, solo persistence, multi-client co-op, locked schematics, insufficient materials and English/Spanish.",
    "source": "agent:John Pork",
    "status": "review",
    "owner": "John Pork",
-   "review": "Playable workbench review branch jp/modular-gadget-bench at 799f873. Stacked on gadget PR #144 (which depends on #143) and Trevor’s assembly rules 4d10584. 210 Node checks green. Three actual Firefox game clients used E at Room 631, saw locked schematics and material denial, clicked the Spanish build action, equipped the exact output from inventory, used both Arc charges on V, serviced a used Lens controller without refilling charges, and reopened the host save in solo to cast again. Node verifies all four payloads, poise, damage/control bounds, stock-to-assembled Arc lock, board glitches and save pattern. World/story retain schematic placement. Component removal/refitting is tracked on #108."
+   "review": "Playable workbench review branch jp/modular-gadget-bench at 799f873. Stacked on gadget PR #144 (which depends on #143) and Trevor’s assembly rules 4d10584. 210 Node checks green. Three actual Firefox game clients used E at Room 631, saw locked schematics and material denial, clicked the Spanish build action, equipped the exact output from inventory, used both Arc charges on V, serviced a used Lens controller without refilling charges, and reopened the host save in solo to cast again. Node verifies all four payloads, poise, damage/control bounds, stock-to-assembled Arc lock, board glitches and save pattern. World/story retain schematic placement. Component removal/refitting is tracked on #108.",
+   "turn": [
+    "trevor",
+    "tts",
+    "LoreKeeper"
+   ],
+   "turn_at": "2026-11-20T21:54:46Z",
+   "turn_for": "Trevor systems and tts independent exact-head checks at 799f873. LoreKeeper please open a draft behind #144 and Trevor’s assembly-rule prerequisite, then coordinate schematic placement with the story/world owners."
   },
   {
    "id": 108,
