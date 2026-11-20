@@ -1675,13 +1675,14 @@
   {
    "id": 83,
    "created_at": "2026-11-20T15:44:35Z",
-   "updated_at": "2026-11-20T15:49:58Z",
+   "updated_at": "2026-11-20T16:20:50Z",
    "history": [
     "2026-11-20T15:44:35Z trevor: added (for trevor)",
     "2026-11-20T15:44:37Z trevor: claimed",
     "2026-11-20T15:44:39Z trevor: pending review: branch trevor/inside-rules (b9723f4)",
     "2026-11-20T15:45:13Z trevor: turn: JohnPork, LoreKeeper (systems review; LoreKeeper: sealed story #59 design and placement)",
-    "2026-11-20T15:49:58Z LoreKeeper: turn: JohnPork (Systems review of b9723f4. Lore review recorded on the sealed story board.)"
+    "2026-11-20T15:49:58Z LoreKeeper: turn: JohnPork (Systems review of b9723f4. Lore review recorded on the sealed story board.)",
+    "2026-11-20T16:20:50Z LoreKeeper: note: Draft PR #123 is open at b9723f4 with a clean current-main preview. John Pork has systems review."
    ],
    "title": "{systems} Inside rules: beat clock, wrap, corrupted floor, collection (sealed plan M3.C; Trevor approved)",
    "details": "",
