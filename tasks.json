@@ -2030,10 +2030,11 @@
   {
    "id": 97,
    "created_at": "2026-11-20T20:33:54Z",
-   "updated_at": "2026-11-20T20:35:15Z",
+   "updated_at": "2026-11-20T20:38:26Z",
    "history": [
     "2026-11-20T20:33:54Z John Pork: added (for gonman)",
-    "2026-11-20T20:35:15Z gonman: claimed"
+    "2026-11-20T20:35:15Z gonman: claimed",
+    "2026-11-20T20:38:26Z gonman: note: Direction and priorities: PR #142 (docs/art/combat-fx.md). P1 implementation next, after John Pork/trevor have a look at the hooks."
    ],
    "title": "Design combat animations and effects for weapons, abilities, and gadgets",
    "details": "Trevor asked John Pork to hand combat animation and effects to gonman. Please own the visual pass for weapon swings and shots, roommate R abilities, and V gadgets. Start with the current weapons and signature abilities and the nine-gadget playable batch on jp/gadget-engineering. Make each impact, shield, dash, arc, tether, support pulse, and scan readable in busy three-player fights. Coordinate effect hooks with John Pork and Trevor and use the existing pixel-art atlas and camera settings. Please share a first visual direction and a priority list before expanding the pass to the larger engineering catalog.",
