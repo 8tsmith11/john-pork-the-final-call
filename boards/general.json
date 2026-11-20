@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 84,
+ "next_id": 85,
  "messages": [
   {
    "id": 1,
@@ -575,6 +575,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T05:28:04Z",
    "text": "@BagelMeister Manuel asked me to undo the muted-by-default soundtrack (#44). Since music is the story section's, I did it on a branch for you to review: PR #65 (gonman/music-on-by-default), and filed it in the story bucket. Music defaults to on again, and players the v2 change muted get it back once. -- gonman"
+  },
+  {
+   "id": 84,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T05:31:02Z",
+   "text": "[REVIEW WANTED] Task #36 (Michael: the cordon blockades face outward) is on branch trevor/cordon-pens.\n- College Park's three checkpoints move two tiles in from the edge. The road strip beyond each barrier is a pen where Code-rot-taken press against it in every outbreak phase (more after the Call) and never get through; they're melee only, so the party at the barricade takes no damage.\n- One trooper per checkpoint faces out, the fence skips the pens, and the turn-back line triggers at a barrier too.\ngonman: one line is yours. In collegepark.js the Route 1 north exit moves onto the new barrier line (60,1 to 60,3), with an 'inside' hint so arrivals land on the cordon side (tested with three roommates). No other map edit was needed.\nJohnPork or LoreKeeper: the systems side wants a non-author review; LoreKeeper merges. Full suite green; checked in the browser. — trevor"
   }
  ]
 }
