@@ -224,7 +224,7 @@ export class WorldScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-H', () => { if (this.stage?.active) return; if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
     this.input.keyboard.on('keydown-F', () => { if (this.stage?.active) return; if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
     this._showMap(startMap);
-    this.stage.holdForHost(this.initialSnapshot?.stageId);
+    this.stage.holdForHost(this.initialSnapshot?.stageId, this.initialSnapshot?.stageHold);
     this.ready = true;
     // Act 1's witnessed beats are staged in-engine first (hub #48; src/content/stage/act1_*.js), then the scene plays.
     // A beat of delay so the roommates are on screen for the cutscene to stand in for them.
@@ -666,8 +666,13 @@ export class WorldScene extends Phaser.Scene {
     this.net.occupySeat(character, peer);
     this._lastSnap = null;
     this._worldSig = null;
-    const snapshot = { ...this.sim.snapshot(), doors: [...this.sim.map.doors.values()].filter(d => d.open).map(d => d.id), stageId: this.stage?.active?.id ?? null };
+    const snapshot = { ...this.sim.snapshot(), doors: [...this.sim.map.doors.values()].filter(d => d.open).map(d => d.id), ...this._stagePresence() };
     this.net.send(peer, { t: 'start', save: this.save, assignments: { [peer]: character }, snapshot });
+  }
+
+  _stagePresence() {
+    const active = this.stage?.active;
+    return { stageId: active?.id ?? null, ...(active?.script?.hold ? { stageHold: true } : {}) };
   }
 
   _wireNet() {
@@ -741,7 +746,7 @@ export class WorldScene extends Phaser.Scene {
           }
         }
       });
-      this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot(), stageId: this.stage?.active?.id ?? null }) });
+      this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot(), ...this._stagePresence() }) });
       this.time.addEvent({ delay: 500, loop: true, callback: () => this._broadcastWorld() });
       on('join', () => { this._worldSig = null; });
     } else if (this.mode === 'client') {
@@ -759,7 +764,7 @@ export class WorldScene extends Phaser.Scene {
             this.stage.syncHostStage(msg.stageId);
             if (!rejoinStageSynced) {
               rejoinStageSynced = true;
-              this.stage.holdForHost(msg.stageId);
+              this.stage.holdForHost(msg.stageId, msg.stageHold);
             }
           }
         }
@@ -2272,14 +2277,16 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _onClick(ptr) {
-    if (!this.ready || ptr.button !== 0 || this.stage?.active) return;
+    if (!this.ready || ptr.button !== 0) return;
+    const stage = this.stage?.active;
+    if (stage && !(stage.script?.hold && this.dlg)) { this.input2.blockAttack = true; return; }
     const { x: sx, y: sy } = toView(ptr);
     const qb = this._qbSticky;
     if (qb && !this._talkOpen() && sx >= qb.x0 && sx <= qb.x1 && sy >= qb.y0 && sy <= qb.y1) { this.input2.blockAttack = true; qb.leave(); return; }   // a hidden card (dialogue up) can't be clicked away
     if (this.dlg) {
       // Clicks never advance dialogue (E does); choices are clicked directly. In free dialogue a click
       // outside the box is still an attack.
-      if (!this.dlgFree || sy > VIEW.h - 70) this.input2.blockAttack = true;
+      if (stage || !this.dlgFree || sy > VIEW.h - 70) this.input2.blockAttack = true;
       return;
     }
     if (this.menu) {

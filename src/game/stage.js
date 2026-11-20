@@ -88,14 +88,14 @@ export class Stage {
   _release(id) { for (const w of [...this._waiters]) if (w.id === id) w.go(); }
 
   /** The host's X: end it for everyone now. */
-  skip() { if (this.active?.host) this._finish(true); }
+  skip() { if (this.active?.host && !this.active.script.hold) this._finish(true); }
 
-  holdForHost(id) {
+  holdForHost(id, hold = false) {
     if (this.s.mode !== 'client' || !id || this.active || this._pending) return;
     const s = this.s;
-    this.active = { id, host: false, waitingForHost: true, actors: new Map(), ui: [], zoom0: s.cameras.main.zoom };
+    this.active = { id, host: false, waitingForHost: true, script: { hold }, actors: new Map(), ui: [], zoom0: s.cameras.main.zoom };
     this._bars(true);
-    const status = s.add.text(VIEW.w / 2, VIEW.h - BAR / 2, tr('Cutscene in progress'), FONT)
+    const status = s.add.text(VIEW.w / 2, hold ? BAR / 2 : VIEW.h - BAR / 2, tr('Cutscene in progress'), FONT)
       .setOrigin(0.5).setScrollFactor(0).setDepth(9645);
     this.active.ui.push(status);
   }
@@ -389,12 +389,12 @@ export class Stage {
   // Letterbox bars slide in, so everyone can tell the game is showing them something.
   _bars(on) {
     const s = this.s, ui = this.active.ui;
-    for (const top of [true, false]) {
+    for (const top of this.active.script.hold ? [true] : [true, false]) {
       const r = s.add.rectangle(0, top ? -BAR : VIEW.h, VIEW.w, BAR, 0x000000).setOrigin(0).setScrollFactor(0).setDepth(9640);
       ui.push(r);
       s.tweens.add({ targets: r, y: top ? 0 : VIEW.h - BAR, duration: 350, ease: 'Sine.easeOut' });
     }
-    if (this.active.host && s.mode !== 'client') {
+    if (this.active.host && s.mode !== 'client' && !this.active.script.hold) {
       const hint = s.add.text(VIEW.w - 6, VIEW.h - BAR / 2, tr('X: skip'), { ...FONT, color: '#5a5d6b' }).setOrigin(1, 0.5).setScrollFactor(0).setDepth(9645);
       ui.push(hint);
     }

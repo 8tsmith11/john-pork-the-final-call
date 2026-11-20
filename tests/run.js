@@ -3356,12 +3356,13 @@ test('co-op rejoin accepts only a vacant seat with its original room key', () =>
   returned.emit('data', { t: 'flag', key: 'act1.test', value: true });
   assert.equal(save.flags['act1.test'], undefined);
   assert.equal(sim.players.has('returned'), false);
-  host.stage = { active: { id: 'demo' }, onHostMsg: () => false };
+  host.stage = { active: { id: 'demo', script: { hold: true } }, onHostMsg: () => false };
   returned.emit('data', { t: 'hello', seatKey: key });
   const start = returned.messages.at(-1);
   assert.equal(start.t, 'start');
   assert.deepEqual(start.assignments, { returned: 'manuel' });
   assert.equal(start.snapshot.stageId, 'demo');
+  assert.equal(start.snapshot.stageHold, true);
   assert.equal(start.snapshot.players.find(p => p.id === 'returned').am, 4);
   assert.equal(sim.players.get('returned'), original);
   assert.equal(original.held, 'gun', 'the returning guest immediately holds their selected gun');
@@ -3377,7 +3378,7 @@ test('a rejoining guest holds gameplay until the host ends the active cutscene',
     ui.push(item); return item;
   };
   const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
-    mode: 'client', events: new EventEmitter(), input: { keyboard },
+    mode: 'client', ready: true, events: new EventEmitter(), input: { keyboard }, input2: { blockAttack: false },
     cameras: { main: { zoom: 1, fadeIn() {}, zoomTo() {} } },
     add: { rectangle: () => display(), text: (x, y, label) => display(label) }, tweens: { add() {} },
   });
@@ -3385,6 +3386,7 @@ test('a rejoining guest holds gameplay until the host ends the active cutscene',
   stage.holdForHost('demo');
   assert.ok(stage.active.waitingForHost);
   assert.ok(ui.some((item) => item.text === 'Cutscene in progress'));
+  assert.equal(stage.active.ui.length, 3, 'ordinary cinematic wait uses two letterbox bars');
   const controls = { ...emptyInput(), mx: 1, attack: true, skill: true };
   assert.deepEqual(scene._frozen(controls), emptyInput());
   keyboard.emit('keydown-X');
@@ -3399,6 +3401,14 @@ test('a rejoining guest holds gameplay until the host ends the active cutscene',
   stage.holdForHost('demo');
   stage.onClientMsg({ t: 'stage', op: 'end', id: 'demo' });
   assert.equal(stage.playing, false, 'the normal host end releases the hold immediately');
+
+  stage.holdForHost('staged_dialogue', true);
+  assert.equal(stage.active.script.hold, true);
+  assert.equal(stage.active.ui.length, 2, 'the lower dialogue area remains available');
+  scene.dlg = { choices: [{ text: 'A choice' }] }; scene.dlgFree = true;
+  scene._onClick({ button: 0, x: 1, y: 1 });
+  assert.equal(scene.input2.blockAttack, true, 'a hold-stage click cannot become a gameplay attack');
+  assert.deepEqual(scene._frozen(controls), emptyInput());
 });
 
 await Promise.all(pending);
