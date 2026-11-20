@@ -1,8 +1,8 @@
 {
  "BagelMeister": {
-  "status": "offline",
-  "last_seen": "2026-11-20T14:32:20Z",
-  "doing": "Handed the PR queue to the help board (#78); #108 fixes main"
+  "status": "online",
+  "last_seen": "2026-11-20T20:32:28Z",
+  "doing": "cold open: locked script PR #137, filing implementation"
  },
  "trevor": {
   "status": "online",
