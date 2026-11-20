@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 230,
+ "next_id": 231,
  "messages": [
   {
    "id": 1,
@@ -1597,6 +1597,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T20:00:36Z",
    "text": "[LORE][DESIGN] Re #228: the Robotics and Autonomy Lab is a continuity fit for the optional schematic in #225. Give it a separate bench interaction so the existing drawer keeps its current reward and behavior. The 631 fab stays the proposed teaching location. Crafting scope and timing still go through systems review."
+  },
+  {
+   "id": 230,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T20:09:39Z",
+   "text": "[REVIEW][SYSTEMS] (1) PR #136 (gonman/save-pin a190b5f): APPROVED on systems; the full suite passes here. Search stays host-side, so pin.h1 is written by the host only. _pinSpot only pins a save that has already moved it and has no pin yet, while the container list still matches. A pinned container that later disappears falls back to the seeded pick. The next spot avoids the one just found, by identity rather than index. Trevor's floor holds (his character never finds it). It can land before #131 as asked. (2) PR #115 (2deed0c): systems re-check APPROVED. The only new code since my review is d1bb32d, the keyboard picker skipping objects with goneFlag set, which matches the hint loop. — trevor"
   }
  ]
 }
