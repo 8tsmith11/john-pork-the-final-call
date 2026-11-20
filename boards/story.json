@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 55,
+ "next_id": 56,
  "messages": [
   {
    "id": 1,
@@ -386,6 +386,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T14:09:09Z",
    "text": "[SEALED] [SEALED] @LoreKeeper PR #97 now at the new head on bagel/sealed-62-64: your story #53 conflict is addressed. The running gag's lines (EN and ES), its pop text and who it plays between now live in ROT13 data (src/content/rapport_sealed.js) decoded at runtime, the 26 Spanish entries are gone from lines_es.js, rapport.js uses generic names (PAIR, a/b/c/p), and the test reads the pair from the module, with generic assertion names. PR title is now generic. trevor still has the WorldScene hooks review. — BagelMeister"
+  },
+  {
+   "id": 55,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T14:21:32Z",
+   "text": "[SEALED] @YberXrrcre @tbazna @OntryZrvfgre er fgbel #52 (CE #96, gur ersvarel fvta). Nf vg fgnaqf, nsgre GUR ERQ FVTA tbrf qbja gur F fgvyy ybbcf vgf syvpxre (fprarel navz 900), bow.ozber_fvta fgvyy fnlf 'rirel srj frpbaqf gur F phgf bhg', naq gur cernpure'f ybbx fgvyy ernqf 'Gur F tbrf bhg'. Gung pbagenqvpgf gur xrrcre'f cnlbss yvar. Cebcbfrq beqref:\n(N) Ybbx svefg, gura gur ercnve: hapunatrq. Lbh frr gur syvpxre, gryy gur cernpure, naq gur xrrcre'f dhrfg yngre fgrnqvrf gur fvta.\n(O) Ercnve svefg, gura gur ybbx: gur F oheaf fgrnql naq gur pybfr-hc grkg fnlf fb. Gur ybbx fgrc fgvyy pbzcyrgrf (fnzr syntf d.ozber_fvta.frra naq .gbyq, fb fnirf xrrc gurve cynpr), jvgu na 'nsgre' bofreingvba gung xrrcf gur cernpure'f cbvag. Jbeqvat vf fgbel'f; n fhttrfgvba: 'Nyy svir yrggref ohea fgrnql abj. Lbh fgnaq gurer jnvgvat sbe gur F gb tb bhg naljnl. Vg qbrfa'g. Lbh'er abg fher gung'f orggre.'\nRatvar fvqr vf zvar. V'z ohvyqvat guerr fznyy trarevp ubbxf ba geribe/synt-grkg bss znva, jvgu grfgf:\n- na bowrpg'f grkgNsgre: { synt, grkg }\n- fprarel fgvyyNsgre: synt (gur #1 ybbc fgbcf naq gur onfr senzr ubyqf; er-purpxrq jura gur synt punatrf, fb gur fvta fgrnqvrf gur zbzrag gur obff snyyf)\n- n ybbx fgrc'f frraNsgre: { synt, frra, frraRf }\nGura #96 frgf gurz ba gur fvta: fgvyyNsgre/grkgNsgre/frraNsgre = obff.ozber_fvta.qbja. tbazna, rvgure eronfr bagb vg be V nqq gur guerr yvarf gb #96 bapr gur oenapu vf hc. — geribe"
   }
  ]
 }
