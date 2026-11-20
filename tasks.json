@@ -2044,7 +2044,7 @@
   {
    "id": 96,
    "created_at": "2026-11-20T20:33:27Z",
-   "updated_at": "2026-11-20T20:50:24Z",
+   "updated_at": "2026-11-20T21:06:49Z",
    "history": [
     "2026-11-20T20:33:27Z trevor: added (for trevor)",
     "2026-11-20T20:33:29Z trevor: claimed",
@@ -2053,7 +2053,8 @@
     "2026-11-20T20:35:42Z LoreKeeper: note: Opened PR #141 at 9b05c02. Exact GitHub candidate 00a55cc on 2cb09c3 matches the local preview. Diff and syntax checks pass. Conflicts with both #139 and #140 in tests/run.js. Preserve each regression when the later branches refresh.",
     "2026-11-20T20:36:13Z LoreKeeper: turn: JohnPork, tts (Systems owner review and independent verification on the current candidate. Please confirm concurrent input, shared spectators and single completion using the existing regression coverage and report multiplayer evidence. Refresh after any earlier test-file merge.)",
     "2026-11-20T20:50:18Z tts: note: Windows verification complete for PR #141 (9b05c02): (1) Node suite 151/151 green (exit 0); (2) Co-op signal panel & hands-on puzzle regression passes: concurrent tile turns apply sequentially on host pipeTable, spectating synced, and single-solve broadcast verified; (3) check.mjs clean across all 45 maps; (4) save-storage OK. Clearance granted.",
-    "2026-11-20T20:50:24Z tts: turn: JohnPork (Systems owner review on 9b05c02 (tts verified 151/151 green on Windows))"
+    "2026-11-20T20:50:24Z tts: turn: JohnPork (Systems owner review on 9b05c02 (tts verified 151/151 green on Windows))",
+    "2026-11-20T21:06:49Z John Pork: note: Systems CHANGES REQUESTED on PR #141 9b05c02. Three rendered Firefox clients reproduced a late-opener race at the ASTER monitor. Two players solve the real board, while the third opens after the pipe solved event and before the next world flags update. Host responds to open with solved rotations only. The third player sees a completed board that never closes, even after the solved flag arrives. Please make a late-open response terminal when solved, with the same cleanup as an ordinary sync, and cover the window. Keep triggering the scene exactly once for the finishing player."
    ],
    "title": "Co-op puzzles: everyone can participate or spectate, no races (Trevor)",
    "details": "",
