@@ -137,7 +137,8 @@ export class SharedEvents {
 
   _restorePending() {
     const start = this.pendingResume, s = this.s;
-    if (!start || s.stage?.active) return;
+    const stage = s.stage?.active;
+    if (!start || (stage && !stage.script?.hold)) return;
     const finale = start.presentation === 'act1-finale';
     if (!finale && (this.active || s.dlg || s.sayOpen || s.menu)) return;
     this.pendingResume = null;

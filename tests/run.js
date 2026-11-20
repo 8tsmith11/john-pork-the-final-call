@@ -3450,10 +3450,11 @@ test('a returning guest joins the current story turn once and abandoned or defer
   hostNet.emit('msg', 'other', { t: 'evStart', id: 'other:live', main: 'michael', scope: 'all' });
   hostNet.emit('msg', 'other', { t: 'evState', id: 'other:live', state });
   guest.shared.onMsg({ t: 'evEnd', id: 'other:live' });   // simulate a fresh World before it requests the current state
+  guest.stage = { active: { script: { hold: true } }, onClientMsg: () => false };
   guest.shared.requestResume();
-  assert.equal(guest.dlg.line.text, state.text);
+  assert.equal(guest.dlg.line.text, state.text, 'an authored hold runs alongside restored dialogue');
   guest.shared.onMsg({ t: 'evEnd', id: 'other:live' });
-  guest.stage = { active: true, onClientMsg: () => false };
+  guest.stage.active = { script: { hold: false } };
   guest.shared.requestResume();
   assert.equal(guest.shared.pendingResume.id, 'other:live');
   host.shared.endGuestDialogue('other');
