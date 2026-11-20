@@ -1639,7 +1639,7 @@ test('cordon, trevor\'s half of #36: a trooper at every checkpoint faces out, wi
   for (const p of sim.players.values()) assert.ok(Math.floor(p.y / 16) > ex.y, `${p.id} landed at row ${Math.floor(p.y / 16)}, beyond the barrier`);
 });
 
-test('the story bench (245): harder, a reference card always there, the book adds a hint per blank only when the party has it', () => {
+test('the story bench (245): harder, a reference card always there, the book adds a hint per blank only when the party has it', async () => {
   const lab = VLab.labById('reader');
   assert.ok(lab.blanks.length >= 5 && lab.blanks.length > VLab.labById('fsm').blanks.length, 'harder than labs 1-3');
   assert.ok(lab.ref.length >= 3 && lab.ref.every(([en, es]) => en && es), 'a reference card, in English and Spanish');
@@ -1657,6 +1657,8 @@ test('the story bench (245): harder, a reference card always there, the book add
   // unlimited attempts: wrong runs never lock it
   for (let i = 0; i < 25; i++) VLab.runTests(bench.bench);
   assert.ok(!bench.bench.passed && VLab.cycle(bench.bench, 0), 'still open after many failed runs');
+  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/msg\.t === 'flag' && msg\.key === 'lab\.book'\) this\.save\.flags\['lab\.book'\] = true/.test(src), 'a guest who reads the book counts for the party');
 });
 
 const Jobs = await import('../src/content/jobs.js');
