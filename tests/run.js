@@ -1133,6 +1133,10 @@ test('cordon (task #36/#38): trooper lines before and after the Call have Spanis
   }
   assert.ok(PLAZA_CORDON.barriers.length >= 3);
   assert.ok(PLAZA_CORDON.closing.length >= 10);
+
+  // every checkpoint keeps its booth, floodlights and notice (a trailing comment once swallowed the north one's: BagelMeister, general #141)
+  const ids = new Set(PLAZA_CORDON.objects.map((o) => o.id));
+  for (const id of ['cordon.booth_1', 'cordon.booth_2', 'cordon.light_1', 'cordon.light_2', 'cordon.sign_1', 'cordon.sign_2', 'cordon.sign_3']) assert.ok(ids.has(id), `${id} is placed`);
 });
 
 test('cordon (task #36): the Code-rot-taken beyond each checkpoint stay out of reach and in their pens', () => {
@@ -1615,6 +1619,18 @@ test('limited shop shelves: a stock entry with a limit sells that many, shared b
   assert.equal(SS.stockLeft(save, 'hardware', 1, { item: 'x', price: 1 }), Infinity, 'no limit: sells without end');
   const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
   assert.ok(/_buy\(who, shopId, idx\) \{[^]*?stockLeft\(this\.save, shopId, idx, st\)[^]*?takeStock\(this\.save, shopId, idx, st\)/.test(src), 'the host checks and takes stock when it sells');
+});
+
+test('cordon, trevor\'s half of #36: a trooper at every checkpoint faces out, with lines of its own, and arrivals through the north checkpoint land inside', async () => {
+  const C = await import('../src/content/cordon.js');
+  const out = C.PLAZA_CORDON.objects.filter((o) => o.cordon === 'trooper' && o.out);
+  assert.equal(out.length, 3, 'one outward trooper per checkpoint');
+  assert.ok(C.CORDON_LINES_OUT.length >= 3 && C.CORDON_LINES_OUT.every((l) => l.en && l.es));
+  const sim = new Sim(MAPS_FOR_TEST.route1_north, { seed: 'arrive' });
+  for (const c of ['trevor', 'manuel', 'michael']) sim.addPlayer(c, c);
+  sim.setMap(MAPS_FOR_TEST.metro_plaza, 'route1_north', 'obj.r1n_south');
+  const ex = MAPS_FOR_TEST.metro_plaza.objects.find((o) => o.id === 'obj.plaza_r1n');
+  for (const p of sim.players.values()) assert.ok(Math.floor(p.y / 16) > ex.y, `${p.id} landed at row ${Math.floor(p.y / 16)}, beyond the barrier`);
 });
 
 const Jobs = await import('../src/content/jobs.js');
