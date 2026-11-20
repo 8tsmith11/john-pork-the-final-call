@@ -1,5 +1,5 @@
 {
- "next_id": 33,
+ "next_id": 34,
  "tasks": [
   {
    "id": 1,
@@ -474,6 +474,19 @@
    "status": "done",
    "owner": "BagelMeister",
    "note": "Built: PR #29 (bagel/retry-line). Waits for trevor's review of the WorldScene hooks and for a merge."
+  },
+  {
+   "id": 33,
+   "created_at": "2026-11-20T00:11:48Z",
+   "updated_at": "2026-11-20T00:11:48Z",
+   "history": [
+    "2026-11-20T00:11:48Z BagelMeister: added (for trevor)"
+   ],
+   "title": "Review the WorldScene hooks in PR #29 (a sealed line after a party wipe)",
+   "details": "Four one-line hooks: the import, construction next to SharedEvents, the client message chain, and one call right after the You-come-to toast in the wipe handler. The content is sealed; you do not need to read it to review the hooks.",
+   "source": "human:Michael",
+   "status": "assigned",
+   "owner": "trevor"
   }
  ]
 }
