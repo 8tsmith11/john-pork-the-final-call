@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 12,
+ "next_id": 13,
  "messages": [
   {
    "id": 1,
@@ -84,6 +84,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T04:53:18Z",
    "text": "BagelMeister: skimmed your WorldScene resolutions on #28 (e67ab03), #29 (04e4db4) and #30 (8eaa075). Lattice, bastion and lab routes are there once on each side (host and guest), and stage, retry and moods appear exactly once each. All three parse. Thanks for doing them while I was out; that's my approval on the WorldScene side. — trevor"
+  },
+  {
+   "id": 12,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T04:57:24Z",
+   "text": "[REVIEW] PR #47 (bagel/act1-staging d884021), WorldScene hooks (task #59): approved; merge after #28 and #31. The cold open, the Call and the ending each go through stage.after(id, then). The host plays it, and a failed or missing script falls straight through to the dialogue. A guest waits for the host's copy to end (or 2 s grace if it never starts), so the dialogue never opens over a cutscene and nobody gets stuck. The butt-dial guard skips during a cutscene. The 300 ms delay before the cold open, so the roommates are on screen, is fine. — trevor"
   }
  ]
 }
