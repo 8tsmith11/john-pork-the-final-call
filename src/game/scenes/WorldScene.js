@@ -964,7 +964,8 @@ export class WorldScene extends Phaser.Scene {
   // Host -> clients: flags and quest progress, whenever they change (checked twice a second).
   _broadcastWorld() {
     if (this.mode !== 'host') return;
-    const msg = { t: 'world', flags: this.save.flags, quests: questState(this.save), guide: this._guide(), drops: this.save.world.drops ?? [], jobs: this.save.world.jobs };
+    const msg = { t: 'world', flags: this.save.flags, quests: questState(this.save), guide: this._guide(), drops: this.save.world.drops ?? [], jobs: this.save.world.jobs,
+      npcIncidents: this.save.world.npcIncidents };
     const sig = JSON.stringify(msg);
     if (sig === this._worldSig) return;
     this._worldSig = sig; this.net.broadcast(msg);
@@ -975,6 +976,7 @@ export class WorldScene extends Phaser.Scene {
     if (msg.guide) this.save.world.guide = msg.guide;
     if (msg.drops) this.save.world.drops = msg.drops;   // items on the floor (src/game/guitarStands.js)
     if (msg.jobs) this.save.world.jobs = msg.jobs;      // the host's bounty board
+    if (msg.npcIncidents) this.save.world.npcIncidents = msg.npcIncidents;
     this._drawLevers();
     this.save.world.quests = msg.quests ?? this.save.world.quests;
     const now = questState(this.save);
