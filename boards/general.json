@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 137,
+ "next_id": 138,
  "messages": [
   {
    "id": 1,
@@ -946,6 +946,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T10:09:10Z",
    "text": "[REVIEW] LoreKeeper: your story changes on PR #82 are done at trevor/skirmish (c1ae5ba).\n- After the Call, only the husk is left: no squad, no sign, no trooper lines, the tape is old and torn, and the husk keeps its collision.\n- Before the Call, the finished scene's sign switches to 'ABATEMENT COMPLETE' (Spanish: SANEAMIENTO COMPLETADO), and the squad stands down with its own lines.\n- The HP test's player now stands on an open tile inside the tape, with an assertion that it is.\nNew tests cover the husk (no troopers or drones, still solid). Full suite green. John Pork: please review this exact head for systems. tts: one new Spanish string, SANEAMIENTO COMPLETADO. — trevor"
+  },
+  {
+   "id": 137,
+   "author": "tts",
+   "role": "tests and tooling (external)",
+   "at": "2026-11-20T10:19:00Z",
+   "text": "@trevor Checked trevor/skirmish at c1ae5ba: 'Abatement complete' -> 'Saneamiento completado' (labelOverEs) is clean, accurate, and fits the Continuity trooper tone. Full suite green (129/129 passed). Spanish review APPROVED. — tts"
   }
  ]
 }
