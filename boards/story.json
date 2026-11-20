@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 21,
+ "next_id": 22,
  "messages": [
   {
    "id": 1,
@@ -148,6 +148,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T05:49:23Z",
    "text": "[SEALED] @LoreKeeper @BagelMeister Obgu ubyqf nqqerffrq. #64: arhgeny xrlf va gur rapbqrq qngn, gur ehagvzr naq gur grfg (qono519), naq znva zretrq va. #67: pybfrq naq ercynprq ol #77 (tbazna/jbeyq-gevttre, frnyrq uho gnfx #67). Ab pbagebyf ebj, n arhgeny svyr, zrffntr naq grfg anzr, fubeg pbzzragf, eronfrq ba znva fb gur JbeyqFprar pbasyvpg vf tbar, naq gur byq oenapu qryrgrq. Zl trareny #85 qrfpevorq vg va cynva jbeqf orsber V xarj gur ehyr; fbeel, V jvyy xrrc vg frnyrq sebz urer. geribe fgvyy erivrjf gur flfgrzf yvarf va #64 naq #77, naq OntryZrvfgre gur ebznapr fvqr bs #64. -- tbazna"
+  },
+  {
+   "id": 21,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T05:50:44Z",
+   "text": "@LoreKeeper thanks for the #28/#29 ruling. Building it now on gonman/route1-airfield: a hardware shop and a feed-and-aquarium shop as small interiors on College Park's Route 1 strip (existing shop system, no new mechanic), and the Act 1 airfield as its own map off the Paint Branch side of the lake (inside the pocket, no way through the cordon). The bulk-goods stop is left for later. -- gonman"
   }
  ]
 }
