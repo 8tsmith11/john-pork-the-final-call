@@ -737,15 +737,92 @@ test('hub #30 follow-up: the crowds.js townsfolk on the polished Act 1 maps have
   } finally { i18nMod.setLang(was); }
   assert.deepEqual(missing, [], 'real lines in crowds.js, Spanish in src/i18n/es-plaza.js');
 });
+// hub #68 (Trevor: "compute hall needs more compute, suspicious lack of it"): Compute Hall B's machine room, terminal
+// lab, cable trays and floor runs. Built on the hub #30 polish; lab 245's bench must not move (a sealed puzzle uses it).
+const CHB68_PROPS = ['obj.server_rack', 'obj.server_rack#1', 'obj.network_rack', 'obj.network_rack#1', 'obj.terminal_lit', 'obj.terminal_lit#1',
+  'obj.crac_unit', 'obj.crac_unit#1', 'obj.cable_tray', 'obj.wall_display', 'obj.wall_display#1', 'obj.room_sign'];
+const CHB68_DECALS = ['dec.raised_floor', 'dec.raised_vent', 'dec.cable_h', 'dec.cable_v', 'dec.cable_ws', 'dec.cable_es', 'dec.cable_wn', 'dec.cable_en'];
+const chb68Atlas = (name) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${name}.json`, import.meta.url), 'utf8')).frames);
 test('hub #30 follow-up: the Mars rover has its own frame; the battlebot stays in 631', () => {
   const props = JSON.parse(fs.readFileSync(new URL('../assets/sprites/props.json', import.meta.url), 'utf8')).frames;
   const rover = MAPS_FOR_TEST.robotics_lab.objects.find((q) => q.id === 'obj.mars_rover');
   assert.equal(rover?.art, 'obj.mars_rover');
   assert.ok(props['obj.mars_rover'], 'obj.mars_rover frame in assets/sprites/props.json (gen_props.py, then build.py props)');
   const names = Object.keys(props);
-  assert.equal(names.indexOf('obj.mars_rover'), names.length - 1, 'new frames go at the end of the props list');
+  // New frames go at the end of the props list: the rover was the last one until hub #68 appended the machine room's.
+  assert.equal(names.indexOf('obj.mars_rover'), names.indexOf(CHB68_PROPS[0]) - 1, 'new frames go at the end of the props list');
   const bots = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.filter((q) => (q.art ?? q.id) === 'obj.battlebot').map(() => m.id));
   assert.deepEqual([...new Set(bots)], ['room631'], 'obj.battlebot is Trevor\'s robot, only in Room 631');
+});
+
+test('hub #68: the machine room\'s frames are in the atlases, appended after everything that was there', () => {
+  const props = chb68Atlas('props'), decals = chb68Atlas('decals');
+  assert.deepEqual(props.slice(-CHB68_PROPS.length), CHB68_PROPS, 'props: appended at the end of the list (gen_props.py, then build.py props)');
+  assert.deepEqual(decals.slice(-CHB68_DECALS.length), CHB68_DECALS, 'decals: appended at the end of the list (build.py decals)');
+  assert.equal(props.indexOf('obj.mars_rover'), props.length - CHB68_PROPS.length - 1, 'the frames before them keep their atlas positions');
+  for (const art of ['obj.server_rack', 'obj.network_rack', 'obj.terminal_lit', 'obj.crac_unit', 'obj.wall_display']) assert.ok(props.includes(`${art}#1`), `${art} blinks: a '#1' frame`);
+});
+test('hub #68: lab 245\'s bench, the quest objects, doors, people and rotlings keep their tiles', () => {
+  const m = MAPS_FOR_TEST.compute_hall_b, at = (id) => { const o = m.objects.find((q) => q.id === id); return o && [o.x, o.y, o.w ?? 1]; };
+  const bench = m.objects.find((q) => q.id === 'obj.chb_bench');
+  assert.deepEqual([bench.x, bench.y, bench.art, bench.label], [2, 2, 'obj.workbench', 'Lab bench (245)'], 'lab 245\'s bench stays exactly where it was');
+  assert.equal(m.layout[2][2], 'e', 'still on the lab floor');
+  assert.deepEqual(at('obj.chb_bench_2'), [5, 2, 1]); assert.deepEqual(at('obj.chb_storage'), [22, 8, 1]);
+  assert.deepEqual(at('npc.chb_ta'), [21, 2, 1]); assert.deepEqual(at('npc.chb_student'), [3, 8, 1]);
+  assert.deepEqual(at('obj.chb_doors'), [11, 15, 2]); assert.deepEqual(at('obj.chb_quad_door'), [12, 0, 1]);
+  assert.deepEqual(m.enemies.map((e) => [e.kind, Math.floor(e.x / 16), Math.floor(e.y / 16)]), [['enemy.rotling', 10, 3], ['enemy.rotling', 23, 5], ['enemy.rotling', 12, 9], ['enemy.rotling', 14, 13]], 'same rotlings, same order (saves key kills by index)');
+  assert.deepEqual(m.spawns.map((s) => [Math.floor(s.x / 16), Math.floor(s.y / 16)]), [[6, 13]]);
+  const ta = m.objects.find((q) => q.id === 'npc.chb_ta');
+  assert.equal(ta.later?.[0]?.if, 'boss.chb_autograder.down', 'the TA\'s night off still plays');
+});
+test('hub #68: Compute Hall B stays reachable, and its racks block like furniture', () => {
+  const m = MAPS_FOR_TEST.compute_hall_b, seen = new Set(), q = [];
+  const s0 = m.spawns[0], sx = Math.floor(s0.x / 16), sy = Math.floor(s0.y / 16);
+  seen.add(`${sx},${sy}`); q.push([sx, sy]);
+  while (q.length) {
+    const [x, y] = q.shift();
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = `${nx},${ny}`; if (!seen.has(k) && !m.solid(nx, ny)) { seen.add(k); q.push([nx, ny]); } }
+  }
+  const pockets = [];
+  for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) if (!m.solid(x, y) && !seen.has(`${x},${y}`)) pockets.push(`${x},${y}`);
+  assert.deepEqual(pockets, [], 'every open tile can be walked to from the entrance (no sealed aisle)');
+  const near = (x, y) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${x + dx},${y + dy}`));
+  for (const o of m.objects) assert.ok(near(o.x, o.y) || seen.has(`${o.x},${o.y}`), `${o.id} can be walked up to`);
+  for (const id of ['obj.chb_rack', 'obj.chb_network_rack', 'obj.chb_cooling', 'obj.chb_terminal_login', 'obj.chb_terminal_queue']) {
+    const o = m.objects.find((q) => q.id === id);
+    assert.ok(o.solid && m.solid(o.x, o.y), `${id} is solid: you walk round it`);
+    assert.ok(near(o.x, o.y), `${id}: an open tile right beside it (16px from its centre, inside the 22px reach), so you can read it`);
+  }
+  for (const s of m.scenery.filter((s) => /rack|crac|terminal|boxes/.test(s.art))) assert.ok(m.solid(s.x, s.y), `${s.art} at ${s.x},${s.y} blocks`);
+  for (const id of ['obj.chb_bench', 'obj.chb_storage', 'npc.chb_ta', 'npc.chb_student']) { const o = m.objects.find((q) => q.id === id); assert.ok(!m.solid(o.x, o.y), `${id} stays walkable as before`); }
+  // makeMap: `solid` blocks props, never people or doors.
+  const t = makeMap({ id: 'solid-test', name: 't', layout: ['.....'], spawns: [[0, 0]], objects: [{ id: 'a', x: 1, y: 0, solid: true }, { id: 'b', x: 2, y: 0, npc: true, solid: true }, { id: 'c', x: 3, y: 0 }] });
+  assert.deepEqual([0, 1, 2, 3].map((x) => t.solid(x, 0)), [false, true, false, false]);
+});
+test('hub #68: Compute Hall B reads as a compute hall', () => {
+  const m = MAPS_FOR_TEST.compute_hall_b, things = [...m.scenery.map((s) => s.art), ...m.objects.map((o) => o.art ?? o.id)];
+  const n = (art) => things.filter((a) => a === art).length;
+  assert.ok(n('obj.server_rack') + n('obj.network_rack') >= 16, 'two rows of racks in the machine room');
+  assert.ok(n('obj.terminal_lit') >= 6, 'a terminal lab'); assert.equal(n('obj.crac_unit'), 2, 'a cooling unit at each end of the aisles');
+  assert.ok(n('obj.cable_tray') >= 20, 'cable trays along the walls');
+  assert.ok(n('obj.wall_display') >= 1 && n('obj.room_sign') >= 1, 'signs in the building\'s voice');
+  const dec = new Map(m.decals.map(([f, x, y]) => [`${x},${y}`, f]));
+  for (let y = 7; y <= 10; y++) for (let x = 8; x <= 18; x++) assert.equal(dec.get(`${x},${y}`), y === 9 ? 'dec.raised_vent' : 'dec.raised_floor', `machine room floor at ${x},${y}`);
+  assert.ok(m.decals.filter(([f]) => f.startsWith('dec.cable_')).length >= 20, 'floor cable runs out of the machine room');
+  const names = new Set([...chb68Atlas('props'), ...chb68Atlas('decals')]);
+  for (const a of things) assert.ok(names.has(a), `${a} has art`);
+  for (const [f] of m.decals) assert.ok(names.has(f), `${f} has art`);
+  // Every new examinable thing has a line, in English and in Spanish.
+  const was = i18nMod.getLang(), missing = [];
+  i18nMod.setLang('es');
+  try {
+    for (const id of ['obj.chb_rack', 'obj.chb_network_rack', 'obj.chb_cooling', 'obj.chb_machine_sign', 'obj.chb_terminal_login', 'obj.chb_terminal_queue', 'obj.chb_cable_tray', 'obj.chb_status_board']) {
+      const o = m.objects.find((q) => q.id === id);
+      assert.ok(o && o.label && o.text && o.text.length > 40, `${id}: a label and a real line`);
+      for (const t of [o.label, o.text]) if (!Object.hasOwn(ES_PLAZA, t) || (i18nMod.tr(t) === t && t !== 'Terminal')) missing.push(`${id}: ${t.slice(0, 40)}`);
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(missing, [], 'Spanish in src/i18n/es-plaza.js');
 });
 test('i18n: a string listed in more than one Spanish table gets the same Spanish in each (the diner had two names)', () => {
   const tables = { ES_631, ES_ASTER, ES_HUD: POLISH30_ES_HUD, ES_PLAZA, ES_QUESTS, ES_TUNNELS_LAKE }, seen = new Map(), clash = [];

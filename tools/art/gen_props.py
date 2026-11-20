@@ -1054,6 +1054,140 @@ def mars_rover():
 
 P("obj.mars_rover", mars_rover())
 
+
+# ---- Compute Hall B's machine room (hub #68, Trevor: "compute hall needs more compute") ----
+# Digital is cold (DIRECTION.md rule 1): dark cabinets, steel, screen cyans. Status lights are the yerba green the
+# signal lamps already use, the warning amber (warm4, never the balloon's orange) and cyan for disk activity.
+# Every '#1' frame is the second half of a slow loop (WorldScene), so a row of racks twinkles.
+def rack_shell(c):
+    """The 42U cabinet every rack shares: a lit top, a slate frame with steel rails, a dark bay, a plinth."""
+    c.h_(1, 1, 14, "concrete3").h_(1, 2, 14, "concrete2")                    # top: lit edge, top face
+    c.rect(1, 3, 14, 19, "night3").v_(14, 3, 19, "night2")                   # frame, shaded right side
+    c.rect(3, 4, 10, 16, "night1")                                           # the bay
+    for y in range(4, 20):
+        c.px(2, y, "steel" if y % 2 else "concrete1").px(13, y, "concrete1" if y % 2 else "night2")   # rails and holes
+    c.pts("bone", (3, 3), (4, 3))                                            # asset tag on the header
+    c.h_(1, 21, 14, "night2").pts("night1", (2, 22), (13, 22))               # plinth and feet
+    return c
+
+
+def server_rack(f):
+    """Servers stacked in the bay, each a grey face with its lights at the right end: green running, an amber that
+    blinks, cyan disk activity that hops between units. One 3U storage box with a row of drive slots."""
+    c = rack_shell(C())
+    units = [(4, 1), (6, 1), (8, 3), (12, 1), (14, 1), (16, 1), (18, 1)]
+    for i, (y, h) in enumerate(units):
+        c.rect(3, y, 10, h, "concrete1").px(3, y, "concrete2")                # face, lit handle
+        if h == 3:                                                           # the storage box: drive slots
+            for x in (4, 6, 8, 10):
+                c.v_(x, y, 3, "night2").px(x, y, "screen2" if (x // 2 + f) % 2 else "screen0")
+            c.px(12, y + 1, "yerba1")
+            continue
+        c.px(12, y, "yerba1")                                                # running
+        c.px(10, y, "screen2" if (i + f) % 2 else "night2")                  # disk activity, hopping
+    c.px(11, 6, "warm4" if f == 0 else "night2")                             # the amber that has been blinking since March
+    c.h_(4, 16, 5, "night3")                                                 # a blanking panel
+    return c.outline()
+
+
+def network_rack(f):
+    """The network cabinet: two switches with rows of port lights, patch cables in five colours looping down to the
+    cable manager, a blank panel, and a UPS at the bottom with a little display."""
+    c = rack_shell(C())
+    for y in (4, 6):                                                         # two 1U switches
+        c.h_(3, y, 10, "concrete1")
+        for x in range(4, 12):
+            c.px(x, y, ("yerba1" if (x + y // 2 + f) % 3 else "night1") if x % 2 == 0 else "night2")
+    cols = ("tub1", "warm4", "bone", "soft1", "screen1")
+    for k, x in enumerate((4, 6, 8, 10, 12)):                                # patch cables, drooping to the right
+        drop = 3 + k % 3
+        c.v_(x, 7, drop, cols[k]).px(x + 1, 7 + drop, cols[k])
+    c.h_(4, 13, 8, "night3")                                                 # blank panel
+    c.rect(3, 15, 10, 4, "concrete1").h_(3, 15, 10, "concrete2")             # the UPS
+    c.rect(4, 16, 4, 2, "screen0").px(5, 16, "screen2").px(6, 17, "screen1" if f else "screen2")
+    c.px(11, 17, "yerba1" if f == 0 else "warm4")                            # on mains, then a flicker to battery
+    return c.outline()
+
+
+def terminal(f):
+    """A lab terminal on a steel desk: a grey monitor showing a few lines of cyan text and a blinking cursor, a
+    keyboard, the desk's front edge and legs."""
+    c = C()
+    c.rect(3, 4, 10, 8, "concrete2").h_(3, 4, 10, "concrete3").v_(12, 5, 7, "concrete1")   # monitor body
+    c.rect(4, 5, 7, 6, "screen0")                                            # screen
+    c.h_(5, 6, 4, "screen2").h_(5, 7, 2, "screen1").h_(5, 8, 5, "screen1")   # text
+    c.px(5 + 2 * f, 9, "screen2").px(6 + 2 * f, 9, "screen2")                 # cursor, blinking along
+    c.rect(7, 12, 2, 2, "steel")                                             # stand
+    c.rect(1, 14, 14, 2, "concrete1").h_(1, 14, 14, "concrete3")             # desk top, lit edge
+    c.h_(3, 14, 8, "night3").pts("bone", (4, 14), (6, 14), (8, 14), (10, 14))   # keyboard
+    c.h_(1, 16, 14, "night2")                                                # front apron
+    c.rect(2, 17, 1, 6, "steel").rect(13, 17, 1, 6, "night3")                # legs, far leg in shade
+    return c.outline()
+
+
+def crac_unit(f):
+    """A computer-room air conditioner: a wardrobe-sized off-white cabinet with a big intake grille, a control
+    panel (cyan readout, a status light) and a service door."""
+    c = C()
+    c.h_(1, 1, 14, "bone").rect(1, 2, 14, 20, "concrete3").v_(14, 2, 20, "concrete2")   # top, body, shade
+    c.rect(3, 3, 10, 7, "night3")                                            # intake grille
+    for y in (3, 5, 7, 9):
+        c.h_(3, y, 10, "concrete2")                                          # louvres
+    c.rect(4, 11, 5, 3, "night1")                                            # the readout
+    c.pts("screen2", (5, 12), (7, 12)).px(6, 12, "screen1" if f else "screen2")
+    c.px(11, 12, "yerba1" if f == 0 else "screen1")                          # status light
+    c.v_(8, 15, 6, "concrete2").px(10, 17, "steel").px(10, 18, "steel")       # service door seam, handle
+    c.h_(2, 15, 12, "concrete2")
+    c.pts("screen1", (4, 20), (5, 20))                                       # a little condensation at the foot
+    c.h_(1, 21, 14, "night2")                                                # plinth
+    return c.outline()
+
+
+# Wall pieces sit in the lower 16 rows of the frame, so on a wall tile they stay on the wall face.
+def cable_tray():
+    """A ladder tray bolted along a wall, packed with cable. Runs edge to edge, so trays side by side join up."""
+    c = C()
+    c.h_(0, 11, 16, "steel").h_(0, 15, 16, "concrete1")                      # the rails
+    for x in (1, 5, 9, 13):
+        c.v_(x, 12, 3, "night3")                                             # rungs
+    c.h_(0, 12, 16, "night1").h_(0, 13, 16, "tub0").h_(0, 14, 16, "night1")  # the bundle
+    c.pts("screen1", (2, 12), (3, 12), (10, 14), (11, 14)).pts("warm3", (6, 13), (7, 13), (14, 12))   # a few odd colours
+    c.pts("night3", (3, 16), (4, 17), (5, 17), (6, 16), (7, 16))             # a loop that slipped out
+    return c.outline()
+
+
+def wall_display(f):
+    """A slim LED message board: amber dots on black, the message one step further along in the second frame."""
+    c = C().rect(1, 9, 14, 6, "steel").rect(2, 10, 12, 4, "night1")          # bezel, face
+    for x in range(2, 14):
+        if (x + 3 * f) % 5 != 4:
+            c.px(x, 11, "warm4")                                             # the scrolling line
+        if (x * 3 + f) % 4 == 0:
+            c.px(x, 12, "warm3")
+    c.pts("concrete1", (3, 15), (12, 15))                                    # brackets
+    return c.outline()
+
+
+def room_sign():
+    """A small steel plaque beside a door: a header bar and two engraved lines."""
+    c = C().rect(3, 9, 10, 6, "steel").h_(3, 9, 10, "concrete3").h_(4, 10, 8, "night2")
+    c.h_(4, 12, 6, "bone").h_(4, 13, 4, "bone")
+    return c.outline()
+
+
+P("obj.server_rack", server_rack(0))
+P("obj.server_rack#1", server_rack(1))
+P("obj.network_rack", network_rack(0))
+P("obj.network_rack#1", network_rack(1))
+P("obj.terminal_lit", terminal(0))
+P("obj.terminal_lit#1", terminal(1))
+P("obj.crac_unit", crac_unit(0))
+P("obj.crac_unit#1", crac_unit(1))
+P("obj.cable_tray", cable_tray())
+P("obj.wall_display", wall_display(0))
+P("obj.wall_display#1", wall_display(1))
+P("obj.room_sign", room_sign())
+
 # Floor decals: 16x16, flat on the ground, no outline. Stamped into the baked map under everything.
 DECALS = {}
 def D(name, c): DECALS[name] = c.rows()
@@ -1107,6 +1241,61 @@ D("dec.rust", ell(dc(), 8, 9, 5, 3.5, "warm1").pts("warm2", (6, 8), (9, 9), (7, 
 D("dec.drip", ell(ell(dc(), 8, 8, 4.5, 2.6, "screen0"), 8, 8, 3, 1.6, "night1", ring=True).pts("screen1", (7, 8), (9, 7)))
 D("dec.roots", dc().pts("warm1", (0, 4), (1, 4), (2, 5), (3, 5), (4, 6), (5, 6), (6, 7), (6, 8), (7, 9), (8, 9), (15, 11), (14, 11), (13, 12), (12, 12), (11, 13)).pts("warm0", (3, 6), (7, 10), (12, 13)).pts("yerba0", (8, 8), (13, 11)))
 D("dec.grate_tree", ell(ell(dc(), 8, 8, 7.5, 7.5, "night1", ring=True), 8, 8, 5.5, 5.5, "night2", ring=True).pts("steel", (8, 1), (1, 8), (14, 8), (8, 14)))
+
+
+# Compute Hall B (hub #68): the machine room's raised floor (four panels a tile, seams, a lit corner on each) and its
+# perforated tiles, where the cold air comes up; then floor cable runs, straight and round a corner. A cable run
+# keeps four strands at the same pixels on every edge (6-9), so straights and corners always meet.
+def raised(perforated=False):
+    c = dc().rect(0, 0, 16, 16, "concrete1")
+    for o in (0, 8):
+        c.h_(0, o, 16, "night2").v_(o, 0, 16, "night2")                      # panel seams
+    for ox in (0, 8):
+        for oy in (0, 8):
+            c.h_(ox + 1, oy + 1, 6, "concrete2").px(ox + 1, oy + 2, "concrete2")   # lit top-left of each panel
+            if perforated:
+                for y in range(oy + 3, oy + 8, 2):
+                    for x in range(ox + 2, ox + 8, 2):
+                        c.px(x, y, "night1")                                 # the holes
+    return c
+
+
+STRANDS = ((6, "night1"), (7, "steel"), (8, "steel"), (9, "night1"))
+
+
+def cable(*edges):
+    """A floor cable run from the tile's centre out to each named edge: 'h', 'v', or a corner like ('w', 's')."""
+    import math
+    c = dc()
+    if edges == ("h",):
+        for p, col in STRANDS:
+            c.h_(0, p, 16, col)
+        return c.pts("concrete3", (4, 6), (4, 7), (4, 8), (4, 9))                 # a zip tie
+    if edges == ("v",):
+        for p, col in STRANDS:
+            c.v_(p, 0, 16, col)
+        return c.pts("concrete3", (6, 4), (7, 4), (8, 4), (9, 4))
+    # A corner: quarter circles round the tile corner between the two edges.
+    cx = 16 if "e" in edges else 0
+    cy = 16 if "s" in edges else 0
+    for p, col in STRANDS:
+        r = abs((p + 0.5) - cy) if cy else p + 0.5                            # radius that meets the side edge at row p
+        for k in range(0, 91):
+            a = math.radians(k)
+            x = cx + (-1 if cx else 1) * r * math.cos(a)
+            y = cy + (-1 if cy else 1) * r * math.sin(a)
+            c.px(int(x), int(y), col)
+    return c
+
+
+D("dec.raised_floor", raised())
+D("dec.raised_vent", raised(perforated=True))
+D("dec.cable_h", cable("h"))
+D("dec.cable_v", cable("v"))
+D("dec.cable_ws", cable("w", "s"))
+D("dec.cable_es", cable("e", "s"))
+D("dec.cable_wn", cable("w", "n"))
+D("dec.cable_en", cable("e", "n"))
 
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)
