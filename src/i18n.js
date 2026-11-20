@@ -3,6 +3,7 @@
 // it appears: exact matches first, then patterns. Anything not listed stays English, so content can
 // be translated piece by piece (dialogue and quests: hub task). Stored per browser.
 import { ES_QUESTS } from './i18n/es-quests.js';
+import { ES_STRETCH } from './i18n/es-stretch.js';
 import { ES_ITEMS } from './i18n/es-items.js';
 import { ES_631 } from './i18n/es-631.js';
 import { ES_TUNNELS_LAKE } from './i18n/es-tunnels-lake.js';
@@ -136,6 +137,8 @@ function trOne(s) {
   for (const [rx, rep] of ES_RX) if (rx.test(s)) return s.replace(rx, rep);
   return null;
 }
+// The stretch-tier areas (stretch.js, hub #30) join the table here, on their own line, after the tables above.
+Object.assign(ES_ALL, ES_STRETCH);
 export function tr(s) {
   if (lang !== 'es' || typeof s !== 'string' || !s) return s;
   const whole = trOne(s); if (whole !== null) return whole;

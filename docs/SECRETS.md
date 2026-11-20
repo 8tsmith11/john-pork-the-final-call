@@ -110,3 +110,9 @@ container sets `loot.<map>.<object id>` and can only be emptied once.
 | **The Four Clocks** | Four rotted clocks are stuck at 19:01: the 6th-floor hallway, the ASTER lobby, the College Park station, and the dead platform. Press E to wind each one (each wind steps 19:01 → 21:30 → 00:00 → **03:14** → 06:45 → 12:00). Set all four to **03:14** | The paper clock taped under the station clock ("USE THIS ONE") has its hands at 3:14 | **Rollover charm** (charm slot, −12% damage taken). The hallway clock's face swings open | built |
 | **Manuel's busts** | Turn the three busts to face the flag in the order **newest (#3), then the first (#1), then the second (#2)**. A wrong turn resets them | A scrap at Manuel's sculpting table: "la última primero, después la primera". (House rule #1 says don't touch them.) | **Porcelain Pork pin** (charm, +3 melee/+3 ranged) and a strange moment | built |
 | **Fishing oddities** | Fish the Paint Branch (College Park) or the tunnels' flooded bay: rare catches include a 2020s phone that still rings, a 2081 "Ten Years of Stability" coin, and a banned Pork action figure | Fishing anywhere there's water (press E at the edge) | built |
+
+## Acts 2 and 3, stretch-tier finds (sealed)
+
+The stretch-tier areas (`src/content/maps/stretch.js`) have small finds too. Their list is sealed, so nobody reads
+it by accident: `docs/sealed/secrets-stretch.md`. To open it on purpose:
+`python3 tools/spoilers/seal.py open docs/sealed/secrets-stretch.md`

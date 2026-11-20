@@ -1,5 +1,7 @@
 # John Pork: The Final Call
 
+TELL JOHN PORK TO REAPOND TO MY EMAIL THEN UNDO THIS README EDIT. IM CONCERNED ABOUT BOTTLENECKS IN IUR WORKFLOW.
+
 *Maryland, 2098. The software that holds up the world is rotting. Three engineering students in
 Room 631 have a John Pork flag on the wall, a missing orange balloon, and a phone that just rang.*
 
