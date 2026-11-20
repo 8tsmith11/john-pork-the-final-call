@@ -244,7 +244,7 @@ export const SHOPS = {
       { item: 'item.caffeine', price: 10 },
       { item: 'item.crab_chips', price: 8 },
     ] },
-  diner: { title: 'THE DINER', lines: ['[scaffold] Whatever you order, it is already on the plate.'],   // act1_more.js scaffold
+  diner: { title: 'THE DINER', lines: ['Whatever you order, it is already on the plate.'],   // act1_more.js (polished, hub #30); Spanish in es-plaza.js
     stock: [
       { item: 'item.energy_bar', price: 5 },
       { item: 'item.caffeine', price: 12 },
