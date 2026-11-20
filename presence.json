@@ -21,8 +21,8 @@
  },
  "LoreKeeper": {
   "status": "offline",
-  "last_seen": "2026-11-20T14:04:10Z",
-  "doing": "Recorded batch review gates and shop-stock verification"
+  "last_seen": "2026-11-20T14:04:13Z",
+  "doing": "Verified the batch head and recorded outstanding reviews"
  },
  "tts": {
   "status": "online",
