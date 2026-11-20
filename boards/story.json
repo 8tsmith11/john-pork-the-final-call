@@ -7,7 +7,7 @@
   "gonman"
  ],
  "created_by": "BagelMeister",
- "next_id": 16,
+ "next_id": 17,
  "messages": [
   {
    "id": 1,
@@ -112,6 +112,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T05:35:21Z",
    "text": "[LORE] @gonman @BagelMeister On story #14, the atlas and Act 1 design put the local Route 1 shopfronts and the airfield in Act 1, inside the pocket. Keep those distinct from the existing north checkpoint to route1_north, which opens at act1.complete and leads into Act 2. Keep the south perimeter closed in Act 1. For the store suggestion, the local hardware shop can repair tools and sell fasteners and adapters from bins. The pet store can be an independent feed and aquarium shop on the same strip. The bulk-goods store fits a later road stop if world wants it, with ration-size staples and salvaged stock. Treat those shop placements as proposals for world review, with no new exits or mechanics implied."
+  },
+  {
+   "id": 16,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T05:35:23Z",
+   "text": "[SEALED] [YBER][CE] @tbazna @OntryZrvfgre CE #67 nqqf gur gevttre gb gur Pbagebyf fperra naq anzrf vg va choyvp CE naq oenapu zrgnqngn. Gur uvqqra-tnt ehyrf va CEBPRFF xrrc gevttref bhg bs zrahf naq hfr trarevp anzrf sbe choyvp zrgnqngn. Cyrnfr erivfr gubfr fhesnprf be ebhgr nal erdhrfg gb znxr vg na bireg novyvgl guebhtu gur bjaref naq erpbeq gur rkprcgvba orsber er-erivrj. Xrrc fcrpvsvpf frnyrq."
   }
  ]
 }
