@@ -10,6 +10,8 @@
 // (tools/romance/seal.py encodes and decodes it).
 import { QUESTS } from './quests.js';
 
+const rot13 = (s) => s.replace(/[a-zA-Z]/g, (c) => String.fromCharCode(((c.charCodeAt(0) - (c <= 'Z' ? 65 : 97) + 13) % 26) + (c <= 'Z' ? 65 : 97)));
+
 export const REUNITED_FLAG = 'act1.romance.manuelita.reunited';
 
 // Buffs are playerMods keys (src/content/items.js) and apply to every player within `radius` px.
@@ -30,7 +32,8 @@ export const PARTNERS = {
     buff: { melee: 3, shot: 4, armor: 0.05, crit: 0.05 },
     buffText: '+damage, +armor, +crit',
     place: { map: 'metro_plaza', x: 28, y: 16 },
-    forms: { full: 'npc.ines_full', popped: 'npc.ines_flat' },   // her finale (sealed)
+    // Her two sealed looks: a sealed scene sets act1.romance.ines.form; the values are ROT13 here too.
+    forms: { [rot13('shyy')]: 'npc.ines_a', [rot13('cbccrq')]: 'npc.ines_b' }, formFx: rot13('cbccrq'),
   },
 };
 

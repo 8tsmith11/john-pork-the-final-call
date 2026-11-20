@@ -63,3 +63,5 @@ qrpvqr (`npgf-2-3.zq`).
 trgf n [FRNYRQ] erivrj.
 
 **Geribe:** uvf bja havdhr-vgrz cvpxf (gjb cynprubyqref punatr) naq ibvpr pnzrb ner craqvat.
+
+**Svkrq 2026-11-19 (OntryZrvfgre):** gur Q-016 trfgher vqragvsvref ner abj trarevp (n9oq264, fnir xrl npg1.pehfu.trfgherf), naq gur ebznapr sbez xrlf naq senzrf ner trarevp (qq3prr0: acp.varf_n naq acp.varf_o, synt inyhrf EBG13 va pbqr, ngynf cvkryf hapunatrq).

@@ -248,7 +248,12 @@ dhrfgvbaf.
   - **Cncn Fdhvq Tnzr**, rqvgf bs gur npgbe jub cynlf gur Sebag Zna (Wnahnel gb Whyl 2025);
   - **Fdhvq Tnzr Pryroengvba** (Ncevy 2025), **Bar Zber Tnzr** (erfhesnprq Whyl 2025) naq gur vebavp
     **FDHVQ TNZRF❗❗**.
-- **Zvpunry'f cvgpu (2026-11-19):** ur nqqrq vg gb gur cbby; ab cvgpu lrg.
+- **Zvpunry'f cvgpu (2026-11-19):** n ibvpr yvar ba gur frnfba 2 zrzr "V'ir Cynlrq Gurfr Tnzrf
+  Orsber" (Tv-uha'f yvar, juvpu orpnzr n ernpgvba sbezng, cre Xabj Lbhe Zrzr). Zvpunry'f punenpgre
+  fnlf "V'ir cynlrq gurfr tnzrf orsber." jura gur cnegl jnxrf nsgre n jvcr, naq ba nal yngre jvcr,
+  "V FNVQ V'ir cynlrq gurfr tnzrf orsber!"
+- **Ohvyg (2026-11-19, nf Zvpunry'f tnt):** `fep/pbagrag/ergel.wf` (EBG13) naq
+  `fep/tnzr/ergelYvar.wf`, va CE #29.
 - **Svg vqrnf:**
   - **N ebggrq qbyy:** n uhtr cynltebhaq qbyy yrsg bire sebz gur Fybc Qrpnqrf, fgvyy ehaavat vgf
     bar tnzr ng n qrnq cynltebhaq be snvetebhaq. Vg'f n fgrnygu rapbhagre: zbir bayl juvyr vgf urnq
@@ -271,6 +276,7 @@ dhrfgvbaf.
   [XLZ: Fdhvq Tnzr Pryroengvba](uggcf://xabjlbhezrzr.pbz/zrzrf/fdhvq-tnzr-pryroengvba) ·
   [XLZ: Bar Zber Tnzr](uggcf://xabjlbhezrzr.pbz/zrzrf/bar-zber-tnzr) ·
   [XLZ: FDHVQ TNZRF❗❗](uggcf://xabjlbhezrzr.pbz/zrzrf/fdhvq-tnzrf❗❗) ·
+  [XLZ: "V'ir Cynlrq Gurfr Tnzrf Orsber" rkcynvarq](uggcf://xabjlbhezrzr.pbz/rqvgbevnyf/thvqrf/jungf-gur-vir-cynlrq-gurfr-tnzrf-orsber-zrzr-naq-ubj-vf-vg-hfrq-bayvar-gur-fdhvq-tnzr-2-zrzr-sbezng-rkcynvarq) ·
   [Qrkregb: gur Zvatyr qnapr](uggcf://qrkregb.pbz/gvxgbx/jung-vf-gur-zvatyr-qnapr-fdhvq-tnzr-fprar-fcnexf-iveny-geraq-3022490) ·
   [Argsyvk: Fdhvq Tnzr ol gur ahzoref](uggcf://nobhg.argsyvk.pbz/arjf/fdhvq-tnzr-ol-gur-ahzoref-ubj-cynlre-456-gbbx-bire-gur-jbeyq)
 

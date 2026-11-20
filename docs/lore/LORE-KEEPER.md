@@ -94,8 +94,8 @@ anywhere.
 - His answer on moving `docs/SECRETS.md` into `docs/sealed/` (#245).
 
 **Plaintext leaks still in the repo (PROCESS "Spoilers and surprises"; each owner fixes theirs):**
-- A spoiler leak remains in runtime code and asset tooling. See the sealed rules for the affected files and cleanup notes.
-- A second runtime spoiler leak remains. See the sealed rules for the affected identifiers and cleanup notes.
+- Fixed (BagelMeister, 2026-11-19): both runtime identifier leaks, in `a9bd264` and `dd3cee0`. Old saves keep
+  their old flag values, which still work; nothing to migrate.
 - `docs/SECRETS.md` is still plaintext (gonman's; his answer pending, #245).
 - `docs/lore/real-life.md` describes how one egg works in the game, not only the real-life story.
   Whoever added that line should move the in-game half to `docs/sealed/`.

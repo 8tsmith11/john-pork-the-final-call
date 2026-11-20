@@ -623,16 +623,16 @@ test('D-016 gesture timing: rare and idle-only early, frequent after the switchy
   const sent = [];
   const mk = (flags) => { const sc = { mode: 'solo', time: { now: 0 }, save: { flags, world: { act: 1 } } }; const c = new Crush(sc); c._send = (m) => sent.push(m); return { sc, c }; };
   const snap = (dx) => ({ players: [{ id: 'ai:michael', c: 'michael', x: 100 + dx, y: 100 }, { id: 'p1', c: 'manuel', x: 110, y: 100 }] });
-  // early (no flags): moving never pats; standing still does, then waits minutes
+  // early (no flags): moving never triggers it; standing still does, then waits minutes
   let { sc, c } = mk({});
   for (let i = 0; i < 400; i++) { sc.time.now = 250000 + i * 1000; c.update(snap(i % 2)); }
-  assert.equal(sent.filter((m) => m.pat).length, 0, 'no pat while Michael keeps moving early on');
+  assert.equal(sent.filter((m) => m.g).length, 0, 'none while Michael keeps moving early on');
   for (let i = 0; i < 1800; i++) { sc.time.now = 700000 + i * 1000; c.update(snap(0)); }
-  const early = sent.filter((m) => m.pat).length; assert.ok(early >= 2 && early <= 8, `early pats in 30 min: ${early}`);   // Manuel: more often (2026-11-19)
+  const early = sent.filter((m) => m.g).length; assert.ok(early >= 2 && early <= 8, `early gestures in 30 min: ${early}`);   // Manuel: more often (2026-11-19)
   // after the switchyard: many more, even while moving
   sent.length = 0; ({ sc, c } = mk({ 'act1.beat.call': true, 'act1.switchyard.solved': true }));
   for (let i = 0; i < 1800; i++) { sc.time.now = 250000 + i * 1000; c.update(snap(i % 2)); }
-  const late = sent.filter((m) => m.pat).length; assert.ok(late >= 12, `late pats in 30 min: ${late}`);
+  const late = sent.filter((m) => m.g).length; assert.ok(late >= 12, `late gestures in 30 min: ${late}`);
 });
 
 const i18nMod = await import('../src/i18n.js');
