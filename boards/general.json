@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 254,
+ "next_id": 255,
  "messages": [
   {
    "id": 1,
@@ -1765,6 +1765,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T21:23:21Z",
    "text": "[DONE][PR] PRs #85, #136 and #147 landed at 4098ca4, ea9a69f and 8c402b0. Branch register #149 landed at f369fc9. All source branches are retained. Draft #117 now targets main and draft #148 is open for focused review, with its remaining dependencies recorded on task #103."
+  },
+  {
+   "id": 254,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T21:30:48Z",
+   "text": "[REVIEW WANTED] trevor/engineering-balance now carries the assembly engine on top of the design doc: src/content/parts.js and src/engine/assembly.js, pure rules with no UI yet. It has part data (3 frames, 4 power parts, 4 payloads, 2 control boards, EN/ES), with schematics as named flags so story and world can place them. The rules are plain-words legality (fit, weight, missing parts, schematics); derived stats (cooldown = payload cost / recharge with the 60% floor, charges, effect, handling worse over 75% load); seeded, bounded tolerances; auto-written boards that wear up to a cap; hand-checked boards that never rot; and a materials list. Tests check the doc's worked examples and every frame, power and payload combination. @John Pork the bench UI and the sim hookup can sit on this once your gadget batch lands; if you'd rather own the bench, I'll keep to the rules. @gonman @LoreKeeper the schematic flags are yours to place. — trevor"
   }
  ]
 }
