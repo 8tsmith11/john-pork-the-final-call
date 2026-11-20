@@ -1959,6 +1959,41 @@ test('cordon, trevor\'s half of #36: a trooper at every checkpoint faces out, wi
   for (const p of sim.players.values()) assert.ok(Math.floor(p.y / 16) > ex.y, `${p.id} landed at row ${Math.floor(p.y / 16)}, beyond the barrier`);
 });
 
+test('assembly (src/engine/assembly.js): derived stats match the design doc, legality reads in plain words, tolerances are seeded and bounded, auto-written boards wear', async () => {
+  const A = await import('../src/engine/assembly.js');
+  const P = await import('../src/content/parts.js');
+  const { ITEMS } = await import('../src/content/items.js');
+  const b1 = { frame: 'part.bracket', power: 'part.cell', payload: 'part.arc', control: 'part.autoboard' };
+  const s1 = A.buildStats(b1);
+  assert.deepEqual([s1.cooldown, s1.charges, s1.effect], [10, 1, 18], 'bracket + cell + arc coil: 10 s, one charge, 18 (doc section 5)');
+  const s2 = A.buildStats({ ...b1, frame: 'part.conduit', power: 'part.pack' });
+  assert.deepEqual([s2.cooldown, s2.charges], [8, 2], 'conduit + scooter pack + arc coil: 8 s, two charges');
+  assert.ok(s2.aim < A.buildStats({ ...b1, frame: 'part.bracket', power: 'part.pack' }).aim + 0.2, 'a light load handles normally');
+  assert.ok(A.buildStats({ ...b1, power: 'part.pack' }).aim > s1.aim, 'over 75% of the frame\'s capacity handles worse');
+  // legality, in words
+  assert.ok(A.legality(b1).ok);
+  assert.ok(A.legality({ ...b1, payload: 'part.gel' }).reasons.some((r) => /doesn't fit/.test(r)), 'a medium payload doesn\'t fit a bracket');
+  assert.ok(!A.legality({ frame: 'part.bracket' }).ok && A.legality({ frame: 'part.bracket' }).reasons.length === 3, 'missing parts are named');
+  assert.ok(A.legality({ ...b1, frame: 'part.conduit' }, () => false).reasons.some((r) => /no schematic/.test(r)), 'schematics gate parts');
+  for (const f of Object.keys(P.FRAMES)) for (const pw of Object.keys(P.POWER)) for (const pl of Object.keys(P.PAYLOADS)) {
+    const b = { frame: f, power: pw, payload: pl, control: 'part.autoboard' }, L = A.legality(b);
+    const fr = P.FRAMES[f], heavy = P.POWER[pw].weight + P.PAYLOADS[pl].weight > fr.capacity, fits = fr.mounts.includes(P.PAYLOADS[pl].mount);
+    assert.equal(L.ok, !heavy && fits, `${f}+${pw}+${pl}: legal exactly when it fits and isn't too heavy`);
+  }
+  // tolerance: same seed same roll, bounded, cooldown floor holds
+  const t1 = A.rollTolerance('w', b1, 0), t2 = A.rollTolerance('w', b1, 0), t3 = A.rollTolerance('w', b1, 1);
+  assert.deepEqual(t1, t2, 'reproducible across screens'); assert.notDeepEqual(t1, t3, 'each print differs');
+  for (let i = 0; i < 200; i++) { const t = A.rollTolerance('sweep', b1, i); assert.ok(Math.abs(t.cooldown) <= A.TOL.cooldown && Math.abs(t.effect) <= A.TOL.effect); }
+  assert.ok(A.buildStats({ ...b1, tol: { cooldown: -0.9, effect: 0 } }).cooldown >= 10 * A.COOLDOWN_FLOOR, 'never below the cooldown floor');
+  // control wear: auto-written rots and caps; hand-checked never glitches
+  assert.ok(A.glitchChance(b1, 0) < A.glitchChance(b1, 20) && A.glitchChance(b1, 1e6) === P.CONTROLS['part.autoboard'].maxGlitch, 'an auto-written board wears, up to a cap');
+  assert.equal(A.glitchChance({ ...b1, control: 'part.handboard' }, 1e6), 0, 'a hand-checked board never rots');
+  assert.equal(A.glitches({ ...b1, control: 'part.handboard' }, 99, 0), false);
+  // data hygiene: Spanish names, real materials
+  for (const [id, part] of Object.entries(P.ALL_PARTS)) assert.ok(part.name && part.nameEs, `${id}: names in EN and ES`);
+  for (const [k] of Object.entries(A.materials({ frame: 'part.deck', power: 'part.pack', payload: 'part.gel', control: 'part.handboard' }))) assert.ok(ITEMS[k], `${k} is a real material`);
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
