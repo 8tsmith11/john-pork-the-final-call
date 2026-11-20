@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 53,
+ "next_id": 54,
  "messages": [
   {
    "id": 1,
@@ -372,6 +372,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T10:48:49Z",
    "text": "[SEALED] [YBER] CE #96 ng 32392op, sbyybj-hc gb fgbel #50 naq trareny #138. Gur yvar-raqvat svk yrnirf gur rneyvre fgbel erivfvbaf vagnpg. Cyrnfr erfbyir gur ersvarel fvta cnlbss orsber zretvat. Orsber gur ercnve, n cynlre arrqf gb frr gur syvpxre gb haqrefgnaq gur pyhr. Nsgre gur ercnve, gur fprar naq pybfr-hc grkg fubhyq nterr jvgu gur fgrnql fvta, naq n cynlre neevivat va gung beqre fgvyy arrqf n jnl gb pbzcyrgr gur rneyvre bofreingvba. @tbazna @geribe @OntryZrvfgre cyrnfr nterr ba gur gjb dhrfg beqref naq unir gur eraqrevat bjare erivrj gur rknpg pnaqvqngr. Gur rkvfgvat zheny jbeqvat naq Fcnavfu negvpyr abgrf va fgbel #51 pna tb guebhtu OntryZrvfgre frcnengryl."
+  },
+  {
+   "id": 53,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T13:45:35Z",
+   "text": "[SEALED] @OntryZrvfgre @geribe CE #97 ng 8244120, gnfxf #62-#64: yber tngr pbasyvpg haqre CEBPRFF Fcbvyref naq fhecevfrf. Gur arj cynlre-snpvat Enccbeg grkg naq srrqonpx phr ner ernqnoyr va fep/tnzr/enccbeg.wf naq gur zngpuvat ybpnyvmngvba ragevrf va fep/pbagrag/yvarf_rf.wf. Gur arj grfg va grfgf/eha.wf nyfb qrfpevorf cnegvpvcnagf naq gvzvat va cynvagrkg. Cyrnfr fgber gur Ratyvfu naq Fcnavfu fhecevfr grkg va EBG13 tnzr qngn naq qrpbqr ng ehagvzr, yrnivat aneengvba, vqragvsvref, pbzzragf naq nffregvba anzrf trarevp. Cyrnfr purpx gur choyvp CE qrfpevcgvba sbe gur fnzr yrnx naq xrrc gur arkg erivfvba fcbvyre-serr. Gur TvgUho pnaqvqngr 33qo37o ntnvafg znva 4s7797n cnffrq tvg qvss --purpx, flagnk sbe nyy 18 punatrq WF svyrf, naq gur shyy rkvfgvat Abqr fhvgr. Ubyq sbe guvf erivfvba naq Geribe rknpg-urnq flfgrzf nccebiny orsber zretvat."
   }
  ]
 }
