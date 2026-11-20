@@ -9,7 +9,7 @@ import { VIEW } from '../view.js';
 
 const TILE = 16, BAND = 4, COOLDOWN = 6000;
 
-function troopTexture(scene) {
+export function troopTexture(scene) {
   if (scene.textures.exists('cordon_trooper')) return 'cordon_trooper';
   const g = scene.make.graphics({ add: false });
   const px = (x, y, w, h, c) => g.fillStyle(c, 1).fillRect(x, y, w, h);

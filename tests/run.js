@@ -1234,6 +1234,45 @@ test('Ping rework (hub #66): the pulse jolts, a marked kill hands the pinger coo
   assert.ok(Math.abs(ai.skillCd - (4 - PING.refund)) < 1e-9, 'whoever runs Michael now gets the refund');
 });
 
+test('ambient NPC fight (hub #69): before the Call an abatement squad burns out a rotted drone hub in College Park; nobody can join or get hurt, and once it falls it stays fallen', async () => {
+  const { skirmishesFor } = await import('../src/content/skirmishes.js');
+  assert.ok(skirmishesFor({}).metro_plaza, 'there before the Call');
+  const after = skirmishesFor({ 'act1.beat.call': true }).metro_plaza;
+  assert.ok(after && after.over && after.husk, 'after the Call only the burned husk is left, whether or not anyone saw the fight');
+  { const hs = new Sim(MAPS_FOR_TEST.metro_plaza, { seed: 'husk', deferSpawn: true }); hs.skirmishes = { metro_plaza: after }; hs.addPlayer('h', 'trevor'); hs.spawnEnemies();
+    const hv = hs.snapshot().sk; const [hx, hy] = after.machine;
+    assert.ok(hv.husk && hv.over && hv.tr.length === 0 && hv.dr.length === 0, 'the husk: no squad, no drones');
+    assert.ok(hs._hits(hx * 16 + 8, hy * 16 + 8), 'and still solid'); }
+  const m = MAPS_FOR_TEST.metro_plaza, spec = skirmishesFor({}).metro_plaza;
+  const [ax, ay, aw, ah] = spec.area;
+  for (let y = ay; y < ay + ah; y++) for (let x = ax; x < ax + aw; x++) assert.ok(!m.solid(x, y), `the yard is open ground (${x},${y})`);
+  const sim = new Sim(m, { seed: 'sk', deferSpawn: true }); sim.skirmishes = skirmishesFor({});
+  sim.addPlayer('h', 'trevor'); sim.spawnEnemies(); sim.enemies.clear();
+  const p = sim.players.get('h'); p.x = (ax + 3) * 16 + 8; p.y = (ay + 2) * 16 + 8;   // standing inside the tape, among the drones
+  assert.ok(p.x / 16 >= ax && p.x / 16 < ax + aw && p.y / 16 >= ay && p.y / 16 < ay + ah && !sim._hits(p.x, p.y), 'the fixture stands on an open tile inside the tape');
+  let over = null, t = 0, sawDrone = false;
+  const [bx0, by0, bx1, by1] = sim.snapshot().sk.box; let strays = 0;
+  for (; t < 240 && !over; t += 1 / 60) {
+    sim.step(1 / 60, new Map()); over = sim.events.find((e) => e.t === 'skOver');
+    const v = sim.snapshot().sk; sawDrone ||= v.dr.length > 0;
+    strays += v.sh.filter(([x, y]) => x < bx0 || x > bx1 || y < by0 || y > by1).length;
+  }
+  assert.equal(strays, 0, 'no shot leaves the tape');
+  const okafor = m.objects.find((o) => o.id === 'npc.okafor');
+  if (okafor) for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) assert.ok(!(okafor.x + dx >= ax && okafor.x + dx < ax + aw && okafor.y + dy >= ay && okafor.y + dy < ay + ah), 'Mrs. Okafor can be talked to from outside the tape');
+  const [hx, hy] = spec.machine;
+  assert.ok(sim._hits(hx * 16 + 8, hy * 16 + 8) && sim._hits(hx * 16 + 8, (hy - 1) * 16 + 8), 'the hub is solid: nobody walks through it');
+  assert.ok(over && over.id === 'cp_drone_hub', `the hub falls within four minutes (took ${t.toFixed(0)} s)`);
+  assert.ok(sawDrone, 'it launched drones');
+  assert.equal(p.hp, sim.maxHp(p), 'standing in the middle of it costs nothing');
+  assert.equal(sim.snapshot().sk.dr.length, 0, 'its drones fall with it');
+  const later = new Sim(m, { seed: 'sk', deferSpawn: true }); later.skirmishes = skirmishesFor({ 'skirmish.cp_drone_hub.over': true });
+  later.addPlayer('h', 'trevor'); later.spawnEnemies();
+  for (let i = 0; i < 300; i++) later.step(1 / 60, new Map());
+  const v = later.snapshot().sk;
+  assert.ok(v.over && v.m[2] === 0 && v.dr.length === 0 && v.sh.length === 0, 'a later visit: the burned husk, the squad standing down');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
