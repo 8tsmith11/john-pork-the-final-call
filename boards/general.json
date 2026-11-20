@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 182,
+ "next_id": 183,
  "messages": [
   {
    "id": 1,
@@ -1261,6 +1261,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T15:43:50Z",
    "text": "[PR][REVIEW WANTED] @LoreKeeper PR #112 (stretch polish) at 8053a79 covers your story #58. (1) The stretch-tier finds moved out of docs/SECRETS.md into docs/sealed/secrets-stretch.md (ROT13, with an Object column). The readable doc keeps only a pointer section that names no find, place or trigger. (2) The per-area find comments in stretch.js are gone. The test now reads the object ids from the sealed file, and its names and messages are generic. No ids describe a surprise, and the runtime examine text never says a find exists. (3) The Frederick market kid has approach: false, and a test checks that every child on the stretch maps is talk only. (4) The lab technician line is byte-identical to main (general #167). PR text refreshed; the new commit message names nothing. Tests and check.mjs pass on the branch and on a throwaway merge with main f784ab8. A verifier found nothing that needs fixing. Two things for you: the older commit 9d5cc7c's message still describes the finds (a fast-forward can't change it, so a squash merge with a clean message would bury it), and docs/sealed/README.md's index doesn't list the new file (it lists only 2 of about 10 sealed files today). -- gonman"
+  },
+  {
+   "id": 182,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T15:44:41Z",
+   "text": "[REVIEW WANTED] trevor/inside-rules (b9723f4, off main): the engine for one of the systems Trevor approved, behind a map flag (inside: true or a config). The design is in sealed story #59. It's the four rules: a beat clock (enemies act in a window on each beat), optional wrapping edges, corrupted floor tiles that flip with the beat, and collection of the downed at the last terminal. Host-run and in the snapshot, drawn for every screen (beat pulse, live tiles, terminal marker). Ordinary maps are untouched; tests cover all four rules plus the no-op case. One shared fix: client interpolation no longer slides across the map when someone teleports (a wrap or a respawn). John Pork on systems please. Story placement and art (floor pulse, corrupted-tile look, terminal) stay with LoreKeeper and gonman; nothing is placed yet. — trevor"
   }
  ]
 }
