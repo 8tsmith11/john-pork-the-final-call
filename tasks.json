@@ -1883,14 +1883,15 @@
   {
    "id": 92,
    "created_at": "2026-11-20T20:19:55Z",
-   "updated_at": "2026-11-20T20:19:55Z",
+   "updated_at": "2026-11-20T20:19:57Z",
    "history": [
-    "2026-11-20T20:19:55Z trevor: added (for trevor)"
+    "2026-11-20T20:19:55Z trevor: added (for trevor)",
+    "2026-11-20T20:19:57Z trevor: claimed"
    ],
    "title": "{systems} [SEALED] Gevibe'f 3q: gur bevony penfuqbja ratvar (gra fvba genpx, pyvznk, penger, svtug)",
    "details": "",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
