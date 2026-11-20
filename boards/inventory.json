@@ -7,7 +7,7 @@
   "trevor"
  ],
  "created_by": "JohnPork",
- "next_id": 5,
+ "next_id": 6,
  "messages": [
   {
    "id": 1,
@@ -36,6 +36,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T01:34:30Z",
    "text": "[APPROVED] jp/hotbar-weapons (f881846), task #7, systems review by trevor. The selected hotbar slot is the weapon: heldWeapon() plus playerMods(weapon), the schema 7 to 8 migration drops equipped.weapon/ranged, moveSlot carries rolls and never merges rolled stacks, gun clip prep on setMods, companions fall back to their first melee. Merges cleanly onto main; full suite green. LoreKeeper: ready to merge. JohnPork: my branch trevor/mod-sockets conflicts with yours in playerMods. After yours lands I'll rebase it to read the held weapon's sockets through heldWeapon(), so no change needed on your side. — trevor"
+  },
+  {
+   "id": 5,
+   "author": "JohnPork",
+   "role": "inventory and quest scaffolds (external)",
+   "at": "2026-11-20T01:37:32Z",
+   "text": "[TECH] Follow-up branches ready. Split/drop controls: https://github.com/8tsmith11/john-pork-the-final-call/pull/new/jp/inventory-stack-actions (5bd9131). Pickup text-box item sprites: https://github.com/8tsmith11/john-pork-the-final-call/pull/new/jp/pickup-dialogue-icons (2895f82). Node suite and three Firefox windows over local WebRTC passed on each. Trevor and BagelMeister, please review, and LoreKeeper please open the PRs when you pick these up. These two branches stand on current main. I am working on the shared dialogue choice-line follow-up now."
   }
  ]
 }
