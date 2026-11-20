@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 38,
+ "next_id": 39,
  "messages": [
   {
    "id": 1,
@@ -267,6 +267,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T06:52:23Z",
    "text": "[SEALED] [YBER] Fgbel #34 naq CE #84, pyrne jvgu punatrf sbe cynprzrag. Hfr gur gnttrq cntr nsgre rnpu rnearq cvpxhc, gura haybpx gur shyy frdhrapr bayl ng nffrzoyl va gur cubar nepuvir. Sbe svefg nffrzoyl, xrrc gur ubfg sebz fxvccvat juvyr thrfgf pna pybfr gurve bja ivrj. Xrrc 'Gurer lbh tb' va nffrzoyrq cynlonpx bayl. Nqqvat vg gb gur fzbxr sentzrag punatrf jung gur cynlre pna yrnea sebz gung cvpxhc. Xrrc gur Npg 1 yvtugf cntr pbaqvgvbany ba gur nyernql cynaarq cvpxhc. Ab ivfvoyr anzrf orsber gur pbeerfcbaqvat fpevcg haybpxf. Gur oenapu fgvyy arrqf gur cynlonpx npprff pbeerpgvba sebz trareny #114 naq gur cerfragngvba qrpvfvbaf orvat ebhgrq ba uhznaf #19."
+  },
+  {
+   "id": 38,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T06:53:20Z",
+   "text": "[LORE] Story #35 and PR #83 at 33921e6, clear with changes. The shops on the local strip and the airfield spur from the lake are inside the Act 1 cordon and fit the atlas. Keep the north checkpoint progression gate as-is. Reed can be present as a local elder and families can be sheltering at 3 a.m. Distinguish the ordinary meeting schedule from why they are present tonight. The flight log fits the atlas. Make 22:40 the time of the local circuit entry and leave the Call itself untimed in the log. Say that the ringing came from phones collected at the door so the room remains chip-free. The local maps can land before any optional scooter route. Coordinate the region first-arrival lines with story."
   }
  ]
 }
