@@ -92,12 +92,18 @@ class ComicView {
     setupCameras(scene);
     const zone = scene.add.zone(0, 0, VIEW.w, VIEW.h).setOrigin(0).setInteractive().setDepth(100);
     zone.on('pointerdown', (ptr) => { if (!ptr || ptr.button === 0) this.onInput('next'); });
-    scene.input.keyboard.on('keydown', (ev) => {
-      if (ev.repeat) return;
-      const action = actionForKey(ev.key);
-      if (action) this.onInput(action);
-    });
+    scene.input.keyboard.on('keydown', (ev) => this._onKey(ev));
     this._draw(true);
+  }
+
+  // A reader's key. Phaser steps the top scene first and every scene reads the same key queue, so a
+  // key that closes the page would reach the world too once its keyboard is back on in that same frame
+  // (Esc opening the inventory, E interacting, Space dodging). A key the page uses stops here.
+  _onKey(ev) {
+    const action = actionForKey(ev?.key);
+    if (!action || !this.state) return;
+    ev.stopPropagation?.();
+    if (!ev.repeat) this.onInput(action);
   }
 
   _stop() {

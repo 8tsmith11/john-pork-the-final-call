@@ -1664,6 +1664,7 @@ test('arriving through any door never lands you on an exit, and your first step 
 {
   const comicMod = await import('../src/game/comic.js');
   const CL = await import('../src/game/render/comicLayout.js');
+  const { makeComicView } = await import('../src/game/render/comicPage.js');
   const { COMIC_TRIGGERS } = await import('../src/content/comics/index.js');
   const testAsync = async (name, fn) => { try { await fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}\n     ${e.message}`); } };
   const comicDir = new URL('../src/content/comics/', import.meta.url);
@@ -1736,6 +1737,14 @@ test('arriving through any door never lands you on an exit, and your first step 
     for (const k of ['e', 'E', ' ', 'Enter', 'ArrowRight']) assert.equal(comicMod.actionForKey(k), 'next', k);
     for (const k of ['ArrowLeft', 'Backspace']) assert.equal(comicMod.actionForKey(k), 'back', k);
     assert.equal(comicMod.actionForKey('Escape'), 'skip'); assert.equal(comicMod.actionForKey('q'), null);
+    // A key the page uses stays on the page, so the closing Esc / E / Space never reaches the world.
+    const got = [], view = makeComicView(null, (a) => got.push(a));
+    const key = (k, repeat = false) => ({ key: k, repeat, stopped: false, stopPropagation() { this.stopped = true; } });
+    view.state = { comic: {}, pages: [], page: 0, opts: {} };
+    const esc = key('Escape'); view._onKey(esc); assert.ok(esc.stopped, 'Esc on a page reached the world'); assert.deepEqual(got, ['skip']);
+    const held = key('e', true); view._onKey(held); assert.ok(held.stopped); assert.deepEqual(got, ['skip'], 'a held key turned a page');
+    const other = key('i'); view._onKey(other); assert.ok(!other.stopped, 'a key the page does not use was kept from the world');
+    view.state = null; const after = key('d'); view._onKey(after); assert.ok(!after.stopped && got.length === 1, 'keys were kept from the world after the page closed');
     assert.match(CL.footerHint('en', { index: 0, total: 3, host: true, skippable: true }), /next.*Esc: skip/);
     assert.ok(!/back/.test(CL.footerHint('en', { index: 0, total: 3, host: true, skippable: true })), 'no back on the first page');
     assert.match(CL.footerHint('en', { index: 2, total: 3, host: true, skippable: false }), /done.*back/);

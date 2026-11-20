@@ -122,9 +122,12 @@ to Pork, rot is a rendering error.
 
 | | Host or solo | Guest |
 |---|---|---|
-| Next page | E, Space, Enter, → or click | the same (asks the host) |
-| Back | ← or Backspace | the same (asks the host) |
+| Next page | E, Space, Enter, → or D, or click | the same (asks the host) |
+| Back | ←, A or Backspace | the same (asks the host) |
 | Esc | ends it for everyone (if the comic is skippable) | closes it on this screen only |
+
+A key the page uses stays on the page: the Esc or E that closes a comic doesn't also open the
+inventory or interact in the world.
 
 The controls line under each page says this in the reader's language, and "next" becomes "done" on
 the last page.
