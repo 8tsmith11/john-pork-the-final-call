@@ -13,7 +13,7 @@ export const gbDishes = fromGrid({
   rows: [
     '##########################',
     '#eeeeeeeeeee#eeeeeeeeeeee#',
-    '#e??????eeee#eeeeeeeTeeee#',
+    '#e??????eTee#eeeeeeeeeeee#',
     '#eeeeeeeeeee#eeeeeeeeeeee#',
     '#eeeeNeeeeeeeeeeeeeeeeee$#',
     '#eeeeeeeeeee#eeeeeeeeeeee#',
@@ -24,13 +24,17 @@ export const gbDishes = fromGrid({
   legend: {
     '?': { scenery: 'obj.table', solid: true, tile: 'e' },
     N: { npc: 'npc.gb_technician', art: 'npc.rotter_3', label: 'A technician', text: '[scaffold] "I never left my post. Nobody relieved me. So technically I\'m still on shift."' },
+    // The tapes sit on the technician's side, out of the guardian's reach: reading them never wakes the fight.
     T: { prop: 'obj.crate', id: 'obj.gb_tapes', label: 'Telemetry tapes', loot: 'parts', text: '[scaffold] Telemetry tapes from before the Slop Decades. Clean.' },
     $: { prop: 'obj.board', id: 'obj.gb_cleanroom', label: 'Clean room window', text: '[scaffold] A clean room, and in the dust on its floor, one set of footprints.' },
     E: { enemy: 'enemy.autocomplete' },
     '@': { spawn: true },
     D: out('greenbelt', 'gb_dishes', 'Back down the hill'),
   },
-}).build();
+})
+  // Region guardian (optional): by the clean room it guards, far enough from the door to sleep until you go there.
+  .enemy('boss.gb_receiver', 24, 2)
+  .build();
 
 // ---- Greenbelt: the co-op (a century of minute books; a shop run by committee) ----
 export const gbCoop = fromGrid({
@@ -56,6 +60,7 @@ export const gbCoop = fromGrid({
 }).build();
 
 // ---- Beltsville: the barn the map doesn't show (a growth tank with a name written on it in marker) ----
+// The breeding ledgers are read outside, in the vet's office (act2_regions.js), not in here.
 export const bvBarn = fromGrid({
   id: 'bv_barn', name: 'The barn the map doesn\'t show', fill: ':', act: 2,
   rows: [
@@ -65,19 +70,21 @@ export const bvBarn = fromGrid({
     '#:TT::TT::TT::TT::TT::K::#',
     '#::::::::::::::::::::::::#',
     '#::E:::::::E:::::::E:::::#',
-    '#::::::::::::::::::::::$:#',
+    '#::::::::::::::::::::::::#',
     '#::::::::::@:::::::::::::#',
     '###########DD#############',
   ],
   legend: {
     T: { scenery: 'obj.degasser', solid: true, tile: ':' },
     K: { prop: 'obj.board', id: 'obj.bv_named_tank', label: 'A growth tank', text: '[scaffold] A growth tank with a name written on it in marker.' },
-    $: { prop: 'obj.crate', id: 'obj.bv_ledgers', label: 'Breeding ledgers', text: '[scaffold] Breeding ledgers that go back before the Call.' },
     E: { enemy: 'enemy.rot_taken' },
     '@': { spawn: true },
     D: out('beltsville', 'bv_barn', 'Back out into the rain'),
   },
-}).build();
+})
+  // Region guardian (optional): at the back of the barn by the tank, asleep until you walk up to it.
+  .enemy('boss.bv_shell', 23, 2)
+  .build();
 
 // ---- The refuge: the Analogist settlement (timber, lamps, a blacksmith, a library copied by hand) ----
 export const rfSettlement = fromGrid({
@@ -159,15 +166,19 @@ export const annHarbor = fromGrid({
     '~~~b~~~~~b~~~~~~b~~~~~b~~~~~',
     '~~~bbbbbbbbbbbbbbbbbbbbbb?~~',
     'bbbbbbbbbbbbNbbbbbbbbbbbbbbb',
-    'bbbbbbbbbbbbbbbbbbbbbbb$bbbb',
+    'bbbbbbbbbbbbbb$bbbbbbbbbbbbb',
     'Dbb@bbbbbbbbbbbbbbbbbbbbbbbb',
     '############################',
   ],
   legend: {
     N: { npc: 'npc.ann_pilot', art: 'npc.rotter_3', label: 'A harbor pilot', text: '[scaffold] "I\'ll get you a boat. Then I\'ll get you a chart. The chart matters more."' },
+    // The almanac sits by the pilot, out of the guardian's reach: reading it never wakes the fight.
     $: { prop: 'obj.crate', id: 'obj.ann_almanac', label: 'Tide almanac', text: '[scaffold] A tide almanac annotated by four generations, each correcting the last.' },
     '?': { prop: 'obj.board', id: 'obj.ann_bell', label: 'A bell across the water', text: '[scaffold] Faint, from the east: a church bell, from an island with no church.' },
     '@': { spawn: true },
     D: { ...out('annapolis', 'ann_harbor', 'Back up the pier', true), tile: 'b' },
   },
-}).build();
+})
+  // Region guardian (optional): at the end of the pier, by the bell it guards.
+  .enemy('boss.ann_tide', 26, 5)
+  .build();

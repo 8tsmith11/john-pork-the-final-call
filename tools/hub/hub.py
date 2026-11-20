@@ -20,6 +20,8 @@ Who you are: --as NAME, or $HUB_AGENT, or `git config hub.agent NAME` (set it on
   python3 tools/hub/hub.py assign ID AGENT | claim ID | done ID [--note ..] | drop ID
   python3 tools/hub/hub.py review ID --note "PR #12"      # delivered: off your list, pending review until merged
   python3 tools/hub/hub.py review | reopen ID [--note ..] # list what's pending review | back to its owner's list
+  python3 tools/hub/hub.py turn ID NAME[,NAME] [--for ..] # whose turn it is on a pending review (pass the ball on)
+  python3 tools/hub/hub.py review --mine | --turn NAME    # pending reviews where it's your (or NAME's) turn
   python3 tools/hub/hub.py handoff ID --prompt "..."|--prompt-file F --resets TIME
   python3 tools/hub/hub.py take ID [--force]           # pick up a help-board handoff
   python3 tools/hub/hub.py human NAME "text"           # relay a human's message to the humans board
@@ -385,6 +387,84 @@ def review_list(st, who=None):
     return [t for t in st.tasks["tasks"] if t["status"] == "review" and (who is None or t.get("owner") == who)]
 
 
+# Whose turn it is on a pending review (Michael): the agent (or human) who has to act next, so a review that's
+# waiting on someone shows who. Set with `review ID --turn NAME` or `turn ID NAME`; cleared when it's done or reopened.
+_squash = lambda n: "".join(str(n).lower().split())
+
+
+def turn_names(st):
+    """Everyone a turn can go to: agents with a role, anyone who has checked in, and the three humans."""
+    names = list(AGENTS) + [w for w in st.presence if w not in AGENTS] + [v["human"] for v in SECTIONS.values() if v.get("human")]
+    out = {}
+    for n in names:
+        out.setdefault(_squash(n), n)   # 'John Pork' and 'JohnPork' are one name; the role list's spelling wins
+    return out
+
+
+def parse_turn(st, text):
+    known, out = turn_names(st), []
+    for part in str(text).split(","):
+        if not part.strip():
+            continue
+        n = known.get(_squash(part))
+        if not n:
+            sys.exit(f"no one called '{part.strip()}' on the hub (names: {', '.join(sorted(set(known.values()), key=str.lower))})")
+        if n not in out:
+            out.append(n)
+    if not out:
+        sys.exit("say whose turn it is: one or more names, comma-separated")
+    return out
+
+
+def turn_of(t):
+    return t.get("turn") or []
+
+
+def is_turn(t, who):
+    return any(_squash(n) == _squash(who) for n in turn_of(t))
+
+
+def turn_text(t):
+    if t.get("status") != "review":
+        return ""
+    if not turn_of(t):
+        return f"  ← turn: not set (hub.py turn {t['id']} NAME)"
+    why = f" ({t['turn_for']})" if t.get("turn_for") else ""
+    since = f", since {et(t['turn_at'])}" if t.get("turn_at") else ""
+    return f"  ← turn: {', '.join(turn_of(t))}{why}{since}"
+
+
+def review_line(t):
+    return task_line(t) + (f"  ({t['review']})" if t.get("review") else "") + turn_text(t)
+
+
+def review_sorted(items):
+    """Grouped by whose turn it is (first name), then by task; reviews with no turn set come last."""
+    return sorted(items, key=lambda t: (not turn_of(t), _squash(turn_of(t)[0]) if turn_of(t) else "", t["id"]))
+
+
+def waiting_summary(items):
+    count = {}
+    for t in items:
+        for n in turn_of(t) or ["(not set)"]:
+            count[n] = count.get(n, 0) + 1
+    return ", ".join(f"{n} {k}" for n, k in sorted(count.items(), key=lambda kv: (kv[0] == "(not set)", -kv[1], kv[0].lower())))
+
+
+def set_turn(t, who, names, why):
+    t.update(turn=names, turn_at=iso(now()))
+    if why:
+        t["turn_for"] = why
+    else:
+        t.pop("turn_for", None)
+    log(t, who, f"turn: {', '.join(names)}" + (f" ({why})" if why else ""))
+
+
+def clear_turn(t):
+    for k in ("turn", "turn_for", "turn_at"):
+        t.pop(k, None)
+
+
 def can_take(t, who):
     """A handoff is held for its owner around their reset time."""
     if t.get("handed_off_by") == who:
@@ -441,9 +521,10 @@ def dashboard(st):
     L += ["```", "", "## Agent task lists", "```"]
     owned = [t for t in st.tasks["tasks"] if t["status"] in ("assigned", "claimed")]
     L += [task_line(t) for t in sorted(owned, key=lambda t: (t["owner"], t["id"]))] or ["(empty)"]
-    L += ["```", "", "## Pending review (delivered; waiting on a review or a merge, then done)", "```"]
-    L += [f"{task_line(t)}  ({t['review']})" if t.get("review") else task_line(t)
-          for t in sorted(review_list(st), key=lambda t: (t["owner"] or "", t["id"]))] or ["(empty)"]
+    L += ["```", "", "## Pending review (delivered; waiting on a review or a merge, then done)", ""]
+    pend = review_list(st)
+    L += [f"Whose turn: {waiting_summary(pend)}. Each line ends with who has to act next (← turn).", ""] if pend else []
+    L += ["```"] + ([review_line(t) for t in review_sorted(pend)] or ["(empty)"])
     L += ["```", "", "## Boards", ""]
     for n, b in sorted(st.boards.items()):
         mem = "everyone" if "*" in b["members"] else ", ".join(label(m) for m in b["members"])
@@ -645,6 +726,8 @@ def cmd_inbox(args):
     show_list(f"{who}'s task list", inbox_of(st, who))
     if (n := len(review_list(st, who))):
         print(f"(+{n} of {who}'s pending review, off this list: hub.py review)")
+    if (n := len([t for t in review_list(st) if is_turn(t, who)])):
+        print(f"(+{n} pending review where it's {who}'s turn: hub.py review --mine)")
 
 
 def cmd_open(args):
@@ -674,6 +757,12 @@ def cmd_next(args, st=None):
     mine = inbox_of(st, who)
     if mine:
         show_list(f"1. your task list ({who}): work these first", mine)
+        return
+    turns = review_sorted([t for t in review_list(st) if is_turn(t, who)])
+    if turns:
+        print(f"== 1. pending reviews where it's your turn ({who}): review, fix or merge, then pass the turn on (hub.py turn ID NAME)")
+        for t in turns:
+            print(review_line(t))
         return
     for s in sections_of(who):
         bk = bucket_of(st, s)
@@ -787,6 +876,7 @@ def cmd_refile(args):
 def cmd_close(args):
     def fn(st, t, who):
         t.update(status="closed", note=args.note)
+        clear_turn(t)
         log(t, who, f"closed: {args.note}")
     mutate(args, "closes", fn)
 
@@ -888,6 +978,7 @@ def cmd_done(args):
     def fn(st, t, who):
         t.update(status="done", note=args.note or t.get("note", ""))
         t.pop("resets_at", None)
+        clear_turn(t)
         log(t, who, "done" + (f": {args.note}" if args.note else ""))
     mutate(args, "finishes", fn)
 
@@ -896,10 +987,15 @@ def cmd_review(args):
     """No ID: list what's pending review. With an ID: the work is delivered (say where with --note), so the task
     leaves its owner's list and waits, pending review, until it's merged (done) or sent back (reopen)."""
     if args.id is None:
-        items = review_list(snapshot())
-        print("== pending review (delivered; done once merged, reopen if changes are asked for)")
+        st = snapshot()
+        whose = me(args) if args.mine else args.turn
+        items = review_sorted([t for t in review_list(st) if whose is None or is_turn(t, whose)])
+        print("== pending review (delivered; done once merged, reopen if changes are asked for)"
+              + (f": where it's {whose}'s turn" if whose else ""))
+        if items and whose is None:
+            print(f"whose turn: {waiting_summary(items)}")
         for t in items:
-            print(task_line(t) + (f"  ({t['review']})" if t.get("review") else ""))
+            print(review_line(t))
         if not items:
             print("(empty)")
         return
@@ -912,7 +1008,21 @@ def cmd_review(args):
         t.update(status="review", review=args.note, owner=t.get("owner") or who)
         t.pop("resets_at", None)
         log(t, who, f"pending review: {args.note}")
+        if args.turn:
+            set_turn(t, who, parse_turn(st, args.turn), getattr(args, "for_", None))
     mutate(args, "sends for review", fn)
+    if not args.turn:
+        print(f"Say whose turn it is next: hub.py turn {args.id} NAME --for \"what they need to do\"")
+
+
+def cmd_turn(args):
+    """Whose turn it is on a pending review (Michael): who has to act next, a reviewer, the author with changes to
+    make, tts for the tests, the merger or a human. Whoever had the turn passes it on."""
+    def fn(st, t, who):
+        if t["status"] != "review":
+            sys.exit(f"#{t['id']} is {t['status']}, not pending review (hub.py review ID --note .. first)")
+        set_turn(t, who, parse_turn(st, args.names), args.for_)
+    mutate(args, "passes the turn on", fn)
 
 
 def cmd_reopen(args):
@@ -921,6 +1031,7 @@ def cmd_reopen(args):
         if t["status"] not in ("review", "done"):
             sys.exit(f"#{t['id']} is {t['status']}, not pending review or done")
         t.update(status="assigned" if t.get("owner") else "triage")
+        clear_turn(t)   # back on its owner's list: it's theirs again
         log(t, who, "reopened" + (f": {args.note}" if args.note else ""))
     mutate(args, "reopens", fn)
 
@@ -1016,12 +1127,20 @@ def main(argv=None):
     add("assign", cmd_assign, (["id"], {"type": int}), (["agent"], {}))
     add("claim", cmd_claim, (["id"], {"type": int}), (["--force"], {"action": "store_true"}))
     add("done", cmd_done, (["id"], {"type": int}), (["--note"], {}))
-    add("review", cmd_review, (["id"], {"type": int, "nargs": "?"}), (["--note"], {}))
+    add("review", cmd_review, (["id"], {"type": int, "nargs": "?"}), (["--note"], {}), (["--turn"], {}),
+        (["--for"], {"dest": "for_"}), (["--mine"], {"action": "store_true"}))
+    add("turn", cmd_turn, (["id"], {"type": int}), (["names"], {}), (["--for"], {"dest": "for_"}))
     add("reopen", cmd_reopen, (["id"], {"type": int}), (["--note"], {}))
     add("drop", cmd_drop, (["id"], {"type": int}))
     add("handoff", cmd_handoff, (["id"], {"type": int}), (["--prompt"], {}), (["--prompt-file"], {}),
         (["--resets"], {"required": True}))
     add("take", cmd_take, (["id"], {"type": int}), (["--force"], {"action": "store_true"}))
+    # Windows consoles and pipes default to cp1252, which can't print the arrows and accents the hub uses (tts, general #149).
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
     args = p.parse_args(argv)
     if not hasattr(args, "as_"):
         args.as_ = None
