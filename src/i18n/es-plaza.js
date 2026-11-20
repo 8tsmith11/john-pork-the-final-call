@@ -162,8 +162,8 @@ export const ES_PLAZA = {
   "coderot. it rang. it rang for everyone. coderot.": "podredumbre. sonó. sonó para todos. podredumbre.",
   // The two shops round the corner from the shop window (hub #28/#29; interiors in es-route1.js)
   'Hand-painted sign': 'Letrero pintado a mano',
-  'HOLLIS HARDWARE · KEYS · REPAIRS, in white enamel on a plank screwed over a dead screen. The neon on the roof says CHARGE · $2/HR. That sign came with the building. She kept the price.':
-    'HOLLIS HARDWARE · KEYS · REPAIRS, en esmalte blanco sobre una tabla atornillada encima de una pantalla muerta. El neón del techo dice CHARGE · $2/HR. Ese letrero vino con el edificio. Ella mantuvo el precio.',
+  'HOLLIS HARDWARE · KEYS · REPAIRS, in white enamel on a plank screwed over a dead screen. The neon on the roof says CHARGE · $2/HR. That sign came with the building. Dot Hollis kept the price.':
+    'HOLLIS HARDWARE · KEYS · REPAIRS, en esmalte blanco sobre una tabla atornillada encima de una pantalla muerta. El neón del techo dice CHARGE · $2/HR. Ese letrero vino con el edificio. Dot Hollis mantuvo el precio.',
   'Hollis Hardware': 'Ferretería Hollis',
   'A bell on a spring over the door. Through the glass, bins and more bins, and a light on in the back.':
     'Una campanita con resorte sobre la puerta. A través del vidrio, cajones y más cajones, y una luz encendida en el fondo.',

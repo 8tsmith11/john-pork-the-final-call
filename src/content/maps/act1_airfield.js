@@ -38,7 +38,7 @@ const field = level({ id: 'airfield', name: 'The airfield', w: W, h: H, fill: 'g
     text: 'Striped canvas on a pole at the edge of the strip, faded to the color of weak tea and patched with a pillowcase. There is no wind tonight. It hangs straight down.' })
   .prop('obj.runway_lamp', 30, 13, { id: 'obj.af_lamp', label: 'Runway lamp', light: 0.7,
     text: 'Kerosene, in a glass chimney on an iron stake. A row of them marks each edge of the grass. Somebody walks the strip at dusk with a box of matches and lights every one.' })
-  .prop('obj.graffiti', 40, 1, { id: 'obj.af_fence', label: 'Fence',
+  .prop('obj.cordon_sign', 40, 1, { id: 'obj.af_fence', label: 'Fence',
     text: 'New chain-link along the far edge of the field, the posts still bright. Past it, floodlights on masts, aimed in at the grass. When a beam crosses the strip, the windsock\'s shadow swings round and back.' })
   .prop('obj.board', 32, 26, { id: 'obj.af_sign', label: 'Airfield sign',
     text: 'COLLEGE PARK AIRFIELD · OPEN SINCE 1909. Repainted over the old paint so many times that the letters stand up off the board.' })

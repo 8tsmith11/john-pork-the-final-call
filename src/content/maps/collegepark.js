@@ -257,7 +257,7 @@ export const metroPlaza = makeMap({
     { id: 'obj.shop_corner', art: 'obj.vending', x: 77, y: 9, label: 'Corner store', action: 'shop', shop: 'corner', light: 0.6 },
     // Round the corner from the shop window, facing the cross street: two shops that are open (hub #28/#29; the
     // interiors are in act1_route1.js). Doors like the diner's.
-    { id: 'obj.hardware_sign', art: 'obj.board', x: 67, y: 28, label: 'Hand-painted sign', text: 'HOLLIS HARDWARE · KEYS · REPAIRS, in white enamel on a plank screwed over a dead screen. The neon on the roof says CHARGE · $2/HR. That sign came with the building. She kept the price.' },
+    { id: 'obj.hardware_sign', art: 'obj.board', x: 67, y: 28, label: 'Hand-painted sign', text: 'HOLLIS HARDWARE · KEYS · REPAIRS, in white enamel on a plank screwed over a dead screen. The neon on the roof says CHARGE · $2/HR. That sign came with the building. Dot Hollis kept the price.' },
     { id: 'obj.hardware_door', art: 'obj.door', x: 69, y: 28, label: 'Hollis Hardware', action: 'exit', to: 'hardware', pair: 'obj.hardware_out', text: 'A bell on a spring over the door. Through the glass, bins and more bins, and a light on in the back.' },
     { id: 'obj.feed_sign', art: 'obj.board', x: 72, y: 28, label: 'Painted sign', text: 'PARDO FEED & AQUARIUM, the letters shaded by hand, with a painted fish swimming through the ampersand.' },
     { id: 'obj.feed_door', art: 'obj.door', x: 74, y: 28, label: 'Pardo Feed & Aquarium', action: 'exit', to: 'feed_store', pair: 'obj.feed_out', text: 'The window is all tanks, lit blue from inside. A card on the door: PLEASE DON\'T TAP THE GLASS.' },
