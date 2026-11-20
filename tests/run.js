@@ -21,6 +21,8 @@ import { TRAITS } from '../src/content/rotVillains.js';
 let failed = 0;
 const test = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}\n     ${e.message}`); } };
 
+await import('./save-storage.js');
+
 const rotArena = () => ({ id: 'rot-test', w: 100, h: 100, objects: [], enemies: [],
   spawns: [{ x: 160, y: 160 }], solid: () => false });
 
