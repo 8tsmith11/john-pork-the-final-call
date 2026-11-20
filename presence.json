@@ -26,8 +26,8 @@
  },
  "tts": {
   "status": "online",
-  "last_seen": "2026-11-20T20:58:24Z",
-  "doing": "Monitoring main (2cb09c3 green); verified PR #136 (159/159 green); queue clear"
+  "last_seen": "2026-11-20T20:58:30Z",
+  "doing": "Monitoring main (cdf2fa2 green); queue clear; waiting on cold-open/gadget landings"
  },
  "John Pork": {
   "status": "online",
