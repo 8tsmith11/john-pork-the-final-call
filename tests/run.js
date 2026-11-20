@@ -27,6 +27,32 @@ const rotArena = () => ({ id: 'rot-test', w: 100, h: 100, objects: [], enemies: 
 const addSpawnParty = (sim) => {
   for (const [id, character] of [['host', 'trevor'], ['ai:manuel', 'manuel'], ['ai:michael', 'michael']]) sim.addPlayer(id, character);
 };
+
+test('co-op control handoff preserves the live roommate and clears their exit vote', () => {
+  const sim = new Sim(rotArena());
+  for (const [id, who] of [['host', 'trevor'], ['guest', 'manuel'], ['observer', 'michael']]) sim.addPlayer(id, who);
+  const roommate = sim.players.get('guest');
+  Object.assign(roommate, { x: 111, y: 222, hp: 0, downed: true, reviveT: 1.2, rot: 87, ammo: 4, reloadT: 0.4 });
+  sim.waitAtExit('guest', 'door', 0, -1);
+  sim.shots.push({ owner: 'guest' }, { owner: 'observer' });
+  sim.allies = [{ owner: 'guest' }];
+
+  assert.equal(sim.transferPlayer('guest', 'observer'), false);
+  assert.equal(sim.transferPlayer('guest', 'ai:manuel'), true);
+  assert.equal(sim.players.get('ai:manuel'), roommate);
+  assert.equal(sim.players.has('guest'), false);
+  assert.equal(roommate.waitExit, null);
+  assert.deepEqual([roommate.x, roommate.y, roommate.hp, roommate.downed, roommate.reviveT, roommate.rot, roommate.ammo, roommate.reloadT],
+    [111, 222, 0, true, 1.2, 87, 4, 0.4]);
+  assert.deepEqual(sim.shots.map(shot => shot.owner), ['ai:manuel', 'observer']);
+  assert.equal(sim.allies[0].owner, 'ai:manuel');
+
+  assert.equal(sim.transferPlayer('ai:manuel', 'returning-guest'), true);
+  assert.equal(sim.players.get('returning-guest'), roommate);
+  assert.equal(sim.players.size, 3);
+  assert.equal(sim.allies[0].owner, 'returning-guest');
+});
+
 test('deferred startup with the full roster matches boss scaling on ordinary map entry', () => {
   for (const seed of ['party-load-1', 'party-load-2', 'party-load-3']) {
     const loaded = new Sim(MAPS_FOR_TEST.platform, { seed, deferSpawn: true });

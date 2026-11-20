@@ -681,10 +681,11 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'scooter') this._scooter(peer);
       });
       on('leave', (peer) => {
+        this.remoteInputs.delete(peer);
         this._questReading?.delete(peer);
         // A roommate who drops out keeps walking with the party as a companion.
-        const p = this.sim.players.get(peer); this.sim.removePlayer(peer);
-        if (p) { this.sim.addPlayer(`ai:${p.character}`, p.character); const a = this.sim.players.get(`ai:${p.character}`); Object.assign(a, { x: p.x, y: p.y, hp: p.hp, rot: p.rot ?? 0, rotQuiet: p.rotQuiet ?? 0, analogCharm: p.analogCharm }); this.sim.setMods(a.id, playerMods(this.save.party[p.character], p.character)); }
+        const p = this.sim.players.get(peer);
+        if (p && this.sim.transferPlayer(peer, `ai:${p.character}`)) this._syncHeld();
       });
       this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
       this.time.addEvent({ delay: 500, loop: true, callback: () => this._broadcastWorld() });
