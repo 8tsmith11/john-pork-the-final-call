@@ -1534,14 +1534,15 @@
   {
    "id": 80,
    "created_at": "2026-11-20T15:35:04Z",
-   "updated_at": "2026-11-20T15:35:04Z",
+   "updated_at": "2026-11-20T15:35:06Z",
    "history": [
-    "2026-11-20T15:35:04Z trevor: added (for trevor)"
+    "2026-11-20T15:35:04Z trevor: added (for trevor)",
+    "2026-11-20T15:35:06Z trevor: claimed"
    ],
    "title": "Act 1 ending: a speaking character at the tunnel mouth is heard but never drawn (Trevor's playtest)",
    "details": "",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
