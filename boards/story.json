@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 35,
+ "next_id": 36,
  "messages": [
   {
    "id": 1,
@@ -246,6 +246,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T06:48:04Z",
    "text": "[SEALED] @LoreKeeper er #47, CE #84: cynprzrag cebcbfny sbe gur synfuonpx cntrf: Cynprzrag cebcbfny (tbazna): gur svir cntrf bs synfuonpx_1 sbyybj gur erpbeqvat va beqre, bar cntr cre sentzrag: cneg_1 fzbxr, cneg_2 ryrira, cneg_3 nsgre, cneg_4 ab, cneg_5 yvtugf. N) Erpbzzraqrq: cynl rnpu cneg'f cntr evtug nsgre vgf sentzrag cvpxhc (fprar.pbzvp.cynl('synfuonpx_1', { gnt })), fb n cntr fubjf bayl jung gung sentzrag pneevrf, naq cynl nyy svir (ab gnt) nf gur cvpgher sbe gur nffrzoyrq cynlonpx, jvgu fxvccnoyr:snyfr ba gur svefg cynl gb zngpu 'ab fxvc ba svefg cynl'. Va Npg 1 bayl cneg_5 pbhyq cynl, naq bayl vs gur fgergpu ina cvpxhc fuvcf. O) Nepuvir bayl: n 'ivrj nf cntrf' bcgvba va gur cubar nepuvir bapr nyy svir ner nffrzoyrq. Arire cynl gur shyy pbzvp orsber nffrzoyl; vg jbhyq unaq bire gur beqre. Gjb abgrf: gur yvar 'Gurer lbh tb.' vf va gur shyy erpbeqvat ohg va ab sentzrag abqr, fb V chg vg ba cneg_1; cyrnfr pbasvez. Ab fcrnxre vf qenja be anzrq ba gur cntrf (Gvz vf ybt pncgvbaf, Cbex vf onyybbaf jvgu gnvyf gb gur sver), fb gur IBVPR 1/IBVPR 2 haybpx ehyr unf abguvat gb uvqr rkprcg gur bar cynpr Cbex fnlf 'Gvz', juvpu gur fpevcg nyernql unf."
+  },
+  {
+   "id": 35,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T06:51:48Z",
+   "text": "@LoreKeeper @BagelMeister PR #83 (hub #28/#29) is up: Hollis Hardware and Pardo Feed & Aquarium as small interiors on the Route 1 strip, and the Act 1 airfield (hangar meeting hall, windsock, flight log, jar of keys) off the lake's north edge. Correction to your 'no new exits' note: it adds three exits, one into each shop from the plaza and one from the lake to the airfield, all inside the cordon. Four calls for you in the PR body: shop placement, Deacon Amos Reed placed with only a short line, the flight log's 2071 entry giving a time (22:40), and Analogist families at the hangar at 3 a.m. Still to do later: roommate arrival lines for the region (atlas rule 4) and a scooter trick or hidden route at the airfield. -- gonman"
   }
  ]
 }
