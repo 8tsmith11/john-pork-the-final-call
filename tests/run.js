@@ -801,6 +801,37 @@ test('Route 1 and the airfield: phones go in the box inside the hangar door, and
   const cork = MAPS_FOR_TEST.feed_store.objects.find((o) => o.id === 'obj.feed_corkboard').text;
   assert.ok(!/windsock/i.test(cork) && /PHONE AT THE DOOR/.test(cork), 'the corkboard sends phones to the door, where the box is');
 });
+test('Route 1 and the airfield (LoreKeeper on #83): Sunday meetings vs tonight\'s shelter, 22:40 is the circuit and the Call has no time, and ringing in the hangar comes from the box at the door', () => {
+  const hangar = MAPS_FOR_TEST.hangar, es = (t) => ES_ROUTE1[t] ?? '';
+  // (a) The ordinary schedule matches the corkboard at Pardo's, and tonight the families are here to sleep, not to meet.
+  const board = hangar.objects.find((o) => o.id === 'obj.hangar_schedule');
+  assert.ok(board, 'a schedule board in the hangar');
+  const cork = MAPS_FOR_TEST.feed_store.objects.find((o) => o.id === 'obj.feed_corkboard').text;
+  assert.ok(/SUNDAYS/.test(board.text) && /SUNDAYS/.test(cork), 'the hangar board and the corkboard give the same meeting day');
+  assert.match(board.text, /NO MEETING TONIGHT/);
+  assert.match(board.text, /FLOOR/, 'tonight they are sheltering');
+  assert.ok(/DOMINGOS/.test(es(board.text)) && /HOY NO HAY REUNIÓN/.test(es(board.text)), 'and the Spanish says the same');
+  // (b) The flight log: 22:40 is an ordinary local circuit, and the Call is a later entry with no time.
+  const pages = hangar.objects.find((o) => o.id === 'obj.hangar_flight_log').pages;
+  const clock = /\b\d{1,2}:\d{2}\b/, ringsEn = /\b(rang|ring|rings|ringing|buzz\w*|went off)\b/i;
+  const timed = pages.filter((p) => clock.test(p));
+  assert.equal(timed.length, 1, 'only one entry in the log has a time');
+  assert.ok(/\b22:40\. Local circuit\b/.test(timed[0]) && !ringsEn.test(timed[0]), '22:40 is the local circuit, and nothing rings in it');
+  const callPage = pages.findIndex((p) => ringsEn.test(p));
+  assert.ok(callPage > pages.indexOf(timed[0]), 'the Call is a later entry than the 22:40 circuit');
+  assert.ok(!clock.test(pages[callPage]), 'the Call is untimed in the log');
+  assert.ok(/22:40\. Circuito local/.test(es(timed[0])) && !/son[óa]/i.test(es(timed[0])), 'the Spanish circuit entry keeps the time and rings nothing');
+  assert.ok(es(pages[callPage]) && !clock.test(es(pages[callPage])), 'the Spanish Call entry has no time either');
+  // (c) Any ringing in the hangar came from the phones in the box at the door; nobody in here has a phone on them.
+  for (const o of hangar.objects) for (const t of [o.text, ...(o.pages ?? []), ...((o.later ?? []).map((l) => l.text))]) {
+    if (typeof t !== 'string') continue;
+    assert.ok(!/pocket/i.test(t), `${o.id}: no phone rings in a pocket in the hangar`);
+    if (!ringsEn.test(t)) continue;
+    const where = `${o.label} ${t}`, whereEs = `${es(o.label)} ${es(t)}`;
+    assert.ok(/\bbox\b/i.test(where) && /\bdoor\b/i.test(where), `${o.id}: the ringing came from the box at the door: ${t.slice(0, 50)}`);
+    assert.ok(/caja/i.test(whereEs) && /puerta/i.test(whereEs), `${o.id}: the Spanish puts the ringing in the box at the door too`);
+  }
+});
 test('i18n: every Route 1 shop and airfield line, label, page and shop header has Spanish', () => {
   const missing = [];
   for (const id of R1_MAPS) for (const o of MAPS_FOR_TEST[id].objects) {

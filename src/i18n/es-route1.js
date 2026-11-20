@@ -98,10 +98,10 @@ export const ES_ROUTE1 = {
   'Flight log': 'Bitácora de vuelo',
   'The field\'s flight log, a ledger on a stand with a pencil on a string. Date, aircraft, pilot, minutes aloft, wind. Most of the remarks are about the wind.':
     'La bitácora de vuelo del aeródromo, un libro de registro en un atril, con un lápiz atado a un cordel. Fecha, aeronave, piloto, minutos en el aire, viento. Casi todas las observaciones son sobre el viento.',
-  '2071. The day and the month are under a thumbprint in engine oil.\n\n22:40. Night circuit, solo. Calm. Windsock limp.\n\nREMARKS: Radio rang on short final. Radios don\'t ring. Kept ringing to touchdown. Didn\'t answer, had my hands full. Every light in town went out while I was tying down.':
-    '2071. El día y el mes quedaron bajo una huella de aceite de motor.\n\n22:40. Circuito nocturno, solo. Calma. Manga de viento caída.\n\nOBSERVACIONES: La radio sonó en final corta. Las radios no suenan. Siguió sonando hasta el aterrizaje. No contesté, tenía las manos ocupadas. Todas las luces de la ciudad se apagaron mientras amarraba el avión.',
-  'The next entry is the same night, in another hand.\n\nPower out across the county. Phones all rang at once, all over the field, and nobody here picked up in time. Lit the runway lamps by hand. Two planes came in on them before morning.':
-    'La entrada siguiente es de la misma noche, con otra letra.\n\nSin luz en todo el condado. Todos los teléfonos sonaron a la vez, por todo el campo, y nadie aquí contestó a tiempo. Encendimos los faroles de la pista a mano. Dos aviones aterrizaron guiándose por ellos antes del amanecer.',
+  '2071. The day and the month are under a thumbprint in engine oil.\n\n22:40. Local circuit, solo. Three landings. Calm. Windsock limp.\n\nREMARKS: Owl on the windsock pole again. It didn\'t think much of my landings.':
+    '2071. El día y el mes quedaron bajo una huella de aceite de motor.\n\n22:40. Circuito local, solo. Tres aterrizajes. Calma. Manga de viento caída.\n\nOBSERVACIONES: Otra vez la lechuza en el poste de la manga de viento. No le impresionaron mis aterrizajes.',
+  'The next entry has the same date, in another hand, and nothing in the time column.\n\nEvery phone in the box by the door rang at once. Nobody got to it in time. Then the power went out across the county. Lit the strip with kerosene lamps from the shed. Two planes came in on them before morning.':
+    'La entrada siguiente tiene la misma fecha, con otra letra, y nada en la columna de la hora.\n\nTodos los teléfonos de la caja junto a la puerta sonaron a la vez. Nadie llegó a tiempo. Después se cortó la luz en todo el condado. Iluminamos la pista con faroles de queroseno del cobertizo. Dos aviones aterrizaron guiándose por ellos antes del amanecer.',
   'The last entry is tonight\'s. No flights. Wind light and variable. Under REMARKS somebody has drawn a windsock, and a kid has colored it in.':
     'La última entrada es de esta noche. Sin vuelos. Viento leve y variable. Bajo OBSERVACIONES alguien dibujó una manga de viento, y un niño la pintó.',
   'Jar of keys': 'Frasco de llaves',
@@ -110,14 +110,17 @@ export const ES_ROUTE1 = {
   'Box by the door': 'Caja junto a la puerta',
   'A cardboard box full of phones, screens down, a strip of tape with a name on each. One of them is buzzing against the others. Nobody gets up.':
     'Una caja de cartón llena de teléfonos, con la pantalla hacia abajo y una tira de cinta con un nombre en cada uno. Uno vibra contra los demás. Nadie se levanta.',
+  'Chalkboard by the door': 'Pizarrón junto a la puerta',
+  'In a careful hand, gone over so often the letters have thickened: SUNDAYS, 7 P.M. BRING A CHAIR. POTLUCK THE FIRST SUNDAY.\n\nUnder it, fresh, pressed so hard the chalk snapped: NO MEETING TONIGHT. THEY FENCED THE TOWN. IF YOU NEED THE FLOOR, TAKE IT. A.R.':
+    'Con letra cuidadosa, repasada tantas veces que los trazos se engrosaron: LOS DOMINGOS, 7 P. M. TRAE UNA SILLA. EL PRIMER DOMINGO, CADA QUIEN TRAE UN PLATO.\n\nDebajo, reciente, escrito con tanta fuerza que la tiza se partió: HOY NO HAY REUNIÓN. CERCARON LA CIUDAD. SI NECESITAS UN LUGAR EN EL PISO, TÓMALO. A.R.',
   'Hangar rules': 'Reglas del hangar',
   'Painted on plywood: PHONES IN THE BOX. BOOTS ON THE MAT. KIDS MAY TOUCH THE PLANE. ADULTS ASK FIRST.':
     'Pintado sobre madera contrachapada: LOS TELÉFONOS, EN LA CAJA. LAS BOTAS, EN EL TAPETE. LOS NIÑOS PUEDEN TOCAR EL AVIÓN. LOS ADULTOS PREGUNTAN PRIMERO.',
   'Deacon Amos Reed': 'Diácono Amos Reed', 'DEACON AMOS REED': 'DIÁCONO AMOS REED',
   'He nods to you and says nothing. The lantern in his hand ticks as it cools. You find yourself explaining why you came, all of it, and he waits until you run out.\n\n"There\'s coffee on the stove in back," he says. "Wash the cup after."':
     'Te saluda con la cabeza y no dice nada. El farol en su mano chasquea mientras se enfría. Te descubres explicándole por qué viniste, todo, y él espera hasta que te quedas sin palabras.\n\n"Hay café en la estufa del fondo", dice. "Lava la taza después."',
-  '"We heard it from the field. Everybody\'s pocket at once." He waits a while. "The box by the door rang till the batteries quit."':
-    '"Lo oímos desde el campo. Los bolsillos de todos a la vez." Espera un rato. "La caja de la puerta sonó hasta que se acabaron las baterías."',
+  '"It was the box by the door." He waits a while. "Every phone in it rang at once. Rang till the batteries quit."':
+    '"Fue la caja junto a la puerta." Espera un rato. "Todos los teléfonos que había adentro sonaron a la vez. Sonaron hasta que se acabaron las baterías."',
   'Card table': 'Mesa de cartas',
   'Rummy, scored on the back of an envelope. A thermos. A cribbage board with matchsticks for pegs, because somebody lost the pegs in 2090.':
     'Rummy, con los puntos anotados en el dorso de un sobre. Un termo. Un tablero de cribbage con fósforos en lugar de clavijas, porque alguien perdió las clavijas en 2090.',

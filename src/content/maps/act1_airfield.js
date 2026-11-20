@@ -60,6 +60,9 @@ for (const [x, y] of LAMPS) if (!(x === 30 && y === 13)) field.scenery('obj.runw
 export const airfield = field.build();
 
 // ---- The hangar: a meeting hall round an old plane. Folding chairs, a card table, the field's paperwork ----
+// It meets on Sundays (the corkboard at Pardo's says so too). Tonight is not a meeting: the families are here
+// to sleep on the floor while the town is fenced, and the chalkboard by the door says which is which. Phones
+// stay in the box by the door, so any ringing heard in here comes from that box and the room stays chip-free.
 export const hangar = fromGrid({
   id: 'hangar', name: 'The hangar', fill: '.', world: { x: 112, y: -31 },
   rows: [
@@ -74,7 +77,7 @@ export const hangar = fromGrid({
     '#...HHHHH.....HHHHH........#',
     '#..........................#',
     '#..K.......................#',
-    '#........B..@.....U.J......#',
+    '#........B..@...S.U.J......#',
     '#############XX#############',
   ],
   legend: {
@@ -85,19 +88,22 @@ export const hangar = fromGrid({
       text: 'Paper maps in cardboard tubes, labeled by hand: COLLEGE PARK. THE BELTWAY. ROUTE 1 TO BALTIMORE. One lies unrolled under four stones, every road marked in pencil with how many minutes it takes on foot.' },
     L: { prop: 'obj.flight_log', id: 'obj.hangar_flight_log', label: 'Flight log', action: 'pages', pages: [
       'The field\'s flight log, a ledger on a stand with a pencil on a string. Date, aircraft, pilot, minutes aloft, wind. Most of the remarks are about the wind.',
-      '2071. The day and the month are under a thumbprint in engine oil.\n\n22:40. Night circuit, solo. Calm. Windsock limp.\n\nREMARKS: Radio rang on short final. Radios don\'t ring. Kept ringing to touchdown. Didn\'t answer, had my hands full. Every light in town went out while I was tying down.',
-      'The next entry is the same night, in another hand.\n\nPower out across the county. Phones all rang at once, all over the field, and nobody here picked up in time. Lit the runway lamps by hand. Two planes came in on them before morning.',
+      // 22:40 is an ordinary local circuit flown that evening; the Call is the next entry, and it has no time.
+      '2071. The day and the month are under a thumbprint in engine oil.\n\n22:40. Local circuit, solo. Three landings. Calm. Windsock limp.\n\nREMARKS: Owl on the windsock pole again. It didn\'t think much of my landings.',
+      'The next entry has the same date, in another hand, and nothing in the time column.\n\nEvery phone in the box by the door rang at once. Nobody got to it in time. Then the power went out across the county. Lit the strip with kerosene lamps from the shed. Two planes came in on them before morning.',
       'The last entry is tonight\'s. No flights. Wind light and variable. Under REMARKS somebody has drawn a windsock, and a kid has colored it in.',
     ] },
     J: { prop: 'obj.key_jar', id: 'obj.hangar_key_jar', label: 'Jar of keys',
       text: 'A pickle jar of keys on a stool by the door. House keys, padlock keys, a mailbox key, a key for a car nobody has built since the 2050s. A card: IF YOU FIND THE DOOR ONE OF THESE OPENS, TELL US WHERE. People keep adding keys. Nobody has found a door.' },
     B: { prop: 'obj.lost_found', id: 'obj.hangar_phone_box', label: 'Box by the door',
       text: 'A cardboard box full of phones, screens down, a strip of tape with a name on each. One of them is buzzing against the others. Nobody gets up.' },
+    S: { prop: 'obj.chalkboard', id: 'obj.hangar_schedule', label: 'Chalkboard by the door',
+      text: 'In a careful hand, gone over so often the letters have thickened: SUNDAYS, 7 P.M. BRING A CHAIR. POTLUCK THE FIRST SUNDAY.\n\nUnder it, fresh, pressed so hard the chalk snapped: NO MEETING TONIGHT. THEY FENCED THE TOWN. IF YOU NEED THE FLOOR, TAKE IT. A.R.' },
     U: { prop: 'obj.house_rules', id: 'obj.hangar_rules', label: 'Hangar rules',
       text: 'Painted on plywood: PHONES IN THE BOX. BOOTS ON THE MAT. KIDS MAY TOUCH THE PLANE. ADULTS ASK FIRST.' },
     R: { npc: 'npc.deacon_reed', art: 'npc.deacon', label: 'Deacon Amos Reed', age: 'adult', role: 'elder',
       text: 'He nods to you and says nothing. The lantern in his hand ticks as it cools. You find yourself explaining why you came, all of it, and he waits until you run out.\n\n"There\'s coffee on the stove in back," he says. "Wash the cup after."',
-      later: [{ if: 'act1.beat.call', text: '"We heard it from the field. Everybody\'s pocket at once." He waits a while. "The box by the door rang till the batteries quit."' }] },
+      later: [{ if: 'act1.beat.call', text: '"It was the box by the door." He waits a while. "Every phone in it rang at once. Rang till the batteries quit."' }] },
     H: { scenery: 'obj.chair', solid: true },
     T: { prop: 'obj.table', id: 'obj.hangar_cards', label: 'Card table',
       text: 'Rummy, scored on the back of an envelope. A thermos. A cribbage board with matchsticks for pegs, because somebody lost the pegs in 2090.' },
