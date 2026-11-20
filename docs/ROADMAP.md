@@ -42,6 +42,31 @@ Fable's character pass (make 4–5 people recur and land), the ending trimmed to
 route, sprite art for the scooter's up/down views and a few placeholder NPCs (Ozzie, the abatement
 tech, the pawn clerk), a lake ambience bed, and a timed full playthrough.
 
+## Current status (2026-11-19)
+
+The later acts are explorable as scaffold. The scope counter on main reports:
+
+| Act | Areas | Named NPCs | Bosses | Side quests |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 20 | 35 | 3 | 20 |
+| 2 | 26 | 54 | 6 | 36 |
+| 3 | 18 | 40 | 6 | 28 |
+
+These are content counts from `node tools/scope.mjs`. Playthrough length and polish still need
+browser playtests. Keep the milestone sequence below and use [the scope plan](design/10-scope.md)
+to track the larger targets.
+
+- **Story:** finish the Act 1 comic and cutscene briefs, then validate how players learn and act on
+  each lead. The in-world cutscene runner and story-flag triggers are on main. Act 1 staging needs an
+  integration refresh and host/guest playback verification.
+- **World:** prioritize the Act 1 art and map polish that supports those beats. The later regions
+  have dedicated scaffold and cohesion work before they are ready for a story playthrough.
+- **Systems:** progression limits, procedural gear, the puzzle kit, and host routing for shared
+  quests, puzzles, and board games are on main. Review the inventory and shared-dialogue queue
+  and the read-only hub board. The customization station follows the hotbar review. Then
+  coordinate the cordon blockades with the world team and review anonymous hub suggestions.
+  Keep a three-player Act 1 run on the playtest plan, including reconnection, saves, and dialogue choices.
+
 ## What the brief really asks for
 
 Three acts, a few hours long, branching and procedural, with production-quality pixel art,
@@ -73,10 +98,11 @@ play, the Sahur fight polished, hard optional puzzles (the 1901 clock, the statu
 page, more gear.
 
 ### M3: Act 2 ("Hold Music")
-Design (sealed), maps, Tim, the Sweeper, branching from Act 1 outcomes, morph stage 2.
+Use the existing region maps to build the sealed main quests, puzzles, and transitions. The
+cohesion audit identifies the scaffold pieces that need to change with those quests.
 
 ### M4: Act 3 ("The Final Call")
-The finale, variable final bosses, endings, the fourth-wall moment.
+Build the sealed finale and its branching routes on the existing region scaffold.
 
 ## Working rules from here
 - **Definition of done = production quality,** checked by actually looking at it in a browser,

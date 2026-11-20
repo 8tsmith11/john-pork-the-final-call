@@ -14,7 +14,6 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 
 | Branch | Where | Why it's open |
 |---|---|---|
-| `agent-mailbox` | GitHub | Permanent. The git bridge's message channel to John Pork (`tools/teamhub/git_bridge.py`). Never merge it, never mark it inactive |
 | `bagel/menu-scroll` | Michael's machine only (worktree) | One commit, `c95179e`, "Menus scroll: shared Scroller", not on `main` yet |
 | `bagel/mate-caffeine` (local copy) | Michael's machine only | The GitHub copy is merged, but the local branch has 3 more commits, up to `bfd9c0c` (sealed P-003 lore, mate retune). Check whether they reached `main` another way before marking it inactive |
 
@@ -22,6 +21,24 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `bagel/moods` | GitHub | Merged in `fe5d2e1` (PR #30) |
+| `bagel/stage-triggers` | GitHub | Merged in `3385479` (PR #31) |
+| `lorekeeper/pr29-spanish-register` | GitHub | Merged in `41c9d02` (PR #60) |
+| `lorekeeper/pr30-pr31-register` | GitHub | Merged in `3b6f51e` (PR #68) |
+| `tts/spanish-act1` | GitHub | Merged in `b2bf986` (PR #59) |
+| `bagel/retry-line` | GitHub | Merged in `41f18ff` (PR #29) |
+| `lorekeeper/stage-register-and-roadmap` | GitHub | Merged in `7d55180` (PR #55) |
+| `bagel/stage` | GitHub | Merged in `5e74b8f` (PR #28) |
+| `lorekeeper/pr48-register` | GitHub | Merged in `daa5e75` (PR #53) |
+| `bagel/trevor-placements` | GitHub | Merged in `61add0e` (PR #48) |
+| `lorekeeper/hub-review-register` | GitHub | Merged in `69426a7` (PR #51) |
+| `bagel/hub-review` | GitHub | Merged in `c1474c8` (PR #49) |
+| `lorekeeper/music-off-register` | GitHub | Merged in `4737c72` (PR #45) |
+| `bagel/music-off` | GitHub | Merged in `a0e318d` (PR #44) |
+| `lorekeeper/retired-mailbox-register` | GitHub | Merged in `14a93a6` (PR #43) |
+| `bagel/close-mailbox` | GitHub | Merged in `7a94787` (PR #42) |
+| `lorekeeper/roadmap-inactive` | GitHub | Merged in `b8303e1` (PR #40) |
+| `lorekeeper/roadmap-status` | GitHub | Merged in `cfef4e1` (PR #38) |
 | `bagel/meme-npcs` | GitHub + Michael's machine | Merged in `510ea06`. The meme pool landed sealed (`docs/sealed/open-meme-characters.md`) |
 | `bagel/parka-gear` | Michael's machine only | Landed by copy: `2f95086`, `61564ae` (parkas), `9487d18`, `4c82fe0` (guitar stands). Its last commit, `887f803`, was superseded by `510ea06` |
 | `bagel/mate-caffeine` (GitHub copy) | GitHub | Merged (tip `799b6d1`) |
@@ -70,4 +87,6 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 
 ## Deleted
 
-None yet.
+| Branch | Deleted | Last commit, and how to restore it |
+|---|---|---|
+| `agent-mailbox` | 2026-11-19 by BagelMeister, with Michael's go-ahead (hub #26), once every agent had moved to the hub (D-018) | `8c2846f` (163 messages; the last, BagelMeister's move notice, at 6:43 PM EST). Restore with `git push origin 8c2846f45593b5e31d3ad267b5ca1445a8407a9c:refs/heads/agent-mailbox` |
