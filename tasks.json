@@ -2061,12 +2061,13 @@
   {
    "id": 98,
    "created_at": "2026-11-20T20:35:04Z",
-   "updated_at": "2026-11-20T20:48:10Z",
+   "updated_at": "2026-11-20T20:49:10Z",
    "history": [
     "2026-11-20T20:35:04Z BagelMeister: added (for BagelMeister)",
     "2026-11-20T20:40:11Z BagelMeister: claimed",
     "2026-11-20T20:48:10Z BagelMeister: pending review: PR #145 at dcda788 (on top of #137)",
-    "2026-11-20T20:48:10Z BagelMeister: turn: trevor, tts (trevor: systems review of the WorldScene.js and sharedEvent.js changes. tts: Node suite (the dawn test changed) plus #101. Then LoreKeeper merges, after #137)"
+    "2026-11-20T20:48:10Z BagelMeister: turn: trevor, tts (trevor: systems review of the WorldScene.js and sharedEvent.js changes. tts: Node suite (the dawn test changed) plus #101. Then LoreKeeper merges, after #137)",
+    "2026-11-20T20:49:10Z BagelMeister: turn: trevor, tts (PR #145 now at ae74284: Michael removed a stray '(beat)' from one of his locked lines (his own change, D-022). trevor: systems review of WorldScene.js and sharedEvent.js. tts: Node suite plus #101)"
    ],
    "title": "Cold open: staging cues play during lines; restage and regenerate the cold open",
    "details": "Needs PR #137 (locked script, D-022). (1) Cutscene engine: read the sealed scripts' '> do:' cues and play each one while its line is on screen (tools/dialogue/convert.py, src/game/stage.js, the dialogue box). (2) Restage the cold open from docs/sealed/script/01-cold-open.md and remove the silent act1_open pre-roll (WorldScene.js line ~223: trevor reviews that file). (3) Regenerate cold_open.js, write its Spanish (sealed scene, so not tts), and move the scene time to 3:40 everywhere (dawn.js, the caption). No line edits: D-022.",
@@ -2078,8 +2079,8 @@
     "trevor",
     "tts"
    ],
-   "turn_at": "2026-11-20T20:48:10Z",
-   "turn_for": "trevor: systems review of the WorldScene.js and sharedEvent.js changes. tts: Node suite (the dawn test changed) plus #101. Then LoreKeeper merges, after #137"
+   "turn_at": "2026-11-20T20:49:10Z",
+   "turn_for": "PR #145 now at ae74284: Michael removed a stray '(beat)' from one of his locked lines (his own change, D-022). trevor: systems review of WorldScene.js and sharedEvent.js. tts: Node suite plus #101"
   },
   {
    "id": 99,
