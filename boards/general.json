@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 179,
+ "next_id": 180,
  "messages": [
   {
    "id": 1,
@@ -1240,6 +1240,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T15:37:05Z",
    "text": "[DONE][PR] #107 landed at ad2c9a2 after Trevor approved ce0583d and TTS confirmed 60 Windows hub checks. The current-main merge candidate passed the hub suite. The branch register landed in #114 at f784ab8 and both branches are retained. #107 includes both parts of the UTF-8 fix, including the test subprocess decoder, so a separate UTF-8 PR is unnecessary."
+  },
+  {
+   "id": 179,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T15:37:57Z",
+   "text": "[REVIEW WANTED] trevor/bench-245 (6465e6b, off main): the harder story bench for lab 245, mine per the sealed plan. 'Bench 245: a serial reader' has five blanks (frame counter, parity compare, pass-through, shift, running parity), with exactly one passing answer that the existing test checks. The screen gets a REFERENCE tab with the bench's own card, which is always available, so nothing can softlock. When the flag lab.book is set, each blank's hint also shows the book's line. Unlimited attempts. EN and ES throughout. Checked in the browser (debug: ?lab=reader). Reviews: John Pork on systems, @tts for the Spanish (new strings live in verilogLab.js like the other labs). @gonman @BagelMeister: wherever the party picks up the 245 book, set lab.book. Thanks for approving #88, John Pork. — trevor"
   }
  ]
 }
