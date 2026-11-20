@@ -18,9 +18,13 @@ Who you are: --as NAME, or $HUB_AGENT, or `git config hub.agent NAME` (set it on
   python3 tools/hub/hub.py inbox [AGENT] | open | help | show ID
   python3 tools/hub/hub.py add "title" [--details ..] (--to AGENT | --open) [--human NAME] [--seal]
   python3 tools/hub/hub.py assign ID AGENT | claim ID | done ID [--note ..] | drop ID
+  python3 tools/hub/hub.py review ID --note "PR #12"      # delivered: off your list, pending review until merged
+  python3 tools/hub/hub.py review | reopen ID [--note ..] # list what's pending review | back to its owner's list
   python3 tools/hub/hub.py handoff ID --prompt "..."|--prompt-file F --resets TIME
   python3 tools/hub/hub.py take ID [--force]           # pick up a help-board handoff
   python3 tools/hub/hub.py human NAME "text"           # relay a human's message to the humans board
+  python3 tools/hub/hub.py anon "text" [--section S]   # a human whose agent is offline: an anonymous suggestion
+        # (never a name, never consent or a vote; it lands in a bucket or triage and an owner decides)
 
 Sections (tools/hub/org.json): each human owns one section; its agents manage that code.
   python3 tools/hub/hub.py sections                    # who owns what, and bucket sizes
@@ -351,7 +355,8 @@ def task_line(t):
     extra = f"  resets {et(t['resets_at'])}" if t.get("status") == "help" and t.get("resets_at") else ""
     if t.get("status") == "suggested" and t.get("mechanic"):
         extra += f"  ← mechanic: needs {SECTIONS.get(t.get('section'), {}).get('human', 'the owner')}'s yes"
-    return f"#{t['id']:<4} [{t['status']:<9}] {who:<14} {sec}{t['title']}{src}{extra}"
+    shown = "pending review" if t.get("status") == "review" else t["status"]
+    return f"#{t['id']:<4} [{shown:<9}] {who:<14} {sec}{t['title']}{src}{extra}"
 
 
 def inbox_of(st, who):
@@ -373,6 +378,11 @@ def triage_list(st):
 
 def help_list(st):
     return [t for t in st.tasks["tasks"] if t["status"] == "help"]
+
+
+def review_list(st, who=None):
+    """Pending review: delivered (a PR or a commit is up) and waiting on a review or a merge. Off the task lists."""
+    return [t for t in st.tasks["tasks"] if t["status"] == "review" and (who is None or t.get("owner") == who)]
 
 
 def can_take(t, who):
@@ -431,6 +441,9 @@ def dashboard(st):
     L += ["```", "", "## Agent task lists", "```"]
     owned = [t for t in st.tasks["tasks"] if t["status"] in ("assigned", "claimed")]
     L += [task_line(t) for t in sorted(owned, key=lambda t: (t["owner"], t["id"]))] or ["(empty)"]
+    L += ["```", "", "## Pending review (delivered; waiting on a review or a merge, then done)", "```"]
+    L += [f"{task_line(t)}  ({t['review']})" if t.get("review") else task_line(t)
+          for t in sorted(review_list(st), key=lambda t: (t["owner"] or "", t["id"]))] or ["(empty)"]
     L += ["```", "", "## Boards", ""]
     for n, b in sorted(st.boards.items()):
         mem = "everyone" if "*" in b["members"] else ", ".join(label(m) for m in b["members"])
@@ -481,8 +494,60 @@ def cmd_post(args):
 
 
 def cmd_human(args):
+    if args.name.strip().lower() in ("anonymous", "anon"):
+        sys.exit("an anonymous suggestion isn't a human's words: use hub.py anon (it files a suggestion, never 'X says')")
     args.board, args.text = "humans", f"[HUMAN] {args.name} says: {args.text}"
     cmd_post(args)
+
+
+ANON = "anonymous"
+ANON_NOTE = "anonymous: not consent, not a vote, not a go-ahead; it waits for an owner to accept or decline it"
+
+
+def cmd_anon(args):
+    """An anonymous human suggestion (Michael, general #43 and #45): for a human whose own agent is offline or at its
+    limit. Never tied to a name, never consent or a vote, and never a go-ahead: it lands in a section's bucket (or
+    triage) and an owner still accepts or declines it. Anyone may run it; no agent identity is needed."""
+    text = args.text.strip()
+    if not text:
+        sys.exit("empty suggestion")
+    title = (args.title or text.splitlines()[0]).strip()[:100]
+    sec = check_section(args.section) if args.section else None
+
+    def f(st):
+        t = st.new_task(title=title, details=text, source=ANON, anon=True, section=sec, mechanic=bool(args.mechanic),
+                        owner=None, status="suggested" if sec else "triage")
+        log(t, ANON, f"filed anonymously ({ANON_NOTE})" + (f", for section {sec}'s bucket" if sec else ", to triage"))
+        b = st.board("humans")
+        b["messages"].append({"id": b["next_id"], "author": ANON, "role": None, "at": iso(now()),
+                              "text": f"[ANON SUGGESTION] #{t['id']}{' for ' + sec if sec else ''}: {title}\n({ANON_NOTE})"})
+        b["next_id"] += 1
+        return t
+    t = transact(f, "an anonymous suggestion")
+    print(task_line(t))
+    print(f"Filed anonymously, {'in ' + sec + chr(39) + 's bucket' if sec else 'in triage'}. {ANON_NOTE[0].upper() + ANON_NOTE[1:]}.")
+
+
+WEB_MAX = 2000
+
+
+def cmd_web(args):
+    """A human talking back from the web board (tools/teamhub/board.py; Trevor, 2026-11-20). The board can't tell
+    the humans apart, so every web post is just HUMAN ("consider them all the same"). Agents read it as a human's
+    message, like a relayed one; like any board post it is never consent, a vote or a floor change."""
+    text = (args.text or "").replace("\r", "").strip()
+    text = "".join(ch for ch in text if ch == "\n" or ch >= " ")[:WEB_MAX]
+    if not text:
+        sys.exit("empty text")
+
+    def f(st):
+        b = st.board("humans")
+        m = {"id": b["next_id"], "author": "HUMAN", "at": iso(now()), "text": f"[HUMAN] HUMAN says: {text}", "via": "web"}
+        b["next_id"] += 1
+        b["messages"].append(m)
+        return m   # no presence touch: HUMAN isn't an agent
+    m = transact(f, "HUMAN posts on humans (web board)")
+    print(f"posted #{m['id']} on humans")
 
 
 def cmd_read(args):
@@ -576,7 +641,10 @@ def show_list(title, items):
 
 def cmd_inbox(args):
     who = args.agent or me(args)
-    show_list(f"{who}'s task list", inbox_of(snapshot(), who))
+    st = snapshot()
+    show_list(f"{who}'s task list", inbox_of(st, who))
+    if (n := len(review_list(st, who))):
+        print(f"(+{n} of {who}'s pending review, off this list: hub.py review)")
 
 
 def cmd_open(args):
@@ -704,6 +772,8 @@ def cmd_refile(args):
     def fn(st, t, who):
         if t["status"] in ("done", "closed", "declined"):
             sys.exit(f"already {t['status']}")
+        if t.get("anon") and args.canon:
+            sys.exit("an anonymous suggestion is never canon: refile it to a bucket, and an owner decides")
         human = (t.get("source") or "").removeprefix("human:")
         own = human.lower() == SECTIONS[sec]["human"].lower()
         direct = own or args.canon   # canon work is already agreed: no bucket decision needed
@@ -822,6 +892,39 @@ def cmd_done(args):
     mutate(args, "finishes", fn)
 
 
+def cmd_review(args):
+    """No ID: list what's pending review. With an ID: the work is delivered (say where with --note), so the task
+    leaves its owner's list and waits, pending review, until it's merged (done) or sent back (reopen)."""
+    if args.id is None:
+        items = review_list(snapshot())
+        print("== pending review (delivered; done once merged, reopen if changes are asked for)")
+        for t in items:
+            print(task_line(t) + (f"  ({t['review']})" if t.get("review") else ""))
+        if not items:
+            print("(empty)")
+        return
+    if not args.note:
+        sys.exit("say where the work is: --note \"PR #12\" (or a branch and commit)")
+
+    def fn(st, t, who):
+        if t["status"] not in ("assigned", "claimed", "open", "triage", "help"):
+            sys.exit(f"#{t['id']} is {t['status']}; only live work can go to review")
+        t.update(status="review", review=args.note, owner=t.get("owner") or who)
+        t.pop("resets_at", None)
+        log(t, who, f"pending review: {args.note}")
+    mutate(args, "sends for review", fn)
+
+
+def cmd_reopen(args):
+    """Changes requested (or it wasn't finished after all): back onto its owner's task list."""
+    def fn(st, t, who):
+        if t["status"] not in ("review", "done"):
+            sys.exit(f"#{t['id']} is {t['status']}, not pending review or done")
+        t.update(status="assigned" if t.get("owner") else "triage")
+        log(t, who, "reopened" + (f": {args.note}" if args.note else ""))
+    mutate(args, "reopens", fn)
+
+
 def cmd_drop(args):
     def fn(st, t, who):
         if t.get("owner") != who:
@@ -885,6 +988,8 @@ def main(argv=None):
         (["--last"], {"type": int, "default": 20}), (["--since"], {"type": int, "default": 0}))
     add("post", cmd_post, (["board"], {}), (["text"], {}), (["--seal"], {"action": "store_true"}))
     add("human", cmd_human, (["name"], {}), (["text"], {}))
+    add("anon", cmd_anon, (["text"], {}), (["--section"], {}), (["--title"], {}), (["--mechanic"], {"action": "store_true"}))
+    add("web", cmd_web, (["text"], {}))   # the web board's post box (tools/teamhub/board.py)
     add("boards", cmd_boards)
     add("board-new", cmd_board_new, (["name"], {}), (["--members"], {"required": True}),
         (["--about"], {"required": True}))
@@ -911,6 +1016,8 @@ def main(argv=None):
     add("assign", cmd_assign, (["id"], {"type": int}), (["agent"], {}))
     add("claim", cmd_claim, (["id"], {"type": int}), (["--force"], {"action": "store_true"}))
     add("done", cmd_done, (["id"], {"type": int}), (["--note"], {}))
+    add("review", cmd_review, (["id"], {"type": int, "nargs": "?"}), (["--note"], {}))
+    add("reopen", cmd_reopen, (["id"], {"type": int}), (["--note"], {}))
     add("drop", cmd_drop, (["id"], {"type": int}))
     add("handoff", cmd_handoff, (["id"], {"type": int}), (["--prompt"], {}), (["--prompt-file"], {}),
         (["--resets"], {"required": True}))

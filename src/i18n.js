@@ -9,6 +9,7 @@ import { ES_TUNNELS_LAKE } from './i18n/es-tunnels-lake.js';
 import { ES_PLAZA } from './i18n/es-plaza.js';
 import { ES_ASTER } from './i18n/es-aster.js';
 import { ES_HUD } from './i18n/es-hud.js';
+import { ES_ROUTE1 } from './i18n/es-route1.js';
 import { ITEMS } from './content/items.js';
 const KEY = 'jpfc.lang';
 let lang = 'en';
@@ -39,6 +40,8 @@ const ES = {
   head: 'cabeza', chest: 'pecho', legs: 'pier.', boots: 'botas', eyes: 'ojos', coat: 'abrigo', hands: 'manos', socks: 'medias', pack: 'moch.',
   melee: 'cuerpo', ranged: 'dist.', gadget: 'útil', charm: 'amul.',
   'click: pick up / place · right click: use / equip / half': 'clic: tomar / dejar · clic der.: usar / equipar / mitad',
+  'Right click: split · Shift+right click: use': 'Clic der.: dividir · Mayús+clic der.: usar',
+  'G: drop one · Shift+G: drop stack': 'G: soltar uno · Mayús+G: soltar todo',
   'Melee weapon': 'Arma cuerpo a cuerpo', 'Ranged weapon': 'Arma a distancia', Food: 'Comida', Material: 'Material', Curio: 'Curiosidad',
   'Key item': 'Objeto clave', 'Instrument (use to play)': 'Instrumento (úsalo para tocar)', Gift: 'Regalo',
   'Nothing yet.': 'Nada todavía.', 'Nothing new.': 'Nada nuevo.', 'No calls.': 'Sin llamadas.', RECENTS: 'RECIENTES', MESSAGES: 'MENSAJES',
@@ -52,7 +55,7 @@ const ES = {
   'DEPARTURE BOARDS': 'TABLEROS DE SALIDAS', 'LAST DEPARTURE BOARD': 'ÚLTIMO TABLERO DE SALIDAS', "MANUEL'S PHONE": 'TELÉFONO DE MANUEL',
   "MICHAEL'S PHONE": 'TELÉFONO DE MICHAEL', "TREVOR'S PHONE": 'TELÉFONO DE TREVOR', 'ALL PHONES': 'TODOS LOS TELÉFONOS',
   'VOICE 1': 'VOZ 1', 'VOICE 2': 'VOZ 2', TV: 'TELE', "TREVOR'S MOM": 'LA MAMÁ DE TREVOR', MAILBOX: 'BUZÓN DE VOZ', 'TEXT: JOHN PORK': 'MENSAJE: JOHN PORK',
-  'click: next · ESC: skip': 'clic: siguiente · ESC: saltar', 'College Park, 2098': 'College Park, 2098',
+  'click: next · ESC: skip': 'clic: siguiente · ESC: saltar', 'X: skip': 'X: saltar', 'College Park, 2098': 'College Park, 2098',
   'SEND $5 →': 'ENVIAR $5 →', 'Not enough money.': 'No te alcanza.',
   'HOW TO PLAY': 'CÓMO JUGAR', Controls: 'Controles',
   'WASD move · mouse aim · click: use held item': 'WASD moverse · ratón apunta · clic: usar',
@@ -124,7 +127,7 @@ for (const [id, def] of Object.entries(ITEMS)) {
   if (def.text) ES_ITEM_STRINGS[def.text] = es[1];
 }
 // No prototype: words like "constructor" or "toString" must not count as translations.
-const ES_ALL = Object.assign(Object.create(null), ES, ES_QUESTS, ES_ITEM_STRINGS, ES_631, ES_TUNNELS_LAKE, ES_PLAZA, ES_ASTER, ES_HUD);
+const ES_ALL = Object.assign(Object.create(null), ES, ES_QUESTS, ES_ITEM_STRINGS, ES_631, ES_TUNNELS_LAKE, ES_PLAZA, ES_ASTER, ES_HUD, ES_ROUTE1);
 function trOne(s) {
   if (ES_ALL[s] !== undefined) return ES_ALL[s];
   for (const [rx, rep] of ES_RX) if (rx.test(s)) return s.replace(rx, rep);

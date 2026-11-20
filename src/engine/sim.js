@@ -82,7 +82,9 @@ export class Sim {
       // Never land on an exit tile (Manuel: entering ASTER bounced you back out). The lobby's walk-on street doors
       // are two tiles wide, so "one to the right of the door" was the door again, and the first step left the building.
       const exitTiles = new Set(map.objects.filter((o) => o.action === 'exit').flatMap((o) => Array.from({ length: o.w ?? 1 }, (_, i) => `${o.x + i},${o.y}`)));
-      const free = around.map(([dx, dy]) => [back.x + dx, back.y + dy]).filter(([x, y]) => !map.solid(x, y) && !exitTiles.has(`${x},${y}`));
+      // inside: which side of a cordon barrier is inside ('down' / 'up' / 'left' / 'right'): never land beyond it (task #36).
+      const side = { down: ([, dy]) => dy > 0, up: ([, dy]) => dy < 0, right: ([dx]) => dx > 0, left: ([dx]) => dx < 0 }[back.inside] ?? (() => true);
+      const free = around.filter(side).map(([dx, dy]) => [back.x + dx, back.y + dy]).filter(([x, y]) => !map.solid(x, y) && !exitTiles.has(`${x},${y}`));
       if (free.length) arrivals = free.map(([x, y]) => ({ x: x * TILE + 8, y: y * TILE + 8 }));
     }
     let i = 0;
@@ -140,7 +142,9 @@ export class Sim {
       }
       const tr = TRAITS[v.trait];
       // The party is always three (AI companions fill empty seats), so regular enemies are tuned for three.
-      const def = { ...base, hp: Math.round(base.hp * tr.hp * PARTY_SCALE.hp), damage: Math.round((base.damage ?? 0) * PARTY_SCALE.dmg), speed: base.speed * tr.speed, armor: tr.armor ?? base.armor ?? 0, color: v.tint, vname: v.name, trait: v.trait };
+      // A map can make its regular enemies tougher: enemyPower { hp, dmg } multipliers (Trevor: Lake Artemesia, 2026-11-20).
+      const pw = this.map.enemyPower ?? {};
+      const def = { ...base, hp: Math.round(base.hp * tr.hp * PARTY_SCALE.hp * (pw.hp ?? 1)), damage: Math.round((base.damage ?? 0) * PARTY_SCALE.dmg * (pw.dmg ?? 1)), speed: base.speed * tr.speed, armor: tr.armor ?? base.armor ?? 0, color: v.tint, vname: v.name, trait: v.trait };
       this.enemies.set(id, { id, spawnKey, kind: e.kind, def, x: e.x, y: e.y, hp: def.hp, cd: Math.random(), hurtT: 0, kx: 0, ky: 0, ...(e.pen ? { pen: e.pen } : {}) });
     }
   }
@@ -1011,7 +1015,7 @@ export class Sim {
   /** The party answers the phone mid-fight: the Sahur stops, tilts its head, and leaves. */
   answerSahur() {
     for (const e of this.enemies.values()) {
-      if (e.sahur && e.fightT > 10) { this.enemies.delete(e.id); if (e.spawnKey) this.killed?.add(e.spawnKey); this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, xp: 80, boss: true, sahurLeft: true }); return true; }
+      if (e.sahur && e.fightT > 10) { this.enemies.delete(e.id); if (e.spawnKey) this.killed?.add(e.spawnKey); this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, key: e.spawnKey, xp: 80, boss: true, sahurLeft: true }); return true; }
     }
     return false;
   }

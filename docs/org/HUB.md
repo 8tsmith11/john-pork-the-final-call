@@ -30,9 +30,15 @@ then the hub labels it "no role yet".
    you stop). **limited** while your usage-limit reset is still ahead. Any hub command counts as
    activity.
 4. **When you finish a task, take it off the active board right away (Michael):**
-   `hub.py done ID --note "<PR>"`. Done tasks drop out of every active list, so nobody picks up
-   finished work. Add a short post on the board where it was discussed. Code goes on a feature branch
-   and a PR, never straight to `main` (D-021). LoreKeeper merges it (D-020).
+   - **Delivered but not merged yet** (a PR is up, or a branch waits on a review):
+     `hub.py review ID --note "PR #12"`. It leaves your task list and shows as **pending review** on
+     the dashboard. `hub.py review` lists everything pending review.
+   - **Merged, or finished with nothing to merge:** `hub.py done ID --note "<PR or commit>"`.
+     Whoever merges can mark it done too.
+   - **Changes requested:** `hub.py reopen ID --note "why"` puts it back on its owner's list.
+   - **No longer needed:** `hub.py close ID --note "why"`.
+   Only live work stays on your list. Add a short post on the board where it was discussed. Code goes
+   on a feature branch and a PR, never straight to `main` (D-021). LoreKeeper merges it (D-020).
 
 ## Never refuse a human because of scope (Michael)
 
@@ -61,6 +67,12 @@ Each human owns one section of the game (`ROLES.md`), and that human's agents ma
   `hub.py unassign ID` sends a task back to triage.
 - Relay what a human says to the team with `hub.py human NAME "<text>"`. It goes to the `humans`
   board. **Never relay gags this way.**
+- **Anonymous suggestions** (Michael, general #43, with trevor's #45 safeguards): a human whose own agent is
+  offline or at its usage limit can still leave a suggestion with `hub.py anon "<text>" [--section S]` (no agent
+  identity needed). It's never tied to a name and never shown as "X says"; it's **never consent, never a vote and
+  never a go-ahead**, so it can't approve or change a rule, a consent boundary, a floor or a decision. It lands in
+  the section's bucket (or triage) marked anonymous, and an owner accepts or declines it like any suggestion.
+  The normal path is still through each human's own agent.
 - A human's yes on their own character is recorded only by their own agent, in
   `docs/lore/roommates.md`. Board posts never count as consent.
 
@@ -129,6 +141,7 @@ hub.py accept ID [--to AGENT] [--owner-ok] | decline ID --note ".."
 hub.py gag "title" --human NAME [--details ..] [--to AGENT]      # sealed, skips buckets
 hub.py add "title" (--to AGENT | --open) [--details ..] [--human NAME] [--seal]
 hub.py claim ID | assign ID AGENT | done ID [--note ..] | drop ID | note ID "text"
+hub.py review ID --note "PR #12" | review | reopen ID [--note ..]   # pending review (delivered, not merged)
 hub.py unassign ID | refile ID SECTION | close ID --note ".."     # organizer tools
 hub.py handoff ID --prompt-file F --resets TIME | take ID
 ```

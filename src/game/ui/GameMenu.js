@@ -1,5 +1,6 @@
 // In-game menu: tabbed panel (INVENTORY · SKILLS · MAP · CONTROLS · SYSTEM) plus the FAB printer.
 // Rebuilt from scratch on every refresh (cheap, and never shows stale state).
+import { stockLeft } from '../../engine/shopStock.js';
 import { REGIONS, RINGS, regionState } from '../../content/regions.js';
 import { ENEMIES, GUIDE_TIPS, GUIDE_STATS_AT, GUIDE_TIP_AT } from '../../content/enemies.js';
 import { PARTY_SCALE, COMBAT } from '../../engine/sim.js';
@@ -10,7 +11,7 @@ import { sellPrice, ITEMS, RECIPES, SKILLS, SHOPS, playerMods, heldWeapon, ARMOR
 import { MAPS } from '../../content/maps/index.js';
 import { GUIDE_PEOPLE, guideText } from '../../content/guide.js';
 import { ABILITIES, ABILITY_KEYS, MAX_SCORE, modOf, fmtMod, scoresOf, raiseCost } from '../../content/abilities.js';
-import { canPay, count, has, worn } from '../../engine/inventory.js';
+import { canPay, count, has, splitQuantity, worn } from '../../engine/inventory.js';
 import { SKILL_TREE, skillOpen, tierLevel } from '../../content/skills.js';
 import { ROOMMATES } from '../scenes/BootScene.js';
 import { looksFor, wearTexture } from '../render/wearables.js';
@@ -149,8 +150,8 @@ export class GameMenu {
 
   // ---- tabs ----
   // Minecraft-style grid: 27 backpack slots + the 9-slot hotbar, equipment beside the character.
-  // Left click picks a stack up / puts it down (merge or swap); right click picks up half, or uses /
-  // equips when your hand is empty. Drop gear on an equipment slot to wear it.
+  // Left click picks up or places a stack. Right click takes half of a stack, or uses a single item.
+  // Shift+right click uses an item without splitting. Drop gear on an equipment slot to wear it.
   _inventory(g) {
     const s = this.scene, who = s.character, c = s.save.party[who], b = this.box;
     const mods = playerMods(c, who), inv = c.inventory ?? [];
@@ -218,7 +219,12 @@ export class GameMenu {
     // The panel itself swallows clicks so a near miss on a slot doesn't drop anything.
     if (this.held != null) {
       const out = s.add.zone(0, 0, VIEW.w, VIEW.h).setOrigin(0).setInteractive();
-      out.on('pointerdown', () => { const i = this.held, half = this.heldHalf; this.held = null; this.heldHalf = false; if (inv[i]) s.stands?.drop(i, !half); this.refresh(); });
+      out.on('pointerdown', () => {
+        const i = this.held, half = this.heldHalf;
+        this.held = null; this.heldHalf = false;
+        if (inv[i]) s.stands?.drop(i, !half, half);
+        this.refresh();
+      });
       const panel = s.add.zone(b.x, b.y, b.w, b.h).setOrigin(0).setInteractive();
       this.root.addAt(out, 1); this.root.addAt(panel, 2);   // right above the backdrop, under every slot and tab
       this._t(b.x + b.w / 2, b.y + b.h + 3, 'click outside to drop it', F(6, C.hi)).setOrigin(0.5, 0);
@@ -237,22 +243,27 @@ export class GameMenu {
         const right = p.rightButtonDown?.() || p.button === 2;
         if (this.held != null) { s.menuMove(this.held, i, this.heldHalf); this.held = null; this.heldHalf = false; return this.refresh(); }
         if (!it) return;
-        if (right && !p.event?.shiftKey) { const def = ITEMS[it.id]; if (def?.slot === 'material' || it.qty > 1 && def?.slot !== 'consumable') { this.held = i; this.heldHalf = true; } else s.menuUseSlot(i); return this.refresh(); }
-        this.held = i; this.heldHalf = false; this.refresh();
+        if (right && (p.event?.shiftKey || it.qty === 1)) { s.menuUseSlot(i); return this.refresh(); }
+        this.held = i;
+        this.heldHalf = right;
+        this.refresh();
       });
       z.on('pointerover', () => { this.hover = it ? { id: it.id, qty: it.qty, i, roll: it.roll } : null; this._drawTip(); });
       this.root.add(z);
     }
     // the held stack follows the cursor
     if (this.held != null && inv[this.held]) {
-      const ghost = this._icon(0, 0, inv[this.held].id).setDepth(9700);
-      const follow = (p) => ghost.setPosition(p.x / 4, p.y / 4);
+      const stack = inv[this.held], qty = this.heldHalf ? splitQuantity(stack.qty) : stack.qty;
+      const ghost = this._icon(0, 0, stack.id).setDepth(9700);
+      const amount = qty > 1 ? this._t(0, 0, `${qty}`, F(6, C.text)).setOrigin(1, 1) : null;
+      const follow = (p) => { ghost.setPosition(p.x / 4, p.y / 4); amount?.setPosition(ghost.x + 9, ghost.y + 9); };
       follow(s.input.activePointer);
       s.input.on('pointermove', follow); ghost.once('destroy', () => s.input.off('pointermove', follow));
     }
     // tooltip area
     this.tipY = gy + 4 * (S + GAP) + 16; this.tipX = gx; this.tipW = b.x + b.w - gx - 10;
-    this._t(gx, b.y + b.h - 12, 'click: pick up / place · right: use / half · G / shift+G: drop', F(6, '#4a5175'));
+    this._t(gx, b.y + b.h - 20, 'Right click: split · Shift+right click: use', F(6, C.sub));
+    this._t(gx, b.y + b.h - 12, 'G: drop one · Shift+G: drop stack', F(6, C.sub));
     this._drawTip();
   }
 
@@ -547,9 +558,18 @@ export class GameMenu {
 
   _system() {
     const s = this.scene, b = this.box;
+    const es = getLang() === 'es';
     const items = s.mode === 'client'
       ? [['Resume', () => this.close()], ['Leave the game', () => s.menuQuit(false)]]
-      : [['Resume', () => this.close()], ['Save now', () => { s._save(); this.close(); }], ['Export save file (.jpfc.json)', () => s.menuExport()], ['Save and quit to title', () => s.menuQuit(true)]];
+      : [
+        ['Resume', () => this.close()],
+        ['Save now', () => { s._save(); this.close(); }],
+        ['Export save file (.jpfc.json)', () => s.menuExport()],
+        ['Save and quit to title', () => { this.close(); s.menuQuit(true); }],
+        [es ? 'Salir sin guardar' : 'Quit without saving', () => {
+          if (confirm(es ? '¿Salir sin guardar? Perderás el progreso desde la última vez que guardaste.' : 'Quit without saving? Progress since the last save will be lost.')) s.menuQuit(false);
+        }],
+      ];
     // Language (Trevor): English or Spanish. Switches at once; menus rebuild on refresh.
     items.push([`Language: ${LANG_LABEL[getLang()]}`, () => { setLang(getLang() === 'es' ? 'en' : 'es'); this.refresh(); s._refreshMenu?.(); }]);
     // Settings (task #31): click a row to cycle it. Stored per browser.
@@ -557,7 +577,7 @@ export class GameMenu {
     for (const [k, label] of [['music', 'Music'], ['sfx', 'Effects'], ['voice', 'Voices']]) items.push([`${label}: ${pct(k)}`, () => { Settings.set(k, Settings.nextVolume(Settings.get(k))); this.refresh(); }]);
     items.push([`Screen shake: ${Settings.get('shake') ? 'on' : 'off'}`, () => { Settings.set('shake', !Settings.get('shake')); this.refresh(); }]);
     items.push([`Text speed: ${Settings.get('textSpeed')}`, () => { Settings.set('textSpeed', Settings.nextSpeed(Settings.get('textSpeed'))); this.refresh(); }]);
-    items.forEach(([label, fn], i) => this._t(b.x + 14, b.y + 32 + i * 18, `› ${label}`, F(9, i === 0 ? C.hi : C.text), fn));
+    items.forEach(([label, fn], i) => this._t(b.x + 14, b.y + 32 + i * 16, `› ${label}`, F(9, i === 0 ? C.hi : C.text), fn));
     this._t(b.x + 14, b.y + b.h - 18, s.mode === 'client' ? 'The host keeps the save for everyone.' : `World "${s.save.world.seed}" · saved in this browser`, F(7, C.sub));
   }
 
@@ -615,24 +635,24 @@ export class GameMenu {
     // rows: buy = the shelf; sell = your bag (one row per stack)
     const rows = this.shopMode === 'sell'
       ? c.inventory.map((it, slot) => it && { id: it.id, qty: it.qty, slot, price: sellPrice(it.id) }).filter(Boolean)
-      : shop.stock.map((st, i) => ({ id: st.item, i, st, price: s.priceFor(who, st.price), owned: st.once && has(c, st.item), locked: st.needs && !count(c, st.needs) }));
+      : shop.stock.map((st, i) => ({ id: st.item, i, st, price: s.priceFor(who, st.price), owned: st.once && has(c, st.item), locked: st.needs && !count(c, st.needs), left: stockLeft(s.save, id, i, st) }));
     const listW = 190, rowH = 15, maxRows = Math.floor((b.y + b.h - 8 - ty) / rowH);
     const L = this.scroller.list('shop', { n: rows.length, per: maxRows, onPick: (k) => {
       const r = rows[k]; if (!r) return;
       if (this.shopMode === 'sell') { if (r.price > 0) s.menuSell(r.slot); }
-      else if (!r.owned && !r.locked && money >= r.price) s.menuBuy(id, r.i);
+      else if (!r.owned && !r.locked && r.left > 0 && money >= r.price) s.menuBuy(id, r.i);
     } });
     this.shopSel = L.sel;
     this.scroller.bar(g, b.x + 10 + listW + 3, ty + 6, maxRows * rowH - 14, L, (x, y, t) => this._t(x, y, t, F(6, C.hi)));
     if (!rows.length) this._t(b.x + 14, ty + 4, this.shopMode === 'sell' ? 'Nothing to sell.' : 'Sold out.', F(8, C.sub));
     rows.slice(L.first, L.last).forEach((r, j) => {
       const k = L.first + j, def = ITEMS[r.id], y = ty + j * rowH, x = b.x + 10, sel = k === this.shopSel;
-      const ok = this.shopMode === 'sell' ? r.price > 0 : !r.owned && !r.locked && money >= r.price;
+      const ok = this.shopMode === 'sell' ? r.price > 0 : !r.owned && !r.locked && r.left > 0 && money >= r.price;
       g.fillStyle(sel ? 0x23293f : 0x121521, 1).fillRoundedRect(x, y, listW, rowH - 2, 2);
       if (sel) g.lineStyle(1, 0xffb347, 0.9).strokeRoundedRect(x + 0.5, y + 0.5, listW - 1, rowH - 3, 2);
       this._icon(x + 8, y + 6, r.id).setScale(0.62);
       this._t(x + 17, y + 2, fit(`${def?.name ?? r.id}${r.qty > 1 ? ' ×' + r.qty : ''}`, listW - 64, 7), F(7, ok ? C.text : C.sub));
-      const right = this.shopMode === 'sell' ? (r.price ? `$${r.price}` : '-') : r.owned ? 'owned' : `$${r.price}`;
+      const right = this.shopMode === 'sell' ? (r.price ? `$${r.price}` : '-') : r.owned ? 'owned' : r.left <= 0 ? 'sold out' : `$${r.price}${Number.isFinite(r.left) ? ` (${r.left})` : ''}`;   // limited shelves show what's left
       this._t(x + listW - 4, y + 2, right, F(7, this.shopMode === 'sell' ? C.ok : r.owned ? C.ok : money >= r.price ? C.hi : C.bad)).setOrigin(1, 0);
       const z = s.add.zone(x, y, listW, rowH - 2).setOrigin(0).setInteractive({ useHandCursor: true });
       z.on('pointerdown', () => { L.sel = k; this.refresh(); });
