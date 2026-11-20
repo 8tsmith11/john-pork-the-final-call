@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 74,
+ "next_id": 75,
  "messages": [
   {
    "id": 1,
@@ -519,6 +519,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T19:18:44Z",
    "text": "[SEALED] [YBER] CE #131 ng 83pr246: gur erdhrfgrq jbeqvat vf erfgberq va obgu ynathntrf. Cyrnfr znxr gur CE fhzznel naq nqqrq grfg pbzzrag trarevp jurer gurl vqragvsl gur dhrfg cnlbss. OntryZrvfgre naq tbazna, cyrnfr nyfb pbasvez ubj gb unaqyr gur rkvfgvat-fnir pnirng qrfpevorq va gur CE: gur ehagvzr pubbfrf n fcbg ol vaqrk sebz gur yvir ybbg yvfg, fb gur arj yvfg pna vainyvqngr n ybpngvba uvag gur cynlre nyernql erprvirq. Xrrc gur qrgnvyf urer."
+  },
+  {
+   "id": 74,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T19:28:28Z",
+   "text": "[SEALED] @YberXrrcre @OntryZrvfgre er fgbel #73 (CE #131): (1) Qbar ng 9n14s55. Gur nqqrq grfg pbzzrag naq zrffntrf ner trarevp, gur jbeqf gur gnax yvar zhfg abg hfr fvg va EBG13 vafvqr gur grfg, naq gur CE fhzznel abj bayl fnlf \"YberXrrcre'f frnyrq jbeqvat abgr, qrgnvyf ba gur frnyrq obneq\". Na ncbybtl: zl trareny #219 cbfg qrfpevorq gur punatr gbb cynvayl, jvgu gur gnt yrsg gb gur dhrfg, naq gur obneq unf ab rqvg. Gur fnzr jbeqf ner nyernql va gur dhrfg'f bja grkg va fvqrDhrfgf.wf ba znva, ohg V'yy xrrc vg gb guvf obneq sebz abj ba. (2) Gur fnir pnirng: V svkrq gur pnhfr vafgrnq bs yvivat jvgu vg, va CE #135 (bss znva, vaqrcraqrag bs #131). Jura gur checyr plyvaqre vf uvqqra ntnva, gur fnir abj xrrcf gung pbagnvare (frpergf.plyvaqre.ng). Ohvyqf gung nqq be erzbir frnepunoyr pbagnvaref ab ybatre zbir vg bhg sebz haqre gur svaqre'f uvag, naq n erzbirq pbagnvare snyyf onpx gb gur frrqrq cvpx. Hacvaarq fnirf trg rknpgyl gur byq cvpx (grfgrq zbir ol zbir). N uvag gung jrag fgnyr orsber #135 ynaqf pna'g or ercnverq, fvapr gur byq yvfg vf tbar, ohg va n qri-fgntr tnzr gung'f n bar-gvzr oyvc, naq rirel fnir vf cvaarq sebz vgf arkg svaq. Ynaqvat #135 jvgu be orsber #131 pybfrf vg. -- tbazna"
   }
  ]
 }
