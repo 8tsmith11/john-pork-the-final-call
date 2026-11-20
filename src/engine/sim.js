@@ -6,6 +6,7 @@ import { BOSS_PATTERNS, bossPool, pickPattern, windFor, LASER, SHOCK, RAIN, LANE
 import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 import { BOSSES } from '../content/bosses.js';
+import { newInside, stepInside, insideView } from './inside.js';
 
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.35, iframes: 0.22,
   stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
@@ -54,6 +55,7 @@ export class Sim {
     this.killed = opts.killed ?? new Set();   // spawn keys of enemies already dead in this world
     this.bossVariant = opts.bossVariant;
     this.map = map;          // { w, h, solid(tx, ty) -> bool, spawns: [{x,y}] }
+    this.inside = newInside(map);   // the inside rules, for maps flagged `inside` (src/engine/inside.js)
     this.players = new Map(); // id -> player
     this.enemies = new Map(); // id -> enemy
     this.shots = [];          // projectiles
@@ -70,6 +72,7 @@ export class Sim {
   /** Swap maps. `fromId` = the map we came from: players arrive beside the exit that leads back there. */
   setMap(map, fromId = null, viaId = null) {
     this.map = map; this.shots = []; this.hazards = []; this.decoys = []; this.goo = []; this.enemies.clear();
+    this.inside = newInside(map);
     for (const a of this.allies ?? []) a.relocate = true;
     // Arrive at the counterpart of the exit you used: an explicit `pair`, else the same kind (stairs to stairs,
     // elevator to elevator), else the first exit back. (John Pork #577: the elevator dropped you at the stairs.)
@@ -460,8 +463,9 @@ export class Sim {
     this._stepHazards(dt);
     this._stepRot(dt);
     this._stepUnder(dt);
+    const edt = this.inside ? stepInside(this, this.inside, dt) : dt;   // inside: enemies act on the beat
     if (this.hitStop > 0) this.hitStop = Math.max(0, this.hitStop - dt);
-    else { this._stepEnemies(dt); this._penEnemies(); this._stepShots(dt); }
+    else { this._stepEnemies(edt); this._penEnemies(); this._stepShots(dt); }
     this._stepRevives(dt);
   }
 
@@ -673,7 +677,7 @@ export class Sim {
     }
     if (p.sleepT > 0 && p.mods?.sleepGuard) { this.events.push({ t: 'hit', x: p.x, y: p.y, dmg: 0, target: p.id }); return; }   // Manuel asleep on his pacifier: untouchable
     dmg = Math.max(1, Math.round(dmg * (1 - (p.mods?.armor ?? 0)) * (p.morphed ? 1.2 : 1)));
-    this.infect(p, infection);
+    this.infect(p, this.inside ? 0 : infection);   // inside, rot comes from the floor, not from hits
     p.hp -= dmg; p.iframes = COMBAT.hurtIframes + (p.mods?.iframes ?? 0);
     if (p.riding) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, knocked: true }); }
     this.events.push({ t: 'hurt', id: p.id, x: p.x, y: p.y, dmg });
@@ -1107,7 +1111,7 @@ export class Sim {
   _hitsBox(x, y, hw, hh) {
     const x0 = Math.floor((x - hw) / TILE), x1 = Math.floor((x + hw - 0.01) / TILE);
     const y0 = Math.floor((y - hh) / TILE), y1 = Math.floor((y + hh - 0.01) / TILE);
-    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.map.solid(tx, ty)) return true;
+    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this._solid(tx, ty)) return true;
     return false;
   }
 
@@ -1137,10 +1141,16 @@ export class Sim {
     }
   }
 
+  // A wall at tile (tx, ty)? On a wrapping inside map, off one edge is the tile at the other.
+  _solid(tx, ty) {
+    if (this.inside?.cfg.wrap) { tx = ((tx % this.map.w) + this.map.w) % this.map.w; ty = ((ty % this.map.h) + this.map.h) % this.map.h; }
+    return this.map.solid(tx, ty);
+  }
+
   _hits(x, y) {
     const x0 = Math.floor((x - HALF_W) / TILE), x1 = Math.floor((x + HALF_W - 0.01) / TILE);
     const y0 = Math.floor((y - HALF_H) / TILE), y1 = Math.floor((y + HALF_H - 0.01) / TILE);
-    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.map.solid(tx, ty)) return true;
+    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this._solid(tx, ty)) return true;
     return false;
   }
 
@@ -1148,6 +1158,7 @@ export class Sim {
   snapshot() {
     return {
       tick: this.tick,
+      ...(this.inside ? { ins: insideView(this.inside) } : {}),
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
