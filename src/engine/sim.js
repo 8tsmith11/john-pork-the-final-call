@@ -7,6 +7,7 @@ import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 import { BOSSES } from '../content/bosses.js';
 import { stepConductor, conductorDamage } from './conductor.js';
+import { stepMolter, molterDamage, moltView } from './molter.js';
 
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.35, iframes: 0.22,
   stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
@@ -692,7 +693,8 @@ export class Sim {
       const a = Math.random() * Math.PI * 2, nx = e.x + Math.cos(a) * 40, ny = e.y + Math.sin(a) * 40;
       if (!this._hitsBox(nx, ny, 6, 4)) { this.events.push({ t: 'blink', x: e.x, y: e.y }); e.x = nx; e.y = ny; }
     }
-    dmg = conductorDamage(e, dmg);   // a conductor's swarm soaks the hit unless it's dropped
+    dmg = molterDamage(e, conductorDamage(e, dmg));   // a conductor's swarm soaks it; a molter's armour turns it
+    if (dmg <= 0) { this.events.push({ t: 'thunk', x: e.x, y: e.y }); return; }   // out of reach
     e.hp -= dmg; e.hurtT = 0.12;
     // Stop damage at the end of the earliest phase that hasn't shown an attack tell.
     if (e.boss && e.def?.phaseGate) {
@@ -714,7 +716,7 @@ export class Sim {
       if (e.def?.trait === 'splitter') for (let i = 0; i < 2; i++) { const nid = `e${this._nextId++}`; this.enemies.set(nid, { id: nid, kind: 'enemy.rotling', def: { ...ENEMIES['enemy.rotling'], hp: 8, speed: 60, radius: 4, color: e.def.color, vname: 'Fragment', trait: 'plain', xp: 2 }, x: e.x + (i ? 6 : -6), y: e.y, hp: 8, cd: 0.6, hurtT: 0, kx: 0, ky: 0 }); }
       if (e.def?.trait === 'puddler') this.hazards.push({ x: e.x, y: e.y, r: 14, ttl: 5, dps: 8 });
       this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss, mini: !!e.mini, key: e.spawnKey });
-      if (e.def?.ai === 'conductor') for (const a of [...this.enemies.values()]) if (a.link === e.id) { this.enemies.delete(a.id); this.events.push({ t: 'kill', x: a.x, y: a.y, kind: a.kind, xp: 0, crumble: true }); }
+      if (e.def?.ai === 'conductor' || e.def?.ai === 'molter') for (const a of [...this.enemies.values()]) if (a.link === e.id) { this.enemies.delete(a.id); this.events.push({ t: 'kill', x: a.x, y: a.y, kind: a.kind, xp: 0, crumble: true }); }
       if (e.boss && !e.mini) for (const a of [...this.enemies.values()]) if (a.summoned) { this.enemies.delete(a.id); this.events.push({ t: 'kill', x: a.x, y: a.y, kind: a.kind, xp: 0, crumble: true }); }   // its adds crumble with it
       if (e.marked > 0 && e.markedBy) this._pingKill(e);   // a Ping mark (Riff's rattle has no owner)
       const k = this.players.get(by);   // Argentina shirt (gambeta): a kill hands the dodge straight back
@@ -796,7 +798,8 @@ export class Sim {
       e.cd = Math.max(0, e.cd - dt); e.hurtT = Math.max(0, e.hurtT - dt);
       if (e.sahur) { this._stepSahur(e, def, dt); continue; }
       if (def.ai === 'conductor') { stepConductor(this, e, dt); continue; }   // src/engine/conductor.js
-      if (def.ai === 'relay' || def.ai === 'swarmling') continue;             // flown by their conductor
+      if (def.ai === 'molter') { stepMolter(this, e, dt); continue; }         // src/engine/molter.js
+      if (def.ai === 'relay' || def.ai === 'swarmling' || def.ai === 'skin') continue;   // a boss's minions: moved (or left) by it
       if (e.boss) { this._stepBoss(e, def, dt); continue; }
       if (e.sleepT > 0) { e.sleepT = Math.max(0, e.sleepT - dt); continue; }
       // knockback decays
@@ -1240,7 +1243,7 @@ export class Sim {
         mk: e.marked > 0, zz: e.sleepT > 0, ...(e.slowT > 0 ? { sl: 1 } : {}), sg: !!this._def(e).lullaby && !(e.sleepT > 0), st: e.st ?? null,
         ...(e.def && !e.boss ? { vn: e.def.vname, tr: e.def.trait, c: e.def.color, mh: e.def.hp, r: e.def.radius } : {}),
         ...(e.link && this.enemies.get(e.link) ? { ln: [Math.round(this.enemies.get(e.link).x), Math.round(this.enemies.get(e.link).y)] } : {}), ...(e.dead ? { dd: 1 } : {}), ...(e.tell ? { tl: 1 } : {}),
-        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, ...(e.def.look ? { lk: e.def.look } : {}), la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
+        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, ...(e.def.look ? { lk: e.def.look } : {}), ...(moltView(e) ? { mo: moltView(e) } : {}), ...(e.off ? { off: 1 } : {}), la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
       goo: this.goo.map((g) => ({ x: Math.round(g.x), y: Math.round(g.y), r: g.r, t: Math.round(g.ttl * 10) / 10 })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
       allies: (this.allies ?? []).map((a) => ({ x: Math.round(a.x), y: Math.round(a.y), hp: a.hp, mhp: a.maxHp, dn: a.down > 0, st: a.st, ...(a.kind ? { k: a.kind, lk: a.look } : {}) })),
