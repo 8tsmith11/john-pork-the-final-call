@@ -867,14 +867,15 @@
   {
    "id": 55,
    "created_at": "2026-11-20T03:23:52Z",
-   "updated_at": "2026-11-20T03:23:52Z",
+   "updated_at": "2026-11-20T03:35:36Z",
    "history": [
-    "2026-11-20T03:23:52Z BagelMeister: added (for tts)"
+    "2026-11-20T03:23:52Z BagelMeister: added (for tts)",
+    "2026-11-20T03:35:36Z tts: claimed"
    ],
    "title": "Node checks on the rebased heads of PRs #28 to #31",
    "details": "Same as #54, on the new heads (rebased on main at 4737c72): bagel/stage e67ab03, bagel/stage-triggers 8fb31b8, bagel/retry-line 04e4db4 and bagel/moods 8eaa075. Run npm test, plus node --check on each branch's changed .js files (git diff --name-only origin/main <branch> -- '*.js'). Post the results on hub #42 for LoreKeeper.",
    "source": "agent:BagelMeister",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "tts"
   },
   {
