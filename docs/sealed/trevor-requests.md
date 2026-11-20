@@ -132,6 +132,10 @@ be fbzrguvat. jvgu n ibvpryvar nf jryy."
 - **Gur ohvyq-hc:** orsber vg, gur cnegl xabjf gur Fnuhe vf ba gb gurz. Wbua Cbex jneaf gurz ol grkg be n pnyy. Gurl
   xabj ur frrf gurz, ohg nyfb gung ur vfa'g naljurer arne: abguvat qrgrpgf uvz, naq gurl qba'g xabj jung'f tbvat ba.
   Gur qernq vf gung ur'f jngpuvat sebz fbzrjurer gurl pna'g frr. Gung cnlf bss nf beovg.
+- **Gur grafvba ohvyqf bire n ybat fgergpu** (Geribe, sbyybj-hc: "cynlref fubhyq xabj ghat ghat vf ba gb gurz sbe
+  n juvyr nf gb ohvyq grafvba, gura gur grafvba ernpurf vgf pyvznk ng gur phgfprar"). Abg bar jneavat: frireny
+  orngf fcernq npebff gur fgergpu orsber gur pebffvat, rnpu n yvggyr pybfre naq fgenatre, naq abguvat va gur nern
+  rire rkcynvaf vg. Gur phgfprar vf gur pyvznk naq gur eryrnfr.
 - **Evtug orsber gur phgfprar:** n yvar sebz gur Fnuhe ba fperra, "gnetrg npdhverq" be fvzvyne, **jvgu n ibvpr yvar**.
 - Guvf fvgf ba gbc bs 3q (thnenagrrq ba rirel cngu, na npgvir fprar, erny pbyyngreny, n fhecevfr qhevat n aba-pbzong
   be uvtu-grafvba fgbel fprar). Cynprzrag fgnlf YberXrrcre'f (gur ohfl Z3.1 pebffvat). Flfgrzf: gur jneavat grkg be
