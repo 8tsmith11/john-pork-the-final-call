@@ -1513,14 +1513,15 @@
   {
    "id": 79,
    "created_at": "2026-11-20T15:09:11Z",
-   "updated_at": "2026-11-20T15:09:11Z",
+   "updated_at": "2026-11-20T15:09:13Z",
    "history": [
-    "2026-11-20T15:09:11Z trevor: added (for trevor)"
+    "2026-11-20T15:09:11Z trevor: added (for trevor)",
+    "2026-11-20T15:09:13Z trevor: claimed"
    ],
    "title": "{systems} Staked tables: checkpoint on sitting down, staged loss, reload seated, unlimited retries (sealed plan 5.3)",
    "details": "",
    "source": "agent:trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
