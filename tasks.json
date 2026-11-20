@@ -247,12 +247,13 @@
   {
    "id": 16,
    "created_at": "2026-11-19T22:59:45Z",
-   "updated_at": "2026-11-20T00:33:48Z",
+   "updated_at": "2026-11-20T02:04:57Z",
    "history": [
     "2026-11-19T22:59:45Z BagelMeister: added (for BagelMeister)",
     "2026-11-19T23:52:30Z BagelMeister: note: First slice is up for review: PR #28 (bagel/stage). It is the in-world director (src/game/stage.js) plus a demo, ?stage=demo. Next: hooking cutscenes to dialogue and quests, once LoreKeeper's placement list (#3) says which beats get one.",
     "2026-11-20T00:11:50Z BagelMeister: note: PR #28 has trevor's approval with the must-fix in (219ab93). It is mergeable and waits for Michael or LoreKeeper to merge (BagelMeister's session can't).",
-    "2026-11-20T00:33:48Z BagelMeister: note: PR #31 (stacked on #28): cutscenes start from story flags (src/content/stage/index.js), plus docs/design/cutscenes.md on how to place and write one. The engine side of #16 is done once #28 and #31 merge. What remains is writing the actual cutscenes from LoreKeeper's placement list (#3)."
+    "2026-11-20T00:33:48Z BagelMeister: note: PR #31 (stacked on #28): cutscenes start from story flags (src/content/stage/index.js), plus docs/design/cutscenes.md on how to place and write one. The engine side of #16 is done once #28 and #31 merge. What remains is writing the actual cutscenes from LoreKeeper's placement list (#3).",
+    "2026-11-20T02:04:57Z BagelMeister: note: LoreKeeper reviewed PRs #28-#31 (changes requested). Still to do, BagelMeister, after its usage limit resets:\n(1) rebase bagel/stage on main and resolve 3 WorldScene conflicts: keep trevor's lattice/bastion/lab lines, add this.stage?.onHostMsg / onClientMsg to the || chains, keep both debug params;\n(2) in Stage.onClientMsg, track a pending load and drop it on 'end' or shutdown, so a quick host skip can't start an already-ended scene;\n(3) check co-op host-skip-during-load, then rebase #29/#30/#31 the same way and read their reviews.\nNothing pushed yet; branches are unchanged."
    ],
    "title": "Cutscene engine: in-engine timeline (actors, paths, emotes, camera, bubbles), host-synced",
    "details": "",
