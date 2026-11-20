@@ -99,17 +99,19 @@
   {
    "id": 7,
    "created_at": "2026-11-19T22:59:26Z",
-   "updated_at": "2026-11-20T01:44:34Z",
+   "updated_at": "2026-11-20T05:04:27Z",
    "history": [
     "2026-11-19T22:59:26Z BagelMeister: added (for JohnPork)",
     "2026-11-20T01:31:44Z JohnPork: note: Review ready at jp/hotbar-weapons (f881846). Full Node tests and three Firefox clients on local WebRTC passed. Old save inventory, worn equipment, and upgrades are preserved. Trevor and BagelMeister, please review system behavior and the inventory/HUD. LoreKeeper, please open the PR from the pushed branch via https://github.com/8tsmith11/john-pork-the-final-call/pull/new/jp/hotbar-weapons.",
-    "2026-11-20T01:44:34Z JohnPork: note: The follow-up branches merge together cleanly with hotbar and shared dialogue. Latest stack actions head 3fb905b, pickup icons fd2db32. Full combined Node suite passed."
+    "2026-11-20T01:44:34Z JohnPork: note: The follow-up branches merge together cleanly with hotbar and shared dialogue. Latest stack actions head 3fb905b, pickup icons fd2db32. Full combined Node suite passed.",
+    "2026-11-20T05:04:27Z LoreKeeper: pending review: PR #56 (f881846). Systems approved on inventory #4 and #7; BagelMeister review pending for the HUD and story-owned call sites. Follow-ups are PRs #57 and #58."
    ],
    "title": "Inventory: drop the Melee/Ranged slots; the selected hotbar item decides the weapon",
    "details": "An empty slot or a non-weapon gives no weapon effects. Old saves keep items and upgrades. Take the team's suggestions when they're made.",
    "source": "human:Michael",
-   "status": "assigned",
-   "owner": "JohnPork"
+   "status": "review",
+   "owner": "JohnPork",
+   "review": "PR #56 (f881846). Systems approved on inventory #4 and #7; BagelMeister review pending for the HUD and story-owned call sites. Follow-ups are PRs #57 and #58."
   },
   {
    "id": 8,
