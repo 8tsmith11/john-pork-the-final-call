@@ -62,7 +62,12 @@ export class PipeTable {
 
   onHostMsg(peer, msg) {
     if (msg?.t !== 'pipe') return false;
-    if (msg.op === 'open' && this._obj(msg.id)) this.s.net?.send(peer, { t: 'pipe', op: 'state', id: msg.id, rots: this._rots(msg.id) });
+    // A late opener (John Pork, PR #141): already solved means a terminal answer, so their board closes like everyone
+    // else's instead of showing a finished board forever. Only the finishing player ever gets the scene.
+    if (msg.op === 'open' && this._obj(msg.id)) {
+      const o = this._obj(msg.id);
+      this.s.net?.send(peer, this.s.save?.flags?.[o.solvedFlag] ? { t: 'pipe', op: 'solved', id: msg.id, by: null } : { t: 'pipe', op: 'state', id: msg.id, rots: this._rots(msg.id) });
+    }
     if (msg.op === 'rot') this.apply(peer, msg.id, msg.i, msg.j);
     return true;
   }

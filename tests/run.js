@@ -2118,6 +2118,13 @@ test('co-op puzzles (Trevor: everyone participates or spectates, no races): the 
     t.apply('g2', panel.id, ...last);
     assert.equal(host.save.flags['act1.cam.fixed'], 1, 'solved once, even with someone still clicking');
     assert.ok(sent.some(([, m]) => m.op === 'solved'), 'everyone is told'); assert.ok(hv.closed, 'and every open board closes');
+    // a late opener, after the solve but before the world flags reach them (John Pork, PR #141)
+    t.onHostMsg('g3', { t: 'pipe', op: 'open', id: panel.id });
+    assert.deepEqual(sent.at(-1), ['g3', { t: 'pipe', op: 'solved', id: panel.id, by: null }], 'a late opener is told it\'s solved');
+    const gsolved = [];
+    const guest = new PipeTable({ mode: 'client', localId: 'g3', save: { world: { seed: 'pipes-coop' }, flags: {} }, map: { objects: [panel] }, net: { send() {} }, _pipeSolvedHere: (id) => gsolved.push(id) }, { makeView: mk });
+    const gv = guest.open(panel); guest.onClientMsg(sent.at(-1)[1]);
+    assert.ok(gv.closed && gsolved.length === 0, 'their board closes, and the scene stays with the player who finished it');
   }
 });
 
