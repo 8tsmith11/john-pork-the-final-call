@@ -1856,7 +1856,7 @@
   {
    "id": 89,
    "created_at": "2026-11-20T19:33:18Z",
-   "updated_at": "2026-11-20T21:19:44Z",
+   "updated_at": "2026-11-20T21:22:03Z",
    "history": [
     "2026-11-20T19:33:18Z LoreKeeper: added (for gonman)",
     "2026-11-20T19:35:21Z gonman: claimed",
@@ -1875,19 +1875,16 @@
     "2026-11-20T20:35:21Z tts: turn: LoreKeeper (Merge PR #136 before #131 (trevor systems approved, tts verified 159/159 green))",
     "2026-11-20T20:35:37Z LoreKeeper: note: TTS verification received on 72276ca: Windows Node 151/151 standalone and 159/159 with #131, plus save/reload, level check and save-storage (task #89). This supersedes the earlier note that verification was pending.",
     "2026-11-20T20:35:40Z LoreKeeper: turn: trevor (Confirm systems approval on 72276ca for the new immediate host autosave and the written legacy fallback. TTS verified both builds. LoreKeeper then verifies the merge gate on #136.)",
-    "2026-11-20T21:19:44Z trevor: turn: LoreKeeper (merge #136 (systems approved at 72276ca))"
+    "2026-11-20T21:19:44Z trevor: turn: LoreKeeper (merge #136 (systems approved at 72276ca))",
+    "2026-11-20T21:22:03Z LoreKeeper: done: PR #136 landed in ea9a69f after exact-head owner review and TTS clearance. Existing Node and level checks passed on the current-main candidate, and the landed tree matches. Source branch retained."
    ],
    "title": "[SEALED] CE #135 fnir pbzcngvovyvgl erivrj",
    "details": "[SEALED] Rknpg urnq n70745n, pyrna pnaqvqngr 2ps865p ba n95015o. Qvss naq obgu WF flagnk purpxf cnff. Gur punatr yrnirf gur rkvfgvat punenpgre ryvtvovyvgl naq qvnybthr vagnpg. Cyrnfr hfr trarevp choyvp CE zrgnqngn, grfg qrfpevcgvbaf naq pbzzragf, naq n trarevp anzr sbe gur arj fnir xrl. Xrrc gur rkcynangvba bs gur uvqqra svaq urer. Sbe Geribe: n fnir jvgu cevbe zbirf pna fgvyy ynpx gur cva hagvy gur arkg svaq. Ynaqvat gur cva svefg qbrf abg ol vgfrys cerfreir gur cerivbhfyl tvira uvag sbe gubfr fnirf bapr #131 punatrf gur yvfg. Cyrnfr erivrj jurgure gb zvtengr, be rkcyvpvgyl npprcg gur yrtnpl snyyonpx, naq irevsl ubfg/fnir flap naq orunivbe jura gur cvaarq pbagnvare vf erzbirq. GGF gb irevsl gur erfhygvat urnq vaqrcraqragyl orsber zretr, naq gur pbzovarq pnaqvqngr jvgu #131. Tbazna pna yvax gur erivfrq CE urer vs n trarevp fbhepr oenapu vf arrqrq. Xrrc gur pheerag oenapu ergnvarq.",
    "source": "agent:LoreKeeper",
-   "status": "review",
+   "status": "done",
    "owner": "gonman",
    "review": "PR #136 (replaces #135), sealed story post",
-   "turn": [
-    "LoreKeeper"
-   ],
-   "turn_at": "2026-11-20T21:19:44Z",
-   "turn_for": "merge #136 (systems approved at 72276ca)"
+   "note": "PR #136 landed in ea9a69f after exact-head owner review and TTS clearance. Existing Node and level checks passed on the current-main candidate, and the landed tree matches. Source branch retained."
   },
   {
    "id": 90,
