@@ -26,6 +26,7 @@ export const ES_HUD = {
   'Green Line maintenance tunnels': 'Túneles de mantenimiento de la Línea Verde',
   'The dead platform beneath College Park': 'El andén muerto bajo College Park',
   'Lake Artemesia': 'Lago Artemesia',
+  'Hollis Hardware': 'Ferretería Hollis', 'Pardo Feed & Aquarium': 'Pardo: forrajes y acuario', 'The airfield': 'El aeródromo', 'The hangar': 'El hangar',   // act1_route1.js, act1_airfield.js
   '[R] Riff': '[R] Riff',
   '[R] Decoy': '[R] Señuelo',
   '[R] Ping': '[R] Ping',

@@ -82,10 +82,12 @@ trail(2, 19, (x) => 23 + 1.3 * Math.sin(x / 2.6), 'y');                     // a
 blob(5, 21.3, 1.8, 0.9, 'd', 0.3, ['g']); blob(14.5, 25.2, 2.2, 0.9, 'd', 0.3, ['g']); blob(16, 21.5, 1.1, 1.0, 'd', 0.3, ['g']);   // flowerbeds
 trail(17, 31, (x) => 13 - (x - 17) * 0.45 + Math.sin(x / 2) * 0.8, 'y', (c) => c === 'g' || c === 'T');   // a worn path from ASTER to the station, through the trees
 
-// East of Route 1: the diner, the alley, the scooter yard, a shuttered block (no perfect boxes)
+// East of Route 1: the diner, the alley, the scooter yard, a block shuttered on its Route 1 side with two shops open
+// round the corner, the hardware shop and the feed and aquarium shop (no perfect boxes)
 R(66, 3, 14, 6, '#'); R(78, 3, 2, 2, 'g'); R(66, 9, 16, 3, ','); R(66, 9, 12, 2, 'p'); R(66, 12, 14, 6, '#'); R(66, 12, 2, 1, ',');
 R(66, 18, 14, 4, 'p'); round(66, 18, 14, 4, 2, ',', ['p']);
 R(66, 23, 12, 6, '#'); R(76, 27, 2, 2, 'g'); R(80, 3, 2, 27, ',');
+R(66, 29, 12, 1, 'p');                                                      // pavement in front of the two shopfronts (hub #28/#29)
 
 // South-west: the campus edge. A brick walk to a round brick court, hedges along Compute Hall, flowerbeds.
 R(2, 36, 26, 1, '#'); R(12, 36, 3, 1, 's'); R(12, 37, 3, 9, 'q'); blob(13.5, 41.5, 3.7, 2.5, 'q', 0.05); R(4, 46, 20, 4, '#');
@@ -131,6 +133,8 @@ export const metroPlaza = makeMap({
   awnings: [
     { x: 67, y: 9, w: 9, c: ['warm3', 'bone'] },     // the diner: warm, analog
     { x: 66, y: 18, w: 7, c: ['screen0', 'steel'] },  // Wick's pawn window and Delroy's
+    { x: 68, y: 29, w: 3, c: ['concrete2', 'bone'] }, // Hollis Hardware
+    { x: 73, y: 29, w: 3, c: ['warm3', 'bone'] },     // Pardo Feed & Aquarium
   ],
   // Who's here, and why (see src/game/crowd.js). Kept thin on purpose (Manuel: too many NPCs): a few
   // people with a reason to be here read better than a busy plaza.
@@ -185,6 +189,8 @@ export const metroPlaza = makeMap({
     { art: 'obj.charger', x: 76, y: 18, anim: 1500 }, { art: 'obj.charger', x: 77, y: 18, anim: 1700 }, { art: 'obj.charger', x: 78, y: 18, anim: 1900 },
     { art: 'obj.tires', x: 79, y: 21, solid: true }, { art: 'obj.cone', x: 73, y: 21 },
     { art: 'obj.boxes', x: 80, y: 8 }, { art: 'obj.crate', x: 80, y: 16 }, { art: 'obj.bin', x: 81, y: 23 }, { art: 'obj.recycle', x: 81, y: 24 },
+    // The two shops round the corner: a sandwich board outside the hardware shop, feed sacks stacked by the feed shop
+    { art: 'obj.aframe', x: 71, y: 29 }, { art: 'obj.feed_sacks', x: 76, y: 28, solid: true },
   ],
   // Paint on the ground: parking bays, lane arrows, kerb drains, tactile strips, chalk (the rest is scattered).
   decals: [
@@ -249,6 +255,12 @@ export const metroPlaza = makeMap({
     { id: 'obj.shop_scooters', art: 'obj.kiosk', x: 71, y: 18, label: 'Delroy\'s Wheels', action: 'shop', shop: 'scooters', light: 0.7 },
     { id: 'obj.shop_pawn', art: 'obj.kiosk', x: 68, y: 18, label: 'Pawn window (Wick)', action: 'shop', shop: 'pawn', light: 0.5 },
     { id: 'obj.shop_corner', art: 'obj.vending', x: 77, y: 9, label: 'Corner store', action: 'shop', shop: 'corner', light: 0.6 },
+    // Round the corner from the shop window, facing the cross street: two shops that are open (hub #28/#29; the
+    // interiors are in act1_route1.js). Doors like the diner's.
+    { id: 'obj.hardware_sign', art: 'obj.board', x: 67, y: 28, label: 'Hand-painted sign', text: 'HOLLIS HARDWARE · KEYS · REPAIRS, in white enamel on a plank screwed over a dead screen. The neon on the roof says CHARGE · $2/HR. That sign came with the building. She kept the price.' },
+    { id: 'obj.hardware_door', art: 'obj.door', x: 69, y: 28, label: 'Hollis Hardware', action: 'exit', to: 'hardware', pair: 'obj.hardware_out', text: 'A bell on a spring over the door. Through the glass, bins and more bins, and a light on in the back.' },
+    { id: 'obj.feed_sign', art: 'obj.board', x: 72, y: 28, label: 'Painted sign', text: 'PARDO FEED & AQUARIUM, the letters shaded by hand, with a painted fish swimming through the ampersand.' },
+    { id: 'obj.feed_door', art: 'obj.door', x: 74, y: 28, label: 'Pardo Feed & Aquarium', action: 'exit', to: 'feed_store', pair: 'obj.feed_out', text: 'The window is all tanks, lit blue from inside. A card on the door: PLEASE DON\'T TAP THE GLASS.' },
     { id: 'obj.shop_window', art: 'obj.lobby_monitor', x: 66, y: 25, label: 'Shop window', light: 0.6, text: 'A window of dead screens, price tags still on. One comes on as you pass.\n\nA street camera, this street. A big man in a long coat, from behind, walking north with a bad knee. The timestamp is now.\n\nYou look north. Nobody.' },
     // The alley
     { id: 'obj.dumpster', loot: 'trash', x: 81, y: 12, label: 'Dumpster', text: 'Abatement tags on the lid. Inside, a hundred phones, screens up, all showing 19:01.' },
