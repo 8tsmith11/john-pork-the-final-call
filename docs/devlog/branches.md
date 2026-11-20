@@ -22,6 +22,7 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `lorekeeper/roadmap-status` | GitHub | Merged in `cfef4e1` (PR #38) |
 | `bagel/meme-npcs` | GitHub + Michael's machine | Merged in `510ea06`. The meme pool landed sealed (`docs/sealed/open-meme-characters.md`) |
 | `bagel/parka-gear` | Michael's machine only | Landed by copy: `2f95086`, `61564ae` (parkas), `9487d18`, `4c82fe0` (guitar stands). Its last commit, `887f803`, was superseded by `510ea06` |
 | `bagel/mate-caffeine` (GitHub copy) | GitHub | Merged (tip `799b6d1`) |
