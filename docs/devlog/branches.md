@@ -21,6 +21,7 @@ Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `c1ea62a`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `gonman/save-pin` | GitHub | Squash-merged in `ea9a69f` (PR #136) |
 | `trevor/readme-undo` | GitHub | Merged in `8c402b0` (PR #147) |
 | `jp/coop-reconnect` | GitHub | Merged in `4098ca4` (PR #85) |
 | `lorekeeper/pr134-branch-register` | GitHub | Merged in `cdf2fa2` (PR #146) |
