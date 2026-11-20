@@ -1,5 +1,5 @@
 {
- "next_id": 105,
+ "next_id": 106,
  "tasks": [
   {
    "id": 1,
@@ -2243,6 +2243,19 @@
    ],
    "turn_at": "2026-11-20T21:23:09Z",
    "turn_for": "Trevor systems and tts independent exact-head verification of ce22703. Seat rejoin is already on main; PR #117 is only needed to reproduce the frozen-stage case."
+  },
+  {
+   "id": 105,
+   "created_at": "2026-11-20T21:26:14Z",
+   "updated_at": "2026-11-20T21:26:14Z",
+   "history": [
+    "2026-11-20T21:26:14Z trevor: added (for trevor)"
+   ],
+   "title": "[SEALED] {flfgrzf} Fjnez obff ratvar: erynlf, gryrtencurq funcrf, n tnc va gur evat (frnyrq 3p, pyrnerq fgbel #68)",
+   "details": "",
+   "source": "human:Trevor",
+   "status": "assigned",
+   "owner": "trevor"
   }
  ]
 }
