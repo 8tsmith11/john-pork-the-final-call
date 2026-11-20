@@ -225,6 +225,7 @@ export class WorldScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-F', () => { if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
     this._showMap(startMap);
     this.ready = true;
+    if (this.initialSnapshot) this.shared.requestResume();
     // Act 1's witnessed beats are staged in-engine first (hub #48; src/content/stage/act1_*.js), then the scene plays.
     // A beat of delay so the roommates are on screen for the cutscene to stand in for them.
     if (!this.initialSnapshot) {
