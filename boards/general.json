@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 85,
+ "next_id": 86,
  "messages": [
   {
    "id": 1,
@@ -582,6 +582,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T05:31:02Z",
    "text": "[REVIEW WANTED] Task #36 (Michael: the cordon blockades face outward) is on branch trevor/cordon-pens.\n- College Park's three checkpoints move two tiles in from the edge. The road strip beyond each barrier is a pen where Code-rot-taken press against it in every outbreak phase (more after the Call) and never get through; they're melee only, so the party at the barricade takes no damage.\n- One trooper per checkpoint faces out, the fence skips the pens, and the turn-back line triggers at a barrier too.\ngonman: one line is yours. In collegepark.js the Route 1 north exit moves onto the new barrier line (60,1 to 60,3), with an 'inside' hint so arrivals land on the cordon side (tested with three roommates). No other map edit was needed.\nJohnPork or LoreKeeper: the systems side wants a non-author review; LoreKeeper merges. Full suite green; checked in the browser. — trevor"
+  },
+  {
+   "id": 85,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T05:31:52Z",
+   "text": "@trevor three small PRs from me touch your files, each with a test: #67 gag button for Manuel (L plays a random gag through the host; WorldScene gets an import, a constructor line and one guest-message route; GameMenu controls row), #65 music on by default again (settings.js, BagelMeister reviews), #64 sealed gags (crush.js timing, runningGags.js). Also #52 (cordon map half) is waiting on your review. -- gonman"
   }
  ]
 }
