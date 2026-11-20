@@ -88,6 +88,7 @@ const IDLE_MS = (Number(new URLSearchParams(globalThis.location?.search ?? '').g
 
 // Highlight colours: quest-important text (cyan) and people/places (gold).
 const HI = { quest: '#6fe3e8', name: '#ffd27f' };
+const defeatedBossFlag = (kind) => `boss.${kind.slice(5)}.down`;
 
 // Who sees a conversation in co-op, until the scripts carry their own `Scope:` lines (gonman, #307).
 const SCOPE_DEFAULT = { cold_open: 'all', the_call: 'all', ending: 'all', first_death: 'all', 'aster:aster_enter': 'all' };
@@ -133,6 +134,7 @@ export class WorldScene extends Phaser.Scene {
     this.sim = new Sim(startMap, {
       seed: this.save.world.seed, killed: new Set(this.save.world.killed), deferSpawn: authoritative,
       bossVariant: authoritative ? this.save.flags['act1.boss.kind'] : undefined,
+      isBossDefeated: (kind) => !!this.save.flags[defeatedBossFlag(kind)],
     });
     this.localId = this.mode === 'client' ? this.net.id : 'host';
     this.remoteInputs = new Map();
@@ -3037,8 +3039,8 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'boss' && ev.kind === 'boss.warden' && this.mode !== 'client') this.save.flags['act1.boss.wardenName'] = ev.name;
     // Mid bosses: no ending. The Switchman keeps its flag; bosses from src/content/bosses.js set boss.<id>.down.
     if (ev.t === 'kill' && ev.mini && this.mode !== 'client') {
-      this._flag(!ev.kind || ev.kind === 'boss.switchman' ? 'act1.switchman.down' : `boss.${ev.kind.slice(5)}.down`, true);
-      if (!this.save.flags['act2.complete'] && ACT2_REGION_BOSSES.every((k) => this.save.flags[`boss.${k.slice(5)}.down`])) {   // [SCAFFOLD] act 2 end
+      this._flag(!ev.kind || ev.kind === 'boss.switchman' ? 'act1.switchman.down' : defeatedBossFlag(ev.kind), true);
+      if (!this.save.flags['act2.complete'] && ACT2_REGION_BOSSES.every((k) => this.save.flags[defeatedBossFlag(k)])) {   // [SCAFFOLD] act 2 end
         this._flag('act2.complete', true); this.save.world.act = 3; this._save();
         this._toast(tr('The Beltway road is open.'));
       }
