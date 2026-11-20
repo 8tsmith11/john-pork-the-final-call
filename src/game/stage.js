@@ -5,6 +5,8 @@
 //
 //   scene.stage.play('demo', onDone)       // scripts live in src/content/stage/<id>.js
 //   ?stage=demo                             // debug: play one when the world loads
+//   src/content/stage/index.js              // triggers: play a script once when a story flag is set
+// How to write and place one: docs/design/cutscenes.md.
 //
 // Sync (Michael: "all dialogue tracks with the host"): the host (or the solo player) runs it and
 // tells every client to play the same script, so each screen acts it out in step; nothing streams.
@@ -38,6 +40,7 @@ import { VIEW } from '../view.js';
 import { tr, getLang } from '../i18n.js';
 import { speak, hush } from '../audio/audio.js';
 import * as Settings from '../settings.js';
+import { STAGE_TRIGGERS } from '../content/stage/index.js';
 
 const ROOMMATES = new Set(['michael', 'trevor', 'manuel']);
 const BAR = 22;                                   // letterbox bar height (view px)
@@ -99,7 +102,7 @@ export class Stage {
   /** Each frame, after the world draws: keep the real sprites hidden behind their stand-ins. */
   update() {
     const a = this.active;
-    if (!a) return;
+    if (!a) { this._checkTriggers(); return; }
     for (const act of a.actors.values()) {
       if (act.real?.active) act.real.setVisible(false);
       act.draw();
@@ -111,6 +114,24 @@ export class Stage {
       sh.clear().fillStyle(0x000000, 0.55);
       for (const p of this.s._lastRendered?.players ?? []) if (!p.dn && !cast.has(p.c)) sh.fillEllipse(Math.round(p.x) + 1, Math.round(p.y) + 3, 11, 4);
       for (const act of a.actors.values()) if (act.roommate) sh.fillEllipse(Math.round(act.x) + 1, Math.round(act.y) + 3, 11, 4);
+    }
+  }
+
+  // ---------- triggers ----------
+
+  /** Host and solo: start any cutscene whose flag is now set (once per world, no dialogue open). */
+  _checkTriggers() {
+    const s = this.s, now = s.time.now;
+    if (s.mode === 'client' || this._starting || s.dlg || !s.save?.flags || now < (this._nextCheck ?? 0)) return;
+    this._nextCheck = now + 250;
+    const f = s.save.flags;
+    for (const t of STAGE_TRIGGERS) {
+      const played = `stage.${t.id}.played`;
+      if (f[played] || !f[t.flag] || (t.map && t.map !== s.map?.id)) continue;
+      f[played] = true;
+      this._starting = true;
+      this.play(t.id).finally(() => { this._starting = false; });
+      return;
     }
   }
 
