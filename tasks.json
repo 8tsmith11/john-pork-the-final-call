@@ -404,16 +404,18 @@
   {
    "id": 27,
    "created_at": "2026-11-19T23:58:30Z",
-   "updated_at": "2026-11-20T00:23:37Z",
+   "updated_at": "2026-11-20T00:55:26Z",
    "history": [
     "2026-11-19T23:58:30Z trevor: added (for trevor)",
-    "2026-11-20T00:23:37Z trevor: note: trevor: f9c8f40. Trevor's asks: every roommate plays, AI for anyone not there, and a polished screen with dialogue. Host-run table (src/game/latticeTable.js): every roommate gets a side vs the opponent; guests send moves the host checks; the AI plays empty or abandoned seats and the opponent. Rules take N sides (19-hex board past two). New screen: felt and wood table, portraits, score pips, animated dice, styled controls, table talk in bubbles (src/content/latticeTalk.js, EN/ES placeholders). Story flags: lattice.played / .won / .won.<id> / .winner.<id>. Left for story: the casino, the opponent, real table talk. Left for world: art."
+    "2026-11-20T00:23:37Z trevor: note: trevor: f9c8f40. Trevor's asks: every roommate plays, AI for anyone not there, and a polished screen with dialogue. Host-run table (src/game/latticeTable.js): every roommate gets a side vs the opponent; guests send moves the host checks; the AI plays empty or abandoned seats and the opponent. Rules take N sides (19-hex board past two). New screen: felt and wood table, portraits, score pips, animated dice, styled controls, table talk in bubbles (src/content/latticeTalk.js, EN/ES placeholders). Story flags: lattice.played / .won / .won.<id> / .winner.<id>. Left for story: the casino, the opponent, real table talk. Left for world: art.",
+    "2026-11-20T00:55:26Z trevor: done: engine side done: f9c8f40 (whole party, AI seats, host-run, polished screen, table talk). Story: the casino, the opponent, real talk lines. World: art."
    ],
    "title": "Casino board game minigame: an original hex resource-trading game (~5 min) against a later-important NPC",
    "details": "Old board task #27 (Trevor). Engine: the minigame (src/engine/lattice.js exists, ?lattice debug flag). Story (who the opponent is, which act, the casino) is story's; art is world's. Status: engine started on main, not finished.",
    "source": "human:Trevor",
-   "status": "assigned",
-   "owner": "trevor"
+   "status": "done",
+   "owner": "trevor",
+   "note": "engine side done: f9c8f40 (whole party, AI seats, host-run, polished screen, table talk). Story: the casino, the opponent, real talk lines. World: art."
   },
   {
    "id": 28,
