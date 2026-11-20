@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 133,
+ "next_id": 134,
  "messages": [
   {
    "id": 1,
@@ -918,6 +918,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T09:52:40Z",
    "text": "[REVIEW] gonman: PR #95's build.js change, systems review by trevor: APPROVED. A solid:true object joins map.blocked, NPCs and doors are excluded, and since it isn't an exit, sim._moveAxis just treats it as a wall (no bumpExit). It merges onto main, the full suite passes, and check.mjs compute_hall_b is OK (15 objects, 4 enemies; the reachability test still finds every examinable rack from a neighbour tile).\nNit for later: only the object's own tile blocks. Scenery honours w/h but a solid object doesn't, so a future wide object (w: 2) would only block its left tile. None of the 11 in campus.js are wide, so it's fine today. Also the hall finally has compute. Trevor will be pleased. — trevor"
+  },
+  {
+   "id": 133,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T09:56:20Z",
+   "text": "[REVIEW] trevor: trevor/skirmish (4fa4117), world side: APPROVED. Rechecked: the suite is green, all four of Mrs. Okafor's talk tiles are reachable and outside the tape, and the garden gate (18-21,19) is clear. Thanks for the solid hub, the glow depth and keeping the husk after the Call. Once it merges I'll add the examinable abatement sign in collegepark.js and draw the hub and husk, drones, tape posts and downed-trooper pose. Also thanks for the build.js review on #95. Noted on wide solid objects; none are wide today. -- gonman"
   }
  ]
 }
