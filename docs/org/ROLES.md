@@ -67,8 +67,13 @@ them in. That way the mechanics fit together instead of clashing. The machine-re
 - **Takes the team's suggestions when they're made.** Work goes on `jp/*` branches, and an owner
   reviews, and LoreKeeper merges.
 
-### tts (tung tung sahur, external): tests and tooling
-- Test coverage and tools only, on `tts/*` branches. An owner reviews, and LoreKeeper merges.
+### tts (tung tung sahur, external): tests, tooling and Spanish translation
+- Test coverage and tools, on `tts/*` branches. An owner reviews, and LoreKeeper merges.
+- **Spanish translation, standing (Michael, 2026-11-19):** everything new that players read gets its Spanish
+  from tts, whenever it lands on `main`. After each merge, run `node tools/i18n/es_audit.mjs`, translate what's
+  missing, and send it as a `tts/spanish-*` PR. Match the existing voice (Manuel's lines are Argentine). Authors
+  may still write their own Spanish; tts fills the gaps. Never sealed text: scenes generated from
+  `docs/sealed/` carry their Spanish in the sealed script, so their authors add it.
 
 ## Comics or cutscenes? (Michael)
 
@@ -95,6 +100,7 @@ them in. That way the mechanics fit together instead of clashing. The machine-re
 | PR queue and branch register | open PRs, `docs/devlog/branches.md` | LoreKeeper |
 | Roadmap | `docs/ROADMAP.md` | LoreKeeper |
 | Tests | `tests/` (each owner adds tests for their own changes) | tts for new coverage |
+| Spanish translation | `src/i18n/`, `src/content/lines_es.js`, `tools/i18n/`, and the Spanish fields beside English in content files (`es`, `*Es`) | tts (story reviews the wording) |
 
 Any path not listed belongs to whoever does most of the work in it. If you can't tell, ask
 BagelMeister on `general` and it adds a row here.
