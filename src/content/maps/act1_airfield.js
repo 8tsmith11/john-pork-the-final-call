@@ -97,7 +97,7 @@ export const hangar = fromGrid({
       text: 'Painted on plywood: PHONES IN THE BOX. BOOTS ON THE MAT. KIDS MAY TOUCH THE PLANE. ADULTS ASK FIRST.' },
     R: { npc: 'npc.deacon_reed', art: 'npc.deacon', label: 'Deacon Amos Reed', age: 'adult', role: 'elder',
       text: 'He nods to you and says nothing. The lantern in his hand ticks as it cools. You find yourself explaining why you came, all of it, and he waits until you run out.\n\n"There\'s coffee on the stove in back," he says. "Wash the cup after."',
-      later: [{ if: 'act1.beat.call', text: '"We heard it from the field. Everybody\'s pocket at once." He waits a while. "Nothing in here rang."' }] },
+      later: [{ if: 'act1.beat.call', text: '"We heard it from the field. Everybody\'s pocket at once." He waits a while. "The box by the door rang till the batteries quit."' }] },
     H: { scenery: 'obj.chair', solid: true },
     T: { prop: 'obj.table', id: 'obj.hangar_cards', label: 'Card table',
       text: 'Rummy, scored on the back of an envelope. A thermos. A cribbage board with matchsticks for pegs, because somebody lost the pegs in 2090.' },

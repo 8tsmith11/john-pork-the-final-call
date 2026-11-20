@@ -792,6 +792,15 @@ test('Route 1 and the airfield: the windsock, the flight log, the jar of keys an
   const atlas = new Set(['props', 'wide', 'big'].flatMap((f) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${f}.json`, import.meta.url), 'utf8')).frames)));
   for (const id of [...R1_MAPS, 'metro_plaza']) for (const s of MAPS_FOR_TEST[id].scenery ?? []) assert.ok(atlas.has(s.art), `${id}: scenery ${s.art} has art`);
 });
+test('Route 1 and the airfield: phones go in the box inside the hangar door, and the corkboard and the deacon agree with it', () => {
+  const hangar = MAPS_FOR_TEST.hangar, box = hangar.objects.find((o) => o.id === 'obj.hangar_phone_box');
+  assert.ok(box && /phones/i.test(box.text), 'the box of phones is inside the hangar, by the door');
+  assert.match(hangar.objects.find((o) => o.id === 'obj.hangar_rules').text, /PHONES IN THE BOX/);
+  const reed = hangar.objects.find((o) => o.id === 'npc.deacon_reed');
+  for (const t of [reed.text, ...(reed.later ?? []).map((l) => l.text)]) assert.ok(!/nothing in here rang/i.test(t), 'the box by the door rang with everyone else\'s');
+  const cork = MAPS_FOR_TEST.feed_store.objects.find((o) => o.id === 'obj.feed_corkboard').text;
+  assert.ok(!/windsock/i.test(cork) && /PHONE AT THE DOOR/.test(cork), 'the corkboard sends phones to the door, where the box is');
+});
 test('i18n: every Route 1 shop and airfield line, label, page and shop header has Spanish', () => {
   const missing = [];
   for (const id of R1_MAPS) for (const o of MAPS_FOR_TEST[id].objects) {

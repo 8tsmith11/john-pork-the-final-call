@@ -51,8 +51,8 @@ export const ES_ROUTE1 = {
   'Fifty-pound sacks of layer pellets and cracked corn on a pallet, BELTSVILLE printed on each in faded green. Somebody up there is still farming.':
     'Sacos de veintitrés kilos de alimento para gallinas y maíz partido sobre una tarima, con BELTSVILLE impreso en verde desteñido. Alguien allá arriba sigue cultivando.',
   'Corkboard': 'Tablero de corcho',
-  'Index cards on cork. LOST: GREY CAT, ANSWERS TO NOTHING. CANOE FOR SALE, ONE PADDLE. And in block capitals: HANGAR, SUNDAYS. BRING A CHAIR. LEAVE YOUR PHONE AT THE WINDSOCK.':
-    'Fichas clavadas en el corcho. SE BUSCA: GATO GRIS, NO RESPONDE A NADA. SE VENDE CANOA, UN REMO. Y en mayúsculas de imprenta: HANGAR, LOS DOMINGOS. TRAE UNA SILLA. DEJA EL TELÉFONO EN LA MANGA DE VIENTO.',
+  'Index cards on cork. LOST: GREY CAT, ANSWERS TO NOTHING. CANOE FOR SALE, ONE PADDLE. And in block capitals: HANGAR, SUNDAYS. BRING A CHAIR. LEAVE YOUR PHONE AT THE DOOR.':
+    'Fichas clavadas en el corcho. SE BUSCA: GATO GRIS, NO RESPONDE A NADA. SE VENDE CANOA, UN REMO. Y en mayúsculas de imprenta: HANGAR, LOS DOMINGOS. TRAE UNA SILLA. DEJA EL TELÉFONO EN LA PUERTA.',
   'Brooder box': 'Criadora',
   'Six chicks asleep in a pile under a heat lamp. Every few minutes the one on the bottom works its way to the top.':
     'Seis pollitos dormidos en montón bajo una lámpara de calor. Cada pocos minutos, el de abajo se abre paso hasta arriba.',
@@ -116,8 +116,8 @@ export const ES_ROUTE1 = {
   'Deacon Amos Reed': 'Diácono Amos Reed', 'DEACON AMOS REED': 'DIÁCONO AMOS REED',
   'He nods to you and says nothing. The lantern in his hand ticks as it cools. You find yourself explaining why you came, all of it, and he waits until you run out.\n\n"There\'s coffee on the stove in back," he says. "Wash the cup after."':
     'Te saluda con la cabeza y no dice nada. El farol en su mano chasquea mientras se enfría. Te descubres explicándole por qué viniste, todo, y él espera hasta que te quedas sin palabras.\n\n"Hay café en la estufa del fondo", dice. "Lava la taza después."',
-  '"We heard it from the field. Everybody\'s pocket at once." He waits a while. "Nothing in here rang."':
-    '"Lo oímos desde el campo. Los bolsillos de todos a la vez." Espera un rato. "Aquí adentro no sonó nada."',
+  '"We heard it from the field. Everybody\'s pocket at once." He waits a while. "The box by the door rang till the batteries quit."':
+    '"Lo oímos desde el campo. Los bolsillos de todos a la vez." Espera un rato. "La caja de la puerta sonó hasta que se acabaron las baterías."',
   'Card table': 'Mesa de cartas',
   'Rummy, scored on the back of an envelope. A thermos. A cribbage board with matchsticks for pegs, because somebody lost the pegs in 2090.':
     'Rummy, con los puntos anotados en el dorso de un sobre. Un termo. Un tablero de cribbage con fósforos en lugar de clavijas, porque alguien perdió las clavijas en 2090.',

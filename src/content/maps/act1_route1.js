@@ -77,7 +77,7 @@ export const feedStore = fromGrid({
     G: { prop: 'obj.feed_sacks', id: 'obj.feed_pallet', tile: 'k', label: 'Feed sacks',
       text: 'Fifty-pound sacks of layer pellets and cracked corn on a pallet, BELTSVILLE printed on each in faded green. Somebody up there is still farming.' },
     B: { prop: 'obj.board', id: 'obj.feed_corkboard', label: 'Corkboard',
-      text: 'Index cards on cork. LOST: GREY CAT, ANSWERS TO NOTHING. CANOE FOR SALE, ONE PADDLE. And in block capitals: HANGAR, SUNDAYS. BRING A CHAIR. LEAVE YOUR PHONE AT THE WINDSOCK.' },
+      text: 'Index cards on cork. LOST: GREY CAT, ANSWERS TO NOTHING. CANOE FOR SALE, ONE PADDLE. And in block capitals: HANGAR, SUNDAYS. BRING A CHAIR. LEAVE YOUR PHONE AT THE DOOR.' },
     C: { prop: 'obj.crate', id: 'obj.feed_brooder', label: 'Brooder box', light: 0.5,
       text: 'Six chicks asleep in a pile under a heat lamp. Every few minutes the one on the bottom works its way to the top.' },
     '@': { spawn: true },
