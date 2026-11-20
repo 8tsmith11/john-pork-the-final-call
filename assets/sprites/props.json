@@ -3299,6 +3299,26 @@
     "w": 16,
     "h": 24
    }
+  },
+  "obj.mars_rover": {
+   "frame": {
+    "x": 80,
+    "y": 480,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
   }
  },
  "meta": {

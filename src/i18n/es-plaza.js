@@ -220,13 +220,13 @@ export const ES_PLAZA = {
   'Slide 40: GRADING IS NOW FULLY AUTOMATED. A cartoon checkmark with a face, waving. You press back.': 'Diapositiva 40: LA CORRECCIÓN AHORA ES TOTALMENTE AUTOMÁTICA. Una marca de visto bueno de dibujo animado, con cara, saludando. Retrocedes.',
   'Slide 39: OFFICE HOURS. The times have been deleted and replaced with one word, NOW, in a font nobody chose.': 'Diapositiva 39: HORARIO DE CONSULTA. Borraron los horarios y pusieron una sola palabra, AHORA, en una tipografía que nadie eligió.',
   'Slide 1. The course title has rotted into a row of empty boxes. Under it, small: RECORDED 2079. PLAYS AT 19:01 DAILY.': 'Diapositiva 1. El título del curso se pudrió en una fila de cuadraditos vacíos. Debajo, en letra chica: GRABADO EN 2079. SE REPRODUCE TODOS LOS DÍAS A LAS 19:01.',
-  // Act 1 townsfolk placed on these maps by crowds.js. Their lines are still the crowd scaffold, outside this pass.
+  // Act 1 townsfolk placed on these maps by crowds.js (polished in the hub #30 follow-up).
   'A regular at the counter': 'Un habitual de la barra',
-  '[scaffold] "Same booth, same order, every night. The cook starts it when I walk in. Sometimes before."': '[scaffold] "Misma mesa, mismo pedido, todas las noches. El cocinero lo empieza cuando entro. A veces antes."',
+  '"Don\'t take that stool. That\'s Earl\'s." The plate in front of it is going cold. "He\'s running late." He salts his own eggs, then reaches over and salts Earl\'s.': '"No te sientes en ese taburete. Es el de Earl." El plato de enfrente se está enfriando. "Se le hizo tarde." Le pone sal a sus huevos, y después estira el brazo y le pone sal a los de Earl.',
   'A student on the brick path': 'Un estudiante en el camino de ladrillo',
-  '[scaffold] "Midterms got cancelled. Not postponed. Cancelled. Nobody sent an email."': '[scaffold] "Cancelaron los parciales. No los pospusieron. Los cancelaron. Nadie mandó un correo."',
+  '"Stay on the bricks. Rot comes up through the grass, everybody knows that." He picks his way along the path and skips every cracked brick, which is most of them.': '"Quédate en los ladrillos. La podredumbre sale por el pasto, todo el mundo lo sabe." Avanza por el camino esquivando cada ladrillo rajado, que son casi todos.',
   'A student with a waffle': 'Un estudiante con un waffle',
-  '[scaffold] "It\'s shaped like the university seal. I feel like I\'m eating my diploma."': '[scaffold] "Tiene la forma del sello de la universidad. Siento que me estoy comiendo el diploma."',
+  '"I rate every one a two, so it learns." He eats around the university seal and sets it at the edge of his plate, next to the other five.': '"A todos les pongo un dos, así aprende." Se come el waffle alrededor del sello de la universidad y deja el sello en el borde del plato, junto a los otros cinco.',
   'A grad student asleep at a bench': 'Un estudiante de posgrado dormido sobre una mesa',
-  '[scaffold] "Mm. Five more minutes. Tell the rover I\'m sorry."': '[scaffold] "Mm. Cinco minutos más. Dile al rover que lo siento."',
+  'Asleep on his folded arms, safety glasses still on. By his elbow, a wheel motor with a sticky note: BORROWED, WILL PUT BACK. Without waking up he says, "It still drives. Just in circles."': 'Dormido sobre los brazos cruzados, todavía con las gafas de seguridad puestas. Junto al codo, un motor de rueda con una nota adhesiva: PRESTADO, LO DEVUELVO. Sin despertarse, dice: "Todavía anda. Pero en círculos."',
 };

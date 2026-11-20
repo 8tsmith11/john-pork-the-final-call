@@ -48,7 +48,7 @@ const COOK = ['the cook', 'el cocinero'], WATCHER = ['the roof watcher', 'la que
 const g1 = (npc, [n, e]) => ({ giver: npc, giverName: n, giverEs: e });
 
 side({ id: 'diner_oldbay', act: 1, ...g1('npc.diner_cook', COOK), title: 'Out of Old Bay', titleEs: 'Sin Old Bay', money: 12, xp: 25,
-  why: 'The diner cook ran out of Old Bay, and he has a plan.', whyEs: 'Al cocinero del diner se le acabó el Old Bay, y tiene un plan.',
+  why: 'The diner cook ran out of Old Bay, and he has a plan.', whyEs: 'Al cocinero de la cafetería se le acabó el Old Bay, y tiene un plan.',
   pitch: '"Out of Old Bay. Bring me a bag of the crab chips. I\'ll grind them. Don\'t tell anyone."', pitchEs: '"Se acabó el Old Bay. Tráeme una bolsa de papas de cangrejo. Las muelo. No le digas a nadie."',
   bring: { item: 'item.crab_chips', what: 'a bag of Old Bay crab chips', whatEs: 'una bolsa de papas de cangrejo Old Bay', refuse: '"That\'s not Old Bay. That\'s not even food."', refuseEs: '"Eso no es Old Bay. Eso ni siquiera es comida."' },
   line: 'He grinds them in a coffee mill and seasons an order nobody placed. "Perfect."', lineEs: 'Las muele en un molinillo de café y condimenta un pedido que nadie hizo. "Perfecto."' });

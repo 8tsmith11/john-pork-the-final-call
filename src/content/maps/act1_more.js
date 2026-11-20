@@ -143,8 +143,8 @@ export const diningHall = fromGrid({
 }).build();
 
 // ---- The Robotics and Autonomy Lab: where the UMD Mars rover lives (Trevor: it belongs in the world, not his gear) ----
-// Secret: the rover team's drawer holds a pair of welding goggles (one per save). The rover borrows the wheeled-bot
-// sprite until it gets art of its own.
+// Secret: the rover team's drawer holds a pair of welding goggles (one per save). The rover has its own frame,
+// obj.mars_rover (tools/art/gen_props.py); obj.battlebot stays Trevor's, in 631.
 export const roboticsLab = fromGrid({
   id: 'robotics_lab', name: 'Robotics and Autonomy Lab', fill: 'e',
   rows: [
@@ -159,7 +159,7 @@ export const roboticsLab = fromGrid({
     '###########DD#############',
   ],
   legend: {
-    M: { prop: 'obj.battlebot', id: 'obj.mars_rover', label: 'The Mars rover', text: 'The UMD rover team\'s machine, on a cart in the middle of the bay. A laminated tag on the frame: FLIGHT SPARE, DO NOT CANNIBALIZE. It has been cannibalized a little.' },
+    M: { prop: 'obj.mars_rover', id: 'obj.mars_rover', label: 'The Mars rover', text: 'The UMD rover team\'s machine, on a cart in the middle of the bay. A laminated tag on the frame: FLIGHT SPARE, DO NOT CANNIBALIZE. It has been cannibalized a little.' },
     Q: { prop: 'obj.whiteboard', id: 'obj.rover_whiteboard', label: 'Whiteboard', text: 'Wheel torque numbers in three colors of marker. DEMO DAY, with the date crossed out and moved four times. In the corner, a stick figure holding a wrench, labeled TREVOR. Someone gave it very good hair.' },
     B: { prop: 'obj.parts_bins', label: 'Parts bin', loot: 'parts', text: 'Little drawers, each labeled in label-maker tape: M3 SCREWS, ENCODERS, MOTORS (DEAD), MOTORS (PROBABLY).' },
     K: { prop: 'obj.workbench', id: 'obj.rover_drawer', label: 'Drawer marked ROVER TEAM', grant: 'item.welding_goggles',

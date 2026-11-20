@@ -725,6 +725,40 @@ test('hub #30: each polished Act 1 area has one small secret or job, made from s
     assert.ok(m.objects.every((q) => !q.npc || q.age === 'adult'), `${m.id}: everyone here is an adult`);
   }
 });
+test('hub #30 follow-up: the crowds.js townsfolk on the polished Act 1 maps have real lines, with Spanish', () => {
+  const was = i18nMod.getLang(), missing = [];
+  i18nMod.setLang('es');
+  try {
+    for (const [map, id] of [['diner', 'npc.diner_regular'], ['campus_quad', 'npc.quad_student'], ['dining_hall', 'npc.dining_student'], ['robotics_lab', 'npc.lab_grad']]) {
+      const o = MAPS_FOR_TEST[map].objects.find((q) => q.id === id);
+      assert.ok(o, `${map}: ${id} is placed`);
+      for (const t of [o.label, o.text]) if (t.includes('[scaffold]') || !Object.hasOwn(ES_PLAZA, t) || i18nMod.tr(t) === t) missing.push(`${id}: ${t.slice(0, 50)}`);
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(missing, [], 'real lines in crowds.js, Spanish in src/i18n/es-plaza.js');
+});
+test('hub #30 follow-up: the Mars rover has its own frame; the battlebot stays in 631', () => {
+  const props = JSON.parse(fs.readFileSync(new URL('../assets/sprites/props.json', import.meta.url), 'utf8')).frames;
+  const rover = MAPS_FOR_TEST.robotics_lab.objects.find((q) => q.id === 'obj.mars_rover');
+  assert.equal(rover?.art, 'obj.mars_rover');
+  assert.ok(props['obj.mars_rover'], 'obj.mars_rover frame in assets/sprites/props.json (gen_props.py, then build.py props)');
+  const names = Object.keys(props);
+  assert.equal(names.indexOf('obj.mars_rover'), names.length - 1, 'new frames go at the end of the props list');
+  const bots = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.filter((q) => (q.art ?? q.id) === 'obj.battlebot').map(() => m.id));
+  assert.deepEqual([...new Set(bots)], ['room631'], 'obj.battlebot is Trevor\'s robot, only in Room 631');
+});
+test('i18n: a string listed in more than one Spanish table gets the same Spanish in each (the diner had two names)', () => {
+  const tables = { ES_631, ES_ASTER, ES_HUD: POLISH30_ES_HUD, ES_PLAZA, ES_QUESTS, ES_TUNNELS_LAKE }, seen = new Map(), clash = [];
+  for (const [name, tb] of Object.entries(tables)) for (const [en, es] of Object.entries(tb)) {
+    const prev = seen.get(en);
+    if (prev && prev[1] !== es) clash.push(`${JSON.stringify(en.slice(0, 40))}: ${prev[0]} "${prev[1].slice(0, 30)}" vs ${name} "${es.slice(0, 30)}"`);
+    else if (!prev) seen.set(en, [name, es]);
+  }
+  assert.deepEqual(clash, [], 'pick one Spanish string and use it in both tables');
+  const was = i18nMod.getLang();
+  i18nMod.setLang('es');
+  try { assert.equal(i18nMod.tr('The diner'), 'La cafetería'); } finally { i18nMod.setLang(was); }
+});
 
 const { ES_HUD } = await import('../src/i18n/es-hud.js');
 test('i18n: every map name has Spanish', () => {
