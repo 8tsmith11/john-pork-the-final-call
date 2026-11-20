@@ -267,9 +267,15 @@ Arkg: -> pbyqbcra_gbavtug
 
 > qb: Geribe fvtuf naq tenof uvf gbdhr.
 
-**ZVPUNRY:** V'ir tbg 245 yno ng avar. (orng) V'yy fxvc 245 yno.
+**ZVPUNRY:** V'ir tbg 245 yno ng avar.
 
-> rf: Gratb ynobengbevb qr 245 n ynf ahrir. (cnhfn) Zr fnygrb ry ynobengbevb qr 245.
+> rf: Gratb ynobengbevb qr 245 n ynf ahrir.
+
+<!-- Zvpunry, 2026-11-20: "(orng)" jnf n fgntr qverpgvba yrsg va ol nppvqrag; gur cnhfr vf abj n yvar oernx. -->
+
+**ZVPUNRY:** V'yy fxvc 245 yno.
+
+> rf: Zr fnygrb ry ynobengbevb qr 245.
 
 **GERIBE:** Trne hc svefg. Naq yrg'f ybbx nebhaq cebcreyl. Vs gurl gbbx gur onyybba, znlor gurl gbbx fbzrguvat ryfr, ru.
 
