@@ -59,10 +59,10 @@ export class GuitarStands {
     f['act1.romance.starterGuitars'] = true;
   }
 
-  _tell(playerId, text) {
+  _tell(playerId, text, itemIcons) {
     const s = this.s;
-    if (playerId === s.localId) s._say(text);
-    else s.net?.send?.(playerId, { t: 'say', text });
+    if (playerId === s.localId) s._say(text, undefined, itemIcons);
+    else s.net?.send?.(playerId, { t: 'say', text, itemIcons });
   }
   _toastTo(playerId, text) {
     const s = this.s;
@@ -116,7 +116,7 @@ export class GuitarStands {
       if (Inv.add(c, held) > 0) return this._tell(playerId, 'Your bag is full. Make room first.');
       f[flagOf(o)] = '';
       sfx('pickup');
-      this._tell(playerId, `${takeLine(who, o.owner, ITEMS[held])}\n\n(In your bag: put it on the hotbar and use it to play. E on an empty stand puts it back.)`);
+      this._tell(playerId, `${takeLine(who, o.owner, ITEMS[held])}\n\n(In your bag: put it on the hotbar and use it to play. E on an empty stand puts it back.)`, [held]);
       s._syncParty();
       return;
     }
@@ -164,7 +164,7 @@ export class GuitarStands {
     if (!got) return this._toastTo(playerId, 'Your bag is full.');
     if (left) d.qty = left; else this.drops.splice(i, 1);
     sfx('pickup');
-    this._toastTo(playerId, `Picked up: ${ITEMS[d.id]?.name ?? d.id}${got > 1 ? ' ×' + got : ''}${left ? ' (bag full)' : ''}`);
+    this._tell(playerId, `Picked up: ${ITEMS[d.id]?.name ?? d.id}${got > 1 ? ' ×' + got : ''}${left ? ' (bag full)' : ''}`, [d.id]);
     s._syncParty();
   }
 
