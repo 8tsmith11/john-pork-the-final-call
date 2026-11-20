@@ -1084,6 +1084,16 @@ test('customization station (task #40): mods fit only where they belong, count i
   assert.deepEqual(SocketsT.socketInfo(c, { bag: 0 }).mods, ['item.mod_edge']);
 });
 
+test('the mod station is modal: while open it is the scene menu, ESC closes only it, and the menu keys stay shut (BagelMeister, PR #93)', async () => {
+  const fs = await import('node:fs');
+  const src = fs.readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/get menu\(\) \{[^\n]*this\.modStation && !this\.modStation\.closed \? 'mods'/.test(src), 'an open station counts as the menu, so _frozen stops movement, attacks and E');
+  assert.ok(/keydown-ESC', \(\) => \{ if \(this\.dlg\) return; if \(this\.modStation\) \{ this\.modStation\.close\(\); return; \}/.test(src), 'ESC closes the station and nothing else');
+  for (const k of ['I', 'K', 'J', 'TAB']) assert.ok(new RegExp(`keydown-${k}'[^\\n]*!this\\.modStation`).test(src), `${k} does nothing while the station is open`);
+  const st = fs.readFileSync(new URL('../src/game/ui/ModStation.js', import.meta.url), 'utf8');
+  assert.ok(!/keyboard\.on\(/.test(st), 'the station has no key listener of its own (the scene routes ESC)');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));

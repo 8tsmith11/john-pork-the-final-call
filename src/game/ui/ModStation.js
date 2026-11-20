@@ -15,8 +15,6 @@ export class ModStation {
   constructor(scene) {
     this.s = scene; this.closed = false; this.pick = null; this.msg = null;
     this.root = scene.add.container(0, 0).setScrollFactor(0).setDepth(9765);
-    this.esc = (ev) => { if (ev.key === 'Escape') this.close(); };
-    scene.input.keyboard.on('keydown', this.esc);
     this.redraw();
   }
 
@@ -77,5 +75,5 @@ export class ModStation {
     this.s.time.delayedCall(this.s.mode === 'client' ? 250 : 0, () => this.redraw());   // a guest waits for the host's party update
   }
 
-  close() { if (this.closed) return; this.closed = true; this.s.input.keyboard.off('keydown', this.esc); this.root.destroy(); this.s.modStation = null; }
+  close() { if (this.closed) return; this.closed = true; this.root.destroy(); this.s.modStation = null; }
 }

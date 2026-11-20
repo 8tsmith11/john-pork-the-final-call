@@ -1008,7 +1008,8 @@ export class WorldScene extends Phaser.Scene {
   _lab() { return (this.labBench ??= new LabBench(this, { makeView: (o) => new LabScreen(this, o) })); }
   _labPassed(id) { if (this.mode === 'client') return; this.save.flags[`lab.passed.${id}`] = true; this._tickQuests(true); }
   // The customization station (task #40): any map object with `station: 'mods'` opens it. Moves are host-applied.
-  openModStation() { if (!this.modStation) this.modStation = new ModStation(this); }
+  // Modal while open (scene.menu === 'mods'): no movement, attacks, E or menu keys; ESC closes it (BagelMeister, PR #93).
+  openModStation() { if (!this.modStation && !this.gameMenu?.tab && !this.dlg) this.modStation = new ModStation(this); }
   menuMod(op, ref, arg) { if (this.mode === 'client') this.net.send({ t: 'mod', op, ref, arg }); else this._modAct(this.character, op, ref, arg); }
   _modAct(who, op, ref, arg) {
     const c = this.save.party[who]; if (!c || !ref || typeof ref !== 'object') return false;
@@ -1104,15 +1105,16 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- in-game menu (src/game/ui/GameMenu.js) ----------
-  get menu() { return this.gameMenu?.tab ?? (this.puzzle && !this.puzzle.closed ? 'puzzle' : this.boardGame && !this.boardGame.closed ? 'lattice' : null); }
+  get menu() { return this.gameMenu?.tab ?? (this.puzzle && !this.puzzle.closed ? 'puzzle' : this.boardGame && !this.boardGame.closed ? 'lattice' : this.modStation && !this.modStation.closed ? 'mods' : null); }
   _makeMenu() {
     this.gameMenu = new GameMenu(this);
     const kb = this.input.keyboard;
-    kb.on('keydown-ESC', () => { if (this.dlg) return; if (this.gameMenu?.held != null) { this.gameMenu.held = null; this.gameMenu.refresh(); return; } if (this.puzzle && !this.puzzle.closed) { this.puzzle.destroy(); this.puzzle = null; return; } this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
-    kb.on('keydown-I', () => { if (!this.dlg) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
-    kb.on('keydown-K', () => { if (!this.dlg) this.menu === 'skills' ? this._closeMenu() : this.gameMenu.show('skills'); });
-    kb.on('keydown-J', () => { if (!this.dlg) this.menu === 'quests' ? this._closeMenu() : this.gameMenu.show('quests'); });
-    kb.on('keydown-TAB', (ev) => { ev.preventDefault?.(); if (!this.dlg) this.menu === 'map' ? this._closeMenu() : this.gameMenu.show('map'); });
+    kb.on('keydown-ESC', () => { if (this.dlg) return; if (this.modStation) { this.modStation.close(); return; }   // the station is modal: ESC closes only it (BagelMeister, PR #93)
+      if (this.gameMenu?.held != null) { this.gameMenu.held = null; this.gameMenu.refresh(); return; } if (this.puzzle && !this.puzzle.closed) { this.puzzle.destroy(); this.puzzle = null; return; } this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
+    kb.on('keydown-I', () => { if (!this.dlg && !this.modStation) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
+    kb.on('keydown-K', () => { if (!this.dlg && !this.modStation) this.menu === 'skills' ? this._closeMenu() : this.gameMenu.show('skills'); });
+    kb.on('keydown-J', () => { if (!this.dlg && !this.modStation) this.menu === 'quests' ? this._closeMenu() : this.gameMenu.show('quests'); });
+    kb.on('keydown-TAB', (ev) => { ev.preventDefault?.(); if (!this.dlg && !this.modStation) this.menu === 'map' ? this._closeMenu() : this.gameMenu.show('map'); });
     kb.addCapture('TAB');
     for (const [key, dir] of [['A', -1], ['LEFT', -1], ['D', 1], ['RIGHT', 1]]) kb.on(`keydown-${key}`, () => { if (TABS.includes(this.menu)) this.gameMenu.cycle(dir); });
   }
@@ -2111,7 +2113,7 @@ export class WorldScene extends Phaser.Scene {
     }
     if (this.menu) {
       this.input2.blockAttack = true;
-      if (this.menu !== 'puzzle' && this.menu !== 'lattice' && !this.gameMenu.contains(sx, sy)) this._closeMenu();
+      if (this.menu !== 'puzzle' && this.menu !== 'lattice' && this.menu !== 'mods' && !this.gameMenu.contains(sx, sy)) this._closeMenu();
       return;
     }
     if (!this.sayOpen && !this.dlg && !this.menu && this._useHeld()) { this.input2.blockAttack = true; return; }
