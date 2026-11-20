@@ -3,7 +3,7 @@
 import { FISH } from './fish.js';
 import { SKILL_TREE } from './skills.js';
 import { abilityModsFor } from './abilities.js';
-import { GADGETS } from './gadgets.js';
+import { BUILT_GADGET, GADGETS } from './gadgets.js';
 import { HOTBAR } from '../engine/save/schema.js';
 
 // Equipment slots (D-014, Michael). Armor points come from the four armor pieces; gear goes on top.
@@ -38,6 +38,7 @@ export const ITEMS = {
 for (const [id, gadget] of Object.entries(GADGETS)) {
   ITEMS[id] = { name: gadget.name, slot: 'gadget', text: gadget.text };
 }
+ITEMS[BUILT_GADGET] = { name: 'Assembled gadget', slot: 'gadget', text: 'Four parts fitted together at the workbench.' };
 
 Object.assign(ITEMS, FISH);   // catches are items too
 

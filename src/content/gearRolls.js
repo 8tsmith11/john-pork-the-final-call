@@ -3,6 +3,7 @@
 // the recipe and how many times it has been made, so a world is reproducible and co-op screens agree.
 // Every affix stays inside its [min, max]; the chosen Fab tuning adds a separate fixed tradeoff.
 import { makeStreams } from '../engine/rng.js';
+import { PAYLOADS } from './parts.js';
 
 // Which affixes can land on which kind of item. Values are added like an item's own `mods`.
 // `es` (gonman): Spanish adjectives agree with the item's gender, so each label is a phrase that works
@@ -65,6 +66,10 @@ export function rollGear(seed, recipeId, count, kind, tune = 'stock') {
 /** A rolled item's name: adjectives first in English ("keen rebar"), the phrase after the noun in Spanish
  *  ("barra de filo fino"). `name` is the base item's name in the current language. */
 export function rolledName(name, roll, lang = 'en') {
+  const payload = roll?.build?.payload;
+  if (typeof payload === 'string' && Object.hasOwn(PAYLOADS, payload)) {
+    return lang === 'es' ? PAYLOADS[payload].nameEs : PAYLOADS[payload].name;
+  }
   if (!roll?.affixes?.length) return name;
   return lang === 'es' ? `${name} ${roll.labelEs}` : `${roll.label} ${name}`;
 }

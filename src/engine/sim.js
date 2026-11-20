@@ -7,6 +7,7 @@ import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 import { BOSSES } from '../content/bosses.js';
 import { ARC_HITS, GADGETS, GADGET_SUPPORT_WINDOW, arcDamage, gadgetStats } from '../content/gadgets.js';
+import { glitches } from './assembly.js';
 
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.35, iframes: 0.22,
   stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
@@ -71,6 +72,8 @@ export class Sim {
     this.tick = 0;
     this.playTime = 0;
     this.gadgetRecharges = new WeakMap();
+    this.builtGadgetCharges = new WeakMap();
+    this.gadgetFields = [];
     this._nextId = 1;
     if (!opts.deferSpawn) this.spawnEnemies();
   }
@@ -78,7 +81,8 @@ export class Sim {
   /** Swap to another map, keeping players (placed at the map's spawns). */
   /** Swap maps. `fromId` = the map we came from: players arrive beside the exit that leads back there. */
   setMap(map, fromId = null, viaId = null) {
-    this.map = map; this.shots = []; this.hazards = []; this.decoys = []; this.goo = []; this.enemies.clear();
+    this.map = map; this.shots = []; this.hazards = []; this.decoys = []; this.goo = []; this.gadgetFields = []; this.enemies.clear();
+    for (const p of this.players.values()) p.gadgetAim = null;
     for (const a of this.allies ?? []) a.relocate = true;
     // Arrive at the counterpart of the exit you used: an explicit `pair`, else the same kind (stairs to stairs,
     // elevator to elevator), else the first exit back. (John Pork #577: the elevator dropped you at the stairs.)
@@ -310,6 +314,21 @@ export class Sim {
 
   removePlayer(id) { this.players.delete(id); }
 
+  /** Hand control to another controller without respawning the roommate. */
+  transferPlayer(from, to) {
+    const player = this.players.get(from);
+    if (!player || this.players.has(to)) return false;
+    this.players.delete(from);
+    this.players.set(to, player);
+    player.id = to;
+    player.waitExit = null;
+    player.gadgetAim = null;
+    // Projectiles and companions still belong to the same roommate.
+    for (const shot of this.shots) if (shot.owner === from) shot.owner = to;
+    for (const ally of this.allies ?? []) if (ally.owner === from) ally.owner = to;
+    return true;
+  }
+
   /** Co-op doors: park a player at an exit. Returns true when every standing player is parked at it. */
   waitAtExit(id, exitId, dx, dy) {
     const p = this.players.get(id); if (!p || p.waitExit === exitId) return this.allWaiting(exitId);
@@ -337,6 +356,7 @@ export class Sim {
         else if ((inp.mx ?? 0) !== p.arriveMx || (inp.my ?? 0) !== p.arriveMy) p.arriveHold = false;
       }
       p.meleeCd = Math.max(0, p.meleeCd - dt); p.shotCd = Math.max(0, p.shotCd - dt); p.swingT = Math.max(0, p.swingT - dt);
+      if (inp.gadgetBlocked || p.downed || p.sleepT > 0 || p.waitExit) p.gadgetAim = null;
       if (p.downed) { p.vx = p.vy = 0; p.moving = false; continue; }
       if (p.sleepT > 0) { if (p.mods?.sleepGuard) { p.hp = Math.min(this.maxHp(p), p.hp + 15 * dt); p.sta = Math.min(MOVE.stamina + (p.mods.sta ?? 0), (p.sta ?? 0) + 40 * dt); }
         p.sleepT = Math.max(0, p.sleepT - dt); p.vx = p.vy = 0; p.moving = false; if (p.sleepT <= 0) this.events.push({ t: 'wake', id: p.id }); continue; }
@@ -392,7 +412,8 @@ export class Sim {
         } else {
           const rotSpeed = p.rot >= 100 ? 0.65 : p.rot >= 60 ? 0.8 : p.rot >= 25 ? 0.9 : 1;
           const spd = MOVE.speed * (p.morphed ? 1.15 : 1) * (1 + (p.mods?.speed ?? 0)) * (p.playing ? 0.5 : 1) * (p.gonT > 0 ? 0 : 1) * (p.wiredT > 0 ? 1.15 : 1) * (p.mateT > 0 ? 1 + MATE.speed : p.crashT > 0 ? 1 + MATE.crashSpeed : 1) * rotSpeed;
-          p.vx = mx * spd; p.vy = my * spd;
+          const handling = p.gadgetAim && p.gadgetBuild ? 1 - p.gadgetBuild.slow : 1;
+          p.vx = mx * spd * handling; p.vy = my * spd * handling;
         }
       }
       p.moving = Math.hypot(p.vx, p.vy) > 1;
@@ -409,7 +430,7 @@ export class Sim {
       if (p.gonSlim && p.skillCd <= 0 && !(p.gonT > 0)) p.gonSlim = false;
       const busy = p.gonT > 0;                                       // the gonman is occupied
       if (inp.skill && !p.riding && !p.playing && !busy && p.skillCd <= 0) this._ability(p);
-      if (inp.gadget && !p.riding && !p.playing && !(p.gonT > 0)) this._useGadget(p, arcHits);
+      if (inp.gadget || p.gadgetAim) this._stepGadget(p, inp, arcHits);
       // Terraria-style: the attack button uses what's in hand. A melee weapon swings, a gun fires, anything
       // else is used by the scene (consumables etc.). No weapon in hand, no punch.
       const held = p.held ?? 'melee';
@@ -595,15 +616,103 @@ export class Sim {
 
   _gadgetRecharge(p) {
     const model = p.gadgetTimers?.[p.gadget], item = this.gadgetRecharges.get(p.gadgetRoll);
-    const latest = (item?.until ?? 0) > (model?.until ?? 0) ? item : model;
+    const family = p.gadgetTimers?.[GADGETS[p.gadget]?.kind];
+    let latest = (item?.until ?? 0) > (model?.until ?? 0) ? item : model;
+    if ((family?.until ?? 0) > (latest?.until ?? 0)) latest = family;
     return latest?.until > this.playTime ? latest : null;
   }
 
   _gadgetSnapshot(p) {
     if (!p.gadget) return {};
+    if (p.gadgetBuild) {
+      const { remaining, next } = this._builtCharge(p);
+      const locked = this._builtSwitchLock(p);
+      const until = Math.max(next, locked?.until ?? 0);
+      return { gadget: p.gadget, gadgetCharges: locked ? 0 : remaining, gadgetCapacity: p.gadgetBuild.charges,
+        gadgetAiming: !!p.gadgetAim, gadgetCd: until ? Math.ceil((until - this.playTime) * 10) / 10 : 0,
+        gadgetMaxCd: Math.max(p.gadgetBuild.cooldown, locked?.total ?? 0) };
+    }
     const recharge = this._gadgetRecharge(p);
     if (!recharge) return { gadget: p.gadget };
     return { gadget: p.gadget, gadgetCd: Math.ceil((recharge.until - this.playTime) * 10) / 10, gadgetMaxCd: recharge.total };
+  }
+
+  _builtCharge(p) {
+    const { charges, cooldown } = p.gadgetBuild;
+    let state = this.builtGadgetCharges.get(p.gadgetRoll);
+    if (!state) {
+      state = { remaining: charges, next: 0 };
+      this.builtGadgetCharges.set(p.gadgetRoll, state);
+    }
+    if (state.next && this.playTime >= state.next) {
+      const recovered = Math.min(charges - state.remaining, 1 + Math.floor((this.playTime - state.next) / cooldown));
+      state.remaining += recovered;
+      state.next = state.remaining < charges ? state.next + recovered * cooldown : 0;
+    }
+    return state;
+  }
+
+  _builtSwitchLock(p) {
+    const last = p.gadgetTimers?.[p.gadgetBuild.kind];
+    return last?.until > this.playTime && last.roll !== p.gadgetRoll ? last : null;
+  }
+
+  _stepGadget(p, inp, arcHits) {
+    const queued = p.gadgetAim;
+    if (inp.gadgetBlocked || p.riding || p.playing || p.gonT > 0 || (p.gadgetBuild && (p.under > 0 || p.dodgeT > 0))) {
+      p.gadgetAim = null;
+      return;
+    }
+    if (!p.gadgetBuild) {
+      if (inp.gadget) this._useGadget(p, arcHits);
+      return;
+    }
+    if (!queued) {
+      if (!this._builtSwitchLock(p) && this._builtCharge(p).remaining > 0) {
+        p.gadgetAim = { until: this.playTime + p.gadgetBuild.aim, roll: p.gadgetRoll };
+      }
+      return;
+    }
+    if (queued.roll !== p.gadgetRoll) { p.gadgetAim = null; return; }
+    if (this.playTime < queued.until) return;
+    p.gadgetAim = null;
+    const charge = this._builtCharge(p);
+    if (charge.remaining <= 0) return;
+    charge.remaining--;
+    if (!charge.next) charge.next = this.playTime + p.gadgetBuild.cooldown;
+    const roll = p.gadgetRoll, uses = Math.max(0, Number.isSafeInteger(roll.uses) ? roll.uses : 0);
+    (p.gadgetTimers ??= Object.create(null))[p.gadgetBuild.kind] = { roll, until: charge.next, total: p.gadgetBuild.cooldown };
+    roll.uses = uses + 1;
+    this.events.push({ t: 'gadgetUse', id: p.id });
+    if (glitches(roll.build, uses)) {
+      this.events.push({ t: 'gadgetGlitch', id: p.id });
+      return;
+    }
+    this._fireBuiltGadget(p, arcHits);
+  }
+
+  _fireBuiltGadget(p, arcHits) {
+    const { kind, effect: power, range: r } = p.gadgetBuild;
+    if (kind === 'scan') {
+      this.events.push({ t: 'gadgetScan', id: p.id, kind, range: r });
+      return;
+    }
+    const ev = { t: 'gadgetCast', kind, id: p.id, x: p.x, y: p.y, r, power };
+    if (kind === 'arc') ev.points = this._gadgetArc(p, r, power, arcHits);
+    if (kind === 'burst') {
+      const ux = Math.cos(p.aim), uy = Math.sin(p.aim);
+      ev.points = [];
+      for (const e of this.enemies.values()) {
+        const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
+        if (d > r || dx * ux + dy * uy < d * 0.7 || e.boss || e.sahur || e.poiseT > 0 ||
+            COMMITTED_ATTACK.has(e.st) || !this._abilityPathClear(p, e) || Math.hypot(e.kx ?? 0, e.ky ?? 0) >= power) continue;
+        e.kx = ux * power;
+        e.ky = uy * power;
+        ev.points.push([e.x, e.y]);
+      }
+    }
+    if (kind === 'slow') this.gadgetFields.push({ x: p.x, y: p.y, r, until: this.playTime + power });
+    this.events.push(ev);
   }
 
   _useGadget(p, arcHits) {
@@ -616,7 +725,9 @@ export class Sim {
     if (this._gadgetRecharge(p)) return;
     const { cooldown, power } = gadgetStats(def, p.mods);
     const recharge = { until: this.playTime + cooldown, total: cooldown };
-    (p.gadgetTimers ??= Object.create(null))[p.gadget] = recharge;
+    const timers = p.gadgetTimers ??= Object.create(null);
+    timers[p.gadget] = recharge;
+    timers[def.kind] = { ...recharge, roll: p.gadgetRoll };
     // Recharge follows the exact build's roll when it is unworn, dropped or picked up.
     if (p.gadgetRoll) this.gadgetRecharges.set(p.gadgetRoll, recharge);
     const r = def.range;
@@ -907,11 +1018,16 @@ export class Sim {
   _stepEnemies(dt0) {
     for (const g of this.goo) g.ttl -= dt0;
     this.goo = this.goo.filter((g) => g.ttl > 0);
+    this.gadgetFields = this.gadgetFields.filter((field) => field.until > this.playTime);
     for (const e of this.enemies.values()) {
       if (e.slowT > 0) e.slowT = Math.max(0, e.slowT - dt0);
       if (!e.sahur && this.goo.some((g) => Math.hypot(e.x - g.x, e.y - g.y) < g.r)) e.slowT = Math.max(e.slowT ?? 0, 0.6);   // walked through a puddle
       // Stuck in the gonman's stuff: the enemy's whole clock runs slow (moving, cooling down, winding up): almost frozen.
-      const dt = e.slowT > 0 && !e.sahur ? dt0 * (e.boss ? GONMAN.bossSlow : GONMAN.slow) : dt0;
+      const fieldSlow = !e.sahur && this.gadgetFields.some((field) =>
+        Math.hypot(e.x - field.x, e.y - field.y) < field.r && this._abilityPathClear(field, e));
+      const slow = e.slowT > 0 && !e.sahur ? e.boss ? GONMAN.bossSlow : GONMAN.slow
+        : fieldSlow ? e.boss ? 0.8 : 0.45 : 1;
+      const dt = dt0 * slow;
       const def = this._def(e);
       e.cd = Math.max(0, e.cd - dt); e.hurtT = Math.max(0, e.hurtT - dt);
       if (e.sahur) { this._stepSahur(e, def, dt); continue; }
@@ -1367,6 +1483,7 @@ export class Sim {
         ...(e.def && !e.boss ? { vn: e.def.vname, tr: e.def.trait, c: e.def.color, mh: e.def.hp, r: e.def.radius } : {}),
         ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
       goo: this.goo.map((g) => ({ x: Math.round(g.x), y: Math.round(g.y), r: g.r, t: Math.round(g.ttl * 10) / 10 })),
+      gadgetFields: this.gadgetFields.map(({ x, y, r }) => ({ x: Math.round(x), y: Math.round(y), r })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
       allies: (this.allies ?? []).map((a) => ({ x: Math.round(a.x), y: Math.round(a.y), hp: a.hp, mhp: a.maxHp, dn: a.down > 0, st: a.st })),
       hazards: this.hazards.map((h) => ({ x: Math.round(h.x), y: Math.round(h.y), r: h.r, t: Math.round(h.ttl * 10) / 10 })),
