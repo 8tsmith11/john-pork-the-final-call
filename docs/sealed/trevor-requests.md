@@ -86,6 +86,11 @@ fubhyq or irel qenzngvp. gurer fubhyq or n phgfprar jurer jr frr uvz penfuvat qb
 - **Npg 2 be 3**, jurerire gur cnegl vf. N **phgfprar** fubjf uvz snyyvat sebz ybj Rnegu beovg (er-ragel, gur
   fgernx npebff gur fxl, gur vzcnpg), **qrfgeblvat n ybg** ba gur jnl qbja naq yrnivat n **uhtr pengre**.
 - Gura ur **svtugf gur cnegl**, va be nebhaq gur pengre. **Irel qenzngvp.**
+- **Thnenagrrq, 100%** (Geribe, 2026-11-20: "fubhyq or 100% thnenagrrq ertneqyrff bs qrpvfvbaf naq eat"): vg unccraf
+  va **rirel** cynlguebhtu. Ab pubvpr, fgnaqvat, raqvat cngu, qvpr ebyy be frrq pna fxvc vg be fjnc vg bhg. Abgr gung
+  gur Npg 1 Fnuhe vf pbaqvgvbany (ur bayl ercynprf gur Jneqra nsgre guerr qrpyvarq pnyyf), fb guvf fprar zhfg **abg**
+  qrcraq ba univat zrg uvz va Npg 1. N cnegl gung arire fnj uvz fgvyy trgf gur penfuqbja; fgbel pna inel gur
+  qvnybthr, arire jurgure vg unccraf. Ratvar: ab enaqbz tngr ba vg, naq n grfg gung vg sverf ba rirel cngu.
 - Gvrf nyernql va cynpr: gur Fnuhe vf Npg 1'f nygreangr obff (gur Jngpuqbt; vg pna'g or orngra ol sbepr, naq
   nafjrevat gur cubar raqf vg), naq gur frnyrq Npg 3 cyna nyernql unf n Jngpuqbt raqvat (Z3.2). Fgbel qrpvqrf ubj
   ur tbg gb beovg (gur Onebaf' fcnpr fgngvba vf va Npg 3) naq jurgure guvf svtug jbexf qvssreragyl sebz Npg 1'f.
