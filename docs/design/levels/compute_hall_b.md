@@ -39,8 +39,7 @@ grading at 3 a.m. · `S` = npc.chb_student, a student who can't get out of the l
 **Encounters:** three rotlings in the corridors. Doorways are chokes, so the fight is about not getting
 surrounded in a hallway.
 
-**Secrets / side content (to write in polish):** a side job from the TA; Manuel's bench (a secret line if he
-inspects it); the storage room's crate.
+**Optional content:** a side job from the TA, examine text on the lab benches, and the storage room's crate.
 
 **Polish needs:** campus floor and wall tiles, a lecture podium and seats, lab benches with screens, two NPC
 sprites, the bell and the lecture audio, real lines EN/ES, and the TA's quest.
