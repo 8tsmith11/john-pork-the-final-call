@@ -8,6 +8,7 @@ Parsed (best effort; the drafts use slightly different conventions):
   ### node: <id>                         node start
   #### if <cond> / else / otherwise / always / end    conditional blocks
   **NAME:** text   /  INSPECT: text      lines
+  > reveal: act1.quest.clue            flag set when the preceding line is fully shown
   *set x[=v]* / *give item [n]* / *standing faction +n*   effects
   Next: -> id   (anywhere on a line)    jump
   Choices:  - [cond] "text" -> id         choices
@@ -27,6 +28,7 @@ BLOCK = re.compile(r"^(####|#####)\s+(if|else|otherwise|always|end|then)\b[,:]?\
 LINE = re.compile(r"^\*\*([A-Z][A-Z0-9 .'\-]*?)(?:\s*\([^)]*\))?:\*\*\s*(.+)$")
 INSPECT = re.compile(r"^\**INSPECT:?\**:?\s*(.+)$")
 EFFECT = re.compile(r"^\*\s*(sets?|gives?|standing|pay)\s+([^*]+)\*\s*$", re.I)   # "*Set x*" and "*Sets x.*" both apply
+REVEAL = re.compile(r"^>\s*reveal:\s*(act\d+\.[\w.\-]+)\s*$")
 GOTO = re.compile(r"Next:\**\s*->\s*`?([\w.\-]+)`?")
 BAREJUMP = re.compile(r"^->\s*`?([\w.\-]+)`?\s*$")
 CONDJUMP = re.compile(r"^-\s+((?:\[[^\]]*\]\s*)+)->\s*`?([\w.\-]+)`?\s*$")
@@ -94,6 +96,10 @@ def parse(text):
             continue
         if line.startswith("## ") or line.startswith("# "):
             node = None; continue
+        reveal = REVEAL.match(line)
+        if reveal and node["lines"] and not in_choices:
+            node["lines"][-1].setdefault("reveal", []).append(reveal.group(1))
+            continue
         es = re.match(r"^>\s*es:\s*(.+)$", line)
         if es:
             txt = es.group(1).strip().strip('"').strip()
