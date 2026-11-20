@@ -1460,6 +1460,41 @@ try {
   if (savedPhaserForCraft === undefined) delete globalThis.Phaser;
   else globalThis.Phaser = savedPhaserForCraft;
 }
+test('a guest interacting with the ASTER stairs waits for players who walk up later', () => {
+  const map = MAPS_FOR_TEST.aster_hall;
+  const stairs = map.objects.find((obj) => obj.action === 'exit' && obj.id.includes('stairs'));
+  const sim = new Sim(map);
+  sim.addPlayer('host', 'trevor');
+  sim.addPlayer('guest1', 'manuel');
+  sim.addPlayer('guest2', 'michael');
+  const peer = sim.players.get('guest1');
+  const handlers = {}, taken = [];
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', character: 'trevor', localId: 'host', map, sim,
+    save: { flags: {}, world: { killed: [] } },
+    events: { once() {} }, time: { now: 0, addEvent() {} },
+    net: { on: (type, fn) => { handlers[type] = fn; } },
+    _tryExit: (obj) => taken.push(obj.id),
+  });
+  scene._wireNet();
+  peer.x = stairs.x * 16 + 80;
+  peer.y = stairs.y * 16 + 8;
+  handlers.msg('guest1', { t: 'exit', obj: stairs.id });
+  assert.equal(peer.waitExit ?? null, null);
+  assert.deepEqual(taken, [], 'a guest must be near the stairs');
+
+  peer.x = stairs.x * 16 + 8;
+  peer.y += 16;
+  handlers.msg('guest1', { t: 'exit', obj: stairs.id });
+  assert.equal(peer.waitExit, stairs.id);
+  assert.deepEqual(taken, []);
+  scene._hostEvents([{ t: 'bumpExit', by: 'host', id: stairs.id, dx: 0, dy: -1 }]);
+  assert.deepEqual(taken, [], 'the third player is still away');
+  scene._hostEvents([{ t: 'bumpExit', by: 'guest2', id: stairs.id, dx: 0, dy: -1 }]);
+  assert.deepEqual(taken, [stairs.id]);
+  assert.ok([...sim.players.values()].every((p) => p.waitExit === null));
+});
+
 test('puzzle kit in co-op: a guest\'s move runs on the host, progress stays on the host, the reward goes once to the guest who solved it', async () => {
   const { PUZZLES } = await import('../src/content/puzzles.js');
   const pz = PK.definePuzzle({ id: 'coop_t', kind: 'cycle', parts: ['obj.a', 'obj.b'], states: ['0', '1'], answer: ['1', '1'], reward: { text: 'done', textEs: 'listo', item: 'item.mat_scrap', money: 9 } });
