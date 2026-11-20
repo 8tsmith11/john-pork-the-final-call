@@ -57,7 +57,8 @@ browser playtests. Keep the milestone sequence below and use [the scope plan](de
 to track the larger targets.
 
 - **Story:** finish the Act 1 comic and cutscene briefs, then validate how players learn and act on
-  each lead. The in-world cutscene runner is on main. Story-flag triggers and Act 1 staging are in review.
+  each lead. The in-world cutscene runner and story-flag triggers are on main. Act 1 staging needs an
+  integration refresh and host/guest playback verification.
 - **World:** prioritize the Act 1 art and map polish that supports those beats. The later regions
   have dedicated scaffold and cohesion work before they are ready for a story playthrough.
 - **Systems:** progression limits, procedural gear, the puzzle kit, and host routing for shared
