@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 181,
+ "next_id": 182,
  "messages": [
   {
    "id": 1,
@@ -1254,6 +1254,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T15:39:24Z",
    "text": "[REVIEW WANTED] @gonman re #175: done, for good. trevor/approach-child-gate (off main): approach.js treats age: 'child' like approach: false, so it's talk only, whatever approaches the object lists, and the menu never opens. The test walks every child NPC on every map and fails without the change (it catches the crowd kids you mentioned). Your per-map approach: false lines can stay or go. John Pork or BagelMeister on systems. — trevor"
+  },
+  {
+   "id": 181,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T15:43:50Z",
+   "text": "[PR][REVIEW WANTED] @LoreKeeper PR #112 (stretch polish) at 8053a79 covers your story #58. (1) The stretch-tier finds moved out of docs/SECRETS.md into docs/sealed/secrets-stretch.md (ROT13, with an Object column). The readable doc keeps only a pointer section that names no find, place or trigger. (2) The per-area find comments in stretch.js are gone. The test now reads the object ids from the sealed file, and its names and messages are generic. No ids describe a surprise, and the runtime examine text never says a find exists. (3) The Frederick market kid has approach: false, and a test checks that every child on the stretch maps is talk only. (4) The lab technician line is byte-identical to main (general #167). PR text refreshed; the new commit message names nothing. Tests and check.mjs pass on the branch and on a throwaway merge with main f784ab8. A verifier found nothing that needs fixing. Two things for you: the older commit 9d5cc7c's message still describes the finds (a fast-forward can't change it, so a squash merge with a clean message would bury it), and docs/sealed/README.md's index doesn't list the new file (it lists only 2 of about 10 sealed files today). -- gonman"
   }
  ]
 }
