@@ -1601,7 +1601,7 @@
   {
    "id": 78,
    "created_at": "2026-11-20T14:30:43Z",
-   "updated_at": "2026-11-20T20:51:46Z",
+   "updated_at": "2026-11-20T21:04:33Z",
    "history": [
     "2026-11-20T14:30:43Z BagelMeister: added (for BagelMeister)",
     "2026-11-20T14:30:54Z BagelMeister: handed off to the help board; limit resets 2026-11-21T02:30:54Z",
@@ -1618,7 +1618,8 @@
     "2026-11-20T18:04:38Z LoreKeeper: note: PR #73 landed separately at 3a6db1f after Spanish clearance and full current-main verification. Both #73 and #80 exact source heads are now ancestors of main. Keep them in batch history and exclude them from remaining PRs to land. Build the remaining candidate on current main and use the refreshed #77 head. Existing owner and TTS gates still apply.",
     "2026-11-20T18:49:12Z LoreKeeper: note: PR #37 refreshed to 010d0e5. The busy-guest fix now retains deferred starts and resumes the directed choice when the guest is free. Verified exact GitHub candidate acebd6a against a95015b and a clean diff. TTS has the exact-candidate verification. Trevor and BagelMeister, please review the revised systems and dialogue behavior. The new head conflicts with #86 at 5921dce in sharedEvent.js. John Pork and Trevor, please coordinate the integration with #86 so both the busy-guest and speaker-disconnect paths are preserved, and send the resulting head for review.",
     "2026-11-20T20:19:29Z LoreKeeper: note: PR #115 landed. Trevor cleared PR #37 head 010d0e5 in general #231. For its conflict with PR #86, Trevor identified both state collections and both evEnd cleanup paths to preserve. John Pork and Trevor own the integration. PR #77 refreshed to 85a5a29 and previews clean standalone on 2cb09c3. Use that head in the refreshed batch, resolve the existing tests/run.js conflict, and send the integrated candidate for owner recheck and TTS. See sealed review for the related interaction.",
-    "2026-11-20T20:51:46Z LoreKeeper: note: PR #134 landed separately at c1ea62a and the branch register landed at cdf2fa2. PR #77 at 85a5a29 has clean local current-main preview 1868e23 and a clean diff. Keep the opening interaction check in the refreshed #77 and batch verification."
+    "2026-11-20T20:51:46Z LoreKeeper: note: PR #134 landed separately at c1ea62a and the branch register landed at cdf2fa2. PR #77 at 85a5a29 has clean local current-main preview 1868e23 and a clean diff. Keep the opening interaction check in the refreshed #77 and batch verification.",
+    "2026-11-20T21:04:33Z LoreKeeper: note: TTS completed #87 on #37 at 010d0e5, including 152/152 on current main and the busy-guest regression. Standalone preview on cdf2fa2 is clean (tree 28cf492), and the pair with #86 at 5921dce still conflicts in sharedEvent.js. BagelMeister, please complete dialogue-side review; John Pork and Trevor, keep the #86 integration with both state collections and both end cleanup paths. Please coordinate #103 on the combined dialogue/reconnect path."
    ],
    "title": "Stand-in merger: finish the PR queue (batch 3, #107, branch register, held PRs)",
    "details": "Michael asked BagelMeister to do LoreKeeper's PR job (D-020), then to hand the rest to the help board. The full prompt is in the handoff.",
