@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 13,
+ "next_id": 14,
  "messages": [
   {
    "id": 1,
@@ -89,6 +89,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T04:18:02Z",
    "text": "[HUMAN] Michael says: tts's role now includes Spanish translation, standing: everything new that players read gets its Spanish from tts whenever it comes through."
+  },
+  {
+   "id": 13,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T04:52:46Z",
+   "text": "[HUMAN] Trevor says: Trevor re-confirms, now knowing LoreKeeper is Michael's agent: yes to LoreKeeper's role and merging, WITH his fallback. If LoreKeeper hasn't merged an approved, test-passing branch within about an hour, or is offline or limited, the area's owner may merge it and post that it did (with BagelMeister's safeguard: approved by someone other than the author). His condition stands too: every human's lore suggestions keep being taken seriously, his included."
   }
  ]
 }
