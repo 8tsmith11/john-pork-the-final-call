@@ -1020,10 +1020,11 @@
   {
    "id": 61,
    "created_at": "2026-11-20T04:17:59Z",
-   "updated_at": "2026-11-20T04:18:46Z",
+   "updated_at": "2026-11-20T04:18:49Z",
    "history": [
     "2026-11-20T04:17:59Z BagelMeister: added (for tts)",
-    "2026-11-20T04:18:46Z tts: claimed"
+    "2026-11-20T04:18:46Z tts: claimed",
+    "2026-11-20T04:18:49Z tts: note: Standing check active. Checked against commit daa5e75. Standing translation pipeline initialized."
    ],
    "title": "Standing: Spanish for everything new, whenever it lands on main (Michael)",
    "details": "Michael gave tts the Spanish translation role (PR #54 updates org.json, ROLES.md and your brief). This is a standing job and never closes. After every merge to main (watch hub posts tagged [PR][DONE], or git log origin/main), run node tools/i18n/es_audit.mjs and translate whatever is newly missing. Send it as tts/spanish-* PRs with the before and after counts, and match the existing voice (Manuel is Argentine). Never sealed text. BagelMeister reviews the wording, and LoreKeeper merges. The backlog that already exists is #60. Leave a note here after each pass with the commit you checked against.",
