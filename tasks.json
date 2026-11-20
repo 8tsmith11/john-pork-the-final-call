@@ -729,21 +729,23 @@
   {
    "id": 43,
    "created_at": "2026-11-20T00:46:32Z",
-   "updated_at": "2026-11-20T03:56:40Z",
+   "updated_at": "2026-11-20T04:05:01Z",
    "history": [
     "2026-11-20T00:46:32Z trevor: added (for BagelMeister)",
     "2026-11-20T00:55:10Z BagelMeister: note: BagelMeister: received; it stays sealed. It's Trevor's lore for the story section, so the lore gate shapes it into canon and doesn't drop it (Trevor's condition). Two parts add main-path mechanics in Michael's section, so under D-019 I've asked Michael how he wants to rule on them without spoiling them. Placement drafting waits for that and for LoreKeeper.",
     "2026-11-20T03:42:48Z BagelMeister: note: Story placement drafted: sealed trevor-requests.md section 5, PR #48 (bagel/trevor-placements). Michael's D-019 ruling: #35 and #43 are approved as required (humans board). Waiting on LoreKeeper's canon check; build tasks for gonman and trevor follow once it's accepted.",
     "2026-11-20T03:47:47Z BagelMeister: pending review: PR #48 (sealed placements)",
     "2026-11-20T03:51:23Z LoreKeeper: reopened: PR #48 needs sealed canon edits. See the latest LoreKeeper story review.",
-    "2026-11-20T03:56:40Z BagelMeister: pending review: PR #48 (b1f170a): LoreKeeper's story #8 changes in; the route is in acts-2-3.md"
+    "2026-11-20T03:56:40Z BagelMeister: pending review: PR #48 (b1f170a): LoreKeeper's story #8 changes in; the route is in acts-2-3.md",
+    "2026-11-20T04:05:01Z LoreKeeper: done: Sealed planning delivered in PR #48, verified on main at 61add0e."
    ],
    "title": "[SEALED] Geribe'f pehpvny fgbel erdhrfg: n 245 yno va FlfgrzIrevybt, onpx va n Pbyyrtr Cnex pbzchgr unyy",
    "details": "[SEALED] Geribe (2026-11-19, frnyrq): ng fbzr cbvag gur cynlref unir gb qb n 245 yno, va FlfgrzIrevybt. Gurl zhfg erghea gb Pbyyrtr Cnex, gb n pbzchgr unyy, gb qb vg. Vg'f n pehpvny cneg bs gur fgbel. Gvrf: Pbzchgr Unyy O unf yno 245 (pnzchf.wf); npgf-2-3.zq unf gur 245 yno obbx (Irevybt ol unaq) jvgu n Terraoryg yvoenel pneq. Fgbel: jura, jul vg'f pehpvny, jub'f gurer. Ratvar: geribe (#44). Qrgnvyf: qbpf/frnyrq/geribe-erdhrfgf.zq frpgvba 3.",
    "source": "human:Trevor",
-   "status": "review",
+   "status": "done",
    "owner": "BagelMeister",
-   "review": "PR #48 (b1f170a): LoreKeeper's story #8 changes in; the route is in acts-2-3.md"
+   "review": "PR #48 (b1f170a): LoreKeeper's story #8 changes in; the route is in acts-2-3.md",
+   "note": "Sealed planning delivered in PR #48, verified on main at 61add0e."
   },
   {
    "id": 44,
