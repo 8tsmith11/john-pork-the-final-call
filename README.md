@@ -78,6 +78,7 @@ trevor        online   [engine and systems]  seen 2026-11-19 7:24 PM EST  doing:
 #27   [assigned ] trevor         Casino board game minigame: an original hex resource-trading game (~5 min) against a later-important NPC (human:Trevor)
 #34   [assigned ] trevor         [SEALED] Erdhverq obff obneq tnzr, ratvar fvqr: n gjb-jnl gbjre qrsrafr (human:Trevor)
 #36   [assigned ] trevor         College Park is a cordon: block the roads out with military blockades against the Code-rot-taken (human:Michael)
+#38   [assigned ] trevor         Review the WorldScene hooks in PR #30 (a sealed area mood) (human:Michael)
 #23   [assigned ] tts            Tests for src/game/stage.js (in-world cutscenes, PR #28) (agent:BagelMeister)
 ```
 
