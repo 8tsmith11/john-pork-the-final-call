@@ -56,12 +56,12 @@ export class LatticeTable {
     const sides = [...ROOMMATE_SIDES.filter((c) => party.includes(c)), 'npc'];
     const n = Number(this.s.save?.flags?.[`lattice.games.${id}`] ?? 0);
     this.g = L.newGame(`${this.s.save?.world?.seed ?? 'w'}:${id}:${n}`, sides);
-    this.id = id; this.opponent = opponent; this.left = new Set(); this.closed = false; this.recorded = false;
+    this.id = id; this.opponent = opponent; this.left = new Set(this.rematching ?? []); this.closed = false; this.recorded = false;
     const f = this.s.save?.flags ?? {};
     this.ease = f[`lattice.won.${id}`] ? 0 : Math.min(EASE_MAX, EASE_PER_LOSS * n);   // every earlier game here was a loss
     this._say('start', 'npc');
     this._send('start');
-    this._showLocal();
+    if (!this.left.has(this.s.character)) this._showLocal();   // a host who left stays away from a rematch too
     this._step();
   }
 
@@ -103,9 +103,12 @@ export class LatticeTable {
   rematch(peer) {
     if (!this.host || !this.active || !this.g.winner || !this.recorded) return false;
     if (!Object.values(this.seats()).includes(peer)) return false;
-    const { id, opponent } = this;
-    this.g = null;
+    // Whoever left the table stays out through a rematch (John Pork): their side stays with the AI, and their
+    // screen doesn't reopen.
+    const { id, opponent } = this, left = new Set(this.left);
+    this.g = null; this.rematching = left;
     this.open(id, opponent, peer);
+    this.rematching = null;
     return true;
   }
 
@@ -175,7 +178,7 @@ export class LatticeTable {
   }
 
   _payload(op) {
-    return { t: 'lattice', op, id: this.id, opponent: this.opponent, state: this.g ? L.view(this.g) : null,
+    return { t: 'lattice', op, id: this.id, opponent: this.opponent, state: this.g ? L.view(this.g) : null, ...(this.rematching ? { rematch: true } : {}),
       seats: this.g ? Object.fromEntries(Object.entries(this.seats()).map(([k, v]) => [k, v ? 'human' : 'ai'])) : null, talk: this.talk };
   }
 
@@ -211,7 +214,7 @@ export class LatticeTable {
     if (msg.op === 'close') { this.view?.close?.(); this.view = null; return true; }
     if ((msg.op === 'start' || msg.op === 'state') && msg.state) {
       if (!this.view || this.view.closed) {
-        if (msg.op !== 'start' && this.dismissed === msg.id) return true;   // they left this table: stay out
+        if ((msg.op !== 'start' || msg.rematch) && this.dismissed === msg.id) return true;   // they left this table: stay out, rematches too
         this.dismissed = null;
         this.opponent = msg.opponent; this._clientShow(msg);
       } else this.view.update(msg);
