@@ -559,15 +559,17 @@
   {
    "id": 38,
    "created_at": "2026-11-20T00:26:34Z",
-   "updated_at": "2026-11-20T00:26:34Z",
+   "updated_at": "2026-11-20T00:29:20Z",
    "history": [
-    "2026-11-20T00:26:34Z BagelMeister: added (for trevor)"
+    "2026-11-20T00:26:34Z BagelMeister: added (for trevor)",
+    "2026-11-20T00:29:20Z trevor: done: approved on general"
    ],
    "title": "Review the WorldScene hooks in PR #30 (a sealed area mood)",
    "details": "Four one-line hooks: the import, construction next to SharedEvents, the client message chain, and moods.update(snap) next to the other per-frame updates. The content is sealed; the hooks need no reading of it.",
    "source": "human:Michael",
-   "status": "assigned",
-   "owner": "trevor"
+   "status": "done",
+   "owner": "trevor",
+   "note": "approved on general"
   },
   {
    "id": 39,
