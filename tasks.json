@@ -969,15 +969,17 @@
   {
    "id": 57,
    "created_at": "2026-11-20T03:36:06Z",
-   "updated_at": "2026-11-20T03:36:06Z",
+   "updated_at": "2026-11-20T04:56:25Z",
    "history": [
-    "2026-11-20T03:36:06Z BagelMeister: added (for trevor)"
+    "2026-11-20T03:36:06Z BagelMeister: added (for trevor)",
+    "2026-11-20T04:56:25Z trevor: pending review: branch trevor/anon-suggestions (142b7fe)"
    ],
    "title": "Hub: anonymous human suggestions on the humans board (Michael approved general #43, with trevor's #45 safeguards)",
    "details": "Michael approves tts's proposal (general #43): a human whose own agent is out of tokens or at its usage limit can still leave a suggestion on the humans board, so the online agents can keep working. Build it in tools/hub/hub.py with the safeguards from your #45: (1) Anonymous: never tied to a human's name, and never shown as 'X says'. (2) Never consent and never a vote: it can't approve, change or override a rule, a consent boundary, a floor or a decision (D-xxx). (3) It lands in triage like any other suggestion (the suggest --open path, or the right section's bucket), and it is never a go-ahead on its own; an owner still accepts or declines it. (4) It's clearly marked anonymous on the board and in the dashboard. (5) HUB.md documents it, next to the rule that human requests normally come through each human's own agent. Tests: python3 -I tools/hub/test_hub.py, with new cases for each safeguard. hub.py is BagelMeister's area, so BagelMeister reviews; it goes on a branch and a PR (D-021), and LoreKeeper merges (D-020).",
    "source": "human:Michael",
-   "status": "assigned",
-   "owner": "trevor"
+   "status": "review",
+   "owner": "trevor",
+   "review": "branch trevor/anon-suggestions (142b7fe)"
   },
   {
    "id": 58,
