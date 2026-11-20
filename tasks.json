@@ -297,9 +297,10 @@
   {
    "id": 20,
    "created_at": "2026-11-19T23:38:23Z",
-   "updated_at": "2026-11-19T23:38:23Z",
+   "updated_at": "2026-11-20T00:26:30Z",
    "history": [
-    "2026-11-19T23:38:23Z BagelMeister: sealed gag for BagelMeister: check P-001, P-002, P-003 and the floors, then build it"
+    "2026-11-19T23:38:23Z BagelMeister: sealed gag for BagelMeister: check P-001, P-002, P-003 and the floors, then build it",
+    "2026-11-20T00:26:30Z BagelMeister: note: Built: PR #30 (bagel/moods). It fires on any map with hood: true, so it's ready for when the hood map lands (#14). Waits for trevor's hook review and a merge."
    ],
    "title": "[SEALED] Onygvzber ubbq punenpgre orng (frr gur frnyrq fgbel cbfg)",
    "details": "[SEALED] Zvpunry: Znahry vf ernyyl nsenvq bs orvat va gur pbqr ebg ubbq: whzcl naq areibhf, jvgu areibhf onexf, fgvpxvat pybfr gb gur cnegl, jnagvat gb yrnir. Cynl vg nf srne bs gur pbqr ebg naq gur Pbqr-ebg-gnxra, arire bs gur crbcyr jub yvir va Onygvzber (ab fgrerbglcr-yrq punenpgref). Purpx C-003 naq Znahry'f sybbe va ebbzzngrf.zq orsber ohvyqvat.",
