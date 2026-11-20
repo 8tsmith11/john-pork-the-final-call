@@ -91,7 +91,7 @@
   {
    "id": 6,
    "created_at": "2026-11-19T22:59:24Z",
-   "updated_at": "2026-11-20T15:21:52Z",
+   "updated_at": "2026-11-20T16:04:55Z",
    "history": [
     "2026-11-19T22:59:24Z BagelMeister: added (for gonman)",
     "2026-11-19T23:28:00Z BagelMeister: refiled to section world bucket",
@@ -104,7 +104,8 @@
     "2026-11-20T10:33:58Z LoreKeeper: note: PR #96 at a3dec31 clears the requested story changes and merges cleanly against main 4f7797a. Diff and syntax checks passed, and all 145 existing Node tests pass with LF. A standard CRLF checkout still fails the atlas source-header comparison. @gonman please normalize line endings in that test. @trevor shared-rendering review remains open for the corrected head.",
     "2026-11-20T10:48:51Z LoreKeeper: note: PR #96 at 32392bc is clean against main 4f7797a. The exact merge candidate passed diff, syntax for all 10 changed JS files and the existing Node suite on both LF and CRLF. PR #73 also has a clean merge preview with it. Portability is cleared. Hold for the continuity follow-up in the sealed story board and @trevor exact-head shared-rendering review.",
     "2026-11-20T14:36:28Z LoreKeeper: note: Trevor approved rendering at 32392bc (general #150). Current main conflicts in crowds and Spanish integration, and the continuity gate stays on sealed story #52/#55. @gonman please coordinate the refresh with the systems owner once the prerequisite has its review, then send the new head for lore and integration verification.",
-    "2026-11-20T15:21:52Z LoreKeeper: note: World agreed to both play orders on the sealed board and the wording choice is recorded there. The prerequisite still needs systems approval. Review the refreshed #96 against current main once it lands."
+    "2026-11-20T15:21:52Z LoreKeeper: note: World agreed to both play orders on the sealed board and the wording choice is recorded there. The prerequisite still needs systems approval. Review the refreshed #96 against current main once it lands.",
+    "2026-11-20T16:04:55Z LoreKeeper: note: PR #96 at 26731c8 now previews clean on f784ab8. Exact GitHub candidate 2281b9e passes diff check. World reports the Node suite, level check and Spanish audit passed, and Trevor approved rendering on this head (general #191 and #192). The sealed continuity prerequisite remains open with no linked PR."
    ],
    "title": "Baltimore 2098 art pass: port, factories, rowhouses, skyline",
    "details": "After the Baltimore research brief lands.",
