@@ -1070,15 +1070,27 @@ test('Ping rework (hub #66): the pulse jolts, a marked kill hands the pinger coo
   assert.ok(!(sim.enemies.get('far').marked > 0), 'out of reach: not marked');
   // Trevor kills a marked one: cooldown goes back to Michael (who pinged it), and the mark jumps to the nearest unmarked
   sim.enemies.clear(); mi.skillCd = 5;
-  foe('a', 30, 1); foe('b', 60, 200); sim.enemies.get('a').marked = 3; sim.enemies.get('a').markedBy = 'mi';
+  foe('a', 30, 1); foe('b', 60, 200); sim.enemies.get('a').marked = 3; sim.enemies.get('a').markedBy = 'michael';
   sim._hurtEnemy(sim.enemies.get('a'), 10, 0, 0, 'tr');
   assert.ok(Math.abs(mi.skillCd - (5 - PING.refund)) < 1e-9, 'the pinger is refunded, whoever lands the kill');
-  assert.ok(sim.enemies.get('b').marked > 0 && sim.enemies.get('b').markedBy === 'mi', 'the mark jumped on');
+  assert.ok(sim.enemies.get('b').marked > 0 && sim.enemies.get('b').markedBy === 'michael', 'the mark jumped on');
   assert.ok(sim.events.some((e) => e.t === 'pingJump'));
   // Riff's rattle (no owner) neither refunds nor jumps
   sim.enemies.clear(); mi.skillCd = 5; foe('c', 30, 1); foe('d', 60, 200); sim.enemies.get('c').marked = 3;
   sim._hurtEnemy(sim.enemies.get('c'), 10, 0, 0, 'tr');
   assert.equal(mi.skillCd, 5); assert.ok(!(sim.enemies.get('d').marked > 0));
+  // John Pork: Ping, let the mark expire, Riff-rattle it, kill it: no refund, no jump
+  sim.enemies.clear(); foe('e', 30, 200); foe('f', 60, 200); mi.skillCd = 0; sim._ability(mi);
+  for (let i = 0; i < Math.ceil(PING.mark * 60) + 5; i++) sim.step(1 / 60, new Map());
+  const e = sim.enemies.get('e'); assert.ok(!(e.marked > 0) && !e.markedBy, 'the mark and its owner expire together');
+  mi.skillCd = 3; e.marked = 3;   // what Riff's rattle does: a mark with no owner
+  sim._hurtEnemy(e, 999, 0, 0, 'tr');
+  assert.equal(mi.skillCd, 3, 'no refund from an expired Ping'); assert.ok(!(sim.enemies.get('f')?.marked > 0), 'no jump either');
+  // the owner is the roommate: control of Michael changing hands keeps the credit
+  sim.enemies.clear(); foe('g', 30, 1); sim.enemies.get('g').marked = 3; sim.enemies.get('g').markedBy = 'michael';
+  sim.removePlayer('mi'); sim.addPlayer('ai:michael', 'michael'); const ai = sim.players.get('ai:michael'); ai.skillCd = 4;
+  sim._hurtEnemy(sim.enemies.get('g'), 10, 0, 0, 'tr');
+  assert.ok(Math.abs(ai.skillCd - (4 - PING.refund)) < 1e-9, 'whoever runs Michael now gets the refund');
 });
 
 const Jobs = await import('../src/content/jobs.js');

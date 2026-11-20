@@ -472,7 +472,8 @@ export class Sim {
   _stepDecoys(dt) {
     for (const dc of this.decoys) dc.ttl -= dt;
     this.decoys = this.decoys.filter((dc) => dc.ttl > 0 && dc.hp > 0);
-    for (const e of this.enemies.values()) if (e.marked > 0) e.marked -= dt;
+    // An expired mark loses its owner too, so a later kill can't refund Ping or jump a mark (John Pork, PR #88).
+    for (const e of this.enemies.values()) if (e.marked > 0 && (e.marked -= dt) <= 0) e.markedBy = null;
   }
 
   _stepHazards(dt) {
@@ -516,7 +517,9 @@ export class Sim {
       const r = PING.r * Math.min(1.8, ap), hit = [];
       for (const e of this.enemies.values()) if (Math.hypot(e.x - p.x, e.y - p.y) < r) hit.push(e);
       for (const e of hit) {
-        e.marked = PING.mark * ap; e.markedBy = p.id;   // marked first, so the jolt itself lands marked
+        // marked first, so the jolt itself lands marked. The owner is the roommate, not the player id, so it survives
+        // a human and the AI trading control of Michael mid-fight (John Pork, PR #85).
+        e.marked = PING.mark * ap; e.markedBy = p.character;
         if (e.boss) continue;   // bosses shrug the jolt off (their fight lengths are tuned: Trevor, the Switchman); still marked
         this._hurtEnemy(e, Math.round(PING.dmg * ap), 0, 0, p.id);
         if (this.enemies.has(e.id)) e.hurtT = Math.max(e.hurtT ?? 0, PING.stagger);
@@ -652,7 +655,7 @@ export class Sim {
   /** A marked thing died (hub #66): whoever pinged it gets cooldown back, and the mark jumps on to the nearest
    *  unmarked enemy in reach, keeping what time it had left. */
   _pingKill(e) {
-    const m = this.players.get(e.markedBy);
+    const m = [...this.players.values()].find((q) => q.character === e.markedBy);
     if (m?.character === 'michael' && m.skillCd > 0) m.skillCd = Math.max(0, m.skillCd - PING.refund);
     let best = null, bd = PING.jumpR;
     for (const o of this.enemies.values()) { const d = Math.hypot(o.x - e.x, o.y - e.y); if (!(o.marked > 0) && d < bd) { best = o; bd = d; } }
