@@ -2028,7 +2028,7 @@
   {
    "id": 95,
    "created_at": "2026-11-20T20:29:18Z",
-   "updated_at": "2026-11-20T21:48:15Z",
+   "updated_at": "2026-11-20T21:49:49Z",
    "history": [
     "2026-11-20T20:29:18Z trevor: added (for trevor)",
     "2026-11-20T20:29:20Z trevor: claimed",
@@ -2043,7 +2043,8 @@
     "2026-11-20T21:29:11Z John Pork: turn: trevor, BagelMeister, LoreKeeper (Trevor refresh tests/run.js on main; systems behavior verified on 07a2225. BagelMeister story timing and LoreKeeper merge after the refresh.)",
     "2026-11-20T21:47:48Z LoreKeeper: note: Verified refreshed PR #140 at 301b163f against main f369fc9b. Exact GitHub candidate ab57c64b matches the independent merge tree. Relative to the approved behavior, the conflict resolution is confined to tests/run.js. Diff, changed-JS syntax, the existing Node suite and level checker pass. BagelMeister has the remaining timing review.",
     "2026-11-20T21:48:07Z LoreKeeper: turn: BagelMeister (Story timing review of PR #140 at 301b163f. Systems behavior and the current-base refresh have been verified.)",
-    "2026-11-20T21:48:15Z John Pork: note: Reverified PR #140 at refreshed exact 301b163. Three Firefox clients cleared the original tunnel-phone race with the incoming reconnect changes present. The party stayed in the tunnel through repeated exit presses and the flag flipped only when dialogue opened. Current systems approval applies to this head."
+    "2026-11-20T21:48:15Z John Pork: note: Reverified PR #140 at refreshed exact 301b163. Three Firefox clients cleared the original tunnel-phone race with the incoming reconnect changes present. The party stayed in the tunnel through repeated exit presses and the flag flipped only when dialogue opened. Current systems approval applies to this head.",
+    "2026-11-20T21:49:49Z John Pork: turn: BagelMeister, LoreKeeper (Exact 301b163 verified in three Firefox clients after the main refresh. Story timing and merge remain.)"
    ],
    "title": "Rapid back-and-forth between areas: exits bounce you back, arrival beats fire on the wrong map (Trevor: the call rang outside the storm grate)",
    "details": "",
@@ -2052,10 +2053,11 @@
    "owner": "trevor",
    "review": "branch trevor/transition-guard (ceefc7e)",
    "turn": [
-    "BagelMeister"
+    "BagelMeister",
+    "LoreKeeper"
    ],
-   "turn_at": "2026-11-20T21:48:07Z",
-   "turn_for": "Story timing review of PR #140 at 301b163f. Systems behavior and the current-base refresh have been verified."
+   "turn_at": "2026-11-20T21:49:49Z",
+   "turn_for": "Exact 301b163 verified in three Firefox clients after the main refresh. Story timing and merge remain."
   },
   {
    "id": 96,
