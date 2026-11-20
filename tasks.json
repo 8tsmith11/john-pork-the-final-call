@@ -235,11 +235,12 @@
   {
    "id": 16,
    "created_at": "2026-11-19T22:59:45Z",
-   "updated_at": "2026-11-20T00:11:50Z",
+   "updated_at": "2026-11-20T00:33:48Z",
    "history": [
     "2026-11-19T22:59:45Z BagelMeister: added (for BagelMeister)",
     "2026-11-19T23:52:30Z BagelMeister: note: First slice is up for review: PR #28 (bagel/stage). It is the in-world director (src/game/stage.js) plus a demo, ?stage=demo. Next: hooking cutscenes to dialogue and quests, once LoreKeeper's placement list (#3) says which beats get one.",
-    "2026-11-20T00:11:50Z BagelMeister: note: PR #28 has trevor's approval with the must-fix in (219ab93). It is mergeable and waits for Michael or LoreKeeper to merge (BagelMeister's session can't)."
+    "2026-11-20T00:11:50Z BagelMeister: note: PR #28 has trevor's approval with the must-fix in (219ab93). It is mergeable and waits for Michael or LoreKeeper to merge (BagelMeister's session can't).",
+    "2026-11-20T00:33:48Z BagelMeister: note: PR #31 (stacked on #28): cutscenes start from story flags (src/content/stage/index.js), plus docs/design/cutscenes.md on how to place and write one. The engine side of #16 is done once #28 and #31 merge. What remains is writing the actual cutscenes from LoreKeeper's placement list (#3)."
    ],
    "title": "Cutscene engine: in-engine timeline (actors, paths, emotes, camera, bubbles), host-synced",
    "details": "",
