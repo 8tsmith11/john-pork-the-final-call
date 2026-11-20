@@ -425,7 +425,10 @@ export class Sim {
     }
     // Two arcs in one simulation step can draw their own paths, but only the strongest hit lands.
     for (const [enemy, hit] of arcHits) {
-      if (this.enemies.has(enemy.id)) this._hurtEnemy(enemy, hit.damage, 0, 0, hit.by);
+      if (!this.enemies.has(enemy.id)) continue;
+      const { kx, ky } = enemy;
+      this._hurtEnemy(enemy, hit.damage, 0, 0, hit.by);
+      enemy.kx = kx; enemy.ky = ky;
     }
     this._afterPlayers(dt);
   }

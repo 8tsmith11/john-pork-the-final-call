@@ -2713,6 +2713,9 @@ test('Vector Actuator shoves one ordinary contact and Arc Splicer coalesces over
   assert.equal(arc.first.hp, 78);
   assert.equal(arc.second.hp, 86);
   assert.equal(arc.sim.events.filter((event) => event.t === 'gadgetCast').length, 2);
+  const mixed = scenario(); mixed.a.gadget = 'item.vector_actuator'; mixed.b.gadget = 'item.arc_splicer';
+  mixed.cast('a', 'b');
+  assert.ok(mixed.first.kx > 0 && mixed.first.hp === 82, 'arc damage preserves displacement from a different gadget');
 });
 
 test('melee and ranged tuning keep positive intervals and use the live item roll', () => {
