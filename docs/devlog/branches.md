@@ -21,6 +21,9 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `tts/spanish-act1` | GitHub | Merged in `b2bf986` (PR #59) |
+| `bagel/retry-line` | GitHub | Merged in `41f18ff` (PR #29) |
+| `lorekeeper/stage-register-and-roadmap` | GitHub | Merged in `7d55180` (PR #55) |
 | `bagel/stage` | GitHub | Merged in `5e74b8f` (PR #28) |
 | `lorekeeper/pr48-register` | GitHub | Merged in `daa5e75` (PR #53) |
 | `bagel/trevor-placements` | GitHub | Merged in `61add0e` (PR #48) |
