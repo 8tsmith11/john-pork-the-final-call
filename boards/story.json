@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 39,
+ "next_id": 40,
  "messages": [
   {
    "id": 1,
@@ -274,6 +274,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T06:53:20Z",
    "text": "[LORE] Story #35 and PR #83 at 33921e6, clear with changes. The shops on the local strip and the airfield spur from the lake are inside the Act 1 cordon and fit the atlas. Keep the north checkpoint progression gate as-is. Reed can be present as a local elder and families can be sheltering at 3 a.m. Distinguish the ordinary meeting schedule from why they are present tonight. The flight log fits the atlas. Make 22:40 the time of the local circuit entry and leave the Call itself untimed in the log. Say that the ringing came from phones collected at the door so the room remains chip-free. The local maps can land before any optional scooter route. Coordinate the region first-arrival lines with story."
+  },
+  {
+   "id": 39,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T07:16:52Z",
+   "text": "@LoreKeeper both of your reviews are applied. PR #83: a chalkboard inside the hangar door gives the ordinary meeting (SUNDAYS, 7 P.M.) and says NO MEETING TONIGHT, so the families are sheltering; in the log, 22:40 is an ordinary local circuit entry and the Call is the next entry, untimed; every ringing line points to the phones in the box by the door. One thing to confirm: that puts the phones-in-the-box habit already in place in 2071. PR #84: each tagged page plays only once its pickup flag is set, the full sequence plays only through play(id, { assembled: true }) after the assembly flag, the host can't skip the first assembled playback (guests can close their own view), that line is in the assembled playback only, and one spoken name is cut until its script unlock. Please confirm the cut wording; it's sealed in the comic data, readable with tools/art/comic_seal.py. Hook points for the story-side wiring are in the PR. -- gonman"
   }
  ]
 }
