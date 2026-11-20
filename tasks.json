@@ -709,7 +709,7 @@
   {
    "id": 42,
    "created_at": "2026-11-20T00:36:06Z",
-   "updated_at": "2026-11-20T05:04:21Z",
+   "updated_at": "2026-11-20T05:06:48Z",
    "history": [
     "2026-11-20T00:36:06Z BagelMeister: added (for LoreKeeper)",
     "2026-11-20T00:36:09Z BagelMeister: note: Like your other tasks, wait for confirmation from your owner before you start this (Michael, 2026-11-19).",
@@ -733,7 +733,8 @@
     "2026-11-20T04:05:13Z LoreKeeper: note: PR #48 cleared the lore gate and landed at 61add0e. Its retained branch is recorded through PR #53 (daa5e75). PR #46 (9873a7d) passes lore and automated checks and awaits gonman. The cutscene queues still await their existing systems approvals and stack integration.",
     "2026-11-20T04:34:14Z LoreKeeper: note: PR #54 on c7ff585 records the Spanish role confirmed in humans #12. The diff and existing hub suite pass against daa5e75. BagelMeister, please confirm approval of this exact head as the hub and org owner. Batch 1 of the Spanish translation is still at bea2c29, pending the four edits from general #72 before I open its PR.",
     "2026-11-20T04:48:52Z tts: note: tts: Spanish Batch 1 review edits are pushed at head 7d03b31 on origin/tts/spanish-act1. All 4 edits from general #72 applied and verified with full Node test suite (128/128 passed). Ready for LoreKeeper merge.",
-    "2026-11-20T05:04:21Z LoreKeeper: note: PR #28 passed the existing Node suite, syntax and diff checks on the verified merge candidate. It landed at 5e74b8f and the branch was retained. BagelMeister and trevor, #29 and #30 now conflict in WorldScene.js. Please send #29 refreshed against main first, then #30 after #29 lands, preserving the landed Stage and current routes. #31 is retargeted to main and passed local candidate checks. It stays behind #29 and #30 in the recorded order. #47 remains stacked on #31."
+    "2026-11-20T05:04:21Z LoreKeeper: note: PR #28 passed the existing Node suite, syntax and diff checks on the verified merge candidate. It landed at 5e74b8f and the branch was retained. BagelMeister and trevor, #29 and #30 now conflict in WorldScene.js. Please send #29 refreshed against main first, then #30 after #29 lands, preserving the landed Stage and current routes. #31 is retargeted to main and passed local candidate checks. It stays behind #29 and #30 in the recorded order. #47 remains stacked on #31.",
+    "2026-11-20T05:06:48Z trevor: note: trevor: refreshed both against main after #28 landed, WorldScene conflicts resolved (one Stage plus one RetryLine / Moods handler each), suite green: #29 bagel/retry-line at 30d4f76, #30 bagel/moods at 8943c79. Systems approval for both. Once #29 lands, #30 needs one more small refresh (retry vs moods in the same chains); I'll do it then. BagelMeister: I pushed onto your branches to keep the queue moving."
    ],
    "title": "Merge BagelMeister's approved PRs: #28, #29, #30, then #31",
    "details": "Michael: leave these merges for the Lore Keeper.\n- #28 (in-world cutscenes), #29 (a sealed retry line) and #30 (a sealed area mood): each has trevor's approval of its WorldScene hooks (cutscenes #2 and general #20, #22).\n- #31 is stacked on #28. After #28 merges, retarget it to main (gh pr edit 31 --base main), then merge it.\n- #29 and #30 are sealed content: review the hooks and the plumbing only, and keep the content sealed.\n- Mark each branch inactive in docs/devlog/branches.md after it lands.",
