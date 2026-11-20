@@ -39,7 +39,7 @@ export function newMatch(seed = 'bastion', roommates = ['trevor'], { difficulty 
   };
 }
 
-// The opponent starts dug in: a gun turret mid-way down every lane and a coil on one (the boss's fortress).
+// The opponent starts dug in: a gun turret mid-way down every lane and a coil on one (a fortress to break).
 export function fortify(m) {
   for (let lane = 0; lane < LANES; lane++) m.towers.push({ id: m.nextId++, side: 'npc', owner: 'npc', kind: 'gun', lane, slot: 2, x: towerX('npc', 2), hp: TOWERS.gun.hp, cd: 0 });
   const lane = m.rng.int(0, LANES - 1);
@@ -82,7 +82,7 @@ export function step(m, dt) {
     const rate = who === 'npc' ? INCOME * (0.6 + 0.4 * m.difficulty) * (0.6 + 0.4 * m.roommates.length) * (1 + m.t / 420) : INCOME;
     m.energy[who] = Math.min(MAX_ENERGY, m.energy[who] + rate * dt);
   }
-  // opponent waves: free units that grow over time (the boss's pressure)
+  // opponent waves: free units that grow over time (the opponent's pressure)
   if (m.t >= m.nextWave) {
     m.wave++; m.nextWave = m.t + Math.max(10, 20 - m.wave);
     const n = 1 + Math.floor(m.wave * 0.35 * m.difficulty * (0.5 + 0.5 * m.roommates.length));
@@ -131,20 +131,20 @@ const defense = (m, side, lane) => m.towers.filter((t) => t.side === side && t.l
 /** One decision for `who` (a roommate or 'npc'): defend the most pressed lane, else push the weakest one. */
 export function aiAct(m, who) {
   if (m.winner) return false;
-  const side = sideOf(who), e = m.energy[who], boss = who === 'npc';
+  const side = sideOf(who), e = m.energy[who], opp = who === 'npc';
   const lanes = [...Array(LANES).keys()];
   const worst = lanes.sort((a, b) => (pressure(m, side, b) - defense(m, side, b)) - (pressure(m, side, a) - defense(m, side, a)))[0];
   const free = [...Array(SLOTS).keys()].find((s) => !m.towers.some((t) => t.side === side && t.lane === worst && t.slot === s));
   // the opponent only builds when a lane is really in trouble; it spends the rest on attacks
-  if (pressure(m, side, worst) > defense(m, side, worst) * (boss ? 1.6 : 1) && free != null && (!boss || e >= 10)) {
+  if (pressure(m, side, worst) > defense(m, side, worst) * (opp ? 1.6 : 1) && free != null && (!opp || e >= 10)) {
     const kind = pressure(m, side, worst) > 14 && e >= TOWERS.zap.cost ? 'zap' : e >= TOWERS.gun.cost ? 'gun' : null;
     if (kind && place(m, who, kind, worst, free)) return true;
   }
-  if (e >= (boss ? 6 : 11)) {   // push where the enemy is thinnest (roommates save up for a bigger push)
+  if (e >= (opp ? 6 : 11)) {   // push where the enemy is thinnest (roommates save up for a bigger push)
     const target = [...Array(LANES).keys()].sort((a, b) => defense(m, side === 'party' ? 'npc' : 'party', a) - defense(m, side === 'party' ? 'npc' : 'party', b))[0];
     const kind = e >= 14 ? 'bruiser' : m.rng.next() < 0.5 ? 'drone' : 'runner';
     send(m, who, kind, target);
-    if (!boss) while (m.energy[who] >= UNITS.runner.cost + 1 && send(m, who, 'runner', target));   // the rest go with it
+    if (!opp) while (m.energy[who] >= UNITS.runner.cost + 1 && send(m, who, 'runner', target));   // the rest go with it
     return true;
   }
   return false;

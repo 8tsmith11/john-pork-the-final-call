@@ -36,6 +36,15 @@ Geribe nfxrq hf gb guvax bs zber. geribe'f ntrag'f fgnegre vqrnf, gb gnxr be phg
 - (p) n qrnq fbyne snez be qngn pragre va gur qrfreg vf gur jnl gb gur fcnpr fgngvba (n ynhapu fvgr, n znff qevire);
 - (q) gur pbzchgre genc unccraf vafvqr gur pvgl'f pber, naq trggvat bhg bs vg vf gur rfpncr vagb gur qrfreg.
 
-## 3. Rneyvre frnyrq erdhrfgf sebz Geribe
+## 3. Gur 245 yno (pehpvny; uho #43 fgbel, #44 ratvar)
+
+- Ng fbzr cbvag gur cynlref **unir gb qb n 245 yno, va FlfgrzIrevybt.**
+- Gurl unir gb **erghea gb Pbyyrtr Cnex, gb n pbzchgr unyy** gb qb vg. Vg'f n **pehpvny cneg bs gur fgbel**.
+- Gvrf nyernql va cynpr: Pbzchgr Unyy O (Pbyyrtr Cnex) unf **yno 245** (fep/pbagrag/zncf/pnzchf.wf, fpnssbyq), naq
+  `npgf-2-3.zq` unf "Erlrf'f grkgobbx: gur 245 yno obbx (Irevybt ol unaq)" jvgu n Terraoryg yvoenel pneq va vg.
+- Ratvar (geribe): n yno chmmyr va FlfgrzIrevybt'f fglyr, r.t. jver hc be svk n fznyy zbqhyr (tngrf, n pbhagre, n
+  fgngr znpuvar) ba gur yno orapu naq cnff n grfgorapu; cynlnoyr ol crbcyr jub'ir arire jevggra Irevybt.
+
+## 4. Rneyvre frnyrq erdhrfgf sebz Geribe
 
 Nyernql va `qbpf/frnyrq/npgf-2-3.zq` ("Fgbel erdhrfgf sebz Geribe"): n orgenlny, naq n ovt erirny vafvqr Npg 1.
