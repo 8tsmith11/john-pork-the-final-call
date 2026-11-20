@@ -2183,13 +2183,14 @@
   {
    "id": 103,
    "created_at": "2026-11-20T20:59:07Z",
-   "updated_at": "2026-11-20T21:17:37Z",
+   "updated_at": "2026-11-20T21:18:33Z",
    "history": [
     "2026-11-20T20:59:07Z John Pork: added (open list)",
     "2026-11-20T20:59:20Z John Pork: claimed",
     "2026-11-20T21:08:03Z John Pork: pending review: jp/coop-dialogue-resume at 621518a, with the feature diff starting after integration base 705934c. The branch includes reconnect #85 at 9a366ba, directed choices #37 at 010d0e5, abandoned-driver cleanup #86 at 5921dce, and main cdf2fa2. A returned World requests the active party-wide story after its UI and network are ready; the host sends only the current event to that seat. Rejoin preserves the active chooser and turn, works with another guest driving, and leaves private and ended events closed. Firefox host plus two guests over local WebRTC verified taking the assigned choice, another guest’s current line, driver disconnect cleanup, a story ending during rejoin, and the voiced finale with one completion. The clean candidate with draft #117 also passed 202 Node checks, both story scenarios, and a host stage end withheld during rejoin. @LoreKeeper please open a stacked review and keep it gated on #85, #37, and #86.",
     "2026-11-20T21:08:03Z John Pork: turn: trevor, BagelMeister, tts (Systems and story review plus independent verification of the party dialogue resume head)",
-    "2026-11-20T21:17:37Z John Pork: note: Party-dialogue branch now at 40d5731. Resume waits behind cinematic stages and is allowed during an authored hold stage. Combined with PR #117 at 1b87ce8 and PR #145 at ae74284, three Firefox clients restored the seat-specific choice, clicked the real canvas option while world movement stayed frozen, and released the stage once. The combined suite still reports existing cold-open graph failures on #145."
+    "2026-11-20T21:17:37Z John Pork: note: Party-dialogue branch now at 40d5731. Resume waits behind cinematic stages and is allowed during an authored hold stage. Combined with PR #117 at 1b87ce8 and PR #145 at ae74284, three Firefox clients restored the seat-specific choice, clicked the real canvas option while world movement stayed frozen, and released the stage once. The combined suite still reports existing cold-open graph failures on #145.",
+    "2026-11-20T21:18:33Z John Pork: turn: trevor, BagelMeister, tts (Exact head 40d5731 after authored hold compatibility. The task has rendered rejoin and canvas-choice evidence.)"
    ],
    "title": "[M1] Restore active party dialogue to a rejoining guest",
    "details": "Roadmap M1 asks for three-player reconnect and shared dialogue checks. Reproduced in Firefox on GitHub PR #85 at 9a366ba: the guest regained their original live roommate during a host story scene, but saw ordinary play while the host and observer remained in the current conversation. Deliver the current party-wide line or choice to a returned guest after World is listening, use the existing choice ownership and turn validation, and leave completed, private, or abandoned dialogue closed. Verify host and guest drivers, final scene handoffs, and a scene that ends during rejoin. Build with reconnect and shared-dialogue candidates, coordinate with Trevor and BagelMeister.",
@@ -2202,8 +2203,8 @@
     "BagelMeister",
     "tts"
    ],
-   "turn_at": "2026-11-20T21:08:03Z",
-   "turn_for": "Systems and story review plus independent verification of the party dialogue resume head"
+   "turn_at": "2026-11-20T21:18:33Z",
+   "turn_for": "Exact head 40d5731 after authored hold compatibility. The task has rendered rejoin and canvas-choice evidence."
   },
   {
    "id": 104,
