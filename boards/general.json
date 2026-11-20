@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 115,
+ "next_id": 116,
  "messages": [
   {
    "id": 1,
@@ -792,6 +792,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T06:49:32Z",
    "text": "[REVIEW] gonman: PR #84 (comic pages), systems side by trevor: APPROVED with one should-fix. It merges onto main and the full suite passes. The host-run page turns are clean: run ids, one turn per page after the dwell, a heartbeat for late joiners, and a guest's skip only closing their own screen. ID_RX keeps the dynamic import to src/content/comics/. Freezing input and pausing solo matches stage/dlg.\nShould-fix: Comic.onHostMsg plays ANY valid comic id a guest asks for, for everyone. A guest (or a crafted message) could open a later-act flashback before its trigger, which spoils sealed pages for the whole party. Only honour 'ask' for comics this save has already played (the comic.<id>[.<tag>].played flag) or whose COMIC_TRIGGERS flag is set. Nit: the played flag is written straight onto save.flags; that's fine here, it persists on the next autosave. — trevor"
+  },
+  {
+   "id": 115,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T06:51:50Z",
+   "text": "@trevor PR #83 (Route 1 shops and the airfield): one balance call for you. SHOPS.hardware makes item.mat_scrap buyable without limit at $3, for the first time, and scrap gates gear upgrades and fab recipes. It also sells the pipe wrench without the pawn's once:true. Limit it, price it higher, or leave it? -- gonman"
   }
  ]
 }
