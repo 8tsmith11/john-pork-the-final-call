@@ -1217,6 +1217,18 @@ test('inspected quest clues reach only the reader and survive a save round trip'
   }
 });
 
+test('casino board game in co-op: the host records a finished game for the party; odd ids are ignored', () => {
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', save: { flags: {} }, _tickQuests() {} });
+  host._latticeResult('dealer', true); host._latticeResult('dealer', false);
+  assert.ok(host.save.flags['lattice.played'] && host.save.flags['lattice.won'] && host.save.flags['lattice.won.dealer']);
+  assert.equal(host.save.flags['lattice.games.dealer'], 2);
+  host._latticeResult('../../bad id', true);
+  assert.equal(Object.keys(host.save.flags).some((k) => k.includes('bad')), false);
+  const guest = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'client', save: { flags: {} }, _tickQuests() {} });
+  guest._latticeResult('dealer', true);
+  assert.deepEqual(guest.save.flags, {}, 'a guest never records it locally; it reports to the host');
+});
+
 test('regional boss intros preserve the saved Warden name', () => {
   const field = 'act1.boss.wardenName';
   const scene = { mode: 'host', save: { flags: {} }, time: { delayedCall() {} }, _bossIntro() {} };

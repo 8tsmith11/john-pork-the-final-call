@@ -649,6 +649,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'rest') this._restAtSave(peer, msg.obj);
         if (msg.t === 'use') { this._useWhat = msg.id ?? null; this._use(this._charOf(peer), peer); }
         if (msg.t === 'morph') this._morph(peer);
+        if (msg.t === 'lattice') this._latticeResult(msg.id, !!msg.won);   // a guest finished the casino board game
         if (msg.t === 'questUse') {
           const o = this.map.objects.find((x) => x.id === msg.id);
           if (o && msg.quest === undefined) this._questInteract(o, this._charOf(peer), peer);
@@ -988,10 +989,21 @@ export class WorldScene extends Phaser.Scene {
   openBoardGame(opponent = 'The Dealer', id = 'dealer', onEnd = null) {
     if (this.boardGame && !this.boardGame.closed) return;
     this.boardGame = new BoardGame(this, { opponent, seed: `${this.save.world.seed}:${id}:${this.save.flags[`lattice.games.${id}`] ?? 0}`, onEnd: (won) => {
-      this._flag('lattice.played', true); this._flag(`lattice.games.${id}`, Number(this.save.flags[`lattice.games.${id}`] ?? 0) + 1);
-      if (won) { this._flag('lattice.won', true); this._flag(`lattice.won.${id}`, true); }
+      // A guest's flags would be dropped by the host (it only takes act*/dlg.* from guests), so the result goes
+      // to the host, which records it for the whole party (one roommate plays the party's side).
+      if (this.mode === 'client') this.net.send({ t: 'lattice', id, won: !!won });
+      else this._latticeResult(id, !!won);
       onEnd?.(won);
     } });
+  }
+
+  /** Host: record a finished Lattice game for the party (story flags: lattice.played / .won / .won.<id>). */
+  _latticeResult(id, won) {
+    if (this.mode === 'client' || typeof id !== 'string' || !/^[a-z0-9_.-]{1,40}$/i.test(id)) return;
+    const f = this.save.flags;
+    f['lattice.played'] = true; f[`lattice.games.${id}`] = Number(f[`lattice.games.${id}`] ?? 0) + 1;
+    if (won) { f['lattice.won'] = true; f[`lattice.won.${id}`] = true; }
+    this._tickQuests(true);
   }
 
   _syncParty() {
