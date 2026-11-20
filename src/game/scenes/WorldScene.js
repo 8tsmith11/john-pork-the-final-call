@@ -89,6 +89,7 @@ const IDLE_MS = (Number(new URLSearchParams(globalThis.location?.search ?? '').g
 
 // Highlight colours: quest-important text (cyan) and people/places (gold).
 const HI = { quest: '#6fe3e8', name: '#ffd27f' };
+const defeatedBossFlag = (kind) => `boss.${kind.slice(5)}.down`;
 
 // Who sees a conversation in co-op, until the scripts carry their own `Scope:` lines (gonman, #307).
 const SCOPE_DEFAULT = { cold_open: 'all', the_call: 'all', ending: 'all', first_death: 'all', 'aster:aster_enter': 'all' };
@@ -143,6 +144,7 @@ export class WorldScene extends Phaser.Scene {
     this.sim = new Sim(startMap, {
       seed: this.save.world.seed, killed, deferSpawn: authoritative,
       bossVariant: authoritative ? this.save.flags['act1.boss.kind'] : undefined,
+      isBossDefeated: (kind) => !!this.save.flags[defeatedBossFlag(kind)],
     });
     this.localId = this.mode === 'client' ? this.net.id : 'host';
     this.remoteInputs = new Map();
@@ -3166,8 +3168,8 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'boss' && ev.kind === 'boss.warden' && this.mode !== 'client') this.save.flags['act1.boss.wardenName'] = ev.name;
     // Mid bosses: no ending. The Switchman keeps its flag; bosses from src/content/bosses.js set boss.<id>.down.
     if (ev.t === 'kill' && ev.mini && this.mode !== 'client') {
-      this._flag(!ev.kind || ev.kind === 'boss.switchman' ? 'act1.switchman.down' : `boss.${ev.kind.slice(5)}.down`, true);
-      if (!this.save.flags['act2.complete'] && ACT2_REGION_BOSSES.every((k) => this.save.flags[`boss.${k.slice(5)}.down`])) {   // [SCAFFOLD] act 2 end
+      this._flag(!ev.kind || ev.kind === 'boss.switchman' ? 'act1.switchman.down' : defeatedBossFlag(ev.kind), true);
+      if (!this.save.flags['act2.complete'] && ACT2_REGION_BOSSES.every((k) => this.save.flags[defeatedBossFlag(k)])) {   // [SCAFFOLD] act 2 end
         this._flag('act2.complete', true); this.save.world.act = 3; this._save();
         this._toast(tr('The Beltway road is open.'));
       }
@@ -3214,7 +3216,8 @@ export class WorldScene extends Phaser.Scene {
       this.tweens.add({ targets: g, alpha: { from: 0.4, to: 1 }, duration: dur, yoyo: false, onComplete: () => g.destroy() });
     }
     if (ev.t === 'riff') { const r = this.add.circle(ev.x, ev.y - 6, 6, 0xffe08a, 0).setStrokeStyle(2, 0xffe08a, 0.9).setDepth(5600); this.tweens.add({ targets: r, scale: 7.5, alpha: 0, duration: 380, onComplete: () => r.destroy() }); this.cameras.main.shake(140, 0.006); sfx('kill'); }
-    if (ev.t === 'ping') { const r = this.add.circle(ev.x, ev.y - 6, 6, 0x6ff2ff, 0).setStrokeStyle(1, 0x6ff2ff, 0.9).setDepth(5600); this.tweens.add({ targets: r, scale: 25, alpha: 0, duration: 650, onComplete: () => r.destroy() }); sfx('shot'); }
+    if (ev.t === 'ping') { const r = this.add.circle(ev.x, ev.y - 6, 6, 0x6ff2ff, 0).setStrokeStyle(1, 0x6ff2ff, 0.9).setDepth(5600); this.tweens.add({ targets: r, scale: (ev.r ?? 150) / 6, alpha: 0, duration: 650, onComplete: () => r.destroy() }); sfx(ev.n ? 'hit' : 'shot'); }
+    if (ev.t === 'pingJump') { const l = this.add.line(0, 0, ev.x, ev.y - 6, ev.x2, ev.y2 - 6, 0x6ff2ff, 0.9).setOrigin(0).setLineWidth(1).setDepth(5600); this.tweens.add({ targets: l, alpha: 0, duration: 300, onComplete: () => l.destroy() }); }   // the mark jumps on (hub #66)
     if (ev.t === 'decoy') sfx('swing');
     if (ev.t === 'gonman') this._gonmanWindup(ev);
     if (ev.t === 'goo') { this._gonmanRelease(ev); this._gonmanHitLines(ev.hit); }

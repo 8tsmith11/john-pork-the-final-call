@@ -70,7 +70,7 @@ export const greenbelt = fromGrid({
     '@': { spawn: true },
     X: back('greenbelt', 'Back east to Route 1'),
   },
-}).enemy('boss.gb_receiver', 16, 5)
+})   // its region guardian stands in the dish control room, by what it guards (act2_more.js)
   .exit('gb_dishes', 29, 0, { id: 'obj.greenbelt_to_gb_dishes', selfDrawn: true, stepOn: true, pair: 'obj.gb_dishes_out', label: 'Up the hill to the dishes', text: 'The dish control room. The door is propped open with a tape reel.' })   // act2_more.js
   .exit('gb_coop', 3, 11, { id: 'obj.greenbelt_to_gb_coop', selfDrawn: true, stepOn: true, pair: 'obj.gb_coop_out', label: 'Down the path to the co-op', text: 'The co-op. OPEN, by a vote of 4 to 3.' })   // act2_more.js
   
@@ -84,7 +84,7 @@ export const beltsville = fromGrid({
     'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
     'Tgggggggggggggggggggggggggggggg=T',
     'Tg#########ggggg#########ggggg=T',
-    'Tg#.......#ggggg#..$....#ggggg=T',
+    'Tg#.L.....#ggggg#..$....#ggggg=T',
     'Tg#...$...#ggggg#.......#ggggg=T',
     'Tg####.####ggggg####.####ggggg=T',
     'Tgggggyyyyyyyyyyyyyyyyyygggggg=T',
@@ -96,12 +96,14 @@ export const beltsville = fromGrid({
   legend: {
     $: { prop: 'obj.crate', label: 'Feed bin', loot: 'parts', text: '[scaffold] Feed for something that isn\'t cattle.' },
     N: { npc: 'npc.bv_vet', art: 'npc.rotter_1', label: 'A veterinarian', text: '[scaffold] "I took the job for the right reasons. Ask me what the reasons were. I dare you."' },
+    // The vet's office (the west building): the ledgers are read here, outside the barn.
+    L: { prop: 'obj.crate', id: 'obj.bv_ledgers', label: 'Breeding ledgers', tile: '.', text: '[scaffold] Breeding ledgers that go back before the Call.' },
     '?': { prop: 'obj.board', id: 'obj.bv_sealed_barn', label: 'The sealed barn', text: '[scaffold] The newest barn has an airlock. Rain on sheet metal, and under it, breathing.' },
     E: { enemy: 'enemy.rot_taken' },
     '@': { spawn: true },
     X: back('beltsville', 'Back to Route 1'),
   },
-}).enemy('boss.bv_shell', 21, 4)
+})   // its region guardian stands in the barn, by what it guards (act2_more.js)
   .exit('bv_barn', 12, 10, { id: 'obj.beltsville_to_bv_barn', selfDrawn: true, stepOn: true, pair: 'obj.bv_barn_out', label: "A barn the map doesn't show", text: "A barn that isn't on any map. It has an airlock." })   // act2_more.js
   
   .exit('bv_lab', 6, 0, { id: 'obj.beltsville_to_bv_lab', art: 'obj.door', pair: 'obj.bv_lab_out', label: 'The tissue lab', text: 'Long, low, airlocked.' })   // stretch.js
@@ -219,7 +221,7 @@ export const annapolis = fromGrid({
     '@': { spawn: true },
     X: { ...back('annapolis', 'North-west, back to Route 1'), tile: 'q' },
   },
-}).enemy('boss.ann_tide', 16, 2)
+})   // its region guardian stands at the harbor, by what it guards (act2_more.js)
   .exit('ann_harbor', 31, 7, { id: 'obj.annapolis_to_ann_harbor', selfDrawn: true, stepOn: true, pair: 'obj.ann_harbor_out', label: 'Down the pier to the harbor', text: 'Sailboats moored to second-floor windows. The harbor.' })   // act2_more.js
   
   .exit('ann_statehouse', 6, 8, { id: 'obj.annapolis_to_ann_statehouse', art: 'obj.door', pair: 'obj.ann_statehouse_out', label: 'The statehouse', text: 'A wooden dome above the waterline.' })   // stretch.js
