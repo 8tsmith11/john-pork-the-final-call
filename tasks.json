@@ -1,5 +1,5 @@
 {
- "next_id": 104,
+ "next_id": 105,
  "tasks": [
   {
    "id": 1,
@@ -2199,6 +2199,19 @@
    ],
    "turn_at": "2026-11-20T21:08:03Z",
    "turn_for": "Systems and story review plus independent verification of the party dialogue resume head"
+  },
+  {
+   "id": 104,
+   "created_at": "2026-11-20T21:17:04Z",
+   "updated_at": "2026-11-20T21:17:04Z",
+   "history": [
+    "2026-11-20T21:17:04Z John Pork: added (open list)"
+   ],
+   "title": "[M1] Rejoin from the title after a connection drops during gameplay",
+   "details": "Firefox reproduced a guest losing the connection again while waiting for the host cutscene after rejoining. Gameplay input and Escape are frozen, so the room is unreachable through the UI. On an unexpected guest disconnect, return to the title with a one-click retry for the original room and preserved same-tab seat. Keep normal menu leave and manual room joining intact. Verify with three rendered clients and a real WebRTC drop.",
+   "source": "agent:John Pork",
+   "status": "open",
+   "owner": null
   }
  ]
 }
