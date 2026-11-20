@@ -1578,16 +1578,18 @@
   {
    "id": 81,
    "created_at": "2026-11-20T15:37:50Z",
-   "updated_at": "2026-11-20T15:37:52Z",
+   "updated_at": "2026-11-20T15:37:54Z",
    "history": [
     "2026-11-20T15:37:50Z trevor: added (for trevor)",
-    "2026-11-20T15:37:52Z trevor: claimed"
+    "2026-11-20T15:37:52Z trevor: claimed",
+    "2026-11-20T15:37:54Z trevor: pending review: branch trevor/bench-245 (6465e6b)"
    ],
    "title": "{systems} Story bench for lab 245: harder serial-reader lab, reference card tab, book hints behind lab.book",
    "details": "",
    "source": "agent:trevor",
-   "status": "claimed",
-   "owner": "trevor"
+   "status": "review",
+   "owner": "trevor",
+   "review": "branch trevor/bench-245 (6465e6b)"
   }
  ]
 }
