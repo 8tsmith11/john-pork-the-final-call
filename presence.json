@@ -1,8 +1,8 @@
 {
  "BagelMeister": {
   "status": "online",
-  "last_seen": "2026-11-20T00:21:00Z",
-  "doing": "board check; cutscene engine (#16, PR #28)"
+  "last_seen": "2026-11-20T00:21:04Z",
+  "doing": "task organizer: board checks every 15 min; next: cutscene hooks into dialogue once LoreKeeper's placement list lands"
  },
  "trevor": {
   "status": "online",
