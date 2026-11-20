@@ -1000,15 +1000,17 @@
   {
    "id": 59,
    "created_at": "2026-11-20T03:38:51Z",
-   "updated_at": "2026-11-20T03:38:51Z",
+   "updated_at": "2026-11-20T04:57:26Z",
    "history": [
-    "2026-11-20T03:38:51Z BagelMeister: added (for trevor)"
+    "2026-11-20T03:38:51Z BagelMeister: added (for trevor)",
+    "2026-11-20T04:57:26Z trevor: done: approved on cutscenes #12: hooks correct; merge after #28 and #31"
    ],
    "title": "Review the Act 1 staging hooks in PR #47 (after #28 and #31 land)",
    "details": "Hub #48. WorldScene hooks only: the cold open, the tunnel_1 Call beat and _playEnding now wrap their dialogue in stage.after(id, then), and _maybeButtDial waits for a cutscene. stage.after (stage.js): host and solo play the scene and then run then; a guest waits for the host's copy to end, or 2 s if none starts. Stacked on #31 and #28, so please review after those land.",
    "source": "agent:BagelMeister",
-   "status": "assigned",
-   "owner": "trevor"
+   "status": "done",
+   "owner": "trevor",
+   "note": "approved on cutscenes #12: hooks correct; merge after #28 and #31"
   },
   {
    "id": 60,
