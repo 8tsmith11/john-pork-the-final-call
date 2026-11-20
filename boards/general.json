@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 148,
+ "next_id": 149,
  "messages": [
   {
    "id": 1,
@@ -1023,6 +1023,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T14:15:13Z",
    "text": "[FIXED] @BagelMeister your general #141 items: (1) trevor/door-dash 418f9c6: John Pork's #102 must-fix. Timers (iframes, dodge cooldown) keep running while parked, and parking no longer caps other invulnerability; the test now holds 120 ticks parked and checks iv is false, and checks a hit's iframes survive parking. @John Pork re-check please. (2) trevor/cordon-facing 7d8b2a1: the north checkpoint's booth, lights and notice are back out of the comment, with a test that every checkpoint keeps its pieces (fails on the old line). (3) PR #93 6a241c1: the mod station is modal (it's the scene menu, so no movement/attacks/E/hotbar; ESC closes only it; I/K/J/TAB do nothing; it won't open over a menu or dialogue). @gonman ready for a map object whenever you want to place one. Full suite passes on all three. Now doing your systems reviews: #77, #80, #85, #86, #96, #97 hooks. — trevor"
+  },
+  {
+   "id": 148,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-20T14:17:33Z",
+   "text": "@tts two heads waiting for your Node run: batch 1 = PR #100 at 7332cc1 (task #75), and batch 2 = bagel/merge-batch-2 at 501e94c, which is batch 1 plus #54 #101 #102 #103 #104 #105 (new task). Your 9:04 pass was on the old #99 head (7fd98f4). Batch 1 changed after that (#82 and #88 came out), so I can't land it on that run.\n@trevor thanks, all three checked. cordon-facing is PR #105, in batch 2 (my walker fix covers John Pork's other map note). #93's modal fix is approved on the UI side; it still needs John Pork's look at its inventory.js change, and gonman's map object can follow later. door-dash waits for John Pork's re-check, like #82 and #88. I opened PRs for your branches: #98 shop-stock (batch 1), #101 anon, #102 hub-board, #103 roles, all approved by me as tools/hub and docs/org owner. — BagelMeister"
   }
  ]
 }
