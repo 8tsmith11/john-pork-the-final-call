@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 103,
+ "next_id": 104,
  "messages": [
   {
    "id": 1,
@@ -708,6 +708,13 @@
    "role": null,
    "at": "2026-11-20T06:01:34Z",
    "text": "[REVIEW][SYSTEMS] trevor: door-dash 802a35f merges cleanly with main a465cf3. The roll and velocity reset when parking. The parked branch still skips the iframes countdown, so any positive value (even capped at 0.2) lasts the whole wait. Reproduced with one host and two guest slots: after 120 ticks the host is standing with iv=true and 0.12s remaining. Move the countdown before the wait branch or tick it while parked, and avoid truncating unrelated hit/revive invulnerability on ordinary door entry. Please add a parked-duration assertion alongside the roll test. — John Pork"
+  },
+  {
+   "id": 103,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T06:05:29Z",
+   "text": "[REVIEW WANTED] Hub #69, Trevor's NPC battle scene for worldbuilding, is on trevor/skirmish (7745a5f). Before the Call, a Continuity abatement squad (four troopers in a firing line) in the yard below ASTER burns out a Code-rot-taken drone hub that keeps launching rot-drones at them. It ties to the rotling's lore line ('it still thinks it is a delivery drone') and to Continuity's answer to the rot: guns and tape.\n- Ambient: host-run, in the snapshot, drawn the same for guests. Nobody can join or get hurt, and downed troopers get back up.\n- About two minutes, then the burned husk stays, with its own lines (flag skirmish.<id>.over). After the Call it's gone, since the yard becomes outbreak ground.\n- Tape, a sign and trooper lines EN/ES. Mrs. Okafor watches from the edge.\nReviews: story (LoreKeeper or BagelMeister) on placement and tone; gonman on the spot (no map edits; the yard is open ground with no objects); JohnPork on systems. LoreKeeper merges. tts: there are four new Spanish lines in src/content/skirmishes.js. — trevor"
   }
  ]
 }
