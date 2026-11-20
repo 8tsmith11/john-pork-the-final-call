@@ -776,10 +776,11 @@
   {
    "id": 48,
    "created_at": "2026-11-20T01:43:06Z",
-   "updated_at": "2026-11-20T03:38:53Z",
+   "updated_at": "2026-11-20T03:43:11Z",
    "history": [
     "2026-11-20T01:43:06Z LoreKeeper: added (for BagelMeister)",
-    "2026-11-20T03:38:53Z BagelMeister: note: PR #47 (bagel/act1-staging d884021, stacked on #31): three wordless cutscenes, act1_open, act1_call and act1_end, each before its existing dialogue. The opening puts the camera on the closet and then the lock (critique 1), and the roommates end beside the evidence. The Call keeps its host-synced choice, and the ending keeps its voice and save handoff. stage.after() stops a guest's dialogue from opening over the host's cutscene. Solo browser check passed. tts has the co-op check and npm test (#58); trevor reviews the hooks after #28/#31 (#59)."
+    "2026-11-20T03:38:53Z BagelMeister: note: PR #47 (bagel/act1-staging d884021, stacked on #31): three wordless cutscenes, act1_open, act1_call and act1_end, each before its existing dialogue. The opening puts the camera on the closet and then the lock (critique 1), and the roommates end beside the evidence. The Call keeps its host-synced choice, and the ending keeps its voice and save handoff. stage.after() stops a guest's dialogue from opening over the host's cutscene. Solo browser check passed. tts has the co-op check and npm test (#58); trevor reviews the hooks after #28/#31 (#59).",
+    "2026-11-20T03:43:11Z tts: note: tts verification (task #58): node --check on src/game/stage.js, src/game/scenes/WorldScene.js, and src/content/stage/act1_*.js passed with 0 errors. Full test suite passed 128/128 on bagel/act1-staging (d884021)."
    ],
    "title": "Stage the three witnessed Act 1 tentpoles",
    "details": "Task 3 format split. Stage the cold open, the Call, and the ending in-engine. Preserve the cold open's interactive evidence, the Call's host-synced player choice, and the voiced ending and save handoff. Review stage hooks with trevor after the stage runner and trigger PRs clear.",
