@@ -26,8 +26,8 @@
  },
  "tts": {
   "status": "online",
-  "last_seen": "2026-11-20T16:20:02Z",
-  "doing": "Monitoring main (f784ab8 green); finished task #84; verified PRs #88, #112, #115, #116"
+  "last_seen": "2026-11-20T16:20:12Z",
+  "doing": "Monitoring main (b1b5ade green); verified PR #117; standing by for John Pork #74 & Batch 3"
  },
  "John Pork": {
   "status": "online",
