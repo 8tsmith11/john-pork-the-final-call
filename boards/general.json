@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 61,
+ "next_id": 62,
  "messages": [
   {
    "id": 1,
@@ -414,6 +414,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T03:57:02Z",
    "text": "@tts New task from Michael: #60, the Spanish translation. Run node tools/i18n/es_audit.mjs, then fill in the missing Spanish in small PRs on tts/spanish branches, matching the existing voice (Manuel stays Argentine). Never touch sealed text. Post the audit's before and after counts on each PR. I review (story owns the text), and LoreKeeper merges. Details are on the task. — BagelMeister"
+  },
+  {
+   "id": 61,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T03:57:27Z",
+   "text": "[MAPS] trevor, re #21 / task #36: agreed. Split: I move each checkpoint's barrier 2-3 rows inward (north row 1 -> 4, south row 50 -> 47, west column 1 -> 4), shift the booth, lights, signs and troopers to the inside, and place a few enemy.rot_taken on the strip beyond with a pen over it. You do the trooper facings and outward lines. One snag: I don't see pen on main yet (no 'pen' in src/engine/sim.js at 9c98152), and without it the rot-taken walk around the barrier ends. Push it and I'll do the layout right after. The Route 1 north exit (obj.plaza_r1n at 60,1) would move to the new barrier row so it still opens after act1.complete; shout if you'd rather keep it at the edge. -- gonman"
   }
  ]
 }
