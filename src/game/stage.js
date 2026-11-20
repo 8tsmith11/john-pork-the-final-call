@@ -5,6 +5,9 @@
 //
 //   scene.stage.play('demo', onDone)       // scripts live in src/content/stage/<id>.js
 //   ?stage=demo                             // debug: play one when the world loads
+//   src/content/stage/index.js              // triggers: play a script once when a story flag is set
+//   scene.stage.after('id', then)           // a story beat: the cutscene, then `then` (e.g. its dialogue) on every peer
+// How to write and place one: docs/design/cutscenes.md.
 //
 // Sync (Michael: "all dialogue tracks with the host"): the host (or the solo player) runs it and
 // tells every client to play the same script, so each screen acts it out in step; nothing streams.
@@ -38,6 +41,7 @@ import { VIEW } from '../view.js';
 import { tr, getLang } from '../i18n.js';
 import { speak, hush } from '../audio/audio.js';
 import * as Settings from '../settings.js';
+import { STAGE_TRIGGERS } from '../content/stage/index.js';
 
 const ROOMMATES = new Set(['michael', 'trevor', 'manuel']);
 const BAR = 22;                                   // letterbox bar height (view px)
@@ -50,8 +54,9 @@ export class Stage {
     this.s = scene;
     this.active = null;     // { id, script, tok, actors: Map, host }
     this.tok = 0;
+    this._waiters = new Set();   // guests: story beats waiting for the host's copy of a cutscene to end
     scene.input.keyboard.on('keydown-X', () => { if (this.active?.host) this.skip(); });
-    scene.events.once('shutdown', () => this._teardown());
+    scene.events.once('shutdown', () => { this._gone = true; this._waiters.clear(); this._teardown(); });
   }
 
   get playing() { return !!this.active; }
@@ -61,11 +66,26 @@ export class Stage {
     const s = this.s;
     if (s.mode === 'client') { s.net.send({ t: 'stage', op: 'ask', id }); onDone?.(); return false; }
     const script = await loadScript(id);
-    if (!script || this.active || (script.map && script.map !== s.map?.id)) { onDone?.(); return false; }
+    if (!script || this._gone || this.active || (script.map && script.map !== s.map?.id)) { onDone?.(); return false; }
     if (s.mode === 'host') s.net.broadcast({ t: 'stage', op: 'start', id });
     this._run(script, { host: true, onDone, ctx });
     return true;
   }
+
+  /**
+   * A story beat that every peer reaches at once (a map entry, the world loading): act cutscene `id` first,
+   * then run `then` (usually the scene's dialogue). Host and solo play it. A guest never plays its own copy;
+   * it waits for the host's: `then` runs when that ends, or after `grace` seconds if the host's never starts
+   * (no script, wrong map). So the dialogue opens after the cutscene on every screen, not over it.
+   */
+  after(id, then, grace = 2) {
+    if (this.s.mode !== 'client') { this.play(id, then); return; }
+    const w = { id, go: () => { if (!this._waiters.delete(w)) return; then?.(); } };
+    this._waiters.add(w);
+    this.s.time.delayedCall(grace * 1000, () => { if (this.active?.id !== id && this._pending?.id !== id) w.go(); });
+  }
+
+  _release(id) { for (const w of [...this._waiters]) if (w.id === id) w.go(); }
 
   /** The host's X: end it for everyone now. */
   skip() { if (this.active?.host) this._finish(true); }
@@ -92,6 +112,7 @@ export class Stage {
     if (msg.op === 'end') {
       if (this._pending?.id === msg.id) this._cancelPending();
       if (this.active && this.active.id === msg.id) this._finish(false);
+      this._release(msg.id);   // a beat waiting on it can go on (also when the scene never got to play here)
     }
     return true;
   }
@@ -99,7 +120,7 @@ export class Stage {
   /** Each frame, after the world draws: keep the real sprites hidden behind their stand-ins. */
   update() {
     const a = this.active;
-    if (!a) return;
+    if (!a) { this._checkTriggers(); return; }
     for (const act of a.actors.values()) {
       if (act.real?.active) act.real.setVisible(false);
       act.draw();
@@ -111,6 +132,32 @@ export class Stage {
       sh.clear().fillStyle(0x000000, 0.55);
       for (const p of this.s._lastRendered?.players ?? []) if (!p.dn && !cast.has(p.c)) sh.fillEllipse(Math.round(p.x) + 1, Math.round(p.y) + 3, 11, 4);
       for (const act of a.actors.values()) if (act.roommate) sh.fillEllipse(Math.round(act.x) + 1, Math.round(act.y) + 3, 11, 4);
+    }
+  }
+
+  // ---------- triggers ----------
+
+  /** Host and solo: start any cutscene whose flag is now set (once per world, no dialogue open). */
+  _checkTriggers() {
+    const s = this.s, now = s.time.now;
+    if (s.mode === 'client' || this._starting || s.dlg || !s.save?.flags || now < (this._nextCheck ?? 0)) return;
+    this._nextCheck = now + 250;
+    const f = s.save.flags;
+    for (const t of STAGE_TRIGGERS) {
+      const played = `stage.${t.id}.played`;
+      if (f[played] || !f[t.flag] || (t.map && t.map !== s.map?.id) || this._missing?.has(t.id)) continue;
+      // Played is recorded only once it really starts. If the party changes maps or another cutscene
+      // starts while the script loads, the trigger stays eligible; a script that can't load is not retried.
+      this._starting = true;
+      loadScript(t.id)
+        .then((script) => {
+          if (!script) { (this._missing ??= new Set()).add(t.id); return false; }
+          if (this._gone || (t.map && t.map !== s.map?.id)) return false;   // scene closed, or the party left the map
+          return this.play(t.id);
+        })
+        .then((started) => { if (started) f[played] = true; })
+        .finally(() => { this._starting = false; });
+      return;
     }
   }
 
@@ -185,6 +232,7 @@ export class Stage {
     const me = s.sprites?.get(s.localId);
     if (me) cam.startFollow(me, true, 0.15, 0.15);
     a.onDone?.();
+    this._release(a.id);
   }
 
   _cancelPending() {
