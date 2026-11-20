@@ -1443,6 +1443,61 @@ test('pipe puzzle: every seed is solvable and starts unsolved', () => {
 // Every generated scene (romance and checkpoint included), so a new scene can't skip this check.
 const SCENES = fs.readdirSync(new URL('../src/content/dialogue/act1/', import.meta.url)).filter((f) => f.endsWith('.js')).map((f) => f.replace(/\.js$/, ''));
 const { loadScene, Conversation, evalCond } = await import('../src/engine/dialogue.js');
+test('a shared choice becomes an actor line before its branch effects apply', () => {
+  const scene = { start: 'start', nodes: {
+    start: { lines: [], choices: [{ text: '*Take the left door.*', go: 'left' }, { text: 'Take the right door.', go: 'right' }] },
+    left: { lines: [{ who: 'Guard', text: 'Go ahead.' }], choices: [], effects: [{ op: 'set', arg: 'door.left' }] },
+    right: { lines: [{ who: 'Guard', text: 'Room is locked.' }], choices: [] },
+  } };
+  const flags = {}, ctx = { flags }, sink = { flag: (key, value) => { flags[key] = value; } };
+  const conv = new Conversation(scene, null, ctx, sink);
+  conv.choose(0, 'manuel');
+  assert.deepEqual(conv.line, { who: 'manuel', text: 'Take the left door.', choice: true });
+  assert.deepEqual(conv.choices, []);
+  assert.equal(flags['door.left'], undefined);
+  conv.choose(1, 'michael');
+  conv.advance();
+  assert.deepEqual(conv.line, { who: 'Guard', text: 'Go ahead.' });
+  assert.equal(flags['door.left'], true);
+  const solo = new Conversation(scene, null, ctx, sink);
+  solo.choose(1);
+  assert.equal(solo.nodeId, 'right');
+});
+
+test('a busy shared chooser receives the current offer once free', async () => {
+  const { SharedEvents } = await import('../src/game/sharedEvent.js');
+  const banner = {
+    setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; },
+    setText() { return this; }, setVisible() { return this; },
+  };
+  const sent = [];
+  const local = { spectator: false };
+  const scene = {
+    character: 'manuel', mode: 'client', dlg: local,
+    input: { keyboard: { on() {} } }, time: { addEvent() {} }, add: { text: () => banner },
+    net: { send: (msg) => sent.push(msg) }, _drawDialogue() {},
+  };
+  const shared = new SharedEvents(scene);
+  const state = { choices: ['Take the left door.'], decider: 'manuel', turn: 2 };
+  shared.onMsg({ t: 'evStart', id: 'host:ended', main: 'trevor', scope: 'all' });
+  shared.onMsg({ t: 'evState', id: 'host:ended', state });
+  shared.onMsg({ t: 'evEnd', id: 'host:ended' });
+  shared.onMsg({ t: 'evStart', id: 'host:live', main: 'trevor', scope: 'all' });
+  shared.onMsg({ t: 'evState', id: 'host:live', state });
+  assert.equal(scene.dlg, local);
+  scene.dlg = null;
+  scene.menu = 'inventory';
+  shared._pump();
+  assert.equal(scene.dlg, null);
+  scene.menu = null;
+  shared._pump();
+  assert.equal(shared.watching.id, 'host:live');
+  assert.equal(scene.dlg.choices[0].text, 'Take the left door.');
+  scene.dlg.choose(0);
+  scene.dlg.choose(0);
+  assert.deepEqual(sent, [{ t: 'evChoose', id: 'host:live', i: 0, turn: 2, who: 'manuel' }]);
+});
+
 await (async () => {
   try {
     for (const name of SCENES) {
