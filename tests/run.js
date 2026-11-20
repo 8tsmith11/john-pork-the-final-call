@@ -976,6 +976,36 @@ test('lattice table (Trevor: everyone plays, AI for whoever is not there): seats
   t2._step(); assert.equal(results.length, 1, 'recorded once');
 });
 
+test('Lattice is required (Trevor): after a game anyone seated can play again, and the house eases off with every loss until the party wins there', async () => {
+  const LTable = await import('../src/game/latticeTable.js'), LRules = await import('../src/engine/lattice.js');
+  const flags = {}, players = new Map([['host', { id: 'host', character: 'trevor' }]]);
+  const scene = { mode: 'solo', character: 'trevor', localId: 'host', sim: { players }, save: { party: { trevor: {}, manuel: {}, michael: {} }, flags, world: { seed: 'r' } },
+    net: { broadcast() {}, send() {} }, _latticeResult: (id, won) => { flags[`lattice.games.${id}`] = (flags[`lattice.games.${id}`] ?? 0) + 1; if (won) flags[`lattice.won.${id}`] = true; } };
+  const t = new LTable.LatticeTable(scene, { makeView: () => ({ update() {}, close() {} }) });
+  t.fast = true; t.open('dealer');
+  assert.equal(t.ease, 0, 'full strength the first time');
+  assert.equal(t.act('host', { type: 'rematch' }), false, 'no rematch mid-game');
+  const playOut = () => { for (let k = 0; k < 3000 && !t.g.winner; k++) { if (t.g.phase === 'setup') LRules.aiSetup(t.g); else LRules.aiTurn(t.g); } t._step(); };
+  playOut();
+  assert.equal(t.act('stranger', { type: 'rematch' }), false, 'only someone at the table deals again');
+  const won = !!flags['lattice.won.dealer'];
+  assert.equal(t.act('host', { type: 'rematch' }), true);
+  assert.ok(t.active && !t.g.winner, 'a fresh game at the same table');
+  assert.equal(t.ease, won ? 0 : LTable.EASE_PER_LOSS, won ? 'won: no easing' : 'one loss: the house eases off');
+  flags['lattice.games.dealer'] = 9; delete flags['lattice.won.dealer'];
+  t.g.winner = 'npc'; t.recorded = true; t.act('host', { type: 'rematch' });
+  assert.equal(t.ease, LTable.EASE_MAX, 'capped');
+  // and the easing is real: the house wins far less often at the cap
+  let full = 0, eased = 0;
+  for (let k = 0; k < 120; k++) for (const [ease, inc] of [[0, () => full++], [LTable.EASE_MAX, () => eased++]]) {
+    const g = LRules.newGame('e' + k, ['trevor', 'manuel', 'michael', 'npc']);
+    for (let i = 0; g.phase === 'setup' && i < 50; i++) LRules.aiSetup(g);
+    for (let i = 0; !g.winner && i < 2000; i++) LRules.aiTurn(g, LRules.side(g) === 'npc' ? { ease } : {});
+    if (g.winner === 'npc') inc();
+  }
+  assert.ok(eased < full / 2, `house wins: ${full} at full strength, ${eased} eased`);
+});
+
 test('penned enemies (cordon blockades, task #36) push toward the party but never leave their pen', () => {
   const m = MAPS_FOR_TEST.metro_plaza;
   const sim = new Sim({ ...m, enemies: [{ kind: 'enemy.rot_taken', x: 30 * 16 + 8, y: 20 * 16 + 8, pen: [29, 19, 3, 2] }] }, { seed: 'pen' });

@@ -9,6 +9,9 @@ import { talkLine } from '../content/latticeTalk.js';
 
 export const ROOMMATE_SIDES = ['trevor', 'manuel', 'michael'];
 const AI_DELAY = { setup: 650, turn: 1100 };
+// Lattice is required (Trevor), so the house eases off after each loss at a table until the party wins there:
+// it wins about 25% of four-way games at full strength, 16% after one loss, 8% after two, 4% after three or more.
+export const EASE_PER_LOSS = 0.15, EASE_MAX = 0.45;
 
 // What changed at the table, for the talk lines.
 const tally = (g) => ({
@@ -54,6 +57,8 @@ export class LatticeTable {
     const n = Number(this.s.save?.flags?.[`lattice.games.${id}`] ?? 0);
     this.g = L.newGame(`${this.s.save?.world?.seed ?? 'w'}:${id}:${n}`, sides);
     this.id = id; this.opponent = opponent; this.left = new Set(); this.closed = false; this.recorded = false;
+    const f = this.s.save?.flags ?? {};
+    this.ease = f[`lattice.won.${id}`] ? 0 : Math.min(EASE_MAX, EASE_PER_LOSS * n);   // every earlier game here was a loss
     this._say('start', 'npc');
     this._send('start');
     this._showLocal();
@@ -65,6 +70,7 @@ export class LatticeTable {
 
   /** Host: a move from `peer`. Applied only if it's that player's side's turn and the rules allow it. */
   act(peer, a) {
+    if (a?.type === 'rematch') return this.rematch(peer);
     if (!this.host || !this.active || this.g.winner || !a) return false;
     const side = this.turnSide();
     if (this.seats()[side] !== peer) return false;
@@ -93,6 +99,16 @@ export class LatticeTable {
     return true;
   }
 
+  /** Host: after a game, anyone seated can deal the same table again (a required table never strands you). */
+  rematch(peer) {
+    if (!this.host || !this.active || !this.g.winner || !this.recorded) return false;
+    if (!Object.values(this.seats()).includes(peer)) return false;
+    const { id, opponent } = this;
+    this.g = null;
+    this.open(id, opponent, peer);
+    return true;
+  }
+
   /** Host: a player leaves the table; their side goes to the AI. With nobody left watching, the game is called off. */
   leave(peer) {
     if (!this.host || !this.active) return;
@@ -114,7 +130,7 @@ export class LatticeTable {
     this.timer = setTimeout(() => {
       if (!this.active || this.g.winner) return;
       const before = tally(this.g), s = this.turnSide();
-      if (this.g.phase === 'setup') L.aiSetup(this.g); else L.aiTurn(this.g);
+      if (this.g.phase === 'setup') L.aiSetup(this.g); else L.aiTurn(this.g, s === 'npc' ? { ease: this.ease } : {});
       this._afterChange(s, before);
       this._send('state');
       this._step();

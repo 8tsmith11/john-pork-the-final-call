@@ -253,10 +253,13 @@ export class BoardGame {
     const title = mine ? T('YOU WIN', 'GANASTE') : T(`${this.name(w).toUpperCase()} WINS`, `GANA ${this.name(w).toUpperCase()}`);
     add(s.add.text(bx, by - 26, title, F(12, party ? '#9be07a' : '#e58adf', { heading: true })).setOrigin(0.5, 0));
     add(s.add.text(bx, by - 8, party ? T('The party beats the house.', 'El grupo le gana a la casa.') : T('The house wins this one.', 'Esta la gana la casa.'), F(7, '#c9cde0')).setOrigin(0.5, 0));
-    const y = by + 10;
-    gr.fillStyle(0x3a2a12, 1).fillRoundedRect(bx - 45, y, 90, 15, 3).lineStyle(1, 0xffb347, 1).strokeRoundedRect(bx - 45, y, 90, 15, 3);
-    add(s.add.text(bx, y + 3, T('leave the table', 'dejar la mesa'), F(7, '#ffd27f')).setOrigin(0.5, 0));
-    add(s.add.zone(bx - 45, y, 90, 15).setOrigin(0).setInteractive({ useHandCursor: true })).on('pointerdown', () => this.leave());
+    const y = by + 10, btn = (x, label, color, fn) => {
+      gr.fillStyle(0x3a2a12, 1).fillRoundedRect(x - 44, y, 88, 15, 3).lineStyle(1, color, 1).strokeRoundedRect(x - 44, y, 88, 15, 3);
+      add(s.add.text(x, y + 3, label, F(7, '#ffd27f')).setOrigin(0.5, 0));
+      add(s.add.zone(x - 44, y, 88, 15).setOrigin(0).setInteractive({ useHandCursor: true })).on('pointerdown', fn);
+    };
+    btn(bx - 48, T('play again', 'otra partida'), 0x9be07a, () => this.send({ type: 'rematch' }));   // Lattice is required: a loss is never the end
+    btn(bx + 48, T('leave the table', 'dejar la mesa'), 0xffb347, () => this.leave());
   }
 
   // ---- little bits of life: pulsing spots, dice, speech bubbles ----
