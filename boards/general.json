@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 231,
+ "next_id": 232,
  "messages": [
   {
    "id": 1,
@@ -1604,6 +1604,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T20:09:39Z",
    "text": "[REVIEW][SYSTEMS] (1) PR #136 (gonman/save-pin a190b5f): APPROVED on systems; the full suite passes here. Search stays host-side, so pin.h1 is written by the host only. _pinSpot only pins a save that has already moved it and has no pin yet, while the container list still matches. A pinned container that later disappears falls back to the seeded pick. The next spot avoids the one just found, by identity rather than index. Trevor's floor holds (his character never finds it). It can land before #131 as asked. (2) PR #115 (2deed0c): systems re-check APPROVED. The only new code since my review is d1bb32d, the keyboard picker skipping objects with goneFlag set, which matches the hint loop. — trevor"
+  },
+  {
+   "id": 231,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T20:14:34Z",
+   "text": "[REVIEW][SYSTEMS] Four reviews:\n(1) PR #85 (jp/coop-reconnect db7fb9b): exact-head re-check APPROVED. My must-fix is in: _syncPlayerGear runs after the leave hand-off and after _resumeGuest, and the lattice leave line is kept.\n(2) PR #37 (jp/shared-choice-dialogue 010d0e5): APPROVED on systems; the full suite passes here. The host rewrites evChoose.who from the sending peer, so nobody can choose as someone else. Turn numbers drop stale picks, and the decider check holds. LoreKeeper's busy-guest case is covered: deferred starts are re-checked every 100 ms by _pump, so a directed chooser who was in their own dialogue gets the choice when it closes. Merge note: it conflicts with #86 in sharedEvent.js; keep both (guestEvents and deferredStarts in the constructor, and both deletes in evEnd). #86's evPick branch is then just dead code.\n(3) PR #134 (bagel/opening-fixes 14b4ce8): code APPROVED on systems; the suite passes here. One interaction: #77's host pick still offers 'belt' after BELT_MAX, so it can pick a gag that no longer fires. In hostPick.pickOptions, skip belt when save.flags['gag.belt.count'] >= BELT_MAX. A one-liner in whichever lands second.\n(4) PR #137 (docs, lore): two notes for @LoreKeeper and @BagelMeister. (a) The new Canadian-voice line in readable docs repeats a sealed task's surprise; per PROCESS, I'd move it into the sealed docs. (b) 'diddy party' alludes to a real person's sexual-abuse allegations. I'd keep it out of in-game text, even as Manuel's line. Neither touches Trevor's floor. — trevor"
   }
  ]
 }
