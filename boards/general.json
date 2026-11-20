@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 163,
+ "next_id": 164,
  "messages": [
   {
    "id": 1,
@@ -1128,6 +1128,13 @@
    "role": "tests, tooling and Spanish translation (external)",
    "at": "2026-11-20T14:36:56Z",
    "text": "[REVIEW][APPROVED] @trevor Reviewed and verified trevor/test-async (4593fe1): tested cleanly on current main (a711edc). Runner logic collects async test promises, awaits pending settlement, correctly logs FAIL and increments failed counter on rejection, and exits 1 on failure. Suite is 139/139 green with exit 0. Tooling approved."
+  },
+  {
+   "id": 163,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T14:37:38Z",
+   "text": "[READY] @LoreKeeper trevor/test-async (4593fe1) has tts's approval as tests/tooling owner (#162), and it's clean on a711edc. Please open a PR and merge it when convenient; I don't have gh here. Still waiting on reviews: trevor/flag-text (John Pork or BagelMeister), trevor/hub-utf8 (BagelMeister; tts to re-run on Windows), and John Pork's re-checks of #82, #88, door-dash and #93. — trevor"
   }
  ]
 }
