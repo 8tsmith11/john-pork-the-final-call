@@ -26,7 +26,8 @@ The view is 480×270, so a page is landscape: one screen, read left to right, to
 - **Gutters:** 6 px between panels.
 - **Footer:** a strip at y 256-270 for the page number (left) and the controls (right).
 - **Paper** (`paper` on the comic):
-  - `bone`: printed look. Bone-white gutters, dark ink frames. The default.
+  - `bone`: printed look. Bone-white gutters, dark ink frames. The default (Michael picked it for
+    flashbacks, PR #84); a comic can still choose `night`.
   - `night`: for pages that should feel like a memory, or a recording in the dark. Near-black
     gutters, the same ink frames plus a 1 px grey keyline outside them so the edges still read.
 - **Frames:** 2 px of ink (`night0`) on the panel's own edge. Art never draws outside its panel; it is
@@ -115,32 +116,52 @@ to Pork, rot is a rendering error.
   with the back of the page showing as a narrow strip at its edge and a soft shadow on the page
   underneath. **Back** runs it the other way: the previous page slides back over.
 - **Close:** a short fade, and the world is back.
-- **Sound (optional):** a short paper swish on the effects bus, so it follows the Effects volume and
-  `?mute`. Nothing else plays; the soundtrack carries on underneath.
+- **Sound:** a short paper swish on every turn (Michael kept it, PR #84), on the effects bus, so it
+  follows the Effects volume and `?mute`. Nothing else plays; the soundtrack carries on underneath.
 
 ## Controls
 
+Michael's answers on PR #84: **only the host turns the page**, and **story comics can't be skipped**
+by default.
+
 | | Host or solo | Guest |
 |---|---|---|
-| Next page | E, Space, Enter, → or D, or click | the same (asks the host) |
-| Back | ←, A or Backspace | the same (asks the host) |
-| Esc | ends it for everyone (if the comic is skippable) | closes it on this screen only |
+| Next page | E, Space, Enter, → or D, or click | nothing: the host turns |
+| Back | ←, A or Backspace | nothing: the host turns |
+| Esc | ends it for everyone, only if the comic is skippable (see below) | closes it on this screen only, always |
+
+**Skipping.** A story comic is unskippable by default: the host's Esc does nothing, and the comic ends
+when the host turns past its last page. The host can Esc out of a comic only when:
+
+- the comic says `skippable: true` (the engine demo does; a story comic shouldn't), and it isn't the
+  first whole playback of a comic in pieces with `assembled.firstSkippable: false`; or
+- the host's game runs in **testing mode** (`?test` in the URL) or **spoiler-free mode**
+  (`?spoilerfree`). Then every comic can be skipped, story comics and locked playbacks included. The
+  mode is read when the world loads, and it is the host's URL that counts. The other debug params
+  still work alongside it, for instance `?comic=<id>&test`.
+
+A `?comic=` debug play on its own doesn't make a story comic skippable; add `&test` for that.
 
 A key the page uses stays on the page: the Esc or E that closes a comic doesn't also open the
 inventory or interact in the world.
 
-The controls line under each page says this in the reader's language, and "next" becomes "done" on
-the last page.
+The controls line under each page says this in the reader's language. The host's line lists next,
+back (from page 2) and Esc (only when the host can skip), and "next" becomes "done" on the last page.
+A guest's line says "The host turns the page · Esc: close" ("El anfitrión pasa la página · Esc:
+cerrar").
 
 ## Co-op (host-authoritative)
 
 - The host (or the solo player) owns the current page and tells everyone; every screen shows the same
   page at the same time.
-- Anyone can turn the page. A guest's turn is a request naming the page they saw. The host accepts the
-  first request for that page once the page has been up for 0.4 s, so two people pressing at once
-  turn one page, and nobody can skip a page by mashing.
-- A guest who presses Esc leaves on their own screen (as with shared scenes, D-014); the rest keep
-  reading. The host's Esc ends it for everyone.
+- **Only the host turns the page** (Michael, PR #84). A guest's next and back do nothing and send
+  nothing, and a `turn` message from an older guest build is ignored. A page is up for 0.4 s before
+  the host can turn it, so a mashed key turns one page.
+- A guest who presses Esc leaves on their own screen (as with shared scenes, D-014); the host and
+  everyone else keep reading. That holds for every playback, the locked first whole playback of a
+  comic in pieces included (the Lore Keeper's rule). A guest never turns or skips for anyone else.
+- The host's Esc ends it for everyone, but only for a comic the host can skip (see Controls): by
+  default a story comic plays to its last page.
 - The host repeats the current page every second, so a guest who joins late, or misses a message,
   catches up.
 - A guest can ask for a comic (the archive, or `?comic=` in their own browser), and it plays for
@@ -158,7 +179,7 @@ the last page.
 - High-contrast lettering: ink on bone, ink on amber, and bright cyan on deep teal for machine voices.
 - Shape tells you the kind of voice as well as colour: tails for speech, square boxes for captions and
   logs, dashes for whispers.
-- No timers: the reader sets the pace, and can go back.
+- No timers: the reader sets the pace (in co-op, the host), and can go back.
 - Each player reads in their own language; pages are synced by number, never by text.
 - With `prefers-reduced-motion` set in the browser, pages cut instead of turning and open without the
   panel stagger.
@@ -174,7 +195,8 @@ everything else neutral Latin American Spanish, per the i18n rules).
 export default {
   id: 'demo',
   paper: 'bone',              // or 'night'
-  skippable: true,            // false: the host can't Esc out (guests still can, on their screen)
+  skippable: true,            // only for comics that aren't story: the host can Esc out. Story comics
+                              // leave it out (unskippable by default; guests still close their screen)
   pages: [
     {
       layout: 'strip3',
@@ -224,13 +246,16 @@ A comic the story hands out a page at a time (found one by one, then put togethe
   sets it at the pickup, then plays the page).
 - `scene.comic.play(id, { assembled: true })` plays the whole comic, and only once `assembled.needs` is
   set. Without `{ assembled: true }` a comic in pieces never plays whole.
-- `assembled.firstSkippable: false`: the host can't Esc out of the first whole playback. Guests can
-  still close their own screen, and every later playback can be skipped.
+- `assembled.firstSkippable: false`: for a comic that says `skippable: true`, the host can't Esc out
+  of the first whole playback; every later playback can be skipped. (A story comic without
+  `skippable: true` can't be skipped at all, outside testing or spoiler-free mode.) Guests can always
+  close their own screen.
 - A trigger for a comic in pieces must name a tag.
 
 **Try it:** open the game with `?comic=<id>` (or `?comic=<id>:<tag>`). The engine demo is `?comic=demo`.
 On the host or in solo it plays as is, a comic in pieces included, and records nothing in the save. In
-a guest's browser it's an ask like any other (see Co-op).
+a guest's browser it's an ask like any other (see Co-op). Add `&test` to be able to skip a story comic
+with Esc.
 
 **Place it** (the Lore Keeper's call): add `{ id, flag, tag?, map? }` to `src/content/comics/index.js`.
 The host plays it once per world when the flag is set, after any story dialogue or cutscene that's on

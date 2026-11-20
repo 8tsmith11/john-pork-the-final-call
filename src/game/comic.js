@@ -8,33 +8,38 @@
 //   scene.comic.play('demo', { tag: 'x' })     // only the pages tagged 'x' (one piece)
 //   scene.comic.play(id, { assembled: true })  // a comic in pieces, played whole
 //   ?comic=demo   ?comic=demo:x                 // debug (host or solo): play one when the world loads
+//   ?test   ?spoilerfree                        // testing / spoiler-free mode: the host can skip any comic
 //   src/content/comics/index.js                 // triggers: play one once when a story flag is set
 // Every play on the host records comic.<id>[.<tag>].played in the save.
 // Art direction and the data format: docs/art/comic-pages.md. Drawing: src/game/render/comicPage.js.
 //
 // Comics in pieces (`pieces` on the comic): each tag plays on its own, once the story flag named for
 // it is set, and the whole comic plays only with { assembled: true } (and once `assembled.needs` is
-// set). `assembled.firstSkippable: false` keeps the host from skipping the first whole playback;
-// guests can always close their own screen. A line can show in one playback only (`only: 'assembled'`
-// or 'piece'), or wait for a story flag (`needs`), showing its `else` text, or nothing, until then.
+// set). `assembled.firstSkippable: false` keeps the host from skipping the first whole playback of a
+// comic that is otherwise skippable. A line can show in one playback only (`only: 'assembled'` or
+// 'piece'), or wait for a story flag (`needs`), showing its `else` text, or nothing, until then.
+//
+// Skipping (Michael, PR #84): story comics are unskippable by default. The host's Esc ends a comic for
+// everyone only when the comic says `skippable: true` (and it isn't a locked first whole playback), or
+// when the host runs in testing mode (?test) or spoiler-free mode (?spoilerfree), where every comic can
+// be skipped. A guest's Esc always closes it on their own screen only, whatever the host sees (D-014).
 //
 // Sync (host-authoritative, like stage.js): the host (or the solo player) owns the current page and
-// tells everyone; guests mirror it. Anyone can turn a page. A guest's turn is a request naming the
-// page they were looking at, and the host accepts the first request for that page once it has been up
-// for a beat, so two people pressing at once turn one page, and everyone moves together. Esc: the host
-// ends it for everyone; a guest closes it on their own screen only (D-014). The host repeats the
-// current page every second, so a late joiner or a dropped message catches up.
+// tells everyone; guests mirror it. Only the host turns the page (Michael, PR #84): a guest's next and
+// back do nothing, and their controls line says the host turns. A page is up for a beat before the host
+// can turn it, so a mashed key turns one page. The host repeats the current page every second, so a
+// late joiner or a dropped message catches up.
 //
 // Wire format, all { t: 'comic', ... }:
 //   host -> all     { op: 'show', id, run, page, tag, open? }   the current page (a new run opens it);
 //                                                       open: which of the comic's `needs` flags are
 //                                                       set, as indexes into gatesOf(comic)
 //                   { op: 'end', run }
-//   guest -> host   { op: 'turn', run, from, dir }       dir 1 next, -1 back; from = the page they saw
-//                   { op: 'ask', id, tag }               a guest wants one played. The host plays it for
+//   guest -> host   { op: 'ask', id, tag }               a guest wants one played. The host plays it for
 //                                                       everyone only if this save has played it before
 //                                                       or its trigger is due, and only while nothing
 //                                                       else is up or waiting; otherwise it's ignored
+//   A guest's { op: 'turn' } (sent by builds before host-only turning) is ignored.
 // Write story comics as sealed or generic content: no spoilers in ids, tags, comments or plain text.
 import { LAYOUTS, PAGE, panelRects, TEXT_KINDS, CAPTION_STYLES, BALLOON_STYLES, ART_KEYS, BACKGROUNDS, PAPER, actionForKey } from './render/comicLayout.js';
 import { makeComicView } from './render/comicPage.js';
@@ -42,7 +47,7 @@ import { COMIC_TRIGGERS } from '../content/comics/index.js';
 
 export { actionForKey };
 
-export const DWELL_MS = 400;     // a page is up at least this long before a turn is accepted
+export const DWELL_MS = 400;     // a page is up at least this long before the host can turn it
 export const BEAT_MS = 1000;     // host heartbeat while a comic is up
 const TICK_MS = 250;
 const ID_RX = /^[a-z0-9_]+$/;
@@ -64,6 +69,13 @@ export async function loadComic(id) {
     console.info(`[comic] none named ${id}`);
     return null;
   }
+}
+
+/** Testing mode (?test) or spoiler-free mode (?spoilerfree) in the URL: the host can skip any comic,
+ *  story comics included. Neither mode existed before comics needed one; both are URL params only. */
+export function skipAnyMode(search = globalThis.location?.search ?? '') {
+  const q = new URLSearchParams(search);
+  return q.has('test') || q.has('spoilerfree');
 }
 
 /** The save flag that records a play: comic.<id>[.<tag>].played. */
@@ -108,6 +120,7 @@ export function checkComic(comic, frames = null) {
   };
   if (!comic || !ID_RX.test(comic.id ?? '')) bad.push('comic: id must be lower_snake_case');
   if (comic?.paper && !PAPER[comic.paper]) bad.push(`comic: unknown paper ${comic.paper}`);
+  if (comic?.skippable != null && typeof comic.skippable !== 'boolean') bad.push('comic: skippable must be true or false');
   if (comic?.pieces != null && comic.pieces !== true) {
     if (typeof comic.pieces !== 'object' || Array.isArray(comic.pieces)) bad.push('comic: pieces must be true or { tag: flag }');
     else for (const [tag, flag] of Object.entries(comic.pieces)) {
@@ -180,6 +193,7 @@ export class Comic {
     this.closedRun = null;  // guest: the run this player closed with Esc
     this.queued = null;     // host: a play waiting for a story scene or cutscene to finish
     this.lastBeat = 0;
+    this.skipAny = skipAnyMode();   // testing or spoiler-free mode: the host can skip story comics too
     scene.time?.addEvent?.({ delay: TICK_MS, loop: true, callback: () => this.tick() });
     scene.events?.once?.('shutdown', () => { this._gone = true; this.cur = null; this.pending = null; this.view.destroy?.(); });
     const q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('comic') : null;
@@ -210,7 +224,7 @@ export class Comic {
     if (!pages.length || this.cur || this._gone) { onDone?.(); return false; }
     const key = playedKey(id, tag);
     const locked = !tag && !debug && !flags[key] && comic.assembled?.firstSkippable === false;   // the first whole playback
-    const skippable = comic.skippable !== false && !locked;
+    const skippable = this.skipAny || (comic.skippable === true && !locked);   // story comics: unskippable unless they say so
     if (!debug) flags[key] = true;
     this.cur = { id, tag, comic, pages, page: 0, run: newRun(), at: this._now(), onDone, skippable, open };
     this._show();
@@ -233,28 +247,24 @@ export class Comic {
     return false;
   }
 
-  /** The local reader pressed something: 'next', 'back' or 'skip'. */
+  /** The local reader pressed something: 'next', 'back' or 'skip'. Only the host turns the page; a
+   *  guest's next and back do nothing, and a guest's Esc closes the comic on their own screen. */
   input(action) {
     const c = this.cur;
     if (!c) return false;
-    if (action === 'next' || action === 'back') {
-      const dir = action === 'next' ? 1 : -1;
-      if (this.host) return this._turn(dir, c.page);
-      this.s.net?.send({ t: 'comic', op: 'turn', run: c.run, from: c.page, dir });
-      return true;
-    }
+    if (action === 'next' || action === 'back') return this.host ? this._turn(action === 'next' ? 1 : -1) : false;
     if (action === 'skip') {
-      if (this.host) { if (c.skippable === false) return false; this.end(); return true; }
+      if (this.host) { if (!c.skippable) return false; this.end(); return true; }
       this.closedRun = c.run; this.cur = null; this.view.close();   // a guest leaves on their own screen
       return true;
     }
     return false;
   }
 
-  /** Host: accept a turn from the page `from`. One turn per page, once it has been up for a beat. */
-  _turn(dir, from) {
+  /** Host: turn one page, once the page has been up for a beat. */
+  _turn(dir) {
     const c = this.cur;
-    if (!c || !this.host || from !== c.page || (dir !== 1 && dir !== -1)) return false;
+    if (!c || !this.host || (dir !== 1 && dir !== -1)) return false;
     if (this._now() - c.at < DWELL_MS) return false;
     const next = c.page + dir;
     if (next < 0) return false;
@@ -303,8 +313,7 @@ export class Comic {
 
   onHostMsg(peer, msg) {
     if (msg?.t !== 'comic') return false;
-    if (msg.op === 'turn' && this.cur && msg.run === this.cur.run && Number.isInteger(msg.from)) this._turn(msg.dir, msg.from);
-    if (msg.op === 'ask') this._ask(msg);
+    if (msg.op === 'ask') this._ask(msg);   // a guest's 'turn' is ignored: only the host turns the page
     return true;
   }
 

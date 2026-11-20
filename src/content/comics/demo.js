@@ -5,6 +5,7 @@
 export default {
   id: 'demo',
   paper: 'bone',
+  skippable: true,   // not a story comic, so the host can Esc out (story comics can't, by default)
   pages: [
     {
       layout: 'strip3',

@@ -73,13 +73,14 @@ export function actionForKey(key) {
   return null;
 }
 
-/** The controls line under a page, in the reader's language. Guests close it on their own screen. */
+/** The controls line under a page, in the reader's language. Only the host turns the page, so a guest
+ *  is told the host turns, and that Esc closes it on their own screen. */
 export function footerHint(lang, { index, total, host, skippable }) {
   const es = lang === 'es', last = index >= total - 1;
+  if (!host) return [es ? 'El anfitrión pasa la página' : 'The host turns the page', `Esc: ${es ? 'cerrar' : 'close'}`].join('  ·  ');
   const parts = [`${es ? 'E / Espacio / clic' : 'E / Space / click'}: ${es ? (last ? 'terminar' : 'siguiente') : (last ? 'done' : 'next')}`];
   if (index > 0) parts.push(`←: ${es ? 'atrás' : 'back'}`);
-  if (!host) parts.push(`Esc: ${es ? 'cerrar' : 'close'}`);
-  else if (skippable) parts.push(`Esc: ${es ? 'saltar' : 'skip'}`);
+  if (skippable) parts.push(`Esc: ${es ? 'saltar' : 'skip'}`);
   return parts.join('  ·  ');
 }
 

@@ -187,7 +187,7 @@ class ComicView {
     panelRects(page).forEach((r, i) => { if (r) panels.push(this._panel(root, page.panels[i], r, paper, timers, hash(`${comic.id}/${index}/${i}`))); });
     const lang = getLang(), foot = { fontFamily: 'monospace', fontSize: '7px', color: PAL[paper.folio] };
     root.add(sc.add.text(PAGE.x, FOOTER_Y, `${index + 1} / ${pages.length}`, foot).setOrigin(0, 0.5));
-    root.add(sc.add.text(PAGE.x + PAGE.w, FOOTER_Y, footerHint(lang, { index, total: pages.length, host: opts.host !== false, skippable: opts.skippable !== false }), foot).setOrigin(1, 0.5));
+    root.add(sc.add.text(PAGE.x + PAGE.w, FOOTER_Y, footerHint(lang, { index, total: pages.length, host: opts.host !== false, skippable: opts.skippable === true }), foot).setOrigin(1, 0.5));
     return { root, timers, panels };
   }
 
