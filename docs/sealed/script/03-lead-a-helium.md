@@ -43,7 +43,7 @@ Fpbcr: arneol
 
 > rf: Cnegrf cbe zvy zvyybarf. Nypnamn l fboen, zv nzbe.
 
-**GERIBE:** Lbh jnag n yrnx qrgrpgbe. Jr cevag gur ubhfvat. Gur frafbe'f n ubg-jver oevqtr. V'ir tbg bar sebz yno.
+**GERIBE:** Lbh jnag n yrnx qrgrpgbe, ru? Jr cevag gur ubhfvat, ru. Gur frafbe'f n ubg-jver oevqtr, ru. V'ir tbg bar sebz yno, ru.
 
 > rf: Arprfvgnf ha qrgrpgbe qr shtnf. Vzcevzvzbf yn pnepnfn. Ry frafbe rf ha chragr qr uvyb pnyvragr. Gratb hab qry ynobengbevb.
 
@@ -57,11 +57,11 @@ Pubvprf:
 
 ### abqr: favssre_ubj
 
-**GERIBE:** Uryvhz pneevrf urng orggre guna nve. Eha n ubg jver. Vs vg pbbyf gbb snfg, gurer'f uryvhz ba vg.
+**GERIBE:** Uryvhz pneevrf urng orggre guna nve, ru? Eha n ubg jver, ru. Vs vg pbbyf gbb snfg, gurer'f uryvhz ba vg, ru.
 
 > rf: Ry uryvb pbaqhpr ry pnybe zrwbe dhr ry nver. Cbarf ha uvyb pnyvragr. Fv fr raseín qrznfvnqb eácvqb, unl uryvb.
 
-**GERIBE:** Gung'f rirel yrnx qrgrpgbe sbe n uhaqerq naq svsgl lrnef.
+**GERIBE:** Gung'f rirel yrnx qrgrpgbe sbe n uhaqerq naq svsgl lrnef, ru.
 
 > rf: Nfí fba gbqbf ybf qrgrpgberf qr shtnf qrfqr unpr pvragb pvaphragn nñbf.
 
@@ -89,7 +89,7 @@ Arkg: -> favssre_ohvyq
 
 > rf: ¡Nuí! Nuí rfgá, qvivab.
 
-**GERIBE:** Ebbxvr Nfgre zvfgnxr, pryroengvat orsber vg'f mrebrq.
+**GERIBE:** Ebbxvr Nfgre zvfgnxr, pryroengvat orsber vg'f mrebrq, ru? Qba'g or n ubfre.
 
 > rf: Reebe qr abingb qr Nfgre, srfgrwne nagrf qr pnyvoene n preb.
 
@@ -97,7 +97,7 @@ Arkg: -> favssre_ohvyq
 
 > rf: Yb pnyvoen n preb. Znahry ihryir n nprepne yn pvagn. Onwn bgen irm.
 
-**GERIBE:** Bxnl. Nfgre cebf.
+**GERIBE:** Bxnl, ru? Nfgre cebf. Ornhgl.
 
 > rf: Ohrab. Cebf qr Nfgre.
 
@@ -119,7 +119,7 @@ Arkg: -> favssre_ernq
 
 > rf: Yb nprepn n yn eraqvwn onwb yn chregn qr ragenqn. Yn yíarn fr qboyn.
 
-**GERIBE:** Qbja gur fgnvef.
+**GERIBE:** Qbja gur fgnvef, ru?
 
 > rf: Cbe yn rfpnyren, unpvn nonwb.
 
@@ -131,7 +131,7 @@ Arkg: -> favssre_ernq
 
 > rf: Ab unl anqn qronwb qr yn pnyyr.
 
-**GERIBE:** Gurer'f n genva fgngvba haqre gur fgerrg.
+**GERIBE:** Gurer'f n genva fgngvba haqre gur fgerrg, ru? Jub xarj, ru.
 
 > rf: Unl han rfgnpvóa qr gera qronwb qr yn pnyyr.
 

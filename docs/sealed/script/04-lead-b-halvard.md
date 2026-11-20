@@ -59,7 +59,7 @@ Fpbcr: arneol
 > rf: Ndhí nshren, qv zrabf.
 
 #### vs fcrnxre=geribe
-**GERIBE:** Jr urneq fbzrbar'f zbivat uryvhz.
+**GERIBE:** Jr urneq fbzrbar'f zbivat uryvhz, ru?
 
 > rf: Bízbf dhr nythvra rfgá zbivraqb uryvb.
 
@@ -146,7 +146,7 @@ Pubvprf:
 > rf: Phneragn. Fbl crevfgn, zhpunpub. Tháeqngr ybf qvrm cnen yb dhr frn dhr gr cnfn.
 
 #### vs fcrnxre=geribe
-**GERIBE:** Sbegl'f n ybg sbe n ehzbe.
+**GERIBE:** Sbegl'f n ybg sbe n ehzbhe, ru.
 
 > rf: Phneragn rf zhpub cbe ha ehzbe.
 
@@ -154,7 +154,7 @@ Pubvprf:
 
 > rf: Rf onengb cbe hab pvregb.
 
-**GERIBE:** Lbh urneq vg frpbaqunaq. Gung'f n hfrq ehzbe. Guvegl.
+**GERIBE:** Lbh urneq vg frpbaqunaq, ru? Gung'f n hfrq ehzbhe, ru. Guvegl. Abg n ybbavr zber, ru.
 
 > rf: Yb bífgr qr frthaqn znab. Rf ha ehzbe hfnqb. Gervagn.
 
@@ -359,7 +359,7 @@ Pubvprf:
 
 > rf: Unpr phngeb abpurf rfghir ra ry ynobengbevb unfgn ynf qbf, ¡fhsevraqb! Certhagnyr ny nlhqnagr.
 
-**GERIBE:** V jnf ubzr.
+**GERIBE:** V jnf ubzr, ru. Va gur ubbfr.
 
 > rf: Lb rfgnon ra pnfn.
 
@@ -413,7 +413,7 @@ Pubvprf:
 > rf: Ren zhpunf pbfnf.
 
 #### vs fcrnxre=geribe
-**GERIBE:** Gung jnfa'g n choyvp punaary. Ab penjy. Ab "Pvgvmraf."
+**GERIBE:** Gung jnfa'g n choyvp punaary, ru? Ab penjy, ru. Ab "Pvgvmraf," ru.
 
 > rf: Rfb ab ren ha pnany cúoyvpb. Fva pvagvyyb. Fva "Pvhqnqnabf".
 
@@ -458,7 +458,7 @@ Pubvprf:
 
 > rf: Gerf tbycrf. Qrfchéf ha ynetb fvyrapvb. Qrfchéf gerf. Rzcrmó ra cevzniren.
 
-**GERIBE:** N chzc. N ybbfr cyngr ba gur genpx.
+**GERIBE:** N chzc, ru? N ybbfr cyngr ba gur genpx, ru.
 
 > rf: Han obzon. Han cynpn fhrygn ra yn iín.
 

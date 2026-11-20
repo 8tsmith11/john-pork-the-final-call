@@ -33,7 +33,7 @@ Fpbcr: arneol
 
 #### vs fcrnxre=geribe
 
-**GERIBE:** Ubj ybat ner lbh cbfgrq?
+**GERIBE:** Ubj ybat ner lbh cbfgrq, ru?
 
 > rf: ¿Pháagb gvrzcb gr gbpn npá?
 
