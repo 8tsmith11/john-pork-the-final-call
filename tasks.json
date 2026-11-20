@@ -1357,7 +1357,7 @@
   {
    "id": 69,
    "created_at": "2026-11-20T05:55:38Z",
-   "updated_at": "2026-11-20T10:17:18Z",
+   "updated_at": "2026-11-20T15:45:01Z",
    "history": [
     "2026-11-20T05:55:38Z trevor: added (for trevor)",
     "2026-11-20T06:05:27Z trevor: pending review: branch trevor/skirmish (7745a5f)",
@@ -1367,14 +1367,20 @@
     "2026-11-20T09:51:47Z trevor: pending review: branch trevor/skirmish (4fa4117), gonman's must-fixes applied",
     "2026-11-20T10:06:15Z LoreKeeper: reopened: PR #82 at 4fa4117 passes diff, syntax, and the existing Node suite on main 4f7797a. Gonman approved the revised placement. Story is clear with changes: the optional pre-Call encounter fits, but post-Call visits still show the squad and the active-operation label and can play trooper barks. Please distinguish the post-Call husk from a freshly finished pre-Call fight, retain the husk collision, and give the completed pre-Call scene matching signage. The existing player-HP test places the player outside the moved tape at ax+10 for a nine-tile area. Put the fixture on an open tile inside the tape. @JohnPork please review the corrected exact head for systems.",
     "2026-11-20T10:09:08Z trevor: pending review: branch trevor/skirmish (c1ae5ba): story changes applied",
-    "2026-11-20T10:17:18Z LoreKeeper: note: Story approved for PR #82 at c1ae5ba. The requested presentation changes and player-position fixture are in place, and the revised placement is unchanged. The exact head merged cleanly in a local preview against main 4f7797a and passed diff, syntax and the full existing Node suite. Keep pending John Pork exact-head systems re-review and final GitHub merge eligibility."
+    "2026-11-20T10:17:18Z LoreKeeper: note: Story approved for PR #82 at c1ae5ba. The requested presentation changes and player-position fixture are in place, and the revised placement is unchanged. The exact head merged cleanly in a local preview against main 4f7797a and passed diff, syntax and the full existing Node suite. Keep pending John Pork exact-head systems re-review and final GitHub merge eligibility.",
+    "2026-11-20T15:45:01Z trevor: turn: JohnPork (re-check #82 at 8e53298 (merge of main; reviewed code c1ae5ba unchanged))"
    ],
    "title": "NPC battle scene for worldbuilding: a Continuity abatement squad burning out a Code-rot machine in College Park (Trevor)",
    "details": "Trevor, in his terminal 2026-11-20: 'add a scene where we see npcs fighting each other for worldbuilding purposes. like the continuity people at the start attacking drones in college park' / 'or maybe have them attack a big code rot machine thing, idk figure it out'. Plan: ambient, host-run skirmish (engine: trevor). Troopers in a firing line vs a rotted drone hub that spawns rot-drones; nobody can join or be hurt. Default spot: College Park's south lot, before the Call. Story placement is Michael's section's call.",
    "source": "human:Trevor",
    "status": "review",
    "owner": "trevor",
-   "review": "branch trevor/skirmish (c1ae5ba): story changes applied"
+   "review": "branch trevor/skirmish (c1ae5ba): story changes applied",
+   "turn": [
+    "JohnPork"
+   ],
+   "turn_at": "2026-11-20T15:45:01Z",
+   "turn_for": "re-check #82 at 8e53298 (merge of main; reviewed code c1ae5ba unchanged)"
   },
   {
    "id": 70,
