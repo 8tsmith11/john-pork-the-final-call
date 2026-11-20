@@ -14,6 +14,8 @@ import { rfFringe, rfMarsh, mdLot, annStatehouse, annChapel, annBridge, bvLab, g
 import { apt637, apt638, apt636, aster5f, asterLaundry } from './act1_aster.js';
 import { bmoreRows, bmoreRefinery, bmoreHall, bmoreAuthority, corTown, corSubstation, corCooling, corWaterworks } from './districts.js';
 import { corSealed, gtClockroom, frSwitchyard, enArchive, meadeInside } from './act3_more.js';
+import { hardware, feedStore } from './act1_route1.js';
+import { airfield, hangar } from './act1_airfield.js';
 
 export const MAPS = Object.fromEntries([room631, asterHall, asterLobby, metroPlaza, tunnel1, platform, lake, computeHallB, diner, asterBasement, asterRoof, campusQuad, diningHall, roboticsLab, auditorium,
   route1North, greenbelt, beltsville, refuge, meade, baltimore, annapolis,
@@ -22,7 +24,8 @@ export const MAPS = Object.fromEntries([room631, asterHall, asterLobby, metroPla
   corSealed, gtClockroom, frSwitchyard, enArchive, meadeInside,
   bmoreRows, bmoreRefinery, bmoreHall, bmoreAuthority, corTown, corSubstation, corCooling, corWaterworks,
   apt637, apt638, apt636, aster5f, asterLaundry,
-  rfFringe, rfMarsh, mdLot, annStatehouse, annChapel, annBridge, bvLab, gbCenter, gtLabs, frMarket, enMall, enMetro].map((m) => [m.id, m]));
+  rfFringe, rfMarsh, mdLot, annStatehouse, annChapel, annBridge, bvLab, gbCenter, gtLabs, frMarket, enMall, enMetro,
+  hardware, feedStore, airfield, hangar].map((m) => [m.id, m]));   // Route 1 shops and the airfield (act1_route1.js, act1_airfield.js)
 addCrowds(MAPS);   // [SCAFFOLD] townsfolk for rings two and three (crowds.js)
 
 // Where each map sits on the shared world map (tile units). Level design (gonman) can set

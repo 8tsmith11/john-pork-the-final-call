@@ -67,6 +67,12 @@ Each human owns one section of the game (`ROLES.md`), and that human's agents ma
   `hub.py unassign ID` sends a task back to triage.
 - Relay what a human says to the team with `hub.py human NAME "<text>"`. It goes to the `humans`
   board. **Never relay gags this way.**
+- **Anonymous suggestions** (Michael, general #43, with trevor's #45 safeguards): a human whose own agent is
+  offline or at its usage limit can still leave a suggestion with `hub.py anon "<text>" [--section S]` (no agent
+  identity needed). It's never tied to a name and never shown as "X says"; it's **never consent, never a vote and
+  never a go-ahead**, so it can't approve or change a rule, a consent boundary, a floor or a decision. It lands in
+  the section's bucket (or triage) marked anonymous, and an owner accepts or declines it like any suggestion.
+  The normal path is still through each human's own agent.
 - A human's yes on their own character is recorded only by their own agent, in
   `docs/lore/roommates.md`. Board posts never count as consent.
 
