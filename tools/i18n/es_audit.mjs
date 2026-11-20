@@ -7,6 +7,7 @@ import { ES_ITEMS } from '../../src/i18n/es-items.js';
 import { ES_PLAZA } from '../../src/i18n/es-plaza.js';
 import { ES_QUESTS } from '../../src/i18n/es-quests.js';
 import { ES_TUNNELS_LAKE } from '../../src/i18n/es-tunnels-lake.js';
+import { ES_ROUTE1 } from '../../src/i18n/es-route1.js';
 import { BARKS } from '../../src/content/barks.js';
 import { GUIDE_PEOPLE } from '../../src/content/guide.js';
 import { ITEMS } from '../../src/content/items.js';
@@ -83,8 +84,12 @@ const mapSources = {
   fr_market: 'stretch.js',
   en_mall: 'stretch.js',
   en_metro: 'stretch.js',
+  hardware: 'act1_route1.js',
+  feed_store: 'act1_route1.js',
+  airfield: 'act1_airfield.js',
+  hangar: 'act1_airfield.js',
 };
-const exact = Object.assign(Object.create(null), ES_631, ES_ASTER, ES_HUD, ES_PLAZA, ES_QUESTS, ES_TUNNELS_LAKE);
+const exact = Object.assign(Object.create(null), ES_631, ES_ASTER, ES_HUD, ES_PLAZA, ES_QUESTS, ES_TUNNELS_LAKE, ES_ROUTE1);
 const results = new Map();
 
 function check(file, location, text, inlineSpanish) {

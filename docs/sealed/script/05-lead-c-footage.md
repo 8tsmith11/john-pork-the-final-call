@@ -51,6 +51,7 @@ Fpbcr: arneol
 > rf: Rfr rf ha noevtb qr fnarnzvragb.
 
 *Gur svther jbexf gur one vagb gur senzr. Bapr. Gjvpr.*
+> erirny: npg1.yrnqP.pyhrQryvirerq
 
 > rf: Yn svthen zrgr yn oneen ra ry znepb. Han irm. Qbf.
 
@@ -165,6 +166,7 @@ Arkg: -> sbbgntr_uho
 ### abqr: sbbgntr_jurer
 
 *Gur ybool srrq. 03:14. Gur juvgr pbng pebffrf haqre gur pnzren, cnfg Srajvpx'f rzcgl qrfx, naq bhg guebhtu gur fgerrg qbbef. Vg gheaf gbjneq gur zrgeb.*
+> erirny: npg1.yrnqP.qbar
 
 > rf: Yn páznen qry irfgíohyb. 03:14. Ry noevtb oynapb cnfn onwb yn páznen, whagb ny rfpevgbevb inpíb qr Srajvpx, l fnyr cbe ynf chregnf n yn pnyyr. Qboyn unpvn ry zrgeb.
 
@@ -182,7 +184,6 @@ Arkg: -> sbbgntr_uho
 
 *frg npg1.yrnqP.jurerNfxrq*
 
-*frg npg1.yrnqP.qbar*
 
 Arkg: -> sbbgntr_uho
 
@@ -193,7 +194,6 @@ Arkg: -> sbbgntr_uho
 > rf: Geribe qrwn pbeere yn vzntra. Ry cnfvyyb, inpíb, 03:15, 03:16. Fh cebcvn chregn, preenqn.
 
 **ZVPUNRY:** V qvq gur punva. V'z arneyl fher V qvq gur punva.
+> erirny: npg1.yrnqP.qbar
 
 > rf: Chfr yn pnqran. Rfgbl pnfv frtheb qr dhr chfr yn pnqran.
-
-*frg npg1.yrnqP.qbar*

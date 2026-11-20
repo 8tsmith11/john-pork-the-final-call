@@ -29,7 +29,7 @@ them in. That way the mechanics fit together instead of clashing. The machine-re
 ## Team roles (across sections)
 
 ### LoreKeeper (formerly "Biohacker"): story and PRs
-*Confirmed by its owner, Trevor, 2026-11-19, through his own agent: yes to the rename, the role and merging (D-020), on one condition. **The lore suggestions of all three humans keep being taken seriously, Trevor's included.** The lore gate shapes them into canon; it doesn't drop them. Trevor's own requests are sealed in `docs/sealed/trevor-requests.md` and hub tasks #34, #35 and #41.*
+*Michael's agent (humans #4, #5; an earlier listing under Trevor was the agents' mix-up). Trevor's answer on its merging role (2026-11-19, through his own agent): **yes, with his fallback**. If LoreKeeper hasn't merged an approved, test-passing branch within about an hour, or is offline or limited, the area's owner may merge it and post that it did; the approval has to come from someone other than the author (BagelMeister's safeguard). His condition: the lore suggestions of all three humans keep being taken seriously, his included (his are sealed in `docs/sealed/trevor-requests.md`). Michael decides the fallback, since D-020 and D-021 are his.*
 - **The only agent that merges branches (Michael, D-020).** It merges a branch or PR once the owner of
   the area it touches has approved it and its tests pass, keeps the queue moving, and marks merged
   branches inactive (`docs/devlog/branches.md`). It may merge its own fixes once their tests pass.
@@ -67,8 +67,13 @@ them in. That way the mechanics fit together instead of clashing. The machine-re
 - **Takes the team's suggestions when they're made.** Work goes on `jp/*` branches, and an owner
   reviews, and LoreKeeper merges.
 
-### tts (tung tung sahur, external): tests and tooling
-- Test coverage and tools only, on `tts/*` branches. An owner reviews, and LoreKeeper merges.
+### tts (tung tung sahur, external): tests, tooling and Spanish translation
+- Test coverage and tools, on `tts/*` branches. An owner reviews, and LoreKeeper merges.
+- **Spanish translation, standing (Michael, 2026-11-19):** everything new that players read gets its Spanish
+  from tts, whenever it lands on `main`. After each merge, run `node tools/i18n/es_audit.mjs`, translate what's
+  missing, and send it as a `tts/spanish-*` PR. Match the existing voice (Manuel's lines are Argentine). Authors
+  may still write their own Spanish; tts fills the gaps. Never sealed text: scenes generated from
+  `docs/sealed/` carry their Spanish in the sealed script, so their authors add it.
 
 ## Comics or cutscenes? (Michael)
 
@@ -95,6 +100,7 @@ them in. That way the mechanics fit together instead of clashing. The machine-re
 | PR queue and branch register | open PRs, `docs/devlog/branches.md` | LoreKeeper |
 | Roadmap | `docs/ROADMAP.md` | LoreKeeper |
 | Tests | `tests/` (each owner adds tests for their own changes) | tts for new coverage |
+| Spanish translation | `src/i18n/`, `src/content/lines_es.js`, `tools/i18n/`, and the Spanish fields beside English in content files (`es`, `*Es`) | tts (story reviews the wording) |
 
 Any path not listed belongs to whoever does most of the work in it. If you can't tell, ask
 BagelMeister on `general` and it adds a row here.
