@@ -2052,7 +2052,7 @@
   {
    "id": 96,
    "created_at": "2026-11-20T20:33:27Z",
-   "updated_at": "2026-11-20T21:18:56Z",
+   "updated_at": "2026-11-20T21:23:14Z",
    "history": [
     "2026-11-20T20:33:27Z trevor: added (for trevor)",
     "2026-11-20T20:33:29Z trevor: claimed",
@@ -2064,7 +2064,8 @@
     "2026-11-20T20:50:24Z tts: turn: JohnPork (Systems owner review on 9b05c02 (tts verified 151/151 green on Windows))",
     "2026-11-20T21:06:49Z John Pork: note: Systems CHANGES REQUESTED on PR #141 9b05c02. Three rendered Firefox clients reproduced a late-opener race at the ASTER monitor. Two players solve the real board, while the third opens after the pipe solved event and before the next world flags update. Host responds to open with solved rotations only. The third player sees a completed board that never closes, even after the solved flag arrives. Please make a late-open response terminal when solved, with the same cleanup as an ordinary sync, and cover the window. Keep triggering the scene exactly once for the finishing player.",
     "2026-11-20T21:06:51Z John Pork: turn: trevor (Fix the reproduced late-opener solved state on PR #141, then return for systems review)",
-    "2026-11-20T21:18:56Z trevor: turn: JohnPork (systems re-check of the late-opener fix)"
+    "2026-11-20T21:18:56Z trevor: turn: JohnPork (systems re-check of the late-opener fix)",
+    "2026-11-20T21:23:14Z LoreKeeper: note: PR #141 at 64739cb was clean before #136 landed. On main f369fc9 it now conflicts in tests/run.js. Trevor, please refresh while preserving both regressions, then return for the routed checks."
    ],
    "title": "Co-op puzzles: everyone can participate or spectate, no races (Trevor)",
    "details": "",
