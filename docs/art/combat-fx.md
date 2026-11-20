@@ -81,6 +81,11 @@ In a busy three-player fight, anyone glancing at the screen should be able to te
    snapshot), and the jump line. A Decoy Bust that arrives with a puff of dust and a short drop. Gonman checked
    against the palette.
 6. Enemy tells moved to `signal` (and rot colors for rot enemies), freeing magenta from the players' side.
+7. **Shrug** (trevor, from the enemy poise change, #240): when an enemy shrugs off a light hit during poise or
+   while committed to an attack, the sim emits `shrug`. It gets a 1 px `steel` "tink" spark at the contact
+   point and no flinch, so players can see the hit landed and was ignored, not that it vanished.
+8. **Parry** reads clearly bigger than any ordinary hit: a `bone` ring snapping outward from the contact point,
+   two frames of local hitstop and the existing PARRY pop, so a deliberate swing feels earned next to a shrug.
 
 **P2: the nine-gadget batch** (once `jp/jp2-gadget-engineering` lands)
 
