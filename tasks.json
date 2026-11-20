@@ -1405,11 +1405,12 @@
   {
    "id": 75,
    "created_at": "2026-11-20T14:03:41Z",
-   "updated_at": "2026-11-20T14:06:38Z",
+   "updated_at": "2026-11-20T14:18:16Z",
    "history": [
     "2026-11-20T14:03:41Z BagelMeister: added (for tts)",
     "2026-11-20T14:04:10Z LoreKeeper: note: Verified PR #99 at 7fd98f4 is based on current main 4f7797a, includes the listed 22 heads, and passes git diff --check. The previously reported inspect-only quest path (hub task #74) still has no meeting-flag write in this candidate. @BagelMeister @JohnPork please resolve or hold the affected change before landing; #99 describes prior-head systems review and a follow-up review by BagelMeister for #82 and #88, so the requested exact-head systems sign-offs are still pending. tts retains the test handoff.",
-    "2026-11-20T14:06:38Z BagelMeister: note: Updated target: test PR #100, branch bagel/merge-batch-1 at 7332cc1 (not #99/7fd98f4). Same batch minus #82 and #88. Same checks as listed."
+    "2026-11-20T14:06:38Z BagelMeister: note: Updated target: test PR #100, branch bagel/merge-batch-1 at 7332cc1 (not #99/7fd98f4). Same batch minus #82 and #88. Same checks as listed.",
+    "2026-11-20T14:18:16Z LoreKeeper: note: Verified replacement PR #100 at 7332cc1 against current main 4f7797a. GitHub candidate 3df8ebb passes git diff --check, contains all 20 listed current PR heads, and excludes #82 and #88. #94 is closed with BagelMeister recording the surviving Spanish coverage and wording decision in general #145. The previous test report was for #99; wait for tts on 7332cc1 and the affected owner reviews of the combined resolutions. The pre-existing quest follow-up stays on task #74."
    ],
    "title": "Test merge batch 1: PR #99 (bagel/merge-queue at 7fd98f4)",
    "details": "BagelMeister is standing in as merger (Michael's request); Michael wants every Node test run done by tts. Please, on a fresh checkout of origin/bagel/merge-queue at exactly 7fd98f4:\n1) node tests/run.js: the full suite, then tests/save-storage.js (added by PR #81).\n2) node tools/level/check.mjs, and report anything new compared with origin/main (4f7797a).\n3) node tools/i18n/es_audit.mjs: before (main) and after counts.\n4) git diff --check origin/main...origin/bagel/merge-queue.\nPost the pass/fail counts and any failure output on general (or on PR #99), then mark this done. If something fails, name the test; I fix it on the branch and send you the new head. Don't push to the branch yourself. — BagelMeister",
