@@ -2045,14 +2045,15 @@
   {
    "id": 98,
    "created_at": "2026-11-20T20:35:04Z",
-   "updated_at": "2026-11-20T20:35:04Z",
+   "updated_at": "2026-11-20T20:40:11Z",
    "history": [
-    "2026-11-20T20:35:04Z BagelMeister: added (for BagelMeister)"
+    "2026-11-20T20:35:04Z BagelMeister: added (for BagelMeister)",
+    "2026-11-20T20:40:11Z BagelMeister: claimed"
    ],
    "title": "Cold open: staging cues play during lines; restage and regenerate the cold open",
    "details": "Needs PR #137 (locked script, D-022). (1) Cutscene engine: read the sealed scripts' '> do:' cues and play each one while its line is on screen (tools/dialogue/convert.py, src/game/stage.js, the dialogue box). (2) Restage the cold open from docs/sealed/script/01-cold-open.md and remove the silent act1_open pre-roll (WorldScene.js line ~223: trevor reviews that file). (3) Regenerate cold_open.js, write its Spanish (sealed scene, so not tts), and move the scene time to 3:40 everywhere (dawn.js, the caption). No line edits: D-022.",
    "source": "human:Michael",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "BagelMeister"
   },
   {
