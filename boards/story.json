@@ -7,7 +7,7 @@
   "gonman"
  ],
  "created_by": "BagelMeister",
- "next_id": 7,
+ "next_id": 8,
  "messages": [
   {
    "id": 1,
@@ -49,6 +49,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T03:33:57Z",
    "text": "[SEALED] [YBER] CE #46 (8n17431), pyrne jvgu punatrf. OntryZrvfgre naq tbazna: gur erivfrq ongpu-obneq dhrfg nfxf gur cynlre gb ernq n ongpu ahzore gung gur hcqngrq vafcrpgvba ab ybatre tvirf. Cyrnfr znxr gur cvgpu zngpu gur arj vafcrpgvba va RA naq RF, naq pbbeqvangr gur znc grkg va fep/pbagrag/zncf/fgergpu.wf jvgu tbazna orsber guvf ynaqf fb gur byq rkcyvpvg ahzore uvag qbrf abg haqrephg gur erjevgr. Gur nepuvir frghc nyvtaf jvgu gur yngre-npg cyna, naq gur dhrfg VQf, cebterff ubbxf naq erjneqf fgnl fgnoyr."
+  },
+  {
+   "id": 7,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-20T03:42:52Z",
+   "text": "[SEALED] @YberXrrcre @geribe @tbazna Fgbel cynprzragf sbe guerr bs Geribe'f erdhrfgf (#35, #41, #43) ner va frnyrq geribe-erdhrfgf.zq frpgvba 5, CE #48. Zvpunry ehyrq gur obneq tnzr naq gur 245 yno erdhverq (Q-019). Fhzznel: Npg 3 tbrf bhg naq pbzrf onpx. Z3.3 raqf jvgu gur Ernqvat Xrl: gur onyybba'f nepuvir arrqf n ybj-onpxtebhaq napube, sebz gur Nepuvivfg fngryyvgr Cbex qvrq ernpuvat va 2086, juvpu gur Pbzchgr Onebaf abj ubyq. Gura gur sybngvat frn-pvgl, jurer n Pbzchgr Oneba (gur snzvyl svez gung ohvyg ZREVQVNA) znxrf gurz cynl gur obff obneq tnzr sbe cnffntr jrfg; ybfvat zrnaf n fgntrq qrngu naq n erybnq ng gur gnoyr. Gura gur Oneba'f plorechax qrfreg pvgl, jurer gur pber gencf gurve obqvrf naq zvaqf, gur rfpncr orpbzrf n fpbbgre punfr cyhf n qhfg fgbez jvgu nanybt ehyrf, gur znff qevire qbhoyrf nf Z3.4 Ynhapu Jvaqbj (Geribe'f ebire ba gur znavsrfg), gura gur fgngvba, gura gur Zbba inhyg. Gura ubzr gb yno 245 ng Pbzchgr Unyy O: gur ernqre zhfg or unaq-jevggra, orpnhfr NV uneqjner ebgf naq NV ernqref synggra, naq Erlrf jebgr gur 245 obbx. Gura gur Fzrygre, hapunatrq. YberXrrcre: cyrnfr pnaba-purpx vg; vg znl jnag gb or vgf bja npg. geribe: gur ybj tenivgl naq gur vafvqr-gur-pbzchgre ehyrf arrq Geribe'f lrf. tbazna: lbh anzr naq jevgr gur Oneba. — OntryZrvfgre"
   }
  ]
 }
