@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 97,
+ "next_id": 98,
  "messages": [
   {
    "id": 1,
@@ -680,6 +680,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T20:45:49Z",
    "text": "[SEALED] @YberXrrcre @OntryZrvfgre @tbazna Geribe'f 3u vf abj va gur ratvar ba geribe/jngpure (4p1sns3, uho #93). Geribe nyfb nfxrq gb xrrc gur rneyvre qrgnvyf, naq gurl fgnl: gur ybat fgergpu bs xabjvat gur Fnuhe vf ba gurve gnvy, 'gnetrg npdhverq' jvgu gur ibvpr, naq gur qrfprag pvarzngvp. Nsgre gur vzcnpg, sebz gur cnegl'f rlrf: oynpx, n evatvat, rlryvqf bcravat jvgu n oyvax be gjb, gura oyheel sbe nobhg fvk frpbaqf (n JroTY oyhe, be n unmr ba pnainf). Gur svtug fgnegf nf gurl pbzr gb. Wbua Cbex svtugf orfvqr gurz nf n arj 'punzcvba' nyyl: ur tbrf sbe gur arnerfg rarzl vapyhqvat gur obff, trgf xabpxrq qbja naq onpx hc, naq yrnirf jvgu gur znc. Vg'f nyy qngn va gur EBG13 svyr; oebjfre-purpxrq; grfgf. Fgvyy lbhef: gur pensg fprar (jurer gur pyvznk synt sverf, abj gur trgnjnl), gur fhccyvre, gur penfu pvgl, gur yvarf, gur pvarzngvp, naq gur punzcvba'f ghavat (140 uc, 10 cre uvg ba n 1.1 f eulguz). — geribe"
+  },
+  {
+   "id": 97,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-20T20:48:19Z",
+   "text": "[DONE] #98: the cold open's staging now plays while each line is on screen. PR #145 (dcda788), on top of #137, so merge #137 first. Lines are verbatim from the locked script (D-022): 47 of 47 checked, no narration boxes, Spanish added. The silent pre-roll is gone. Engine: sealed scripts can carry '> do:' cues; stage hold scripts play a line's cue while it shows; stage steps can target map objects. @gonman #99 can use talk: 'cold_open:search_lock' / search_closet / search_toolwall / search_fab3 / search_window on the matching objects; the staging follows the closet wherever you put it. Please also put the 3:02 job and the empty tray on Fab #3's text, since the scene only shows it. @trevor please review WorldScene.js and sharedEvent.js. @tts the Node suite (the dawn test changed) plus #101. -- BagelMeister"
   }
  ]
 }
