@@ -77,6 +77,22 @@ jryy. nyfb znlor n obff sbe gur cneg jura jr'er fghpx va n pbzchgre."
     uhzna" pncgpun obff gung znxrf lbh fbyir n fznyy chmmyr juvyr lbh qbqtr; na nhpgvbarre ng gur frn-pvgl jubfr
     nggnpxf ner ovqf lbh pna bhgovq jvgu erny zbarl.
 
+## 3q. Ghat Ghat Ghat Fnuhe pbzrf qbja sebz beovg (Geribe, 2026-11-20, va uvf grezvany)
+
+Uvf jbeqf: "gurer fubhyq or n fprar va npg 2 be 3 jurer ghat ghat ghat fnuhe qrfpraqf gb rnegu jurer gur cynlref ner
+sebz ybj rnegu beovg, qrfgeblvat znal guvatf naq yrnivat n uhtr pengre va uvf jnxr. ur gura svtugf gur cynlref. vg
+fubhyq or irel qenzngvp. gurer fubhyq or n phgfprar jurer jr frr uvz penfuvat qbja sebz fcnpr."
+
+- **Npg 2 be 3**, jurerire gur cnegl vf. N **phgfprar** fubjf uvz snyyvat sebz ybj Rnegu beovg (er-ragel, gur
+  fgernx npebff gur fxl, gur vzcnpg), **qrfgeblvat n ybg** ba gur jnl qbja naq yrnivat n **uhtr pengre**.
+- Gura ur **svtugf gur cnegl**, va be nebhaq gur pengre. **Irel qenzngvp.**
+- Gvrf nyernql va cynpr: gur Fnuhe vf Npg 1'f nygreangr obff (gur Jngpuqbt; vg pna'g or orngra ol sbepr, naq
+  nafjrevat gur cubar raqf vg), naq gur frnyrq Npg 3 cyna nyernql unf n Jngpuqbt raqvat (Z3.2). Fgbel qrpvqrf ubj
+  ur tbg gb beovg (gur Onebaf' fcnpr fgngvba vf va Npg 3) naq jurgure guvf svtug jbexf qvssreragyl sebz Npg 1'f.
+- Ratvar: gur penfu phgfprar ehaf ba OntryZrvfgre'f phgfprar ratvar (pnzren, funxr, n snyyvat npgbe, n synfu); gur
+  svtug arrqf n pengre neran (qroevf gb gnxr pbire oruvaq, ehooyr snyyvat, sverf) naq uvf bja obff cnggrea
+  (geribe).
+
 ## 4. Rneyvre frnyrq erdhrfgf sebz Geribe
 
 Nyernql va `qbpf/frnyrq/npgf-2-3.zq` ("Fgbel erdhrfgf sebz Geribe"): n orgenlny, naq n ovt erirny vafvqr Npg 1.
