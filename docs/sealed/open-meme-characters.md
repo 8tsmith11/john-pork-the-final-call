@@ -2,7 +2,7 @@
      To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/open-meme-characters.md -->
 # Bcra zrzr punenpgref (ersrerapr cbby)
 
-Zvpunry'f yvfg bs zrzrf sbe shgher punenpgref (2026-11-18, hcqngrq gur fnzr qnl). Frnyrq ba zretr
+Zvpunry'f yvfg bs zrzrf sbe shgher punenpgref (2026-11-18, hcqngrq gur fnzr qnl; Fdhvq Tnzr nqqrq 2026-11-19). Frnyrq ba zretr
 (2026-11-19), haqre gur ehyr gung rirel fhecevfr vf frnyrq (`CEBPRFF.zq`, "Fcbvyref naq fhecevfrf").
 
 **Zvpunry'f qrpvfvbaf ba zretr (2026-11-19, yber-tngr frffvba):** ur nccebirf gur cbby nf jevggra,
@@ -237,6 +237,42 @@ dhrfgvbaf.
   [XLZ: gur Puvpxra Wbpxrl Vapvqrag](uggcf://xabjlbhezrzr.pbz/zrzrf/riragf/gur-puvpxra-wbpxrl-vapvqrag) ·
   [Fgne Gevohar](uggcf://jjj.fgnegevohar.pbz/gur-punbf-bs-puvpxra-wbpxrl-ng-n-zvarpensg-zbivr/601333275) ·
   [Hcebkk](uggcf://hcebkk.pbz/zbivrf/n-zvarpensg-zbivr-puvpxra-wbpxrl-zrzr-rkcynvarq)
+
+### Fdhvq Tnzr
+- **Zrzr:** gur Argsyvk fheiviny qenzn (frnfba 1 va Frcgrzore 2021, frnfba 2 va Qrprzore 2024,
+  frnfba 3 va Whar 2025). Crbcyr va qrog cynl qrnqyl irefvbaf bs puvyqera'f tnzrf sbe n pnfu cevmr,
+  juvyr thneqf va cvax whzcfhvgf naq znfxf xrrc jngpu. Vg xrrcf fcnjavat zrzrf:
+  - gur tvnag **Erq Yvtug, Terra Yvtug** qbyy jubfr urnq gheaf gb pngpu nalbar fgvyy zbivat;
+  - gur frnfba 2 **Zvatyr** tnzr, jubfr "Ebhaq naq Ebhaq" fbat orpnzr GvxGbx'f svefg iveny qnapr bs
+    2025 (gur svefg ivqrbf jrag hc nebhaq Arj Lrne'f Rir 2024);
+  - **Cncn Fdhvq Tnzr**, rqvgf bs gur npgbe jub cynlf gur Sebag Zna (Wnahnel gb Whyl 2025);
+  - **Fdhvq Tnzr Pryroengvba** (Ncevy 2025), **Bar Zber Tnzr** (erfhesnprq Whyl 2025) naq gur vebavp
+    **FDHVQ TNZRF❗❗**.
+- **Zvpunry'f cvgpu (2026-11-19):** ur nqqrq vg gb gur cbby; ab cvgpu lrg.
+- **Svg vqrnf:**
+  - **N ebggrq qbyy:** n uhtr cynltebhaq qbyy yrsg bire sebz gur Fybc Qrpnqrf, fgvyy ehaavat vgf
+    bar tnzr ng n qrnq cynltebhaq be snvetebhaq. Vg'f n fgrnygu rapbhagre: zbir bayl juvyr vgf urnq
+    vf ghearq. Gur pb-bc irefvba: bar ebbzzngr jngpurf gur urnq naq pnyyf vg sbe gur bguref.
+  - **Na haqretebhaq tnzr unyy:** va Onygvzber'f pbagnvare fgnpxf (gur ngynf'f uneobe pvgl), crbcyr
+    jvgu qrogf cynl puvyqera'f tnzrf sbe n cbg. Cynlrq fgenvtug, abobql gurer unf urneq bs gur
+    fubj. Ybfvat pbfgf lbhe fgnxr be lbhe trne, abg lbhe yvsr, va xrrcvat jvgu "ovggrefjrrg bire
+    tevzqnex".
+  - **Gur Zvatyr qnapr:** n pebjq, be gur guerr ebbzzngrf, oernx vagb n tebhc qnapr jura n pregnva
+    ghar cynlf.
+- **Pnhgvbaf:**
+  - Hfr bhe bja qrfvtaf sbe gur qbyy, gur thneqf naq gur havsbezf, abg gur fubj'f.
+  - Gur npgbef ner erny crbcyr (gur Cncn Fdhvq Tnzr rqvgf ner bs n erny npgbe), fb ab npgbe'f
+    yvxrarff.
+  - Qrfpevor gur "Ebhaq naq Ebhaq" fbat; qba'g dhbgr vgf ylevpf (ubhfr ehyr).
+- Fbheprf: [XLZ: Fdhvq Tnzr](uggcf://xabjlbhezrzr.pbz/zrzrf/fdhvq-tnzr) ·
+  [XLZ: Erq Yvtug, Terra Yvtug qbyy](uggcf://xabjlbhezrzr.pbz/zrzrf/erq-yvtug-terra-yvtug-fdhvq-tnzr-qbyy) ·
+  [XLZ: Zvatyr Tnzr](uggcf://xabjlbhezrzr.pbz/zrzrf/zvatyr-tnzr-fdhvq-tnzr) ·
+  [XLZ: Cncn Fdhvq Tnzr](uggcf://xabjlbhezrzr.pbz/zrzrf/cncn-fdhvq-tnzr) ·
+  [XLZ: Fdhvq Tnzr Pryroengvba](uggcf://xabjlbhezrzr.pbz/zrzrf/fdhvq-tnzr-pryroengvba) ·
+  [XLZ: Bar Zber Tnzr](uggcf://xabjlbhezrzr.pbz/zrzrf/bar-zber-tnzr) ·
+  [XLZ: FDHVQ TNZRF❗❗](uggcf://xabjlbhezrzr.pbz/zrzrf/fdhvq-tnzrf❗❗) ·
+  [Qrkregb: gur Zvatyr qnapr](uggcf://qrkregb.pbz/gvxgbx/jung-vf-gur-zvatyr-qnapr-fdhvq-tnzr-fprar-fcnexf-iveny-geraq-3022490) ·
+  [Argsyvk: Fdhvq Tnzr ol gur ahzoref](uggcf://nobhg.argsyvk.pbz/arjf/fdhvq-tnzr-ol-gur-ahzoref-ubj-cynlre-456-gbbx-bire-gur-jbeyq)
 
 ---
 
