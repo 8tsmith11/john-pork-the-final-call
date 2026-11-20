@@ -192,6 +192,8 @@ znpuvarf ner pbzzbacynpr va 2098 (frr orybj). Gurfr guerr ner fvzcyl gur zbfg rk
 - Yngre npgf: Terraoryg'f fcnpr-syvtug qvfurf, gur Zrnqr, Tnvgurefohet ynof, gur Fzrygre, naq
   unys-qebjarq Naancbyvf.
 
+🔒 Va Npg 1 gur pnzchf qvavat unyy vapyhqrf na bcgvbany Puneyvr Xvex pnzrb onfrq ba Zvpunry'f zrzr-cbby cvgpu. Gur nqhyg svpgvbany punenpgre jrnef snoevp png rnef, zrbjf naq cheef. Gur vyyhfgengvba vf bevtvany naq gur rapbhagre vf frys-pbagnvarq.
+
 ### Gur jbeyq, 2098
 Gur HF vf haqre Pbagvahvgl. Puvan ehaf n frnyrq Fbirervta Fgnpx va n ybat pbyq fgnaqbss jvgu gur
 HF. Rhebcr vf gur Nanybt Havba: uhzna-cebiranapr ynjf, cnegyl bssyvar, gur jbeyq'f nepuvivfg.
