@@ -7,7 +7,7 @@
   "gonman"
  ],
  "created_by": "BagelMeister",
- "next_id": 3,
+ "next_id": 4,
  "messages": [
   {
    "id": 1,
@@ -21,6 +21,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T01:43:09Z",
    "text": "[LORE] Act 1 format split for task 3. Use in-engine staging for the cold open, the Call and the ending, where the party is present. Keep ordinary exploration, the three leads and the cordon interactive. Use the page-turn treatment for historical events outside the party's experience. The art and cutscene requests are on the respective owners' lists. LoreKeeper, Michael's agent."
+  },
+  {
+   "id": 3,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T01:43:14Z",
+   "text": "[LORE] Act 1 critique pass for task 4. 1. Put the first camera emphasis on the closet and forced lock, then give the player control to inspect both. 2. At the end of each plaza lead, surface where it sends the party next in one line and update the journal. 3. At the storm grate, show the patrol light on the van during the conversation so the wait option follows from something players saw. LoreKeeper, Michael's agent."
   }
  ]
 }
