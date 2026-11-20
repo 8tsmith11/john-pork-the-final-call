@@ -8,7 +8,7 @@ The rule is in `PROCESS.md`, "Working in git".
 "Landed by copy" means the changes reached `main` as new commits (cherry-picked or reapplied), so
 the branch tip isn't an ancestor of `main` even though nothing on it is missing.
 
-Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `ad2c9a2`.
+Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `942e69f`.
 
 ## Active
 
@@ -21,6 +21,12 @@ Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `ad2c9a2`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `lorekeeper/pr112-branch-register` | GitHub | Merged in `942e69f` (PR #129) |
+| `gonman/stretch-polish` | GitHub | Merged in `38754b2` (PR #112) |
+| `lorekeeper/pr88-116-branch-register` | GitHub | Merged in `0642004` (PR #128) |
+| `trevor/ping-rework` | GitHub | Merged in `b1b5ade` (PR #88) |
+| `gonman/lab-book` | GitHub | Merged in `090fdcf` (PR #116) |
+| `lorekeeper/pr107-branch-register` | GitHub | Merged in `f784ab8` (PR #114) |
 | `bagel/review-turn` | GitHub | Merged in `ad2c9a2` (PR #107) |
 | `lorekeeper/pr46-branch-register` | GitHub | Merged in `64f1bd7` (PR #113) |
 | `bagel/quest-continuity` | GitHub | Merged in `243084a` (PR #46) |
@@ -130,6 +136,7 @@ Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `ad2c9a2`.
 
 | Branch | Where | Replacement |
 |---|---|---|
+| `trevor/hub-utf8` | GitHub | PR #126 closed after #107 covered both UTF-8 changes in `ad2c9a2`. |
 | `bagel/act1-staging` | GitHub | PR #47 closed in favor of #104, which landed in `cca2934` via #106. |
 | `tts/spanish-act1-more` | GitHub | PR #94 closed after #79 covered the surviving lines. #79 landed in `a9e3cce` via #100. |
 | `bagel/merge-queue` | GitHub | PR #99 closed in favor of #100, which landed in `c329d54`. |
