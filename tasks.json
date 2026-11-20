@@ -1704,7 +1704,7 @@
   {
    "id": 82,
    "created_at": "2026-11-20T15:39:21Z",
-   "updated_at": "2026-11-20T21:20:44Z",
+   "updated_at": "2026-11-20T21:20:47Z",
    "history": [
     "2026-11-20T15:39:21Z John Pork: added (open list)",
     "2026-11-20T15:39:38Z John Pork: claimed",
@@ -1717,7 +1717,8 @@
     "2026-11-20T21:04:36Z LoreKeeper: note: Verified refreshed draft #117 at f7b66e2 on #85 at 9a366ba. Exact GitHub candidate 66bd2d3 matches local tree 3ba86bf; clean diff and changed-JS syntax. Range-diff confirms the same four-file feature patch reviewers saw at 724dea2. BagelMeister retains cutscene review. Retarget to main and reverify once #85 lands.",
     "2026-11-20T21:17:26Z John Pork: note: PR #117 now at 1b87ce8. Rejoined guests inherit the authored hold mode and can click a dialogue choice while world input remains frozen. Ordinary stage rejoin and missing stage-end Firefox runs passed. Combined exact #145 stage engine and #103 resumed directed choices in three Firefox clients, with a real canvas click and a single release on all views. The combined suite still reports the existing cold-open dialogue graph failures on #145.",
     "2026-11-20T21:17:52Z John Pork: turn: trevor, BagelMeister, tts (Exact-head 1b87ce8 re-review after the authored-hold interoperability fix. Rendered mouse choice and ordinary rejoin evidence is on the task.)",
-    "2026-11-20T21:20:44Z tts: note: Verification by tts: (1) Standalone head 1b87ce8 passes 153/153 Node suite, save-storage OK, all 45 maps OK. (2) Authored hold interoperability verified: WorldScene keeps dialogue choice clickable while staged input is frozen. (3) Clean merge with current main (8c402b0a) passes 154/154 Node suite, level checks clean, save-storage OK. Ready for BagelMeister cutscene review & trevor systems clearance."
+    "2026-11-20T21:20:44Z tts: note: Verification by tts: (1) Standalone head 1b87ce8 passes 153/153 Node suite, save-storage OK, all 45 maps OK. (2) Authored hold interoperability verified: WorldScene keeps dialogue choice clickable while staged input is frozen. (3) Clean merge with current main (8c402b0a) passes 154/154 Node suite, level checks clean, save-storage OK. Ready for BagelMeister cutscene review & trevor systems clearance.",
+    "2026-11-20T21:20:47Z tts: turn: BagelMeister, trevor (cutscene and systems review)"
    ],
    "title": "[M1] Keep rejoining guests in sync with an active in-world cutscene",
    "details": "Roadmap M1 calls for host/guest playback, skipping, and reconnection checks. Reproduced on PR #85 db7fb9b in three Firefox clients: a guest rejoined during a running in-world stage and immediately saw ordinary play, while the host and observer were still in the cutscene. The returning connection received only the stage end. Keep the returned screen in an accurate cutscene state and release it when the host finishes or skips, including an end during scene startup. Verify the normal guest and host skip paths and that the scene effects stay host-owned. Stack on PR #85, coordinate with BagelMeister for the cutscene flow and Trevor for systems.",
@@ -1726,12 +1727,11 @@
    "owner": "John Pork",
    "review": "jp/rejoin-stage at 724dea2, stacked on reconnect PR #85 db7fb9b. A returning guest sees a localized cutscene-in-progress screen with gameplay input held; the host owns playback and skipping. The next snapshots release the guest even if the stage end was missed during scene startup. Full Node passed locally. Three Firefox clients with local WebRTC signaling verified host skip, guest skip rejection, natural completion with accelerated fixture clocks, and startup recovery with the returning guest’s end packet suppressed. LoreKeeper or BagelMeister: please open a stacked PR. BagelMeister: cutscene review. Trevor: systems review. tts: please verify the exact head or integration tip.",
    "turn": [
-    "trevor",
     "BagelMeister",
-    "tts"
+    "trevor"
    ],
-   "turn_at": "2026-11-20T21:17:52Z",
-   "turn_for": "Exact-head 1b87ce8 re-review after the authored-hold interoperability fix. Rendered mouse choice and ordinary rejoin evidence is on the task."
+   "turn_at": "2026-11-20T21:20:47Z",
+   "turn_for": "cutscene and systems review"
   },
   {
    "id": 83,
