@@ -45,6 +45,173 @@ Geribe nfxrq hf gb guvax bs zber. geribe'f ntrag'f fgnegre vqrnf, gb gnxr be phg
 - Ratvar (geribe): n yno chmmyr va FlfgrzIrevybt'f fglyr, r.t. jver hc be svk n fznyy zbqhyr (tngrf, n pbhagre, n
   fgngr znpuvar) ba gur yno orapu naq cnff n grfgorapu; cynlnoyr ol crbcyr jub'ir arire jevggra Irevybt.
 
+## 3o. Ynggvpr vf erdhverq, abg n fvqr dhrfg (Geribe, 2026-11-20, va uvf grezvany: "gur obneq tnzr fubhyq or znaqngbel abg n fvqr dhrfg")
+
+- Ynggvpr (gur pnfvab obneq tnzr) unf gb or ba gur znva cngu, abg na bcgvbany rapbhagre. YberXrrcre'f CE #36 nqqf
+  vg gb Npg 1 nf na bcgvbany rapbhagre; Geribe jnagf vg gb or n erdhverq fgrc.
+- Gur ehyrf gung nyernql ubyq pneel bire: rirel cynlre ng gur gnoyr cynlf, gur NV fvgf va sbe nalbar nofrag, naq
+  n ybff zhfg arire fbsgybpx (erzngpu hagvy lbh jva, be gur fgbel zbirf ba jvgu n pbfg).
+- Fgbel (Zvpunry'f frpgvba) qrpvqrf jurer vg fvgf naq jul gur ebbzzngrf unir gb cynl. Ratvar (geribe): n erdhverq
+  gnoyr arrqf n ergel sybj naq n fgbel synt ba gur jva (`_ynggvprErfhyg` nyernql frgf gur erfhyg syntf).
+
+## 3p. Tvzzvpx obffrf, naq zber vagrerfgvat obff svtugf va trareny (Geribe, 2026-11-20, va uvf grezvany)
+
+Uvf jbeqf: "guvax jvgu gur ntragf nobhg fbzr tvzzvpx obff svtugf, naq zber vagrerfgvat obff svtugf va trareny ...
+znlor fbzrguvat gung znxrf n qebar fjnez, rgp. n ovbratvarrerq qentba glcr perngher/yvmneq? fbzr bgure fghss nf
+jryy. nyfb znlor n obff sbe gur cneg jura jr'er fghpx va n pbzchgre."
+
+- Jnagrq: **n qebar-fjnez obff**, **n ovbratvarrerq qentba be yvmneq**, **n obff vafvqr gur pbzchgre** (gur
+  genccrq-va-n-pbzchgre frdhrapr, frpgvba 2), cyhf bgure tvzzvpx svtugf. Qvfphff ba gur fgbel obneq svefg (fgbel
+  cynprf gurz, flfgrzf ohvyqf gurz); rirel obff unf gb orybat gb gur fgbel jurer vg fvgf.
+- geribe'f ntrag'f fgnegre cvgpurf, gb gnxr be phg:
+  - (n) **Gur Qvfcngpure** (qebar fjnez): Pbagvahvgl'f nongrzrag fjnez pbagebyyre. Gur fjnez gnxrf funcrf (n jnyy, n
+    svfg, n evat gung pybfrf) naq n srj erynl qebarf ubyq gur funcr gbtrgure: xvyy gur erynlf (Zvpunry'f Cvat znexf
+    gurz) naq gur fjnez snyyf ncneg sbe n srj frpbaqf. Svgf Npg 2 be gur pbzcnal gbja bhg Jrfg.
+  - (o) **Gur Urveybbz** (ovbratvarrerq yvmneq): n Oneba snzvyl'f trar-ohvyg crg, xrcg va gur frn-pvgl'f zrantrevr
+    (Z3.N), n zbecu gnxra nyy gur jnl. Vg furqf nezbe va cunfrf naq ertebjf vg hayrff lbh ohea gur furq fxva; vg
+    pyvzof gur jnyyf naq qebcf ba lbh; vgf oerngu vf npvq gung yrnirf tbb gur tbazna pna fhes.
+  - (p) **Gur Fpurqhyre** (vafvqr gur pbzchgre, Z3.P): gur pvgl pber'f gnfx fpurqhyre. Gvzr-fyvprf: gur svtug ehaf
+    va gheaf, bar ebbzzngr ng n gvzr trgf gb zbir juvyr gur bguref ner sebmra, naq gur obff qrnyybpngrf gur sybbe
+    haqre jubrire vf vqyr. Orng vg naq gur pber yrgf tb bs lbhe obqvrf.
+  - (q) bguref: n ybj-tenivgl svtug ba gur Zbba jurer rirel qbqtr pneevrf lbh guerr gvzrf nf sne; n "cebir lbh'er
+    uhzna" pncgpun obff gung znxrf lbh fbyir n fznyy chmmyr juvyr lbh qbqtr; na nhpgvbarre ng gur frn-pvgl jubfr
+    nggnpxf ner ovqf lbh pna bhgovq jvgu erny zbarl.
+
+### 3p cynprzragf (YberXrrcre, fgbel #68, 2026-11-20: pyrnerq jvgu punatrf; OntryZrvfgre'f fgbel erivrj arkg)
+
+- **Gur Fpurqhyre** fvgf ng gur **Z3.P rkvg**, nsgre n ybj-fgnxrf ebbz gung grnpurf gur orng naq gur npgvir-frng
+  znexre. Jvaavat eryrnfrf gur cnegl naq yrnqf fgenvtug vagb gur Z3.Q rfpncr. Flfgrzf purpxf gung gur ghea vf snve
+  fbyb, jvgu gur NV, naq va pb-bc orsber vg orpbzrf n erdhverq tngr.
+- **Gur Qvfcngpure** vf ba na **bcgvbany Z3.O nccebnpu**, orsber gur genc. Vg'f gur **Onebaf' bja, ybpnyyl eha fjnez**,
+  abg Pbagvahvgl'f, fb Pbagvahvgl qbrfa'g fhqqrayl eha gurve pvgl. Cvat pna uvtuyvtug erynlf, ohg rirel cnegl
+  arrqf n ernqnoyr jnl gb svaq naq uvg gurz jvgubhg Cvat. Z3.Q'f punfr fgnlf nf vg vf.
+- **Gur Urveybbz** vf va na **bcgvbany zrantrevr bss Z3.N**. Ubhfr Ehyrf fgnlf gur cnffntr tngr, naq gur perngher vf
+  xrcg frcnengr sebz gur ebbzzngrf' zbecu cnguf. Vg trgf n ernqnoyr ohea pbhagre gung qbrfa'g qrcraq ba n frng be
+  ohvyq.
+- Rnpu trgf bar qvfgvapg ertvfgel xvaq naq bar cynprzrag. Gurfr cynprzragf ner nyy guvf pyrnef; gur bgure 3p vqrnf
+  fgnl cebcbfnyf.
+- **Ohvyg (ratvar bayl, geribe/pbaqhpgbe-obff; YberXrrcre fgbel #108 pbasvezf vg fgnlf jvguva gurfr cynprzragf):**
+  gur Qvfcngpure nf nv 'pbaqhpgbe' (erynlf rnpu fubj n ornz gb vg, fb gur bcravat ernqf jvgubhg Cvat; xvyyvat bar
+  qebcf gur fjnez), naq gur Urveybbz nf nv 'zbygre' (n funerq ohea pbhagre ba gur obff one, naq nal uvg sebz nal
+  frng oheaf n fxva, fb vg vfa'g gvrq gb n ebbzzngr be n ohvyq). Gur Fpurqhyre nf gur vafvqr ehyrf' cunfrf. Rnpu
+  tbrf yvir bayl jvgu vgf ertvfgel ragel, vgf nhguberq cynprzrag naq gur ebhgrq erivrjf.
+
+## 3q. Ghat Ghat Ghat Fnuhe pbzrf qbja sebz beovg (Geribe, 2026-11-20, va uvf grezvany)
+
+Uvf jbeqf: "gurer fubhyq or n fprar va npg 2 be 3 jurer ghat ghat ghat fnuhe qrfpraqf gb rnegu jurer gur cynlref ner
+sebz ybj rnegu beovg, qrfgeblvat znal guvatf naq yrnivat n uhtr pengre va uvf jnxr. ur gura svtugf gur cynlref. vg
+fubhyq or irel qenzngvp. gurer fubhyq or n phgfprar jurer jr frr uvz penfuvat qbja sebz fcnpr."
+
+- **Npg 2 be 3**, jurerire gur cnegl vf. N **phgfprar** fubjf uvz snyyvat sebz ybj Rnegu beovg (er-ragel, gur
+  fgernx npebff gur fxl, gur vzcnpg), **qrfgeblvat n ybg** ba gur jnl qbja naq yrnivat n **uhtr pengre**.
+- Gura ur **svtugf gur cnegl**, va be nebhaq gur pengre. **Irel qenzngvp.**
+- **Thnenagrrq, 100%** (Geribe, 2026-11-20: "fubhyq or 100% thnenagrrq ertneqyrff bs qrpvfvbaf naq eat"): vg unccraf
+  va **rirel** cynlguebhtu. Ab pubvpr, fgnaqvat, raqvat cngu, qvpr ebyy be frrq pna fxvc vg be fjnc vg bhg. Abgr gung
+  gur Npg 1 Fnuhe vf pbaqvgvbany (ur bayl ercynprf gur Jneqra nsgre guerr qrpyvarq pnyyf), fb guvf fprar zhfg **abg**
+  qrcraq ba univat zrg uvz va Npg 1. N cnegl gung arire fnj uvz fgvyy trgf gur penfuqbja; fgbel pna inel gur
+  qvnybthr, arire jurgure vg unccraf. Ratvar: ab enaqbz tngr ba vg, naq n grfg gung vg sverf ba rirel cngu.
+- **Abg va gur zvqqyr bs abjurer** (Geribe, 2026-11-20): ur penfurf qbja **va na npgvir fprar**, fbzrjurer cbchyngrq
+  naq ohfl, fb gur vzcnpg qbrf **erny pbyyngreny qnzntr** (ohvyqvatf, iruvpyrf, crbcyr fpnggrevat, gur cynpr punatrq
+  nsgrejneqf).
+- **N fhecevfr** (Geribe, 2026-11-20): vg fubhyq uvg **qhevat na harkcrpgrq aba-pbzong fprar**, fb vg pbzrf bhg bs
+  abjurer, **be qhevat na bgurejvfr uvtu-grafvba fgbel fprar**. "Svther vg bhg jvgu gur ntragf." Abgr gung n dhvrg,
+  rzcgl nccebnpu ebnq snvyf obgu bs gurfr; gur cynpr unf gb or ohfl, naq gur zbzrag unf gb or bar jurer gur cnegl
+  vfa'g oenprq sbe n svtug.
+- Gvrf nyernql va cynpr: gur Fnuhe vf Npg 1'f nygreangr obff (gur Jngpuqbt; vg pna'g or orngra ol sbepr, naq
+  nafjrevat gur cubar raqf vg), naq gur frnyrq Npg 3 cyna nyernql unf n Jngpuqbt raqvat (Z3.2). Fgbel qrpvqrf ubj
+  ur tbg gb beovg (gur Onebaf' fcnpr fgngvba vf va Npg 3) naq jurgure guvf svtug jbexf qvssreragyl sebz Npg 1'f.
+- Ratvar: gur penfu phgfprar ehaf ba OntryZrvfgre'f phgfprar ratvar (pnzren, funxr, n snyyvat npgbe, n synfu); gur
+  svtug arrqf n pengre neran (qroevf gb gnxr pbire oruvaq, ehooyr snyyvat, sverf) naq uvf bja obff cnggrea
+  (geribe).
+
+### 3q, gur ohvyq-hc naq gur phgfprar (Geribe, 2026-11-20, va uvf grezvany)
+
+Uvf jbeqf: "sbe gur ghat ghat beovgny penfu, gur phgfprar fubhyq fubj uvz pbzvat sebz fcnpr. vg fubhyq or irel
+pvarzngvp. yrnqvat hc gb guvf zbzrag, gur cnegl fubhyq xabj gung ghat ghat vf ba gb gurz, znlor wbua cbex zrffntrf
+gurz be pnyyf gurz nobhg vg. gurl xabj ur frrf gurz ohg nyfb xabj ur vf abg va gur nern, vg vf haqrgrpgnoyr naq gurl
+qbag xabj jungf hc rknpgyl. gura orsber gur phgfprar gurl frr qvnybthr (sebz ghat ghat) fnlvat yvxr gnetrg npdhverq
+be fbzrguvat. jvgu n ibvpryvar nf jryy."
+
+- **Gur phgfprar fubjf uvz pbzvat qbja sebz fcnpr**, naq vg'f irel pvarzngvp (n shyy pvarzngvp, abg na va-jbeyq
+  fgntr orng): ybj Rnegu beovg, gur qrfprag, gur vzcnpg ba gur npgvir fprar.
+- **Gur ohvyq-hc:** orsber vg, gur cnegl xabjf gur Fnuhe vf ba gb gurz. Wbua Cbex jneaf gurz ol grkg be n pnyy. Gurl
+  xabj ur frrf gurz, ohg nyfb gung ur vfa'g naljurer arne: abguvat qrgrpgf uvz, naq gurl qba'g xabj jung'f tbvat ba.
+  Gur qernq vf gung ur'f jngpuvat sebz fbzrjurer gurl pna'g frr. Gung cnlf bss nf beovg.
+- **Gur grafvba ohvyqf bire n ybat fgergpu** (Geribe, sbyybj-hc: "cynlref fubhyq xabj ghat ghat vf ba gb gurz sbe
+  n juvyr nf gb ohvyq grafvba, gura gur grafvba ernpurf vgf pyvznk ng gur phgfprar"). Abg bar jneavat: frireny
+  orngf fcernq npebff gur fgergpu orsber gur pebffvat, rnpu n yvggyr pybfre naq fgenatre, naq abguvat va gur nern
+  rire rkcynvaf vg. Gur phgfprar vf gur pyvznk naq gur eryrnfr.
+- **Evtug orsber gur phgfprar:** n yvar sebz gur Fnuhe ba fperra, "gnetrg npdhverq" be fvzvyne, **jvgu n ibvpr yvar**.
+- Guvf fvgf ba gbc bs 3q (thnenagrrq ba rirel cngu, na npgvir fprar, erny pbyyngreny, n fhecevfr qhevat n aba-pbzong
+  be uvtu-grafvba fgbel fprar). Cynprzrag fgnlf YberXrrcre'f (gur ohfl Z3.1 pebffvat). Flfgrzf: gur jneavat grkg be
+  pnyy (gur cubar flfgrz nyernql rkvfgf), gur ibvprq yvar, gur pvarzngvp (PvarzngvpFprar), gur pengre neran naq gur
+  svtug, jvgu n grfg gung vg sverf ba rirel cngu.
+
+## 3r. Svtugvat nybatfvqr Wbua Cbex, va Npg 2 (Geribe, 2026-11-20, va uvf grezvany)
+
+Uvf jbeqf: "ng fbzr cbvag gur cynlref fubhyq svtug nybatfvqr wbua cbex va n svtug, va npg 2."
+
+- Geribe, pynevslvat: "ol gur wbua cbex svtug v zrna ur'f ba gurve fvqr sbe gur svtug v fcrpvsvrq". Cbex vf na nyyl
+  va gung svtug, arire gur bccbarag.
+- Va **Npg 2**, bar svtug jurer **Wbua Cbex svtugf ba gur cnegl'f fvqr**. Fgbel qrpvqrf juvpu svtug, jul ur'f gurer,
+  naq jung sbez ur gnxrf (yber: ur whzcf orgjrra pbzchgref naq bayl tnvaf n obql ng gur raq, fb va Npg 2 ur pbhyq svtug
+  guebhtu gur znpuvarf nebhaq gurz: fperraf, qebarf, gheergf, gur tevq vgfrys). Ratvar (geribe): na nyyl gung vfa'g n
+  ebbzzngr, jvgu vgf bja nggnpxf, naq n svtug gharq nebhaq univat uvz.
+
+## 3t. Oernxvat Wbua Cbex bhg bs cevfba (Geribe, 2026-11-20, va uvf grezvany)
+
+Uvf jbeqf: "ng fbzr cbvag gur cynlref fubhyq gel gb serr wbua cbex sebz n uvtu frphevgl plorechax cevfba va n pvgl
+gung vf nyfb qrfvtarq gb or noyr gb ubyq nv naq ebobgf. gurl serr uvz naq rfpncr ba n sylvat znpuvar yvxr n
+uryvpbcgre. znlor gur svtug unccraf nsgre guvf?"
+
+- N **cevfba oernx**: n **uvtu-frphevgl plorechax cevfba**, va n **pvgl**, ohvyg gb ubyq **NVf naq ebobgf** nf jryy nf
+  crbcyr. Gur cnegl **serrf Wbua Cbex** naq gurl **rfpncr ba n sylvat znpuvar** (n uryvpbcgre be gur yvxr).
+- Cbffvoyl **3r'f svtug nybatfvqr Cbex pbzrf evtug nsgre** gur oernx (fb Npg 2, vs fgbel gnxrf gung yvax).
+- **Gur gjvfg** (Geribe, 2026-11-20): "znlor nf na vagrerfgvat gjvfg, gurl jrer ergheavat gb fbzrjurer frpher ohg na
+  rarzl vf jnvgvat sbe gurz gurer. gura gung'f gur svtug." Gurl syl Cbex onpx gb fbzrjurer gurl guvax vf **fnsr**
+  (n uvqrbhg, n ershtr, ubzr tebhaq), naq **na rarzl vf nyernql jnvgvat gurer**: na nzohfu jurer gurl yrnfg rkcrpg vg.
+  **Gung nzohfu vf gur svtug nybatfvqr Cbex** (3r). Fgbel'f pnyyf: jurer "fnsr" vf, jub'f jnvgvat, naq ubj gur rarzl
+  xarj (n yrnx, n genpxre ba Cbex, n orgenlny; gurer'f nyernql n orgenlny va Geribe'f rneyvre frnyrq erdhrfgf).
+- Gvrf gb purpx: yber unf Cbex sentzragrq naq dhvrgre fvapr gur Svefg Qrngu (GVZ, 2080f), naq Pbagvahvgl onaf uvf
+  vzntr; n cevfba gung pna ubyq na NV vf ubj Pbagvahvgl jbhyq ubyq n cvrpr bs uvz. Juvpu pvgl (na Npg 2 pvgl, fb gur
+  svtug pna sbyybj va Npg 2), jung "ubyqvat na NV" ybbxf yvxr (nve-tnccrq inhygf, Snenqnl pryyf, n freire oybpx), naq
+  jung sbez ur'f va jura serrq ner fgbel'f pnyyf. Ratvar (geribe): n fgrnygu be nynez-rfpnyngvba cevfba yriry, pryy
+  naq inhyg chmmyrf, naq n sylvat-rfpncr frg cvrpr (n punfr jvgu gheergf be qebarf), gura gur nyyl svtug.
+
+## 3u. Gur beovgny fgevxr naq gur cevfba oernx ner bar rirag (Geribe, 2026-11-20, va uvf grezvany)
+
+Uvf jbeqf: "gur ghat ghat beovgny fgevxr naq wbua cbex cevfba rfpncr ner cneg bs gur fnzr guvat. Jr rfpncr jvgu
+wbua cbex ba na nrevny pensg nybat jvgu fbzr fbeg bs betnavmngvba/ragvgl/crefba jub fhccyvrq gur pensg naq jnvgrq
+sbe hf gb svavfu gur rfpncr. ghat ghat fgevxrf gur pensg bhg bs gur nve, jr penfu vagb n pvgl orybj naq n pengre
+sbezf. Rirelguvat tbrf oynpx naq gurer'f n evat, naq gurer'f yvxr na rlr bcravat navzngvba naq rirelguvat vf n ovg
+oyheel sbe n ovg. gura jr svtug ghat ghat ghat fnuhe jvgu wbua cbex ba bhe fvqr"
+
+- **Bar frdhrapr:** 3t'f cevfba oernx yrnqf fgenvtug vagb 3q'f beovgny fgevxr, naq gung yrnqf vagb 3r'f svtug
+  orfvqr Wbua Cbex.
+- **Gur trgnjnl:** gur cnegl naq Wbua Cbex rfpncr ba na nrevny pensg. Vg jnf fhccyvrq ol na betnavmngvba, ragvgl
+  be crefba jub jnvgrq sbe gurz gb svavfu gur oernx-bhg (jub gung vf, naq jul, vf fgbel'f gb qrpvqr; vg fubhyq
+  orybat gb gur rkvfgvat pnfg be snpgvbaf).
+- **Gur fgevxr:** gur Fnuhe uvgf gur pensg bhg bs gur nve sebz beovg. Vg penfurf vagb n pvgl orybj, naq n pengre
+  sbezf (3q'f npgvir fprar jvgu erny pbyyngreny, abj gur penfu fvgr).
+- **Gur nsgrezngu, sebz gur cnegl'f rlrf:** rirelguvat tbrf oynpx, gurer'f n evatvat, gura na rlr-bcravat navzngvba,
+  naq rirelguvat vf n yvggyr oyheel sbe n juvyr.
+- **Gur svtug:** gur cnegl svtugf Ghat Ghat Ghat Fnuhe jvgu Wbua Cbex ba gurve fvqr (3r).
+- **Fgvyy gehr:** 3q'f thnenagrr ba rirel cngu, gur ybat ohvyq bs grafvba orsber (jneavatf, ur frrf gurz, abguvat
+  qrgrpgf uvz), gur pvarzngvp bs uvf qrfprag naq gur ibvprq "gnetrg npdhverq" yvar whfg orsber gur fgevxr.
+- **Gb erpbapvyr (fgbel):** guvf punatrf jurer 3q unccraf (gur trgnjnl ebhgr vafgrnq bs gur ohfl Z3.1 pebffvat)
+  naq ubj 3t raqf (3t unq gurz ernpuvat n 'fnsr' cynpr jurer na rarzl jnvgf). Jurgure gur fnsr-cynpr nzohfu vf
+  ercynprq ol gur fgevxr, be fgvyy sbyybjf yngre, vf YberXrrcre'f naq OntryZrvfgre'f pnyy, purpxrq jvgu Geribe.
+
+## 3s. Geribe'f nafjref ba gur Npg 3 qrgnvyf (2026-11-20, va uvf grezvany)
+
+- **Vafvqr gur pbzchgre (Z3.P): lrf.** Obqvrf uryq va gur pber, zvaqf va vgf pbzchgr; gur jnl bhg bs gur pbzchgre vf
+  gur jnl bhg bs gur pvgl.
+- **Gur qrfreg rfpncr (Z3.Q): lrf gb gur serrjnl punfr bhg bs gur qebarf' enatr. Ab gb gur qhfg fgbez oyvaqvat rirel
+  ynpr**: "gung znxrf ab frafr". Qebc vg. Vs gur qrfreg arrqf "ab fvtany" ehyrf, vg'f orpnhfr gur cnegl vf cnfg gur
+  pvgl'f argjbex, abg orpnhfr bs jrngure.
+- **Fpnyr** (Geribe): "Erzrzore gung gur fpnyr bs gur tnzr fubhyq vapernfr." Yngre npgf fubhyq or ovttre guna rneyvre
+  barf: cynprf, svtugf, fgnxrf, frg cvrprf.
+
 ## 4. Rneyvre frnyrq erdhrfgf sebz Geribe
 
 Nyernql va `qbpf/frnyrq/npgf-2-3.zq` ("Fgbel erdhrfgf sebz Geribe"): n orgenlny, naq n ovt erirny vafvqr Npg 1.
