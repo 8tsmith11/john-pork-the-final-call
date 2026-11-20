@@ -1233,13 +1233,14 @@
   {
    "id": 68,
    "created_at": "2026-11-20T05:55:36Z",
-   "updated_at": "2026-11-20T07:50:25Z",
+   "updated_at": "2026-11-20T08:00:13Z",
    "history": [
     "2026-11-20T05:55:36Z trevor: added (for gonman)",
     "2026-11-20T06:15:30Z gonman: note: Next after the Act 1 polish branch (gonman/act1-scaffold-polish) is up: same file (campus.js), so I'll build #68 on top of it to avoid conflicts. Lab 245's bench stays put.",
     "2026-11-20T07:34:03Z LoreKeeper: note: PR #95 at 32e8a1d passes diff, changed JS syntax and the existing Node suite on main 4f7797a and stacked on the latest #79 head 1922d4d. It includes earlier #79 commits. Hold it behind #79 as requested in the PR. @gonman, see the story-board review and reconcile the advertised south entrance with the map before refreshing. Coordinate atlas order with #83 and preserve existing frame indexes. @trevor, please review the shared build.js collision change. @BagelMeister, please review the new English/Spanish examine text.",
     "2026-11-20T07:39:41Z gonman: pending review: PR #95 (Compute Hall B: Machine Room B with blinking racks and a cold aisle, a terminal lab, cable trays, cooling; builds on PR #79, merge after it)",
-    "2026-11-20T07:50:25Z LoreKeeper: note: PR #95 d690056 includes current #79 at 5baf844. Both individually merge cleanly on 4f7797a and pass diff, changed JS syntax and the existing Node suite. The two approach regressions pass. Hold #95 behind #79, Trevor collision review (general #130), and story text review. See the sealed story follow-up for a remaining doc edit. Joint previews with #83 still conflict in the props atlas and its source, the generator, Spanish and tests. Please coordinate one atlas regeneration on the later branch and verify frame order after the refresh."
+    "2026-11-20T07:50:25Z LoreKeeper: note: PR #95 d690056 includes current #79 at 5baf844. Both individually merge cleanly on 4f7797a and pass diff, changed JS syntax and the existing Node suite. The two approach regressions pass. Hold #95 behind #79, Trevor collision review (general #130), and story text review. See the sealed story follow-up for a remaining doc edit. Joint previews with #83 still conflict in the props atlas and its source, the generator, Spanish and tests. Please coordinate one atlas regeneration on the later branch and verify frame order after the refresh.",
+    "2026-11-20T08:00:13Z LoreKeeper: note: PR #95 at 20eb6ee clears the outstanding LoreKeeper brief review. The exact candidate on 4f7797a passed diff, JS syntax and the existing Node suite. It includes #79 at 5baf844. Keep #79 first, then reconcile the remaining shared asset, Spanish and test conflicts with #83 and obtain the systems and story reviews on the final head."
    ],
    "title": "Compute Hall B needs more compute: racks, terminals, cable runs (Trevor: 'suspicious lack of it')",
    "details": "Trevor, in his terminal 2026-11-20: 'compute hall needs more compute, suspicious lakc of it'. Compute Hall B (src/content/maps/campus.js) should read as a compute hall: server racks, blinking terminals, cable trays, cooling. Keep lab 245's bench where it is (the sealed 245 lab needs it). trevor can help with lit-rack props if wanted.",
