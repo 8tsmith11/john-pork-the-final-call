@@ -34,6 +34,7 @@ export class SharedEvents {
     this.s = scene;
     this.active = null;     // the event this player is driving
     this.watching = null;   // the event this player is mirroring
+    this.deferredStarts = new Map();
     scene.input.keyboard.on('keydown', (ev) => {
       if ((ev.key === 't' || ev.key === 'T') && !this.s.dlg) { this.joinOffer(); return; }
       if (!this.s.dlg?.spectator) return;
@@ -94,6 +95,7 @@ export class SharedEvents {
   // Main player: mirror the dialogue box to everyone whenever it changes.
   _pump() {
     const s = this.s;
+    this._resumeDirectedChoice();
     if (!this.active || this.active.scope === 'self' || !s.dlg || s.dlg.spectator) return;
     const d = s.dlg, line = d.line, choices = d.choices;
     const state = choices.length ? { who: null, text: '', choices: choices.map((c) => c.text.replace(/\*/g, '')), nodeId: d.nodeId, decider: this.deciderFor(d.node) }
@@ -131,10 +133,7 @@ export class SharedEvents {
     if (this.active?.id === msg.id) return true;   // our own event coming back
     if (msg.t === 'evState') {
       (this.latest ??= {})[msg.id] = msg.state;
-      if (this.offer?.id === msg.id && msg.state.decider === s.character && !s.dlg) {
-        this.joinOffer();
-        return true;
-      }
+      if (this._resumeDirectedChoice()) return true;
     }
     if (msg.t === 'evStart') {
       if (msg.presentation === 'act1-finale') {
@@ -142,7 +141,10 @@ export class SharedEvents {
         this._watch(msg);
         return true;
       }
-      if (s.dlg) return true;                        // already reading something: can't watch
+      if (s.dlg) {
+        this.deferredStarts.set(msg.id, msg);
+        return true;
+      }
       const me = s._lastRendered?.players?.find((p) => p.id === s.localId);
       const near = msg.scope === 'all' || (msg.map === s.map?.id && me && Math.hypot(me.x - msg.x, me.y - msg.y) <= 128);
       if (!near) { this.offer = msg; s._toast(`${String(msg.main).toUpperCase()} is talking${msg.label ? ` to ${msg.label}` : ''}  ·  [T] watch`); return true; }
@@ -151,10 +153,28 @@ export class SharedEvents {
       s.dlg.set(msg.state); s._lineAt = 0; s._drawDialogue();
     } else if (msg.t === 'evEnd') {
       if (this.latest) delete this.latest[msg.id];
+      this.deferredStarts.delete(msg.id);
       if (this.offer?.id === msg.id) this.offer = null;
       if (this.watching?.id === msg.id) { if (s.dlg?.spectator) { s.dlg.done = true; s._drawDialogue(); } this.watching = null; this.banner.setVisible(false); }
     }
     return true;
+  }
+
+  _resumeDirectedChoice() {
+    const s = this.s;
+    if (this.active || s.dlg || s.sayOpen || s.menu || s.stage?.active) return false;
+    const isMyTurn = (msg) => {
+      const state = this.latest?.[msg.id];
+      return state?.decider === s.character && state.choices?.length;
+    };
+    if (this.offer && isMyTurn(this.offer)) return this.joinOffer();
+    for (const [id, msg] of this.deferredStarts) {
+      if (!isMyTurn(msg)) continue;
+      this.deferredStarts.delete(id);
+      this._watch(msg);
+      return true;
+    }
+    return false;
   }
 
   _prepareFinale({ x, y }) {
