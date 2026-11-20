@@ -52,8 +52,7 @@ room is **Machine Room B**: glass on both hall sides (`=`), a door in each, a ra
 aisle between two rows of racks, and a cooling unit at each end. The north room is a **terminal lab**. Cable trays run
 along the hall walls, and floor cables run from the machine room's door to the terminals and to lab 245's bench. The
 halls are terrazzo (`m`), the TA's office keeps a wood floor (analog is warm). Lab 245's bench, the quest objects,
-the doors, the two people, the spawn and the four rotlings keep their tiles (a sealed puzzle uses the bench; tests
-check it).
+the doors, the two people, the spawn and the four rotlings keep their tiles (tests check it).
 
 ```
 #HHHHHH#HHHH#HHHHH##########

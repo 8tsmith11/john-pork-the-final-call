@@ -751,7 +751,7 @@ test('hub #30 follow-up: the crowds.js townsfolk on the polished Act 1 maps have
   assert.deepEqual(missing, [], 'real lines in crowds.js, Spanish in src/i18n/es-plaza.js');
 });
 // hub #68 (Trevor: "compute hall needs more compute, suspicious lack of it"): Compute Hall B's machine room, terminal
-// lab, cable trays and floor runs. Built on the hub #30 polish; lab 245's bench must not move (a sealed puzzle uses it).
+// lab, cable trays and floor runs. Built on the hub #30 polish; lab 245's bench must not move.
 const CHB68_PROPS = ['obj.server_rack', 'obj.server_rack#1', 'obj.network_rack', 'obj.network_rack#1', 'obj.terminal_lit', 'obj.terminal_lit#1',
   'obj.crac_unit', 'obj.crac_unit#1', 'obj.cable_tray', 'obj.wall_display', 'obj.wall_display#1', 'obj.room_sign'];
 const CHB68_DECALS = ['dec.raised_floor', 'dec.raised_vent', 'dec.cable_h', 'dec.cable_v', 'dec.cable_ws', 'dec.cable_es', 'dec.cable_wn', 'dec.cable_en'];
@@ -804,7 +804,7 @@ test('hub #68: Compute Hall B stays reachable, and its racks block like furnitur
   for (const id of ['obj.chb_rack', 'obj.chb_network_rack', 'obj.chb_cooling', 'obj.chb_terminal_login', 'obj.chb_terminal_queue']) {
     const o = m.objects.find((q) => q.id === id);
     assert.ok(o.solid && m.solid(o.x, o.y), `${id} is solid: you walk round it`);
-    assert.ok(near(o.x, o.y), `${id}: an open tile right beside it (16px from its centre, inside the 22px reach), so you can read it`);
+    assert.ok(near(o.x, o.y), `${id}: an open tile right beside it (16px from its centre, inside the 34px reach in WorldScene), so you can read it`);
   }
   for (const s of m.scenery.filter((s) => /rack|crac|terminal|boxes/.test(s.art))) assert.ok(m.solid(s.x, s.y), `${s.art} at ${s.x},${s.y} blocks`);
   for (const id of ['obj.chb_bench', 'obj.chb_storage', 'npc.chb_ta', 'npc.chb_student']) { const o = m.objects.find((q) => q.id === id); assert.ok(!m.solid(o.x, o.y), `${id} stays walkable as before`); }

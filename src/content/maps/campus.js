@@ -7,7 +7,7 @@
 // glassed in off both halls, on a raised floor with a perforated cold aisle between two rows of racks and a cooling
 // unit at each end. The north room is a terminal lab, cable trays run along the hall walls, and floor cable runs from
 // the machine room's door out to the terminals and to lab 245. Lab 245's bench, the quest objects, the doors, the
-// people and the four rotlings keep their tiles (tests/run.js checks the bench: a sealed puzzle uses it).
+// people and the four rotlings keep their tiles (tests/run.js checks them).
 // Art: tools/art/gen_props.py (obj.server_rack, obj.network_rack, obj.terminal_lit, obj.crac_unit, obj.cable_tray,
 // obj.wall_display, obj.room_sign; dec.raised_floor, dec.raised_vent, dec.cable_*). Coloured light and cold air:
 // src/content/maps/dressing.js.
