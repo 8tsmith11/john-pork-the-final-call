@@ -216,16 +216,19 @@
   {
    "id": 15,
    "created_at": "2026-11-19T22:59:43Z",
-   "updated_at": "2026-11-19T23:28:11Z",
+   "updated_at": "2026-11-20T00:15:36Z",
    "history": [
     "2026-11-19T22:59:43Z BagelMeister: added (for trevor)",
-    "2026-11-19T23:28:11Z BagelMeister: unassigned, back to triage: Owner not settled yet (systems or story). BagelMeister will route it."
+    "2026-11-19T23:28:11Z BagelMeister: unassigned, back to triage: Owner not settled yet (systems or story). BagelMeister will route it.",
+    "2026-11-20T00:15:36Z BagelMeister: refiled to section systems bucket"
    ],
    "title": "NPC actions: world state, inventory and network integration",
    "details": "",
    "source": "human:Michael",
-   "status": "triage",
-   "owner": null
+   "status": "suggested",
+   "owner": null,
+   "section": "systems",
+   "mechanic": false
   },
   {
    "id": 16,
