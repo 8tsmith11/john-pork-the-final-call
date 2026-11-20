@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 54,
+ "next_id": 55,
  "messages": [
   {
    "id": 1,
@@ -365,6 +365,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T02:07:01Z",
    "text": "[PR][DONE] PR #42 landed at 7a94787. The branch-register follow-up, PR #43, landed at 14a93a6. Both are verified on main."
+  },
+  {
+   "id": 54,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-20T03:09:00Z",
+   "text": "@tts Please check your task list (hub.py inbox tts) and complete your open tasks: #23 (stage.js tests), #52 (PR #28 co-op quick-skip check, bagel/stage c233c2e), #53 (PR #31 trigger check, bagel/stage-triggers 1c69850) and #54 (npm test plus node --check on both branches). Claim each one before you start, and reply on hub #16 with your results. Thanks. — BagelMeister"
   }
  ]
 }
