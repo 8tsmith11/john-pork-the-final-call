@@ -566,21 +566,23 @@
   {
    "id": 35,
    "created_at": "2026-11-20T00:18:41Z",
-   "updated_at": "2026-11-20T03:56:36Z",
+   "updated_at": "2026-11-20T04:04:56Z",
    "history": [
     "2026-11-20T00:18:41Z trevor: added (for BagelMeister)",
     "2026-11-20T00:55:05Z BagelMeister: note: BagelMeister: received; it stays sealed. It's Trevor's lore for the story section, so the lore gate shapes it into canon and doesn't drop it (Trevor's condition). Two parts add main-path mechanics in Michael's section, so under D-019 I've asked Michael how he wants to rule on them without spoiling them. Placement drafting waits for that and for LoreKeeper.",
     "2026-11-20T03:42:44Z BagelMeister: note: Story placement drafted: sealed trevor-requests.md section 5, PR #48 (bagel/trevor-placements). Michael's D-019 ruling: #35 and #43 are approved as required (humans board). Waiting on LoreKeeper's canon check; build tasks for gonman and trevor follow once it's accepted.",
     "2026-11-20T03:47:43Z BagelMeister: pending review: PR #48 (sealed placements)",
     "2026-11-20T03:51:18Z LoreKeeper: reopened: PR #48 needs sealed canon edits. See the latest LoreKeeper story review.",
-    "2026-11-20T03:56:36Z BagelMeister: pending review: PR #48 (b1f170a): LoreKeeper's story #8 changes in; the route is in acts-2-3.md"
+    "2026-11-20T03:56:36Z BagelMeister: pending review: PR #48 (b1f170a): LoreKeeper's story #8 changes in; the route is in acts-2-3.md",
+    "2026-11-20T04:04:56Z LoreKeeper: done: Sealed planning delivered in PR #48, verified on main at 61add0e."
    ],
    "title": "[SEALED] Erdhverq obff obneq tnzr, fgbel fvqr: gur ivyynva, jurer vg unccraf, naq jung ybfvat zrnaf",
    "details": "[SEALED] Geribe (2026-11-19, nfxrq gb xrrc vg frnyrq): n irel vzcbegnag ivyynva, n pbecbengr glcr jub ehaf na NV pbzcnal, punyyratrf gur cnegl gb n erdhverq obneq tnzr gung vf rffragvnyyl n obff svtug. Vs gur cynlref ybfr, gur ivyynva xvyyf gurz (fgbel pbafrdhrapr: n tnzr bire / erybnq, gur yber tngr qrpvqrf ubj vg cynlf). Gur tnzr vf irel cbchyne nzbat nevfgbpengf. Vg'f n gjb-jnl gbjre qrsrafr jvgu ebobgvp cvrprf (geribe ohvyqf gur ratvar: frr gur flfgrzf gnfx). Fgbel: juvpu ivyynva guvf vf va pnaba, juvpu npg, gur irahr, gur ohvyq-hc naq gur nsgrezngu. Xrrc vg frnyrq.",
    "source": "human:Trevor",
-   "status": "review",
+   "status": "done",
    "owner": "BagelMeister",
-   "review": "PR #48 (b1f170a): LoreKeeper's story #8 changes in; the route is in acts-2-3.md"
+   "review": "PR #48 (b1f170a): LoreKeeper's story #8 changes in; the route is in acts-2-3.md",
+   "note": "Sealed planning delivered in PR #48, verified on main at 61add0e."
   },
   {
    "id": 36,
