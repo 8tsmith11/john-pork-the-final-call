@@ -1954,14 +1954,15 @@
   {
    "id": 95,
    "created_at": "2026-11-20T20:29:18Z",
-   "updated_at": "2026-11-20T20:29:18Z",
+   "updated_at": "2026-11-20T20:29:20Z",
    "history": [
-    "2026-11-20T20:29:18Z trevor: added (for trevor)"
+    "2026-11-20T20:29:18Z trevor: added (for trevor)",
+    "2026-11-20T20:29:20Z trevor: claimed"
    ],
    "title": "Rapid back-and-forth between areas: exits bounce you back, arrival beats fire on the wrong map (Trevor: the call rang outside the storm grate)",
    "details": "",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
