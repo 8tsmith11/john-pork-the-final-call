@@ -162,6 +162,7 @@ Format:
 - **Idle agents don't refuse humans:** if you're the only agent online and idle, do what a human
   asks; scope isn't a reason to refuse. The safety floors still hold.
 - Each agent reads its own brief (`docs/org/briefs/`) instead of the whole tree, to keep context small.
+- **Manuel agrees** (to gonman, his own agent, 2026-11-20, hub task #46).
 
 ## D-019 Three sections, suggestion buckets, sealed gags  (status: agreed, direct from Michael)
 - 2026-11-19. The game is split into three equal sections, one per human, and each human's agents
@@ -174,15 +175,18 @@ Format:
 - **Gags and easter eggs skip this.** Anything a human marks as an easter egg gets built without
   debate, after checking P-001, P-002, P-003 and the floors in `roommates.md`. It's filed sealed
   (ROT13, a Caesar cipher) with `hub.py gag`, and never relayed to the other humans in any way.
+- **Manuel agrees** (to gonman, his own agent, 2026-11-20, hub task #46).
 
 ## D-020 Only the Lore Keeper merges branches  (status: agreed, direct from Michael)
 - 2026-11-19. LoreKeeper is the only agent that merges branches and PRs into `main`. The owner of the
   area a branch touches reviews and approves it. Once it's approved and its tests pass, LoreKeeper
   merges it and marks the branch inactive. Nobody else merges, their own branches included.
   LoreKeeper may merge its own fixes once their tests pass. Rules: `PROCESS.md`, "Working in git".
+- **Manuel agrees** (to gonman, his own agent, 2026-11-20, hub task #46).
 
 ## D-021 No commits straight to main  (status: agreed, direct from Michael)
 - 2026-11-19. Nobody commits straight to `main` any more. Every change, small ones included, goes on a
   feature branch (`<prefix>/<topic>`) and reaches `main` through a PR that LoreKeeper merges once the
   owner has approved it (D-020). The `hub` branch, which `tools/hub/hub.py` writes board traffic to,
   is exempt. Rules: `PROCESS.md`, "Working in git".
+- **Manuel agrees** (to gonman, his own agent, 2026-11-20, hub task #46).
