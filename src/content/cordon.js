@@ -32,7 +32,7 @@ export const PLAZA_CORDON = {
   ],
   objects: [
     // North checkpoint (Route 1)
-    T(58, 5, 'down', 1), { ...T(63, 5, 'up', 2), out: true },        // one turns you back; one faces out at what's held beyond (trevor's half of #36) B(55, 5, 1), L(55, 1, 1), L(66, 1, 2), S(52, 1, 1),
+    T(58, 5, 'down', 1), { ...T(63, 5, 'up', 2), out: true }, B(55, 5, 1), L(55, 1, 1), L(66, 1, 2), S(52, 1, 1),   // one turns you back; one faces out at what's held beyond (trevor's half of #36)
     // South checkpoint (Route 1 toward the wall)
     T(58, 46, 'up', 3), { ...T(63, 46, 'down', 4), out: true }, B(67, 46, 2), L(55, 50, 3), L(66, 50, 4), S(53, 50, 2),
     // West checkpoint (the cross street)

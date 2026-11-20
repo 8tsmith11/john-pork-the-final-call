@@ -709,6 +709,10 @@ test('cordon (task #36/#38): trooper lines before and after the Call have Spanis
   }
   assert.ok(PLAZA_CORDON.barriers.length >= 3);
   assert.ok(PLAZA_CORDON.closing.length >= 10);
+
+  // every checkpoint keeps its booth, floodlights and notice (a trailing comment once swallowed the north one's: BagelMeister, general #141)
+  const ids = new Set(PLAZA_CORDON.objects.map((o) => o.id));
+  for (const id of ['cordon.booth_1', 'cordon.booth_2', 'cordon.light_1', 'cordon.light_2', 'cordon.sign_1', 'cordon.sign_2', 'cordon.sign_3']) assert.ok(ids.has(id), `${id} is placed`);
 });
 
 test('cordon (task #36): the Code-rot-taken beyond each checkpoint stay out of reach and in their pens', () => {
