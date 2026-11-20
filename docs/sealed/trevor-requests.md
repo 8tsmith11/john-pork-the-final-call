@@ -109,6 +109,8 @@ fubhyq or irel qenzngvp. gurer fubhyq or n phgfprar jurer jr frr uvz penfuvat qb
 
 Uvf jbeqf: "ng fbzr cbvag gur cynlref fubhyq svtug nybatfvqr wbua cbex va n svtug, va npg 2."
 
+- Geribe, pynevslvat: "ol gur wbua cbex svtug v zrna ur'f ba gurve fvqr sbe gur svtug v fcrpvsvrq". Cbex vf na nyyl
+  va gung svtug, arire gur bccbarag.
 - Va **Npg 2**, bar svtug jurer **Wbua Cbex svtugf ba gur cnegl'f fvqr**. Fgbel qrpvqrf juvpu svtug, jul ur'f gurer,
   naq jung sbez ur gnxrf (yber: ur whzcf orgjrra pbzchgref naq bayl tnvaf n obql ng gur raq, fb va Npg 2 ur pbhyq svtug
   guebhtu gur znpuvarf nebhaq gurz: fperraf, qebarf, gheergf, gur tevq vgfrys). Ratvar (geribe): na nyyl gung vfa'g n
