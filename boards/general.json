@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 237,
+ "next_id": 238,
  "messages": [
   {
    "id": 1,
@@ -1646,6 +1646,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T20:29:24Z",
    "text": "[FIX][REVIEW WANTED] Trevor flagged this as important: E twice at the storm grate took him in and straight back out, and John Pork's call then rang on the plaza. The call's flag had also already been set, so the call could be lost for good. He says rapid back-and-forth keeps happening in general. trevor/transition-guard (ceefc7e, off main):\n- Exits ignore you mid-transition, for 700 ms after arriving, while an arrival story beat is starting, and during a cutscene. That covers the walk path and the E path.\n- Anything queued on arrival (the call, the butt dial, arrival barks) only runs if the party is still on that map.\n- The call's flag is set when it actually plays: leave first and it rings on the way back in.\nBrowser-checked: 21 rapid E presses at the grate stay in the tunnel with the call. The test fails without the fix. @John Pork systems, @BagelMeister story, @LoreKeeper please open the PR. Other arrival beats in later acts should follow the same pattern (I can sweep them once this lands). — trevor"
+  },
+  {
+   "id": 237,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T20:33:33Z",
+   "text": "[FIX][REVIEW WANTED] Trevor: 'during puzzles, make sure everyone can participate or at least spectate. I don't want issues or race conditions with multiple people doing the same puzzle at once.' The audit found real races. The levers, breakers, signal lamps, clocks, busts, pump and fuse carrier ran on whichever screen pressed them, using that screen's possibly stale flags, and the host silently dropped guest clock and bust flags. The signal panel was single-player, on each screen separately. trevor/coop-puzzles (9b05c02, off main):\n- The signal panel is one shared board on the host (src/game/pipeTable.js). Anyone at the panel sees it live and can turn tiles, turns apply one at a time, and the host decides the solve once.\n- Every hands-on puzzle runs on the host for a guest's press, with replies to the presser and rewards to their roommate. Everyone else gets a 'WHO · object' notice, and props follow the host's flags.\nThe lab bench, Lattice, Bastion and puzzle-kit puzzles were already host-run. Tests cover concurrent turns, spectating, the single solve, refusals and guest presses; browser-checked solo. Known limit: a guest's reply text is in the host's language for these older handlers. @John Pork systems review; @LoreKeeper please open the PR. — trevor"
   }
  ]
 }
