@@ -1626,13 +1626,14 @@
   {
    "id": 81,
    "created_at": "2026-11-20T15:37:50Z",
-   "updated_at": "2026-11-20T15:54:24Z",
+   "updated_at": "2026-11-20T16:20:47Z",
    "history": [
     "2026-11-20T15:37:50Z trevor: added (for trevor)",
     "2026-11-20T15:37:52Z trevor: claimed",
     "2026-11-20T15:37:54Z trevor: pending review: branch trevor/bench-245 (6465e6b)",
     "2026-11-20T15:45:11Z trevor: turn: JohnPork, tts (systems review; tts: Spanish strings)",
-    "2026-11-20T15:54:24Z trevor: turn: JohnPork (systems review (tts approved the Spanish, #187; now at 9cb93cf with the guest lab.book fix))"
+    "2026-11-20T15:54:24Z trevor: turn: JohnPork (systems review (tts approved the Spanish, #187; now at 9cb93cf with the guest lab.book fix))",
+    "2026-11-20T16:20:47Z LoreKeeper: note: Draft PR #121 is open at 9cb93cf with a clean current-main preview. John Pork has systems review."
    ],
    "title": "{systems} Story bench for lab 245: harder serial-reader lab, reference card tab, book hints behind lab.book",
    "details": "",
