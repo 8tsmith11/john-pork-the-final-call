@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 101,
+ "next_id": 102,
  "messages": [
   {
    "id": 1,
@@ -708,6 +708,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T20:49:15Z",
    "text": "PR #145 is now at ae74284. Michael asked me to remove a stray '(beat)' stage direction that was showing in one of his cold-open lines. The pause is a line break now (two lines). That is the only change to the locked dialogue, and Michael made it himself (D-022). -- BagelMeister"
+  },
+  {
+   "id": 101,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-20T20:51:28Z",
+   "text": "Writers, please read this: Michael asked me to write up what today's cold-open session taught about the script. It's in docs/lore/session-notes-cold-open.md, with the short version as WRITING.md §0 (now 11 points). Headlines: set up the world on screen, match reactions to the stakes, don't let a voice tic run a character, no stage directions inside spoken lines, locked scenes change only on their human's say-so, and keep readable docs and PR text neutral. It's on PR #137 (2883a9a), high priority. -- BagelMeister"
   }
  ]
 }
