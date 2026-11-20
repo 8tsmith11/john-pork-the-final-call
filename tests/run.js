@@ -19,7 +19,15 @@ import { makeMap } from '../src/content/maps/build.js';
 import { TRAITS } from '../src/content/rotVillains.js';
 
 let failed = 0;
-const test = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}\n     ${e.message}`); } };
+// An async test is counted when it settles (it used to print 'ok' at once and fail after the summary, so a
+// broken async test could still read as 'all tests passed').
+const pending = [];
+const test = (name, fn) => {
+  const pass = () => console.log(`ok   ${name}`), fail = (e) => { failed++; console.log(`FAIL ${name}\n     ${e?.message ?? e}`); };
+  try { const r = fn(); if (r && typeof r.then === 'function') pending.push(r.then(pass, fail)); else pass(); } catch (e) { fail(e); }
+};
+
+await import('./save-storage.js');
 
 const rotArena = () => ({ id: 'rot-test', w: 100, h: 100, objects: [], enemies: [],
   spawns: [{ x: 160, y: 160 }], solid: () => false });
@@ -657,6 +665,20 @@ test('Manuel\'s fart: on its own, every couple of minutes; Michael only complain
 
 const gagsMod = await import('../src/game/runningGags.js');
 const linesEsMod = await import('../src/content/lines_es.js');
+test('running gags: the sealed one keeps to its conditions and schedule, and every line has EN and ES', () => {
+  const sent = [], sc = { mode: 'solo', time: { now: 0 }, save: { flags: {} } }, g = new gagsMod.RunningGags(sc); g._send = (m) => sent.push(m);
+  const near = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 130, y: 100 }, { id: 'p3', c: 'trevor', x: 500, y: 100 }] };
+  for (let i = 0; i < 3600; i++) { sc.time.now = i * 1000; g.update(near); }
+  const sg = sent.filter((m) => m.k === 'sg');
+  assert.ok(sg.length >= 8 && sg.length <= 30, `in an hour: ${sg.length}`);
+  assert.ok(sg.every((m) => m.a === 'p2' && m.b === 'ai:manuel'));
+  const far = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 600, y: 100 }] };
+  const sent2 = [], sc2 = { mode: 'solo', time: { now: 0 }, save: { flags: {} } }, g2 = new gagsMod.RunningGags(sc2); g2._send = (m) => sent2.push(m);
+  for (let i = 0; i < 1800; i++) { sc2.time.now = i * 1000; g2.update(far); }
+  assert.equal(sent2.filter((m) => m.k === 'sg').length, 0);
+  for (const l of [...gagsMod.SEALED_LINES.a, ...gagsMod.SEALED_LINES.b]) assert.ok(l.en && l.es, 'EN and ES');
+});
+
 test('running gags: the 245 lab chat and the abuela voice notes come round, with Spanish for every line', () => {
   const sent = [], sc = { mode: 'solo', time: { now: 0 }, save: { flags: {} } }, g = new gagsMod.RunningGags(sc); g._send = (m) => sent.push(m);
   const snap = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 300, y: 100 }, { id: 'p3', c: 'trevor', x: 500, y: 100 }] };
@@ -669,6 +691,414 @@ test('running gags: the 245 lab chat and the abuela voice notes come round, with
   const all = Object.values(gagsMod.GAG_LINES).flatMap((g) => Object.values(g).flat());
   const missing = all.filter((l) => !linesEsMod.LINES_ES[l]);
   assert.deepEqual(missing, [], 'Spanish for these lines in src/content/lines_es.js');
+});
+
+const settingsMod = await import('../src/settings.js');
+test('settings: the soundtrack plays by default (Manuel, 2026-11-20)', () => {
+  assert.equal(settingsMod.get('music'), 1);
+  assert.equal(settingsMod.get('sfx'), 1);
+});
+
+// The v3 step runs when settings.js loads, so load a fresh copy of it over each saved state.
+let settingsLoads = 0;
+const settingsAfter = async (saved) => {
+  const store = new Map(saved ? [['jpfc.settings', JSON.stringify(saved)]] : []);
+  const before = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, writable: true,
+    value: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, String(v)) } });
+  try {
+    const m = await import(`../src/settings.js?load=${++settingsLoads}`);
+    return { music: m.get('music'), v: m.get('v'), stored: JSON.parse(store.get('jpfc.settings')) };
+  } finally {
+    if (before) Object.defineProperty(globalThis, 'localStorage', before); else delete globalThis.localStorage;
+  }
+};
+const settingsCases = {
+  fresh: await settingsAfter(null),
+  mutedByV2: await settingsAfter({ music: 0, sfx: 0.25, voice: 1, shake: true, textSpeed: 'normal', v: 2 }),
+  raisedUnderV2: await settingsAfter({ music: 0.5, v: 2 }),
+  chosenBeforeV2: await settingsAfter({ music: 0.25 }),
+  silencedBeforeV2: await settingsAfter({ music: 0 }),
+  silencedUnderV3: await settingsAfter({ music: 0, v: 3 }),
+};
+test('settings: v3 turns the soundtrack back on only where the v2 change muted it; player choices are kept', () => {
+  const c = settingsCases;
+  assert.deepEqual([c.fresh.music, c.fresh.stored.music, c.fresh.stored.v], [1, 1, 3], 'a new player hears music');
+  assert.deepEqual([c.mutedByV2.music, c.mutedByV2.stored.music, c.mutedByV2.stored.v], [1, 1, 3], 'v2 muted it, v3 undoes that');
+  assert.equal(c.mutedByV2.stored.sfx, 0.25, 'only the music changes');
+  assert.equal(c.raisedUnderV2.music, 0.5, 'turned up under v2: kept');
+  assert.equal(c.chosenBeforeV2.music, 0.25, 'chosen before v2: kept');
+  assert.equal(c.silencedBeforeV2.music, 0, 'silenced before v2: kept');
+  assert.equal(c.silencedUnderV3.music, 0, 'silenced under v3: kept');
+  for (const r of Object.values(c)) assert.equal(r.v, 3);
+  assert.equal(settingsMod.get('music'), 1, 'the shared settings module is untouched');
+});
+
+// hub #30: the Act 1 scaffold areas, polished (act1_more.js, act1_aster.js, campus.js). Fresh copies of the modules
+// (the ?polish30 query), so the crowds.js townsfolk that maps/index.js adds afterwards aren't counted as theirs.
+const POLISH30_FILES = ['act1_more.js', 'act1_aster.js', 'campus.js'];
+const POLISH30_MAPS = (await Promise.all(POLISH30_FILES.map((f) => import(`../src/content/maps/${f}?polish30`))))
+  .flatMap((mod) => Object.values(mod).filter((m) => m && m.id && Array.isArray(m.objects)));
+const polish30Lines = (o) => [o.label, o.text, o.doneText, o.lockedText, ...(o.pages ?? []), ...(o.later ?? []).map((l) => l.text)].filter((t) => typeof t === 'string' && t);
+const { SIDE_QUESTS: POLISH30_SIDE } = await import('../src/content/sideQuests.js');
+const { makeJob: polish30Job } = await import('../src/content/jobs.js');
+const { LOOT: POLISH30_LOOT } = await import('../src/content/items.js');
+const { BOSSES: POLISH30_BOSSES } = await import('../src/content/bosses.js');
+const { ES_HUD: POLISH30_ES_HUD } = await import('../src/i18n/es-hud.js');
+test('hub #30: no [scaffold] line left in the Act 1 area files, and every line in them has Spanish', () => {
+  assert.equal(POLISH30_MAPS.length, 13, 'the thirteen areas in the three files');
+  for (const f of POLISH30_FILES) assert.ok(!/\[scaffold\]/i.test(fs.readFileSync(new URL(`../src/content/maps/${f}`, import.meta.url), 'utf8')), `${f} still has a [scaffold] line`);
+  const was = i18nMod.getLang(), missing = [], multiline = [];
+  i18nMod.setLang('es');
+  try {
+    for (const m of POLISH30_MAPS) for (const o of m.objects) for (const t of polish30Lines(o)) {
+      const listed = [ES_PLAZA, ES_ASTER, POLISH30_ES_HUD].some((tb) => Object.hasOwn(tb, t));
+      if (t.includes('[scaffold]') || (!listed && i18nMod.tr(t) === t)) missing.push(`${m.id}/${o.id}: ${t.slice(0, 50)}`);
+      if (t.includes('\n')) multiline.push(`${m.id}/${o.id}`);
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(missing, [], 'add Spanish to src/i18n/es-plaza.js (diner, campus) or es-aster.js (ASTER)');
+  assert.deepEqual(multiline, [], 'one line each, so a loot find or a quest clue added under it still translates line by line');
+});
+test('hub #30: each polished Act 1 area has one small secret or job, made from systems that already exist', () => {
+  const SECRET = { diner: 'obj.diner_window_booth', aster_basement: 'obj.basement_cage_631', aster_roof: 'obj.roof_cooler', dining_hall: 'obj.dining_swipe',
+    robotics_lab: 'obj.rover_drawer', auditorium: 'obj.aud_projector', apt_637: 'npc.apt637_player', apt_638: 'obj.apt638_cans', apt_636: 'obj.apt636_parcel',
+    aster_5f: 'obj.aster5_hose', aster_laundry: 'obj.laundry_end_machine', compute_hall_b: 'npc.chb_ta' };
+  const nests = new Set();
+  for (let n = 0; n < 400; n++) { const j = polish30Job(`polish30-${n}`, n); if (j.type === 'nest') nests.add(j.map); }
+  assert.ok(nests.has('campus_quad'), 'the bounty board can post a rot nest on the campus quad (jobs.js)');
+  const questFlags = new Set(POLISH30_SIDE.flatMap((q) => [q.report?.flag, q.inspect?.flag, q.give?.flag].filter(Boolean)));
+  const atlas = new Set(['props', 'big', 'wide', 'doors'].flatMap((s) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${s}.json`, import.meta.url), 'utf8')).frames)));
+  for (const m of POLISH30_MAPS) {
+    const id = SECRET[m.id], o = id && m.objects.find((q) => q.id === id);
+    if (m.id === 'campus_quad') assert.ok(!id, 'the quad\'s is the job'); else assert.ok(o && (o.grant || o.loot || o.action === 'pages' || o.later?.length), `${m.id}: no secret (${id})`);
+    for (const q of m.objects) {
+      if (q.grant) { assert.ok(ITEMS[q.grant], `${q.id}: no item ${q.grant}`); assert.ok(q.text && q.doneText, `${q.id}: a one-time find needs text and doneText`); }
+      if (q.loot) assert.ok(POLISH30_LOOT[q.loot], `${q.id}: no loot table ${q.loot}`);
+      if (q.action === 'pages') assert.ok(q.pages.length > 1, `${q.id}: pages to step through`);
+      for (const l of q.later ?? []) {
+        assert.ok(q.npc, `${q.id}: later lines only play for people`);
+        const boss = /^boss\.(.+)\.down$/.exec(l.if)?.[1];
+        const set = boss ? POLISH30_BOSSES[`boss.${boss}`] && POLISH30_MAPS.some((mm) => mm.enemies.some((e) => e.kind === `boss.${boss}`)) : questFlags.has(l.if);
+        assert.ok(set, `${q.id}: nothing in the game sets ${l.if}`);
+      }
+      if (q.art) assert.ok(atlas.has(q.art), `${q.id}: no art ${q.art} in assets/sprites`);
+    }
+    for (const s of m.scenery ?? []) assert.ok(atlas.has(s.art), `${m.id}: no scenery art ${s.art}`);
+    assert.ok(m.objects.every((q) => !q.npc || q.age === 'adult'), `${m.id}: everyone here is an adult`);
+  }
+});
+const { SHOPS: POLISH30_SHOPS } = await import('../src/content/items.js');
+test('hub #30 follow-up: a shop counter on a polished Act 1 map has a real header, with Spanish (the diner\'s said [scaffold])', () => {
+  const was = i18nMod.getLang(), missing = [];
+  i18nMod.setLang('es');
+  try {
+    for (const m of POLISH30_MAPS) for (const o of m.objects.filter((q) => q.action === 'shop')) {
+      const shop = POLISH30_SHOPS[o.shop];
+      assert.ok(shop, `${m.id}/${o.id}: no shop ${o.shop} in items.js`);
+      for (const t of [shop.title, ...shop.lines]) if (t.includes('[scaffold]') || i18nMod.tr(t) === t) missing.push(`${o.shop}: ${t.slice(0, 50)}`);
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(missing, [], 'a real line in items.js SHOPS, Spanish in src/i18n/es-plaza.js');
+});
+test('hub #30 follow-up: the crowds.js townsfolk on the polished Act 1 maps have real lines, with Spanish', () => {
+  const was = i18nMod.getLang(), missing = [];
+  i18nMod.setLang('es');
+  try {
+    for (const [map, id] of [['diner', 'npc.diner_regular'], ['campus_quad', 'npc.quad_student'], ['dining_hall', 'npc.dining_student'], ['robotics_lab', 'npc.lab_grad']]) {
+      const o = MAPS_FOR_TEST[map].objects.find((q) => q.id === id);
+      assert.ok(o, `${map}: ${id} is placed`);
+      for (const t of [o.label, o.text]) if (t.includes('[scaffold]') || !Object.hasOwn(ES_PLAZA, t) || i18nMod.tr(t) === t) missing.push(`${id}: ${t.slice(0, 50)}`);
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(missing, [], 'real lines in crowds.js, Spanish in src/i18n/es-plaza.js');
+});
+// hub #68 (Trevor: "compute hall needs more compute, suspicious lack of it"): Compute Hall B's machine room, terminal
+// lab, cable trays and floor runs. Built on the hub #30 polish; lab 245's bench must not move.
+const CHB68_PROPS = ['obj.server_rack', 'obj.server_rack#1', 'obj.network_rack', 'obj.network_rack#1', 'obj.terminal_lit', 'obj.terminal_lit#1',
+  'obj.crac_unit', 'obj.crac_unit#1', 'obj.cable_tray', 'obj.wall_display', 'obj.wall_display#1', 'obj.room_sign'];
+const CHB68_DECALS = ['dec.raised_floor', 'dec.raised_vent', 'dec.cable_h', 'dec.cable_v', 'dec.cable_ws', 'dec.cable_es', 'dec.cable_wn', 'dec.cable_en'];
+const chb68Atlas = (name) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${name}.json`, import.meta.url), 'utf8')).frames);
+test('hub #30 follow-up: the Mars rover has its own frame; the battlebot stays in 631', () => {
+  const props = JSON.parse(fs.readFileSync(new URL('../assets/sprites/props.json', import.meta.url), 'utf8')).frames;
+  const rover = MAPS_FOR_TEST.robotics_lab.objects.find((q) => q.id === 'obj.mars_rover');
+  assert.equal(rover?.art, 'obj.mars_rover');
+  assert.ok(props['obj.mars_rover'], 'obj.mars_rover frame in assets/sprites/props.json (gen_props.py, then build.py props)');
+  const names = Object.keys(props);
+  // New frames go at the end of the props list: the rover was the last one until hub #68 appended the machine room's.
+  assert.ok(names.indexOf('obj.mars_rover') > names.indexOf('obj.battlebot'), 'new frames are appended after the existing ones (other branches may append more after it)');
+  const bots = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.filter((q) => (q.art ?? q.id) === 'obj.battlebot').map(() => m.id));
+  assert.deepEqual([...new Set(bots)], ['room631'], 'obj.battlebot is Trevor\'s robot, only in Room 631');
+});
+
+test('hub #68: the machine room\'s frames are in the atlases, appended after everything that was there', () => {
+  const props = chb68Atlas('props'), decals = chb68Atlas('decals');
+  // Appended as one block after the frames that were already there; other branches may append more after them.
+  const p0 = props.indexOf(CHB68_PROPS[0]), d0 = decals.indexOf(CHB68_DECALS[0]);
+  assert.deepEqual(props.slice(p0, p0 + CHB68_PROPS.length), CHB68_PROPS, 'props: one appended block (gen_props.py, then build.py props)');
+  assert.ok(p0 > props.indexOf('obj.mars_rover'), 'after the frames that were there before');
+  assert.deepEqual(decals.slice(d0, d0 + CHB68_DECALS.length), CHB68_DECALS, 'decals: one appended block (build.py decals)');
+  assert.ok(d0 > decals.indexOf('dec.lily'), 'after the decals that were there before');
+  for (const art of ['obj.server_rack', 'obj.network_rack', 'obj.terminal_lit', 'obj.crac_unit', 'obj.wall_display']) assert.ok(props.includes(`${art}#1`), `${art} blinks: a '#1' frame`);
+});
+test('hub #68: the machine room opens on both halls, and both openings reach the cold aisle (LoreKeeper story #42)', () => {
+  const m = MAPS_FOR_TEST.compute_hall_b;
+  const reach = (sx, sy) => { const seen = new Set([sx + ',' + sy]), q = [[sx, sy]]; while (q.length) { const [x, y] = q.shift(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (seen.has(k) || nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || m.solid(nx, ny)) continue; seen.add(k); q.push([nx, ny]); } } return seen; };
+  assert.ok(!m.solid(12, 6) && !m.solid(12, 11), 'a gap in the north glass (12,6) and in the south glass (12,11)');
+  const plaque = m.objects.find((q) => q.id === 'obj.chb_machine_sign');
+  assert.ok(Math.abs(plaque.x - 12) <= 1 && plaque.y === 11, 'the plaque sits beside the south opening, readable from the south hall');
+  const blockNorth = new Set(['12,6']), solidN = m.solid; m.solid = (x, y) => blockNorth.has(x + ',' + y) || solidN.call(m, x, y);
+  try { assert.ok(reach(12, 13).has('12,9'), 'from the south hall alone you reach the cold aisle'); } finally { m.solid = solidN; }
+  const blockSouth = new Set(['12,11']); m.solid = (x, y) => blockSouth.has(x + ',' + y) || solidN.call(m, x, y);
+  try { assert.ok(reach(12, 5).has('12,9'), 'from the north hall alone you reach the cold aisle'); } finally { m.solid = solidN; }
+});
+test('hub #68: lab 245\'s bench, the quest objects, doors, people and rotlings keep their tiles', () => {
+  const m = MAPS_FOR_TEST.compute_hall_b, at = (id) => { const o = m.objects.find((q) => q.id === id); return o && [o.x, o.y, o.w ?? 1]; };
+  const bench = m.objects.find((q) => q.id === 'obj.chb_bench');
+  assert.deepEqual([bench.x, bench.y, bench.art, bench.label], [2, 2, 'obj.workbench', 'Lab bench (245)'], 'lab 245\'s bench stays exactly where it was');
+  assert.equal(m.layout[2][2], 'e', 'still on the lab floor');
+  assert.deepEqual(at('obj.chb_bench_2'), [5, 2, 1]); assert.deepEqual(at('obj.chb_storage'), [22, 8, 1]);
+  assert.deepEqual(at('npc.chb_ta'), [21, 2, 1]); assert.deepEqual(at('npc.chb_student'), [3, 8, 1]);
+  assert.deepEqual(at('obj.chb_doors'), [11, 15, 2]); assert.deepEqual(at('obj.chb_quad_door'), [12, 0, 1]);
+  assert.deepEqual(m.enemies.map((e) => [e.kind, Math.floor(e.x / 16), Math.floor(e.y / 16)]), [['enemy.rotling', 10, 3], ['enemy.rotling', 23, 5], ['enemy.rotling', 12, 9], ['enemy.rotling', 14, 13]], 'same rotlings, same order (saves key kills by index)');
+  assert.deepEqual(m.spawns.map((s) => [Math.floor(s.x / 16), Math.floor(s.y / 16)]), [[6, 13]]);
+  const ta = m.objects.find((q) => q.id === 'npc.chb_ta');
+  assert.equal(ta.later?.[0]?.if, 'boss.chb_autograder.down', 'the TA\'s night off still plays');
+});
+test('hub #68: Compute Hall B stays reachable, and its racks block like furniture', () => {
+  const m = MAPS_FOR_TEST.compute_hall_b, seen = new Set(), q = [];
+  const s0 = m.spawns[0], sx = Math.floor(s0.x / 16), sy = Math.floor(s0.y / 16);
+  seen.add(`${sx},${sy}`); q.push([sx, sy]);
+  while (q.length) {
+    const [x, y] = q.shift();
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = `${nx},${ny}`; if (!seen.has(k) && !m.solid(nx, ny)) { seen.add(k); q.push([nx, ny]); } }
+  }
+  const pockets = [];
+  for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) if (!m.solid(x, y) && !seen.has(`${x},${y}`)) pockets.push(`${x},${y}`);
+  assert.deepEqual(pockets, [], 'every open tile can be walked to from the entrance (no sealed aisle)');
+  const near = (x, y) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${x + dx},${y + dy}`));
+  for (const o of m.objects) assert.ok(near(o.x, o.y) || seen.has(`${o.x},${o.y}`), `${o.id} can be walked up to`);
+  for (const id of ['obj.chb_rack', 'obj.chb_network_rack', 'obj.chb_cooling', 'obj.chb_terminal_login', 'obj.chb_terminal_queue']) {
+    const o = m.objects.find((q) => q.id === id);
+    assert.ok(o.solid && m.solid(o.x, o.y), `${id} is solid: you walk round it`);
+    assert.ok(near(o.x, o.y), `${id}: an open tile right beside it (16px from its centre, inside the 34px reach in WorldScene), so you can read it`);
+  }
+  for (const s of m.scenery.filter((s) => /rack|crac|terminal|boxes/.test(s.art))) assert.ok(m.solid(s.x, s.y), `${s.art} at ${s.x},${s.y} blocks`);
+  for (const id of ['obj.chb_bench', 'obj.chb_storage', 'npc.chb_ta', 'npc.chb_student']) { const o = m.objects.find((q) => q.id === id); assert.ok(!m.solid(o.x, o.y), `${id} stays walkable as before`); }
+  // makeMap: `solid` blocks props, never people or doors.
+  const t = makeMap({ id: 'solid-test', name: 't', layout: ['.....'], spawns: [[0, 0]], objects: [{ id: 'a', x: 1, y: 0, solid: true }, { id: 'b', x: 2, y: 0, npc: true, solid: true }, { id: 'c', x: 3, y: 0 }] });
+  assert.deepEqual([0, 1, 2, 3].map((x) => t.solid(x, 0)), [false, true, false, false]);
+});
+test('hub #68: Compute Hall B reads as a compute hall', () => {
+  const m = MAPS_FOR_TEST.compute_hall_b, things = [...m.scenery.map((s) => s.art), ...m.objects.map((o) => o.art ?? o.id)];
+  const n = (art) => things.filter((a) => a === art).length;
+  assert.ok(n('obj.server_rack') + n('obj.network_rack') >= 16, 'two rows of racks in the machine room');
+  assert.ok(n('obj.terminal_lit') >= 6, 'a terminal lab'); assert.equal(n('obj.crac_unit'), 2, 'a cooling unit at each end of the aisles');
+  assert.ok(n('obj.cable_tray') >= 20, 'cable trays along the walls');
+  assert.ok(n('obj.wall_display') >= 1 && n('obj.room_sign') >= 1, 'signs in the building\'s voice');
+  const dec = new Map(m.decals.map(([f, x, y]) => [`${x},${y}`, f]));
+  for (let y = 7; y <= 10; y++) for (let x = 8; x <= 18; x++) assert.equal(dec.get(`${x},${y}`), y === 9 ? 'dec.raised_vent' : 'dec.raised_floor', `machine room floor at ${x},${y}`);
+  assert.ok(m.decals.filter(([f]) => f.startsWith('dec.cable_')).length >= 20, 'floor cable runs out of the machine room');
+  const names = new Set([...chb68Atlas('props'), ...chb68Atlas('decals')]);
+  for (const a of things) assert.ok(names.has(a), `${a} has art`);
+  for (const [f] of m.decals) assert.ok(names.has(f), `${f} has art`);
+  // Every new examinable thing has a line, in English and in Spanish.
+  const was = i18nMod.getLang(), missing = [];
+  i18nMod.setLang('es');
+  try {
+    for (const id of ['obj.chb_rack', 'obj.chb_network_rack', 'obj.chb_cooling', 'obj.chb_machine_sign', 'obj.chb_terminal_login', 'obj.chb_terminal_queue', 'obj.chb_cable_tray', 'obj.chb_status_board']) {
+      const o = m.objects.find((q) => q.id === id);
+      assert.ok(o && o.label && o.text && o.text.length > 40, `${id}: a label and a real line`);
+      for (const t of [o.label, o.text]) if (!Object.hasOwn(ES_PLAZA, t) || (i18nMod.tr(t) === t && t !== 'Terminal')) missing.push(`${id}: ${t.slice(0, 40)}`);
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(missing, [], 'Spanish in src/i18n/es-plaza.js');
+});
+test('i18n: a string listed in more than one Spanish table gets the same Spanish in each (the diner had two names)', () => {
+  const tables = { ES_631, ES_ASTER, ES_HUD: POLISH30_ES_HUD, ES_PLAZA, ES_QUESTS, ES_TUNNELS_LAKE }, seen = new Map(), clash = [];
+  for (const [name, tb] of Object.entries(tables)) for (const [en, es] of Object.entries(tb)) {
+    const prev = seen.get(en);
+    if (prev && prev[1] !== es) clash.push(`${JSON.stringify(en.slice(0, 40))}: ${prev[0]} "${prev[1].slice(0, 30)}" vs ${name} "${es.slice(0, 30)}"`);
+    else if (!prev) seen.set(en, [name, es]);
+  }
+  assert.deepEqual(clash, [], 'pick one Spanish string and use it in both tables');
+  const was = i18nMod.getLang();
+  i18nMod.setLang('es');
+  try { assert.equal(i18nMod.tr('The diner'), 'La cafetería'); } finally { i18nMod.setLang(was); }
+});
+
+// ---- Route 1 shops and the airfield (hub #28/#29): src/content/maps/act1_route1.js, act1_airfield.js ----
+const R1_MAPS = ['hardware', 'feed_store', 'airfield', 'hangar'];
+const r1Regions = await import('../src/content/regions.js');
+const { ES_ROUTE1 } = await import('../src/i18n/es-route1.js');
+const { SHOPS: R1_SHOPS, sellPrice: r1SellPrice } = await import('../src/content/items.js');
+const { PLAZA_CORDON: R1_CORDON } = await import('../src/content/cordon.js');
+const r1Walk = (m, starts) => {   // tiles reachable on foot from `starts` (doors open on contact, as in the reachability test)
+  const seen = new Set(starts.map(([x, y]) => `${x},${y}`)), q = [...starts];
+  while (q.length) {
+    const [x, y] = q.shift();
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
+      if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
+      seen.add(k); q.push([nx, ny]);
+    }
+  }
+  return seen;
+};
+const r1Near = (seen, o) => [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${o.x + dx},${o.y + dy}`));
+test('Route 1 and the airfield (hub #28/#29): the new maps are registered in the route1 region, and College Park and the lake lead to them', () => {
+  const route1 = r1Regions.REGIONS.find((r) => r.id === 'route1');
+  for (const id of R1_MAPS) { assert.ok(MAPS_FOR_TEST[id], `${id} is registered in maps/index.js`); assert.ok(route1.maps.includes(id), `${id} is in the route1 region`); }
+  assert.equal(route1.act, 1);
+  const leads = (from, to) => MAPS_FOR_TEST[from].objects.some((o) => o.action === 'exit' && o.to === to && !o.requiresFlag);
+  assert.ok(leads('metro_plaza', 'hardware') && leads('metro_plaza', 'feed_store'), 'the shop doors are on the Route 1 strip');
+  assert.ok(leads('lake', 'airfield') && leads('airfield', 'hangar'), 'the airfield is off the lake, the hangar off the airfield');
+  assert.ok(!MAPS_FOR_TEST.metro_plaza.objects.some((o) => o.action === 'exit' && o.to === 'airfield'), 'the airfield is reached through the lake, not straight from the plaza');
+});
+test('Route 1 and the airfield: every new map is walkable from each entrance, with every object in reach', () => {
+  const bad = [];
+  for (const id of R1_MAPS) {
+    const m = MAPS_FOR_TEST[id];
+    for (const back of m.objects.filter((o) => o.action === 'exit')) {   // arrive the way the game does, through the matching door
+      const from = MAPS_FOR_TEST[back.to], via = from.objects.find((o) => o.action === 'exit' && o.to === id && o.pair === back.id);
+      if (!via) { bad.push(`${id}: nothing in ${back.to} leads to ${back.id}`); continue; }
+      const sim = new Sim(from, { seed: 'r1' });
+      for (const [pid, c] of [['a', 'manuel'], ['b', 'trevor'], ['c', 'michael']]) sim.addPlayer(pid, c);
+      sim.setMap(m, back.to, via.id);
+      const starts = [...sim.players.values()].map((p) => [Math.floor(p.x / 16), Math.floor(p.y / 16)]);
+      for (const [x, y] of starts) if (m.solid(x, y)) bad.push(`${id}: arriving from ${back.to} lands in a wall at ${x},${y}`);
+      for (const [x, y] of starts) if (Math.abs(x - back.x) + Math.abs(y - back.y) > 2) bad.push(`${id}: arriving from ${back.to} lands far from ${back.id}`);
+      const seen = r1Walk(m, starts);
+      for (const o of m.objects) if (!r1Near(seen, o)) bad.push(`${id}: ${o.id} can't be reached from ${back.id}`);
+      let open = 0; for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) if (!m.solid(x, y)) open++;
+      const cut = open - [...seen].filter((k) => { const [x, y] = k.split(',').map(Number); return !m.solid(x, y); }).length;
+      if (cut > 0 && id !== 'airfield') bad.push(`${id}: ${cut} floor tiles can't be walked to from ${back.id}`);   // outdoors, a tree can close off a corner
+    }
+  }
+  // ...and on the maps you enter them from, the doors and the trail sign can be walked up to from where you start.
+  for (const [mapId, ids] of [['metro_plaza', ['obj.hardware_door', 'obj.hardware_sign', 'obj.feed_door', 'obj.feed_sign']], ['lake', ['obj.lake_airfield']]]) {
+    const m = MAPS_FOR_TEST[mapId], seen = r1Walk(m, m.spawns.map((s) => [Math.floor(s.x / 16), Math.floor(s.y / 16)]));
+    for (const oid of ids) { const o = m.objects.find((q) => q.id === oid); if (!o) bad.push(`${mapId}: no ${oid}`); else if (!r1Near(seen, o)) bad.push(`${mapId}: ${oid} out of reach`); }
+  }
+  assert.deepEqual(bad, []);
+});
+test('Route 1 and the airfield: every exit to or from the new maps is paired both ways, and the shop doors sit in a wall like the diner\'s', () => {
+  const bad = [];
+  const exits = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.filter((o) => o.action === 'exit' && (R1_MAPS.includes(o.to) || R1_MAPS.includes(m.id))).map((o) => [m, o]));
+  assert.ok(exits.length >= 8, 'four maps, eight door sides');
+  for (const [m, o] of exits) {
+    const there = MAPS_FOR_TEST[o.to]?.objects.find((q) => q.id === o.pair);
+    if (!there) { bad.push(`${m.id}/${o.id}: its pair ${o.pair} is not in ${o.to}`); continue; }
+    if (there.action !== 'exit' || there.to !== m.id || there.pair !== o.id) bad.push(`${m.id}/${o.id}: ${o.to}/${there.id} doesn't lead back to it`);
+  }
+  const plaza = MAPS_FOR_TEST.metro_plaza;
+  for (const id of ['obj.hardware_door', 'obj.feed_door']) {
+    const o = plaza.objects.find((q) => q.id === id);
+    assert.equal(plaza.layout[o.y][o.x], '#', `${id} is set in a building wall`);
+    assert.ok(!plaza.solid(o.x, o.y + 1), `${id} opens onto pavement`);
+    assert.ok(!o.stepOn && !o.floor && !o.requiresFlag, `${id} works like the diner's door`);
+  }
+  assert.deepEqual(bad, []);
+});
+test('Route 1 and the airfield: no new way out through the cordon; Act 1 exits from College Park stay inside ring one', () => {
+  const plaza = MAPS_FOR_TEST.metro_plaza, opening = (o) => R1_CORDON.openings.some(([x, y, w, h]) => o.x >= x - 1 && o.x < x + w && o.y >= y - 1 && o.y < y + h);
+  for (const o of plaza.objects.filter((q) => q.action === 'exit' && (q.x <= 1 || q.y <= 1 || q.x >= plaza.w - 2 || q.y >= plaza.h - 2))) {
+    assert.ok(opening(o) || o.requiresFlag === 'act1.complete', `${o.id} leaves College Park through the cordon`);
+  }
+  assert.ok(!plaza.objects.some((o) => o.action === 'exit' && o.y >= plaza.h - 2), 'the south perimeter stays closed');
+  // Every exit you can use before Act 1 is complete, followed from College Park, stays in ring one.
+  const seen = new Set(['metro_plaza']), q = ['metro_plaza'];
+  while (q.length) for (const o of MAPS_FOR_TEST[q.shift()].objects) if (o.action === 'exit' && MAPS_FOR_TEST[o.to] && o.requiresFlag !== 'act1.complete' && !seen.has(o.to)) { seen.add(o.to); q.push(o.to); }
+  for (const id of R1_MAPS) assert.ok(seen.has(id), `${id} can be reached in Act 1`);
+  for (const id of seen) assert.equal(r1Regions.regionOfMap(id)?.ring, 1, `${id} is reachable in Act 1 but sits outside ring one`);
+  // The airfield's only ways out are the hangar and the trail back to the lake; the hangar's only door is back to the field.
+  assert.deepEqual(MAPS_FOR_TEST.airfield.objects.filter((o) => o.action === 'exit').map((o) => o.to).sort(), ['hangar', 'lake']);
+  assert.deepEqual(MAPS_FOR_TEST.hangar.objects.filter((o) => o.action === 'exit').map((o) => o.to), ['airfield']);
+  for (const id of ['hardware', 'feed_store']) assert.deepEqual(MAPS_FOR_TEST[id].objects.filter((o) => o.action === 'exit').map((o) => o.to), ['metro_plaza']);
+});
+test('Route 1 shops: the counters open the ordinary shop menu, the chalkboard matches the shelf, and the pawn pays what it paid before', () => {
+  for (const [mapId, shop] of [['hardware', 'hardware'], ['feed_store', 'feed']]) {
+    const counter = MAPS_FOR_TEST[mapId].objects.find((o) => o.action === 'shop');
+    assert.equal(counter?.shop, shop, `${mapId} has a counter for SHOPS.${shop}`);
+    assert.ok(R1_SHOPS[shop].stock.length >= 4, `SHOPS.${shop} has stock`);
+    for (const st of R1_SHOPS[shop].stock) { assert.ok(ITEMS[st.item], `${shop} sells ${st.item}, which exists`); assert.ok(st.price > 0); }
+  }
+  const board = MAPS_FOR_TEST.hardware.objects.find((o) => o.id === 'obj.hardware_chalkboard').text;
+  assert.deepEqual([...board.matchAll(/\$(\d+)/g)].map((m) => Number(m[1])).sort((a, b) => a - b), R1_SHOPS.hardware.stock.map((s) => s.price).sort((a, b) => a - b), 'chalkboard prices = shelf prices');
+  const ids = [...new Set(['hardware', 'feed'].flatMap((s) => R1_SHOPS[s].stock.map((st) => st.item)))], now = ids.map((id) => r1SellPrice(id));
+  const saved = { hardware: R1_SHOPS.hardware, feed: R1_SHOPS.feed };
+  try { delete R1_SHOPS.hardware; delete R1_SHOPS.feed; assert.deepEqual(now, ids.map((id) => r1SellPrice(id)), 'adding the shops changed what the pawn pays'); }
+  finally { Object.assign(R1_SHOPS, saved); }
+});
+test('Route 1 and the airfield: people have an age, kids are never egg targets, and no new NPC opts into the eggs', () => {
+  for (const id of R1_MAPS) for (const o of MAPS_FOR_TEST[id].objects.filter((q) => q.npc)) {
+    assert.ok(['adult', 'child'].includes(o.age), `${o.id} has an age`);
+    assert.ok(!o.eggOk, `${o.id} is not tagged eggOk`);
+  }
+  assert.ok(R1_MAPS.some((id) => MAPS_FOR_TEST[id].objects.some((o) => o.npc && o.age === 'child')), 'Analogist families bring their kids');
+  for (const id of R1_MAPS) for (const o of MAPS_FOR_TEST[id].objects.filter((q) => q.npc && q.age === 'child')) assert.equal(o.approach, false, `${o.id}: talk only, nobody pickpockets or intimidates a kid`);
+  for (const m of Object.values(MAPS_FOR_TEST)) for (const o of m.objects) if (o.npc && o.age === 'child') assert.ok(!o.eggOk, `${m.id}/${o.id}: a child is never tagged eggOk`);
+});
+test('Route 1 and the airfield: the windsock, the flight log, the jar of keys and the paper maps are there, with art for everything', () => {
+  const find = (mapId, art) => MAPS_FOR_TEST[mapId].objects.find((o) => o.art === art);
+  assert.ok(find('airfield', 'obj.windsock'), 'it still has a windsock');
+  const log = find('hangar', 'obj.flight_log');
+  assert.ok(log?.pages?.some((p) => p.startsWith('2071.')), 'the flight log has an entry on the night of the Call');
+  assert.ok(find('hangar', 'obj.key_jar') && find('hangar', 'obj.bookshelf'), 'a jar of keys and the paper maps');
+  const atlas = new Set(['props', 'wide', 'big'].flatMap((f) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${f}.json`, import.meta.url), 'utf8')).frames)));
+  for (const id of [...R1_MAPS, 'metro_plaza']) for (const s of MAPS_FOR_TEST[id].scenery ?? []) assert.ok(atlas.has(s.art), `${id}: scenery ${s.art} has art`);
+});
+test('Route 1 and the airfield: phones go in the box inside the hangar door, and the corkboard and the deacon agree with it', () => {
+  const hangar = MAPS_FOR_TEST.hangar, box = hangar.objects.find((o) => o.id === 'obj.hangar_phone_box');
+  assert.ok(box && /phones/i.test(box.text), 'the box of phones is inside the hangar, by the door');
+  assert.match(hangar.objects.find((o) => o.id === 'obj.hangar_rules').text, /PHONES IN THE BOX/);
+  const reed = hangar.objects.find((o) => o.id === 'npc.deacon_reed');
+  for (const t of [reed.text, ...(reed.later ?? []).map((l) => l.text)]) assert.ok(!/nothing in here rang/i.test(t), 'the box by the door rang with everyone else\'s');
+  const cork = MAPS_FOR_TEST.feed_store.objects.find((o) => o.id === 'obj.feed_corkboard').text;
+  assert.ok(!/windsock/i.test(cork) && /PHONE AT THE DOOR/.test(cork), 'the corkboard sends phones to the door, where the box is');
+});
+test('Route 1 and the airfield (LoreKeeper on #83): Sunday meetings vs tonight\'s shelter, 22:40 is the circuit and the Call has no time, and ringing in the hangar comes from the box at the door', () => {
+  const hangar = MAPS_FOR_TEST.hangar, es = (t) => ES_ROUTE1[t] ?? '';
+  // (a) The ordinary schedule matches the corkboard at Pardo's, and tonight the families are here to sleep, not to meet.
+  const board = hangar.objects.find((o) => o.id === 'obj.hangar_schedule');
+  assert.ok(board, 'a schedule board in the hangar');
+  const cork = MAPS_FOR_TEST.feed_store.objects.find((o) => o.id === 'obj.feed_corkboard').text;
+  assert.ok(/SUNDAYS/.test(board.text) && /SUNDAYS/.test(cork), 'the hangar board and the corkboard give the same meeting day');
+  assert.match(board.text, /NO MEETING TONIGHT/);
+  assert.match(board.text, /FLOOR/, 'tonight they are sheltering');
+  assert.ok(/DOMINGOS/.test(es(board.text)) && /HOY NO HAY REUNIÓN/.test(es(board.text)), 'and the Spanish says the same');
+  // (b) The flight log: 22:40 is an ordinary local circuit, and the Call is a later entry with no time.
+  const pages = hangar.objects.find((o) => o.id === 'obj.hangar_flight_log').pages;
+  const clock = /\b\d{1,2}:\d{2}\b/, ringsEn = /\b(rang|ring|rings|ringing|buzz\w*|went off)\b/i;
+  const timed = pages.filter((p) => clock.test(p));
+  assert.equal(timed.length, 1, 'only one entry in the log has a time');
+  assert.ok(/\b22:40\. Local circuit\b/.test(timed[0]) && !ringsEn.test(timed[0]), '22:40 is the local circuit, and nothing rings in it');
+  const callPage = pages.findIndex((p) => ringsEn.test(p));
+  assert.ok(callPage > pages.indexOf(timed[0]), 'the Call is a later entry than the 22:40 circuit');
+  assert.ok(!clock.test(pages[callPage]), 'the Call is untimed in the log');
+  assert.ok(/22:40\. Circuito local/.test(es(timed[0])) && !/son[óa]/i.test(es(timed[0])), 'the Spanish circuit entry keeps the time and rings nothing');
+  assert.ok(es(pages[callPage]) && !clock.test(es(pages[callPage])), 'the Spanish Call entry has no time either');
+  // (c) Any ringing in the hangar came from the phones in the box at the door; nobody in here has a phone on them.
+  for (const o of hangar.objects) for (const t of [o.text, ...(o.pages ?? []), ...((o.later ?? []).map((l) => l.text))]) {
+    if (typeof t !== 'string') continue;
+    assert.ok(!/pocket/i.test(t), `${o.id}: no phone rings in a pocket in the hangar`);
+    if (!ringsEn.test(t)) continue;
+    const where = `${o.label} ${t}`, whereEs = `${es(o.label)} ${es(t)}`;
+    assert.ok(/\bbox\b/i.test(where) && /\bdoor\b/i.test(where), `${o.id}: the ringing came from the box at the door: ${t.slice(0, 50)}`);
+    assert.ok(/caja/i.test(whereEs) && /puerta/i.test(whereEs), `${o.id}: the Spanish puts the ringing in the box at the door too`);
+  }
+});
+test('i18n: every Route 1 shop and airfield line, label, page and shop header has Spanish', () => {
+  const missing = [];
+  for (const id of R1_MAPS) for (const o of MAPS_FOR_TEST[id].objects) {
+    for (const t of [o.label, o.text, ...(o.pages ?? []), ...((o.later ?? []).map((l) => l.text)), o.lockedText, o.doneText]) if (typeof t === 'string' && t && !(t in ES_ROUTE1)) missing.push(`${id}: ${t.slice(0, 40)}`);
+    if (o.later?.length && !(o.label.toUpperCase() in ES_ROUTE1)) missing.push(`${id}: ${o.label.toUpperCase()} (speaker line)`);
+  }
+  for (const s of ['hardware', 'feed']) for (const t of [R1_SHOPS[s].title, R1_SHOPS[s].lines.join(' ')]) if (!(t in ES_ROUTE1)) missing.push(`SHOPS.${s}: ${t}`);
+  assert.deepEqual(missing, [], 'add these to src/i18n/es-route1.js');
+  const was = i18nMod.getLang(); i18nMod.setLang('es');
+  try { assert.equal(i18nMod.tr('The airfield'), 'El aeródromo'); assert.equal(i18nMod.tr(R1_SHOPS.hardware.title), 'FERRETERÍA HOLLIS'); }
+  finally { i18nMod.setLang(was); }
 });
 
 const { ES_HUD } = await import('../src/i18n/es-hud.js');
@@ -709,6 +1139,27 @@ test('cordon (task #36/#38): trooper lines before and after the Call have Spanis
   }
   assert.ok(PLAZA_CORDON.barriers.length >= 3);
   assert.ok(PLAZA_CORDON.closing.length >= 10);
+
+  // every checkpoint keeps its booth, floodlights and notice (a trailing comment once swallowed the north one's: BagelMeister, general #141)
+  const ids = new Set(PLAZA_CORDON.objects.map((o) => o.id));
+  for (const id of ['cordon.booth_1', 'cordon.booth_2', 'cordon.light_1', 'cordon.light_2', 'cordon.sign_1', 'cordon.sign_2', 'cordon.sign_3']) assert.ok(ids.has(id), `${id} is placed`);
+});
+
+test('cordon (task #36): the Code-rot-taken beyond each checkpoint stay out of reach and in their pens', () => {
+  if (!cordonMod) return;
+  const m = MAPS_FOR_TEST.metro_plaza, held = cordonMod.PLAZA_CORDON.held;
+  assert.ok(held.length >= 6 && m.enemies.filter((e) => e.pen).length === held.length, 'the held rot-taken are on the map');
+  const sp = m.spawns[0], start = [Math.floor(sp.x / 16), Math.floor(sp.y / 16)], seen = new Set([start.join(',')]), q = [start];
+  while (q.length) { const [x, y] = q.shift(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || m.solid(nx, ny)) continue; seen.add(k); q.push([nx, ny]); } }
+  for (const [, tx, ty, { pen }] of held) {
+    for (let y = pen[1]; y < pen[1] + pen[3]; y++) for (let x = pen[0]; x < pen[0] + pen[2]; x++) assert.ok(!seen.has(x + ',' + y), `pen tile ${x},${y} is reachable on foot`);
+    assert.ok(tx >= pen[0] && tx < pen[0] + pen[2] && ty >= pen[1] && ty < pen[1] + pen[3], `rot-taken at ${tx},${ty} starts inside its pen`);
+  }
+  // Walk up to the north barrier and wait: they push at the line but never leave.
+  const sim = new Sim(m, { seed: 'pens' }); sim.addPlayer('a', 'trevor');
+  const p = sim.players.get('a'); p.x = 60 * 16 + 8; p.y = 6 * 16 + 8;
+  for (let i = 0; i < 600; i++) sim.step(1 / 60, new Map([['a', { mx: 0, my: 0, aim: 0 }]]));
+  for (const e of sim.enemies.values()) if (e.pen) { const [tx, ty, tw, th] = e.pen; assert.ok(e.x >= tx * 16 && e.x <= (tx + tw) * 16 && e.y >= ty * 16 && e.y <= (ty + th) * 16, `${e.kind} left its pen`); }
 });
 
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
@@ -744,6 +1195,44 @@ await (async () => {
     console.log(`ok   dialogue: all ${SCENES.length} scenes play to an end for every speaker, first/second/third/last choice`);
   } catch (e) { failed++; console.log(`FAIL dialogue\n     ${e.message}`); }
 })();
+
+const checkpointDialogue = await loadScene('checkpoint');
+const asterDialogue = await loadScene('aster');
+test('balloon quest credits the delivered lobby clue and checkpoint outcome, never the greeting', () => {
+  const balloon = QUESTS_ES.find((q) => q.id === 'main.balloon');
+  const flags = { 'met.npc.kess': true, 'met.npc.dez': true, 'met.npc.doorman': true, 'act1.halvard.met': true };
+  const ctx = { speaker: 'trevor', flags, present: ['trevor'], inventory: [], money: 20, standing: { continuity: 0 } };
+  const changes = [];
+  const sink = { flag: (key, value) => { flags[key] = value; changes.push(key); }, standing() {}, pay() {} };
+  assert.equal(!!balloon.stages[2].done(flags), false);
+  assert.equal(!!balloon.stages[3].done(flags), false);
+
+  const lobby = new Conversation(asterDialogue, 'fenwick_talk', ctx, sink);
+  lobby.revealLine();
+  assert.equal(!!balloon.stages[2].done(flags), false);
+  lobby.advance();
+  lobby.advance();
+  assert.equal(!!balloon.stages[2].done(flags), false, 'entering the clue line does not grant it');
+  lobby.revealLine();
+  lobby.revealLine();
+  assert.equal(balloon.stages[2].done(flags), true);
+  assert.equal(changes.filter((key) => key === 'act1.balloon.lobbyClue').length, 1);
+  assert.equal(flags['act1.aster.fenwickOrder'], undefined);
+  while (!lobby.done) { lobby.revealLine(); lobby.advance(); }
+  assert.equal(flags['act1.aster.fenwickOrder'], true);
+
+  for (const [node, skip] of [['cordon_bluff', 2], ['cordon_bribe', 1], ['cordon_drone', 1]]) {
+    delete flags['act1.cordon.passed'];
+    const checkpoint = new Conversation(checkpointDialogue, node, ctx, sink);
+    for (let i = 0; i < skip; i++) {
+      checkpoint.revealLine();
+      checkpoint.advance();
+    }
+    assert.equal(!!balloon.stages[4].done(flags), false, node);
+    checkpoint.revealLine();
+    assert.equal(balloon.stages[4].done(flags), true, node);
+  }
+});
 
 test('every door has wall on both sides (no doors standing on an open patch)', () => {
   for (const m of Object.values(MAPS_FOR_TEST)) {
@@ -976,6 +1465,62 @@ test('lattice table (Trevor: everyone plays, AI for whoever is not there): seats
   t2._step(); assert.equal(results.length, 1, 'recorded once');
 });
 
+test('Lattice is required (Trevor): after a game anyone seated can play again, and the house eases off with every loss until the party wins there', async () => {
+  const LTable = await import('../src/game/latticeTable.js'), LRules = await import('../src/engine/lattice.js');
+  const flags = {}, players = new Map([['host', { id: 'host', character: 'trevor' }]]);
+  const scene = { mode: 'solo', character: 'trevor', localId: 'host', sim: { players }, save: { party: { trevor: {}, manuel: {}, michael: {} }, flags, world: { seed: 'r' } },
+    net: { broadcast() {}, send() {} }, _latticeResult: (id, won) => { flags[`lattice.games.${id}`] = (flags[`lattice.games.${id}`] ?? 0) + 1; if (won) flags[`lattice.won.${id}`] = true; } };
+  const t = new LTable.LatticeTable(scene, { makeView: () => ({ update() {}, close() {} }) });
+  t.fast = true; t.open('dealer');
+  assert.equal(t.ease, 0, 'full strength the first time');
+  assert.equal(t.act('host', { type: 'rematch' }), false, 'no rematch mid-game');
+  const playOut = () => { for (let k = 0; k < 3000 && !t.g.winner; k++) { if (t.g.phase === 'setup') LRules.aiSetup(t.g); else LRules.aiTurn(t.g); } t._step(); };
+  playOut();
+  assert.equal(t.act('stranger', { type: 'rematch' }), false, 'only someone at the table deals again');
+  const won = !!flags['lattice.won.dealer'];
+  assert.equal(t.act('host', { type: 'rematch' }), true);
+  assert.ok(t.active && !t.g.winner, 'a fresh game at the same table');
+  assert.equal(t.ease, won ? 0 : LTable.EASE_PER_LOSS, won ? 'won: no easing' : 'one loss: the house eases off');
+  flags['lattice.games.dealer'] = 9; delete flags['lattice.won.dealer'];
+  t.g.winner = 'npc'; t.recorded = true; t.act('host', { type: 'rematch' });
+  assert.equal(t.ease, LTable.EASE_MAX, 'capped');
+  // and the easing is real: the house wins far less often at the cap
+  let full = 0, eased = 0;
+  for (let k = 0; k < 120; k++) for (const [ease, inc] of [[0, () => full++], [LTable.EASE_MAX, () => eased++]]) {
+    const g = LRules.newGame('e' + k, ['trevor', 'manuel', 'michael', 'npc']);
+    for (let i = 0; g.phase === 'setup' && i < 50; i++) LRules.aiSetup(g);
+    for (let i = 0; !g.winner && i < 2000; i++) LRules.aiTurn(g, LRules.side(g) === 'npc' ? { ease } : {});
+    if (g.winner === 'npc') inc();
+  }
+  assert.ok(eased < full / 2, `house wins: ${full} at full strength, ${eased} eased`);
+});
+
+test('Lattice co-op (John Pork\'s review): a guest dropping out mid-turn hands their side to the AI at once, and whoever left stays out through a rematch', async () => {
+  const LTable = await import('../src/game/latticeTable.js'), LRules = await import('../src/engine/lattice.js');
+  const sent = [], flags = {}, players = new Map([['host', { id: 'host', character: 'trevor' }], ['peerM', { id: 'peerM', character: 'michael' }]]);
+  const scene = { mode: 'host', character: 'trevor', localId: 'host', sim: { players }, save: { party: { trevor: {}, manuel: {}, michael: {} }, flags, world: { seed: 'c' } },
+    net: { broadcast: (m) => sent.push(m), send() {} }, _latticeResult() {} };
+  const t = new LTable.LatticeTable(scene, { makeView: () => ({ update() {}, close() { this.closed = true; } }) });
+  t.fast = true; t.open('dealer');
+  for (let i = 0; i < 20 && t.turnSide() !== 'michael'; i++) LRules.aiSetup(t.g);
+  assert.equal(t.turnSide(), 'michael'); clearTimeout(t.timer); t.timer = null;
+  t.leave('peerM');   // what WorldScene's leave handler now does before swapping the peer for a companion
+  assert.equal(t.seats().michael, null); assert.ok(t.timer !== null, 'the AI picks up the turn instead of waiting forever');
+  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/on\('leave', \(peer\) => \{[^]*?this\.latticeTable\?\.leave\(peer\)[^]*?removePlayer\(peer\)/.test(src), 'the disconnect path tells the table before the roster changes');
+  // play it out, then the host deals again: Michael left, so he stays with the AI and his screen stays shut
+  clearTimeout(t.timer);
+  for (let k = 0; k < 3000 && !t.g.winner; k++) { if (t.g.phase === 'setup') LRules.aiSetup(t.g); else LRules.aiTurn(t.g); }
+  t._step(); clearTimeout(t.timer);
+  sent.length = 0;
+  assert.equal(t.act('host', { type: 'rematch' }), true); clearTimeout(t.timer);
+  assert.ok(t.left.has('michael') && t.seats().michael === null, 'his opt-out survives the rematch');
+  const start = sent.find((m) => m.op === 'start'); assert.ok(start?.rematch, 'guests are told it is a rematch');
+  const guest = new LTable.LatticeTable({ ...scene, mode: 'client', character: 'michael', localId: 'peerM', net: { send() {} } }, { makeView: () => { throw new Error('reopened for a guest who left'); } });
+  guest.dismissed = 'dealer'; guest.onClientMsg(start);
+  assert.equal(guest.view, null);
+});
+
 test('penned enemies (cordon blockades, task #36) push toward the party but never leave their pen', () => {
   const m = MAPS_FOR_TEST.metro_plaza;
   const sim = new Sim({ ...m, enemies: [{ kind: 'enemy.rot_taken', x: 30 * 16 + 8, y: 20 * 16 + 8, pen: [29, 19, 3, 2] }] }, { seed: 'pen' });
@@ -1055,6 +1600,45 @@ test('lab bench (hub #44): every lab has exactly one passing answer; the shared 
   assert.equal(bench.act({ type: 'cycle', i: 0 }), false, 'a passed lab is locked');
 });
 
+test('Lake Artemesia\'s enemies hit harder and last longer than the same kind elsewhere (map enemyPower)', () => {
+  const lake = MAPS_FOR_TEST.lake;
+  assert.ok(lake.enemyPower?.hp > 1 && lake.enemyPower?.dmg > 1);
+  const strong = new Sim(lake, { seed: 'lake' }), plain = new Sim({ ...lake, enemyPower: undefined }, { seed: 'lake' });
+  const a = [...strong.enemies.values()], b = [...plain.enemies.values()];
+  assert.equal(a.length, b.length);
+  for (let i = 0; i < a.length; i++) {
+    if (a[i].boss) continue;
+    assert.ok(a[i].def.hp > b[i].def.hp, `${a[i].kind}: more health at the lake`);
+    if (b[i].def.damage > 0) assert.ok(a[i].def.damage > b[i].def.damage, `${a[i].kind}: more damage at the lake`);
+  }
+});
+
+test('limited shop shelves: a stock entry with a limit sells that many, shared by the party, then restocks on play time', async () => {
+  const SS = await import('../src/engine/shopStock.js');
+  const save = { world: { playMs: 0 } }, st = { item: 'item.mat_scrap', price: 3, limit: 3, restockMin: 10 };
+  assert.equal(SS.stockLeft(save, 'hardware', 0, st), 3);
+  for (let i = 0; i < 3; i++) assert.ok(SS.takeStock(save, 'hardware', 0, st));
+  assert.equal(SS.stockLeft(save, 'hardware', 0, st), 0); assert.equal(SS.takeStock(save, 'hardware', 0, st), false, 'sold out');
+  save.world.playMs = 9 * 60000; assert.equal(SS.stockLeft(save, 'hardware', 0, st), 0, 'not yet');
+  save.world.playMs = 10 * 60000; assert.equal(SS.stockLeft(save, 'hardware', 0, st), 3, 'restocked after ten minutes of play');
+  assert.ok(SS.takeStock(save, 'hardware', 0, st)); assert.equal(SS.stockLeft(save, 'hardware', 0, st), 2, 'and the clock starts again');
+  assert.equal(SS.stockLeft(save, 'hardware', 1, { item: 'x', price: 1 }), Infinity, 'no limit: sells without end');
+  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/_buy\(who, shopId, idx\) \{[^]*?stockLeft\(this\.save, shopId, idx, st\)[^]*?takeStock\(this\.save, shopId, idx, st\)/.test(src), 'the host checks and takes stock when it sells');
+});
+
+test('cordon, trevor\'s half of #36: a trooper at every checkpoint faces out, with lines of its own, and arrivals through the north checkpoint land inside', async () => {
+  const C = await import('../src/content/cordon.js');
+  const out = C.PLAZA_CORDON.objects.filter((o) => o.cordon === 'trooper' && o.out);
+  assert.equal(out.length, 3, 'one outward trooper per checkpoint');
+  assert.ok(C.CORDON_LINES_OUT.length >= 3 && C.CORDON_LINES_OUT.every((l) => l.en && l.es));
+  const sim = new Sim(MAPS_FOR_TEST.route1_north, { seed: 'arrive' });
+  for (const c of ['trevor', 'manuel', 'michael']) sim.addPlayer(c, c);
+  sim.setMap(MAPS_FOR_TEST.metro_plaza, 'route1_north', 'obj.r1n_south');
+  const ex = MAPS_FOR_TEST.metro_plaza.objects.find((o) => o.id === 'obj.plaza_r1n');
+  for (const p of sim.players.values()) assert.ok(Math.floor(p.y / 16) > ex.y, `${p.id} landed at row ${Math.floor(p.y / 16)}, beyond the barrier`);
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
@@ -1078,9 +1662,12 @@ const Regions = await import('../src/content/regions.js');
 test('world regions: every built map belongs to exactly one region, each region sits in its act\'s ring, states follow the act', () => {
   for (const id of Object.keys(MAPS_FOR_TEST)) assert.equal(Regions.REGIONS.filter((r) => r.maps.includes(id)).length, 1, `${id} must belong to one region`);
   for (const r of Regions.REGIONS) assert.equal(Regions.RINGS.find((q) => q.ring === r.ring)?.act, r.act, `${r.id} ring/act mismatch`);
-  const aster = Regions.REGIONS.find((r) => r.id === 'aster'), campus = Regions.REGIONS.find((r) => r.id === 'route1'), balt = { ...Regions.REGIONS.find((r) => r.id === 'corridor'), maps: [] };   // an act-3 region, maps cleared
+  // route1 has maps now (hub #28/#29), so the "this act, nothing built" case uses a copy with its maps cleared.
+  const aster = Regions.REGIONS.find((r) => r.id === 'aster'), route1 = Regions.REGIONS.find((r) => r.id === 'route1'), campus = { ...route1, maps: [] }, balt = { ...Regions.REGIONS.find((r) => r.id === 'corridor'), maps: [] };   // an act-3 region, maps cleared
   assert.equal(Regions.regionState(aster, 1, 'room631'), 'here');
   assert.equal(Regions.regionState(campus, 1, 'room631'), 'closed');
+  assert.equal(Regions.regionState(route1, 1, 'room631'), 'open');
+  assert.equal(Regions.regionState(route1, 1, 'airfield'), 'here');
   assert.equal(Regions.regionState(balt, 1, 'room631'), 'locked');
   assert.equal(Regions.regionState(balt, 3, 'room631'), 'closed');
 });
@@ -1204,6 +1791,41 @@ try {
   if (savedPhaserForCraft === undefined) delete globalThis.Phaser;
   else globalThis.Phaser = savedPhaserForCraft;
 }
+test('a guest interacting with the ASTER stairs waits for players who walk up later', () => {
+  const map = MAPS_FOR_TEST.aster_hall;
+  const stairs = map.objects.find((obj) => obj.action === 'exit' && obj.id.includes('stairs'));
+  const sim = new Sim(map);
+  sim.addPlayer('host', 'trevor');
+  sim.addPlayer('guest1', 'manuel');
+  sim.addPlayer('guest2', 'michael');
+  const peer = sim.players.get('guest1');
+  const handlers = {}, taken = [];
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', character: 'trevor', localId: 'host', map, sim,
+    save: { flags: {}, world: { killed: [] } },
+    events: { once() {} }, time: { now: 0, addEvent() {} },
+    net: { on: (type, fn) => { handlers[type] = fn; } },
+    _tryExit: (obj) => taken.push(obj.id),
+  });
+  scene._wireNet();
+  peer.x = stairs.x * 16 + 80;
+  peer.y = stairs.y * 16 + 8;
+  handlers.msg('guest1', { t: 'exit', obj: stairs.id });
+  assert.equal(peer.waitExit ?? null, null);
+  assert.deepEqual(taken, [], 'a guest must be near the stairs');
+
+  peer.x = stairs.x * 16 + 8;
+  peer.y += 16;
+  handlers.msg('guest1', { t: 'exit', obj: stairs.id });
+  assert.equal(peer.waitExit, stairs.id);
+  assert.deepEqual(taken, []);
+  scene._hostEvents([{ t: 'bumpExit', by: 'host', id: stairs.id, dx: 0, dy: -1 }]);
+  assert.deepEqual(taken, [], 'the third player is still away');
+  scene._hostEvents([{ t: 'bumpExit', by: 'guest2', id: stairs.id, dx: 0, dy: -1 }]);
+  assert.deepEqual(taken, [stairs.id]);
+  assert.ok([...sim.players.values()].every((p) => p.waitExit === null));
+});
+
 test('puzzle kit in co-op: a guest\'s move runs on the host, progress stays on the host, the reward goes once to the guest who solved it', async () => {
   const { PUZZLES } = await import('../src/content/puzzles.js');
   const pz = PK.definePuzzle({ id: 'coop_t', kind: 'cycle', parts: ['obj.a', 'obj.b'], states: ['0', '1'], answer: ['1', '1'], reward: { text: 'done', textEs: 'listo', item: 'item.mat_scrap', money: 9 } });
@@ -1286,7 +1908,11 @@ test('quest hooks in co-op: Talk keeps the item and an explicit hand-in uses the
 test('inspected quest clues reach only the reader and survive a save round trip', async () => {
   const { QUESTS, questState, questLeads } = await import('../src/content/quests.js');
   const q = {
-    id: 'qa.reading', stages: [], inspect: { obj: 'qa.log', flag: 'q.qa.read', text: 'A line at the end.', fact: 'qa.log' },
+    id: 'qa.reading', stages: [],
+    inspections: [
+      { obj: 'qa.log', flag: 'q.qa.read', text: 'A line at the end.', fact: 'qa.log' },
+      { obj: 'qa.relay', flag: 'q.qa.relay', text: 'The relay is here.', fact: 'qa.relay' },
+    ],
     leads: [{ id: 'log', text: 'Check the log', fact: 'qa.log' }, { id: 'relay', text: 'Find the relay', fact: 'qa.relay' }],
   };
   QUESTS.push(q);
@@ -1331,6 +1957,12 @@ test('inspected quest clues reach only the reader and survive a save round trip'
     assert.deepEqual(questLeads(q, save, 'michael'), []);
     host._finishQuestReading('one', read);
     assert.deepEqual(questLeads(q, migrate(JSON.parse(JSON.stringify(save))), 'manuel').map((lead) => lead.id), ['log']);
+    host._questInteract({ ...log, id: 'qa.relay' }, 'manuel', 'one');
+    const relayRead = messages.at(-1).message.questRead;
+    host._finishQuestReading('one', read);
+    assert.deepEqual(questLeads(q, save, 'manuel').map((lead) => lead.id), ['log']);
+    host._finishQuestReading('one', relayRead);
+    assert.deepEqual(questLeads(q, save, 'manuel').map((lead) => lead.id), ['log', 'relay']);
     questState(save)[q.id].done = true;
     host._questInteract(log, 'michael', 'two');
     host._finishQuestReading('two', messages.at(-1).message.questRead);
@@ -1352,6 +1984,43 @@ test('casino board game in co-op: the host records a finished game for the party
   assert.deepEqual(guest.save.flags, {}, 'a guest never records it locally; it reports to the host');
 });
 
+const { Approach } = await import('../src/game/approach.js');
+test('a caught pickpocket changes that roommate\'s NPC actions across saves until they apologize', () => {
+  const save = newSave({ seed: 'npc-memory', rolls: {}, gameVersion: 'test' });
+  const sim = new Sim(rotArena()), notices = [];
+  const npc = { id: 'npc.test', label: 'Attendant', npc: true, x: 9, y: 9,
+    approaches: ['talk', { id: 'charm', name: 'Ask for a favor' }, 'pickpocket'] };
+  sim.addPlayer('guest', 'michael');
+  const p = sim.players.get('guest');
+  const scene = { save, sim, map: { objects: [npc] }, character: 'trevor', localId: 'host',
+    input: { keyboard: { on() {} } }, time: { now: 10 }, _questHandIns: () => [],
+    net: { send: (peer, msg) => notices.push({ peer, msg }) } };
+  const approach = new Approach(scene);
+  const fail = { t: 'approach', npc: npc.id, kind: 'pickpocket' };
+  p.x = 400;
+  approach.onHostMsg('guest', fail);
+  assert.equal(save.world.npcIncidents, undefined, 'the host checks reach');
+  assert.deepEqual(notices, []);
+  Object.assign(p, { x: 152, y: 152 });
+  const random = Math.random;
+  try { Math.random = () => 0; approach.onHostMsg('guest', fail); } finally { Math.random = random; }
+  assert.equal(notices.at(-1).peer, 'guest');
+  assert.match(notices.at(-1).msg.text, /FUMBLE/);
+  scene.save = migrate(JSON.parse(JSON.stringify(save)));
+  const reopened = new Approach(scene);
+  const choices = (who) => reopened.options(npc, who);
+  assert.deepEqual(choices('michael').map((a) => a.id), ['apologize', 'talk', 'charm', 'pickpocket']);
+  assert.match(choices('michael').find((a) => a.id === 'charm').blocked, /caught you/);
+  assert.equal(choices('trevor').find((a) => a.id === 'charm').name, 'Ask for a favor');
+  assert.equal(choices('trevor').find((a) => a.id === 'charm').blocked, null);
+  reopened.onHostMsg('guest', { ...fail, kind: 'charm' });
+  assert.match(notices.at(-1).msg.text, /caught you/);
+  reopened.onHostMsg('guest', { ...fail, kind: 'apologize' });
+  assert.deepEqual(scene.save.world.npcIncidents[npc.id].michael.caughtPickpocket, { count: 1, open: false });
+  assert.deepEqual(choices('michael').map((a) => a.id), ['talk', 'charm', 'pickpocket']);
+  assert.equal(choices('michael').find((a) => a.id === 'charm').blocked, null);
+});
+
 test('regional boss intros preserve the saved Warden name', () => {
   const field = 'act1.boss.wardenName';
   const scene = { mode: 'host', save: { flags: {} }, time: { delayedCall() {} }, _bossIntro() {} };
@@ -1370,10 +2039,66 @@ test('regional boss intros preserve the saved Warden name', () => {
   assert.equal(scene.save.flags[field], warden.name, 'the new intro must preserve the Warden name');
 });
 
-const { RECIPES: CRAFT_RECIPES } = await import('../src/content/items.js');
-const craftFixture = (inventory, weapon = null) => {
+const { RECIPES: CRAFT_RECIPES, playerMods: hotbarMods } = await import('../src/content/items.js');
+test('the host derives guest combat from the selected hotbar slot and broadcasts changes to the party', () => {
+  const save = newSave({ seed: 'hotbar-peer', rolls: {}, gameVersion: 'test' });
+  const sim = new Sim(rotArena()), handlers = {}, updates = [];
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', save, sim, remoteInputs: new Map(),
+    net: { on: (type, fn) => { handlers[type] = fn; }, broadcast: (msg) => updates.push(structuredClone(msg)) },
+    events: { once() {} }, time: { addEvent() {} }, _refreshMenu() {},
+  });
+  sim.addPlayer('host', 'trevor');
+  sim.addPlayer('guest', 'michael');
+  sim.addPlayer('ai:manuel', 'manuel');
+  const guest = save.party.michael, companion = save.party.manuel, p = sim.players.get('guest');
+  guest.inventory[0] = { id: 'item.wooden_bat', qty: 1, roll: { mods: { melee: 3 } } };
+  guest.inventory[1] = { id: 'item.nail_gun', qty: 1 };
+  guest.inventory[2] = { id: 'item.energy_bar', qty: 2 };
+  guest.equipped.chestplate = 'item.mesh_vest';
+  guest.upgrades['item.wooden_bat'] = 2;
+  companion.hotSel = 3;
+  companion.inventory[0] = { id: 'item.pry_bar', qty: 1 };
+  scene._wireNet();
+  scene._syncParty();
+
+  const select = (i) => handlers.msg('guest', { t: 'hotSel', i });
+  const attack = (controls) => {
+    sim.events.length = 0;
+    handlers.msg('guest', { t: 'input', inp: { ...emptyInput(), ...controls } });
+    sim.step(1 / 60, scene.remoteInputs);
+    return sim.events.filter((event) => event.id === 'guest');
+  };
+  const base = hotbarMods(guest, 'michael', null);
+  assert.ok(p.mods.melee > base.melee + ITEMS['item.wooden_bat'].mods.melee + 3, 'the exact held roll and upgrade apply');
+  assert.equal(p.mods.armor, base.armor);
+  assert.equal(attack({ fire: true }).some((e) => e.t === 'shot'), false);
+  assert.equal(attack({ attack: true }).find((e) => e.t === 'swing')?.weapon, 'item.wooden_bat');
+  assert.equal(sim.players.get('ai:manuel').mods.weaponId, 'item.pry_bar');
+  assert.equal(companion.hotSel, 3);
+
+  select(1);
+  assert.equal(updates.at(-1).party.michael.hotSel, 1);
+  assert.equal(p.mods.melee, base.melee);
+  assert.equal(p.ammo, ITEMS['item.nail_gun'].gun.clip);
+  assert.ok(attack({ fire: true }).some((e) => e.t === 'shot'));
+  const ammo = p.ammo;
+  for (const i of [2, 3]) {
+    select(i);
+    assert.equal(p.mods.weaponId, undefined);
+    assert.equal(attack({ attack: true, fire: true }).length, 0);
+  }
+  select(1);
+  assert.equal(p.ammo, ammo);
+  assert.equal(sim.snapshot().players.find((player) => player.id === 'guest').weapon, 'item.nail_gun');
+  handlers.msg('guest', { t: 'move', a: 1, b: 9 });
+  assert.equal(p.mods.gunStats, null);
+  assert.equal(guest.inventory[9].id, 'item.nail_gun');
+});
+
+const craftFixture = (inventory, selected = 0) => {
   const c = newSave({ seed: 'craft-test', rolls: {}, gameVersion: 'test' }).party.trevor;
-  c.inventory = inventory; c.equipped.weapon = weapon;
+  c.inventory = inventory; c.hotSel = selected;
   const notices = [], scene = { save: { party: { trevor: c } }, syncs: 0,
     _announce: (text) => notices.push(text), _syncParty() { this.syncs++; } };
   return { c, scene, notices, craft: (id) => CraftWorldScene.prototype._craft.call(scene, 'trevor', CRAFT_RECIPES.findIndex((r) => r.item === id)) };
@@ -1396,7 +2121,9 @@ test('procedural gear (task #39): procedural recipes roll seeded variants that c
   assert.ok(a.notices.some((n) => /rebar/i.test(n) && /\(/.test(n)), 'the fab names the roll');
   // held: the selected hotbar rebar's roll adds to the stats
   const c = a.c, i = c.inventory.findIndex((x) => x?.id === 'item.rebar'), roll = c.inventory[i].roll;
-  [c.inventory[0], c.inventory[i]] = [c.inventory[i], c.inventory[0]]; c.hotSel = 0; c.equipped.weapon = 'item.rebar';
+  c.inventory[0] = null;
+  Inv.moveSlot(c, i, 0);
+  assert.deepEqual(c.inventory[0].roll, roll, 'moving into an empty hotbar slot retains the roll');
   const withRoll = pm(c, 'trevor'), bare = pm({ ...c, inventory: c.inventory.map((x) => x && { id: x.id, qty: x.qty }) }, 'trevor');
   for (const [k, v] of Object.entries(roll.mods)) assert.ok(Math.abs((withRoll[k] - bare[k]) - v) < 1e-9, `held roll adds ${k}`);
   // worn: wearing a rolled vest keeps its roll on, and taking it off puts it back on the slot
@@ -1415,9 +2142,9 @@ test('procedural gear (task #39): procedural recipes roll seeded variants that c
 
 const fullCraftBag = () => Array.from({ length: Inv.SLOTS }, () => ({ id: 'item.wooden_bat', qty: 1 }));
 test('crafting rejects a full bag without payment, a phantom equipped item or a success broadcast', () => {
-  for (const weapon of [null, 'item.wooden_bat']) {
+  for (const selected of [0, 1]) {
     const inv = fullCraftBag(); inv[0] = { id: 'item.mat_scrap', qty: 99, extra: 'preserve' };
-    const f = craftFixture(inv, weapon), before = structuredClone(f.c);
+    const f = craftFixture(inv, selected), before = structuredClone(f.c);
     f.craft('item.rebar');
     assert.deepEqual(f.c, before); assert.equal(f.c.inventory, inv);
     assert.equal(f.scene.syncs, 0); assert.deepEqual(f.notices, ['Your bag is full.']);
@@ -1427,7 +2154,7 @@ test('crafting can use a slot freed by payment and can fill an existing stack in
   const inv = fullCraftBag(); inv[0] = { id: 'item.mat_scrap', qty: 4 };
   const f = craftFixture(inv); f.craft('item.rebar');
   assert.equal(Inv.count(f.c, 'item.mat_scrap'), 0); assert.equal(Inv.count(f.c, 'item.rebar'), 1);
-  assert.equal(f.c.equipped.weapon, 'item.rebar'); assert.equal(f.scene.syncs, 1);
+  assert.equal(f.c.inventory[0].id, 'item.rebar'); assert.equal(f.scene.syncs, 1);
   const stacked = fullCraftBag(); stacked[0] = { id: 'item.mat_plastic', qty: 99 }; stacked[1] = { id: 'item.mat_scrap', qty: 99 };
   stacked[2] = { id: 'item.mate_flask', qty: Inv.stackOf('item.mate_flask') - 1 };
   const g = craftFixture(stacked); g.craft('item.mate_flask');
@@ -1461,6 +2188,53 @@ test('slot inventory: stacks, backpack-first (hotbar only when full), remove, mo
   const full = { inventory: new Array(36).fill(null).map((_, i) => (i >= 9 ? { id: 'item.wooden_bat', qty: 1 } : null)) };
   Inv.add(full, 'item.energy_bar'); assert.equal(full.inventory[0].id, 'item.energy_bar', 'hotbar takes it once the backpack is full');
 });
+test('splitting a consumable stack moves the rounded-up half within the fixed inventory', () => {
+  const c = { inventory: new Array(Inv.SLOTS).fill(null) };
+  c.inventory[0] = { id: 'item.energy_bar', qty: 7 };
+  for (const index of [-1, Inv.SLOTS, undefined]) Inv.moveSlot(c, 0, index, true);
+  assert.equal(c.inventory[0].qty, 7);
+  assert.equal(c.inventory.length, Inv.SLOTS);
+  Inv.moveSlot(c, 0, 9, true);
+  assert.deepEqual([c.inventory[0].qty, c.inventory[9].qty], [3, 4]);
+});
+
+const { GuitarStands } = await import('../src/game/guitarStands.js');
+test('held stacks drop one, half or all as requested, and floor pickup preserves procedural rolls', () => {
+  const save = newSave({ seed: 'drops', rolls: {}, gameVersion: 'test' });
+  const sim = new Sim(rotArena()), c = save.party.trevor, receiver = save.party.michael;
+  sim.addPlayer('local', 'trevor');
+  sim.addPlayer('guest', 'michael');
+  const gameMenu = { held: 0, heldHalf: false, refresh() {} };
+  const scene = { sim, save, map: sim.map, mode: 'host', character: 'trevor', localId: 'local',
+    menu: 'inventory', gameMenu, time: { now: 0 }, _syncParty() {}, _toast() {}, _say() {},
+    _charOf: (peer) => sim.players.get(peer)?.character };
+  const stands = Object.assign(Object.create(GuitarStands.prototype), { s: scene });
+  c.inventory[0] = { id: 'item.energy_bar', qty: 8 };
+  stands._dropKey(false);
+  assert.equal(c.inventory[0].qty, 7);
+  assert.equal(stands.drops[0].qty, 1);
+  assert.equal(gameMenu.held, null);
+  stands.drop(0, false, true);
+  assert.equal(c.inventory[0].qty, 3);
+  gameMenu.held = 0;
+  stands._dropKey(true);
+  assert.equal(c.inventory[0], null);
+  assert.equal(stands.drops.reduce((total, drop) => total + drop.qty, 0), 8);
+
+  const roll = { mods: { melee: 3 } };
+  receiver.inventory[0] = { id: 'item.wooden_bat', qty: 1, roll };
+  stands.onHostMsg('guest', { t: 'drop', slot: undefined, all: true });
+  assert.equal(receiver.inventory[0].id, 'item.wooden_bat');
+  stands.onHostMsg('guest', { t: 'drop', slot: 0 });
+  const drop = stands.drops.find((d) => d.id === 'item.wooden_bat');
+  assert.deepEqual(drop.roll, roll);
+  stands.pickup('trevor', 'local', drop.n);
+  assert.deepEqual(c.inventory.find((s) => s?.id === drop.id)?.roll, roll);
+  c.inventory[0] = { id: 'item.wmata_fuses', qty: 1 };
+  stands.drop(0, true);
+  assert.equal(c.inventory[0].qty, 1);
+});
+
 test('schema 1 -> 2 migration: scrap becomes money, list inventory becomes 36 slots', () => {
   const old = newSave({ seed: 'm', rolls: {}, gameVersion: 't' });
   old.schemaVersion = 1; old.world.scrap = 10; delete old.world.money;
@@ -1482,6 +2256,24 @@ test('schema 2 -> 3 migration: worn armor moves to the chestplate slot (D-014)',
   assert.equal(m.schemaVersion, CURRENT_SCHEMA);
   assert.equal(m.party.trevor.equipped.chestplate, 'item.mesh_vest'); assert.ok(!('armor' in m.party.trevor.equipped));
   assert.equal(m.party.trevor.equipped.boots, null); assert.deepEqual(m.party.trevor.upgrades, {});
+});
+
+test('schema 7 -> 8 removes weapon references while preserving a full bag, worn gear and selection', () => {
+  const save = newSave({ seed: 'hotbar-migration', rolls: {}, gameVersion: 'test' });
+  save.schemaVersion = 7;
+  const c = save.party.trevor;
+  c.inventory = fullCraftBag();
+  c.inventory[8] = { id: 'item.nail_gun', qty: 1, roll: { mods: { shot: 2 }, affixes: ['test'] } };
+  c.hotSel = 8;
+  c.upgrades['item.nail_gun'] = 3;
+  c.equipped = { ...c.equipped, weapon: 'item.wooden_bat', ranged: 'item.nail_gun', chestplate: 'item.mesh_vest', futureSlot: 'example' };
+  const before = structuredClone(c);
+  delete before.equipped.weapon;
+  delete before.equipped.ranged;
+  const upgraded = migrate(JSON.parse(JSON.stringify(save)));
+  assert.equal(upgraded.schemaVersion, CURRENT_SCHEMA);
+  assert.deepEqual(upgraded.party.trevor, before);
+  assert.equal(hotbarMods(upgraded.party.trevor, 'trevor').weaponId, 'item.nail_gun');
 });
 
 test('worn gear leaves the bag and sits in its equipment slot (Michael)', () => {
@@ -1766,8 +2558,8 @@ const tunPuz = await import('../src/content/tunnelPuzzles.js');
 const { playerMods: playerModsT } = await import('../src/content/items.js');
 const wardenFight = (loadout, seed) => {
   const L = {
-    bare: () => ({ equipped: { weapon: 'item.pry_bar' }, skills: {} }),
-    good: (who) => ({ equipped: { weapon: 'item.pipe_wrench', chestplate: 'item.mesh_vest', helmet: 'item.hardhat', leggings: 'item.work_pants', boots: 'item.steel_toes' },
+    bare: () => ({ inventory: [{ id: 'item.pry_bar', qty: 1 }], skills: {} }),
+    good: (who) => ({ inventory: [{ id: 'item.pipe_wrench', qty: 1 }], equipped: { chestplate: 'item.mesh_vest', helmet: 'item.hardhat', leggings: 'item.work_pants', boots: 'item.steel_toes' },
       skills: { trevor: { 'tr.jab': 3, 'tr.tank': 3, 'tr.amp': 2 }, manuel: { 'ma.hands': 3, 'ma.shoulders': 2, 'ma.clay': 2 }, michael: { 'mi.ping': 3, 'mi.lock': 2, 'mi.luck': 2 } }[who] }),
   }[loadout];
   const random = Math.random, rng = new Rng(`boss:${loadout}:${seed}`); Math.random = () => rng.next();
@@ -1819,6 +2611,66 @@ test('the platform gate needs the yard, the breakers and the signals; no world s
   assert.ok(tunPuz.puzzleClue('obj.locker', seed, f, 'es').includes('TABLERO'));
 });
 
+test('both Act 1 victories queue exactly one host finale and checkpoint its completion', () => {
+  for (const variant of ['warden', 'sahur']) {
+    const save = newSave({ seed: 'act-one-finale', rolls: {}, gameVersion: 'test' });
+    save.world.killed = [];
+    save.flags['act1.boss.kind'] = variant;
+    save.flags['act1.call.declines'] = variant === 'sahur' ? 3 : 0;
+    save.flags['act1.call.answered'] = variant === 'warden';
+    const map = MAPS_FOR_TEST.platform;
+    const sim = new Sim(map, { bossVariant: variant });
+    sim.addPlayer('host', 'trevor');
+    const boss = [...sim.enemies.values()].find(e => e.boss);
+    const broadcasts = [], starts = [];
+    let cards = 0, writes = 0;
+    const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+      mode: 'host', localId: 'host', save, sim, map, time: { now: 100 },
+      net: { broadcast: msg => broadcasts.push(msg) }, _announce() {}, _showActOneArrival() {}, _closeSayAll() {},
+      _showActOneCard() { cards++; }, _save() { writes++; }, _fxPop() {}, _levelsReached() {}, _syncParty() {},
+      stage: { after: (_id, then) => then() },   // the staged beat (#104) runs, then the scene
+      startDialogue: async (name, _node, done) => { starts.push({ name, done }); return true; },
+    });
+    if (variant === 'sahur') {
+      boss.fightT = 11;
+      host._answer();
+      assert.equal(save.flags['act1.call.answered'], true);
+    } else host._hostEvents([{ t: 'kill', boss: true, mini: false, kind: boss.kind, key: boss.spawnKey, xp: 1 }]);
+    assert.ok(save.world.killed.includes(boss.spawnKey));
+    assert.equal(save.flags['act1.boss.defeated'], true);
+    assert.equal(save.flags['act1.outbreak.contained'], true);
+    host._tickActOneEnding();
+    assert.equal(starts.length, 0, 'keep the post-fight beat');
+    host.time.now = 4000;
+    host.dlg = {};
+    host._tickActOneEnding();
+    assert.equal(starts.length, 0, 'wait for the host to finish an open conversation');
+    host.dlg = null;
+    host._tickActOneEnding();
+    host._tickActOneEnding();
+    assert.equal(starts.length, 1);
+    assert.equal(starts[0].name, 'ending');
+    assert.equal(save.world.act, 1);
+    starts[0].done();
+    assert.equal(save.flags['act1.complete'], true);
+    assert.equal(save.flags['act1.boss.sahur'], variant === 'sahur');
+    assert.equal(save.flags['act1.ending.warm'], variant === 'warden');
+    assert.equal(save.world.act, 2);
+    assert.equal(cards, 1);
+    assert.equal(writes, 1);
+    assert.deepEqual(broadcasts, [{ t: 'act1Complete' }]);
+
+    const timers = [], shape = { setOrigin() { return this; }, setDepth() { return this; } };
+    const guest = Object.assign(Object.create(CraftWorldScene.prototype), {
+      mode: 'client', localId: 'guest', save: { flags: {} }, time: { delayedCall: (...args) => timers.push(args) },
+      add: { rectangle: () => shape, text: () => shape }, tweens: { add() {} },
+    });
+    guest._fx({ t: 'kill', boss: true, mini: false, kind: boss.kind, by: 'host' }, { players: [] });
+    assert.deepEqual(timers, [], 'a guest renders the kill without scheduling their own ending');
+    assert.deepEqual(guest.save.flags, {});
+  }
+});
+
 test('burst damage cannot skip a gated boss phase or its first tell', () => {
   const sim = new Sim(MAPS_FOR_TEST.tunnel_1, { seed: 'phase-gate' });
   const boss = [...sim.enemies.values()].find((e) => e.kind === 'boss.switchman');
@@ -1860,7 +2712,7 @@ test('the Switchman (Act 1 mid boss): sleeps until you come close, starter gear 
   try {
     const sim = new Sim(MAPS_FOR_TEST.tunnel_1, { seed: 'sw', deferSpawn: true });
     sim.addPlayer('host', 'trevor'); sim.addPlayer('ai:manuel', 'manuel'); sim.addPlayer('ai:michael', 'michael');
-    for (const p of sim.players.values()) sim.setMods(p.id, playerModsT({ equipped: { weapon: 'item.pry_bar' }, skills: {} }, p.character));
+    for (const p of sim.players.values()) sim.setMods(p.id, playerModsT({ inventory: [{ id: 'item.pry_bar', qty: 1 }], skills: {} }, p.character));
     sim.spawnEnemies();
     for (const [id, e] of [...sim.enemies]) if (e.kind !== 'boss.switchman') sim.enemies.delete(id);   // just the boss
     const sw = [...sim.enemies.values()][0];
@@ -2029,7 +2881,7 @@ test('the gonman is overpowered on purpose: a much smaller hitbox while thin, en
 });
 
 test("Manuel's edge: with the same gear and no skills, Manuel is the toughest and hits hardest of the three", () => {
-  const bare = () => ({ skills: {}, equipped: { weapon: 'item.pry_bar' }, abilities: {} });
+  const bare = () => ({ skills: {}, inventory: [{ id: 'item.pry_bar', qty: 1 }], abilities: {} });
   const m = Object.fromEntries(['manuel', 'trevor', 'michael'].map((w) => [w, pmods(bare(), w)]));
   for (const other of ['trevor', 'michael']) {
     assert.ok(m.manuel.maxHp > m[other].maxHp && m.manuel.armor > m[other].armor && m.manuel.melee > m[other].melee && m.manuel.speed > m[other].speed, other);
@@ -2231,5 +3083,6 @@ test('sceneryPlacement: Baltimore pieces stand at their drawn size, centred on t
   assert.equal(decorMod.sceneryPlacement({ art: 'obj.bench', x: 1, y: 1 }, (s, a) => s === 'props' && a === 'obj.bench', 1.5).sheet, 'props', 'other sheets unchanged');
 });
 
+await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

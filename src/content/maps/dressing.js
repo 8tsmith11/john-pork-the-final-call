@@ -24,7 +24,7 @@ export const DRESSING = {
       { x: 23, y: 24, text: 'BOBA', color: C.magenta, flicker: 0.08 },
       { x: 27, y: 24, text: 'ABIERTO', color: C.red, flicker: 0.02 },
       { x: 7, y: 10, text: 'ASTER', color: C.cyan },
-      { x: 67, y: 28, text: 'CHARGE · $2/HR', color: C.lime, size: 6 },
+      { x: 66, y: 27, text: 'CHARGE · $2/HR', color: C.lime, size: 6 },   // on the roof edge, over the hardware shop's door (hub #28)
     ],
     holo: [
       { x: 38, y: 5, w: 7, h: 3, color: C.cyan, lines: ['CITIZENS,', 'THINGS ARE', 'STABLE.', '', 'CONTINUITY'] },
@@ -55,6 +55,12 @@ export const DRESSING = {
   },
   room631: {
     glow: [{ x: 13, y: 8, color: C.cyan, r: 0.8 }, { x: 25, y: 6, color: C.magenta, r: 0.7 }],
+  },
+  compute_hall_b: {
+    // Machine Room B (hub #68): the cold aisle lit by the racks, cold air coming up through the perforated tiles,
+    // the terminal lab's screens, and the amber status board on the entrance hall.
+    glow: [{ x: 10, y: 9, color: C.cyan, r: 0.9 }, { x: 15, y: 9, color: C.cyan, r: 0.9 }, { x: 12, y: 2, color: C.cyan, r: 0.8 }, { x: 20, y: 12, color: C.amber, r: 0.6 }],
+    vent: [{ x: 9, y: 9 }, { x: 16, y: 9 }],
   },
   tunnel_1: {
     // On the wall faces above the main corridor (rows 11-15), checked against the 66x28 layout.

@@ -9,6 +9,11 @@
 
 import { SIDE_QUESTS } from './sideQuests.js';
 
+function balloonLeads(flags) {
+  return [flags['act1.halvard.sellerClue'], flags['act1.leadC.clueDelivered'] || flags['act1.leadC.done'], flags['act1.leadA.done']]
+    .filter(Boolean).length;
+}
+
 export const QUESTS = [
   {
     id: 'main.balloon', why: "Someone forced the front door tonight and took Manuel\'s orange balloon from his closet. Get it back before morning: Continuity\'s vans are sniffing for it, and the code rot under the station could get College Park walled in.", title: 'The balloon', main: true, act: 1,
@@ -16,8 +21,8 @@ export const QUESTS = [
       { text: 'Check Manuel\'s closet.', done: (f) => f['act1.balloon.noticedGone'] },
       { text: 'Look at the front door.', done: (f) => f['act1.clue.lockForced'] },
       // Clear next steps (Trevor): name the places and people, and say how many leads are enough.
-      { text: 'Ask around the ASTER lobby. Somebody saw something at 3 a.m.', done: (f) => ['met.npc.kess', 'met.npc.dez', 'met.npc.doorman'].some((k) => f[k]) || Object.keys(f).some((k) => k.startsWith('act1.halvard') || k.startsWith('act1.leadC') || k.startsWith('act1.leadA')) },   // the lobby's own people (Kess, Dez, Fenwick), not anyone anywhere (John Pork #582: Tobin satisfied it)
-      { text: 'Run down two of the three leads: the phone seller under the metro station steps, the security monitor on the ASTER lobby desk (fix it to see the 3 a.m. footage), or the helium trail (print a sniffer at Fab #1).', done: (f) => [f['act1.halvard.met'], f['act1.leadC.done'], f['act1.leadA.done']].filter(Boolean).length >= 2 || f['act1.cordon.passed'] || f['act1.beat.call'] },
+      { text: 'Ask around the ASTER lobby. Somebody saw something at 3 a.m.', done: (f) => f['act1.balloon.lobbyClue'] || balloonLeads(f) > 0 || f['act1.cordon.passed'] || f['act1.beat.call'] },
+      { text: 'Run down two of the three leads: the phone seller under the metro station steps, the security monitor on the ASTER lobby desk (fix it to see the 3 a.m. footage), or the helium trail (print a sniffer at Fab #1).', done: (f) => balloonLeads(f) >= 2 || f['act1.cordon.passed'] || f['act1.beat.call'] },
       { text: 'The trail goes down the storm grate into the Green Line. Get past the abatement cordon in the plaza.', done: (f) => f['act1.cordon.passed'] || f['act1.beat.call'] },
       { text: 'Follow the Green Line tunnels east, toward the old platform.', done: (f) => f['act1.fuses.seen'] || f['act1.tunnel.gate'] || f['act1.boss.defeated'] },
       { text: 'The gate panel has no fuses. Its sticker says the spares are with the ASTER super, B-01: that\'s Kess, in the ASTER lobby. Go back up and ask her.', done: (f) => f['act1.fuses.in'] || f['act1.tunnel.gate'] || f['act1.boss.defeated'] },
@@ -153,7 +158,7 @@ export function learnQuestFact(save, who, fact) {
   save.flags[`q.known.${who}.${fact}`] = true;
 }
 
-// An inspect.fact is recorded by the host after the reader closes the final page.
+// Quests can declare several inspections. An inspection's fact is recorded by the host after the final page closes.
 // Authors can give a quest independent leads: { id, text, fact, resolvedFact? }.
 export function questLeads(q, save, who) {
   return (q.leads ?? []).filter((lead) => knowsQuestFact(save, who, lead.fact)).map((lead) => ({
