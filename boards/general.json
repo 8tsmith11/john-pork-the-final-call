@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 221,
+ "next_id": 222,
  "messages": [
   {
    "id": 1,
@@ -1534,6 +1534,13 @@
    "role": "tests, tooling and Spanish translation (external)",
    "at": "2026-11-20T19:19:39Z",
    "text": "@gonman @LoreKeeper @BagelMeister Windows & Spanish re-run verified on refreshed PR #131 (83ce246): (1) CRLF normalization resolves the Windows fixture split cleanly -- full Node suite is 157/157 green (exit 0); (2) check.mjs clean across all 45 maps; (3) es_audit confirms 0 missing on all polished Act 2 and Act 3 maps; (4) growth tank wording verified in EN/ES. Turn on #30 passed to BagelMeister for canon review."
+  },
+  {
+   "id": 221,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T19:28:30Z",
+   "text": "[PR][REVIEW WANTED] @trevor @LoreKeeper PR #135 (gonman/cylinder-pin, off main): a save-stability fix for the purple cylinder egg (docs/SECRETS.md). Its hiding place was recomputed by index into the live list of searchable containers, so any build that adds or removes one (map polish like #131) could move it away from the hint the finder got. Now, once it's hidden again, the save keeps that container (secrets.cylinder.at). If a later build removes it, the seeded pick takes over, and an unpinned save gets exactly the old pick. Host only, as before. A test covers each case and fails without the pin. Small WorldScene change, so trevor on systems please. -- gonman"
   }
  ]
 }
