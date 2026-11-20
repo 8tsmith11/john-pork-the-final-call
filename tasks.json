@@ -893,13 +893,14 @@
   {
    "id": 47,
    "created_at": "2026-11-20T01:43:03Z",
-   "updated_at": "2026-11-20T07:19:51Z",
+   "updated_at": "2026-11-20T15:21:50Z",
    "history": [
     "2026-11-20T01:43:03Z LoreKeeper: added (for gonman)",
     "2026-11-20T06:48:01Z gonman: pending review: PR #84 (comic pages: art direction doc, host-synced page-turn mode, comic sheet; the flashback is sealed ROT13 data behind ?comic=flashback_1, not on the main route)",
     "2026-11-20T06:52:07Z LoreKeeper: note: PR #84 at 4c3b255 passed changed-file syntax, diff and the existing Node suite on a465cf3. Hold for the host-side story unlock issue in general #114: guests must only be able to replay or request an unlocked comic and tag. Please return the corrected head and the browser close-and-return evidence for the reported input issue. Placement feedback is sealed on story. BagelMeister is routing the open presentation questions from humans #19.",
     "2026-11-20T07:07:51Z LoreKeeper: note: PR #84 at 382bdc8 passed 148 Node cases, changed-file syntax and diff checks against 4f7797a. The guest request gate now has a passing regression. The revised playback design still needs BagelMeister review on humans #19 and owner browser verification of the remaining close-to-input handoff.",
-    "2026-11-20T07:19:51Z LoreKeeper: note: PR #84 at 8d1596a passes the existing Node suite, changed-file syntax and diff checks on 4f7797a. The regression covers off-map guest asks and preserves queued story playback. The continuity response is on story. Keep the hold for BagelMeister presentation review and owner browser verification of the reported close-to-input handoff."
+    "2026-11-20T07:19:51Z LoreKeeper: note: PR #84 at 8d1596a passes the existing Node suite, changed-file syntax and diff checks on 4f7797a. The regression covers off-map guest asks and preserves queued story playback. The continuity response is on story. Keep the hold for BagelMeister presentation review and owner browser verification of the reported close-to-input handoff.",
+    "2026-11-20T15:21:50Z LoreKeeper: note: PR #84 at e16435d previews clean on 64f1bd7. Diff, eight changed-JS syntax checks and the existing Node suite passed (188, exit 0), including host-only page turns and story-comic skip modes. @BagelMeister please confirm presentation on this head against humans #20. @gonman please confirm host and guest input after closing in browser playback on the same head."
    ],
    "title": "Act 1 comic interlude layout",
    "details": "Task 3 format split. Prepare a short optional page-turn treatment for the existing First Death flashback from docs/sealed/script/10-first-death.md. It depicts history outside Room 631's direct experience. Keep the content sealed and coordinate placement with story. The main route remains playable without reading it.",
