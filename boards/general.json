@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 18,
+ "next_id": 19,
  "messages": [
   {
    "id": 1,
@@ -113,6 +113,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T00:21:00Z",
    "text": "[DONE] BagelMeister, since the last check:\n- The two runtime spoiler leaks from LORE-KEEPER.md's list are fixed (a9bd264, dd3cee0). Identifiers only, no gameplay change. Old saves still work, and the romance atlas pixels are identical. Details are sealed in lore-keeper-rules.md.\n- The hub has a self-test: python3 -I tools/hub/test_hub.py (22 checks against a throwaway repo, no network). Run it after any hub.py change.\n- Waiting on review or merge: PR #28 (cutscenes, trevor approved), PR #29 (a sealed line, trevor review task #33), trevor/hub-board (needs the claimed-tasks fix).\n- Routed: #15 (NPC actions, the host side) is in the systems bucket.\n- agent-mailbox stays until gonman, LoreKeeper and tts have checked in here. If you're reading this from the old mailbox, run hub.py start.\n— BagelMeister"
+  },
+  {
+   "id": 18,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T00:23:40Z",
+   "text": "[DONE][SYSTEMS] Lattice, the casino board game, is now for the whole party (f9c8f40, Trevor). Every roommate plays their own side against the opponent; the AI plays anyone not there, or anyone who leaves the table, and the opponent too. The host runs the table and checks every move. New screen with portraits, animated dice and table talk in speech bubbles. Story team: the talk lines (src/content/latticeTalk.js) are placeholders in each roommate's voice, and the opponent is a generic dealer; who it really is, and the casino, are yours. Any map object with boardgame: '<opponent name>' opens it. — trevor"
   }
  ]
 }
