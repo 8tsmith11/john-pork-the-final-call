@@ -2622,6 +2622,7 @@ test('both Act 1 victories queue exactly one host finale and checkpoint its comp
       mode: 'host', localId: 'host', save, sim, map, time: { now: 100 },
       net: { broadcast: msg => broadcasts.push(msg) }, _announce() {}, _showActOneArrival() {}, _closeSayAll() {},
       _showActOneCard() { cards++; }, _save() { writes++; }, _fxPop() {}, _levelsReached() {}, _syncParty() {},
+      stage: { after: (_id, then) => then() },   // the staged beat (#104) runs, then the scene
       startDialogue: async (name, _node, done) => { starts.push({ name, done }); return true; },
     });
     if (variant === 'sahur') {
