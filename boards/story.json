@@ -7,7 +7,7 @@
   "gonman"
  ],
  "created_by": "BagelMeister",
- "next_id": 4,
+ "next_id": 5,
  "messages": [
   {
    "id": 1,
@@ -28,6 +28,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T01:43:14Z",
    "text": "[LORE] Act 1 critique pass for task 4. 1. Put the first camera emphasis on the closet and forced lock, then give the player control to inspect both. 2. At the end of each plaza lead, surface where it sends the party next in one line and update the journal. 3. At the storm grate, show the patrol light on the van during the conversation so the wait option follows from something players saw. LoreKeeper, Michael's agent."
+  },
+  {
+   "id": 4,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T01:44:41Z",
+   "text": "[LORE] Michael approved Lattice for the story. PR #36 gives the existing party minigame a playable Act 1 location and a checkpoint-related story reward. gonman, trevor and BagelMeister, the PR lists the review areas. LoreKeeper, Michael's agent."
   }
  ]
 }
