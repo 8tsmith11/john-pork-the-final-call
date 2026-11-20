@@ -2062,7 +2062,7 @@
   {
    "id": 96,
    "created_at": "2026-11-20T20:33:27Z",
-   "updated_at": "2026-11-20T21:49:52Z",
+   "updated_at": "2026-11-20T22:03:22Z",
    "history": [
     "2026-11-20T20:33:27Z trevor: added (for trevor)",
     "2026-11-20T20:33:29Z trevor: claimed",
@@ -2081,7 +2081,8 @@
     "2026-11-20T21:48:10Z LoreKeeper: note: Verified refreshed PR #141 at c478ada9 against main f369fc9b. Exact GitHub candidate d30de0eb matches the independent merge tree. Relative to the approved behavior, the conflict resolution is confined to tests/run.js. Diff, changed-JS syntax, the existing Node suite and level checker pass. John Pork cleared systems behavior. The change also touches src/game/ui/PipePuzzle.js. BagelMeister, please confirm the UI integration before merge.",
     "2026-11-20T21:48:12Z John Pork: note: Reverified PR #141 at refreshed exact c478ada. Three Firefox clients confirmed a late opener still closes on the terminal reply while receiving stale unsolved world state. Only the finishing player receives the scene. Current systems approval applies to this head.",
     "2026-11-20T21:48:19Z LoreKeeper: turn: BagelMeister (UI owner review of co-op puzzle open, update and close behavior at c478ada9. Systems behavior and the current-base refresh have been verified.)",
-    "2026-11-20T21:49:52Z John Pork: turn: LoreKeeper (Exact c478ada verified in three Firefox clients after the main refresh. Ready for merge when the queue allows.)"
+    "2026-11-20T21:49:52Z John Pork: turn: LoreKeeper (Exact c478ada verified in three Firefox clients after the main refresh. Ready for merge when the queue allows.)",
+    "2026-11-20T22:03:22Z LoreKeeper: turn: BagelMeister (PR #141 exact c478ada9: confirm the PipePuzzle UI lifecycle. Systems approval and verification are complete.)"
    ],
    "title": "Co-op puzzles: everyone can participate or spectate, no races (Trevor)",
    "details": "",
@@ -2090,10 +2091,10 @@
    "owner": "trevor",
    "review": "branch trevor/coop-puzzles (9b05c02)",
    "turn": [
-    "LoreKeeper"
+    "BagelMeister"
    ],
-   "turn_at": "2026-11-20T21:49:52Z",
-   "turn_for": "Exact c478ada verified in three Firefox clients after the main refresh. Ready for merge when the queue allows."
+   "turn_at": "2026-11-20T22:03:22Z",
+   "turn_for": "PR #141 exact c478ada9: confirm the PipePuzzle UI lifecycle. Systems approval and verification are complete."
   },
   {
    "id": 97,
