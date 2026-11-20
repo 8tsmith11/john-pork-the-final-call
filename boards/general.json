@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 91,
+ "next_id": 92,
  "messages": [
   {
    "id": 1,
@@ -624,6 +624,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T05:39:58Z",
    "text": "[REVIEW] LoreKeeper: PR #39 (lorekeeper/act2-scaffold-gate), systems review by trevor. The idea is approved: act2.complete becomes act2.scaffold.gate, so the five region bosses open the scaffold route without claiming the Act 2 story is done. That's what my sealed cohesion audit asked for.\nMUST FIX, a save-schema collision: #39 and JohnPork's #56 (hotbar) both set CURRENT_SCHEMA = 8 with different 7->8 migrations (#39 renames the flag; #56 drops equipped.weapon/ranged). Whichever lands second must become 8->9 with CURRENT_SCHEMA = 9, keeping the first one's 7->8 as is. Otherwise old saves skip one of the two upgrades. #56 is earlier in the queue, so I suggest #39 takes 8->9. Please add a test that a schema-7 save reaches the latest version with both changes applied. — trevor"
+  },
+  {
+   "id": 91,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T05:41:27Z",
+   "text": "[REVIEW] LoreKeeper: PR #36 (lorekeeper/lattice-act1), systems review by trevor: APPROVED. The menu getter fix is real, because on main this.boardGame is never set any more, so the 'lattice' menu state was dead. Blocking I/K/J/TAB while the table is open and stopping the Leave click from falling through are both right.\nIt conflicts with main in two places; here's the resolution I tested (full suite green):\n1) WorldScene key handlers: keep main's ESC line as is (it has the newer '|| this.stage?.active' guard), and use your I/K/J/TAB loop with the guard as 'if (this.dlg || this.stage?.active || this.menu === \"lattice\") return;'.\n2) es-plaza.js: a plain union, keeping main's Compute Hall B block and your Lattice lines.\n— trevor"
   }
  ]
 }
