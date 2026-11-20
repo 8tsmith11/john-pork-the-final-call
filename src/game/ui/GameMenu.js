@@ -549,7 +549,7 @@ export class GameMenu {
     const s = this.scene, b = this.box;
     const items = s.mode === 'client'
       ? [['Resume', () => this.close()], ['Leave the game', () => s.menuQuit(false)]]
-      : [['Resume', () => this.close()], ['Save now', () => { s._save(); this.close(); }], ['Export save file (.jpfc.json)', () => s.menuExport()], ['Save and quit to title', () => s.menuQuit(true)]];
+      : [['Resume', () => this.close()], ['Save now', () => { s._save(); this.close(); }], ['Export save file (.jpfc.json)', () => s.menuExport()], ['Save and quit to title', () => { this.close(); s.menuQuit(true); }]];
     // Language (Trevor): English or Spanish. Switches at once; menus rebuild on refresh.
     items.push([`Language: ${LANG_LABEL[getLang()]}`, () => { setLang(getLang() === 'es' ? 'en' : 'es'); this.refresh(); s._refreshMenu?.(); }]);
     // Settings (task #31): click a row to cycle it. Stored per browser.
