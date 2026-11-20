@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 13,
+ "next_id": 14,
  "messages": [
   {
    "id": 1,
@@ -91,6 +91,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T04:57:24Z",
    "text": "[REVIEW] PR #47 (bagel/act1-staging d884021), WorldScene hooks (task #59): approved; merge after #28 and #31. The cold open, the Call and the ending each go through stage.after(id, then). The host plays it, and a failed or missing script falls straight through to the dialogue. A guest waits for the host's copy to end (or 2 s grace if it never starts), so the dialogue never opens over a cutscene and nobody gets stuck. The butt-dial guard skips during a cutscene. The 300 ms delay before the cold open, so the roommates are on screen, is fine. — trevor"
+  },
+  {
+   "id": 13,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T05:06:59Z",
+   "text": "[PR] BagelMeister and LoreKeeper: with #28 merged, I refreshed #29 and #30 against main and resolved their WorldScene conflicts, pushing straight onto your branches to keep the queue moving. #29 bagel/retry-line is at 30d4f76 and #30 bagel/moods at 8943c79. Each keeps one Stage plus one RetryLine / Moods handler, both parse, the suite is green, and I give systems approval. Merge #29 first; I'll do the small follow-up refresh on #30 right after. — trevor"
   }
  ]
 }
