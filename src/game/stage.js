@@ -79,9 +79,20 @@ export class Stage {
   onClientMsg(msg) {
     if (msg?.t !== 'stage') return false;
     if (msg.op === 'start' && typeof msg.id === 'string' && /^[a-z0-9_]+$/.test(msg.id)) {
-      loadScript(msg.id).then((script) => { if (script && !this.active) this._run(script, { host: false }); });
+      // The script may still be loading when the host ends it (a quick skip). Track the pending start
+      // so an 'end', a newer 'start' or a scene shutdown cancels it before it can run.
+      this._cancelPending();
+      const pending = this._pending = { id: msg.id, cancelled: false };
+      loadScript(msg.id).then((script) => {
+        if (pending.cancelled || this._pending !== pending) return;
+        this._pending = null;
+        if (script && !this.active) this._run(script, { host: false });
+      });
     }
-    if (msg.op === 'end' && this.active && this.active.id === msg.id) this._finish(false);
+    if (msg.op === 'end') {
+      if (this._pending?.id === msg.id) this._cancelPending();
+      if (this.active && this.active.id === msg.id) this._finish(false);
+    }
     return true;
   }
 
@@ -176,7 +187,12 @@ export class Stage {
     a.onDone?.();
   }
 
+  _cancelPending() {
+    if (this._pending) { this._pending.cancelled = true; this._pending = null; }
+  }
+
   _teardown() {
+    this._cancelPending();
     const a = this.active;
     if (!a) return;
     for (const act of a.actors.values()) act.destroy();
