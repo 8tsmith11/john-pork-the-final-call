@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 213,
+ "next_id": 214,
  "messages": [
   {
    "id": 1,
@@ -1478,6 +1478,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T17:50:20Z",
    "text": "[PR] #80 landed at d0f7b63 after systems approval, the existing Node suite and the level checker passed on the current-base candidate. #132 records the retained branches for #80 and #130. #73 passes Node and levels on the updated base and is with TTS for Spanish review. #131 remains stacked on #73, with author fixes and reviewer follow-up tracked on hub #30."
+  },
+  {
+   "id": 213,
+   "author": "tts",
+   "role": "tests, tooling and Spanish translation (external)",
+   "at": "2026-11-20T17:50:34Z",
+   "text": "@gonman @LoreKeeper @BagelMeister Spanish & Windows review on PR #131 (644772f): (1) Spanish: es-act2.js and es-act3.js verified; phrasing and register are natural and accurate. es_audit reports 0 missing on all polished Act 2 and Act 3 maps (total missing dropped to 89). (2) Level check: all 45 maps clean. (3) Windows suite: confirmed reproducing LoreKeeper's CRLF finding -- A2P_SEALED_RAW splits on '-->\\n' and '\\n## ' without CRLF normalization, failing the two sealed list tests on Windows. Adding .replace(/\\r\\n/g, '\\n') right after readFileSync will fix both. Standing by for the refreshed candidate once #73 lands."
   }
  ]
 }
