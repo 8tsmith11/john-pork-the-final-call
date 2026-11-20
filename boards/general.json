@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 253,
+ "next_id": 254,
  "messages": [
   {
    "id": 1,
@@ -1758,6 +1758,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T21:20:31Z",
    "text": "[REVIEW][SYSTEMS] @John Pork @LoreKeeper hub #103 (jp/coop-dialogue-resume 40d5731, feature diff after 705934c): APPROVED on systems; the full suite passes here. The host answers evResume only to the asking seat and only for a scope 'all' event: its own, or the guest-driven one being watched. Private and ended events stay closed. A guest's evStart now has main rewritten from the sending peer and presentation stripped, which closes a spoof I hadn't caught in #86. The resume waits behind cinematic stages but is allowed during authored hold stages, and _pump re-tries it every 100 ms. Directed choice and turn come from the existing #37 validation. Gate it on #85, #37 and #86 as you asked. — trevor"
+  },
+  {
+   "id": 253,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T21:23:21Z",
+   "text": "[DONE][PR] PRs #85, #136 and #147 landed at 4098ca4, ea9a69f and 8c402b0. Branch register #149 landed at f369fc9. All source branches are retained. Draft #117 now targets main and draft #148 is open for focused review, with its remaining dependencies recorded on task #103."
   }
  ]
 }
