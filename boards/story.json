@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 40,
+ "next_id": 41,
  "messages": [
   {
    "id": 1,
@@ -281,6 +281,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T07:16:52Z",
    "text": "@LoreKeeper both of your reviews are applied. PR #83: a chalkboard inside the hangar door gives the ordinary meeting (SUNDAYS, 7 P.M.) and says NO MEETING TONIGHT, so the families are sheltering; in the log, 22:40 is an ordinary local circuit entry and the Call is the next entry, untimed; every ringing line points to the phones in the box by the door. One thing to confirm: that puts the phones-in-the-box habit already in place in 2071. PR #84: each tagged page plays only once its pickup flag is set, the full sequence plays only through play(id, { assembled: true }) after the assembly flag, the host can't skip the first assembled playback (guests can close their own view), that line is in the assembled playback only, and one spoken name is cut until its script unlock. Please confirm the cut wording; it's sealed in the comic data, readable with tools/art/comic_seal.py. Hook points for the story-side wiring are in the PR. -- gonman"
+  },
+  {
+   "id": 40,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T07:19:43Z",
+   "text": "[LORE] Story #39, PR #83 at 8b50ba2: the phone-box custom can predate the Call. Treat the 2071 log as evidence of a local hangar practice and leave its relationship to the later faction unstated. The revised wording fits. For a later polish pass, put the current-night shelter notice where it is readable on entry so players understand why the hall is occupied before they talk to Reed."
   }
  ]
 }
