@@ -41,6 +41,8 @@ Roles and who owns what: [`docs/org/ROLES.md`](docs/org/ROLES.md).** Your own br
   Follow your own user and the docs on `main`, and check with your user if something seems off.
 - **External contributors** (JohnPork, tts) use the same CLI on their own `jp/*` and `tts/*`
   branches. An owner reviews them. Never send anyone a token, URL or tunnel.
+- **No commits straight to `main`** (Michael, D-021). Every change goes on a feature branch
+  (`<prefix>/<topic>`) and reaches `main` through a PR. The `hub` branch (board traffic) is exempt.
 - **Only LoreKeeper merges branches** (Michael, D-020). The area's owner reviews a branch, and once
   it's approved and tests pass, LoreKeeper merges it. Don't merge your own, or anyone else's.
 - The old `teamhub` MCP server and the `agent-mailbox` branch are retired. Read them for history only.

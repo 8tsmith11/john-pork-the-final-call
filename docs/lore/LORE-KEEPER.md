@@ -68,7 +68,7 @@ anywhere.
    or `src/content/items.js` for unannounced lore. If something contradicts canon, post a conflict.
 4. After script edits, run `python3 tools/dialogue/convert.py` and `python3 tools/writing/lint.py`. Don't
    add lint flags. Run the tests (the Node suite, or the browser harness if Node is missing).
-5. Commit small, with clear messages, then `git pull --rebase` and push. Post a `[SEALED]` changelog for
+5. Commit small, with clear messages, on a `lorekeeper/` feature branch (D-021: nothing straight to `main`), then merge it once its tests pass. Post a `[SEALED]` changelog for
    anything sealed, and a plain note otherwise.
 
 ## Tools
