@@ -1685,6 +1685,32 @@ test('the blue pill makes dodges free while it lasts', () => {
   assert.equal(p.sta, MOVE.stamina);
 });
 
+const rapportMod = await import('../src/game/rapport.js');
+test('rapport (task #63): rare before the Call, far more often later, never Trevor, never near a fight', () => {
+  const run = (flags, act, { noMichael = false, enemy = false } = {}) => {
+    const sent = [], sc = { mode: 'solo', time: { now: 0 }, save: { flags, world: { act } } }, g = new rapportMod.Rapport(sc); g._send = (m) => sent.push(m);
+    const players = [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p3', c: 'trevor', x: 104, y: 100 }];
+    if (!noMichael) players.push({ id: 'p2', c: 'michael', x: 112, y: 100 });
+    const snap = { players, enemies: enemy ? [{ x: 150, y: 100 }] : [] };
+    for (let i = 0; i < 3600; i++) { sc.time.now = i * 1000; g.update(snap); }   // an hour, standing together, no input
+    return sent;
+  };
+  const early = run({}, 1), late = run({ 'act1.beat.call': true }, 3);
+  assert.ok(early.length >= 6 && early.length <= 24, `before the Call, in an hour: ${early.length}`);
+  assert.ok(late.length >= 60, `in Act 3, in an hour: ${late.length}`);
+  for (const m of [...early, ...late]) {
+    assert.equal(m.from, 'ai:manuel', 'always Manuel');
+    assert.ok(m.k === 'aside' || m.to === 'p2', 'always aimed at Michael');
+    assert.ok(!JSON.stringify(m).includes('p3'), 'Trevor is never part of it');
+  }
+  assert.ok(early.some((m) => m.k === 'aside') && early.some((m) => m.k !== 'aside'), 'both kinds come round');
+  const all = Object.values(rapportMod.RAPPORT_LINES).filter(Array.isArray).flat();
+  const tierOf = (l) => all.find(([, x]) => x === l)?.[0];
+  assert.ok(early.flatMap((m) => [m.la, m.lb]).filter(Boolean).every((l) => tierOf(l) === 0), 'early on, only the first tier of lines');
+  assert.equal(run({}, 3, { noMichael: true }).length, 0, 'nothing without Michael (never on Trevor)');
+  assert.equal(run({}, 3, { enemy: true }).length, 0, 'nothing with a fight close by');
+});
+
 const { BARKS } = await import('../src/content/barks.js');
 const { LINES_ES } = await import('../src/content/lines_es.js');
 const beltMod = await import('../src/game/beltless.js');
@@ -1692,7 +1718,7 @@ const toothMod = await import('../src/game/toothpaste.js');
 const crowd = await import('../src/game/crowd.js');
 test('every bark and crowd line has Spanish', () => {
   const all = []; const walk = (o) => { if (typeof o === 'string') all.push(o); else if (o && typeof o === 'object') Object.values(o).forEach(walk); };
-  walk(BARKS); walk(crowd.LINES); walk(crowd.PIXEL_LINES); walk(fartMod.FART_LINES); walk(buttMod.BUTT_LINES); walk(Object.values(npcLifeMod.NPC_LIFE).map((l) => l.hi)); walk(npcLifeMod.NPC_FART); walk(beltMod.BELT_LINES); walk(toothMod.TOOTHPASTE_TALK);
+  walk(BARKS); walk(crowd.LINES); walk(crowd.PIXEL_LINES); walk(fartMod.FART_LINES); walk(buttMod.BUTT_LINES); walk(Object.values(npcLifeMod.NPC_LIFE).map((l) => l.hi)); walk(npcLifeMod.NPC_FART); walk(beltMod.BELT_LINES); walk(toothMod.TOOTHPASTE_TALK); walk(rapportMod.RAPPORT_LINES);
   const missing = all.filter((s) => !LINES_ES[s]);
   assert.deepEqual(missing, [], 'add these to src/content/lines_es.js');
 });
