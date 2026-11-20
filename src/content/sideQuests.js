@@ -162,7 +162,7 @@ side({ id: 'bv_tank', act: 2, ...g('npc.bv_vet', VET), title: 'A name in marker'
 
 side({ id: 'bv_ledgers', act: 2, ...g('npc.bv_vet', VET), title: 'Before the Call', titleEs: 'Antes de la Llamada',
   why: 'The breeding ledgers go back further than anyone admits.', whyEs: 'Los registros de cría van más atrás de lo que nadie admite.',
-  pitch: '"The ledgers in the barn. Check the first date. Tell me it\'s after the Call."', pitchEs: '"Los registros del granero. Mira la primera fecha. Dime que es posterior a la Llamada."',
+  pitch: '"The ledgers on the shelf in my office. Check the first date. Tell me it\'s after the Call."', pitchEs: '"Los registros del estante de mi oficina. Mira la primera fecha. Dime que es posterior a la Llamada."',
   look: { obj: 'obj.bv_ledgers', where: 'the breeding ledgers', whereEs: 'los registros de cría', seen: 'The first date is before the Call. Years before.', seenEs: 'La primera fecha es anterior a la Llamada. Años antes.' },
   line: '"Then they knew." She folds her gloves very carefully.', lineEs: '"Entonces sabían." Dobla los guantes con mucho cuidado.' });
 
@@ -322,8 +322,8 @@ side({ id: 'gt_cradle', act: 3, ...g('npc.gt_physicist', PHYS), title: 'The empt
   line: '"Approximately." She laughs, and then doesn\'t.', lineEs: '"Aproximadamente." Se ríe, y después no.' });
 
 side({ id: 'gt_master', act: 3, ...g('npc.gt_physicist', PHYS), title: 'Running since 1901', titleEs: 'En marcha desde 1901', money: 50, xp: 100,
-  why: 'The thing in the clock vault is the reason devices think it\'s 1901.', whyEs: 'Lo que hay en la bóveda del reloj es la razón por la que los aparatos creen que es 1901.',
-  pitch: '"Down in the vault. The clock that runs the clocks. It\'s wrong on purpose. Make it be wrong somewhere else."', pitchEs: '"Abajo, en la bóveda. El reloj que maneja los relojes. Está mal a propósito. Haz que esté mal en otro lado."',
+  why: 'The thing guarding the weights room is the reason devices think it\'s 1901.', whyEs: 'Lo que vigila la sala de pesas es la razón por la que los aparatos creen que es 1901.',
+  pitch: '"In the weights room, by the empty cradle. The clock that runs the clocks. It\'s wrong on purpose. Make it be wrong somewhere else."', pitchEs: '"En la sala de pesas, junto a la cuna vacía. El reloj que maneja los relojes. Está mal a propósito. Haz que esté mal en otro lado."',
   boss: { boss: 'boss.gt_clock', bossName: 'THE MASTER CLOCK' },
   line: '"Every phone in the county just learned what year it is. Some of them won\'t like it."', lineEs: '"Todos los teléfonos del condado acaban de enterarse de en qué año estamos. A algunos no les va a gustar."' });
 
