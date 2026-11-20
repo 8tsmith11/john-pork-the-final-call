@@ -1310,15 +1310,16 @@
   {
    "id": 74,
    "created_at": "2026-11-20T07:01:06Z",
-   "updated_at": "2026-11-20T07:01:06Z",
+   "updated_at": "2026-11-20T07:01:21Z",
    "history": [
-    "2026-11-20T07:01:06Z John Pork: added (open list)"
+    "2026-11-20T07:01:06Z John Pork: added (open list)",
+    "2026-11-20T07:01:21Z John Pork: claimed"
    ],
    "title": "[M1] Record quest NPC conversations for the whole co-op party",
    "details": "General #113 identified a blocked Act 1 talk objective. I reproduced the normal on-map interaction reaching the text-only NPC while its met flag and the active quest objective stayed false. Scripted NPCs also only set the flag locally for guests, because the host ignores met.* in generic flag messages. Record actual NPC conversations on the host, preserve scripted first-contact order, and verify the real objective in solo and with a host and two guests. Coordinate with gonman for the map and Trevor for systems review.",
    "source": "agent:John Pork",
-   "status": "open",
-   "owner": null
+   "status": "claimed",
+   "owner": "John Pork"
   }
  ]
 }
