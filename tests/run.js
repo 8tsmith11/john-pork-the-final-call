@@ -1698,10 +1698,22 @@ test('arriving through any door never lands you on an exit, and your first step 
     assert.ok(comics.flashback_1.pages.every((p) => /^part_\d$/.test(p.tag)), 'every page has its part tag');
     for (const t of comicMod.pagesFor(comics.flashback_1, 'part_3')) assert.equal(t.tag, 'part_3');
     assert.equal(comicMod.pagesFor(comics.flashback_1, 'part_9').length, 0);
+    // placement: each part waits on its own story flag, the whole plays only assembled and locks the host the first time
+    const fb = comics.flashback_1, tags = fb.pages.map((p) => p.tag);
+    assert.deepEqual(Object.keys(fb.pieces ?? {}).sort(), [...tags].sort(), 'every part needs its own pickup flag');
+    assert.equal(new Set(Object.values(fb.pieces)).size, tags.length, 'two parts share a pickup flag');
+    assert.ok(fb.assembled?.needs && fb.assembled.firstSkippable === false, 'the whole comic must wait for assembly and lock the first playback');
+    // a part played alone can drop lines the assembled playback keeps, and lines waiting on a flag have a fallback
+    const count = (pages) => pages.reduce((n, p) => n + p.panels.reduce((m, x) => m + (x.text?.length ?? 0), 0), 0);
+    const whole = comicMod.pagesFor(fb, null, new Set()), first = comicMod.pagesFor(fb, tags[0], new Set());
+    assert.ok(count(first) < count([whole[0]]), 'the first part plays alone with every assembled-only line');
+    const waiting = fb.pages.flatMap((p) => p.panels.flatMap((x) => (x.text ?? []).filter((t) => t.needs)));
+    assert.ok(waiting.length > 0 && waiting.every((t) => t.else?.en && t.else?.es), 'a line waiting on a flag has no fallback');
     for (const t of COMIC_TRIGGERS) {
       assert.ok(comics[t.id], `trigger for a comic that doesn't exist: ${t.id}`);
       assert.ok(typeof t.flag === 'string' && t.flag, `trigger for ${t.id} has no flag`);
       assert.ok(comicMod.pagesFor(comics[t.id], t.tag ?? null).length > 0, `trigger ${t.id}:${t.tag} plays no pages`);
+      assert.ok(!comics[t.id].pieces || t.tag, `trigger for ${t.id} would play a comic in pieces whole`);
     }
   });
 
@@ -1758,7 +1770,7 @@ test('arriving through any door never lands you on an exit, and your first step 
   });
 
   // A stand-in world and drawing side, so the mode's rules run without Phaser.
-  const fakeView = () => { const v = { calls: [], open: (c, pages, page, o) => v.calls.push(['open', page, o.host]), turnTo: (p, d) => v.calls.push(['turn', p, d]), close: () => v.calls.push(['close']), destroy() {} }; return v; };
+  const fakeView = () => { const v = { calls: [], open: (c, pages, page, o) => { v.calls.push(['open', page, o.host]); v.last = { pages, o }; }, turnTo: (p, d) => v.calls.push(['turn', p, d]), close: () => v.calls.push(['close']), destroy() {} }; return v; };
   const fakeWorld = (mode) => { const w = { mode, time: { now: 0 }, save: { flags: {} }, sent: [], net: { broadcast: (m) => w.sent.push(['all', m]), send: (m) => w.sent.push(['host', m]) } }; return w; };
   const threePages = { id: 'tst', pages: [{ layout: 'splash', panels: [{}] }, { layout: 'splash', tag: 'b', panels: [{}] }, { layout: 'splash', panels: [{}] }] };
   const mkComic = (mode) => { const w = fakeWorld(mode), v = fakeView(), c = new comicMod.Comic(w, v); c.load = async () => threePages; return { w, v, c }; };
@@ -1820,11 +1832,94 @@ test('arriving through any door never lands you on an exit, and your first step 
     assert.ok(guest.active, 'the next comic opens again'); guest.onClientMsg({ t: 'comic', op: 'end', run: 'next' }); assert.ok(!guest.active);
     assert.equal(guest.onClientMsg({ t: 'comic', op: 'show', id: '../x', run: 'r', page: 0 }), true); assert.equal(guest.pending, null, 'a bad id loaded');
 
-    // the host's Esc ends it for everyone; a guest's ask starts one for everyone
+    // the host's Esc ends it for everyone
     host.input('skip'); assert.ok(hw.sent.some(([, m]) => m.op === 'end' && m.run === run)); assert.ok(!host.active);
-    host.onHostMsg('g1', { t: 'comic', op: 'ask', id: 'tst', tag: 'b' }); await new Promise((r) => setTimeout(r, 0));
-    assert.ok(host.active && host.cur.tag === 'b');
     guest.play('tst'); assert.deepEqual(G.w.sent.at(-1), ['host', { t: 'comic', op: 'ask', id: 'tst', tag: null }]);
+  });
+
+  await testAsync('comic mode: a guest\'s ask plays only what this save has already played or triggered, for everyone', async () => {
+    const H = mkComic('host'), host = H.c, f = H.w.save.flags;
+    const ask = async (m) => { const r = host.onHostMsg('g1', { t: 'comic', op: 'ask', ...m }); await new Promise((res) => setTimeout(res, 0)); return r; };
+    // nothing played yet and no trigger flag: ignored, so nobody can open pages the party hasn't reached
+    assert.equal(await ask({ id: 'tst', tag: 'b' }), true, 'comic messages are still consumed');
+    assert.ok(!host.active, 'a guest opened an unplayed, untriggered comic for everyone');
+    await ask({ id: 'tst', tag: null }); assert.ok(!host.active, 'a guest opened the whole comic before it was played');
+    await ask({ id: 'tst', tag: 'Not A Tag' }); assert.ok(!host.active, 'a bad tag fell back to the whole comic');
+    await ask({ id: 'tst', tag: 7 }); assert.ok(!host.active);
+    assert.equal(H.w.sent.length, 0, 'an ignored ask told the party something');
+    // the host plays the piece itself (a story beat): recorded in the save, and from then on a guest can ask for it again
+    assert.equal(await host.play('tst', { tag: 'b' }), true); assert.equal(f[comicMod.playedKey('tst', 'b')], true);
+    host.end();
+    await ask({ id: 'tst', tag: 'b' }); assert.ok(host.active && host.cur.tag === 'b', 'a played comic was not honoured');
+    host.end();
+    assert.equal(f[comicMod.playedKey('tst')], undefined); await ask({ id: 'tst' }); assert.ok(!host.active, 'playing a piece unlocked the whole');
+    // a comic whose trigger flag is set can be asked for before it has played
+    COMIC_TRIGGERS.push({ id: 'tst', flag: 'test.comic.ask', tag: null });
+    try {
+      await ask({ id: 'tst' }); assert.ok(!host.active, 'honoured before the trigger flag');
+      f['test.comic.ask'] = true; await ask({ id: 'tst' }); assert.ok(host.active && host.cur.tag === null, 'a triggered comic was not honoured');
+      host.end();
+    } finally { COMIC_TRIGGERS.pop(); }
+    // the debug param still works for the host itself (and records nothing); a guest's only asks
+    const Q = globalThis.location;
+    globalThis.location = { search: '?comic=tst:b' };
+    try {
+      const D = fakeWorld('host'); D.time.delayedCall = (ms, fn) => setTimeout(fn, 0);
+      const dc = new comicMod.Comic(D, fakeView()); dc.load = async () => threePages; await new Promise((r) => setTimeout(r, 5));
+      assert.ok(dc.active && dc.cur.tag === 'b', 'the debug param did not play for the host'); assert.deepEqual(D.save.flags, {}, 'a debug play was recorded');
+      const C = fakeWorld('client'); C.time.delayedCall = (ms, fn) => fn();
+      new comicMod.Comic(C, fakeView());
+      assert.deepEqual(C.sent.at(-1), ['host', { t: 'comic', op: 'ask', id: 'tst', tag: 'b' }], 'a guest\'s debug param skipped the host');
+    } finally { if (Q === undefined) delete globalThis.location; else globalThis.location = Q; }
+  });
+
+  await testAsync('comic mode: a comic in pieces plays each piece once earned, the whole only assembled, and the first whole playback locks the host only', async () => {
+    const parts = {
+      id: 'pcs', pieces: { one: 'test.got.one', two: 'test.got.two' }, assembled: { needs: 'test.all', firstSkippable: false },
+      pages: [
+        { layout: 'splash', tag: 'one', panels: [{ text: [
+          { kind: 'caption', en: 'a', es: 'a' },
+          { kind: 'balloon', en: 'b', es: 'b', only: 'assembled' },
+          { kind: 'balloon', en: 'c', es: 'c', only: 'piece' },
+          { kind: 'balloon', en: 'Name. d', es: 'Nombre. d', needs: 'test.name', else: { en: 'd', es: 'd' } },
+          { kind: 'balloon', en: 'e', es: 'e', needs: ['test.x', 'test.name'] },
+        ] }] },
+        { layout: 'splash', tag: 'two', panels: [{}] },
+      ],
+    };
+    assert.deepEqual(comicMod.checkComic(parts), []);
+    assert.deepEqual(comicMod.gatesOf(parts), ['test.name', 'test.x']);
+    const H = mkComic('host'), host = H.c, f = H.w.save.flags, v = H.v;
+    host.load = async () => parts;
+    const lines = () => v.last.pages[0].panels[0].text.map((t) => t.en);
+    // a piece waits for its pickup; then it plays alone, without the assembled-only line and without the name
+    assert.equal(await host.play('pcs', { tag: 'one' }), false, 'a piece played before it was earned');
+    f['test.got.one'] = true;
+    assert.equal(await host.play('pcs', { tag: 'one' }), true);
+    assert.deepEqual(lines(), ['a', 'c', 'd']); assert.equal(v.last.o.skippable, true);
+    assert.ok(!('open' in H.w.sent.at(-1)[1]), 'sent flags nobody has');
+    host.end();
+    // the whole comic: never without { assembled }, never before assembled.needs
+    assert.equal(await host.play('pcs'), false, 'the whole played without being assembled');
+    assert.equal(await host.play('pcs', { assembled: true }), false, 'the whole played before its flag');
+    f['test.all'] = true; f['test.name'] = true;
+    assert.equal(await host.play('pcs', { assembled: true }), true);
+    assert.equal(v.last.pages.length, 2); assert.deepEqual(lines(), ['a', 'b', 'Name. d', 'e']);
+    const show = H.w.sent.at(-1)[1]; assert.deepEqual(show.open, [0], 'the guests were not told which lines are unlocked');
+    assert.equal(v.last.o.skippable, false); assert.equal(host.input('skip'), false); assert.ok(host.active, 'the host skipped the first whole playback');
+    // a guest still closes their own screen, and sees what the host sees
+    const G = mkComic('client'); G.c.load = async () => parts;
+    G.c.onClientMsg(show); await new Promise((r) => setTimeout(r, 0));
+    assert.deepEqual(G.v.last.pages[0].panels[0].text.map((t) => t.en), ['a', 'b', 'Name. d', 'e']);
+    assert.equal(G.v.last.o.skippable, true); G.c.input('skip'); assert.ok(!G.c.active, 'a guest could not close the first whole playback');
+    host.cur.at = -1e9; host.input('next'); host.cur.at = -1e9; host.input('next'); assert.ok(!host.active);
+    // later whole playbacks can be skipped
+    assert.equal(await host.play('pcs', { assembled: true }), true); assert.equal(v.last.o.skippable, true);
+    host.input('skip'); assert.ok(!host.active);
+    // a broken setup is caught by the checks
+    const bad = { id: 'bad', pieces: { nope: 1 }, assembled: { needs: '', firstSkippable: 'no' }, pages: [{ layout: 'splash', panels: [{ text: [{ kind: 'balloon', en: 'x', es: 'x', only: 'never', needs: [''], else: { en: 'y' } }] }] }] };
+    const probs = comicMod.checkComic(bad).join(' | ');
+    for (const want of ['no page has', 'pieces.nope', 'assembled.needs', 'firstSkippable', 'only must be', 'needs must name', 'else: no Spanish']) assert.ok(probs.includes(want), `missing "${want}" in: ${probs}`);
   });
 
   await testAsync('comic mode: waits for a story scene or cutscene, and a trigger plays once per world', async () => {

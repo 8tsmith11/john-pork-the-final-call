@@ -143,6 +143,10 @@ the last page.
   reading. The host's Esc ends it for everyone.
 - The host repeats the current page every second, so a guest who joins late, or misses a message,
   catches up.
+- A guest can ask for a comic (the archive, or `?comic=` in their own browser), and it plays for
+  everyone, so the host only honours an ask for a comic this save has already played
+  (`comic.<id>[.<tag>].played`) or one whose trigger flag is set. Anything else is ignored: a guest
+  can't open pages the party hasn't reached.
 - While a page is up the reader's own roommate doesn't move or attack, and in solo the world waits,
   as it does for story dialogue. In co-op the world keeps running for anyone who closed the page, so
   place comics where nothing is attacking the party.
@@ -196,13 +200,40 @@ export default {
 
 Text fields: `kind` (`caption`, `balloon`, `sfx`, `stamp`), `style` (captions: `narration`, `log`;
 balloons: `speech`, `whisper`, `log`), `x`, `y`, `w`, `tail`, `at: 'bottom'` (captions), and for
-`sfx`: `size`, `color`, `angle`.
+`sfx`: `size`, `color`, `angle`. Two more decide when a line shows:
+
+- `only: 'assembled'` or `only: 'piece'`: the line is lettered only when the comic plays whole, or
+  only when its page plays alone with `{ tag }`.
+- `needs: '<flag>'` (or a list, any of them) with `else: { en, es }`: the line as written shows once
+  that story flag is set; until then the page letters `else` instead (or nothing, without `else`).
+  Use it for anything the story hasn't unlocked yet, a name for instance. The host checks the flags
+  when the comic starts and tells the guests, so every screen letters the same page.
+
+### Comics in pieces
+
+A comic the story hands out a page at a time (found one by one, then put together) is **in pieces**:
+
+```js
+  pieces: { part_1: 'some.flag', part_2: 'other.flag' },   // or true: pieces with no flag of their own
+  assembled: { needs: 'all.found.flag', firstSkippable: false },
+```
+
+- `scene.comic.play(id, { tag: 'part_1' })` plays one piece, and only once its flag is set (the story
+  sets it at the pickup, then plays the page).
+- `scene.comic.play(id, { assembled: true })` plays the whole comic, and only once `assembled.needs` is
+  set. Without `{ assembled: true }` a comic in pieces never plays whole.
+- `assembled.firstSkippable: false`: the host can't Esc out of the first whole playback. Guests can
+  still close their own screen, and every later playback can be skipped.
+- A trigger for a comic in pieces must name a tag.
 
 **Try it:** open the game with `?comic=<id>` (or `?comic=<id>:<tag>`). The engine demo is `?comic=demo`.
+On the host or in solo it plays as is, a comic in pieces included, and records nothing in the save. In
+a guest's browser it's an ask like any other (see Co-op).
 
 **Place it** (the Lore Keeper's call): add `{ id, flag, tag?, map? }` to `src/content/comics/index.js`.
 The host plays it once per world when the flag is set, after any story dialogue or cutscene that's on
-screen, and records `comic.<id>[.<tag>].played` in the save. From code: `scene.comic.play(id, { tag, onDone })`.
+screen. From code: `scene.comic.play(id, { tag, assembled, onDone })`. Every play on the host records
+`comic.<id>[.<tag>].played` in the save (a whole playback is `comic.<id>.played`).
 
 **Checks:** `node tests/run.js` decodes every comic in the folder and checks it: every page has
 panels inside the live area, every art frame exists in its atlas, every line has English and Spanish,
