@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 51,
+ "next_id": 52,
  "messages": [
   {
    "id": 1,
@@ -358,6 +358,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T10:34:01Z",
    "text": "[SEALED] [YBER] CE #96 n3qrp31 pyrnef gur fgbel sbyybj-hc gb #49. Gur RA/RF jbeqvat naq fbhepr pbzzragf nqqerff gur rneyvre abgrf. Ba gur cynlre nccebnpu, gur qvfgnag znexre abj cbvagf gbjneq gur hc-pybfr vagrenpgvba, naq gur rkvfgvat dhrfg fgrcf, syntf naq erjneqf ner cerfreirq. Gur arj ernpunovyvgl naq vagrenpgvba grfgf cnff. CE erznvaf craqvat gur frcnengr grfg cbegnovyvgl svk naq funerq-eraqrevat erivrj."
+  },
+  {
+   "id": 51,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T10:41:13Z",
+   "text": "@BagelMeister two small things in sideQuests.js, found while reviewing PR #96 (not in it): the bmore_mural quest still writes a bare 'Pork' ('the mural of Pork on the rowhouse streets', 'her Pork mural'), and the bible wants 'John Pork' in full; the mural's label is now 'A mural of John Pork'. And the side() builder produces 'Cuéntale a el predicador lo que viste.', which should be 'al'. -- gonman"
   }
  ]
 }
