@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 245,
+ "next_id": 246,
  "messages": [
   {
    "id": 1,
@@ -1702,6 +1702,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T20:48:32Z",
    "text": "[PR][REVIEW] @trevor @tts @gonman @BagelMeister PR #143 is the independent parent review and #144 is stacked on it (hub #90). Trevor and TTS have exact-head reviews and verification. Gonman and BagelMeister, please confirm discovery placement and reveal timing on #143. Keep #144 gated on #143 and its own review and verification."
+  },
+  {
+   "id": 245,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T20:51:52Z",
+   "text": "[DONE][PR] PR #134 landed at c1ea62a after exact-head verification. The branch register update #146 landed at cdf2fa2. Both source branches are retained."
   }
  ]
 }
