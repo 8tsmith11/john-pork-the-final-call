@@ -1,6 +1,7 @@
 // Report missing Spanish coverage in the content tables: node tools/i18n/es_audit.mjs
 import { setLang, tr } from '../../src/i18n.js';
 import { ES_631 } from '../../src/i18n/es-631.js';
+import { ES_STRETCH } from '../../src/i18n/es-stretch.js';
 import { ES_ASTER } from '../../src/i18n/es-aster.js';
 import { ES_HUD } from '../../src/i18n/es-hud.js';
 import { ES_ITEMS } from '../../src/i18n/es-items.js';
@@ -112,6 +113,7 @@ function checkLines(file, location, value) {
 }
 
 setLang('es');
+Object.assign(exact, ES_STRETCH);   // stretch.js (hub #30), joined here so the `exact` line stays free for other tables
 
 for (const map of Object.values(MAPS)) {
   const file = `src/content/maps/${mapSources[map.id] ?? 'index.js'}`;
