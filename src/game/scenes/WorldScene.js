@@ -225,6 +225,7 @@ export class WorldScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-F', () => { if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
     this._showMap(startMap);
     this.ready = true;
+    if (this.initialSnapshot) this.shared.requestResume();
     // Act 1's witnessed beats are staged in-engine first (hub #48; src/content/stage/act1_*.js), then the scene plays.
     // A beat of delay so the roommates are on screen for the cutscene to stand in for them.
     if (!this.initialSnapshot) {
@@ -428,12 +429,23 @@ export class WorldScene extends Phaser.Scene {
 
   _choose(i) {
     if (!this.dlg?.choices[i] || this.time.now - (this._lineAt ?? 0) < 450) return;
-    if (this.dlg.spectator) { if (this.dlg.decider === this.character) { this.dlg.choose(i); this._toast('…'); } return; }
+    if (this.dlg.spectator) {
+      if (this.dlg.decider === this.character && !this.dlg.pending) { this.dlg.choose(i); this._drawDialogue(); }
+      return;
+    }
     if (this._aiDecider && !this.dlg.spectator) return this._toast(`${this._aiDecider.toUpperCase()} decides`);
     if (!this.shared?.canChoose()) return;
-    this.shared?.picked(this.character, this.dlg.choices[i].text.replace(/\*/g, ''));
-    this._logChoice(this.character, this.dlg.choices[i]);
-    this.dlg.choose(i); this._drawDialogue();
+    this._commitDialogueChoice(i, this.character);
+  }
+
+  _commitDialogueChoice(i, who) {
+    const c = this.dlg?.choices[i];
+    if (!c || this.dlg.spectator) return;
+    const showLine = this.shared?.active && this.shared.active.scope !== 'self';
+    if (!showLine) this._logChoice(who, c);
+    this.dlg.choose(i, showLine ? who : undefined);
+    this.shared?._pump();
+    this._drawDialogue();
   }
 
   _drawDialogue() {
@@ -453,12 +465,14 @@ export class WorldScene extends Phaser.Scene {
     this.dlgTimer?.setVisible(false);
     this._choiceHeader = false;
     if (choices.length) {
+      const decider = d.spectator ? d.decider : (this._aiDecider ?? (this.shared?.active ? this.shared.deciderFor(d.node) : null));
+      const mine = !decider || (decider === this.character && !d.pending && !this._aiDecider);
       if (this._choicesFor !== d.nodeId) { this._choicesFor = d.nodeId; this._lineAt = this.time.now; }
       // A timed choice ("Let it ring."): count down on screen and take it if nobody picks.
       const ti = choices.findIndex((c) => c.timeout);
       if (ti >= 0) {
         const left = Math.ceil(choices[ti].timeout - (this.time.now - this._lineAt) / 1000);
-        if (left <= 0) { this._lineAt = 0; this._choose(ti); return; }
+        if (left <= 0) { this._commitDialogueChoice(ti, decider ?? this.character); return; }
         this.dlgWho.setText('');
         this.dlgTimer ??= this.add.text(0, 0, '', { ...FONT, fontSize: '9px' }).setOrigin(1, 0).setScrollFactor(0).setDepth(9502);
         this.dlgTimer.setText(`⏱ ${left}s`).setColor(left <= 5 ? '#d65db1' : '#9aa3c7').setVisible(true);
@@ -466,34 +480,29 @@ export class WorldScene extends Phaser.Scene {
       } else this.dlgWho.setText('');
       this.dlgPortrait.setVisible(false); this.dlgPortraitBg.setVisible(false); this.dlgInitial.setText('');
       this.dlgText.setText(''); this._hideRich(); this.dlgMore?.setVisible(false);
-      // Directed choices: a small "→ MANUEL" tag, and greyed options on everyone else's screen.
-      const decider = d.spectator ? d.decider : (this.shared?.active ? this.shared.deciderFor(d.node) : null);
-      const mine = !decider || decider === this.character;
-      // A header row above the options (not on top of them): clear for the decider, quiet for everyone else.
-      this._choiceHeader = !!(decider && this.mode !== 'solo');
+      this._choiceHeader = !!(decider && (this.mode !== 'solo' || this._aiDecider));
       // An AI roommate's own scene (romance he's courting himself): he picks, after a beat.
       if (this._aiDecider && !d.spectator) {
-        this._choiceHeader = true;
-        this.dlgWho.setText(`${this._aiDecider.toUpperCase()} IS CHOOSING…`).setColor('#9aa3c7');
         if (this._aiPickFor !== d.nodeId) {
           this._aiPickFor = d.nodeId;
           const node = d.nodeId;
           this.time.delayedCall(1100, () => {
             if (!this.dlg || this.dlg.nodeId !== node || !this.dlg.choices.length) return;
             const opts = this.dlg.choices.map((c, i) => [c, i]).filter(([c]) => !c.timeout);
-            const [c, i] = opts[Math.floor(Math.random() * opts.length)] ?? [this.dlg.choices[0], 0];
-            this._toast(`${this._aiDecider?.toUpperCase() ?? ''}: "${c.text.replace(/[*"]/g, '')}"`);
-            this._logChoice(this._aiDecider, c);
-            this.dlg.choose(i); this._drawDialogue();
+            const [, i] = opts[Math.floor(Math.random() * opts.length)] ?? [this.dlg.choices[0], 0];
+            this._commitDialogueChoice(i, this._aiDecider);
           });
         }
       }
-      if (this._choiceHeader) this.dlgWho.setText(mine ? '▶ YOUR CHOICE' : `${decider.toUpperCase()} IS CHOOSING…`).setColor(mine ? '#6fe3e8' : '#9aa3c7');
-      this.dlgChoices.forEach((t, i) => t.setText(choices[i] ? `${i + 1}. ${choices[i].text.replace(/\*/g, '')}` : '').setVisible(!!choices[i]).setAlpha(mine && !this._aiDecider ? 1 : 0.45));
+      if (this._choiceHeader) {
+        const wait = `${tr('WAITING FOR')} ${decider.toUpperCase()}…`;
+        this.dlgWho.setText(d.pending ? tr('CHOICE SENT') : mine ? tr('▶ YOUR CHOICE') : wait).setColor(mine ? '#6fe3e8' : '#9aa3c7');
+      }
+      this.dlgChoices.forEach((t, i) => t.setText(choices[i] ? `${i + 1}. ${choices[i].text.replace(/\*/g, '')}` : '').setVisible(!!choices[i]).setAlpha(mine ? 1 : 0.45));
       // John Pork's call: the ANSWER / DECLINE choice is shown as a full phone takeover (CallCard).
       const label = (c) => c.text.replace(/[*"]/g, '').trim().toUpperCase();
       const ai = choices.findIndex((c) => label(c) === 'ANSWER'), di = choices.findIndex((c) => label(c) === 'DECLINE');
-      if (ai >= 0 && di >= 0) {
+      if (mine && ai >= 0 && di >= 0) {
         if (!this._callCard || this._callCard.closed || this._callCardFor !== d.nodeId) {
           this._callCard?.destroy(); this._callCardFor = d.nodeId;
           this._callCard = new CallCard(this, { name: 'John Pork', onAnswer: () => this._choose(ai), onDecline: () => this._choose(di) });
@@ -506,7 +515,8 @@ export class WorldScene extends Phaser.Scene {
       this.dlgText.setColor(line && !line.who ? '#9aa3c7' : '#e8e8f0');
       if (line && line !== this._lastLine) {
         this._lastLine = line; this._lineAt = this.time.now;
-        if (this._transcript && line.text && !line.sms) this._transcript.lines.push([line.who ?? '', line.text.replace(/\*([^*]+)\*/g, '$1')]);
+        if (line.choice) this._logChoice(line.who, line);
+        else if (this._transcript && line.text && !line.sms) this._transcript.lines.push([line.who ?? '', line.text.replace(/\*([^*]+)\*/g, '$1')]);
         // The guide's Sahur entry: seen once he speaks on screen, whichever route (cameo or boss).
         if (line.who && /sahur/i.test(line.who) && !this.save.flags['act1.sahur.seen']) this._flag('act1.sahur.seen', true);
         if (line.sms) {   // a text message: buzz, and keep it on the phone
@@ -675,6 +685,7 @@ export class WorldScene extends Phaser.Scene {
     this._netHandlers = [];
     this.events.once('shutdown', () => { for (const [t, fn] of this._netHandlers) this.net?.off?.(t, fn); });
     if (this.mode === 'host') {
+      on('leave', (peer) => this.shared?.endGuestDialogue(peer));
       on('msg', (peer, msg) => {
         if (!msg) return;
         if (!this.sim.players.has(peer)) {
@@ -684,7 +695,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'lattice') { this._table().onHostMsg(peer, msg); return; }   // the casino board game (host runs it)
         if (msg.t === 'bastion') { this._bastion().onHostMsg(peer, msg); return; }   // hub #34 (host runs it)
         if (msg.t === 'lab') { this._lab().onHostMsg(peer, msg); return; }   // hub #44 (host keeps the bench)
-        if (this.shared?.onMsg(msg, peer) || this.stage?.onHostMsg(peer, msg) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg)) return;
+        if (this.shared?.onHostMsg(peer, msg) || this.stage?.onHostMsg(peer, msg) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg)) return;
         if (msg.t === 'questRead') this._finishQuestReading(peer, msg.read);
         if (msg.t === 'npcTalk') this._guestNpcTalk(peer, msg);
         if (msg.t === 'input') {
