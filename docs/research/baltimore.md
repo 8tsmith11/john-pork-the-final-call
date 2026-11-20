@@ -56,12 +56,14 @@ so. Anything not checked is marked **unverified**. Links are at the end.
 - **Public marine terminals** *(gov; acreage varies by source)*:
   - Dundalk, about 570 acres: containers, roll-on/roll-off, autos, farm and construction machinery.
   - Seagirt, about 275 to 320 acres: the container terminal, run by a private operator under a
-    50-year concession. It has two 50-ft berths and 11 cranes, 8 of them Neo-Panamax, reaching 22
-    containers across. The newest four arrived in 2021, each about 450 ft tall and about 1,740 tons.
+    50-year concession. It has two 50-ft berths and 12 ship-to-shore cranes (the state's pages class
+    them differently); the biggest reach 22 to 24 containers across. The newest four arrived in
+    2021, each about 450 ft tall and about 1,740 tons.
   - South Locust Point, about 80 acres: general cargo, and the cruise terminal.
   - Fairfield and Masonville: autos.
-- **Autos and machinery.** The state calls Baltimore the nation's top port for roll-on/roll-off cargo
-  and, in the years its manual reports, for autos and light trucks *(gov)*.
+- **Autos and machinery.** The state calls Baltimore the nation's top port for roll-on/roll-off cargo.
+  For autos and light trucks its 2025 manual ranks it second in the country (about 750,000 units in
+  2024) *(gov)*.
 - **Two tunnels go under the harbor.** The Harbor Tunnel (1957, four lanes) and the Fort McHenry
   Tunnel (1985, eight lanes, about 1.4 miles, linking Locust Point and Canton just south of the fort)
   *(gov)*. The I-95 crossing was planned as a bridge, and became a tunnel because a bridge would have
@@ -226,7 +228,8 @@ also keeps the choice away from real communities.
   | 2090 | 1.9 ft | 2.4 ft | 3.1 ft | 4.3 ft |
   | 2100 | 2.0 ft | 2.7 ft | 3.5 ft | 4.9 ft |
 
-  For 2098, the median is about 2.6 ft, and a high case is about 3.5 ft.
+  For 2098, the median is about 2.6 ft, and the "unlikely to exceed" case is about 3.4 ft
+  (interpolated between 2090 and 2100).
 - **Today's flooding.** The east end of Thames Street (Fells Point) and the Inner Harbor promenade
   flood at high tide several times a year without a storm. NOAA projected 50 to 160 such events a
   year by 2050 *(news, 2018)*. Tropical Storm Isabel (2003) put up to 8 ft of water into the Inner
@@ -387,7 +390,7 @@ Follows the flags table in `docs/lore/meme-research.md` §7, extended for Baltim
 | **Real heads of government** | Coverage of the Red Line, the Key Bridge rebuild, the incinerator and the harbor is full of governors and mayors | Don't reference any of them, or slogans tied to a named administration (meme-research §7) |
 | **Places named after people** | The fort, the bridge, the hospital, the library, the column and a planned park all carry real people's names | Name them by what they are, as the atlas does with "the Meade": the star fort, the column, the reading room |
 | **The Key Bridge collapse** | A ship strike on 26 March 2024 killed six workers. It is recent, and local players will know it | Never show a collapsed Key Bridge or use a ship strike as spectacle. In 2098 the replacement stands. Review whether the Annapolis entry's "long bridge with a missing span" reads as this (Open questions) |
-| **Neighborhood stereotypes** | Real neighborhoods carry real reputations, and pixel-art rot on a real block is a statement about the people who live there | Pick the code rot hood on wiring and geography (section 4). Never use real vacant rowhouses as code rot scenery: the city had 12,349 vacant-building notices in October 2025 *(gov)* |
+| **Neighborhood stereotypes** | Real neighborhoods carry real reputations, and pixel-art rot on a real block is a statement about the people who live there | Pick the code rot hood on wiring and geography (section 4). Never use real vacant rowhouses as code rot scenery: the city still had more than 12,000 vacant-building notices in 2025 *(news)* |
 | **Drug-use imagery** | Baltimore had the highest overdose death rate of any large US county in 2024, about 116 per 100,000 *(news, gov)* | Code rotters must never read as addiction: no needles, no nodding off on a corner, no "fiend" language. They loop and stagger because of firmware. Keep it visibly digital (rendering errors, 1901) |
 | **Policing and 2015** | A death in police custody in 2015 and the unrest that followed are recent and painful | No riot set pieces modeled on it. Abatement and Continuity enforcers stay fictional and are never styled after the city's real police |
 | **TV crime drama** | The best-known picture of Baltimore in fiction is a crime series | Don't build the city's look, talk or NPC types from TV. No corner-crew NPCs, no quotes |
@@ -468,5 +471,5 @@ Follows the flags table in `docs/lore/meme-research.md` §7, extended for Baltim
 
 **Cautions**
 - Maryland DOT, [West Baltimore United narrative](https://www.mdot.maryland.gov/OPCP/Narrative_2024_West_Baltimore_United_Phase_1_RCP_Construction.pdf); Baltimore Magazine, [the expressway's history](https://www.baltimoremagazine.com/section/businessdevelopment/highway-to-nowhere-baltimore-expressway-demolished-black-neighborhoods/)
-- Maryland DHCD, [vacants council annual report (Oct 2025)](https://news.maryland.gov/dhcd/2025/10/20/baltimore-vacants-reinvestment-council-publishes-annual-report/); Baltimore Heritage, [counting vacants](https://baltimoreheritage.github.io/vacant-buildings-101/guides/counting-vacants)
+- Maryland DHCD, [vacants council annual report (Oct 2025)](https://news.maryland.gov/dhcd/2025/10/20/baltimore-vacants-reinvestment-council-publishes-annual-report/); HousingWire, [vacancy notices in 2025](https://www.housingwire.com/articles/baltimores-push-against-vacant-housing-shows-positive-results/); Baltimore Heritage, [counting vacants](https://baltimoreheritage.github.io/vacant-buildings-101/guides/counting-vacants)
 - Baltimore Banner, [overdose deaths in 2024](https://www.thebanner.com/community/public-health/baltimore-decline-drug-overdose-deaths-challenges-ZI7EYPYFTZD2VPLXJKBS4WASJI/); Maryland Department of Health, [2024 intoxication report](https://health.maryland.gov/vsa/Documents/Overdose/2024%20Intox%20Report.pdf)
