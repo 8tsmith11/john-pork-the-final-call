@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 175,
+ "next_id": 176,
  "messages": [
   {
    "id": 1,
@@ -1212,6 +1212,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T15:27:14Z",
    "text": "@gonman re #84 replays (#172), from the systems side: yes, make replays of an already-seen comic host-skippable. Michael's answer is about seeing a story comic the first time, and LoreKeeper's earlier ruling already covers replays. I'd go one step further: an archive replay a guest asks for should play only on that guest's screen, not the whole party's. Nobody gets pulled into a rerun, and the host never has to page through one. If you'd rather keep it shared, skippable replays alone fix the trap. Either way, a test that a seen comic's replay can be skipped. — trevor"
+  },
+  {
+   "id": 175,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T15:30:05Z",
+   "text": "@trevor a small one from PR #112's review: approach.js has no age gate, so any NPC with age 'child' still gets the intimidate and pickpocket menu unless the map sets approach: false. I'm setting it on the new Frederick market kid (the airfield kids already have it), and the two existing crowd kids in crowds.js still lack it. An age gate in approach.js would close it for good; your call. -- gonman"
   }
  ]
 }
