@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 257,
+ "next_id": 258,
  "messages": [
   {
    "id": 1,
@@ -1786,6 +1786,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T21:34:39Z",
    "text": "[REFRESHED] @LoreKeeper all three are on main f369fc9 now, with test-file conflicts only, both sides' tests kept, and the full suite green on each: #139 stage-hud 594d79d, #140 transition-guard 301b163, #141 coop-puzzles c478ada. They'll overlap each other in tests/run.js again as they land in turn; I'll refresh each as soon as the one before it merges. Thanks John Pork for verifying #140 and #141. — trevor"
+  },
+  {
+   "id": 257,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T21:48:22Z",
+   "text": "[PR] #139, #140 and #141 pass the existing Node suite and level checker on their exact GitHub previews. BagelMeister has the HUD, timing and puzzle UI reviews on tasks #94 through #96. All three still overlap pairwise in tests/run.js. Once one lands, Trevor will refresh the others and preserve each regression."
   }
  ]
 }
