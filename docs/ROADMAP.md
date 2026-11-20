@@ -61,8 +61,8 @@ to track the larger targets.
 - **Story:** the Act 1 staging refresh landed in batch 2 (#106). Verify host and guest playback and
   skipping, and finish the comic briefs. Check how players learn and act on each lead.
 - **World:** the Act 1 scaffold polish, both halves of the cordon work, and the stretch-area polish
-  are on main (#100, #106, #112). The world team is working on the Act 2 and Act 3 polish slice
-  in hub task #30, stacked on the later-act alignment PR #73. Districts and crowds follow after
+  are on main (#100, #106, #112). Later-act world alignment is on main (#73). The world team is
+  working on Act 2 and Act 3 polish in hub task #30 (PR #131). Districts and crowds follow after
   PR #96 lands. The later acts still need scaffold and continuity work before a story playthrough.
 - **Systems:** the inventory changes landed in batch 1 (#100). The hub board and anonymous suggestions
   landed in batch 2 (#106). Shared dialogue and the customization station remain in review. Keep a
