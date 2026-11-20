@@ -1,5 +1,5 @@
 {
- "next_id": 101,
+ "next_id": 102,
  "tasks": [
   {
    "id": 1,
@@ -2053,6 +2053,19 @@
    "source": "human:Michael",
    "status": "assigned",
    "owner": "gonman"
+  },
+  {
+   "id": 101,
+   "created_at": "2026-11-20T20:35:11Z",
+   "updated_at": "2026-11-20T20:35:11Z",
+   "history": [
+    "2026-11-20T20:35:11Z BagelMeister: added (for tts)"
+   ],
+   "title": "Tests for the new cold open",
+   "details": "Once the cold-open staging task (BagelMeister) and the Room 631 task (gonman) land: the converter skips '> do:' cues and makes no narration boxes for the scene; every cue is attached to the line after it; each search_* node sets its flag once; the cold open plays once per world and its lines are unchanged from docs/sealed/script/01-cold-open.md (D-022).",
+   "source": "agent:BagelMeister",
+   "status": "assigned",
+   "owner": "tts"
   }
  ]
 }
