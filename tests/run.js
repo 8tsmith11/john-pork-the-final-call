@@ -1140,6 +1140,63 @@ test('quest hooks in co-op: a guest\'s ask and hand-in run on the host, with the
   assert.deepEqual(guestSent, [{ t: 'questUse', id: 'npc.409' }], 'a guest only asks the host');
 });
 
+test('inspected quest clues reach only the reader and survive a save round trip', async () => {
+  const { QUESTS, questState, questLeads } = await import('../src/content/quests.js');
+  const q = {
+    id: 'qa.reading', stages: [], inspect: { obj: 'qa.log', flag: 'q.qa.read', text: 'A line at the end.', fact: 'qa.log' },
+    leads: [{ id: 'log', text: 'Check the log', fact: 'qa.log' }, { id: 'relay', text: 'Find the relay', fact: 'qa.relay' }],
+  };
+  QUESTS.push(q);
+  try {
+    const save = newSave({ seed: 'clues', rolls: {}, gameVersion: 'qa' });
+    const log = { id: 'qa.log', x: 2, y: 2, label: 'Log' };
+    questState(save)[q.id].started = true;
+    const messages = [], players = new Map([
+      ['one', { character: 'manuel', x: 40, y: 40 }],
+      ['two', { character: 'michael', x: 40, y: 40 }],
+    ]);
+    const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+      save, mode: 'host', localId: 'host', sim: { players }, _tickQuests() {},
+      net: { send: (peer, message) => messages.push({ peer, message }) },
+    });
+    host._questInteract(log, 'manuel', 'one');
+    const delivery = messages.at(-1);
+    assert.equal(delivery.peer, 'one');
+    assert.equal(delivery.message.t, 'say');
+    const read = delivery.message.questRead;
+    assert.equal(save.flags['q.qa.read'], undefined);
+    assert.deepEqual(questLeads(q, save, 'manuel'), []);
+    host._finishQuestReading('two', read);
+    host._finishQuestReading('one', read + 1);
+    assert.deepEqual(questLeads(q, save, 'manuel'), []);
+
+    const sent = [];
+    const setText = () => {};
+    const guest = Object.assign(Object.create(CraftWorldScene.prototype), {
+      mode: 'client', _sayQuestRead: read, _sayPages: ['first part', 'reveals the clue'], _sayPage: 0,
+      boxText: { setText }, _drawSayRich() {}, _closeSayAll() { this._sayQuestRead = null; },
+      net: { send: (message) => sent.push(message) },
+    });
+    guest._closeSay();
+    assert.deepEqual(sent, []);
+    guest._closeSay();
+    assert.deepEqual(sent, [{ t: 'questRead', read }]);
+
+    host._finishQuestReading('one', read);
+    assert.equal(save.flags['q.qa.read'], true);
+    assert.deepEqual(questLeads(q, save, 'manuel').map((lead) => lead.id), ['log']);
+    assert.deepEqual(questLeads(q, save, 'michael'), []);
+    host._finishQuestReading('one', read);
+    assert.deepEqual(questLeads(q, migrate(JSON.parse(JSON.stringify(save))), 'manuel').map((lead) => lead.id), ['log']);
+    questState(save)[q.id].done = true;
+    host._questInteract(log, 'michael', 'two');
+    host._finishQuestReading('two', messages.at(-1).message.questRead);
+    assert.deepEqual(questLeads(q, save, 'michael').map((lead) => lead.id), ['log']);
+  } finally {
+    QUESTS.splice(QUESTS.indexOf(q), 1);
+  }
+});
+
 test('regional boss intros preserve the saved Warden name', () => {
   const field = 'act1.boss.wardenName';
   const scene = { mode: 'host', save: { flags: {} }, time: { delayedCall() {} }, _bossIntro() {} };

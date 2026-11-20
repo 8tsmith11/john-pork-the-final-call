@@ -1,7 +1,9 @@
 // Quests as data. Hooks for writers (no engine code needed):
 //   giver: npc id · ask: flag set when you first talk to the giver (with `pitch` as their line)
 //   give: { item, flag, refuse }  → talking to the giver while carrying `item` hands it over, sets flag
-//   inspect: { obj, flag, text }  → examining `obj` while the quest is active sets flag (appends text)
+//   inspect: { obj, flag, text, fact? }  → examining `obj` appends text and sets flag.
+//     With `fact`, the host sets the flag and remembers who read it after the final page closes.
+//   leads: [{ id, text, fact, resolvedFact? }] → each lead appears only after its fact reaches that player
 //   report: { needs, flag }       → talking to the giver after `needs` is set sets flag
 // Quests as data. Stages complete when their `done(flags, save)` test passes; the engine checks each
 // second, advances, toasts, and pays rewards. Side quests start when `start` passes (usually a flag
@@ -144,6 +146,21 @@ export function questState(save) {
   const s = (save.world.quests ??= {});
   for (const q of QUESTS) s[q.id] ??= { stage: 0, started: !!q.main, done: false };
   return s;
+}
+
+// A fact is scoped to the roommate who read it. Quest progress and rewards remain shared.
+export const knowsQuestFact = (save, who, fact) => save.flags[`q.known.${who}.${fact}`] === true;
+
+export function learnQuestFact(save, who, fact) {
+  save.flags[`q.known.${who}.${fact}`] = true;
+}
+
+// Authors can give a quest independent leads: { id, text, fact, resolvedFact? }.
+export function questLeads(q, save, who) {
+  return (q.leads ?? []).filter((lead) => knowsQuestFact(save, who, lead.fact)).map((lead) => ({
+    ...lead,
+    resolved: !!lead.resolvedFact && knowsQuestFact(save, who, lead.resolvedFact),
+  }));
 }
 
 // [SCAFFOLD] Acts 2 and 3 side quests, built from compact specs (src/content/sideQuests.js).

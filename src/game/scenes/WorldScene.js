@@ -21,7 +21,7 @@ import { Crowd } from '../crowd.js';
 import { BARKS, pickBark } from '../../content/barks.js';
 import { esLine } from '../../content/lines_es.js';
 import { rollCatch } from '../../content/fish.js';
-import { QUESTS, questState, questVisible } from '../../content/quests.js';
+import { QUESTS, questState, questVisible, knowsQuestFact, learnQuestFact } from '../../content/quests.js';
 import { CompanionBrain, isAi } from '../../engine/companion.js';
 import * as Inv from '../../engine/inventory.js';
 import { syncWear } from '../render/wearables.js';
@@ -649,6 +649,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'use') { this._useWhat = msg.id ?? null; this._use(this._charOf(peer), peer); }
         if (msg.t === 'morph') this._morph(peer);
         if (msg.t === 'questUse') { const o = this.map.objects.find((x) => x.id === msg.id); if (o) this._questInteract(o, this._charOf(peer), peer); }   // quest hooks, host side
+        if (msg.t === 'questRead') this._finishQuestReading(peer, msg.read);
         if (msg.t === 'puzzle') { const o = this.map.objects.find((x) => x.id === msg.id), pz = o && puzzleFor(o.id); if (pz) this._usePuzzle(pz, o, this._charOf(peer), peer); }   // puzzle kit, host side
         if (msg.t === 'search') { const o = this.map.objects.find((x) => x.id === msg.id && x.loot); if (o) this._search(o, this._charOf(peer)); }
         if (msg.t === 'zip') { const o = this.map.objects.find((x) => x.id === msg.id && x.zip); if (o) this._zip(o, peer); }
@@ -661,6 +662,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'scooter') this._scooter(peer);
       });
       on('leave', (peer) => {
+        this._questReading?.delete(peer);
         // A roommate who drops out keeps walking with the party as a companion.
         const p = this.sim.players.get(peer); this.sim.removePlayer(peer);
         if (p) { this.sim.addPlayer(`ai:${p.character}`, p.character); const a = this.sim.players.get(`ai:${p.character}`); Object.assign(a, { x: p.x, y: p.y, hp: p.hp, rot: p.rot ?? 0, rotQuiet: p.rotQuiet ?? 0, analogCharm: p.analogCharm }); this.sim.setMods(a.id, playerMods(this.save.party[p.character], p.character)); }
@@ -672,7 +674,7 @@ export class WorldScene extends Phaser.Scene {
       on('msg', (msg) => {
         if (this.shared?.onMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg)) return;
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
-        if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text);
+        if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text, msg.questRead);
         if (msg.t === 'caption') this._caption(msg.text);
         if (msg.t === 'reload') { this.scene.restart({ mode: 'client', net: this.net, save: msg.save, character: this.character }); return; }
         if (msg.t === 'party') { this.save.party = msg.party; this._refreshMenu(); }   // wallets ride along in party
@@ -1303,6 +1305,34 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- quests (src/content/quests.js) ----------
+  // Closing the last page acknowledges the clue. The host accepts only an outstanding delivery
+  // to that roommate, then records both the personal fact and shared quest progress.
+  _showQuestClue(peer, who, text, fact, flag) {
+    const clue = { who, fact, flag };
+    if (peer === this.localId) {
+      this._say(text, clue);
+      return;
+    }
+    const questRead = this._nextQuestRead = (this._nextQuestRead ?? 0) + 1;
+    (this._questReading ??= new Map()).set(peer, { ...clue, read: questRead });
+    this.net?.send(peer, { t: 'say', text, questRead });
+  }
+
+  _finishQuestReading(peer, read) {
+    const pending = this._questReading?.get(peer);
+    if (!pending || pending.read !== read || pending.who !== this._charOf(peer)) return;
+    this._questReading.delete(peer);
+    this._recordQuestReading(pending, peer);
+  }
+
+  _recordQuestReading({ who, fact, flag }, peer) {
+    learnQuestFact(this.save, who, fact);
+    if (!this.save.flags[flag]) {
+      this._flag(flag, true);
+      this._tickQuests(true, peer);
+    }
+  }
+
   // Quest hooks (ask / inspect / give / report) change shared state, so only the host runs them (John Pork's
   // three-window report: a guest's hand-in took the item on their screen only, and the host dropped the flag).
   // A guest sends { t: 'questUse', id }; the host runs this with the guest's roommate and sends the line back.
@@ -1312,10 +1342,25 @@ export class WorldScene extends Phaser.Scene {
     const act = (fn) => { if (client) this.net.send({ t: 'questUse', id: near.id }); else fn(); return true; };
     for (const q of QUESTS) {
       const st = qs[q.id];
-      if (st.done) continue;
-      if (q.inspect && near.id === q.inspect.obj && st.started && !f[q.inspect.flag]) {
-        return act(() => { this._flag(q.inspect.flag, true); say(`${near.text ?? near.label}\n\n${q.inspect.text ?? ''}`); this._tickQuests(true, peer); });
+      if (q.inspect && near.id === q.inspect.obj && st.started && questVisible(q, who)) {
+        const { flag, text, fact } = q.inspect;
+        const unread = fact && !knowsQuestFact(this.save, who, fact);
+        if ((!st.done && !f[flag]) || unread) {
+          return act(() => {
+            const lines = `${near.text ?? near.label}\n\n${text ?? ''}`;
+            if (unread) {
+              const p = this.sim.players.get(peer);
+              if (!p || p.downed || Math.hypot(near.x * TILE + 8 - p.x, near.y * TILE + 8 - p.y) > 34) return;
+              this._showQuestClue(peer, who, lines, fact, flag);
+              return;
+            }
+            this._flag(flag, true);
+            say(lines);
+            this._tickQuests(true, peer);
+          });
+        }
       }
+      if (st.done) continue;
       if (q.giver !== near.id) continue;
       const label = near.label.toUpperCase();
       if (!st.started && q.ask) return act(() => { this._flag(q.ask, true); say(`${label}\n${q.pitch}`); this._tickQuests(true, peer); });
@@ -1940,9 +1985,10 @@ export class WorldScene extends Phaser.Scene {
   // dialogue box; past ~60% of the screen it caps and the font steps down a size.
   // The say box (object text, quest pitches, hints): same text size always, paged at 6 lines;
   // E or a click turns the page, and closes it after the last one.
-  _say(text) {
+  _say(text, questRead) {
     const W = VIEW.w, H = VIEW.h, bottom = H - 5;
     this._sayPages = this._paginate(tr(String(text ?? '')), this.boxText, 6); this._sayPage = 0;   // translate before wrapping
+    this._sayQuestRead = questRead;
     this.boxText.setText(this._sayPages[0] + (this._sayPages.length > 1 ? `   ▼ 1/${this._sayPages.length}` : '')).setVisible(true).setAlpha(0);
     const h = Math.max(34, this.boxText.height + 14);
     this.box.setSize(W - 20, h).setPosition(W / 2, bottom - h / 2).setVisible(true);
@@ -1957,7 +2003,7 @@ export class WorldScene extends Phaser.Scene {
     this._sayLineH ??= (() => { const m = this.add.text(0, 0, 'A\nA', { ...FONT, fontSize: '8px' }).setVisible(false); const h2 = m.height; m.setText('A'); const h = h2 - m.height; m.destroy(); return h; })();
     this._richRuns(this._sayRich, this.boxText.text, this.boxText.x, this.boxText.y, this._sayLineH, { ...FONT, fontSize: '8px' }, '#e8e8f0', 9002);
   }
-  _closeSayAll() { this._sayPages = null; this.box.setVisible(false); this.boxText.setVisible(false); this.sayOpen = false; this._drawSayRich(); }
+  _closeSayAll() { this._sayPages = null; this._sayQuestRead = null; this.box.setVisible(false); this.boxText.setVisible(false); this.sayOpen = false; this._drawSayRich(); }
   _closeSay() {
     if (this._sayPages && this._sayPage < this._sayPages.length - 1) {   // next page first
       this._sayPage++;
@@ -1966,7 +2012,11 @@ export class WorldScene extends Phaser.Scene {
       this._drawSayRich();
       return;
     }
+    const read = this._sayQuestRead;
     this._closeSayAll();
+    if (!read) return;
+    if (this.mode === 'client') this.net.send({ t: 'questRead', read });
+    else this._recordQuestReading(read, this.localId);
   }
 
   _objectAt(wx, wy) {
