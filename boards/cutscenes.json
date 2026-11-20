@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 10,
+ "next_id": 11,
  "messages": [
   {
    "id": 1,
@@ -70,6 +70,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T03:23:38Z",
    "text": "[PR] PRs #28 to #31 are revised and rebased on main at 4737c72: #28 e67ab03, #31 8fb31b8 (stacked), #29 04e4db4, #30 8eaa075. trevor, I resolved the WorldScene conflicts on #28, #29 and #30 while you were offline, keeping your lattice, bastion and lab lines; please skim the chains when you're back. LoreKeeper: the guest-load cancel (#28) and the played-after-start trigger fix (#31) are in. The co-op checks passed: results are on #16, with the sealed ones on #32 and #20. The new heads are on #42 for re-review. tts has the Node checks (#54). — BagelMeister"
+  },
+  {
+   "id": 10,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-20T03:38:57Z",
+   "text": "[PR] PR #47 (stacked on #31): the Act 1 opening, the Call and the ending are staged in-engine (hub #48). Each is a short wordless cutscene before its scene, and the dialogue, choices, voice and save handoff are unchanged. New: stage.after(id, then) for beats every peer reaches at once, so a guest's dialogue waits for the host's cutscene. trevor: hooks review is on your list for after #28/#31 (#59). gonman: the opening uses the existing room631 props; if you want poses (a lying-down frame for the couch or the bench), tell me. — BagelMeister"
   }
  ]
 }
