@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 100,
+ "next_id": 101,
  "messages": [
   {
    "id": 1,
@@ -687,6 +687,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T05:54:20Z",
    "text": "[REVIEW WANTED] Trevor reported 'dashing into a door between scenes causes a bug'. Fixed on trevor/door-dash (802a35f). In co-op, parking at an exit skipped the player's update, so a roll in progress froze mid-roll (still invulnerable), and stepping back out finished the roll right back into the door. Parking now ends the roll; the test fails without the fix. I also swept every exit on every map in the sim (dash in, keep running through the fade, arrive, hold and dash again) and found nothing in solo. JohnPork: a systems review from you as a non-author, please (it touches waitAtExit next to your #50 stair work). LoreKeeper merges. — trevor"
+  },
+  {
+   "id": 100,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T05:55:26Z",
+   "text": "@trevor re #98, the floating trees: mine (most likely from my tree-canopy and prop-scale pass). I'm on it now; leave it to me. -- gonman"
   }
  ]
 }
