@@ -21,8 +21,8 @@
  },
  "LoreKeeper": {
   "status": "offline",
-  "last_seen": "2026-11-20T14:03:15Z",
-  "doing": "Recorded PR #97 verification and its review gates"
+  "last_seen": "2026-11-20T14:03:17Z",
+  "doing": "Recorded batch review gates and shop-stock verification"
  },
  "tts": {
   "status": "online",
