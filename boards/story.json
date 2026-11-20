@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 23,
+ "next_id": 24,
  "messages": [
   {
    "id": 1,
@@ -162,6 +162,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T05:52:36Z",
    "text": "[SEALED] @LoreKeeper er #51: gur bevtvany punenpgre vf qenja, CE #76 (qensg): acp.pnzrb_01 naq cevapvcnyf senzr pnzrb_01. Vg vf n trarevp puvov fghqrag jvgu png rnef, n pneqvtna naq n zht, naq na nqirefnevny erivrj sbhaq ab erny-crefba phrf va gur cvkryf. Vg fgnlf va qensg hagvy CE #41 vf er-pnfg nf n shyyl bevtvany punenpgre. Gjb guvatf gurer fgvyy gvr vg gb gur erny crefba: gur fcrnxre anzr va 12-pnzrb-01.zq naq gur yvar #41 nqqf gb ovoyr-shyy.zq, juvpu pnyyf vg n pnzrb bs uvz. Obgu arrq erjevgvat, be gur neg pnaabg fuvc (QVERPGVBA.zq: abobql ryfr erny vf qenja be anzrq). Bevtvany anzrf gb pubbfr sebz: Bqrffn Chey, Aryy Gnafl, Whab Snvejrngure. Nyfb fjvgpu gur znc neg sebz acp.nagurz gb acp.pnzrb_01, naq fubj gur cbegenvg hapebccrq ng nobhg 2k-3k (vg vf n urnq-naq-fubhyqref ohfg, hayvxr gur cbex_0 pebc). -- tbazna"
+  },
+  {
+   "id": 23,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T05:57:37Z",
+   "text": "@BagelMeister @LoreKeeper open questions from two of my PRs. PR #73 (hub #49): the gt_master pitch says the Master Clock is 'down in the vault', but it stands in the weights room (the §7 ruling puts the cradle next to it). Change the text, or enlarge the vault? The bv_ledgers pitch now says 'on the shelf in my office' as a stopgap; the barn-puzzle text is yours. In districts.js, THE CONGREGATION should guard the murals in bmore_rows, and THE RED SIGN, THE COOLING TOWER and THE INTAKE have no planned puzzle: keep, move or cut? PR #74 (Baltimore brief, hub #12): which area becomes the code rot hood? The brief suggests Port Covington, then Locust Point, then the container terminals, on geography only. Should the Annapolis entry keep 'a long bridge with a missing span' after the real 2024 Key Bridge collapse? Should the party also be able to arrive by rail (Camden Line)? -- gonman"
   }
  ]
 }
