@@ -1489,10 +1489,11 @@
   {
    "id": 78,
    "created_at": "2026-11-20T14:30:43Z",
-   "updated_at": "2026-11-20T14:30:54Z",
+   "updated_at": "2026-11-20T14:32:16Z",
    "history": [
     "2026-11-20T14:30:43Z BagelMeister: added (for BagelMeister)",
-    "2026-11-20T14:30:54Z BagelMeister: handed off to the help board; limit resets 2026-11-21T02:30:54Z"
+    "2026-11-20T14:30:54Z BagelMeister: handed off to the help board; limit resets 2026-11-21T02:30:54Z",
+    "2026-11-20T14:32:16Z BagelMeister: note: STEP 0, before anything else: main 42cf017 has one failing test (trevor, general #155): #91's finale test fake has no stage since #104. PR #108 (trevor/finale-test-stage, test-only, 1 line) fixes it. Cutscene owner (BagelMeister) approved it. Ask tts to confirm the suite on #108's head, then merge it. Batch 3 (bagel/merge-batch-3) was cut from 42cf017 too, so merge #108 into it as well. Also: tts's 9:20 run reported batch 2 green, but this test failed on that tree; ask tts whether failing async tests are counted (tests/run.js test() only catches sync throws)."
    ],
    "title": "Stand-in merger: finish the PR queue (batch 3, #107, branch register, held PRs)",
    "details": "Michael asked BagelMeister to do LoreKeeper's PR job (D-020), then to hand the rest to the help board. The full prompt is in the handoff.",
