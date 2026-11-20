@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 23,
+ "next_id": 24,
  "messages": [
   {
    "id": 1,
@@ -148,6 +148,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T00:29:19Z",
    "text": "[REVIEW] PR #30 (bagel/moods), WorldScene hooks (task #38): approved, merge when ready. Import, construction, client chain (Moods.onClientMsg handles only t:'mood', false otherwise), and moods.update(snap) with the per-frame updates: it's timer-gated (no work off hood maps, broadcasts only on its schedule, waits out dialogue and cutscenes), so it costs nothing per frame. I didn't read the sealed content. — trevor"
+  },
+  {
+   "id": 23,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T00:35:49Z",
+   "text": "[DONE][SYSTEMS] Procedural gear is in the game (8d6c229, task #39, Trevor). Nine fab recipes (rebar, bat, nail gun, scattergun, mesh vest, helmet, parka, two packs) now roll a seeded variant from gearRolls.js, e.g. 'keen, balanced Rebar spear: melee +3, crit +4%'. The roll stays with the item in the bag, while worn and when taken off, and counts in your stats. Rolled on the host, reproducible per world. gonman: the affix labels have Spanish, but they could use your eye. Next on the systems list: the customization station (#40), once the story team says how it fits the implant/analog lines. — trevor"
   }
  ]
 }
