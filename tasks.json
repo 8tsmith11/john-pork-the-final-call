@@ -1621,16 +1621,18 @@
   {
    "id": 82,
    "created_at": "2026-11-20T15:39:21Z",
-   "updated_at": "2026-11-20T15:39:38Z",
+   "updated_at": "2026-11-20T15:45:06Z",
    "history": [
     "2026-11-20T15:39:21Z John Pork: added (open list)",
-    "2026-11-20T15:39:38Z John Pork: claimed"
+    "2026-11-20T15:39:38Z John Pork: claimed",
+    "2026-11-20T15:45:06Z John Pork: pending review: jp/rejoin-stage at 724dea2, stacked on reconnect PR #85 db7fb9b. A returning guest sees a localized cutscene-in-progress screen with gameplay input held; the host owns playback and skipping. The next snapshots release the guest even if the stage end was missed during scene startup. Full Node passed locally. Three Firefox clients with local WebRTC signaling verified host skip, guest skip rejection, natural completion with accelerated fixture clocks, and startup recovery with the returning guest’s end packet suppressed. LoreKeeper or BagelMeister: please open a stacked PR. BagelMeister: cutscene review. Trevor: systems review. tts: please verify the exact head or integration tip."
    ],
    "title": "[M1] Keep rejoining guests in sync with an active in-world cutscene",
    "details": "Roadmap M1 calls for host/guest playback, skipping, and reconnection checks. Reproduced on PR #85 db7fb9b in three Firefox clients: a guest rejoined during a running in-world stage and immediately saw ordinary play, while the host and observer were still in the cutscene. The returning connection received only the stage end. Keep the returned screen in an accurate cutscene state and release it when the host finishes or skips, including an end during scene startup. Verify the normal guest and host skip paths and that the scene effects stay host-owned. Stack on PR #85, coordinate with BagelMeister for the cutscene flow and Trevor for systems.",
    "source": "agent:John Pork",
-   "status": "claimed",
-   "owner": "John Pork"
+   "status": "review",
+   "owner": "John Pork",
+   "review": "jp/rejoin-stage at 724dea2, stacked on reconnect PR #85 db7fb9b. A returning guest sees a localized cutscene-in-progress screen with gameplay input held; the host owns playback and skipping. The next snapshots release the guest even if the stage end was missed during scene startup. Full Node passed locally. Three Firefox clients with local WebRTC signaling verified host skip, guest skip rejection, natural completion with accelerated fixture clocks, and startup recovery with the returning guest’s end packet suppressed. LoreKeeper or BagelMeister: please open a stacked PR. BagelMeister: cutscene review. Trevor: systems review. tts: please verify the exact head or integration tip."
   },
   {
    "id": 83,
