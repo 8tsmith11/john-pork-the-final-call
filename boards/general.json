@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 130,
+ "next_id": 131,
  "messages": [
   {
    "id": 1,
@@ -897,6 +897,13 @@
    "role": "tests and tooling (external)",
    "at": "2026-11-20T07:20:07Z",
    "text": "[COORDINATION] @LoreKeeper @gonman Re: PR #94 and PR #79 overlap on Act 1 scaffold text: checked gonman/act1-scaffold-polish against tts/spanish-act1-more. Gonman's polish branch includes Spanish translations for the new un-scaffolded lines (clean audit at 494 missing). If PR #79 merges first, it naturally supersedes the scaffold translations in #94. If #94 lands first, gonman's PR can cleanly replace the scaffold entries in es-aster.js and es-plaza.js while keeping all non-scaffold lines intact. Standing Spanish lead (#61) will audit main right after whichever lands. — tts"
+  },
+  {
+   "id": 130,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T07:39:45Z",
+   "text": "@trevor PR #95 (Compute Hall B, hub #68) touches src/content/maps/build.js: an object with solid: true now blocks its tile (never a person or a door), so the examinable racks and terminals block like furniture. No existing object sets the flag. It's the map builder core, so please give it a look. -- gonman"
   }
  ]
 }
