@@ -2200,6 +2200,37 @@ test('AI companions follow the human, fight, and never trigger exits', () => {
 });
 
 const Inv = await import('../src/engine/inventory.js');
+test('modular printing validates parts and schematics, commits material costs atomically and saves the exact build', async () => {
+  const { BUILT_GADGET } = await import('../src/content/gadgets.js');
+  const { printBuild, previewBuild } = await import('../src/engine/gadgetBuilds.js');
+  const save = newSave({ seed: 'workbench', rolls: {}, gameVersion: 'test' });
+  const c = save.party.trevor;
+  const selection = { frame: 'part.bracket', power: 'part.cell', payload: 'part.arc', control: 'part.autoboard' };
+  const preview = previewBuild(selection);
+  assert.ok(preview.ok);
+  assert.equal(previewBuild({ ...selection, frame: 'part.deck' }).ok, false);
+  assert.equal(previewBuild({ ...selection, power: 'constructor' }).ok, false);
+  assert.equal(printBuild(save, 'trevor', selection).error, 'materials');
+  c.inventory.fill(null);
+  for (const [id, count] of Object.entries(preview.cost)) assert.equal(Inv.add(c, id, count + 1), 0);
+  c.inventory = c.inventory.map((stack) => stack ?? { id: 'item.pry_bar', qty: 1 });
+  const full = structuredClone(save);
+  assert.equal(printBuild(save, 'trevor', selection).error, 'space');
+  assert.deepEqual(save, full);
+
+  c.inventory[0] = null;
+  const identical = structuredClone(save);
+  const first = printBuild(save, 'trevor', { ...selection, tol: { cooldown: -1, effect: 1 }, uses: 99 });
+  assert.deepEqual(first, printBuild(identical, 'trevor', selection));
+  assert.equal(first.roll.uses, 0);
+  assert.ok(Math.abs(first.roll.build.tol.cooldown) <= 0.06);
+  const slot = c.inventory.findIndex((stack) => stack?.roll === first.roll);
+  assert.ok(Inv.wear(c, BUILT_GADGET, slot));
+  const restored = migrate(JSON.parse(JSON.stringify(save)));
+  assert.equal(restored.party.trevor.equipped.gadget, BUILT_GADGET);
+  assert.deepEqual(restored.party.trevor.rolled.gadget, first.roll);
+  assert.equal(restored.world.gearMade[BUILT_GADGET], 1);
+});
 // Exercise the real scene method without starting Phaser's browser renderer.
 const savedPhaserForCraft = globalThis.Phaser;
 let CraftWorldScene;

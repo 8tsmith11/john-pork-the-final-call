@@ -8,6 +8,7 @@ export const ES_ITEMS = {
   mesh_vest: ['Chaleco de malla impreso', 'Retícula hexagonal. Se lleva una quinta parte del daño.'],
   sniffer: ['Rastreador de helio', 'Toma una muestra del aire para seguir el rastro de helio. El Fab #1 lo calibra.'],
   salvage_array: ['Radar de repuestos', 'Busca el contenedor de repuestos sin abrir más cercano de la zona.'],
+  assembled_gadget: ['Dispositivo ensamblado', 'Cuatro piezas montadas en el banco de trabajo.'],
   phase_screen: ['Pantalla de fase', 'Bloquea por un momento los disparos comunes. Los golpes cuerpo a cuerpo y los ataques pesados la atraviesan.'],
   vector_actuator: ['Actuador vectorial', 'Te impulsa hacia donde apuntas y empuja al primer enemigo que encuentres si se puede mover. Las paredes te frenan y todavía puedes recibir golpes.'],
   arc_splicer: ['Puente de arco', 'Apunta a un enemigo. El arco salta a dos enemigos cercanos y pierde potencia con cada salto.'],

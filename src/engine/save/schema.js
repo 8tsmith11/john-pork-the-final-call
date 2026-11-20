@@ -8,7 +8,7 @@ import { BASE_SCORES } from '../../content/abilities.js';
 export const FORMAT = 'jpfc-save';
 export const SLOTS = 36;   // inventory slots per character: 0..8 hotbar, 9..35 backpack
 export const HOTBAR = 9;
-export const CURRENT_SCHEMA = 8;
+export const CURRENT_SCHEMA = 9;
 
 /** migrations[n] upgrades a schema-n save to schema n+1. Append only. */
 export const migrations = {
@@ -83,6 +83,8 @@ export const migrations = {
     }
     save.schemaVersion = 8; return save;
   },
+  // 8 -> 9: assembled gadgets add build data to their own rolls. Existing items have no build data.
+  8: (save) => { save.schemaVersion = 9; return save; },
 };
 
 export function newCharacter(id) {
