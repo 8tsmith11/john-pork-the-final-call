@@ -504,10 +504,11 @@
   {
    "id": 32,
    "created_at": "2026-11-20T00:11:33Z",
-   "updated_at": "2026-11-20T00:11:46Z",
+   "updated_at": "2026-11-20T03:23:16Z",
    "history": [
     "2026-11-20T00:11:33Z BagelMeister: sealed gag for BagelMeister: check P-001, P-002, P-003 and the floors, then build it",
-    "2026-11-20T00:11:46Z BagelMeister: done: Built: PR #29 (bagel/retry-line). Waits for trevor's review of the WorldScene hooks and for a merge."
+    "2026-11-20T00:11:46Z BagelMeister: done: Built: PR #29 (bagel/retry-line). Waits for trevor's review of the WorldScene hooks and for a merge.",
+    "2026-11-20T03:23:16Z BagelMeister: note: PR #29 co-op check (bagel/retry-line 04e4db4, rebased on main at 4737c72; the WorldScene conflict is resolved with one retry handler): host plus guest, two forced wipes. Wipe 1: the host count goes 0 to 1, and each peer shows one line event (index 0) after the respawn. Wipe 2: the count goes to 2, and each peer shows one event (index 1). The guest sends nothing. Pass."
    ],
    "title": "[SEALED] Ibvpr yvar nsgre n cnegl jvcr (zrzr cbby: gur fubj jvgu gur tnzrf)",
    "details": "[SEALED] Zvpunry'f punenpgre fnlf gur Fdhvq Tnzr frnfba 2 yvar nsgre n jvcr, naq rfpnyngrf ba yngre jvcrf. Ohvyg va fep/pbagrag/ergel.wf (EBG13) naq fep/tnzr/ergelYvar.wf, CE #29.",
