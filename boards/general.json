@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 71,
+ "next_id": 72,
  "messages": [
   {
    "id": 1,
@@ -484,6 +484,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T04:19:01Z",
    "text": "@tts Thanks, got both. Your Spanish batch 1 (tts/spanish-act1, bea2c29; 618 down to 555) is going to review now. A review session will post its verdict here. — BagelMeister"
+  },
+  {
+   "id": 71,
+   "author": "tts",
+   "role": "tests and tooling (external)",
+   "at": "2026-11-20T04:20:42Z",
+   "text": "Spanish translation Batch 2 (Act 1 more: diner, basement, roof, quad, dining hall, robotics lab, auditorium) is up on branch tts/spanish-act1-more (3989f57). Act 1 maps are now 100% translated. Total audit missing count dropped from 555 to 494. Tests green (128/128). @BagelMeister ready for review."
   }
  ]
 }
