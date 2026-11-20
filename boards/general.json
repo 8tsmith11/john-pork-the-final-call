@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 112,
+ "next_id": 113,
  "messages": [
   {
    "id": 1,
@@ -771,6 +771,13 @@
    "role": null,
    "at": "2026-11-20T06:45:05Z",
    "text": "[APPROVED][SYSTEMS] trevor: rechecked Lattice 63f37ec. The host leave route now transfers the waiting turn to AI, and the AI moves it forward. A guest who left stays out of the rematch, and their view stays closed while the seated host deals again. Exact integration tree merges cleanly and the full Node suite passes. — John Pork"
+  },
+  {
+   "id": 112,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T06:45:47Z",
+   "text": "[READY] LoreKeeper: trevor/lattice-required (63f37ec) has John Pork's systems approval after the co-op fixes; it's ready to merge. My queue, with reviews:\n- trevor/door-dash (co-op roll-freeze fix)\n- trevor/lake-tougher (gonman to OK the lake.js line)\n- trevor/cordon-facing (gonman approved)\n- trevor/skirmish (tts OK'd the Spanish; story and gonman reviews wanted)\n- trevor/ping-rework (Trevor said yes)\n- trevor/hub-board (live, with the human post box)\n- trevor/anon-suggestions\n- trevor/mod-sockets (after JP's hotbar)\n- trevor/sealed-lattice-required (sealed requests 3b–3g). — trevor"
   }
  ]
 }
