@@ -306,6 +306,28 @@ export class Sim {
 
   removePlayer(id) { this.players.delete(id); }
 
+  /** A boss that arrives mid-scene (a story beat), not from the map's list: `w` is a defineBoss() result. */
+  spawnBoss(kind, w, x, y, spawnKey = null) {
+    if (spawnKey && this.killed?.has(spawnKey)) return null;
+    const id = `e${this._nextId++}`, def = { ...w, hp: w.maxHp, ai: 'boss', xp: 120, touchCooldown: 0.9 };
+    this.enemies.set(id, { id, spawnKey, kind, def, boss: true, mini: w.mini !== false, awake: true, phase: 1, x, y, hp: def.hp, cd: 2, cd2: 3, hurtT: 0, kx: 0, ky: 0, dash: 0 });
+    this.events.push({ t: 'boss', name: def.name, epithet: def.epithet, kind });
+    return id;
+  }
+
+  /** Something lands hard at (x, y): players in the radius are hurt and thrown clear, ordinary enemies in it are gone. */
+  impact(x, y, r, dmg) {
+    for (const p of this.players.values()) {
+      const dx = p.x - x, dy = p.y - y, d = Math.hypot(dx, dy);
+      if (d > r || p.downed) continue;
+      p.iframes = 0; this._hurtPlayer(p, dmg, 0);
+      const k = (r + 12 - d) / (d || 1);
+      for (let i = 0; i < 8 && this._hits(p.x + dx * k / 8, p.y + dy * k / 8) === false; i++) { p.x += dx * k / 8; p.y += dy * k / 8; }
+    }
+    for (const e of [...this.enemies.values()]) if (!e.boss && Math.hypot(e.x - x, e.y - y) <= r) { this.enemies.delete(e.id); this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, xp: 0 }); }
+    this.events.push({ t: 'impact', x, y, r });
+  }
+
   /** Co-op doors: park a player at an exit. Returns true when every standing player is parked at it. */
   waitAtExit(id, exitId, dx, dy) {
     const p = this.players.get(id); if (!p || p.waitExit === exitId) return this.allWaiting(exitId);
@@ -1185,7 +1207,7 @@ export class Sim {
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
         mk: e.marked > 0, zz: e.sleepT > 0, ...(e.slowT > 0 ? { sl: 1 } : {}), sg: !!this._def(e).lullaby && !(e.sleepT > 0), st: e.st ?? null,
         ...(e.def && !e.boss ? { vn: e.def.vname, tr: e.def.trait, c: e.def.color, mh: e.def.hp, r: e.def.radius } : {}),
-        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
+        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, ...(e.def.look ? { lk: e.def.look } : {}), la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
       goo: this.goo.map((g) => ({ x: Math.round(g.x), y: Math.round(g.y), r: g.r, t: Math.round(g.ttl * 10) / 10 })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
       allies: (this.allies ?? []).map((a) => ({ x: Math.round(a.x), y: Math.round(a.y), hp: a.hp, mhp: a.maxHp, dn: a.down > 0, st: a.st })),

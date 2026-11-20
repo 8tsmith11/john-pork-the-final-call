@@ -2084,6 +2084,66 @@ try {
   if (savedPhaserForCraft === undefined) delete globalThis.Phaser;
   else globalThis.Phaser = savedPhaserForCraft;
 }
+
+test('a long story beat (src/game/watcher.js): beats build in order, the climax comes on every path, the fight is owed until won', async () => {
+  const W = await import('../src/game/watcher.js');
+  const { defineBoss } = await import('../src/content/builders.js');
+  // the sealed data decodes, its boss is a valid boss, and it stays switched off until story places it
+  assert.ok(W.WATCH.beats.length >= 3, 'several beats, so the tension builds');
+  assert.ok(defineBoss(W.WATCH.climax.boss)(3).maxHp > 0 && W.WATCH.climax.line.text && W.WATCH.climax.line.es && W.WATCH.climax.cinematic);
+  for (const b of W.WATCH.beats) assert.ok(b.text && b.es, 'every beat has Spanish');
+  assert.equal(W.WATCH.climax.map, null, 'not placed yet: nothing fires in the game until story places it');
+  // a placed fixture
+  const d = { ...W.WATCH, id: 'wt', beats: W.WATCH.beats.map((b, i) => ({ ...b, after: `t.b${i}` })), climax: { ...W.WATCH.climax, map: 'tmap', flag: 't.cross' } };
+  const f = W.flagsOf(d);
+  // every path: whichever beats were reached (all 2^n subsets), reaching the crossing makes the climax due
+  for (let mask = 0; mask < 1 << d.beats.length; mask++) {
+    const flags = { 't.cross': true };
+    d.beats.forEach((b, i) => { if (mask & (1 << i)) { flags[b.after] = true; if (i % 2) flags[f.beat(b)] = true; } });
+    assert.ok(W.climaxDue(d, flags, 'tmap'), `due on path ${mask}`);
+    assert.ok(!W.climaxDue(d, flags, 'elsewhere'), 'only on its map');
+  }
+  assert.ok(!W.climaxDue(d, {}, 'tmap'), 'not before the crossing');
+  // beats: one at a time, in order, spaced out, never on top of a dialogue
+  const sent = [], said = [];
+  const scene = { mode: 'host', map: { id: 'other', objects: [] }, save: { flags: {}, world: {} }, time: { now: 0, delayedCall: (_ms, fn) => fn() },
+    net: { broadcast: (m) => sent.push(m) }, _say: (t) => said.push(t), _caption() {}, _save() {}, cameras: { main: {} } };
+  const w = new W.Watcher(scene, d);
+  d.beats.forEach((b) => { scene.save.flags[b.after] = true; });
+  w.update(); assert.equal(sent.length, 1); assert.equal(sent[0].id, d.beats[0].id);
+  scene.time.now = 1000; w.update(); assert.equal(sent.length, 1, 'spaced out');
+  scene.time.now = 30000; scene.dlg = {}; w.update(); assert.equal(sent.length, 1, 'never over a dialogue');
+  scene.dlg = null; w.update(); assert.equal(sent[1].id, d.beats[1].id, 'and in order');
+  // the climax: skipped beats fold into the last, then landed is set at once (a reload goes straight to the fight)
+  let landed = false;
+  scene.map.id = 'tmap'; scene.save.flags['t.cross'] = true; scene.time.now = 31000;
+  scene.playCinematic = (_id, done) => done();
+  scene.sim = { players: new Map([['h', {}]]), enemies: new Map(), impact: () => { landed = true; }, spawnBoss: (kind, w2) => scene.sim.enemies.set('b', { kind, def: w2 }) };
+  w.update();
+  assert.ok(d.beats.every((b) => scene.save.flags[f.beat(b)]), 'every beat counts as seen');
+  assert.ok(scene.save.flags[f.landed] && landed, 'the impact happens');
+  const boss = scene.sim.enemies.get('b'); assert.ok(boss && boss.kind === 'boss.wt' && boss.def.look === W.WATCH.climax.boss.look && boss.def.look, 'and the fight starts, drawn with the right art');
+  assert.equal(sent.filter((m) => m.op === 'climax').length, 1); assert.equal(sent.at(-1).last, d.beats.at(-1).id, 'the last warning plays first');
+  w.update(); assert.equal(sent.filter((m) => m.op === 'climax').length, 1, 'once');
+  // owed until won: coming back respawns the fight at the crater, without the cinematic
+  assert.ok(W.fightOwed(d, scene.save.flags, 'tmap'));
+  scene.sim.enemies.clear(); w.onMapShown(); assert.ok(scene.sim.enemies.size === 1, 'the fight is still there');
+  scene.save.flags[f.down] = true; assert.ok(!W.fightOwed(d, scene.save.flags, 'tmap'), 'won: over');
+});
+
+test('sim: a boss can arrive mid-scene, and an impact hurts and throws clear whoever stands in it', () => {
+  const sim = new Sim(rotArena(), { seed: 'impact' });
+  sim.addPlayer('h', 'trevor'); sim.addPlayer('g', 'manuel');
+  const h = sim.players.get('h'), g = sim.players.get('g'); h.x = 400; h.y = 400; g.x = 900; g.y = 900;
+  sim.enemies.clear(); sim.enemies.set('x', { id: 'x', kind: 'enemy.rotling', def: { radius: 6 }, x: 410, y: 400, hp: 10 });
+  const hp0 = h.hp; sim.impact(400, 410, 64, 18);
+  assert.ok(h.hp < hp0 && Math.hypot(h.x - 400, h.y - 410) > 20, 'hurt and thrown clear');
+  assert.equal(g.hp, sim.maxHp(g), 'far away: untouched'); assert.ok(!sim.enemies.has('x'), 'what stood there is gone');
+  const id = sim.spawnBoss('boss.t', { name: 'T', epithet: '', maxHp: 500, modules: ['shock'], pool: [['shock'], ['shock'], ['shock']], radius: 10, speed: 30, damage: 10, guard: 0, look: 'kiosk' }, 400, 410, 't#fight');
+  const snap = sim.snapshot().enemies.find((e) => e.id === id);
+  assert.ok(snap && snap.boss && snap.boss.lk === 'kiosk' && sim.events.some((e) => e.t === 'boss' && e.kind === 'boss.t'));
+  sim.killed.add('t#fight'); assert.equal(sim.spawnBoss('boss.t', { maxHp: 1 }, 0, 0, 't#fight'), null, 'a won fight stays won');
+});
 test('a guest interacting with the ASTER stairs waits for players who walk up later', () => {
   const map = MAPS_FOR_TEST.aster_hall;
   const stairs = map.objects.find((obj) => obj.action === 'exit' && obj.id.includes('stairs'));
