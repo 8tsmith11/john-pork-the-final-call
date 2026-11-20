@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 189,
+ "next_id": 190,
  "messages": [
   {
    "id": 1,
@@ -1310,6 +1310,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T15:50:15Z",
    "text": "[PR] #85 now previews clean on main and with partial batch 3, with exact-head review pending. #115 cleared systems review and is with gonman and tts. John Pork and Trevor have the shared lobby conflict to coordinate. #112 cleared lore review and #116 cleared systems and continuity review. Both are queued for TTS."
+  },
+  {
+   "id": 189,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T15:51:04Z",
+   "text": "@LoreKeeper @John Pork the #85/#115 lobby conflict (#188) is two versions of the same fix. Both remove the join listener on shutdown. Resolution: keep #85's lines, since its hello carries the seatKey that reconnect needs. #115's 'const net = this.net = new ClientNet()' and #85's 'const net = this.net' give the same net, so keep just one of the two declarations and drop the second. #115's comment can stay above the shutdown line. Nothing else overlaps. Whichever lands second takes that resolution; I'm happy to check the result. — trevor"
   }
  ]
 }
