@@ -650,6 +650,101 @@ test('i18n: built-in object names are never treated as translations', () => {
   try { for (const s of ['constructor', 'toString', '__proto__', 'hasOwnProperty', '→ constructor', '[E] toString']) assert.equal(i18n.tr(s), s); } finally { i18n.setLang(was); }
 });
 
+// Later-act alignment (hub #49): optional region guardians stand by the puzzle or item they guard, the scaffold
+// routes stay walkable, the reserved doors stay shut, and the quests a later puzzle converts keep their ids.
+const AlignBoss = await import('../src/content/bosses.js');
+const AlignSide = await import('../src/content/sideQuests.js');
+const GUARDIANS = {   // guardian -> [the map it stands on, the object it guards]
+  'boss.gb_receiver': ['gb_dishes', 'obj.gb_cleanroom'],
+  'boss.bv_shell': ['bv_barn', 'obj.bv_named_tank'],
+  'boss.md_fence': ['meade', 'obj.md_menu'],
+  'boss.ann_tide': ['ann_harbor', 'obj.ann_bell'],
+  'boss.cor_hall': ['cor_sealed', 'obj.cor_meters'],
+  'boss.gt_clock': ['gaithersburg', 'obj.gt_cradle'],
+  'boss.en_gate': ['enclave', 'obj.en_archive'],
+};
+const placesOf = (kind) => Object.values(MAPS_FOR_TEST).filter((m) => m.enemies.some((e) => e.kind === kind)).map((m) => m.id);
+const walkFrom = (start) => {   // maps reachable through exits that need no story flag
+  const seen = new Set([start]), q = [start];
+  while (q.length) for (const o of MAPS_FOR_TEST[q.shift()].objects) if (o.action === 'exit' && !o.requiresFlag && MAPS_FOR_TEST[o.to] && !seen.has(o.to)) { seen.add(o.to); q.push(o.to); }
+  return seen;
+};
+test('region guardians (#49): each stands by what it guards, sleeps when the party arrives through any door, wakes when you walk up to it', () => {
+  for (const [kind, [mapId, objId]] of Object.entries(GUARDIANS)) {
+    assert.deepEqual(placesOf(kind), [mapId], `${kind} should stand on ${mapId}, and only there`);
+    const m = MAPS_FOR_TEST[mapId], e = m.enemies.find((x) => x.kind === kind), o = m.objects.find((x) => x.id === objId);
+    assert.ok(o, `${objId} should be on ${mapId}, with its guardian`);
+    const tx = (e.x - 8) / 16, ty = (e.y - 8) / 16;
+    assert.ok(Math.hypot(tx - o.x, ty - o.y) <= 3, `${kind} at ${tx},${ty} should stand within 3 tiles of ${objId} at ${o.x},${o.y}`);
+    assert.equal(m.enemies.at(-1).kind, kind, `${kind} goes last in ${mapId}'s enemy list, so saved kills of the others keep their keys`);
+    const wake = AlignBoss.BOSSES[kind](3).wake ?? 150, looks = new Set(AlignSide.SIDE_QUESTS.map((q) => q.inspect?.obj).filter(Boolean));
+    for (const x of m.objects) if (x.id !== objId && looks.has(x.id)) {   // another quest's object: reading it must not start this fight
+      assert.ok(Math.hypot(e.x - (x.x * 16 + 8), e.y - (x.y * 16 + 8)) > wake, `${x.id} sits inside ${kind}'s wake radius, so reading it would wake the guardian`);
+    }
+    const froms = new Set(m.objects.filter((x) => x.action === 'exit' && MAPS_FOR_TEST[x.to]).map((x) => x.to));
+    assert.ok(froms.size, `${mapId} has no way in`);
+    for (const from of froms) {
+      const sim = new Sim(MAPS_FOR_TEST[from], { seed: 'guard' });
+      for (const [id, c] of [['a', 'manuel'], ['b', 'trevor'], ['c', 'michael']]) sim.addPlayer(id, c);
+      sim.setMap(m, from);
+      sim.step(1 / 60, new Map());
+      const b = [...sim.enemies.values()].find((x) => x.kind === kind);
+      assert.ok(b && b.mini && !b.awake, `${kind} should sleep when the party comes in from ${from}`);
+      const [nx, ny] = [[0, 1], [1, 0], [-1, 0], [0, -1]].map(([dx, dy]) => [o.x + dx, o.y + dy]).find(([x, y]) => !m.solid(x, y));
+      Object.assign(sim.players.get('a'), { x: nx * 16 + 8, y: ny * 16 + 8 });
+      sim.step(1 / 60, new Map());
+      assert.ok(b.awake, `${kind} should wake when someone walks up to ${objId}`);
+    }
+  }
+});
+
+test('region guardians (#49): the Act 2 gate and every guardian stay reachable without opening a reserved door; those doors stay shut', () => {
+  const ring2 = walkFrom('route1_north'), ring3 = walkFrom('beltway');
+  for (const kind of AlignBoss.ACT2_REGION_BOSSES) assert.ok(placesOf(kind).some((id) => ring2.has(id)), `${kind} must be reachable in Act 2 without a flagged door`);
+  for (const [kind, [mapId]] of Object.entries(GUARDIANS)) assert.ok(ring2.has(mapId) || ring3.has(mapId), `${kind} on ${mapId} must be reachable without a flagged door`);
+  for (const [mapId, id] of [['route1_north', 'obj.r1n_to_beltway'], ['meade', 'obj.meade_to_meade_inside']]) {   // the flag's name may change; the lock may not
+    const flag = MAPS_FOR_TEST[mapId].objects.find((o) => o.id === id)?.requiresFlag;
+    assert.ok(typeof flag === 'string' && flag.length > 0, `${id} stays shut behind a story flag (story sign-off opens it)`);
+  }
+});
+
+test('region guardians (#49): the breeding ledgers are read outside the barn, in the vet\'s office; the barn keeps its tank', () => {
+  const holders = Object.values(MAPS_FOR_TEST).filter((m) => m.objects.some((o) => o.id === 'obj.bv_ledgers')).map((m) => m.id);
+  assert.deepEqual(holders, ['beltsville'], 'the ledgers are outside the barn, on the farm');
+  const bv = MAPS_FOR_TEST.beltsville, led = bv.objects.find((o) => o.id === 'obj.bv_ledgers'), vet = bv.objects.find((o) => o.id === 'npc.bv_vet');
+  assert.equal(bv.layout[led.y][led.x], '.', 'indoors, on the office floor');
+  // the office is the building nearest the vet: walk out of it, and its door is closer to the vet than the other one
+  const doors = [[6, 5], [20, 5]].filter(([x, y]) => bv.layout[y][x] !== '#');
+  assert.equal(doors.length, 2);
+  const near = doors.sort((a, b) => Math.hypot(a[0] - vet.x, a[1] - vet.y) - Math.hypot(b[0] - vet.x, b[1] - vet.y))[0];
+  assert.ok(Math.abs(led.x - near[0]) <= 4 && led.y < near[1], 'the ledgers sit in the building by the vet');
+  assert.ok(MAPS_FOR_TEST.bv_barn.objects.some((o) => o.id === 'obj.bv_named_tank'), 'the named tank stays in the barn');
+  const q = AlignSide.SIDE_QUESTS.find((x) => x.id === 'side.bv_ledgers');
+  assert.equal(q.inspect.obj, 'obj.bv_ledgers');
+  assert.ok(!/barn/i.test(q.pitch) && !/granero/i.test(AlignSide.ES_SIDE_QUESTS[q.pitch] ?? 'granero'), 'the pitch (and its Spanish) no longer sends you to the barn');
+});
+
+test('region guardians (#49): scaffold quests a later puzzle converts keep their ids, ask flags and first-step objects', () => {
+  const LOOK = { gb_footprints: 'obj.gb_cleanroom', bv_ledgers: 'obj.bv_ledgers', bv_tank: 'obj.bv_named_tank', bv_batch: 'obj.bv_batch_board', rf_rings: 'obj.rf_tower',
+    md_menu: 'obj.md_menu', bmore_mural: 'obj.bmore_mural', ann_bell: 'obj.ann_bell', ann_almanac: 'obj.ann_almanac', cor_meters: 'obj.cor_meters', gt_cradle: 'obj.gt_cradle',
+    fr_guestbook: 'obj.fr_guestbook', fr_potlines: 'obj.fr_potlines', fr_dashboard: 'obj.fr_dashboard_room', en_parchment: 'obj.en_parchment', en_archive: 'obj.en_archive' };
+  const FIGHT = { gb_receiver: 'boss.gb_receiver', bv_shell: 'boss.bv_shell', md_fence: 'boss.md_fence', ann_tide: 'boss.ann_tide', cor_hall: 'boss.cor_hall', gt_master: 'boss.gt_clock',
+    en_gate: 'boss.en_gate', fr_potline: 'boss.fr_potline' };
+  const byId = new Map(AlignSide.SIDE_QUESTS.map((q) => [q.id, q]));
+  const objs = new Set(Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.map((o) => o.id)));
+  for (const [id, obj] of Object.entries(LOOK)) {
+    const q = byId.get(`side.${id}`);
+    assert.ok(q, `side.${id} must keep its id (a conversion keeps the quest and makes this its first step)`);
+    assert.equal(q.ask, `q.${id}.asked`); assert.equal(q.inspect?.obj, obj); assert.equal(q.inspect.flag, `q.${id}.seen`);
+    assert.ok(objs.has(obj), `${obj} is on no map`);
+  }
+  for (const [id, boss] of Object.entries(FIGHT)) {
+    const q = byId.get(`side.${id}`);
+    assert.ok(q, `side.${id} must keep its id`); assert.equal(q.ask, `q.${id}.asked`); assert.equal(q.target?.boss, boss);
+    assert.ok(placesOf(boss).length === 1, `${boss} should stand on exactly one map`);
+  }
+});
+
 const fartMod = await import('../src/game/fart.js');
 const buttMod = await import('../src/game/bigButt.js');
 const npcLifeMod = await import('../src/content/npc_life.js');
@@ -2232,7 +2327,7 @@ test('regional boss intros preserve the saved Warden name', () => {
   CraftWorldScene.prototype._fx.call(scene, warden, { players: [] });
   assert.equal(scene.save.flags[field], warden.name);
 
-  const region = new Sim(MAPS_FOR_TEST.greenbelt, { seed: 'warden-name' });
+  const region = new Sim(MAPS_FOR_TEST.gb_dishes, { seed: 'warden-name' });   // Greenbelt's guardian stands in the dish room
   const boss = [...region.enemies.values()].find((e) => e.boss);
   region.addPlayer('host', 'trevor');
   Object.assign(region.players.get('host'), { x: boss.x - 32, y: boss.y });
