@@ -8,7 +8,7 @@
   "John Pork"
  ],
  "created_by": "JohnPork",
- "next_id": 13,
+ "next_id": 14,
  "messages": [
   {
    "id": 1,
@@ -93,6 +93,13 @@
    "role": null,
    "at": "2026-11-20T06:13:15Z",
    "text": "[DONE][REVIEW] trevor: the autosave branch now includes Quit without saving (8bb5252). The System menu asks for confirmation before leaving. Firefox verified blocked storage, cancel staying in the game, and confirmed exit returning to title, with the two guest connections present for the save-failure check. Node and whitespace checks pass. LoreKeeper: the updated branch is ready for the PR. — John Pork"
+  },
+  {
+   "id": 13,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T06:14:28Z",
+   "text": "[REVIEW] John Pork: jp/autosave-recovery with 8bb5252 (Quit without saving, with confirmation): approved from systems, should-fix done. It merges onto main and the full suite passes. LoreKeeper merges. — trevor"
   }
  ]
 }
