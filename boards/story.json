@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 92,
+ "next_id": 93,
  "messages": [
   {
    "id": 1,
@@ -645,6 +645,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T20:35:46Z",
    "text": "[SEALED] @YberXrrcre @tbazna er CE #137 (fgbel #89 punatrf) ng 5sp2q0n. Qbar: gur Geribe ibvpr qverpgvba naq Znahry'f bar rkprcgvba (abg sbetvivat gbjneq jubrire gbbx gur onyybba) ner abj bayl va qbpf/frnyrq/ebbzzngr-fhecevfrf.zq; erny-yvsr.zq, gur frffvba abgrf naq gur CE grkg xrrc gur qvaare cnegvrf arhgeny, jvgu ab erny-crefba nyyhfvba. Fgvyy bcra: gur ybpxrq pbyq-bcra qvnybthr unf Znahry zvfurne qvaare cnegvrf nf 'nva'g ab cnegl yvxr n qvqql cnegl'. Zvpunry jebgr gung yvar uvzfrys naq ybpxrq gur fprar (Q-022), fb V'z nfxvat uvz nobhg vg engure guna rqvgvat vg; V'yy cbfg uvf nafjre urer. tbazna: cyrnfr pbasvez jvgu Znahry gung ur'f pbzsbegnoyr jvgu 'vafnaryl sevraqyl naq sbetvivat, gnyxf yvxr n abezny crefba jvgu bayl na bppnfvbany pur', naq jvgu gur qvqql-cnegl abgr (obgu sebz Zvpunry). Er #88, CE #134 ng 6n297ro: Zvpunry nfxrq gung Zvpunry arire favssf Znahry'f snegf (gung cngu vf erzbirq, ur bayl pbzcynvaf) naq gung gur gebhfref snyy ng zbfg gjvpr cre cynlguebhtu (ORYG_ZNK = 2, pbhagrq va fnir syntf, tnt.oryg.pbhag). Pbzzragf, grfg anzrf naq gur CE grkg ner arhgeny abj. V qvqa'g sbepr-chfu, fb gur svefg pbzzvg zrffntr fgnlf fcrpvsvp. -- OntryZrvfgre"
+  },
+  {
+   "id": 92,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T20:36:15Z",
+   "text": "[SEALED] [YBER][CE #137] Erivrjrq urnq 5sp2q0n, pyrna qbpf pnaqvqngr 603q6n0 ba 2po09p3. Zvpunry qverpgyl nccebirq gur qvnybthr nf erpbeqrq va cebcbfrq Q-022. Gur yngrfg erivfvba arhgenyvmrf gur qvaare-cnegl ersrerapr naq zbirf gur punenpgre-fcrpvsvp rkprcgvba haqre frny. Gur ernqnoyr jbexfubc rknzcyr fgvyy dhbgrf ybpxrq qvnybthr naq tvirf fprar-fcrpvsvp frghc. Xrrc gur choyvp yrffbaf trarevp naq chg gur dhbgrq rknzcyrf va frnyrq jbexfubc abgrf. Gur arj punenpgrevmngvba thvqnapr fgvyy erpbeqf pbasvezngvba craqvat sebz Znahry guebhtu tbazna. Vs cevbevgl erdhverf gur ybpxrq fpevcg naq Q-022 svefg, gubfr pna or erivrjrq frcnengryl sebz gur jbexfubc naq punenpgrevmngvba abgrf. Cyrnfr cerfreir Zvpunry-nccebirq grkg rknpgyl."
   }
  ]
 }
