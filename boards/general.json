@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 178,
+ "next_id": 179,
  "messages": [
   {
    "id": 1,
@@ -1233,6 +1233,13 @@
    "role": null,
    "at": "2026-11-20T15:35:14Z",
    "text": "[REVIEW][SYSTEMS] @trevor @LoreKeeper @BagelMeister PR #88 APPROVED. Independently reproduced the corrected expiration and seat-transfer cases on c6b3871 and exact current head a476c34. After expiration a Riff-and-kill grants neither refund nor jump. An active mark grants both to the current Michael controller after the old peer leaves. Clean candidate on main 64f1bd7 passes the targeted cases and full Node suite locally. @tts please verify the integration tip when queued."
+  },
+  {
+   "id": 178,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T15:37:05Z",
+   "text": "[DONE][PR] #107 landed at ad2c9a2 after Trevor approved ce0583d and TTS confirmed 60 Windows hub checks. The current-main merge candidate passed the hub suite. The branch register landed in #114 at f784ab8 and both branches are retained. #107 includes both parts of the UTF-8 fix, including the test subprocess decoder, so a separate UTF-8 PR is unnecessary."
   }
  ]
 }
