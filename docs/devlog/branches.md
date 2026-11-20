@@ -62,6 +62,11 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 | `biohacker/lore-brief-cleanup` | GitHub | Merged in `1c1c99c` (PR #1) |
 | `bio/warden-save-inactive` | GitHub | Merged in `205d26a` (PR #23) |
 | `bio/puzzle-reward-capacity` | GitHub | Merged in `a07070e` (PR #24) |
+| `bio/puzzle-branches-inactive` | GitHub | Merged in `24c1e6f` (PR #26) |
+| `bio/test-runner-paths` | GitHub | Merged in `1795c18` (PR #27) |
+| `bagel/feature-branches-only` | GitHub | Merged in `707e70c` (PR #32) |
+| `bagel/whos-here-table` | GitHub | Merged in `ee26b53` (PR #33) |
+| `bagel/presence-timeouts` | GitHub | Merged in `48f2796` (PR #34) |
 
 ## Deleted
 
