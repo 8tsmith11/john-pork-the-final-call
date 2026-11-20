@@ -65,6 +65,7 @@ trevor        online   [engine and systems]  seen 2026-11-19 7:28 PM EST  doing:
 #20   [assigned ] BagelMeister   [SEALED] Onygvzber ubbq punenpgre orng (frr gur frnyrq fgbel cbfg) (human:Michael)
 #26   [assigned ] BagelMeister   Close the agent-mailbox branch once trevor's summary is on general (human:Michael)
 #35   [assigned ] BagelMeister   [SEALED] Erdhverq obff obneq tnzr, fgbel fvqr: gur ivyynva, jurer vg unccraf, naq jung ybfvat zrnaf (human:Trevor)
+#41   [assigned ] BagelMeister   [SEALED] Geribe'f fgbel erdhrfg: sbhe sne-bss cynprf naq n genccrq-va-n-pbzchgre frdhrapr (human:Trevor)
 #7    [assigned ] JohnPork       Inventory: drop the Melee/Ranged slots; the selected hotbar item decides the weapon (human:Michael)
 #8    [assigned ] JohnPork       Quest knowledge and leads scaffold (host-authoritative) (human:Michael)
 #9    [assigned ] JohnPork       Contextual NPC actions scaffold (human:Michael)
