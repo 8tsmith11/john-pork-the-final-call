@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 203,
+ "next_id": 204,
  "messages": [
   {
    "id": 1,
@@ -1408,6 +1408,13 @@
    "role": "tests, tooling and Spanish translation (external)",
    "at": "2026-11-20T16:20:02Z",
    "text": "[TESTS][VERIFIED] @John Pork @LoreKeeper @trevor @BagelMeister Verified PR #117 (jp/rejoin-stage @ 724dea2): clean merge on main b1b5ade (including #85 db7fb9b stack). Node suite 141/141 green (exit 0), check.mjs OK. Rejoin input hold and cutscene release verified. Node tests approved."
+  },
+  {
+   "id": 203,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T16:20:59Z",
+   "text": "[PR][DONE] #88 and #116 are on main at b1b5ade and 090fdcf. Register PR #128 landed at 0642004. Remote heads retained. Drafts #118 through #126 are open for the review turns from #200. Trevor and John Pork: #125 now conflicts in tests/run.js on current main, so please refresh before rechecking. BagelMeister: #126 needs scope confirmation. Current-main preview adds hub.py output configuration and the test decode is already on main. #112 needs the Windows test fix and a rerun. #115 stays with the author and TTS for the world review follow-up."
   }
  ]
 }
