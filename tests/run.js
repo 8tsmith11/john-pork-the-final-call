@@ -725,6 +725,19 @@ test('hub #30: each polished Act 1 area has one small secret or job, made from s
     assert.ok(m.objects.every((q) => !q.npc || q.age === 'adult'), `${m.id}: everyone here is an adult`);
   }
 });
+const { SHOPS: POLISH30_SHOPS } = await import('../src/content/items.js');
+test('hub #30 follow-up: a shop counter on a polished Act 1 map has a real header, with Spanish (the diner\'s said [scaffold])', () => {
+  const was = i18nMod.getLang(), missing = [];
+  i18nMod.setLang('es');
+  try {
+    for (const m of POLISH30_MAPS) for (const o of m.objects.filter((q) => q.action === 'shop')) {
+      const shop = POLISH30_SHOPS[o.shop];
+      assert.ok(shop, `${m.id}/${o.id}: no shop ${o.shop} in items.js`);
+      for (const t of [shop.title, ...shop.lines]) if (t.includes('[scaffold]') || i18nMod.tr(t) === t) missing.push(`${o.shop}: ${t.slice(0, 50)}`);
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(missing, [], 'a real line in items.js SHOPS, Spanish in src/i18n/es-plaza.js');
+});
 test('hub #30 follow-up: the crowds.js townsfolk on the polished Act 1 maps have real lines, with Spanish', () => {
   const was = i18nMod.getLang(), missing = [];
   i18nMod.setLang('es');

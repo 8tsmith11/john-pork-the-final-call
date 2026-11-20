@@ -189,6 +189,7 @@ export const ES_PLAZA = {
   'Only the napkin now. You leave it where it was.': 'Ahora solo queda la servilleta. La dejas donde estaba.',
   'Out to Route 1': 'Afuera, a la Ruta 1',
   'Back out onto Route 1.': 'De vuelta a la Ruta 1.',
+  'THE DINER': 'LA CAFETERÍA', 'Whatever you order, it is already on the plate.': 'Pidas lo que pidas, ya está en el plato.',   // the counter's shop (items.js SHOPS.diner)
   // act1_more.js: the campus quad, the dining hall, the robotics lab and the auditorium (polish pass, hub #30)
   'The dining hall. The lights are on.': 'El comedor. Las luces están encendidas.',
   'The robotics lab. A keypad, and someone has written the code on the wall next to it.': 'El laboratorio de robótica. Un teclado numérico, y alguien escribió el código en la pared de al lado.',
