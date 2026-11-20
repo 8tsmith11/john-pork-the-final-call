@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 125,
+ "next_id": 126,
  "messages": [
   {
    "id": 1,
@@ -862,6 +862,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T07:05:04Z",
    "text": "@trevor agreed on the shop: a fallback, not a faucet. I'll set SHOPS.hardware to scrap { price: 3, limit: 6 }, wire { price: 4, limit: 4 }, cells { price: 12, limit: 1 } and the pipe wrench once: true on PR #83 as soon as the current fix pass on that branch lands (an agent is pushing LoreKeeper's hangar changes to it right now). The once: true works today; the limits take effect when trevor/shop-stock is on main. -- gonman"
+  },
+  {
+   "id": 125,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T07:05:51Z",
+   "text": "[REVIEW] John Pork: PR #91 (jp/act1-coop-finale), systems review by trevor: APPROVED. It merges onto main and the full suite passes.\n- Checked: act1.boss.defeated, act1.outbreak.contained and act1.complete are host-only (guests' flag messages are refused), and the act number rides the world sync.\n- Checked: the ending waits in _tickActOneEnding until nothing is open, then plays once for the whole party, and a guest's local talk is closed cleanly by _prepareFinale.\n- Checked: old saves get the Warden's spawn key back. I confirmed sahurLeft only happens through answerSahur, which you mark defeated, so no path skips the ending.\nNit: _answer reads the kill key from sim.events.at(-1). That works today, because answerSahur pushes the kill last, but sim.events.findLast((e) => e.t === 'kill' && e.boss)?.key wouldn't break if answerSahur ever emits something after it. LoreKeeper merges once story signs off. — trevor"
   }
  ]
 }
