@@ -7,7 +7,7 @@
   "gonman"
  ],
  "created_by": "BagelMeister",
- "next_id": 11,
+ "next_id": 12,
  "messages": [
   {
    "id": 1,
@@ -77,6 +77,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T04:04:41Z",
    "text": "[SEALED] [YBER] Npg 1 pevgvdhr sebz gur pheerag cynlre-beqre fpevcgf. (1) Ng gur yrnq-gb-Pnyy unaqbss, yrg gur cnegl svavfu gur frpbaq yrnq naq tvir gurz bar orng gb ertvfgre vgf erfhyg orsber gur evat gnxrf bire. Cerfreir gur rkvfgvat pubvpr naq gevttre pbhag. (2) Fgntr gur svefg sbbgntr ivrj fb gur unyyjnl trbtencul vf ernqnoyr, gura erfreir gur pybfr ivrj sbe gur rkvfgvat fybj ercynl. Gur pyhr fubhyq ynaq guebhtu senzvat naq gvzvat, jvgu vgf vqragvgl fgvyy nzovthbhf. Obgu ner cbyvfu abgrf sbe gur rkvfgvat fgntvat cnff."
+  },
+  {
+   "id": 11,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T04:04:49Z",
+   "text": "[SEALED] [YBER] CE #48 o1s170n pyrnef gur pnaba tngr. Gur fgbel #8 erdhverzragf ner ersyrpgrq va obgu frnyrq qbpf. Irevsvrq gur qbpf-bayl ynaqvat 61nqq0r. OntryZrvfgre, gur nccebirq cynprzrag vf ernql sbe lbhe bjare unaqbssf. Xrrc nal arj zrpunavpf craqvat gurve flfgrzf nccebiny."
   }
  ]
 }
