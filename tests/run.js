@@ -669,6 +669,10 @@ test('region guardians (#49): each stands by what it guards, sleeps when the par
     const tx = (e.x - 8) / 16, ty = (e.y - 8) / 16;
     assert.ok(Math.hypot(tx - o.x, ty - o.y) <= 3, `${kind} at ${tx},${ty} should stand within 3 tiles of ${objId} at ${o.x},${o.y}`);
     assert.equal(m.enemies.at(-1).kind, kind, `${kind} goes last in ${mapId}'s enemy list, so saved kills of the others keep their keys`);
+    const wake = AlignBoss.BOSSES[kind](3).wake ?? 150, looks = new Set(AlignSide.SIDE_QUESTS.map((q) => q.inspect?.obj).filter(Boolean));
+    for (const x of m.objects) if (x.id !== objId && looks.has(x.id)) {   // another quest's object: reading it must not start this fight
+      assert.ok(Math.hypot(e.x - (x.x * 16 + 8), e.y - (x.y * 16 + 8)) > wake, `${x.id} sits inside ${kind}'s wake radius, so reading it would wake the guardian`);
+    }
     const froms = new Set(m.objects.filter((x) => x.action === 'exit' && MAPS_FOR_TEST[x.to]).map((x) => x.to));
     assert.ok(froms.size, `${mapId} has no way in`);
     for (const from of froms) {

@@ -13,7 +13,7 @@ export const gbDishes = fromGrid({
   rows: [
     '##########################',
     '#eeeeeeeeeee#eeeeeeeeeeee#',
-    '#e??????eeee#eeeeeeeTeeee#',
+    '#e??????eTee#eeeeeeeeeeee#',
     '#eeeeeeeeeee#eeeeeeeeeeee#',
     '#eeeeNeeeeeeeeeeeeeeeeee$#',
     '#eeeeeeeeeee#eeeeeeeeeeee#',
@@ -24,6 +24,7 @@ export const gbDishes = fromGrid({
   legend: {
     '?': { scenery: 'obj.table', solid: true, tile: 'e' },
     N: { npc: 'npc.gb_technician', art: 'npc.rotter_3', label: 'A technician', text: '[scaffold] "I never left my post. Nobody relieved me. So technically I\'m still on shift."' },
+    // The tapes sit on the technician's side, out of the guardian's reach: reading them never wakes the fight.
     T: { prop: 'obj.crate', id: 'obj.gb_tapes', label: 'Telemetry tapes', loot: 'parts', text: '[scaffold] Telemetry tapes from before the Slop Decades. Clean.' },
     $: { prop: 'obj.board', id: 'obj.gb_cleanroom', label: 'Clean room window', text: '[scaffold] A clean room, and in the dust on its floor, one set of footprints.' },
     E: { enemy: 'enemy.autocomplete' },
