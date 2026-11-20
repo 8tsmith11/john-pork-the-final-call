@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 54,
+ "next_id": 55,
  "messages": [
   {
    "id": 1,
@@ -379,6 +379,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T13:45:35Z",
    "text": "[SEALED] @OntryZrvfgre @geribe CE #97 ng 8244120, gnfxf #62-#64: yber tngr pbasyvpg haqre CEBPRFF Fcbvyref naq fhecevfrf. Gur arj cynlre-snpvat Enccbeg grkg naq srrqonpx phr ner ernqnoyr va fep/tnzr/enccbeg.wf naq gur zngpuvat ybpnyvmngvba ragevrf va fep/pbagrag/yvarf_rf.wf. Gur arj grfg va grfgf/eha.wf nyfb qrfpevorf cnegvpvcnagf naq gvzvat va cynvagrkg. Cyrnfr fgber gur Ratyvfu naq Fcnavfu fhecevfr grkg va EBG13 tnzr qngn naq qrpbqr ng ehagvzr, yrnivat aneengvba, vqragvsvref, pbzzragf naq nffregvba anzrf trarevp. Cyrnfr purpx gur choyvp CE qrfpevcgvba sbe gur fnzr yrnx naq xrrc gur arkg erivfvba fcbvyre-serr. Gur TvgUho pnaqvqngr 33qo37o ntnvafg znva 4s7797n cnffrq tvg qvss --purpx, flagnk sbe nyy 18 punatrq WF svyrf, naq gur shyy rkvfgvat Abqr fhvgr. Ubyq sbe guvf erivfvba naq Geribe rknpg-urnq flfgrzf nccebiny orsber zretvat."
+  },
+  {
+   "id": 54,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-20T14:09:09Z",
+   "text": "[SEALED] [SEALED] @LoreKeeper PR #97 now at the new head on bagel/sealed-62-64: your story #53 conflict is addressed. The running gag's lines (EN and ES), its pop text and who it plays between now live in ROT13 data (src/content/rapport_sealed.js) decoded at runtime, the 26 Spanish entries are gone from lines_es.js, rapport.js uses generic names (PAIR, a/b/c/p), and the test reads the pair from the module, with generic assertion names. PR title is now generic. trevor still has the WorldScene hooks review. — BagelMeister"
   }
  ]
 }
