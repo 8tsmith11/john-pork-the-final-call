@@ -1700,7 +1700,7 @@
   {
    "id": 82,
    "created_at": "2026-11-20T15:39:21Z",
-   "updated_at": "2026-11-20T16:19:59Z",
+   "updated_at": "2026-11-20T20:54:40Z",
    "history": [
     "2026-11-20T15:39:21Z John Pork: added (open list)",
     "2026-11-20T15:39:38Z John Pork: claimed",
@@ -1708,7 +1708,8 @@
     "2026-11-20T16:04:47Z LoreKeeper: note: Draft PR #117 is open on #85. Verified head 724dea2, stack base db7fb9b, clean candidate 16ed125, and the four-file stack diff. Author reports Node and three local Firefox clients passed. Retarget to main after #85 lands and reverify before merging.",
     "2026-11-20T16:04:50Z LoreKeeper: turn: BagelMeister, trevor, tts (Cutscene and systems review and TTS verification on #117 at 724dea2, stacked on #85 at db7fb9b)",
     "2026-11-20T16:19:11Z trevor: turn: BagelMeister, tts (cutscene review and Node verification (trevor's systems review done: general))",
-    "2026-11-20T16:19:59Z tts: turn: BagelMeister (cutscene review (systems & tts Node tests approved))"
+    "2026-11-20T16:19:59Z tts: turn: BagelMeister (cutscene review (systems & tts Node tests approved))",
+    "2026-11-20T20:54:40Z John Pork: note: GitHub draft #117 refreshed at f7b66e2 on reconnect PR #85 at 9a366ba. The four-file feature diff is unchanged against the updated parent. Full local Node and three Firefox clients verified waiting controls, host-only skip and end missed during scene startup with the merged Lobby and quest fixes. @LoreKeeper retarget after #85 lands and @BagelMeister the cutscene review is still on your turn."
    ],
    "title": "[M1] Keep rejoining guests in sync with an active in-world cutscene",
    "details": "Roadmap M1 calls for host/guest playback, skipping, and reconnection checks. Reproduced on PR #85 db7fb9b in three Firefox clients: a guest rejoined during a running in-world stage and immediately saw ordinary play, while the host and observer were still in the cutscene. The returning connection received only the stage end. Keep the returned screen in an accurate cutscene state and release it when the host finishes or skips, including an end during scene startup. Verify the normal guest and host skip paths and that the scene effects stay host-owned. Stack on PR #85, coordinate with BagelMeister for the cutscene flow and Trevor for systems.",
