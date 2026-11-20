@@ -1657,6 +1657,9 @@ test('progression (Trevor: too easy, too low a ceiling): steeper curve, costed s
   assert.equal(cost, 13);
   let pts = 0; for (let lv = 2; lv <= 5; lv++) pts += Prog.abilityPointsAt(lv);
   assert.ok(pts < cost / 2, 'level 5 is nowhere near a maxed score');
+  const maxCost = Array.from({ length: Abil.MAX_SCORE - 14 }, (_, i) => Abil.raiseCost(14 + i)).reduce((a, b) => a + b);
+  const earned = Array.from({ length: Prog.LEVEL_CAP - 1 }, (_, i) => Prog.abilityPointsAt(i + 2)).reduce((a, b) => a + b);
+  assert.equal(maxCost, earned);
   assert.ok(Prog.xpToNext(1) === 30 && Prog.xpToNext(10) > 1000 && Prog.xpToNext(20) > 3000);
   const c = { level: 1, xp: 0, skillPoints: 0, abilityPoints: 0 };
   assert.deepEqual(Prog.addXp(c, 30 + 91), [2, 3]); assert.equal(c.skillPoints, 2); assert.equal(c.abilityPoints, 2);
@@ -1891,6 +1894,47 @@ test('Ping rework (hub #66): the pulse jolts, a marked kill hands the pinger coo
   sim.removePlayer('mi'); sim.addPlayer('ai:michael', 'michael'); const ai = sim.players.get('ai:michael'); ai.skillCd = 4;
   sim._hurtEnemy(sim.enemies.get('g'), 10, 0, 0, 'tr');
   assert.ok(Math.abs(ai.skillCd - (4 - PING.refund)) < 1e-9, 'whoever runs Michael now gets the refund');
+});
+
+test('alternate R moves change targeting, stamina, and marks, while the transformed move takes priority', () => {
+  const map = rotArena();
+  map.solid = (x, y) => x === 8 && y === 5;
+  const sim = new Sim(map);
+  for (const [id, who] of [['tr', 'trevor'], ['ma', 'manuel'], ['mi', 'michael']]) sim.addPlayer(id, who);
+  const tr = sim.players.get('tr'), ma = sim.players.get('ma'), mi = sim.players.get('mi');
+  Object.assign(tr, { x: 96, y: 80, aim: 0, activeAbility: 'chord', sta: 10 });
+  Object.assign(ma, { x: 96, y: 134, activeAbility: 'rally', sta: 85 });
+  Object.assign(mi, { x: 96, y: 200, aim: 0, activeAbility: 'focus', sta: 10 });
+  const foe = (id, x, y) => {
+    const e = { id, kind: 'enemy.rotling', x, y, hp: 200, cd: 9, hurtT: 0, sleepT: 99 };
+    sim.enemies.set(id, e);
+    return e;
+  };
+  const front = foe('front', 160, 64), behind = foe('behind', 75, 80), blocked = foe('blocked', 144, 88);
+  sim._ability(tr);
+  assert.equal(front.hp, 194);
+  assert.ok(front.kx > 0 && !behind.kx);
+  assert.equal(behind.hp, 200);
+  assert.equal(blocked.hp, 200);
+  assert.equal(sim.snapshot().players.find((p) => p.id === 'tr').skMax, 8);
+
+  sim._ability(ma);
+  assert.equal(ma.sta, 100);
+  assert.equal(tr.sta, 40);
+  assert.equal(mi.sta, 10);
+  assert.equal(sim.decoys.length, 0);
+  ma.morphed = true; ma.morphStage = 2;
+  sim._ability(ma);
+  assert.ok(ma.gonT > 0);
+
+  const aimed = foe('aimed', 285, 200), offAxis = foe('off-axis', 148, 245), distant = foe('farther', 302, 200);
+  sim._ability(mi);
+  assert.equal(aimed.marked, 8);
+  assert.equal(aimed.markedBy, 'michael');
+  assert.equal(aimed.hp, 200);
+  assert.equal(aimed.hurtT, 0);
+  assert.equal(offAxis.marked, undefined);
+  assert.equal(distant.marked, undefined);
 });
 
 test('Lake Artemesia\'s enemies hit harder and last longer than the same kind elsewhere (map enemyPower)', () => {
@@ -2652,6 +2696,56 @@ test('skill trees: valid links, capstone needs all three branches, mods sum, old
   }
   const old = { skills: { 'skill.trevor.stack': 2, 'tr.amp': 1 }, skillPoints: 1 };
   assert.equal(migrateSkills(old, 'trevor'), 2); assert.equal(old.skillPoints, 3); assert.deepEqual(Object.keys(old.skills), ['tr.amp']);
+});
+
+test('the host validates discovery, level, room ownership, and points before equipping a saved R move', () => {
+  const { abilityOptions, selectedAbility, skillKnown } = SkillsP;
+  const save = newSave({ seed: 'discoveries', rolls: {}, gameVersion: 'test' });
+  const sim = new Sim(rotArena()), handlers = {};
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    character: 'trevor', localId: 'host', mode: 'host', save, sim, remoteInputs: new Map(), events: { once() {} }, time: { addEvent() {} },
+    net: { on: (type, fn) => { handlers[type] = fn; }, broadcast() {} }, _refreshMenu() {},
+  });
+  const peers = { trevor: 'host', manuel: 'guestM', michael: 'guestI' };
+  for (const [who, peer] of Object.entries(peers)) sim.addPlayer(peer, who);
+  host._wireNet();
+  for (const [who, peer] of Object.entries(peers)) {
+    const node = SKILL_TREE[who].nodes.find((n) => n.ability);
+    const c = save.party[who], learn = { t: 'skill', id: node.id }, equip = { t: 'equipR', id: node.ability };
+    const signature = selectedAbility(who, c);
+    c.level = 3;
+    c.skillPoints = 2;
+    assert.equal(skillKnown(c, node, save), false);
+    handlers.msg(peer, learn);
+    handlers.msg(peer, equip);
+    assert.equal(c.skillPoints, 2);
+    assert.equal(selectedAbility(who, c), signature);
+    if (node.reveal.quest) (save.world.quests ??= {})[node.reveal.quest] = { stage: 1, started: true, done: true };
+    else save.flags[node.reveal.flag] = true;
+    assert.ok(skillKnown(c, node, save));
+    handlers.msg(peer, learn);
+    assert.equal(c.skills[node.id], undefined, 'discovery still requires the minimum level');
+    c.level = 4;
+    handlers.msg(peer, learn);
+    handlers.msg(peer, learn);
+    handlers.msg(peer, equip);
+    assert.equal(c.skillPoints, 1);
+    assert.equal(c.skills[node.id], 1);
+    assert.deepEqual(abilityOptions(who, c), [signature, node.ability]);
+    const imported = migrate(JSON.parse(JSON.stringify(save)));
+    assert.equal(selectedAbility(who, imported.party[who]), node.ability);
+    const p = sim.players.get(peer);
+    assert.equal(p.activeAbility, node.ability);
+    p.skillCd = 4;
+    handlers.msg(peer, { t: 'equipR', id: signature });
+    assert.equal(p.activeAbility, signature);
+    assert.equal(p.skillCd, 4);
+  }
+  handlers.msg('guestM', { t: 'equipR', id: 'chord' });
+  assert.equal(sim.players.get('guestM').activeAbility, 'decoy');
+  handlers.msg('guestM', { t: 'input', inp: { ...emptyInput(), skill: true } });
+  handlers.msg('guestM', { t: 'input', inp: emptyInput() });
+  assert.equal(host.remoteInputs.get('guestM').skill, true, 'a later neutral frame does not swallow the R press');
 });
 
 // tts/item-names: in tests/run.js, add one test that loops over ITEMS in src/content/items.js

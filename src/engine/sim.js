@@ -502,32 +502,58 @@ export class Sim {
     this.hazards = this.hazards.filter((h) => h.ttl > 0);
   }
 
-  // Signature abilities (R). Trevor: Riff · Manuel: Decoy Bust · Michael: Ping.
+  // R uses the equipped ability. Manuel's stage-two transformation overrides his normal selection.
   _ability(p) {
     const ap = 1 + (p.mods?.abilityPower ?? 0), cdk = 1 - (p.mods?.skillCd ?? 0);
     if (p.character === 'trevor') {
-      p.skillCd = 6 * cdk;
-      const r = 46 * Math.min(1.8, Math.sqrt(ap));
+      const chord = p.activeAbility === 'chord', halfArc = Math.PI / 5;
+      p.skillCd = p.skillMaxCd = (chord ? 8 : 6) * cdk;
+      const r = (chord ? 80 : 46) * Math.min(1.8, Math.sqrt(ap));
+      const ax = Math.cos(p.aim), ay = Math.sin(p.aim), cone = Math.cos(halfArc);
       for (const e of this.enemies.values()) {
         const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
-        if (d > r) continue;
+        if (d > r || (chord && (dx * ax + dy * ay < d * cone || !this._abilityPathClear(p, e)))) continue;
         this._hurtEnemy(e, Math.round(6 * ap), (dx / (d || 1)) * 260 * Math.min(1.6, ap), (dy / (d || 1)) * 260 * Math.min(1.6, ap), p.id);
         if (this.enemies.has(e.id)) { e.hurtT = (e.boss ? 0.3 : 0.9) * Math.min(2.2, ap); if (p.mods?.markDmg) e.marked = Math.max(e.marked ?? 0, 3); }   // stunned (and rattled)
       }
-      this.events.push({ t: 'riff', id: p.id, x: p.x, y: p.y, r });
+      this.events.push(chord ? { t: 'chord', id: p.id, x: p.x, y: p.y, r, aim: p.aim, halfArc }
+        : { t: 'riff', id: p.id, x: p.x, y: p.y, r });
     } else if (p.character === 'manuel' && p.morphed && (p.morphStage ?? 0) >= 2) {
-      p.skillCd = GONMAN.cd * cdk; p.gonT = GONMAN.windup; p.gonAim = p.aim;   // the gonman, stage two
+      p.skillCd = p.skillMaxCd = GONMAN.cd * cdk; p.gonT = GONMAN.windup; p.gonAim = p.aim;
       this.events.push({ t: 'gonman', id: p.id, ms: GONMAN.windup * 1000 });
+    } else if (p.character === 'manuel' && p.activeAbility === 'rally') {
+      p.skillCd = p.skillMaxCd = 12 * cdk;
+      const r = 64, restore = Math.round(30 * Math.min(1.5, ap));
+      for (const ally of this.players.values()) {
+        if (ally.downed || ally.under > 0 || Math.hypot(ally.x - p.x, ally.y - p.y) > r) continue;
+        ally.sta = Math.min(MOVE.stamina + (ally.mods?.sta ?? 0), ally.sta + restore);
+      }
+      this.events.push({ t: 'rally', id: p.id, x: p.x, y: p.y, r });
     } else if (p.character === 'manuel') {
-      p.skillCd = 10 * cdk;
+      p.skillCd = p.skillMaxCd = 10 * cdk;
       const n = 1 + (p.mods?.decoys ?? 0);
       for (let i = 0; i < n; i++) {
         const a = p.aim + (i - (n - 1) / 2) * 0.9;
         this.decoys.push({ x: p.x + Math.cos(a) * 14, y: p.y + Math.sin(a) * 14, ttl: 6 * ap, hp: Math.round(40 * ap), mhp: Math.round(40 * ap) });
       }
       this.events.push({ t: 'decoy', id: p.id });
+    } else if (p.character === 'michael' && p.activeAbility === 'focus') {
+      p.skillCd = p.skillMaxCd = 7 * cdk;
+      const ax = Math.cos(p.aim), ay = Math.sin(p.aim), cone = Math.cos(Math.PI / 10);
+      let best, range = 210 * Math.min(1.8, ap);
+      for (const e of this.enemies.values()) {
+        const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
+        if (d > range || dx * ax + dy * ay < d * cone || !this._abilityPathClear(p, e)) continue;
+        best = e;
+        range = d;
+      }
+      if (best) {
+        best.marked = Math.max(best.marked ?? 0, 8 * ap);
+        best.markedBy = p.character;
+      }
+      this.events.push({ t: 'focusPing', x: p.x, y: p.y, x2: best?.x ?? p.x + 48 * ax, y2: best?.y ?? p.y + 48 * ay });
     } else {
-      p.skillCd = PING.cd * cdk;
+      p.skillCd = p.skillMaxCd = PING.cd * cdk;
       const r = PING.r * Math.min(1.8, ap), hit = [];
       for (const e of this.enemies.values()) if (Math.hypot(e.x - p.x, e.y - p.y) < r) hit.push(e);
       for (const e of hit) {
@@ -540,6 +566,16 @@ export class Sim {
       }
       this.events.push({ t: 'ping', id: p.id, x: p.x, y: p.y, r, n: hit.length });
     }
+  }
+
+  // Aimed abilities stop at walls and closed doors.
+  _abilityPathClear(from, to) {
+    const dx = to.x - from.x, dy = to.y - from.y, steps = Math.ceil(Math.hypot(dx, dy) / (TILE / 2));
+    for (let i = 1; i < steps; i++) {
+      const x = from.x + dx * i / steps, y = from.y + dy * i / steps;
+      if (this.map.solid(Math.floor(x / TILE), Math.floor(y / TILE))) return false;
+    }
+    return true;
   }
 
   /** The release: globs in a fan toward where he was aiming. Each one slows what it lands on and leaves a puddle. */
@@ -1177,6 +1213,7 @@ export class Sim {
     return {
       tick: this.tick,
       players: [...this.players.values()].map((p) => ({
+        ...(p.skillCd > 0 && p.skillMaxCd ? { skMax: p.skillMaxCd } : {}),
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
         hp: Math.round(p.hp), mhp: this.maxHp(p), rot: Math.round((p.rot ?? 0) * 10) / 10, weapon: p.mods.weaponId ?? null, am: p.ammo ?? null, rl: p.reloadT > 0 ? Math.round(p.reloadT * 10) / 10 : 0, st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, ...(p.gonSlim ? { gs: Math.max(0, Math.min(1, Math.round((1 - p.skillCd / (GONMAN.cd * (1 - (p.mods?.skillCd ?? 0)))) * 100) / 100)) } : {}), pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0, un: p.under > 0 ? Math.ceil(p.under) : 0, pu: p.under > 0 ? Math.round(((p.pullT ?? 0) / UNDER.pullTime) * 100) / 100 : 0, mt: Math.ceil(p.mateT ?? 0), cr: p.crashT > 0,

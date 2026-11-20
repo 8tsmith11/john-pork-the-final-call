@@ -33,7 +33,7 @@ import * as W from '../../engine/wallet.js';
 import { bossTalk } from '../../content/bossTalk.js';
 import { BoardGame } from '../ui/BoardGame.js';
 import { Neon } from '../render/neon.js';
-import { skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
+import { R_ABILITIES, abilityOptions, selectedAbility, skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
 import { LatticeTable } from '../latticeTable.js';
 import { BastionTable } from '../bastionTable.js';
@@ -660,7 +660,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'questRead') this._finishQuestReading(peer, msg.read);
         if (msg.t === 'input') {
           const prev = this.remoteInputs.get(peer);
-          this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, interact: false });
+          this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, skill: msg.inp.skill || prev?.skill, interact: false });
         }
         if (msg.t === 'flag' && typeof msg.key === 'string' && /^(act\d|dlg\.)/.test(msg.key) && !ACT_ONE_HOST_FLAGS.has(msg.key)) this.save.flags[msg.key] = msg.value ?? true
         if (msg.t === 'flag' && msg.key === 'act1.fuses.in') this._seatFuses();
@@ -671,6 +671,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'door') this._toggleDoor(msg.id);
         if (msg.t === 'craft') this._craft(this._charOf(peer), msg.idx);
         if (msg.t === 'skill') this._learn(this._charOf(peer), msg.id);
+        if (msg.t === 'equipR') this._equipR(this._charOf(peer), msg.id);
         if (msg.t === 'ability') this._raiseAbility(this._charOf(peer), msg.key);
         if (msg.t === 'equip') this._equip(this._charOf(peer), msg.id);
         if (msg.t === 'mate') this._mateBreak();
@@ -964,8 +965,9 @@ export class WorldScene extends Phaser.Scene {
 
   _syncPlayerGear(p) {
     const c = this.save.party[p.character];
-    const weapon = heldWeapon(c, p.character, isAi(p.id));
+    const ai = isAi(p.id), weapon = heldWeapon(c, p.character, ai);
     p.held = weapon ? (ITEMS[weapon.id].slot === 'ranged' ? 'gun' : 'melee') : null;
+    p.activeAbility = ai ? null : selectedAbility(p.character, c);
     this.sim.setMods(p.id, playerMods(c, p.character, weapon));
     p.analogCharm = !!ITEMS[c.equipped?.charm]?.analog;
   }
@@ -1114,8 +1116,17 @@ export class WorldScene extends Phaser.Scene {
 
   _learn(who, id) {
     const c = this.save.party[who], s = skillNode(who, id);
-    if (!c || !s || c.skillPoints < 1 || (c.skills[id] ?? 0) >= s.max || !skillOpen(who, c, s)) return;
+    const rank = c?.skills?.[id] ?? 0;
+    if (!c || !s || !(c.skillPoints >= 1) || rank >= s.max || !skillOpen(who, c, s, this.save)) return;
     c.skillPoints--; c.skills[id] = (c.skills[id] ?? 0) + 1;
+    this._syncParty();
+  }
+
+  menuEquipR(id) { if (this.mode === 'client') this.net.send({ t: 'equipR', id }); else this._equipR(this.character, id); }
+  _equipR(who, id) {
+    const c = this.save.party[who];
+    if (!c || !abilityOptions(who, c).includes(id) || selectedAbility(who, c) === id) return;
+    c.activeAbility = id;
     this._syncParty();
   }
 
@@ -2255,11 +2266,11 @@ export class WorldScene extends Phaser.Scene {
       this.acc += this.mode === 'solo' && (this._dlgStops() || this.menu || this.stage?.active) ? 0 : Math.min(deltaMs / 1000, 0.1);
       let first = true, events = [];
       while (this.acc >= STEP) {
-        const inputs = new Map([[this.localId, first ? inp : { ...inp, dodge: false, interact: false }]]);
+        const inputs = new Map([[this.localId, first ? inp : { ...inp, dodge: false, skill: false, interact: false }]]);
         if (this.brain && !(this._dlgStops() && this.mode === 'solo')) for (const [id, ai] of this.brain.inputs()) inputs.set(id, ai);
         for (const [peer, rinp] of this.remoteInputs) {
           inputs.set(peer, rinp);
-          if (rinp.dodge) this.remoteInputs.set(peer, { ...rinp, dodge: false });
+          if (rinp.dodge || rinp.skill) this.remoteInputs.set(peer, { ...rinp, dodge: false, skill: false });
         }
         this.sim.step(STEP, inputs);   // dialogue never pauses combat (Trevor); levels keep enemies away from scenes instead
         events = events.concat(this.sim.events);
@@ -3188,8 +3199,21 @@ export class WorldScene extends Phaser.Scene {
       this.tweens.add({ targets: g, alpha: { from: 0.4, to: 1 }, duration: dur, yoyo: false, onComplete: () => g.destroy() });
     }
     if (ev.t === 'riff') { const r = this.add.circle(ev.x, ev.y - 6, 6, 0xffe08a, 0).setStrokeStyle(2, 0xffe08a, 0.9).setDepth(5600); this.tweens.add({ targets: r, scale: 7.5, alpha: 0, duration: 380, onComplete: () => r.destroy() }); this.cameras.main.shake(140, 0.006); sfx('kill'); }
+    if (ev.t === 'chord') {
+      const wave = this.add.graphics().setDepth(5600).lineStyle(2, 0xffe08a, 0.9);
+      for (const r of [ev.r * 0.5, ev.r * 0.75, ev.r]) {
+        wave.beginPath().arc(ev.x, ev.y - 6, r, ev.aim - ev.halfArc, ev.aim + ev.halfArc).strokePath();
+      }
+      this.tweens.add({ targets: wave, alpha: 0, duration: 380, onComplete: () => wave.destroy() });
+      sfx('kill');
+    }
+    if (ev.t === 'rally') {
+      const wave = this.add.circle(ev.x, ev.y - 6, 6, 0x7fb069, 0).setStrokeStyle(2, 0x7fb069, 0.9).setDepth(5600);
+      this.tweens.add({ targets: wave, scale: ev.r / 6, alpha: 0, duration: 480, onComplete: () => wave.destroy() });
+      sfx('pickup');
+    }
     if (ev.t === 'ping') { const r = this.add.circle(ev.x, ev.y - 6, 6, 0x6ff2ff, 0).setStrokeStyle(1, 0x6ff2ff, 0.9).setDepth(5600); this.tweens.add({ targets: r, scale: (ev.r ?? 150) / 6, alpha: 0, duration: 650, onComplete: () => r.destroy() }); sfx(ev.n ? 'hit' : 'shot'); }
-    if (ev.t === 'pingJump') { const l = this.add.line(0, 0, ev.x, ev.y - 6, ev.x2, ev.y2 - 6, 0x6ff2ff, 0.9).setOrigin(0).setLineWidth(1).setDepth(5600); this.tweens.add({ targets: l, alpha: 0, duration: 300, onComplete: () => l.destroy() }); }   // the mark jumps on (hub #66)
+    if (ev.t === 'pingJump' || ev.t === 'focusPing') { const l = this.add.line(0, 0, ev.x, ev.y - 6, ev.x2, ev.y2 - 6, 0x6ff2ff, 0.9).setOrigin(0).setLineWidth(1).setDepth(5600); this.tweens.add({ targets: l, alpha: 0, duration: 300, onComplete: () => l.destroy() }); if (ev.t === 'focusPing') sfx('shot'); }
     if (ev.t === 'decoy') sfx('swing');
     if (ev.t === 'gonman') this._gonmanWindup(ev);
     if (ev.t === 'goo') { this._gonmanRelease(ev); this._gonmanHitLines(ev.hit); }
@@ -3284,11 +3308,13 @@ export class WorldScene extends Phaser.Scene {
       bar(27, (me.st ?? 100) / 100, 0x6ff2ff, 3);
     }
     if (me) {   // ability (R): a pip under the card that fills as it recharges
-      const max = { trevor: 6, manuel: 10, michael: 8 }[me.c] ?? 8, frac = 1 - Math.min(1, (me.sk ?? 0) / max);
+      const max = me.skMax ?? 8, frac = 1 - Math.min(1, (me.sk ?? 0) / max);
       g.fillStyle(0x1c1f33).fillRect(34, 33, 30, 3).fillStyle(frac >= 1 ? 0xffb347 : 0x5d6487).fillRect(34, 33, 30 * frac, 3);
     }
     this.hudSkill ??= this.add.text(67, 31, '', { ...FONT, fontSize: '6px', color: '#9aa3c7' }).setScrollFactor(0).setDepth(9002);
-    this.hudSkill.setText(`[R] ${{ trevor: 'Riff', manuel: 'Decoy', michael: 'Ping' }[this.character]}`);
+    const transformed = this.character === 'manuel' && me?.mo && (c.morph?.stage ?? 0) >= 2;
+    const rAbility = transformed ? 'gonman' : selectedAbility(this.character, c);
+    this.hudSkill.setText(`[R] ${R_ABILITIES[rAbility].short}`);
     g.fillStyle(0xffb347).fillRoundedRect(92, 6, 20, 9, 2);
     this.hudLv ??= this.add.text(102, 6.5, '', { ...FONT, fontSize: '7px', color: '#0b0d16' }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(9002);
     this.hudLv.setText(`LV${c.level}`);
