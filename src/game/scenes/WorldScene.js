@@ -1041,6 +1041,10 @@ export class WorldScene extends Phaser.Scene {
 
   // Field guide (Terraria's bestiary): enemies unlock on sight, NPCs when you talk to them; kills reveal more.
   _guide() { const g = (this.save.world.guide ??= {}); g.e ??= {}; g.n ??= {}; return g; }
+  _rememberNpc(npc) {
+    this._guide().n[npc.id] ??= { name: npc.label.replace(/\s*\(.*\)\s*/g, '').trim(), where: this.map.name ?? this.map.id };
+  }
+
   _tickGuide() {
     if (this.mode === 'client' || (this._guideT = (this._guideT ?? 0) + 1) % 30) return;
     const g = this._guide();
@@ -1456,7 +1460,18 @@ export class WorldScene extends Phaser.Scene {
     if (!npc || !p || p.downed || p.under > 0) return;
     if ((npc.goneFlag && this.save.flags[npc.goneFlag]) || this.perf?.asleep(npc)) return;
     if (Math.hypot(npc.x * TILE + 8 - p.x, npc.y * TILE + 8 - p.y) > 34) return;
-    this.save.flags[`met.${npc.id}`] = true;
+    this._rememberNpc(npc);
+    this._recordNpcTalk(npc, p.character);
+  }
+
+  _recordNpcTalk(npc, who) {
+    const flags = this.save.flags, quests = questState(this.save);
+    flags[`met.${npc.id}`] = true;
+    for (const q of QUESTS) {
+      if (q.target?.npc !== npc.id || !q.target.talkFlag || !questVisible(q, who)) continue;
+      const state = quests[q.id];
+      if (!state.done && (state.started || q.start?.(flags))) flags[q.target.talkFlag] = true;
+    }
   }
 
   // Asking, inspecting and reporting use the ordinary interaction. Hand-ins use a named action.
@@ -2426,7 +2441,7 @@ export class WorldScene extends Phaser.Scene {
     if (!near) return;
     if (!inReach(near)) { this.hint.setText(`${near.label} (too far)`); return; }
     if (near.npc && near.goneFlag && this.save.flags[near.goneFlag]) return;
-    if (near.npc && this.mode !== 'client') this._guide().n[near.id] ??= { name: near.label.replace(/\s*\(.*\)\s*/g, '').trim(), where: this.map.name ?? this.map.id };
+    if (near.npc && this.mode !== 'client') this._rememberNpc(near);
     if (near.action === 'exit') {
       if (this.mode === 'client') this.net.send({ t: 'exit', obj: near.id });
       else this._requestExit(near, this.localId);
@@ -2449,12 +2464,12 @@ export class WorldScene extends Phaser.Scene {
     // Story first, quest second: the first talk plays the scene; after that a quest step (pitch,
     // report) takes the interaction if one is waiting, otherwise the scene replays.
     if (near.npc) {
-      const met = `met.${near.id}`;
-      if (near.talk && this.save.flags[met] && (this._questInteract(near) || this._sayLater(near))) return;
-      if (!this.save.flags[met] && !me.downed && !me.dn) {
+      const met = this.save.flags[`met.${near.id}`];
+      if (!me.downed && !me.dn) {
         if (this.mode === 'client') this.net.send({ t: 'npcTalk', map: this.map.id, id: near.id });
-        else this.save.flags[met] = true;
+        else this._recordNpcTalk(near, this.character);
       }
+      if (near.talk && met && (this._questInteract(near) || this._sayLater(near))) return;
     }
     // A scene that is finished for good (e.g. the sniffer is printed) answers with one line after that.
     if (near.talk && near.doneFlag && this.save.flags[near.doneFlag]) { this._say(near.doneText ?? near.text ?? ''); return; }

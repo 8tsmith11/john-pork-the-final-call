@@ -7,7 +7,7 @@
 //   look:  { obj, where, whereEs, seen, seenEs }   examine an object, then tell the giver
 //   boss:  { boss, bossName }                      put down a region boss (flag boss.<id>.down)
 //   bring: { item, what, whatEs, refuse, refuseEs } hand the giver an item
-//   talk:  { npc, who, whoEs }                     go and talk to someone else (flag met.<npc>)
+//   talk:  { npc, who, whoEs }                     talk to someone after accepting this quest
 
 const ES = {};
 const built = [];
@@ -35,8 +35,9 @@ function side({ id, act, giver, giverName, giverEs, title, titleEs, why, whyEs, 
     ES[B.refuse] = B.refuseEs;
   } else if (kind.talk) {
     const T = kind.talk;
-    q.target = { npc: T.npc };
-    st.push([`Talk to ${T.who}.`, `Habla con ${T.whoEs}.`, (f) => f[`met.${T.npc}`]]);
+    const flag = `${k}.talked`;
+    q.target = { npc: T.npc, talkFlag: flag };
+    st.push([`Talk to ${T.who}.`, `Habla con ${T.whoEs}.`, (f) => f[flag]]);
   } else throw new Error(`side quest ${id}: needs look, boss, bring or talk`);
   q.stages = st.map(([text, , done]) => ({ text, done }));
   q.reward = { money, xp, line };

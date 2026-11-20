@@ -2199,13 +2199,12 @@ test('quest hooks in co-op: Talk keeps the item and an explicit hand-in uses the
 });
 
 const { questState: npcQuestState } = await import('../src/content/quests.js');
-test('talk objectives use a nearby NPC meeting on the host and keep the quest pitch on screen', () => {
+test('talk objectives count nearby conversations after acceptance and share guest discoveries', () => {
   const map = MAPS_FOR_TEST.aster_roof;
   const npc = map.objects.find((o) => o.id === 'npc.roof_watcher');
   const goal = SideQ.SIDE_QUESTS.find((q) => q.target?.npc === npc.id);
   const pitch = SideQ.SIDE_QUESTS.find((q) => q.giver === npc.id);
   const save = newSave({ seed: 'roof-talk', rolls: {}, gameVersion: 't' });
-  save.flags[goal.ask] = true;
   const p = { character: 'michael', x: npc.x * 16 + 8, y: npc.y * 16 + 8 };
   const delivered = [], handlers = {}, said = [];
   const host = Object.assign(Object.create(CraftWorldScene.prototype), {
@@ -2233,13 +2232,26 @@ test('talk objectives use a nearby NPC meeting on the host and keep the quest pi
   guest._clickedObj = npc;
   guest._handleInteract(p);
   assert.ok(!save.flags[met], 'approach menu and invalid host requests never count as Talk');
+  assert.equal(save.world.guide?.n?.[npc.id], undefined);
+
+  handlers.msg('guest', talk);
+  assert.ok(save.flags[met], 'an early talk still records the introduction');
+  assert.equal(save.flags[goal.target.talkFlag], undefined);
+  const guide = host._guide();
+  assert.deepEqual(guide.n[npc.id], { name: npc.label, where: map.name });
+  save.flags[goal.ask] = true;
+  host._tickQuests(true);
+  const state = npcQuestState(save)[goal.id];
+  assert.equal(state.started, true);
+  assert.equal(state.done, false, 'accepting the quest after an earlier meeting leaves the objective open');
+  guest._applyWorld(structuredClone({ flags: save.flags, quests: npcQuestState(save), guide }));
 
   guest.approach.intercept = () => false;
   guest._clickedObj = npc;
   guest._handleInteract(p);
-  assert.ok(save.flags[met], 'a real guest Talk reaches the host');
-  assert.equal(guest.save.flags[met], undefined, 'the guest waits for host world state');
-  assert.ok(npcQuestState(save)[goal.id].done);
+  assert.ok(save.flags[goal.target.talkFlag], 'the second guest Talk reaches the host');
+  assert.equal(guest.save.flags[goal.target.talkFlag], undefined, 'the guest waits for host world state');
+  assert.ok(state.done);
   assert.ok(delivered.some((m) => m.text.includes(pitch.pitch)), 'the guest hears the NPC pitch');
   assert.ok(!delivered.some((m) => m.text === goal.reward.line), 'world sync is the only guest reward notification');
   assert.deepEqual(said, [goal.reward.line]);
@@ -2249,9 +2261,25 @@ test('talk objectives use a nearby NPC meeting on the host and keep the quest pi
   assert.equal(save.party.michael.money, paid, 'repeating Talk cannot pay twice');
 
   guest.sayOpen = true;
-  guest._applyWorld({ flags: save.flags, quests: npcQuestState(save) });
-  assert.ok(guest.save.flags[met] && npcQuestState(guest.save)[goal.id].done);
+  guest._applyWorld(structuredClone({ flags: save.flags, quests: npcQuestState(save), guide }));
+  assert.ok(guest.save.flags[goal.target.talkFlag] && npcQuestState(guest.save)[goal.id].done);
+  assert.deepEqual(guest.save.world.guide.n[npc.id], guide.n[npc.id]);
   assert.deepEqual(guest._questRewardLines, [goal.reward.line]);
+});
+
+test('quests that share a contact track their own post-acceptance talks', () => {
+  const npcId = 'npc.gb_committee';
+  const [first, second] = SideQ.SIDE_QUESTS.filter((q) => q.target?.npc === npcId);
+  const save = newSave({ seed: 'shared-contact', rolls: {}, gameVersion: 't' });
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), { save, mode: 'host' });
+  save.flags[first.ask] = true;
+  host._recordNpcTalk({ id: npcId }, 'trevor');
+  assert.ok(first.stages[0].done(save.flags));
+  assert.equal(save.flags[second.target.talkFlag], undefined);
+  save.flags[second.ask] = true;
+  assert.ok(!second.stages[0].done(save.flags));
+  host._recordNpcTalk({ id: npcId }, 'trevor');
+  assert.ok(second.stages[0].done(save.flags));
 });
 
 test('a first Talk still plays a scripted NPC introduction before its quest pitch', () => {
