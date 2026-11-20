@@ -2685,7 +2685,8 @@ export class WorldScene extends Phaser.Scene {
     for (const e of snap.enemies || []) {
       eseen.add(e.id);
       let s = this.enemySprites.get(e.id);
-      const def = e.boss ? { radius: e.boss.r, color: e.boss.c } : ENEMIES[e.k];
+      const def = e.boss ? { radius: e.boss.r, color: e.boss.c } : (ENEMIES[e.k] ?? { radius: e.r ?? 5, color: e.c ?? 0xc0c4d0 });   // a boss's minions bring their own look
+      if (e.ln && this.shotGfx) this.shotGfx.lineStyle(1, 0xffd27f, 0.45 + 0.35 * Math.sin(this.time.now / 120)).lineBetween(e.x, e.y - 4, e.ln[0], e.ln[1] - 8);   // a relay's beam to what it holds up
       if (!s) {
         const sahurLook = e.boss?.sahur || e.boss?.lk === 'sahur';   // lk: a boss drawn with another's art (a story beat's fight)
         const anim = e.boss ? (sahurLook ? 'sahur' : e.k === 'boss.switchman' ? 'switchman' : 'warden') : e.k;
@@ -2694,6 +2695,7 @@ export class WorldScene extends Phaser.Scene {
         this.enemySprites.set(e.id, s);
       }
       s.setPosition(e.x, e.y + 3).setDepth(e.y);
+      if (e.ln) s.setAlpha(e.dd ? 0.3 : e.tl ? 0.55 + 0.45 * Math.sin(this.time.now / 60) : 1);   // a conductor's minions: dropped (dim), or a shape's tell (flicker)
       if (s.isArt) { if (e.h) s.setTintFill(0xffffff); else if (e.boss && !s.noTint) s.setTint(def.color); else s.clearTint(); }
       else s.setFillStyle(e.h ? 0xffffff : def.color);
       if (e.boss) {
