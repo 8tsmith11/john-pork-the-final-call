@@ -2001,7 +2001,7 @@ test('procedural gear rolls: seeded and reproducible, 1-2 affixes of the right k
 
 const Dawn = await import('../src/content/dawn.js');
 test('dawn clock (P-004): moves only with story beats, in order, and never passes first light', () => {
-  assert.equal(Dawn.dawnLabel({}), '2:58 am');   // the microwave in the cold open
+  assert.equal(Dawn.dawnLabel({}), '3:40 am');   // the cold open (D-022)
   let last = Dawn.DAWN_START; const flags = {};
   for (const [flag, at] of Dawn.DAWN_BEATS) { assert.ok(at > last && at < Dawn.FIRST_LIGHT, `${flag} out of order`); last = at; flags[flag] = true; assert.equal(Dawn.dawnMinutes(flags), at); }
   assert.ok(Dawn.dawnProgress(flags) < 1 && Dawn.dawnProgress({}) === 0);

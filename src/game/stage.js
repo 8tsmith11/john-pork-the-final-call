@@ -35,6 +35,15 @@
 //   { together: [ ...steps ] }      // run these at once; continue when all are done
 //   { set: { 'act1.some.flag': true } }   // story effects, applied once on the host
 //   { if: (ctx) => bool, ...step }  // skip this step for this run
+// Places can be map objects too: walk { to: 'obj.manuel_closet' } stands next to it (the first open tile
+// below, left, right or above), and cam / face accept an object id.
+//
+// Staging over dialogue (Michael, D-022: "the animations should always happen as text is occurring"):
+//   { id, hold: true, cast, steps, cues: { 'node.n': [ ...step ] } }
+// A hold script doesn't end when its steps do. It stays up behind a dialogue scene, and each line that
+// carries a cue (`> do:` in the sealed script, "cue" in the generated data) plays cues[key] while that
+// line is on screen. Every peer plays the cue its own dialogue box shows, so nothing extra is sent.
+// The host ends it with stage.release(id) when the dialogue is over (clients get the usual 'end').
 // Write story scripts as sealed or generic content: no spoilers in ids, comments or plain text.
 import { TILE } from '../engine/sim.js';
 import { VIEW } from '../view.js';
@@ -88,7 +97,21 @@ export class Stage {
   _release(id) { for (const w of [...this._waiters]) if (w.id === id) w.go(); }
 
   /** The host's X: end it for everyone now. */
-  skip() { if (this.active?.host) this._finish(true); }
+  skip() { if (this.active?.host && !this.active.script.hold) this._finish(true); }
+
+  /** A dialogue line's staging cue: play it now, alongside the line (hold scripts only). */
+  cue(key) {
+    const a = this.active, steps = a?.script.cues?.[key];
+    if (!steps) return false;
+    this._steps(steps, a.tok);
+    return true;
+  }
+
+  /** Host and solo: end a hold script (its dialogue is over). */
+  release(id) {
+    if (this.s.mode === 'client' || this.active?.id !== id) return;
+    this._finish(true);
+  }
 
   onHostMsg(peer, msg) {
     if (msg?.t !== 'stage') return false;
@@ -173,7 +196,7 @@ export class Stage {
     }
     cam.stopFollow();
     this._bars(true);
-    this._steps(script.steps ?? [], tok).then(() => { if (this.tok === tok) this._finish(host); });
+    this._steps(script.steps ?? [], tok).then(() => { if (this.tok === tok && !script.hold) this._finish(host); });
   }
 
   async _steps(steps, tok) {
@@ -297,7 +320,7 @@ export class Stage {
   }
 
   _dirOf(act, dir) {
-    const other = this.active.actors.get(dir);
+    const other = this.active.actors.get(dir) ?? this._objPoint(dir);
     if (!other) return dir;
     const dx = other.x - act.x, dy = other.y - act.y;
     return Math.abs(dx) >= Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'up' : 'down');
@@ -307,9 +330,11 @@ export class Stage {
     if (!act) return;
     const pts = st.by ? [[act.x / TILE - 0.5 + st.by[0], act.y / TILE - (act.roommate ? 0.5 : 1) + st.by[1]]]
       : Array.isArray(st.to?.[0]) ? st.to : [st.to];
+    for (let i = 0; i < pts.length; i++) if (typeof pts[i] === 'string') pts[i] = this._beside(pts[i]);
     const speed = st.speed ?? 48;
     for (const pt of pts) {
       if (this.tok !== tok) return;
+      if (!pt) continue;
       const goal = this._tilePos(act, pt);
       const dx = goal.x - act.x, dy = goal.y - act.y, dist = Math.hypot(dx, dy);
       if (dist < 0.5) continue;
@@ -367,18 +392,34 @@ export class Stage {
       return { x: list.reduce((n, q) => n + q.x, 0) / list.length, y: list.reduce((n, q) => n + q.y, 0) / list.length };
     }
     const act = a.actors.get(c);
-    return act ? { x: act.x, y: act.y } : null;
+    return act ? { x: act.x, y: act.y } : this._objPoint(c);
+  }
+
+  /** A map object's tile, by id. */
+  _objTile(id) {
+    const o = typeof id === 'string' && this.s.map?.objects?.find((q) => q.id === id);
+    return o ? [o.x, o.y] : null;
+  }
+
+  _objPoint(id) { const t = this._objTile(id); return t ? { x: (t[0] + 0.5) * TILE, y: (t[1] + 0.5) * TILE } : null; }
+
+  /** The tile to stand on next to a map object: below it, else left, right, above. */
+  _beside(id) {
+    const t = this._objTile(id), m = this.s.map;
+    if (!t) return null;
+    for (const [dx, dy] of [[0, 1], [-1, 0], [1, 0], [0, -1]]) if (!m?.solid?.(t[0] + dx, t[1] + dy)) return [t[0] + dx, t[1] + dy];
+    return [t[0], t[1] + 1];
   }
 
   // Letterbox bars slide in, so everyone can tell the game is showing them something.
   _bars(on) {
     const s = this.s, ui = this.active.ui;
-    for (const top of [true, false]) {
+    for (const top of this.active.script.hold ? [true] : [true, false]) {   // a hold script: the dialogue box sits where the bottom bar would
       const r = s.add.rectangle(0, top ? -BAR : VIEW.h, VIEW.w, BAR, 0x000000).setOrigin(0).setScrollFactor(0).setDepth(9640);
       ui.push(r);
       s.tweens.add({ targets: r, y: top ? 0 : VIEW.h - BAR, duration: 350, ease: 'Sine.easeOut' });
     }
-    if (this.active.host && s.mode !== 'client') {
+    if (this.active.host && s.mode !== 'client' && !this.active.script.hold) {
       const hint = s.add.text(VIEW.w - 6, VIEW.h - BAR / 2, tr('X: skip'), { ...FONT, color: '#5a5d6b' }).setOrigin(1, 0.5).setScrollFactor(0).setDepth(9645);
       ui.push(hint);
     }
