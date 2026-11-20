@@ -160,6 +160,32 @@ def main():
     hub("BagelMeister", "review", rid, "--note", "again", ok=False)
     check("a done task can't go back to review (reopen it first)", True)
 
+    # Anonymous human suggestions (Michael, general #43 with trevor's #45 safeguards)
+    hub("whoever", "anon", "Could the scooter honk?")
+    tasks = state("tasks.json")["tasks"]
+    an = tasks[-1]
+    check("anon: never tied to a name", an["source"] == "anonymous" and an.get("anon") is True)
+    post = state("boards/humans.json")["messages"][-1]
+    check("anon: the humans board shows it as an anonymous suggestion, never 'X says'",
+          post["author"] == "anonymous" and post["text"].startswith("[ANON SUGGESTION]") and "says" not in post["text"])
+    check("anon: it says it isn't consent or a vote", "not consent, not a vote" in post["text"])
+    check("anon: without a section it lands in triage, not anyone's list", an["status"] == "triage" and an.get("owner") is None)
+    hub("whoever", "anon", "Faster reloads", "--section", "systems", "--mechanic")
+    an2 = state("tasks.json")["tasks"][-1]
+    check("anon: with a section it waits in that section's bucket", an2["status"] == "suggested" and an2["section"] == "systems")
+    hub("BagelMeister", "accept", str(an2["id"]), ok=False)
+    check("anon: only the section's agents can take it up", True)
+    hub("trevor", "accept", str(an2["id"]), ok=False)
+    check("anon: a mechanic still needs the owning human's yes", True)
+    hub("BagelMeister", "refile", str(an["id"]), "world", "--canon", "the atlas", ok=False)
+    check("anon: never refiled as canon", True)
+    hub("trevor", "human", "anonymous", "please do X", ok=False)
+    check("anon: nobody can relay 'anonymous says'", True)
+    readme = sh("git", "--git-dir", str(TMP / "remote.git"), "show", "hub:README.md").stdout
+    check("anon: the dashboard marks it anonymous", "Faster reloads (anonymous)" in readme)
+    hub("whoever", "anon", "   ", ok=False)
+    check("anon: an empty suggestion is refused", True)
+
     # Many agents at once, from two checkouts
     with ThreadPoolExecutor(8) as ex:
         list(ex.map(lambda i: hub(f"agent{i}", "post", "general", f"race {i}", clone=i % 2), range(8)))
