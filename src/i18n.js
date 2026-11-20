@@ -9,6 +9,7 @@ import { ES_TUNNELS_LAKE } from './i18n/es-tunnels-lake.js';
 import { ES_PLAZA } from './i18n/es-plaza.js';
 import { ES_ASTER } from './i18n/es-aster.js';
 import { ES_HUD } from './i18n/es-hud.js';
+import { ES_ROUTE1 } from './i18n/es-route1.js';
 import { ITEMS } from './content/items.js';
 const KEY = 'jpfc.lang';
 let lang = 'en';
@@ -32,12 +33,15 @@ const ES = {
   // tab labels kept about as long as the English so the bar fits
   INVENTORY: 'OBJETOS', QUESTS: 'MISIONES', GUIDE: 'GUÍA', PHONE: 'TELÉFONO', SKILLS: 'HABIL.', STATS: 'DATOS',
   MAP: 'MAPA', CONTROLS: 'TECLAS', SYSTEM: 'SISTEMA', '[ESC]': '[ESC]', '[ESC] close': '[ESC] cerrar',
-  BACKPACK: 'MOCHILA', 'HOTBAR  (keys 1-9)': 'BARRA  (teclas 1-9)', ARMOR: 'ARMADURA', GEAR: 'EQUIPO', HANDS: 'MANOS',
+  BACKPACK: 'MOCHILA', 'HOTBAR  (keys 1-9)': 'BARRA  (teclas 1-9)', ARMOR: 'ARMADURA', GEAR: 'EQUIPO', ACCESSORIES: 'ACCESORIOS',
+  '1-9 select a hotbar slot': '1-9 selecciona una casilla de la barra',
   'BUFFS  (hover gear for details)': 'MEJORAS  (pasa el ratón por el equipo)', 'none right now': 'ninguna ahora',
   // slot labels must fit their 13px boxes
   head: 'cabeza', chest: 'pecho', legs: 'pier.', boots: 'botas', eyes: 'ojos', coat: 'abrigo', hands: 'manos', socks: 'medias', pack: 'moch.',
   melee: 'cuerpo', ranged: 'dist.', gadget: 'útil', charm: 'amul.',
   'click: pick up / place · right click: use / equip / half': 'clic: tomar / dejar · clic der.: usar / equipar / mitad',
+  'Right click: split · Shift+right click: use': 'Clic der.: dividir · Mayús+clic der.: usar',
+  'G: drop one · Shift+G: drop stack': 'G: soltar uno · Mayús+G: soltar todo',
   'Melee weapon': 'Arma cuerpo a cuerpo', 'Ranged weapon': 'Arma a distancia', Food: 'Comida', Material: 'Material', Curio: 'Curiosidad',
   'Key item': 'Objeto clave', 'Instrument (use to play)': 'Instrumento (úsalo para tocar)', Gift: 'Regalo',
   'Nothing yet.': 'Nada todavía.', 'Nothing new.': 'Nada nuevo.', 'No calls.': 'Sin llamadas.', RECENTS: 'RECIENTES', MESSAGES: 'MENSAJES',
@@ -123,7 +127,7 @@ for (const [id, def] of Object.entries(ITEMS)) {
   if (def.text) ES_ITEM_STRINGS[def.text] = es[1];
 }
 // No prototype: words like "constructor" or "toString" must not count as translations.
-const ES_ALL = Object.assign(Object.create(null), ES, ES_QUESTS, ES_ITEM_STRINGS, ES_631, ES_TUNNELS_LAKE, ES_PLAZA, ES_ASTER, ES_HUD);
+const ES_ALL = Object.assign(Object.create(null), ES, ES_QUESTS, ES_ITEM_STRINGS, ES_631, ES_TUNNELS_LAKE, ES_PLAZA, ES_ASTER, ES_HUD, ES_ROUTE1);
 function trOne(s) {
   if (ES_ALL[s] !== undefined) return ES_ALL[s];
   for (const [rx, rep] of ES_RX) if (rx.test(s)) return s.replace(rx, rep);

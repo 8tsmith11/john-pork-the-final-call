@@ -119,13 +119,33 @@
     "w": 32,
     "h": 16
    }
+  },
+  "obj.plane": {
+   "frame": {
+    "x": 192,
+    "y": 0,
+    "w": 32,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 16
+   }
   }
  },
  "meta": {
   "image": "wide.png",
   "format": "RGBA8888",
   "size": {
-   "w": 192,
+   "w": 224,
    "h": 16
   },
   "scale": "1"

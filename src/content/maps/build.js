@@ -25,8 +25,9 @@ export function makeMap({ id, name, layout, spawns, objects = [], enemies = [], 
     objects,
     // Exits (doors, ladders, elevators) block walking; you use them by interacting.
     // Doors (door: true) block until opened. `floor: true` objects (grates) stay walkable.
-    // Exits block; so does solid scenery (street furniture you walk round: `scenery: [{ art, x, y, solid, w, h }]`).
-    blocked: new Set([...objects.filter((o) => o.action === 'exit' && !o.floor).map((o) => `${o.x},${o.y}`),
+    // Exits block; so does solid scenery (street furniture you walk round: `scenery: [{ art, x, y, solid, w, h }]`),
+    // and any object marked `solid: true` (a server rack you can read but not walk through; hub #68).
+    blocked: new Set([...objects.filter((o) => (o.action === 'exit' && !o.floor) || (o.solid && !o.npc && !o.door)).map((o) => `${o.x},${o.y}`),
       ...(extra.scenery ?? []).filter((s) => s.solid).flatMap((s) => Array.from({ length: (s.w ?? 1) * (s.h ?? 1) }, (_, i) => `${s.x + (i % (s.w ?? 1))},${s.y - Math.floor(i / (s.w ?? 1))}`))]),
     doors: new Map(objects.filter((o) => o.door).map((o) => [`${o.x},${o.y}`, o])),
     // Optional fourth field carries authored spawn options, e.g. { elite: 'armored' }.

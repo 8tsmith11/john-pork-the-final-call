@@ -155,7 +155,7 @@ export const bvLab = fromGrid({
   ],
   legend: {
     T: { scenery: 'obj.degasser', solid: true, tile: 'e' },
-    N: npc('bv_lab_tech', R2, 'A lab technician', '"We grow them in batches of twelve. Twelve. Never thirteen. Nobody will say why."'),
+    N: npc('bv_lab_tech', R2, 'A lab technician', '"We grow them in batches. Every batch has a line on the board. One line got scrubbed, and nobody will say why."'),
     '?': { prop: 'obj.board', id: 'obj.bv_batch_board', label: 'Batch board', text: '[scaffold] Batch numbers, dates, and a column marked "took." Most say yes. One says "took, but."' },
     E: { enemy: 'enemy.rot_taken' },
     '@': { spawn: true },

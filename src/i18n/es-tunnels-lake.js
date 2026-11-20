@@ -72,6 +72,9 @@ export const ES_TUNNELS_LAKE = {
   'A shaft up to the street, and past the street, the sky. Rain comes down it. A cable hangs in the middle.': 'Un pozo hasta la calle, y más allá de la calle, el cielo. Por ahí baja la lluvia. Un cable cuelga en el medio.',
   'Back to College Park': 'De vuelta a College Park',
   'The trail back to the plaza.': 'El sendero de vuelta a la plaza.',
+  'Trail to the airfield': 'Sendero al aeródromo',   // the spur north to the airfield (hub #28/#29)
+  'A spur of the Paint Branch trail runs north through the trees. Past them, a windsock on a pole, and a row of small flames.':
+    'Un ramal del sendero del Paint Branch sigue al norte entre los árboles. Más allá, una manga de viento en un poste y una fila de llamitas.',
   'Trail sign': 'Cartel del sendero',
   'LAKE ARTEMESIA · 0.4 MI. Under it, a newer plate: WATER SAFETY ZONE. CONTINUITY ADVISES AGAINST CONTACT WITH STANDING WATER. Somebody has scratched FISH ARE FINE under that.': 'LAGO ARTEMESIA · 0,6 KM. Debajo, una placa más nueva: ZONA DE SEGURIDAD HÍDRICA. CONTINUITY DESACONSEJA EL CONTACTO CON AGUA ESTANCADA. Alguien raspó debajo: LOS PECES ESTÁN BIEN.',
   'Trail lamp': 'Farol del sendero',
