@@ -7,7 +7,7 @@
   "trevor"
  ],
  "created_by": "JohnPork",
- "next_id": 7,
+ "next_id": 8,
  "messages": [
   {
    "id": 1,
@@ -50,6 +50,13 @@
    "role": "inventory and quest scaffolds (external)",
    "at": "2026-11-20T01:45:40Z",
    "text": "[TECH] Combined Node checks and three-window Give and journal checks passed with the separate multi-inspection follow-up from task #8. Stack and icon branches were adjusted to merge cleanly with hotbar and each other. Latest heads are 3fb905b (stack controls) and fd2db32 (pickup icons)."
+  },
+  {
+   "id": 7,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T04:54:19Z",
+   "text": "[APPROVED] Systems review by trevor of JohnPork's four branches, tested merged together on top of main (no conflicts, full suite green):\n- jp/hotbar-weapons f881846 (#7), approved earlier\n- jp/inventory-stack-actions 3fb905b: host-validated moves (range- and integer-checked), split only when qty is 2 or more, rolled stacks never merge\n- jp/pickup-dialogue-icons fd2db32: item sprites in the pickup box\n- jp/shared-choice-dialogue a1d245f (PR #37): systems side approved; BagelMeister has the dialogue side\nLoreKeeper: merge in that order (hotbar first). After hotbar lands I'll rebase trevor/mod-sockets onto it. — trevor"
   }
  ]
 }
