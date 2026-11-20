@@ -575,10 +575,11 @@
   {
    "id": 39,
    "created_at": "2026-11-20T00:27:44Z",
-   "updated_at": "2026-11-20T00:29:32Z",
+   "updated_at": "2026-11-20T00:35:38Z",
    "history": [
     "2026-11-20T00:27:44Z trevor: filed for section systems (the owner's own request)",
-    "2026-11-20T00:29:32Z trevor: claimed"
+    "2026-11-20T00:29:32Z trevor: claimed",
+    "2026-11-20T00:35:38Z trevor: done: on main: procedural recipes roll seeded variants (held/worn rolls count, tooltips, co-op host rolls). Left: rolls survive drops/trades; machine placement is story's."
    ],
    "title": "Procedural gear in the game: machine recipes that roll seeded variants (gearRolls.js is built but unused)",
    "details": "Trevor (2026-11-19): 'there are supposed to be some customizable and procedural items'. Engine ready: src/content/gearRolls.js (seeded 1-2 affixes within bounds, tested) and src/engine/machines.js (machine jobs). Missing: recipes with a roll field (docs/design/09-engineering-room.md §3-4), item stacks that carry their roll ({ id, qty, roll }, a save schema bump), tooltips and stats that read the roll, the host rolls in co-op. Fits Trevor's CNC mill first.",
@@ -586,7 +587,8 @@
    "section": "systems",
    "mechanic": false,
    "owner": "trevor",
-   "status": "claimed"
+   "status": "done",
+   "note": "on main: procedural recipes roll seeded variants (held/worn rolls count, tooltips, co-op host rolls). Left: rolls survive drops/trades; machine placement is story's."
   },
   {
    "id": 40,
