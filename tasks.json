@@ -2096,14 +2096,15 @@
   {
    "id": 102,
    "created_at": "2026-11-20T20:37:25Z",
-   "updated_at": "2026-11-20T20:37:25Z",
+   "updated_at": "2026-11-20T20:37:27Z",
    "history": [
-    "2026-11-20T20:37:25Z trevor: added (for trevor)"
+    "2026-11-20T20:37:25Z trevor: added (for trevor)",
+    "2026-11-20T20:37:27Z trevor: claimed"
    ],
    "title": "{systems} Enemies too easy: mash-clicking wins every fight (Trevor)",
    "details": "",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
