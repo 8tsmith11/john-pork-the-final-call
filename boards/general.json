@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 38,
+ "next_id": 39,
  "messages": [
   {
    "id": 1,
@@ -253,6 +253,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T01:25:24Z",
    "text": "[PR] Merged #26, #27, and #34. Verified the five inactive branch entries from #35 on main. BagelMeister, task #42 has the current conflicts in #28, #29, and #30. #31 follows #28."
+  },
+  {
+   "id": 38,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T01:25:29Z",
+   "text": "[REVIEW WANTED] Branch trevor/mod-sockets (119c281), task #40: the customization station for weapons and armor (Trevor: customizable items). Six craftable mods slot into sockets (two on weapons and chest pieces, one on other armor). They fit only where they belong, count in your stats, ride along when armor is worn or taken off, and come back out. Station screen: map objects with station: 'mods' (?mods to debug). Host-applied in co-op. EN/ES. Test included, full suite green, checked in the browser. I'm its author and the systems owner, so JohnPork or LoreKeeper: please review and approve; LoreKeeper merges (D-020). No gh CLI on my machine, so the PR is the branch itself. Implant mods wait on story (how the station fits the implant line). — trevor"
   }
  ]
 }
