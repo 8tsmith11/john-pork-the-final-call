@@ -1827,7 +1827,7 @@
   {
    "id": 89,
    "created_at": "2026-11-20T19:33:18Z",
-   "updated_at": "2026-11-20T20:00:33Z",
+   "updated_at": "2026-11-20T20:09:41Z",
    "history": [
     "2026-11-20T19:33:18Z LoreKeeper: added (for gonman)",
     "2026-11-20T19:35:21Z gonman: claimed",
@@ -1836,7 +1836,8 @@
     "2026-11-20T19:49:34Z LoreKeeper: note: Verified PR #136 a190b5f on a95015b (candidate 229663e): clean diff and changed-file syntax. Combined with #131 at 9a14f55: clean tree 546e6ee and diff. #135 is closed and its branch is retained. Remaining lore review is on story #77 or the latest sealed review by LoreKeeper. Trevor and TTS still have systems and exact-head verification.",
     "2026-11-20T19:50:04Z tts: note: Windows independent run complete: (1) PR #136 (a190b5f) verified alone: 150/150 Node tests pass (exit 0), save pin and fallback logic confirmed; (2) Combined tree PR #136 + PR #131 (9a14f55) merges cleanly and verified: 158/158 Node tests pass (exit 0), save-storage OK, all 45 maps OK. Clearance granted.",
     "2026-11-20T19:50:10Z tts: turn: trevor, LoreKeeper (Trevor systems review & LoreKeeper merge #136 before #131 (tts independent run verified 158/158 green))",
-    "2026-11-20T20:00:33Z LoreKeeper: note: TTS task #89 and general #226 report Windows Node 150/150 for #136 a190b5f and 158/158 for the joint candidate with #131 9a14f55, plus level and save-storage checks. Reconfirmed both exact candidates on main a95015b and combined tree 546e6ee. Trevor, please record systems approval and the compatibility decision, including persistence across reload and the fallback for saves first opened after both land. The outstanding sealed review is on story #77. Merge order remains #136 then #131."
+    "2026-11-20T20:00:33Z LoreKeeper: note: TTS task #89 and general #226 report Windows Node 150/150 for #136 a190b5f and 158/158 for the joint candidate with #131 9a14f55, plus level and save-storage checks. Reconfirmed both exact candidates on main a95015b and combined tree 546e6ee. Trevor, please record systems approval and the compatibility decision, including persistence across reload and the fallback for saves first opened after both land. The outstanding sealed review is on story #77. Merge order remains #136 then #131.",
+    "2026-11-20T20:09:41Z trevor: turn: LoreKeeper (merge #136 before #131 (trevor systems approved, tts verified))"
    ],
    "title": "[SEALED] CE #135 fnir pbzcngvovyvgl erivrj",
    "details": "[SEALED] Rknpg urnq n70745n, pyrna pnaqvqngr 2ps865p ba n95015o. Qvss naq obgu WF flagnk purpxf cnff. Gur punatr yrnirf gur rkvfgvat punenpgre ryvtvovyvgl naq qvnybthr vagnpg. Cyrnfr hfr trarevp choyvp CE zrgnqngn, grfg qrfpevcgvbaf naq pbzzragf, naq n trarevp anzr sbe gur arj fnir xrl. Xrrc gur rkcynangvba bs gur uvqqra svaq urer. Sbe Geribe: n fnir jvgu cevbe zbirf pna fgvyy ynpx gur cva hagvy gur arkg svaq. Ynaqvat gur cva svefg qbrf abg ol vgfrys cerfreir gur cerivbhfyl tvira uvag sbe gubfr fnirf bapr #131 punatrf gur yvfg. Cyrnfr erivrj jurgure gb zvtengr, be rkcyvpvgyl npprcg gur yrtnpl snyyonpx, naq irevsl ubfg/fnir flap naq orunivbe jura gur cvaarq pbagnvare vf erzbirq. GGF gb irevsl gur erfhygvat urnq vaqrcraqragyl orsber zretr, naq gur pbzovarq pnaqvqngr jvgu #131. Tbazna pna yvax gur erivfrq CE urer vs n trarevp fbhepr oenapu vf arrqrq. Xrrc gur pheerag oenapu ergnvarq.",
@@ -1845,11 +1846,10 @@
    "owner": "gonman",
    "review": "PR #136 (replaces #135), sealed story post",
    "turn": [
-    "trevor",
     "LoreKeeper"
    ],
-   "turn_at": "2026-11-20T19:50:10Z",
-   "turn_for": "Trevor systems review & LoreKeeper merge #136 before #131 (tts independent run verified 158/158 green)"
+   "turn_at": "2026-11-20T20:09:41Z",
+   "turn_for": "merge #136 before #131 (trevor systems approved, tts verified)"
   }
  ]
 }
