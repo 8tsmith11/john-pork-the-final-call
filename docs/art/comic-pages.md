@@ -137,7 +137,9 @@ the comic ends when the host turns past its last page. The host can Esc out of a
 - it's a **replay**: this save already played it before this playback started (the save has
   `comic.<id>[.<tag>].played`, from this session or an earlier one). Each playback counts on its own:
   a piece (`{ tag }`) is a replay once that piece has played, and the whole comic once the whole has
-  played. Playing a piece doesn't make the whole a replay. This is trevor's ruling (general #174):
+  played. Playing a piece doesn't make the whole a replay, and playing the whole doesn't make a
+  piece one either, since a whole playback leaves out the lines marked `only: 'piece'` (in normal
+  play the pieces come first anyway). This is trevor's ruling (general #174):
   Michael's answer covers a story comic's first showing, and the Lore Keeper's earlier ruling already
   covered replays;
 - the comic says `skippable: true` (the engine demo does; a story comic shouldn't), and it isn't the
@@ -184,7 +186,8 @@ host's line, with Esc, since they turn it and close it themselves.
     on a story flag (`needs`) follow the host's save, as they would in a host playback. On the
     guest's side it opens only as the answer to their own last ask, and only while nothing else is
     up, loading or on there (a story scene or cutscene); otherwise it's dropped (ask again after).
-    A comic the host starts for the party while it's up takes its place.
+    A comic the host starts for the party while it's up takes its place, and a story scene or
+    cutscene that starts on that guest's screen closes it, so they never miss part of one.
   - **Its trigger is due** (its flag set, on its map) but it hasn't played: it's a first viewing and
     plays for everyone, unskippable like any story comic. This ask waits for nothing: while a page
     is up, a story scene or cutscene is on, or the story's own comic is waiting for one to end, it's

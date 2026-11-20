@@ -35,7 +35,9 @@
 // Guest replays (trevor, general #174): a guest who asks for a comic this save has already played gets
 // it on their own screen only. The host answers that guest alone with 'replay' (nothing is broadcast,
 // nothing changes on the host's screen or anyone else's, and no flag is written); the guest pages it
-// and closes it themselves. A story comic the host starts takes its place.
+// and closes it themselves. A story comic the host starts takes its place, and a story scene or
+// cutscene starting on that guest's screen closes it. A piece counts as seen only once that piece has
+// played: a whole playback leaves out lines marked only: 'piece'.
 //
 // Wire format, all { t: 'comic', ... }:
 //   host -> all     { op: 'show', id, run, page, tag, open? }   the current page (a new run opens it);
@@ -306,9 +308,12 @@ export class Comic {
     if (c && !c.local && this.s.mode === 'host') this.s.net.broadcast({ t: 'comic', op: 'show', id: c.id, run: c.run, page: c.page, tag: c.tag, ...(c.open?.length ? { open: c.open } : {}) });
   }
 
-  /** Every quarter second: host heartbeat, a queued play, and flag triggers. */
+  /** Every quarter second: host heartbeat, a queued play, and flag triggers. Guest: closes a local
+   *  replay when a story scene or cutscene starts. */
   tick() {
-    if (this._gone || !this.host) return;
+    if (this._gone) return;
+    // guest: a story scene or cutscene starting on this screen closes a local replay, so nobody misses it
+    if (!this.host) { if (this.cur?.local && this._busy()) this.end(); return; }
     if (this.cur) { if (this._now() - this.lastBeat >= BEAT_MS) this._show(); return; }
     if (this._busy()) return;
     if (this.queued) { const q = this.queued; this.queued = null; this.play(q.id, q); return; }

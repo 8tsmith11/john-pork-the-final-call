@@ -2877,6 +2877,22 @@ test('arriving through any door never lands you on an exit, and your first step 
     guest.play('pcs', { tag: 'one' }); guest.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'two' }); await tick(); assert.ok(!guest.active, 'a replay of another comic opened');
     G.w.dlg = {}; G.w.dlgFree = false; guest.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'one' }); await tick();
     assert.ok(!guest.active, 'a replay opened over a story scene'); G.w.dlg = null;
+    // a replay that arrives while the party's comic is loading, or up, doesn't open; the party's comic stays
+    f4 = H.w.sent.length; assert.equal(await host.play('pcs', { tag: 'two' }), true);
+    const show = H.w.sent.slice(f4).find(([, m]) => m.op === 'show')[1];
+    guest.play('pcs', { tag: 'one' }); guest.onClientMsg(show); guest.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'one' }); await tick();
+    assert.ok(guest.active && !guest.cur.local && guest.cur.run === host.cur.run, 'a replay opened while the party\'s comic was loading');
+    guest.play('pcs', { tag: 'one' }); guest.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'one' }); await tick();
+    assert.ok(guest.active && !guest.cur.local && guest.cur.run === host.cur.run, 'a replay opened over the party\'s comic');
+    host.end(); await toGuest(f4); assert.ok(!guest.active);
+    // a story scene or cutscene starting on the guest's screen closes their replay (telling nobody); a free line doesn't
+    for (const [what, busy] of [['story scene', () => { G.w.dlg = {}; G.w.dlgFree = false; }], ['cutscene', () => { G.w.stage = { active: true }; }]]) {
+      f4 = H.w.sent.length; guest.play('pcs', { tag: 'one' }); await askHost(); await toGuest(f4); assert.ok(guest.cur?.local);
+      G.w.dlg = {}; G.w.dlgFree = true; guest.tick(); assert.ok(guest.cur?.local, 'a free line closed a local replay'); G.w.dlg = null;
+      const s0 = G.w.sent.length; busy(); guest.tick();
+      assert.ok(!guest.active, `a local replay stayed up over a ${what}`); assert.equal(G.w.sent.length, s0, 'closing it told the host something');
+      G.w.dlg = null; G.w.stage = null;
+    }
     // a replay message reaching the host (or a solo game) does nothing
     assert.equal(host.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'one' }), true); await tick(); assert.ok(!host.active);
   });
