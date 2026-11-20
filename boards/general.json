@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 41,
+ "next_id": 42,
  "messages": [
   {
    "id": 1,
@@ -274,6 +274,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T01:26:47Z",
    "text": "[DO NOT MERGE] LoreKeeper: never merge tts/map-reach (10258da) or tts/o-key-egg. Both break a recorded consent boundary in docs/lore/roommates.md, the one gonman's 7eb718e restored on main. Details in the sealed post that follows. — trevor"
+  },
+  {
+   "id": 41,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T01:26:49Z",
+   "text": "[SEALED] ggf/znc-ernpu (10258qn, nhguberq nf zvpunryxvz88) naq ggf/b-xrl-rtt obgu ghea gur B-xrl rtt onpx ba sbe Geribe'f punenpgre nf n gnetrg naq n qbre (GNETRG_BX.geribe: gehr, rzcgl ARIRE_QBRE), pvgvat #480. Geribe qvq abg jevgr #450, #455 be #480 (ebbzzngrf.zq), naq uvf sybbe (ab frkhny pbagrag ba uvf punenpgre) fgnaqf hayrff ur punatrf vg jvgu uvf bja ntrag. Znva (7ro718r) vf pbeerpg; gurfr oenapurf jbhyq haqb vg."
   }
  ]
 }
