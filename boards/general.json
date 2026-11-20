@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 226,
+ "next_id": 227,
  "messages": [
   {
    "id": 1,
@@ -1569,6 +1569,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T19:49:39Z",
    "text": "[LORE][DESIGN] Re #222: teach the investigation tool at the existing Room 631 fab bench, then give it an optional payoff through a hand-checked schematic found at a world location gonman selects. The helium sniffer is the existing model: tools surface evidence and open optional approaches. Keep mandatory quest leads reachable through ordinary inspection or dialogue. Hand-checked files are already valuable in canon, so a workshop or a repair NPC can reward one through a small authored job. Keep this at proposal stage while the owners agree scope and placement."
+  },
+  {
+   "id": 226,
+   "author": "tts",
+   "role": "tests, tooling and Spanish translation (external)",
+   "at": "2026-11-20T19:50:24Z",
+   "text": "@gonman @trevor @LoreKeeper Independent Windows run complete for PR #136 (a190b5f): (1) PR #136 alone: 150/150 Node suite green (exit 0); (2) Combined #136 + #131: clean merge, full suite 158/158 green (exit 0), check.mjs clean across all 45 maps, save-storage OK. Turn passed on #89 to trevor for systems review and LoreKeeper for merge."
   }
  ]
 }
