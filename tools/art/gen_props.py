@@ -1192,6 +1192,85 @@ P("obj.wall_display", wall_display(0))
 P("obj.wall_display#1", wall_display(1))
 P("obj.room_sign", room_sign())
 
+
+# ---- Route 1 shops and the airfield (hub #28/#29): the least rotted place in Act 1, so wood, paper,
+# brass and canvas. No balloon orange (it is reserved), no roommate colours on strangers.
+def windsock(f):                # a striped canvas sock on a pole; frame 1 is a gust lifting the tip
+    c = C().v_(3, 2, 20, "steel").v_(4, 3, 19, "concrete1").h_(1, 22, 6, "concrete2").px(3, 2, "concrete3")
+    drop = (0, 1, 2, 3) if f == 0 else (0, 0, 1, 1)
+    for i, (x, w, h, col) in enumerate(((5, 3, 5, "warm4"), (8, 3, 4, "bone"), (11, 2, 3, "warm4"), (13, 2, 2, "bone"))):
+        c.rect(x, 3 + drop[i], w, h, col)
+    c.h_(5, 3, 3, "bone").pts("warm3", (5, 7), (6, 7), (11, 5 + drop[2]))
+    return c.outline()
+def feed_sacks():               # three burlap sacks, stitched at the top, a printed band on each
+    c = C().rect(1, 15, 7, 7, "warm3").rect(8, 15, 7, 7, "warm2").rect(4, 9, 8, 6, "warm3")
+    c.h_(1, 15, 7, "warm4").h_(8, 15, 7, "warm3").h_(4, 9, 8, "warm4").v_(14, 15, 7, "warm1").v_(11, 9, 6, "warm2")
+    c.h_(2, 18, 5, "bone").h_(9, 18, 5, "bone").h_(5, 12, 6, "bone").pts("night2", (3, 18), (5, 18), (10, 18), (12, 18), (6, 12), (8, 12))
+    c.h_(1, 22, 14, "warm0")
+    return c.outline()
+def key_jar():                  # a glass jar of brass keys on a little stool
+    c = C().rect(3, 18, 10, 2, "warm2").h_(3, 18, 10, "warm3").v_(4, 20, 3, "warm0").v_(11, 20, 3, "warm0")
+    c.rect(4, 8, 8, 10, "night2").v_(4, 8, 10, "concrete2").v_(11, 9, 9, "night1").rect(4, 7, 8, 1, "steel").rect(5, 6, 6, 1, "concrete3")
+    c.pts("warm4", (6, 15), (7, 16), (9, 14), (8, 11), (10, 16), (6, 12)).pts("warm3", (7, 15), (9, 16), (8, 13), (6, 10), (10, 12))
+    c.pts("steel", (7, 12), (9, 10), (10, 15)).rect(6, 13, 4, 2, "bone").px(5, 9, "bone")
+    return c.outline()
+def chalkboard():               # prices in chalk on a slate in a wooden frame
+    c = C().rect(1, 4, 14, 13, "warm1").rect(2, 5, 12, 11, "night2").h_(1, 4, 14, "warm2")
+    for y, w in ((7, 6), (9, 8), (11, 5), (13, 7)):
+        c.h_(3, y, w, "bone").h_(11, y, 2, "concrete3")
+    c.rect(4, 17, 8, 1, "warm0").px(12, 16, "bone")
+    return c.outline()
+def flight_log():               # a ledger open on a wooden stand, a pencil on a string
+    c = C().rect(3, 11, 10, 2, "warm2").h_(3, 11, 10, "warm3").rect(7, 13, 2, 8, "warm1").h_(5, 21, 6, "warm0")
+    c.rect(3, 7, 10, 4, "bone").v_(8, 7, 4, "concrete3").pts("night3", (4, 8), (5, 8), (6, 8), (4, 9), (6, 9), (10, 8), (11, 8), (9, 9), (10, 9))
+    c.pts("warm4", (13, 10), (13, 12), (14, 13), (14, 14))
+    return c.outline()
+def runway_lamp():              # a kerosene lamp on a stake, marking the edge of the grass strip
+    c = C().v_(7, 17, 6, "warm0").rect(5, 12, 6, 5, "steel").rect(6, 13, 4, 3, "warm4").px(7, 13, "bone")
+    c.h_(6, 11, 4, "concrete2").px(8, 10, "concrete2").h_(5, 17, 6, "concrete1")
+    return c.outline()
+def kid(coat, coat_d, skin, hair, plane=False):   # a child: a head shorter than the adults
+    c = C().rect(5, 9, 6, 5, skin).rect(5, 9, 6, 2, hair).v_(5, 9, 3, hair).pts("night0", (7, 12), (9, 12))
+    c.rect(5, 14, 6, 5, coat).v_(10, 14, 5, coat_d).rect(6, 19, 1, 3, "night2").rect(9, 19, 1, 3, "night2").h_(5, 22, 2, "warm0").h_(9, 22, 2, "warm0")
+    if plane:
+        c.h_(10, 13, 5, "bone").pts("bone", (12, 12), (13, 12)).px(14, 14, "concrete3")   # a paper airplane, folded from a notice
+    return c.outline()
+def figure(coat, coat_d, skin, hair, hunch=True):   # person() before its outline, so accessories get outlined too
+    c, top = C(), 5 if hunch else 3
+    c.rect(5, top, 6, 6, skin).rect(5, top, 6, 2, hair).v_(5, top, 4, hair).pts("night0", (7, top + 3), (9, top + 3))
+    c.rect(4, top + 6, 8, 9, coat).v_(11, top + 6, 9, coat_d).v_(4, top + 7, 6, coat_d)
+    c.rect(5, top + 15, 2, 8 - top, "night2").rect(9, top + 15, 2, 8 - top, "night2").h_(4, 22, 3, "warm0").h_(9, 22, 3, "warm0")
+    return c
+def hollis():                   # the hardware shop: cardigan, a canvas apron, reading glasses, a pencil behind the ear
+    c = figure("warm1", "warm0", "skin1", "bone")
+    c.rect(5, 12, 6, 7, "concrete2").h_(5, 12, 6, "concrete3").pts("steel", (6, 8), (10, 8)).px(11, 6, "warm4").px(6, 15, "warm4")
+    return c.outline()
+def feedkeeper():               # the feed and aquarium shop: mustard flannel, rubber boots, a long-handled net
+    c = figure("warm3", "warm2", "skin2", "night2", hunch=False)
+    c.h_(4, 12, 8, "warm2").h_(4, 15, 8, "warm2").rect(5, 19, 2, 4, "night3").rect(9, 19, 2, 4, "night3")
+    c.v_(13, 8, 10, "warm1").rect(12, 5, 3, 3, "concrete3").px(13, 6, "night2")
+    return c.outline()
+def deacon():                   # Deacon Amos Reed: a long dark coat, a grey beard, a lantern
+    c = figure("night3", "night2", "skin0", "concrete3", hunch=False)
+    c.rect(5, 7, 6, 2, "concrete3").pts("concrete3", (6, 9), (9, 9)).h_(6, 9, 4, "bone").v_(1, 13, 3, "warm0").rect(0, 16, 3, 3, "warm4").px(1, 17, "bone")
+    return c.outline()
+
+for name, c in (("obj.windsock", windsock(0)), ("obj.windsock#1", windsock(1)), ("obj.feed_sacks", feed_sacks()), ("obj.key_jar", key_jar()),
+                ("obj.chalkboard", chalkboard()), ("obj.flight_log", flight_log()), ("obj.runway_lamp", runway_lamp()),
+                ("npc.hollis", hollis()), ("npc.feedkeeper", feedkeeper()), ("npc.deacon", deacon()),
+                ("npc.analogist_a", person("warm2", "warm1", "skin1", "warm0")),                       # a wool coat
+                ("npc.analogist_b", person("bone", "concrete3", "skin3", "night2", hunch=False)),        # a hand-knit sweater
+                ("npc.analogist_kid", kid("warm3", "warm2", "skin2", "warm0", plane=True)),
+                ("npc.analogist_kid2", kid("concrete2", "concrete1", "skin0", "night2"))):
+    P(name, c)
+# A wood-and-fabric high-wing taildragger, side on: the hangar's plane, older than anyone who flies it.
+c = C(32, 16).rect(9, 3, 14, 2, "warm3").h_(9, 3, 14, "warm4").pts("night2", (12, 5), (13, 6), (19, 5), (18, 6))   # the wing and its struts
+c.rect(8, 6, 16, 5, "bone").h_(8, 6, 16, "bone").h_(8, 10, 16, "concrete3").h_(8, 8, 16, "warm2").rect(17, 6, 3, 2, "night2")   # fuselage, stripe, cockpit
+c.rect(2, 6, 7, 3, "bone").h_(2, 8, 7, "concrete3").rect(2, 2, 3, 4, "warm3").h_(1, 7, 5, "warm3")                  # tail, fin, stabilizer
+c.rect(24, 7, 3, 3, "concrete3").px(27, 8, "warm0").v_(28, 4, 9, "warm1").pts("steel", (21, 11), (20, 12))          # cowl, propeller, gear leg
+c.rect(19, 12, 3, 3, "night1").px(20, 13, "steel").px(3, 9, "night1").pts("night2", (11, 8), (13, 8), (15, 8))        # wheels, registration
+WIDE["obj.plane"] = c.outline().rows()
+
 # Floor decals: 16x16, flat on the ground, no outline. Stamped into the baked map under everything.
 DECALS = {}
 def D(name, c): DECALS[name] = c.rows()

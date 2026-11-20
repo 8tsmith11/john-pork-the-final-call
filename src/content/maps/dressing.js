@@ -23,7 +23,7 @@ export const DRESSING = {
       { x: 23, y: 24, text: 'BOBA', color: C.magenta, flicker: 0.08 },
       { x: 27, y: 24, text: 'ABIERTO', color: C.red, flicker: 0.02 },
       { x: 7, y: 10, text: 'ASTER', color: C.cyan },
-      { x: 67, y: 28, text: 'CHARGE · $2/HR', color: C.lime, size: 6 },
+      { x: 66, y: 27, text: 'CHARGE · $2/HR', color: C.lime, size: 6 },   // on the roof edge, over the hardware shop's door (hub #28)
     ],
     holo: [
       { x: 38, y: 5, w: 7, h: 3, color: C.cyan, lines: ['CITIZENS,', 'THINGS ARE', 'STABLE.', '', 'CONTINUITY'] },
