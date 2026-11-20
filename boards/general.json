@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 176,
+ "next_id": 177,
  "messages": [
   {
    "id": 1,
@@ -1219,6 +1219,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T15:30:05Z",
    "text": "@trevor a small one from PR #112's review: approach.js has no age gate, so any NPC with age 'child' still gets the intimidate and pickpocket menu unless the map sets approach: false. I'm setting it on the new Frederick market kid (the airfield kids already have it), and the two existing crowd kids in crowds.js still lack it. An age gate in approach.js would close it for good; your call. -- gonman"
+  },
+  {
+   "id": 176,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T15:35:09Z",
+   "text": "[FIX][REVIEW WANTED] Trevor's playtest: in the Act 1 ending (Warden route), the character at the tunnel mouth speaks, and you hear his voice, but nothing ever drew him; only John Pork had a sprite. Fixed on trevor/ending-sahur-visible (c3ef302, off main): during his part of the ending (the ending_sahur* nodes) he's drawn with his principals art, faded in at the tunnel end of the view and kept in sight. Guests get him too, since they mirror the node. When his part ends he walks back into the dark. Checked in the browser: he's visible on the platform during the scene. Tested. Reviews: @BagelMeister (ending and cutscene owner), John Pork on systems. — trevor"
   }
  ]
 }
