@@ -38,6 +38,8 @@ const ES = {
   head: 'cabeza', chest: 'pecho', legs: 'pier.', boots: 'botas', eyes: 'ojos', coat: 'abrigo', hands: 'manos', socks: 'medias', pack: 'moch.',
   melee: 'cuerpo', ranged: 'dist.', gadget: 'útil', charm: 'amul.',
   'click: pick up / place · right click: use / equip / half': 'clic: tomar / dejar · clic der.: usar / equipar / mitad',
+  'Right click: split · Shift+right click: use': 'Clic der.: dividir · Mayús+clic der.: usar',
+  'G: drop one · Shift+G: drop stack': 'G: soltar uno · Mayús+G: soltar todo',
   'Melee weapon': 'Arma cuerpo a cuerpo', 'Ranged weapon': 'Arma a distancia', Food: 'Comida', Material: 'Material', Curio: 'Curiosidad',
   'Key item': 'Objeto clave', 'Instrument (use to play)': 'Instrumento (úsalo para tocar)', Gift: 'Regalo',
   'Nothing yet.': 'Nada todavía.', 'Nothing new.': 'Nada nuevo.', 'No calls.': 'Sin llamadas.', RECENTS: 'RECIENTES', MESSAGES: 'MENSAJES',

@@ -8,6 +8,7 @@ export { SLOTS };
 export const HOTBAR = 9;
 
 export const stackOf = (id) => ITEMS[id]?.stack ?? (ITEMS[id]?.slot === 'material' ? 99 : ITEMS[id]?.slot === 'consumable' ? 16 : ITEMS[id]?.slot === 'junk' ? 16 : 1);
+export const splitQuantity = (qty) => Math.ceil(qty / 2);
 
 /** Old saves stored a plain list; turn any shape into exactly SLOTS slots, merging stacks. */
 export function normalize(c) {
@@ -25,7 +26,7 @@ export function add(c, id, n = 1, roll = null) {
   const inv = c.inventory, max = stackOf(id);
   for (let i = 0; i < SLOTS && n > 0 && !roll; i++) {
     const s = inv[i];
-    if (s && s.id === id && s.qty < max) { const k = Math.min(n, max - s.qty); s.qty += k; n -= k; }
+    if (s && s.id === id && !s.roll && s.qty < max) { const k = Math.min(n, max - s.qty); s.qty += k; n -= k; }
   }
   // New stacks go to the backpack first (Trevor: items shouldn't auto-fill the hotbar); the hotbar
   // only takes them when the backpack is full. Stacking onto an existing stack still happens anywhere.
@@ -64,9 +65,11 @@ export function takeSlot(c, i, n = 1) {
 
 /** Drag-and-drop: move/merge/swap slot a onto slot b (half = move half the stack). */
 export function moveSlot(c, a, b, half = false) {
-  const inv = c.inventory; if (a === b || !inv[a]) return;
+  const inv = c.inventory;
+  if (!Number.isInteger(a) || !Number.isInteger(b) || a < 0 || b < 0 || a >= SLOTS || b >= SLOTS || a === b || !inv[a]) return;
   const src = inv[a], dst = inv[b], max = stackOf(src.id);
-  const moving = half ? Math.ceil(src.qty / 2) : src.qty;
+  if (half && src.qty < 2) return;
+  const moving = half ? splitQuantity(src.qty) : src.qty;
   if (!dst) {
     inv[b] = { id: src.id, qty: moving }; src.qty -= moving; if (src.qty <= 0) inv[a] = null;
   } else if (dst.id === src.id && dst.qty < max) {

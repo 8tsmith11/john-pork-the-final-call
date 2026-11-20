@@ -10,7 +10,7 @@ import { sellPrice, ITEMS, RECIPES, SKILLS, SHOPS, playerMods, ARMOR_SLOTS, GEAR
 import { MAPS } from '../../content/maps/index.js';
 import { GUIDE_PEOPLE, guideText } from '../../content/guide.js';
 import { ABILITIES, ABILITY_KEYS, MAX_SCORE, modOf, fmtMod, scoresOf, raiseCost } from '../../content/abilities.js';
-import { canPay, count, has, worn } from '../../engine/inventory.js';
+import { canPay, count, has, splitQuantity, worn } from '../../engine/inventory.js';
 import { SKILL_TREE, skillOpen, tierLevel } from '../../content/skills.js';
 import { ROOMMATES } from '../scenes/BootScene.js';
 import { looksFor, wearTexture } from '../render/wearables.js';
@@ -149,8 +149,8 @@ export class GameMenu {
 
   // ---- tabs ----
   // Minecraft-style grid: 27 backpack slots + the 9-slot hotbar, equipment beside the character.
-  // Left click picks a stack up / puts it down (merge or swap); right click picks up half, or uses /
-  // equips when your hand is empty. Drop gear on an equipment slot to wear it.
+  // Left click picks up or places a stack. Right click takes half of a stack, or uses a single item.
+  // Shift+right click uses an item without splitting. Drop gear on an equipment slot to wear it.
   _inventory(g) {
     const s = this.scene, who = s.character, c = s.save.party[who], b = this.box;
     const mods = playerMods(c, who), inv = c.inventory ?? [];
@@ -219,7 +219,12 @@ export class GameMenu {
     // The panel itself swallows clicks so a near miss on a slot doesn't drop anything.
     if (this.held != null) {
       const out = s.add.zone(0, 0, VIEW.w, VIEW.h).setOrigin(0).setInteractive();
-      out.on('pointerdown', () => { const i = this.held, half = this.heldHalf; this.held = null; this.heldHalf = false; if (inv[i]) s.stands?.drop(i, !half); this.refresh(); });
+      out.on('pointerdown', () => {
+        const i = this.held, half = this.heldHalf;
+        this.held = null; this.heldHalf = false;
+        if (inv[i]) s.stands?.drop(i, !half, half);
+        this.refresh();
+      });
       const panel = s.add.zone(b.x, b.y, b.w, b.h).setOrigin(0).setInteractive();
       this.root.addAt(out, 1); this.root.addAt(panel, 2);   // right above the backdrop, under every slot and tab
       this._t(b.x + b.w / 2, b.y + b.h + 3, 'click outside to drop it', F(6, C.hi)).setOrigin(0.5, 0);
@@ -237,22 +242,27 @@ export class GameMenu {
         const right = p.rightButtonDown?.() || p.button === 2;
         if (this.held != null) { s.menuMove(this.held, i, this.heldHalf); this.held = null; this.heldHalf = false; return this.refresh(); }
         if (!it) return;
-        if (right && !p.event?.shiftKey) { const def = ITEMS[it.id]; if (def?.slot === 'material' || it.qty > 1 && def?.slot !== 'consumable') { this.held = i; this.heldHalf = true; } else s.menuUseSlot(i); return this.refresh(); }
-        this.held = i; this.heldHalf = false; this.refresh();
+        if (right && (p.event?.shiftKey || it.qty === 1)) { s.menuUseSlot(i); return this.refresh(); }
+        this.held = i;
+        this.heldHalf = right;
+        this.refresh();
       });
       z.on('pointerover', () => { this.hover = it ? { id: it.id, qty: it.qty, i, roll: it.roll } : null; this._drawTip(); });
       this.root.add(z);
     }
     // the held stack follows the cursor
     if (this.held != null && inv[this.held]) {
-      const ghost = this._icon(0, 0, inv[this.held].id).setDepth(9700);
-      const follow = (p) => ghost.setPosition(p.x / 4, p.y / 4);
+      const stack = inv[this.held], qty = this.heldHalf ? splitQuantity(stack.qty) : stack.qty;
+      const ghost = this._icon(0, 0, stack.id).setDepth(9700);
+      const amount = qty > 1 ? this._t(0, 0, `${qty}`, F(6, C.text)).setOrigin(1, 1) : null;
+      const follow = (p) => { ghost.setPosition(p.x / 4, p.y / 4); amount?.setPosition(ghost.x + 9, ghost.y + 9); };
       follow(s.input.activePointer);
       s.input.on('pointermove', follow); ghost.once('destroy', () => s.input.off('pointermove', follow));
     }
     // tooltip area
     this.tipY = gy + 4 * (S + GAP) + 16; this.tipX = gx; this.tipW = b.x + b.w - gx - 10;
-    this._t(gx, b.y + b.h - 12, 'click: pick up / place · right: use / half · G / shift+G: drop', F(6, '#4a5175'));
+    this._t(gx, b.y + b.h - 20, 'Right click: split · Shift+right click: use', F(6, C.sub));
+    this._t(gx, b.y + b.h - 12, 'G: drop one · Shift+G: drop stack', F(6, C.sub));
     this._drawTip();
   }
 
