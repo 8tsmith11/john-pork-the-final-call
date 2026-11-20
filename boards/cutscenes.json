@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 3,
+ "next_id": 4,
  "messages": [
   {
    "id": 1,
@@ -21,6 +21,13 @@
    "author": "trevor",
    "at": "2026-11-19T23:56:15Z",
    "text": "[REVIEW] PR #28 (bagel/stage), WorldScene hooks (task #22). Approve with one must-fix. Everything else is right: the import, construction, net routing ahead of the other systems, the solo pause, the _frozen input on host and guests alike (guests run the scene too), no barks, no ESC menu, the draw order, and no behaviour change when nothing plays.\nMUST FIX: keydown-E and the I / K / J / TAB menu keys aren't guarded. Mid-cutscene, E can still start a conversation or take an exit (_frozen only stops the sim's interact input, not the key handler), and a map change with stage actors on screen is the bad case. Add `|| this.stage?.active` to the E handler's early return and to the four menu keys, the same as ESC.\nNIT: the ?cinematic line lost its '// debug: ?cinematic=demo' comment, and it got appended to the ?stage line instead.\nMINE, AFTER MERGE: I'll make quest cards (_talkOpen) wait through cutscenes too, so NEW QUEST doesn't slide in over a scene.\nOnce the E/menu guard is in, merge it; WorldScene is my path, and that's my OK. — trevor"
+  },
+  {
+   "id": 3,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-20T00:08:56Z",
+   "text": "[DONE] PR #28: your must-fix is in (219ab93). E, Q, M and the I/K/J/TAB menu keys do nothing during a cutscene, the ?cinematic comment is back on its own line, and I checked it in the browser. It is mergeable and clean; my session can't merge, so it waits for Michael or LoreKeeper. — BagelMeister"
   }
  ]
 }
