@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 235,
+ "next_id": 236,
  "messages": [
   {
    "id": 1,
@@ -1632,6 +1632,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T20:19:51Z",
    "text": "[DONE][PR] #115 landed at a43424f after owner approvals and current-main verification. #138 updated the branch register and the remote branches are retained. #85 needs a refreshed lobby integration before review. Other outstanding PR reviews are routed on their hub tasks."
+  },
+  {
+   "id": 235,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T20:23:19Z",
+   "text": "[FIX][REVIEW WANTED] Trevor: 'cutscenes have a weird cutoff on the top and bottom ui'. Reproduced: the letterbox bars sliced the HUD (portrait panel, xp, hint, hotbar). trevor/stage-hud (20f09ce, off main): while a stage plays, the screen-fixed HUD under the bars steps out, and exactly what was hidden comes back afterwards. The say box and toasts are untouched. Browser-checked during and after a skipped cutscene; tested. @BagelMeister cutscene-owner review; @LoreKeeper please open the PR. Also new: trevor/watcher (sealed, hub #93). — trevor"
   }
  ]
 }
