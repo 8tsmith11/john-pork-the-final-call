@@ -22,7 +22,7 @@ CLONES = []
 
 
 def sh(*args, cwd=None, check=True):
-    r = subprocess.run(args, cwd=cwd, capture_output=True, text=True)
+    r = subprocess.run(args, cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace")   # hub.py prints UTF-8 everywhere
     if check and r.returncode != 0:
         raise AssertionError(f"{' '.join(map(str, args))} failed:\n{r.stdout}{r.stderr}")
     return r
@@ -159,6 +159,43 @@ def main():
     check("done takes it off Pending review", "a cutscene" not in readme.split("## Pending review")[1].split("## Boards")[0])
     hub("BagelMeister", "review", rid, "--note", "again", ok=False)
     check("a done task can't go back to review (reopen it first)", True)
+
+    # Whose turn it is on a pending review (Michael): who has to act next, shown wherever pending review is listed
+    hub("trevor", "add", "a fix", "--to", "trevor")
+    fid = str(state("tasks.json")["next_id"] - 1)
+    out = hub("trevor", "review", fid, "--note", "PR #7")
+    check("review without --turn asks for one", f"hub.py turn {fid} NAME" in out)
+    check("an unset turn shows as not set", "turn: not set" in hub("LoreKeeper", "review"))
+    hub("trevor", "turn", fid, "Johnpork, gonman", "--for", "systems and map review")
+    ft = {x["id"]: x for x in state("tasks.json")["tasks"]}[int(fid)]
+    check("turn takes several names, spelled as the role list spells them", ft["turn"] == ["JohnPork", "gonman"] and ft["turn_for"] == "systems and map review" and ft.get("turn_at"))
+    out = hub("LoreKeeper", "review")
+    check("hub.py review shows whose turn it is and what for", "turn: JohnPork, gonman (systems and map review)" in out)
+    check("hub.py review sums up who it's waiting on", "whose turn:" in out and "JohnPork 1" in out and "gonman 1" in out)
+    readme = sh("git", "--git-dir", str(TMP / "remote.git"), "show", "hub:README.md").stdout
+    pending = readme.split("## Pending review")[1].split("## Boards")[0]
+    check("the dashboard shows whose turn it is", "turn: JohnPork, gonman" in pending and "Whose turn: " in pending)
+    check("--turn NAME filters to that person's turn", "a fix" in hub("BagelMeister", "review", "--turn", "gonman") and "a fix" not in hub("BagelMeister", "review", "--turn", "tts"))
+    check("--mine is your own turn", "a fix" in hub("gonman", "review", "--mine", clone=1) and "a fix" not in hub("tts", "review", "--mine"))
+    check("inbox points at reviews where it's your turn", "pending review where it's gonman's turn" in hub("gonman", "inbox"))
+    hub("gonman", "turn", fid, "tts", "--for", "tests")   # gonman passes it on
+    nxt = hub("tts", "next")   # tts's own list is empty here (gonman's isn't: own work still comes first)
+    check("next puts reviews where it's your turn right after your own list", "pending reviews where it's your turn" in nxt and "a fix" in nxt, nxt)
+    check("but your own task list still comes first", "your task list" in hub("gonman", "next"))
+    hub("gonman", "turn", fid, "Nobody", ok=False)
+    check("turn refuses a name nobody on the hub has", True)
+    hub("gonman", "turn", fid, "Trevor", "--for", "Trevor's yes")
+    check("the turn is passed on; a human's name and an agent's handle that differ only in case are one name",
+          {x["id"]: x for x in state("tasks.json")["tasks"]}[int(fid)]["turn"] == ["trevor"])
+    hub("gonman", "turn", rid, "tts", ok=False)
+    check("turn only works on pending reviews", True)
+    hub("LoreKeeper", "reopen", fid, "--note", "changes")
+    ft = {x["id"]: x for x in state("tasks.json")["tasks"]}[int(fid)]
+    check("reopen clears the turn (it's the owner's again)", "turn" not in ft and "turn_for" not in ft)
+    hub("trevor", "review", fid, "--note", "PR #7, revised", "--turn", "LoreKeeper", "--for", "merge")
+    check("review --turn sets it in one go", {x["id"]: x for x in state("tasks.json")["tasks"]}[int(fid)]["turn"] == ["LoreKeeper"])
+    hub("LoreKeeper", "done", fid, "--note", "merged")
+    check("done clears the turn", "turn" not in {x["id"]: x for x in state("tasks.json")["tasks"]}[int(fid)])
 
     # Anonymous human suggestions (Michael, general #43 with trevor's #45 safeguards)
     hub("whoever", "anon", "Could the scooter honk?")
