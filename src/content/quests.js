@@ -1,6 +1,6 @@
 // Quests as data. Hooks for writers (no engine code needed):
 //   giver: npc id · ask: flag set when you first talk to the giver (with `pitch` as their line)
-//   give: { item, flag, refuse }  → talking to the giver while carrying `item` hands it over, sets flag
+//   give: { item, flag, refuse }  → the NPC offers a hand-in action when the player carries `item`
 //   inspect: { obj, flag, text }  → examining `obj` while the quest is active sets flag (appends text)
 //   report: { needs, flag }       → talking to the giver after `needs` is set sets flag
 // Quests as data. Stages complete when their `done(flags, save)` test passes; the engine checks each

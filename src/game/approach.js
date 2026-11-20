@@ -8,8 +8,10 @@ import { ITEMS } from '../content/items.js';
 import * as Inv from '../engine/inventory.js';
 import { Rng, hashString } from '../engine/rng.js';
 import { sfx } from '../audio/audio.js';
+import { getLang, tr } from '../i18n.js';
 
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const APPROACH_ROWS = 8;
 
 export class Approach {
   constructor(scene) {
@@ -20,7 +22,7 @@ export class Approach {
     this.adv = new Set();      // `${char}:${npcId}` with advantage on the next pickpocket (host)
     scene.input.keyboard.on('keydown', (ev) => {
       if (!scene.menu?.startsWith?.('approach:')) return;
-      const n = parseInt(ev.key, 10), list = this.options(this.target);
+      const n = parseInt(ev.key, 10), list = this.shownOptions ?? [];
       if (n >= 1 && n <= list.length) this.choose(list[n - 1].id);
     });
   }
@@ -28,13 +30,20 @@ export class Approach {
   roleOf(o) { return o.role ?? ROLE_OF[o.id] ?? 'resident'; }
   options(o) {
     if (!o) return [];
+    const c = this.s.save.party[this.s.character];
+    const handIns = this.s._questHandIns(o, this.s.character)
+      .filter((q) => Inv.count(c, q.give.item) > 0)
+      .map((q) => ({
+        id: `give:${q.id}`,
+        name: `${getLang() === 'es' ? 'Entregar' : 'Give'} ${tr(ITEMS[q.give.item].name)} (1)`,
+      }));
     const allowed = ALLOWED[this.roleOf(o)];
-    return APPROACHES.filter((a) => !allowed || allowed.includes(a.id));
+    return [...handIns, ...APPROACHES.filter((a) => o.approach === false ? a.id === 'talk' : !allowed || allowed.includes(a.id))];
   }
 
   /** Interaction hook: open the approach menu for an NPC. Returns true if it took over. */
   intercept(near) {
-    if (!near?.npc || near.romance || near.armorer || near.approach === false) return false;
+    if (!near?.npc || near.romance || near.armorer || (near.approach === false && this.options(near).length === 1)) return false;
     if (this.passThrough === near.id) { this.passThrough = null; return false; }
     this.target = near;
     this.s.gameMenu.show(`approach:${near.id}`);
@@ -45,6 +54,7 @@ export class Approach {
     const s = this.s, o = this.target;
     if (!o) return;
     s._closeMenu();
+    if (kind.startsWith('give:')) return s._giveQuestItem(o, kind.slice(5));
     if (kind === 'talk') { this.passThrough = o.id; s._clickedObj = o; return; }
     if (s.mode === 'client') s.net.send({ t: 'approach', npc: o.id, kind });
     else this._say(s.localId, this.resolve(s.character, o, kind));
@@ -93,7 +103,8 @@ export class Approach {
   /** Host: roll the approach and apply it. Returns what to show the player. */
   resolve(who, o, kind) {
     const s = this.s, now = s.time.now, role = this.roleOf(o), A = APPROACHES.find((a) => a.id === kind);
-    if (!A || !this.options(o).some((a) => a.id === kind)) return '';
+    const allowed = ALLOWED[role];
+    if (!A?.ability || o.approach === false || (allowed && !allowed.includes(kind))) return '';
     const name = o.label?.replace(/\s*\(.*\)$/, '') ?? 'They';
     const fill = (t, extra = {}) => t.replace(/\{(\w+)\}/g, (_, k) => ({ name, ...extra })[k] ?? '');
     const lines = (outcome) => GUARD_LINES[kind]?.[outcome] && role === 'guard' ? GUARD_LINES[kind][outcome] : LINES[kind]?.[outcome] ?? LINES[kind]?.lose;
@@ -138,18 +149,23 @@ export class Approach {
   draw(menu, g) {
     const s = this.s, b = menu.box, o = this.target, who = s.character, c = s.save.party[who];
     if (!o) return;
-    const role = this.roleOf(o), sc = scoresOf(c, who);
+    const sc = scoresOf(c, who), options = this.options(o);
+    const rows = Math.min(options.length, APPROACH_ROWS);
+    const keys = rows === 1 ? '1' : `1-${rows}`;
+    const choose = getLang() === 'es' ? 'elegir' : 'choose';
     menu._t(b.x + 12, b.y + 8, (o.label ?? '').toUpperCase(), { fontFamily: 'monospace', fontSize: '10px', color: '#ffb347' });
-    menu._t(b.x + b.w - 12, b.y + 8, '[1-7] choose  [ESC] back', { fontFamily: 'monospace', fontSize: '7px', color: '#9aa3c7' }).setOrigin(1, 0);
+    menu._t(b.x + b.w - 12, b.y + 8, `[${keys}] ${choose}  ${tr('[ESC] back')}`, { fontFamily: 'monospace', fontSize: '7px', color: '#9aa3c7' }).setOrigin(1, 0);
     const wary = (this.wary.get(o.id) ?? 0) > s.time.now;
     menu._t(b.x + 12, b.y + 22, `How do you want to handle this?${wary ? '  (They\'re wary of you right now.)' : ''}`, { fontFamily: 'monospace', fontSize: '7px', color: '#9aa3c7' });
-    this.options(o).forEach((a, i) => {
+    const list = menu.scroller.list(`approach:${o.id}`, { n: options.length, per: APPROACH_ROWS, onPick: (i) => this.choose(options[i].id) });
+    this.shownOptions = options.slice(list.first, list.last);
+    this.shownOptions.forEach((a, i) => {
       const y = b.y + 36 + i * 24, x = b.x + 12, m = a.ability ? modOf(sc[a.ability]) : null;
-      g.fillStyle(0x1a2030).fillRoundedRect(x, y, b.w - 24, 20, 3).lineStyle(1, 0xffb347, 0.6).strokeRoundedRect(x, y, b.w - 24, 20, 3);
+      g.fillStyle(i + list.first === list.sel ? 0x282e45 : 0x1a2030).fillRoundedRect(x, y, b.w - 28, 20, 3).lineStyle(1, 0xffb347, 0.6).strokeRoundedRect(x, y, b.w - 28, 20, 3);
       menu._t(x + 8, y + 5, `${i + 1}. ${a.name}`, { fontFamily: 'monospace', fontSize: '9px', color: '#e8e8f0' }, () => this.choose(a.id));
       if (a.ability) menu._t(x + 120, y + 6, `${ABILITIES[a.ability].short} ${fmtMod(m)}  ·  ${{ charm: 'win them over', deceive: 'talk them into it', intimidate: 'lean on them', insight: 'are they lying?', investigate: 'look them over', pickpocket: 'lift something' }[a.id]}`, { fontFamily: 'monospace', fontSize: '7px', color: m > 0 ? '#7fb069' : m < 0 ? '#d65db1' : '#9aa3c7' });
-      else menu._t(x + 120, y + 6, 'say hello, ask about things', { fontFamily: 'monospace', fontSize: '7px', color: '#9aa3c7' });
+      else if (a.id === 'talk') menu._t(x + 120, y + 6, 'say hello, ask about things', { fontFamily: 'monospace', fontSize: '7px', color: '#9aa3c7' });
     });
-    void role;
+    menu.scroller.bar(g, b.x + b.w - 13, b.y + 36, 188, list);
   }
 }
