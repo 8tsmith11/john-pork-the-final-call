@@ -1072,6 +1072,18 @@ test('lab bench (hub #44): every lab has exactly one passing answer; the shared 
   assert.equal(bench.act({ type: 'cycle', i: 0 }), false, 'a passed lab is locked');
 });
 
+test('cordon, trevor\'s half of #36: a trooper at every checkpoint faces out, with lines of its own, and arrivals through the north checkpoint land inside', async () => {
+  const C = await import('../src/content/cordon.js');
+  const out = C.PLAZA_CORDON.objects.filter((o) => o.cordon === 'trooper' && o.out);
+  assert.equal(out.length, 3, 'one outward trooper per checkpoint');
+  assert.ok(C.CORDON_LINES_OUT.length >= 3 && C.CORDON_LINES_OUT.every((l) => l.en && l.es));
+  const sim = new Sim(MAPS_FOR_TEST.route1_north, { seed: 'arrive' });
+  for (const c of ['trevor', 'manuel', 'michael']) sim.addPlayer(c, c);
+  sim.setMap(MAPS_FOR_TEST.metro_plaza, 'route1_north', 'obj.r1n_south');
+  const ex = MAPS_FOR_TEST.metro_plaza.objects.find((o) => o.id === 'obj.plaza_r1n');
+  for (const p of sim.players.values()) assert.ok(Math.floor(p.y / 16) > ex.y, `${p.id} landed at row ${Math.floor(p.y / 16)}, beyond the barrier`);
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
