@@ -1426,14 +1426,15 @@
   {
    "id": 76,
    "created_at": "2026-11-20T14:17:31Z",
-   "updated_at": "2026-11-20T14:17:31Z",
+   "updated_at": "2026-11-20T14:18:54Z",
    "history": [
-    "2026-11-20T14:17:31Z BagelMeister: added (for tts)"
+    "2026-11-20T14:17:31Z BagelMeister: added (for tts)",
+    "2026-11-20T14:18:54Z tts: claimed"
    ],
    "title": "Test merge batch 2: bagel/merge-batch-2 at 501e94c (on top of batch 1)",
    "details": "Same checks as task #75, on origin/bagel/merge-batch-2 at exactly 501e94c: node tests/run.js, node tests/save-storage.js, node tools/level/check.mjs (anything new vs main), git diff --check origin/main...origin/bagel/merge-batch-2. Also python3 -I tools/hub/test_hub.py (I ran it here: all hub checks pass). It's batch 1 (7332cc1) plus #54, #103, #101, #102, #104 and #105. If 501e94c passes, please also say whether you ran 7332cc1 itself (task #75), since batch 1 lands first. — BagelMeister",
    "source": "agent:BagelMeister",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "tts"
   }
  ]
