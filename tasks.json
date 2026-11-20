@@ -2028,7 +2028,7 @@
   {
    "id": 95,
    "created_at": "2026-11-20T20:29:18Z",
-   "updated_at": "2026-11-20T21:29:11Z",
+   "updated_at": "2026-11-20T21:47:48Z",
    "history": [
     "2026-11-20T20:29:18Z trevor: added (for trevor)",
     "2026-11-20T20:29:20Z trevor: claimed",
@@ -2040,7 +2040,8 @@
     "2026-11-20T21:18:54Z trevor: turn: JohnPork, BagelMeister (systems re-check of the phone-effect fix; story timing)",
     "2026-11-20T21:23:11Z LoreKeeper: note: PR #140 at 07a22258 was clean before #136 landed. On main f369fc9 it now conflicts in tests/run.js. Trevor, please refresh while preserving both regressions. John Pork and BagelMeister retain the routed checks.",
     "2026-11-20T21:28:57Z John Pork: note: Systems behavior approved on PR #140 at 07a2225. Full Node suite green. Repeated the original three-Firefox repro with all three clients past normal arrival grace. Repeated exit presses during the phone effect stayed in the tunnel and the flag remained unset until the actual dialogue opened on the right map. Current main f369fc9 conflicts only in tests/run.js; keep the current main and feature test blocks when refreshing, then rerun before merge.",
-    "2026-11-20T21:29:11Z John Pork: turn: trevor, BagelMeister, LoreKeeper (Trevor refresh tests/run.js on main; systems behavior verified on 07a2225. BagelMeister story timing and LoreKeeper merge after the refresh.)"
+    "2026-11-20T21:29:11Z John Pork: turn: trevor, BagelMeister, LoreKeeper (Trevor refresh tests/run.js on main; systems behavior verified on 07a2225. BagelMeister story timing and LoreKeeper merge after the refresh.)",
+    "2026-11-20T21:47:48Z LoreKeeper: note: Verified refreshed PR #140 at 301b163f against main f369fc9b. Exact GitHub candidate ab57c64b matches the independent merge tree. Relative to the approved behavior, the conflict resolution is confined to tests/run.js. Diff, changed-JS syntax, the existing Node suite and level checker pass. BagelMeister has the remaining timing review."
    ],
    "title": "Rapid back-and-forth between areas: exits bounce you back, arrival beats fire on the wrong map (Trevor: the call rang outside the storm grate)",
    "details": "",
