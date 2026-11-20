@@ -1581,7 +1581,7 @@
   {
    "id": 78,
    "created_at": "2026-11-20T14:30:43Z",
-   "updated_at": "2026-11-20T17:49:28Z",
+   "updated_at": "2026-11-20T18:04:38Z",
    "history": [
     "2026-11-20T14:30:43Z BagelMeister: added (for BagelMeister)",
     "2026-11-20T14:30:54Z BagelMeister: handed off to the help board; limit resets 2026-11-21T02:30:54Z",
@@ -1594,7 +1594,8 @@
     "2026-11-20T15:50:04Z LoreKeeper: note: PR #85 at db7fb9b previews clean on f784ab8 and with partial batch 3 at 1e031d2. The refresh includes both gear handoffs. Trevor and TTS have exact-head review on hub #71. Pairing #85 with #115 at 6b04ddb conflicts in LobbyScene.js only. John Pork, coordinate landing order with Trevor and keep the reconnect listener and its shutdown cleanup. Batch 3 still needs the #97 refresh and final TTS verification.",
     "2026-11-20T15:51:17Z LoreKeeper: note: Late refresh: PR #77 now points to 03d2253, a clean main refresh with scope unchanged. Partial batch 3 contains its prior head 38430f3. Adding the refreshed head conflicts only in tests/run.js because the same regression moved. Gonman, please confirm keeping one copy of that regression and all unrelated tests in the final batch. The final candidate must include 03d2253 and go back to TTS.",
     "2026-11-20T16:04:58Z LoreKeeper: note: PR #77 refreshed again to 467cc45 and Trevor approved this head in general #192. Exact GitHub candidate 880c855 on f784ab8 passes diff check. Adding this head to partial batch 3 at 1e031d2 still conflicts only in tests/run.js. Use this refreshed head in the final batch, preserve the updated regression and unrelated tests, and send the resolved integration tip to TTS. #97 still needs its refresh. The #85 follow-up is in draft #117 and stays stacked on #85.",
-    "2026-11-20T17:49:28Z LoreKeeper: note: Compatible save prerequisite #80 landed separately at d0f7b63 after owner approval and current-base verification. The exact source 5d7341b is an ancestor of main; retain it in batch history. #73 is refreshed at 95ac4eb, previews clean after #80, and passed Node and level verification. Hub #49 tracks TTS Spanish review. Use the refreshed head for any final batch candidate and have TTS verify the resulting head."
+    "2026-11-20T17:49:28Z LoreKeeper: note: Compatible save prerequisite #80 landed separately at d0f7b63 after owner approval and current-base verification. The exact source 5d7341b is an ancestor of main; retain it in batch history. #73 is refreshed at 95ac4eb, previews clean after #80, and passed Node and level verification. Hub #49 tracks TTS Spanish review. Use the refreshed head for any final batch candidate and have TTS verify the resulting head.",
+    "2026-11-20T18:04:38Z LoreKeeper: note: PR #73 landed separately at 3a6db1f after Spanish clearance and full current-main verification. Both #73 and #80 exact source heads are now ancestors of main. Keep them in batch history and exclude them from remaining PRs to land. Build the remaining candidate on current main and use the refreshed #77 head. Existing owner and TTS gates still apply."
    ],
    "title": "Stand-in merger: finish the PR queue (batch 3, #107, branch register, held PRs)",
    "details": "Michael asked BagelMeister to do LoreKeeper's PR job (D-020), then to hand the rest to the help board. The full prompt is in the handoff.",
