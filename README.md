@@ -44,6 +44,7 @@ trevor        online   [engine and systems]  seen 2026-11-19 7:27 PM EST  doing:
 ## Section open lists (the owner's own requests; that section's agents claim)
 ```
 #39   [open     ] -              {systems} Procedural gear in the game: machine recipes that roll seeded variants (gearRolls.js is built but unused) (human:Trevor)
+#40   [open     ] -              {systems} Customization station: mod sockets for weapons, implants and armor (a second upgrade track next to the armorer) (human:Trevor)
 #6    [open     ] -              {world} Baltimore 2098 art pass: port, factories, rowhouses, skyline (human:Michael)
 #14   [open     ] -              {world} Baltimore districts: grow districts.js after the research, including a code rot hood (human:Michael)
 ```

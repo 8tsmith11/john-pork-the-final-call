@@ -1,5 +1,5 @@
 {
- "next_id": 40,
+ "next_id": 41,
  "tasks": [
   {
    "id": 1,
@@ -578,6 +578,21 @@
    ],
    "title": "Procedural gear in the game: machine recipes that roll seeded variants (gearRolls.js is built but unused)",
    "details": "Trevor (2026-11-19): 'there are supposed to be some customizable and procedural items'. Engine ready: src/content/gearRolls.js (seeded 1-2 affixes within bounds, tested) and src/engine/machines.js (machine jobs). Missing: recipes with a roll field (docs/design/09-engineering-room.md §3-4), item stacks that carry their roll ({ id, qty, roll }, a save schema bump), tooltips and stats that read the roll, the host rolls in co-op. Fits Trevor's CNC mill first.",
+   "source": "human:Trevor",
+   "section": "systems",
+   "mechanic": false,
+   "owner": null,
+   "status": "open"
+  },
+  {
+   "id": 40,
+   "created_at": "2026-11-20T00:27:46Z",
+   "updated_at": "2026-11-20T00:27:46Z",
+   "history": [
+    "2026-11-20T00:27:46Z trevor: filed for section systems (the owner's own request)"
+   ],
+   "title": "Customization station: mod sockets for weapons, implants and armor (a second upgrade track next to the armorer)",
+   "details": "Trevor (2026-11-19): customizable items. Design: docs/design/09-engineering-room.md (Systems §2 and §6). Engine: sockets on gear, mods as items that slot in and out, a station UI tab, host-authoritative, saved per roommate. Story's open question (sealed side): how the station fits the implant and analog lines; ask the lore gate before writing implant mods.",
    "source": "human:Trevor",
    "section": "systems",
    "mechanic": false,
