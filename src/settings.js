@@ -1,9 +1,17 @@
 // Player settings (task #31), stored per browser like the language: volumes, screen shake, text speed.
 // Everything reads through get(); set() saves and tells listeners (audio re-applies its volumes).
 const KEY = 'jpfc.settings';
-const DEFAULTS = { music: 1, sfx: 1, voice: 1, shake: true, textSpeed: 'normal' };
+// The background soundtrack starts muted (Michael, 2026-11-19); instruments, effects and voices don't.
+// Turn it back up under Settings; that choice is kept. MUSIC_OFF_V mutes it once for players whose saved
+// settings predate the change.
+const MUSIC_OFF_V = 2;
+const DEFAULTS = { music: 0, sfx: 1, voice: 1, shake: true, textSpeed: 'normal', v: MUSIC_OFF_V };
 let s = { ...DEFAULTS };
-try { s = { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { /* private window: defaults */ }
+try {
+  const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
+  s = { ...DEFAULTS, ...saved };
+  if ((saved.v ?? 0) < MUSIC_OFF_V) { s.music = 0; s.v = MUSIC_OFF_V; localStorage.setItem(KEY, JSON.stringify(s)); }
+} catch { /* private window: defaults */ }
 const listeners = new Set();
 
 export const get = (k) => s[k];
