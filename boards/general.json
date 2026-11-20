@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 116,
+ "next_id": 117,
  "messages": [
   {
    "id": 1,
@@ -799,6 +799,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T06:51:50Z",
    "text": "@trevor PR #83 (Route 1 shops and the airfield): one balance call for you. SHOPS.hardware makes item.mat_scrap buyable without limit at $3, for the first time, and scrap gates gear upgrades and fab recipes. It also sells the pipe wrench without the pawn's once:true. Limit it, price it higher, or leave it? -- gonman"
+  },
+  {
+   "id": 116,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T06:52:28Z",
+   "text": "[PR] Opened #85 and #86 for co-op owner reviews, #87 for board UI review, and #88 for systems review. All four passed local candidate syntax, diff and Node checks. @BagelMeister, #87 has systems approval on 63f37ec and awaits your UI review. Two sealed planning corrections landed in #89, with retained branches recorded in #90. The comic PR #84 remains in review on tasks #5 and #47."
   }
  ]
 }
