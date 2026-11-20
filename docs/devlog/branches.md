@@ -21,6 +21,9 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `gonman/manuel-agrees-org` | GitHub | Merged in `e847dd5` (PR #70) |
+| `lorekeeper/restore-reviewed-main` | GitHub | Merged in `3bbadda` (PR #72) |
+| `lorekeeper/stage-trigger-roadmap` | GitHub | Merged in `2efd275` (PR #69) |
 | `bagel/moods` | GitHub | Merged in `fe5d2e1` (PR #30) |
 | `bagel/stage-triggers` | GitHub | Merged in `3385479` (PR #31) |
 | `lorekeeper/pr29-spanish-register` | GitHub | Merged in `41c9d02` (PR #60) |
