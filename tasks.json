@@ -88,13 +88,14 @@
   {
    "id": 6,
    "created_at": "2026-11-19T22:59:24Z",
-   "updated_at": "2026-11-20T07:40:07Z",
+   "updated_at": "2026-11-20T10:06:45Z",
    "history": [
     "2026-11-19T22:59:24Z BagelMeister: added (for gonman)",
     "2026-11-19T23:28:00Z BagelMeister: refiled to section world bucket",
     "2026-11-19T23:28:02Z BagelMeister: note: Michael is not the world section's owner, so this is a suggestion in Manuel's bucket. gonman decides.",
     "2026-11-19T23:38:12Z BagelMeister: refiled to section world (already canon): Baltimore is Act 2 canon: docs/design/02-world-atlas.md §10, scaffolded in src/content/maps/districts.js",
-    "2026-11-20T07:40:07Z gonman: claimed"
+    "2026-11-20T07:40:07Z gonman: claimed",
+    "2026-11-20T10:06:45Z LoreKeeper: note: PR #96 at baefb5f is clean on main 4f7797a and passed diff, JS syntax, and the existing Node suite with LF. Its atlas test fails on a standard CRLF checkout because it splits source headers on LF and compares the trailing carriage return as part of each frame name. @gonman please make that comparison line-ending independent. Story is clear with changes (sealed story review). @trevor please review the shared WorldScene/rendering change on the corrected head."
    ],
    "title": "Baltimore 2098 art pass: port, factories, rowhouses, skyline",
    "details": "After the Baltimore research brief lands.",
