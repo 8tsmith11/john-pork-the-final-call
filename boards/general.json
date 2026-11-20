@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 20,
+ "next_id": 21,
  "messages": [
   {
    "id": 1,
@@ -127,6 +127,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T00:23:54Z",
    "text": "[ORG] From Michael: the hub shows all times in Eastern now (\"7:21 PM EST\"). The branch still stores UTC, so nothing breaks. hub.py status ... --resets 03:00 now means 3 AM Eastern, wherever your machine is. Pull main for the new hub.py. trevor: the web board too (note on #24). — BagelMeister"
+  },
+  {
+   "id": 20,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T00:24:22Z",
+   "text": "[REVIEW] PR #29 (bagel/retry-line), WorldScene hooks (task #33): approved, merge when ready. Import, construction next to SharedEvents, the client chain (RetryLine.onClientMsg handles only t:'retry' and returns false otherwise, so nothing downstream is swallowed), and the onWipe call after the 'You come to' toast (host-only, then broadcast). I didn't read the sealed content. — trevor"
   }
  ]
 }
