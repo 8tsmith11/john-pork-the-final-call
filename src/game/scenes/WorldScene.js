@@ -215,9 +215,10 @@ export class WorldScene extends Phaser.Scene {
       if (person) { person.mode = 'wait'; person.t = 4; person.spr.setFlipX(person.x > me.x); this._say(`${person.name.toUpperCase()}\n${this.crowd.lineFor(person)}`); if (person.pixel) this._flag?.('secrets.pixelated.found', true); babble(null, 'hey there friend'); }
     });
     this.input.on('pointerdown', (ptr) => this._onClick(ptr));
-    this.input.keyboard.on('keydown-H', () => { if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
-    this.input.keyboard.on('keydown-F', () => { if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
+    this.input.keyboard.on('keydown-H', () => { if (this.stage?.active) return; if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
+    this.input.keyboard.on('keydown-F', () => { if (this.stage?.active) return; if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
     this._showMap(startMap);
+    this.stage.holdForHost(this.initialSnapshot?.stageId);
     this.ready = true;
     // Act 1's witnessed beats are staged in-engine first (hub #48; src/content/stage/act1_*.js), then the scene plays.
     // A beat of delay so the roommates are on screen for the cutscene to stand in for them.
@@ -659,7 +660,7 @@ export class WorldScene extends Phaser.Scene {
     this.net.occupySeat(character, peer);
     this._lastSnap = null;
     this._worldSig = null;
-    const snapshot = { ...this.sim.snapshot(), doors: [...this.sim.map.doors.values()].filter(d => d.open).map(d => d.id) };
+    const snapshot = { ...this.sim.snapshot(), doors: [...this.sim.map.doors.values()].filter(d => d.open).map(d => d.id), stageId: this.stage?.active?.id ?? null };
     this.net.send(peer, { t: 'start', save: this.save, assignments: { [peer]: character }, snapshot });
   }
 
@@ -733,17 +734,28 @@ export class WorldScene extends Phaser.Scene {
           }
         }
       });
-      this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
+      this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot(), stageId: this.stage?.active?.id ?? null }) });
       this.time.addEvent({ delay: 500, loop: true, callback: () => this._broadcastWorld() });
       on('join', () => { this._worldSig = null; });
     } else if (this.mode === 'client') {
+      let rejoinStageSynced = false;
       on('msg', (msg) => {
         if (msg.t === 'toast') { this._toast(msg.text); return; }
         if (msg.t === 'lattice') { this._table().onClientMsg(msg); return; }
         if (msg.t === 'bastion') { this._bastion().onClientMsg(msg); return; }
         if (msg.t === 'lab') { this._lab().onClientMsg(msg); return; }
         if (this.shared?.onMsg(msg) || this.stage?.onClientMsg(msg) || this.retry?.onClientMsg(msg) || this.moods?.onClientMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg)) return;
-        if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
+        if (msg.t === 'snap') {
+          this.snapBuf.push({ at: performance.now(), snap: msg.snap });
+          if (this.snapBuf.length > 20) this.snapBuf.shift();
+          if (this.initialSnapshot && this.stage) {
+            this.stage.syncHostStage(msg.stageId);
+            if (!rejoinStageSynced) {
+              rejoinStageSynced = true;
+              this.stage.holdForHost(msg.stageId);
+            }
+          }
+        }
         if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text, msg.questRead, msg.itemIcons);
         if (msg.t === 'caption') this._caption(msg.text);
         if (msg.t === 'reload') { this.scene.restart({ mode: 'client', net: this.net, save: msg.save, character: this.character }); return; }
@@ -1003,6 +1015,7 @@ export class WorldScene extends Phaser.Scene {
   }
   // Select a hotbar slot (1-9 / wheel). A weapon or gun in that slot becomes the one you hold.
   selectHot(i) {
+    if (this.stage?.active) return;
     const c = this.save.party[this.character]; if (!c) return;
     i = ((i % 9) + 9) % 9;
     this._hotFlash = { i, at: this.time.now };
@@ -2233,7 +2246,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _onClick(ptr) {
-    if (!this.ready || ptr.button !== 0) return;
+    if (!this.ready || ptr.button !== 0 || this.stage?.active) return;
     const { x: sx, y: sy } = toView(ptr);
     const qb = this._qbSticky;
     if (qb && !this._talkOpen() && sx >= qb.x0 && sx <= qb.x1 && sy >= qb.y0 && sy <= qb.y1) { this.input2.blockAttack = true; qb.leave(); return; }   // a hidden card (dialogue up) can't be clicked away
@@ -2312,7 +2325,13 @@ export class WorldScene extends Phaser.Scene {
     this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.gags?.update(snap); this.pacifier?.update(snap); this.stands?.update(); this.moods?.update(snap); this.stage?.update(snap);   // cutscene stand-ins draw last
   }
 
-  _frozen(inp) { return this._dlgStops() || this.menu || this.stage?.active ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : this.dlg ? { ...inp, interact: false } : inp; }
+  _frozen(inp) {
+    const inStage = !!this.stage?.active;
+    if (this._dlgStops() || this.menu || inStage) {
+      return { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false, skill: inStage ? false : inp.skill };
+    }
+    return this.dlg ? { ...inp, interact: false } : inp;
+  }
   /** A story dialogue is up (the world waits); free dialogue lets everyone keep moving and fighting. */
   _dlgStops() { return !!this.dlg && !this.dlgFree; }
 
