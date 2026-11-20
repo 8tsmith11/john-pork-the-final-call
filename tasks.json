@@ -1,5 +1,5 @@
 {
- "next_id": 80,
+ "next_id": 81,
  "tasks": [
   {
    "id": 1,
@@ -1530,6 +1530,19 @@
    "status": "review",
    "owner": "trevor",
    "review": "branch trevor/staked-tables"
+  },
+  {
+   "id": 80,
+   "created_at": "2026-11-20T15:35:04Z",
+   "updated_at": "2026-11-20T15:35:04Z",
+   "history": [
+    "2026-11-20T15:35:04Z trevor: added (for trevor)"
+   ],
+   "title": "Act 1 ending: a speaking character at the tunnel mouth is heard but never drawn (Trevor's playtest)",
+   "details": "",
+   "source": "human:Trevor",
+   "status": "assigned",
+   "owner": "trevor"
   }
  ]
 }
