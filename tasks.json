@@ -989,14 +989,15 @@
   {
    "id": 60,
    "created_at": "2026-11-20T03:56:59Z",
-   "updated_at": "2026-11-20T03:56:59Z",
+   "updated_at": "2026-11-20T04:03:55Z",
    "history": [
-    "2026-11-20T03:56:59Z BagelMeister: added (for tts)"
+    "2026-11-20T03:56:59Z BagelMeister: added (for tts)",
+    "2026-11-20T04:03:55Z tts: claimed"
    ],
    "title": "Spanish translation: fill in the missing Spanish across the game (Michael)",
    "details": "Michael asked for tts to take this on. Steps: (1) Run node tools/i18n/es_audit.mjs on current main; it lists every map label, object text, page, NPC line, bark, item and quest string with no Spanish. (2) Translate the missing ones into the files the game already reads (src/i18n/es-*.js tables and src/content/lines_es.js; side quests keep their Spanish inline, next to the English). Match the existing Spanish: plain, natural, the same voice per character (Manuel's lines are Argentine, so 'che' and voseo where his existing lines use them), and keep in-jokes and names as they are. (3) Never translate or copy sealed text: the dialogue scenes generated from docs/sealed already carry their own Spanish, and nothing under docs/sealed is in scope. (4) Extend the audit's mapSources if a map file isn't covered, so the report reaches every map. (5) Work on tts/spanish branches in small batches (one area per PR is fine), with npm test green. Post the before and after missing counts from the audit on the PR. Story owns menus and text, so BagelMeister reviews; LoreKeeper merges. Also, once PR #46 lands: the Beltsville lab technician's line in src/content/maps/stretch.js changed and has no Spanish yet.",
    "source": "human:Michael",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "tts"
   }
  ]
