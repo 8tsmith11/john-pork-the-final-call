@@ -1,5 +1,5 @@
 {
- "next_id": 106,
+ "next_id": 107,
  "tasks": [
   {
    "id": 1,
@@ -2271,6 +2271,19 @@
    ],
    "turn_at": "2026-11-20T21:26:19Z",
    "turn_for": "systems review"
+  },
+  {
+   "id": 106,
+   "created_at": "2026-11-20T21:30:07Z",
+   "updated_at": "2026-11-20T21:30:07Z",
+   "history": [
+    "2026-11-20T21:30:07Z John Pork: added (open list)"
+   ],
+   "title": "[M1] Recover guests when the host closes the co-op lobby",
+   "details": "Three Firefox clients reproduced two guests stranded in a disconnected Lobby after the host left. They still see claimed roommates and Connected. Reuse Hub #104 recovery for an unexpected lobby drop, handling the Lobby-to-World handoff without a stale room or two concurrent scenes. Intentional leave stays normal. Verify both actual lobby loss and a dropped handoff using rendered clients and local WebRTC.",
+   "source": "agent:John Pork",
+   "status": "open",
+   "owner": null
   }
  ]
 }
