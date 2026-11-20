@@ -1525,7 +1525,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   /** True while a text box or a dialogue tree is on screen (quest cards hold until it closes). */
-  _talkOpen() { return !!(this.sayOpen || this.dlg); }
+  _talkOpen() { return !!(this.sayOpen || this.dlg || this.stage?.active); }   // cutscenes too (PR #28)
 
   _nextQuestBanner() {
     if (this._talkOpen()) { this._qbBusy = false; return; }   // a new conversation opened between two cards: wait again
