@@ -2,11 +2,12 @@
 // Talking to an NPC first asks HOW: Talk carries on exactly as before; the rest roll d20 + modifier
 // on the host, which owns pockets, money and items, and sends the result back as a say box.
 import * as W from '../engine/wallet.js';
-import { APPROACHES, ROLE_OF, DC, ALLOWED, POCKETS, LINES, GUARD_LINES, TELLS, WARY_MS } from '../content/approaches.js';
+import { APPROACHES, ROLE_OF, DC, ALLOWED, CAUGHT_PICKPOCKET, POCKETS, LINES, GUARD_LINES, TELLS, WARY_MS } from '../content/approaches.js';
 import { ABILITIES, check, modOf, scoresOf, fmtMod } from '../content/abilities.js';
 import { ITEMS } from '../content/items.js';
 import * as Inv from '../engine/inventory.js';
 import { Rng, hashString } from '../engine/rng.js';
+import { TILE } from '../engine/sim.js';
 import { sfx } from '../audio/audio.js';
 import { getLang, tr } from '../i18n.js';
 
@@ -28,23 +29,45 @@ export class Approach {
   }
 
   roleOf(o) { return o.role ?? ROLE_OF[o.id] ?? 'resident'; }
-  options(o) {
-    if (!o) return [];
-    const c = this.s.save.party[this.s.character];
-    const handIns = this.s._questHandIns(o, this.s.character)
+  _commonActions(o, who) {
+    const allowed = ALLOWED[this.roleOf(o)], es = getLang() === 'es';
+    const configured = o.approaches ?? APPROACHES;
+    const incident = this.s.save.world.npcIncidents?.[o.id]?.[who]?.caughtPickpocket;
+    const profile = CAUGHT_PICKPOCKET;
+    const actions = [];
+    for (const entry of configured) {
+      const id = typeof entry === 'string' ? entry : entry.id;
+      const def = APPROACHES.find((a) => a.id === id);
+      if (!def || actions.some((a) => a.id === id) || (o.approach === false && id !== 'talk') ||
+        (!o.approaches && allowed && !allowed.includes(id))) continue;
+      const name = es ? entry.nameEs ?? tr(entry.name ?? def.name) : entry.name ?? def.name;
+      const blocked = incident?.open && profile.blocks.includes(id) ? (es ? profile.reasonEs : profile.reason) : null;
+      actions.push({ ...def, name, blocked });
+    }
+    if (incident?.open && o.approach !== false) {
+      actions.unshift({ ...profile.recovery, name: es ? profile.recovery.nameEs : profile.recovery.name });
+    }
+    return actions;
+  }
+
+  options(o, who = this.s.character) {
+    const c = this.s.save.party[who];
+    if (!o || !c) return [];
+    const handIns = this.s._questHandIns(o, who)
       .filter((q) => Inv.count(c, q.give.item) > 0)
       .map((q) => ({
         id: `give:${q.id}`,
         name: `${getLang() === 'es' ? 'Entregar' : 'Give'} ${tr(ITEMS[q.give.item].name)} (1)`,
       }));
-    const allowed = ALLOWED[this.roleOf(o)];
-    return [...handIns, ...APPROACHES.filter((a) => o.approach === false ? a.id === 'talk' : !allowed || allowed.includes(a.id))];
+    return [...handIns, ...this._commonActions(o, who)];
   }
 
   /** Interaction hook: open the approach menu for an NPC. Returns true if it took over. */
   intercept(near) {
-    if (!near?.npc || near.romance || near.armorer || (near.approach === false && this.options(near).length === 1)) return false;
+    if (!near?.npc || near.romance || near.armorer) return false;
     if (this.passThrough === near.id) { this.passThrough = null; return false; }
+    const actions = this.options(near);
+    if (!actions.length || (near.approach === false && actions.length === 1 && actions[0].id === 'talk')) return false;
     this.target = near;
     this.s.gameMenu.show(`approach:${near.id}`);
     return true;
@@ -53,18 +76,28 @@ export class Approach {
   choose(kind) {
     const s = this.s, o = this.target;
     if (!o) return;
+    const action = this.options(o).find((a) => a.id === kind);
+    if (!action || action.blocked) return;
     s._closeMenu();
     if (kind.startsWith('give:')) return s._giveQuestItem(o, kind.slice(5));
     if (kind === 'talk') { this.passThrough = o.id; s._clickedObj = o; return; }
     if (s.mode === 'client') s.net.send({ t: 'approach', npc: o.id, kind });
-    else this._say(s.localId, this.resolve(s.character, o, kind));
+    else this._perform(s.localId, o, kind);
   }
 
   onHostMsg(peer, msg) {
     if (msg.t !== 'approach') return false;
     const o = this.s.map.objects.find((x) => x.id === msg.npc && x.npc);
-    if (o) this._say(peer, this.resolve(this.s._charOf(peer), o, msg.kind));
+    if (o) this._perform(peer, o, msg.kind);
     return true;
+  }
+
+  _perform(playerId, o, kind) {
+    const s = this.s, p = s.sim.players.get(playerId);
+    if (!p || p.downed || (o.goneFlag && s.save.flags[o.goneFlag]) || s.perf?.asleep(o)
+      || Math.hypot(o.x * TILE + 8 - p.x, o.y * TILE + 8 - p.y) > 34) return;
+    const text = this.resolve(p.character, o, kind);
+    if (text) this._say(playerId, text);
   }
 
   _say(playerId, text) {
@@ -102,14 +135,20 @@ export class Approach {
 
   /** Host: roll the approach and apply it. Returns what to show the player. */
   resolve(who, o, kind) {
-    const s = this.s, now = s.time.now, role = this.roleOf(o), A = APPROACHES.find((a) => a.id === kind);
-    const allowed = ALLOWED[role];
-    if (!A?.ability || o.approach === false || (allowed && !allowed.includes(kind))) return '';
+    const s = this.s, now = s.time.now, role = this.roleOf(o), c = s.save.party[who];
+    if (!c) return '';
+    const A = this._commonActions(o, who).find((a) => a.id === kind);
+    if (A?.blocked) return A.blocked;
+    if (A?.id === CAUGHT_PICKPOCKET.recovery.id) {
+      s.save.world.npcIncidents[o.id][who].caughtPickpocket.open = false;
+      return getLang() === 'es' ? CAUGHT_PICKPOCKET.replyEs : CAUGHT_PICKPOCKET.reply;
+    }
+    if (!A?.ability) return '';
     const name = o.label?.replace(/\s*\(.*\)$/, '') ?? 'They';
     const fill = (t, extra = {}) => t.replace(/\{(\w+)\}/g, (_, k) => ({ name, ...extra })[k] ?? '');
     const lines = (outcome) => GUARD_LINES[kind]?.[outcome] && role === 'guard' ? GUARD_LINES[kind][outcome] : LINES[kind]?.[outcome] ?? LINES[kind]?.lose;
     if ((this.wary.get(o.id) ?? 0) > now) return fill(pick(LINES.wary));
-    const c = s.save.party[who], dc = o.dc?.[kind] ?? DC[role]?.[kind] ?? 12;
+    const dc = o.dc?.[kind] ?? DC[role]?.[kind] ?? 12;
     const advKey = `${who}:${o.id}`, adv = kind === 'pickpocket' && this.adv.has(advKey);
     const r = check(c, who, A.ability, dc, { adv });
     const head = `${A.name.toUpperCase()} (${ABILITIES[A.ability].short} ${fmtMod(r.mod)}) · d20 ${adv ? '(adv) ' : ''}${r.roll} ${fmtMod(r.mod)} = ${r.total} vs DC ${dc}${r.nat20 ? ' · CRITICAL' : r.nat1 ? ' · FUMBLE' : ''}\n\n`;
@@ -132,7 +171,14 @@ export class Approach {
     // charm, deceive, intimidate, pickpocket: something changes hands, or doesn't.
     if (!this.pockets(o).length) return fill(pick(LINES.empty));
     if (!r.success) {
-      fail();
+      if (kind === 'pickpocket') {
+        this.adv.delete(advKey);
+        const history = (s.save.world.npcIncidents ??= {});
+        const actor = ((history[o.id] ??= {})[who] ??= {});
+        const incident = (actor.caughtPickpocket ??= { count: 0, open: false });
+        incident.count++;
+        incident.open = true;
+      } else fail();
       let tail = '';
       if (role === 'guard' && (kind === 'pickpocket' || kind === 'deceive' || outcome === 'fumble')) { s.save.standing.continuity -= kind === 'pickpocket' ? 2 : 1; tail = '\n\n(Continuity standing down.)'; }
       if (kind === 'intimidate' && outcome === 'fumble') { const p = [...s.sim.players.values()].find((q) => q.character === who); if (p) s.sim._hurtPlayer(p, 6); }
@@ -162,8 +208,9 @@ export class Approach {
     this.shownOptions.forEach((a, i) => {
       const y = b.y + 36 + i * 24, x = b.x + 12, m = a.ability ? modOf(sc[a.ability]) : null;
       g.fillStyle(i + list.first === list.sel ? 0x282e45 : 0x1a2030).fillRoundedRect(x, y, b.w - 28, 20, 3).lineStyle(1, 0xffb347, 0.6).strokeRoundedRect(x, y, b.w - 28, 20, 3);
-      menu._t(x + 8, y + 5, `${i + 1}. ${a.name}`, { fontFamily: 'monospace', fontSize: '9px', color: '#e8e8f0' }, () => this.choose(a.id));
-      if (a.ability) menu._t(x + 120, y + 6, `${ABILITIES[a.ability].short} ${fmtMod(m)}  ·  ${{ charm: 'win them over', deceive: 'talk them into it', intimidate: 'lean on them', insight: 'are they lying?', investigate: 'look them over', pickpocket: 'lift something' }[a.id]}`, { fontFamily: 'monospace', fontSize: '7px', color: m > 0 ? '#7fb069' : m < 0 ? '#d65db1' : '#9aa3c7' });
+      menu._t(x + 8, y + 5, `${i + 1}. ${a.name}`, { fontFamily: 'monospace', fontSize: '9px', color: a.blocked ? '#9aa3c7' : '#e8e8f0' }, a.blocked ? null : () => this.choose(a.id));
+      if (a.blocked) menu._t(x + 120, y + 6, a.blocked, { fontFamily: 'monospace', fontSize: '7px', color: '#d65db1' });
+      else if (a.ability) menu._t(x + 120, y + 6, `${ABILITIES[a.ability].short} ${fmtMod(m)}  ·  ${{ charm: 'win them over', deceive: 'talk them into it', intimidate: 'lean on them', insight: 'are they lying?', investigate: 'look them over', pickpocket: 'lift something' }[a.id]}`, { fontFamily: 'monospace', fontSize: '7px', color: m > 0 ? '#7fb069' : m < 0 ? '#d65db1' : '#9aa3c7' });
       else if (a.id === 'talk') menu._t(x + 120, y + 6, 'say hello, ask about things', { fontFamily: 'monospace', fontSize: '7px', color: '#9aa3c7' });
     });
     menu.scroller.bar(g, b.x + b.w - 13, b.y + 36, 188, list);
