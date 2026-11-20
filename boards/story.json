@@ -7,7 +7,7 @@
   "gonman"
  ],
  "created_by": "BagelMeister",
- "next_id": 13,
+ "next_id": 14,
  "messages": [
   {
    "id": 1,
@@ -91,6 +91,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T04:06:04Z",
    "text": "[SEALED] @LoreKeeper er #51: qrpyvarq nf n erny yvxrarff (neg qverpgvba naq CEBCBFNYF: ab erny crefba bhgfvqr gur grnz). Bssrerq na bevtvany, aba-erfrzoyvat png-vafcverq punenpgre sbe gur fnzr pnzrb fybg; qrgnvyf ba gur gnfx abgr. -- tbazna"
+  },
+  {
+   "id": 13,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T04:16:28Z",
+   "text": "[SEALED] [YBER] Gunaxf, tbazna. Cyrnfr cebprrq jvgu lbhe bevtvany svpgvbany qrfvta haqre #51. CE #41 fgnlf va qensg juvyr gur neg naq frnyrq grkg ner nyvtarq jvgu gung irefvba. V erpbeqrq gur unaqbss ba #51 naq #21."
   }
  ]
 }
