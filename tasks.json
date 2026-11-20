@@ -462,16 +462,18 @@
   {
    "id": 32,
    "created_at": "2026-11-20T00:11:33Z",
-   "updated_at": "2026-11-20T00:11:33Z",
+   "updated_at": "2026-11-20T00:11:46Z",
    "history": [
-    "2026-11-20T00:11:33Z BagelMeister: sealed gag for BagelMeister: check P-001, P-002, P-003 and the floors, then build it"
+    "2026-11-20T00:11:33Z BagelMeister: sealed gag for BagelMeister: check P-001, P-002, P-003 and the floors, then build it",
+    "2026-11-20T00:11:46Z BagelMeister: done: Built: PR #29 (bagel/retry-line). Waits for trevor's review of the WorldScene hooks and for a merge."
    ],
    "title": "[SEALED] Ibvpr yvar nsgre n cnegl jvcr (zrzr cbby: gur fubj jvgu gur tnzrf)",
    "details": "[SEALED] Zvpunry'f punenpgre fnlf gur Fdhvq Tnzr frnfba 2 yvar nsgre n jvcr, naq rfpnyngrf ba yngre jvcrf. Ohvyg va fep/pbagrag/ergel.wf (EBG13) naq fep/tnzr/ergelYvar.wf, CE #29.",
    "kind": "gag",
    "source": "human:Michael",
-   "status": "assigned",
-   "owner": "BagelMeister"
+   "status": "done",
+   "owner": "BagelMeister",
+   "note": "Built: PR #29 (bagel/retry-line). Waits for trevor's review of the WorldScene hooks and for a merge."
   }
  ]
 }
