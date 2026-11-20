@@ -1828,7 +1828,7 @@
   {
    "id": 89,
    "created_at": "2026-11-20T19:33:18Z",
-   "updated_at": "2026-11-20T20:34:55Z",
+   "updated_at": "2026-11-20T20:35:21Z",
    "history": [
     "2026-11-20T19:33:18Z LoreKeeper: added (for gonman)",
     "2026-11-20T19:35:21Z gonman: claimed",
@@ -1843,7 +1843,8 @@
     "2026-11-20T20:19:35Z LoreKeeper: turn: gonman (Resolve the sealed review on PR #136 and record save compatibility before the next verification.)",
     "2026-11-20T20:29:02Z gonman: turn: tts, LoreKeeper (PR #136 at 72276ca: verify exact head and combined with #131 across a real save/reload (tts); merge #136 then #131 (LoreKeeper))",
     "2026-11-20T20:34:44Z tts: note: Windows verification complete for refreshed PR #136 at 72276ca: (1) Standalone head 72276ca passes 151/151 Node suite (exit 0), migration write and save/reload round trip verified; (2) Combined tree PR #136 (72276ca) + PR #131 (9a14f55) passes 159/159 Node suite (exit 0), check.mjs clean across all 45 maps, save-storage OK. Clearance granted.",
-    "2026-11-20T20:34:55Z LoreKeeper: note: Verified #136 at 72276ca on main 2cb09c3, candidate 1bd1f5f. Prior fixture-hygiene request addressed. Diff and changed-JS syntax pass. The combined preview with #131 at 9a14f55 is clean (tree a16fb8f). Story #88 documents the legacy fallback. TTS still has the requested save/reload on the standalone and combined builds, and Trevor should confirm the immediate host autosave and fallback on the new head. Merge order remains #136 then #131."
+    "2026-11-20T20:34:55Z LoreKeeper: note: Verified #136 at 72276ca on main 2cb09c3, candidate 1bd1f5f. Prior fixture-hygiene request addressed. Diff and changed-JS syntax pass. The combined preview with #131 at 9a14f55 is clean (tree a16fb8f). Story #88 documents the legacy fallback. TTS still has the requested save/reload on the standalone and combined builds, and Trevor should confirm the immediate host autosave and fallback on the new head. Merge order remains #136 then #131.",
+    "2026-11-20T20:35:21Z tts: turn: LoreKeeper (Merge PR #136 before #131 (trevor systems approved, tts verified 159/159 green))"
    ],
    "title": "[SEALED] CE #135 fnir pbzcngvovyvgl erivrj",
    "details": "[SEALED] Rknpg urnq n70745n, pyrna pnaqvqngr 2ps865p ba n95015o. Qvss naq obgu WF flagnk purpxf cnff. Gur punatr yrnirf gur rkvfgvat punenpgre ryvtvovyvgl naq qvnybthr vagnpg. Cyrnfr hfr trarevp choyvp CE zrgnqngn, grfg qrfpevcgvbaf naq pbzzragf, naq n trarevp anzr sbe gur arj fnir xrl. Xrrc gur rkcynangvba bs gur uvqqra svaq urer. Sbe Geribe: n fnir jvgu cevbe zbirf pna fgvyy ynpx gur cva hagvy gur arkg svaq. Ynaqvat gur cva svefg qbrf abg ol vgfrys cerfreir gur cerivbhfyl tvira uvag sbe gubfr fnirf bapr #131 punatrf gur yvfg. Cyrnfr erivrj jurgure gb zvtengr, be rkcyvpvgyl npprcg gur yrtnpl snyyonpx, naq irevsl ubfg/fnir flap naq orunivbe jura gur cvaarq pbagnvare vf erzbirq. GGF gb irevsl gur erfhygvat urnq vaqrcraqragyl orsber zretr, naq gur pbzovarq pnaqvqngr jvgu #131. Tbazna pna yvax gur erivfrq CE urer vs n trarevp fbhepr oenapu vf arrqrq. Xrrc gur pheerag oenapu ergnvarq.",
@@ -1852,11 +1853,10 @@
    "owner": "gonman",
    "review": "PR #136 (replaces #135), sealed story post",
    "turn": [
-    "tts",
     "LoreKeeper"
    ],
-   "turn_at": "2026-11-20T20:29:02Z",
-   "turn_for": "PR #136 at 72276ca: verify exact head and combined with #131 across a real save/reload (tts); merge #136 then #131 (LoreKeeper)"
+   "turn_at": "2026-11-20T20:35:21Z",
+   "turn_for": "Merge PR #136 before #131 (trevor systems approved, tts verified 159/159 green)"
   },
   {
    "id": 90,
