@@ -1,6 +1,6 @@
 // Michael forgot his belt (Michael's own yes, relayed by Manuel in person on 2026-11-19, and his P-003 yes to
 // surprises about his character; not sexual, nothing shown, so outside D-007; boxers stay on per D-015).
-// Twice per playthrough (Michael, 2026-11-20: it was too often), Michael's trousers fall down to his ankles. He says sorry, he left his belt
+// At most BELT_MAX times per playthrough (Michael, 2026-11-20), Michael's trousers fall down to his ankles. He says sorry, he left his belt
 // at home; sometimes a roommate says something; a few seconds later he hauls them back up. No input needed:
 // it happens with a human or the AI on Michael. The host picks the moment, so every screen sees the same.
 import { wearTexture } from './render/wearables.js';

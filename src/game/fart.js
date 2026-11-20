@@ -3,7 +3,7 @@
 // gas that puffs out behind him and drifts. Works whether a human or the AI is running Manuel.
 // The host picks the moment and tells everyone, so all screens see the same cloud.
 //
-// Michael never sniffs or likes it (Michael, 2026-11-20: removed). He only complains, like the bystanders.
+// A roommate close by only complains (Michael, 2026-11-20).
 import { audioOut } from '../audio/audio.js';
 
 // Michael only complains: an ordinary roommate reaction. BagelMeister can turn it off if Michael objects.
