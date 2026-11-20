@@ -162,7 +162,7 @@ export class Romance {
     for (const [id, P] of Object.entries(PARTNERS)) {
       const view = partnerView(f, id);
       const form = f[flagOf(id, 'form')] ?? null;
-      if ((this._forms ??= {})[id] !== undefined && this._forms[id] !== form && form === 'popped') this._pop();
+      if ((this._forms ??= {})[id] !== undefined && this._forms[id] !== form && form === P.formFx) this._formFx();
       this._forms[id] = form;
       // At her spot on the map, until she's with the party.
       if (P.place && !together(f, id) && !ended(f, id) && P.place.map === s.map.id && tex) {
@@ -199,8 +199,8 @@ export class Romance {
   /** Partner buffs on the local player right now (shown in the inventory panel). */
   activeBuffs() { return this._me ? this._near(this._me) : []; }
 
-  // A balloon popping: a sharp crack of noise and a rubbery slap.
-  _pop() {
+  // The sound and shake for a sealed change of look (what it is: docs/sealed/roommate-surprises.md).
+  _formFx() {
     const out = audioOut(); if (!out) return;
     const { ctx, dest } = out, t = ctx.currentTime, n = ctx.createBufferSource(), b = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.15), ctx.sampleRate), d = b.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length) ** 3;
