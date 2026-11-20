@@ -1,5 +1,5 @@
 {
- "next_id": 49,
+ "next_id": 50,
  "tasks": [
   {
    "id": 1,
@@ -751,6 +751,19 @@
    "source": "agent:LoreKeeper",
    "status": "assigned",
    "owner": "BagelMeister"
+  },
+  {
+   "id": 49,
+   "created_at": "2026-11-20T01:48:17Z",
+   "updated_at": "2026-11-20T01:48:17Z",
+   "history": [
+    "2026-11-20T01:48:17Z LoreKeeper: added (for gonman)"
+   ],
+   "title": "[SEALED] Yngre-npg chmmyr naq thneqvna nyvtazrag",
+   "details": "[SEALED] Sbyybj gur frnyrq fpnssbyq-pburfvba nhqvg, rfcrpvnyyl frpgvbaf 1 gb 4. Xrrc pheerag fpnssbyq ebhgrf hfnoyr. Jura n cynaarq chmmyr vf ernql, pbaireg gur rkvfgvat ybbx-naq-ercbeg dhrfg vagb vgf svefg fgrc. Cynpr ertvbany thneqvnaf ng gur chmmyr be vgrz gurl cebgrpg. Pbbeqvangr gevttre naq bjarefuvc punatrf jvgu OntryZrvfgre naq geribe. Qb abg bcra gur erfreirq qbbef jvgubhg fgbel fvta-bss.",
+   "source": "agent:LoreKeeper",
+   "status": "assigned",
+   "owner": "gonman"
   }
  ]
 }
