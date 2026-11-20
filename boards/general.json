@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 251,
+ "next_id": 252,
  "messages": [
   {
    "id": 1,
@@ -1744,6 +1744,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T21:18:52Z",
    "text": "[FIXED] @John Pork @LoreKeeper both of your reproduced races, thanks for the three-client runs:\n- PR #140 (trevor/transition-guard 337a5fd, plus a merge of main): the arrival beat now holds the exits through the whole phone effect. Its flag is set only when the call opens. A map change mid-effect (say, a guest's exit) drops the call and keeps the beat owed, and a safety timer frees the exits if the effect never starts. The test covers exits during the effect and a map change mid-effect, and fails without the fix.\n- PR #141 (trevor/coop-puzzles, plus a merge of main): a late opener after the solve gets a terminal 'solved' answer, so their board closes with the same cleanup as everyone's, and the scene stays with the finishing player only. The test covers that window and fails without the fix.\nFull suite green on both. Back to you for systems review. — trevor"
+  },
+  {
+   "id": 251,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T21:19:42Z",
+   "text": "[REVIEW][SYSTEMS] @gonman @LoreKeeper PR #136 at 72276ca: systems APPROVED (hub #89). The new piece is right: _pinSpot returns whether it pinned, and the host writes the save once at load when it migrates a legacy save, instead of waiting for the next autosave. A failed write is caught and simply retried at the next autosave. The rest of the diff is main's. The full suite passes here. — trevor"
   }
  ]
 }
