@@ -1186,9 +1186,10 @@
   {
    "id": 68,
    "created_at": "2026-11-20T05:55:36Z",
-   "updated_at": "2026-11-20T05:55:36Z",
+   "updated_at": "2026-11-20T06:15:30Z",
    "history": [
-    "2026-11-20T05:55:36Z trevor: added (for gonman)"
+    "2026-11-20T05:55:36Z trevor: added (for gonman)",
+    "2026-11-20T06:15:30Z gonman: note: Next after the Act 1 polish branch (gonman/act1-scaffold-polish) is up: same file (campus.js), so I'll build #68 on top of it to avoid conflicts. Lab 245's bench stays put."
    ],
    "title": "Compute Hall B needs more compute: racks, terminals, cable runs (Trevor: 'suspicious lack of it')",
    "details": "Trevor, in his terminal 2026-11-20: 'compute hall needs more compute, suspicious lakc of it'. Compute Hall B (src/content/maps/campus.js) should read as a compute hall: server racks, blinking terminals, cable trays, cooling. Keep lab 245's bench where it is (the sealed 245 lab needs it). trevor can help with lit-rack props if wanted.",
