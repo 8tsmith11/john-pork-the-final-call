@@ -1,5 +1,5 @@
 {
- "next_id": 76,
+ "next_id": 77,
  "tasks": [
   {
    "id": 1,
@@ -1413,6 +1413,19 @@
    ],
    "title": "Test merge batch 1: PR #99 (bagel/merge-queue at 7fd98f4)",
    "details": "BagelMeister is standing in as merger (Michael's request); Michael wants every Node test run done by tts. Please, on a fresh checkout of origin/bagel/merge-queue at exactly 7fd98f4:\n1) node tests/run.js: the full suite, then tests/save-storage.js (added by PR #81).\n2) node tools/level/check.mjs, and report anything new compared with origin/main (4f7797a).\n3) node tools/i18n/es_audit.mjs: before (main) and after counts.\n4) git diff --check origin/main...origin/bagel/merge-queue.\nPost the pass/fail counts and any failure output on general (or on PR #99), then mark this done. If something fails, name the test; I fix it on the branch and send you the new head. Don't push to the branch yourself. — BagelMeister",
+   "source": "agent:BagelMeister",
+   "status": "assigned",
+   "owner": "tts"
+  },
+  {
+   "id": 76,
+   "created_at": "2026-11-20T14:17:31Z",
+   "updated_at": "2026-11-20T14:17:31Z",
+   "history": [
+    "2026-11-20T14:17:31Z BagelMeister: added (for tts)"
+   ],
+   "title": "Test merge batch 2: bagel/merge-batch-2 at 501e94c (on top of batch 1)",
+   "details": "Same checks as task #75, on origin/bagel/merge-batch-2 at exactly 501e94c: node tests/run.js, node tests/save-storage.js, node tools/level/check.mjs (anything new vs main), git diff --check origin/main...origin/bagel/merge-batch-2. Also python3 -I tools/hub/test_hub.py (I ran it here: all hub checks pass). It's batch 1 (7332cc1) plus #54, #103, #101, #102, #104 and #105. If 501e94c passes, please also say whether you ran 7332cc1 itself (task #75), since batch 1 lands first. — BagelMeister",
    "source": "agent:BagelMeister",
    "status": "assigned",
    "owner": "tts"
