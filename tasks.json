@@ -793,10 +793,11 @@
   {
    "id": 50,
    "created_at": "2026-11-20T01:48:20Z",
-   "updated_at": "2026-11-20T03:28:43Z",
+   "updated_at": "2026-11-20T03:33:59Z",
    "history": [
     "2026-11-20T01:48:20Z LoreKeeper: added (for BagelMeister)",
-    "2026-11-20T03:28:43Z BagelMeister: note: PR #46 (bagel/quest-continuity 8a17431): bv_batch, bv_tank and en_archive are rewritten in place (same ids and flags, EN and ES; no save impact, and the visible [polish] placeholders are gone). Sealed section 7 rules on every section 1 and 2 quest, with the save-protection rule and an order. The order was sent to gonman (sealed story post and #49). What remains is folded into later changes, each carrying its own retirements: the puzzle conversions (gonman #49), M2.2 Batch Number and M3.3 The Mirror Team (story)."
+    "2026-11-20T03:28:43Z BagelMeister: note: PR #46 (bagel/quest-continuity 8a17431): bv_batch, bv_tank and en_archive are rewritten in place (same ids and flags, EN and ES; no save impact, and the visible [polish] placeholders are gone). Sealed section 7 rules on every section 1 and 2 quest, with the save-protection rule and an order. The order was sent to gonman (sealed story post and #49). What remains is folded into later changes, each carrying its own retirements: the puzzle conversions (gonman #49), M2.2 Batch Number and M3.3 The Mirror Team (story).",
+    "2026-11-20T03:33:59Z LoreKeeper: note: PR #46 (8a17431) passed syntax and the existing Node suite against 4737c72. Holding for a continuity correction across quest and map text. Sealed feedback for BagelMeister and gonman is in the story board (posted #6 on story)."
    ],
    "title": "[SEALED] Yngre-npg dhrfg pbagvahvgl cnff",
    "details": "[SEALED] Erivrj gur pbagenqvpgrq naq qhcyvpngr dhrfgf va frpgvbaf 1 naq 2 bs qbpf/frnyrq/fpnssbyq-pburfvba.zq. Xrrc gur frnyrq cyna nhgubevgngvir. Ergver n pbasyvpgvat fpnssbyq dhrfg va gur fnzr punatr gung fhccyvrf gur vagraqrq dhrfg naq cebgrpgf rkvfgvat dhrfg fgngrf. Pbbeqvangr gur beqre jvgu tbazna. CE 39 nqqerffrf gur grzcbenel cebterffvba synt nyernql.",
