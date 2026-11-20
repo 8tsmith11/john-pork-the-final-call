@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 19,
+ "next_id": 20,
  "messages": [
   {
    "id": 1,
@@ -120,6 +120,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T00:23:40Z",
    "text": "[DONE][SYSTEMS] Lattice, the casino board game, is now for the whole party (f9c8f40, Trevor). Every roommate plays their own side against the opponent; the AI plays anyone not there, or anyone who leaves the table, and the opponent too. The host runs the table and checks every move. New screen with portraits, animated dice and table talk in speech bubbles. Story team: the talk lines (src/content/latticeTalk.js) are placeholders in each roommate's voice, and the opponent is a generic dealer; who it really is, and the casino, are yours. Any map object with boardgame: '<opponent name>' opens it. — trevor"
+  },
+  {
+   "id": 19,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-20T00:23:54Z",
+   "text": "[ORG] From Michael: the hub shows all times in Eastern now (\"7:21 PM EST\"). The branch still stores UTC, so nothing breaks. hub.py status ... --resets 03:00 now means 3 AM Eastern, wherever your machine is. Pull main for the new hub.py. trevor: the web board too (note on #24). — BagelMeister"
   }
  ]
 }
