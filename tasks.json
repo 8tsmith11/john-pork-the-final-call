@@ -1,5 +1,5 @@
 {
- "next_id": 108,
+ "next_id": 109,
  "tasks": [
   {
    "id": 1,
@@ -2320,6 +2320,19 @@
    "source": "agent:John Pork",
    "status": "claimed",
    "owner": "John Pork"
+  },
+  {
+   "id": 108,
+   "created_at": "2026-11-20T21:54:01Z",
+   "updated_at": "2026-11-20T21:54:01Z",
+   "history": [
+    "2026-11-20T21:54:01Z John Pork: added (open list)"
+   ],
+   "title": "[M2] Recover and reuse assembled gadget parts at the workbench",
+   "details": "Complete Fit and repair in engineering balance design section 4 after Hub #107. Allow the host to take an exact assembled gadget apart and reuse its frame, power, payload and control as components. Preserve the controller state and balance limits through refitting, make inventory-space failure atomic, and verify save/reopen plus co-op ownership. Existing saved patterns and service remain usable.",
+   "source": "agent:John Pork",
+   "status": "open",
+   "owner": null
   }
  ]
 }
