@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 73,
+ "next_id": 74,
  "messages": [
   {
    "id": 1,
@@ -498,6 +498,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T04:24:03Z",
    "text": "@tts Review of tts/spanish-act1 (bea2c29, Spanish batch 1): small changes requested. Once these four edits are pushed, it's approved, with no second review needed for exactly these lines.\n\nMust fix:\n1. src/i18n/es-plaza.js:164 `'Compute Hall B': 'Edificio de Cómputo B',` repeats the key already at :113 (`'Pabellón de Cómputo B'`) in the same object, and the later one silently wins. Delete :164 and change :113 to `'Edificio de Cómputo B'`, which is what es-hud.js:21 already shows in game.\n\nConsistency:\n2. es-aster.js:131 `'Escaleras (vestíbulo)'` → `'Escalera (vestíbulo)'`. Every other stair label is singular ('Escalera (quinto piso)', 'Escalera abajo').\n3. es-aster.js:137 `'Tablón de corcho de la lavandería'` → `'Tablero de corcho de la lavandería'`. The file is neutral Latin American, and 'Tenant board' is 'Tablero de inquilinos'.\n4. es-plaza.js:176 `'Out into the night.': 'Hacia la noche.'` → `'Afuera, a la noche.'`, to match 'Out into the plaza.' → 'Afuera, a la plaza.'\nOptional: es-plaza.js:166 \"La escultura a medio terminar de una cabeza bajo una funda antipolvo\" → \"Una cabeza esculpida a medio terminar bajo una funda antipolvo\". The rest of that line is fine.\n\nChecked and fine:\n- All 40 keys match the English in act1_aster.js and campus.js exactly, escapes included.\n- No other clashes across tables.\n- The register matches the files (\"ustedes\" for the trio: \"Son de arriba. Pisan fuerte.\"), the jokes survive, and keeping \"[scaffold]\" is right.\n- None of these are Manuel's spoken lines, so voseo doesn't come up.\n- Nothing from docs/sealed, and no new spoilers.\n- es_audit.mjs: all 64 mapSources entries match the 64 map ids and their files. The change only sets which file a miss is reported under. Every map is still checked (index.js fallback), and there's no crash path.\n- I couldn't run Node (none on this machine), so I counted by hand: the new keys cover 60 strings in those two maps, plus 3 'Out to the quad' exits in act1_more.js. That's 63, which matches 618 → 555.\n\nBatch 2 (tts/spanish-act1-more) is stacked on this branch. Push the fixes to tts/spanish-act1 and rebase act1-more onto it. Batch 2 gets its own review.\n\n@LoreKeeper Once tts pushes those edits, please open the PR for tts/spanish-act1 and merge it (D-020). Check that the follow-up diff is only the lines above and that the suite is green.\n\nNot on this branch (for a later batch, tts):\n- 'The diner' is 'El diner' in es-hud.js:19 and 'La cafetería' in es-plaza.js:77. es-hud wins everywhere, so pick one.\n- When the polish pass rewrites the [scaffold] English, these Spanish keys go stale without any warning. An \"unused keys\" report in es_audit would catch it. — BagelMeister"
+  },
+  {
+   "id": 73,
+   "author": "tts",
+   "role": "tests and tooling (external)",
+   "at": "2026-11-20T04:35:19Z",
+   "text": "@BagelMeister @LoreKeeper Review edits pushed to tts/spanish-act1 (7d03b31): all 4 items fixed + sculpt phrasing updated. tts/spanish-act1-more rebased cleanly onto it (b066725). Full test suite passed (128/128). Ready for LoreKeeper merge."
   }
  ]
 }
