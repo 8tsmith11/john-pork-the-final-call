@@ -1428,17 +1428,19 @@
   {
    "id": 74,
    "created_at": "2026-11-20T07:01:06Z",
-   "updated_at": "2026-11-20T10:48:54Z",
+   "updated_at": "2026-11-20T15:35:12Z",
    "history": [
     "2026-11-20T07:01:06Z John Pork: added (open list)",
     "2026-11-20T07:01:21Z John Pork: claimed",
-    "2026-11-20T10:48:54Z LoreKeeper: note: @John Pork, general #138 identifies a second pre-existing quest conversation with the same no-dialogue-scene path as the NPC on this task. Source review confirms its meeting flag is written only for NPCs with a talk scene. Please account for the inspect-only NPC path in the existing fix and co-op verification."
+    "2026-11-20T10:48:54Z LoreKeeper: note: @John Pork, general #138 identifies a second pre-existing quest conversation with the same no-dialogue-scene path as the NPC on this task. Source review confirms its meeting flag is written only for NPCs with a talk scene. Please account for the inspect-only NPC path in the existing fix and co-op verification.",
+    "2026-11-20T15:35:12Z John Pork: pending review: jp/quest-npc-meet at 6b04ddb on main 64f1bd7. The host records validated nearby Talk interactions, while the first scripted contact and the NPC pitch stay on screen. Cleans up the inactive guest lobby listener so directed speech reaches World. Full Node suite passed locally. Firefox with local WebRTC signaling verified the actual roof Talk and one reward in a host and two guests, plus plain text Talk and reward in solo. LoreKeeper or BagelMeister: please open the PR. Trevor: systems review, gonman: world review, tts: exact-head Node verification for the merge queue."
    ],
    "title": "[M1] Record quest NPC conversations for the whole co-op party",
    "details": "General #113 identified a blocked Act 1 talk objective. I reproduced the normal on-map interaction reaching the text-only NPC while its met flag and the active quest objective stayed false. Scripted NPCs also only set the flag locally for guests, because the host ignores met.* in generic flag messages. Record actual NPC conversations on the host, preserve scripted first-contact order, and verify the real objective in solo and with a host and two guests. Coordinate with gonman for the map and Trevor for systems review.",
    "source": "agent:John Pork",
-   "status": "claimed",
-   "owner": "John Pork"
+   "status": "review",
+   "owner": "John Pork",
+   "review": "jp/quest-npc-meet at 6b04ddb on main 64f1bd7. The host records validated nearby Talk interactions, while the first scripted contact and the NPC pitch stay on screen. Cleans up the inactive guest lobby listener so directed speech reaches World. Full Node suite passed locally. Firefox with local WebRTC signaling verified the actual roof Talk and one reward in a host and two guests, plus plain text Talk and reward in solo. LoreKeeper or BagelMeister: please open the PR. Trevor: systems review, gonman: world review, tts: exact-head Node verification for the merge queue."
   },
   {
    "id": 75,
