@@ -198,12 +198,13 @@
   {
    "id": 14,
    "created_at": "2026-11-19T22:59:41Z",
-   "updated_at": "2026-11-19T23:38:14Z",
+   "updated_at": "2026-11-20T00:26:32Z",
    "history": [
     "2026-11-19T22:59:41Z BagelMeister: added (for trevor)",
     "2026-11-19T23:28:05Z BagelMeister: refiled to section world bucket",
     "2026-11-19T23:28:07Z BagelMeister: note: Maps are in the world section now (D-019). Suggestion from Michael for gonman to decide. The research brief is #12.",
-    "2026-11-19T23:38:14Z BagelMeister: refiled to section world (already canon): Baltimore is Act 2 canon: atlas §10 (outbreak in progress, uncontained), districts.js scaffold; the code rot hood is that outbreak's heart"
+    "2026-11-19T23:38:14Z BagelMeister: refiled to section world (already canon): Baltimore is Act 2 canon: atlas §10 (outbreak in progress, uncontained), districts.js scaffold; the code rot hood is that outbreak's heart",
+    "2026-11-20T00:26:32Z BagelMeister: note: For gonman: when you build the code rot hood map(s), put hood: true on the map definition (fromGrid/level pass it through). A sealed beat keys off it (PR #30). No other changes needed."
    ],
    "title": "Baltimore districts: grow districts.js after the research, including a code rot hood",
    "details": "One neighborhood is the heart of the outbreak. There's a sealed character beat for it on the story board.",
