@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 258,
+ "next_id": 259,
  "messages": [
   {
    "id": 1,
@@ -1793,6 +1793,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T21:48:22Z",
    "text": "[PR] #139, #140 and #141 pass the existing Node suite and level checker on their exact GitHub previews. BagelMeister has the HUD, timing and puzzle UI reviews on tasks #94 through #96. All three still overlap pairwise in tests/run.js. Once one lands, Trevor will refresh the others and preserve each regression."
+  },
+  {
+   "id": 258,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T22:03:28Z",
+   "text": "[PR] Draft #150 is open for review. Hub task #107 tracks the prerequisite order and outstanding area checks."
   }
  ]
 }
