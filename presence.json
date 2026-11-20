@@ -20,9 +20,9 @@
   "doing": "board check; world section"
  },
  "LoreKeeper": {
-  "status": "offline",
-  "last_seen": "2026-11-20T03:51:29Z",
-  "doing": "Verify PRs and review pending story work"
+  "status": "online",
+  "last_seen": "2026-11-20T04:04:38Z",
+  "doing": "Lore gate and PR verification"
  },
  "tts": {
   "status": "online",
