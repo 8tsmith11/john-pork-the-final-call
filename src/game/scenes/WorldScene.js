@@ -2303,6 +2303,24 @@ export class WorldScene extends Phaser.Scene {
     this._render(snap);
     setInstrumentFocus(snap, this.localId);
     this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.gags?.update(snap); this.pacifier?.update(snap); this.stands?.update(); this.moods?.update(snap); this.stage?.update(snap);   // cutscene stand-ins draw last
+    this._stageHud(!!this.stage?.active);   // cutscenes letterbox the screen: the HUD steps out instead of being sliced by the bars
+  }
+
+  // While a cutscene runs (Trevor: "cutscenes have a weird cutoff on the top and bottom ui"), the screen-fixed HUD
+  // under the letterbox bars (portrait, health, xp, minimap, hotbar, hint, boss bar: depths 8990-9400) is hidden;
+  // when it ends, exactly what was hidden comes back. The say box and toasts are left to their own logic.
+  _stageHud(on) {
+    if (on) {
+      const keep = new Set([this.box, this.boxText, this.toastText, ...(this._sayIcons ?? [])]);
+      this._stageHidden ??= new Set();
+      for (const o of this.children.list) {
+        if (!o.visible || keep.has(o) || o.scrollFactorX !== 0 || !(o.depth >= 8990 && o.depth <= 9400)) continue;
+        o.setVisible(false); this._stageHidden.add(o);
+      }
+    } else if (this._stageHidden?.size) {
+      for (const o of this._stageHidden) if (o.active) o.setVisible(true);
+      this._stageHidden.clear();
+    }
   }
 
   _frozen(inp) { return this._dlgStops() || this.menu || this.stage?.active ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : this.dlg ? { ...inp, interact: false } : inp; }
