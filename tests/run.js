@@ -748,14 +748,14 @@ test('region guardians (#49): scaffold quests a later puzzle converts keep their
 const fartMod = await import('../src/game/fart.js');
 const buttMod = await import('../src/game/bigButt.js');
 const npcLifeMod = await import('../src/content/npc_life.js');
-test('Manuel\'s fart: on its own, every couple of minutes; Michael only complains until his side says yes', () => {
+test('Manuel\'s fart: on its own, every couple of minutes; a roommate close by only complains', () => {
   const sent = [], sc = { mode: 'solo', time: { now: 0 } }, f = new fartMod.Fart(sc); f._send = (m) => sent.push(m);
   const snap = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 120, y: 100 }] };
   for (let i = 0; i < 3600; i++) { sc.time.now = i * 1000; f.update(snap); }   // an hour, no input at all
   assert.ok(sent.length >= 15 && sent.length <= 40, `farts in an hour: ${sent.length}`);   // Manuel: more often (2026-11-19)
   assert.ok(sent.every((m) => m.id === 'ai:manuel' && m.line), 'always Manuel, always a line');
-  if (!fartMod.MICHAEL_SAYS_YES) assert.ok(sent.every((m) => !m.sniff && (fartMod.MICHAEL_FART_COMPLAIN ? m.by === 'p2' && fartMod.FART_LINES.complain.includes(m.reply) : !m.reply)), 'until his yes Michael only complains, never sniffs');
-  else assert.ok(sent.every((m) => m.sniff === 'p2' && m.reply), 'Michael close by sniffs every one');
+  assert.ok(sent.every((m) => !('sniff' in m) && (fartMod.MICHAEL_FART_COMPLAIN ? m.by === 'p2' && fartMod.FART_LINES.complain.includes(m.reply) : !m.reply)), 'only the complaint path (Michael, 2026-11-20)');
+  assert.ok(!('michael' in fartMod.FART_LINES), 'no other reaction lines');
 });
 
 const gagsMod = await import('../src/game/runningGags.js');
@@ -3242,6 +3242,15 @@ test("Michael's belt gag: his own line first, on behind one switch, painted as a
   assert.equal(beltMod.BELT_LINES.michael[0], 'Sorry. Left my belt at home.');
   assert.equal(typeof beltMod.MICHAEL_BELT, 'boolean');
   assert.ok(!beltMod.BELT_LINES.trevor.some((l) => /pants|boxer|butt/i.test(l)), "Trevor only reacts; nothing happens to Trevor's character");
+});
+
+test('gag cap: at most BELT_MAX per playthrough, and the count survives a reload', () => {
+  const save = { flags: {} }, snap = { players: [{ id: 'p1', c: 'michael', x: 0, y: 0 }] };
+  const run = (secs) => { const sent = [], sc = { mode: 'solo', time: { now: 0 }, save, sprites: new Map() }, b = new beltMod.Beltless(sc); b._send = (m) => sent.push(m);
+    for (let i = 0; i < secs; i++) { sc.time.now = i * 1000; b.update(snap); } return sent; };
+  assert.equal(run(3 * 3600).length, beltMod.BELT_MAX, 'three hours, still capped');
+  assert.equal(beltMod.BELT_MAX, 2);
+  assert.equal(run(3600).length, 0, 'a reloaded world does not start the count over');
 });
 
 test('the gonman, stage two: R while morphed winds up (no moving), then globs slow enemies and leave puddles; otherwise R is the decoy', () => {
