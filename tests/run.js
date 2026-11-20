@@ -693,7 +693,7 @@ const settingsAfter = async (saved) => {
 };
 const settingsCases = {
   fresh: await settingsAfter(null),
-  mutedByV2: await settingsAfter({ music: 0, sfx: 1, voice: 1, shake: true, textSpeed: 'normal', v: 2 }),
+  mutedByV2: await settingsAfter({ music: 0, sfx: 0.25, voice: 1, shake: true, textSpeed: 'normal', v: 2 }),
   raisedUnderV2: await settingsAfter({ music: 0.5, v: 2 }),
   chosenBeforeV2: await settingsAfter({ music: 0.25 }),
   silencedBeforeV2: await settingsAfter({ music: 0 }),
@@ -703,6 +703,7 @@ test('settings: v3 turns the soundtrack back on only where the v2 change muted i
   const c = settingsCases;
   assert.deepEqual([c.fresh.music, c.fresh.stored.music, c.fresh.stored.v], [1, 1, 3], 'a new player hears music');
   assert.deepEqual([c.mutedByV2.music, c.mutedByV2.stored.music, c.mutedByV2.stored.v], [1, 1, 3], 'v2 muted it, v3 undoes that');
+  assert.equal(c.mutedByV2.stored.sfx, 0.25, 'only the music changes');
   assert.equal(c.raisedUnderV2.music, 0.5, 'turned up under v2: kept');
   assert.equal(c.chosenBeforeV2.music, 0.25, 'chosen before v2: kept');
   assert.equal(c.silencedBeforeV2.music, 0, 'silenced before v2: kept');
