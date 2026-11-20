@@ -1,10 +1,13 @@
 // Node test runner (no dependencies): `node tests/run.js`. Must pass before pushing.
 import assert from 'node:assert/strict';
+import { webcrypto } from 'node:crypto';
+import { EventEmitter } from 'node:events';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { makeStreams, Rng } from '../src/engine/rng.js';
 import { rollWorld } from '../src/engine/worldRolls.js';
 import { newSave, migrate, CURRENT_SCHEMA } from '../src/engine/save/schema.js';
+import { HostNet } from '../src/engine/net/net.js';
 import { Sim, MOVE, ROT, MATE, UNDER, LULLABY as BOT_LULLABY, emptyInput } from '../src/engine/sim.js';
 import { ENEMIES } from '../src/content/enemies.js';
 import { ITEMS } from '../src/content/items.js';
@@ -35,6 +38,32 @@ const rotArena = () => ({ id: 'rot-test', w: 100, h: 100, objects: [], enemies: 
 const addSpawnParty = (sim) => {
   for (const [id, character] of [['host', 'trevor'], ['ai:manuel', 'manuel'], ['ai:michael', 'michael']]) sim.addPlayer(id, character);
 };
+
+test('co-op control handoff preserves the live roommate and clears their exit vote', () => {
+  const sim = new Sim(rotArena());
+  for (const [id, who] of [['host', 'trevor'], ['guest', 'manuel'], ['observer', 'michael']]) sim.addPlayer(id, who);
+  const roommate = sim.players.get('guest');
+  Object.assign(roommate, { x: 111, y: 222, hp: 0, downed: true, reviveT: 1.2, rot: 87, ammo: 4, reloadT: 0.4 });
+  sim.waitAtExit('guest', 'door', 0, -1);
+  sim.shots.push({ owner: 'guest' }, { owner: 'observer' });
+  sim.allies = [{ owner: 'guest' }];
+
+  assert.equal(sim.transferPlayer('guest', 'observer'), false);
+  assert.equal(sim.transferPlayer('guest', 'ai:manuel'), true);
+  assert.equal(sim.players.get('ai:manuel'), roommate);
+  assert.equal(sim.players.has('guest'), false);
+  assert.equal(roommate.waitExit, null);
+  assert.deepEqual([roommate.x, roommate.y, roommate.hp, roommate.downed, roommate.reviveT, roommate.rot, roommate.ammo, roommate.reloadT],
+    [111, 222, 0, true, 1.2, 87, 4, 0.4]);
+  assert.deepEqual(sim.shots.map(shot => shot.owner), ['ai:manuel', 'observer']);
+  assert.equal(sim.allies[0].owner, 'ai:manuel');
+
+  assert.equal(sim.transferPlayer('ai:manuel', 'returning-guest'), true);
+  assert.equal(sim.players.get('returning-guest'), roommate);
+  assert.equal(sim.players.size, 3);
+  assert.equal(sim.allies[0].owner, 'returning-guest');
+});
+
 test('deferred startup with the full roster matches boss scaling on ordinary map entry', () => {
   for (const seed of ['party-load-1', 'party-load-2', 'party-load-3']) {
     const loaded = new Sim(MAPS_FOR_TEST.platform, { seed, deferSpawn: true });
@@ -1761,8 +1790,6 @@ test('Lattice co-op (John Pork\'s review): a guest dropping out mid-turn hands t
   assert.equal(t.turnSide(), 'michael'); clearTimeout(t.timer); t.timer = null;
   t.leave('peerM');   // what WorldScene's leave handler now does before swapping the peer for a companion
   assert.equal(t.seats().michael, null); assert.ok(t.timer !== null, 'the AI picks up the turn instead of waiting forever');
-  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
-  assert.ok(/on\('leave', \(peer\) => \{[^]*?this\.latticeTable\?\.leave\(peer\)[^]*?removePlayer\(peer\)/.test(src), 'the disconnect path tells the table before the roster changes');
   // play it out, then the host deals again: Michael left, so he stays with the AI and his screen stays shut
   clearTimeout(t.timer);
   for (let k = 0; k < 3000 && !t.g.winner; k++) { if (t.g.phase === 'setup') LRules.aiSetup(t.g); else LRules.aiTurn(t.g); }
@@ -3274,6 +3301,79 @@ test("Manuel's edge: with the same gear and no skills, Manuel is the toughest an
   for (const other of ['trevor', 'michael']) {
     assert.ok(m.manuel.maxHp > m[other].maxHp && m.manuel.armor > m[other].armor && m.manuel.melee > m[other].melee && m.manuel.speed > m[other].speed, other);
   }
+});
+
+test('co-op rejoin accepts only a vacant seat with its original room key', () => {
+  const net = new HostNet();
+  const connect = (peer) => {
+    const connection = Object.assign(new EventEmitter(), {
+      peer, messages: [], send(msg) { this.messages.push(structuredClone(msg)); }, close() { this.emit('close'); },
+    });
+    net._trackConnection(connection);
+    connection.emit('open');
+    return connection;
+  };
+  const guest = connect('guest'), observer = connect('observer'), other = connect('other');
+  const save = newSave({ seed: 'reconnect', rolls: {}, gameVersion: 'test' });
+  const assignments = { host: 'trevor', guest: 'manuel', observer: 'michael' };
+  const hasBrowserCrypto = !!globalThis.crypto;
+  if (!hasBrowserCrypto) globalThis.crypto = webcrypto;
+  try { net.startGame(save, assignments); }
+  finally { if (!hasBrowserCrypto) delete globalThis.crypto; }
+  const key = guest.messages[0].seatKey;
+  assert.match(key, /^[a-f0-9]{32}$/);
+  assert.notEqual(observer.messages[0].seatKey, key);
+  assert.equal(other.messages[0].t, 'say');
+
+  const sim = new Sim(MAPS_FOR_TEST.room631);
+  for (const [peer, who] of Object.entries(assignments)) sim.addPlayer(peer, who);
+  const original = sim.players.get('guest');
+  save.party.manuel.inventory[0] = { id: 'item.nail_gun', qty: 1 };
+  save.party.manuel.inventory[1] = { id: 'item.pry_bar', qty: 1 };
+  const exits = [], leftTable = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', localId: 'host', net, sim, save, remoteInputs: new Map(),
+    events: { once() {} }, time: { addEvent() {} }, _tryExit: (exit) => exits.push(exit.id),
+    latticeTable: { leave(peer) {
+      assert.equal(sim.players.get(peer), original, 'Lattice receives the disconnect before the roster changes');
+      leftTable.push(peer);
+    } },
+  });
+  host._syncPlayerGear(original);
+  original.ammo = 4;
+  host._wireNet();
+  other.emit('data', { t: 'hello', seatKey: key });
+  assert.equal(sim.players.has('other'), false, 'a connected player cannot be taken over');
+  net.broadcast({ t: 'snap', snap: sim.snapshot() });
+  net.send('other', { t: 'evState', state: {} });
+  assert.equal(other.messages.some(msg => msg.t === 'snap'), false, 'unseated connections receive no world snapshots');
+  assert.equal(other.messages.some(msg => msg.t === 'evState'), false, 'direct game traffic also stays in the party');
+
+  guest.emit('data', { t: 'input', inp: { mx: 1 } });
+  const exit = sim.map.objects.find(o => o.action === 'exit');
+  for (const peer of ['host', 'observer']) sim.waitAtExit(peer, exit.id, 0, -1);
+  guest.close();
+  assert.equal(host.remoteInputs.has('guest'), false);
+  assert.equal(sim.players.get('ai:manuel'), original);
+  assert.deepEqual(leftTable, ['guest']);
+  assert.equal(original.held, 'melee', 'the companion switches to an available melee weapon');
+  assert.equal(original.mods.gun, 0);
+  assert.equal(save.party.manuel.hotSel ?? 0, 0, 'the original selection belongs to the returning guest');
+  assert.deepEqual(exits, [exit.id]);
+  const returned = connect('returned');
+  returned.emit('data', { t: 'hello', seatKey: 'wrong' });
+  returned.emit('data', { t: 'flag', key: 'act1.test', value: true });
+  assert.equal(save.flags['act1.test'], undefined);
+  assert.equal(sim.players.has('returned'), false);
+  returned.emit('data', { t: 'hello', seatKey: key });
+  const start = returned.messages.at(-1);
+  assert.equal(start.t, 'start');
+  assert.deepEqual(start.assignments, { returned: 'manuel' });
+  assert.equal(start.snapshot.players.find(p => p.id === 'returned').am, 4);
+  assert.equal(sim.players.get('returned'), original);
+  assert.equal(original.held, 'gun', 'the returning guest immediately holds their selected gun');
+  assert.equal(original.mods.gun, 1);
+  assert.equal(sim.players.size, 3);
 });
 
 await Promise.all(pending);

@@ -127,6 +127,7 @@ export class WorldScene extends Phaser.Scene {
     for (const k of Object.keys(this)) if (!WorldScene._baseKeys.has(k)) delete this[k];
     this.character = data.character; this.mode = data.mode;
     this.net = data.net; this.assignments = data.assignments; this.passedSave = data.save;
+    this.initialSnapshot = data.snapshot;
   }
 
   async create() {
@@ -148,10 +149,12 @@ export class WorldScene extends Phaser.Scene {
     });
     this.localId = this.mode === 'client' ? this.net.id : 'host';
     this.remoteInputs = new Map();
-    this.snapBuf = [];
+    this.snapBuf = this.initialSnapshot ? [{ at: performance.now(), snap: this.initialSnapshot }] : [];
     if (this.mode !== 'client') {
       this.sim.addPlayer(this.localId, this.character);
-      for (const [peer, ch] of Object.entries(this.assignments || {})) if (peer !== 'host') this.sim.addPlayer(peer, ch);
+      for (const [peer, ch] of Object.entries(this.assignments || {})) {
+        if (peer !== 'host' && this.net?.conns.has(peer)) this.sim.addPlayer(peer, ch);
+      }
       // Task 9: roommates nobody is playing are still here, run by the companion brain.
       const taken = new Set([...this.sim.players.values()].map((p) => p.character));
       for (const ch of ['trevor', 'manuel', 'michael']) if (!taken.has(ch)) this.sim.addPlayer(`ai:${ch}`, ch);
@@ -224,8 +227,10 @@ export class WorldScene extends Phaser.Scene {
     this.ready = true;
     // Act 1's witnessed beats are staged in-engine first (hub #48; src/content/stage/act1_*.js), then the scene plays.
     // A beat of delay so the roommates are on screen for the cutscene to stand in for them.
-    if (!this.save.flags['act1.coldopen.done']) this.time.delayedCall(300, () => this.stage.after('act1_open', () => this.startDialogue('cold_open', null, () => { this._flag('act1.coldopen.done', true); this._controlsHint(); })));
-    else this.time.delayedCall(1200, () => this._controlsHint());
+    if (!this.initialSnapshot) {
+      if (!this.save.flags['act1.coldopen.done']) this.time.delayedCall(300, () => this.stage.after('act1_open', () => this.startDialogue('cold_open', null, () => { this._flag('act1.coldopen.done', true); this._controlsHint(); })));
+      else this.time.delayedCall(1200, () => this._controlsHint());
+    }
   }
 
   // ---------- dialogue ----------
@@ -650,6 +655,20 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- networking ----------
+  _resumeGuest(peer, key) {
+    const character = this.net.findVacantSeat(peer, key);
+    if (!character || !this.sim.transferPlayer(`ai:${character}`, peer)) {
+      this.net.rejectJoin(peer, 'Room in progress. Rejoin from your original tab.');
+      return;
+    }
+    this._syncPlayerGear(this.sim.players.get(peer));
+    this.net.occupySeat(character, peer);
+    this._lastSnap = null;
+    this._worldSig = null;
+    const snapshot = { ...this.sim.snapshot(), doors: [...this.sim.map.doors.values()].filter(d => d.open).map(d => d.id) };
+    this.net.send(peer, { t: 'start', save: this.save, assignments: { [peer]: character }, snapshot });
+  }
+
   _wireNet() {
     // Handlers come off when this scene shuts down, so a restart (the save reload) doesn't double them.
     const on = (t, fn) => { this.net.on(t, fn); this._netHandlers.push([t, fn]); };
@@ -657,6 +676,11 @@ export class WorldScene extends Phaser.Scene {
     this.events.once('shutdown', () => { for (const [t, fn] of this._netHandlers) this.net?.off?.(t, fn); });
     if (this.mode === 'host') {
       on('msg', (peer, msg) => {
+        if (!msg) return;
+        if (!this.sim.players.has(peer)) {
+          if (msg.t === 'hello') this._resumeGuest(peer, msg.seatKey);
+          return;
+        }
         if (msg.t === 'lattice') { this._table().onHostMsg(peer, msg); return; }   // the casino board game (host runs it)
         if (msg.t === 'bastion') { this._bastion().onHostMsg(peer, msg); return; }   // hub #34 (host runs it)
         if (msg.t === 'lab') { this._lab().onHostMsg(peer, msg); return; }   // hub #44 (host keeps the bench)
@@ -700,11 +724,21 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'scooter') this._scooter(peer);
       });
       on('leave', (peer) => {
+        this.remoteInputs.delete(peer);
         this._questReading?.delete(peer);
         this.latticeTable?.leave(peer);   // their side goes to the AI now, or a turn waiting on them stalls the table (John Pork)
         // A roommate who drops out keeps walking with the party as a companion.
-        const p = this.sim.players.get(peer); this.sim.removePlayer(peer);
-        if (p) { this.sim.addPlayer(`ai:${p.character}`, p.character); const a = this.sim.players.get(`ai:${p.character}`); Object.assign(a, { x: p.x, y: p.y, hp: p.hp, rot: p.rot ?? 0, rotQuiet: p.rotQuiet ?? 0 }); this._syncPlayerGear(a); }
+        const p = this.sim.players.get(peer);
+        if (p && this.sim.transferPlayer(peer, `ai:${p.character}`)) {
+          this._syncPlayerGear(p);
+          this._lastSnap = null;
+          const waiting = [...this.sim.players.values()].find(q => !isAi(q.id) && !q.downed && q.waitExit)?.waitExit;
+          if (!this.dlg && !this._transitioning && waiting && this.sim.allWaiting(waiting)) {
+            const exit = this.sim.map.objects.find(o => o.id === waiting && o.action === 'exit');
+            this.sim.clearWaiting();
+            if (exit) this._tryExit(exit);
+          }
+        }
       });
       this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
       this.time.addEvent({ delay: 500, loop: true, callback: () => this._broadcastWorld() });
@@ -728,7 +762,7 @@ export class WorldScene extends Phaser.Scene {
           this._showActOneCard();
         }
       });
-      on('close', () => this._say('The host closed the game.'));
+      on('close', () => this._say(`Connection lost. To resume, leave to title and rejoin room ${this.net.code} from this tab.`));
     }
   }
 

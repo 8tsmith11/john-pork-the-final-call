@@ -306,6 +306,20 @@ export class Sim {
 
   removePlayer(id) { this.players.delete(id); }
 
+  /** Hand control to another controller without respawning the roommate. */
+  transferPlayer(from, to) {
+    const player = this.players.get(from);
+    if (!player || this.players.has(to)) return false;
+    this.players.delete(from);
+    this.players.set(to, player);
+    player.id = to;
+    player.waitExit = null;
+    // Projectiles and companions still belong to the same roommate.
+    for (const shot of this.shots) if (shot.owner === from) shot.owner = to;
+    for (const ally of this.allies ?? []) if (ally.owner === from) ally.owner = to;
+    return true;
+  }
+
   /** Co-op doors: park a player at an exit. Returns true when every standing player is parked at it. */
   waitAtExit(id, exitId, dx, dy) {
     const p = this.players.get(id); if (!p || p.waitExit === exitId) return this.allWaiting(exitId);
