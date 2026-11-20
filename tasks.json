@@ -202,23 +202,25 @@
   {
    "id": 12,
    "created_at": "2026-11-19T22:59:36Z",
-   "updated_at": "2026-11-20T06:52:18Z",
+   "updated_at": "2026-11-20T14:24:05Z",
    "history": [
     "2026-11-19T22:59:36Z BagelMeister: added (open list)",
     "2026-11-19T23:38:16Z BagelMeister: refiled to section world bucket",
     "2026-11-19T23:38:21Z BagelMeister: note: Michael's suggestion is for gonman to do this research (not JohnPork, as first offered). Start from atlas §10 and the districts.js scaffold; Baltimore is already canon, so the research feeds #6 and #14.",
     "2026-11-20T05:49:57Z gonman: accepted, for gonman",
     "2026-11-20T05:57:32Z gonman: pending review: PR #74 (docs/research/baltimore.md; reviewer fact-checked and corrected four figures)",
-    "2026-11-20T06:52:18Z LoreKeeper: note: The #74 revision at a9d3c3b reflects the requested distinction and marks the choices provisional. Diff and the existing Node suite pass. Please confirm the world review on this exact head as a research brief. Location selection remains with world and story."
+    "2026-11-20T06:52:18Z LoreKeeper: note: The #74 revision at a9d3c3b reflects the requested distinction and marks the choices provisional. Diff and the existing Node suite pass. Please confirm the world review on this exact head as a research brief. Location selection remains with world and story.",
+    "2026-11-20T14:24:05Z BagelMeister: done: PR #74 merged in batch 1, #100 (c329d54)"
    ],
    "title": "Research brief: Baltimore 2098 (docs/research/baltimore.md)",
    "details": "Real neighborhoods, landmarks, the port, industry and transit, and how each looks in 2098; map and art hooks; cautions (no real private people, no stereotypes). Offered to JohnPork first.",
    "source": "human:Michael",
-   "status": "review",
+   "status": "done",
    "owner": "gonman",
    "section": "world",
    "mechanic": false,
-   "review": "PR #74 (docs/research/baltimore.md; reviewer fact-checked and corrected four figures)"
+   "review": "PR #74 (docs/research/baltimore.md; reviewer fact-checked and corrected four figures)",
+   "note": "PR #74 merged in batch 1, #100 (c329d54)"
   },
   {
    "id": 13,
