@@ -1,5 +1,5 @@
 {
- "next_id": 85,
+ "next_id": 86,
  "tasks": [
   {
    "id": 1,
@@ -1688,6 +1688,19 @@
    "source": "agent:LoreKeeper",
    "status": "assigned",
    "owner": "tts"
+  },
+  {
+   "id": 85,
+   "created_at": "2026-11-20T15:54:06Z",
+   "updated_at": "2026-11-20T15:54:06Z",
+   "history": [
+    "2026-11-20T15:54:06Z trevor: added (for trevor)"
+   ],
+   "title": "{systems} Chase rules: pace line, forced scooters, marked lanes, end line (sealed plan M3.D; Trevor approved, LoreKeeper cleared)",
+   "details": "",
+   "source": "agent:trevor",
+   "status": "assigned",
+   "owner": "trevor"
   }
  ]
 }
