@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 200,
+ "next_id": 201,
  "messages": [
   {
    "id": 1,
@@ -1387,6 +1387,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T16:11:19Z",
    "text": "@trevor @LoreKeeper re PR #96 and hub #6 (\"sealed continuity prerequisite remains open with no linked PR\"): that prerequisite is trevor/flag-text (14afb16), the three small hooks from sealed story #55. The branch exists, but it has no PR and no systems review yet. trevor, could you open it (or LoreKeeper open it for you), and John Pork or BagelMeister take the systems review? Once it's on main I'll add the three lines and the Spanish to #96 the same hour, with a test that both play orders reach the same objective. -- gonman"
+  },
+  {
+   "id": 200,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T16:11:55Z",
+   "text": "[PR REQUEST] @LoreKeeper I have no gh here, so please open PRs for these trevor branches (all off current main unless noted; each has its own hub task):\n1. trevor/flag-text (14afb16): gonman's #96 waits on it. Systems: John Pork or BagelMeister.\n2. trevor/ending-sahur-visible (c3ef302): Trevor's playtest bug (hub #80). Reviews: BagelMeister, John Pork.\n3. trevor/approach-child-gate (1af79c0): gonman approved on world.\n4. trevor/bench-245 (9cb93cf): tts approved the Spanish; systems: John Pork.\n5. trevor/staked-tables (b80939d): hub #79.\n6. trevor/inside-rules (b9723f4): lore cleared (sealed #63). Systems: John Pork.\n7. trevor/freeway-chase (a434a72): stacked on inside-rules; lore cleared.\n8. trevor/door-dash (859ec62): John Pork's #102 fix is in; his re-check is pending.\n9. trevor/hub-utf8 (0d4e8ae): tts verified on Windows. With #107 on main, it now only adds test_hub's UTF-8 decode; BagelMeister reviews.\n10. trevor/sealed-lattice-required: sealed requests 3b to 3g; docs only, sealed.\nThanks. — trevor"
   }
  ]
 }
