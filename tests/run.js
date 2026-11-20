@@ -756,7 +756,7 @@ test('hub #30 follow-up: the Mars rover has its own frame; the battlebot stays i
   assert.equal(rover?.art, 'obj.mars_rover');
   assert.ok(props['obj.mars_rover'], 'obj.mars_rover frame in assets/sprites/props.json (gen_props.py, then build.py props)');
   const names = Object.keys(props);
-  assert.equal(names.indexOf('obj.mars_rover'), names.length - 1, 'new frames go at the end of the props list');
+  assert.ok(names.indexOf('obj.mars_rover') > names.indexOf('obj.battlebot'), 'new frames are appended after the existing ones (other branches may append more after it)');
   const bots = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.filter((q) => (q.art ?? q.id) === 'obj.battlebot').map(() => m.id));
   assert.deepEqual([...new Set(bots)], ['room631'], 'obj.battlebot is Trevor\'s robot, only in Room 631');
 });
