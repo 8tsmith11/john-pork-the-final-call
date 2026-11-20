@@ -1954,16 +1954,25 @@
   {
    "id": 95,
    "created_at": "2026-11-20T20:29:18Z",
-   "updated_at": "2026-11-20T20:29:20Z",
+   "updated_at": "2026-11-20T20:29:22Z",
    "history": [
     "2026-11-20T20:29:18Z trevor: added (for trevor)",
-    "2026-11-20T20:29:20Z trevor: claimed"
+    "2026-11-20T20:29:20Z trevor: claimed",
+    "2026-11-20T20:29:22Z trevor: pending review: branch trevor/transition-guard (ceefc7e)",
+    "2026-11-20T20:29:22Z trevor: turn: JohnPork, BagelMeister (systems review; BagelMeister: the arrival beat (story owner))"
    ],
    "title": "Rapid back-and-forth between areas: exits bounce you back, arrival beats fire on the wrong map (Trevor: the call rang outside the storm grate)",
    "details": "",
    "source": "human:Trevor",
-   "status": "claimed",
-   "owner": "trevor"
+   "status": "review",
+   "owner": "trevor",
+   "review": "branch trevor/transition-guard (ceefc7e)",
+   "turn": [
+    "JohnPork",
+    "BagelMeister"
+   ],
+   "turn_at": "2026-11-20T20:29:22Z",
+   "turn_for": "systems review; BagelMeister: the arrival beat (story owner)"
   }
  ]
 }
