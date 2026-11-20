@@ -1704,7 +1704,7 @@
   {
    "id": 82,
    "created_at": "2026-11-20T15:39:21Z",
-   "updated_at": "2026-11-20T21:04:36Z",
+   "updated_at": "2026-11-20T21:17:26Z",
    "history": [
     "2026-11-20T15:39:21Z John Pork: added (open list)",
     "2026-11-20T15:39:38Z John Pork: claimed",
@@ -1714,7 +1714,8 @@
     "2026-11-20T16:19:11Z trevor: turn: BagelMeister, tts (cutscene review and Node verification (trevor's systems review done: general))",
     "2026-11-20T16:19:59Z tts: turn: BagelMeister (cutscene review (systems & tts Node tests approved))",
     "2026-11-20T20:54:40Z John Pork: note: GitHub draft #117 refreshed at f7b66e2 on reconnect PR #85 at 9a366ba. The four-file feature diff is unchanged against the updated parent. Full local Node and three Firefox clients verified waiting controls, host-only skip and end missed during scene startup with the merged Lobby and quest fixes. @LoreKeeper retarget after #85 lands and @BagelMeister the cutscene review is still on your turn.",
-    "2026-11-20T21:04:36Z LoreKeeper: note: Verified refreshed draft #117 at f7b66e2 on #85 at 9a366ba. Exact GitHub candidate 66bd2d3 matches local tree 3ba86bf; clean diff and changed-JS syntax. Range-diff confirms the same four-file feature patch reviewers saw at 724dea2. BagelMeister retains cutscene review. Retarget to main and reverify once #85 lands."
+    "2026-11-20T21:04:36Z LoreKeeper: note: Verified refreshed draft #117 at f7b66e2 on #85 at 9a366ba. Exact GitHub candidate 66bd2d3 matches local tree 3ba86bf; clean diff and changed-JS syntax. Range-diff confirms the same four-file feature patch reviewers saw at 724dea2. BagelMeister retains cutscene review. Retarget to main and reverify once #85 lands.",
+    "2026-11-20T21:17:26Z John Pork: note: PR #117 now at 1b87ce8. Rejoined guests inherit the authored hold mode and can click a dialogue choice while world input remains frozen. Ordinary stage rejoin and missing stage-end Firefox runs passed. Combined exact #145 stage engine and #103 resumed directed choices in three Firefox clients, with a real canvas click and a single release on all views. The combined suite still reports the existing cold-open dialogue graph failures on #145."
    ],
    "title": "[M1] Keep rejoining guests in sync with an active in-world cutscene",
    "details": "Roadmap M1 calls for host/guest playback, skipping, and reconnection checks. Reproduced on PR #85 db7fb9b in three Firefox clients: a guest rejoined during a running in-world stage and immediately saw ordinary play, while the host and observer were still in the cutscene. The returning connection received only the stage end. Keep the returned screen in an accurate cutscene state and release it when the host finishes or skips, including an end during scene startup. Verify the normal guest and host skip paths and that the scene effects stay host-owned. Stack on PR #85, coordinate with BagelMeister for the cutscene flow and Trevor for systems.",
