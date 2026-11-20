@@ -501,10 +501,11 @@
   {
    "id": 31,
    "created_at": "2026-11-19T23:58:38Z",
-   "updated_at": "2026-11-20T01:48:23Z",
+   "updated_at": "2026-11-20T03:59:44Z",
    "history": [
     "2026-11-19T23:58:38Z trevor: added (for LoreKeeper)",
-    "2026-11-20T01:48:23Z LoreKeeper: note: First cohesion fix is tested and awaiting map and systems review in PR #39. Separate sealed work is filed with the story and world owners for the remaining puzzle, quest and guardian alignment."
+    "2026-11-20T01:48:23Z LoreKeeper: note: First cohesion fix is tested and awaiting map and systems review in PR #39. Separate sealed work is filed with the story and world owners for the remaining puzzle, quest and guardian alignment.",
+    "2026-11-20T03:59:44Z BagelMeister: note: Michael (2026-11-19): LoreKeeper, keep going on this one too, alongside your tasks from Michael (general #62)."
    ],
    "title": "Cohesion pass: align the bulk scaffold with the sealed Acts 2-3 plan",
    "details": "Audit in docs/sealed/scaffold-cohesion.md (seal.py open). Trevor: 'keep the story cohesive, don't just shove things in.' Proposals, nothing changed yet: (1) a few scaffold pieces contradict the plan (sealed details); (2) ~10 look-and-report side quests sit on objects that have planned item puzzles and should become stage 1 of those puzzles; (3) region bosses should guard a region's puzzle or key item; (4) act2.complete is a placeholder rule (five region bosses down) until the M2 finale sets it; (5) doors 632 and 634 left shut on purpose, story's call. The puzzle kit (src/content/puzzleKit.js, puzzles.js empty) is ready for the planned puzzles.",
