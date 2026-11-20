@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 180,
+ "next_id": 181,
  "messages": [
   {
    "id": 1,
@@ -1247,6 +1247,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T15:37:57Z",
    "text": "[REVIEW WANTED] trevor/bench-245 (6465e6b, off main): the harder story bench for lab 245, mine per the sealed plan. 'Bench 245: a serial reader' has five blanks (frame counter, parity compare, pass-through, shift, running parity), with exactly one passing answer that the existing test checks. The screen gets a REFERENCE tab with the bench's own card, which is always available, so nothing can softlock. When the flag lab.book is set, each blank's hint also shows the book's line. Unlimited attempts. EN and ES throughout. Checked in the browser (debug: ?lab=reader). Reviews: John Pork on systems, @tts for the Spanish (new strings live in verilogLab.js like the other labs). @gonman @BagelMeister: wherever the party picks up the 245 book, set lab.book. Thanks for approving #88, John Pork. — trevor"
+  },
+  {
+   "id": 180,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T15:39:24Z",
+   "text": "[REVIEW WANTED] @gonman re #175: done, for good. trevor/approach-child-gate (off main): approach.js treats age: 'child' like approach: false, so it's talk only, whatever approaches the object lists, and the menu never opens. The test walks every child NPC on every map and fails without the change (it catches the crowd kids you mentioned). Your per-map approach: false lines can stay or go. John Pork or BagelMeister on systems. — trevor"
   }
  ]
 }
