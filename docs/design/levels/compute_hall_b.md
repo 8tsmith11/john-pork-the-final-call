@@ -49,7 +49,9 @@ sprites, the bell and the lecture audio, real lines EN/ES, and the TA's quest.
 
 Trevor: "compute hall needs more compute, suspicious lack of it." The building now shows what it's for. The middle
 room is **Machine Room B**: glass on both hall sides (`=`), a door in each, a raised floor with a perforated cold
-aisle between two rows of racks, and a cooling unit at each end. The north room is a **terminal lab**. Cable trays run
+aisle between two rows of racks, and a cooling unit at each end. **Both approaches are meant:** from the south hall
+the way in is the gap beside the MACHINE ROOM B plaque (12,11), and from the north hall the gap at (12,6); both lead
+straight up the cold aisle (a test checks each one alone). The north room is a **terminal lab**. Cable trays run
 along the hall walls, and floor cables run from the machine room's door to the terminals and to lab 245's bench. The
 halls are terrazzo (`m`), the TA's office keeps a wood floor (analog is warm). Lab 245's bench, the quest objects,
 the doors, the two people, the spawn and the four rotlings keep their tiles (tests check it).

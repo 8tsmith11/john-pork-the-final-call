@@ -763,17 +763,31 @@ test('hub #30 follow-up: the Mars rover has its own frame; the battlebot stays i
   assert.ok(props['obj.mars_rover'], 'obj.mars_rover frame in assets/sprites/props.json (gen_props.py, then build.py props)');
   const names = Object.keys(props);
   // New frames go at the end of the props list: the rover was the last one until hub #68 appended the machine room's.
-  assert.equal(names.indexOf('obj.mars_rover'), names.indexOf(CHB68_PROPS[0]) - 1, 'new frames go at the end of the props list');
+  assert.ok(names.indexOf('obj.mars_rover') > names.indexOf('obj.battlebot'), 'new frames are appended after the existing ones (other branches may append more after it)');
   const bots = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.filter((q) => (q.art ?? q.id) === 'obj.battlebot').map(() => m.id));
   assert.deepEqual([...new Set(bots)], ['room631'], 'obj.battlebot is Trevor\'s robot, only in Room 631');
 });
 
 test('hub #68: the machine room\'s frames are in the atlases, appended after everything that was there', () => {
   const props = chb68Atlas('props'), decals = chb68Atlas('decals');
-  assert.deepEqual(props.slice(-CHB68_PROPS.length), CHB68_PROPS, 'props: appended at the end of the list (gen_props.py, then build.py props)');
-  assert.deepEqual(decals.slice(-CHB68_DECALS.length), CHB68_DECALS, 'decals: appended at the end of the list (build.py decals)');
-  assert.equal(props.indexOf('obj.mars_rover'), props.length - CHB68_PROPS.length - 1, 'the frames before them keep their atlas positions');
+  // Appended as one block after the frames that were already there; other branches may append more after them.
+  const p0 = props.indexOf(CHB68_PROPS[0]), d0 = decals.indexOf(CHB68_DECALS[0]);
+  assert.deepEqual(props.slice(p0, p0 + CHB68_PROPS.length), CHB68_PROPS, 'props: one appended block (gen_props.py, then build.py props)');
+  assert.ok(p0 > props.indexOf('obj.mars_rover'), 'after the frames that were there before');
+  assert.deepEqual(decals.slice(d0, d0 + CHB68_DECALS.length), CHB68_DECALS, 'decals: one appended block (build.py decals)');
+  assert.ok(d0 > decals.indexOf('dec.lily'), 'after the decals that were there before');
   for (const art of ['obj.server_rack', 'obj.network_rack', 'obj.terminal_lit', 'obj.crac_unit', 'obj.wall_display']) assert.ok(props.includes(`${art}#1`), `${art} blinks: a '#1' frame`);
+});
+test('hub #68: the machine room opens on both halls, and both openings reach the cold aisle (LoreKeeper story #42)', () => {
+  const m = MAPS_FOR_TEST.compute_hall_b;
+  const reach = (sx, sy) => { const seen = new Set([sx + ',' + sy]), q = [[sx, sy]]; while (q.length) { const [x, y] = q.shift(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (seen.has(k) || nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || m.solid(nx, ny)) continue; seen.add(k); q.push([nx, ny]); } } return seen; };
+  assert.ok(!m.solid(12, 6) && !m.solid(12, 11), 'a gap in the north glass (12,6) and in the south glass (12,11)');
+  const plaque = m.objects.find((q) => q.id === 'obj.chb_machine_sign');
+  assert.ok(Math.abs(plaque.x - 12) <= 1 && plaque.y === 11, 'the plaque sits beside the south opening, readable from the south hall');
+  const blockNorth = new Set(['12,6']), solidN = m.solid; m.solid = (x, y) => blockNorth.has(x + ',' + y) || solidN.call(m, x, y);
+  try { assert.ok(reach(12, 13).has('12,9'), 'from the south hall alone you reach the cold aisle'); } finally { m.solid = solidN; }
+  const blockSouth = new Set(['12,11']); m.solid = (x, y) => blockSouth.has(x + ',' + y) || solidN.call(m, x, y);
+  try { assert.ok(reach(12, 5).has('12,9'), 'from the north hall alone you reach the cold aisle'); } finally { m.solid = solidN; }
 });
 test('hub #68: lab 245\'s bench, the quest objects, doors, people and rotlings keep their tiles', () => {
   const m = MAPS_FOR_TEST.compute_hall_b, at = (id) => { const o = m.objects.find((q) => q.id === id); return o && [o.x, o.y, o.w ?? 1]; };
