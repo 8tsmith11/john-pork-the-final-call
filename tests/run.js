@@ -931,13 +931,15 @@ test('hub #30 (Act 2): es-act2.js is wired in and agrees with the other Spanish 
 test('hub #30 (Act 2), canon: the lines keep to the quest clues, the naming rule and the house style', () => {
   const obj = (mapId, id) => A2P_MAPS.find((m) => m.id === mapId).objects.find((o) => o.id === id);
   const all = A2P_MAPS.flatMap((m) => m.objects.flatMap((o) => a2pLines(o).map((t) => [`${m.id}/${o.id}`, t])));
-  // Lore gate 7.1 (PR #46): the named tank's name can't be read, and nothing invents a batch number.
+  // Lore gate 7.1 (PR #46): nothing on the tank can be read, and nothing here invents a number.
   for (const [where, t] of all.filter(([w]) => /^(beltsville|bv_barn)\//.test(w))) assert.ok(!/thirteen|batch \d|\bnumber \d/i.test(t), `${where}: an invented batch: ${t.slice(0, 60)}`);
-  // The name has faded past reading (sealed ruling, LoreKeeper story #71); the tag is the quest's payoff, so the map line leaves it out.
+  // The tank's line follows the sealed ruling (LoreKeeper, story #71). The words it must not use are kept in ROT13.
   const tankEn = obj('bv_barn', 'obj.bv_named_tank').text, tankEs = A2P_ES[tankEn];
-  assert.ok(!/\d|"|'[A-Z]|\btag\b|\bbatch\b|\blabel\b/.test(tankEn), 'the tank: no readable name, number or tag before the clue says so');
-  assert.ok(/faded|too far to read|past reading|can't be read|unreadable|illegible/i.test(tankEn), 'the tank: the line says the name can no longer be read');
-  assert.ok(tankEs && !/\d|"|etiqueta|lote/i.test(tankEs) && /borrad|no se lee|ilegible/i.test(tankEs), 'the tank (ES): unreadable too, and no tag');
+  const r13 = (w) => w.replace(/[a-z]/gi, (c) => String.fromCharCode(((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26) + (c <= 'Z' ? 65 : 97)));
+  const notYet = new RegExp(`\\b(${['gnt', 'ongpu', 'ynory', 'rgvdhrgn', 'ybgr'].map(r13).join('|')})\\b`, 'i');
+  assert.ok(!/\d|"|'[A-Z]/.test(tankEn) && !notYet.test(tankEn), 'the tank: nothing on it can be read before its quest');
+  assert.ok(/faded|too far to read|past reading|can't be read|unreadable|illegible/i.test(tankEn), 'the tank: the line says the writing can no longer be read');
+  assert.ok(tankEs && !/\d|"/.test(tankEs) && !notYet.test(tankEs) && /borrad|no se lee|ilegible/i.test(tankEs), 'the tank (ES): the same');
   // The bay (LoreKeeper): nothing here may read like the real 2024 bridge collapse.
   for (const [where, t] of all.filter(([w]) => /^(annapolis|ann_harbor)\//.test(w))) assert.ok(!/\b(ships?|vessels?|freighters?|collisions?|collapsed?|wreck(age)?|struck|broken)\b/i.test(t), `${where} reads like a disaster: ${t.slice(0, 60)}`);
   // The main story keeps the boat (atlas §11): nobody on the harbor promises one.
