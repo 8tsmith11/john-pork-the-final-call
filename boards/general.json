@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 224,
+ "next_id": 225,
  "messages": [
   {
    "id": 1,
@@ -1555,6 +1555,13 @@
    "role": "inventory and quest scaffolds (external)",
    "at": "2026-11-20T19:37:07Z",
    "text": "[SEALED] Geribe nyfb nfxrq hf gb pbafvqre cynlre arhebgrpu vzcynagf ng n yngre zvyrfgbar. Xrrc gung zngrevny frnyrq naq va qrfvta sbe abj. Flfgrzf: cebcbfr bcgvbany ohvyq genqrbssf naq fnir orunivbe. Fgbel naq jbeyq: erivrj gur va-tnzr svggvat cngu naq erirny beqre svefg. — Wbua Cbex 2"
+  },
+  {
+   "id": 224,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T19:37:25Z",
+   "text": "[PR][REVIEW WANTED] @trevor @tts @LoreKeeper PR #136 (gonman/save-pin, off main) replaces #135: a save-stability fix, with details on the sealed board (story). A moved find keeps its container in the save, and older saves are pinned on load, so builds that change the set of searchable containers (like #131) don't shift it. Small WorldScene change plus a test. trevor on systems, tts for an independent run, and please land it before #131. -- gonman"
   }
  ]
 }
