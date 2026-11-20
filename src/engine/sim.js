@@ -291,7 +291,9 @@ export class Sim {
   /** Co-op doors: park a player at an exit. Returns true when every standing player is parked at it. */
   waitAtExit(id, exitId, dx, dy) {
     const p = this.players.get(id); if (!p || p.waitExit === exitId) return this.allWaiting(exitId);
-    Object.assign(p, { waitExit: exitId, waitDx: dx, waitDy: dy, waitTick: this.tick });
+    // Parking ends a roll (Trevor: dashing into a door broke things). The park skips the player's update, so a roll in
+    // progress froze mid-air, invulnerable, and stepping back out finished it, straight back into the door.
+    Object.assign(p, { waitExit: exitId, waitDx: dx, waitDy: dy, waitTick: this.tick, dodgeT: 0, vx: 0, vy: 0, iframes: Math.min(p.iframes ?? 0, 0.2) });
     return this.allWaiting(exitId);
   }
   // AI companions (ids 'ai:*') don't vote at doors; they're carried along with the party.

@@ -1055,6 +1055,28 @@ test('lab bench (hub #44): every lab has exactly one passing answer; the shared 
   assert.equal(bench.act({ type: 'cycle', i: 0 }), false, 'a passed lab is locked');
 });
 
+test('co-op: dashing into a door parks you standing, not frozen mid-roll, and stepping back out does not throw you back in', () => {
+  const m = MAPS_FOR_TEST.metro_plaza, ex = m.objects.find((o) => o.id === 'obj.diner_door');
+  const sim = new Sim(m, { seed: 'dash', deferSpawn: true }); sim.enemies.clear();
+  sim.addPlayer('h', 'trevor'); sim.addPlayer('g', 'manuel');
+  const p = sim.players.get('h'), dy = m.solid(ex.x, ex.y + 1) ? -1 : 1;
+  p.x = ex.x * 16 + 8; p.y = (ex.y + dy * 3) * 16 + 8; p.arriveHold = false;
+  const up = { ...emptyInput(), my: -dy };
+  let fired = null;
+  for (let n = 0; n < 90 && !fired; n++) {
+    sim.step(1 / 60, new Map([['h', { ...up, dodge: n === 2 }]]));
+    fired = sim.events.find((e) => e.t === 'bumpExit');
+    if (fired) sim.waitAtExit('h', fired.id, fired.dx, fired.dy);   // the scene does this in co-op
+  }
+  assert.ok(fired && p.waitExit === ex.id, 'parked at the diner door');
+  assert.equal(p.dodgeT, 0, 'the roll ended when parked');
+  for (let i = 0; i < 20; i++) sim.step(1 / 60, new Map([['h', { ...emptyInput(), my: dy }]]));   // step back out
+  assert.equal(p.waitExit, null);
+  let back = false;
+  for (let i = 0; i < 20; i++) { sim.step(1 / 60, new Map([['h', emptyInput()]])); back ||= sim.events.some((e) => e.t === 'bumpExit'); }
+  assert.ok(!back, 'no leftover roll throws you back into the door');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
