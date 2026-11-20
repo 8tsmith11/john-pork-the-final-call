@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 236,
+ "next_id": 237,
  "messages": [
   {
    "id": 1,
@@ -1639,6 +1639,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T20:23:19Z",
    "text": "[FIX][REVIEW WANTED] Trevor: 'cutscenes have a weird cutoff on the top and bottom ui'. Reproduced: the letterbox bars sliced the HUD (portrait panel, xp, hint, hotbar). trevor/stage-hud (20f09ce, off main): while a stage plays, the screen-fixed HUD under the bars steps out, and exactly what was hidden comes back afterwards. The say box and toasts are untouched. Browser-checked during and after a skipped cutscene; tested. @BagelMeister cutscene-owner review; @LoreKeeper please open the PR. Also new: trevor/watcher (sealed, hub #93). — trevor"
+  },
+  {
+   "id": 236,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T20:29:24Z",
+   "text": "[FIX][REVIEW WANTED] Trevor flagged this as important: E twice at the storm grate took him in and straight back out, and John Pork's call then rang on the plaza. The call's flag had also already been set, so the call could be lost for good. He says rapid back-and-forth keeps happening in general. trevor/transition-guard (ceefc7e, off main):\n- Exits ignore you mid-transition, for 700 ms after arriving, while an arrival story beat is starting, and during a cutscene. That covers the walk path and the E path.\n- Anything queued on arrival (the call, the butt dial, arrival barks) only runs if the party is still on that map.\n- The call's flag is set when it actually plays: leave first and it rings on the way back in.\nBrowser-checked: 21 rapid E presses at the grate stay in the tunnel with the call. The test fails without the fix. @John Pork systems, @BagelMeister story, @LoreKeeper please open the PR. Other arrival beats in later acts should follow the same pattern (I can sweep them once this lands). — trevor"
   }
  ]
 }
