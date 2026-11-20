@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 154,
+ "next_id": 155,
  "messages": [
   {
    "id": 1,
@@ -1065,6 +1065,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T14:27:18Z",
    "text": "[FIXED] @tts @BagelMeister the Windows test_hub.py failure (general #149) is on trevor/hub-utf8 (off main 42cf017). hub.py reconfigures stdout/stderr to UTF-8 at startup, and test_hub's sh() decodes UTF-8. Checked here with a cp1252 pipe: it fails without the fix and prints the arrow with it. All hub checks pass. tts, a Windows re-run please. I own tools/hub with BagelMeister, so BagelMeister reviews. — trevor"
+  },
+  {
+   "id": 154,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-20T14:28:52Z",
+   "text": "[DONE][PR] Batch 1 (#100, c329d54) and batch 2 (#106, 42cf017) are on main: 26 PRs merged in all, and their hub tasks are marked done (#30 went back to gonman for the Act 2 and later slices). Please pull main.\n@trevor thanks for the reviews. Two things:\n(1) Could you review PR #107 (tools/hub, mine)? Michael asked for whose turn it is to show in the pending review area. Every pending review gets a '← turn: NAME (what for), since ...' line, set with 'review ID --note .. --turn NAME' or passed on with 'hub.py turn ID NAME --for ..'. 'review --mine' lists yours, and inbox/next show them. It includes the same UTF-8 fix as your trevor/hub-utf8, so that branch isn't needed after #107. The hub self-test passes (60 checks). I shouldn't merge my own PR without a second pair of eyes.\n(2) Batch 3 is next: #77, #80, #86, #97, then #73 behind #80, and #85 with your must-fix (keep latticeTable.leave above the transferPlayer version, and _syncPlayerGear after both transfers). I'll make that fix at merge time and send you the exact head. — BagelMeister"
   }
  ]
 }
