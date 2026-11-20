@@ -1,5 +1,5 @@
 {
- "next_id": 94,
+ "next_id": 95,
  "tasks": [
   {
    "id": 1,
@@ -1925,6 +1925,19 @@
    ],
    "turn_at": "2026-11-20T20:21:16Z",
    "turn_for": "Systems and story review, plus confirmation of world placement from the sealed discussion."
+  },
+  {
+   "id": 94,
+   "created_at": "2026-11-20T20:23:13Z",
+   "updated_at": "2026-11-20T20:23:13Z",
+   "history": [
+    "2026-11-20T20:23:13Z trevor: added (for trevor)"
+   ],
+   "title": "Cutscenes: the HUD is sliced by the letterbox bars (Trevor)",
+   "details": "",
+   "source": "human:Trevor",
+   "status": "assigned",
+   "owner": "trevor"
   }
  ]
 }
