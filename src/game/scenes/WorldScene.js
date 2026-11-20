@@ -498,6 +498,7 @@ export class WorldScene extends Phaser.Scene {
         if (this._transcript && line.text && !line.sms) this._transcript.lines.push([line.who ?? '', line.text.replace(/\*([^*]+)\*/g, '$1')]);
         // The guide's Sahur entry: seen once he speaks on screen, whichever route (cameo or boss).
         if (line.who && /sahur/i.test(line.who) && !this.save.flags['act1.sahur.seen']) this._flag('act1.sahur.seen', true);
+        this._endingSahurCue(d.nodeId);
         if (line.sms) {   // a text message: buzz, and keep it on the phone
           sfx('pickup');
           const texts = (this.save.world.phone ??= { texts: [] }).texts;
@@ -742,6 +743,7 @@ export class WorldScene extends Phaser.Scene {
   // ---------- map ----------
   _showMap(map) {
     this.map = map;
+    this.sahurCameo?.destroy(); this.sahurCameo = null;
     this.mapGfx?.destroy(); this.mapRT?.destroy();
     // Bake textured tiles into one render texture (cheap to draw every frame).
     const rt = this.mapRT = this.add.renderTexture(0, 0, map.w * TILE, map.h * TILE).setOrigin(0, 0).setDepth(-10);
@@ -899,6 +901,22 @@ export class WorldScene extends Phaser.Scene {
     setArea(map.id);
     for (const s of this.enemySprites.values()) s.destroy();
     this.enemySprites.clear();
+  }
+
+  // The ending's visitor at the tunnel mouth (Trevor: "we heard him but couldn't see him"). His part of the ending
+  // scene (nodes ending_sahur*) describes him standing there and speaking, but nothing drew him. Now he's drawn
+  // while that part plays, on every screen (guests mirror the node), at the tunnel end of the view so he's always
+  // in sight, and he walks back into the dark when his part is over.
+  _endingSahurCue(nodeId) {
+    const on = this.map?.id === 'platform' && /^ending_sahur/.test(nodeId ?? '');
+    if (on && !this.sahurCameo && this.anims?.exists('sahur')) {
+      const cam = this.cameras.main, x = Math.max(2 * TILE + 8, (cam.worldView?.x ?? 0) + 44), y = 8 * TILE;
+      this.sahurCameo = this.add.sprite(x, y, 'principals').setOrigin(0.5, 1).play('sahur').setDepth(y).setAlpha(0);
+      this.tweens.add({ targets: this.sahurCameo, alpha: 1, duration: 700 });
+    } else if (!on && this.sahurCameo && !this.sahurCameo.leaving) {
+      const sp = this.sahurCameo; sp.leaving = true;
+      this.tweens.add({ targets: sp, x: sp.x - 40, alpha: 0, duration: 1600, onComplete: () => { sp.destroy(); if (this.sahurCameo === sp) this.sahurCameo = null; } });
+    }
   }
 
   _showActOneArrival(x, y) {
@@ -2276,6 +2294,8 @@ export class WorldScene extends Phaser.Scene {
     this._render(snap);
     setInstrumentFocus(snap, this.localId);
     this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.gags?.update(snap); this.pacifier?.update(snap); this.stands?.update(); this.moods?.update(snap); this.stage?.update(snap);   // cutscene stand-ins draw last
+    if (this.sahurCameo && !this.dlg) this._endingSahurCue(null);   // the scene closed with him still there: he goes
+    else if (this.sahurCameo && !this.sahurCameo.leaving) this.sahurCameo.x = Math.max(this.sahurCameo.x, this.cameras.main.worldView.x + 44);   // keep him in sight
   }
 
   _frozen(inp) { return this._dlgStops() || this.menu || this.stage?.active ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : this.dlg ? { ...inp, interact: false } : inp; }
