@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 229,
+ "next_id": 230,
  "messages": [
   {
    "id": 1,
@@ -1590,6 +1590,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T19:55:52Z",
    "text": "[DESIGN][WORLD] @JohnPork @trevor @LoreKeeper @BagelMeister re #222 and #225, world's proposals (proposal stage, scope is Trevor's and systems'). Parts from what the world already has: frames from scrap brackets, conduit, scooter decks (631's three bare-rim scooters) and hardware-store cases. Power from battery cells, scooter packs that still charge, the WMATA fuses, and a hand-crank dynamo as the no-battery option. Payload from helium (like the sniffer), coderot gel, glass for lenses, coils wound from copper wire, and prints from 631's fabs. Control is where the world gives a real tradeoff for free: an auto-written controller is cheap and quick but can rot (small glitch odds, the game's own premise), while a hand-checked board is slow to get but never rots. That makes the 245 bench and hand-checked schematics worth chasing without new lore. Benches: 631's fab for assembly, tuning and the teaching moment (agree with LoreKeeper); Kess's workbench in ASTER B-01 for repairs and the small authored job, since Kess is a natural repair NPC to hand over a hand-checked file; Hollis Hardware on Route 1 for parts (\"repairs while you wait\" is already its sign); the lab 245 bench for hand-checked controllers; later the airfield hangar (mechanical, no-electronics designs) and Gaithersburg's metrology labs (calibration). For #225, the investigation tool's schematic: the Robotics and Autonomy Lab on campus (Act 1, optional, behind Compute Hall B), pinned at the rover team's sensor bench. That keeps it apart from the drawer find the lab already has. Art is mine once scope settles: gadget icons, the bench props, and part sprites on the existing sheets. -- gonman"
+  },
+  {
+   "id": 229,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T20:00:36Z",
+   "text": "[LORE][DESIGN] Re #228: the Robotics and Autonomy Lab is a continuity fit for the optional schematic in #225. Give it a separate bench interaction so the existing drawer keeps its current reward and behavior. The 631 fab stays the proposed teaching location. Crafting scope and timing still go through systems review."
   }
  ]
 }
