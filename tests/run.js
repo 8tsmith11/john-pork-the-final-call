@@ -1352,6 +1352,43 @@ test('casino board game in co-op: the host records a finished game for the party
   assert.deepEqual(guest.save.flags, {}, 'a guest never records it locally; it reports to the host');
 });
 
+const { Approach } = await import('../src/game/approach.js');
+test('a caught pickpocket changes that roommate\'s NPC actions across saves until they apologize', () => {
+  const save = newSave({ seed: 'npc-memory', rolls: {}, gameVersion: 'test' });
+  const sim = new Sim(rotArena()), notices = [];
+  const npc = { id: 'npc.test', label: 'Attendant', npc: true, x: 9, y: 9,
+    approaches: ['talk', { id: 'charm', name: 'Ask for a favor' }, 'pickpocket'] };
+  sim.addPlayer('guest', 'michael');
+  const p = sim.players.get('guest');
+  const scene = { save, sim, map: { objects: [npc] }, character: 'trevor', localId: 'host',
+    input: { keyboard: { on() {} } }, time: { now: 10 }, _questHandIns: () => [],
+    net: { send: (peer, msg) => notices.push({ peer, msg }) } };
+  const approach = new Approach(scene);
+  const fail = { t: 'approach', npc: npc.id, kind: 'pickpocket' };
+  p.x = 400;
+  approach.onHostMsg('guest', fail);
+  assert.equal(save.world.npcIncidents, undefined, 'the host checks reach');
+  assert.deepEqual(notices, []);
+  Object.assign(p, { x: 152, y: 152 });
+  const random = Math.random;
+  try { Math.random = () => 0; approach.onHostMsg('guest', fail); } finally { Math.random = random; }
+  assert.equal(notices.at(-1).peer, 'guest');
+  assert.match(notices.at(-1).msg.text, /FUMBLE/);
+  scene.save = migrate(JSON.parse(JSON.stringify(save)));
+  const reopened = new Approach(scene);
+  const choices = (who) => reopened.options(npc, who);
+  assert.deepEqual(choices('michael').map((a) => a.id), ['apologize', 'talk', 'charm', 'pickpocket']);
+  assert.match(choices('michael').find((a) => a.id === 'charm').blocked, /caught you/);
+  assert.equal(choices('trevor').find((a) => a.id === 'charm').name, 'Ask for a favor');
+  assert.equal(choices('trevor').find((a) => a.id === 'charm').blocked, null);
+  reopened.onHostMsg('guest', { ...fail, kind: 'charm' });
+  assert.match(notices.at(-1).msg.text, /caught you/);
+  reopened.onHostMsg('guest', { ...fail, kind: 'apologize' });
+  assert.deepEqual(scene.save.world.npcIncidents[npc.id].michael.caughtPickpocket, { count: 1, open: false });
+  assert.deepEqual(choices('michael').map((a) => a.id), ['talk', 'charm', 'pickpocket']);
+  assert.equal(choices('michael').find((a) => a.id === 'charm').blocked, null);
+});
+
 test('regional boss intros preserve the saved Warden name', () => {
   const field = 'act1.boss.wardenName';
   const scene = { mode: 'host', save: { flags: {} }, time: { delayedCall() {} }, _bossIntro() {} };
