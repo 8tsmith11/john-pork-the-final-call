@@ -1737,6 +1737,53 @@ test('slot inventory: stacks, backpack-first (hotbar only when full), remove, mo
   const full = { inventory: new Array(36).fill(null).map((_, i) => (i >= 9 ? { id: 'item.wooden_bat', qty: 1 } : null)) };
   Inv.add(full, 'item.energy_bar'); assert.equal(full.inventory[0].id, 'item.energy_bar', 'hotbar takes it once the backpack is full');
 });
+test('splitting a consumable stack moves the rounded-up half within the fixed inventory', () => {
+  const c = { inventory: new Array(Inv.SLOTS).fill(null) };
+  c.inventory[0] = { id: 'item.energy_bar', qty: 7 };
+  for (const index of [-1, Inv.SLOTS, undefined]) Inv.moveSlot(c, 0, index, true);
+  assert.equal(c.inventory[0].qty, 7);
+  assert.equal(c.inventory.length, Inv.SLOTS);
+  Inv.moveSlot(c, 0, 9, true);
+  assert.deepEqual([c.inventory[0].qty, c.inventory[9].qty], [3, 4]);
+});
+
+const { GuitarStands } = await import('../src/game/guitarStands.js');
+test('held stacks drop one, half or all as requested, and floor pickup preserves procedural rolls', () => {
+  const save = newSave({ seed: 'drops', rolls: {}, gameVersion: 'test' });
+  const sim = new Sim(rotArena()), c = save.party.trevor, receiver = save.party.michael;
+  sim.addPlayer('local', 'trevor');
+  sim.addPlayer('guest', 'michael');
+  const gameMenu = { held: 0, heldHalf: false, refresh() {} };
+  const scene = { sim, save, map: sim.map, mode: 'host', character: 'trevor', localId: 'local',
+    menu: 'inventory', gameMenu, time: { now: 0 }, _syncParty() {}, _toast() {}, _say() {},
+    _charOf: (peer) => sim.players.get(peer)?.character };
+  const stands = Object.assign(Object.create(GuitarStands.prototype), { s: scene });
+  c.inventory[0] = { id: 'item.energy_bar', qty: 8 };
+  stands._dropKey(false);
+  assert.equal(c.inventory[0].qty, 7);
+  assert.equal(stands.drops[0].qty, 1);
+  assert.equal(gameMenu.held, null);
+  stands.drop(0, false, true);
+  assert.equal(c.inventory[0].qty, 3);
+  gameMenu.held = 0;
+  stands._dropKey(true);
+  assert.equal(c.inventory[0], null);
+  assert.equal(stands.drops.reduce((total, drop) => total + drop.qty, 0), 8);
+
+  const roll = { mods: { melee: 3 } };
+  receiver.inventory[0] = { id: 'item.wooden_bat', qty: 1, roll };
+  stands.onHostMsg('guest', { t: 'drop', slot: undefined, all: true });
+  assert.equal(receiver.inventory[0].id, 'item.wooden_bat');
+  stands.onHostMsg('guest', { t: 'drop', slot: 0 });
+  const drop = stands.drops.find((d) => d.id === 'item.wooden_bat');
+  assert.deepEqual(drop.roll, roll);
+  stands.pickup('trevor', 'local', drop.n);
+  assert.deepEqual(c.inventory.find((s) => s?.id === drop.id)?.roll, roll);
+  c.inventory[0] = { id: 'item.wmata_fuses', qty: 1 };
+  stands.drop(0, true);
+  assert.equal(c.inventory[0].qty, 1);
+});
+
 test('schema 1 -> 2 migration: scrap becomes money, list inventory becomes 36 slots', () => {
   const old = newSave({ seed: 'm', rolls: {}, gameVersion: 't' });
   old.schemaVersion = 1; old.world.scrap = 10; delete old.world.money;

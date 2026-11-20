@@ -674,7 +674,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'search') { const o = this.map.objects.find((x) => x.id === msg.id && x.loot); if (o) this._search(o, this._charOf(peer)); }
         if (msg.t === 'zip') { const o = this.map.objects.find((x) => x.id === msg.id && x.zip); if (o) this._zip(o, peer); }
         if (msg.t === 'useSlot') { this._useSlot = msg.i | 0; this._use(this._charOf(peer), peer); }
-        if (msg.t === 'move' && this.save.party[this._charOf(peer)]) { Inv.moveSlot(this.save.party[this._charOf(peer)], msg.a | 0, msg.b | 0, !!msg.half); this._syncParty(); }
+        if (msg.t === 'move' && this.save.party[this._charOf(peer)]) { Inv.moveSlot(this.save.party[this._charOf(peer)], msg.a, msg.b, msg.half === true); this._syncParty(); }
         if (msg.t === 'buy') this._buy(this._charOf(peer), msg.shop, msg.idx);
         if (msg.t === 'sell') this._sell(this._charOf(peer), msg.slot | 0);
         if (msg.t === 'sendMoney') this._sendMoney(this._charOf(peer), String(msg.to), msg.n | 0);
@@ -693,6 +693,7 @@ export class WorldScene extends Phaser.Scene {
       on('join', () => { this._worldSig = null; });
     } else if (this.mode === 'client') {
       on('msg', (msg) => {
+        if (msg.t === 'toast') { this._toast(msg.text); return; }
         if (msg.t === 'lattice') { this._table().onClientMsg(msg); return; }
         if (msg.t === 'bastion') { this._bastion().onClientMsg(msg); return; }
         if (msg.t === 'lab') { this._lab().onClientMsg(msg); return; }
