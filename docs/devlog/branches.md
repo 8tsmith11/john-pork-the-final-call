@@ -21,6 +21,8 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `bagel/music-off` | GitHub | Merged in `a0e318d` (PR #44) |
+| `lorekeeper/retired-mailbox-register` | GitHub | Merged in `14a93a6` (PR #43) |
 | `bagel/close-mailbox` | GitHub | Merged in `7a94787` (PR #42) |
 | `lorekeeper/roadmap-inactive` | GitHub | Merged in `b8303e1` (PR #40) |
 | `lorekeeper/roadmap-status` | GitHub | Merged in `cfef4e1` (PR #38) |
