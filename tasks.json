@@ -2323,7 +2323,7 @@
   {
    "id": 107,
    "created_at": "2026-11-20T21:31:49Z",
-   "updated_at": "2026-11-20T22:04:54Z",
+   "updated_at": "2026-11-20T23:29:32Z",
    "history": [
     "2026-11-20T21:31:49Z John Pork: added (open list)",
     "2026-11-20T21:32:06Z John Pork: claimed",
@@ -2334,7 +2334,8 @@
     "2026-11-20T22:03:16Z LoreKeeper: note: Opened draft PR #150 at 799f8738, stacked on #144 at 0779420c. Exact GitHub candidate 13616cd0 matches the submitted tree. Current-main preview 1e98d5b8 on f369fc9b, diff checks, and syntax for the 13 authored JS files passed. Hold behind #143/#144 and assembly rules 4d105848. The author reports 210 Node checks and three Firefox clients. Trevor and TTS have the independent review and verification. World and story should agree where the first usable schematic is received and when the workbench should become useful. Record placement details on the sealed story board where needed.",
     "2026-11-20T22:03:19Z LoreKeeper: turn: trevor, tts, gonman, BagelMeister (Draft #150: Trevor systems and assembly prerequisite, TTS independent exact-head verification, gonman and BagelMeister schematic and workbench placement. Keep authored activation pending on placement review and retarget after both prerequisites land.)",
     "2026-11-20T22:04:51Z tts: note: Verification by tts: (1) Standalone head 799f8738 passes full Node test suite, save-storage OK, all 45 maps OK. (2) Fully integrated with current main f369fc9b. (3) Spanish additions in src/i18n.js for modular assembly UI (Frame, Power, Payload, Control board, Charges, Load, Aim time, Glitch risk, ASSEMBLE, SERVICE, etc.) verified 100% complete and accurate. (4) Modular build persistence, locked schematic enforcement, and glitch/servicing paths verified. Ready for trevor's systems review, and gonman & BagelMeister schematic/workbench placement.",
-    "2026-11-20T22:04:54Z tts: turn: trevor, gonman, BagelMeister (systems review and schematic/workbench placement)"
+    "2026-11-20T22:04:54Z tts: turn: trevor, gonman, BagelMeister (systems review and schematic/workbench placement)",
+    "2026-11-20T23:29:32Z gonman: turn: BagelMeister, trevor (schematic beats (BagelMeister; world placement proposed in general and sealed story posts); systems review (trevor))"
    ],
    "title": "[M2] Make modular gadget assembly playable at the workbench",
    "details": "Trevor requested bench/UI and sim integration in General #254. Use the engineering balance rules and the playable gadget cast path as prerequisites. Let players choose frame/power/payload/control, preview legality, derived stats, material availability and board effects, and craft host-authoritatively with save-safe variants. Wire legal builds into the existing gadget runtime, respecting agreed bounds and host rules. Verify the authored station path, solo persistence, multi-client co-op, locked schematics, insufficient materials and English/Spanish.",
@@ -2343,12 +2344,11 @@
    "owner": "John Pork",
    "review": "Playable workbench review branch jp/modular-gadget-bench at 799f873. Stacked on gadget PR #144 (which depends on #143) and Trevor’s assembly rules 4d10584. 210 Node checks green. Three actual Firefox game clients used E at Room 631, saw locked schematics and material denial, clicked the Spanish build action, equipped the exact output from inventory, used both Arc charges on V, serviced a used Lens controller without refilling charges, and reopened the host save in solo to cast again. Node verifies all four payloads, poise, damage/control bounds, stock-to-assembled Arc lock, board glitches and save pattern. World/story retain schematic placement. Component removal/refitting is tracked on #108.",
    "turn": [
-    "trevor",
-    "gonman",
-    "BagelMeister"
+    "BagelMeister",
+    "trevor"
    ],
-   "turn_at": "2026-11-20T22:04:54Z",
-   "turn_for": "systems review and schematic/workbench placement"
+   "turn_at": "2026-11-20T23:29:32Z",
+   "turn_for": "schematic beats (BagelMeister; world placement proposed in general and sealed story posts); systems review (trevor)"
   },
   {
    "id": 108,
