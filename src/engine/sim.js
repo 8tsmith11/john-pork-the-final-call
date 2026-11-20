@@ -140,7 +140,9 @@ export class Sim {
       }
       const tr = TRAITS[v.trait];
       // The party is always three (AI companions fill empty seats), so regular enemies are tuned for three.
-      const def = { ...base, hp: Math.round(base.hp * tr.hp * PARTY_SCALE.hp), damage: Math.round((base.damage ?? 0) * PARTY_SCALE.dmg), speed: base.speed * tr.speed, armor: tr.armor ?? base.armor ?? 0, color: v.tint, vname: v.name, trait: v.trait };
+      // A map can make its regular enemies tougher: enemyPower { hp, dmg } multipliers (Trevor: Lake Artemesia, 2026-11-20).
+      const pw = this.map.enemyPower ?? {};
+      const def = { ...base, hp: Math.round(base.hp * tr.hp * PARTY_SCALE.hp * (pw.hp ?? 1)), damage: Math.round((base.damage ?? 0) * PARTY_SCALE.dmg * (pw.dmg ?? 1)), speed: base.speed * tr.speed, armor: tr.armor ?? base.armor ?? 0, color: v.tint, vname: v.name, trait: v.trait };
       this.enemies.set(id, { id, spawnKey, kind: e.kind, def, x: e.x, y: e.y, hp: def.hp, cd: Math.random(), hurtT: 0, kx: 0, ky: 0, ...(e.pen ? { pen: e.pen } : {}) });
     }
   }
@@ -161,7 +163,14 @@ export class Sim {
   }
 
   /** Gear/skill modifiers from the save (src/content/items.js playerMods). */
-  setMods(id, mods) { const p = this.players.get(id); if (p) { const full = p.hp >= this.maxHp(p); p.mods = mods; if (full) p.hp = this.maxHp(p); } }
+  setMods(id, mods) {
+    const p = this.players.get(id);
+    if (!p) return;
+    const full = p.hp >= this.maxHp(p);
+    p.mods = mods;
+    if (full) p.hp = this.maxHp(p);
+    if (mods.gun) this._prepareGun(p, mods.gunStats?.clip ?? COMBAT.shot.clip);
+  }
   maxHp(p) { return COMBAT.maxHp + (p.mods?.maxHp ?? 0); }
   setRot(id, value) {
     const p = this.players.get(id);
@@ -327,7 +336,7 @@ export class Sim {
       p.aim = inp.aim;
       p.dodgeCd = Math.max(0, p.dodgeCd - dt);
       p.iframes = Math.max(0, p.iframes - dt); if (p.focusT > 0) p.focusT = Math.max(0, p.focusT - dt);
-      if (p.reloadT > 0) { p.reloadT = Math.max(0, p.reloadT - dt); if (p.reloadT === 0) p.ammo = ({ ...COMBAT.shot, ...(p.mods?.gunStats ?? {}) }).clip; }
+      if (p.reloadT > 0) { p.reloadT = Math.max(0, p.reloadT - dt); if (p.reloadT === 0) p.ammo = p.gunClip ?? COMBAT.shot.clip; }
 
       p.staT = Math.max(0, (p.staT ?? 0) - dt);
       p.pillT = Math.max(0, (p.pillT ?? 0) - dt);   // blue pill: dodges are free while this runs
@@ -385,7 +394,7 @@ export class Sim {
       const held = p.held ?? 'melee';
       if (inp.attack && held === 'melee' && p.mods?.swing && !p.riding && !p.playing && !busy && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
       if (inp.attack && held === 'gun' && p.mods?.gun && !p.riding && !p.playing && !busy && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);
-      if (inp.fire && !p.riding && !p.playing && !busy && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);   // no gun, no shooting
+      if (inp.fire && (held === 'gun' || p.held === undefined) && !p.riding && !p.playing && !busy && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);
 
       // Facing follows the walking direction; it only turns toward the cursor while firing a ranged
       // weapon. Standing still keeps the last facing.
@@ -547,7 +556,7 @@ export class Sim {
     if (dash) m = { ...m, damage: m.damage * FEEL.dashDmg, range: m.range + FEEL.dashRange, arc: m.arc * 0.7 };
     const focus = p.focusT > 0; if (focus) p.focusT = 0;
     p.meleeCd = m.cooldown * (fin ? 1.25 : 1); p.swingT = 0.2;   // long enough for both attack frames (12 fps)
-    this.events.push({ t: 'swing', id: p.id, a: p.aim, r: m.range, arc: m.arc, combo: p.combo });
+    this.events.push({ t: 'swing', id: p.id, a: p.aim, r: m.range, arc: m.arc, combo: p.combo, weapon: p.mods?.weaponId });
     // Deflect: enemy shots inside the swing go back the way they came, as the player's.
     for (const s of this.shots) {
       if (s.from === 'player' || s.noDeflect) continue;   // red-tell attacks (the boss Sweep) can't be deflected
@@ -579,11 +588,15 @@ export class Sim {
     }
   }
 
+  _prepareGun(p, clip) {
+    const key = p.mods?.weaponId ?? JSON.stringify(p.mods?.gunStats ?? null);
+    if (p.gunKey !== key) { p.gunKey = key; p.ammo = clip; p.reloadT = 0; }
+    p.gunClip = clip;
+  }
+
   _fire(p) {
     const c = { ...COMBAT.shot, ...(p.mods?.gunStats ?? {}) }, n = c.pellets ?? 1;
-    // Magazine: a gun holds `clip` shots, then reloads for `reload` s. Swapping guns starts a fresh clip.
-    const key = JSON.stringify(p.mods?.gunStats ?? null);
-    if (p.gunKey !== key) { p.gunKey = key; p.ammo = c.clip; p.reloadT = 0; }
+    this._prepareGun(p, c.clip);
     if (p.reloadT > 0) return;
     p.ammo = (p.ammo ?? c.clip) - 1;
     if (p.ammo <= 0) { p.reloadT = c.reload; p.ammo = 0; this.events.push({ t: 'reload', id: p.id }); }
@@ -1000,7 +1013,7 @@ export class Sim {
   /** The party answers the phone mid-fight: the Sahur stops, tilts its head, and leaves. */
   answerSahur() {
     for (const e of this.enemies.values()) {
-      if (e.sahur && e.fightT > 10) { this.enemies.delete(e.id); if (e.spawnKey) this.killed?.add(e.spawnKey); this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, xp: 80, boss: true, sahurLeft: true }); return true; }
+      if (e.sahur && e.fightT > 10) { this.enemies.delete(e.id); if (e.spawnKey) this.killed?.add(e.spawnKey); this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, key: e.spawnKey, xp: 80, boss: true, sahurLeft: true }); return true; }
     }
     return false;
   }
@@ -1136,7 +1149,7 @@ export class Sim {
       players: [...this.players.values()].map((p) => ({
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
-        hp: Math.round(p.hp), mhp: this.maxHp(p), rot: Math.round((p.rot ?? 0) * 10) / 10, am: p.ammo ?? null, rl: p.reloadT > 0 ? Math.round(p.reloadT * 10) / 10 : 0, st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, ...(p.gonSlim ? { gs: Math.max(0, Math.min(1, Math.round((1 - p.skillCd / (GONMAN.cd * (1 - (p.mods?.skillCd ?? 0)))) * 100) / 100)) } : {}), pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0, un: p.under > 0 ? Math.ceil(p.under) : 0, pu: p.under > 0 ? Math.round(((p.pullT ?? 0) / UNDER.pullTime) * 100) / 100 : 0, mt: Math.ceil(p.mateT ?? 0), cr: p.crashT > 0,
+        hp: Math.round(p.hp), mhp: this.maxHp(p), rot: Math.round((p.rot ?? 0) * 10) / 10, weapon: p.mods.weaponId ?? null, am: p.ammo ?? null, rl: p.reloadT > 0 ? Math.round(p.reloadT * 10) / 10 : 0, st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, ...(p.gonSlim ? { gs: Math.max(0, Math.min(1, Math.round((1 - p.skillCd / (GONMAN.cd * (1 - (p.mods?.skillCd ?? 0)))) * 100) / 100)) } : {}), pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0, un: p.under > 0 ? Math.ceil(p.under) : 0, pu: p.under > 0 ? Math.round(((p.pullT ?? 0) / UNDER.pullTime) * 100) / 100 : 0, mt: Math.ceil(p.mateT ?? 0), cr: p.crashT > 0,
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
