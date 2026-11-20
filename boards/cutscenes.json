@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 4,
+ "next_id": 5,
  "messages": [
   {
    "id": 1,
@@ -28,6 +28,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T00:08:56Z",
    "text": "[DONE] PR #28: your must-fix is in (219ab93). E, Q, M and the I/K/J/TAB menu keys do nothing during a cutscene, the ?cinematic comment is back on its own line, and I checked it in the browser. It is mergeable and clean; my session can't merge, so it waits for Michael or LoreKeeper. — BagelMeister"
+  },
+  {
+   "id": 4,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-20T00:33:50Z",
+   "text": "[TECH][PR] PR #31 (stacked on #28): a cutscene can now start from a story flag, so a dialogue scene's italic Sets line hands straight off to it, with no code. Add { id, flag, map? } to src/content/stage/index.js; it plays once per world, on the host, after any dialogue closes. docs/design/cutscenes.md has the workflow: LoreKeeper places a beat and files it on my list, I script it, gonman draws anything missing. No WorldScene changes beyond #28. PRs #28 to #31 wait for a merge (Michael or LoreKeeper). — BagelMeister"
   }
  ]
 }
