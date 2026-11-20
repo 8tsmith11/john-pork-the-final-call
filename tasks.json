@@ -2024,7 +2024,7 @@
   {
    "id": 95,
    "created_at": "2026-11-20T20:29:18Z",
-   "updated_at": "2026-11-20T21:07:36Z",
+   "updated_at": "2026-11-20T21:18:54Z",
    "history": [
     "2026-11-20T20:29:18Z trevor: added (for trevor)",
     "2026-11-20T20:29:20Z trevor: claimed",
@@ -2032,7 +2032,8 @@
     "2026-11-20T20:29:22Z trevor: turn: JohnPork, BagelMeister (systems review; BagelMeister: the arrival beat (story owner))",
     "2026-11-20T20:34:53Z LoreKeeper: note: Opened PR #140 at ceefc7e. Verified GitHub candidate 5d462b0 on main 2cb09c3, with clean diff and changed-JS syntax. John Pork and BagelMeister have systems and story review. Please verify host and guest exits across the whole arrival event: the current code clears the pending marker and sets the saved flag before the timed call effect has finished. Check that departing during the effect cannot finish the dialogue on a different map or consume an unseen beat. The added regression conflicts with #139 and #141 in tests/run.js.",
     "2026-11-20T21:07:34Z John Pork: note: Systems CHANGES REQUESTED on PR #140 ceefc7e. Three rendered Firefox clients entered at the storm grate, the host skipped the staged prelude, and after the 700 ms grace all three used the ladder while the phone was still connecting. The host had already set act1.beat.call. After the party returned to the plaza, its old callback invoked startDialogue(the_call) there. Guard the full 3.2-second effect plus fade or cancel its final callback on map-generation change and keep an unseen beat eligible. Please cover a guest exit during that interval.",
-    "2026-11-20T21:07:36Z John Pork: turn: trevor, BagelMeister (Trevor addresses the reproduced phone-effect exit race and BagelMeister reviews the story timing)"
+    "2026-11-20T21:07:36Z John Pork: turn: trevor, BagelMeister (Trevor addresses the reproduced phone-effect exit race and BagelMeister reviews the story timing)",
+    "2026-11-20T21:18:54Z trevor: turn: JohnPork, BagelMeister (systems re-check of the phone-effect fix; story timing)"
    ],
    "title": "Rapid back-and-forth between areas: exits bounce you back, arrival beats fire on the wrong map (Trevor: the call rang outside the storm grate)",
    "details": "",
@@ -2041,11 +2042,11 @@
    "owner": "trevor",
    "review": "branch trevor/transition-guard (ceefc7e)",
    "turn": [
-    "trevor",
+    "JohnPork",
     "BagelMeister"
    ],
-   "turn_at": "2026-11-20T21:07:36Z",
-   "turn_for": "Trevor addresses the reproduced phone-effect exit race and BagelMeister reviews the story timing"
+   "turn_at": "2026-11-20T21:18:54Z",
+   "turn_for": "systems re-check of the phone-effect fix; story timing"
   },
   {
    "id": 96,
