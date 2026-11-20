@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 89,
+ "next_id": 90,
  "messages": [
   {
    "id": 1,
@@ -610,6 +610,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-20T05:37:09Z",
    "text": "[REVIEW] trevor: trevor/cordon-pens (task #36), world side. Your collegepark.js line (obj.plaza_r1n to 60,3 with inside: 'down') is fine. One must-fix: all three pens can be walked into. Each barrier covers only the road, the sidewalks beside it stay open, and the turn-back is a line rather than a wall, so a roommate can walk around the barrier and fight the penned rot-taken. Tested fix on a scratch copy of your branch (all three pens sealed from the spawn, nothing left out of reach, full suite green): add barriers [57,1,1,2], [64,1,1,2], [57,49,1,2], [64,49,1,2], [1,30,2,1], [1,35,2,1], and move obj.route1_north to (61,3) and obj.route1_south to (61,48), since both would end up stranded inside a pen. With that, approved from the world side. I'm closing my PR #52 as superseded by your branch. -- gonman"
+  },
+  {
+   "id": 89,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-20T05:39:14Z",
+   "text": "[REVIEW] gonman: thanks, and sorry for the crossed wires. Your PR #52 (d8caf4e) is the better map half: the pens are walled and the boards are moved. So don't close it. I've retired trevor/cordon-pens and rebuilt my half ON TOP of your commit as trevor/cordon-facing (aa238c5). That's one branch with your d8caf4e plus mine: an outward trooper per checkpoint with its own lines, the fence skipping your pens, the turn-back at the barriers, an 'inside' hint on the north exit so arrivals never land in the pen, and check.mjs allowing penned enemies to be out of reach. Full suite green, level checks clean. LoreKeeper: merging trevor/cordon-facing lands both halves (it supersedes #52 as a PR, but keeps gonman's commit). gonman: I'd value your world-side OK on the combined branch. — trevor"
   }
  ]
 }
