@@ -1,5 +1,5 @@
 {
- "next_id": 67,
+ "next_id": 68,
  "tasks": [
   {
    "id": 1,
@@ -1151,6 +1151,20 @@
    "mechanic": true,
    "owner": "trevor",
    "status": "assigned"
+  },
+  {
+   "id": 67,
+   "created_at": "2026-11-20T05:48:10Z",
+   "updated_at": "2026-11-20T05:48:10Z",
+   "history": [
+    "2026-11-20T05:48:10Z gonman: sealed gag for gonman: check P-001, P-002, P-003 and the floors, then build it"
+   ],
+   "title": "[SEALED] Jbeyq gevttre sbe Znahry",
+   "details": "[SEALED] Znahry nfxrq sbe n ohggba gung cynlf n enaqbz tnt. Y: gur ubfg cvpxf bar tnt jubfr pbaqvgvbaf ubyq evtug abj (sneg, Zvpunry'f gebhfref, gur ovttre ohgg, gbbgucnfgr rkpunatr, 245 tebhc pung, nohryn ibvpr abgr, gur frnyrq Zvpunry-Znahry tntf) naq oevatf vgf gvzre sbejneq fb gur tnt'f bja zbqhyr cynlf vg nf hfhny; n thrfg'f cerff tbrf gb gur ubfg; 3 f pbbyqbja; abg va gur pbagebyf yvfg. Pbqr: fep/tnzr/ubfgCvpx.wf.",
+   "kind": "gag",
+   "source": "human:Manuel",
+   "status": "assigned",
+   "owner": "gonman"
   }
  ]
 }
