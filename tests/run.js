@@ -1855,6 +1855,45 @@ test('lab bench (hub #44): every lab has exactly one passing answer; the shared 
   assert.equal(bench.act({ type: 'cycle', i: 0 }), false, 'a passed lab is locked');
 });
 
+const SocketsT = await import('../src/engine/sockets.js');
+test('customization station (task #40): mods fit only where they belong, count in your stats, ride along when worn, and come back out', async () => {
+  const { playerMods: pm, socketsFor, ITEMS } = await import('../src/content/items.js');
+  const InvS = await import('../src/engine/inventory.js');
+  const c = newSave({ seed: 'mods', rolls: {}, gameVersion: 't' }).party.trevor;
+  c.inventory = Array.from({ length: InvS.SLOTS }, () => null);
+  c.inventory[0] = { id: 'item.rebar', qty: 1 }; c.inventory[1] = { id: 'item.mesh_vest', qty: 1 };
+  InvS.add(c, 'item.mod_edge', 3); InvS.add(c, 'item.mod_plate'); InvS.add(c, 'item.mod_barrel');
+  c.hotSel = 0; c.equipped.weapon = 'item.rebar';
+  assert.equal(socketsFor(ITEMS['item.rebar']), 2);
+  assert.equal(SocketsT.insert(c, { bag: 0 }, 'item.mod_barrel'), false, 'a gun barrel does not fit a spear');
+  const base = pm(c, 'trevor').melee;
+  assert.ok(SocketsT.insert(c, { bag: 0 }, 'item.mod_edge')); assert.ok(SocketsT.insert(c, { bag: 0 }, 'item.mod_edge'));
+  assert.equal(SocketsT.insert(c, { bag: 0 }, 'item.mod_edge'), false, 'two sockets, no third');
+  assert.equal(pm(c, 'trevor').melee, base + 4, 'two honed edges: +4 melee while held');
+  assert.equal(InvS.count(c, 'item.mod_edge'), 1);
+  // armor: the plate goes in, the vest is worn, the plate rides along and counts, then comes back with it
+  assert.ok(SocketsT.insert(c, { bag: 1 }, 'item.mod_plate'));
+  assert.ok(InvS.wear(c, 'item.mesh_vest'));
+  assert.deepEqual(c.socketed.chestplate, ['item.mod_plate']);
+  const worn = pm(c, 'trevor').armor;
+  assert.ok(InvS.unwear(c, 'chestplate'));
+  assert.deepEqual(c.inventory.find((x) => x?.id === 'item.mesh_vest').socketed, ['item.mod_plate']);
+  assert.ok(worn > pm(c, 'trevor').armor, 'the plate counted while worn');
+  // out again
+  assert.ok(SocketsT.extract(c, { bag: 0 }, 0)); assert.equal(InvS.count(c, 'item.mod_edge'), 2);
+  assert.deepEqual(SocketsT.socketInfo(c, { bag: 0 }).mods, ['item.mod_edge']);
+});
+
+test('the mod station is modal: while open it is the scene menu, ESC closes only it, and the menu keys stay shut (BagelMeister, PR #93)', async () => {
+  const fs = await import('node:fs');
+  const src = fs.readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/get menu\(\) \{[^\n]*this\.modStation && !this\.modStation\.closed \? 'mods'/.test(src), 'an open station counts as the menu, so _frozen stops movement, attacks and E');
+  assert.ok(/keydown-ESC', \(\) => \{ if \(this\.dlg[^)]*\) return; if \(this\.modStation\) \{ this\.modStation\.close\(\); return; \}/.test(src), 'ESC closes the station and nothing else');
+  for (const k of ['I', 'K', 'J', 'TAB']) assert.ok(new RegExp(`keydown-${k}'[^\\n]*!this\\.modStation`).test(src), `${k} does nothing while the station is open`);
+  const st = fs.readFileSync(new URL('../src/game/ui/ModStation.js', import.meta.url), 'utf8');
+  assert.ok(!/keyboard\.on\(/.test(st), 'the station has no key listener of its own (the scene routes ESC)');
+});
+
 test('Ping rework (hub #66): the pulse jolts, a marked kill hands the pinger cooldown back, and the mark jumps on', async () => {
   const { PING } = await import('../src/engine/sim.js');
   const sim = new Sim(MAPS_FOR_TEST.metro_plaza, { seed: 'ping', deferSpawn: true });

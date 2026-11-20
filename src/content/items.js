@@ -47,6 +47,13 @@ export const MATERIALS = {
   'item.mat_circuit': { name: 'Circuit board', slot: 'material', text: 'Green, scorched at one corner. Some of the chips still answer.' },
   'item.mat_cell':    { name: 'Battery cell', slot: 'material', text: 'A fat lithium cylinder. Keep it away from the shrimp.' },
   'item.mat_gel':     { name: 'Coderot gel', slot: 'material', text: 'What\'s left when a coderot thing stops. It shimmers a frame behind itself.' },
+  // ---- mods for the customization station (task #40): slot into sockets on weapons and armor ----
+  'item.mod_edge':    { name: 'Honed edge', slot: 'mod', fits: ['weapon'], mods: { melee: 2 }, text: 'A strip of filed steel that clamps onto a blade or a bar. +2 melee.' },
+  'item.mod_grip':    { name: 'Taped grip', slot: 'mod', fits: ['weapon'], mods: { crit: 0.05 }, text: 'Hockey tape, wound tight. Your hand stops slipping at the worst moment. +5% crit.' },
+  'item.mod_barrel':  { name: 'Rifled barrel', slot: 'mod', fits: ['ranged'], mods: { shot: 2 }, text: 'A sleeve with a spiral cut inside. Shots fly straighter and hit harder. +2 shot damage.' },
+  'item.mod_mag':     { name: 'Spring feed', slot: 'mod', fits: ['ranged'], mods: { shotCd: -0.06 }, text: 'A stiffer spring in the feed. The next round is there before you ask. Faster fire.' },
+  'item.mod_plate':   { name: 'Steel insert', slot: 'mod', fits: ['chestplate', 'helmet'], mods: { armor: 0.03 }, text: 'A cut-down plate that slides into a pocket you didn\'t know you had. +3% armor.' },
+  'item.mod_padding': { name: 'Gel padding', slot: 'mod', fits: ['chestplate', 'helmet', 'leggings', 'boots'], mods: { maxHp: 8 }, text: 'Soft until something hits it. +8 max HP.' },
   'item.mat_glass':   { name: 'Glass shard', slot: 'material', text: 'Phone screen, mostly. Your face looks back, slightly late.' },
 };
 Object.assign(ITEMS, MATERIALS);
@@ -161,6 +168,10 @@ Object.assign(ITEMS, {
 });
 
 // The fab prints from materials (cost = { materialId: qty }). `req` hides a recipe until a flag is set.
+/** Mod sockets per piece (task #40): weapons and chest pieces take two, other armor one; `sockets` on an item overrides. */
+const SOCKETS = { weapon: 2, ranged: 2, chestplate: 2, helmet: 1, leggings: 1, boots: 1 };
+export const socketsFor = (def) => (def ? def.sockets ?? SOCKETS[def.slot] ?? 0 : 0);
+
 export const RECIPES = [
   { item: 'item.bot_drive',  req: 'q.bot.looked', cost: { 'item.mat_scrap': 4, 'item.mat_wire': 2, 'item.mat_cell': 1 } },
   { item: 'item.bot_weapon', req: 'q.bot.looked', cost: { 'item.mat_scrap': 3, 'item.mat_gel': 3 } },
@@ -176,6 +187,12 @@ export const RECIPES = [
   { item: 'item.rain_parka', roll: 'armor', cost: { 'item.mat_plastic': 3, 'item.mat_cloth': 2 } },
   { item: 'item.pack_coolant', roll: 'gear', cost: { 'item.mat_gel': 3, 'item.mat_cell': 1, 'item.mat_cloth': 2 } },
   { item: 'item.pack_capacitor', roll: 'gear', cost: { 'item.mat_cell': 2, 'item.mat_circuit': 1, 'item.mat_wire': 2 } },
+  { item: 'item.mod_edge',    cost: { 'item.mat_scrap': 3, 'item.mat_glass': 1 } },
+  { item: 'item.mod_grip',    cost: { 'item.mat_cloth': 2, 'item.mat_plastic': 1 } },
+  { item: 'item.mod_barrel',  cost: { 'item.mat_scrap': 3, 'item.mat_wire': 1 } },
+  { item: 'item.mod_mag',     cost: { 'item.mat_scrap': 2, 'item.mat_cell': 1 } },
+  { item: 'item.mod_plate',   cost: { 'item.mat_scrap': 4, 'item.mat_cloth': 1 } },
+  { item: 'item.mod_padding', cost: { 'item.mat_gel': 2, 'item.mat_cloth': 2 } },
   { item: 'item.sleep_potion',   cost: { 'item.mat_gel': 2, 'item.mat_glass': 1 } },
   { item: 'item.fab_launcher', cost: { 'item.mat_scrap': 4, 'item.mat_circuit': 2, 'item.mat_cell': 1, 'item.mat_gel': 2 } },
 ];
@@ -318,6 +335,7 @@ export function playerMods(char, charId, weapon = heldWeapon(char, charId)) {
     add(scaleMods(def.mods, char.upgrades?.[id] ?? 0));
     if (def.blink) m.blink = true;
     add(char.rolled?.[slot]?.mods);
+    for (const id of char.socketed?.[slot] || []) if (id) add(ITEMS[id]?.mods);   // socketed mods on worn pieces (task #40)
   }
   const def = ITEMS[weapon?.id];
   m.swing = null;
@@ -326,6 +344,7 @@ export function playerMods(char, charId, weapon = heldWeapon(char, charId)) {
     m.weaponId = weapon.id;
     add(scaleMods(def.mods, char.upgrades?.[weapon.id] ?? 0));
     add(weapon.roll?.mods);
+    for (const id of weapon.socketed || []) if (id) add(ITEMS[id]?.mods);   // socketed mods ride on the held stack (task #40)
     m.swing = def.swing ?? null;
     m.gunStats = def.gun ?? null;
   }
