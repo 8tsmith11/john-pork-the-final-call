@@ -216,7 +216,9 @@ export class WorldScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-F', () => { if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
     this._showMap(startMap);
     this.ready = true;
-    if (!this.save.flags['act1.coldopen.done']) this.startDialogue('cold_open', null, () => { this._flag('act1.coldopen.done', true); this._controlsHint(); });
+    // Act 1's witnessed beats are staged in-engine first (hub #48; src/content/stage/act1_*.js), then the scene plays.
+    // A beat of delay so the roommates are on screen for the cutscene to stand in for them.
+    if (!this.save.flags['act1.coldopen.done']) this.time.delayedCall(300, () => this.stage.after('act1_open', () => this.startDialogue('cold_open', null, () => { this._flag('act1.coldopen.done', true); this._controlsHint(); })));
     else this.time.delayedCall(1200, () => this._controlsHint());
   }
 
@@ -631,7 +633,7 @@ export class WorldScene extends Phaser.Scene {
     const once = (flag, fn) => { if (!this.save.flags[flag]) { this.save.flags[flag] = true; fn(); } };
     if (map.id === 'room631' && this.mode !== 'client') this.time.delayedCall(4000, () => this._maybeButtDial());
     if (map.id === 'aster_hall') once('act1.beat.asterEnter', () => this.startDialogue('aster'));
-    if (map.id === 'tunnel_1') once('act1.beat.call', () => this._hackCall(() => this.startDialogue('the_call')));
+    if (map.id === 'tunnel_1') once('act1.beat.call', () => this.stage.after('act1_call', () => this._hackCall(() => this.startDialogue('the_call'))));
     // A roommate says something on the way in.
     if (BARKS.enter[map.id]) this.time.delayedCall(1400, () => { const snap = this._lastRendered; const ps = (snap?.players ?? []).filter((p) => !p.dn); const p = ps[Math.floor(Math.random() * ps.length)]; if (p && this.map.id === map.id) this._bark(p.id, pickBark(BARKS.enter[map.id], p.c)); });
   }
@@ -942,14 +944,17 @@ export class WorldScene extends Phaser.Scene {
     this._flag('act1.boss.sahur', f['act1.boss.kind'] === 'sahur');
     this._flag('act1.ending.warm', !!f['act1.call.answered'] && !Number(f['act1.call.declines'] || 0));
     if (f['q.van.seen']) this._flag('act1.leadA.vanSeen', true);
-    const started = await this.startDialogue('ending', null, () => {
-      this._flag('act1.complete', true);
-      this.save.world.act = 2;
-      this._showActOneCard();
-      if (this.mode === 'host') this.net.broadcast({ t: 'act1Complete' });
-      this._save();
+    // Staged in-engine first (hub #48; src/content/stage/act1_end.js), then the scene plays for the whole party.
+    this.stage.after('act1_end', async () => {
+      const started = await this.startDialogue('ending', null, () => {
+        this._flag('act1.complete', true);
+        this.save.world.act = 2;
+        this._showActOneCard();
+        if (this.mode === 'host') this.net.broadcast({ t: 'act1Complete' });
+        this._save();
+      });
+      if (started === false) this._endingPlayed = false;
     });
-    if (started === false) this._endingPlayed = false;
   }
 
   // ---------- crafting, skills, items (host-authoritative) ----------
@@ -2350,7 +2355,7 @@ export class WorldScene extends Phaser.Scene {
     const f = this.save.flags;
     if (f['act1.call.buttDialDone'] || f['act1.beat.buttDial'] || f['act1.call.sahurSummoned']) return;
     if (!(f['act1.call.answered'] || Number(f['act1.call.declines'] || 0) >= 1)) return;
-    if (this.dlg || this.menu || this._transitioning || this.time.now - (this._lastCallAt ?? -1e9) < 60000) return;
+    if (this.dlg || this.menu || this.stage?.active || this._transitioning || this.time.now - (this._lastCallAt ?? -1e9) < 60000) return;
     const me = this.sim.players.get(this.localId);
     if (me && [...this.sim.enemies.values()].some((e) => Math.hypot(e.x - me.x, e.y - me.y) < 140)) return;
     if (!force && Math.random() > 1 / 3) return;
