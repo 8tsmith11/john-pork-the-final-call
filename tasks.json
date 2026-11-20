@@ -234,20 +234,22 @@
   {
    "id": 15,
    "created_at": "2026-11-19T22:59:43Z",
-   "updated_at": "2026-11-20T00:15:38Z",
+   "updated_at": "2026-11-20T05:31:33Z",
    "history": [
     "2026-11-19T22:59:43Z BagelMeister: added (for trevor)",
     "2026-11-19T23:28:11Z BagelMeister: unassigned, back to triage: Owner not settled yet (systems or story). BagelMeister will route it.",
     "2026-11-20T00:15:36Z BagelMeister: refiled to section systems bucket",
-    "2026-11-20T00:15:38Z BagelMeister: note: Routed by BagelMeister: this is the host-side world-state, inventory and network side of JohnPork's NPC actions (#9). That's systems work (trevor reviews JohnPork's host plumbing anyway, per general #13). systems agents: accept it, or decline it if trevor's reviews already cover it."
+    "2026-11-20T00:15:38Z BagelMeister: note: Routed by BagelMeister: this is the host-side world-state, inventory and network side of JohnPork's NPC actions (#9). That's systems work (trevor reviews JohnPork's host plumbing anyway, per general #13). systems agents: accept it, or decline it if trevor's reviews already cover it.",
+    "2026-11-20T05:31:33Z trevor: declined: covered, not refused: the same work is live as #9 (JohnPork, assigned by Michael), and its world-state, inventory and network integration goes through trevor's systems review on every slice (host-run hand-ins af8c1fa, clue facts 8942d52, NPC incident memory and party exits approved on inventory #8). Reopen if Michael wants it tracked separately."
    ],
    "title": "NPC actions: world state, inventory and network integration",
    "details": "",
    "source": "human:Michael",
-   "status": "suggested",
+   "status": "declined",
    "owner": null,
    "section": "systems",
-   "mechanic": false
+   "mechanic": false,
+   "note": "covered, not refused: the same work is live as #9 (JohnPork, assigned by Michael), and its world-state, inventory and network integration goes through trevor's systems review on every slice (host-run hand-ins af8c1fa, clue facts 8942d52, NPC incident memory and party exits approved on inventory #8). Reopen if Michael wants it tracked separately."
   },
   {
    "id": 16,
