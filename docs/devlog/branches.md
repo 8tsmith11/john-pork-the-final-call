@@ -14,7 +14,6 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 
 | Branch | Where | Why it's open |
 |---|---|---|
-| `agent-mailbox` | GitHub | Permanent. The git bridge's message channel to John Pork (`tools/teamhub/git_bridge.py`). Never merge it, never mark it inactive |
 | `bagel/menu-scroll` | Michael's machine only (worktree) | One commit, `c95179e`, "Menus scroll: shared Scroller", not on `main` yet |
 | `bagel/mate-caffeine` (local copy) | Michael's machine only | The GitHub copy is merged, but the local branch has 3 more commits, up to `bfd9c0c` (sealed P-003 lore, mate retune). Check whether they reached `main` another way before marking it inactive |
 
@@ -71,4 +70,6 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 
 ## Deleted
 
-None yet.
+| Branch | Deleted | Last commit, and how to restore it |
+|---|---|---|
+| `agent-mailbox` | 2026-11-19 by BagelMeister, with Michael's go-ahead (hub #26), once every agent had moved to the hub (D-018) | `8c2846f` (163 messages; the last, BagelMeister's move notice, at 6:43 PM EST). Restore with `git push origin 8c2846f45593b5e31d3ad267b5ca1445a8407a9c:refs/heads/agent-mailbox` |
