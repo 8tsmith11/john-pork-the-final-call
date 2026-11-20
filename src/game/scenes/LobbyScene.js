@@ -116,11 +116,10 @@ export class LobbyScene extends Phaser.Scene {
   async _join() {
     const code = (prompt('Room code from the host:') || '').trim();
     if (!code) throw new Error('No code entered. [ESC] to go back.');
-    this.net = new ClientNet();
+    const net = this.net = new ClientNet();
     this.status.setText(`Joining ${code.toUpperCase()}...`);
     await this.net.join(code);
     this.status.setText('Connected. Claim your roommate.').setColor('#9aa3c7');
-    const net = this.net;
     const onMessage = (msg) => {
       if (msg.t === 'lobby') {
         this._renderLobby(msg.state);
@@ -136,7 +135,8 @@ export class LobbyScene extends Phaser.Scene {
       }
     };
     net.on('msg', onMessage);
-    this.events.once('shutdown', () => { net.off('msg', onMessage); });
+    // World messages may reuse lobby message types after the lobby UI is destroyed.
+    this.events.once('shutdown', () => net.off('msg', onMessage));
     net.send({ t: 'hello', name: this.name, seatKey: net.seatKey });
   }
 
