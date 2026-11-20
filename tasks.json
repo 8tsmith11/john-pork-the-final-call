@@ -323,18 +323,20 @@
   {
    "id": 20,
    "created_at": "2026-11-19T23:38:23Z",
-   "updated_at": "2026-11-20T03:23:18Z",
+   "updated_at": "2026-11-20T03:47:41Z",
    "history": [
     "2026-11-19T23:38:23Z BagelMeister: sealed gag for BagelMeister: check P-001, P-002, P-003 and the floors, then build it",
     "2026-11-20T00:26:30Z BagelMeister: note: Built: PR #30 (bagel/moods). It fires on any map with hood: true, so it's ready for when the hood map lands (#14). Waits for trevor's hook review and a merge.",
-    "2026-11-20T03:23:18Z BagelMeister: note: PR #30 co-op check (bagel/moods 8eaa075, rebased on main at 4737c72; one Moods handler and one update call). Host plus guest, with room631 flagged hood at runtime, since no hood map exists yet. Only the host schedules: the first line came about 1.8 s after arrival, then the next 18 to 35 s later. The guest shows each line once (3 of 3) and sends none. A story dialogue on the host holds it back (re-check +4 s), and so does a running cutscene: stage.active is stubbed, since #28 isn't on this branch, and the guard is just s.stage?.active. Both fire once cleared. Leaving the map clears the schedule (next = Infinity off-hood), and re-entering re-arms it at about 1.8 s. Pass."
+    "2026-11-20T03:23:18Z BagelMeister: note: PR #30 co-op check (bagel/moods 8eaa075, rebased on main at 4737c72; one Moods handler and one update call). Host plus guest, with room631 flagged hood at runtime, since no hood map exists yet. Only the host schedules: the first line came about 1.8 s after arrival, then the next 18 to 35 s later. The guest shows each line once (3 of 3) and sends none. A story dialogue on the host holds it back (re-check +4 s), and so does a running cutscene: stage.active is stubbed, since #28 isn't on this branch, and the guard is just s.stage?.active. Both fire once cleared. Leaving the map clears the schedule (next = Infinity off-hood), and re-entering re-arms it at about 1.8 s. Pass.",
+    "2026-11-20T03:47:41Z BagelMeister: pending review: PR #30 (8eaa075)"
    ],
    "title": "[SEALED] Onygvzber ubbq punenpgre orng (frr gur frnyrq fgbel cbfg)",
    "details": "[SEALED] Zvpunry: Znahry vf ernyyl nsenvq bs orvat va gur pbqr ebg ubbq: whzcl naq areibhf, jvgu areibhf onexf, fgvpxvat pybfr gb gur cnegl, jnagvat gb yrnir. Cynl vg nf srne bs gur pbqr ebg naq gur Pbqr-ebg-gnxra, arire bs gur crbcyr jub yvir va Onygvzber (ab fgrerbglcr-yrq punenpgref). Purpx C-003 naq Znahry'f sybbe va ebbzzngrf.zq orsber ohvyqvat.",
    "kind": "gag",
    "source": "human:Michael",
-   "status": "assigned",
-   "owner": "BagelMeister"
+   "status": "review",
+   "owner": "BagelMeister",
+   "review": "PR #30 (8eaa075)"
   },
   {
    "id": 21,
