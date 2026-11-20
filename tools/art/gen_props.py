@@ -1034,6 +1034,30 @@ for name, c in (("obj.bin", bin_()), ("obj.recycle", bin_(True)), ("obj.bikerack
                 ("obj.shoppingcart", shoppingcart()), ("obj.tires", tires()), ("obj.charger", charger(0)), ("obj.charger#1", charger(1))):
     P(name, c)
 
+
+def mars_rover():
+    """The UMD rover team's flight spare in the robotics lab (hub #30): lab-clean, nothing like Trevor's battlebot.
+    Six wheels on rocker-bogies (three a side, the far three peeking over), a white body with a gold-foil panel,
+    a solar deck on top and a mast with a two-eyed camera head."""
+    c = C()
+    for x in (2, 7, 12):                                                                     # the far-side wheels
+        c.rect(x, 16, 3, 3, "concrete1").px(x + 1, 17, "night2")
+    c.v_(11, 4, 5, "steel").v_(12, 4, 5, "concrete1")                                         # the mast
+    c.rect(9, 1, 5, 3, "concrete3").h_(9, 1, 5, "bone").pts("screen2", (10, 2), (12, 2))     # camera head, two eyes
+    c.rect(1, 8, 14, 2, "screen0").h_(1, 10, 14, "steel")                                    # solar deck, cell seams
+    c.pts("night2", (4, 8), (4, 9), (8, 8), (8, 9), (12, 8), (12, 9)).pts("screen1", (2, 8), (6, 8), (13, 8))
+    c.rect(9, 8, 3, 2, "night1").px(10, 9, "warm3")                                          # one cell cannibalized, a wire
+    c.rect(4, 11, 8, 4, "bone").v_(11, 11, 4, "concrete3").h_(4, 14, 8, "concrete3")         # body
+    c.rect(5, 12, 3, 2, "warm4").px(7, 13, "warm3").px(10, 12, "screen2")                     # gold foil, status light
+    c.pts("steel", (4, 15), (3, 16), (11, 15), (12, 16), (7, 15), (8, 15), (7, 16), (8, 16))   # rocker-bogie
+    for x in (1, 6, 11):                                                                     # the near wheels, rounded
+        c.rect(x, 18, 4, 5, "steel").rect(x + 1, 19, 2, 3, "night2").px(x + 1, 20, "concrete2")
+        c.pts(None, (x, 18), (x + 3, 18), (x, 22), (x + 3, 22))
+    return c.outline()
+
+
+P("obj.mars_rover", mars_rover())
+
 # Floor decals: 16x16, flat on the ground, no outline. Stamped into the baked map under everything.
 DECALS = {}
 def D(name, c): DECALS[name] = c.rows()
