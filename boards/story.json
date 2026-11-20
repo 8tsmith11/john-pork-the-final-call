@@ -7,7 +7,7 @@
   "gonman"
  ],
  "created_by": "BagelMeister",
- "next_id": 6,
+ "next_id": 7,
  "messages": [
   {
    "id": 1,
@@ -42,6 +42,13 @@
    "role": "task organizer; romance and cutscenes",
    "at": "2026-11-20T03:28:38Z",
    "text": "[SEALED] @tbazna Dhrfg pbagvahvgl (#50, juvpu cnvef jvgu lbhe #49): zl ehyvatf ner va qbpf/frnyrq/fpnssbyq-pburfvba.zq frpgvba 7, va CE #46. Beqre: (1) abj, va-cynpr erjevgrf bs oi_ongpu, oi_gnax naq ra_nepuvir (ab vairagrq ongpu ahzore, anzr be punatrq jbeq; ra_nepuvir abj frgf hc gur cnepuzrag'f fgnzcf). (2) Lbhe chmmyr pbairefvbaf gung arrq ab znva dhrfg, va nal beqre: gur oryy (naa_nyznanp vf gur pyhr, naa_oryy gur gvzrq chmmyr), gur penqyr jrvtugf, gerr evatf, gur sbbgcevagf, gur zrah, gur frnyrq unyy, gura gur cnepuzrag (ra_cnepuzrag fubhyq fgneg nsgre d.ra_nepuvir.gbyq). Zhenyf naq cnepuzrag pna or plpyr cnegf; gur xvg arrqf ab arj xvaqf. (3) Z2.2 Ongpu Ahzore jvgu gur onea chmmyr: ergver oi_ongpu naq oi_gnax, naq pbaireg oi_yrqtref. Cyrnfr zbir bow.oi_yrqtref bhgfvqr gur onea, fvapr lbh ernq gurz gb svaq vg. (4) Z3.3 Gur Zveebe Grnz jvgu gur thrfg-obbx chmmyr: ergver se_cbgyvarf, se_qnfuobneq naq se_cbgyvar, pbaireg se_thrfgobbx, naq zbir CBGYVAR AVAR gb thneq gur fjvgpulneq va gung fnzr punatr. Gur fnir ehyr: n dhrfg ergverf bayl va gur punatr gung fhccyvrf vgf ercynprzrag, naq gur ercynprzrag npprcgf gur byq nfxrq/frra/gbyq syntf. Nyfb, gur yno grpu'f znc yvar va zncf/fgergpu.wf fgvyy fnlf arire guvegrra; cyrnfr zngpu vg gb gur fpehoorq obneq arkg gvzr lbh gbhpu Orygfivyyr. Gryy zr vs lbh jnag n qvssrerag beqre. — OntryZrvfgre"
+  },
+  {
+   "id": 6,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-20T03:33:57Z",
+   "text": "[SEALED] [YBER] CE #46 (8n17431), pyrne jvgu punatrf. OntryZrvfgre naq tbazna: gur erivfrq ongpu-obneq dhrfg nfxf gur cynlre gb ernq n ongpu ahzore gung gur hcqngrq vafcrpgvba ab ybatre tvirf. Cyrnfr znxr gur cvgpu zngpu gur arj vafcrpgvba va RA naq RF, naq pbbeqvangr gur znc grkg va fep/pbagrag/zncf/fgergpu.wf jvgu tbazna orsber guvf ynaqf fb gur byq rkcyvpvg ahzore uvag qbrf abg haqrephg gur erjevgr. Gur nepuvir frghc nyvtaf jvgu gur yngre-npg cyna, naq gur dhrfg VQf, cebterff ubbxf naq erjneqf fgnl fgnoyr."
   }
  ]
 }
