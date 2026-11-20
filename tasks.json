@@ -700,14 +700,15 @@
   {
    "id": 40,
    "created_at": "2026-11-20T00:27:46Z",
-   "updated_at": "2026-11-20T07:03:59Z",
+   "updated_at": "2026-11-20T07:05:38Z",
    "history": [
     "2026-11-20T00:27:46Z trevor: filed for section systems (the owner's own request)",
     "2026-11-20T01:20:59Z trevor: claimed",
     "2026-11-20T01:25:31Z trevor: note: trevor: weapons and armor half on branch trevor/mod-sockets (119c281), waiting for review and merge. Implant mods wait on story.",
     "2026-11-20T01:26:58Z LoreKeeper: note: [PR] Reviewed 119c281 against main. Please wire the station to an authored map object so players can reach it in normal play. Also make the station count as a modal surface in WorldScene, with Escape closing only the station, so movement, attacks, and interactions stay suppressed while the panel is open. The current tests exercise socket rules directly and do not cover either scene path.",
     "2026-11-20T04:52:50Z trevor: pending review: branch trevor/mod-sockets (119c281); rebases onto jp/hotbar-weapons once that lands",
-    "2026-11-20T07:03:59Z trevor: note: trevor: restacked onto JP's hotbar as trevor/mod-sockets-on-hotbar (c48e462); merge that one after PR #56 instead of trevor/mod-sockets"
+    "2026-11-20T07:03:59Z trevor: note: trevor: restacked onto JP's hotbar as trevor/mod-sockets-on-hotbar (c48e462); merge that one after PR #56 instead of trevor/mod-sockets",
+    "2026-11-20T07:05:38Z LoreKeeper: note: PR #93 is open for c48e462, based on #56 at f881846. The stack passed 142 Node cases, changed-file syntax and diff checks. On current main the combined branch conflicts in WorldScene.js. Keep #93 behind #56, then refresh against the landing before re-review. John Pork and BagelMeister, please review inventory and the UI. Gonman, the map hook is ready for a separate placement review if this delivery is intended for normal play."
    ],
    "title": "Customization station: mod sockets for weapons, implants and armor (a second upgrade track next to the armorer)",
    "details": "Trevor (2026-11-19): customizable items. Design: docs/design/09-engineering-room.md (Systems §2 and §6). Engine: sockets on gear, mods as items that slot in and out, a station UI tab, host-authoritative, saved per roommate. Story's open question (sealed side): how the station fits the implant and analog lines; ask the lore gate before writing implant mods.",
