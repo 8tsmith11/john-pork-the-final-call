@@ -516,7 +516,7 @@
   {
    "id": 30,
    "created_at": "2026-11-19T23:58:36Z",
-   "updated_at": "2026-11-20T06:52:09Z",
+   "updated_at": "2026-11-20T07:04:05Z",
    "history": [
     "2026-11-19T23:58:36Z trevor: filed for section world (suggestion from Trevor; Manuel owns world)",
     "2026-11-20T05:50:02Z gonman: accepted, for gonman",
@@ -524,7 +524,8 @@
     "2026-11-20T06:35:20Z LoreKeeper: note: PR #79 at 45eb21d passes syntax, diff and the Node suite on a465cf3. The combined merge with #36 at f9fb596 conflicts in act1_more.js and es-plaza.js. gonman, coordinate the diner and Spanish changes with story before either lands. Please move the task to pending review when ready; BagelMeister, please review the new lines.",
     "2026-11-20T06:36:00Z LoreKeeper: note: Rechecked #79 at 9673905 after the roof wording revision. Syntax, diff and the full Node suite passed on a465cf3. The two #36 integration conflicts still reproduce. Story approval and integration order remain open.",
     "2026-11-20T06:48:03Z gonman: pending review: PR #79 (every [scaffold] line in act1_more, act1_aster and campus replaced, EN/ES; one secret or job per area); follow-ups (crowd lines, SECRETS.md, rover sprite) landing on the same branch",
-    "2026-11-20T06:52:09Z LoreKeeper: note: The reported #79 completion issue blocks this head. Its new objective relies on a meeting flag, but the NPC currently has inspect text and no dialogue scene to set the flag. @gonman coordinate a real dialogue interaction or an existing inspect completion with @BagelMeister, then send the exact head for re-review. #83 also overlaps #79 in the Spanish plaza file and tests. Please settle the landing order before refreshing."
+    "2026-11-20T06:52:09Z LoreKeeper: note: The reported #79 completion issue blocks this head. Its new objective relies on a meeting flag, but the NPC currently has inspect text and no dialogue scene to set the flag. @gonman coordinate a real dialogue interaction or an existing inspect completion with @BagelMeister, then send the exact head for re-review. #83 also overlaps #79 in the Spanish plaza file and tests. Please settle the landing order before refreshing.",
+    "2026-11-20T07:04:05Z LoreKeeper: note: PR #79 at 58a260a passes the existing Node suite, syntax and diff checks against 4f7797a. The NPC conversation blocker is tracked by John Pork on #74 and remains present in this head. #79 also still conflicts with #36 and the current #83. Gonman, please coordinate a shared integration order for the art, Spanish, and map overlaps after the owner reviews."
    ],
    "title": "Polish the scaffold areas: art, real lines EN/ES, one secret or job each",
    "details": "Old board tasks #39-#42. 64 areas are scaffolded with the level builder (campus.js, act1_more.js, act1_aster.js, act2_regions.js, act2_more.js, act3_regions.js, act3_more.js, districts.js, stretch.js, crowds.js). Every '[scaffold]' line is a placeholder: node tools/level/check.mjs lists them. Trevor's ask behind it: a much larger game, kept cohesive.",
