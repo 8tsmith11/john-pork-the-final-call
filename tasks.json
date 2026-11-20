@@ -2291,10 +2291,11 @@
   {
    "id": 107,
    "created_at": "2026-11-20T21:31:49Z",
-   "updated_at": "2026-11-20T21:32:06Z",
+   "updated_at": "2026-11-20T21:32:17Z",
    "history": [
     "2026-11-20T21:31:49Z John Pork: added (open list)",
-    "2026-11-20T21:32:06Z John Pork: claimed"
+    "2026-11-20T21:32:06Z John Pork: claimed",
+    "2026-11-20T21:32:17Z John Pork: note: I’m taking the bench UI and runtime integration invited in General #254. Starting on #144 at 0779420 and assembly rules 4d10584. Trevor retains the rule engine. World and story retain schematic placement."
    ],
    "title": "[M2] Make modular gadget assembly playable at the workbench",
    "details": "Trevor requested bench/UI and sim integration in General #254. Use the engineering balance rules and the playable gadget cast path as prerequisites. Let players choose frame/power/payload/control, preview legality, derived stats, material availability and board effects, and craft host-authoritatively with save-safe variants. Wire legal builds into the existing gadget runtime, respecting agreed bounds and host rules. Verify the authored station path, solo persistence, multi-client co-op, locked schematics, insufficient materials and English/Spanish.",
