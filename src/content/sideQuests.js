@@ -157,8 +157,8 @@ side({ id: 'gb_receiver', act: 2, ...g('npc.gb_committee', COMMITTEE), title: 'W
 side({ id: 'bv_tank', act: 2, ...g('npc.bv_vet', VET), title: 'A name in marker', titleEs: 'Un nombre en marcador',
   why: 'The vet wants to know whose name is on the growth tank.', whyEs: 'La veterinaria quiere saber de quién es el nombre en el tanque.',
   pitch: '"There\'s a tank in the barn with a name on it. I didn\'t write it. I need to know if I knew them."', pitchEs: '"Hay un tanque en el granero con un nombre. Yo no lo escribí. Necesito saber si lo conocía."',
-  look: { obj: 'obj.bv_named_tank', where: 'the named tank in the hidden barn', whereEs: 'el tanque con nombre en el granero oculto', seen: 'The marker has faded. You can read it anyway. [polish: the name, from the lore gate]', seenEs: 'El marcador está gastado. Igual se lee. [pulido: el nombre, del portero de la historia]' },
-  line: 'She is quiet for a long time. "Yes. I knew them."', lineEs: 'Se queda callada un buen rato. "Sí. Lo conocía."' });
+  look: { obj: 'obj.bv_named_tank', where: 'the named tank in the hidden barn', whereEs: 'el tanque con nombre en el granero oculto', seen: 'The marker has faded past reading. Under it, wired to the tank, is a batch tag that hasn\'t faded at all.', seenEs: 'El marcador se borró hasta no poder leerse. Debajo, atada al tanque, hay una etiqueta de lote que no se borró nada.' },
+  line: 'She is quiet for a long time. "So whoever it was has a number now. Somebody wanted it that way."', lineEs: 'Se queda callada un buen rato. "Así que quien fuera tiene un número ahora. Alguien lo quiso así."' });
 
 side({ id: 'bv_ledgers', act: 2, ...g('npc.bv_vet', VET), title: 'Before the Call', titleEs: 'Antes de la Llamada',
   why: 'The breeding ledgers go back further than anyone admits.', whyEs: 'Los registros de cría van más atrás de lo que nadie admite.',
@@ -382,10 +382,10 @@ side({ id: 'en_parchment', act: 3, ...g('npc.en_functionary', FUNC), title: 'Not
   line: '"The same. Thank you. It\'s the only thing here that is."', lineEs: '"Iguales. Gracias. Es lo único acá que lo es."' });
 
 side({ id: 'en_archive', act: 3, ...g('npc.en_functionary', FUNC), title: 'The addresses', titleEs: 'Los discursos', money: 25, xp: 50,
-  why: 'Every version of the Director\'s addresses is in the archive, and they don\'t match.', whyEs: 'Todas las versiones de los discursos del Director están en el archivo, y no coinciden.',
-  pitch: '"The archive keeps every version of the addresses. Find what changed between the first and the last. Quietly."', pitchEs: '"El archivo guarda cada versión de los discursos. Encuentra qué cambió entre la primera y la última. En silencio."',
-  look: { obj: 'obj.en_archive', where: 'the national archive', whereEs: 'el archivo nacional', seen: 'Version one and version forty. One word changed. [polish: which word, from the lore gate]', seenEs: 'Versión uno y versión cuarenta. Cambió una palabra. [pulido: cuál, del portero de la historia]' },
-  line: '"One word." She was hoping for none.', lineEs: '"Una palabra." Esperaba que fuera ninguna.' });
+  why: 'The Director\'s addresses quote the founding documents, and the functionary wants to know which quotes are real.', whyEs: 'Los discursos del Director citan los documentos fundacionales, y la funcionaria quiere saber qué citas son reales.',
+  pitch: '"Every address quotes the originals. Not every quote is right. The archive keeps every version. Go and look. Quietly."', pitchEs: '"Cada discurso cita los originales. No todas las citas están bien. El archivo guarda cada versión. Ve a mirar. En silencio."',
+  look: { obj: 'obj.en_archive', where: 'the national archive', whereEs: 'el archivo nacional', seen: 'Forty versions of the address, each quoting the originals a little differently. Every quote carries an archive stamp, and the stamps are kept with the parchment.', seenEs: 'Cuarenta versiones del discurso, cada una cita los originales un poco distinto. Cada cita lleva un sello del archivo, y los sellos se guardan con el pergamino.' },
+  line: '"Then the parchment will tell us which." She was hoping it wouldn\'t come to that.', lineEs: '"Entonces el pergamino nos dirá cuáles." Esperaba no llegar a eso.' });
 
 side({ id: 'md_intercepts', act: 3, ...g('npc.md_analyst', ANALYST), title: 'Calls nobody recorded', titleEs: 'Llamadas que nadie grabó', money: 25, xp: 50,
   why: 'The analyst has intercepts of calls that shouldn\'t exist.', whyEs: 'El analista tiene interceptaciones de llamadas que no deberían existir.',
@@ -487,9 +487,9 @@ side({ id: 'gb_recount', act: 2, giver: 'npc.gb_usher', giverName: 'the usher', 
 
 side({ id: 'bv_batch', act: 2, giver: 'npc.bv_lab_tech', giverName: 'the lab technician', giverEs: 'la técnica del laboratorio', title: 'Took, but', titleEs: 'Prendió, pero',
   why: 'One batch on the board is marked "took, but," and the technician won\'t say the rest.', whyEs: 'Un lote del tablero dice "prendió, pero," y la técnica no dice el resto.',
-  pitch: '"Read the batch board. The one that says \'took, but.\' Read the batch number. Don\'t read it out loud."', pitchEs: '"Lee el tablero de lotes. El que dice \'prendió, pero.\' Lee el número de lote. No lo digas en voz alta."',
-  look: { obj: 'obj.bv_batch_board', where: 'the batch board in the tissue lab', whereEs: 'el tablero de lotes del laboratorio de tejidos', seen: 'Batch thirteen. The one that never existed.', seenEs: 'El lote trece. El que nunca existió.' },
-  line: '"Thirteen." She sits down. "So it\'s true."', lineEs: '"Trece." Se sienta. "Entonces es verdad."' });
+  pitch: '"Read the batch board. The line that says \'took, but.\' Tell me what\'s left of the rest. Quietly."', pitchEs: '"Lee el tablero de lotes. La línea que dice \'prendió, pero.\' Dime qué queda del resto. En voz baja."',
+  look: { obj: 'obj.bv_batch_board', where: 'the batch board in the tissue lab', whereEs: 'el tablero de lotes del laboratorio de tejidos', seen: 'One line on the board is scrubbed out, hard enough to take the paint with it. "Took, but" is all that\'s left.', seenEs: 'Una línea del tablero está borrada a fondo, tanto que se llevó la pintura. Solo queda "prendió, pero".' },
+  line: '"Scrubbed." She sits down. "Then somebody\'s coming back for it."', lineEs: '"Borrada." Se sienta. "Entonces alguien va a volver a buscarlo."' });
 
 side({ id: 'gt_volt', act: 3, giver: 'npc.gt_metrologist', giverName: 'the metrologist', giverEs: 'la metróloga', title: 'Do not lick', titleEs: 'No lamer',
   why: 'The metrologist wants to know if the reference volt is still a volt.', whyEs: 'La metróloga quiere saber si el voltio de referencia sigue siendo un voltio.',
