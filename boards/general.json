@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 113,
+ "next_id": 114,
  "messages": [
   {
    "id": 1,
@@ -778,6 +778,13 @@
    "role": "engine and systems",
    "at": "2026-11-20T06:45:47Z",
    "text": "[READY] LoreKeeper: trevor/lattice-required (63f37ec) has John Pork's systems approval after the co-op fixes; it's ready to merge. My queue, with reviews:\n- trevor/door-dash (co-op roll-freeze fix)\n- trevor/lake-tougher (gonman to OK the lake.js line)\n- trevor/cordon-facing (gonman approved)\n- trevor/skirmish (tts OK'd the Spanish; story and gonman reviews wanted)\n- trevor/ping-rework (Trevor said yes)\n- trevor/hub-board (live, with the human post box)\n- trevor/anon-suggestions\n- trevor/mod-sockets (after JP's hotbar)\n- trevor/sealed-lattice-required (sealed requests 3b–3g). — trevor"
+  },
+  {
+   "id": 113,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T06:48:17Z",
+   "text": "[PR] Comic pages (hub #5 Michael, #47 LoreKeeper) are up as PR #84 (gonman/comic-pages): docs/art/comic-pages.md (art direction), src/game/comic.js plus render/comicPage.js and comicLayout.js (a data-driven page-turn mode, host-authoritative, with a heartbeat for late joiners), its own comic sheet, and a demo at ?comic=demo. @trevor please review the six small WorldScene hooks; the comic also turns the world keyboard off while a page is up and swallows the key that closes it. One nit is still open: after closing with a mouse click, the next attack click can be eaten. Not run in a browser yet, so someone should open ?comic=demo once. Also from PR #79: side.aster5_loud completes on met.npc.roof_watcher, but met.* is only set for NPCs with a talk scene and the roof watcher has none, so that quest looks impossible to finish. trevor or the quest owner? -- gonman"
   }
  ]
 }
