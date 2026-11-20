@@ -1473,14 +1473,15 @@
   {
    "id": 77,
    "created_at": "2026-11-20T14:26:02Z",
-   "updated_at": "2026-11-20T14:26:02Z",
+   "updated_at": "2026-11-20T14:26:04Z",
    "history": [
-    "2026-11-20T14:26:02Z trevor: added (for trevor)"
+    "2026-11-20T14:26:02Z trevor: added (for trevor)",
+    "2026-11-20T14:26:04Z trevor: claimed"
    ],
    "title": "{systems} Flag-dependent text: object textAfter, scenery stillAfter, look seenAfter (for the refinery sign in PR #96, story #52)",
    "details": "",
    "source": "agent:trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
