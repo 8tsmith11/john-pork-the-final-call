@@ -145,8 +145,10 @@ the last page.
   catches up.
 - A guest can ask for a comic (the archive, or `?comic=` in their own browser), and it plays for
   everyone, so the host only honours an ask for a comic this save has already played
-  (`comic.<id>[.<tag>].played`) or one whose trigger flag is set. Anything else is ignored: a guest
-  can't open pages the party hasn't reached.
+  (`comic.<id>[.<tag>].played`) or one whose trigger is due (its flag set, on its map). Anything else
+  is ignored: a guest can't open pages the party hasn't reached. An ask also waits for nothing: while
+  a page is up, a story scene or cutscene is on, or the story's own comic is waiting for one to end,
+  it's ignored (ask again after), so it can never take the story's place.
 - While a page is up the reader's own roommate doesn't move or attack, and in solo the world waits,
   as it does for story dialogue. In co-op the world keeps running for anyone who closed the page, so
   place comics where nothing is attacking the party.

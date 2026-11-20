@@ -1860,6 +1860,24 @@ test('arriving through any door never lands you on an exit, and your first step 
       f['test.comic.ask'] = true; await ask({ id: 'tst' }); assert.ok(host.active && host.cur.tag === null, 'a triggered comic was not honoured');
       host.end();
     } finally { COMIC_TRIGGERS.pop(); }
+    // a trigger placed on one map isn't due anywhere else, so a guest can't move it off its map
+    COMIC_TRIGGERS.push({ id: 'tst', flag: 'test.comic.mapped', tag: 'b', map: 'test_roof' });
+    try {
+      H.w.map = { id: 'test_lobby' }; f['test.comic.mapped'] = true; delete f[comicMod.playedKey('tst', 'b')];
+      await ask({ id: 'tst', tag: 'b' }); assert.ok(!host.active, 'a guest played a map trigger off its map');
+      H.w.map = { id: 'test_roof' }; await ask({ id: 'tst', tag: 'b' }); assert.ok(host.active, 'a due map trigger was not honoured');
+      host.end();
+    } finally { COMIC_TRIGGERS.pop(); delete H.w.map; }
+    // an ask is never queued: it can't push a story's own comic (and its onDone) out of the queue
+    let storyDone = false;
+    H.w.dlg = {}; H.w.dlgFree = false;
+    assert.equal(await host.play('tst', { tag: 'b', onDone: () => { storyDone = true; } }), false); assert.equal(host.queued?.tag, 'b');
+    assert.equal(f[comicMod.playedKey('tst')], true); await ask({ id: 'tst' });
+    assert.equal(host.queued?.tag, 'b', 'a guest\'s ask replaced the story\'s queued comic'); assert.ok(host.queued.onDone);
+    H.w.dlg = null; host.tick(); await new Promise((r) => setTimeout(r, 0));
+    assert.ok(host.active && host.cur.tag === 'b', 'the story\'s queued comic did not play');
+    await ask({ id: 'tst' }); assert.equal(host.cur.tag, 'b', 'an ask cut into a page already up');
+    host.end(); assert.ok(storyDone, 'the story\'s onDone never fired');
     // the debug param still works for the host itself (and records nothing); a guest's only asks
     const Q = globalThis.location;
     globalThis.location = { search: '?comic=tst:b' };

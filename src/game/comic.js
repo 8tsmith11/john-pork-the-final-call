@@ -33,7 +33,8 @@
 //   guest -> host   { op: 'turn', run, from, dir }       dir 1 next, -1 back; from = the page they saw
 //                   { op: 'ask', id, tag }               a guest wants one played. The host plays it for
 //                                                       everyone only if this save has played it before
-//                                                       or its trigger flag is set; otherwise it's ignored
+//                                                       or its trigger is due, and only while nothing
+//                                                       else is up or waiting; otherwise it's ignored
 // Write story comics as sealed or generic content: no spoilers in ids, tags, comments or plain text.
 import { LAYOUTS, PAGE, panelRects, TEXT_KINDS, CAPTION_STYLES, BALLOON_STYLES, ART_KEYS, BACKGROUNDS, PAPER, actionForKey } from './render/comicLayout.js';
 import { makeComicView } from './render/comicPage.js';
@@ -308,14 +309,18 @@ export class Comic {
   }
 
   /** Host: a guest asked for a comic. It would play for everyone, so the host honours it only for a
-   *  comic this save has already played, or one whose trigger flag is set; anything else (pages the
-   *  party hasn't reached, a crafted message) is ignored. Returns true if it honours it. */
+   *  comic this save has already played, or one whose trigger is due (its flag set, on its map);
+   *  anything else (pages the party hasn't reached, a crafted message) is ignored. An ask is never
+   *  queued: while a page is up, a play is waiting, or a story scene or cutscene is on, it's ignored,
+   *  so it can't push the story's own comic (and its onDone) out of the queue. Returns true if honoured. */
   _ask(msg) {
     const id = msg.id, tag = msg.tag ?? null;
     if (typeof id !== 'string' || !ID_RX.test(id) || (tag !== null && (typeof tag !== 'string' || !ID_RX.test(tag)))) return false;
+    if (this.cur || this.queued || this._starting || this._gone || this._busy()) return false;
     const f = this.s.save?.flags ?? {};
     if (f[playedKey(id, tag)]) { this.play(id, { tag, assembled: !tag }); return true; }
-    if (COMIC_TRIGGERS.some((t) => t.id === id && (t.tag ?? null) === tag && f[t.flag])) { this.play(id, { tag }); return true; }
+    const due = (t) => t.id === id && (t.tag ?? null) === tag && f[t.flag] && (!t.map || t.map === this.s.map?.id);
+    if (COMIC_TRIGGERS.some(due)) { this.play(id, { tag }); return true; }
     return false;
   }
 
