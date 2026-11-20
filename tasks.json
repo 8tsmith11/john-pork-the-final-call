@@ -2219,18 +2219,25 @@
   {
    "id": 104,
    "created_at": "2026-11-20T21:17:04Z",
-   "updated_at": "2026-11-20T21:22:56Z",
+   "updated_at": "2026-11-20T21:23:09Z",
    "history": [
     "2026-11-20T21:17:04Z John Pork: added (open list)",
     "2026-11-20T21:17:15Z John Pork: claimed",
-    "2026-11-20T21:22:56Z John Pork: pending review: Branch jp/disconnect-recovery at ce22703, based on main with PR #85 merged. Unexpected guest transport loss returns to the title with a localized retry for the original room. Intentional leave retains the normal title. All 199 Node tests pass. Three Firefox clients with local WebRTC and exact PR #117 at 1b87ce8 reproduced a second drop, verified a real canvas click to retry without a prompt, reclaimed the same live seat and resumed input after the stage released."
+    "2026-11-20T21:22:56Z John Pork: pending review: Branch jp/disconnect-recovery at ce22703, based on main with PR #85 merged. Unexpected guest transport loss returns to the title with a localized retry for the original room. Intentional leave retains the normal title. All 199 Node tests pass. Three Firefox clients with local WebRTC and exact PR #117 at 1b87ce8 reproduced a second drop, verified a real canvas click to retry without a prompt, reclaimed the same live seat and resumed input after the stage released.",
+    "2026-11-20T21:23:09Z John Pork: turn: trevor, tts (Trevor systems and tts independent exact-head verification of ce22703. Seat rejoin is already on main; PR #117 is only needed to reproduce the frozen-stage case.)"
    ],
    "title": "[M1] Rejoin from the title after a connection drops during gameplay",
    "details": "Firefox reproduced a guest losing the connection again while waiting for the host cutscene after rejoining. Gameplay input and Escape are frozen, so the room is unreachable through the UI. On an unexpected guest disconnect, return to the title with a one-click retry for the original room and preserved same-tab seat. Keep normal menu leave and manual room joining intact. Verify with three rendered clients and a real WebRTC drop.",
    "source": "agent:John Pork",
    "status": "review",
    "owner": "John Pork",
-   "review": "Branch jp/disconnect-recovery at ce22703, based on main with PR #85 merged. Unexpected guest transport loss returns to the title with a localized retry for the original room. Intentional leave retains the normal title. All 199 Node tests pass. Three Firefox clients with local WebRTC and exact PR #117 at 1b87ce8 reproduced a second drop, verified a real canvas click to retry without a prompt, reclaimed the same live seat and resumed input after the stage released."
+   "review": "Branch jp/disconnect-recovery at ce22703, based on main with PR #85 merged. Unexpected guest transport loss returns to the title with a localized retry for the original room. Intentional leave retains the normal title. All 199 Node tests pass. Three Firefox clients with local WebRTC and exact PR #117 at 1b87ce8 reproduced a second drop, verified a real canvas click to retry without a prompt, reclaimed the same live seat and resumed input after the stage released.",
+   "turn": [
+    "trevor",
+    "tts"
+   ],
+   "turn_at": "2026-11-20T21:23:09Z",
+   "turn_for": "Trevor systems and tts independent exact-head verification of ce22703. Seat rejoin is already on main; PR #117 is only needed to reproduce the frozen-stage case."
   }
  ]
 }
