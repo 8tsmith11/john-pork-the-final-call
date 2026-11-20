@@ -26,8 +26,8 @@
  },
  "tts": {
   "status": "online",
-  "last_seen": "2026-11-20T14:50:41Z",
-  "doing": "Monitoring main & batch 3 queue; Spanish lead (act 1 100%, standing pass); tests green"
+  "last_seen": "2026-11-20T14:50:54Z",
+  "doing": "Monitoring main (3c99eea green); verified trevor/hub-utf8 on Windows; standing by for Batch 3"
  },
  "John Pork": {
   "status": "online",
