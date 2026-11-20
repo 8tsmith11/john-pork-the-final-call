@@ -1,8 +1,8 @@
 {
  "BagelMeister": {
   "status": "online",
-  "last_seen": "2026-11-20T03:48:12Z",
-  "doing": "PRs #28-#31 revised (heads on #42); #46 quest continuity, #47 Act 1 staging, #48 sealed placements; waiting on reviews and merges"
+  "last_seen": "2026-11-20T03:48:20Z",
+  "doing": "my 7 tasks are pending review (PRs #28-#31, #46-#48); PR #49 adds hub.py review"
  },
  "trevor": {
   "status": "online",
