@@ -6,6 +6,7 @@ import { BOSS_PATTERNS, bossPool, pickPattern, windFor, LASER, SHOCK, RAIN, LANE
 import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 import { BOSSES } from '../content/bosses.js';
+import { GADGETS } from '../content/gadgets.js';
 
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.35, iframes: 0.22,
   stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
@@ -49,7 +50,7 @@ export const COMBAT = {
 const HALF_W = 5, HALF_H = 4; // feet hitbox (characters are 16x24; collide at the feet)
 
 export function emptyInput() {
-  return { mx: 0, my: 0, aim: 0, dodge: false, attack: false, fire: false, interact: false, skill: false };
+  return { mx: 0, my: 0, aim: 0, dodge: false, attack: false, fire: false, interact: false, skill: false, gadget: false };
 }
 
 export class Sim {
@@ -324,6 +325,9 @@ export class Sim {
     this.events = this._pending ?? []; this._pending = [];
     for (const p of this.players.values()) {
       const inp = p.under > 0 && !p.downed ? this._underInput(p) : inputs.get(p.id) || emptyInput();
+      if (p.gadgetCd > 0) p.gadgetCd = Math.max(0, p.gadgetCd - dt);
+      if (p.screenT > 0) p.screenT = Math.max(0, p.screenT - dt);
+      if (p.relayT > 0) p.relayT = Math.max(0, p.relayT - dt);
       if (p.arriveHold) {   // the arrival grace ends the moment the movement input changes (or is released)
         if (p.arriveMx === null) { p.arriveMx = inp.mx ?? 0; p.arriveMy = inp.my ?? 0; }
         else if ((inp.mx ?? 0) !== p.arriveMx || (inp.my ?? 0) !== p.arriveMy) p.arriveHold = false;
@@ -350,7 +354,10 @@ export class Sim {
       p.staT = Math.max(0, (p.staT ?? 0) - dt);
       p.pillT = Math.max(0, (p.pillT ?? 0) - dt);   // blue pill: dodges are free while this runs
       const staMax = MOVE.stamina + (p.mods?.sta ?? 0);
-      if (p.staT <= 0) p.sta = Math.min(staMax, (p.sta ?? staMax) + MOVE.staminaRegen * Math.max(0.1, 1 + (p.mods?.staRegen ?? 0) + (p.mateT > 0 ? MATE.staRegen : 0)) * (p.rot >= 100 ? 0.5 : 1) * dt);
+      if (p.staT <= 0) {
+        const regen = Math.max(0.1, 1 + (p.mods?.staRegen ?? 0) + (p.mateT > 0 ? MATE.staRegen : 0) + (p.relayT > 0 ? 0.55 : 0));
+        p.sta = Math.min(staMax, (p.sta ?? staMax) + MOVE.staminaRegen * regen * (p.rot >= 100 ? 0.5 : 1) * dt);
+      }
       if (inp.dodge && !p.riding && p.dodgeT <= 0 && p.dodgeCd <= 0 && p.sta >= MOVE.dashCost) {
         if (!(p.pillT > 0)) { p.sta -= MOVE.dashCost; p.staT = MOVE.regenDelay; }
         // Dodge toward movement, or toward the aim if standing still.
@@ -388,7 +395,7 @@ export class Sim {
       this._moveAxis(p, p.vx * dt, 0);
       this._moveAxis(p, 0, p.vy * dt);
 
-      p.skillCd = Math.max(0, (p.skillCd ?? 0) - dt);
+      p.skillCd = Math.max(0, (p.skillCd ?? 0) - dt * (p.relayT > 0 ? 1.6 : 1));
       p.blinkCd = Math.max(0, (p.blinkCd ?? 0) - dt);
       if (p.wiredT > 0) p.wiredT = Math.max(0, p.wiredT - dt);
       if (p.mateT > 0) { p.mateT = Math.max(0, p.mateT - dt); if (p.mateT <= 0) { p.crashT = MATE.crash; this.events.push({ t: 'mateCrash', id: p.id }); } }
@@ -398,6 +405,7 @@ export class Sim {
       if (p.gonSlim && p.skillCd <= 0 && !(p.gonT > 0)) p.gonSlim = false;
       const busy = p.gonT > 0;                                       // the gonman is occupied
       if (inp.skill && !p.riding && !p.playing && !busy && p.skillCd <= 0) this._ability(p);
+      if (inp.gadget && !p.riding && !p.playing && !(p.gonT > 0)) this._useGadget(p);
       // Terraria-style: the attack button uses what's in hand. A melee weapon swings, a gun fires, anything
       // else is used by the scene (consumables etc.). No weapon in hand, no punch.
       const held = p.held ?? 'melee';
@@ -539,14 +547,8 @@ export class Sim {
       this.events.push({ t: 'decoy', id: p.id });
     } else if (p.character === 'michael' && p.activeAbility === 'focus') {
       p.skillCd = p.skillMaxCd = 7 * cdk;
-      const ax = Math.cos(p.aim), ay = Math.sin(p.aim), cone = Math.cos(Math.PI / 10);
-      let best, range = 210 * Math.min(1.8, ap);
-      for (const e of this.enemies.values()) {
-        const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
-        if (d > range || dx * ax + dy * ay < d * cone || !this._abilityPathClear(p, e)) continue;
-        best = e;
-        range = d;
-      }
+      const ax = Math.cos(p.aim), ay = Math.sin(p.aim);
+      const best = this._aimedTarget(p, 210 * Math.min(1.8, ap), Math.PI / 10);
       if (best) {
         best.marked = Math.max(best.marked ?? 0, 8 * ap);
         best.markedBy = p.character;
@@ -566,6 +568,87 @@ export class Sim {
       }
       this.events.push({ t: 'ping', id: p.id, x: p.x, y: p.y, r, n: hit.length });
     }
+  }
+
+  _aimedTarget(p, range, halfArc) {
+    const ax = Math.cos(p.aim), ay = Math.sin(p.aim), cone = Math.cos(halfArc);
+    let best;
+    for (const e of this.enemies.values()) {
+      const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
+      if (d > range || dx * ax + dy * ay < d * cone || !this._abilityPathClear(p, e)) continue;
+      best = e;
+      range = d;
+    }
+    return best;
+  }
+
+  _useGadget(p) {
+    const def = GADGETS[p.gadget];
+    if (!def || p.downed || p.under > 0) return;
+    if (!def.cooldown) {
+      this.events.push({ t: 'gadgetScan', id: p.id, kind: def.kind });
+      return;
+    }
+    if (p.gadgetCd > 0) return;
+    p.gadgetCd = p.gadgetMaxCd = def.cooldown * Math.max(0.65, Math.min(1.4, 1 + (p.mods.gadgetCd ?? 0)));
+    const power = def.power * Math.max(0.7, Math.min(1.4, 1 + (p.mods.gadgetEffect ?? 0)));
+    const r = def.range;
+    const ev = { t: 'gadgetCast', kind: def.kind, id: p.id, x: p.x, y: p.y, r, power };
+    switch (def.kind) {
+      case 'screen':
+        p.screenT = power;
+        break;
+      case 'vector': {
+        const steps = Math.ceil(power / 4), dx = Math.cos(p.aim) * power / steps, dy = Math.sin(p.aim) * power / steps;
+        for (let i = 0; i < steps; i++) {
+          this._moveAxis(p, dx, 0);
+          this._moveAxis(p, 0, dy);
+        }
+        ev.points = [[p.x, p.y]];
+        break;
+      }
+      case 'tether': {
+        const target = this._aimedTarget(p, r, Math.PI / 7);
+        if (target) {
+          if (!target.sahur) target.slowT = Math.max(target.slowT ?? 0, power * (target.boss ? 0.4 : 1));
+          ev.points = [[target.x, target.y]];
+        }
+        break;
+      }
+      case 'arc':
+        ev.points = this._gadgetArc(p, r, power);
+        break;
+      default:
+        for (const ally of this.players.values()) {
+          if (ally.downed || ally.under > 0 || Math.hypot(ally.x - p.x, ally.y - p.y) > r || !this._abilityPathClear(p, ally)) continue;
+          if (def.kind === 'relay') ally.relayT = Math.max(ally.relayT ?? 0, power);
+          if (def.kind === 'patch') this.heal(ally.id, Math.round(power));
+          if (def.kind === 'ground') this.setRot(ally.id, Math.max(0, (ally.rot ?? 0) - power));
+        }
+        break;
+    }
+    this.events.push(ev);
+  }
+
+  _gadgetArc(p, range, power) {
+    const targets = new Set(), points = [];
+    let next = this._aimedTarget(p, range, Math.PI / 7);
+    for (let i = 0; i < 3 && next; i++) {
+      const hit = next;
+      targets.add(hit.id);
+      points.push([hit.x, hit.y]);
+      this._hurtEnemy(hit, Math.round(power * 0.65 ** i), 0, 0, p.id);
+      let nearest = 52;
+      next = null;
+      for (const e of this.enemies.values()) {
+        if (targets.has(e.id)) continue;
+        const d = Math.hypot(e.x - hit.x, e.y - hit.y);
+        if (d >= nearest || !this._abilityPathClear(hit, e)) continue;
+        nearest = d;
+        next = e;
+      }
+    }
+    return points;
   }
 
   // Aimed abilities stop at walls and closed doors.
@@ -1100,6 +1183,11 @@ export class Sim {
         }
       } else {
         for (const p of this.players.values()) {
+          if (!p.downed && p.screenT > 0 && !s.noDeflect && Math.hypot(p.x - s.x, p.y - 6 - s.y) < 13) {
+            this.events.push({ t: 'gadgetBlock', x: s.x, y: s.y });
+            hit = true;
+            break;
+          }
           if (!p.downed && Math.hypot(p.x - s.x, p.y - 6 - s.y) < 7 - this._small(p)) { this._hurtPlayer(p, s.dmg, s.rot ?? 0); hit = true; break; }
         }
       }
@@ -1214,6 +1302,7 @@ export class Sim {
       tick: this.tick,
       players: [...this.players.values()].map((p) => ({
         ...(p.skillCd > 0 && p.skillMaxCd ? { skMax: p.skillMaxCd } : {}),
+        ...(p.gadgetCd > 0 ? { gadgetCd: Math.ceil(p.gadgetCd * 10) / 10, gadgetMaxCd: p.gadgetMaxCd } : {}),
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
         hp: Math.round(p.hp), mhp: this.maxHp(p), rot: Math.round((p.rot ?? 0) * 10) / 10, weapon: p.mods.weaponId ?? null, am: p.ammo ?? null, rl: p.reloadT > 0 ? Math.round(p.reloadT * 10) / 10 : 0, st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, ...(p.gonSlim ? { gs: Math.max(0, Math.min(1, Math.round((1 - p.skillCd / (GONMAN.cd * (1 - (p.mods?.skillCd ?? 0)))) * 100) / 100)) } : {}), pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0, un: p.under > 0 ? Math.ceil(p.under) : 0, pu: p.under > 0 ? Math.round(((p.pullT ?? 0) / UNDER.pullTime) * 100) / 100 : 0, mt: Math.ceil(p.mateT ?? 0), cr: p.crashT > 0,

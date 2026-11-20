@@ -1,0 +1,21 @@
+// The equipped gadget is a separate action on V. Range is in pixels and timers are in seconds.
+export const GADGETS = {
+  'item.sniffer': { name: 'Helium sniffer', kind: 'sniffer', cooldown: 0,
+    text: 'Sample the air for the helium trail. Fab #1 calibrates it.' },
+  'item.salvage_array': { name: 'Salvage Array', kind: 'survey', cooldown: 0,
+    text: 'Scan for the closest unopened salvage container in this area.' },
+  'item.phase_screen': { name: 'Phase Screen', kind: 'screen', cooldown: 12, power: 2.2,
+    text: 'Block ordinary incoming shots for a short time. Melee and heavy attacks still get through.' },
+  'item.vector_actuator': { name: 'Vector Actuator', kind: 'vector', cooldown: 10, power: 48,
+    text: 'Lunge in the direction you aim. You stop at walls and can still take hits.' },
+  'item.arc_splicer': { name: 'Arc Splicer', kind: 'arc', cooldown: 9, range: 112, power: 18,
+    text: 'Aim at an enemy. The arc jumps to two nearby enemies, losing power with each jump.' },
+  'item.phase_tether': { name: 'Phase Tether', kind: 'tether', cooldown: 11, range: 128, power: 3,
+    text: 'Slow one enemy in the direction you aim. Bosses resist the tether.' },
+  'item.overclock_relay': { name: 'Overclock Relay', kind: 'relay', cooldown: 15, range: 64, power: 5,
+    text: 'For a short time, nearby roommates recover stamina and recharge R faster.' },
+  'item.patch_mesh': { name: 'Patch Mesh', kind: 'patch', cooldown: 24, range: 50, power: 16,
+    text: 'Send repair microbots to nearby standing roommates. It cannot revive anyone.' },
+  'item.ground_loop': { name: 'Ground Loop', kind: 'ground', cooldown: 20, range: 56, power: 8,
+    text: 'Drain a little code rot from nearby roommates who are still standing.' },
+};
