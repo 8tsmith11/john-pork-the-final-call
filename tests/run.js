@@ -671,6 +671,12 @@ test('running gags: the 245 lab chat and the abuela voice notes come round, with
   assert.deepEqual(missing, [], 'Spanish for these lines in src/content/lines_es.js');
 });
 
+const settingsMod = await import('../src/settings.js');
+test('settings: the soundtrack plays by default (Manuel, 2026-11-20)', () => {
+  assert.equal(settingsMod.get('music'), 1);
+  assert.equal(settingsMod.get('sfx'), 1);
+});
+
 const { ES_HUD } = await import('../src/i18n/es-hud.js');
 test('i18n: every map name has Spanish', () => {
   const missing = Object.values(MAPS_FOR_TEST).map((m) => m.name).filter((n) => n && !(n in ES_HUD));
