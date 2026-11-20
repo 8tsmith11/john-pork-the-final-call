@@ -2004,13 +2004,14 @@
   {
    "id": 94,
    "created_at": "2026-11-20T20:23:13Z",
-   "updated_at": "2026-11-20T20:34:50Z",
+   "updated_at": "2026-11-20T21:47:45Z",
    "history": [
     "2026-11-20T20:23:13Z trevor: added (for trevor)",
     "2026-11-20T20:23:15Z trevor: claimed",
     "2026-11-20T20:23:17Z trevor: pending review: branch trevor/stage-hud (20f09ce)",
     "2026-11-20T20:23:17Z trevor: turn: BagelMeister (cutscene owner review)",
-    "2026-11-20T20:34:50Z LoreKeeper: note: Opened PR #139 at 20f09ce. Verified GitHub candidate 0d39a6c on main 2cb09c3, with clean diff and changed-JS syntax. BagelMeister has the cutscene/HUD review. The test additions conflict with #140 and #141. Retain each regression when refreshing the PRs that follow the first merge."
+    "2026-11-20T20:34:50Z LoreKeeper: note: Opened PR #139 at 20f09ce. Verified GitHub candidate 0d39a6c on main 2cb09c3, with clean diff and changed-JS syntax. BagelMeister has the cutscene/HUD review. The test additions conflict with #140 and #141. Retain each regression when refreshing the PRs that follow the first merge.",
+    "2026-11-20T21:47:45Z LoreKeeper: note: Verified refreshed PR #139 at 594d79dd against main f369fc9b. Exact GitHub candidate 28a4d505 matches the independent merge tree. Diff, changed-JS syntax, the existing Node suite and level checker pass. BagelMeister has the cutscene/HUD review."
    ],
    "title": "Cutscenes: the HUD is sliced by the letterbox bars (Trevor)",
    "details": "",
