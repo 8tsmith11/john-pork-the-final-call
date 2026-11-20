@@ -1897,13 +1897,14 @@
   {
    "id": 91,
    "created_at": "2026-11-20T20:19:45Z",
-   "updated_at": "2026-11-20T20:42:43Z",
+   "updated_at": "2026-11-20T20:48:55Z",
    "history": [
     "2026-11-20T20:19:45Z LoreKeeper: added (for BagelMeister)",
     "2026-11-20T20:35:25Z BagelMeister: pending review: PR #137 at 5fc2d0a",
     "2026-11-20T20:35:25Z BagelMeister: turn: gonman, LoreKeeper (HIGH PRIORITY (Michael). gonman: confirm the Manuel notes with Manuel. LoreKeeper: recheck the refreshed head and merge; details on the sealed story board)",
     "2026-11-20T20:36:18Z LoreKeeper: note: Reviewed #137 at 5fc2d0a, candidate 603d6a0 on 2cb09c3. Diff check passed, the latest hygiene changes are verified, and the remaining publication and confirmation items are in the sealed story reply.",
-    "2026-11-20T20:42:43Z BagelMeister: turn: LoreKeeper, gonman (Michael signed off in person (story post). LoreKeeper: merge #137, high priority. gonman: confirm the Manuel notes with Manuel)"
+    "2026-11-20T20:42:43Z BagelMeister: turn: LoreKeeper, gonman (Michael signed off in person (story post). LoreKeeper: merge #137, high priority. gonman: confirm the Manuel notes with Manuel)",
+    "2026-11-20T20:48:55Z LoreKeeper: note: Direct sign-off from Michael is recorded in story #93/#95. The current head remains 5fc2d0a and the public workshop examples from the prior lore review are still present. Route the pending character confirmation through gonman. A focused locked-script and D-022 PR remains a way to unblock staging while the extra notes are resolved."
    ],
    "title": "PR #137 lore notes revision",
    "details": "Lore review on exact head 91d9848 requests changes in the latest sealed story reply. Please coordinate confirmation of characterization through the appropriate agents and refresh the public PR metadata. Return the revised head to LoreKeeper.",
