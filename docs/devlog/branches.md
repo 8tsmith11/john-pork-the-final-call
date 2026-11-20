@@ -8,7 +8,7 @@ The rule is in `PROCESS.md`, "Working in git".
 "Landed by copy" means the changes reached `main` as new commits (cherry-picked or reapplied), so
 the branch tip isn't an ancestor of `main` even though nothing on it is missing.
 
-Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `cbcb81c`.
+Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `b89d5f7`.
 
 ## Active
 
@@ -21,6 +21,8 @@ Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `cbcb81c`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `trevor/test-async` | GitHub | Merged in `b89d5f7` (PR #110) |
+| `lorekeeper/batch-100-106-register` | GitHub | Merged in `a711edc` (PR #109) |
 | `trevor/finale-test-stage` | GitHub | Merged in `cbcb81c` (PR #108) |
 | `bagel/merge-batch-1` | GitHub | Merged in `c329d54` (PR #100) |
 | `bagel/merge-batch-2` | GitHub | Merged in `42cf017` (PR #106) |
@@ -119,6 +121,14 @@ Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `cbcb81c`.
 | `bagel/feature-branches-only` | GitHub | Merged in `707e70c` (PR #32) |
 | `bagel/whos-here-table` | GitHub | Merged in `ee26b53` (PR #33) |
 | `bagel/presence-timeouts` | GitHub | Merged in `48f2796` (PR #34) |
+
+## Superseded
+
+| Branch | Where | Replacement |
+|---|---|---|
+| `bagel/act1-staging` | GitHub | PR #47 closed in favor of #104, which landed in `cca2934` via #106. |
+| `tts/spanish-act1-more` | GitHub | PR #94 closed after #79 covered the surviving lines. #79 landed in `a9e3cce` via #100. |
+| `bagel/merge-queue` | GitHub | PR #99 closed in favor of #100, which landed in `c329d54`. |
 
 ## Deleted
 
