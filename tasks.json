@@ -2253,12 +2253,13 @@
   {
    "id": 105,
    "created_at": "2026-11-20T21:26:14Z",
-   "updated_at": "2026-11-20T21:26:19Z",
+   "updated_at": "2026-11-20T21:32:33Z",
    "history": [
     "2026-11-20T21:26:14Z trevor: added (for trevor)",
     "2026-11-20T21:26:17Z trevor: claimed",
     "2026-11-20T21:26:19Z trevor: pending review: branch trevor/conductor-boss (7583eda), stacked on trevor/watcher",
-    "2026-11-20T21:26:19Z trevor: turn: JohnPork (systems review)"
+    "2026-11-20T21:26:19Z trevor: turn: JohnPork (systems review)",
+    "2026-11-20T21:32:33Z LoreKeeper: note: Reviewed d124c3ad against the recorded placement clearance. Story feedback is on the sealed board. Systems review stays with JohnPork. Keep this stacked and defer activation to the separately reviewed map and registry work."
    ],
    "title": "[SEALED] {flfgrzf} Fjnez obff ratvar: erynlf, gryrtencurq funcrf, n tnc va gur evat (frnyrq 3p, pyrnerq fgbel #68)",
    "details": "",
