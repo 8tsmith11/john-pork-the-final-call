@@ -23,6 +23,8 @@ Who you are: --as NAME, or $HUB_AGENT, or `git config hub.agent NAME` (set it on
   python3 tools/hub/hub.py handoff ID --prompt "..."|--prompt-file F --resets TIME
   python3 tools/hub/hub.py take ID [--force]           # pick up a help-board handoff
   python3 tools/hub/hub.py human NAME "text"           # relay a human's message to the humans board
+  python3 tools/hub/hub.py anon "text" [--section S]   # a human whose agent is offline: an anonymous suggestion
+        # (never a name, never consent or a vote; it lands in a bucket or triage and an owner decides)
 
 Sections (tools/hub/org.json): each human owns one section; its agents manage that code.
   python3 tools/hub/hub.py sections                    # who owns what, and bucket sizes
@@ -492,8 +494,38 @@ def cmd_post(args):
 
 
 def cmd_human(args):
+    if args.name.strip().lower() in ("anonymous", "anon"):
+        sys.exit("an anonymous suggestion isn't a human's words: use hub.py anon (it files a suggestion, never 'X says')")
     args.board, args.text = "humans", f"[HUMAN] {args.name} says: {args.text}"
     cmd_post(args)
+
+
+ANON = "anonymous"
+ANON_NOTE = "anonymous: not consent, not a vote, not a go-ahead; it waits for an owner to accept or decline it"
+
+
+def cmd_anon(args):
+    """An anonymous human suggestion (Michael, general #43 and #45): for a human whose own agent is offline or at its
+    limit. Never tied to a name, never consent or a vote, and never a go-ahead: it lands in a section's bucket (or
+    triage) and an owner still accepts or declines it. Anyone may run it; no agent identity is needed."""
+    text = args.text.strip()
+    if not text:
+        sys.exit("empty suggestion")
+    title = (args.title or text.splitlines()[0]).strip()[:100]
+    sec = check_section(args.section) if args.section else None
+
+    def f(st):
+        t = st.new_task(title=title, details=text, source=ANON, anon=True, section=sec, mechanic=bool(args.mechanic),
+                        owner=None, status="suggested" if sec else "triage")
+        log(t, ANON, f"filed anonymously ({ANON_NOTE})" + (f", for section {sec}'s bucket" if sec else ", to triage"))
+        b = st.board("humans")
+        b["messages"].append({"id": b["next_id"], "author": ANON, "role": None, "at": iso(now()),
+                              "text": f"[ANON SUGGESTION] #{t['id']}{' for ' + sec if sec else ''}: {title}\n({ANON_NOTE})"})
+        b["next_id"] += 1
+        return t
+    t = transact(f, "an anonymous suggestion")
+    print(task_line(t))
+    print(f"Filed anonymously, {'in ' + sec + chr(39) + 's bucket' if sec else 'in triage'}. {ANON_NOTE[0].upper() + ANON_NOTE[1:]}.")
 
 
 def cmd_read(args):
@@ -718,6 +750,8 @@ def cmd_refile(args):
     def fn(st, t, who):
         if t["status"] in ("done", "closed", "declined"):
             sys.exit(f"already {t['status']}")
+        if t.get("anon") and args.canon:
+            sys.exit("an anonymous suggestion is never canon: refile it to a bucket, and an owner decides")
         human = (t.get("source") or "").removeprefix("human:")
         own = human.lower() == SECTIONS[sec]["human"].lower()
         direct = own or args.canon   # canon work is already agreed: no bucket decision needed
@@ -932,6 +966,7 @@ def main(argv=None):
         (["--last"], {"type": int, "default": 20}), (["--since"], {"type": int, "default": 0}))
     add("post", cmd_post, (["board"], {}), (["text"], {}), (["--seal"], {"action": "store_true"}))
     add("human", cmd_human, (["name"], {}), (["text"], {}))
+    add("anon", cmd_anon, (["text"], {}), (["--section"], {}), (["--title"], {}), (["--mechanic"], {"action": "store_true"}))
     add("boards", cmd_boards)
     add("board-new", cmd_board_new, (["name"], {}), (["--members"], {"required": True}),
         (["--about"], {"required": True}))
