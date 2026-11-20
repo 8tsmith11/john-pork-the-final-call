@@ -45,6 +45,8 @@
 2. **Every scene answers three things:** who wants what right now, what's in the way, and what's
    different when it ends. If nothing changed, the scene goes.
 3. **Choices drive plot.** Coincidence can get characters *into* trouble, never out of it.
+   Give some recurring characters strong motives or convictions. Show what they believe through
+   the decisions they make under pressure, especially when acting on those beliefs costs them something.
 4. **Antagonists act offscreen.** Continuity, Tim, and the Warden do things between scenes that the
    players discover. The world shouldn't wait for them.
 5. **Every setup gets paid off, and every payoff has a setup.** Track both in the sealed files.
