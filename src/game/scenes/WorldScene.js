@@ -3025,8 +3025,8 @@ export class WorldScene extends Phaser.Scene {
     // Mid bosses: no ending. The Switchman keeps its flag; bosses from src/content/bosses.js set boss.<id>.down.
     if (ev.t === 'kill' && ev.mini && this.mode !== 'client') {
       this._flag(!ev.kind || ev.kind === 'boss.switchman' ? 'act1.switchman.down' : `boss.${ev.kind.slice(5)}.down`, true);
-      if (!this.save.flags['act2.complete'] && ACT2_REGION_BOSSES.every((k) => this.save.flags[`boss.${k.slice(5)}.down`])) {   // [SCAFFOLD] act 2 end
-        this._flag('act2.complete', true); this.save.world.act = 3; this._save();
+      if (!this.save.flags['act2.scaffold.gate'] && ACT2_REGION_BOSSES.every((k) => this.save.flags[`boss.${k.slice(5)}.down`])) {
+        this._flag('act2.scaffold.gate', true); this.save.world.act = 3; this._save();
         this._toast(tr('The Beltway road is open.'));
       }
     }

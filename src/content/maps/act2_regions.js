@@ -39,9 +39,9 @@ export const route1North = fromGrid({
     '@': { spawn: true },
   },
 })
-  // Act 3: the Beltway road, open once Act 2 is complete (src/content/maps/act3_regions.js).
+  // The regional boss milestone opens the route through the current scaffold.
   .exit('beltway', 10, 12, { id: 'obj.r1n_to_beltway', selfDrawn: true, stepOn: true, pair: 'obj.bw_to_r1n', label: 'South-west to the Beltway',
-    requiresFlag: 'act2.complete', lockedText: 'A barricade, and a sign: INNER LOOP CLOSED. Not yet.', text: 'The ring road around the Enclave.' })
+    requiresFlag: 'act2.scaffold.gate', lockedText: 'A barricade, and a sign: INNER LOOP CLOSED. Not yet.', text: 'The ring road around the Enclave.' })
   .build();
 
 // ---- 6. Greenbelt and the dishes ----
@@ -159,7 +159,7 @@ export const meade = fromGrid({
     X: { ...back('meade', 'Back west to Route 1'), tile: ',' },
   },
 }).enemy('boss.md_fence', 27, 3)
-  .exit('meade_inside', 10, 8, { id: 'obj.meade_to_meade_inside', selfDrawn: true, stepOn: true, requiresFlag: 'act2.complete', lockedText: 'The gate does not acknowledge you. Not yet.', pair: 'obj.meade_inside_out', label: 'The Meade gate', text: 'Black glass behind the berm. The gate is open.' })   // act3_more.js
+  .exit('meade_inside', 10, 8, { id: 'obj.meade_to_meade_inside', selfDrawn: true, stepOn: true, requiresFlag: 'act2.scaffold.gate', lockedText: 'The gate does not acknowledge you. Not yet.', pair: 'obj.meade_inside_out', label: 'The Meade gate', text: 'Black glass behind the berm. The gate is open.' })   // act3_more.js
   
   .exit('md_lot', 4, 8, { id: 'obj.meade_to_md_lot', selfDrawn: true, stepOn: true, pair: 'obj.md_lot_out', label: 'The parking lot', text: 'Ten thousand spaces.' })   // stretch.js
   .build();
