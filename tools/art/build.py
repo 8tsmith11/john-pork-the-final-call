@@ -10,6 +10,10 @@ Source format:
 Every color must come from tools/art/palette.json. Output: assets/sprites/<name>.png and
 assets/sprites/<name>.json, frames laid out left to right, wrapping at 8 per row.
 
+A sheet may change @size between frames (the 'baltimore' sheet mixes 16x16 stoops with a crane). Each run of
+same-size frames is laid out as its own band of rows, bands stacked top to bottom, so a sheet with one @size
+packs exactly as before.
+
 Usage: python3 tools/art/build.py            (all sources)
        python3 tools/art/build.py manuel     (one)
 """
@@ -38,10 +42,10 @@ def load_palette() -> dict[str, tuple[int, int, int, int]]:
     return pal
 
 
-def parse(path: Path, pal: dict) -> tuple[int, int, list[tuple[str, list[str]]], dict]:
+def parse(path: Path, pal: dict) -> tuple[list[tuple[str, int, int, list[str]]], dict]:
     w = h = 0
     letters: dict[str, tuple[int, int, int, int]] = {".": (0, 0, 0, 0)}
-    frames: list[tuple[str, list[str]]] = []
+    frames: list[tuple[str, int, int, list[str]]] = []
     lines = path.read_text().splitlines()
     i = 0
     while i < len(lines):
@@ -64,21 +68,38 @@ def parse(path: Path, pal: dict) -> tuple[int, int, list[tuple[str, list[str]]],
             i += h
             if len(rows) != h or any(len(r) != w for r in rows):
                 sys.exit(f"{path.name}: frame {name} is not {w}x{h}")
-            frames.append((name, rows))
+            if any(f[0] == name for f in frames):
+                sys.exit(f"{path.name}: frame {name} appears twice")
+            frames.append((name, w, h, rows))
         else:
             sys.exit(f"{path.name}: unexpected line: {line!r}")
-    return w, h, frames, letters
+    return frames, letters
+
+
+def layout(frames: list[tuple[str, int, int, list[str]]]) -> tuple[list[tuple[int, int]], int, int]:
+    """Top-left corner of every frame, and the sheet size. Runs of same-size frames form bands of PER_ROW."""
+    spots, width, top, i = [], 0, 0, 0
+    while i < len(frames):
+        _, w, h, _ = frames[i]
+        j = i
+        while j < len(frames) and frames[j][1:3] == (w, h):
+            j += 1
+        n = j - i
+        for k in range(n):
+            spots.append(((k % PER_ROW) * w, top + (k // PER_ROW) * h))
+        width = max(width, min(PER_ROW, n) * w)
+        top += ((n + PER_ROW - 1) // PER_ROW) * h
+        i = j
+    return spots, width, top
 
 
 def build(path: Path, pal: dict) -> None:
-    w, h, frames, letters = parse(path, pal)
-    cols = min(PER_ROW, len(frames))
-    rows_n = (len(frames) + PER_ROW - 1) // PER_ROW
-    sheet = Image.new("RGBA", (cols * w, rows_n * h), (0, 0, 0, 0))
+    frames, letters = parse(path, pal)
+    spots, sw, sh = layout(frames)
+    sheet = Image.new("RGBA", (sw, sh), (0, 0, 0, 0))
     atlas = {"frames": {}, "meta": {"image": f"{path.stem}.png", "format": "RGBA8888",
-                                    "size": {"w": cols * w, "h": rows_n * h}, "scale": "1"}}
-    for n, (name, rows) in enumerate(frames):
-        ox, oy = (n % PER_ROW) * w, (n // PER_ROW) * h
+                                    "size": {"w": sw, "h": sh}, "scale": "1"}}
+    for (name, w, h, rows), (ox, oy) in zip(frames, spots):
         for y, row in enumerate(rows):
             for x, ch in enumerate(row):
                 if ch not in letters:

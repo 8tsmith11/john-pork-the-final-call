@@ -156,9 +156,30 @@ after #17): a rare alternate long idle, back to the camera, nothing explicit on 
 | `icons` | 16×16 | inventory and hotbar icons, frame name = item id | `gen_icons.py` |
 | `romance` | 16×24 | BagelMeister's characters | `gen_romance.py` |
 | `title_bg` | full screen | the title night scene | `gen_title.py` |
+| `baltimore` | mixed (16x16 to the 152x96 crane) | the Baltimore set: rowhouse fronts, the refinery wall and its sign, the port (crane, containers, bollards, flatcars, rails, quay, pier), skyline strips, the Callers' hall | `gen_baltimore.py` |
 
-An object picks its frame by `art ?? id`, looked up in `doors`, `wide`, `big`, then `props`.
-`<id>#1` is a second frame for a two-frame loop.
+An object picks its frame by `art ?? id`, looked up in `doors`, `baltimore`, `wide`, `big`, then `props`
+(scenery: `baltimore`, `big`, `wide`, `props`). `<id>#1` is a second frame for a two-frame loop.
+
+**The `baltimore` sheet mixes sizes** (`build.py` packs each run of same-size frames as its own band). Its pieces
+are drawn at their final size, so they ignore a map's `propScale`, and they stand on the bottom edge of their tile:
+an object centred on its tile, scenery centred on its footprint (`w` tiles from its x, default as many tiles as the
+frame is wide). Only solid pieces cast a contact shadow; house fronts, walls, floors and skylines don't. Frame
+names are `bm.<thing>`. How the pieces go together:
+- **Rowhouse fronts** are 16x32 bays on a two-row wall block. A door sits in a one-tile recess: its upper storey
+  (`bm.row_upper*`) stands on the wall row and its doorway with the marble steps (`bm.row_door*`) is a floor piece in
+  the recess, so you climb the steps in front of the door. Match the upper storey's cornice to its house.
+- **North walls indoors** are two rows deep with 16x32 pieces on the lower row, marked `floor: true` so anything
+  standing on the wall row (the Callers' book) draws in front.
+- **Skyline strips** (`bm.sky_*`, 144x16) go along the top row of an outdoor map, between its exits.
+- **The crane** is drawn once and stands on a solid `bm.crane_bogie` under each leg; you walk between the legs.
+
+## The refinery's sign (hub #6)
+
+The refinery is called **SHOAL** (our own name, no real brand). Its rooftop letters are **soft red**: `soft1` tube
+on a `bone` core with a `soft0` halo, dark tubes when off. `signal` stays Continuity's (their containers, banners
+and ledger carry it, and their frames are named `_ca`); a test fails if `signal` turns up anywhere else in the
+Baltimore set, or balloon orange anywhere at all. At sign scale soft red reads as neon, never as Michael's clothes.
 
 ## Pipeline (built)
 

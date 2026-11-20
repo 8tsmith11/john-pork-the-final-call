@@ -5,7 +5,7 @@
 
 const ART = ['npc.rotter_1', 'npc.rotter_2', 'npc.rotter_3'];
 
-// [map, hint x, hint y, id suffix, label, line]
+// [map, hint x, hint y, id suffix, label, line, written?]  (written: the line is final, so no "[scaffold]" mark)
 const CROWD = [
   // ---- Act 1 (the new campus areas; act1_more.js) ----
   ['diner', 6, 5, 'diner_regular', 'A regular at the counter', '"Same booth, same order, every night. The cook starts it when I walk in. Sometimes before."'],
@@ -39,13 +39,13 @@ const CROWD = [
   ['annapolis', 6, 2, 'ann_midshipman', 'A midshipman with no navy', '"We still drill. Nobody tells us to stop. Nobody tells us anything."'],
   ['annapolis', 24, 2, 'ann_waterman', 'A waterman', '"Tide\'s wrong again. It\'s right about the crabs, though."'],
   ['ann_harbor', 8, 5, 'ann_sailor', 'A sailor on a second-floor mooring', '"I tied up to my old bedroom window. Felt right."'],
-  // Baltimore district (districts.js)
-  ['bmore_rows', 6, 4, 'bmore_scrubber', 'A gran scrubbing the steps', '"Outbreak or no outbreak. You keep your steps."'],
-  ['bmore_rows', 22, 6, 'bmore_pigeon', 'A man feeding pigeons', '"They came back before the people did. They always do."'],
-  ['bmore_refinery', 20, 4, 'bmore_signkeeper', 'The sign keeper', '"Ships steer by that sign. Rotters too, I think. Something in it hums."'],
-  ['bmore_hall', 6, 1, 'bmore_scribe', 'The scribe of the book', '"I write down what they heard. I don\'t judge. I spell-check."'],
-  ['bmore_hall', 18, 3, 'bmore_singer', 'A singer in the back row', '"The choir comes in late on purpose. It\'s about being called."'],
-  ['bmore_authority', 10, 3, 'bmore_ca_clerk', 'A Continuity clerk', '"Every container is accounted for. Don\'t ask me which accounts."'],
+  // Baltimore district (districts.js): final lines (hub #6), Spanish in src/i18n/es-baltimore.js
+  ['bmore_rows', 6, 4, 'bmore_scrubber', 'A gran scrubbing the steps', '"Pumice first, then the powder, then cold water. Hot yellows it. Mind the wet one."', true],
+  ['bmore_rows', 22, 6, 'bmore_pigeon', 'A man feeding pigeons', '"That one\'s Lieutenant. That one\'s also Lieutenant. I lost track in March."', true],
+  ['bmore_refinery', 20, 4, 'bmore_signkeeper', 'The sign keeper', '"S, H, O, A, L. I replace the tubes on the S every month. It eats them. Hear the hum? That\'s the S too."', true],
+  ['bmore_hall', 12, 2, 'bmore_scribe', 'The scribe of the book', '"I write down what they heard, word for word. Then I fix the spelling. They let me do the spelling."', true],
+  ['bmore_hall', 18, 3, 'bmore_singer', 'A singer in the back row', '"We come in late. On purpose. Last week the drummer came in on time and we had to start over."', true],
+  ['bmore_authority', 10, 3, 'bmore_ca_clerk', 'A Continuity clerk', '"Visitors stay behind the yellow line. There isn\'t a yellow line. Stay behind where it would be."', true],
   // Corridor district (districts.js)
   ['cor_town', 14, 6, 'cor_mayor', 'The last mayor', '"I signed the sale. Ask anyone. They\'ll tell you. Loudly."'],
   ['cor_town', 26, 4, 'cor_porch', 'A woman on her porch', '"My porch light comes on when the hall decides it\'s night."'],
@@ -80,7 +80,7 @@ const CROWD = [
 /** Adds the crowd to built maps (mutates map.objects). Returns how many were placed. */
 export function addCrowds(maps) {
   let n = 0;
-  CROWD.forEach(([mapId, hx, hy, id, label, line], i) => {
+  CROWD.forEach(([mapId, hx, hy, id, label, line, written], i) => {
     const m = maps[mapId]; if (!m) throw new Error(`crowds: no map ${mapId}`);
     const taken = new Set(m.objects.flatMap((o) => Array.from({ length: o.w ?? 1 }, (_, k) => `${o.x + k},${o.y}`)));
     const free = (x, y) => x > 0 && y > 0 && x < m.w - 1 && y < m.h - 1 && !m.solid(x, y) && !taken.has(`${x},${y}`) && !m.blocked?.has(`${x},${y}`);
@@ -92,7 +92,7 @@ export function addCrowds(maps) {
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const k = `${x + dx},${y + dy}`; if (!seen.has(k) && x + dx >= 0 && y + dy >= 0 && x + dx < m.w && y + dy < m.h) { seen.add(k); q.push([x + dx, y + dy]); } }
     }
     if (!at) throw new Error(`crowds: no free tile near ${mapId} ${hx},${hy}`);
-    m.objects.push({ id: `npc.${id}`, x: at[0], y: at[1], npc: true, art: ART[i % 3], label, age: /\bkid\b/.test(label) ? 'child' : 'adult', mood: ['still', 'fidget', 'nod'][i % 3], text: `[scaffold] ${line}` });
+    m.objects.push({ id: `npc.${id}`, x: at[0], y: at[1], npc: true, art: ART[i % 3], label, age: /\bkid\b/.test(label) ? 'child' : 'adult', mood: ['still', 'fidget', 'nod'][i % 3], text: written ? line : `[scaffold] ${line}` });
     n++;
   });
   return n;

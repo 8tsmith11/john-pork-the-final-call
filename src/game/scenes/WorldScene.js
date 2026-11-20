@@ -793,6 +793,7 @@ export class WorldScene extends Phaser.Scene {
     }
     for (const t of Object.values(this.leverLabels ?? {})) t.destroy(); this.leverLabels = {}; this.leverGfx?.clear();
     const props = this.textures.exists('props') ? this.textures.get('props') : null;
+    const bmore = this.textures.exists('baltimore') ? this.textures.get('baltimore') : null;
     for (const s of this.doorVis ?? []) s.vis.destroy();
     this.doorVis = [];
     // Depth pass (task 13): a soft contact shadow under everything that stands on the floor, offset a
@@ -818,6 +819,15 @@ export class WorldScene extends Phaser.Scene {
         if (art && art.height > TILE) art.setDisplaySize(TILE, TILE);
         const vis = art ?? this.add.graphics().setDepth(o.floor ? 2 : o.y * TILE + TILE - 4);
         this.doorVis.push({ o, vis, art: !!art, sheet, drawn: null });
+        continue;
+      }
+      if (bmore?.has(art)) {
+        // Baltimore set (tools/art/gen_baltimore.py): mixed sizes drawn at their final size, centred on the object's
+        // tile and standing on its bottom edge. A "#1" frame loops like a prop's.
+        const kb = o.scale ?? 1, bm = this.add.image(o.x * TILE + TILE / 2, o.y * TILE + TILE, 'baltimore', art).setOrigin(0.5, 1).setScale(kb).setDepth(o.floor ? 2 : o.y * TILE + TILE - 4);
+        if (!o.floor && !o.npc && !onWall(o)) shadowUnder(o.x * TILE + TILE / 2, o.y * TILE + TILE, Math.min(bm.width, 16) * 0.75 * kb);
+        if (bmore.has(`${art}#1`)) this.propTimers.push(this.time.addEvent({ delay: 420, loop: true, callback: () => bm.active && bm.setFrame(bm.frame.name === art ? `${art}#1` : art) }));
+        this.propSprites.push(bm); this.propById[o.id] = { im: bm, sheet: 'baltimore', art };
         continue;
       }
       if (this.textures.exists('wide') && this.textures.get('wide').has(art)) {
@@ -854,10 +864,11 @@ export class WorldScene extends Phaser.Scene {
     // Landscape pass: street furniture (map.scenery). Drawn like props, never interactive; solid pieces are
     // walls to the sim (build.js). A "#1" frame loops, every `anim` ms (default 420).
     const hasArt = (sheet, art) => this.textures.exists(sheet) && this.textures.get(sheet).has(art);
+    const frameSize = (sheet, art) => { const f = this.textures.get(sheet).get(art); return { w: f.width, h: f.height }; };
     for (const s of map.scenery ?? []) {
-      const pl = sceneryPlacement(s, hasArt, s.scale ?? PK); if (!pl) continue;
+      const pl = sceneryPlacement(s, hasArt, s.scale ?? PK, frameSize); if (!pl) continue;
       const im = this.add.image(pl.x, pl.y, pl.sheet, s.art).setOrigin(...pl.origin).setScale(pl.k).setDepth(s.floor ? 2 : pl.y - 4).setFlipX(!!s.flip);
-      if (!s.floor) shadowUnder(pl.x, pl.y, pl.shadow);
+      if (!s.floor && pl.shadow) shadowUnder(pl.x, pl.y, pl.shadow);
       if (hasArt(pl.sheet, `${s.art}#1`)) this.propTimers.push(this.time.addEvent({ delay: s.anim ?? 420, loop: true, callback: () => im.active && im.setFrame(im.frame.name === s.art ? `${s.art}#1` : s.art) }));
       this.propSprites.push(im);
     }

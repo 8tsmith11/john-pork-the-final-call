@@ -2036,5 +2036,103 @@ test("Manuel's edge: with the same gear and no skills, Manuel is the toughest an
   }
 });
 
+// ---- Baltimore art pass (hub #6): the 'baltimore' sheet and the four district maps that use it ----
+const BMORE_MAPS = ['bmore_rows', 'bmore_refinery', 'bmore_hall', 'bmore_authority'];
+const bmoreAtlas = JSON.parse(fs.readFileSync(new URL('../assets/sprites/baltimore.json', import.meta.url), 'utf8'));
+test('baltimore sheet (hub #6): the set is all there, packed without overlaps, and every piece the maps use exists', () => {
+  const fr = bmoreAtlas.frames;
+  const want = ['bm.crane', 'bm.crane_bogie', 'bm.box_rust', 'bm.box_teal', 'bm.box_mustard', 'bm.box_grey', 'bm.box_ca', 'bm.box20_rust',
+    'bm.boxes_rust_teal', 'bm.boxes_ca', 'bm.bollard', 'bm.bollard_rope', 'bm.flatcar', 'bm.flatcar_box', 'bm.rail_h', 'bm.rail_stop',
+    'bm.row_brick', 'bm.row_form', 'bm.row_brick_screen', 'bm.row_brick_board', 'bm.row_upper', 'bm.row_door', 'bm.row_door_scrubbed',
+    'bm.wall_ref', 'bm.wall_ref_valve', 'bm.smokestack', 'bm.silo', 'bm.quay_e', 'bm.quay_s', 'bm.pier', 'bm.pier_end',
+    'bm.sky_cranes', 'bm.sky_downtown', 'bm.sky_stacks', 'bm.mural', 'bm.sign_switch', 'bm.book_stand', 'bm.ledger_ca',
+    ...[...'SHOAL'].flatMap((ch) => [`bm.sign_${ch}`, `bm.sign_${ch}_off`]), 'bm.sign_S#1'];
+  assert.deepEqual(want.filter((n) => !fr[n]), [], 'missing from the baltimore sheet');
+  const { w: crW, h: crH } = fr['bm.crane'].frame; assert.ok(crW >= 64 && crH >= 64, 'the crane is a big multi-tile piece');
+  for (const n of ['bm.sky_cranes', 'bm.sky_downtown', 'bm.sky_stacks']) assert.ok(fr[n].frame.w >= 6 * fr[n].frame.h, `${n} is low and wide`);
+  const rects = Object.entries(fr).map(([n, f]) => [n, f.frame]);
+  for (const [n, r] of rects) assert.ok(r.x + r.w <= bmoreAtlas.meta.size.w && r.y + r.h <= bmoreAtlas.meta.size.h, `${n} is off the sheet`);
+  for (let i = 0; i < rects.length; i++) for (let j = i + 1; j < rects.length; j++) {
+    const [a, A] = rects[i], [b, B] = rects[j];
+    assert.ok(A.x + A.w <= B.x || B.x + B.w <= A.x || A.y + A.h <= B.y || B.y + B.h <= A.y, `${a} overlaps ${b}`);
+  }
+  const missing = [];
+  for (const id of BMORE_MAPS) {
+    const m = MAPS_FOR_TEST[id];
+    for (const s of m.scenery ?? []) if (s.art.startsWith('bm.') && !fr[s.art]) missing.push(`${id}: scenery ${s.art}`);
+    for (const o of m.objects) if ((o.art ?? '').startsWith('bm.') && !fr[o.art]) missing.push(`${id}: ${o.id} ${o.art}`);
+    assert.ok((m.scenery ?? []).some((s) => s.art.startsWith('bm.')), `${id} uses the new art`);
+  }
+  assert.deepEqual(missing, []);
+});
+
+test('baltimore sheet: no balloon orange anywhere, and signal red only on Continuity\'s own pieces (named _ca)', () => {
+  const src = fs.readFileSync(new URL('../assets/src/baltimore.txt', import.meta.url), 'utf8').split('\n');
+  const letter = {};
+  for (const pair of src.find((l) => l.startsWith('@map')).split(' ').slice(1)) { const [k, v] = pair.split('='); letter[v] = k; }
+  const bad = [];
+  let frame = null;
+  for (const line of src) {
+    if (line.startsWith('@frame')) { frame = line.split(' ')[1]; continue; }
+    if (!frame || line.startsWith('@') || line.startsWith('#')) continue;
+    if (line.includes(letter.balloon0) || line.includes(letter.balloon1)) bad.push(`${frame}: balloon orange`);
+    if (line.includes(letter.signal) && !frame.includes('_ca')) bad.push(`${frame}: signal red`);
+  }
+  assert.deepEqual([...new Set(bad)], []);
+  const built = Object.keys(bmoreAtlas.frames).sort(), authored = src.filter((l) => l.startsWith('@frame')).map((l) => l.split(' ')[1]).sort();
+  assert.deepEqual(built, authored, 'assets/sprites/baltimore.* is stale: run python3 tools/art/build.py baltimore');
+});
+
+test('Baltimore district maps keep every quest object, door, NPC and enemy reachable, with no [scaffold] text left', () => {
+  const where = { 'obj.bmore_rows_board_3_3': ['bmore_rows', 3, 3], 'obj.bmore_rows_board_17_3': ['bmore_rows', 17, 3], 'obj.bmore_mural': ['bmore_rows', 27, 3],
+    'obj.refinery_switch': ['bmore_refinery', 28, 2], 'obj.callers_book': ['bmore_hall', 13, 1], 'obj.authority_ledger': ['bmore_authority', 21, 3],
+    'obj.rows_to_refinery': ['bmore_rows', 10, 0], 'obj.rows_to_hall': ['bmore_rows', 20, 0], 'obj.rows_to_baltimore': ['bmore_rows', 0, 7], 'obj.rows_to_authority': ['bmore_rows', 30, 7],
+    'obj.refinery_out': ['bmore_refinery', 25, 8], 'obj.hall_out': ['bmore_hall', 12, 8], 'obj.authority_out': ['bmore_authority', 0, 6] };
+  for (const [oid, [mid, x, y]] of Object.entries(where)) {
+    const o = MAPS_FOR_TEST[mid].objects.find((q) => q.id === oid);
+    assert.ok(o && o.x === x && o.y === y, `${oid} should still be at ${mid} ${x},${y}`);
+  }
+  assert.ok(MAPS_FOR_TEST.bmore_refinery.enemies.some((e) => e.kind === 'boss.bmore_sign' && e.x === 4 * 16 + 8 && e.y === 2 * 16 + 8), 'the sign boss stays put');
+  const bad = [];
+  for (const id of BMORE_MAPS) {
+    const m = MAPS_FOR_TEST[id], seen = new Set(), q = [];
+    for (const s of m.spawns) { const k = `${Math.floor(s.x / 16)},${Math.floor(s.y / 16)}`; seen.add(k); q.push(k.split(',').map(Number)); }
+    while (q.length) {
+      const [x, y] = q.shift();
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
+        if (seen.has(k) || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
+        seen.add(k); q.push([nx, ny]);
+      }
+    }
+    const near = (x, y) => [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${x + dx},${y + dy}`));
+    for (const o of m.objects) if (!near(o.x, o.y)) bad.push(`${id}: ${o.id} unreachable`);
+    for (const e of m.enemies) if (!seen.has(`${Math.floor(e.x / 16)},${Math.floor(e.y / 16)}`)) bad.push(`${id}: ${e.kind} unreachable`);
+    for (const o of m.objects) for (const t of [o.label, o.text]) if (typeof t === 'string' && t.includes('[scaffold]')) bad.push(`${id}: ${o.id} still says [scaffold]`);
+  }
+  assert.deepEqual(bad, []);
+  assert.equal(MAPS_FOR_TEST.bmore_hall.objects.find((o) => o.id === 'npc.bmore_scribe')?.x, 12, 'the scribe stands by the book');
+});
+
+const { ES_BALTIMORE } = await import('../src/i18n/es-baltimore.js');
+test('i18n: every label and line in the four Baltimore district maps has Spanish (src/i18n/es-baltimore.js)', () => {
+  const missing = [];
+  for (const id of BMORE_MAPS) for (const o of MAPS_FOR_TEST[id].objects) for (const t of [o.label, o.text]) if (t && !(t in ES_BALTIMORE) && !(t in ES_HUD)) missing.push(`${id}: ${t.slice(0, 50)}`);
+  assert.deepEqual(missing, []);
+  const was = i18nMod.getLang(); i18nMod.setLang('es');
+  try { assert.equal(i18nMod.tr('Port ledger'), 'Registro del puerto'); } finally { i18nMod.setLang(was); }
+});
+
+test('sceneryPlacement: Baltimore pieces stand at their drawn size, centred on their footprint; only solid ones cast a shadow', () => {
+  const has = (sheet, art) => sheet === 'baltimore' && art.startsWith('bm.');
+  const size = (sheet, art) => bmoreAtlas.frames[art].frame;
+  const sky = decorMod.sceneryPlacement({ art: 'bm.sky_cranes', x: 21, y: 0, w: 9, floor: true }, has, 1.5, size);
+  assert.deepEqual([sky.sheet, sky.x, sky.y, sky.k, sky.shadow], ['baltimore', 21 * 16 + 72, 16, 1, 0], 'skyline: nine tiles from x, no propScale, no shadow');
+  const box = decorMod.sceneryPlacement({ art: 'bm.box_rust', x: 25, y: 6, solid: true }, has, 1, size);
+  assert.equal(box.x, 25 * 16 + 24, 'a forty-footer defaults to three tiles'); assert.ok(box.shadow > 0, 'solid pieces cast a contact shadow');
+  assert.equal(decorMod.sceneryPlacement({ art: 'bm.row_brick', x: 2, y: 3 }, has, 1, size).shadow, 0, 'house fronts do not');
+  assert.equal(decorMod.sceneryPlacement({ art: 'obj.bench', x: 1, y: 1 }, (s, a) => s === 'props' && a === 'obj.bench', 1.5).sheet, 'props', 'other sheets unchanged');
+});
+
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
