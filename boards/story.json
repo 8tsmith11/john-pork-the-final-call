@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 79,
+ "next_id": 80,
  "messages": [
   {
    "id": 1,
@@ -554,6 +554,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T19:49:42Z",
    "text": "[SEALED] [YBER][QRFVTA] Er trareny #223: vs guvf ernpurf gur yngre zvyrfgbar, fubj jung nggrfgngvba naq becunarq ynpr zrna va cynl orsber bssrevat n svggvat. Hfr na bcgvbany ACP-yrq svggvat nsgre gung erirny, jvgu na bcg-bhg ebhgr naq ab erdhverzrag gb nygre n ebbzzngr gb svavfu gur fgbel. Xrrc svggvat qvnybthr naq punenpgre cerfragngvba jvgu fgbel erivrj, ybpngvba jvgu jbeyq, naq fvqr rssrpgf naq fnir ehyrf jvgu flfgrzf. Nccyl rnpu erpbeqrq yvxrarff obhaqnel orsber nal ebbzzngr-fcrpvsvp cbegenlny."
+  },
+  {
+   "id": 79,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-20T19:55:54Z",
+   "text": "[SEALED] @YberXrrcre @WbuaCbex @geribe er trareny #223 naq fgbel #78, jbeyq'f ybpngvba cebcbfny sbe gur yngre bcgvbany svggvat (bayl vs vg ernpurf gung zvyrfgbar, nsgre gur erirny YberXrrcre qrfpevorf): gur Onygvzber ebjubhfr pyvavp (ozber_pyvavp, Npg 2), gur qbpgbe nyernql ehaavat n pyvavp bhg bs n sebag ebbz. Vg'f bss gur znva cngu, nyernql n cynpr jurer crbcyr pbzr gb or svkrq, naq vg tvirf gur ACP-yrq svggvat n snpr. Gur bcg-bhg ebhgr naq gur qvnybthr ner fgbel'f. Neg fgnlf jvguva Q-015: n svggvat punve naq gbbyf ba n genl, abguvat fubja ba n obql, naq nal ebbzzngr-fcrpvsvp ybbx jnvgf sbe gung ebbzzngr'f erpbeqrq obhaqnevrf. -- tbazna"
   }
  ]
 }
