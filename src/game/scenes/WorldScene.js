@@ -35,6 +35,7 @@ import { BoardGame } from '../ui/BoardGame.js';
 import { Neon } from '../render/neon.js';
 import { skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
+import { PipeTable } from '../pipeTable.js';
 import { LatticeTable } from '../latticeTable.js';
 import { BastionTable } from '../bastionTable.js';
 import { BastionScreen } from '../ui/BastionScreen.js';
@@ -688,6 +689,8 @@ export class WorldScene extends Phaser.Scene {
           if (o && msg.quest === undefined) this._questInteract(o, this._charOf(peer), peer);
           if (o && typeof msg.quest === 'string') this._giveQuestItem(o, msg.quest, this._charOf(peer), peer);
         }
+        if (msg.t === 'pact') this._puzzleAct(peer, msg.id);   // co-op puzzles, host side
+        if (msg.t === 'pipe') { this._pipes().onHostMsg(peer, msg); return; }   // the shared signal panel
         if (msg.t === 'puzzle') { const o = this.map.objects.find((x) => x.id === msg.id), pz = o && puzzleFor(o.id); if (pz) this._usePuzzle(pz, o, this._charOf(peer), peer); }   // puzzle kit, host side
         if (msg.t === 'search') { const o = this.map.objects.find((x) => x.id === msg.id && x.loot); if (o) this._search(o, this._charOf(peer), peer); }
         if (msg.t === 'zip') { const o = this.map.objects.find((x) => x.id === msg.id && x.zip); if (o) this._zip(o, peer); }
@@ -715,6 +718,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'lattice') { this._table().onClientMsg(msg); return; }
         if (msg.t === 'bastion') { this._bastion().onClientMsg(msg); return; }
         if (msg.t === 'lab') { this._lab().onClientMsg(msg); return; }
+        if (msg.t === 'pipe') { this._pipes().onClientMsg(msg); return; }
         if (this.shared?.onMsg(msg) || this.stage?.onClientMsg(msg) || this.retry?.onClientMsg(msg) || this.moods?.onClientMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg)) return;
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
         if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text, msg.questRead, msg.itemIcons);
@@ -1023,6 +1027,7 @@ export class WorldScene extends Phaser.Scene {
     const before = questState(this.save), was = JSON.parse(JSON.stringify(before));
     if (Number.isInteger(msg.act)) this.save.world.act = msg.act;
     Object.assign(this.save.flags, msg.flags ?? {});
+    this._refreshPuzzleProps?.();   // levers, breakers, lamps, busts, the clock: as the host has them
     if (msg.guide) this.save.world.guide = msg.guide;
     if (msg.drops) this.save.world.drops = msg.drops;   // items on the floor (src/game/guitarStands.js)
     if (msg.jobs) this.save.world.jobs = msg.jobs;      // the host's bounty board
@@ -1730,6 +1735,71 @@ export class WorldScene extends Phaser.Scene {
 
   // Hidden mechanic (fun): kick the vending machine. Sometimes it pays. Keep kicking and it talks back.
   // Hard optional: wind the four stuck clocks to the paper clock's time.
+  // The world's hands-on puzzles (switchyard levers, the fuse carrier, breakers, signal lamps, the clocks, Manuel's
+  // busts, the pump). The host runs them for everyone: its own press directly, a guest's through _puzzleAct.
+  // The signal panel, shared by the party (src/game/pipeTable.js). The host checks a guest is at the panel, records
+  // the solve once (flag, toast for everyone); whoever turned the last tile hears the scene that follows.
+  _pipes() {
+    return (this.pipeTable ??= new PipeTable(this, {
+      makeView: (seed, onRotate) => new PipePuzzle(this, seed, () => { this.puzzle = null; }, { onRotate }),
+      near: (peer, id) => { const o = this.map.objects.find((x) => x.id === id), p = this.sim?.players.get(peer); return !!(o && p && !p.downed && Math.hypot(o.x * TILE + 8 - p.x, o.y * TILE + 8 - p.y) <= 48); },
+      solved: (o) => { this._flag(o.solvedFlag, true); this._toast('✓ Signal restored'); if (this.mode === 'host') this.net.broadcast({ t: 'toast', text: '✓ Signal restored' }); },
+    }));
+  }
+  _pipeSolvedHere(id) {
+    const o = this.map.objects.find((x) => x.id === id); this.puzzle = null;
+    if (o?.talk) { const [scene, node] = o.talk.split(':'); this.time.delayedCall(500, () => this.startDialogue(scene, node || null)); }
+  }
+
+  _hostPuzzle(o) {
+    return /^obj\.switch_[abc]$/.test(o?.id ?? '') || o?.id === 'obj.fuse_carrier' || !!o?.breaker || !!o?.siglamp || CLOCKS.includes(o?.id) || BUST_ORDER.includes(o?.id) || o?.id === 'obj.pump';
+  }
+
+  _runPuzzle(near) {
+    if (/^obj\.switch_[abc]$/.test(near.id)) { this._lever(near.id.slice(-1)); return; }
+    if (near.id === 'obj.fuse_carrier') {               // the midway block: fuses from the ASTER super (Trevor #514)
+      const L = getLang() === 'es' ? 'es' : 'en', f = this.save.flags;
+      if (f['act1.fuses.in']) { this._say(FUSE_TEXT.installed[L]); return; }
+      if (Object.values(this.save.party).some((pc) => Inv.count(pc, 'item.wmata_fuses') > 0)) {   // anyone in the party can be carrying them
+        this._flag('act1.fuses.in', true); this._seatFuses(); sfx('kill');
+        this._say(FUSE_TEXT.install[L]); return;
+      }
+      this._flag('act1.fuses.seen', true); this._say(tr(near.text ?? '')); return;
+    }
+    if (near.breaker) { this._breaker(near.breaker); return; }
+    if (near.siglamp) { this._siglamp(near.siglamp); return; }
+    if (CLOCKS.includes(near.id)) { this._windClock(near); return; }
+    if (BUST_ORDER.includes(near.id)) { this._turnBust(near); return; }
+    if (near.id === 'obj.pump') {
+      if (this.save.flags['act1.bay.drained']) { this._say((near.text ?? '') + '\n\nIt\'s still running, the way you left it. Down in the flooded bay, the waterline has dropped.'); return; }
+      this._flag('act1.bay.drained', true); sfx('hit'); this.cameras.main.shake(300, 0.004);
+      this._say((near.text ?? '') + '\n\nYou find the reset and lean on it. The pump coughs, catches, and starts pulling water. Somewhere south, a long gurgle. The flooded bay is draining.'); return;
+    }
+  }
+
+  /** Host: a guest pressed a puzzle object. Checked (same map, standing, within reach), then run here with the
+   *  replies going to that guest and any reward to their roommate. */
+  _puzzleAct(peer, id) {
+    const o = this.map.objects.find((x) => x.id === id), p = this.sim.players.get(peer), who = p?.character;
+    if (!o || !p || p.downed || !this._hostPuzzle(o) || Math.hypot(o.x * TILE + 8 - p.x, o.y * TILE + 8 - p.y) > 42) return false;
+    const out = [];
+    this._say = (t) => { out.push(['say', t]); };
+    this._toast = (t) => { out.push(['toast', t]); };
+    this._grant = (item) => { Inv.add(this.save.party[who], item); this._syncParty(); out.push(['toast', `★ ${ITEMS[item]?.name ?? item}`]); };
+    try { this._runPuzzle(o); } finally { delete this._say; delete this._toast; delete this._grant; }
+    for (const [t, text] of out) this.net?.send(peer, { t, text });
+    this._puzzleNotice(who, o, peer);
+    return true;
+  }
+
+  /** Everyone else sees who did what (spectating), and the props follow the host's flags on every screen. */
+  _puzzleNotice(who, o, actorPeer) {
+    const text = `${String(who).toUpperCase()} · ${o.label}`;
+    if (actorPeer !== this.localId) this._toast(text);
+    if (this.mode === 'host') for (const peer of this.net?.conns?.keys?.() ?? []) if (peer !== actorPeer) this.net.send(peer, { t: 'toast', text });
+    this._refreshPuzzleProps?.();
+  }
+
   _windClock(o) {
     const key = `puz.clock.${o.id}`, n = ((this.save.flags[key] ?? 0) + 1) % CLOCK_TIMES.length;
     this._flag(key, n); sfx('swing');
@@ -2433,10 +2503,8 @@ export class WorldScene extends Phaser.Scene {
       return;
     }
     if (near.puzzle === 'pipes' && !this.save.flags[near.solvedFlag]) {
-      this.puzzle = new PipePuzzle(this, `${this.save.world.seed}:${near.id}`, () => {
-        this.puzzle = null; this._flag(near.solvedFlag, true); this._toast('✓ Signal restored');
-        const [scene, node] = near.talk.split(':'); this.startDialogue(scene, node || null);
-      });
+      // Shared (src/game/pipeTable.js): everyone at the panel sees the same board and can turn tiles; the host decides.
+      this.puzzle = this._pipes().open(near);
       return;
     }
     if (near.npc && this.perf?.asleep(near)) { this._say(`${near.label} is fast asleep.`); return; }
@@ -2468,23 +2536,16 @@ export class WorldScene extends Phaser.Scene {
       if (this.save.flags[near.grantFlag ?? `got.${near.id}`]) { this._say(near.doneText ?? near.text ?? ''); return; }
       this._flag(near.grantFlag ?? `got.${near.id}`, true); this._grant(near.grant); this._say(near.text ?? ''); return;
     }
-    if (/^obj\.switch_[abc]$/.test(near.id)) { this._lever(near.id.slice(-1)); return; }
-    if (near.id === 'obj.fuse_carrier') {               // the midway block: fuses from the ASTER super (Trevor #514)
-      const L = getLang() === 'es' ? 'es' : 'en', f = this.save.flags;
-      if (f['act1.fuses.in']) { this._say(FUSE_TEXT.installed[L]); return; }
-      if (Object.values(this.save.party).some((pc) => Inv.count(pc, 'item.wmata_fuses') > 0)) {   // anyone in the party can be carrying them
-        this._flag('act1.fuses.in', true); this._seatFuses(); sfx('kill');
-        this._say(FUSE_TEXT.install[L]); return;
-      }
-      this._flag('act1.fuses.seen', true); this._say(tr(near.text ?? '')); return;
+    // Co-op puzzles (Trevor: "make sure everyone can participate or at least spectate; no race conditions"): a guest's
+    // press goes to the host, which runs it on its own state, one at a time, and tells the room what changed.
+    if (this._hostPuzzle(near)) {
+      if (this.mode === 'client') this.net.send({ t: 'pact', id: near.id });
+      else { this._runPuzzle(near); this._puzzleNotice(this.character, near, this.localId); }
+      return;
     }
-    if (near.breaker) { this._breaker(near.breaker); return; }
-    if (near.siglamp) { this._siglamp(near.siglamp); return; }
     if (['obj.locker', 'obj.signal_chair', 'obj.departures'].includes(near.id)) { this._say(tr(near.text ?? '') + puzzleClue(near.id, this.save.world.seed, this.save.flags, getLang())); return; }
     if (near.id === 'obj.vending') { this._kickVending(near); return; }
-    if (CLOCKS.includes(near.id)) { this._windClock(near); return; }
     { const pz = puzzleFor(near.id); if (pz) { this._usePuzzle(pz, near); return; } }   // puzzle kit (src/content/puzzles.js)
-    if (BUST_ORDER.includes(near.id)) { this._turnBust(near); return; }
     if (near.id === 'obj.manuel_table') { this._say(near.text + BUST_HINT); return; }
     if (near.id === 'obj.shrimp_tank') { this._say(near.text + '\n\n' + this._shrimpReading()); return; }
     if (near.id === 'obj.old_phone') {   // egg, see docs/SECRETS.md
@@ -2494,11 +2555,6 @@ export class WorldScene extends Phaser.Scene {
     }
     if (near.id === 'obj.yard_map') { this._say(`${YARD_MAP_TEXT}\n\nCurrent: ${LEVERS.map((k) => `${k.toUpperCase()} ${(this.save.flags[`act1.switch.${k}`] ?? 'left').toUpperCase()}`).join(' · ')}${this.save.flags[GATE_FLAG] ? '\nThe east gate is open.' : this.save.flags['act1.switchyard.solved'] ? '\nThe yard agrees. The gate still needs power and signals.' : ''}`); return; }
     if (['obj.work_order', 'obj.sunk_vending', 'obj.ledger'].includes(near.id)) { this._say((near.text ?? '') + clueFor(near.id, yardSolution(this.save.world.seed), !!this.save.flags['act1.bay.drained'])); return; }
-    if (near.id === 'obj.pump') {
-      if (this.save.flags['act1.bay.drained']) { this._say((near.text ?? '') + '\n\nIt\'s still running, the way you left it. Down in the flooded bay, the waterline has dropped.'); return; }
-      this._flag('act1.bay.drained', true); sfx('hit'); this.cameras.main.shake(300, 0.004);
-      this._say((near.text ?? '') + '\n\nYou find the reset and lean on it. The pump coughs, catches, and starts pulling water. Somewhere south, a long gurgle. The flooded bay is draining.'); return;
-    }
     if (near.action === 'tv') { this._say(this._newsLine()); return; }
     if (near.action === 'jobs') { if (this.mode === 'client') this.net.send({ t: 'jobs' }); this._jobBoard(); return; }
     if (near.action === 'shop') { this.gameMenu.show(`shop:${near.shop}`); return; }

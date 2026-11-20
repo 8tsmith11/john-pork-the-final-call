@@ -2084,6 +2084,60 @@ try {
   if (savedPhaserForCraft === undefined) delete globalThis.Phaser;
   else globalThis.Phaser = savedPhaserForCraft;
 }
+
+test('co-op puzzles (Trevor: everyone participates or spectates, no races): the signal panel is one shared board on the host', async () => {
+  const { PipeTable } = await import('../src/game/pipeTable.js');
+  const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js');
+  const panel = { id: 'obj.panel', puzzle: 'pipes', solvedFlag: 'act1.cam.fixed', x: 5, y: 5 };
+  const sent = [], solved = [];
+  const host = { mode: 'host', localId: 'host', save: { world: { seed: 'pipes-coop' }, flags: {} }, map: { objects: [panel] },
+    net: { broadcast: (m) => sent.push(['all', m]), send: (to, m) => sent.push([to, m]) }, _pipeSolvedHere: (id) => solved.push(['host', id]) };
+  const views = [];
+  const mk = () => { const v = { rots: null, closed: false, setRots(r) { this.rots = [...r]; }, finish() { this.closed = true; } }; views.push(v); return v; };
+  const t = new PipeTable(host, { makeView: mk, near: (peer) => peer !== 'far', solved: (o) => { host.save.flags[o.solvedFlag] = (host.save.flags[o.solvedFlag] ?? 0) + 1; } });
+  const hv = t.open(panel);
+  assert.deepEqual(hv.rots, new PipePuzzle(null, 'pipes-coop:obj.panel').rots(), 'the host sees the seeded board');
+  t.onHostMsg('g1', { t: 'pipe', op: 'open', id: panel.id });
+  assert.deepEqual(sent.at(-1), ['g1', { t: 'pipe', op: 'state', id: panel.id, rots: hv.rots }], 'a guest who walks up gets the live board');
+  // two guests click the same tile in the same moment: both turns land, in order, nobody's lost
+  const model = new PipePuzzle(null, 'pipes-coop:obj.panel'), k = model.grid.flat().findIndex((c) => !c.locked), i = k % model.cols, j = Math.floor(k / model.cols);
+  const r0 = hv.rots[k];
+  t.onHostMsg('g1', { t: 'pipe', op: 'rot', id: panel.id, i, j }); t.onHostMsg('g2', { t: 'pipe', op: 'rot', id: panel.id, i, j });
+  assert.equal(hv.rots[k], (r0 + 2) % 4, 'two turns, applied one after the other');
+  assert.ok(sent.filter(([to, m]) => to === 'all' && m.op === 'state').length >= 2, 'and everyone watching sees each one');
+  assert.equal(t.apply('far', panel.id, i, j), false, 'someone across the map can watch but not turn');
+  const lk = model.grid.flat().findIndex((c) => c.locked);
+  if (lk >= 0) assert.equal(t.apply('g1', panel.id, lk % model.cols, Math.floor(lk / model.cols)), false, 'rotted tiles stay put');
+  // solve it from the solution, with two people racing on the last tile: one solve, recorded once
+  const sol = new PipePuzzle(null, 'pipes-coop:obj.panel');
+  const want = sol.grid.flat().map((c) => c.solution ?? c.r);
+  let last = null;
+  sol.grid.flat().forEach((c, n) => { if (c.solution == null || c.locked) return; while (t._rots(panel.id)[n] !== want[n]) { last = [n % sol.cols, Math.floor(n / sol.cols)]; if (!t.apply('g1', panel.id, ...last)) break; } });
+  assert.equal(host.save.flags['act1.cam.fixed'], 1, 'turning every tile to its answer solves it');
+  {
+    t.apply('g2', panel.id, ...last);
+    assert.equal(host.save.flags['act1.cam.fixed'], 1, 'solved once, even with someone still clicking');
+    assert.ok(sent.some(([, m]) => m.op === 'solved'), 'everyone is told'); assert.ok(hv.closed, 'and every open board closes');
+  }
+});
+
+test('co-op puzzles: a guest pressing a lever, a clock or a bust runs on the host, replies to them, and shows the room', () => {
+  const save = newSave({ seed: 'pact', rolls: {}, gameVersion: 't' }), sent = [], toasts = [];
+  const lever = { id: 'obj.switch_a', label: 'Lever A', x: 3, y: 3 };
+  const sim = { players: new Map([['host', { id: 'host', character: 'trevor', x: 3 * 16 + 8, y: 4 * 16 + 8 }], ['g1', { id: 'g1', character: 'manuel', x: 3 * 16 + 8, y: 4 * 16 + 8 }], ['g2', { id: 'g2', character: 'michael', x: 400, y: 400 }]]) };
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', localId: 'host', character: 'trevor', save, sim, map: { id: 'switchyard', objects: [lever] },
+    net: { conns: new Map([['g1', 1], ['g2', 1]]), send: (to, m) => sent.push([to, m]), broadcast() {} }, cameras: { main: { shake() {} } }, _drawLevers() {}, _refreshPuzzleProps() {}, _checkGate: () => false });
+  const realToast = CraftWorldScene.prototype._toast; CraftWorldScene.prototype._toast = function (t) { toasts.push(t); };
+  try {
+    assert.ok(sc._puzzleAct('g1', 'obj.switch_a'), 'a guest at the lever');
+    assert.equal(save.flags['act1.switch.a'], 'right', 'the host pulled it, on the host\'s state');
+    assert.ok(sent.some(([to, m]) => to === 'g1' && m.t === 'toast' && /Lever A/.test(m.text)), 'the guest who pulled it hears it');
+    assert.ok(sent.some(([to, m]) => to === 'g2' && m.t === 'toast' && /MANUEL · Lever A/.test(m.text)) && toasts.some((t) => /MANUEL · Lever A/.test(t)), 'everyone else sees who did what');
+    sc._puzzleAct('g1', 'obj.switch_a'); assert.equal(save.flags['act1.switch.a'], 'left', 'presses land one after another, never on stale state');
+    assert.equal(sc._puzzleAct('g2', 'obj.switch_a'), false, 'out of reach: refused');
+    assert.ok(!Object.prototype.hasOwnProperty.call(sc, '_say') && !Object.prototype.hasOwnProperty.call(sc, '_grant'), 'the host\'s own say and grant are back afterwards');
+  } finally { CraftWorldScene.prototype._toast = realToast; }
+});
 test('a guest interacting with the ASTER stairs waits for players who walk up later', () => {
   const map = MAPS_FOR_TEST.aster_hall;
   const stairs = map.objects.find((obj) => obj.action === 'exit' && obj.id.includes('stairs'));
