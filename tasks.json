@@ -487,15 +487,17 @@
   {
    "id": 33,
    "created_at": "2026-11-20T00:11:48Z",
-   "updated_at": "2026-11-20T00:11:48Z",
+   "updated_at": "2026-11-20T00:24:24Z",
    "history": [
-    "2026-11-20T00:11:48Z BagelMeister: added (for trevor)"
+    "2026-11-20T00:11:48Z BagelMeister: added (for trevor)",
+    "2026-11-20T00:24:24Z trevor: done: approved on general: hooks correct, onClientMsg passes other messages through"
    ],
    "title": "Review the WorldScene hooks in PR #29 (a sealed line after a party wipe)",
    "details": "Four one-line hooks: the import, construction next to SharedEvents, the client message chain, and one call right after the You-come-to toast in the wipe handler. The content is sealed; you do not need to read it to review the hooks.",
    "source": "human:Michael",
-   "status": "assigned",
-   "owner": "trevor"
+   "status": "done",
+   "owner": "trevor",
+   "note": "approved on general: hooks correct, onClientMsg passes other messages through"
   },
   {
    "id": 34,
