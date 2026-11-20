@@ -766,6 +766,23 @@ test('cordon (task #36/#38): trooper lines before and after the Call have Spanis
   assert.ok(PLAZA_CORDON.closing.length >= 10);
 });
 
+test('cordon (task #36): the Code-rot-taken beyond each checkpoint stay out of reach and in their pens', () => {
+  if (!cordonMod) return;
+  const m = MAPS_FOR_TEST.metro_plaza, held = cordonMod.PLAZA_CORDON.held;
+  assert.ok(held.length >= 6 && m.enemies.filter((e) => e.pen).length === held.length, 'the held rot-taken are on the map');
+  const sp = m.spawns[0], start = [Math.floor(sp.x / 16), Math.floor(sp.y / 16)], seen = new Set([start.join(',')]), q = [start];
+  while (q.length) { const [x, y] = q.shift(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || m.solid(nx, ny)) continue; seen.add(k); q.push([nx, ny]); } }
+  for (const [, tx, ty, { pen }] of held) {
+    for (let y = pen[1]; y < pen[1] + pen[3]; y++) for (let x = pen[0]; x < pen[0] + pen[2]; x++) assert.ok(!seen.has(x + ',' + y), `pen tile ${x},${y} is reachable on foot`);
+    assert.ok(tx >= pen[0] && tx < pen[0] + pen[2] && ty >= pen[1] && ty < pen[1] + pen[3], `rot-taken at ${tx},${ty} starts inside its pen`);
+  }
+  // Walk up to the north barrier and wait: they push at the line but never leave.
+  const sim = new Sim(m, { seed: 'pens' }); sim.addPlayer('a', 'trevor');
+  const p = sim.players.get('a'); p.x = 60 * 16 + 8; p.y = 6 * 16 + 8;
+  for (let i = 0; i < 600; i++) sim.step(1 / 60, new Map([['a', { mx: 0, my: 0, aim: 0 }]]));
+  for (const e of sim.enemies.values()) if (e.pen) { const [tx, ty, tw, th] = e.pen; assert.ok(e.x >= tx * 16 && e.x <= (tx + tw) * 16 && e.y >= ty * 16 && e.y <= (ty + th) * 16, `${e.kind} left its pen`); }
+});
+
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
 test('pipe puzzle: every seed is solvable and starts unsolved', () => {
   if (!PipePuzzle) return;

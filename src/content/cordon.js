@@ -16,14 +16,27 @@ const S = (x, y, n) => ({ id: `cordon.sign_${n}`, cordon: 'sign', selfDrawn: tru
 // College Park (metro_plaza, 84 x 52). Roads out: Route 1 north and south, the cross street west.
 // The Paint Branch trail east stays open: the lake is inside the cordon.
 export const PLAZA_CORDON = {
-  barriers: [[58, 1, 6, 1], [58, 50, 6, 1], [1, 31, 1, 4]],   // tiles that become solid barrier ('=')
+  // Tiles that become solid barrier ('='). The checkpoints sit a few rows inside the map edge (task #36, gonman's
+  // half): past each barrier a short strip of road runs on to the edge, walled at the sides, and a few Code-rot-taken
+  // are penned there, pushing at the line (`held` below).
+  barriers: [
+    [55, 4, 11, 1], [55, 1, 1, 2], [66, 1, 1, 2],      // north: across Route 1, and the pen's side walls
+    [55, 47, 12, 1], [55, 48, 1, 3], [66, 48, 1, 3],   // south
+    [4, 30, 1, 6], [1, 30, 3, 1], [1, 35, 3, 1],       // west: across the cross street
+  ],
+  // The Code-rot-taken held beyond each checkpoint (map enemies: [kind, tx, ty, options]); the pen keeps them in.
+  held: [
+    ['enemy.rot_taken', 58, 2, { pen: [56, 1, 10, 3] }], ['enemy.rot_taken', 61, 1, { pen: [56, 1, 10, 3] }], ['enemy.rot_taken', 63, 3, { pen: [56, 1, 10, 3] }],
+    ['enemy.rot_taken', 59, 49, { pen: [56, 48, 10, 3] }], ['enemy.rot_taken', 62, 50, { pen: [56, 48, 10, 3] }],
+    ['enemy.rot_taken', 2, 32, { pen: [1, 31, 3, 4] }], ['enemy.rot_taken', 3, 34, { pen: [1, 31, 3, 4] }],
+  ],
   objects: [
     // North checkpoint (Route 1)
-    T(57, 2, 'down', 1), T(64, 2, 'down', 2), B(54, 2, 1), L(55, 1, 1), L(66, 1, 2), S(52, 1, 1),
+    T(58, 5, 'down', 1), T(63, 5, 'down', 2), B(55, 5, 1), L(55, 1, 1), L(66, 1, 2), S(52, 1, 1),
     // South checkpoint (Route 1 toward the wall)
-    T(57, 49, 'up', 3), T(64, 49, 'up', 4), B(67, 49, 2), L(55, 50, 3), L(66, 50, 4), S(53, 50, 2),
+    T(58, 46, 'up', 3), T(63, 46, 'up', 4), B(67, 46, 2), L(55, 50, 3), L(66, 50, 4), S(53, 50, 2),
     // West checkpoint (the cross street)
-    T(2, 30, 'right', 5), T(2, 35, 'right', 6), L(1, 29, 5), L(1, 36, 6), S(3, 27, 3),
+    T(5, 30, 'right', 5), T(5, 35, 'right', 6), L(1, 29, 5), L(1, 36, 6), S(3, 27, 3),
     // Along the fence
     L(20, 1, 7), L(40, 1, 8), S(30, 1, 4), L(82, 12, 9), T(81, 20, 'left', 7), S(82, 30, 5),
     L(20, 50, 10), L(45, 50, 11), T(28, 49, 'up', 8), S(36, 50, 6), L(1, 12, 12), T(2, 18, 'right', 9),
@@ -31,7 +44,7 @@ export const PLAZA_CORDON = {
   openings: [[83, 40, 1, 1]],   // edge tiles that don't trigger the turn-back (the trail to the lake)
   // After the Call the cordon closes (task #38): more troopers on the posts and along the fence, and the
   // floodlights go red. Drawn only in that phase; not map objects (nothing to examine, nothing to reach).
-  closing: [[59, 3, 'down'], [62, 3, 'down'], [59, 48, 'up'], [62, 48, 'up'], [3, 32, 'right'], [3, 33, 'right'],
+  closing: [[59, 5, 'down'], [62, 5, 'down'], [59, 46, 'up'], [62, 46, 'up'], [5, 32, 'right'], [5, 33, 'right'],
     [12, 2, 'down'], [48, 2, 'down'], [75, 2, 'down'], [81, 8, 'left'], [81, 33, 'left'], [40, 49, 'up'], [12, 49, 'up'], [2, 8, 'right'], [2, 24, 'right']],
 };
 
