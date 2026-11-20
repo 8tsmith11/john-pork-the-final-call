@@ -33,12 +33,12 @@ export const beltway = fromGrid({
     R: road('route1_north', 'obj.bw_to_r1n', 'obj.r1n_to_beltway', 'East, back to Route 1', 'Back toward College Park.', ','),
     E: road('enclave', 'obj.bw_to_enclave', 'obj.enclave_out', 'The Enclave gate', 'An attestation gate, and the wall behind it.', 's'),
     '?': { prop: 'obj.billboard', id: 'obj.bw_sign', label: 'Beltway sign',
-      text: 'A gantry sign over the inner lanes, still lit: INNER LOOP · ATTESTED TRAFFIC ONLY. Lower down, on the post, somebody has added in marker: OUTER LOOP · THE REST OF US, with an arrow pointing at the potholes.' },
+      text: 'A gantry sign over the inner lanes, still lit: INNER LOOP · ATTESTED TRAFFIC ONLY. Lower down, on the post, somebody has added in marker: OUTER LOOP · THE REST OF US, with an arrow pointing down at the lanes that have no paint left.' },
     N: { npc: 'npc.bw_driver', art: 'npc.rotter_3', label: 'A trucker on the shoulder',
       text: '"Twenty years on the loop." He works round the truck, knocking each tire with an iron and listening to it. "The inner lanes won\'t have me and the exits are shut, so I go round. Anything I deliver, I hand over the rail."' },
     // On the verge by the guardrail, at the west end, well clear of the road's one foe.
     K: { prop: 'obj.toolbox', id: 'obj.bw_gang_box', label: 'Gang box by the rail', loot: 'tools',
-      text: 'A highway crew\'s gang box, chained to a guardrail post, BELTWAY MAINT. stenciled on the lid. The chain has rusted through at one link. Taped inside the lid, the last work order: FILL POTHOLES, OUTER LOOP, dated 2091 and never signed off.' },
+      text: 'A gang box chained to a guardrail post, BELTWAY MAINT. stenciled on the lid. The chain has rusted through at one link. Taped inside the lid, the last work order: REPLACE REFLECTORS, MILE 31, signed off as done. The box was due back at the depot the week the exits shut.' },
     '@': { spawn: true },
   },
 }).enemy('enemy.captcha', 34, 7).build();
@@ -96,14 +96,14 @@ export const gaithersburg = fromGrid({
   ].map((r) => r.padEnd(30, 'T').slice(0, 30)),
   legend: {
     '?': { prop: 'obj.wall_display', id: 'obj.gt_master_clock', label: 'The master clock',
-      text: 'The master clock\'s repeater at the head of the vault stairs, so nobody has to go down to read it: red digits behind glass in a brass frame. The engraved plate under it says only OFFICIAL TIME.' },
+      text: 'Red digits behind glass in a brass frame, set into the wall at the head of the vault stairs where the whole campus can see them. The engraved plate under it says only OFFICIAL TIME.' },
     $: { prop: 'obj.key_jar', id: 'obj.gt_cradle', label: 'Reference weights',
       text: 'The weights room: brass reference weights under glass bells, one to a cradle, from a kilogram down to a gram. One cradle in the front row is empty. Its label is still there.' },
     N: { npc: 'npc.gt_physicist', art: 'npc.rotter_2', label: 'A physicist',
       text: '"What time do you have?" She turns your wrist over and reads your watch herself, then her own, then the one on her other wrist. She writes all three down in a notebook that is nothing but columns.' },
     // In the east building, by the door to the measurement labs, away from the weights room and its guardian.
     J: { prop: 'obj.bin', id: 'obj.gt_reject_bin', label: 'Reject bin', loot: 'trash',
-      text: 'A steel bin by the door to the measurement labs, OUT OF TOLERANCE stenciled on the side. Everything in it failed calibration by less than a hair, which is enough here. Nobody minds what you take.' },
+      text: 'A steel bin by the door to the measurement labs, OUT OF TOLERANCE stenciled on the side. Everything in it failed calibration by less than a hair, and it all goes out with the scrap on Mondays.' },
     E: { enemy: 'enemy.moth' },
     '@': { spawn: true },
     S: back('gaithersburg', 'South, back to the Beltway', 'g'),
@@ -134,7 +134,7 @@ export const frederick = fromGrid({
     // The square's three fronts: the corner grocery, the middle door with the guest book, the watchmaker's.
     F: { prop: 'obj.flowerpot', id: 'obj.fr_grocery', label: 'The corner grocery', grant: 'item.flowers',
       text: 'A corner grocery with the blind pulled half down for the afternoon. On the step, a bucket of tulips in cellophane, a little wilted, and a card: GOING OVER. TAKE SOME. You take a bunch.',
-      doneText: 'The bucket on the step, the card, and an inch of water.' },
+      doneText: 'The bucket on the step, with an inch of water left in it.' },
     R: { prop: 'obj.window_6f', id: 'obj.fr_watchmaker', label: 'The watchmaker\'s',
       text: 'A watchmaker\'s window, a row of watches laid out on green velvet, every one stopped at a different time. A card propped among them in careful capitals: WE REPAIR. WE DO NOT SET.' },
     $: { prop: 'obj.flight_log', id: 'obj.fr_guestbook', label: 'A guest book',
@@ -174,12 +174,12 @@ export const enclave = fromGrid({
       text: 'A metro pylon on the north walk: the station name in white on bronze, an arrow pointing across the lawn to the escalators, and a speaker grille that carries the announcements up from the platform, one after another, on the minute.' },
     // The archive's east wing, where the addresses are kept (the reading room and the originals are through the marble steps).
     $: { prop: 'obj.directory', id: 'obj.en_archive', label: 'The national archive',
-      text: 'The national archive\'s east wing, where the Director\'s addresses are kept. Along its wall runs a row of glass cases, one printed copy in each, under the date it was read. The cases are dusted daily. Nobody stops to read them.' },
+      text: 'The national archive\'s east wing, where the Director\'s addresses are kept. Along its wall runs a row of glass cases, one printed copy in each, under the date it was read. The cases are dusted daily, and the visitors walk straight past them.' },
     N: { npc: 'npc.en_cleaner', art: 'npc.rotter_1', label: 'A cleaner',
-      text: '"Path, please." A cleaner in a grown body, a little too tall for his overalls, polishes a bollard that was clean already. "Not the grass. Nobody says why. I think it\'s so they can see who did."' },
+      text: '"Path, please." A cleaner in a grown body, a little too tall for his overalls, polishes a bollard that was clean already. "Not the grass. They never say why. I think it\'s so they can see who did."' },
     // On the north walk, halfway between where the two embassies' staff stand.
     G: { prop: 'obj.bench', id: 'obj.en_gift_box', label: 'A gift box on a bench', grant: 'item.chocolates',
-      text: 'A bench on the north walk, halfway between the two embassies. On it, a heart-shaped box of chocolates in its ribbon, stamped RETURNED WITH THANKS by one embassy and again, underneath, by the other. Nobody will be seen picking it up. You pick it up.',
+      text: 'A bench on the north walk, halfway between the two embassies. On it, a heart-shaped box of chocolates in its ribbon, stamped RETURNED WITH THANKS by one embassy and again, underneath, by the other. Neither embassy will be seen picking it up. You pick it up.',
       doneText: 'The bench, and a square of clean wood where the box sat.' },
     E: { enemy: 'enemy.captcha' },
     '@': { spawn: true },

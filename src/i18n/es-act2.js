@@ -2,7 +2,7 @@
 // refuge, the Meade and Annapolis (src/content/maps/act2_regions.js; Baltimore has its own pass), every sub-area in
 // src/content/maps/act2_more.js, and the co-op counter's shop (SHOPS.coop in src/content/items.js). Keyed by the
 // exact English, like the other tables; tests/run.js checks coverage. Neutral Latin American Spanish, tú for the
-// player; officials keep it impersonal. The uppercase labels are the speaker line over a side-quest pitch or a later
+// player; troopers and officials use usted. Signs use tú. The uppercase labels are the speaker line over a side-quest pitch or a later
 // line (WorldScene prints label.toUpperCase()).
 export const ES_ACT2 = {
   // route1_north: the old road out of the cordon
@@ -33,12 +33,12 @@ export const ES_ACT2 = {
     'Una parada de autobús sin un solo vidrio. El horario sigue atornillado al poste, y el último autobús al norte que figura es de una noche de 2071. Debajo del banco, una caja de cartón que dice CAMINANTES, y debajo, más chico: TOMA LO QUE NECESITES.',
   'A walker on the shoulder': 'Un caminante al costado del camino', 'A WALKER ON THE SHOULDER': 'UN CAMINANTE AL COSTADO DEL CAMINO',
   '"Two pairs of socks." He sits on the guardrail with one boot off, working at his heel. "Nobody tells you that about leaving. Two pairs, and you swap the inside pair at Greenbelt."':
-    '"Dos pares de medias." Está sentado en el guardarraíl con una bota quitada, frotándose el talón. "Nadie te dice eso cuando te vas. Dos pares, y el de adentro lo cambias en Greenbelt."',
+    '"Dos pares de medias." Está sentado en el guardarraíl sin una de las botas, frotándose el talón. "Nadie te dice eso cuando te vas. Dos pares, y el de adentro lo cambias en Greenbelt."',
 
   // greenbelt: curved streets and co-op shopfronts
   'The tool library': 'La biblioteca de herramientas',
-  'TOOL LIBRARY on the glass, and under it the rules: BORROW FOR A WEEK. SIGN THE CLIPBOARD. On the returns shelf inside the door, a pair of work gloves with a tag on one thumb: OVERDUE SINCE 2088, FINE WAIVED BY VOTE. Nobody is coming back for them. You take them.':
-    'BIBLIOTECA DE HERRAMIENTAS en el vidrio, y debajo las reglas: PRÉSTAMO POR UNA SEMANA. FIRMA LA PLANILLA. En el estante de devoluciones, junto a la puerta, un par de guantes de trabajo con una etiqueta en un pulgar: VENCIDOS DESDE 2088, MULTA PERDONADA POR VOTACIÓN. Nadie va a volver por ellos. Te los llevas.',
+  'TOOL LIBRARY on the glass, and under it the rules: BORROW FOR A WEEK. SIGN THE CLIPBOARD. On the returns shelf inside the door, a pair of work gloves with a tag on one thumb: OVERDUE SINCE 2088, FINE WAIVED BY VOTE. You sign the clipboard and take them.':
+    'BIBLIOTECA DE HERRAMIENTAS en el vidrio, y debajo las reglas: PRÉSTAMO POR UNA SEMANA. FIRMA LA PLANILLA. En el estante de devoluciones, junto a la puerta, un par de guantes de trabajo con una etiqueta en un pulgar: VENCIDOS DESDE 2088, MULTA PERDONADA POR VOTACIÓN. Firmas la planilla y te los llevas.',
   'The returns shelf, empty. On the clipboard, the line for the gloves has a pencil tick beside it now.':
     'El estante de devoluciones, vacío. En la planilla, la línea de los guantes ahora tiene una marca a lápiz al lado.',
   'The barbershop': 'La barbería',
@@ -67,23 +67,23 @@ export const ES_ACT2 = {
 
   // gb_dishes: the dish control room
   'Telemetry tapes': 'Cintas de telemetría',
-  'Grey cans of telemetry tape on steel shelves up to the ceiling, every can labeled by hand. A strip of tape along the shelf edge says BEFORE 2030, and nobody has moved it.':
-    'Latas grises de cinta de telemetría en estantes de acero hasta el techo, cada lata rotulada a mano. Una tira de cinta en el borde del estante dice ANTES DE 2030, y nadie la movió.',
+  'Grey cans of telemetry tape on steel shelves up to the ceiling, every can labeled by hand. A strip of masking tape along the shelf edge says BEFORE 2030. It has dried out and curled up at both ends.':
+    'Latas grises de cinta de telemetría en estantes de acero hasta el techo, cada lata rotulada a mano. Una tira de cinta de papel en el borde del estante dice ANTES DE 2030. Se secó y se le levantaron las dos puntas.',
   'A technician': 'Un técnico', 'A TECHNICIAN': 'UN TÉCNICO',
-  '"Relief\'s late." He checks the clock over the consoles against his wristwatch, then writes the time in the log. "Twelve years late. I write it up every shift. Somebody up the line reads them."':
-    '"El relevo viene tarde." Compara el reloj de arriba de las consolas con su reloj de pulsera y anota la hora en el registro. "Doce años tarde. Lo dejo asentado cada turno. Alguien más arriba lo lee."',
+  '"Relief\'s late." He checks the clock over the consoles against his wristwatch, then writes the time in the log. "Years late. I write it up every shift. Somebody up the line reads them."':
+    '"El relevo viene tarde." Compara el reloj de arriba de las consolas con su reloj de pulsera y anota la hora en el registro. "Años tarde. Lo dejo asentado cada turno. Alguien más arriba lo lee."',
   'Shift log': 'Registro de turnos',
-  'The station\'s shift log, a ledger chained to a stand: date, dish, where it points, what came in, initials. For twelve years, every line has the same initials.':
-    'El registro de turnos de la estación, un libro encadenado a un atril: fecha, antena, hacia dónde apunta, qué entró, iniciales. Hace doce años que cada línea tiene las mismas iniciales.',
+  'The station\'s shift log, a ledger chained to a stand: date, dish, where it points, what came in, initials. For years now, every line has the same initials.':
+    'El registro de turnos de la estación, un libro encadenado a un atril: fecha, antena, hacia dónde apunta, qué entró, iniciales. Hace años que cada línea tiene las mismas iniciales.',
   'An old page near the front. Five sets of initials to a shift, and a running argument in the margin about who keeps finishing the coffee.':
     'Una página vieja, cerca del principio. Cinco juegos de iniciales por turno, y una discusión en el margen sobre quién se termina siempre el café.',
-  '2086. Dish 3: slewing, not commanded. The line stops halfway across the column. The next entry is four days later, in the same hand, smaller: Relief did not arrive. Continued watch.':
-    '2086. Antena 3: virando, sin orden. La línea se corta a mitad de columna. La entrada siguiente es de cuatro días después, con la misma letra, más chica: El relevo no llegó. Sigo de guardia.',
+  'Further in, the page where the five sets of initials drop to one, with no reason given. At the foot of it, in the same hand: Relief did not arrive. Continued watch.':
+    'Más adelante, la página donde los cinco juegos de iniciales pasan a ser uno, sin ninguna explicación. Al pie, con la misma letra: El relevo no llegó. Sigo de guardia.',
   'Tonight. Dish 3: turning, not commanded. Signal: yes. Under SOURCE he has written a question mark and gone over it until the pencil went through the page.':
     'Esta noche. Antena 3: girando, sin orden. Señal: sí. Bajo FUENTE escribió un signo de pregunta y lo repasó hasta que el lápiz atravesó la hoja.',
   'Clean room window': 'Ventana de la sala limpia',
-  'A window of wired glass into the clean room: white walls, a steel bench, and a floor nobody has swept in years. In the dust there is one set of footprints, from a narrow shoe.':
-    'Una ventana de vidrio armado hacia la sala limpia: paredes blancas, un banco de acero y un piso que nadie barre hace años. En el polvo hay un solo par de huellas, de un zapato angosto.',
+  'A window of wired glass into the clean room. The floor hasn\'t been swept in years, and there is one set of footprints in the dust.':
+    'Una ventana de vidrio armado hacia la sala limpia. Hace años que no barren el piso, y en el polvo hay un solo par de huellas.',
   'Back down the hill': 'De vuelta colina abajo',
   'Back outside.': 'De vuelta afuera.',
 
@@ -93,13 +93,13 @@ export const ES_ACT2 = {
     'Los libros de actas de la cooperativa, un siglo entero, un tomo encuadernado por año a lo largo de toda la pared del fondo. El tomo de 2071 es el doble de grueso que sus vecinos, y el de 2072 es una sola página.',
   'The co-op counter': 'El mostrador de la cooperativa',
   'Sample tray': 'Bandeja de muestras',
-  'A card table by the register with a hand-lettered card: FREE SAMPLE, ONE PER VISIT. Under it, smaller: CARRIED 4-3. One bag of Old Bay crab chips is left. You take it before anybody can call a vote.':
-    'Una mesa plegable junto a la caja, con un cartel escrito a mano: MUESTRA GRATIS, UNA POR VISITA. Debajo, más chico: APROBADO 4-3. Queda una bolsa de papitas de cangrejo Old Bay. Te la llevas antes de que alguien pida una votación.',
+  'A card table by the register with a hand-lettered card: FREE SAMPLE, ONE PER VISIT. Under it, smaller: CARRIED 4-3. One bag of Old Bay crab chips is left. You take it.':
+    'Una mesa plegable junto a la caja, con un cartel escrito a mano: MUESTRA GRATIS, UNA POR VISITA. Debajo, más chico: APROBADO 4-3. Queda una bolsa de papitas de cangrejo Old Bay. Te la llevas.',
   'The card table, bare. A second card has gone up beside the first: SAMPLES SUSPENDED PENDING REVIEW.':
     'La mesa plegable, vacía. Al lado del primer cartel apareció otro: MUESTRAS SUSPENDIDAS HASTA NUEVA REVISIÓN.',
   'A clerk': 'Una empleada', 'A CLERK': 'UNA EMPLEADA',
-  '"Eggs are thirty cents." She taps the price card, typed and gone yellow at the edges. "Same as the day they voted on it, in 2071. Nobody has moved to change it, so they\'re thirty cents."':
-    '"Los huevos están a treinta centavos." Da unos golpecitos en la tarjeta de precios, escrita a máquina y amarillenta en los bordes. "Igual que el día que lo votaron, en 2071. Nadie propuso cambiarlo, así que treinta centavos."',
+  '"Eggs are thirty cents." She taps the price card, typed and gone yellow at the edges. "Same as the day they voted on it, in 2071. There\'s been no motion since, so they\'re thirty cents."':
+    '"Los huevos están a treinta centavos." Da unos golpecitos en la tarjeta de precios, escrita a máquina y amarillenta en los bordes. "Igual que el día que lo votaron, en 2071. Desde entonces no hubo ninguna moción, así que treinta centavos."',
   'Back out to the street': 'De vuelta a la calle',
   'GREENBELT CO-OP': 'COOPERATIVA DE GREENBELT',
   'Prices set by vote in 2071. The next vote is pending.': 'Precios votados en 2071. La próxima votación está pendiente.',
@@ -117,7 +117,7 @@ export const ES_ACT2 = {
     'Registros de cría en el estante de la oficina de la veterinaria, un tomo encuadernado en tela por año, con los años en tinta blanca en los lomos. Adentro, cada línea es una fecha y un número de poste de la cerca.',
   'The sealed barn': 'El granero sellado',
   'A notice on two legs: BIOSECURE. NO ENTRY WITHOUT ESCORT. Past it, down the track in the rain, a barn with no windows and an airlock where the door should be. Under the rain on its roof, a pump runs in and out, slow, like breathing.':
-    'Un aviso sobre dos patas: BIOSEGURIDAD. PROHIBIDO EL PASO SIN ESCOLTA. Más allá, camino abajo bajo la lluvia, un granero sin ventanas y con una esclusa donde debería estar la puerta. Bajo la lluvia sobre el techo, una bomba entra y sale, lenta, como una respiración.',
+    'Un aviso sobre dos patas: BIOSEGURIDAD. PROHIBIDO EL PASO SIN ESCOLTA. Más allá, camino abajo bajo la lluvia, un granero sin ventanas y con una esclusa donde debería estar la puerta. Bajo la lluvia sobre el techo, una bomba aspira y expulsa, lenta, como una respiración.',
   'Back to Route 1': 'De vuelta a la Ruta 1',
   'A barn the map doesn\'t show': 'Un granero que el mapa no muestra',
   'A barn that isn\'t on any map. It has an airlock.': 'Un granero que no figura en ningún mapa. Tiene una esclusa.',
@@ -136,7 +136,7 @@ export const ES_ACT2 = {
   // refuge: no signal, timber and lamps
   'A schoolteacher with a slate': 'Una maestra con una pizarra', 'A SCHOOLTEACHER WITH A SLATE': 'UNA MAESTRA CON UNA PIZARRA',
   '"Your phones go quiet past the fence." She wipes her slate clean with the heel of her hand. "The children think that\'s funny. Try not to check yours in front of them."':
-    '"Pasando la cerca, los teléfonos se quedan callados." Borra la pizarra con el canto de la mano. "A los chicos les da risa. Traten de no mirar los suyos delante de ellos."',
+    '"Pasando la cerca, los teléfonos se quedan callados." Borra la pizarra con la base de la mano. "A los chicos les da risa. Traten de no mirar los suyos delante de ellos."',
   'A box by the ranger station door': 'Una caja junto a la puerta de la estación de guardabosques',
   'A box inside the old ranger station door with WALKING STICKS painted on it, full of staves cut from the woods. Among them is a bat of ash wood, sanded smooth at the grip, with a cedar tag on twine: FOR THE ROAD BACK. You take it.':
     'Una caja del lado de adentro de la puerta de la vieja estación de guardabosques, con BASTONES pintado encima, llena de varas cortadas en el bosque. Entre ellas hay un bate de fresno, lijado liso en el mango, con una etiqueta de cedro atada con hilo: PARA EL CAMINO DE VUELTA. Te lo llevas.',
@@ -170,14 +170,14 @@ export const ES_ACT2 = {
 
   // meade: the perimeter
   'Cafeteria menu (posted outside)': 'Menú de la cafetería (colgado afuera)',
-  'The cafeteria menu, on a sandwich board at the edge of the berm road, typed fresh every morning. MONDAY: Meatloaf (Redacted). TUESDAY: Mystery Meat (Classified). A few letters in every line have a pinhole through them, as if someone kept count with a tack.':
-    'El menú de la cafetería, en un cartel de caballete al borde del camino del terraplén, escrito a máquina cada mañana. LUNES: Pastel de carne (Censurado). MARTES: Carne Misteriosa (Clasificada). Algunas letras de cada línea tienen un agujerito, como si alguien llevara la cuenta con una chinche.',
+  'The cafeteria menu, on a sandwich board at the edge of the berm road, typed fresh every morning. MONDAY: Meatloaf (Redacted). TUESDAY: Mystery Meat (Classified).':
+    'El menú de la cafetería, en un cartel de caballete al borde del camino del terraplén, escrito a máquina cada mañana. LUNES: Pastel de carne (Censurado). MARTES: Carne Misteriosa (Clasificada).',
   'A quartermaster': 'Un intendente', 'A QUARTERMASTER': 'UN INTENDENTE',
   '"Everything at the Meade has a form." He holds out a clipboard and pulls it back before you can take it. "I\'m the form you fill out to skip the others. I cost more."':
     '"En el Meade todo tiene un formulario." Te tiende un portapapeles y lo retira antes de que puedas agarrarlo. "Yo soy el formulario que se llena para saltarse los demás. Salgo más caro."',
   'A badge on a lanyard': 'Una credencial con cordón',
-  'A contractor badge face down in the gutter, its lanyard trodden flat. You turn it over: a photo of somebody you have never met, and a clearance stripe in steel grey. Nobody comes looking for it.':
-    'Una credencial de contratista boca abajo en la cuneta, con el cordón aplastado a pisotones. La das vuelta: la foto de alguien que nunca viste y una franja de autorización gris acero. Nadie viene a buscarla.',
+  'A contractor badge face down in the gutter under the fence, its lanyard trodden flat. You turn it over: a photo of somebody you have never met, and a clearance stripe in steel grey. Somebody has clipped one corner off to void it.':
+    'Una credencial de contratista boca abajo en la cuneta, al pie de la cerca, con el cordón aplastado a pisotones. Le das la vuelta: la foto de alguien que nunca viste y una franja de autorización gris acero. Alguien le cortó una esquina para anularla.',
   'The print of a lanyard in the grit, where the badge lay.': 'La marca de un cordón en la arenilla, donde estaba la credencial.',
   'Back west to Route 1': 'De vuelta al oeste, a la Ruta 1',
   'The Meade gate': 'El portón del Meade',
@@ -191,8 +191,8 @@ export const ES_ACT2 = {
   '"Shells got their union cards the year of the strike." She checks a hiring slip against the containers, row by row. "Four years to win a vote on whether they could vote. Mind the third tier, it sways."':
     '"Los cuerpos sacaron su carnet del sindicato el año de la huelga." Revisa una planilla de contratación contra los contenedores, fila por fila. "Cuatro años para ganar una votación sobre si podían votar. Cuidado con el tercer piso, se bambolea."',
   'Shipping manifests': 'Manifiestos de carga',
-  'A crate on its own at the end of the row, SOVEREIGN STACK stenciled on two sides and the union\'s chalk X on the lid, the one that means nobody touches it. The manifest is in a plastic sleeve stapled to the slats.':
-    'Un cajón solo al final de la fila, con SOVEREIGN STACK estarcido en dos lados y la X de tiza del sindicato en la tapa, la que significa que nadie lo toca. El manifiesto está en una funda de plástico engrapada a las tablas.',
+  'A crate on its own at the end of the row, SOVEREIGN STACK stenciled on two sides and the union\'s chalk X on the lid, the one that means hands off. The manifest is in a plastic sleeve stapled to the slats.':
+    'Un cajón solo al final de la fila, con SOVEREIGN STACK estarcido en dos lados y la X de tiza del sindicato en la tapa, la que significa que no se toca. El manifiesto está en una funda de plástico engrapada a las tablas.',
   'Union tool crib': 'Depósito de herramientas del sindicato',
   'A container with its doors chained open, UNION TOOL CRIB stenciled across them, and a sign-out sheet on a nail. The rule at the top of the sheet: TAKE IT, SIGN IT, BRING IT BACK. Most of the lines say BACK.':
     'Un contenedor con las puertas abiertas y encadenadas, DEPÓSITO DE HERRAMIENTAS DEL SINDICATO estarcido de lado a lado, y una planilla de retiros colgada de un clavo. La regla arriba de la planilla: LLÉVALA, FÍRMALA, DEVUÉLVELA. Casi todas las líneas dicen DEVUELTA.',
@@ -220,7 +220,7 @@ export const ES_ACT2 = {
     '"Las nasas se echan con la marea quieta." Enrolla un cabo alrededor del codo y de vuelta a la mano. "Ahora la marea quieta llega cuando se le antoja. El almanaque no sirve de nada, y la mitad la escribió mi abuela."',
   'The statehouse dome': 'La cúpula del capitolio',
   'A cast-iron marker on a post: THE STATEHOUSE, OLDEST IN CONTINUOUS LEGISLATIVE USE. Somebody has scratched a question mark after USE. Up the street, the wooden dome stands clear of the waterline. Down here, the high-water marks are pencilled on the post, each one dated.':
-    'Un marcador de hierro fundido en un poste: EL CAPITOLIO, EL MÁS ANTIGUO EN USO LEGISLATIVO CONTINUO. Alguien rayó un signo de pregunta al final. Calle arriba, la cúpula de madera queda por encima del agua. Acá abajo, las marcas de crecida están anotadas a lápiz en el poste, cada una con su fecha.',
+    'Una placa de hierro fundido en un poste: EL CAPITOLIO, EL MÁS ANTIGUO EN USO LEGISLATIVO CONTINUO. Alguien rayó un signo de pregunta al final. Calle arriba, la cúpula de madera queda por encima del agua. Acá abajo, las marcas de crecida están anotadas a lápiz en el poste, cada una con su fecha.',
   'Paper charts': 'Cartas de papel',
   'A chart seller\'s handcart at the head of the pier, paper charts rolled in its bins, the soundings corrected by hand in red. The printed charts from the 2060s still show islands that aren\'t there anymore. Those go for half price.':
     'El carrito de un vendedor de cartas náuticas al principio del muelle, con cartas de papel enrolladas en los cajones y las sondas corregidas a mano en rojo. Las cartas impresas de la década de 2060 todavía muestran islas que ya no están. Esas van a mitad de precio.',
@@ -233,8 +233,8 @@ export const ES_ACT2 = {
   'Down the pier to the harbor': 'Por el muelle, al puerto',
   'Sailboats moored to second-floor windows. The harbor.': 'Veleros amarrados a ventanas de segundo piso. El puerto.',
   'A wooden dome above the waterline.': 'Una cúpula de madera por encima del nivel del agua.',
-  'Out to the broken bridge': 'Hacia el puente roto',
-  'The bridge east, with a span missing.': 'El puente al este, con un tramo de menos.',
+  'Out to the cut bridge': 'Hacia el puente cortado',
+  'The bridge east, one span taken out.': 'El puente al este, al que le quitaron un tramo.',
   'Its doors are open. They always are.': 'Sus puertas están abiertas. Siempre lo están.',
 
   // ann_harbor: the harbor

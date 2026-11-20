@@ -113,11 +113,12 @@ function checkLines(file, location, value) {
     for (const [key, child] of Object.entries(value)) checkLines(file, `${location}.${key}`, child);
   }
 }
-Object.assign(exact, ES_ACT2);   // the Act 2 areas (hub #30), after the others as in src/i18n.js, on a line of their own
-Object.assign(exact, ES_ACT3);   // the Act 3 areas (hub #30), the same way
 
 setLang('es');
 Object.assign(exact, ES_STRETCH);   // stretch.js (hub #30), joined here so the `exact` line stays free for other tables
+// The Act 2 and Act 3 areas (hub #30) last, after ES_STRETCH, in the same order as src/i18n.js, on lines of their own.
+Object.assign(exact, ES_ACT2);
+Object.assign(exact, ES_ACT3);
 
 for (const map of Object.values(MAPS)) {
   const file = `src/content/maps/${mapSources[map.id] ?? 'index.js'}`;

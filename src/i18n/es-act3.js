@@ -1,7 +1,7 @@
 // Spanish for the Act 3 areas from the polish pass (hub #30, gonman): the Beltway, the Corridor, Gaithersburg,
 // Frederick and the Enclave (src/content/maps/act3_regions.js), and every sub-area in src/content/maps/act3_more.js.
 // Keyed by the exact English, like the other tables; tests/run.js checks coverage. Neutral Latin American Spanish,
-// tú for the player; officials address the party as usted. The uppercase labels are the speaker line over a
+// tú for the player; officials, the Meade's staff and the embassies' included, use usted. Signs use tú. The uppercase labels are the speaker line over a
 // side-quest pitch or a later line (WorldScene prints label.toUpperCase()).
 export const ES_ACT3 = {
   // beltway: the ring road outside the wall
@@ -16,14 +16,14 @@ export const ES_ACT3 = {
   'The Enclave gate': 'La puerta del Enclave',
   'An attestation gate, and the wall behind it.': 'Una puerta de verificación, y el muro detrás.',
   'Beltway sign': 'Cartel de la Beltway',
-  'A gantry sign over the inner lanes, still lit: INNER LOOP · ATTESTED TRAFFIC ONLY. Lower down, on the post, somebody has added in marker: OUTER LOOP · THE REST OF US, with an arrow pointing at the potholes.':
-    'Un cartel en un pórtico sobre los carriles interiores, todavía encendido: ANILLO INTERIOR · SOLO TRÁNSITO VERIFICADO. Más abajo, en el poste, alguien agregó con marcador: ANILLO EXTERIOR · EL RESTO DE NOSOTROS, con una flecha que apunta a los baches.',
+  'A gantry sign over the inner lanes, still lit: INNER LOOP · ATTESTED TRAFFIC ONLY. Lower down, on the post, somebody has added in marker: OUTER LOOP · THE REST OF US, with an arrow pointing down at the lanes that have no paint left.':
+    'Un cartel en un pórtico sobre los carriles interiores, todavía encendido: ANILLO INTERIOR · SOLO TRÁNSITO VERIFICADO. Más abajo, en el poste, alguien agregó con marcador: ANILLO EXTERIOR · EL RESTO DE NOSOTROS, con una flecha que apunta hacia abajo, a los carriles que ya no tienen pintura.',
   'A trucker on the shoulder': 'Un camionero al costado del camino', 'A TRUCKER ON THE SHOULDER': 'UN CAMIONERO AL COSTADO DEL CAMINO',
   '"Twenty years on the loop." He works round the truck, knocking each tire with an iron and listening to it. "The inner lanes won\'t have me and the exits are shut, so I go round. Anything I deliver, I hand over the rail."':
     '"Veinte años en el anillo." Da la vuelta al camión golpeando cada rueda con una barra y escuchando cómo suena. "Los carriles de adentro no me aceptan y las salidas están cerradas, así que doy vueltas. Lo que entrego, lo paso por encima de la baranda."',
   'Gang box by the rail': 'Caja de herramientas junto a la baranda',
-  'A highway crew\'s gang box, chained to a guardrail post, BELTWAY MAINT. stenciled on the lid. The chain has rusted through at one link. Taped inside the lid, the last work order: FILL POTHOLES, OUTER LOOP, dated 2091 and never signed off.':
-    'La caja de herramientas de una cuadrilla de autopista, encadenada a un poste del guardarraíl, con MANT. BELTWAY pintado con plantilla en la tapa. La cadena se oxidó hasta cortarse en un eslabón. Pegada por dentro de la tapa, la última orden de trabajo: RELLENAR BACHES, ANILLO EXTERIOR, con fecha de 2091 y nunca firmada como terminada.',
+  'A gang box chained to a guardrail post, BELTWAY MAINT. stenciled on the lid. The chain has rusted through at one link. Taped inside the lid, the last work order: REPLACE REFLECTORS, MILE 31, signed off as done. The box was due back at the depot the week the exits shut.':
+    'Una caja de herramientas encadenada a un poste del guardarraíl, con MANT. BELTWAY pintado con plantilla en la tapa. La cadena se oxidó hasta cortarse en un eslabón. Pegada por dentro de la tapa, la última orden de trabajo: CAMBIAR REFLECTIVOS, MILLA 31, firmada como terminada. La caja tenía que volver al depósito la semana en que cerraron las salidas.',
 
   // corridor: windowless halls, chillers, the lot
   'Server rack': 'Rack de servidores',
@@ -44,17 +44,17 @@ export const ES_ACT3 = {
 
   // gaithersburg: the standards
   'The master clock': 'El reloj maestro',
-  'The master clock\'s repeater at the head of the vault stairs, so nobody has to go down to read it: red digits behind glass in a brass frame. The engraved plate under it says only OFFICIAL TIME.':
-    'La repetidora del reloj maestro, arriba de la escalera de la bóveda, para que nadie tenga que bajar a leerlo: dígitos rojos detrás de un vidrio, en un marco de bronce. La placa grabada de abajo dice solamente HORA OFICIAL.',
+  'Red digits behind glass in a brass frame, set into the wall at the head of the vault stairs where the whole campus can see them. The engraved plate under it says only OFFICIAL TIME.':
+    'Dígitos rojos detrás de un vidrio, en un marco de bronce, empotrado en la pared arriba de la escalera de la bóveda, donde todo el campus puede verlos. La placa grabada de abajo dice solamente HORA OFICIAL.',
   'Reference weights': 'Pesas de referencia',
   'The weights room: brass reference weights under glass bells, one to a cradle, from a kilogram down to a gram. One cradle in the front row is empty. Its label is still there.':
     'La sala de pesas: pesas de referencia de bronce bajo campanas de vidrio, una por cuna, desde un kilo hasta un gramo. Una cuna de la primera fila está vacía. Su etiqueta sigue ahí.',
   'A physicist': 'Una física', 'A PHYSICIST': 'UNA FÍSICA',
   '"What time do you have?" She turns your wrist over and reads your watch herself, then her own, then the one on her other wrist. She writes all three down in a notebook that is nothing but columns.':
-    '"¿Qué hora tienes?" Te da vuelta la muñeca y lee tu reloj ella misma, después el suyo, después el de su otra muñeca. Anota las tres en una libreta que no es más que columnas.',
+    '"¿Qué hora tienes?" Te gira la muñeca y lee tu reloj ella misma, después el suyo, después el de su otra muñeca. Anota las tres en una libreta que no es más que columnas.',
   'Reject bin': 'Contenedor de descartes',
-  'A steel bin by the door to the measurement labs, OUT OF TOLERANCE stenciled on the side. Everything in it failed calibration by less than a hair, which is enough here. Nobody minds what you take.':
-    'Un contenedor de acero junto a la puerta de los laboratorios de medición, con FUERA DE TOLERANCIA pintado con plantilla en el costado. Todo lo que hay adentro falló la calibración por menos de un pelo, que acá alcanza. A nadie le importa lo que te lleves.',
+  'A steel bin by the door to the measurement labs, OUT OF TOLERANCE stenciled on the side. Everything in it failed calibration by less than a hair, and it all goes out with the scrap on Mondays.':
+    'Un contenedor de acero junto a la puerta de los laboratorios de medición, con FUERA DE TOLERANCIA pintado con plantilla en el costado. Todo lo que hay adentro falló la calibración por menos de un pelo, y los lunes se va todo con la chatarra.',
   'South, back to the Beltway': 'Al sur, de vuelta a la Beltway',
   'Down to the clock vault': 'Abajo, a la bóveda del reloj',
   'Stairs down. A tick, from below.': 'Una escalera que baja. Un tictac, desde abajo.',
@@ -63,8 +63,8 @@ export const ES_ACT3 = {
   // frederick: the market town above the campus
   'The corner grocery': 'El almacén de la esquina',
   'A corner grocery with the blind pulled half down for the afternoon. On the step, a bucket of tulips in cellophane, a little wilted, and a card: GOING OVER. TAKE SOME. You take a bunch.':
-    'Un almacén de esquina con la persiana a medio bajar por la tarde. En el escalón, un balde de tulipanes en celofán, un poco marchitos, y una tarjeta: SE ESTÁN PASANDO. LLÉVESE UNOS CUANTOS. Te llevas un ramo.',
-  'The bucket on the step, the card, and an inch of water.': 'El balde en el escalón, la tarjeta y dos dedos de agua.',
+    'Un almacén de esquina con la persiana a medio bajar por la tarde. En el escalón, un balde de tulipanes en celofán, un poco marchitos, y una tarjeta: SE ESTÁN PASANDO. LLÉVATE UNOS CUANTOS. Te llevas un ramo.',
+  'The bucket on the step, with an inch of water left in it.': 'El balde en el escalón, con dos dedos de agua en el fondo.',
   'The watchmaker\'s': 'La relojería',
   'A watchmaker\'s window, a row of watches laid out on green velvet, every one stopped at a different time. A card propped among them in careful capitals: WE REPAIR. WE DO NOT SET.':
     'La vidriera de una relojería, una fila de relojes sobre terciopelo verde, cada uno detenido en una hora distinta. Entre ellos, una tarjeta en mayúsculas cuidadosas: REPARAMOS. NO PONEMOS EN HORA.',
@@ -85,16 +85,16 @@ export const ES_ACT3 = {
   // enclave: Washington inside the wall
   'Metro entrance': 'Entrada del metro',
   'A metro pylon on the north walk: the station name in white on bronze, an arrow pointing across the lawn to the escalators, and a speaker grille that carries the announcements up from the platform, one after another, on the minute.':
-    'Un pilar del metro en la acera norte: el nombre de la estación en blanco sobre bronce, una flecha que señala las escaleras mecánicas al otro lado del césped, y una rejilla de altavoz que sube los anuncios desde el andén, uno tras otro, al minuto.',
+    'Un pilar del metro en la acera norte: el nombre de la estación en blanco sobre bronce, una flecha que señala las escaleras mecánicas al otro lado del césped, y una rejilla de altavoz que sube los anuncios desde el andén, uno tras otro, cada minuto en punto.',
   'The national archive': 'El archivo nacional',
-  'The national archive\'s east wing, where the Director\'s addresses are kept. Along its wall runs a row of glass cases, one printed copy in each, under the date it was read. The cases are dusted daily. Nobody stops to read them.':
-    'El ala este del archivo nacional, donde se guardan los discursos del Director. A lo largo de la pared corre una fila de vitrinas, con una copia impresa en cada una, bajo la fecha en que se leyó. Las vitrinas se limpian todos los días. Nadie se detiene a leerlas.',
+  'The national archive\'s east wing, where the Director\'s addresses are kept. Along its wall runs a row of glass cases, one printed copy in each, under the date it was read. The cases are dusted daily, and the visitors walk straight past them.':
+    'El ala este del archivo nacional, donde se guardan los discursos del Director. A lo largo de la pared corre una fila de vitrinas, con una copia impresa en cada una, bajo la fecha en que se leyó. Las vitrinas se limpian todos los días, y los visitantes pasan de largo.',
   'A cleaner': 'Un limpiador', 'A CLEANER': 'UN LIMPIADOR',
-  '"Path, please." A cleaner in a grown body, a little too tall for his overalls, polishes a bollard that was clean already. "Not the grass. Nobody says why. I think it\'s so they can see who did."':
-    '"Por el camino, por favor." Un limpiador en un cuerpo cultivado, un poco demasiado alto para su overol, lustra un bolardo que ya estaba limpio. "El césped no. Nadie dice por qué. Creo que es para poder ver quién lo pisó."',
+  '"Path, please." A cleaner in a grown body, a little too tall for his overalls, polishes a bollard that was clean already. "Not the grass. They never say why. I think it\'s so they can see who did."':
+    '"Por el camino, por favor." Un limpiador en un cuerpo cultivado, un poco demasiado alto para su overol, lustra un bolardo que ya estaba limpio. "El césped no. Nunca dicen por qué. Creo que es para poder ver quién lo pisó."',
   'A gift box on a bench': 'Una caja de regalo en un banco',
-  'A bench on the north walk, halfway between the two embassies. On it, a heart-shaped box of chocolates in its ribbon, stamped RETURNED WITH THANKS by one embassy and again, underneath, by the other. Nobody will be seen picking it up. You pick it up.':
-    'Un banco en la acera norte, a mitad de camino entre las dos embajadas. Encima, una caja de bombones en forma de corazón, con su moño, sellada DEVUELTO CON AGRADECIMIENTO por una embajada y otra vez, debajo, por la otra. Nadie va a dejarse ver levantándola. Tú la levantas.',
+  'A bench on the north walk, halfway between the two embassies. On it, a heart-shaped box of chocolates in its ribbon, stamped RETURNED WITH THANKS by one embassy and again, underneath, by the other. Neither embassy will be seen picking it up. You pick it up.':
+    'Un banco en la acera norte, a mitad de camino entre las dos embajadas. Encima, una caja de bombones en forma de corazón, con su moño, sellada DEVUELTO CON AGRADECIMIENTO por una embajada y otra vez, debajo, por la otra. Ninguna de las dos embajadas va a dejarse ver levantándola. Tú la levantas.',
   'The bench, and a square of clean wood where the box sat.': 'El banco, y un cuadrado de madera limpia donde estaba la caja.',
   'Out through the gate, to the Beltway': 'Afuera por la puerta, a la Beltway',
   'The archive reading room': 'La sala de lectura del archivo',
@@ -111,7 +111,7 @@ export const ES_ACT3 = {
     'Una batería de medidores de agua en la pared del fondo, donde el circuito de enfriamiento entra desde la cañería del río: diales de bronce bajo vidrio, uno por cada fila de racks, con el vidrio empañado por dentro. Debajo de cada uno, un volante de válvula, encadenado abierto.',
   'Chiller by the dock door': 'Enfriador junto a la puerta del muelle',
   'A white chiller by the dock door, stenciled HOT AISLE: WEAR A LOOP. Inside, the coolant-loop packs the crews wore between the racks, still cold: the hall was written off with the power on, and the chiller never noticed. One pack is left. You take it.':
-    'Un enfriador blanco junto a la puerta del muelle, con PASILLO CALIENTE: USE REFRIGERACIÓN pintado con plantilla. Adentro, las mochilas de refrigeración que usaban las cuadrillas entre los racks, todavía frías: dieron de baja la nave con la corriente prendida, y el enfriador nunca se enteró. Queda una. Te la llevas.',
+    'Un enfriador blanco junto a la puerta del muelle, con PASILLO CALIENTE: USA REFRIGERACIÓN pintado con plantilla. Adentro, las mochilas de refrigeración que usaban las cuadrillas entre los racks, todavía frías: dieron de baja la nave con la corriente prendida, y el enfriador nunca se enteró. Queda una. Te la llevas.',
   'The chiller hums away, cold, with nothing left in it.': 'El enfriador sigue zumbando, frío, sin nada adentro.',
   'Back out the loading dock': 'Afuera por el muelle de carga',
 
@@ -121,8 +121,8 @@ export const ES_ACT3 = {
   'The leap-second log, a ledger on the desk beside the clock. Every second the world was ever asked to wait is entered by hand, with the date and two sets of initials, in fountain pen and the same neat hand for decades, until the last line.':
     'El registro de segundos intercalares, un libro mayor sobre el escritorio junto al reloj. Cada segundo que alguna vez se le pidió al mundo que esperara está anotado a mano, con la fecha y dos juegos de iniciales, en pluma estilográfica y con la misma letra prolija durante décadas, hasta la última línea.',
   'A timekeeper': 'Un cronometrista', 'A TIMEKEEPER': 'UN CRONOMETRISTA',
-  '"Wipe your feet." He doesn\'t look up from the clock. "The floor is level to a millimeter and I\'d like it to stay that way. Every faction in the country sets its watch by this room. That\'s why nobody shoots at it."':
-    '"Límpiate los pies." No levanta la vista del reloj. "El piso está nivelado al milímetro y me gustaría que siga así. Todas las facciones del país ponen en hora sus relojes con esta sala. Por eso nadie le dispara."',
+  '"Wipe your feet." He doesn\'t look up from the clock. "The floor is level to a millimeter and I\'d like it to stay that way. Every faction in the country sets its watch by this room. That\'s why the shooting stops at the fence."':
+    '"Límpiate los pies." No levanta la vista del reloj. "El piso está nivelado al milímetro y me gustaría que siga así. Todas las facciones del país ponen en hora sus relojes con esta sala. Por eso los tiros paran en la cerca."',
   'Retired clocks': 'Relojes retirados',
   'A pegboard on the back wall, hung with clocks taken out of service, each one stopped and tagged in manila. The first, a quartz wall clock: RETIRED 2038. REASON: believes it is 1901.':
     'Un tablero perforado en la pared del fondo, con relojes sacados de servicio colgados, cada uno detenido y con una etiqueta de cartulina. El primero, un reloj de pared de cuarzo: RETIRADO 2038. MOTIVO: cree que es 1901.',
@@ -139,10 +139,9 @@ export const ES_ACT3 = {
   'A control hut': 'Una caseta de control',
   'A cinder-block control hut at the far end of the yard, one window, the door held open with a brick. Inside, a long desk faces a wall of screens.':
     'Una caseta de control de bloques de hormigón al fondo del patio, con una sola ventana y la puerta trabada con un ladrillo. Adentro, un escritorio largo mira hacia una pared de pantallas.',
-  'Crew hamper': 'Canasto de la cuadrilla',
-  'A canvas hamper by the hut wall, WASHING, FRIDAYS stenciled on the side. On top, a pair of double-knee work pants back from the wash, so stiff they keep the shape of whoever wore them last. There\'s no name in the waistband. You take them.':
-    'Un canasto de lona junto a la pared de la caseta, con LAVADO, LOS VIERNES pintado con plantilla en el costado. Arriba de todo, un pantalón de trabajo reforzado recién lavado, tan duro que conserva la forma de quien lo usó último. No tiene nombre en la cintura. Te lo llevas.',
-  'The hamper, and a sock that has been waiting a long time for the other one.': 'El canasto, y una media que hace mucho que espera a la otra.',
+  'Scrap tub': 'Tina de chatarra',
+  'A galvanized tub against the hut wall with SCRAP painted on the side, heaped with what came off the switchgear: cracked porcelain insulators, and under them, coils of cable stripped down to the copper.':
+    'Una tina galvanizada contra la pared de la caseta, con CHATARRA pintado en el costado, llena hasta el tope de lo que les sacaron a los tableros: aisladores de porcelana rajados, y debajo, rollos de cable pelado hasta el cobre.',
   'Back to town': 'De vuelta al pueblo',
 
   // en_archive: the reading room and the originals
@@ -166,8 +165,8 @@ export const ES_ACT3 = {
   // meade_inside: the Meade, inside
   'The Meade, inside': 'El Meade, por dentro',
   'The wall': 'La pared',
-  'A list runs the length of the wall, typed sheets pinned edge to edge, some lines struck through and typed again further down. A line of yellow tape on the floor keeps everyone a long step back, too far to read a word of it.':
-    'Una lista recorre toda la pared, hojas mecanografiadas clavadas borde con borde, algunas líneas tachadas y vueltas a escribir más abajo. Una línea de cinta amarilla en el piso mantiene a todos a un paso largo, demasiado lejos para leer una sola palabra.',
+  'A list runs the length of the wall, typed sheets pinned edge to edge. A line of yellow tape on the floor keeps everyone a long step back, too far to read a word of it.':
+    'Una lista recorre toda la pared, hojas mecanografiadas clavadas borde con borde. Una línea de cinta amarilla en el piso mantiene a todos a un paso largo, demasiado lejos para leer una sola palabra.',
   'Intercepts': 'Interceptaciones',
   'Archive boxes of intercepts at the back of the room: transcripts of calls in grey folders, each stamped with a date and a time to the second. Most are calls between phones that were switched off at the time.':
     'Cajas de archivo con interceptaciones al fondo de la sala: transcripciones de llamadas en carpetas grises, cada una sellada con fecha y hora al segundo. La mayoría son llamadas entre teléfonos que en ese momento estaban apagados.',
@@ -211,7 +210,7 @@ export const ES_ACT3 = {
   'Analog Union embassy staff': 'Personal de la embajada de la Unión Analógica',
   '[scaffold] "We write everything down. On paper. They hate that."': '[scaffold] "Anotamos todo. En papel. Lo odian."',
   'Sovereign Stack embassy staff': 'Personal de la embajada del Sovereign Stack',
-  '[scaffold] "We\'re here to observe. We\'re observing you now."': '[scaffold] "Estamos acá para observar. Ahora te estamos observando."',
+  '[scaffold] "We\'re here to observe. We\'re observing you now."': '[scaffold] "Estamos acá para observar. Ahora lo estamos observando."',
   'A jogger on the path': 'Un corredor en el sendero',
   '[scaffold] "Path only. Never the grass. I\'ve jogged past the grass for eleven years."': '[scaffold] "Solo el sendero. Nunca el césped. Hace once años que paso trotando al lado del césped."',
   'A reader in the stacks': 'Un lector entre los estantes',
@@ -219,7 +218,7 @@ export const ES_ACT3 = {
   'An archive guard': 'Un guardia del archivo',
   '[scaffold] "Nothing can rot the parchment. My job is mainly people."': '[scaffold] "Nada puede pudrir el pergamino. Mi trabajo es sobre todo la gente."',
   'An analyst at the far desk': 'Un analista en el escritorio del fondo',
-  '[scaffold] "Don\'t look at the wall. Everybody looks at the wall."': '[scaffold] "No mires la pared. Todos miran la pared."',
+  '[scaffold] "Don\'t look at the wall. Everybody looks at the wall."': '[scaffold] "No mire la pared. Todos miran la pared."',
   'A night clerk': 'Un empleado del turno noche',
   '[scaffold] "I file the intercepts. I don\'t read them. I read them."': '[scaffold] "Archivo las interceptaciones. No las leo. Las leo."',
 };

@@ -752,12 +752,14 @@ const A2P_IDS = ['route1_north', 'greenbelt', 'beltsville', 'refuge', 'meade', '
 const A2P_MAPS = [...Object.values(await import('../src/content/maps/act2_regions.js?a2p30')), ...Object.values(await import('../src/content/maps/act2_more.js?a2p30'))]
   .filter((m) => m && Array.isArray(m.objects) && A2P_IDS.includes(m.id));
 const { ES_ACT2: A2P_ES } = await import('../src/i18n/es-act2.js');
-const A2P_TABLES = {
-  ES_631: (await import('../src/i18n/es-631.js')).ES_631, ES_ASTER: (await import('../src/i18n/es-aster.js')).ES_ASTER,
-  ES_HUD: (await import('../src/i18n/es-hud.js')).ES_HUD, ES_PLAZA: (await import('../src/i18n/es-plaza.js')).ES_PLAZA,
-  ES_QUESTS: (await import('../src/i18n/es-quests.js')).ES_QUESTS, ES_TUNNELS_LAKE: (await import('../src/i18n/es-tunnels-lake.js')).ES_TUNNELS_LAKE,
-  ES_ROUTE1: (await import('../src/i18n/es-route1.js')).ES_ROUTE1, ES_SIDE_QUESTS: AlignSide.ES_SIDE_QUESTS,
-};
+// Every other Spanish table: each ES_* export in src/i18n/ (but the item table, keyed by item id and checked on its own
+// below) and the side quests' own, read from the folder so a table added later is compared too.
+const A2P_TABLES = { ES_SIDE_QUESTS: AlignSide.ES_SIDE_QUESTS };
+for (const f of fs.readdirSync(new URL('../src/i18n/', import.meta.url)).filter((n) => n.endsWith('.js')).sort()) {
+  for (const [name, tb] of Object.entries(await import(`../src/i18n/${f}`))) {
+    if (/^ES_/.test(name) && !['ES_ITEMS', 'ES_ACT2'].includes(name) && tb && typeof tb === 'object' && !Array.isArray(tb)) A2P_TABLES[name] = tb;
+  }
+}
 const { LOOT: A2P_LOOT, SHOPS: A2P_SHOPS } = await import('../src/content/items.js');
 const { Approach: A2P_Approach } = await import('../src/game/approach.js');
 const a2pLines = (o) => [o.label, o.text, o.doneText, o.lockedText, ...(o.pages ?? []), ...(o.later ?? []).map((l) => l.text)].filter((t) => typeof t === 'string' && t);
@@ -921,6 +923,10 @@ test('hub #30 (Act 2): es-act2.js is wired in and agrees with the other Spanish 
   assert.deepEqual(wrong, [], 'src/i18n.js reads es-act2.js, and nothing later in the table overrides it');
   const audit = fs.readFileSync(new URL('../tools/i18n/es_audit.mjs', import.meta.url), 'utf8');
   assert.ok(/import \{ ES_ACT2 \} from '..\/..\/src\/i18n\/es-act2\.js'/.test(audit) && /Object\.assign\(exact, ES_ACT2\)/.test(audit), 'tools/i18n/es_audit.mjs counts es-act2.js');
+  // A paged object adds its page count under each page (WorldScene), and that line translates too.
+  i18nMod.setLang('es');
+  const page = A2P_MAPS.find((m) => m.id === 'gb_dishes').objects.find((o) => o.id === 'obj.gb_shift_log').pages[1];
+  try { assert.equal(i18nMod.tr(`${page}\n\n[E again: 2/4]`), `${A2P_ES[page]}\n\n[E otra vez: 2/4]`, 'the page count under a page'); } finally { i18nMod.setLang(was); }
 });
 test('hub #30 (Act 2), canon: the lines keep to the quest clues, the naming rule and the house style', () => {
   const obj = (mapId, id) => A2P_MAPS.find((m) => m.id === mapId).objects.find((o) => o.id === id);
@@ -929,11 +935,13 @@ test('hub #30 (Act 2), canon: the lines keep to the quest clues, the naming rule
   for (const [where, t] of all.filter(([w]) => /^(beltsville|bv_barn)\//.test(w))) assert.ok(!/thirteen|batch \d|\bnumber \d/i.test(t), `${where}: an invented batch: ${t.slice(0, 60)}`);
   assert.ok(!/\d/.test(obj('bv_barn', 'obj.bv_named_tank').text), 'the tank: no readable name or number before the clue says so');
   // The bay (LoreKeeper): nothing here may read like the real 2024 bridge collapse.
-  for (const [where, t] of all.filter(([w]) => /^(annapolis|ann_harbor)\//.test(w))) assert.ok(!/\b(ships?|vessels?|freighters?|collisions?|collapsed?|wreck(age)?|struck)\b/i.test(t), `${where} reads like a disaster: ${t.slice(0, 60)}`);
-  // M2.5 keeps the boat: nobody on the harbor promises one.
+  for (const [where, t] of all.filter(([w]) => /^(annapolis|ann_harbor)\//.test(w))) assert.ok(!/\b(ships?|vessels?|freighters?|collisions?|collapsed?|wreck(age)?|struck|broken)\b/i.test(t), `${where} reads like a disaster: ${t.slice(0, 60)}`);
+  // The main story keeps the boat (atlas §11): nobody on the harbor promises one.
   for (const [where, t] of all.filter(([w]) => /^ann_harbor\//.test(w))) assert.ok(!/\b(get|give|find) you a boat\b/i.test(t), `${where} hands out the boat`);
   // The clues are read under these lines, so the lines can't give the clue away first.
-  assert.ok(!/\bin\b.*\bout\b|don't come out|doesn't come out/i.test(obj('gb_dishes', 'obj.gb_cleanroom').text), 'the clean room: where the prints lead is the clue\'s to say');
+  assert.ok(!/\bin\b.*\bout\b|don't come out|doesn't come out|shoe|boot/i.test(obj('gb_dishes', 'obj.gb_cleanroom').text), 'the clean room: where the prints lead, and whose they are, is the clue\'s to say');
+  // The dish log stays undated, with no count of the years: what it may record is the lore gate's to place.
+  for (const t of [...obj('gb_dishes', 'obj.gb_shift_log').pages, obj('gb_dishes', 'npc.gb_technician').text]) assert.ok(!/\b\d{4}\b|\b(ten|eleven|twelve|thirteen|fourteen|fifteen|\d+) years\b|slew/i.test(t), `the dish log: ${t.slice(0, 60)}`);
   assert.ok(!/before the Call|ask the bell/i.test(obj('beltsville', 'obj.bv_ledgers').text + obj('ann_harbor', 'obj.ann_almanac').text), 'the ledgers and the almanac leave their answers to the clues');
   // Naming in what players read (bible §2): "code rot", "code rotter", "Code-rot-taken", and "John Pork" in full.
   for (const [where, t] of all) {
@@ -948,7 +956,7 @@ const A3P_IDS = ['beltway', 'corridor', 'gaithersburg', 'frederick', 'enclave', 
 const A3P_MAPS = [...Object.values(await import('../src/content/maps/act3_regions.js?a3p30')), ...Object.values(await import('../src/content/maps/act3_more.js?a3p30'))]
   .filter((m) => m && Array.isArray(m.objects) && A3P_IDS.includes(m.id));
 const { ES_ACT3: A3P_ES } = await import('../src/i18n/es-act3.js');
-const A3P_TABLES = { ...A2P_TABLES, ES_ACT2: A2P_ES };
+const A3P_TABLES = Object.fromEntries(Object.entries({ ...A2P_TABLES, ES_ACT2: A2P_ES }).filter(([name]) => name !== 'ES_ACT3'));
 const a3pExact = Object.assign(Object.create(null), ...Object.values(A3P_TABLES), A3P_ES);
 const a3pMissing = (t) => !Object.hasOwn(a3pExact, t) && i18nMod.tr(t) === t;
 test('hub #30 (Act 3): no [scaffold] left on the polished Act 3 maps, and every line on them has Spanish', () => {
@@ -1123,8 +1131,16 @@ test('hub #30 (Act 3), canon: the lines keep to the quest clues, the naming rule
   for (const [where, rx] of Object.entries(FIRST)) { const [m, id] = where.split('/'); assert.ok(!rx.test(obj(m, id).text), `${where}: leave the clue to the clue: ${obj(m, id).text.slice(0, 60)}`); }
   // The old woman's errands carry the dates and the numbers; her own line adds none.
   assert.ok(!/\d|\b(nine|ninety|forty|sixty)\b/i.test(obj('frederick', 'npc.fr_old_woman').text), 'her errands carry the dates; her line adds none');
-  // The wall in the Meade stays a stub until the lore gate fills it: nothing on it can be read.
-  assert.ok(!/\d|:/.test(obj('meade_inside', 'obj.md_the_wall').text) && /read/.test(obj('meade_inside', 'obj.md_the_wall').text), 'the wall stays a stub');
+  // The wall in the Meade stays a stub until the lore gate fills it: nothing on it can be read, and the list has no
+  // property of its own yet (nothing struck out, nothing added).
+  assert.ok(!/\d|:|struck|crossed|again/i.test(obj('meade_inside', 'obj.md_the_wall').text) && /read/.test(obj('meade_inside', 'obj.md_the_wall').text), 'the wall stays a stub');
+  // One master clock: the quest's guardian is the clock that runs the clocks, so the display sends nobody elsewhere.
+  assert.ok(!/master clock|repeater|relay|below/i.test(obj('gaithersburg', 'obj.gt_master_clock').text), 'the display names no other clock');
+  // The Beltway: nothing here may read like the real 2024 bridge collapse (no road crew, potholes or job left unfinished).
+  for (const [where, t] of all.filter(([w]) => /^beltway\//.test(w))) {
+    assert.ok(!/\b(potholes?|crews?|bridges?|ships?|vessels?|collisions?|collapsed?|wreck(age)?|struck|never signed)\b/i.test(t), `${where} reads like a disaster: ${t.slice(0, 60)}`);
+    assert.ok(!/\b(baches?|cuadrillas?|puentes?|derrumb\w*|nunca firmad\w*)\b/i.test(A3P_ES[t] ?? ''), `${where}: the Spanish reads like a disaster: ${(A3P_ES[t] ?? '').slice(0, 60)}`);
+  }
   // Naming in what players read (bible §2): "code rot", "code rotter", "Code-rot-taken", and "John Pork" in full.
   for (const [where, t] of all) {
     assert.ok(!/(?<!code[ -])\brot(ter)?s?\b/i.test(t) && !/(?<!John )\bPork\b/.test(t), `${where}: the naming rule: ${t.slice(0, 60)}`);

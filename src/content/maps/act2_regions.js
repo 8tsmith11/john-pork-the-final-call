@@ -73,7 +73,7 @@ export const greenbelt = fromGrid({
   legend: {
     D: { scenery: 'obj.planter', solid: true, tile: '#' },   // window boxes on the upper floor
     L: { prop: 'obj.parts_bins', id: 'obj.gb_tool_library', label: 'The tool library', grant: 'item.work_gloves',
-      text: 'TOOL LIBRARY on the glass, and under it the rules: BORROW FOR A WEEK. SIGN THE CLIPBOARD. On the returns shelf inside the door, a pair of work gloves with a tag on one thumb: OVERDUE SINCE 2088, FINE WAIVED BY VOTE. Nobody is coming back for them. You take them.',
+      text: 'TOOL LIBRARY on the glass, and under it the rules: BORROW FOR A WEEK. SIGN THE CLIPBOARD. On the returns shelf inside the door, a pair of work gloves with a tag on one thumb: OVERDUE SINCE 2088, FINE WAIVED BY VOTE. You sign the clipboard and take them.',
       doneText: 'The returns shelf, empty. On the clipboard, the line for the gloves has a pencil tick beside it now.' },
     H: { prop: 'obj.neon', id: 'obj.gb_barber', label: 'The barbershop', light: 0.5,
       text: 'HAIRCUTS in gold leaf on the window. Under it the price has been painted over so many times that the glass is thick with paint. The newest price is in chalk, which wipes off faster.' },
@@ -175,11 +175,11 @@ export const meade = fromGrid({
   rows: [
     '################################',
     '#==============================#',
-    '#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#',
+    '#,,G,,,,,,,,,,,,,,,,,,,,,,,,,,,#',
     '#,,,,c,,,,,,c,,,,,,c,,,,,,,,,,,#',
     '#,,,,,,,,,,,,,,,,,,,,,,,,,,,?,,#',
     '#,,,,,,,,,,,,,N,,,,,,,,,,,,,,,,#',
-    '#,,,,,,,,G,,,,,,,,,,,,,,,,,,,,,#',
+    '#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#',
     'X,,@,,,,,,,,,,,,,,,,,,,,,,,,E,,#',
     '################################',
   ],
@@ -188,9 +188,10 @@ export const meade = fromGrid({
     N: { npc: 'npc.md_quartermaster', art: 'npc.rotter_3', label: 'A quartermaster',
       text: '"Everything at the Meade has a form." He holds out a clipboard and pulls it back before you can take it. "I\'m the form you fill out to skip the others. I cost more."' },
     '?': { prop: 'obj.aframe', id: 'obj.md_menu', label: 'Cafeteria menu (posted outside)',
-      text: 'The cafeteria menu, on a sandwich board at the edge of the berm road, typed fresh every morning. MONDAY: Meatloaf (Redacted). TUESDAY: Mystery Meat (Classified). A few letters in every line have a pinhole through them, as if someone kept count with a tack.' },
+      text: 'The cafeteria menu, on a sandwich board at the edge of the berm road, typed fresh every morning. MONDAY: Meatloaf (Redacted). TUESDAY: Mystery Meat (Classified).' },
+    // In the gutter under the fence, in the far corner from the gate: the badge is void and opens nothing.
     G: { prop: 'obj.room_sign', id: 'obj.md_badge', label: 'A badge on a lanyard', grant: 'item.keycard',
-      text: 'A contractor badge face down in the gutter, its lanyard trodden flat. You turn it over: a photo of somebody you have never met, and a clearance stripe in steel grey. Nobody comes looking for it.',
+      text: 'A contractor badge face down in the gutter under the fence, its lanyard trodden flat. You turn it over: a photo of somebody you have never met, and a clearance stripe in steel grey. Somebody has clipped one corner off to void it.',
       doneText: 'The print of a lanyard in the grit, where the badge lay.' },
     E: { enemy: 'enemy.captcha' },
     '@': { spawn: true },
@@ -267,6 +268,6 @@ export const annapolis = fromGrid({
   .exit('ann_harbor', 31, 7, { id: 'obj.annapolis_to_ann_harbor', selfDrawn: true, stepOn: true, pair: 'obj.ann_harbor_out', label: 'Down the pier to the harbor', text: 'Sailboats moored to second-floor windows. The harbor.' })   // act2_more.js
   
   .exit('ann_statehouse', 6, 8, { id: 'obj.annapolis_to_ann_statehouse', art: 'obj.door', pair: 'obj.ann_statehouse_out', label: 'The statehouse', text: 'A wooden dome above the waterline.' })   // stretch.js
-  .exit('ann_bridge', 28, 8, { id: 'obj.annapolis_to_ann_bridge', selfDrawn: true, stepOn: true, pair: 'obj.ann_bridge_out', label: 'Out to the broken bridge', text: 'The bridge east, with a span missing.' })   // stretch.js
+  .exit('ann_bridge', 28, 8, { id: 'obj.annapolis_to_ann_bridge', selfDrawn: true, stepOn: true, pair: 'obj.ann_bridge_out', label: 'Out to the cut bridge', text: 'The bridge east, one span taken out.' })   // stretch.js
   .exit('ann_chapel', 3, 0, { id: 'obj.annapolis_to_ann_chapel', art: 'obj.door', pair: 'obj.ann_chapel_out', label: 'The academy chapel', text: 'Its doors are open. They always are.' })   // stretch.js
   .build();
