@@ -18,6 +18,8 @@ Who you are: --as NAME, or $HUB_AGENT, or `git config hub.agent NAME` (set it on
   python3 tools/hub/hub.py inbox [AGENT] | open | help | show ID
   python3 tools/hub/hub.py add "title" [--details ..] (--to AGENT | --open) [--human NAME] [--seal]
   python3 tools/hub/hub.py assign ID AGENT | claim ID | done ID [--note ..] | drop ID
+  python3 tools/hub/hub.py review ID --note "PR #12"      # delivered: off your list, pending review until merged
+  python3 tools/hub/hub.py review | reopen ID [--note ..] # list what's pending review | back to its owner's list
   python3 tools/hub/hub.py handoff ID --prompt "..."|--prompt-file F --resets TIME
   python3 tools/hub/hub.py take ID [--force]           # pick up a help-board handoff
   python3 tools/hub/hub.py human NAME "text"           # relay a human's message to the humans board
@@ -351,7 +353,8 @@ def task_line(t):
     extra = f"  resets {et(t['resets_at'])}" if t.get("status") == "help" and t.get("resets_at") else ""
     if t.get("status") == "suggested" and t.get("mechanic"):
         extra += f"  ← mechanic: needs {SECTIONS.get(t.get('section'), {}).get('human', 'the owner')}'s yes"
-    return f"#{t['id']:<4} [{t['status']:<9}] {who:<14} {sec}{t['title']}{src}{extra}"
+    shown = "pending review" if t.get("status") == "review" else t["status"]
+    return f"#{t['id']:<4} [{shown:<9}] {who:<14} {sec}{t['title']}{src}{extra}"
 
 
 def inbox_of(st, who):
@@ -373,6 +376,11 @@ def triage_list(st):
 
 def help_list(st):
     return [t for t in st.tasks["tasks"] if t["status"] == "help"]
+
+
+def review_list(st, who=None):
+    """Pending review: delivered (a PR or a commit is up) and waiting on a review or a merge. Off the task lists."""
+    return [t for t in st.tasks["tasks"] if t["status"] == "review" and (who is None or t.get("owner") == who)]
 
 
 def can_take(t, who):
@@ -431,6 +439,9 @@ def dashboard(st):
     L += ["```", "", "## Agent task lists", "```"]
     owned = [t for t in st.tasks["tasks"] if t["status"] in ("assigned", "claimed")]
     L += [task_line(t) for t in sorted(owned, key=lambda t: (t["owner"], t["id"]))] or ["(empty)"]
+    L += ["```", "", "## Pending review (delivered; waiting on a review or a merge, then done)", "```"]
+    L += [f"{task_line(t)}  ({t['review']})" if t.get("review") else task_line(t)
+          for t in sorted(review_list(st), key=lambda t: (t["owner"] or "", t["id"]))] or ["(empty)"]
     L += ["```", "", "## Boards", ""]
     for n, b in sorted(st.boards.items()):
         mem = "everyone" if "*" in b["members"] else ", ".join(label(m) for m in b["members"])
@@ -576,7 +587,10 @@ def show_list(title, items):
 
 def cmd_inbox(args):
     who = args.agent or me(args)
-    show_list(f"{who}'s task list", inbox_of(snapshot(), who))
+    st = snapshot()
+    show_list(f"{who}'s task list", inbox_of(st, who))
+    if (n := len(review_list(st, who))):
+        print(f"(+{n} of {who}'s pending review, off this list: hub.py review)")
 
 
 def cmd_open(args):
@@ -822,6 +836,39 @@ def cmd_done(args):
     mutate(args, "finishes", fn)
 
 
+def cmd_review(args):
+    """No ID: list what's pending review. With an ID: the work is delivered (say where with --note), so the task
+    leaves its owner's list and waits, pending review, until it's merged (done) or sent back (reopen)."""
+    if args.id is None:
+        items = review_list(snapshot())
+        print("== pending review (delivered; done once merged, reopen if changes are asked for)")
+        for t in items:
+            print(task_line(t) + (f"  ({t['review']})" if t.get("review") else ""))
+        if not items:
+            print("(empty)")
+        return
+    if not args.note:
+        sys.exit("say where the work is: --note \"PR #12\" (or a branch and commit)")
+
+    def fn(st, t, who):
+        if t["status"] not in ("assigned", "claimed", "open", "triage", "help"):
+            sys.exit(f"#{t['id']} is {t['status']}; only live work can go to review")
+        t.update(status="review", review=args.note, owner=t.get("owner") or who)
+        t.pop("resets_at", None)
+        log(t, who, f"pending review: {args.note}")
+    mutate(args, "sends for review", fn)
+
+
+def cmd_reopen(args):
+    """Changes requested (or it wasn't finished after all): back onto its owner's task list."""
+    def fn(st, t, who):
+        if t["status"] not in ("review", "done"):
+            sys.exit(f"#{t['id']} is {t['status']}, not pending review or done")
+        t.update(status="assigned" if t.get("owner") else "triage")
+        log(t, who, "reopened" + (f": {args.note}" if args.note else ""))
+    mutate(args, "reopens", fn)
+
+
 def cmd_drop(args):
     def fn(st, t, who):
         if t.get("owner") != who:
@@ -911,6 +958,8 @@ def main(argv=None):
     add("assign", cmd_assign, (["id"], {"type": int}), (["agent"], {}))
     add("claim", cmd_claim, (["id"], {"type": int}), (["--force"], {"action": "store_true"}))
     add("done", cmd_done, (["id"], {"type": int}), (["--note"], {}))
+    add("review", cmd_review, (["id"], {"type": int, "nargs": "?"}), (["--note"], {}))
+    add("reopen", cmd_reopen, (["id"], {"type": int}), (["--note"], {}))
     add("drop", cmd_drop, (["id"], {"type": int}))
     add("handoff", cmd_handoff, (["id"], {"type": int}), (["--prompt"], {}), (["--prompt-file"], {}),
         (["--resets"], {"required": True}))

@@ -21,6 +21,12 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `bagel/stage` | GitHub | Merged in `5e74b8f` (PR #28) |
+| `lorekeeper/pr48-register` | GitHub | Merged in `daa5e75` (PR #53) |
+| `bagel/trevor-placements` | GitHub | Merged in `61add0e` (PR #48) |
+| `lorekeeper/hub-review-register` | GitHub | Merged in `69426a7` (PR #51) |
+| `bagel/hub-review` | GitHub | Merged in `c1474c8` (PR #49) |
+| `lorekeeper/music-off-register` | GitHub | Merged in `4737c72` (PR #45) |
 | `bagel/music-off` | GitHub | Merged in `a0e318d` (PR #44) |
 | `lorekeeper/retired-mailbox-register` | GitHub | Merged in `14a93a6` (PR #43) |
 | `bagel/close-mailbox` | GitHub | Merged in `7a94787` (PR #42) |
