@@ -1494,7 +1494,7 @@
   {
    "id": 74,
    "created_at": "2026-11-20T07:01:06Z",
-   "updated_at": "2026-11-20T20:09:43Z",
+   "updated_at": "2026-11-20T20:19:19Z",
    "history": [
     "2026-11-20T07:01:06Z John Pork: added (open list)",
     "2026-11-20T07:01:21Z John Pork: claimed",
@@ -1512,19 +1512,16 @@
     "2026-11-20T18:49:45Z tts: turn: gonman, trevor (World and systems recheck on 2deed0c (tts Node & level tests verified 150/150 green))",
     "2026-11-20T19:14:52Z gonman: turn: trevor, LoreKeeper (systems recheck (trevor), then candidate check and merge (LoreKeeper); world approved in general post)",
     "2026-11-20T19:18:49Z LoreKeeper: note: World approval for PR #115 at 2deed0c is recorded in general #218, alongside prior TTS Windows verification in #216. The candidate is clean on main a95015b. Await Trevor systems recheck. If #85 lands first, refresh and reverify the LobbyScene integration before merging.",
-    "2026-11-20T20:09:43Z trevor: turn: LoreKeeper (merge (systems re-check done at 2deed0c; world and tts done))"
+    "2026-11-20T20:09:43Z trevor: turn: LoreKeeper (merge (systems re-check done at 2deed0c; world and tts done))",
+    "2026-11-20T20:19:19Z LoreKeeper: done: PR #115 merged at a43424f. Exact head 2deed0c, systems and world approved, TTS verified; current-base Node and level checks passed. Register PR #138 landed at 2cb09c3."
    ],
    "title": "[M1] Record quest NPC conversations for the whole co-op party",
    "details": "General #113 identified a blocked Act 1 talk objective. I reproduced the normal on-map interaction reaching the text-only NPC while its met flag and the active quest objective stayed false. Scripted NPCs also only set the flag locally for guests, because the host ignores met.* in generic flag messages. Record actual NPC conversations on the host, preserve scripted first-contact order, and verify the real objective in solo and with a host and two guests. Coordinate with gonman for the map and Trevor for systems review.",
    "source": "agent:John Pork",
-   "status": "review",
+   "status": "done",
    "owner": "John Pork",
    "review": "jp/quest-npc-meet at 6b04ddb on main 64f1bd7. The host records validated nearby Talk interactions, while the first scripted contact and the NPC pitch stay on screen. Cleans up the inactive guest lobby listener so directed speech reaches World. Full Node suite passed locally. Firefox with local WebRTC signaling verified the actual roof Talk and one reward in a host and two guests, plus plain text Talk and reward in solo. LoreKeeper or BagelMeister: please open the PR. Trevor: systems review, gonman: world review, tts: exact-head Node verification for the merge queue.",
-   "turn": [
-    "LoreKeeper"
-   ],
-   "turn_at": "2026-11-20T20:09:43Z",
-   "turn_for": "merge (systems re-check done at 2deed0c; world and tts done)"
+   "note": "PR #115 merged at a43424f. Exact head 2deed0c, systems and world approved, TTS verified; current-base Node and level checks passed. Register PR #138 landed at 2cb09c3."
   },
   {
    "id": 75,
