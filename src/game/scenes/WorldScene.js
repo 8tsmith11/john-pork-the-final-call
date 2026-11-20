@@ -638,11 +638,12 @@ export class WorldScene extends Phaser.Scene {
     this._netHandlers = [];
     this.events.once('shutdown', () => { for (const [t, fn] of this._netHandlers) this.net?.off?.(t, fn); });
     if (this.mode === 'host') {
+      on('leave', (peer) => this.shared?.endGuestDialogue(peer));
       on('msg', (peer, msg) => {
         if (msg.t === 'lattice') { this._table().onHostMsg(peer, msg); return; }   // the casino board game (host runs it)
         if (msg.t === 'bastion') { this._bastion().onHostMsg(peer, msg); return; }   // hub #34 (host runs it)
         if (msg.t === 'lab') { this._lab().onHostMsg(peer, msg); return; }   // hub #44 (host keeps the bench)
-        if (this.shared?.onMsg(msg, peer) || this.stage?.onHostMsg(peer, msg) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg)) return;
+        if (this.shared?.onHostMsg(peer, msg) || this.stage?.onHostMsg(peer, msg) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg)) return;
         if (msg.t === 'questRead') this._finishQuestReading(peer, msg.read);
         if (msg.t === 'input') {
           const prev = this.remoteInputs.get(peer);

@@ -2028,6 +2028,67 @@ test('the gonman is overpowered on purpose: a much smaller hitbox while thin, en
   for (const l of [...gonContent.GONMAN_HIT.enemy, ...gonContent.GONMAN_HIT.boss, ...gonContent.GONMAN_LINES.start, ...gonContent.GONMAN_LINES.release]) assert.ok(LINES_ES[l], `no Spanish for: ${l}`);
 });
 
+const { ClientNet: DialogueClientNet, HostNet: DialogueHostNet } = await import('../src/engine/net/net.js');
+const { SharedEvents } = await import('../src/game/sharedEvent.js');
+test('a disconnected dialogue driver releases only their scene on the host and observer', () => {
+  const hostNet = new DialogueHostNet(), observerNet = new DialogueClientNet();
+  const connect = (peer, send = () => {}) => hostNet.conns.set(peer, { send });
+  const leave = (peer) => {
+    hostNet.conns.delete(peer);
+    hostNet.emit('leave', peer);
+  };
+  const posted = [];
+  connect('observer', (msg) => { posted.push(msg); observerNet.emit('msg', msg); });
+  connect('driver');
+  const makeScene = (mode, net, character) => {
+    const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+      mode, net, character, map: MAPS_FOR_TEST.room631, events: { once() {} },
+      input: { keyboard: { on() {} } }, time: { addEvent() {} },
+      add: { text: () => ({ setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; }, setVisible() { return this; }, setText() { return this; } }) },
+      _drawDialogue() { if (this.dlg?.done) { this.dlg = null; this.dlgDone?.(); } },
+    });
+    scene.shared = new SharedEvents(scene);
+    return scene;
+  };
+  const host = makeScene('host', hostNet, 'trevor'), observer = makeScene('client', observerNet, 'michael');
+  host.save = newSave({ seed: 'dialogue-disconnect', rolls: {}, gameVersion: 'test' });
+  observer.save = structuredClone(host.save);
+  host.sim = new Sim(host.map);
+  for (const [id, who] of [['host', 'trevor'], ['observer', 'michael'], ['driver', 'manuel']]) host.sim.addPlayer(id, who);
+  host.remoteInputs = new Map();
+  host._wireNet();
+  observer._wireNet();
+
+  const id = 'driver:opening';
+  hostNet.emit('msg', 'driver', { t: 'evStart', id, main: 'manuel', scope: 'all' });
+  hostNet.emit('msg', 'driver', { t: 'evState', id, state: { choices: ['Continue'], decider: 'michael' } });
+  assert.equal(host.shared.watching.id, id);
+  assert.equal(observer.shared.watching.id, id);
+  hostNet.emit('msg', 'observer', { t: 'evEnd', id });
+  assert.equal(host.shared.watching.id, id, 'another guest cannot end the driver’s dialogue');
+
+  leave('driver');
+  leave('driver');
+  assert.equal(host.dlg, null);
+  assert.equal(observer.dlg, null);
+  assert.equal(host.shared.latest[id], undefined);
+  assert.equal(observer.shared.latest[id], undefined);
+  assert.equal(posted.filter(msg => msg.t === 'evEnd' && msg.id === id).length, 1);
+  assert.ok(host.sim.players.has('ai:manuel'));
+
+  connect('returning');
+  host.sim.removePlayer('ai:manuel');
+  host.sim.addPlayer('returning', 'manuel');
+  host.dlg = { choices: [], done: false };
+  const local = host.dlg;
+  host.dlgDone = () => assert.fail('disconnect advanced an unrelated story');
+  hostNet.emit('msg', 'returning', { t: 'evStart', id: 'returning:retry', main: 'manuel', scope: 'all' });
+  assert.equal(observer.shared.watching.id, 'returning:retry');
+  leave('returning');
+  assert.equal(host.dlg, local);
+  assert.equal(observer.dlg, null);
+});
+
 test("Manuel's edge: with the same gear and no skills, Manuel is the toughest and hits hardest of the three", () => {
   const bare = () => ({ skills: {}, equipped: { weapon: 'item.pry_bar' }, abilities: {} });
   const m = Object.fromEntries(['manuel', 'trevor', 'michael'].map((w) => [w, pmods(bare(), w)]));
