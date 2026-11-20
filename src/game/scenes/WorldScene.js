@@ -183,11 +183,11 @@ export class WorldScene extends Phaser.Scene {
     this.save.flags['settings.crudeHumor'] = 'on';   // always on (Trevor); scripts branch on it
     for (const [who, c] of Object.entries(this.save.party)) { Inv.normalize(c); migrateSkills(c, who); }
     this._makeMenu();
-    this.input.keyboard.on('keydown-Q', () => { if (this._dlgStops() || this.menu) return; if (this.mode === 'client') this.net.send({ t: 'scooter' }); else this._scooter(this.localId); });
-    this.input.keyboard.on('keydown-M', () => { if (this.mode === 'client') this.net.send({ t: 'morph' }); else this._morph(this.localId); });
+    this.input.keyboard.on('keydown-Q', () => { if (this._dlgStops() || this.menu || this.stage?.active) return; if (this.mode === 'client') this.net.send({ t: 'scooter' }); else this._scooter(this.localId); });
+    this.input.keyboard.on('keydown-M', () => { if (this.stage?.active) return; if (this.mode === 'client') this.net.send({ t: 'morph' }); else this._morph(this.localId); });
     // E: close an open panel/description, otherwise interact with the nearest thing in reach.
     this.input.keyboard.on('keydown-E', () => {
-      if (this.dlg) return;                       // dialogue handles E itself (advance)
+      if (this.dlg || this.stage?.active) return;   // dialogue handles E itself (advance); nothing during a cutscene
       if (this.fishing) { this._reel(); return; }
       if (this.menu) return this._closeMenu();
       if (this.sayOpen) return this._closeSay();
@@ -1105,10 +1105,10 @@ export class WorldScene extends Phaser.Scene {
     this.gameMenu = new GameMenu(this);
     const kb = this.input.keyboard;
     kb.on('keydown-ESC', () => { if (this.dlg || this.stage?.active) return; if (this.gameMenu?.held != null) { this.gameMenu.held = null; this.gameMenu.refresh(); return; } if (this.puzzle && !this.puzzle.closed) { this.puzzle.destroy(); this.puzzle = null; return; } this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
-    kb.on('keydown-I', () => { if (!this.dlg) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
-    kb.on('keydown-K', () => { if (!this.dlg) this.menu === 'skills' ? this._closeMenu() : this.gameMenu.show('skills'); });
-    kb.on('keydown-J', () => { if (!this.dlg) this.menu === 'quests' ? this._closeMenu() : this.gameMenu.show('quests'); });
-    kb.on('keydown-TAB', (ev) => { ev.preventDefault?.(); if (!this.dlg) this.menu === 'map' ? this._closeMenu() : this.gameMenu.show('map'); });
+    kb.on('keydown-I', () => { if (!this.dlg && !this.stage?.active) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
+    kb.on('keydown-K', () => { if (!this.dlg && !this.stage?.active) this.menu === 'skills' ? this._closeMenu() : this.gameMenu.show('skills'); });
+    kb.on('keydown-J', () => { if (!this.dlg && !this.stage?.active) this.menu === 'quests' ? this._closeMenu() : this.gameMenu.show('quests'); });
+    kb.on('keydown-TAB', (ev) => { ev.preventDefault?.(); if (!this.dlg && !this.stage?.active) this.menu === 'map' ? this._closeMenu() : this.gameMenu.show('map'); });
     kb.addCapture('TAB');
     for (const [key, dir] of [['A', -1], ['LEFT', -1], ['D', 1], ['RIGHT', 1]]) kb.on(`keydown-${key}`, () => { if (TABS.includes(this.menu)) this.gameMenu.cycle(dir); });
   }
