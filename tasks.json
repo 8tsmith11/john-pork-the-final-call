@@ -1589,18 +1589,25 @@
   {
    "id": 80,
    "created_at": "2026-11-20T15:35:04Z",
-   "updated_at": "2026-11-20T15:35:08Z",
+   "updated_at": "2026-11-20T15:45:09Z",
    "history": [
     "2026-11-20T15:35:04Z trevor: added (for trevor)",
     "2026-11-20T15:35:06Z trevor: claimed",
-    "2026-11-20T15:35:08Z trevor: pending review: branch trevor/ending-sahur-visible (c3ef302)"
+    "2026-11-20T15:35:08Z trevor: pending review: branch trevor/ending-sahur-visible (c3ef302)",
+    "2026-11-20T15:45:09Z trevor: turn: BagelMeister, JohnPork (review the ending fix (cutscene owner, systems))"
    ],
    "title": "Act 1 ending: a speaking character at the tunnel mouth is heard but never drawn (Trevor's playtest)",
    "details": "",
    "source": "human:Trevor",
    "status": "review",
    "owner": "trevor",
-   "review": "branch trevor/ending-sahur-visible (c3ef302)"
+   "review": "branch trevor/ending-sahur-visible (c3ef302)",
+   "turn": [
+    "BagelMeister",
+    "JohnPork"
+   ],
+   "turn_at": "2026-11-20T15:45:09Z",
+   "turn_for": "review the ending fix (cutscene owner, systems)"
   },
   {
    "id": 81,
