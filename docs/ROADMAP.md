@@ -57,11 +57,14 @@ browser playtests. Keep the milestone sequence below and use [the scope plan](de
 to track the larger targets.
 
 - **Story:** finish the Act 1 comic and cutscene briefs, then validate how players learn and act on
-  each lead. The world cutscene runner and trigger support are in review.
+  each lead. The in-world cutscene runner is on main. Story-flag triggers and Act 1 staging are in review.
 - **World:** prioritize the Act 1 art and map polish that supports those beats. The later regions
   have dedicated scaffold and cohesion work before they are ready for a story playthrough.
-- **Systems:** finish reviewing the shared interaction and input work, then test an Act 1 run with
-  three players. Note where reconnection, saves, and dialogue choices affect the run.
+- **Systems:** progression limits, procedural gear, the puzzle kit, and host routing for shared
+  quests, puzzles, and board games are on main. Review the inventory and shared-dialogue queue
+  and the read-only hub board. The customization station follows the hotbar review. Then
+  coordinate the cordon blockades with the world team and review anonymous hub suggestions.
+  Keep a three-player Act 1 run on the playtest plan, including reconnection, saves, and dialogue choices.
 
 ## What the brief really asks for
 
