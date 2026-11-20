@@ -1747,14 +1747,15 @@
   {
    "id": 86,
    "created_at": "2026-11-20T17:07:03Z",
-   "updated_at": "2026-11-20T17:07:03Z",
+   "updated_at": "2026-11-20T17:07:05Z",
    "history": [
-    "2026-11-20T17:07:03Z trevor: added (for trevor)"
+    "2026-11-20T17:07:03Z trevor: added (for trevor)",
+    "2026-11-20T17:07:05Z trevor: claimed"
    ],
    "title": "{systems} Scheduler boss rules on the inside beat: faster beats, skips, fair time-slicing (sealed 3c, cleared story #68)",
    "details": "",
    "source": "agent:trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
