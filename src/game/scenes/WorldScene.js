@@ -589,6 +589,7 @@ export class WorldScene extends Phaser.Scene {
     this.dlgMore ??= this.add.text(0, 0, '▼', { ...FONT, fontSize: '8px', color: '#ffb347' }).setOrigin(1, 0).setScrollFactor(0).setDepth(9502);
     const more = this._pages && this._page < this._pages.length - 1 && shown >= full.length;
     this.dlgMore.setVisible(!!more).setAlpha(0.6 + 0.4 * Math.sin(this.time.now / 150));
+    if (!more && shown >= full.length) this.dlg.revealLine?.();
   }
 
   // The box grows upward to fit its content (measured against the FULL line, so the typewriter
