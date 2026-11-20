@@ -122,33 +122,43 @@ to Pork, rot is a rendering error.
 ## Controls
 
 Michael's answers on PR #84: **only the host turns the page**, and **story comics can't be skipped**
-by default.
+the first time they play. trevor's ruling (general #174): **a replay can be skipped**, and **a guest's
+replay plays on their own screen only**.
 
-| | Host or solo | Guest |
-|---|---|---|
-| Next page | E, Space, Enter, → or D, or click | nothing: the host turns |
-| Back | ←, A or Backspace | nothing: the host turns |
-| Esc | ends it for everyone, only if the comic is skippable (see below) | closes it on this screen only, always |
+| | Host or solo | Guest, in the party's comic | Guest, in their own replay |
+|---|---|---|---|
+| Next page | E, Space, Enter, → or D, or click | nothing: the host turns | the same keys as the host |
+| Back | ←, A or Backspace | nothing: the host turns | the same keys as the host |
+| Esc | ends it for everyone, only if the host can skip it (see below) | closes it on this screen only, always | closes it, always |
 
-**Skipping.** A story comic is unskippable by default: the host's Esc does nothing, and the comic ends
-when the host turns past its last page. The host can Esc out of a comic only when:
+**Skipping.** A story comic is unskippable the first time it plays: the host's Esc does nothing, and
+the comic ends when the host turns past its last page. The host can Esc out of a comic only when:
 
+- it's a **replay**: this save already played it before this playback started (the save has
+  `comic.<id>[.<tag>].played`, from this session or an earlier one). Each playback counts on its own:
+  a piece (`{ tag }`) is a replay once that piece has played, and the whole comic once the whole has
+  played. Playing a piece doesn't make the whole a replay. This is trevor's ruling (general #174):
+  Michael's answer covers a story comic's first showing, and the Lore Keeper's earlier ruling already
+  covered replays;
 - the comic says `skippable: true` (the engine demo does; a story comic shouldn't), and it isn't the
-  first whole playback of a comic in pieces with `assembled.firstSkippable: false`; or
+  first whole playback of a comic in pieces with `assembled.firstSkippable: false`. That lock holds
+  only for the first whole playback; a replay of the whole can be skipped like any replay; or
 - the host's game runs in **testing mode** (`?test` in the URL) or **spoiler-free mode**
   (`?spoilerfree`). Then every comic can be skipped, story comics and locked playbacks included. The
   mode is read when the world loads, and it is the host's URL that counts. The other debug params
   still work alongside it, for instance `?comic=<id>&test`.
 
-A `?comic=` debug play on its own doesn't make a story comic skippable; add `&test` for that.
+A `?comic=` debug play on its own doesn't make a story comic skippable the first time (on a save
+that has played it, it's a replay like any other); add `&test` for that.
 
 A key the page uses stays on the page: the Esc or E that closes a comic doesn't also open the
 inventory or interact in the world.
 
 The controls line under each page says this in the reader's language. The host's line lists next,
-back (from page 2) and Esc (only when the host can skip), and "next" becomes "done" on the last page.
-A guest's line says "The host turns the page · Esc: close" ("El anfitrión pasa la página · Esc:
-cerrar").
+back (from page 2) and Esc (only when the host can skip, so on a replay it shows "Esc: skip"), and
+"next" becomes "done" on the last page. A guest's line in the party's comic says "The host turns the
+page · Esc: close" ("El anfitrión pasa la página · Esc: cerrar"). A guest's own replay shows the
+host's line, with Esc, since they turn it and close it themselves.
 
 ## Co-op (host-authoritative)
 
@@ -161,15 +171,27 @@ cerrar").
   everyone else keep reading. That holds for every playback, the locked first whole playback of a
   comic in pieces included (the Lore Keeper's rule). A guest never turns or skips for anyone else.
 - The host's Esc ends it for everyone, but only for a comic the host can skip (see Controls): by
-  default a story comic plays to its last page.
+  default a story comic plays to its last page the first time, and a replay can be skipped.
 - The host repeats the current page every second, so a guest who joins late, or misses a message,
   catches up.
-- A guest can ask for a comic (the archive, or `?comic=` in their own browser), and it plays for
-  everyone, so the host only honours an ask for a comic this save has already played
-  (`comic.<id>[.<tag>].played`) or one whose trigger is due (its flag set, on its map). Anything else
-  is ignored: a guest can't open pages the party hasn't reached. An ask also waits for nothing: while
-  a page is up, a story scene or cutscene is on, or the story's own comic is waiting for one to end,
-  it's ignored (ask again after), so it can never take the story's place.
+- A guest can ask for a comic (the archive, or `?comic=` in their own browser). The host answers by
+  what the save says:
+  - **Already played** (`comic.<id>[.<tag>].played` on the host's save): it's a replay, and it plays
+    on **that guest's screen only** (trevor, general #174). The host answers that guest alone;
+    nothing is broadcast, nothing changes on the host's screen or anyone else's, and no flag is
+    written. Nobody is pulled into a rerun, and the host never pages through one. The guest turns
+    it and closes it themselves, and it doesn't wait on what the host is doing. The lines that wait
+    on a story flag (`needs`) follow the host's save, as they would in a host playback. On the
+    guest's side it opens only as the answer to their own last ask, and only while nothing else is
+    up, loading or on there (a story scene or cutscene); otherwise it's dropped (ask again after).
+    A comic the host starts for the party while it's up takes its place.
+  - **Its trigger is due** (its flag set, on its map) but it hasn't played: it's a first viewing and
+    plays for everyone, unskippable like any story comic. This ask waits for nothing: while a page
+    is up, a story scene or cutscene is on, or the story's own comic is waiting for one to end, it's
+    ignored (ask again after), so it can never take the story's place.
+  - **Anything else** is ignored: a guest can't open pages the party hasn't reached, in the party's
+    comic or in a replay of their own. A played piece doesn't open the whole comic, and a piece that
+    hasn't played stays shut.
 - While a page is up the reader's own roommate doesn't move or attack, and in solo the world waits,
   as it does for story dialogue. In co-op the world keeps running for anyone who closed the page, so
   place comics where nothing is attacking the party.
@@ -196,7 +218,8 @@ export default {
   id: 'demo',
   paper: 'bone',              // or 'night'
   skippable: true,            // only for comics that aren't story: the host can Esc out. Story comics
-                              // leave it out (unskippable by default; guests still close their screen)
+                              // leave it out (unskippable the first time, skippable on a replay;
+                              // guests still close their screen)
   pages: [
     {
       layout: 'strip3',
@@ -248,19 +271,20 @@ A comic the story hands out a page at a time (found one by one, then put togethe
   set. Without `{ assembled: true }` a comic in pieces never plays whole.
 - `assembled.firstSkippable: false`: for a comic that says `skippable: true`, the host can't Esc out
   of the first whole playback; every later playback can be skipped. (A story comic without
-  `skippable: true` can't be skipped at all, outside testing or spoiler-free mode.) Guests can always
-  close their own screen.
+  `skippable: true` can't be skipped the first time, outside testing or spoiler-free mode; its
+  replays can, like any replay.) Guests can always close their own screen.
 - A trigger for a comic in pieces must name a tag.
 
 **Try it:** open the game with `?comic=<id>` (or `?comic=<id>:<tag>`). The engine demo is `?comic=demo`.
 On the host or in solo it plays as is, a comic in pieces included, and records nothing in the save. In
 a guest's browser it's an ask like any other (see Co-op). Add `&test` to be able to skip a story comic
-with Esc.
+with Esc the first time it plays.
 
 **Place it** (the Lore Keeper's call): add `{ id, flag, tag?, map? }` to `src/content/comics/index.js`.
 The host plays it once per world when the flag is set, after any story dialogue or cutscene that's on
 screen. From code: `scene.comic.play(id, { tag, assembled, onDone })`. Every play on the host records
-`comic.<id>[.<tag>].played` in the save (a whole playback is `comic.<id>.played`).
+`comic.<id>[.<tag>].played` in the save (a whole playback is `comic.<id>.played`); from then on a
+playback of it is a replay. A guest's own replay records nothing.
 
 **Checks:** `node tests/run.js` decodes every comic in the folder and checks it: every page has
 panels inside the live area, every art frame exists in its atlas, every line has English and Spanish,

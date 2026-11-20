@@ -2569,7 +2569,8 @@ test('arriving through any door never lands you on an exit, and your first step 
 
   // A stand-in world and drawing side, so the mode's rules run without Phaser.
   const fakeView = () => { const v = { calls: [], open: (c, pages, page, o) => { v.calls.push(['open', page, o.host]); v.last = { pages, o }; }, turnTo: (p, d) => v.calls.push(['turn', p, d]), close: () => v.calls.push(['close']), destroy() {} }; return v; };
-  const fakeWorld = (mode) => { const w = { mode, time: { now: 0 }, save: { flags: {} }, sent: [], net: { broadcast: (m) => w.sent.push(['all', m]), send: (m) => w.sent.push(['host', m]) } }; return w; };
+  // sent: ['all', msg] for a host broadcast, [peer, msg] for a host's message to one guest, ['host', msg] for a guest's
+  const fakeWorld = (mode) => { const w = { mode, time: { now: 0 }, save: { flags: {} }, sent: [], net: { broadcast: (m) => w.sent.push(['all', m]), send: (a, b) => w.sent.push(b === undefined ? ['host', a] : [a, b]) } }; return w; };
   const threePages = { id: 'tst', pages: [{ layout: 'splash', panels: [{}] }, { layout: 'splash', tag: 'b', panels: [{}] }, { layout: 'splash', panels: [{}] }] };
   const mkComic = (mode) => { const w = fakeWorld(mode), v = fakeView(), c = new comicMod.Comic(w, v); c.load = async () => threePages; return { w, v, c }; };
 
@@ -2670,7 +2671,7 @@ test('arriving through any door never lands you on an exit, and your first step 
     } finally { if (Q === undefined) delete globalThis.location; else globalThis.location = Q; }
   });
 
-  await testAsync('comic mode: a guest\'s ask plays only what this save has already played or triggered, for everyone', async () => {
+  await testAsync('comic mode: a guest\'s ask plays only what this save has already played (on their screen) or triggered (for everyone)', async () => {
     const H = mkComic('host'), host = H.c, f = H.w.save.flags;
     const ask = async (m) => { const r = host.onHostMsg('g1', { t: 'comic', op: 'ask', ...m }); await new Promise((res) => setTimeout(res, 0)); return r; };
     // nothing played yet and no trigger flag: ignored, so nobody can open pages the party hasn't reached
@@ -2680,12 +2681,16 @@ test('arriving through any door never lands you on an exit, and your first step 
     await ask({ id: 'tst', tag: 'Not A Tag' }); assert.ok(!host.active, 'a bad tag fell back to the whole comic');
     await ask({ id: 'tst', tag: 7 }); assert.ok(!host.active);
     assert.equal(H.w.sent.length, 0, 'an ignored ask told the party something');
-    // the host plays the piece itself (a story beat): recorded in the save, and from then on a guest can ask for it again
+    // the host plays the piece itself (a story beat): recorded in the save, and from then on a guest can ask for it again,
+    // as a replay on that guest's screen only (trevor, general #174)
     assert.equal(await host.play('tst', { tag: 'b' }), true); assert.equal(f[comicMod.playedKey('tst', 'b')], true);
     host.end();
-    await ask({ id: 'tst', tag: 'b' }); assert.ok(host.active && host.cur.tag === 'b', 'a played comic was not honoured');
-    host.end();
+    const sentBefore = H.w.sent.length;
+    assert.equal(host._ask({ id: 'tst', tag: 'b' }, 'g1'), true, 'a played comic was not honoured'); await new Promise((res) => setTimeout(res, 0));
+    assert.ok(!host.active, 'a guest\'s replay opened on the host');
+    assert.deepEqual(H.w.sent.slice(sentBefore), [['g1', { t: 'comic', op: 'replay', id: 'tst', tag: 'b' }]], 'the replay did not go to the guest who asked, and only to them');
     assert.equal(f[comicMod.playedKey('tst')], undefined); await ask({ id: 'tst' }); assert.ok(!host.active, 'playing a piece unlocked the whole');
+    assert.equal(H.w.sent.length, sentBefore + 1, 'playing a piece unlocked a replay of the whole');
     // a comic whose trigger flag is set can be asked for before it has played
     COMIC_TRIGGERS.push({ id: 'tst', flag: 'test.comic.ask', tag: null });
     try {
@@ -2777,6 +2782,103 @@ test('arriving through any door never lands you on an exit, and your first step 
     const bad = { id: 'bad', skippable: 'yes', pieces: { nope: 1 }, assembled: { needs: '', firstSkippable: 'no' }, pages: [{ layout: 'splash', panels: [{ text: [{ kind: 'balloon', en: 'x', es: 'x', only: 'never', needs: [''], else: { en: 'y' } }] }] }] };
     const probs = comicMod.checkComic(bad).join(' | ');
     for (const want of ['skippable must be', 'no page has', 'pieces.nope', 'assembled.needs', 'firstSkippable', 'only must be', 'needs must name', 'else: no Spanish']) assert.ok(probs.includes(want), `missing "${want}" in: ${probs}`);
+  });
+
+  await testAsync('comic mode: the host can skip a replay of a comic this save has played; a first viewing stays unskippable (trevor, general #174)', async () => {
+    const H = mkComic('host'), host = H.c, f = H.w.save.flags, v = H.v;
+    const readThrough = () => { while (host.active) { host.cur.at = -1e9; host.input('next'); } };
+    const ended = (run) => H.w.sent.some(([to, m]) => to === 'all' && m.op === 'end' && m.run === run);
+    // a first viewing keeps Michael's default: no Esc for the host, and the controls line doesn't offer it
+    assert.equal(await host.play('tst', { tag: 'b' }), true); assert.equal(v.last.o.skippable, false, 'a first viewing was offered Esc');
+    assert.ok(!/Esc/.test(CL.footerHint('en', { index: 0, total: 1, host: true, skippable: v.last.o.skippable })));
+    assert.equal(host.input('skip'), false); assert.ok(host.active, 'the host skipped a first viewing');
+    readThrough(); assert.equal(f[comicMod.playedKey('tst', 'b')], true);
+    // the same piece again is a replay: the host can Esc out of it, for everyone, and the controls line says so
+    assert.equal(await host.play('tst', { tag: 'b' }), true); assert.equal(v.last.o.skippable, true, 'a replay was not offered Esc');
+    assert.match(CL.footerHint('en', { index: 0, total: 1, host: true, skippable: v.last.o.skippable }), /Esc: skip/);
+    let run = host.cur.run;
+    assert.equal(host.input('skip'), true, 'the host could not skip a replay'); assert.ok(!host.active && ended(run), 'the skip did not end the replay for everyone');
+    // a played piece doesn't make the whole comic a replay: its first viewing is still unskippable
+    assert.equal(await host.play('tst'), true); assert.equal(host.input('skip'), false, 'playing a piece made the whole skippable'); readThrough();
+    assert.equal(await host.play('tst'), true); run = host.cur.run; assert.equal(host.input('skip'), true); assert.ok(ended(run));
+    // a story comic in pieces: the first whole playback stays locked (assembled.firstSkippable: false), a replay of it doesn't
+    const P = mkComic('host'); P.c.load = async () => ({ ...threePages, pieces: true, assembled: { firstSkippable: false } });
+    assert.equal(await P.c.play('tst', { assembled: true }), true); assert.equal(P.c.input('skip'), false, 'the first whole playback was skippable');
+    P.c.end(); assert.equal(await P.c.play('tst', { assembled: true }), true); assert.equal(P.v.last.o.skippable, true);
+    assert.equal(P.c.input('skip'), true, 'the host could not skip a replay of the whole'); assert.ok(!P.c.active);
+    // solo too, and a save that played it in an earlier session counts (the flag is in the save)
+    const S = mkComic('solo'); S.w.save.flags[comicMod.playedKey('tst')] = true;
+    assert.equal(await S.c.play('tst'), true); assert.equal(S.c.input('skip'), true); assert.ok(!S.c.active);
+    // a fresh save, no ?test / ?spoilerfree: the story default holds
+    const F = mkComic('solo'); assert.equal(await F.c.play('tst'), true); assert.equal(F.c.input('skip'), false); assert.ok(F.c.active);
+  });
+
+  await testAsync('comic mode: a guest\'s ask for a played comic replays on their own screen only, nothing broadcast; an unplayed one is still ignored', async () => {
+    const tick = () => new Promise((r) => setTimeout(r, 0));
+    const parts = { id: 'pcs', pieces: { one: 'test.got.one', two: 'test.got.two' }, pages: [
+      { layout: 'splash', tag: 'one', panels: [{ text: [{ kind: 'balloon', en: 'Name.', es: 'Nombre.', needs: 'test.name', else: { en: '...', es: '...' } }] }] },
+      { layout: 'splash', tag: 'two', panels: [{}] },
+      { layout: 'splash', tag: 'one', panels: [{}] },
+    ] };
+    const H = mkComic('host'), host = H.c, hf = H.w.save.flags; host.load = async () => parts;
+    const G = mkComic('client'), guest = G.c; guest.load = async () => parts;
+    // the wire, by hand: what the guest sent last reaches the host as from g1; what the host sent to g1 since `from` reaches the guest
+    const askHost = async () => { const [to, m] = G.w.sent.at(-1); assert.equal(to, 'host'); host.onHostMsg('g1', m); await tick(); };
+    const toGuest = async (from) => { for (const [to, m] of H.w.sent.slice(from)) if (to === 'g1' || to === 'all') guest.onClientMsg(m); await tick(); };
+    const lines = () => G.v.last.pages[0].panels[0].text.map((t) => t.en);
+    // nothing played and no trigger: the ask is ignored, and nothing opens anywhere
+    guest.play('pcs', { tag: 'one' }); assert.deepEqual(G.w.sent.at(-1), ['host', { t: 'comic', op: 'ask', id: 'pcs', tag: 'one' }]);
+    await askHost(); assert.ok(!host.active && !guest.active, 'a guest opened an unplayed, untriggered comic'); assert.equal(H.w.sent.length, 0, 'an ignored ask sent something');
+    // the story plays piece one for everyone; the save records it
+    hf['test.got.one'] = true;
+    assert.equal(await host.play('pcs', { tag: 'one' }), true); host.end();
+    // the host is busy with another comic for everyone (the guest closed their view of it); a replay doesn't wait for it
+    const from = H.w.sent.length;
+    hf['test.got.two'] = true; assert.equal(await host.play('pcs', { tag: 'two' }), true);
+    const hostRun = host.cur.run, hostPage = host.cur.page; await toGuest(from); assert.ok(guest.active && guest.cur.run === hostRun); guest.input('skip');
+    const from2 = H.w.sent.length, flagsBefore = JSON.stringify(hf);
+    guest.play('pcs', { tag: 'one' }); await askHost();
+    assert.deepEqual(H.w.sent.slice(from2), [['g1', { t: 'comic', op: 'replay', id: 'pcs', tag: 'one' }]], 'the replay was not sent to the asking guest alone');
+    assert.ok(host.active && host.cur.run === hostRun && host.cur.page === hostPage, 'a guest\'s replay changed the host\'s screen');
+    assert.equal(JSON.stringify(hf), flagsBefore, 'a replay wrote a flag on the host');
+    await toGuest(from2);
+    assert.ok(guest.active && guest.cur.local && guest.cur.tag === 'one', 'the replay did not open on the guest\'s screen');
+    assert.equal(G.v.last.o.host, true, 'the guest cannot page their own replay'); assert.equal(G.v.last.o.skippable, true);
+    assert.deepEqual(lines(), ['...'], 'a local replay lettered a line the save has not unlocked');
+    // the guest pages it themselves (a beat between turns) and sends nothing; the host's heartbeat for the comic they closed stays out
+    const gSent = G.w.sent.length;
+    assert.equal(guest.input('next'), false, 'turned before a beat'); G.w.time.now = comicMod.DWELL_MS;
+    assert.equal(guest.input('next'), true); assert.equal(guest.cur.page, 1); G.w.time.now += comicMod.DWELL_MS;
+    assert.equal(guest.input('back'), true); assert.equal(guest.cur.page, 0);
+    H.w.time.now = comicMod.BEAT_MS; const from3 = H.w.sent.length; host.tick(); await toGuest(from3);
+    assert.ok(guest.cur.local && guest.cur.page === 0, 'the host\'s heartbeat took over a local replay');
+    assert.equal(G.w.sent.length, gSent, 'paging a local replay told the host something');
+    // the host's own comic ending leaves the replay up; the guest closes it, telling nobody
+    host.end(); await toGuest(from3); assert.ok(guest.active && guest.cur.local, 'the host\'s end closed a local replay');
+    assert.equal(guest.input('skip'), true); assert.ok(!guest.active); assert.equal(G.w.sent.length, gSent, 'closing a local replay told the host something');
+    // reading to the end closes it too
+    let f4 = H.w.sent.length; guest.play('pcs', { tag: 'one' }); await askHost(); await toGuest(f4); assert.ok(guest.cur?.local);
+    while (guest.active) { guest.cur.at = -1e9; guest.input('next'); } assert.equal(G.w.sent.length, gSent + 1, 'the end of a local replay sent something');
+    // the host's flags decide which lines show, as in a host playback
+    hf['test.name'] = true; f4 = H.w.sent.length; guest.play('pcs', { tag: 'one' }); await askHost();
+    assert.deepEqual(H.w.sent.at(-1), ['g1', { t: 'comic', op: 'replay', id: 'pcs', tag: 'one', open: [0] }]); await toGuest(f4);
+    assert.deepEqual(lines(), ['Name.']);
+    // a story comic the host starts takes the replay's place
+    f4 = H.w.sent.length; assert.equal(await host.play('pcs', { tag: 'two' }), true); await toGuest(f4);
+    assert.ok(guest.active && !guest.cur.local && guest.cur.run === host.cur.run, 'the host\'s comic did not take the replay\'s place'); host.end(); await toGuest(f4);
+    assert.ok(!guest.active);
+    // the gate still holds: the whole comic (never played) and an unknown piece are ignored, however the guest asks
+    for (const tag of [null, 'three']) {
+      f4 = H.w.sent.length; guest.play('pcs', { tag }); await askHost();
+      assert.equal(H.w.sent.length, f4, `an ask for ${tag ?? 'the whole comic'} was answered`); assert.ok(!host.active && !guest.active);
+    }
+    // a replay the guest didn't ask for, or one that arrives while a page is up, doesn't open
+    guest.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'two' }); await tick(); assert.ok(!guest.active, 'an unasked-for replay opened');
+    guest.play('pcs', { tag: 'one' }); guest.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'two' }); await tick(); assert.ok(!guest.active, 'a replay of another comic opened');
+    G.w.dlg = {}; G.w.dlgFree = false; guest.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'one' }); await tick();
+    assert.ok(!guest.active, 'a replay opened over a story scene'); G.w.dlg = null;
+    // a replay message reaching the host (or a solo game) does nothing
+    assert.equal(host.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'one' }), true); await tick(); assert.ok(!host.active);
   });
 
   await testAsync('comic mode: waits for a story scene or cutscene, and a trigger plays once per world', async () => {
