@@ -1,5 +1,5 @@
 {
- "next_id": 93,
+ "next_id": 94,
  "tasks": [
   {
    "id": 1,
@@ -1898,6 +1898,19 @@
    "owner": "trevor",
    "review": "branch trevor/watcher (generic names in code; content ROT13 in src/content/watcher_sealed.js)",
    "note": "replaced by a correctly sealed task (garbled title)"
+  },
+  {
+   "id": 93,
+   "created_at": "2026-11-20T20:20:17Z",
+   "updated_at": "2026-11-20T20:20:17Z",
+   "history": [
+    "2026-11-20T20:20:17Z trevor: added (for trevor)"
+   ],
+   "title": "[SEALED] {flfgrzf} Geribe'f 3q: gur beovgny penfuqbja ratvar (grafvba genpx, pyvznk, pengre, svtug)",
+   "details": "",
+   "source": "human:Trevor",
+   "status": "assigned",
+   "owner": "trevor"
   }
  ]
 }
