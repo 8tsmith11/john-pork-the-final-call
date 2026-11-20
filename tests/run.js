@@ -1055,6 +1055,32 @@ test('lab bench (hub #44): every lab has exactly one passing answer; the shared 
   assert.equal(bench.act({ type: 'cycle', i: 0 }), false, 'a passed lab is locked');
 });
 
+test('Ping rework (hub #66): the pulse jolts, a marked kill hands the pinger cooldown back, and the mark jumps on', async () => {
+  const { PING } = await import('../src/engine/sim.js');
+  const sim = new Sim(MAPS_FOR_TEST.metro_plaza, { seed: 'ping', deferSpawn: true });
+  sim.addPlayer('mi', 'michael'); sim.addPlayer('tr', 'trevor');
+  const mi = sim.players.get('mi'), tr = sim.players.get('tr'); sim.enemies.clear();
+  const foe = (id, dx, hp) => sim.enemies.set(id, { id, kind: 'enemy.rotling', x: mi.x + dx, y: mi.y, hp, cd: 9, hurtT: 0, sleepT: 99 });
+  foe('near', 30, 200); foe('weak', 60, 3); foe('far', 400, 200);
+  sim._ability(mi);
+  const near = sim.enemies.get('near');
+  assert.ok(near.hp < 200 && near.hurtT >= PING.stagger - 1e-9, 'the pulse lands damage and a stagger');
+  assert.ok(!sim.enemies.has('weak'), 'the jolt can finish something weak');
+  assert.ok(Math.abs(mi.skillCd - (PING.cd - PING.refund)) < 1e-9, 'killing a marked thing handed time back');
+  assert.ok(!(sim.enemies.get('far').marked > 0), 'out of reach: not marked');
+  // Trevor kills a marked one: cooldown goes back to Michael (who pinged it), and the mark jumps to the nearest unmarked
+  sim.enemies.clear(); mi.skillCd = 5;
+  foe('a', 30, 1); foe('b', 60, 200); sim.enemies.get('a').marked = 3; sim.enemies.get('a').markedBy = 'mi';
+  sim._hurtEnemy(sim.enemies.get('a'), 10, 0, 0, 'tr');
+  assert.ok(Math.abs(mi.skillCd - (5 - PING.refund)) < 1e-9, 'the pinger is refunded, whoever lands the kill');
+  assert.ok(sim.enemies.get('b').marked > 0 && sim.enemies.get('b').markedBy === 'mi', 'the mark jumped on');
+  assert.ok(sim.events.some((e) => e.t === 'pingJump'));
+  // Riff's rattle (no owner) neither refunds nor jumps
+  sim.enemies.clear(); mi.skillCd = 5; foe('c', 30, 1); foe('d', 60, 200); sim.enemies.get('c').marked = 3;
+  sim._hurtEnemy(sim.enemies.get('c'), 10, 0, 0, 'tr');
+  assert.equal(mi.skillCd, 5); assert.ok(!(sim.enemies.get('d').marked > 0));
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
