@@ -817,7 +817,7 @@ export class WorldScene extends Phaser.Scene {
           this._showActOneCard();
         }
       });
-      on('close', () => this._say(`Connection lost. To resume, leave to title and rejoin room ${this.net.code} from this tab.`));
+      on('close', () => this._leaveToTitle(this.net.code));
     }
   }
 
@@ -1393,8 +1393,13 @@ export class WorldScene extends Phaser.Scene {
   menuExport() { exportFile(this.save); }
   async menuQuit(save) {
     if (save && this.mode !== 'client' && !await this._save()) return;
+    this._leaveToTitle();
+  }
+  _leaveToTitle(rejoinCode) {
+    if (this._leaving) return;
+    this._leaving = true;
     this.net?.close?.();
-    this.scene.start('Title');
+    this.scene.start('Title', { rejoinCode });
   }
   mapName(id) { return MAPS[id]?.name ?? id; }
   playerWorldTile() {

@@ -16,7 +16,11 @@ const IDS = Object.keys(ROOMMATES);
 
 export class LobbyScene extends Phaser.Scene {
   constructor() { super('Lobby'); }
-  init(data) { this.role = data.role; }
+  init({ role, rejoinCode }) {
+    this.role = role;
+    this.rejoinCode = rejoinCode;
+    this.net = null;
+  }
 
   async create() {
     setArea('lobby');   // music: see src/audio/music.js
@@ -35,9 +39,17 @@ export class LobbyScene extends Phaser.Scene {
     const back = this.add.text(8, 256, '[ESC] back', { ...FONT, color: '#5d6487' });
     // English / Español (Trevor). The lobby keeps its connection, so relabel in place instead of restarting.
     langToggle(this, W - 6, 6, () => { back.setText('[ESC] back'); for (const c of this.cards) { c.label?.setText(c.label.text); } this.status.setText(this.status.text); this.startBtn.setText(this.startBtn.text); });
-    this.input.keyboard.on('keydown-ESC', () => { this.net?.close(); this.scene.start('Title'); });
+    this.input.keyboard.on('keydown-ESC', () => {
+      this.net?.close();
+      this.scene.start('Title', { rejoinCode: this.rejoinCode });
+    });
+    const status = this.status;
     try { this.role === 'host' ? await this._host() : await this._join(); }
-    catch (e) { this.status.setText(`${e.message || e}`).setColor('#ff6b6b'); }
+    catch (e) {
+      if (!status.active) return;
+      this.net?.close();
+      status.setText(`${e.message || e}`).setColor('#ff6b6b');
+    }
   }
 
   _card(id, x, y) {
@@ -114,12 +126,14 @@ export class LobbyScene extends Phaser.Scene {
 
   // ---------- client ----------
   async _join() {
-    const code = (prompt('Room code from the host:') || '').trim();
+    const code = (this.rejoinCode ?? prompt('Room code from the host:') ?? '').trim();
     if (!code) throw new Error('No code entered. [ESC] to go back.');
     const net = this.net = new ClientNet();
-    this.status.setText(`Joining ${code.toUpperCase()}...`);
+    const status = this.status;
+    status.setText(`Joining ${code.toUpperCase()}...`);
     await net.join(code);
-    this.status.setText('Connected. Claim your roommate.').setColor('#9aa3c7');
+    if (!status.active) return;
+    status.setText('Connected. Claim your roommate.').setColor('#9aa3c7');
     const onMessage = (msg) => {
       if (msg.t === 'lobby') {
         this._renderLobby(msg.state);
