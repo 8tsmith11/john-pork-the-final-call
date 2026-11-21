@@ -1727,6 +1727,335 @@ def jukebox(f):                 # wood cabinet under a lit arch of tubes; the co
 P("obj.jukebox", jukebox(0))
 P("obj.jukebox#1", jukebox(1))
 
+# ---- Campus rooms and Hollis Hardware (hub #113, second slice; act1_more.js, act1_route1.js) ----
+# The lecture auditorium. The landmark: the projector on its cart at the back of the hall, still running.
+def projector(f):
+    c = C().rect(3, 15, 10, 2, "concrete2").h_(3, 15, 10, "concrete3")                                           # cart top
+    c.v_(4, 17, 5, "steel").v_(11, 17, 5, "steel").h_(4, 20, 8, "concrete1").rect(3, 22, 2, 2, "night1").rect(11, 22, 2, 2, "night1")
+    c.rect(4, 9, 9, 6, "concrete3").h_(4, 9, 9, "bone").v_(12, 10, 5, "concrete2").rect(5, 11, 3, 3, "night1")   # the body, the lens
+    c.px(6, 12, "screen2" if f == 0 else "bone").px(10, 13, "rot1" if f == 0 else "night2").pts("night2", (9, 11), (10, 11), (11, 11))
+    for i, y in enumerate((8, 6, 4, 2)):                                                                         # the beam, going up the hall
+        c.h_(5 - i // 2, y, 3 + i, "screen2" if (i + f) % 2 == 0 else "screen1")
+    c.pts("bone", *(((6, 7), (7, 5), (6, 3)) if f == 0 else ((7, 7), (6, 5), (8, 3))))                           # dust in the beam
+    return c.rect(2, 9, 2, 3, "night1").px(2, 10, "steel")                                                        # the clicker dock
+
+
+P("obj.projector", projector(0).outline())
+P("obj.projector#1", projector(1).outline())
+
+# The screen over the stage: slide 41 of 41, QUESTIONS?, and a checkmark with a face.
+c = C(32, 40)
+c.rect(1, 2, 30, 3, "concrete2").h_(1, 2, 30, "concrete3").rect(2, 5, 28, 26, "bone").v_(29, 6, 25, "concrete3")   # the case, the sheet
+c.rect(4, 8, 24, 3, "tub0").pts("bone", *[(x, 9) for x in range(6, 26, 2)])                                     # the title bar
+for y, w in ((14, 16), (17, 12), (20, 14)):
+    c.h_(5, y, w, "night2")
+c.pts("yerba1", (21, 24), (22, 25), (23, 26), (24, 25), (25, 23), (26, 21), (27, 19)).pts("night1", (22, 21), (25, 20))   # the checkmark, waving
+c.h_(5, 27, 6, "concrete3").px(27, 28, "signal").h_(2, 31, 28, "concrete2").v_(16, 32, 3, "steel").px(16, 35, "concrete3")   # 41/41, the pull cord
+BIG["obj.aud_screen"] = c.outline().rows()
+
+
+def seats(down):                # two fold-up seats from behind (32x16), a writing arm between; `down`: one seat left down
+    c = C(32, 16)
+    for i, x in enumerate((1, 17)):
+        c.rect(x, 2, 14, 9, "tub0").h_(x, 2, 14, "tub1").v_(x + 13, 3, 8, "night3").rect(x + 2, 4, 10, 5, "tub1").h_(x + 2, 8, 10, "tub0")
+        c.rect(x, 11, 2, 4, "steel").rect(x + 12, 11, 2, 4, "steel").h_(x, 15, 14, "night2")
+        if down and i == 1:
+            c.rect(x + 1, 11, 12, 2, "tub1").h_(x + 1, 13, 12, "night3")
+    c.rect(14, 5, 4, 2, "warm3").h_(14, 7, 4, "warm1")
+    return c
+
+
+WIDE["obj.aud_seats"] = seats(False).rows()
+WIDE["obj.aud_seats_b"] = seats(True).rows()
+
+# Seats unbolted from the floor and stacked against the wall, sorted by row letter.
+c = C()
+for i, y in enumerate((18, 13, 8, 3)):
+    c.rect(2 + i % 2, y, 11, 4, "tub0").h_(2 + i % 2, y, 11, "tub1").v_(12 + i % 2, y + 1, 3, "night3").rect(3 + i % 2, y + 4, 2, 1, "steel").rect(10 + i % 2, y + 4, 2, 1, "steel")
+    c.rect(5, y + 1, 3, 2, "bone").px(6, y + 2, "night1")                                                         # the row letter, taped on
+P("obj.seat_stack", c.outline())
+
+# The lectern: a slanted top, a gooseneck mic, the clicker left on it.
+c = C().rect(3, 11, 10, 12, "warm1").v_(12, 12, 11, "warm0").h_(3, 22, 10, "warm0").rect(5, 14, 6, 5, "warm2").px(8, 16, "warm4")
+c.rect(2, 8, 12, 3, "warm2").h_(2, 8, 12, "warm3").h_(2, 11, 12, "warm0")
+c.pts("steel", (11, 7), (11, 6), (12, 5), (12, 4)).px(12, 3, "night1").rect(4, 9, 3, 1, "night1").px(5, 9, "signal")
+P("obj.lectern", c.outline())
+
+# A step light at the end of a row.
+c = C().rect(6, 19, 4, 4, "concrete2").h_(6, 19, 4, "concrete3").rect(7, 20, 2, 2, "slicker1").px(7, 20, "bone")
+P("obj.aisle_light", c.outline())
+
+# A stage curtain, drawn back.
+c = C().rect(2, 1, 12, 22, "soft0").h_(2, 1, 12, "warm3")
+for x in (4, 7, 10, 13): c.v_(x, 2, 21, "soft1" if x % 2 else "night3")
+c.h_(2, 15, 12, "warm4").pts("warm3", (2, 16), (13, 16)).h_(2, 23, 12, "night2")
+P("obj.curtain", c.outline())
+
+# A PA speaker on a pole.
+c = C().rect(4, 3, 8, 11, "night2").h_(4, 3, 8, "night3").rect(6, 5, 4, 3, "night1").px(7, 6, "concrete2").rect(5, 9, 6, 4, "night1").pts("concrete2", (7, 10), (8, 11))
+c.v_(7, 14, 8, "steel").v_(8, 14, 8, "concrete2").h_(4, 22, 8, "concrete1").pts("concrete1", (5, 21), (10, 21))
+P("obj.pa_speaker", c.outline())
+
+# An exit sign, lit.
+c = C().rect(1, 6, 14, 7, "night1").rect(2, 7, 12, 5, "signal")
+c.pts("bone", (3, 8), (3, 9), (3, 10), (4, 8), (4, 10), (6, 8), (7, 9), (6, 10), (8, 8), (8, 10), (10, 8), (10, 9), (10, 10), (12, 8), (12, 9), (12, 10), (11, 8), (13, 8))
+P("obj.exit_sign", c.outline())
+
+# A backpack somebody left.
+c = C().rect(4, 14, 8, 8, "yerba0").h_(4, 14, 8, "yerba1").v_(11, 15, 7, "night2").rect(6, 17, 4, 3, "yerba1").h_(6, 17, 4, "night2")
+c.pts("steel", (7, 13), (8, 13)).pts("night2", (5, 22), (10, 22)).px(8, 18, "warm4")
+P("obj.backpack", c.outline())
+
+# Problem sets on the floor, marked in red.
+c = C().rect(2, 17, 6, 5, "bone").rect(8, 19, 6, 4, "bone").h_(3, 18, 3, "night2").h_(3, 20, 4, "concrete3").h_(9, 20, 4, "concrete3")
+c.pts("signal", (6, 18), (7, 18), (6, 19), (11, 21), (12, 21), (12, 22)).px(13, 19, "concrete3")
+P("obj.graded_paper", c.outline())
+
+# A cart of exam booklets, every one of them graded.
+c = C().rect(2, 14, 12, 2, "concrete2").h_(2, 14, 12, "concrete3").v_(3, 16, 6, "steel").v_(12, 16, 6, "steel").h_(3, 19, 10, "concrete1")
+c.rect(2, 22, 2, 2, "night1").rect(12, 22, 2, 2, "night1")
+for x, h, col in ((3, 5, "tub1"), (7, 7, "tub1"), (11, 4, "tub1")):
+    c.rect(x, 14 - h, 3, h, col)
+    for y in range(14 - h, 14, 2): c.h_(x, y, 3, "bone")
+c.pts("signal", (8, 7), (4, 9))
+P("obj.bluebooks", c.outline())
+
+# Bolt holes where a row of seats stood (a floor decal).
+D("dec.bolt_holes", dc().pts("night1", (2, 6), (6, 6), (10, 6), (14, 6), (2, 10), (6, 10), (10, 10), (14, 10)).pts("concrete2", (3, 6), (7, 6), (11, 6), (15, 6)))
+
+
+# The dining hall. The landmark: the new waffle machine, chrome and a touch screen, the film still on one side.
+def waffle(f):
+    c = C().rect(2, 14, 12, 9, "concrete3").h_(2, 14, 12, "bone").v_(13, 15, 8, "concrete2").h_(2, 22, 12, "concrete1")     # the cabinet
+    c.rect(3, 9, 10, 5, "steel").h_(3, 9, 10, "bone").h_(3, 11, 10, "night2").rect(13, 10, 2, 1, "night1")                 # the iron, the handle
+    c.rect(4, 2, 8, 6, "night1").rect(5, 3, 6, 4, "screen1" if f == 0 else "screen2")                                       # the touch screen
+    for i in range(5):
+        c.px(5 + i, 5, "slicker1" if i < (2 if f == 0 else 5) else "screen0")                                              # rate your waffle
+    c.px(7, 8, "steel").px(8, 8, "steel").pts("pork2", (11, 3), (11, 4), (10, 2))                                           # the film, peeling
+    c.rect(5, 16, 6, 4, "bone").rect(6, 17, 4, 2, "warm3").pts("warm1", (7, 17), (8, 18)).px(3, 20, "rot1" if f == 0 else "yerba1")   # the seal plate
+    return c
+
+
+P("obj.waffle_machine", waffle(0).outline())
+P("obj.waffle_machine#1", waffle(1).outline())
+
+
+def swipe(f):                   # the meal swipe reader on a post, scrolling
+    c = C().rect(4, 5, 8, 9, "night2").h_(4, 5, 8, "night3").rect(5, 6, 6, 4, "screen0").h_(5, 7 + f, 6, "screen2").h_(5, 9 - f, 4, "screen1")
+    c.rect(5, 11, 6, 2, "night1").h_(6, 12, 4, "slicker1" if f == 0 else "yerba1")
+    return c.v_(7, 14, 8, "steel").v_(8, 14, 8, "concrete2").h_(5, 22, 6, "concrete1")
+
+
+P("obj.swipe_reader", swipe(0).outline())
+P("obj.swipe_reader#1", swipe(1).outline())
+
+
+def steam_table(f):             # a run of serving line: the sneeze guard, three pans, the tray rail
+    c = C().rect(0, 12, 16, 10, "concrete3").h_(0, 12, 16, "bone").rect(0, 22, 16, 2, "night2").h_(0, 19, 16, "steel").h_(0, 20, 16, "concrete2")
+    c.rect(1, 10, 4, 2, "warm3").rect(6, 10, 4, 2, "yerba1").rect(11, 10, 4, 2, "slicker0").h_(0, 9, 16, "steel")
+    c.h_(0, 5, 16, "screen2").v_(0, 5, 5, "steel").v_(15, 5, 5, "steel").pts("screen1", (3, 6), (4, 7), (10, 6), (11, 7))
+    return c.pts("bone", *(((2, 3), (7, 2), (12, 3)) if f == 0 else ((3, 2), (8, 3), (13, 2))))                  # steam
+
+
+P("obj.steam_table", steam_table(0).outline())
+P("obj.steam_table#1", steam_table(1).outline())
+
+# Trays, stacked wet.
+c = C().rect(2, 16, 12, 6, "concrete2").h_(2, 16, 12, "concrete3").rect(2, 22, 12, 1, "night2")
+for i, y in enumerate(range(15, 6, -1)):
+    c.h_(3, y, 10, ("warm3", "warm2")[i % 2])
+c.h_(3, 6, 10, "warm4").pts("screen2", (5, 9), (10, 12))
+P("obj.tray_stack", c.outline())
+
+# The condiment station: pumps, a napkin box, a jar of forks.
+c = C().rect(1, 13, 14, 9, "warm1").h_(1, 13, 14, "warm3").v_(14, 14, 8, "warm0").rect(1, 22, 14, 1, "night2")
+c.rect(2, 8, 3, 5, "signal").rect(6, 8, 3, 5, "slicker1").px(3, 7, "bone").px(7, 7, "bone").pts("steel", (3, 6), (4, 6), (7, 6), (8, 6))
+c.rect(10, 9, 4, 4, "steel").pts("bone", (10, 8), (11, 7), (12, 8), (13, 7)).rect(4, 16, 6, 3, "bone").h_(4, 17, 6, "concrete3")
+P("obj.condiments", c.outline())
+
+
+def dish_return(f):             # the dish return: a belt through a window, carrying one tray round again
+    c = C().rect(1, 3, 14, 12, "night1").rect(2, 4, 12, 10, "night0").h_(1, 3, 14, "steel").rect(0, 14, 16, 3, "concrete2").h_(0, 14, 16, "concrete3")
+    for x in range(1 + f, 16, 3): c.px(x, 15, "night2")
+    x = 3 if f == 0 else 7
+    c.rect(x, 12, 6, 2, "warm3").rect(x + 1, 10, 2, 2, "bone").px(x + 4, 11, "screen2")
+    return c.rect(1, 17, 14, 5, "concrete1").h_(1, 22, 14, "night2").rect(5, 6, 6, 2, "bone").h_(6, 7, 4, "night2")
+
+
+P("obj.dish_return", dish_return(0).outline())
+P("obj.dish_return#1", dish_return(1).outline())
+
+# The drinks fountain: four spouts, one label worn off.
+c = C().rect(2, 5, 12, 10, "concrete3").h_(2, 5, 12, "bone").v_(13, 6, 9, "concrete2")
+for i, col in enumerate(("signal", "slicker1", "yerba1", "concrete2")):
+    c.rect(3 + i * 3, 7, 2, 3, col).px(3 + i * 3, 11, "steel").px(3 + i * 3, 12, "night2")
+c.rect(1, 15, 14, 2, "steel").h_(1, 15, 14, "concrete3").rect(2, 17, 12, 5, "concrete2").h_(2, 22, 12, "night2").rect(10, 12, 2, 3, "bone")
+P("obj.soda_fountain", c.outline())
+
+# A cafeteria table, two tiles long, with the stools that swing out from under it.
+c = C(32, 16).rect(1, 3, 30, 5, "warm3").h_(1, 3, 30, "warm4").h_(1, 8, 30, "warm1").v_(16, 3, 5, "warm2")
+for x in (4, 12, 20, 28):
+    c.v_(x, 9, 3, "steel").rect(x - 2, 12, 5, 2, "soft1").h_(x - 2, 14, 5, "soft0")
+c.rect(6, 4, 4, 2, "bone").px(7, 4, "warm2").rect(22, 5, 3, 2, "screen2").h_(1, 15, 30, "night2")
+WIDE["obj.long_table"] = c.outline().rows()
+
+# The three-bay sink, a sprayer on a spring.
+c = C().rect(0, 12, 16, 4, "concrete3").h_(0, 12, 16, "bone").rect(1, 13, 4, 2, "screen1").rect(6, 13, 4, 2, "screen0").rect(11, 13, 4, 2, "night2")
+c.rect(1, 16, 14, 6, "concrete2").v_(2, 16, 7, "steel").v_(13, 16, 7, "steel").h_(1, 22, 14, "night2")
+c.pts("steel", (8, 11), (8, 10), (8, 9), (8, 8), (9, 7), (10, 7), (11, 8), (11, 9)).px(11, 10, "night1").pts("bone", (3, 11), (4, 10))
+P("obj.kitchen_sink", c.outline())
+
+# Cereal dispensers: three tubes, a crank each.
+c = C().rect(1, 15, 14, 7, "warm1").h_(1, 15, 14, "warm3").h_(1, 22, 14, "night2")
+for i, col in enumerate(("warm4", "soft1", "warm2")):
+    x = 2 + i * 4
+    c.rect(x, 3, 4, 10, "bone").rect(x + 1, 6 + i, 2, 7 - i, col).h_(x, 3, 4, "steel").rect(x + 1, 13, 2, 2, "steel").px(x + 3, 14, "night1")
+c.rect(6, 16, 4, 2, "bone").px(7, 16, "warm4")
+P("obj.cereal_bar", c.outline())
+
+
+# The robotics lab.
+def robot_arm(f):               # a bench arm running its test loop
+    c = C().rect(4, 20, 8, 3, "concrete2").h_(4, 20, 8, "concrete3").rect(6, 16, 4, 4, "slicker0").h_(6, 16, 4, "slicker1")
+    if f == 0:
+        c.pts("slicker0", (7, 15), (7, 14), (6, 13), (6, 12), (5, 11), (5, 10)).pts("slicker1", (8, 15), (8, 14), (7, 13), (7, 12), (6, 11), (6, 10))
+        c.rect(4, 8, 3, 2, "steel").pts("slicker0", (7, 8), (8, 7), (9, 6), (10, 6)).rect(10, 4, 3, 2, "steel").pts("night1", (11, 6), (13, 6), (11, 7), (13, 7))
+    else:
+        c.pts("slicker0", (8, 15), (8, 14), (9, 13), (9, 12), (10, 11), (10, 10)).pts("slicker1", (7, 15), (7, 14), (8, 13), (8, 12), (9, 11), (9, 10))
+        c.rect(9, 8, 3, 2, "steel").pts("slicker0", (8, 8), (7, 7), (6, 7), (5, 8)).rect(3, 8, 3, 2, "steel").pts("night1", (3, 10), (5, 10), (3, 11), (5, 11))
+    return c.px(11, 21, "rot1" if f == 0 else "signal").pts("night1", (5, 23), (10, 23))
+
+
+P("obj.robot_arm", robot_arm(0).outline())
+P("obj.robot_arm#1", robot_arm(1).outline())
+
+
+def bot_dock(f):                # the charging station: a small wheeled robot nosed into its dock
+    c = C().rect(2, 8, 12, 9, "night2").h_(2, 8, 12, "night3").rect(4, 10, 8, 3, "night1").h_(5, 11, 2 + 4 * f, "yerba1").px(12, 9, "rot1" if f == 0 else "night1")
+    c.rect(3, 17, 10, 4, "concrete3").h_(3, 17, 10, "bone").rect(2, 20, 3, 3, "night1").rect(11, 20, 3, 3, "night1").px(3, 21, "steel").px(12, 21, "steel")
+    return c.rect(6, 18, 4, 2, "screen0").px(7, 18, "screen2").pts("slicker1", (1, 14), (1, 15), (0, 16)).h_(4, 23, 8, "night2")
+
+
+P("obj.bot_dock", bot_dock(0).outline())
+P("obj.bot_dock#1", bot_dock(1).outline())
+
+# The tool wall (32x16): pegboard, every tool with its outline painted behind it, one outline empty.
+c = C(32, 16).rect(0, 1, 32, 14, "warm2").h_(0, 1, 32, "warm3").h_(0, 14, 32, "warm1")
+for x in range(2, 32, 4):
+    for y in (3, 7, 11): c.px(x, y, "warm1")
+c.rect(3, 5, 2, 7, "steel").rect(2, 3, 4, 2, "concrete3")                                                         # hammer
+c.v_(9, 3, 9, "steel").pts("steel", (8, 3), (10, 3), (8, 11), (10, 11))                                           # wrench
+c.pts("bone", (13, 3), (14, 3), (15, 3), (16, 3), (13, 12), (14, 12), (15, 12), (16, 12), (13, 6), (16, 6), (13, 9), (16, 9))   # an empty outline
+c.rect(20, 3, 6, 4, "slicker0").rect(21, 7, 2, 4, "night2").px(26, 4, "steel")                                    # drill
+for x in (28, 30): c.v_(x, 4, 8, "steel").px(x, 3, "soft1")                                                       # two drivers
+WIDE["obj.tool_wall"] = c.rows()
+
+# A rack of spare rover wheels, one missing.
+c = C().v_(2, 3, 20, "steel").v_(13, 3, 20, "steel").h_(2, 3, 12, "concrete3").h_(2, 22, 12, "night2")
+for i, y in enumerate((5, 11, 17)):
+    c.h_(2, y + 5, 12, "concrete2")
+    for x in ((4, 9) if i != 1 else (4,)):
+        c.rect(x, y, 4, 5, "night1").rect(x + 1, y + 1, 2, 3, "steel").px(x + 1, y + 2, "bone").pts("night3", (x, y), (x + 3, y + 4))
+c.rect(9, 13, 3, 2, "slicker1")                                                                                    # the sticky note where the wheel was
+P("obj.wheel_rack", c.outline())
+
+
+# Hollis Hardware. The landmark: the key machine under its board of blanks, with a lamp bent over it.
+c = C(32, 40)
+c.rect(3, 2, 22, 17, "warm2").h_(3, 2, 22, "warm3").v_(24, 3, 16, "warm1").h_(3, 18, 22, "warm1")               # the board
+for j, y in enumerate((4, 9, 14)):
+    for i, x in enumerate(range(5, 24, 3)):
+        col = ("warm4", "steel", "warm3")[(i + j) % 3]
+        c.px(x, y, "night1").rect(x, y + 1, 2, 2, col).px(x, y + 3, col)
+c.rect(14, 15, 2, 3, "warm2")                                                                                     # one hook bare
+c.rect(4, 26, 20, 4, "concrete2").h_(4, 26, 20, "concrete3").rect(5, 30, 18, 9, "warm1").v_(22, 30, 9, "warm0").h_(5, 39, 18, "night2")   # the stand
+c.rect(7, 21, 9, 5, "steel").h_(7, 21, 9, "concrete3").rect(9, 22, 2, 2, "warm4").rect(13, 22, 2, 2, "warm4").h_(8, 25, 7, "night2")      # the duplicator: two vises
+c.pts("night1", (17, 23), (18, 23), (19, 22), (19, 21)).px(19, 20, "soft1")                                       # the crank
+c.rect(9, 33, 4, 5, "signal").h_(9, 33, 4, "bone").pts("warm4", (10, 32), (11, 32))                               # the coffee can of shavings
+c.pts("steel", (27, 25), (27, 24), (28, 23), (28, 22), (28, 21), (27, 20), (26, 19)).rect(22, 19, 4, 2, "slicker0").h_(22, 21, 4, "slicker1").px(27, 26, "night1")   # the lamp
+c.pts("slicker1", (23, 22), (24, 23)).rect(16, 31, 5, 3, "bone").h_(17, 32, 3, "night2")                          # the chalked note
+BIG["obj.key_machine"] = c.outline().rows()
+
+# Repair tags (32x16): tools on nails, a paper tag on each.
+c = C(32, 16).rect(0, 1, 32, 14, "warm1").h_(0, 1, 32, "warm2").h_(0, 14, 32, "warm0")
+for i, x in enumerate((3, 9, 15, 21, 27)):
+    c.px(x, 2, "night1")
+    if i == 2:
+        c.v_(x, 3, 8, "warm3").rect(x - 2, 3, 5, 2, "steel").px(x - 2, 5, "steel")                                # the claw hammer
+    elif i % 2:
+        c.v_(x, 3, 9, "steel").pts("steel", (x - 1, 3), (x + 1, 3))
+    else:
+        c.rect(x - 1, 3, 3, 4, "signal" if i else "yerba1").v_(x, 7, 5, "steel")
+    c.rect(x + 1, 8, 3, 4, "bone").px(x + 2, 9, "night2").px(x + 2, 11, "concrete3")
+WIDE["obj.repair_tags"] = c.rows()
+
+# The shop counter: oak, a brass rule let into the edge.
+c = C().rect(0, 10, 16, 3, "warm3").h_(0, 10, 16, "warm4").h_(0, 13, 16, "warm0").rect(0, 14, 16, 8, "warm1").rect(0, 22, 16, 2, "night2")
+for x in range(1, 16, 2): c.px(x, 12, "slicker0")
+c.v_(5, 14, 8, "warm0").v_(11, 14, 8, "warm0").pts("warm2", (2, 17), (8, 18), (13, 16))
+P("obj.shop_counter", c.outline())
+
+# The cash drawer on its piece of counter: wood, brass corners, the bell inside.
+c = C().rect(0, 12, 16, 2, "warm3").h_(0, 12, 16, "warm4").rect(0, 14, 16, 8, "warm1").rect(0, 22, 16, 2, "night2")
+c.rect(2, 5, 12, 7, "warm2").h_(2, 5, 12, "warm3").v_(13, 6, 6, "warm1").pts("slicker0", (2, 5), (13, 5), (2, 11), (13, 11)).rect(6, 8, 4, 2, "night1").px(7, 8, "slicker1")
+P("obj.cash_drawer", c.outline())
+
+
+def shelf(kind):                # a run of shop shelving, three shelves
+    c = C().rect(0, 2, 16, 21, "warm0").v_(0, 2, 21, "warm1").v_(15, 2, 21, "warm1").h_(0, 2, 16, "warm2")
+    for j, y in enumerate((8, 15, 22)):
+        c.h_(0, y, 16, "warm2")
+        for i, x in enumerate(range(1, 14, 3)):
+            if kind == "paint":
+                c.rect(x, y - 4, 3, 4, "concrete3").h_(x, y - 4, 3, "steel").rect(x, y - 2, 3, 1, ("signal", "tub1", "yerba1", "slicker1", "bone")[(i + j * 2) % 5])
+            elif kind == "tools":
+                c.v_(x + 1, y - 5, 5, "steel" if (i + j) % 2 else "warm3").rect(x, y - 5, 3, 2, ("signal", "steel", "slicker0")[(i + j) % 3])
+            else:
+                c.rect(x, y - 3 - (i + j) % 2, 3, 3 + (i + j) % 2, ("warm2", "warm3", "concrete2")[(i + j) % 3]).px(x + 1, y - 2, "bone")
+    return c
+
+
+P("obj.shelf_tools", shelf("tools").outline())
+P("obj.shelf_paint", shelf("paint").outline())
+P("obj.shelf_boxes", shelf("boxes").outline())
+
+
+def paint_mixer(f):             # the paint shaker, a can clamped in it, never switched off
+    c = C().rect(2, 14, 12, 8, "concrete2").h_(2, 14, 12, "concrete3").h_(2, 22, 12, "night2").rect(4, 17, 3, 2, "night1").px(5, 17, "rot1" if f == 0 else "signal")
+    x = 5 + f
+    c.rect(3, 3, 10, 2, "steel").v_(3, 5, 9, "steel").v_(12, 5, 9, "steel")
+    c.rect(x, 6, 5, 7, "bone").h_(x, 6, 5, "steel").rect(x, 9, 5, 2, "tub1").h_(4, 13, 8, "night1").px(x + 2, 5, "night1")
+    return c.pts("concrete3", *(((1, 8), (14, 10)) if f == 0 else ((1, 10), (14, 8))))
+
+
+P("obj.paint_mixer", paint_mixer(0).outline())
+P("obj.paint_mixer#1", paint_mixer(1).outline())
+
+# A wheelbarrow with a price on it.
+c = C().rect(3, 12, 10, 5, "yerba0").h_(3, 12, 10, "yerba1").h_(4, 17, 8, "yerba0")
+c.pts("warm3", (13, 13), (14, 12), (15, 11)).rect(5, 19, 4, 4, "night1").px(6, 20, "steel").px(7, 21, "steel").pts("steel", (11, 18), (12, 19), (12, 20), (12, 21), (12, 22))
+c.rect(6, 13, 4, 3, "bone").px(7, 14, "night2").px(8, 14, "night2")
+P("obj.wheelbarrow", c.outline())
+
+# Bags of potting soil, stacked.
+c = C()
+for i, y in enumerate((18, 13, 8)):
+    c.rect(2 + i, y, 12 - i, 5, "warm1" if i % 2 else "warm0").h_(2 + i, y, 12 - i, "warm2").rect(5 + i, y + 1, 5, 3, "yerba1").px(7 + i, y + 2, "bone")
+c.pts("warm0", (3, 23), (4, 23), (12, 23))
+P("obj.soil_bags", c.outline())
+
+# A garden hose on a reel.
+c = C().rect(4, 8, 8, 10, "yerba0").rect(5, 9, 6, 8, "yerba1").rect(6, 10, 4, 6, "yerba0").rect(7, 12, 2, 2, "steel")
+c.v_(3, 7, 15, "steel").v_(12, 7, 15, "steel").h_(3, 22, 10, "night2").pts("yerba1", (12, 17), (13, 18), (13, 19), (14, 20), (14, 21)).px(14, 22, "slicker0")
+P("obj.hose_reel", c.outline())
+
+# Ladders leaned in the corner, a stepladder in front.
+c = C().v_(3, 1, 22, "warm3").v_(8, 1, 22, "warm3")
+for y in range(3, 22, 3): c.h_(4, y, 4, "warm2")
+c.v_(9, 10, 13, "steel").v_(14, 10, 13, "steel").h_(9, 10, 6, "signal")
+for y in (13, 16, 19): c.h_(10, y, 4, "concrete3")
+P("obj.ladders", c.outline())
+
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)
 write("big", 32, 40, BIG)
