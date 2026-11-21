@@ -29,6 +29,10 @@ export const FEEL = { comboWindow: 0.55, finisherDmg: 1.6, finisherKnock: 1.8, f
 // The gonman, stage two (Manuel's own request for his own character; implied only, nothing drawn, D-007/D-015).
 // R while morphed: a wind-up where he can't move, then sticky globs fly toward his aim. A glob slows what it hits
 // and leaves a puddle that slows anything walking through it. Bosses slow less; the Sahur doesn't slow at all.
+// Michael's Ping (hub #66, player feedback: "feels bad to use"). It used to only mark. Now the pulse lands a jolt
+// (a little damage and a stagger), a kill on something you marked hands cooldown back to whoever pinged it, and when a
+// marked thing dies its mark jumps to the nearest one unmarked, so a ping run through a crowd keeps itself going.
+export const PING = { cd: 8, r: 150, mark: 5, dmg: 4, stagger: 0.35, refund: 1.5, jumpR: 90 };
 export const GONMAN = { windup: 1.4, cd: 30, slow: 0.06, bossSlow: 0.3, slowTime: 5, shrink: 5.5, puddleR: 16, puddleTtl: 7, globs: 5, near: 36, far: 84, dmg: 2 };
 export const MATE = { buff: 45, crash: 4, speed: 0.15, staRegen: 0.6, crashSpeed: -0.4 };
 // Going under (Michael, 2026-11-19; sealed lore acts-2-3 §4). At 100% code rot a roommate goes
@@ -52,6 +56,7 @@ export class Sim {
   constructor(map, opts = {}) {
     this.seed = opts.seed ?? 'default';
     this.killed = opts.killed ?? new Set();   // spawn keys of enemies already dead in this world
+    this.isBossDefeated = opts.isBossDefeated;
     this.bossVariant = opts.bossVariant;
     this.map = map;          // { w, h, solid(tx, ty) -> bool, spawns: [{x,y}] }
     this.players = new Map(); // id -> player
@@ -82,7 +87,9 @@ export class Sim {
       // Never land on an exit tile (Manuel: entering ASTER bounced you back out). The lobby's walk-on street doors
       // are two tiles wide, so "one to the right of the door" was the door again, and the first step left the building.
       const exitTiles = new Set(map.objects.filter((o) => o.action === 'exit').flatMap((o) => Array.from({ length: o.w ?? 1 }, (_, i) => `${o.x + i},${o.y}`)));
-      const free = around.map(([dx, dy]) => [back.x + dx, back.y + dy]).filter(([x, y]) => !map.solid(x, y) && !exitTiles.has(`${x},${y}`));
+      // inside: which side of a cordon barrier is inside ('down' / 'up' / 'left' / 'right'): never land beyond it (task #36).
+      const side = { down: ([, dy]) => dy > 0, up: ([, dy]) => dy < 0, right: ([dx]) => dx > 0, left: ([dx]) => dx < 0 }[back.inside] ?? (() => true);
+      const free = around.filter(side).map(([dx, dy]) => [back.x + dx, back.y + dy]).filter(([x, y]) => !map.solid(x, y) && !exitTiles.has(`${x},${y}`));
       if (free.length) arrivals = free.map(([x, y]) => ({ x: x * TILE + 8, y: y * TILE + 8 }));
     }
     let i = 0;
@@ -114,6 +121,8 @@ export class Sim {
       }
       if (BOSSES[e.kind]) {   // bosses made with defineBoss (src/content/bosses.js): mid bosses unless def.mini === false
         const w = BOSSES[e.kind](Math.max(1, this.players.size));
+        // A unique guardian keeps its defeat flag even if its map or spawn index changes.
+        if (w.mini !== false && this.isBossDefeated?.(e.kind)) continue;
         const def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
         this.enemies.set(id, { id, spawnKey, kind: e.kind, def, boss: true, mini: w.mini !== false, awake: !w.wake, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 2, cd2: 3, hurtT: 0, kx: 0, ky: 0, dash: 0 });
         continue;
@@ -140,7 +149,9 @@ export class Sim {
       }
       const tr = TRAITS[v.trait];
       // The party is always three (AI companions fill empty seats), so regular enemies are tuned for three.
-      const def = { ...base, hp: Math.round(base.hp * tr.hp * PARTY_SCALE.hp), damage: Math.round((base.damage ?? 0) * PARTY_SCALE.dmg), speed: base.speed * tr.speed, armor: tr.armor ?? base.armor ?? 0, color: v.tint, vname: v.name, trait: v.trait };
+      // A map can make its regular enemies tougher: enemyPower { hp, dmg } multipliers (Trevor: Lake Artemesia, 2026-11-20).
+      const pw = this.map.enemyPower ?? {};
+      const def = { ...base, hp: Math.round(base.hp * tr.hp * PARTY_SCALE.hp * (pw.hp ?? 1)), damage: Math.round((base.damage ?? 0) * PARTY_SCALE.dmg * (pw.dmg ?? 1)), speed: base.speed * tr.speed, armor: tr.armor ?? base.armor ?? 0, color: v.tint, vname: v.name, trait: v.trait };
       this.enemies.set(id, { id, spawnKey, kind: e.kind, def, x: e.x, y: e.y, hp: def.hp, cd: Math.random(), hurtT: 0, kx: 0, ky: 0, ...(e.pen ? { pen: e.pen } : {}) });
     }
   }
@@ -161,7 +172,14 @@ export class Sim {
   }
 
   /** Gear/skill modifiers from the save (src/content/items.js playerMods). */
-  setMods(id, mods) { const p = this.players.get(id); if (p) { const full = p.hp >= this.maxHp(p); p.mods = mods; if (full) p.hp = this.maxHp(p); } }
+  setMods(id, mods) {
+    const p = this.players.get(id);
+    if (!p) return;
+    const full = p.hp >= this.maxHp(p);
+    p.mods = mods;
+    if (full) p.hp = this.maxHp(p);
+    if (mods.gun) this._prepareGun(p, mods.gunStats?.clip ?? COMBAT.shot.clip);
+  }
   maxHp(p) { return COMBAT.maxHp + (p.mods?.maxHp ?? 0); }
   setRot(id, value) {
     const p = this.players.get(id);
@@ -288,6 +306,20 @@ export class Sim {
 
   removePlayer(id) { this.players.delete(id); }
 
+  /** Hand control to another controller without respawning the roommate. */
+  transferPlayer(from, to) {
+    const player = this.players.get(from);
+    if (!player || this.players.has(to)) return false;
+    this.players.delete(from);
+    this.players.set(to, player);
+    player.id = to;
+    player.waitExit = null;
+    // Projectiles and companions still belong to the same roommate.
+    for (const shot of this.shots) if (shot.owner === from) shot.owner = to;
+    for (const ally of this.allies ?? []) if (ally.owner === from) ally.owner = to;
+    return true;
+  }
+
   /** Co-op doors: park a player at an exit. Returns true when every standing player is parked at it. */
   waitAtExit(id, exitId, dx, dy) {
     const p = this.players.get(id); if (!p || p.waitExit === exitId) return this.allWaiting(exitId);
@@ -327,7 +359,7 @@ export class Sim {
       p.aim = inp.aim;
       p.dodgeCd = Math.max(0, p.dodgeCd - dt);
       p.iframes = Math.max(0, p.iframes - dt); if (p.focusT > 0) p.focusT = Math.max(0, p.focusT - dt);
-      if (p.reloadT > 0) { p.reloadT = Math.max(0, p.reloadT - dt); if (p.reloadT === 0) p.ammo = ({ ...COMBAT.shot, ...(p.mods?.gunStats ?? {}) }).clip; }
+      if (p.reloadT > 0) { p.reloadT = Math.max(0, p.reloadT - dt); if (p.reloadT === 0) p.ammo = p.gunClip ?? COMBAT.shot.clip; }
 
       p.staT = Math.max(0, (p.staT ?? 0) - dt);
       p.pillT = Math.max(0, (p.pillT ?? 0) - dt);   // blue pill: dodges are free while this runs
@@ -385,7 +417,7 @@ export class Sim {
       const held = p.held ?? 'melee';
       if (inp.attack && held === 'melee' && p.mods?.swing && !p.riding && !p.playing && !busy && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
       if (inp.attack && held === 'gun' && p.mods?.gun && !p.riding && !p.playing && !busy && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);
-      if (inp.fire && !p.riding && !p.playing && !busy && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);   // no gun, no shooting
+      if (inp.fire && (held === 'gun' || p.held === undefined) && !p.riding && !p.playing && !busy && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);
 
       // Facing follows the walking direction; it only turns toward the cursor while firing a ranged
       // weapon. Standing still keeps the last facing.
@@ -468,7 +500,8 @@ export class Sim {
   _stepDecoys(dt) {
     for (const dc of this.decoys) dc.ttl -= dt;
     this.decoys = this.decoys.filter((dc) => dc.ttl > 0 && dc.hp > 0);
-    for (const e of this.enemies.values()) if (e.marked > 0) e.marked -= dt;
+    // An expired mark loses its owner too, so a later kill can't refund Ping or jump a mark (John Pork, PR #88).
+    for (const e of this.enemies.values()) if (e.marked > 0 && (e.marked -= dt) <= 0) e.markedBy = null;
   }
 
   _stepHazards(dt) {
@@ -483,35 +516,80 @@ export class Sim {
     this.hazards = this.hazards.filter((h) => h.ttl > 0);
   }
 
-  // Signature abilities (R). Trevor: Riff · Manuel: Decoy Bust · Michael: Ping.
+  // R uses the equipped ability. Manuel's stage-two transformation overrides his normal selection.
   _ability(p) {
     const ap = 1 + (p.mods?.abilityPower ?? 0), cdk = 1 - (p.mods?.skillCd ?? 0);
     if (p.character === 'trevor') {
-      p.skillCd = 6 * cdk;
-      const r = 46 * Math.min(1.8, Math.sqrt(ap));
+      const chord = p.activeAbility === 'chord', halfArc = Math.PI / 5;
+      p.skillCd = p.skillMaxCd = (chord ? 8 : 6) * cdk;
+      const r = (chord ? 80 : 46) * Math.min(1.8, Math.sqrt(ap));
+      const ax = Math.cos(p.aim), ay = Math.sin(p.aim), cone = Math.cos(halfArc);
       for (const e of this.enemies.values()) {
         const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
-        if (d > r) continue;
+        if (d > r || (chord && (dx * ax + dy * ay < d * cone || !this._abilityPathClear(p, e)))) continue;
         this._hurtEnemy(e, Math.round(6 * ap), (dx / (d || 1)) * 260 * Math.min(1.6, ap), (dy / (d || 1)) * 260 * Math.min(1.6, ap), p.id);
         if (this.enemies.has(e.id)) { e.hurtT = (e.boss ? 0.3 : 0.9) * Math.min(2.2, ap); if (p.mods?.markDmg) e.marked = Math.max(e.marked ?? 0, 3); }   // stunned (and rattled)
       }
-      this.events.push({ t: 'riff', id: p.id, x: p.x, y: p.y, r });
+      this.events.push(chord ? { t: 'chord', id: p.id, x: p.x, y: p.y, r, aim: p.aim, halfArc }
+        : { t: 'riff', id: p.id, x: p.x, y: p.y, r });
     } else if (p.character === 'manuel' && p.morphed && (p.morphStage ?? 0) >= 2) {
-      p.skillCd = GONMAN.cd * cdk; p.gonT = GONMAN.windup; p.gonAim = p.aim;   // the gonman, stage two
+      p.skillCd = p.skillMaxCd = GONMAN.cd * cdk; p.gonT = GONMAN.windup; p.gonAim = p.aim;
       this.events.push({ t: 'gonman', id: p.id, ms: GONMAN.windup * 1000 });
+    } else if (p.character === 'manuel' && p.activeAbility === 'rally') {
+      p.skillCd = p.skillMaxCd = 12 * cdk;
+      const r = 64, restore = Math.round(30 * Math.min(1.5, ap));
+      for (const ally of this.players.values()) {
+        if (ally.downed || ally.under > 0 || Math.hypot(ally.x - p.x, ally.y - p.y) > r) continue;
+        ally.sta = Math.min(MOVE.stamina + (ally.mods?.sta ?? 0), ally.sta + restore);
+      }
+      this.events.push({ t: 'rally', id: p.id, x: p.x, y: p.y, r });
     } else if (p.character === 'manuel') {
-      p.skillCd = 10 * cdk;
+      p.skillCd = p.skillMaxCd = 10 * cdk;
       const n = 1 + (p.mods?.decoys ?? 0);
       for (let i = 0; i < n; i++) {
         const a = p.aim + (i - (n - 1) / 2) * 0.9;
         this.decoys.push({ x: p.x + Math.cos(a) * 14, y: p.y + Math.sin(a) * 14, ttl: 6 * ap, hp: Math.round(40 * ap), mhp: Math.round(40 * ap) });
       }
       this.events.push({ t: 'decoy', id: p.id });
+    } else if (p.character === 'michael' && p.activeAbility === 'focus') {
+      p.skillCd = p.skillMaxCd = 7 * cdk;
+      const ax = Math.cos(p.aim), ay = Math.sin(p.aim), cone = Math.cos(Math.PI / 10);
+      let best, range = 210 * Math.min(1.8, ap);
+      for (const e of this.enemies.values()) {
+        const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
+        if (d > range || dx * ax + dy * ay < d * cone || !this._abilityPathClear(p, e)) continue;
+        best = e;
+        range = d;
+      }
+      if (best) {
+        best.marked = Math.max(best.marked ?? 0, 8 * ap);
+        best.markedBy = p.character;
+      }
+      this.events.push({ t: 'focusPing', x: p.x, y: p.y, x2: best?.x ?? p.x + 48 * ax, y2: best?.y ?? p.y + 48 * ay });
     } else {
-      p.skillCd = 8 * cdk;
-      for (const e of this.enemies.values()) if (Math.hypot(e.x - p.x, e.y - p.y) < 150 * Math.min(1.8, ap)) e.marked = 5 * ap;
-      this.events.push({ t: 'ping', id: p.id, x: p.x, y: p.y });
+      p.skillCd = p.skillMaxCd = PING.cd * cdk;
+      const r = PING.r * Math.min(1.8, ap), hit = [];
+      for (const e of this.enemies.values()) if (Math.hypot(e.x - p.x, e.y - p.y) < r) hit.push(e);
+      for (const e of hit) {
+        // marked first, so the jolt itself lands marked. The owner is the roommate, not the player id, so it survives
+        // a human and the AI trading control of Michael mid-fight (John Pork, PR #85).
+        e.marked = PING.mark * ap; e.markedBy = p.character;
+        if (e.boss) continue;   // bosses shrug the jolt off (their fight lengths are tuned: Trevor, the Switchman); still marked
+        this._hurtEnemy(e, Math.round(PING.dmg * ap), 0, 0, p.id);
+        if (this.enemies.has(e.id)) e.hurtT = Math.max(e.hurtT ?? 0, PING.stagger);
+      }
+      this.events.push({ t: 'ping', id: p.id, x: p.x, y: p.y, r, n: hit.length });
     }
+  }
+
+  // Aimed abilities stop at walls and closed doors.
+  _abilityPathClear(from, to) {
+    const dx = to.x - from.x, dy = to.y - from.y, steps = Math.ceil(Math.hypot(dx, dy) / (TILE / 2));
+    for (let i = 1; i < steps; i++) {
+      const x = from.x + dx * i / steps, y = from.y + dy * i / steps;
+      if (this.map.solid(Math.floor(x / TILE), Math.floor(y / TILE))) return false;
+    }
+    return true;
   }
 
   /** The release: globs in a fan toward where he was aiming. Each one slows what it lands on and leaves a puddle. */
@@ -547,7 +625,7 @@ export class Sim {
     if (dash) m = { ...m, damage: m.damage * FEEL.dashDmg, range: m.range + FEEL.dashRange, arc: m.arc * 0.7 };
     const focus = p.focusT > 0; if (focus) p.focusT = 0;
     p.meleeCd = m.cooldown * (fin ? 1.25 : 1); p.swingT = 0.2;   // long enough for both attack frames (12 fps)
-    this.events.push({ t: 'swing', id: p.id, a: p.aim, r: m.range, arc: m.arc, combo: p.combo });
+    this.events.push({ t: 'swing', id: p.id, a: p.aim, r: m.range, arc: m.arc, combo: p.combo, weapon: p.mods?.weaponId });
     // Deflect: enemy shots inside the swing go back the way they came, as the player's.
     for (const s of this.shots) {
       if (s.from === 'player' || s.noDeflect) continue;   // red-tell attacks (the boss Sweep) can't be deflected
@@ -579,11 +657,15 @@ export class Sim {
     }
   }
 
+  _prepareGun(p, clip) {
+    const key = p.mods?.weaponId ?? JSON.stringify(p.mods?.gunStats ?? null);
+    if (p.gunKey !== key) { p.gunKey = key; p.ammo = clip; p.reloadT = 0; }
+    p.gunClip = clip;
+  }
+
   _fire(p) {
     const c = { ...COMBAT.shot, ...(p.mods?.gunStats ?? {}) }, n = c.pellets ?? 1;
-    // Magazine: a gun holds `clip` shots, then reloads for `reload` s. Swapping guns starts a fresh clip.
-    const key = JSON.stringify(p.mods?.gunStats ?? null);
-    if (p.gunKey !== key) { p.gunKey = key; p.ammo = c.clip; p.reloadT = 0; }
+    this._prepareGun(p, c.clip);
     if (p.reloadT > 0) return;
     p.ammo = (p.ammo ?? c.clip) - 1;
     if (p.ammo <= 0) { p.reloadT = c.reload; p.ammo = 0; this.events.push({ t: 'reload', id: p.id }); }
@@ -632,9 +714,20 @@ export class Sim {
       if (e.def?.trait === 'puddler') this.hazards.push({ x: e.x, y: e.y, r: 14, ttl: 5, dps: 8 });
       this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss, mini: !!e.mini, key: e.spawnKey });
       if (e.boss && !e.mini) for (const a of [...this.enemies.values()]) if (a.summoned) { this.enemies.delete(a.id); this.events.push({ t: 'kill', x: a.x, y: a.y, kind: a.kind, xp: 0, crumble: true }); }   // its adds crumble with it
+      if (e.marked > 0 && e.markedBy) this._pingKill(e);   // a Ping mark (Riff's rattle has no owner)
       const k = this.players.get(by);   // Argentina shirt (gambeta): a kill hands the dodge straight back
       if (k?.mods?.killDodge) { k.dodgeCd = 0; k.sta = Math.min(MOVE.stamina + (k.mods.sta ?? 0), (k.sta ?? 0) + MOVE.dashCost); }
     }
+  }
+
+  /** A marked thing died (hub #66): whoever pinged it gets cooldown back, and the mark jumps on to the nearest
+   *  unmarked enemy in reach, keeping what time it had left. */
+  _pingKill(e) {
+    const m = [...this.players.values()].find((q) => q.character === e.markedBy);
+    if (m?.character === 'michael' && m.skillCd > 0) m.skillCd = Math.max(0, m.skillCd - PING.refund);
+    let best = null, bd = PING.jumpR;
+    for (const o of this.enemies.values()) { const d = Math.hypot(o.x - e.x, o.y - e.y); if (!(o.marked > 0) && d < bd) { best = o; bd = d; } }
+    if (best) { best.marked = Math.max(1.5, e.marked); best.markedBy = e.markedBy; this.events.push({ t: 'pingJump', x: e.x, y: e.y, x2: best.x, y2: best.y }); }
   }
 
   /** How much smaller a player's hitbox is, in px: gear (mods.small) plus the gonman's thin spell, which starts
@@ -1000,7 +1093,7 @@ export class Sim {
   /** The party answers the phone mid-fight: the Sahur stops, tilts its head, and leaves. */
   answerSahur() {
     for (const e of this.enemies.values()) {
-      if (e.sahur && e.fightT > 10) { this.enemies.delete(e.id); if (e.spawnKey) this.killed?.add(e.spawnKey); this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, xp: 80, boss: true, sahurLeft: true }); return true; }
+      if (e.sahur && e.fightT > 10) { this.enemies.delete(e.id); if (e.spawnKey) this.killed?.add(e.spawnKey); this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, key: e.spawnKey, xp: 80, boss: true, sahurLeft: true }); return true; }
     }
     return false;
   }
@@ -1134,9 +1227,10 @@ export class Sim {
     return {
       tick: this.tick,
       players: [...this.players.values()].map((p) => ({
+        ...(p.skillCd > 0 && p.skillMaxCd ? { skMax: p.skillMaxCd } : {}),
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
-        hp: Math.round(p.hp), mhp: this.maxHp(p), rot: Math.round((p.rot ?? 0) * 10) / 10, am: p.ammo ?? null, rl: p.reloadT > 0 ? Math.round(p.reloadT * 10) / 10 : 0, st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, ...(p.gonSlim ? { gs: Math.max(0, Math.min(1, Math.round((1 - p.skillCd / (GONMAN.cd * (1 - (p.mods?.skillCd ?? 0)))) * 100) / 100)) } : {}), pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0, un: p.under > 0 ? Math.ceil(p.under) : 0, pu: p.under > 0 ? Math.round(((p.pullT ?? 0) / UNDER.pullTime) * 100) / 100 : 0, mt: Math.ceil(p.mateT ?? 0), cr: p.crashT > 0,
+        hp: Math.round(p.hp), mhp: this.maxHp(p), rot: Math.round((p.rot ?? 0) * 10) / 10, weapon: p.mods.weaponId ?? null, am: p.ammo ?? null, rl: p.reloadT > 0 ? Math.round(p.reloadT * 10) / 10 : 0, st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, ...(p.gonSlim ? { gs: Math.max(0, Math.min(1, Math.round((1 - p.skillCd / (GONMAN.cd * (1 - (p.mods?.skillCd ?? 0)))) * 100) / 100)) } : {}), pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0, un: p.under > 0 ? Math.ceil(p.under) : 0, pu: p.under > 0 ? Math.round(((p.pullT ?? 0) / UNDER.pullTime) * 100) / 100 : 0, mt: Math.ceil(p.mateT ?? 0), cr: p.crashT > 0,
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,

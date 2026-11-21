@@ -82,6 +82,37 @@ entries turn into one-line hints. The full answers stay in this file.
 | **Shrimp canary** | Check Trevor's shrimp tank in 631: their behavior tells you how rotted the tunnels still are | The tank text says they act up before rot spikes | built |
 | **Sump pump** (puzzle step) | Restart the pump in the tunnels' pump room to drain the flooded bay and read the B switch clue | The vending-machine marks "below the waterline" | built |
 
+## Later acts, small finds (sealed)
+
+The later acts' areas have small finds too. Their list is sealed, so nobody reads it by accident:
+`docs/sealed/secrets-later-acts.md`. To open it on purpose:
+`python3 tools/spoilers/seal.py open docs/sealed/secrets-later-acts.md`
+
+*En español:* las zonas de los actos siguientes también tienen hallazgos pequeños. La lista está sellada para que nadie
+la lea sin querer: `docs/sealed/secrets-later-acts.md`. Para abrirla a propósito:
+`python3 tools/spoilers/seal.py open docs/sealed/secrets-later-acts.md`
+
+## Act 1, small finds (hub #30 polish, added by gonman)
+
+One small secret or job in each of the Act 1 side areas. "Once per save" finds set `got.<object id>`; a searched
+container sets `loot.<map>.<object id>` and can only be emptied once.
+
+| Find | How to trigger | Hint in the world | Status |
+|---|---|---|---|
+| **The window booth** | In the diner (off Route 1, College Park), press E on the booth by the window: a Halfsmoke bar left on a napkin for whoever sits there next. Once per save | It's the only booth with its own name: "The window booth" | built |
+| **Storage cage 631** | ASTER basement (B-01), the last storage cage against the east wall: a bike helmet a past tenant left behind. Once per save | Kess's workbench: the key on 631's hook on the pegboard is furred with dust | built |
+| **The roof cooler** | ASTER roof, the cooler wedged behind the water tank: search it once for supplies | It sits in plain view, right beside the tank | built |
+| **The meal swipe reader** | Dining hall (off the campus quad), the lit reader by the door: press E again to page through three screens (swipes left, the top-swipers table, the rating faces) | It glows next to the door you came in by | built |
+| **The rover team's drawer** | Robotics lab (off the campus quad), the bench beside the parts bins: welding goggles. Once per save | The bench is labeled "Drawer marked ROVER TEAM", and a grad student is asleep next to it | built |
+| **The projector** | Lecture auditorium (off the campus quad): press E on the projector again and again to click back through the last lecture, from slide 41 to slide 1 | The quad door: "A projector hums behind the doors." It's lit at the front of the hall | built |
+| **637's new exercise** | Do the 637 neighbor's errand (*The same exercise*: read the first date in their sheet music and tell them). Talk to them again afterwards: there's a new page on the stand | They promise to try a new one tomorrow, and you both doubt it | built |
+| **Cold brew in 638** | Apartment 638, the carton by the couch: she waves you toward a can. Once per save | The empties lined up in rows by the couch | built |
+| **The 631 parcel** | Apartment 636 (nobody home), the box among the deliveries that's addressed to 631: wool socks. Once per save | Its name: "A box addressed to 631" | built |
+| **The fifth-floor hose cabinet** | ASTER fifth floor, the fire hose cabinet on the north wall: a hard hat someone left as collateral. Once per save | A glass door that doesn't lock, and no hose behind it | built |
+| **The machine on the end** | ASTER laundry room (off the basement), the out-of-order washer at the end of the row: search it once | The person folding: "Nobody uses the one on the end." | built |
+| **Rot nest on the quad** | The abatement bounty board (by the van in College Park) can post a rot nest on the campus quad's west lawn. Clear it for the reward | The student on the brick path: "Rot comes up through the grass" | built |
+| **The TA's night off** | Compute Hall B: once the autograder is down, talk to the TA again. For once she isn't grading, and she asks you for one night before anyone upstairs finds out | The auditorium's slide 40: GRADING IS NOW FULLY AUTOMATED | built |
+
 ## Hard optional puzzles (boons)
 
 | Puzzle | Solution | Hints in the world | Boon | Status |
@@ -89,3 +120,9 @@ entries turn into one-line hints. The full answers stay in this file.
 | **The Four Clocks** | Four rotted clocks are stuck at 19:01: the 6th-floor hallway, the ASTER lobby, the College Park station, and the dead platform. Press E to wind each one (each wind steps 19:01 → 21:30 → 00:00 → **03:14** → 06:45 → 12:00). Set all four to **03:14** | The paper clock taped under the station clock ("USE THIS ONE") has its hands at 3:14 | **Rollover charm** (charm slot, −12% damage taken). The hallway clock's face swings open | built |
 | **Manuel's busts** | Turn the three busts to face the flag in the order **newest (#3), then the first (#1), then the second (#2)**. A wrong turn resets them | A scrap at Manuel's sculpting table: "la última primero, después la primera". (House rule #1 says don't touch them.) | **Porcelain Pork pin** (charm, +3 melee/+3 ranged) and a strange moment | built |
 | **Fishing oddities** | Fish the Paint Branch (College Park) or the tunnels' flooded bay: rare catches include a 2020s phone that still rings, a 2081 "Ten Years of Stability" coin, and a banned Pork action figure | Fishing anywhere there's water (press E at the edge) | built |
+
+## Acts 2 and 3, stretch-tier finds (sealed)
+
+The stretch-tier areas (`src/content/maps/stretch.js`) have small finds too. Their list is sealed, so nobody reads
+it by accident: `docs/sealed/secrets-stretch.md`. To open it on purpose:
+`python3 tools/spoilers/seal.py open docs/sealed/secrets-stretch.md`

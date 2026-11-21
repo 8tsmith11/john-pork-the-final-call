@@ -10,8 +10,10 @@ const SHAPES = { straight: [1, 0, 1, 0], corner: [1, 1, 0, 0], tee: [1, 1, 1, 0]
 const rot = (mask, r) => mask.map((_, i) => mask[(i - r + 4) % 4]);
 
 export class PipePuzzle {
-  constructor(scene, seed, onSolved, { cols = 6, rows = 4 } = {}) {
-    this.scene = scene; this.onSolved = onSolved; this.cols = cols; this.rows = rows;
+  // onRotate (co-op, src/game/pipeTable.js): a click asks the host to turn the tile instead of turning it here; the
+  // host's state comes back through setRots(), and only the host says it's solved (finish()).
+  constructor(scene, seed, onSolved, { cols = 6, rows = 4, onRotate = null } = {}) {
+    this.scene = scene; this.onSolved = onSolved; this.cols = cols; this.rows = rows; this.onRotate = onRotate;
     const r = new Rng(`${seed}::pipe`);
     this.inRow = r.int(0, rows - 1); this.outRow = r.int(0, rows - 1);
     this.grid = this._generate(r);
@@ -103,7 +105,11 @@ export class PipePuzzle {
       g.fillStyle(lit ? 0x6ff2ff : 0x4a5070).fillCircle(cx, cy, 3);
       if (!c.locked) {
         const z = scene.add.zone(x, y, cell, cell).setOrigin(0, 0).setInteractive({ useHandCursor: true });
-        z.on('pointerdown', (p, lx, ly, ev) => { ev?.stopPropagation?.(); c.r = (c.r + 1) % 4; sfx('swing'); /* was sound.play('x'): a missing key that threw, so the tile turned but never redrew (Trevor) */ this.draw(); if (this.solved()) this._win(); });
+        z.on('pointerdown', (p, lx, ly, ev) => {
+          ev?.stopPropagation?.(); sfx('swing');
+          if (this.onRotate) { this.onRotate(i, j); return; }   // co-op: the host turns it, for everyone
+          c.r = (c.r + 1) % 4; this.draw(); if (this.solved()) this._win();
+        });
         this.root.add(z);
       }
     }
@@ -114,5 +120,12 @@ export class PipePuzzle {
     this.scene.time.delayedCall(450, () => { this.destroy(); this.onSolved?.(); });
   }
 
-  destroy() { this.root.destroy(); this.closed = true; }
+  destroy() { if (this.closed) return; this.root?.destroy(); this.closed = true; }
+
+  /** Every tile's rotation, row by row (the shared state). */
+  rots() { return this.grid.flat().map((c) => c.r); }
+  /** Take the host's rotations and redraw. */
+  setRots(rots) { this.grid.flat().forEach((c, k) => { if (Number.isInteger(rots?.[k])) c.r = ((rots[k] % 4) + 4) % 4; }); if (this.root && !this.closed) this.draw(); }
+  /** The host says it's solved: close and run onSolved. */
+  finish() { this._win(); }
 }

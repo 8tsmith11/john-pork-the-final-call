@@ -56,12 +56,17 @@ These are content counts from `node tools/scope.mjs`. Playthrough length and pol
 browser playtests. Keep the milestone sequence below and use [the scope plan](design/10-scope.md)
 to track the larger targets.
 
-- **Story:** finish the Act 1 comic and cutscene briefs, then validate how players learn and act on
-  each lead. The world cutscene runner and trigger support are in review.
-- **World:** prioritize the Act 1 art and map polish that supports those beats. The later regions
-  have dedicated scaffold and cohesion work before they are ready for a story playthrough.
-- **Systems:** finish reviewing the shared interaction and input work, then test an Act 1 run with
-  three players. Note where reconnection, saves, and dialogue choices affect the run.
+### Landed work and next checks (2026-11-20)
+
+- **Story:** the Act 1 staging refresh landed in batch 2 (#106). Verify host and guest playback and
+  skipping, and finish the comic briefs. Check how players learn and act on each lead.
+- **World:** the Act 1 scaffold polish, both halves of the cordon work, and the stretch-area polish
+  are on main (#100, #106, #112). Later-act world alignment is on main (#73). The world team is
+  working on Act 2 and Act 3 polish in hub task #30 (PR #131). Districts and crowds follow after
+  PR #96 lands. The later acts still need scaffold and continuity work before a story playthrough.
+- **Systems:** the inventory changes landed in batch 1 (#100). The hub board and anonymous suggestions
+  landed in batch 2 (#106). Shared dialogue and the customization station remain in review. Keep a
+  three-player Act 1 run on the playtest plan, including reconnection, saves, and dialogue choices.
 
 ## What the brief really asks for
 
