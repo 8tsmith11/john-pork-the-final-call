@@ -72,6 +72,7 @@ import { growthSize, lookStage, gonmanWeight } from '../../content/growth.js';
 import { Beltless } from '../beltless.js';
 import { ToothpasteTalk } from '../toothpaste.js';
 import { RunningGags } from '../runningGags.js';
+import { Watcher } from '../watcher.js';
 import { HostPick } from '../hostPick.js';
 import { Approach } from '../approach.js';
 import { Pacifier } from '../pacifier.js';
@@ -188,7 +189,7 @@ export class WorldScene extends Phaser.Scene {
     this._wireNet();
     this._makeDialogueUi();
     // D-014: shared events, instruments, romance (src/game/sharedEvent.js, performances.js, romance.js)
-    this.shared = new SharedEvents(this); this.stage = new Stage(this); this.retry = new RetryLine(this); this.moods = new Moods(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.cordon = new Cordon(this); this.skirmish = new SkirmishView(this); this.bigButt = new BigButt(this); this.beltless = new Beltless(this); this.toothpaste = new ToothpasteTalk(this); this.gags = new RunningGags(this); this.hostPick = new HostPick(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this); this.stands = new GuitarStands(this);
+    this.shared = new SharedEvents(this); this.stage = new Stage(this); this.retry = new RetryLine(this); this.moods = new Moods(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.cordon = new Cordon(this); this.skirmish = new SkirmishView(this); this.bigButt = new BigButt(this); this.beltless = new Beltless(this); this.toothpaste = new ToothpasteTalk(this); this.gags = new RunningGags(this); this.hostPick = new HostPick(this); this.watcher = new Watcher(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this); this.stands = new GuitarStands(this);
     this.comic = new Comic(this);   // comic pages: flashbacks as a host-synced page-turn mode (src/game/comic.js)
     this._pageIdx = {};
     this.vignette = this._makeVignette();
@@ -238,6 +239,7 @@ export class WorldScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-H', () => { if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
     this.input.keyboard.on('keydown-F', () => { if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
     this._showMap(startMap);
+    this.time.delayedCall(300, () => this.watcher?.onMapShown());
     this.ready = true;
     // Act 1's witnessed beats are staged in-engine first (hub #48; src/content/stage/act1_*.js), then the scene plays.
     // A beat of delay so the roommates are on screen for the cutscene to stand in for them.
@@ -664,6 +666,7 @@ export class WorldScene extends Phaser.Scene {
 
   // Story beats keyed to places (Act 1 MVP wiring; see docs/act1/DESIGN.md).
   _onEnterMap(map) {
+    this.watcher?.onMapShown();   // a story beat's crater and unfinished fight (src/game/watcher.js)
     const once = (flag, fn) => { if (!this.save.flags[flag]) { this.save.flags[flag] = true; fn(); } };
     // Still here? A callback queued on arrival only runs if the party is still on this map (Trevor: rapid E at the storm
     // grate went in and back out, and John Pork's call then rang on the plaza).
@@ -804,7 +807,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'bastion') { this._bastion().onClientMsg(msg); return; }
         if (msg.t === 'lab') { this._lab().onClientMsg(msg); return; }
         if (msg.t === 'pipe') { this._pipes().onClientMsg(msg); return; }
-        if (this.shared?.onMsg(msg) || this.stage?.onClientMsg(msg) || this.retry?.onClientMsg(msg) || this.moods?.onClientMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg) || this.comic?.onClientMsg(msg)) return;
+        if (this.shared?.onMsg(msg) || this.stage?.onClientMsg(msg) || this.retry?.onClientMsg(msg) || this.moods?.onClientMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg) || this.comic?.onClientMsg(msg) || this.watcher?.onClientMsg(msg)) return;
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
         if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text, msg.questRead, msg.itemIcons);
         if (msg.t === 'caption') this._caption(msg.text);
@@ -1789,6 +1792,14 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // Side-view cutscene (CinematicScene) over a paused world; resumes when it ends or is skipped.
+  /** Play a cinematic given as data (a story beat's painted film) rather than a file in content/cinematics. */
+  playCinematicData(cine, onDone) {
+    const ctx = { flags: this.save.flags, character: this.character, present: this.humanRoommates?.() ?? [this.character] };
+    this.scene.pause();
+    this.scene.launch('Cinematic', { cine, ctx, onDone: () => { this.scene.resume(); onDone?.(); } });
+    this.scene.bringToTop('Cinematic');
+  }
+
   async playCinematic(name, onDone) {
     let mod;
     try { mod = await import(`../../content/cinematics/${name}.js`); } catch { console.info(`[cinematic] none named ${name}`); return onDone?.(); }
@@ -2549,7 +2560,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode === 'client' && snap.doors) for (const d of this.map.doors.values()) d.open = snap.doors.includes(d.id);
     this._render(snap);
     setInstrumentFocus(snap, this.localId);
-    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.skirmish?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.gags?.update(snap); this.pacifier?.update(snap); this.stands?.update(); this.moods?.update(snap); this.stage?.update(snap);   // cutscene stand-ins draw last
+    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.skirmish?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.gags?.update(snap); this.watcher?.update(); this.pacifier?.update(snap); this.stands?.update(); this.moods?.update(snap); this.stage?.update(snap);   // cutscene stand-ins draw last
     this._stageHud(!!this.stage?.active);   // cutscenes letterbox the screen: the HUD steps out instead of being sliced by the bars
   }
 
@@ -3019,8 +3030,9 @@ export class WorldScene extends Phaser.Scene {
       let s = this.enemySprites.get(e.id);
       const def = e.boss ? { radius: e.boss.r, color: e.boss.c } : ENEMIES[e.k];
       if (!s) {
-        const anim = e.boss ? (e.boss.sahur ? 'sahur' : e.k === 'boss.switchman' ? 'switchman' : 'warden') : e.k;
-        if (this.anims.exists(anim)) { s = this.add.sprite(e.x, e.y, e.boss ? (e.boss.sahur ? 'principals' : 'warden') : 'enemies').setOrigin(0.5, 1).play(anim); s.isArt = true; s.noTint = !!e.boss?.sahur; }
+        const sahurLook = e.boss?.sahur || e.boss?.lk === 'sahur';   // lk: a boss drawn with another's art (a story beat's fight)
+        const anim = e.boss ? (sahurLook ? 'sahur' : e.k === 'boss.switchman' ? 'switchman' : 'warden') : e.k;
+        if (this.anims.exists(anim)) { s = this.add.sprite(e.x, e.y, e.boss ? (sahurLook ? 'principals' : 'warden') : 'enemies').setOrigin(0.5, 1).play(anim); s.isArt = true; s.noTint = !!sahurLook; }
         else s = this.add.rectangle(e.x, e.y, def.radius * 2, def.radius * (e.boss ? 3 : 2) + 2, def.color).setOrigin(0.5, 1);
         this.enemySprites.set(e.id, s);
       }
@@ -3058,6 +3070,14 @@ export class WorldScene extends Phaser.Scene {
     for (const a of snap.allies || []) {   // Trevor's combat robot (prop art, small), hp bar when hurt
       this.allySpr ??= [];
       const i = (snap.allies || []).indexOf(a);
+      if (a.k === 'champion') {   // a story ally drawn with a principal's art (lk), not the robot
+        let c = this.allySpr[i];
+        if (!c || c.kind !== 'champion') { c?.destroy(); c = this.allySpr[i] = this.add.sprite(0, 0, 'principals').setOrigin(0.5, 1); c.kind = 'champion'; if (this.anims.exists(a.lk)) c.play(a.lk); }
+        c.setVisible(true).setPosition(a.x, a.y + 3).setDepth(a.y).setAlpha(a.dn ? 0.45 : 1).setAngle(a.st === 'strike' ? Math.sin(this.time.now / 40) * 4 : 0);
+        if (a.hp < a.mhp && !a.dn) this.shotGfx.fillStyle(0x1c1f33).fillRect(a.x - 8, a.y - 30, 16, 2).fillStyle(0x7fb069).fillRect(a.x - 8, a.y - 30, 16 * (a.hp / a.mhp), 2);
+        continue;
+      }
+      if (this.allySpr[i]?.kind === 'champion') { this.allySpr[i].destroy(); this.allySpr[i] = null; }
       const spr = (this.allySpr[i] ??= this.add.image(0, 0, 'props', 'bot.live').setOrigin(0.5, 1).setScale(0.75));
       const moved = spr.lastX !== undefined && Math.hypot(a.x - spr.lastX, a.y - spr.lastY) > 0.2; spr.lastX = a.x; spr.lastY = a.y;
       spr.setFrame(!a.dn && moved && Math.floor(this.time.now / 140) % 2 ? 'bot.live#1' : 'bot.live').setFlipX(moved ? a.x < (spr.prevX ?? a.x) : spr.flipX); spr.prevX = a.x;
