@@ -102,6 +102,58 @@ don't fix them: the cold open rewrite (#137, #145) and the Baltimore art (#96) h
   scenes, the Call as a HUD hijack, John Pork's voice, side quests that double as clues, and the grounding in
   real College Park.
 
+## 6. The humans' requests aren't stitched together
+
+Each human asks for features without knowing what the others asked for. The agents' job is to stitch those
+requests into one game that makes sense, and that hasn't happened: features ship as islands the story never
+mentions (Manuel, 2026-11-21).
+
+- **Powers:** Manuel asked for leveling and powers. Canon calls the forms staged biohacking and gene editing, but
+  in the game they appear at level 3 with a toast ("Something in Manuel clicks into place") and no scene. They
+  should come from the story, for example a scene in 631 or 245 lab where the roommates edit themselves, with the
+  form unlocking at that beat.
+- **Gadgets and the workbench:** Trevor's. Nothing in the story gives a reason to build them.
+- **The courtships:** Michael's. They're dates at 4 a.m. in the middle of the emergency.
+- **The comic flashback:** Michael's. It's placed nowhere.
+- **The gags:** they fire on timers whatever the scene's stakes.
+- **The side systems:** the board game, the battlebot, the casino and the puzzles each need a reason in the world.
+- **The bosses:** every one speaks the Warden's lines.
+
+**The rule (posted to all agents, general #284).** Every feature, system or content a human asks for answers four
+questions in its PR before it ships:
+1. Where in the world does it happen?
+2. Why does the story allow it, and who or what introduces it on screen?
+3. When in the acts does it unlock?
+4. How does it connect to what the other humans asked for?
+
+"Nowhere" or "it just appears" means it needs a stitch: a line, a scene, an NPC, a placement or an unlock tied to a
+story beat. Story writes the words with the feature's owner, and world places it. One agent owns cohesion across
+all three humans' requests (proposed: LoreKeeper), and existing features get the same check, starting with the
+list above.
+
+## 7. The Act 1 script after the cold open
+
+Five reviewers (on Fable) read every scene after the locked cold open: the hallway, the three leads, the checkpoint,
+the Call, the descent and boss, the ending, the flashback and the courtships (hub #112). The full review, with cut
+lists and rewrites per scene, is sealed in `docs/sealed/script-review-2026-11-21.md`. Spoiler-free, what they found:
+
+- **It scripts an older design.** Much of it refers to puzzles, doors, props and boss mechanics that were
+  redesigned away or never built. It has almost no lines for what the player actually does in the tunnels.
+- **The dialogue converter breaks what does ship.** Conditional blocks swallow the rest of a scene, "set" lines
+  never take effect, and narration ships as text boxes. That causes skipped lines, cut-off messages, and
+  characters reacting to things that never played. This is the source of much of what read as nonsense.
+- **The night's timeline contradicts itself** and the locked cold open: times, the van's color, dates and sizes.
+- **Choices change nothing:** prices aren't charged, trades and answers are never read again.
+- **Characters explain the mystery** instead of letting players work it out.
+- **Trevor and Manuel lose their cold-open voices,** catchphrases are bolted on, Trevor's supplement jokes break
+  his own floor, and machine-writing patterns close most scenes.
+- **About 175 narration boxes describe visuals the game doesn't draw.**
+- **Verdicts:** heavy rewrites for the hallway, the helium lead, the Call (55-60% cut), the descent (about 60%), the
+  ending and the flashback wrapper (keep its core recording). Light edits for Halvard, the checkpoint and two of
+  the courtships. The courtships and the flashback move out of the emergency night.
+- **Order:** fix the converter first, then one timeline ruling, then rewrite the descent around the shipped tunnels
+  and wire it in, then the Call, then the ending (with an Act 2 hook), then the leads.
+
 ## The redesign: one spine on real rails
 
 Each act gets one goal, one way to travel, and a wider ring of real Maryland. The train is both the travel system
@@ -185,6 +237,7 @@ Pork) owns engine and bosses; story (BagelMeister, LoreKeeper) owns quests, dial
 verifies.
 
 **Phase 0: make Act 1 legible (biggest impact, mostly small changes).**
+0. Story tooling: fix the dialogue converter and condition evaluator (section 7). Agree one timeline for the night. Name a cohesion owner (section 6).
 1. Story and systems: bring back the objective line, fix the card queue, add a main quest intro card.
 2. Story: wire the descent script. Move the Call to the surface after the second lead. Gate the cordon on two of
    three leads. Give Halvard's key something to open. Add an Act 2 hook quest.
