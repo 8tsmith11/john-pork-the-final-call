@@ -3,11 +3,14 @@
 // Checks: everything reachable from the spawn; doors have wall on both sides; nothing interactable sits on a
 // solid tile it can't be reached from; unique object ids; exits lead to known maps; a sleeping boss doesn't wake
 // the moment you arrive (spawns and exits outside its wake radius); "[scaffold]" text left.
+// The room standard (tools/level/rooms.mjs: size, sprites, density, variety, floors, a landmark, lights): a warning
+// (~) for every map, and a failure for a map marked `standard: true`.
 import { MAPS } from '../../src/content/maps/index.js';
 import { BOSSES } from '../../src/content/bosses.js';
+import { roomReport } from './rooms.mjs';
 
 const ids = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(MAPS);
-let bad = 0;
+let bad = 0, meets = 0, marked = 0;
 for (const id of ids) {
   const m = MAPS[id]; if (!m) { console.log(`?? ${id}: no such map`); bad++; continue; }
   const problems = [], notes = [];
@@ -38,9 +41,14 @@ for (const id of ids) {
       if (wake && d < wake) problems.push(`${e.kind} wakes on arrival: ${Math.round(d)}px from ${o.id} (wake ${wake})`);
     }
   }
+  const room = roomReport(m, MAPS);
+  if (m.standard) { marked++; problems.push(...room.miss.map((r) => `room standard: ${r}`)); }
+  if (!room.miss.length) meets++;
   bad += problems.length;
   console.log(`${problems.length ? 'XX' : 'OK'} ${id}${problems.length ? '' : ` (${m.objects.length} objects, ${m.enemies.length} enemies)`}`);
   for (const p of problems) console.log(`   ✗ ${p}`);
   for (const n of [...new Set(notes)]) console.log(`   · ${n}`);
+  if (!m.standard && room.miss.length) console.log(`   ~ room standard: ${room.miss.join('; ')}`);
 }
+console.log(`\nRoom standard: ${meets} of ${ids.length} maps meet it; ${marked} marked standard: true (those must).`);
 process.exit(bad ? 1 : 0);

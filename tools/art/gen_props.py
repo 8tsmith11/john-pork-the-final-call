@@ -1535,6 +1535,161 @@ c.rect(9, 2, 3, 3, "concrete1").rect(21, 11, 3, 2, "concrete1")                 
 c.pts("concrete2", (13, 3), (14, 4), (26, 2), (27, 12))                                                     # grime
 WIDE["obj.station_tiles"] = c.rows()
 
+
+# ---- ASTER's sixth floor, the neighbours (hub #113, act1_aster.js): each flat's own things, used only in that flat ----
+# 637: someone practising scales on a cello, the same exercise for eleven years.
+# The practice corner, the flat's landmark: the cello on a rubber stop, the chair, and a floor lamp bent low over both.
+c = C(32, 40)
+c.rect(23, 38, 7, 2, "steel").h_(23, 38, 7, "concrete3").v_(27, 19, 19, "steel").v_(28, 20, 18, "concrete1")      # lamp base, pole
+c.pts("steel", (26, 18), (25, 17), (24, 17), (23, 17))                                                          # the bent neck
+c.rect(18, 17, 6, 2, "bone").rect(19, 19, 4, 1, "warm4").pts("slicker1", (20, 20), (21, 20)).h_(18, 17, 6, "concrete3")   # shade, lit underside
+c.rect(15, 32, 8, 2, "warm2").h_(15, 32, 8, "warm3").rect(15, 25, 8, 7, "warm1").rect(16, 26, 6, 5, "warm0")    # chair back and seat
+c.rect(15, 34, 2, 6, "warm0").rect(21, 34, 2, 6, "warm0")                                                       # chair legs
+c.h_(14, 33, 10, "warm0").h_(15, 32, 8, "bone").px(14, 33, "night1")                                            # the bow, laid across the seat
+c.rect(5, 22, 7, 6, "warm2").rect(6, 28, 5, 1, "warm2").rect(4, 29, 9, 8, "warm2")                              # cello: upper bout, waist, lower bout
+for x, y in ((5, 22), (11, 22), (4, 29), (12, 29), (4, 36), (12, 36)): c.px(x, y, None)                       # rounded corners
+c.v_(11, 23, 5, "warm1").v_(12, 30, 6, "warm1").h_(6, 22, 5, "warm3").h_(5, 29, 7, "warm3")                    # shaded side, lit edges
+c.rect(8, 12, 1, 10, "warm1").rect(8, 14, 1, 16, "night1").v_(9, 22, 8, "night1")                               # neck, fingerboard
+c.h_(7, 31, 3, "bone").v_(8, 32, 3, "night1").pts("concrete3", (8, 23), (8, 26), (8, 29))                       # bridge, tailpiece, strings catching light
+c.rect(7, 9, 3, 3, "warm1").pts("warm0", (6, 10), (10, 10), (8, 8))                                             # scroll and pegs
+c.v_(8, 37, 2, "steel").rect(7, 39, 3, 1, "night2")                                                             # endpin on its rubber stop
+BIG["obj.cello_corner"] = c.outline().rows()
+
+# A wire music stand with the binder open on it: staves, a pencil on the lip.
+c = C().rect(2, 5, 12, 7, "night2").rect(3, 6, 5, 5, "bone").rect(8, 6, 5, 5, "bone").v_(8, 6, 5, "concrete3")
+for y in (7, 9): c.h_(3, y, 4, "concrete2").h_(9, y, 4, "concrete2")
+c.pts("night1", (4, 8), (6, 7), (10, 8), (11, 10)).h_(3, 11, 8, "warm4").px(11, 11, "signal")
+c.v_(8, 12, 9, "steel").pts("steel", (7, 21), (6, 22), (9, 21), (10, 22)).pts("concrete1", (5, 23), (11, 23), (8, 22))
+P("obj.music_stand", c.outline())
+
+
+def metronome(f):               # a wind-up metronome on a round side table; the arm swings between the two frames
+    c = C().rect(3, 16, 10, 2, "warm2").h_(3, 16, 10, "warm3").rect(7, 18, 2, 4, "warm0").h_(5, 22, 6, "warm1")
+    c.rect(6, 9, 4, 7, "warm1").rect(5, 13, 6, 3, "warm1").rect(7, 7, 2, 2, "warm1").rect(7, 10, 2, 5, "warm2")
+    c.pts("bone", (7, 11), (8, 11), (7, 13))                                                                    # the tempo scale
+    arm = [(8, 14), (8, 13), (7, 12), (7, 11), (6, 10), (6, 9), (5, 8)] if f == 0 else [(8, 14), (8, 13), (9, 12), (9, 11), (10, 10), (10, 9), (11, 8)]
+    c.pts("steel", *arm).px(arm[4][0], arm[4][1], "bone")                                                       # arm and its weight
+    return c.outline()
+
+
+P("obj.metronome", metronome(0))
+P("obj.metronome#1", metronome(1))
+
+# The hard case, stood up and open: red lining, empty, a cake of rosin in the neck pocket.
+c = C().rect(5, 2, 6, 8, "night3").rect(3, 10, 10, 12, "night3").h_(4, 22, 8, "night2")
+c.rect(6, 3, 4, 6, "soft0").rect(4, 11, 8, 10, "soft0").rect(5, 12, 6, 8, "soft1").v_(7, 4, 7, "soft1")
+c.rect(7, 4, 2, 2, "warm4").pts("steel", (13, 12), (13, 16), (2, 14))                                           # rosin, latches
+P("obj.cello_case", c.outline())
+
+# Egg cartons glued over a wall, floor to ceiling (a 32x16 wall piece). They don't do much.
+c = C(32, 16).rect(0, 1, 32, 14, "concrete2")
+for y in range(2, 15, 3):
+    for x in range((y // 3) % 2, 32, 3):
+        c.px(x, y, "concrete3").px(x + 1, y + 1, "night2")
+c.h_(0, 7, 32, "concrete1").v_(11, 1, 14, "concrete1").v_(23, 1, 14, "concrete1")                               # seams between cartons
+c.rect(24, 9, 4, 3, "bone").pts("concrete3", (25, 10), (27, 10))                                                # one lid torn open
+WIDE["obj.egg_foam"] = c.rows()
+
+# 638: the television that is always on, and the woman logging what changes.
+# The landmark: a big set on a low console, the anchor in front of a flag that doesn't move, the banner along the bottom.
+c = C(32, 40)
+c.rect(1, 31, 30, 8, "warm1").h_(1, 31, 30, "warm3").h_(1, 38, 30, "warm0").v_(15, 32, 6, "warm0")             # console, two doors
+c.pts("warm4", (12, 34), (18, 34)).rect(3, 39, 2, 1, "warm0").rect(27, 39, 2, 1, "warm0")                        # knobs, feet
+c.rect(2, 15, 28, 15, "night1").rect(3, 16, 26, 12, "tub0")                                                      # bezel, screen
+c.rect(17, 17, 10, 8, "bone").rect(17, 17, 10, 2, "signal").rect(20, 20, 4, 3, "steel")                          # the flag and its seal
+c.rect(9, 18, 6, 5, "skin2").rect(9, 17, 6, 2, "night2").pts("night1", (10, 20), (13, 20))                       # the anchor's head
+c.rect(6, 23, 12, 5, "night3").rect(11, 23, 2, 3, "bone").px(11, 24, "signal")                                   # suit, collar, tie
+c.rect(3, 25, 26, 3, "signal").pts("bone", *[(x, 26) for x in range(5, 27, 2)])                                 # THINGS ARE STABLE
+c.pts("screen2", (4, 17), (5, 17), (4, 18)).px(27, 28, "rot1").h_(13, 29, 6, "night2")                            # glare, power light, stand
+BIG["obj.tv_continuity"] = c.outline().rows()
+
+# The back of the couch, turned to the set, a crocheted blanket over it.
+c = C().rect(0, 8, 16, 11, "soft0").h_(0, 8, 16, "soft1").rect(0, 11, 2, 9, "soft0").rect(14, 11, 2, 9, "soft0")
+c.rect(4, 8, 8, 7, "yerba0")
+for x, y in ((4, 9), (6, 9), (8, 9), (10, 9), (5, 11), (7, 11), (9, 11), (11, 11), (4, 13), (6, 13), (8, 13), (10, 13)):
+    c.px(x, y, ("warm4", "bone", "yerba1")[(x + y) % 3])
+c.pts("yerba0", (5, 15), (7, 16), (9, 15), (11, 16)).h_(2, 19, 12, "night2").rect(1, 20, 2, 2, "warm0").rect(13, 20, 2, 2, "warm0")
+P("obj.couch_back", c.outline())
+
+# Cold brew: a carton of full cans, and the empties lined up in rows on the floor beside it.
+c = C().rect(2, 11, 8, 7, "warm2").h_(2, 11, 8, "warm3").v_(9, 12, 6, "warm1").h_(3, 14, 6, "bone")
+c.pts("steel", (3, 10), (5, 10), (7, 10)).pts("night1", (4, 10), (6, 10), (8, 10))
+for x in (2, 5, 8, 11):
+    for y in (19, 22):
+        c.rect(x, y - 2, 2, 3, "steel").px(x, y - 1, "screen1")
+c.rect(11, 13, 2, 3, "steel").px(11, 14, "screen1").px(12, 12, "concrete3")
+P("obj.cold_brew", c.outline())
+
+# Screen grabs pinned on cork (a 32x16 wall piece): stills of the anchor, red circles round the eyes, string between.
+c = C(32, 16).rect(0, 1, 32, 14, "warm2").h_(0, 1, 32, "warm3").h_(0, 14, 32, "warm1")
+for i, (x, y) in enumerate(((2, 3), (9, 2), (16, 4), (23, 2), (4, 9), (12, 9), (20, 9), (27, 8))):
+    c.rect(x, y, 5, 4, "bone").rect(x + 1, y + 1, 3, 2, "tub0").px(x + 2, y + 1, "skin2").px(x + 2, y, "signal")
+    if i % 3 == 0:
+        c.pts("signal", (x, y + 1), (x + 4, y + 1), (x + 2, y + 3))
+c.pts("signal", (7, 5), (8, 5), (10, 7), (11, 8), (17, 8), (18, 9), (22, 7), (23, 7), (25, 6))                    # the string
+WIDE["obj.screengrab_wall"] = c.rows()
+
+# A shelf of composition books, all the same, numbered down the spines in marker.
+c = C().rect(1, 3, 14, 20, "warm1").v_(1, 3, 20, "warm0").v_(14, 3, 20, "warm0")
+for y in (4, 9, 14, 19):
+    c.rect(2, y, 12, 4, "night1").h_(1, y + 4, 14, "warm2")
+    for x in range(2, 14, 2):
+        c.px(x, y + 1, "bone").px(x + 1, y + 2, "concrete3")
+c.rect(10, 19, 4, 4, "warm0")                                                                                    # the gap at the end
+P("obj.notebooks", c.outline())
+
+# 636: half moved out. The landmark: a hand truck by the door, three taped boxes strapped on, and the one lamp still
+# plugged in riding on top, no shade, its cord run across the floor to the wall.
+c = C(32, 40)
+c.v_(9, 14, 23, "signal").v_(10, 14, 23, "soft0").h_(9, 36, 12, "signal").h_(9, 37, 12, "soft0")                 # frame and toe plate
+c.pts("signal", (8, 13), (8, 12), (9, 12))                                                                       # handle
+for y0, w in ((28, 10), (21, 9), (15, 8)):
+    c.rect(11, y0, w, 7 if y0 > 15 else 6, "warm2").h_(11, y0, w, "warm3").v_(11 + w - 1, y0 + 1, 5, "warm1")
+    c.v_(11 + w // 2, y0, 6, "warm4").h_(12, y0 + 3, 3, "night1")                                                # tape, marker
+c.pts("night2", (11, 18), (13, 21), (15, 24), (17, 27), (19, 30))                                                # the strap
+c.rect(8, 35, 4, 4, "night1").px(9, 36, "steel").px(10, 37, "steel")                                            # wheel
+c.rect(13, 12, 4, 3, "steel").v_(15, 7, 5, "concrete2").rect(14, 4, 3, 3, "slicker1").px(15, 4, "bone")         # lamp base, stem, bare bulb
+c.pts("night1", (17, 12), (18, 13), (19, 14), (20, 15)).v_(21, 16, 22, "night1").px(22, 38, "night1").h_(23, 39, 9, "night1")   # cord to the wall
+BIG["obj.hand_truck"] = c.outline().rows()
+
+# The fridge, emptied and propped open with a roll of tape, still running: the light on, the cold falling out.
+c = C().rect(2, 3, 9, 20, "bone").v_(10, 3, 20, "concrete3").rect(3, 4, 7, 18, "screen2").rect(4, 5, 5, 16, "bone")
+for y in (9, 14, 18): c.h_(3, y, 7, "steel")
+c.rect(11, 2, 3, 21, "concrete3").v_(13, 3, 19, "concrete2").pts("steel", (12, 6), (12, 12))                     # the open door
+c.pts("screen2", (12, 20), (13, 21), (14, 22)).rect(13, 22, 3, 2, "bone").px(14, 22, "night2")                   # cold air, the tape roll
+P("obj.fridge_open", c.outline())
+
+# A delivery box: a printed label, the tape gone yellow.
+c = C().rect(2, 13, 12, 9, "warm2").h_(2, 13, 12, "warm3").v_(13, 14, 8, "warm1").v_(8, 13, 9, "warm4")
+c.rect(3, 16, 4, 3, "bone").h_(3, 17, 3, "night1").px(4, 18, "night1").pts("warm1", (2, 21), (3, 21), (12, 13))   # label, a crushed corner
+P("obj.parcel", c.outline())
+
+# A bare mattress stood on its end against the wall, roped in two places.
+c = C().rect(3, 1, 10, 22, "bone").v_(12, 2, 21, "concrete3").h_(3, 22, 10, "concrete2")
+for y in range(3, 22, 3):
+    for x in (5, 8, 11):
+        c.px(x - (y // 3) % 2, y, "concrete3")
+c.h_(3, 7, 10, "warm3").h_(3, 16, 10, "warm3").px(2, 8, "warm3").px(13, 17, "warm3")
+P("obj.mattress_up", c.outline())
+
+# The list taped to the wall: two columns, most of the left one struck through.
+c = C().rect(3, 3, 10, 16, "bone").pts("concrete3", (3, 2), (4, 2), (11, 2), (12, 2))
+c.h_(4, 5, 3, "night0").h_(9, 5, 3, "night0").v_(8, 5, 13, "concrete3")
+for y in (8, 10, 12, 14, 16):
+    c.h_(4, y, 3, "night2").h_(9, y, 2 + y % 2, "night2")
+for y in (8, 10, 12): c.h_(4, y, 4, "signal")
+P("obj.move_list", c.outline())
+
+# A run of kitchen counter with the lease on it: a stamped sheet and a pen.
+c = C().rect(1, 12, 14, 11, "warm1").rect(0, 11, 16, 2, "concrete2").h_(0, 11, 16, "concrete3").v_(8, 13, 10, "warm0")
+c.pts("warm4", (6, 17), (10, 17)).rect(3, 8, 7, 4, "bone").pts("night2", (4, 9), (5, 9), (6, 9), (4, 10), (5, 10))
+c.pts("signal", (8, 9), (8, 10), (7, 10)).h_(10, 10, 4, "tub1")
+P("obj.lease_counter", c.outline())
+
+# Where the couch stood: a clean outline in the dust and four dents from its feet (floor decals, two tiles wide).
+D("dec.outline_l", dc().h_(2, 3, 14, "warm1").h_(2, 12, 14, "warm1").v_(2, 3, 10, "warm1").pts("night1", (3, 4), (3, 11)))
+D("dec.outline_r", dc().h_(0, 3, 14, "warm1").h_(0, 12, 14, "warm1").v_(13, 3, 10, "warm1").pts("night1", (12, 4), (12, 11)))
+
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)
 write("big", 32, 40, BIG)

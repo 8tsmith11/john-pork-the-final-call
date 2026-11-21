@@ -137,3 +137,37 @@ dqqqdqqqdqqqdqqqdqqqdbbbdqqcdqqq
 dddddddddddddddddddddddddddddddd
 dqqqdqqqdqqqdqqqdqqqdqqqdqqqdqqq
 ................................
+@frame obj.egg_foam
+................................
+cccccccccccbcccccccccccbcccccccc
+dccdccdccdcbdccdccdccdcbdccdccdc
+c2cc2cc2cc2bc2cc2cc2cc2bc2cc2cc2
+cccccccccccbcccccccccccbcccccccc
+cdccdccdccdbcdccdccdccdbcdccdccd
+cc2cc2cc2ccbcc2cc2cc2ccbcc2cc2cc
+bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+dccdccdccdcbdccdccdccdcbdccdccdc
+c2cc2cc2cc2bc2cc2cc2cc2bqqqq2cc2
+cccccccccccbcccccccccccbqdqdcccc
+cdccdccdccdbcdccdccdccdbqqqqdccd
+cc2cc2cc2ccbcc2cc2cc2ccbcc2cc2cc
+cccccccccccbcccccccccccbcccccccc
+dccdccdccdcbdccdccdccdcbdccdccdc
+.2..2..2..2..2..2..2..2..2..2..2
+@frame obj.screengrab_wall
+................................
+hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+gggggggggqqrqqgggggggggqqrqqgggg
+ggqqrqqggqClCqgggggggggrClCrgggg
+ggrClCrggqCCCqggqqrqqggqCCCqgggg
+ggqCCCqrrqqqqqggqClCqggqqrqqgggg
+ggqqrqqgggggggggqCCCqggggrgggggg
+ggggggggggrgggggqqqqqgrrgggggggg
+gggggggggggrgggggrgggggggggqqrqq
+ggggqqrqqgggqqrqqgrgqqrqqggqClCq
+ggggqClCqgggqClCqgggrClCrggqCCCq
+ggggqCCCqgggqCCCqgggqCCCqggqqqqq
+ggggqqqqqgggqqqqqgggqqrqqggggggg
+gggggggggggggggggggggggggggggggg
+ffffffffffffffffffffffffffffffff
+................................
