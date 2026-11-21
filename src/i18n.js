@@ -7,6 +7,8 @@ import { ES_STRETCH } from './i18n/es-stretch.js';
 import { ES_ITEMS } from './i18n/es-items.js';
 import { ES_631 } from './i18n/es-631.js';
 import { ES_TUNNELS_LAKE } from './i18n/es-tunnels-lake.js';
+import { ES_ACT2 } from './i18n/es-act2.js';
+import { ES_ACT3 } from './i18n/es-act3.js';
 import { ES_PLAZA } from './i18n/es-plaza.js';
 import { ES_ASTER } from './i18n/es-aster.js';
 import { ES_HUD } from './i18n/es-hud.js';
@@ -27,6 +29,8 @@ const ES = {
   '[ESC] back': '[ESC] volver', free: 'libre', 'AI (free to claim)': 'IA (libre)', 'Opening a room...': 'Abriendo una sala...',
   'Pick your roommate first.': 'Primero elige a tu compañero.', 'waiting for the host to start...': 'esperando a que el anfitrión empiece...',
   'Connected. Claim your roommate.': 'Conectado. Elige a tu compañero.', 'The host closed the game.': 'El anfitrión cerró la partida.',
+  'Room in progress. Rejoin from your original tab.': 'Partida en curso. Vuelve a entrar desde la pestaña original.',
+  'The host started without you. Claim a roommate next time.': 'El anfitrión empezó sin ti. Elige a un compañero la próxima vez.',
   'Maryland, 2098': 'Maryland, 2098', '"why are you still up?"  - J.P.': '"¿por qué sigues despierto?"  - J.P.',
   'no save yet: clicking a roommate starts a new game': 'sin partida guardada: elige un compañero para empezar',
   '[ new game ]': '[ partida nueva ]', '[ import save file ]': '[ importar partida ]', '[ HOST CO-OP ]': '[ CREAR CO-OP ]', '[ JOIN CO-OP ]': '[ UNIRSE CO-OP ]',
@@ -71,6 +75,7 @@ const ES = {
   '› Save and quit to title': '› Guardar y volver al título', '› Leave the game': '› Salir de la partida',
   'The host keeps the save for everyone.': 'El anfitrión guarda la partida de todos.',
   // dialogue speaker labels (drawn uppercase); people's names stay as they are
+  'WAITING FOR': 'ESPERANDO A', 'CHOICE SENT': 'ELECCIÓN ENVIADA', '▶ YOUR CHOICE': '▶ TÚ ELIGES',
   DRONE: 'DRON', SNIFFER: 'RASTREADOR', NOTICE: 'AVISO', 'AD PANEL': 'PANEL PUBLICITARIO', 'CODE ROTTER': 'PODRIDO DE CÓDIGO',
   'DEPARTURE BOARDS': 'TABLEROS DE SALIDAS', 'LAST DEPARTURE BOARD': 'ÚLTIMO TABLERO DE SALIDAS', "MANUEL'S PHONE": 'TELÉFONO DE MANUEL',
   "MICHAEL'S PHONE": 'TELÉFONO DE MICHAEL', "TREVOR'S PHONE": 'TELÉFONO DE TREVOR', 'ALL PHONES': 'TODOS LOS TELÉFONOS',
@@ -106,6 +111,7 @@ const ES_RX = [
   [/^★ (.+?)( ×\d+)?$/, (m, a, n) => `★ ${ES_ALL[a] ?? a}${n ?? ''}`],
   [/^Bought: (.+) \(-\$(\d+)\)$/, (m, a, n) => `Compraste: ${ES_ALL[a] ?? a} (-$${n})`],
   [/^Sold: (.+) \(\+\$(\d+)\)$/, (m, a, n) => `Vendiste: ${ES_ALL[a] ?? a} (+$${n})`],
+  [/^\[E again: (\d+)\/(\d+)\]$/, '[E otra vez: $1/$2]'],   // the page count under a paged object (WorldScene)
   // weapon stats and character stats (GameMenu)
   [/^hit (\d+) · ([\d.]+)\/s · (\d+) dmg\/s · reach (\d+) · (wide|narrow|normal) arc · (heavy|medium|light) knockback$/, (m, h, r, d, re, a, k) => `golpe ${h} · ${r}/s · ${d} daño/s · alcance ${re} · arco ${{ wide: 'amplio', narrow: 'estrecho', normal: 'normal' }[a]} · empuje ${{ heavy: 'fuerte', medium: 'medio', light: 'leve' }[k]}`],
   [/^(dmg (\d+)|(\d+)×(\d+)) · ([\d.]+) shots\/s · clip (\d+) · reload ([\d.]+)s$/, (m, a, d1, d2, n, r, c, rl) => `${d1 ? `daño ${d1}` : `${d2}×${n}`} · ${r} disparos/s · cargador ${c} · recarga ${rl}s`],
@@ -122,6 +128,7 @@ const ES_RX = [
   [/^(.+) \(too far\)$/, '$1 (muy lejos)'],
   [/^ROOM CODE: (\S+) {3}\(others: Join and type it\)$/, 'CÓDIGO DE SALA: $1   (los demás: Unirse y escribirlo)'],
   [/^Joining (.+)\.\.\.$/, 'Uniéndose a $1...'],
+  [/^Connection lost\. To resume, leave to title and rejoin room (\S+) from this tab\.$/, 'Se perdió la conexión. Vuelve al título y entra de nuevo a la sala $1 desde esta pestaña.'],
   [/^(\S+) IS CHOOSING…$/, '$1 ESTÁ ELIGIENDO…'],
   [/^(\S+) decides$/, 'decide $1'],
   [/^Watching (\S+) {2}· {2}\[X\] skip$/, 'Mirando a $1  ·  [X] saltar'],
@@ -163,6 +170,11 @@ export function trFor(s, language) {
   if (s.includes('\n')) { const parts = s.split('\n'); const out = parts.map((l) => trOne(l) ?? l); if (out.some((l, i) => l !== parts[i])) return out.join('\n'); }
   return s;
 }
+// The Act 2 areas (act2_regions.js, act2_more.js; hub #30) join the table last, after ES_STRETCH, on a line of their
+// own so other tables can be added to the ES_ALL list above without touching this one. tools/i18n/es_audit.mjs joins
+// them in the same order.
+Object.assign(ES_ALL, ES_ACT2);
+Object.assign(ES_ALL, ES_ACT3);   // the Act 3 areas (act3_regions.js, act3_more.js; hub #30), the same way
 
 // A small "EN · ES" switch for the title and lobby screens. onChange runs after the language flips.
 export function langToggle(scene, x, y, onChange) {
