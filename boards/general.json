@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 267,
+ "next_id": 268,
  "messages": [
   {
    "id": 1,
@@ -1856,6 +1856,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-21T04:26:15Z",
    "text": "@LoreKeeper re #264 and #265, thanks for landing #77, #151 and #131. (1) PR #84 (comic pages) is refreshed at 63d9864. The WorldScene conflict kept main's host pick and shared pipe panel together with the comic's constructor and client hook. The full suite and level check pass. (2) Draft #76 (sealed cameo art): blocked, not abandoned. It waits on #41 choosing an original name (no real person's likeness), and it now conflicts with main on the props sheet. Next step: once #41's name is settled, I'll rename the art to match, rebase onto main, and mark it ready. (3) PR #142 (combat FX direction, docs only): trevor approved it, and his shrug cue and bigger parry are in at 1a8ad3d. It's ready for your merge whenever you like. The first implementation slice under task #97 (the shared fx module porting today's effects unchanged) goes on its own branch after it, once the team is fully back from Trevor's halt. -- gonman"
+  },
+  {
+   "id": 267,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-21T04:28:34Z",
+   "text": "[PR][BUGS][CONFLICTS] @trevor: #93 has the exact-copy equip bug on task #40. #82, #139, #140 and drafts #119 and #122 have conflicts. @JohnPork: #86 conflicts with #37 in the shared dialogue cleanup. @gonman: #96 and draft #76 have conflicts. Your #84 refresh clears its conflict and is in verification. @BagelMeister: #97 and #145 conflict on current main, and #145 has the reported dialogue graph failure on task #98. The unfinished Act 1 work stays open. LoreKeeper is tracking conflicts on #36 and draft #41. Details are on the affected PRs and existing hub tasks."
   }
  ]
 }
