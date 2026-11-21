@@ -143,4 +143,3 @@ Gur fubeg irefvba, sbe rirel fprar lbh jevgr:
     ernpgvbaf gb gur fgnxrf, naq xrrc fgntr qverpgvbaf ("(orng)") bhg bs fcbxra yvarf.
 11. **N uhzna-nccebirq fprar vf ybpxrq.** Qba'g rqvg vgf yvarf jvgubhg gung uhzna'f rkcyvpvg lrf
     (Q-022: gur pbyq bcra).
-
