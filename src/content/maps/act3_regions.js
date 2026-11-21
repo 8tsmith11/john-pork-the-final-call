@@ -60,7 +60,7 @@ export const corridor = fromGrid({
     '@': { spawn: true },
     R: back('corridor', 'East, back to the Beltway', ','),
   },
-}).enemy('boss.cor_hall', 6, 4)
+})   // its region guardian stands inside the sealed hall, by what it guards (act3_more.js)
   .exit('cor_sealed', 18, 0, { id: 'obj.corridor_to_cor_sealed', selfDrawn: true, stepOn: true, pair: 'obj.cor_sealed_out', label: "A sealed hall's loading dock", text: 'The dock door is chained. The chain has been cut.' })   // act3_more.js
   
   .exit('cor_town', 24, 10, { id: 'obj.corridor_to_cor_town', selfDrawn: true, stepOn: true, pair: 'obj.town_to_corridor', label: 'South to the worker town', text: 'Houses between the halls.' })   // districts.js
@@ -75,7 +75,7 @@ export const gaithersburg = fromGrid({
     'T=gggggggggggggggggggggggggg=T',
     'T=g########gggggg########gg=T',
     'T=g#eeeeee#gggggg#eeeeee#gg=T',
-    'T=g#ee?eee#gggNgg#ee$eee#gg=T',
+    'T=g#ee$eee#gggNgg#ee?eee#gg=T',   // the weights room is west, with its guardian; the clock sign by the vault stairs
     'T=g####e###gggggg####e###gg=T',
     'T=gggggggggqqqqqqgggggggggg=T',
     'T=ggggEggggqqqqqqggggggEg@g=T',
@@ -90,7 +90,7 @@ export const gaithersburg = fromGrid({
     '@': { spawn: true },
     S: back('gaithersburg', 'South, back to the Beltway', 'g'),
   },
-}).enemy('boss.gt_clock', 6, 4)
+}).enemy('boss.gt_clock', 6, 4)   // region guardian (optional), in the weights room by what it guards
   .exit('gt_clockroom', 20, 3, { id: 'obj.gaithersburg_to_gt_clockroom', art: 'obj.door', pair: 'obj.gt_clockroom_out', label: 'Down to the clock vault', text: 'Stairs down. A tick, from below.' })   // act3_more.js
   
   .exit('gt_labs', 23, 3, { id: 'obj.gaithersburg_to_gt_labs', art: 'obj.door', pair: 'obj.gt_labs_out', label: 'The measurement labs', text: 'Every faction checks its clocks here.' })   // stretch.js

@@ -29,6 +29,10 @@ export const FEEL = { comboWindow: 0.55, finisherDmg: 1.6, finisherKnock: 1.8, f
 // The gonman, stage two (Manuel's own request for his own character; implied only, nothing drawn, D-007/D-015).
 // R while morphed: a wind-up where he can't move, then sticky globs fly toward his aim. A glob slows what it hits
 // and leaves a puddle that slows anything walking through it. Bosses slow less; the Sahur doesn't slow at all.
+// Michael's Ping (hub #66, player feedback: "feels bad to use"). It used to only mark. Now the pulse lands a jolt
+// (a little damage and a stagger), a kill on something you marked hands cooldown back to whoever pinged it, and when a
+// marked thing dies its mark jumps to the nearest one unmarked, so a ping run through a crowd keeps itself going.
+export const PING = { cd: 8, r: 150, mark: 5, dmg: 4, stagger: 0.35, refund: 1.5, jumpR: 90 };
 export const GONMAN = { windup: 1.4, cd: 30, slow: 0.06, bossSlow: 0.3, slowTime: 5, shrink: 5.5, puddleR: 16, puddleTtl: 7, globs: 5, near: 36, far: 84, dmg: 2 };
 export const MATE = { buff: 45, crash: 4, speed: 0.15, staRegen: 0.6, crashSpeed: -0.4 };
 // Going under (Michael, 2026-11-19; sealed lore acts-2-3 §4). At 100% code rot a roommate goes
@@ -52,6 +56,7 @@ export class Sim {
   constructor(map, opts = {}) {
     this.seed = opts.seed ?? 'default';
     this.killed = opts.killed ?? new Set();   // spawn keys of enemies already dead in this world
+    this.isBossDefeated = opts.isBossDefeated;
     this.bossVariant = opts.bossVariant;
     this.map = map;          // { w, h, solid(tx, ty) -> bool, spawns: [{x,y}] }
     this.players = new Map(); // id -> player
@@ -116,6 +121,8 @@ export class Sim {
       }
       if (BOSSES[e.kind]) {   // bosses made with defineBoss (src/content/bosses.js): mid bosses unless def.mini === false
         const w = BOSSES[e.kind](Math.max(1, this.players.size));
+        // A unique guardian keeps its defeat flag even if its map or spawn index changes.
+        if (w.mini !== false && this.isBossDefeated?.(e.kind)) continue;
         const def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
         this.enemies.set(id, { id, spawnKey, kind: e.kind, def, boss: true, mini: w.mini !== false, awake: !w.wake, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 2, cd2: 3, hurtT: 0, kx: 0, ky: 0, dash: 0 });
         continue;
@@ -299,6 +306,20 @@ export class Sim {
 
   removePlayer(id) { this.players.delete(id); }
 
+  /** Hand control to another controller without respawning the roommate. */
+  transferPlayer(from, to) {
+    const player = this.players.get(from);
+    if (!player || this.players.has(to)) return false;
+    this.players.delete(from);
+    this.players.set(to, player);
+    player.id = to;
+    player.waitExit = null;
+    // Projectiles and companions still belong to the same roommate.
+    for (const shot of this.shots) if (shot.owner === from) shot.owner = to;
+    for (const ally of this.allies ?? []) if (ally.owner === from) ally.owner = to;
+    return true;
+  }
+
   /** Co-op doors: park a player at an exit. Returns true when every standing player is parked at it. */
   waitAtExit(id, exitId, dx, dy) {
     const p = this.players.get(id); if (!p || p.waitExit === exitId) return this.allWaiting(exitId);
@@ -479,7 +500,8 @@ export class Sim {
   _stepDecoys(dt) {
     for (const dc of this.decoys) dc.ttl -= dt;
     this.decoys = this.decoys.filter((dc) => dc.ttl > 0 && dc.hp > 0);
-    for (const e of this.enemies.values()) if (e.marked > 0) e.marked -= dt;
+    // An expired mark loses its owner too, so a later kill can't refund Ping or jump a mark (John Pork, PR #88).
+    for (const e of this.enemies.values()) if (e.marked > 0 && (e.marked -= dt) <= 0) e.markedBy = null;
   }
 
   _stepHazards(dt) {
@@ -519,9 +541,18 @@ export class Sim {
       }
       this.events.push({ t: 'decoy', id: p.id });
     } else {
-      p.skillCd = 8 * cdk;
-      for (const e of this.enemies.values()) if (Math.hypot(e.x - p.x, e.y - p.y) < 150 * Math.min(1.8, ap)) e.marked = 5 * ap;
-      this.events.push({ t: 'ping', id: p.id, x: p.x, y: p.y });
+      p.skillCd = PING.cd * cdk;
+      const r = PING.r * Math.min(1.8, ap), hit = [];
+      for (const e of this.enemies.values()) if (Math.hypot(e.x - p.x, e.y - p.y) < r) hit.push(e);
+      for (const e of hit) {
+        // marked first, so the jolt itself lands marked. The owner is the roommate, not the player id, so it survives
+        // a human and the AI trading control of Michael mid-fight (John Pork, PR #85).
+        e.marked = PING.mark * ap; e.markedBy = p.character;
+        if (e.boss) continue;   // bosses shrug the jolt off (their fight lengths are tuned: Trevor, the Switchman); still marked
+        this._hurtEnemy(e, Math.round(PING.dmg * ap), 0, 0, p.id);
+        if (this.enemies.has(e.id)) e.hurtT = Math.max(e.hurtT ?? 0, PING.stagger);
+      }
+      this.events.push({ t: 'ping', id: p.id, x: p.x, y: p.y, r, n: hit.length });
     }
   }
 
@@ -647,9 +678,20 @@ export class Sim {
       if (e.def?.trait === 'puddler') this.hazards.push({ x: e.x, y: e.y, r: 14, ttl: 5, dps: 8 });
       this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss, mini: !!e.mini, key: e.spawnKey });
       if (e.boss && !e.mini) for (const a of [...this.enemies.values()]) if (a.summoned) { this.enemies.delete(a.id); this.events.push({ t: 'kill', x: a.x, y: a.y, kind: a.kind, xp: 0, crumble: true }); }   // its adds crumble with it
+      if (e.marked > 0 && e.markedBy) this._pingKill(e);   // a Ping mark (Riff's rattle has no owner)
       const k = this.players.get(by);   // Argentina shirt (gambeta): a kill hands the dodge straight back
       if (k?.mods?.killDodge) { k.dodgeCd = 0; k.sta = Math.min(MOVE.stamina + (k.mods.sta ?? 0), (k.sta ?? 0) + MOVE.dashCost); }
     }
+  }
+
+  /** A marked thing died (hub #66): whoever pinged it gets cooldown back, and the mark jumps on to the nearest
+   *  unmarked enemy in reach, keeping what time it had left. */
+  _pingKill(e) {
+    const m = [...this.players.values()].find((q) => q.character === e.markedBy);
+    if (m?.character === 'michael' && m.skillCd > 0) m.skillCd = Math.max(0, m.skillCd - PING.refund);
+    let best = null, bd = PING.jumpR;
+    for (const o of this.enemies.values()) { const d = Math.hypot(o.x - e.x, o.y - e.y); if (!(o.marked > 0) && d < bd) { best = o; bd = d; } }
+    if (best) { best.marked = Math.max(1.5, e.marked); best.markedBy = e.markedBy; this.events.push({ t: 'pingJump', x: e.x, y: e.y, x2: best.x, y2: best.y }); }
   }
 
   /** How much smaller a player's hitbox is, in px: gear (mods.small) plus the gonman's thin spell, which starts

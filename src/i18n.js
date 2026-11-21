@@ -3,6 +3,7 @@
 // it appears: exact matches first, then patterns. Anything not listed stays English, so content can
 // be translated piece by piece (dialogue and quests: hub task). Stored per browser.
 import { ES_QUESTS } from './i18n/es-quests.js';
+import { ES_STRETCH } from './i18n/es-stretch.js';
 import { ES_ITEMS } from './i18n/es-items.js';
 import { ES_631 } from './i18n/es-631.js';
 import { ES_TUNNELS_LAKE } from './i18n/es-tunnels-lake.js';
@@ -26,6 +27,8 @@ const ES = {
   '[ESC] back': '[ESC] volver', free: 'libre', 'AI (free to claim)': 'IA (libre)', 'Opening a room...': 'Abriendo una sala...',
   'Pick your roommate first.': 'Primero elige a tu compañero.', 'waiting for the host to start...': 'esperando a que el anfitrión empiece...',
   'Connected. Claim your roommate.': 'Conectado. Elige a tu compañero.', 'The host closed the game.': 'El anfitrión cerró la partida.',
+  'Room in progress. Rejoin from your original tab.': 'Partida en curso. Vuelve a entrar desde la pestaña original.',
+  'The host started without you. Claim a roommate next time.': 'El anfitrión empezó sin ti. Elige a un compañero la próxima vez.',
   'Maryland, 2098': 'Maryland, 2098', '"why are you still up?"  - J.P.': '"¿por qué sigues despierto?"  - J.P.',
   'no save yet: clicking a roommate starts a new game': 'sin partida guardada: elige un compañero para empezar',
   '[ new game ]': '[ partida nueva ]', '[ import save file ]': '[ importar partida ]', '[ HOST CO-OP ]': '[ CREAR CO-OP ]', '[ JOIN CO-OP ]': '[ UNIRSE CO-OP ]',
@@ -102,6 +105,7 @@ const ES_RX = [
   [/^(.+) \(too far\)$/, '$1 (muy lejos)'],
   [/^ROOM CODE: (\S+) {3}\(others: Join and type it\)$/, 'CÓDIGO DE SALA: $1   (los demás: Unirse y escribirlo)'],
   [/^Joining (.+)\.\.\.$/, 'Uniéndose a $1...'],
+  [/^Connection lost\. To resume, leave to title and rejoin room (\S+) from this tab\.$/, 'Se perdió la conexión. Vuelve al título y entra de nuevo a la sala $1 desde esta pestaña.'],
   [/^(\S+) IS CHOOSING…$/, '$1 ESTÁ ELIGIENDO…'],
   [/^(\S+) decides$/, 'decide $1'],
   [/^Watching (\S+) {2}· {2}\[X\] skip$/, 'Mirando a $1  ·  [X] saltar'],
@@ -133,6 +137,8 @@ function trOne(s) {
   for (const [rx, rep] of ES_RX) if (rx.test(s)) return s.replace(rx, rep);
   return null;
 }
+// The stretch-tier areas (stretch.js, hub #30) join the table here, on their own line, after the tables above.
+Object.assign(ES_ALL, ES_STRETCH);
 export function tr(s) {
   if (lang !== 'es' || typeof s !== 'string' || !s) return s;
   const whole = trOne(s); if (whole !== null) return whole;

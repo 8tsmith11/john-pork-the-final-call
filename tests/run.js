@@ -1,10 +1,13 @@
 // Node test runner (no dependencies): `node tests/run.js`. Must pass before pushing.
 import assert from 'node:assert/strict';
+import { webcrypto } from 'node:crypto';
+import { EventEmitter } from 'node:events';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { makeStreams, Rng } from '../src/engine/rng.js';
 import { rollWorld } from '../src/engine/worldRolls.js';
 import { newSave, migrate, CURRENT_SCHEMA } from '../src/engine/save/schema.js';
+import { HostNet } from '../src/engine/net/net.js';
 import { Sim, MOVE, ROT, MATE, UNDER, LULLABY as BOT_LULLABY, emptyInput } from '../src/engine/sim.js';
 import { ENEMIES } from '../src/content/enemies.js';
 import { ITEMS } from '../src/content/items.js';
@@ -35,6 +38,32 @@ const rotArena = () => ({ id: 'rot-test', w: 100, h: 100, objects: [], enemies: 
 const addSpawnParty = (sim) => {
   for (const [id, character] of [['host', 'trevor'], ['ai:manuel', 'manuel'], ['ai:michael', 'michael']]) sim.addPlayer(id, character);
 };
+
+test('co-op control handoff preserves the live roommate and clears their exit vote', () => {
+  const sim = new Sim(rotArena());
+  for (const [id, who] of [['host', 'trevor'], ['guest', 'manuel'], ['observer', 'michael']]) sim.addPlayer(id, who);
+  const roommate = sim.players.get('guest');
+  Object.assign(roommate, { x: 111, y: 222, hp: 0, downed: true, reviveT: 1.2, rot: 87, ammo: 4, reloadT: 0.4 });
+  sim.waitAtExit('guest', 'door', 0, -1);
+  sim.shots.push({ owner: 'guest' }, { owner: 'observer' });
+  sim.allies = [{ owner: 'guest' }];
+
+  assert.equal(sim.transferPlayer('guest', 'observer'), false);
+  assert.equal(sim.transferPlayer('guest', 'ai:manuel'), true);
+  assert.equal(sim.players.get('ai:manuel'), roommate);
+  assert.equal(sim.players.has('guest'), false);
+  assert.equal(roommate.waitExit, null);
+  assert.deepEqual([roommate.x, roommate.y, roommate.hp, roommate.downed, roommate.reviveT, roommate.rot, roommate.ammo, roommate.reloadT],
+    [111, 222, 0, true, 1.2, 87, 4, 0.4]);
+  assert.deepEqual(sim.shots.map(shot => shot.owner), ['ai:manuel', 'observer']);
+  assert.equal(sim.allies[0].owner, 'ai:manuel');
+
+  assert.equal(sim.transferPlayer('ai:manuel', 'returning-guest'), true);
+  assert.equal(sim.players.get('returning-guest'), roommate);
+  assert.equal(sim.players.size, 3);
+  assert.equal(sim.allies[0].owner, 'returning-guest');
+});
+
 test('deferred startup with the full roster matches boss scaling on ordinary map entry', () => {
   for (const seed of ['party-load-1', 'party-load-2', 'party-load-3']) {
     const loaded = new Sim(MAPS_FOR_TEST.platform, { seed, deferSpawn: true });
@@ -650,17 +679,112 @@ test('i18n: built-in object names are never treated as translations', () => {
   try { for (const s of ['constructor', 'toString', '__proto__', 'hasOwnProperty', '→ constructor', '[E] toString']) assert.equal(i18n.tr(s), s); } finally { i18n.setLang(was); }
 });
 
+// Later-act alignment (hub #49): optional region guardians stand by the puzzle or item they guard, the scaffold
+// routes stay walkable, the reserved doors stay shut, and the quests a later puzzle converts keep their ids.
+const AlignBoss = await import('../src/content/bosses.js');
+const AlignSide = await import('../src/content/sideQuests.js');
+const GUARDIANS = {   // guardian -> [the map it stands on, the object it guards]
+  'boss.gb_receiver': ['gb_dishes', 'obj.gb_cleanroom'],
+  'boss.bv_shell': ['bv_barn', 'obj.bv_named_tank'],
+  'boss.md_fence': ['meade', 'obj.md_menu'],
+  'boss.ann_tide': ['ann_harbor', 'obj.ann_bell'],
+  'boss.cor_hall': ['cor_sealed', 'obj.cor_meters'],
+  'boss.gt_clock': ['gaithersburg', 'obj.gt_cradle'],
+  'boss.en_gate': ['enclave', 'obj.en_archive'],
+};
+const placesOf = (kind) => Object.values(MAPS_FOR_TEST).filter((m) => m.enemies.some((e) => e.kind === kind)).map((m) => m.id);
+const walkFrom = (start) => {   // maps reachable through exits that need no story flag
+  const seen = new Set([start]), q = [start];
+  while (q.length) for (const o of MAPS_FOR_TEST[q.shift()].objects) if (o.action === 'exit' && !o.requiresFlag && MAPS_FOR_TEST[o.to] && !seen.has(o.to)) { seen.add(o.to); q.push(o.to); }
+  return seen;
+};
+test('region guardians (#49): each stands by what it guards, sleeps when the party arrives through any door, wakes when you walk up to it', () => {
+  for (const [kind, [mapId, objId]] of Object.entries(GUARDIANS)) {
+    assert.deepEqual(placesOf(kind), [mapId], `${kind} should stand on ${mapId}, and only there`);
+    const m = MAPS_FOR_TEST[mapId], e = m.enemies.find((x) => x.kind === kind), o = m.objects.find((x) => x.id === objId);
+    assert.ok(o, `${objId} should be on ${mapId}, with its guardian`);
+    const tx = (e.x - 8) / 16, ty = (e.y - 8) / 16;
+    assert.ok(Math.hypot(tx - o.x, ty - o.y) <= 3, `${kind} at ${tx},${ty} should stand within 3 tiles of ${objId} at ${o.x},${o.y}`);
+    assert.equal(m.enemies.at(-1).kind, kind, `${kind} goes last in ${mapId}'s enemy list, so saved kills of the others keep their keys`);
+    const wake = AlignBoss.BOSSES[kind](3).wake ?? 150, looks = new Set(AlignSide.SIDE_QUESTS.map((q) => q.inspect?.obj).filter(Boolean));
+    for (const x of m.objects) if (x.id !== objId && looks.has(x.id)) {   // another quest's object: reading it must not start this fight
+      assert.ok(Math.hypot(e.x - (x.x * 16 + 8), e.y - (x.y * 16 + 8)) > wake, `${x.id} sits inside ${kind}'s wake radius, so reading it would wake the guardian`);
+    }
+    const froms = new Set(m.objects.filter((x) => x.action === 'exit' && MAPS_FOR_TEST[x.to]).map((x) => x.to));
+    assert.ok(froms.size, `${mapId} has no way in`);
+    for (const from of froms) {
+      const sim = new Sim(MAPS_FOR_TEST[from], { seed: 'guard' });
+      for (const [id, c] of [['a', 'manuel'], ['b', 'trevor'], ['c', 'michael']]) sim.addPlayer(id, c);
+      sim.setMap(m, from);
+      sim.step(1 / 60, new Map());
+      const b = [...sim.enemies.values()].find((x) => x.kind === kind);
+      assert.ok(b && b.mini && !b.awake, `${kind} should sleep when the party comes in from ${from}`);
+      const [nx, ny] = [[0, 1], [1, 0], [-1, 0], [0, -1]].map(([dx, dy]) => [o.x + dx, o.y + dy]).find(([x, y]) => !m.solid(x, y));
+      Object.assign(sim.players.get('a'), { x: nx * 16 + 8, y: ny * 16 + 8 });
+      sim.step(1 / 60, new Map());
+      assert.ok(b.awake, `${kind} should wake when someone walks up to ${objId}`);
+    }
+  }
+});
+
+test('region guardians (#49): the Act 2 gate and every guardian stay reachable without opening a reserved door; those doors stay shut', () => {
+  const ring2 = walkFrom('route1_north'), ring3 = walkFrom('beltway');
+  for (const kind of AlignBoss.ACT2_REGION_BOSSES) assert.ok(placesOf(kind).some((id) => ring2.has(id)), `${kind} must be reachable in Act 2 without a flagged door`);
+  for (const [kind, [mapId]] of Object.entries(GUARDIANS)) assert.ok(ring2.has(mapId) || ring3.has(mapId), `${kind} on ${mapId} must be reachable without a flagged door`);
+  for (const [mapId, id] of [['route1_north', 'obj.r1n_to_beltway'], ['meade', 'obj.meade_to_meade_inside']]) {   // the flag's name may change; the lock may not
+    const flag = MAPS_FOR_TEST[mapId].objects.find((o) => o.id === id)?.requiresFlag;
+    assert.ok(typeof flag === 'string' && flag.length > 0, `${id} stays shut behind a story flag (story sign-off opens it)`);
+  }
+});
+
+test('region guardians (#49): the breeding ledgers are read outside the barn, in the vet\'s office; the barn keeps its tank', () => {
+  const holders = Object.values(MAPS_FOR_TEST).filter((m) => m.objects.some((o) => o.id === 'obj.bv_ledgers')).map((m) => m.id);
+  assert.deepEqual(holders, ['beltsville'], 'the ledgers are outside the barn, on the farm');
+  const bv = MAPS_FOR_TEST.beltsville, led = bv.objects.find((o) => o.id === 'obj.bv_ledgers'), vet = bv.objects.find((o) => o.id === 'npc.bv_vet');
+  assert.equal(bv.layout[led.y][led.x], '.', 'indoors, on the office floor');
+  // the office is the building nearest the vet: walk out of it, and its door is closer to the vet than the other one
+  const doors = [[6, 5], [20, 5]].filter(([x, y]) => bv.layout[y][x] !== '#');
+  assert.equal(doors.length, 2);
+  const near = doors.sort((a, b) => Math.hypot(a[0] - vet.x, a[1] - vet.y) - Math.hypot(b[0] - vet.x, b[1] - vet.y))[0];
+  assert.ok(Math.abs(led.x - near[0]) <= 4 && led.y < near[1], 'the ledgers sit in the building by the vet');
+  assert.ok(MAPS_FOR_TEST.bv_barn.objects.some((o) => o.id === 'obj.bv_named_tank'), 'the named tank stays in the barn');
+  const q = AlignSide.SIDE_QUESTS.find((x) => x.id === 'side.bv_ledgers');
+  assert.equal(q.inspect.obj, 'obj.bv_ledgers');
+  assert.ok(!/barn/i.test(q.pitch) && !/granero/i.test(AlignSide.ES_SIDE_QUESTS[q.pitch] ?? 'granero'), 'the pitch (and its Spanish) no longer sends you to the barn');
+});
+
+test('region guardians (#49): scaffold quests a later puzzle converts keep their ids, ask flags and first-step objects', () => {
+  const LOOK = { gb_footprints: 'obj.gb_cleanroom', bv_ledgers: 'obj.bv_ledgers', bv_tank: 'obj.bv_named_tank', bv_batch: 'obj.bv_batch_board', rf_rings: 'obj.rf_tower',
+    md_menu: 'obj.md_menu', bmore_mural: 'obj.bmore_mural', ann_bell: 'obj.ann_bell', ann_almanac: 'obj.ann_almanac', cor_meters: 'obj.cor_meters', gt_cradle: 'obj.gt_cradle',
+    fr_guestbook: 'obj.fr_guestbook', fr_potlines: 'obj.fr_potlines', fr_dashboard: 'obj.fr_dashboard_room', en_parchment: 'obj.en_parchment', en_archive: 'obj.en_archive' };
+  const FIGHT = { gb_receiver: 'boss.gb_receiver', bv_shell: 'boss.bv_shell', md_fence: 'boss.md_fence', ann_tide: 'boss.ann_tide', cor_hall: 'boss.cor_hall', gt_master: 'boss.gt_clock',
+    en_gate: 'boss.en_gate', fr_potline: 'boss.fr_potline' };
+  const byId = new Map(AlignSide.SIDE_QUESTS.map((q) => [q.id, q]));
+  const objs = new Set(Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.map((o) => o.id)));
+  for (const [id, obj] of Object.entries(LOOK)) {
+    const q = byId.get(`side.${id}`);
+    assert.ok(q, `side.${id} must keep its id (a conversion keeps the quest and makes this its first step)`);
+    assert.equal(q.ask, `q.${id}.asked`); assert.equal(q.inspect?.obj, obj); assert.equal(q.inspect.flag, `q.${id}.seen`);
+    assert.ok(objs.has(obj), `${obj} is on no map`);
+  }
+  for (const [id, boss] of Object.entries(FIGHT)) {
+    const q = byId.get(`side.${id}`);
+    assert.ok(q, `side.${id} must keep its id`); assert.equal(q.ask, `q.${id}.asked`); assert.equal(q.target?.boss, boss);
+    assert.ok(placesOf(boss).length === 1, `${boss} should stand on exactly one map`);
+  }
+});
+
 const fartMod = await import('../src/game/fart.js');
 const buttMod = await import('../src/game/bigButt.js');
 const npcLifeMod = await import('../src/content/npc_life.js');
-test('Manuel\'s fart: on its own, every couple of minutes; Michael only complains until his side says yes', () => {
+test('Manuel\'s fart: on its own, every couple of minutes; a roommate close by only complains', () => {
   const sent = [], sc = { mode: 'solo', time: { now: 0 } }, f = new fartMod.Fart(sc); f._send = (m) => sent.push(m);
   const snap = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 120, y: 100 }] };
   for (let i = 0; i < 3600; i++) { sc.time.now = i * 1000; f.update(snap); }   // an hour, no input at all
   assert.ok(sent.length >= 15 && sent.length <= 40, `farts in an hour: ${sent.length}`);   // Manuel: more often (2026-11-19)
   assert.ok(sent.every((m) => m.id === 'ai:manuel' && m.line), 'always Manuel, always a line');
-  if (!fartMod.MICHAEL_SAYS_YES) assert.ok(sent.every((m) => !m.sniff && (fartMod.MICHAEL_FART_COMPLAIN ? m.by === 'p2' && fartMod.FART_LINES.complain.includes(m.reply) : !m.reply)), 'until his yes Michael only complains, never sniffs');
-  else assert.ok(sent.every((m) => m.sniff === 'p2' && m.reply), 'Michael close by sniffs every one');
+  assert.ok(sent.every((m) => !('sniff' in m) && (fartMod.MICHAEL_FART_COMPLAIN ? m.by === 'p2' && fartMod.FART_LINES.complain.includes(m.reply) : !m.reply)), 'only the complaint path (Michael, 2026-11-20)');
+  assert.ok(!('michael' in fartMod.FART_LINES), 'no other reaction lines');
 });
 
 const gagsMod = await import('../src/game/runningGags.js');
@@ -1130,6 +1254,148 @@ test('i18n: every Route 1 shop and airfield line, label, page and shop header ha
   finally { i18nMod.setLang(was); }
 });
 
+// hub #30, stretch slice: the twelve stretch-tier areas (src/content/maps/stretch.js), polished. A fresh copy of the
+// module (the ?stretch30 query), so the crowds.js townsfolk that maps/index.js adds afterwards aren't counted as its own.
+const STRETCH30_IDS = ['rf_fringe', 'rf_marsh', 'md_lot', 'ann_statehouse', 'ann_chapel', 'ann_bridge', 'bv_lab', 'gb_center', 'gt_labs', 'fr_market', 'en_mall', 'en_metro'];
+const STRETCH30_MAPS = Object.values(await import('../src/content/maps/stretch.js?stretch30')).filter((m) => m && m.id && Array.isArray(m.objects));
+const { ES_STRETCH } = await import('../src/i18n/es-stretch.js');
+const { ES_HUD: STRETCH30_ES_HUD } = await import('../src/i18n/es-hud.js');
+const { SIDE_QUESTS: STRETCH30_SIDE } = await import('../src/content/sideQuests.js');
+const { LOOT: STRETCH30_LOOT } = await import('../src/content/items.js');
+const stretch30Lines = (o) => [o.label, o.text, o.doneText, o.lockedText, ...(o.pages ?? []), ...(o.later ?? []).map((l) => l.text)].filter((t) => typeof t === 'string' && t);
+// A side-quest giver's pitch and anyone's later line print the label in capitals above the line (WorldScene).
+const stretch30Speaks = (o) => o.npc && (o.later?.length || STRETCH30_SIDE.some((q) => q.giver === o.id));
+test('hub #30 (stretch): no [scaffold] left in stretch.js, and every line on its twelve maps has Spanish', () => {
+  assert.deepEqual(STRETCH30_MAPS.map((m) => m.id).sort(), [...STRETCH30_IDS].sort(), 'the twelve stretch areas');
+  assert.ok(!/\[scaffold\]/i.test(fs.readFileSync(new URL('../src/content/maps/stretch.js', import.meta.url), 'utf8')), 'stretch.js still has a [scaffold] line');
+  const was = i18nMod.getLang(), missing = [], multiline = [];
+  i18nMod.setLang('es');
+  try {
+    for (const m of STRETCH30_MAPS) for (const o of m.objects) {
+      for (const t of [...stretch30Lines(o), ...(stretch30Speaks(o) ? [o.label.toUpperCase()] : [])]) {
+        if (t.includes('[scaffold]') || i18nMod.tr(t) === t) missing.push(`${m.id}/${o.id}: ${t.slice(0, 50)}`);
+        if (t.includes('\n')) multiline.push(`${m.id}/${o.id}`);
+      }
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(missing, [], 'add Spanish to src/i18n/es-stretch.js');
+  assert.deepEqual(multiline, [], 'one line each, so a loot find or a quest clue added under it still translates line by line');
+});
+test('hub #30 (stretch): every stretch map can be reached from Room 631, and everything on it can be walked up to', () => {
+  const linked = new Set(['room631']), todo = ['room631'];
+  while (todo.length) for (const o of MAPS_FOR_TEST[todo.shift()].objects) if (o.action === 'exit' && MAPS_FOR_TEST[o.to] && !linked.has(o.to)) { linked.add(o.to); todo.push(o.to); }
+  for (const id of STRETCH30_IDS) {
+    assert.ok(linked.has(id), `${id} can't be reached through the exits from Room 631`);
+    const m = MAPS_FOR_TEST[id], out = m.objects.find((o) => o.id === `obj.${id}_out`);   // the way in is the way back
+    const into = MAPS_FOR_TEST[out?.to]?.objects.find((o) => o.id === out.pair);
+    assert.ok(into && into.to === id && into.pair === out.id, `${id}: the exit pair with ${out?.to} doesn't line up`);
+    const seen = new Set(), q = [];
+    for (const s of m.spawns) { const x = Math.floor(s.x / 16), y = Math.floor(s.y / 16); assert.ok(!m.solid(x, y), `${id}: spawn in a wall`); seen.add(`${x},${y}`); q.push([x, y]); }
+    while (q.length) {
+      const [x, y] = q.shift();
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
+        if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
+        seen.add(k); q.push([nx, ny]);
+      }
+    }
+    const near = (x, y) => [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${x + dx},${y + dy}`));
+    for (const o of m.objects) assert.ok(near(o.x, o.y), `${id}: ${o.id} at ${o.x},${o.y} can't be walked up to`);
+    for (const e of m.enemies) assert.ok(seen.has(`${Math.floor(e.x / 16)},${Math.floor(e.y / 16)}`), `${id}: ${e.kind} is walled off`);
+  }
+});
+// The finds are listed sealed (docs/sealed/secrets-stretch.md, ROT13), so this test reads their object ids from there.
+const STRETCH30_SEALED = fs.readFileSync(new URL('../docs/sealed/secrets-stretch.md', import.meta.url), 'utf8').replace(/\r\n/g, '\n')   // CRLF checkouts (Windows, tts)
+  .split('-->\n').slice(1).join('-->\n')
+  .replace(/[a-z]/gi, (c) => String.fromCharCode(((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26) + (c <= 'Z' ? 65 : 97)));
+const { Approach: STRETCH30_Approach } = await import('../src/game/approach.js');
+test('hub #30 (stretch): each stretch area has its finds in the sealed list, built from systems that already exist', () => {
+  const listed = new Set(STRETCH30_SEALED.split('\n').filter((l) => l.startsWith('| **')).map((l) => l.split('|')[2].trim().replace(/`/g, '')));
+  assert.ok(listed.size >= STRETCH30_MAPS.length, 'docs/sealed/secrets-stretch.md: a row per find, with its object id');
+  const onStretch = new Set(STRETCH30_MAPS.flatMap((m) => m.objects.map((o) => o.id)));
+  for (const id of listed) assert.ok(onStretch.has(id), `${id}: in docs/sealed/secrets-stretch.md but on no stretch map`);
+  const isFind = (o) => o.grant || o.loot || o.action === 'pages' || o.later?.length;
+  const questFlags = new Set(STRETCH30_SIDE.flatMap((q) => [q.report?.flag, q.inspect?.flag, q.give?.flag].filter(Boolean)));
+  const atlas = new Set(['props', 'big', 'wide', 'doors'].flatMap((s) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${s}.json`, import.meta.url), 'utf8')).frames)));
+  const everyId = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.map((o) => o.id));
+  for (const m of STRETCH30_MAPS) {
+    assert.ok(m.objects.some((q) => listed.has(q.id)), `${m.id}: no row in docs/sealed/secrets-stretch.md`);
+    for (const q of m.objects) {
+      if (listed.has(q.id)) assert.ok(isFind(q), `${q.id}: listed in the sealed file, but built from no existing system`);
+      else assert.ok(!isFind(q), `${m.id}/${q.id}: add its row to docs/sealed/secrets-stretch.md`);
+      if (q.grant) { assert.ok(ITEMS[q.grant], `${q.id}: no item ${q.grant}`); assert.ok(q.text && q.doneText, `${q.id}: a one-time find needs text and doneText`); }
+      if (q.loot) assert.ok(STRETCH30_LOOT[q.loot], `${q.id}: no loot table ${q.loot}`);
+      if (q.action === 'pages') assert.ok(q.pages.length > 1, `${q.id}: pages to step through`);
+      for (const l of q.later ?? []) { assert.ok(q.npc, `${q.id}: later lines only play for people`); assert.ok(questFlags.has(l.if), `${q.id}: nothing in the game sets ${l.if}`); }
+      if (!q.selfDrawn) assert.ok(atlas.has(q.art ?? q.id), `${q.id}: no art ${q.art ?? q.id} in assets/sprites`);
+      assert.notEqual(q.art, 'obj.board', `${m.id}/${q.id}: still the placeholder corkboard`);
+      assert.equal(everyId.filter((id) => id === q.id).length, 1, `${q.id}: the id is used on another map too (finds and searches are keyed by it)`);
+    }
+    for (const s of m.scenery ?? []) assert.ok(atlas.has(s.art), `${m.id}: no scenery art ${s.art}`);
+  }
+});
+test('hub #30 (stretch): children are talk only, like the airfield kids, and no gag picks them', () => {
+  const kids = STRETCH30_MAPS.flatMap((m) => m.objects.filter((q) => q.npc && q.age === 'child'));
+  assert.ok(kids.some((q) => q.id === 'npc.fr_market_kid'), 'the kid minding a stall is a child');
+  const approach = new STRETCH30_Approach({ save: { party: { manuel: {} }, world: {} }, character: 'manuel', input: { keyboard: { on() {} } }, _questHandIns: () => [] });
+  for (const q of kids) {
+    assert.equal(q.approach, false, `${q.id}: talk only, nobody pickpockets or intimidates a kid`);
+    assert.deepEqual(approach.options(q).map((a) => a.id), ['talk'], `${q.id}: Talk is the only approach`);
+    assert.equal(approach.intercept(q), false, `${q.id}: no approach menu opens, so pressing E just talks`);
+    assert.ok(q.eggNo, `${q.id}: no gag picks a child`);
+  }
+});
+test('hub #30 (stretch): the side-quest objects, givers, exits and spawns on the stretch maps are where they were', () => {
+  const WAS = { 'npc.rf_counter': [7, 5], 'obj.rf_blind': [22, 5], 'npc.md_attendant': [14, 5], 'obj.md_lot_sign': [26, 4], 'npc.ann_clerk': [10, 5], 'obj.ann_tideline': [11, 3],
+    'npc.ann_fisher': [9, 3], 'obj.ann_span': [18, 3], 'npc.gb_usher': [14, 5], 'obj.gb_theater': [8, 2], 'npc.bv_lab_tech': [11, 4], 'obj.bv_batch_board': [22, 4],
+    'npc.gt_metrologist': [11, 4], 'obj.gt_volt': [24, 2], 'npc.fr_grocer': [10, 5], 'obj.fr_prices': [22, 2], 'npc.en_rider': [13, 2], 'obj.en_departures': [27, 2],
+    'obj.rf_fringe_out': [13, 8], 'obj.rf_marsh_out': [14, 0], 'obj.md_lot_out': [13, 0], 'obj.ann_statehouse_out': [11, 7], 'obj.ann_chapel_out': [11, 7], 'obj.ann_bridge_out': [0, 3],
+    'obj.bv_lab_out': [12, 7], 'obj.gb_center_out': [12, 8], 'obj.gt_labs_out': [12, 7], 'obj.fr_market_out': [12, 7], 'obj.en_mall_out': [19, 6], 'obj.en_metro_out': [14, 0] };
+  const SPAWN = { rf_fringe: [13, 7], rf_marsh: [14, 6], md_lot: [13, 7], ann_statehouse: [11, 6], ann_chapel: [11, 6], ann_bridge: [2, 3], bv_lab: [12, 6], gb_center: [12, 7],
+    gt_labs: [12, 6], fr_market: [12, 6], en_mall: [19, 5], en_metro: [14, 3] };
+  const at = new Map(STRETCH30_MAPS.flatMap((m) => m.objects.map((o) => [o.id, o])));
+  for (const [id, xy] of Object.entries(WAS)) assert.deepEqual(at.has(id) && [at.get(id).x, at.get(id).y], xy, `${id} moved`);
+  for (const m of STRETCH30_MAPS) assert.deepEqual(m.spawns.map((s) => [Math.floor(s.x / 16), Math.floor(s.y / 16)]), [SPAWN[m.id]], `${m.id}: the spawn moved`);
+  for (const q of STRETCH30_SIDE) {
+    for (const id of [q.giver, q.inspect?.obj]) if (id && at.has(id)) assert.ok(WAS[id], `${q.id}: ${id} is on a stretch map; add it to this list`);
+    if (q.inspect && at.has(q.inspect.obj)) assert.ok(at.get(q.inspect.obj).text, `${q.id}: the clue is read under the object's own text, so it needs one`);
+  }
+});
+test('hub #30 (stretch): es-stretch.js agrees with the other Spanish tables wherever they share an English line', () => {
+  const clash = [];
+  for (const [name, tb] of Object.entries({ ES_631, ES_ASTER, ES_HUD: STRETCH30_ES_HUD, ES_PLAZA, ES_QUESTS, ES_TUNNELS_LAKE })) {
+    for (const [en, es] of Object.entries(ES_STRETCH)) if (Object.hasOwn(tb, en) && tb[en] !== es) clash.push(`${JSON.stringify(en.slice(0, 40))}: ${name} says "${tb[en].slice(0, 30)}"`);
+  }
+  assert.deepEqual(clash, [], 'use one Spanish string in both tables');
+  const was = i18nMod.getLang();
+  i18nMod.setLang('es');
+  try { assert.equal(i18nMod.tr('A coin viewer'), ES_STRETCH['A coin viewer'], 'src/i18n.js reads es-stretch.js'); } finally { i18nMod.setLang(was); }
+});
+test('hub #30 (stretch), review: the lines agree with canon and the quest clues, and the Enclave stays spotless', () => {
+  const map = (id) => STRETCH30_MAPS.find((m) => m.id === id), obj = (id, oid) => map(id).objects.find((o) => o.id === oid);
+  // The broken bridge (LoreKeeper): a span lifted out on purpose, nothing like the real 2024 collapse.
+  const bridge = map('ann_bridge'), span = obj('ann_bridge', 'obj.ann_span');
+  for (const o of bridge.objects) for (const t of stretch30Lines(o)) assert.ok(!/\b(ships?|vessels?|freighters?|barges?|collisions?|collapsed?|wreck(age)?|struck|crash(ed)?)\b/i.test(t), `ann_bridge/${o.id} reads like a disaster: ${t.slice(0, 60)}`);
+  assert.ok(/SPAN REMOVED BY ORDER/.test(span.text) && /sawn square/.test(span.text), 'the span sign and its square-cut edge');
+  assert.equal((bridge.scenery ?? []).filter((s) => s.art === 'obj.cone').length, 2, 'two cones at the cut');
+  // ann_span's pitch says "look east": the island is past the far end, not off to one side.
+  assert.ok(!/\b(north|south|west) of\b/i.test(span.text), 'the island is where the pitch sends you');
+  // Lore gate 7.1 (PR #46): the batch board keeps "took, but" for bv_batch and invents no batch number.
+  const board = obj('bv_lab', 'obj.bv_batch_board');
+  assert.ok(/took, but/.test(board.text) && !/\d|twelve|thirteen/i.test(board.text), 'the batch board: no invented batch number');
+  for (const o of map('bv_lab').objects) for (const t of stretch30Lines(o)) assert.ok(!/thirteen/i.test(t), `bv_lab/${o.id} still hints at batch thirteen`);
+  // fr_prices' clue says bread is the same as last week, so the board can't say everything went up.
+  assert.ok(!/\bEverything\b/.test(obj('fr_market', 'obj.fr_prices').text), 'the price board agrees with the clue (bread is the same)');
+  // The Enclave works and is clean: the props fountain is drawn broken on purpose, so it stays out of en_*.
+  for (const m of STRETCH30_MAPS.filter((q) => q.id.startsWith('en_'))) for (const a of [...(m.scenery ?? []).map((s) => s.art), ...m.objects.map((o) => o.art)]) assert.notEqual(a, 'obj.fountain', `${m.id}: the broken fountain`);
+  const mall = map('en_mall');
+  for (const [x0, label] of [[2, 'west'], [38, 'east']]) assert.ok([0, 1].every((dx) => [2, 3].every((y) => mall.layout[y][x0 + dx] === '|')), `the mall's ${label} monument (stone columns)`);
+  // WRITING.md: no triplets on the boards and signs (three capitalised words in a row, or a word said three times).
+  for (const m of STRETCH30_MAPS) for (const o of m.objects) for (const t of stretch30Lines(o)) {
+    assert.ok(!/\b[A-Z]{3,}, [A-Z]{3,}, (and )?[A-Z]{3,}\b/.test(t) && !/\b(\w+), \1, \1\b/i.test(t), `${m.id}/${o.id}: a triplet: ${t.slice(0, 60)}`);
+  }
+});
+
 const { ES_HUD } = await import('../src/i18n/es-hud.js');
 test('i18n: every map name has Spanish', () => {
   const missing = Object.values(MAPS_FOR_TEST).map((m) => m.name).filter((n) => n && !(n in ES_HUD));
@@ -1384,6 +1650,24 @@ test('registry bosses (defineBoss): each one placed on a map spawns as a sleepin
   assert.equal(placed.size, Object.keys(BossReg.BOSSES).length, 'every registry boss should be placed on some map');
 });
 
+test('a defeated guardian stays dead when its map and spawn index change', () => {
+  const kind = Object.keys(BossReg.BOSSES)[0];
+  const regular = { kind: 'enemy.rot_taken', x: 160, y: 160 };
+  const oldMap = { ...rotArena(), id: 'old-guardian', enemies: [{ kind, x: 144, y: 160 }] };
+  const movedMap = { ...rotArena(), id: 'new-guardian', enemies: [regular, { kind, x: 192, y: 160 }] };
+  const killed = new Set(['old-guardian#0']);
+  const priorDefeat = (enemyKind) => enemyKind === kind;
+  const sim = new Sim(oldMap, { killed, isBossDefeated: priorDefeat });
+  sim.addPlayer('host', 'trevor');
+  sim.setMap(movedMap);
+  assert.deepEqual([...sim.enemies.values()].map((e) => e.kind), [regular.kind]);
+  assert.deepEqual([...killed], ['old-guardian#0'], 'the old save must not be rewritten');
+  const loaded = new Sim(movedMap, { killed, isBossDefeated: priorDefeat });
+  assert.deepEqual([...loaded.enemies.values()].map((e) => e.kind), [regular.kind]);
+  const fresh = new Sim(movedMap, { killed });
+  assert.ok([...fresh.enemies.values()].some((e) => e.kind === kind));
+});
+
 const SideQ = await import('../src/content/sideQuests.js');
 test('side quests (sideQuests.js): every giver, object, item, boss and person they point at exists, so each can be finished', async () => {
   const { ITEMS } = await import('../src/content/items.js');
@@ -1535,8 +1819,6 @@ test('Lattice co-op (John Pork\'s review): a guest dropping out mid-turn hands t
   assert.equal(t.turnSide(), 'michael'); clearTimeout(t.timer); t.timer = null;
   t.leave('peerM');   // what WorldScene's leave handler now does before swapping the peer for a companion
   assert.equal(t.seats().michael, null); assert.ok(t.timer !== null, 'the AI picks up the turn instead of waiting forever');
-  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
-  assert.ok(/on\('leave', \(peer\) => \{[^]*?this\.latticeTable\?\.leave\(peer\)[^]*?removePlayer\(peer\)/.test(src), 'the disconnect path tells the table before the roster changes');
   // play it out, then the host deals again: Michael left, so he stays with the AI and his screen stays shut
   clearTimeout(t.timer);
   for (let k = 0; k < 3000 && !t.g.winner; k++) { if (t.g.phase === 'setup') LRules.aiSetup(t.g); else LRules.aiTurn(t.g); }
@@ -1627,6 +1909,44 @@ test('lab bench (hub #44): every lab has exactly one passing answer; the shared 
   assert.ok(bench.act({ type: 'run' })); assert.ok(bench.bench.passed);
   bench.act({ type: 'run' }); assert.deepEqual(passed, ['counter'], 'recorded once');
   assert.equal(bench.act({ type: 'cycle', i: 0 }), false, 'a passed lab is locked');
+});
+
+test('Ping rework (hub #66): the pulse jolts, a marked kill hands the pinger cooldown back, and the mark jumps on', async () => {
+  const { PING } = await import('../src/engine/sim.js');
+  const sim = new Sim(MAPS_FOR_TEST.metro_plaza, { seed: 'ping', deferSpawn: true });
+  sim.addPlayer('mi', 'michael'); sim.addPlayer('tr', 'trevor');
+  const mi = sim.players.get('mi'), tr = sim.players.get('tr'); sim.enemies.clear();
+  const foe = (id, dx, hp) => sim.enemies.set(id, { id, kind: 'enemy.rotling', x: mi.x + dx, y: mi.y, hp, cd: 9, hurtT: 0, sleepT: 99 });
+  foe('near', 30, 200); foe('weak', 60, 3); foe('far', 400, 200);
+  sim._ability(mi);
+  const near = sim.enemies.get('near');
+  assert.ok(near.hp < 200 && near.hurtT >= PING.stagger - 1e-9, 'the pulse lands damage and a stagger');
+  assert.ok(!sim.enemies.has('weak'), 'the jolt can finish something weak');
+  assert.ok(Math.abs(mi.skillCd - (PING.cd - PING.refund)) < 1e-9, 'killing a marked thing handed time back');
+  assert.ok(!(sim.enemies.get('far').marked > 0), 'out of reach: not marked');
+  // Trevor kills a marked one: cooldown goes back to Michael (who pinged it), and the mark jumps to the nearest unmarked
+  sim.enemies.clear(); mi.skillCd = 5;
+  foe('a', 30, 1); foe('b', 60, 200); sim.enemies.get('a').marked = 3; sim.enemies.get('a').markedBy = 'michael';
+  sim._hurtEnemy(sim.enemies.get('a'), 10, 0, 0, 'tr');
+  assert.ok(Math.abs(mi.skillCd - (5 - PING.refund)) < 1e-9, 'the pinger is refunded, whoever lands the kill');
+  assert.ok(sim.enemies.get('b').marked > 0 && sim.enemies.get('b').markedBy === 'michael', 'the mark jumped on');
+  assert.ok(sim.events.some((e) => e.t === 'pingJump'));
+  // Riff's rattle (no owner) neither refunds nor jumps
+  sim.enemies.clear(); mi.skillCd = 5; foe('c', 30, 1); foe('d', 60, 200); sim.enemies.get('c').marked = 3;
+  sim._hurtEnemy(sim.enemies.get('c'), 10, 0, 0, 'tr');
+  assert.equal(mi.skillCd, 5); assert.ok(!(sim.enemies.get('d').marked > 0));
+  // John Pork: Ping, let the mark expire, Riff-rattle it, kill it: no refund, no jump
+  sim.enemies.clear(); foe('e', 30, 200); foe('f', 60, 200); mi.skillCd = 0; sim._ability(mi);
+  for (let i = 0; i < Math.ceil(PING.mark * 60) + 5; i++) sim.step(1 / 60, new Map());
+  const e = sim.enemies.get('e'); assert.ok(!(e.marked > 0) && !e.markedBy, 'the mark and its owner expire together');
+  mi.skillCd = 3; e.marked = 3;   // what Riff's rattle does: a mark with no owner
+  sim._hurtEnemy(e, 999, 0, 0, 'tr');
+  assert.equal(mi.skillCd, 3, 'no refund from an expired Ping'); assert.ok(!(sim.enemies.get('f')?.marked > 0), 'no jump either');
+  // the owner is the roommate: control of Michael changing hands keeps the credit
+  sim.enemies.clear(); foe('g', 30, 1); sim.enemies.get('g').marked = 3; sim.enemies.get('g').markedBy = 'michael';
+  sim.removePlayer('mi'); sim.addPlayer('ai:michael', 'michael'); const ai = sim.players.get('ai:michael'); ai.skillCd = 4;
+  sim._hurtEnemy(sim.enemies.get('g'), 10, 0, 0, 'tr');
+  assert.ok(Math.abs(ai.skillCd - (4 - PING.refund)) < 1e-9, 'whoever runs Michael now gets the refund');
 });
 
 test('Lake Artemesia\'s enemies hit harder and last longer than the same kind elsewhere (map enemyPower)', () => {
@@ -1820,6 +2140,44 @@ try {
   if (savedPhaserForCraft === undefined) delete globalThis.Phaser;
   else globalThis.Phaser = savedPhaserForCraft;
 }
+test('a moved find stays in the container the save says, even when a later build changes the searchable containers', () => {
+  // Names of the existing helpers and keys are decoded at runtime (ROT13), so this file names nothing sealed.
+  const r13 = (w) => w.replace(/[a-z]/gi, (c) => String.fromCharCode(((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26) + (c <= 'Z' ? 65 : 97)));
+  const H = r13('plyvaqre'), HC = r13('Plyvaqre'), MOVES = `${r13('frpergf')}.${H}.moves`, CACHE = `_${H.slice(0, 3)}Spots`;
+  const spotsOf = (sc) => sc[`_${H}Spots`](), spotOf = (sc) => sc[`_${H}Spot`](), moveIt = (sc, who) => sc[`_find${HC}`](who);
+  const make = (mode, save) => Object.assign(Object.create(CraftWorldScene.prototype), { mode, save, _flag(k, v) { save.flags[k] = v; } });
+  const save = { flags: {}, world: { seed: 'pin-test' } }, scene = make('solo', save);
+  const key = (x) => `${x.map}:${x.id}`, spots = spotsOf(scene);
+  const withNew = (sc) => { sc[CACHE] = [{ map: 'new_map', id: 'obj.new_crate', where: 'Somewhere new' }, ...spots]; };
+  assert.ok(spots.length > 2, 'searchable containers');
+  // an unpinned save gets exactly the place the earlier seeded pick chose, move after move
+  const oldPick = (n) => { const p = (k) => Math.floor(new Rng(`pin-test:${H}:${k}`).next() * spots.length); let i = p(n); if (n > 0 && i === p(n - 1)) i = (i + 1) % spots.length; return spots[i]; };
+  for (let n = 0; n < 6; n++) assert.deepEqual(scene._spotPick(n), oldPick(n), `move ${n}: an existing save would see it change`);
+  const first = spotOf(scene); assert.deepEqual(first, oldPick(0));
+  assert.equal(scene._pinSpot(), false, 'pinned before it ever moved'); assert.equal(save.flags['pin.h1'], undefined);
+  // it moves: the save keeps where, and the text names that place
+  const text = moveIt(scene, 'manuel'), next = spotOf(scene);
+  assert.equal(save.flags['pin.h1'], key(next)); assert.notEqual(key(next), key(first), 'back where it just was');
+  assert.ok(text.includes(next.where), 'the text does not name the new place');
+  // a later build adds a container: every index shifts, but it stays put
+  withNew(scene); assert.deepEqual(spotOf(scene), next, 'a new container moved it');
+  // the next move avoids the pinned place even though the list changed
+  const text2 = moveIt(scene, 'michael'), next2 = spotOf(scene);
+  assert.notEqual(key(next2), key(next)); assert.equal(save.flags['pin.h1'], key(next2)); assert.ok(text2.includes(next2.where));
+  // a later build removes the pinned container: a seeded place takes over, never nothing
+  scene[CACHE] = spotsOf(scene).filter((x) => key(x) !== key(next2));
+  const fallback = spotOf(scene); assert.ok(fallback && key(fallback) !== key(next2));
+  // migration: a save from before the pin that already moved it gets pinned on load by the host (or solo), not a guest
+  const legacy = { flags: { [MOVES]: 2 }, world: { seed: 'pin-test' } }, host = make('host', legacy);
+  const before = spotOf(host);
+  assert.equal(host._pinSpot(), true, 'the caller is not told to write the save'); assert.equal(legacy.flags['pin.h1'], key(before));
+  assert.equal(host._pinSpot(), false, 'pinned twice');
+  // the pin is plain save data: it survives a save/reload round trip, and the reloaded save keeps its place under a new list
+  const reloaded = make('host', JSON.parse(JSON.stringify(legacy))); withNew(reloaded);
+  assert.deepEqual(spotOf(reloaded), before, 'a migrated save moved after a reload under a changed list');
+  const guestSave = { flags: { [MOVES]: 2 }, world: { seed: 'pin-test' } };
+  assert.equal(make('client', guestSave)._pinSpot(), false); assert.equal(guestSave.flags['pin.h1'], undefined, 'a guest wrote the pin');
+});
 test('a guest interacting with the ASTER stairs waits for players who walk up later', () => {
   const map = MAPS_FOR_TEST.aster_hall;
   const stairs = map.objects.find((obj) => obj.action === 'exit' && obj.id.includes('stairs'));
@@ -1934,6 +2292,86 @@ test('quest hooks in co-op: Talk keeps the item and an explicit hand-in uses the
   assert.deepEqual(guestSent, [{ t: 'questUse', id: 'npc.409' }, give], 'a guest only sends the requested action to the host');
 });
 
+const { questState: npcQuestState } = await import('../src/content/quests.js');
+test('talk objectives use a nearby NPC meeting on the host and keep the quest pitch on screen', () => {
+  const map = MAPS_FOR_TEST.aster_roof;
+  const npc = map.objects.find((o) => o.id === 'npc.roof_watcher');
+  const goal = SideQ.SIDE_QUESTS.find((q) => q.target?.npc === npc.id);
+  const pitch = SideQ.SIDE_QUESTS.find((q) => q.giver === npc.id);
+  const save = newSave({ seed: 'roof-talk', rolls: {}, gameVersion: 't' });
+  save.flags[goal.ask] = true;
+  const p = { character: 'michael', x: npc.x * 16 + 8, y: npc.y * 16 + 8 };
+  const delivered = [], handlers = {}, said = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', character: 'trevor', localId: 'host', save, map,
+    sim: { players: new Map([['guest', p]]) }, events: { once() {} }, time: { addEvent() {} },
+    net: { on: (type, fn) => { handlers[type] = fn; }, send: (peer, msg) => delivered.push(msg) },
+    _say: (line) => said.push(line), _questBanner() {}, _refreshMenu() {}, _drawLevers() {}, _levelsReached() {},
+  });
+  const tag = { setText() { return this; }, setPosition() { return this; }, setVisible() { return this; } };
+  const guest = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'client', character: 'michael', localId: 'guest', map, hint: tag, nameTag: tag,
+    save: JSON.parse(JSON.stringify(save)), net: { send: (msg) => handlers.msg('guest', msg) },
+    _say: (line) => delivered.push({ text: line }), _questBanner() {}, _refreshMenu() {}, _drawLevers() {},
+  });
+  host._wireNet();
+  host._tickQuests(true);
+  const met = `met.${npc.id}`;
+  const talk = { t: 'npcTalk', map: map.id, id: npc.id };
+  handlers.msg('unknown-peer', talk);
+  handlers.msg('guest', { ...talk, map: 'aster_5' });
+  p.x += 35; handlers.msg('guest', talk); p.x -= 35;
+  p.downed = true; handlers.msg('guest', talk); p.downed = false;
+  host.perf = { onHostMsg: () => false, asleep: () => true }; handlers.msg('guest', talk); delete host.perf;
+  guest.approach = { intercept: () => true };
+  guest._clickedObj = npc;
+  guest._handleInteract(p);
+  assert.ok(!save.flags[met], 'approach menu and invalid host requests never count as Talk');
+
+  guest.approach.intercept = () => false;
+  guest._clickedObj = npc;
+  guest._handleInteract(p);
+  assert.ok(save.flags[met], 'a real guest Talk reaches the host');
+  assert.equal(guest.save.flags[met], undefined, 'the guest waits for host world state');
+  assert.ok(npcQuestState(save)[goal.id].done);
+  assert.ok(delivered.some((m) => m.text.includes(pitch.pitch)), 'the guest hears the NPC pitch');
+  assert.ok(!delivered.some((m) => m.text === goal.reward.line), 'world sync is the only guest reward notification');
+  assert.deepEqual(said, [goal.reward.line]);
+  const paid = save.party.michael.money;
+  handlers.msg('guest', talk);
+  host._tickQuests(true);
+  assert.equal(save.party.michael.money, paid, 'repeating Talk cannot pay twice');
+
+  guest.sayOpen = true;
+  guest._applyWorld({ flags: save.flags, quests: npcQuestState(save) });
+  assert.ok(guest.save.flags[met] && npcQuestState(guest.save)[goal.id].done);
+  assert.deepEqual(guest._questRewardLines, [goal.reward.line]);
+});
+
+test('a first Talk still plays a scripted NPC introduction before its quest pitch', () => {
+  const hall = MAPS_FOR_TEST.aster_hall;
+  const npc = { ...hall.objects.find((o) => o.id === 'npc.409'), talk: 'aster' };
+  const map = { ...hall, objects: [npc] };
+  const p = { x: npc.x * 16 + 8, y: npc.y * 16 + 8 };
+  const tag = { setText() { return this; }, setPosition() { return this; }, setVisible() { return this; } };
+  const scenes = [], speeches = [];
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'solo', character: 'trevor', localId: 'host', map, hint: tag, nameTag: tag,
+    save: newSave({ seed: 'scripted-talk', rolls: {}, gameVersion: 't' }),
+    startDialogue: (name) => scenes.push(name), _say: (line) => speeches.push(line), _questBanner() {},
+  });
+  scene._clickedObj = npc;
+  scene._handleInteract(p);
+  assert.ok(scene.save.flags[`met.${npc.id}`]);
+  assert.deepEqual(scenes, [npc.talk.split(':')[0]]);
+  assert.equal(speeches.length, 0);
+  scene._clickedObj = npc;
+  scene._handleInteract(p);
+  assert.ok(scene.save.flags['q.soup.asked']);
+  assert.match(speeches[0], /soup/i);
+  assert.equal(scenes.length, 1);
+});
+
 test('inspected quest clues reach only the reader and survive a save round trip', async () => {
   const { QUESTS, questState, questLeads } = await import('../src/content/quests.js');
   const q = {
@@ -2013,6 +2451,12 @@ test('casino board game in co-op: the host records a finished game for the party
   assert.deepEqual(guest.save.flags, {}, 'a guest never records it locally; it reports to the host');
 });
 
+test('room 631: reading the 245 textbook on the bookshelf sets lab.book (trevor, general #179)', () => {
+  const shelf = room631.objects.find((o) => o.id === 'obj.bookshelf');
+  assert.equal(shelf.action, 'pages');
+  assert.equal(shelf.flag, 'lab.book', 'the pages action sets this flag on the first press');
+  assert.ok(/^The 245 lab textbook\./.test(shelf.pages[0]), 'and the first press shows the textbook');
+});
 const { Approach } = await import('../src/game/approach.js');
 test('a caught pickpocket changes that roommate\'s NPC actions across saves until they apologize', () => {
   const save = newSave({ seed: 'npc-memory', rolls: {}, gameVersion: 'test' });
@@ -2057,7 +2501,7 @@ test('regional boss intros preserve the saved Warden name', () => {
   CraftWorldScene.prototype._fx.call(scene, warden, { players: [] });
   assert.equal(scene.save.flags[field], warden.name);
 
-  const region = new Sim(MAPS_FOR_TEST.greenbelt, { seed: 'warden-name' });
+  const region = new Sim(MAPS_FOR_TEST.gb_dishes, { seed: 'warden-name' });   // Greenbelt's guardian stands in the dish room
   const boss = [...region.enemies.values()].find((e) => e.boss);
   region.addPlayer('host', 'trevor');
   Object.assign(region.players.get('host'), { x: boss.x - 32, y: boss.y });
@@ -2833,6 +3277,15 @@ test("Michael's belt gag: his own line first, on behind one switch, painted as a
   assert.ok(!beltMod.BELT_LINES.trevor.some((l) => /pants|boxer|butt/i.test(l)), "Trevor only reacts; nothing happens to Trevor's character");
 });
 
+test('gag cap: at most BELT_MAX per playthrough, and the count survives a reload', () => {
+  const save = { flags: {} }, snap = { players: [{ id: 'p1', c: 'michael', x: 0, y: 0 }] };
+  const run = (secs) => { const sent = [], sc = { mode: 'solo', time: { now: 0 }, save, sprites: new Map() }, b = new beltMod.Beltless(sc); b._send = (m) => sent.push(m);
+    for (let i = 0; i < secs; i++) { sc.time.now = i * 1000; b.update(snap); } return sent; };
+  assert.equal(run(3 * 3600).length, beltMod.BELT_MAX, 'three hours, still capped');
+  assert.equal(beltMod.BELT_MAX, 2);
+  assert.equal(run(3600).length, 0, 'a reloaded world does not start the count over');
+});
+
 test('the gonman, stage two: R while morphed winds up (no moving), then globs slow enemies and leave puddles; otherwise R is the decoy', () => {
   const sim = new Sim(landMaps.metro_plaza, { seed: 'gon' }); sim.addPlayer('a', 'manuel');
   const p = sim.players.get('a'); p.x = 38 * 16 + 8; p.y = 23 * 16 + 8; p.aim = 0; p.skillCd = 0;
@@ -2915,6 +3368,79 @@ test("Manuel's edge: with the same gear and no skills, Manuel is the toughest an
   for (const other of ['trevor', 'michael']) {
     assert.ok(m.manuel.maxHp > m[other].maxHp && m.manuel.armor > m[other].armor && m.manuel.melee > m[other].melee && m.manuel.speed > m[other].speed, other);
   }
+});
+
+test('co-op rejoin accepts only a vacant seat with its original room key', () => {
+  const net = new HostNet();
+  const connect = (peer) => {
+    const connection = Object.assign(new EventEmitter(), {
+      peer, messages: [], send(msg) { this.messages.push(structuredClone(msg)); }, close() { this.emit('close'); },
+    });
+    net._trackConnection(connection);
+    connection.emit('open');
+    return connection;
+  };
+  const guest = connect('guest'), observer = connect('observer'), other = connect('other');
+  const save = newSave({ seed: 'reconnect', rolls: {}, gameVersion: 'test' });
+  const assignments = { host: 'trevor', guest: 'manuel', observer: 'michael' };
+  const hasBrowserCrypto = !!globalThis.crypto;
+  if (!hasBrowserCrypto) globalThis.crypto = webcrypto;
+  try { net.startGame(save, assignments); }
+  finally { if (!hasBrowserCrypto) delete globalThis.crypto; }
+  const key = guest.messages[0].seatKey;
+  assert.match(key, /^[a-f0-9]{32}$/);
+  assert.notEqual(observer.messages[0].seatKey, key);
+  assert.equal(other.messages[0].t, 'say');
+
+  const sim = new Sim(MAPS_FOR_TEST.room631);
+  for (const [peer, who] of Object.entries(assignments)) sim.addPlayer(peer, who);
+  const original = sim.players.get('guest');
+  save.party.manuel.inventory[0] = { id: 'item.nail_gun', qty: 1 };
+  save.party.manuel.inventory[1] = { id: 'item.pry_bar', qty: 1 };
+  const exits = [], leftTable = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', localId: 'host', net, sim, save, remoteInputs: new Map(),
+    events: { once() {} }, time: { addEvent() {} }, _tryExit: (exit) => exits.push(exit.id),
+    latticeTable: { leave(peer) {
+      assert.equal(sim.players.get(peer), original, 'Lattice receives the disconnect before the roster changes');
+      leftTable.push(peer);
+    } },
+  });
+  host._syncPlayerGear(original);
+  original.ammo = 4;
+  host._wireNet();
+  other.emit('data', { t: 'hello', seatKey: key });
+  assert.equal(sim.players.has('other'), false, 'a connected player cannot be taken over');
+  net.broadcast({ t: 'snap', snap: sim.snapshot() });
+  net.send('other', { t: 'evState', state: {} });
+  assert.equal(other.messages.some(msg => msg.t === 'snap'), false, 'unseated connections receive no world snapshots');
+  assert.equal(other.messages.some(msg => msg.t === 'evState'), false, 'direct game traffic also stays in the party');
+
+  guest.emit('data', { t: 'input', inp: { mx: 1 } });
+  const exit = sim.map.objects.find(o => o.action === 'exit');
+  for (const peer of ['host', 'observer']) sim.waitAtExit(peer, exit.id, 0, -1);
+  guest.close();
+  assert.equal(host.remoteInputs.has('guest'), false);
+  assert.equal(sim.players.get('ai:manuel'), original);
+  assert.deepEqual(leftTable, ['guest']);
+  assert.equal(original.held, 'melee', 'the companion switches to an available melee weapon');
+  assert.equal(original.mods.gun, 0);
+  assert.equal(save.party.manuel.hotSel ?? 0, 0, 'the original selection belongs to the returning guest');
+  assert.deepEqual(exits, [exit.id]);
+  const returned = connect('returned');
+  returned.emit('data', { t: 'hello', seatKey: 'wrong' });
+  returned.emit('data', { t: 'flag', key: 'act1.test', value: true });
+  assert.equal(save.flags['act1.test'], undefined);
+  assert.equal(sim.players.has('returned'), false);
+  returned.emit('data', { t: 'hello', seatKey: key });
+  const start = returned.messages.at(-1);
+  assert.equal(start.t, 'start');
+  assert.deepEqual(start.assignments, { returned: 'manuel' });
+  assert.equal(start.snapshot.players.find(p => p.id === 'returned').am, 4);
+  assert.equal(sim.players.get('returned'), original);
+  assert.equal(original.held, 'gun', 'the returning guest immediately holds their selected gun');
+  assert.equal(original.mods.gun, 1);
+  assert.equal(sim.players.size, 3);
 });
 
 await Promise.all(pending);

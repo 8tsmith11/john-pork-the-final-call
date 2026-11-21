@@ -90,6 +90,7 @@ const IDLE_MS = (Number(new URLSearchParams(globalThis.location?.search ?? '').g
 
 // Highlight colours: quest-important text (cyan) and people/places (gold).
 const HI = { quest: '#6fe3e8', name: '#ffd27f' };
+const defeatedBossFlag = (kind) => `boss.${kind.slice(5)}.down`;
 
 // Who sees a conversation in co-op, until the scripts carry their own `Scope:` lines (gonman, #307).
 const SCOPE_DEFAULT = { cold_open: 'all', the_call: 'all', ending: 'all', first_death: 'all', 'aster:aster_enter': 'all' };
@@ -127,6 +128,7 @@ export class WorldScene extends Phaser.Scene {
     for (const k of Object.keys(this)) if (!WorldScene._baseKeys.has(k)) delete this[k];
     this.character = data.character; this.mode = data.mode;
     this.net = data.net; this.assignments = data.assignments; this.passedSave = data.save;
+    this.initialSnapshot = data.snapshot;
   }
 
   async create() {
@@ -135,6 +137,7 @@ export class WorldScene extends Phaser.Scene {
     const startMap = MAPS[this.save.world.area] ?? MAPS.room631;
     this.save.world.killed ??= [];
     const authoritative = this.mode !== 'client';
+    if (authoritative && this._pinSpot()) autosave(this.save).catch(() => {});   // write the migrated pin now, not at the next autosave
     const killed = new Set(this.save.world.killed);
     if (this.save.flags['act1.boss.defeated']) {
       // Older saves could record the phone outcome without the defeated spawn's key.
@@ -144,13 +147,16 @@ export class WorldScene extends Phaser.Scene {
     this.sim = new Sim(startMap, {
       seed: this.save.world.seed, killed, deferSpawn: authoritative,
       bossVariant: authoritative ? this.save.flags['act1.boss.kind'] : undefined,
+      isBossDefeated: (kind) => !!this.save.flags[defeatedBossFlag(kind)],
     });
     this.localId = this.mode === 'client' ? this.net.id : 'host';
     this.remoteInputs = new Map();
-    this.snapBuf = [];
+    this.snapBuf = this.initialSnapshot ? [{ at: performance.now(), snap: this.initialSnapshot }] : [];
     if (this.mode !== 'client') {
       this.sim.addPlayer(this.localId, this.character);
-      for (const [peer, ch] of Object.entries(this.assignments || {})) if (peer !== 'host') this.sim.addPlayer(peer, ch);
+      for (const [peer, ch] of Object.entries(this.assignments || {})) {
+        if (peer !== 'host' && this.net?.conns.has(peer)) this.sim.addPlayer(peer, ch);
+      }
       // Task 9: roommates nobody is playing are still here, run by the companion brain.
       const taken = new Set([...this.sim.players.values()].map((p) => p.character));
       for (const ch of ['trevor', 'manuel', 'michael']) if (!taken.has(ch)) this.sim.addPlayer(`ai:${ch}`, ch);
@@ -206,7 +212,11 @@ export class WorldScene extends Phaser.Scene {
       const me = this.mode === 'client' ? this._lastRendered?.players.find((p) => p.id === this.localId) : this.sim.players.get(this.localId);
       if (!me) return;
       let best = null, bd = 34;
-      for (const o of this.map.objects) { const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y); if (d <= bd) { bd = d; best = o; } }
+      for (const o of this.map.objects) {
+        if (o.goneFlag && this.save.flags[o.goneFlag]) continue;
+        const d = Math.hypot(o.x * TILE + 8 - me.x, o.y * TILE + 8 - me.y);
+        if (d <= bd) { bd = d; best = o; }
+      }
       if (best) { this._clickedObj = best; return; }
       if (this._nearWater(me)) { this._startFishing(me); return; }
       const person = this.crowd?.nearest(me.x, me.y);
@@ -219,8 +229,10 @@ export class WorldScene extends Phaser.Scene {
     this.ready = true;
     // Act 1's witnessed beats are staged in-engine first (hub #48; src/content/stage/act1_*.js), then the scene plays.
     // A beat of delay so the roommates are on screen for the cutscene to stand in for them.
-    if (!this.save.flags['act1.coldopen.done']) this.time.delayedCall(300, () => this.stage.after('act1_open', () => this.startDialogue('cold_open', null, () => { this._flag('act1.coldopen.done', true); this._controlsHint(); })));
-    else this.time.delayedCall(1200, () => this._controlsHint());
+    if (!this.initialSnapshot) {
+      if (!this.save.flags['act1.coldopen.done']) this.time.delayedCall(300, () => this.stage.after('act1_open', () => this.startDialogue('cold_open', null, () => { this._flag('act1.coldopen.done', true); this._controlsHint(); })));
+      else this.time.delayedCall(1200, () => this._controlsHint());
+    }
   }
 
   // ---------- dialogue ----------
@@ -645,6 +657,20 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- networking ----------
+  _resumeGuest(peer, key) {
+    const character = this.net.findVacantSeat(peer, key);
+    if (!character || !this.sim.transferPlayer(`ai:${character}`, peer)) {
+      this.net.rejectJoin(peer, 'Room in progress. Rejoin from your original tab.');
+      return;
+    }
+    this._syncPlayerGear(this.sim.players.get(peer));
+    this.net.occupySeat(character, peer);
+    this._lastSnap = null;
+    this._worldSig = null;
+    const snapshot = { ...this.sim.snapshot(), doors: [...this.sim.map.doors.values()].filter(d => d.open).map(d => d.id) };
+    this.net.send(peer, { t: 'start', save: this.save, assignments: { [peer]: character }, snapshot });
+  }
+
   _wireNet() {
     // Handlers come off when this scene shuts down, so a restart (the save reload) doesn't double them.
     const on = (t, fn) => { this.net.on(t, fn); this._netHandlers.push([t, fn]); };
@@ -652,11 +678,17 @@ export class WorldScene extends Phaser.Scene {
     this.events.once('shutdown', () => { for (const [t, fn] of this._netHandlers) this.net?.off?.(t, fn); });
     if (this.mode === 'host') {
       on('msg', (peer, msg) => {
+        if (!msg) return;
+        if (!this.sim.players.has(peer)) {
+          if (msg.t === 'hello') this._resumeGuest(peer, msg.seatKey);
+          return;
+        }
         if (msg.t === 'lattice') { this._table().onHostMsg(peer, msg); return; }   // the casino board game (host runs it)
         if (msg.t === 'bastion') { this._bastion().onHostMsg(peer, msg); return; }   // hub #34 (host runs it)
         if (msg.t === 'lab') { this._lab().onHostMsg(peer, msg); return; }   // hub #44 (host keeps the bench)
         if (this.shared?.onMsg(msg, peer) || this.stage?.onHostMsg(peer, msg) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg)) return;
         if (msg.t === 'questRead') this._finishQuestReading(peer, msg.read);
+        if (msg.t === 'npcTalk') this._guestNpcTalk(peer, msg);
         if (msg.t === 'input') {
           const prev = this.remoteInputs.get(peer);
           this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, interact: false });
@@ -695,11 +727,21 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'scooter') this._scooter(peer);
       });
       on('leave', (peer) => {
+        this.remoteInputs.delete(peer);
         this._questReading?.delete(peer);
         this.latticeTable?.leave(peer);   // their side goes to the AI now, or a turn waiting on them stalls the table (John Pork)
         // A roommate who drops out keeps walking with the party as a companion.
-        const p = this.sim.players.get(peer); this.sim.removePlayer(peer);
-        if (p) { this.sim.addPlayer(`ai:${p.character}`, p.character); const a = this.sim.players.get(`ai:${p.character}`); Object.assign(a, { x: p.x, y: p.y, hp: p.hp, rot: p.rot ?? 0, rotQuiet: p.rotQuiet ?? 0 }); this._syncPlayerGear(a); }
+        const p = this.sim.players.get(peer);
+        if (p && this.sim.transferPlayer(peer, `ai:${p.character}`)) {
+          this._syncPlayerGear(p);
+          this._lastSnap = null;
+          const waiting = [...this.sim.players.values()].find(q => !isAi(q.id) && !q.downed && q.waitExit)?.waitExit;
+          if (!this.dlg && !this._transitioning && waiting && this.sim.allWaiting(waiting)) {
+            const exit = this.sim.map.objects.find(o => o.id === waiting && o.action === 'exit');
+            this.sim.clearWaiting();
+            if (exit) this._tryExit(exit);
+          }
+        }
       });
       this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
       this.time.addEvent({ delay: 500, loop: true, callback: () => this._broadcastWorld() });
@@ -723,7 +765,7 @@ export class WorldScene extends Phaser.Scene {
           this._showActOneCard();
         }
       });
-      on('close', () => this._say('The host closed the game.'));
+      on('close', () => this._say(`Connection lost. To resume, leave to title and rejoin room ${this.net.code} from this tab.`));
     }
   }
 
@@ -1029,7 +1071,7 @@ export class WorldScene extends Phaser.Scene {
       const a = was[q.id] ?? {}, b = now[q.id]; if (!b || !questVisible(q, this.character)) continue;
       if (!a.started && b.started && !b.done) { this._questBanner('NEW QUEST', q.title, [q.stages[b.stage]?.text, q.why].filter(Boolean).join('\n')); this._trackedQuest = q.id; }
       else if (b.started && !b.done && b.stage > (a.stage ?? 0)) this._questBanner('QUEST UPDATED', q.title, q.stages[b.stage]?.text ?? '');
-      if (!a.done && b.done) { this._questBanner('QUEST COMPLETE', q.title, [q.reward?.money ? `+$${q.reward.money}` : '', q.reward?.xp ? `+${q.reward.xp} xp` : ''].filter(Boolean).join('   ')); if (q.reward?.line) this._say(q.reward.line); }
+      if (!a.done && b.done) { this._questBanner('QUEST COMPLETE', q.title, [q.reward?.money ? `+$${q.reward.money}` : '', q.reward?.xp ? `+${q.reward.xp} xp` : ''].filter(Boolean).join('   ')); this._sayQuestReward(q); }
     }
     this._refreshMenu();
   }
@@ -1358,23 +1400,42 @@ export class WorldScene extends Phaser.Scene {
   _cylinderSpots() {
     return (this._cylSpots ??= Object.values(MAPS).flatMap((m) => m.objects.filter((x) => x.loot).map((x) => ({ map: m.id, id: x.id, where: m.name ?? m.id }))));
   }
-  _cylinderSpot(n = Number(this.save.flags['secrets.cylinder.moves'] || 0)) {
+  // Where it is now. Once it has moved, the save keeps that container (pin.h1), so a later build that adds or
+  // removes searchable containers doesn't shift it. Before then, or if that container is gone, the seeded pick.
+  _cylinderSpot() {
+    const at = this.save.flags['pin.h1'];
+    const pinned = typeof at === 'string' && this._cylinderSpots().find((x) => `${x.map}:${x.id}` === at);
+    return pinned || this._spotPick(Number(this.save.flags['secrets.cylinder.moves'] || 0));
+  }
+  // The seeded pick for move n, never the place it just left (avoid, or move n - 1's pick).
+  _spotPick(n, avoid = null) {
     const spots = this._cylinderSpots(); if (!spots.length) return null;
     const pick = (k) => Math.floor(new Rng(`${this.save.world.seed}:cylinder:${k}`).next() * spots.length);
     let i = pick(n);
-    if (n > 0 && i === pick(n - 1)) i = (i + 1) % spots.length;   // never hidden back in the place it was just found
+    const prev = avoid ?? (n > 0 ? spots[pick(n - 1)] : null);
+    if (prev && spots.length > 1 && spots[i].map === prev.map && spots[i].id === prev.id) i = (i + 1) % spots.length;
     return spots[i];
+  }
+  // Host, on load: a save from before pin.h1 that has already moved it gets pinned where it is now, while the
+  // container list still matches the one it moved under.
+  // Returns true when it pinned (the caller writes the save).
+  _pinSpot() {
+    if (this.mode === 'client' || !Number(this.save.flags['secrets.cylinder.moves'] || 0) || this.save.flags['pin.h1']) return false;
+    const s = this._cylinderSpot(); if (!s) return false;
+    this.save.flags['pin.h1'] = `${s.map}:${s.id}`;
+    return true;
   }
   _cylinderHere(o) { const s = this._cylinderSpot(); return !!s && s.map === this.map.id && s.id === o.id; }
   _findCylinder(who) {
-    const f = this.save.flags, n = Number(f['secrets.cylinder.moves'] || 0) + 1;
+    const f = this.save.flags, n = Number(f['secrets.cylinder.moves'] || 0) + 1, here = this._cylinderSpot();
     this._flag('secrets.cylinder.moves', n); this._flag('secrets.cylinder.found', true);
     this._flag(`secrets.cylinder.by.${who}`, Number(f[`secrets.cylinder.by.${who}`] || 0) + 1);
     const line = {
       manuel: 'MANUEL: "I cast that. Two-part silicone. It came out of the mold perfect and I have regretted nothing."',
       michael: 'MICHAEL: "I\'m not touching it." He is already holding it.',
     }[who] ?? '';
-    const next = this._cylinderSpot(n);
+    const next = this._spotPick(n, here);
+    if (next) this._flag('pin.h1', `${next.map}:${next.id}`);
     const tally = ['manuel', 'michael'].map((k) => `${k[0].toUpperCase()}${k.slice(1)} ${Number(f[`secrets.cylinder.by.${k}`] || 0)}`).join(' · ');
     return `\n\nUnderneath everything else: the purple cylinder. Cast silicone, a little dusty, exactly the shape you remember.\n${line}\nHouse rule: whoever finds it hides it again. It goes somewhere worse${next ? `, out by ${next.where}` : ''}.\nFound so far: ${tally}`;
   }
@@ -1444,6 +1505,16 @@ export class WorldScene extends Phaser.Scene {
     this._tickQuests(true, peer);
   }
 
+  _guestNpcTalk(peer, msg) {
+    if (msg.map !== this.map.id) return;
+    const npc = this.map.objects.find((o) => o.id === msg.id && o.npc);
+    const p = this.sim.players.get(peer);
+    if (!npc || !p || p.downed || p.under > 0) return;
+    if ((npc.goneFlag && this.save.flags[npc.goneFlag]) || this.perf?.asleep(npc)) return;
+    if (Math.hypot(npc.x * TILE + 8 - p.x, npc.y * TILE + 8 - p.y) > 34) return;
+    this.save.flags[`met.${npc.id}`] = true;
+  }
+
   // Asking, inspecting and reporting use the ordinary interaction. Hand-ins use a named action.
   _questInteract(near, who = this.character, peer = this.localId) {
     const f = this.save.flags, qs = questState(this.save), client = this.mode === 'client', remote = peer !== this.localId;
@@ -1510,10 +1581,19 @@ export class WorldScene extends Phaser.Scene {
  for (const [who, c] of Object.entries(this.save.party)) if (questVisible(q, who)) this._levelsReached(who, c, addXp(c, (q.reward?.xp ?? 0) * xpScale(q.act))); if (q.reward?.item) Inv.add(this.save.party[q.owner ?? this.character], q.reward.item); this._partyDirty = true; }
         if (mine) this._questBanner('QUEST COMPLETE', q.title, [q.reward?.money ? `+$${q.reward.money}` : '', q.reward?.xp ? `+${q.reward.xp} xp` : '', q.reward?.item ? ITEMS[q.reward.item]?.name : ''].filter(Boolean).join('   '));
         if (this._trackedQuest === q.id) this._trackedQuest = null;
-        if (q.reward?.line && mine) this._say(q.reward.line);
-        if (q.reward?.line && peer && peer !== this.localId) this.net?.send(peer, { t: 'say', text: q.reward.line });
+        if (mine) this._sayQuestReward(q);
+        if (q.reward?.line && !q.target?.npc && peer && peer !== this.localId) this.net?.send(peer, { t: 'say', text: q.reward.line });
       }
     }
+  }
+
+  _sayQuestReward(q) {
+    const line = q.reward?.line;
+    if (!line) return;
+    // A Talk objective can finish while the NPC is still speaking. Keep that conversation on screen.
+    if (q.target?.npc && (this._talkOpen() || this.menu || this._questRewardLines?.length)) {
+      (this._questRewardLines ??= []).push(line);
+    } else this._say(line);
   }
 
   // Closing the last page acknowledges the clue. The host accepts only an outstanding delivery
@@ -2237,6 +2317,7 @@ export class WorldScene extends Phaser.Scene {
   // ---------- loop ----------
   update(_, deltaMs) {
     if (!this.ready) return;
+    if (this._questRewardLines?.length && !this._talkOpen() && !this.menu) this._say(this._questRewardLines.shift());
     if (!this._qbBusy && this._qbQueue?.length && !this._talkOpen()) this._nextQuestBanner();   // quest cards after dialogue
     if (this._qbCard?.active) this._qbCard.setVisible(!this._talkOpen());   // a card already up steps aside while someone talks
     let snap, me;
@@ -2400,6 +2481,7 @@ export class WorldScene extends Phaser.Scene {
     const near = this._clickedObj; this._clickedObj = null;
     if (!near) return;
     if (!inReach(near)) { this.hint.setText(`${near.label} (too far)`); return; }
+    if (near.npc && near.goneFlag && this.save.flags[near.goneFlag]) return;
     if (near.npc && this.mode !== 'client') this._guide().n[near.id] ??= { name: near.label.replace(/\s*\(.*\)\s*/g, '').trim(), where: this.map.name ?? this.map.id };
     if (near.action === 'exit') {
       if (this.mode === 'client') this.net.send({ t: 'exit', obj: near.id });
@@ -2422,11 +2504,13 @@ export class WorldScene extends Phaser.Scene {
     if (this.approach?.intercept(near)) return;   // D-017: choose how to approach an NPC
     // Story first, quest second: the first talk plays the scene; after that a quest step (pitch,
     // report) takes the interaction if one is waiting, otherwise the scene replays.
-    if (near.talk && near.npc) {
+    if (near.npc) {
       const met = `met.${near.id}`;
-      if (this.save.flags[met] && this._questInteract(near)) return;
-      if (this.save.flags[met] && this._sayLater(near)) return;
-      if (!this.save.flags[met]) this._flag(met, true);
+      if (near.talk && this.save.flags[met] && (this._questInteract(near) || this._sayLater(near))) return;
+      if (!this.save.flags[met] && !me.downed && !me.dn) {
+        if (this.mode === 'client') this.net.send({ t: 'npcTalk', map: this.map.id, id: near.id });
+        else this.save.flags[met] = true;
+      }
     }
     // A scene that is finished for good (e.g. the sniffer is printed) answers with one line after that.
     if (near.talk && near.doneFlag && this.save.flags[near.doneFlag]) { this._say(near.doneText ?? near.text ?? ''); return; }
@@ -3140,8 +3224,8 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'boss' && ev.kind === 'boss.warden' && this.mode !== 'client') this.save.flags['act1.boss.wardenName'] = ev.name;
     // Mid bosses: no ending. The Switchman keeps its flag; bosses from src/content/bosses.js set boss.<id>.down.
     if (ev.t === 'kill' && ev.mini && this.mode !== 'client') {
-      this._flag(!ev.kind || ev.kind === 'boss.switchman' ? 'act1.switchman.down' : `boss.${ev.kind.slice(5)}.down`, true);
-      if (!this.save.flags['act2.complete'] && ACT2_REGION_BOSSES.every((k) => this.save.flags[`boss.${k.slice(5)}.down`])) {   // [SCAFFOLD] act 2 end
+      this._flag(!ev.kind || ev.kind === 'boss.switchman' ? 'act1.switchman.down' : defeatedBossFlag(ev.kind), true);
+      if (!this.save.flags['act2.complete'] && ACT2_REGION_BOSSES.every((k) => this.save.flags[defeatedBossFlag(k)])) {   // [SCAFFOLD] act 2 end
         this._flag('act2.complete', true); this.save.world.act = 3; this._save();
         this._toast(tr('The Beltway road is open.'));
       }
@@ -3188,7 +3272,8 @@ export class WorldScene extends Phaser.Scene {
       this.tweens.add({ targets: g, alpha: { from: 0.4, to: 1 }, duration: dur, yoyo: false, onComplete: () => g.destroy() });
     }
     if (ev.t === 'riff') { const r = this.add.circle(ev.x, ev.y - 6, 6, 0xffe08a, 0).setStrokeStyle(2, 0xffe08a, 0.9).setDepth(5600); this.tweens.add({ targets: r, scale: 7.5, alpha: 0, duration: 380, onComplete: () => r.destroy() }); this.cameras.main.shake(140, 0.006); sfx('kill'); }
-    if (ev.t === 'ping') { const r = this.add.circle(ev.x, ev.y - 6, 6, 0x6ff2ff, 0).setStrokeStyle(1, 0x6ff2ff, 0.9).setDepth(5600); this.tweens.add({ targets: r, scale: 25, alpha: 0, duration: 650, onComplete: () => r.destroy() }); sfx('shot'); }
+    if (ev.t === 'ping') { const r = this.add.circle(ev.x, ev.y - 6, 6, 0x6ff2ff, 0).setStrokeStyle(1, 0x6ff2ff, 0.9).setDepth(5600); this.tweens.add({ targets: r, scale: (ev.r ?? 150) / 6, alpha: 0, duration: 650, onComplete: () => r.destroy() }); sfx(ev.n ? 'hit' : 'shot'); }
+    if (ev.t === 'pingJump') { const l = this.add.line(0, 0, ev.x, ev.y - 6, ev.x2, ev.y2 - 6, 0x6ff2ff, 0.9).setOrigin(0).setLineWidth(1).setDepth(5600); this.tweens.add({ targets: l, alpha: 0, duration: 300, onComplete: () => l.destroy() }); }   // the mark jumps on (hub #66)
     if (ev.t === 'decoy') sfx('swing');
     if (ev.t === 'gonman') this._gonmanWindup(ev);
     if (ev.t === 'goo') { this._gonmanRelease(ev); this._gonmanHitLines(ev.hit); }
