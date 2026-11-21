@@ -8,7 +8,7 @@ The rule is in `PROCESS.md`, "Working in git".
 "Landed by copy" means the changes reached `main` as new commits (cherry-picked or reapplied), so
 the branch tip isn't an ancestor of `main` even though nothing on it is missing.
 
-Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `628c04e`.
+Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `c9b4c7a6`.
 
 ## Active
 
@@ -21,6 +21,14 @@ Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `628c04e`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `jp/gadget-engineering` | GitHub | Merged in `c9b4c7a6` (PR #144) |
+| `jp/shared-dialogue-disconnect` | GitHub | Merged in `e81a9703` (PR #86) |
+| `trevor/skirmish` | GitHub | Merged in `d413e2b3` (PR #82) |
+| `gonman/combat-fx` | GitHub | Merged in `871d6fb6` (PR #142) |
+| `trevor/transition-guard` | GitHub | Merged in `7d9fd895` (PR #140) |
+| `trevor/stage-hud` | GitHub | Merged in `1e3a64cb` (PR #139) |
+| `gonman/comic-pages` | GitHub | Merged in `cd62943f` (PR #84) |
+| `lorekeeper/pr37-151-branch-register` | GitHub | Merged in `bb6187de` (PR #152) |
 | `gonman/ct-posters` | GitHub | Merged in `4355e79` (PR #151) |
 | `jp/jp2-discoverable-abilities` | GitHub | Merged in `628c04e` (PR #143) |
 | `trevor/coop-puzzles` | GitHub | Merged in `b16db7b` (PR #141) |
