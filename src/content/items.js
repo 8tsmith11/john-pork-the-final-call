@@ -238,7 +238,7 @@ export const SHOPS = {
       { item: 'item.welding_goggles', price: 16 },
       { item: 'item.mat_glass', price: 2 },
     ] },
-  coop: { title: 'GREENBELT CO-OP', lines: ['[scaffold] Prices set by vote.'],   // act2_more.js scaffold
+  coop: { title: 'GREENBELT CO-OP', lines: ['Prices set by vote in 2071. The next vote is pending.'],   // act2_more.js (polished, hub #30); Spanish in es-act2.js
     stock: [
       { item: 'item.energy_bar', price: 4 },
       { item: 'item.caffeine', price: 10 },
