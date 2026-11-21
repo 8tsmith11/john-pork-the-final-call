@@ -2101,7 +2101,7 @@ test('the fuse carrier sends you to the ASTER lobby, where Kess is (Phase 0: it 
 const { roomReport: ROOM_REPORT, RULES: ROOM_RULES, spriteOf: ROOM_SPRITE } = await import('../tools/level/rooms.mjs');
 test('room standard (hub #113): every map marked standard: true meets it', () => {
   const marked = Object.values(MAPS_FOR_TEST).filter((m) => m.standard);
-  for (const id of ['apt_636', 'apt_637', 'apt_638', 'diner']) assert.ok(MAPS_FOR_TEST[id].standard, `${id} is built to the standard`);
+  for (const id of ['apt_636', 'apt_637', 'apt_638', 'diner', 'dining_hall', 'robotics_lab', 'auditorium', 'hardware']) assert.ok(MAPS_FOR_TEST[id].standard, `${id} is built to the standard`);
   for (const m of marked) assert.deepEqual(ROOM_REPORT(m, MAPS_FOR_TEST).miss, [], `${m.id} misses the room standard`);
 });
 test('room standard (hub #113): the checks bite, and Room 631 (the reference) meets all of them but the landmark', () => {
@@ -2135,6 +2135,50 @@ test('the ASTER flats (hub #113): quest objects, people and exits kept; 631\'s s
     }
   }
   assert.equal(MAPS_FOR_TEST.apt_638.objects.find((o) => o.id === 'obj.apt638_tv').landmark, true, 'the set is 638\'s landmark');
+});
+// hub #113, second slice: the dining hall, the robotics lab, the auditorium (act1_more.js) and Hollis Hardware
+// (act1_route1.js), rebuilt to the room standard.
+const { AUD_ARENA } = await import('../src/content/maps/act1_more.js');
+test('campus rooms and Hollis Hardware (hub #113): ids, people, exits and enemies kept; doors in the south wall; the landmark is lit', () => {
+  const KEEP = { dining_hall: ['obj.dining_out', 'npc.dining_cook', 'npc.dining_student', 'obj.waffle_machine', 'obj.dining_swipe'],
+    robotics_lab: ['obj.robotics_out', 'obj.mars_rover', 'obj.rover_whiteboard', 'obj.robotics_lab_parts_bins_3_6', 'obj.rover_drawer', 'npc.lab_grad'],
+    auditorium: ['obj.aud_out', 'obj.aud_projector'],
+    hardware: ['obj.hardware_out', 'npc.dot_hollis', ...['tags', 'bench', 'key_machine', 'fasteners', 'drawer', 'counter', 'chalkboard', 'adapters'].map((n) => `obj.hardware_${n}`)] };
+  const LANDMARK = { dining_hall: 'obj.waffle_machine', robotics_lab: 'obj.mars_rover', auditorium: 'obj.aud_projector', hardware: 'obj.hardware_key_machine' };
+  for (const [id, keep] of Object.entries(KEEP)) {
+    const m = MAPS_FOR_TEST[id];
+    for (const k of keep) assert.ok(m.objects.some((o) => o.id === k), `${id}: ${k} is still there`);
+    const exits = m.objects.filter((o) => o.action === 'exit');
+    assert.equal(exits.length, 1, `${id}: one way out`);
+    assert.equal(exits[0].y, m.h - 1, `${id}: the door stays in the south wall (PR #168)`);
+    const mark = m.objects.find((o) => o.landmark);
+    assert.equal(mark.id, LANDMARK[id]); assert.ok(mark.light > 0, `${id}: the landmark is lit`);
+    assert.ok(m.h >= 15, `${id}: tall enough to draw at the plaza's zoom`);
+    const atlas = chb68Atlas('props');
+    assert.ok([...m.objects, ...(m.scenery ?? [])].some((t) => atlas.includes(`${ROOM_SPRITE(t)}#1`)), `${id}: something in the room moves`);
+  }
+  assert.deepEqual(MAPS_FOR_TEST.robotics_lab.enemies.map((e) => e.kind), ['enemy.rotling']);
+  assert.deepEqual(MAPS_FOR_TEST.auditorium.enemies.map((e) => e.kind), ['enemy.rotling', 'boss.chb_autograder'], 'same enemies, same order (saves key kills by index)');
+  assert.equal(MAPS_FOR_TEST.hardware.objects.find((o) => o.id === 'obj.hardware_counter').action, 'shop');
+  assert.equal(MAPS_FOR_TEST.dining_hall.objects.find((o) => o.id === 'obj.dining_swipe').pages.length, 3);
+  assert.equal(MAPS_FOR_TEST.robotics_lab.objects.find((o) => o.id === 'obj.rover_drawer').grant, 'item.welding_goggles');
+  // No stand-ins left where the audit named them: the auditorium's seats aren't tables, the tags aren't a notice board.
+  assert.ok(!(MAPS_FOR_TEST.auditorium.scenery ?? []).some((t) => t.art === 'obj.table' && t.y > 2), 'no tables for seats');
+  for (const id of Object.keys(KEEP)) assert.ok(![...MAPS_FOR_TEST[id].objects, ...(MAPS_FOR_TEST[id].scenery ?? [])].some((t) => ROOM_SPRITE(t) === 'obj.board'), `${id}: obj.board isn't standing in for anything`);
+});
+test('the auditorium (hub #113): the Autograder\'s floor stays clear, at least the audit\'s 30x16, and it sleeps until you walk up', () => {
+  const m = MAPS_FOR_TEST.auditorium, A = AUD_ARENA;
+  assert.ok(A.w * A.h >= 30 * 16 && A.w >= 30, `the arena is ${A.w}x${A.h}`);
+  const solid = [];
+  for (let y = A.y; y < A.y + A.h; y++) for (let x = A.x; x < A.x + A.w; x++) if (m.solid(x, y)) solid.push(`${x},${y}`);
+  assert.deepEqual(solid, [], 'nothing solid on the arena floor (seats, stacks and the stage furniture stay outside it)');
+  const inArena = (e) => { const x = Math.floor(e.x / 16), y = Math.floor(e.y / 16); return x >= A.x && x < A.x + A.w && y >= A.y && y < A.y + A.h; };
+  const boss = m.enemies.find((e) => e.kind === 'boss.chb_autograder');
+  assert.ok(boss && inArena(boss), 'the Autograder starts on the arena floor');
+  const wake = POLISH30_BOSSES['boss.chb_autograder'](1).wake, sp = m.spawns[0];
+  assert.ok(Math.hypot(sp.x - boss.x, sp.y - boss.y) > wake * 2, 'you come in at the back, well outside its wake radius');
+  assert.ok(m.scenery.filter((t) => /^obj\.aud_seats/.test(t.art)).every((t) => t.solid && t.y >= A.y + A.h), 'the seats that are left are behind the arena');
+  assert.ok(m.objects.some((o) => o.art === 'obj.aud_screen' && o.y < A.y) && m.objects.some((o) => o.art === 'obj.lectern' && o.y < A.y), 'a stage with a screen and a lectern, in front of the arena');
 });
 const { BOSS_PATTERNS, bossPool, pickPattern } = await import('../src/engine/bossPatterns.js');
 const { MODULES: WARDEN_MODULES } = await import('../src/content/rotVillains.js');
