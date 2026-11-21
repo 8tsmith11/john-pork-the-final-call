@@ -3839,6 +3839,66 @@
     "w": 16,
     "h": 24
    }
+  },
+  "obj.ct_poster": {
+   "frame": {
+    "x": 0,
+    "y": 576,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.ct_poster_text": {
+   "frame": {
+    "x": 16,
+    "y": 576,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.ct_poster_street": {
+   "frame": {
+    "x": 32,
+    "y": 576,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
   }
  },
  "meta": {
@@ -3846,7 +3906,7 @@
   "format": "RGBA8888",
   "size": {
    "w": 128,
-   "h": 576
+   "h": 600
   },
   "scale": "1"
  }
