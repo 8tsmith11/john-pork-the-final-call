@@ -3453,6 +3453,29 @@ test('co-op rejoin accepts only a vacant seat with its original room key', () =>
   assert.equal(sim.players.size, 3);
 });
 
+test('equip the exact copy (John Pork, PR #93): with two vests, the modded one you click goes on, mods and all; swapping and taking off keep each copy\'s mods', async () => {
+  const InvM = await import('../src/engine/inventory.js');
+  const save = newSave({ seed: 'two-vests', rolls: {}, gameVersion: 't' }), c = save.party.trevor;
+  c.inventory = Array(c.inventory.length).fill(null); c.equipped = {}; c.rolled = {}; c.socketed = {};
+  c.inventory[9] = { id: 'item.mesh_vest', qty: 1, socketed: ['item.mod_plate'] }; c.inventory[10] = { id: 'item.mesh_vest', qty: 1 };
+  const sent = [], toasts = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'solo', character: 'trevor', save, _syncParty() {}, _toast: (t) => toasts.push(t), _announce() {} });
+  host._equipSlot('trevor', 9);
+  assert.equal(c.equipped.chestplate, 'item.mesh_vest'); assert.deepEqual(c.socketed.chestplate, ['item.mod_plate'], 'the clicked, modded vest is the one worn');
+  assert.ok(!c.inventory[9] && c.inventory[10] && !c.inventory[10].socketed, 'and the plain one is still in slot 10');
+  host._equipSlot('trevor', 10);
+  assert.ok(!c.socketed.chestplate, 'swapped for the plain copy: no mods worn');
+  assert.ok(c.inventory.some((s) => s?.id === 'item.mesh_vest' && s.socketed?.[0] === 'item.mod_plate'), 'and the modded copy is back in the bag with its mod');
+  host._unwear('trevor', 'chestplate');
+  assert.ok(!c.equipped.chestplate && c.inventory.filter((s) => s?.id === 'item.mesh_vest').length === 2, 'taking it off keeps both copies');
+  // a guest sends the slot, not just the id
+  const guest = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'client', character: 'trevor', save, net: { send: (m) => sent.push(m) } });
+  const k = c.inventory.findIndex((s) => s?.socketed);
+  guest.menuWearSlot(k); guest.menuUnwear('chestplate');
+  assert.deepEqual(sent, [{ t: 'equipSlot', i: k }, { t: 'unwear', slot: 'chestplate' }], 'guests send the exact slot, and a separate take-off');
+  assert.equal(InvM.wear(c, 'item.mesh_vest', 99), true, 'an out-of-range slot falls back to the old search');
+});
+
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

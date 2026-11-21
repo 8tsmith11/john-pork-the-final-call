@@ -707,6 +707,8 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'skill') this._learn(this._charOf(peer), msg.id);
         if (msg.t === 'ability') this._raiseAbility(this._charOf(peer), msg.key);
         if (msg.t === 'equip') this._equip(this._charOf(peer), msg.id);
+        if (msg.t === 'equipSlot') this._equipSlot(this._charOf(peer), msg.i | 0);   // the exact bag stack
+        if (msg.t === 'unwear' && typeof msg.slot === 'string') this._unwear(this._charOf(peer), msg.slot);
         if (msg.t === 'mate') this._mateBreak();
         if (msg.t === 'hotSel') this._setHot(this._charOf(peer), msg.i);
         if (msg.t === 'rest') this._restAtSave(peer, msg.obj);
@@ -1232,6 +1234,29 @@ export class WorldScene extends Phaser.Scene {
     if (def.slot === 'consumable') { if (this.mode === 'client') this.net.send({ t: 'use', id }); else { this._useWhat = id; this._use(this.character, this.localId); } return; }
     if (this.mode === 'client') this.net.send({ t: 'equip', id }); else this._equip(this.character, id);
   }
+  // Wear the bag stack that was clicked, not just the first one with that id (John Pork, PR #93: with two vests, the
+  // modded one in slot 9 must be the one that goes on). Guests send the slot; the host checks it.
+  menuWearSlot(i) {
+    if (!this.save.party[this.character]?.inventory[i]) return;
+    if (this.mode === 'client') this.net.send({ t: 'equipSlot', i }); else this._equipSlot(this.character, i);
+  }
+  // Taking off what's worn in a slot: its own action, so clicking a bag copy never takes the worn one off.
+  menuUnwear(slot) {
+    if (this.mode === 'client') this.net.send({ t: 'unwear', slot }); else this._unwear(this.character, slot);
+  }
+  _equipSlot(who, i) {
+    const c = this.save.party[who], it = c?.inventory?.[i], def = it && ITEMS[it.id];
+    if (!def || !WORN_SLOTS.includes(def.slot)) return;
+    if (!canWear(def, who)) return this._announce(`${def.name}: only ${def.owner[0].toUpperCase() + def.owner.slice(1)} can wear that.`);
+    if (!Inv.wear(c, it.id, i)) return this._toast('Your bag is full. Make room to swap.');
+    this._syncParty();
+  }
+  _unwear(who, slot) {
+    const c = this.save.party[who];
+    if (!c?.equipped?.[slot] || !WORN_SLOTS.includes(slot)) return;
+    if (!Inv.unwear(c, slot)) return this._toast('Your bag is full. Make room to take it off.');
+    this._syncParty();
+  }
   // Slot actions (inventory grid + hotbar). Host-authoritative like everything else.
   menuUseSlot(i) {
     const c = this.save.party[this.character], it = c?.inventory[i]; if (!it) return;
@@ -1246,7 +1271,8 @@ export class WorldScene extends Phaser.Scene {
       if (i < Inv.HOTBAR) this.selectHot(i);
       return;
     }
-    if (WORN_SLOTS.includes(def.slot) || def.slot === 'instrument' || def.slot === 'gift') return this.menuUse(it.id);
+    if (WORN_SLOTS.includes(def.slot)) return this.menuWearSlot(i);   // this exact stack, mods and all
+    if (def.slot === 'instrument' || def.slot === 'gift') return this.menuUse(it.id);
     if (def.slot === 'junk' || def.slot === 'key') this._say(`${def.name}\n${def.text}`);
   }
   menuMove(a, b, half) { if (this.mode === 'client') this.net.send({ t: 'move', a, b, half }); else { Inv.moveSlot(this.save.party[this.character], a, b, half); this._syncParty(); } }

@@ -84,12 +84,15 @@ export function pay(c, cost) { if (!canPay(c, cost)) return false; for (const [i
 
 /** Put on a worn-slot item from the bag: it leaves the bag, and whatever was in that slot goes back
  *  into the bag. False (and nothing changes) if `id` isn't in the bag or the old piece won't fit. */
-export function wear(c, id) {
+export function wear(c, id, at = null) {
   const slot = ITEMS[id]?.slot;
   if (!WORN_SLOTS.includes(slot) || count(c, id) < 1) return false;
   c.equipped ??= {}; c.rolled ??= {};
   // the same slot remove() would take (the back of the backpack first), so its roll goes on with it
-  let i = SLOTS - 1; while (i >= 0 && c.inventory[i]?.id !== id) i--;
+  // `at`: the exact bag slot that was clicked (two copies of one item can carry different mods: John Pork, PR #93);
+  // otherwise the same slot remove() would take (the back of the backpack first), so its roll goes on with it.
+  let i = Number.isInteger(at) && c.inventory[at]?.id === id ? at : SLOTS - 1;
+  if (i !== at) while (i >= 0 && c.inventory[i]?.id !== id) i--;
   c.socketed ??= {};
   const taken = c.inventory[i], roll = taken.roll ?? null, socketed = taken.socketed ?? null;
   const old = c.equipped[slot], oldRoll = c.rolled[slot] ?? null, oldSock = c.socketed[slot] ?? null;

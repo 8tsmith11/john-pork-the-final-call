@@ -176,8 +176,8 @@ export class GameMenu {
       else this._t(x + S / 2, y + S / 2, SLOT_ABBR[slot], F(5, '#4a5175')).setOrigin(0.5);
       const z = s.add.zone(x, y, S, S).setOrigin(0).setInteractive({ useHandCursor: true });
       z.on('pointerdown', () => {
-        if (this.held != null) { const it = inv[this.held]; if (it && ITEMS[it.id]?.slot === slot) s.menuUse(it.id); this.held = null; return this.refresh(); }
-        if (id) s.menuUse(id);   // click a worn item to take it off
+        if (this.held != null) { const it = inv[this.held]; if (it && ITEMS[it.id]?.slot === slot) s.menuWearSlot(this.held); this.held = null; return this.refresh(); }   // that exact stack
+        if (id) s.menuUnwear(slot);   // click a worn item to take it off
       });
       z.on('pointerover', () => { this.hover = id ? { id, roll: c.rolled?.[slot] } : { label: `${SLOT_NAMES[slot]} slot` }; this._drawTip(); });
       this.root.add(z);
