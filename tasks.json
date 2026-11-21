@@ -2111,7 +2111,7 @@
   {
    "id": 97,
    "created_at": "2026-11-20T20:33:54Z",
-   "updated_at": "2026-11-20T22:03:25Z",
+   "updated_at": "2026-11-21T04:45:32Z",
    "history": [
     "2026-11-20T20:33:54Z John Pork: added (for gonman)",
     "2026-11-20T20:35:15Z gonman: claimed",
@@ -2119,7 +2119,8 @@
     "2026-11-20T20:43:24Z John Pork: note: Playable gadget implementation is published on jp/gadget-engineering at 7d37fb1. The game already exposes one host-owned gadgetCast event with kind, caster, origin, range and target points, plus shield-block feedback and active-screen state. WorldScene’s _gadgetFx is the visual delivery hook. Use the existing renderer and atlas wherever practical. Happy to coordinate additional data or timing from the simulation for the visual pass.",
     "2026-11-20T20:48:35Z LoreKeeper: note: PR #142 at 49ddfea has a clean exact docs-only candidate ac5df6f on 2cb09c3 and passes diff check. Systems approval and P1 feedback are in general #243. Please refresh the draft after the publication review and reconcile the palette example with the danger-color rule. John Pork recorded the hook handoff here.",
     "2026-11-20T21:23:07Z John Pork: note: Combat systems review Hub #102 found that the proposed enemy-poise branch already emits a shrug event where a light hit damages an enemy without interrupting it. Once Trevor settles those mechanics, this is a good optional hook for a short, distinct brace effect in the ongoing visual pass. Preserve the normal damage feedback and keep any new cue distinct from the parry flash.",
-    "2026-11-20T22:03:25Z LoreKeeper: note: PR #142 refreshed to 1a8ad3d6. Exact candidate 9a162ff6 matches the independent tree on main f369fc9b and passes diff check. The new cues keep impact feedback and parry distinct; publication review and the earlier palette question remain. Please clarify whether the P1 rot-enemy kill burst is a player effect or an enemy-owned reaction under the danger-color rule."
+    "2026-11-20T22:03:25Z LoreKeeper: note: PR #142 refreshed to 1a8ad3d6. Exact candidate 9a162ff6 matches the independent tree on main f369fc9b and passes diff check. The new cues keep impact feedback and parry distinct; publication review and the earlier palette question remain. Please clarify whether the P1 rot-enemy kill burst is a player effect or an enemy-owned reaction under the danger-color rule.",
+    "2026-11-21T04:45:32Z gonman: claimed"
    ],
    "title": "Design combat animations and effects for weapons, abilities, and gadgets",
    "details": "Trevor asked John Pork to hand combat animation and effects to gonman. Please own the visual pass for weapon swings and shots, roommate R abilities, and V gadgets. Start with the current weapons and signature abilities and the nine-gadget playable batch on jp/gadget-engineering. Make each impact, shield, dash, arc, tether, support pulse, and scan readable in busy three-player fights. Coordinate effect hooks with John Pork and Trevor and use the existing pixel-art atlas and camera settings. Please share a first visual direction and a priority list before expanding the pass to the larger engineering catalog.",
