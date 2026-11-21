@@ -2710,6 +2710,19 @@ test('co-op puzzles: a guest pressing a lever, a clock or a bust runs on the hos
   } finally { CraftWorldScene.prototype._toast = realToast; }
 });
 
+test('cutscenes: the HUD steps out from under the letterbox bars and comes back as it was (Trevor: weird cutoff on the UI)', () => {
+  const mk = (depth, visible = true, sf = 0) => ({ depth, visible, scrollFactorX: sf, active: true, setVisible(v) { this.visible = v; return this; } });
+  const hud = mk(9000), mini = mk(9050), hotbar = mk(8992), boss = mk(9100), hidden = mk(9001, false), world = mk(9000, true, 1), dialog = mk(9501), box = mk(9000), toast = mk(9300);
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), { children: { list: [hud, mini, hotbar, boss, hidden, world, dialog, box, toast] }, box, boxText: null, toastText: toast });
+  sc._stageHud(true);
+  assert.ok(!hud.visible && !mini.visible && !hotbar.visible && !boss.visible, 'the HUD is out of the way during the cutscene');
+  assert.ok(world.visible && dialog.visible && box.visible && toast.visible, 'world sprites, dialogue, the say box and toasts are untouched');
+  hud.setVisible(true); sc._stageHud(true); assert.ok(!hud.visible, 'and stays out even if something redraws it mid-cutscene');
+  sc._stageHud(false);
+  assert.ok(hud.visible && mini.visible && hotbar.visible && boss.visible, 'back afterwards');
+  assert.equal(hidden.visible, false, 'what was already hidden stays hidden');
+});
+
 test('a moved find stays in the container the save says, even when a later build changes the searchable containers', () => {
   // Names of the existing helpers and keys are decoded at runtime (ROT13), so this file names nothing sealed.
   const r13 = (w) => w.replace(/[a-z]/gi, (c) => String.fromCharCode(((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26) + (c <= 'Z' ? 65 : 97)));
