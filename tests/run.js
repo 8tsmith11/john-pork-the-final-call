@@ -2101,7 +2101,7 @@ test('the fuse carrier sends you to the ASTER lobby, where Kess is (Phase 0: it 
 const { roomReport: ROOM_REPORT, RULES: ROOM_RULES, spriteOf: ROOM_SPRITE } = await import('../tools/level/rooms.mjs');
 test('room standard (hub #113): every map marked standard: true meets it', () => {
   const marked = Object.values(MAPS_FOR_TEST).filter((m) => m.standard);
-  for (const id of ['apt_636', 'apt_637', 'apt_638']) assert.ok(MAPS_FOR_TEST[id].standard, `${id} is built to the standard`);
+  for (const id of ['apt_636', 'apt_637', 'apt_638', 'diner']) assert.ok(MAPS_FOR_TEST[id].standard, `${id} is built to the standard`);
   for (const m of marked) assert.deepEqual(ROOM_REPORT(m, MAPS_FOR_TEST).miss, [], `${m.id} misses the room standard`);
 });
 test('room standard (hub #113): the checks bite, and Room 631 (the reference) meets all of them but the landmark', () => {

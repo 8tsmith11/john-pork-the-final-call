@@ -1690,6 +1690,43 @@ P("obj.lease_counter", c.outline())
 D("dec.outline_l", dc().h_(2, 3, 14, "warm1").h_(2, 12, 14, "warm1").v_(2, 3, 10, "warm1").pts("night1", (3, 4), (3, 11)))
 D("dec.outline_r", dc().h_(0, 3, 14, "warm1").h_(0, 12, 14, "warm1").v_(13, 3, 10, "warm1").pts("night1", (12, 4), (12, 11)))
 
+# ---- The diner (hub #113, act1_more.js): booths, a counter with stools, and the jukebox (its landmark) ----
+# A booth: the red vinyl back, tufted, with a duct-tape mend; the table in front on a chrome pedestal.
+c = C().rect(2, 4, 12, 11, "soft0").rect(3, 5, 10, 9, "soft1").h_(2, 4, 12, "soft1")
+for x in (5, 8, 11): c.v_(x, 6, 7, "soft0")
+c.rect(9, 7, 3, 2, "concrete3").px(10, 8, "steel")                                                               # the tape, mended twice
+c.rect(1, 14, 14, 2, "bone").h_(1, 16, 14, "steel").pts("steel", (4, 13), (5, 13)).px(10, 13, "signal").px(11, 13, "bone")   # top, napkins, ketchup
+c.rect(1, 17, 3, 2, "soft0").rect(12, 17, 3, 2, "soft0").v_(7, 17, 5, "steel").v_(8, 17, 5, "concrete2").h_(5, 22, 6, "concrete1")
+P("obj.booth", c.outline())
+
+# A counter stool: a red seat on a chrome post, a foot ring, a weighted base.
+c = C().rect(4, 11, 8, 2, "soft1").h_(4, 13, 8, "soft0").h_(5, 10, 6, "pork1")
+c.v_(7, 14, 8, "steel").v_(8, 14, 8, "concrete2").h_(5, 18, 6, "steel").rect(5, 22, 6, 1, "concrete2").h_(4, 23, 8, "concrete1")
+P("obj.stool", c.outline())
+
+# A run of counter: a pale top with a chrome edge, the red front, a kick plate.
+c = C().rect(0, 10, 16, 3, "bone").h_(0, 10, 16, "concrete3").h_(0, 13, 16, "steel")
+c.rect(0, 14, 16, 8, "soft0").h_(0, 16, 16, "steel").pts("soft1", (2, 18), (6, 19), (11, 18)).rect(0, 22, 16, 2, "night2")
+c.pts("night1", (4, 11), (12, 11)).px(12, 12, "concrete3")                                                       # rings from cups
+P("obj.counter", c.outline())
+
+
+def jukebox(f):                 # wood cabinet under a lit arch of tubes; the colours run round the arch
+    c = C().rect(2, 6, 12, 17, "warm2").v_(13, 7, 16, "warm1").h_(2, 6, 12, "warm3")
+    cols = ["pork1", "screen2", "slicker1"]
+    for i, (x, y) in enumerate(((3, 6), (3, 5), (4, 4), (5, 3), (6, 2), (7, 2), (8, 2), (9, 2), (10, 3), (11, 4), (12, 5), (12, 6))):
+        c.px(x, y, cols[(i + f) % 3])
+    c.rect(4, 7, 8, 6, "bone").h_(4, 7, 8, "concrete3")
+    for y in (8, 10, 12): c.h_(5, y, 6, "night2")                                                               # forty cards, one title
+    c.rect(4, 14, 8, 3, "night1").rect(6, 15, 4, 1, "night3").px(7, 15, "signal")                               # the record turning
+    for y in (18, 20): c.h_(4, y, 8, "steel")                                                                   # speaker grille
+    c.pts(cols[f % 3], (3, 9), (12, 9), (3, 12), (12, 12)).h_(2, 22, 12, "warm0")
+    return c.outline()
+
+
+P("obj.jukebox", jukebox(0))
+P("obj.jukebox#1", jukebox(1))
+
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)
 write("big", 32, 40, BIG)
