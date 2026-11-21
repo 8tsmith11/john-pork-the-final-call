@@ -2,6 +2,7 @@
 //   giver: npc id · ask: flag set when you first talk to the giver (with `pitch` as their line)
 //   give: { item, flag, refuse }  → the NPC offers a hand-in action when the player carries `item`
 //   inspect: { obj, flag, text }  → examining `obj` while the quest is active sets flag (appends text)
+//            + textAfter: { flag, text }   appended instead once that flag is set (the thing you look at has changed)
 //   report: { needs, flag }       → talking to the giver after `needs` is set sets flag
 // Quests as data. Stages complete when their `done(flags, save)` test passes; the engine checks each
 // second, advances, toasts, and pays rewards. Side quests start when `start` passes (usually a flag

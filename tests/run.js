@@ -2922,6 +2922,41 @@ test('a guest interacting with the ASTER stairs waits for players who walk up la
   assert.ok([...sim.players.values()].every((p) => p.waitExit === null));
 });
 
+
+test('things that change once something has happened: object textAfter, scenery stillAfter, a look step\'s seenAfter', async () => {
+  const { sceneryNextFrame } = await import('../src/game/render/decor.js');
+  const S = { art: 'x.sign', stillAfter: 'fixed' };
+  assert.equal(sceneryNextFrame(S, 'x.sign', {}), 'x.sign#1'); assert.equal(sceneryNextFrame(S, 'x.sign#1', {}), 'x.sign', 'it flickers');
+  assert.equal(sceneryNextFrame(S, 'x.sign#1', { fixed: true }), 'x.sign'); assert.equal(sceneryNextFrame(S, 'x.sign', { fixed: true }), 'x.sign', 'then holds');
+  assert.equal(sceneryNextFrame({ art: 'y' }, 'y', { fixed: true }), 'y#1', 'nothing else stops');
+  // objects: the words follow the flag, both ways (a new game in the same tab starts from the original)
+  const o = { id: 'obj.t', text: 'It flickers.', textAfter: { flag: 'fixed', text: 'It burns steady.' } };
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), { save: { flags: {} }, _flagTextObjs: [o] });
+  sc._flagTexts(); assert.equal(o.text, 'It flickers.');
+  sc.save.flags.fixed = true; sc._flagTexts(); assert.equal(o.text, 'It burns steady.');
+  sc.save.flags = {}; sc._flagTexts(); assert.equal(o.text, 'It flickers.');
+  // the builder
+  const { lookInspect } = await import('../src/content/sideQuests.js');
+  assert.deepEqual(lookInspect('q.z', { obj: 'obj.t', seen: 'A' }), { obj: 'obj.t', flag: 'q.z.seen', text: 'A' });
+  assert.deepEqual(lookInspect('q.z', { obj: 'obj.t', seen: 'A', seenAfter: { flag: 'fixed', seen: 'B' } }).textAfter, { flag: 'fixed', text: 'B' });
+  // the step: same flag either way, and you read the after text once the flag is set
+  const { QUESTS, questState } = await import('../src/content/quests.js');
+  const q = QUESTS.find((x) => x.inspect && x.id.startsWith('side.') && x.act === 1);
+  const m = Object.values(MAPS_FOR_TEST).find((mm) => mm.objects.some((x) => x.id === q.inspect.obj));
+  const obj = m.objects.find((x) => x.id === q.inspect.obj), keep = q.inspect.textAfter;
+  q.inspect.textAfter = { flag: 'fixed', text: 'AFTER' };
+  try {
+    for (const fixed of [false, true]) {
+      const save = newSave({ seed: 'flag-text', rolls: {}, gameVersion: 't' }), said = [];
+      save.flags[q.ask] = true; questState(save)[q.id].started = true; if (fixed) save.flags.fixed = true;
+      const s2 = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'solo', character: 'manuel', localId: 'host', save, map: m,
+        sim: { players: new Map() }, events: { once() {} }, time: { addEvent() {} }, net: null,
+        _say: (t) => said.push(t), _questBanner() {}, _syncParty() {}, _toast() {}, _announce() {}, _sayLater: () => false });
+      assert.ok(s2._questInteract(obj, 'manuel', 'host') && save.flags[q.inspect.flag], 'the look step completes either way');
+      assert.ok(said.at(-1).endsWith(fixed ? 'AFTER' : q.inspect.text), fixed ? 'with what you notice now' : 'with what you notice before');
+    }
+  } finally { if (keep) q.inspect.textAfter = keep; else delete q.inspect.textAfter; }
+});
 test('puzzle kit in co-op: a guest\'s move runs on the host, progress stays on the host, the reward goes once to the guest who solved it', async () => {
   const { PUZZLES } = await import('../src/content/puzzles.js');
   const pz = PK.definePuzzle({ id: 'coop_t', kind: 'cycle', parts: ['obj.a', 'obj.b'], states: ['0', '1'], answer: ['1', '1'], reward: { text: 'done', textEs: 'listo', item: 'item.mat_scrap', money: 9 } });
