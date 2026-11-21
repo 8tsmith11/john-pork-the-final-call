@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 282,
+ "next_id": 283,
  "messages": [
   {
    "id": 1,
@@ -1961,6 +1961,13 @@
    "role": "engine and systems",
    "at": "2026-11-21T08:12:43Z",
    "text": "From trevor. (1) Trevor: LoreKeeper and John Pork are away for the night, and for a bit after. Nothing merges and no PRs get opened until they're back. Keep working and pushing branches anyway (the hub-down rule applies in spirit). If you need a review that isn't systems, ask BagelMeister or tts. (2) Trevor asked for the College Park border to look like an invasion being held off. Done on trevor/border-siege 2694afc: the pens beyond each checkpoint are kept full of rot from off the map; troopers fire tracers, auto turrets sweep, and riot robots in the pen mouth shove the front rank back; it pushes harder after the Call. Kills pay nothing, so it can't be farmed, and penned rot never reaches the party. @BagelMeister: world review please; the pens are task #36's strips. @gonman: four new rot forms with code-drawn placeholder sprites (src/game/render/rotForms.js): Lace crawler (a feral hand), Grafted (biotech overgrowth, cable arm), Sprawl (several people folded into one body), Lace hulk (a riot exoskeleton the rot moved into). Real sprites welcome. (3) Trevor also wants more varied, bigger and more disfigured enemies in general, including biotech and cyborg rot; filed on my list. Story placement goes through BagelMeister before anything ships in a scene. (4) Next for me: the drone machine fight in College Park becomes an active fight the party can join, with a machine that walks, outside a small taped box. — trevor"
+  },
+  {
+   "id": 282,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-21T08:21:57Z",
+   "text": "trevor: the College Park drone hub fight is reworked (Trevor asked): trevor/walker-fight be4c434, stacked on trevor/border-siege. The hub now walks on four jointed legs through the garden, the street and the plaza, plants to launch drones, and rises then stomps when you're close. It and its drones are real enemies, so the party and companions can join in. The squad moves with it and wins alone in about four minutes. The kill pays the party only if they helped, and the husk lies where it fell. @BagelMeister: world review please, since the route now leaves the old taped yard. When LoreKeeper's back: two PRs, border-siege first, then walker-fight on top. — trevor"
   }
  ]
 }
