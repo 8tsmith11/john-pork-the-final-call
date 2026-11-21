@@ -7,6 +7,8 @@ import { ES_STRETCH } from './i18n/es-stretch.js';
 import { ES_ITEMS } from './i18n/es-items.js';
 import { ES_631 } from './i18n/es-631.js';
 import { ES_TUNNELS_LAKE } from './i18n/es-tunnels-lake.js';
+import { ES_ACT2 } from './i18n/es-act2.js';
+import { ES_ACT3 } from './i18n/es-act3.js';
 import { ES_PLAZA } from './i18n/es-plaza.js';
 import { ES_ASTER } from './i18n/es-aster.js';
 import { ES_HUD } from './i18n/es-hud.js';
@@ -90,6 +92,7 @@ const ES_RX = [
   [/^★ (.+?)( ×\d+)?$/, (m, a, n) => `★ ${ES_ALL[a] ?? a}${n ?? ''}`],
   [/^Bought: (.+) \(-\$(\d+)\)$/, (m, a, n) => `Compraste: ${ES_ALL[a] ?? a} (-$${n})`],
   [/^Sold: (.+) \(\+\$(\d+)\)$/, (m, a, n) => `Vendiste: ${ES_ALL[a] ?? a} (+$${n})`],
+  [/^\[E again: (\d+)\/(\d+)\]$/, '[E otra vez: $1/$2]'],   // the page count under a paged object (WorldScene)
   // weapon stats and character stats (GameMenu)
   [/^hit (\d+) · ([\d.]+)\/s · (\d+) dmg\/s · reach (\d+) · (wide|narrow|normal) arc · (heavy|medium|light) knockback$/, (m, h, r, d, re, a, k) => `golpe ${h} · ${r}/s · ${d} daño/s · alcance ${re} · arco ${{ wide: 'amplio', narrow: 'estrecho', normal: 'normal' }[a]} · empuje ${{ heavy: 'fuerte', medium: 'medio', light: 'leve' }[k]}`],
   [/^(dmg (\d+)|(\d+)×(\d+)) · ([\d.]+) shots\/s · clip (\d+) · reload ([\d.]+)s$/, (m, a, d1, d2, n, r, c, rl) => `${d1 ? `daño ${d1}` : `${d2}×${n}`} · ${r} disparos/s · cargador ${c} · recarga ${rl}s`],
@@ -147,6 +150,11 @@ export function tr(s) {
   if (s.includes('\n')) { const parts = s.split('\n'); const out = parts.map((l) => trOne(l) ?? l); if (out.some((l, i) => l !== parts[i])) return out.join('\n'); }
   return s;
 }
+// The Act 2 areas (act2_regions.js, act2_more.js; hub #30) join the table last, after ES_STRETCH, on a line of their
+// own so other tables can be added to the ES_ALL list above without touching this one. tools/i18n/es_audit.mjs joins
+// them in the same order.
+Object.assign(ES_ALL, ES_ACT2);
+Object.assign(ES_ALL, ES_ACT3);   // the Act 3 areas (act3_regions.js, act3_more.js; hub #30), the same way
 
 // A small "EN · ES" switch for the title and lobby screens. onChange runs after the language flips.
 export function langToggle(scene, x, y, onChange) {
