@@ -174,4 +174,14 @@ export const ES_ASTER = {
   '"Start at the water tower and go left. Don\'t count the moon. People count the moon." They keep their eyes on the north the whole time.': '"Empieza por la torre de agua y sigue hacia la izquierda. No cuentes la luna. La gente cuenta la luna." No aparta la vista del norte en ningún momento.',
   'A cooler behind the tank': 'Una hielera detrás del tanque',
   'A cooler wedged behind the water tank, out of the wind. On the lid in marker: IF YOU CAME UP HERE YOU NEED IT MORE THAN ME.': 'Una hielera encajada detrás del tanque de agua, al reparo del viento. En la tapa, con marcador: SI SUBISTE HASTA AQUÍ LO NECESITAS MÁS QUE YO.',
+  // Continuity propaganda (hub #100)
+  'Continuity poster': 'Cartel de Continuidad',
+  'A Continuity poster, put up this week. A phone with its caller ID blacked out and a red slash through it: DON\'T PICK UP. AN UNEXPECTED CALL IS A PUBLIC-HEALTH EVENT. LET IT RING AND REPORT IT. They hung it right beside your door.':
+    'Un cartel de Continuidad, pegado esta semana. Un teléfono con el identificador de llamadas tachado en negro y una raya roja encima: NO CONTESTE. UNA LLAMADA INESPERADA ES UN EVENTO DE SALUD PÚBLICA. DÉJELA SONAR Y DENÚNCIELA. Lo colgaron justo al lado de tu puerta.',
+  'HE IS NOT YOUR FRIEND. HE IS NOT ANYONE\'S. Possession of his likeness, image or flag is a loyalty-score event. Continuity Authority. The graffiti across the hall answers it in three colors.':
+    'ÉL NO ES SU AMIGO. NO ES AMIGO DE NADIE. Poseer su imagen, su retrato o su bandera es un evento de puntaje de lealtad. Autoridad de Continuidad. El grafiti del otro lado del pasillo le contesta en tres colores.',
+  'LIKENESS OFFENSES: printing, carving, drawing or describing a banned likeness, minus forty loyalty. Statues count. Someone has circled "Statues count" in pen and drawn an arrow pointing at the ceiling.':
+    'DELITOS DE IMAGEN: imprimir, tallar, dibujar o describir una imagen prohibida, menos cuarenta de lealtad. Las estatuas cuentan. Alguien encerró "Las estatuas cuentan" en un círculo con bolígrafo y dibujó una flecha que apunta al techo.',
+  'The same DON\'T PICK UP poster as upstairs, by the street doors, so it\'s the last thing you see going out. The fine print: "Phones are certified at the checkpoint. Uncertified devices may be confiscated."':
+    'El mismo cartel de NO CONTESTE de arriba, junto a las puertas de la calle, para que sea lo último que ves al salir. La letra pequeña: "Los teléfonos se certifican en el puesto de control. Los dispositivos sin certificar pueden ser confiscados."',
 };
