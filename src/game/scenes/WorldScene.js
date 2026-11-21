@@ -83,6 +83,7 @@ import { puzzleFor } from '../../content/puzzles.js';
 import { use as usePuzzle } from '../../content/puzzleKit.js';
 
 const STEP = 1 / 60;
+const CAM_FX = new Set(['shake', 'flash', 'fadeOut', 'fadeIn']);   // camera effects the host may send guests (_camFx)
 const TRAIT_LABEL = { sprinter: 'fast', armored: 'armored', splitter: 'splits', puddler: 'leaks coderot', blinker: 'blinks' };
 const MORPH_UNLOCK = {
   trevor: 'Trevor\'s supplement stack finally hits all at once. Morph stage 1 unlocked. [M]',
@@ -165,7 +166,9 @@ export class WorldScene extends Phaser.Scene {
     });
     this.localId = this.mode === 'client' ? this.net.id : 'host';
     this.remoteInputs = new Map();
-    this.snapBuf = this.initialSnapshot ? [{ at: performance.now(), snap: this.initialSnapshot }] : [];
+    // fx: that snapshot's events have played on this screen (each plays once; the joining snapshot's already happened).
+    this.snapBuf = this.initialSnapshot ? [{ at: performance.now(), snap: this.initialSnapshot, fx: true }] : [];
+    this._netEvents = []; this._fxLate = null;
     if (this.mode !== 'client') {
       this.sim.addPlayer(this.localId, this.character);
       for (const [peer, ch] of Object.entries(this.assignments || {})) {
@@ -797,20 +800,37 @@ export class WorldScene extends Phaser.Scene {
           }
         }
       });
-      this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
+      // Every event since the last broadcast goes out with it (a broadcast spans several frames; _lastSnap holds only the latest).
+      this.time.addEvent({ delay: 50, loop: true, callback: () => {
+        this.net.broadcast({ t: 'snap', snap: { ...(this._lastSnap ?? this.sim.snapshot()), events: this._netEvents ?? [] } });
+        this._netEvents = [];
+      } });
       this.time.addEvent({ delay: 500, loop: true, callback: () => this._broadcastWorld() });
       on('join', () => { this._worldSig = null; });
     } else if (this.mode === 'client') {
       on('msg', (msg) => {
         if (msg.t === 'toast') { this._toast(msg.text); return; }
         if (msg.t === 'gadgetFx') { if (msg.area === this.map.id) this._gadgetFx(msg.effect); return; }
+        if (msg.t === 'camfx') { if (msg.area === this.map.id && CAM_FX.has(msg.kind)) this.cameras.main[msg.kind](...(msg.args ?? [])); return; }
+        if (msg.t === 'fxPop') { if (msg.area === this.map.id) this._fxPop(msg.x, msg.y, msg.text); return; }
+        if (msg.t === 'hackCall') { this._hackCall(); return; }   // the dialogue after it is shared already
+        if (msg.t === 'buttDial') { ring(2); this._toast('Phone: JOHN PORK'); return; }
+        if (msg.t === 'act1Arrival') { this._showActOneArrival(msg.x, msg.y); return; }
         if (msg.t === 'gadgetReading') { if (msg.area === this.map.id) this._showGadgetReading(msg); return; }
         if (msg.t === 'lattice') { this._table().onClientMsg(msg); return; }
         if (msg.t === 'bastion') { this._bastion().onClientMsg(msg); return; }
         if (msg.t === 'lab') { this._lab().onClientMsg(msg); return; }
         if (msg.t === 'pipe') { this._pipes().onClientMsg(msg); return; }
         if (this.shared?.onMsg(msg) || this.stage?.onClientMsg(msg) || this.retry?.onClientMsg(msg) || this.moods?.onClientMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg) || this.comic?.onClientMsg(msg)) return;
-        if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
+        if (msg.t === 'snap') {
+          this.snapBuf.push({ at: performance.now(), snap: msg.snap, fx: false });
+          if (this.snapBuf.length > 20) {
+            // Dropped before this screen drew it (a long frame): its events still play once, next frame. Capped, so a
+            // hidden tab doesn't save up minutes of hits.
+            const old = this.snapBuf.shift();
+            if (!old.fx) this._fxLate = [...(this._fxLate ?? []), ...(old.snap.events ?? [])].slice(-64);
+          }
+        }
         if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text, msg.questRead, msg.itemIcons);
         if (msg.t === 'caption') this._caption(msg.text);
         if (msg.t === 'reload') { this.scene.restart({ mode: 'client', net: this.net, save: msg.save, character: this.character }); return; }
@@ -829,15 +849,22 @@ export class WorldScene extends Phaser.Scene {
   _interpolated() {
     const t = performance.now() - 100, buf = this.snapBuf;
     if (!buf.length) return null;
+    // The same snapshot is drawn over several frames, and the view can skip past one: every snapshot up to the one
+    // shown hands over its events exactly once.
+    const withEvents = (b, snap) => {
+      const events = this._fxLate ?? []; this._fxLate = null;
+      for (const s of buf) if (!s.fx && s.at <= b.at) { s.fx = true; events.push(...(s.snap.events ?? [])); }
+      return { ...snap, events };
+    };
     const i = buf.findIndex((s) => s.at > t);
-    if (i <= 0) return buf[i === 0 ? 0 : buf.length - 1].snap;
+    if (i <= 0) { const b = buf[i === 0 ? 0 : buf.length - 1]; return withEvents(b, b.snap); }
     const a = buf[i - 1], b = buf[i], k = (t - a.at) / (b.at - a.at || 1);
-    if (a.snap.map !== b.snap.map) return b.snap;
+    if (a.snap.map !== b.snap.map) return withEvents(b, b.snap);
     const lerp = (list, prevList) => {
       const prev = new Map(prevList.map((p) => [p.id, p]));
       return list.map((p) => { const q = prev.get(p.id); return q ? { ...p, x: q.x + (p.x - q.x) * k, y: q.y + (p.y - q.y) * k } : p; });
     };
-    return { ...b.snap, players: lerp(b.snap.players, a.snap.players), enemies: lerp(b.snap.enemies, a.snap.enemies) };
+    return withEvents(b, { ...b.snap, players: lerp(b.snap.players, a.snap.players), enemies: lerp(b.snap.enemies, a.snap.enemies) });
   }
 
   // ---------- map ----------
@@ -1041,7 +1068,9 @@ export class WorldScene extends Phaser.Scene {
   async _playEnding() {
     if (this.mode === 'client') return;
     const me = this._lastRendered?.players.find(p => p.id === this.localId) ?? this.sim.players.get(this.localId);
-    this._showActOneArrival(me?.x ?? 160, me?.y ?? 80);
+    const x = me?.x ?? 160, y = me?.y ?? 80;
+    this._showActOneArrival(x, y);
+    if (this.mode === 'host') this.net.broadcast({ t: 'act1Arrival', x, y });
     // The ending script branches on these; nothing else sets them. Warm = the party picked up the
     // first time the phone rang (script note: any decline makes Pork cold, including the Sahur route).
     const f = this.save.flags;
@@ -1266,22 +1295,22 @@ export class WorldScene extends Phaser.Scene {
     if (i < 0 || !c.inventory[i] || !(ITEMS[c.inventory[i].id]?.heal || ITEMS[c.inventory[i].id]?.caffeine)) return;
     const usedId = c.inventory[i].id;
     const it = ITEMS[Inv.takeSlot(c, i)];
-    if (it.caffeine) { this.sim.caffeinate(peerId, it.caffeine); this._toast(`${who} slams the ${it.name.toLowerCase()}. Wide awake for ${it.caffeine}s.`); this._syncParty(); return; }   // D-017
+    if (it.caffeine) { this.sim.caffeinate(peerId, it.caffeine); this._toastTo(peerId, `${who} slams the ${it.name.toLowerCase()}. Wide awake for ${it.caffeine}s.`); this._syncParty(); return; }   // D-017
     const healAmt = Math.round((it.heal ?? 0) * (usedId === 'item.mate_flask' ? 1 + (playerMods(c, who).mateHeal ?? 0) : 1));   // mate holster
     this.sim.heal(peerId, healAmt);
     if (it.mateKick) {   // mate caffeine (sim.mate): the kick toast comes from the snapshot on the drinker's own screen
       this.sim.mate(peerId);
-      this._toast(`${who} has the ${it.name.toLowerCase()}. +${healAmt} HP`);
+      this._toastTo(peerId, `${who} has the ${it.name.toLowerCase()}. +${healAmt} HP`);
       this._syncParty(); return;
     }
     if (it.pill) {
       const p = this.sim.players.get(peerId);
       if (p) { p.pillT = it.pill; p.sta = 999; p.staT = 0; }   // the sim clamps stamina to its max on the next step
       const line = { manuel: 'Manuel takes the blue pill. "For stamina. It says so on the box."', trevor: 'Trevor takes the blue pill and logs it in a spreadsheet.', michael: 'Michael takes the blue pill. "Nobody tell her."' }[who] ?? `${who} takes the blue pill.`;
-      this._toast(`${line} Dodges are free for ${it.pill}s.`);
+      this._toastTo(peerId, `${line} Dodges are free for ${it.pill}s.`);
       this._syncParty(); return;
     }
-    this._toast(`${who} has the ${it.name.toLowerCase()}. +${healAmt} HP`);
+    this._toastTo(peerId, `${who} has the ${it.name.toLowerCase()}. +${healAmt} HP`);
     this._syncParty();
   }
 
@@ -1429,8 +1458,8 @@ export class WorldScene extends Phaser.Scene {
     if (!p.riding && !Inv.has(c, 'item.scooter')) return;   // you have to buy one first (Delroy's, on the plaza)
     p.battery = c.scooterBattery ??= 100;
     p.hicap = Inv.has(c, 'item.scooter_hicap');
-    if (!p.riding && !this.map.outdoor) return this._toast('No scooters indoors.');
-    if (!p.riding && p.battery <= 0) return this._toast('Scooter battery is dead. Charge it at the dock in 631.');
+    if (!p.riding && !this.map.outdoor) return this._toastTo(peerId, 'No scooters indoors.');
+    if (!p.riding && p.battery <= 0) return this._toastTo(peerId, 'Scooter battery is dead. Charge it at the dock in 631.');
     this.sim.toggleScooter(peerId, true);
   }
 
@@ -1947,7 +1976,7 @@ export class WorldScene extends Phaser.Scene {
     if (BUST_ORDER.includes(near.id)) { this._turnBust(near); return; }
     if (near.id === 'obj.pump') {
       if (this.save.flags['act1.bay.drained']) { this._say((near.text ?? '') + '\n\nIt\'s still running, the way you left it. Down in the flooded bay, the waterline has dropped.'); return; }
-      this._flag('act1.bay.drained', true); sfx('hit'); this.cameras.main.shake(300, 0.004);
+      this._flag('act1.bay.drained', true); sfx('hit'); this._camFx('shake', 300, 0.004);
       this._say((near.text ?? '') + '\n\nYou find the reset and lean on it. The pump coughs, catches, and starts pulling water. Somewhere south, a long gurgle. The flooded bay is draining.'); return;
     }
   }
@@ -1983,7 +2012,7 @@ export class WorldScene extends Phaser.Scene {
     if (clocksSolved(this.save.flags) && !this.save.flags['puz.clocks.solved']) {
       this._flag('puz.clocks.solved', true);
       this._grant('item.charm_1901'); this._refreshPuzzleProps();
-      this.cameras.main.shake(400, 0.006);
+      this._camFx('shake', 400, 0.006);
       return this._say(`You wind it to ${now}. Somewhere in ASTER, four clocks tick at once. When you're back on the sixth floor, the hallway clock's face is hanging open on a hinge. Inside, a brass clock hand on a cord. (Rollover charm)`);
     }
     this._say(`You open the face and wind it. It now reads ${now}.${note}`);
@@ -2010,7 +2039,7 @@ export class WorldScene extends Phaser.Scene {
     if (r.solved) {
       if (r.reward.money) W.addMoney(this.save, who, r.reward.money);
       this._syncParty?.(); this._partyDirty = true;
-      this.cameras.main.shake(300, 0.005); this._tickQuests(true);
+      this._camFx('shake', 300, 0.005); this._tickQuests(true);
     }
     const base = o.text ?? o.label ?? '';
     const text = `${base}\n\n${r.say}`, textEs = `${tr(base)}\n\n${rEs.say}`;
@@ -2029,7 +2058,7 @@ export class WorldScene extends Phaser.Scene {
     if (seq.length === BUST_ORDER.length) {
       this._flag('puz.busts.solved', true);
       this._grant('item.pork_pin');
-      this.cameras.main.flash(300, 242, 166, 184);
+      this._camFx('flash', 300, 242, 166, 184);
       return this._say('The third bust turns to face the flag. For a second the whole room feels like it\'s being looked at, from three directions, kindly. Something small and porcelain is lying on the floor that wasn\'t there before. (Porcelain John Pork pin)');
     }
     this._say(`You turn it to face the flag. (${seq.length} of 3)`);
@@ -2117,14 +2146,14 @@ export class WorldScene extends Phaser.Scene {
 
   _lever(k) {
     const key = `act1.switch.${k}`, now = (this.save.flags[key] ?? 'left') === 'left' ? 'right' : 'left';
-    this._flag(key, now); sfx('hit'); this.cameras.main.shake(80, 0.003);
+    this._flag(key, now); sfx('hit'); this._camFx('shake', 80, 0.003);
     this._toast(`Lever ${k.toUpperCase()}: ${now.toUpperCase()}`);
     this._drawLevers();
     const sol = yardSolution(this.save.world.seed);
     const solved = LEVERS.every((x) => (this.save.flags[`act1.switch.${x}`] ?? 'left') === sol[x]);
     if (solved && !this.save.flags['act1.switchyard.solved']) {
       this._flag('act1.switchyard.solved', true);
-      this.cameras.main.shake(500, 0.01); sfx('kill');
+      this._camFx('shake', 500, 0.01); sfx('kill');
       if (!this._checkGate()) this._say(STEP_TEXT.switchyard[getLang() === 'es' ? 'es' : 'en']);
     }
   }
@@ -2140,7 +2169,7 @@ export class WorldScene extends Phaser.Scene {
     const L = getLang() === 'es' ? 'es' : 'en';
     if (!this.save.flags['act1.fuses.in']) { this._flag('act1.fuses.seen', true); sfx('swing'); this._say(FUSE_TEXT.dead[L]); return; }   // midway block (Trevor #514)
     const key = `act1.breaker.${k}`, now = breakerState(this.save.flags, k) === 'down' ? 'up' : 'down', was = breakersSet(this.save.flags, this.save.world.seed);
-    this._flag(key, now); sfx('hit'); this.cameras.main.shake(60, 0.002);
+    this._flag(key, now); sfx('hit'); this._camFx('shake', 60, 0.002);
     this._toast(toggleText('breaker', k, now, getLang()));
     this._drawLevers();
     if (!was && breakersSet(this.save.flags, this.save.world.seed) && !this._checkGate()) { sfx('kill'); this._say(STEP_TEXT.breakers[getLang() === 'es' ? 'es' : 'en']); }
@@ -2157,7 +2186,7 @@ export class WorldScene extends Phaser.Scene {
   _checkGate() {
     if (this.save.flags[GATE_FLAG] || !gateOpen(this.save.flags, this.save.world.seed)) return false;
     this._flag(GATE_FLAG, true);
-    this.cameras.main.shake(600, 0.012); sfx('kill');
+    this._camFx('shake', 600, 0.012); sfx('kill');
     this._say(STEP_TEXT.gate[getLang() === 'es' ? 'es' : 'en']);
     return true;
   }
@@ -2315,7 +2344,7 @@ export class WorldScene extends Phaser.Scene {
     // Quick fade out → swap → fade in. Players arrive beside the matching door on the other side.
     this._transitioning = true;
     const from = this.map.id;
-    this.cameras.main.fadeOut(140, 5, 6, 12);
+    this._camFx('fadeOut', 140, 5, 6, 12);   // guests fade back in when the new map reaches them
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.sim.phaseEnemies = phaseEnemies(this.save.flags);   // the phase may have moved since the last map
       this.sim.skirmishes = skirmishesFor(this.save.flags);
@@ -2389,6 +2418,19 @@ export class WorldScene extends Phaser.Scene {
     this.toastText.setText(text).setAlpha(1);
     this.tweens.killTweensOf(this.toastText);
     this.tweens.add({ targets: this.toastText, alpha: 0, delay: 1400, duration: 500 });
+  }
+
+  /** A toast for one player: here if it's ours, sent if it's a guest's, nowhere for a companion. */
+  _toastTo(id, text) {
+    if (id === this.localId) this._toast(text);
+    else if (!isAi(id)) this.net?.send(id, { t: 'toast', text });
+  }
+
+  /** A camera shake, flash or fade from code only the host runs (puzzles, exits, wipes): on the host's screen and on
+   *  every guest's on the same map. Returns the camera, like the call it wraps. */
+  _camFx(kind, ...args) {
+    if (this.mode === 'host') this.net?.broadcast({ t: 'camfx', kind, args, area: this.map.id });
+    return this.cameras.main[kind](...args);
   }
 
   async _save(message = '✓ saved') {
@@ -2550,6 +2592,7 @@ export class WorldScene extends Phaser.Scene {
       this._handleInteract(me);
       for (const p of this.sim.players.values()) this.save.party[p.character].rot = p.rot ?? 0;
       this._hostEvents(events);
+      if (this.mode === 'host') (this._netEvents ??= []).push(...events);   // kept for the next broadcast
       if (this.sim.rotDeath && !this._rotReload) this._rotReloadSoon();
       this._tickActOneEnding();
       snap = this._lastSnap = { ...this.sim.snapshot(), events, doors: [...this.map.doors.values()].filter((d) => d.open).map((d) => d.id) };
@@ -2593,7 +2636,7 @@ export class WorldScene extends Phaser.Scene {
   // Death by code rot (sim.rotDeath): a beat to read it, then the last save loads for everyone.
   _rotReloadSoon() {
     this._rotReload = true;
-    this.time.delayedCall(2400, () => this.cameras.main.fadeOut(600, 5, 6, 12));
+    this.time.delayedCall(2400, () => this._camFx('fadeOut', 600, 5, 6, 12));
     this.time.delayedCall(3100, async () => {
       const save = await loadAutosave().catch(() => null);
       if (this.mode === 'host') {
@@ -2618,10 +2661,10 @@ export class WorldScene extends Phaser.Scene {
       }
       if (ev.t === 'skOver' && ev.id) this._flag(`skirmish.${ev.id}.over`, true);   // the hub fell: it stays fallen (hub #69)
       if (ev.t === 'door' || ev.t === 'doorClose') sfx('swing');
-      if (ev.t === 'grind' && ev.id === this.localId && !this.save.flags['secrets.grind.found']) { this._flag('secrets.grind.found', true); this._toast('★ Rail grind! (scooters fly along the tracks)'); }
+      if (ev.t === 'grind' && !isAi(ev.id) && !this.save.flags['secrets.grind.found']) { this._flag('secrets.grind.found', true); this._toastTo(ev.id, '★ Rail grind! (scooters fly along the tracks)'); }
       if (ev.t === 'scooter') {
         const p = this.sim.players.get(ev.id); if (p) this.save.party[p.character].scooterBattery = Math.round(p.battery ?? 100);
-        if (ev.id === this.localId) this._toast(ev.dead ? 'Battery dead.' : ev.knocked ? 'Knocked off your scooter!' : ev.on ? 'On the scooter. [Q] to hop off' : 'Off the scooter.');
+        this._toastTo(ev.id, ev.dead ? 'Battery dead.' : ev.knocked ? 'Knocked off your scooter!' : ev.on ? 'On the scooter. [Q] to hop off' : 'Off the scooter.');
       }
       if (ev.t === 'kill') {
         if (ev.kind === 'boss.warden' && ev.boss && !ev.mini) this._markActOneBossDefeated(900);
@@ -2639,7 +2682,9 @@ export class WorldScene extends Phaser.Scene {
           if (!ev.boss && Math.random() < (killer.mods?.loot ?? 0)) { const id = drop.mats[Math.floor(Math.random() * drop.mats.length)][0]; Inv.add(kc, id); got.push(ITEMS[id].name); }
           if (ev.boss) for (const [id] of drop.mats) { Inv.add(kc, id, 2); got.push(ITEMS[id].name); }
           else if (Math.random() < 0.7) { const tot = drop.mats.reduce((t, [, w]) => t + w, 0); let r = Math.random() * tot; const id = drop.mats.find(([, w]) => (r -= w) < 0)?.[0] ?? drop.mats[0][0]; Inv.add(kc, id); got.push(ITEMS[id].name); }
-          this._fxPop(ev.x, ev.y, `+$${cash}${got.length ? ' · ' + got.join(', ') : ''}`);
+          const text = `+$${cash}${got.length ? ' · ' + got.join(', ') : ''}`;
+          this._fxPop(ev.x, ev.y, text);
+          if (this.mode === 'host') this.net.broadcast({ t: 'fxPop', area: this.map.id, x: ev.x, y: ev.y, text });
         }
         this._partyDirty = true;
         // XP is shared by the party (co-op), levels grant skill points.
@@ -2652,13 +2697,13 @@ export class WorldScene extends Phaser.Scene {
     if (this._partyDirty) { this._partyDirty = false; this._syncParty(); }
     // Party wipe: a short beat, then everyone wakes at the start of this area (the entrance you came
     // in by). Dead enemies stay dead; survivors and bosses reset.
-    if (this.sim.wiped && !this._wipeAt) { this._wipeAt = this.time.now + 1200; this.cameras.main.fadeOut(1000, 5, 6, 12); }
+    if (this.sim.wiped && !this._wipeAt) { this._wipeAt = this.time.now + 1200; this._camFx('fadeOut', 1000, 5, 6, 12); }
     if (this._wipeAt && this.time.now > this._wipeAt) {
       this._wipeAt = 0;
       this.sim.setMap(this.sim.map, this.enteredFrom ?? null);
       this.sim.wipeReset();   // full health, no code rot (Michael)
       for (const p of this.sim.players.values()) this.save.party[p.character].rot = 0;
-      this.cameras.main.fadeIn(500, 5, 6, 12);
+      this._camFx('fadeIn', 500, 5, 6, 12);   // same map, so guests need telling to fade back in
       this._toast('You come to at the start of the area.');
       this.retry?.onWipe();   // a line about trying again (src/game/retryLine.js)
     }
@@ -2724,6 +2769,7 @@ export class WorldScene extends Phaser.Scene {
     if (!force && Math.random() > 1 / 3) return;
     f['act1.beat.buttDial'] = true;
     ring(2); this._toast('Phone: JOHN PORK');
+    if (this.mode === 'host') this.net.broadcast({ t: 'buttDial' });   // everyone's phone rings
     this.time.delayedCall(2600, () => this.startDialogue('the_call', 'butt_dial'));
   }
 
@@ -2743,6 +2789,7 @@ export class WorldScene extends Phaser.Scene {
       if (ring && !this.save.flags[`act1.beat.ring${ring}`]) {
         this.save.flags[`act1.beat.ring${ring}`] = true;
         this._hackCall(() => this.startDialogue('the_call', `call_ring_${ring}`));
+        if (this.mode === 'host') this.net.broadcast({ t: 'hackCall' });   // the takeover plays on every screen
         return;
       }
     }
@@ -2861,7 +2908,7 @@ export class WorldScene extends Phaser.Scene {
       if (PARTS.every(holder)) {
         for (const id of PARTS) Inv.remove(holder(id), id);
         this._flag('q.bot.built', true); this._syncParty(); this._spawnBot(); this._tickQuests(true);
-        this.cameras.main.shake(120, 0.004); sfx('pickup');
+        this._camFx('shake', 120, 0.004); sfx('pickup');
         return;
       }
       const missing = PARTS.filter((id) => !holder(id)).map((id) => ITEMS[id].name.toLowerCase());
@@ -3037,13 +3084,14 @@ export class WorldScene extends Phaser.Scene {
       s.setPosition(e.x, e.y + 3).setDepth(e.y);
       if (s.isArt) { if (e.h) s.setTintFill(0xffffff); else if (e.boss && !s.noTint) s.setTint(def.color); else s.clearTint(); }
       else s.setFillStyle(e.h ? 0xffffff : def.color);
+      let sx = 1 + Math.sin(this.time.now / 90 + e.x) * 0.06, sy = 1;   // jittery rot wobble
       if (e.boss) {
         if (!e.boss.idle) this._bossBar(e);
         this._bossArenaFx(e);
         if (e.boss.st === 'vulnerable') s.setAlpha(0.6 + 0.4 * Math.sin(this.time.now / 50)); else s.setAlpha(1);
-        if (e.boss.st === 'windup') s.setScale(1.08 + 0.04 * Math.sin(this.time.now / 30), 1.08); else if (!e.boss.sahur) s.setScale(1);
+        if (e.boss.st === 'windup') { sx *= 1.08 + 0.04 * Math.sin(this.time.now / 30); sy = 1.08; }   // swells on top of the wobble
       }
-      s.setScale(1 + Math.sin(this.time.now / 90 + e.x) * 0.06, 1);   // jittery rot wobble
+      s.setScale(sx, sy);
     }
     for (const [id, s] of this.enemySprites) if (!eseen.has(id)) { s.destroy(); this.enemySprites.delete(id); this.bossFx?.clear(); }
     const meP = snap.players.find((p) => p.id === this.localId);
