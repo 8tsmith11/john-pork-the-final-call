@@ -20,7 +20,7 @@ export const FART_LINES = {
 export class Fart {
   constructor(scene) {
     this.s = scene;
-    this.next = scene.time.now + 90000 + Math.random() * 60000;     // first one 1.5-2.5 minutes in (Manuel: more often)
+    this.next = scene.time.now + 240000 + Math.random() * 120000;   // first one 4-6 minutes in (Manuel, 2026-11-21: fewer gags)
     this.n = 0;
   }
 
@@ -34,7 +34,7 @@ export class Fart {
     this.due ??= s.time.now;
     if (!near && snap.players.some((p) => p.c === 'michael' && !p.dn) && s.time.now - this.due < 60000) return;
     this.due = null;
-    this.next = s.time.now + 90000 + Math.random() * 90000;       // then every 1.5-3 minutes
+    this.next = s.time.now + 300000 + Math.random() * 180000;     // then every 5-8 minutes
     const complain = MICHAEL_FART_COMPLAIN ? near : null;
     const n = (this.n = this.n + 1);
     const oops = Math.random() < 0.25 ? FART_LINES.oops[(n - 1) % FART_LINES.oops.length] : null;

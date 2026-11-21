@@ -670,7 +670,7 @@ test('D-016 gesture timing: rare and idle-only early, frequent after the switchy
   // after the switchyard: many more, even while moving
   sent.length = 0; ({ sc, c } = mk({ 'act1.beat.call': true, 'act1.switchyard.solved': true }));
   for (let i = 0; i < 1800; i++) { sc.time.now = 250000 + i * 1000; c.update(snap(i % 2)); }
-  const late = sent.filter((m) => m.g).length; assert.ok(late >= 12, `late gestures in 30 min: ${late}`);
+  const late = sent.filter((m) => m.g).length; assert.ok(late >= 5 && late <= 11 && late > early, `late gestures in 30 min: ${late}`);   // Manuel: fewer gags (2026-11-21)
 });
 
 const i18nMod = await import('../src/i18n.js');
@@ -1186,11 +1186,17 @@ test('hub #30 (Act 3), canon: the lines keep to the quest clues, the naming rule
 const fartMod = await import('../src/game/fart.js');
 const buttMod = await import('../src/game/bigButt.js');
 const npcLifeMod = await import('../src/content/npc_life.js');
+test('gags come round less often (Manuel, 2026-11-21): the big behind a handful of times an hour', () => {
+  const sent = [], sc = { mode: 'solo', time: { now: 0 }, save: { flags: {} } }, b = new buttMod.BigButt(sc); b._send = (m) => sent.push(m);
+  const snap = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }] };
+  for (let i = 0; i < 3600; i++) { sc.time.now = i * 1000; b.update(snap); }
+  assert.ok(sent.length >= 3 && sent.length <= 8, `big behinds in an hour: ${sent.length}`);
+});
 test('Manuel\'s fart: on its own, every couple of minutes; a roommate close by only complains', () => {
   const sent = [], sc = { mode: 'solo', time: { now: 0 } }, f = new fartMod.Fart(sc); f._send = (m) => sent.push(m);
   const snap = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 120, y: 100 }] };
   for (let i = 0; i < 3600; i++) { sc.time.now = i * 1000; f.update(snap); }   // an hour, no input at all
-  assert.ok(sent.length >= 15 && sent.length <= 40, `farts in an hour: ${sent.length}`);   // Manuel: more often (2026-11-19)
+  assert.ok(sent.length >= 6 && sent.length <= 14, `farts in an hour: ${sent.length}`);   // Manuel: fewer gags (2026-11-21)
   assert.ok(sent.every((m) => m.id === 'ai:manuel' && m.line), 'always Manuel, always a line');
   assert.ok(sent.every((m) => !('sniff' in m) && (fartMod.MICHAEL_FART_COMPLAIN ? m.by === 'p2' && fartMod.FART_LINES.complain.includes(m.reply) : !m.reply)), 'only the complaint path (Michael, 2026-11-20)');
   assert.ok(!('michael' in fartMod.FART_LINES), 'no other reaction lines');
@@ -1203,7 +1209,7 @@ test('running gags: the sealed one keeps to its conditions and schedule, and eve
   const near = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 130, y: 100 }, { id: 'p3', c: 'trevor', x: 500, y: 100 }] };
   for (let i = 0; i < 3600; i++) { sc.time.now = i * 1000; g.update(near); }
   const sg = sent.filter((m) => m.k === 'sg');
-  assert.ok(sg.length >= 8 && sg.length <= 30, `in an hour: ${sg.length}`);
+  assert.ok(sg.length >= 3 && sg.length <= 9, `in an hour: ${sg.length}`);   // Manuel: fewer gags (2026-11-21)
   assert.ok(sg.every((m) => m.a === 'p2' && m.b === 'ai:manuel'));
   const far = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 600, y: 100 }] };
   const sent2 = [], sc2 = { mode: 'solo', time: { now: 0 }, save: { flags: {} } }, g2 = new gagsMod.RunningGags(sc2); g2._send = (m) => sent2.push(m);
@@ -1217,8 +1223,8 @@ test('running gags: the 245 lab chat and the abuela voice notes come round, with
   const snap = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 300, y: 100 }, { id: 'p3', c: 'trevor', x: 500, y: 100 }] };
   for (let i = 0; i < 3600; i++) { sc.time.now = i * 1000; g.update(snap); }   // an hour, no input
   const chats = sent.filter((m) => m.k === 'chat'), notes = sent.filter((m) => m.k === 'abuela');
-  assert.ok(chats.length >= 6 && chats.length <= 16, `245 chats in an hour: ${chats.length}`);
-  assert.ok(notes.length >= 4 && notes.length <= 10, `abuela notes in an hour: ${notes.length}`);
+  assert.ok(chats.length >= 3 && chats.length <= 7, `245 chats in an hour: ${chats.length}`);   // Manuel: fewer gags (2026-11-21)
+  assert.ok(notes.length >= 2 && notes.length <= 5, `abuela notes in an hour: ${notes.length}`);
   assert.ok(notes.every((m) => m.a === 'ai:manuel'), 'the voice notes are Manuel\'s');
   assert.ok(chats.filter((m) => m.a === 'p3').every((m) => gagsMod.GAG_LINES.chat.trevor.includes(m.la)), 'Trevor only says he hates 245 lab');
   const all = Object.values(gagsMod.GAG_LINES).flatMap((g) => Object.values(g).flat());
