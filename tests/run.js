@@ -2747,6 +2747,28 @@ try {
   else globalThis.Phaser = savedPhaserForCraft;
 }
 
+test('the ending\'s visitor is drawn while his part plays, on host and guests, in view, and walks off after (Trevor: heard but not seen)', async () => {
+  const made = [], tweens = [];
+  const sprite = () => { const sp = { x: 0, y: 0, alpha: 1, destroyed: false, setOrigin() { return sp; }, play(k) { sp.anim = k; return sp; }, setDepth() { return sp; }, setAlpha(a) { sp.alpha = a; return sp; }, destroy() { sp.destroyed = true; } }; return sp; };
+  for (const mode of ['host', 'client']) {
+    const sc = Object.assign(Object.create(CraftWorldScene.prototype), { mode, map: { id: 'platform' },
+      anims: { exists: (k) => k === 'sahur' }, cameras: { main: { worldView: { x: 300 } } },
+      add: { sprite: (x, y, key) => { const sp = sprite(); Object.assign(sp, { x, y, key }); made.push(sp); return sp; } },
+      tweens: { add: (t) => { tweens.push(t); Object.assign(t.targets, Object.fromEntries(Object.entries(t).filter(([k]) => ['x', 'alpha'].includes(k)))); t.onComplete?.(); } } });
+    sc._endingSahurCue('ending_ladder'); assert.equal(sc.sahurCameo ?? null, null, 'not before his part');
+    sc._endingSahurCue('ending_sahur_watch');
+    const sp = sc.sahurCameo;
+    assert.ok(sp && sp.key === 'principals' && sp.anim === 'sahur' && sp.alpha === 1, `${mode}: drawn with his own art, faded in`);
+    assert.ok(sp.x >= 300, 'at the tunnel end of the view, not off screen');
+    sc._endingSahurCue('ending_sahur_watch'); assert.equal(made.filter((m) => !m.destroyed).length, 1, 'once, not per line');
+    sc._endingSahurCue('ending_in_person');
+    assert.ok(sp.destroyed && sc.sahurCameo === null && sp.alpha === 0, 'he walks back into the dark when his part is over');
+    made.length = 0;
+  }
+  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/act1\.sahur\.seen', true\);\n\s*this\._endingSahurCue\(d\.nodeId\);/.test(src), 'every new dialogue line (host or mirrored) checks the cue');
+});
+
 test('co-op puzzles (Trevor: everyone participates or spectates, no races): the signal panel is one shared board on the host', async () => {
   const { PipeTable } = await import('../src/game/pipeTable.js');
   const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js');
