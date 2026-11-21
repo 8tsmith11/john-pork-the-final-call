@@ -27,6 +27,7 @@ const ES = {
   // title / lobby
   'choose your roommate': 'elige a tu compañero', 'controls: ESC in game': 'controles: ESC en el juego', 'THE FINAL CALL': 'LA ÚLTIMA LLAMADA',
   '[ESC] back': '[ESC] volver', free: 'libre', 'AI (free to claim)': 'IA (libre)', 'Opening a room...': 'Abriendo una sala...',
+  'Out of range. The drones turn back.': 'Fuera de alcance. Los drones se dan la vuelta.',
   'Pick your roommate first.': 'Primero elige a tu compañero.', 'waiting for the host to start...': 'esperando a que el anfitrión empiece...',
   'Connected. Claim your roommate.': 'Conectado. Elige a tu compañero.', 'The host closed the game.': 'El anfitrión cerró la partida.',
   'Room in progress. Rejoin from your original tab.': 'Partida en curso. Vuelve a entrar desde la pestaña original.',
