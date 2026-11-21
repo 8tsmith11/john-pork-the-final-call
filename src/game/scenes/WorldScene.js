@@ -103,6 +103,8 @@ const CONTROLS_TEXT = 'WASD move · mouse aim · click: use held item\nSpace / S
 // while they play. Everything else is FREE: the box stays at the bottom and you keep moving and fighting
 // (E advances, 1-6 choose, Space still dodges, clicks outside the box still attack). A scene or node can
 // override with `mode: 'story' | 'free'` once the scripts carry it.
+// After arriving on a map, exits ignore you this long (ms), so a rapid second E or a held key can't bounce you back.
+const ARRIVE_LOCK = 700;
 const STORY_SCENES = new Set(['cold_open', 'the_call', 'descent_and_boss', 'ending', 'first_death', 'checkpoint', 'lead_b_halvard']);
 const ACT_ONE_HOST_FLAGS = new Set(['act1.boss.defeated', 'act1.outbreak.contained', 'act1.complete']);
 
@@ -656,11 +658,31 @@ export class WorldScene extends Phaser.Scene {
   // Story beats keyed to places (Act 1 MVP wiring; see docs/act1/DESIGN.md).
   _onEnterMap(map) {
     const once = (flag, fn) => { if (!this.save.flags[flag]) { this.save.flags[flag] = true; fn(); } };
-    if (map.id === 'room631' && this.mode !== 'client') this.time.delayedCall(4000, () => this._maybeButtDial());
+    // Still here? A callback queued on arrival only runs if the party is still on this map (Trevor: rapid E at the storm
+    // grate went in and back out, and John Pork's call then rang on the plaza).
+    const gen = this._mapGen, here = () => this._mapGen === gen && this.map?.id === map.id;
+    if (map.id === 'room631' && this.mode !== 'client') this.time.delayedCall(4000, () => { if (here()) this._maybeButtDial(); });
     if (map.id === 'aster_hall') once('act1.beat.asterEnter', () => this.startDialogue('aster'));
-    if (map.id === 'tunnel_1') once('act1.beat.call', () => this.stage.after('act1_call', () => this._hackCall(() => this.startDialogue('the_call'))));
+    if (map.id === 'tunnel_1' && !this.save.flags['act1.beat.call']) {
+      // The exits hold while the beat starts, and its flag is set only when it really plays: leave first and it
+      // plays on the way back in, instead of on the wrong map or never.
+      this._beatPending = 'act1.beat.call';
+      // Held through the whole phone effect too (John Pork, PR #140: the party left while it was still connecting).
+      this.stage.after('act1_call', () => {
+        if (!here()) return;
+        if (this.save.flags['act1.beat.call']) { this._beatPending = null; return; }
+        this._hackCall(() => {
+          if (!here()) { if (this._beatPending === 'act1.beat.call') this._beatPending = null; return; }   // left anyway: still owed
+          this._beatPending = null;
+          this.save.flags['act1.beat.call'] = true;
+          this.startDialogue('the_call');
+        });
+      });
+      // Never stuck: if the effect couldn't start (one already running), the exits come back and the beat stays owed.
+      this.time.delayedCall(12000, () => { if (here() && this._beatPending === 'act1.beat.call' && !this.dlg && !this._hacking) this._beatPending = null; });
+    }
     // A roommate says something on the way in.
-    if (BARKS.enter[map.id]) this.time.delayedCall(1400, () => { const snap = this._lastRendered; const ps = (snap?.players ?? []).filter((p) => !p.dn); const p = ps[Math.floor(Math.random() * ps.length)]; if (p && this.map.id === map.id) this._bark(p.id, pickBark(BARKS.enter[map.id], p.c)); });
+    if (BARKS.enter[map.id]) this.time.delayedCall(1400, () => { const snap = this._lastRendered; const ps = (snap?.players ?? []).filter((p) => !p.dn); const p = ps[Math.floor(Math.random() * ps.length)]; if (p && here()) this._bark(p.id, pickBark(BARKS.enter[map.id], p.c)); });
   }
 
   _newGame() {
@@ -802,6 +824,9 @@ export class WorldScene extends Phaser.Scene {
   // ---------- map ----------
   _showMap(map) {
     this.map = map;
+    // Rapid back-and-forth guard (Trevor): a new map generation, so anything queued on the last map knows it's stale;
+    // the arrival time, for the exit grace; and no story beat is still pending from the last map.
+    this._mapGen = (this._mapGen ?? 0) + 1; this._arrivedAt = this.time?.now ?? 0; this._beatPending = null;
     this.mapGfx?.destroy(); this.mapRT?.destroy();
     // Bake textured tiles into one render texture (cheap to draw every frame).
     const rt = this.mapRT = this.add.renderTexture(0, 0, map.w * TILE, map.h * TILE).setOrigin(0, 0).setDepth(-10);
@@ -2181,9 +2206,14 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
+  /** No leaving right now: mid-transition, just arrived (ARRIVE_LOCK ms), a story beat starting, or a cutscene. */
+  _exitLocked() {
+    return !!(this._transitioning || this._beatPending || this.stage?.active || (this.time?.now ?? 0) - (this._arrivedAt ?? -1e9) < ARRIVE_LOCK);
+  }
+
   _requestExit(obj, playerId, walk) {
     const p = this.sim.players.get(playerId);
-    if (obj?.action !== 'exit' || !p || p.downed || isAi(playerId) || this._transitioning) return;
+    if (obj?.action !== 'exit' || !p || p.downed || isAi(playerId) || this._exitLocked()) return;
     const dx = obj.x * TILE + 8 - p.x, dy = obj.y * TILE + 8 - p.y;
     if (!walk && Math.hypot(dx, dy) > 34) return;
     if (obj.requiresClear && !this.sim.cleared) return this._announce('Something down here is still moving.');
@@ -2594,6 +2624,7 @@ export class WorldScene extends Phaser.Scene {
     if (near.npc && near.goneFlag && this.save.flags[near.goneFlag]) return;
     if (near.npc && this.mode !== 'client') this._guide().n[near.id] ??= { name: near.label.replace(/\s*\(.*\)\s*/g, '').trim(), where: this.map.name ?? this.map.id };
     if (near.action === 'exit') {
+      if (this._exitLocked()) return;   // a second E right after arriving does nothing
       if (this.mode === 'client') this.net.send({ t: 'exit', obj: near.id });
       else this._requestExit(near, this.localId);
       return;

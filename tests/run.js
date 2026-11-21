@@ -2723,6 +2723,34 @@ test('cutscenes: the HUD steps out from under the letterbox bars and comes back 
   assert.equal(hidden.visible, false, 'what was already hidden stays hidden');
 });
 
+test('rapid back-and-forth between areas (Trevor): exits wait after arriving, and an arrival beat never fires on the wrong map or gets lost', () => {
+  let afterFn = null, hackDone = null, calls = 0, exits = 0, now = 10000;
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'solo', save: { flags: {} }, map: { id: 'tunnel_1' }, time: { get now() { return now; }, delayedCall() {} },
+    stage: { active: null, after: (_id, fn) => { afterFn = fn; } }, _hackCall: (done) => { hackDone = done; }, startDialogue: () => { calls++; },
+    sim: { players: new Map([['host', { x: 8, y: 8 }]]), waitAtExit: () => true, clearWaiting() {} }, _tryExit: () => { exits++; },
+  });
+  const exit = { id: 'obj.back', action: 'exit', to: 'metro_plaza', x: 0, y: 0 };
+  sc._mapGen = 1; sc._arrivedAt = now; sc._onEnterMap(sc.map);
+  // straight back out: held while the beat starts, and for a moment after arriving anyway
+  sc._requestExit(exit, 'host'); assert.equal(exits, 0, 'no leaving while the call is starting');
+  // even if they did get out (say, a guest's exit), the queued call doesn't ring on the plaza, and isn't lost
+  sc.map = { id: 'metro_plaza' }; sc._mapGen = 2; afterFn();
+  assert.equal(calls, 0, 'no call on the wrong map'); assert.ok(!sc.save.flags['act1.beat.call'], 'and the beat is still owed');
+  sc.map = { id: 'tunnel_1' }; sc._mapGen = 3; sc._beatPending = null; sc._onEnterMap(sc.map); afterFn();
+  // the phone effect is running (John Pork, PR #140): exits stay held for all of it, host or guest
+  now += 2000; sc._requestExit(exit, 'host'); assert.equal(exits, 0, 'no leaving while the phone is still connecting');
+  assert.ok(!sc.save.flags['act1.beat.call'] && calls === 0, 'nothing is consumed until the call really opens');
+  // a map change mid-effect anyway: the call doesn't open there, and it's still owed
+  sc.map = { id: 'metro_plaza' }; sc._mapGen = 4; hackDone();
+  assert.equal(calls, 0, 'not on the plaza'); assert.ok(!sc.save.flags['act1.beat.call'], 'still owed');
+  sc.map = { id: 'tunnel_1' }; sc._mapGen = 5; sc._beatPending = null; sc._onEnterMap(sc.map); afterFn(); hackDone();
+  assert.equal(calls, 1, 'it rings on the way back in'); assert.ok(sc.save.flags['act1.beat.call']);
+  // the arrival grace on its own
+  sc._beatPending = null; sc._arrivedAt = now; sc._requestExit(exit, 'host'); assert.equal(exits, 0, 'a second E right after arriving does nothing');
+  now += 800; sc._requestExit(exit, 'host'); assert.equal(exits, 1, 'a moment later the exit works');
+});
+
 test('a moved find stays in the container the save says, even when a later build changes the searchable containers', () => {
   // Names of the existing helpers and keys are decoded at runtime (ROT13), so this file names nothing sealed.
   const r13 = (w) => w.replace(/[a-z]/gi, (c) => String.fromCharCode(((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26) + (c <= 'Z' ? 65 : 97)));
