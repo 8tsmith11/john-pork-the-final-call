@@ -79,13 +79,33 @@
     "w": 24,
     "h": 32
    }
+  },
+  "cameo_01": {
+   "frame": {
+    "x": 96,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 24,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 24,
+    "h": 32
+   }
   }
  },
  "meta": {
   "image": "principals.png",
   "format": "RGBA8888",
   "size": {
-   "w": 96,
+   "w": 120,
    "h": 32
   },
   "scale": "1"

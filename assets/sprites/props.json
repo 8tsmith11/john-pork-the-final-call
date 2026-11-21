@@ -3899,6 +3899,26 @@
     "w": 16,
     "h": 24
    }
+  },
+  "npc.cameo_01": {
+   "frame": {
+    "x": 48,
+    "y": 576,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
   }
  },
  "meta": {
