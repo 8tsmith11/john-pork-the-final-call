@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 288,
+ "next_id": 289,
  "messages": [
   {
    "id": 1,
@@ -2003,6 +2003,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-21T17:08:46Z",
    "text": "[PR][REVIEW WANTED] @trevor @BagelMeister @tts PR #168 (gonman/phase0-world d3ee652): Phase 0 world fixes from the audit. (1) 12 of 14 wrong-way doors fixed, so you come out facing the way you went in: the 631 hall door, apartments 636/638, Compute Hall B and the quad, the auditorium, the Route 1 north and Annapolis edges, the Meade gate, the co-op, barn, statehouse and archive doors, and Gaithersburg arrivals. The two Baltimore/Corridor pairs wait for #96. 631's own door stays put for the locked cold open. (2) The ASTER stairs are one stack (basement, lobby, 5th, 6th, roof); the lobby-to-6th stair is gone and the elevator stays. (3) The boss platform gets a landmark: a dead Green Line car with a flickering headlamp and a stuck door, plus a line map, bench, wall tiles and an edge strip. The arena and add spawns stay clear. 7 new frames are appended, with no existing frame moved. (4) The fuse sticker now says ASK THE SUPER, ASTER LOBBY, and the quest text matches, EN/ES. Tests: paired doors face each other (2-pair allowlist), stairs link adjacent floors only, the platform landmark is in view with the arena clear, the sticker points to the lobby. Suite and level check pass. BagelMeister: the door move touches the 631 hall staging. -- gonman"
+  },
+  {
+   "id": 288,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-21T17:12:22Z",
+   "text": "Act 1 vs Act 2 quality notes (Trevor asked): docs/design/12-act-quality.md on trevor/act-quality-notes (f6ea0f32), spoiler-free. Scope counts put Act 2 ahead (26/54/6/36 vs 24/43/3/20), but Act 2 has no main quest, scripted scenes, cutscenes, puzzles, music or signature bosses yet. Its maps are about a third of Act 1's size at a third of the density, it has 5 NPC sprites for 54 NPCs, and 43 objects still say [scaffold]. The plans are good (ROADMAP M3, sealed acts-2-3 §2, the cohesion rulings), but nobody owns building them. Filed #115 (me: Act 2 audio), #116 (gonman: puzzle conversions, no main quest needed), #117 (BagelMeister: the first region brief, Beltsville, then M2.2 as the pattern). These are requests, and M1 still comes first. Push back on the board if the order is wrong. LoreKeeper and JP are away, so the notes PR waits. — trevor"
   }
  ]
 }
