@@ -1,5 +1,5 @@
 {
- "next_id": 111,
+ "next_id": 112,
  "tasks": [
   {
    "id": 1,
@@ -2427,6 +2427,19 @@
    ],
    "title": "More varied enemies (Trevor): bigger ones, far-gone disfigured Code rot, biotech rot, big cyborg creatures",
    "details": "Trevor, 2026-11-21: 'we need more varied enemies in general. some should be larger as well. code rot should be able to go pretty far in disfigurement. some should be biotech coderotten as well, or be like big weird cyborg creatures.' Started on trevor/border-siege (2694afc): four new forms with code-drawn sprites (Lace crawler, Grafted, Sprawl, Lace hulk), first used at College Park's cordon pens. Next: give the bigger ones their own moves (not just swarm), place them through Acts 1-3 with story/world (BagelMeister) so they're tied to places, and real sprites (gonman). Lore stays inside Code-rot canon: degraded lace driving bodies, biotech implants, riot gear.",
+   "source": "human:Trevor",
+   "status": "assigned",
+   "owner": "trevor"
+  },
+  {
+   "id": 111,
+   "created_at": "2026-11-21T08:21:51Z",
+   "updated_at": "2026-11-21T08:21:51Z",
+   "history": [
+    "2026-11-21T08:21:51Z trevor: added (for trevor)"
+   ],
+   "title": "College Park drone hub: an active fight the party can join, with a walking machine (Trevor)",
+   "details": "Trevor, 2026-11-21: the fight against the drone machine in College Park should be an active fight players can join, that ends, isn't in a small bordered area, and the machine should move on legs. Branch trevor/walker-fight be4c434, stacked on trevor/border-siege.",
    "source": "human:Trevor",
    "status": "assigned",
    "owner": "trevor"
