@@ -2378,6 +2378,84 @@ test('lab bench (hub #44): every lab has exactly one passing answer; the shared 
   assert.equal(bench.act({ type: 'cycle', i: 0 }), false, 'a passed lab is locked');
 });
 
+test('ambient NPC fight (hub #69): before the Call an abatement squad burns out a rotted drone hub in College Park; nobody can join or get hurt, and once it falls it stays fallen', async () => {
+  const { skirmishesFor } = await import('../src/content/skirmishes.js');
+  assert.ok(skirmishesFor({}).metro_plaza, 'there before the Call');
+  const after = skirmishesFor({ 'act1.beat.call': true }).metro_plaza;
+  assert.ok(after && after.over && after.husk, 'after the Call only the burned husk is left, whether or not anyone saw the fight');
+  { const hs = new Sim(MAPS_FOR_TEST.metro_plaza, { seed: 'husk', deferSpawn: true }); hs.skirmishes = { metro_plaza: after }; hs.addPlayer('h', 'trevor'); hs.spawnEnemies();
+    const hv = hs.snapshot().sk; const [hx, hy] = after.machine;
+    assert.ok(hv.husk && hv.over && hv.tr.length === 0 && hv.dr.length === 0, 'the husk: no squad, no drones');
+    assert.ok(hs._hits(hx * 16 + 8, hy * 16 + 8), 'and still solid'); }
+  const m = MAPS_FOR_TEST.metro_plaza, spec = skirmishesFor({}).metro_plaza;
+  const [ax, ay, aw, ah] = spec.area;
+  for (let y = ay; y < ay + ah; y++) for (let x = ax; x < ax + aw; x++) assert.ok(!m.solid(x, y), `the yard is open ground (${x},${y})`);
+  const sim = new Sim(m, { seed: 'sk', deferSpawn: true }); sim.skirmishes = skirmishesFor({});
+  sim.addPlayer('h', 'trevor'); sim.spawnEnemies(); sim.enemies.clear();
+  const p = sim.players.get('h'); p.x = (ax + 3) * 16 + 8; p.y = (ay + 2) * 16 + 8;   // standing inside the tape, among the drones
+  assert.ok(p.x / 16 >= ax && p.x / 16 < ax + aw && p.y / 16 >= ay && p.y / 16 < ay + ah && !sim._hits(p.x, p.y), 'the fixture stands on an open tile inside the tape');
+  let over = null, t = 0, sawDrone = false;
+  const [bx0, by0, bx1, by1] = sim.snapshot().sk.box; let strays = 0;
+  for (; t < 240 && !over; t += 1 / 60) {
+    sim.step(1 / 60, new Map()); over = sim.events.find((e) => e.t === 'skOver');
+    const v = sim.snapshot().sk; sawDrone ||= v.dr.length > 0;
+    strays += v.sh.filter(([x, y]) => x < bx0 || x > bx1 || y < by0 || y > by1).length;
+  }
+  assert.equal(strays, 0, 'no shot leaves the tape');
+  const okafor = m.objects.find((o) => o.id === 'npc.okafor');
+  if (okafor) for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) assert.ok(!(okafor.x + dx >= ax && okafor.x + dx < ax + aw && okafor.y + dy >= ay && okafor.y + dy < ay + ah), 'Mrs. Okafor can be talked to from outside the tape');
+  const [hx, hy] = spec.machine;
+  assert.ok(sim._hits(hx * 16 + 8, hy * 16 + 8) && sim._hits(hx * 16 + 8, (hy - 1) * 16 + 8), 'the hub is solid: nobody walks through it');
+  assert.ok(over && over.id === 'cp_drone_hub', `the hub falls within four minutes (took ${t.toFixed(0)} s)`);
+  assert.ok(sawDrone, 'it launched drones');
+  assert.equal(p.hp, sim.maxHp(p), 'standing in the middle of it costs nothing');
+  assert.equal(sim.snapshot().sk.dr.length, 0, 'its drones fall with it');
+  const later = new Sim(m, { seed: 'sk', deferSpawn: true }); later.skirmishes = skirmishesFor({ 'skirmish.cp_drone_hub.over': true });
+  later.addPlayer('h', 'trevor'); later.spawnEnemies();
+  for (let i = 0; i < 300; i++) later.step(1 / 60, new Map());
+  const v = later.snapshot().sk;
+  assert.ok(v.over && v.m[2] === 0 && v.dr.length === 0 && v.sh.length === 0, 'a later visit: the burned husk, the squad standing down');
+});
+
+const SocketsT = await import('../src/engine/sockets.js');
+test('customization station (task #40): mods fit only where they belong, count in your stats, ride along when worn, and come back out', async () => {
+  const { playerMods: pm, socketsFor, ITEMS } = await import('../src/content/items.js');
+  const InvS = await import('../src/engine/inventory.js');
+  const c = newSave({ seed: 'mods', rolls: {}, gameVersion: 't' }).party.trevor;
+  c.inventory = Array.from({ length: InvS.SLOTS }, () => null);
+  c.inventory[0] = { id: 'item.rebar', qty: 1 }; c.inventory[1] = { id: 'item.mesh_vest', qty: 1 };
+  InvS.add(c, 'item.mod_edge', 3); InvS.add(c, 'item.mod_plate'); InvS.add(c, 'item.mod_barrel');
+  c.hotSel = 0; c.equipped.weapon = 'item.rebar';
+  assert.equal(socketsFor(ITEMS['item.rebar']), 2);
+  assert.equal(SocketsT.insert(c, { bag: 0 }, 'item.mod_barrel'), false, 'a gun barrel does not fit a spear');
+  const base = pm(c, 'trevor').melee;
+  assert.ok(SocketsT.insert(c, { bag: 0 }, 'item.mod_edge')); assert.ok(SocketsT.insert(c, { bag: 0 }, 'item.mod_edge'));
+  assert.equal(SocketsT.insert(c, { bag: 0 }, 'item.mod_edge'), false, 'two sockets, no third');
+  assert.equal(pm(c, 'trevor').melee, base + 4, 'two honed edges: +4 melee while held');
+  assert.equal(InvS.count(c, 'item.mod_edge'), 1);
+  // armor: the plate goes in, the vest is worn, the plate rides along and counts, then comes back with it
+  assert.ok(SocketsT.insert(c, { bag: 1 }, 'item.mod_plate'));
+  assert.ok(InvS.wear(c, 'item.mesh_vest'));
+  assert.deepEqual(c.socketed.chestplate, ['item.mod_plate']);
+  const worn = pm(c, 'trevor').armor;
+  assert.ok(InvS.unwear(c, 'chestplate'));
+  assert.deepEqual(c.inventory.find((x) => x?.id === 'item.mesh_vest').socketed, ['item.mod_plate']);
+  assert.ok(worn > pm(c, 'trevor').armor, 'the plate counted while worn');
+  // out again
+  assert.ok(SocketsT.extract(c, { bag: 0 }, 0)); assert.equal(InvS.count(c, 'item.mod_edge'), 2);
+  assert.deepEqual(SocketsT.socketInfo(c, { bag: 0 }).mods, ['item.mod_edge']);
+});
+
+test('the mod station is modal: while open it is the scene menu, ESC closes only it, and the menu keys stay shut (BagelMeister, PR #93)', async () => {
+  const fs = await import('node:fs');
+  const src = fs.readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/get menu\(\) \{[^\n]*this\.modStation && !this\.modStation\.closed \? 'mods'/.test(src), 'an open station counts as the menu, so _frozen stops movement, attacks and E');
+  assert.ok(/keydown-ESC', \(\) => \{ if \(this\.dlg[^)]*\) return; if \(this\.modStation\) \{ this\.modStation\.close\(\); return; \}/.test(src), 'ESC closes the station and nothing else');
+  for (const k of ['I', 'K', 'J', 'TAB']) assert.ok(new RegExp(`keydown-${k}'[^\\n]*!this\\.modStation`).test(src), `${k} does nothing while the station is open`);
+  const st = fs.readFileSync(new URL('../src/game/ui/ModStation.js', import.meta.url), 'utf8');
+  assert.ok(!/keyboard\.on\(/.test(st), 'the station has no key listener of its own (the scene routes ESC)');
+});
+
 test('Ping rework (hub #66): the pulse jolts, a marked kill hands the pinger cooldown back, and the mark jumps on', async () => {
   const { PING } = await import('../src/engine/sim.js');
   const sim = new Sim(MAPS_FOR_TEST.metro_plaza, { seed: 'ping', deferSpawn: true });
@@ -2545,10 +2623,11 @@ test('machine jobs: one per machine, run on play time while you are away, ready 
 });
 
 const Rolls = await import('../src/content/gearRolls.js');
+const Gadget = await import('../src/content/gadgets.js');
 test('procedural gear rolls: seeded and reproducible, 1-2 affixes of the right kind, every value inside its bounds', () => {
   assert.deepEqual(Rolls.rollGear('w', 'mill.blade', 3, 'melee'), Rolls.rollGear('w', 'mill.blade', 3, 'melee'));
   const seen = new Set();
-  for (const kind of ['melee', 'gun', 'armor', 'gear']) for (let i = 0; i < 400; i++) {
+  for (const kind of ['melee', 'gun', 'armor', 'gear', 'gadget']) for (let i = 0; i < 400; i++) {
     const r = Rolls.rollGear(`seed-${i}`, 'recipe', i, kind);
     assert.ok(r.affixes.length >= 1 && r.affixes.length <= 2, `${kind} #${i}: ${r.affixes.length} affixes`);
     const lo = {}, hi = {};
@@ -2561,6 +2640,25 @@ test('procedural gear rolls: seeded and reproducible, 1-2 affixes of the right k
     assert.equal(r.analog, r.affixes.includes('analog'));
   }
   assert.equal(seen.size, Object.keys(Rolls.AFFIXES).length, 'every affix can come up');
+});
+
+test('gadget tuning stays within recharge, effect and actual output caps across seeded rolls', () => {
+  for (const [id, def] of Object.entries(Gadget.GADGETS)) {
+    if (!def.cooldown) continue;
+    const base = Gadget.gadgetEffectValue(def, def.power) / def.cooldown;
+    for (const tune of ['stock', 'cycle', 'output']) for (let i = 0; i < 300; i++) {
+      const roll = Rolls.rollGear(`gadget-${i}`, id, i, 'gadget', tune);
+      const stats = Gadget.gadgetStats(def, roll.mods);
+      const value = Gadget.gadgetEffectValue(def, stats.power) / stats.cooldown;
+      assert.ok(stats.cooldown >= def.cooldown * 0.6 && stats.power <= def.power * 1.35 + 1e-9, `${id} ${tune} ${i}`);
+      assert.ok(value <= base * Gadget.GADGET_VALUE_CAP + 1e-9, `${id} ${tune} ${value / base}`);
+      if (def.kind === 'screen' || def.kind === 'tether') assert.ok(stats.power / stats.cooldown <= 0.25 + 1e-9);
+    }
+  }
+  const screen = Gadget.GADGETS['item.phase_screen'];
+  const extreme = Gadget.gadgetStats(screen, { gadgetCd: -9, gadgetEffect: 9 });
+  assert.ok(extreme.power <= screen.power * 1.35 && extreme.cooldown >= screen.cooldown * 0.6);
+  assert.equal(Gadget.GADGETS['item.phase_tether'].cooldown, 12);
 });
 
 const Dawn = await import('../src/content/dawn.js');
@@ -3238,6 +3336,185 @@ test('procedural gear (task #39): procedural recipes roll seeded variants that c
   // a plain recipe never rolls, and old saves without rolls load as before
   const plain = make('world-a', 'item.mate_flask', 1).c.inventory.find((x) => x?.id === 'item.mate_flask');
   assert.equal(plain.roll, undefined);
+});
+
+test('Fab tuning charges its material once and equipping a specific build preserves rolls in a save', () => {
+  const id = 'item.phase_screen';
+  const idx = CRAFT_RECIPES.findIndex((r) => r.item === id);
+  const recipe = CRAFT_RECIPES[idx], wire = 'item.mat_wire';
+  const f = craftFixture(Array(Inv.SLOTS).fill(null));
+  f.scene.save.world = { seed: 'tuning' };
+  for (const [part, needed] of Object.entries(recipe.cost)) Inv.add(f.c, part, 3 * needed + 4);
+  Inv.add(f.c, 'item.mat_cell');
+  const craft = (tune) => CraftWorldScene.prototype._craft.call(f.scene, 'trevor', idx, tune);
+  const initialWire = Inv.count(f.c, wire);
+  craft('unknown'); craft(['cycle']);
+  assert.equal(Inv.count(f.c, wire), initialWire);
+  assert.equal(f.scene.save.world.gearMade, undefined);
+  craft('cycle');
+  const cycle = f.c.rolled.gadget;
+  assert.deepEqual(cycle, Rolls.rollGear('tuning', id, 0, 'gadget', 'cycle'));
+  assert.equal(Inv.count(f.c, wire), initialWire - recipe.cost[wire] - 1);
+  craft('output');
+  const outputSlot = f.c.inventory.findIndex((it) => it?.id === id);
+  const output = f.c.inventory[outputSlot].roll;
+  assert.equal(output.tune, 'output');
+  assert.ok(cycle.mods.gadgetCd < 0 && output.mods.gadgetCd > 0);
+  assert.ok(cycle.mods.gadgetEffect < 0 && output.mods.gadgetEffect > 0);
+  CraftWorldScene.prototype._equip.call(f.scene, 'trevor', id, outputSlot);
+  assert.equal(f.c.equipped.gadget, id);
+  assert.deepEqual(f.c.rolled.gadget, output);
+  assert.deepEqual(f.c.inventory.find((it) => it?.id === id).roll, cycle);
+  const save = newSave({ seed: 'tuning', rolls: {}, gameVersion: 't' });
+  save.party.trevor = f.c;
+  const loaded = migrate(JSON.parse(JSON.stringify(save))).party.trevor;
+  assert.equal(loaded.equipped.gadget, id);
+  assert.deepEqual(loaded.rolled.gadget, output);
+  assert.deepEqual(loaded.inventory.find((it) => it?.id === id).roll, cycle);
+  const locked = CRAFT_RECIPES.findIndex((r) => r.req);
+  for (const [part, needed] of Object.entries(CRAFT_RECIPES[locked].cost)) Inv.add(f.c, part, needed);
+  const before = JSON.stringify(f.c.inventory);
+  CraftWorldScene.prototype._craft.call(f.scene, 'trevor', locked);
+  assert.equal(JSON.stringify(f.c.inventory), before, 'host enforces the same recipe lock as the Fab menu');
+});
+
+test('a guest V press reaches the host once and recharge follows the model and exact build across swaps and travel', () => {
+  const save = newSave({ seed: 'gadget-coop', rolls: {}, gameVersion: 't' });
+  const map = MAPS_FOR_TEST.room631, sim = new Sim(map);
+  sim.addPlayer('host', 'trevor'); sim.addPlayer('guest', 'michael');
+  const guest = save.party.michael, screen = 'item.phase_screen';
+  const printed = Rolls.rollGear('gadget-coop', screen, 0, 'gadget', 'cycle');
+  guest.equipped.gadget = screen; guest.rolled = { gadget: printed };
+  const sent = [], local = [], handlers = {};
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', character: 'trevor', localId: 'host', map, sim, save, ready: true, acc: 0,
+    input2: { read: emptyInput }, remoteInputs: new Map(), events: { once() {} }, time: { addEvent() {} },
+    net: { on: (type, cb) => { handlers[type] = cb; }, broadcast: (msg) => sent.push(msg) },
+    children: { list: [] },
+    _gadgetFx: (ev) => local.push(ev), _handleInteract() {}, _render() {}, _tickActOneEnding() {},
+  });
+  host._wireNet(); host._syncParty();
+  const input = (gadget) => handlers.msg('guest', { t: 'input', inp: { ...emptyInput(), gadget } });
+  input(true); input(false);
+  assert.equal(host.remoteInputs.get('guest').gadget, true);
+  host.update(0, 50);
+  const pawn = sim.players.get('guest'), count = () => sent.filter((msg) => msg.t === 'gadgetFx').length;
+  const snapshot = () => sim.snapshot().players.find((p) => p.id === 'guest');
+  assert.equal(count(), 1); assert.equal(local[0].kind, 'screen');
+  assert.ok(snapshot().gadgetCd > 0);
+  assert.equal(host.remoteInputs.get('guest').gadget, false);
+  assert.equal(snapshot().gadget, screen);
+  const remaining = snapshot().gadgetCd;
+  guest.rolled.gadget = Rolls.rollGear('gadget-coop', screen, 1, 'gadget', 'output'); host._syncParty();
+  input(true); host.update(0, 50); assert.equal(count(), 1);
+  guest.equipped.gadget = 'item.patch_mesh'; delete guest.rolled.gadget; host._syncParty();
+  assert.equal(snapshot().gadgetCd, undefined, 'another model has its own ready state');
+  input(true); host.update(0, 50); assert.equal(local.at(-1).kind, 'patch'); assert.equal(count(), 2);
+  guest.equipped.gadget = screen; guest.rolled.gadget = printed; host._syncParty();
+  sim.setMap(map);
+  assert.ok(snapshot().gadgetCd > 0 && snapshot().gadgetCd <= remaining);
+
+  // A transfer of the used build hands the timer to the new wearer through the same roll object.
+  guest.equipped.gadget = 'item.vector_actuator'; delete guest.rolled.gadget;
+  save.party.trevor.equipped.gadget = screen; save.party.trevor.rolled = { gadget: printed };
+  host._syncParty();
+  assert.ok(sim.snapshot().players.find((p) => p.id === 'host').gadgetCd > 0);
+  host.input2.read = () => ({ ...emptyInput(), gadget: true });
+  host.stage = { active: true, onHostMsg: () => false, update() {} };
+  input(true); host.update(0, 50); assert.equal(count(), 2);
+  assert.equal(host._frozen({ ...emptyInput(), gadget: true }).gadget, false);
+  host.stage.active = false;
+  input(true); host.update(0, 50);
+  assert.equal(local.at(-1).kind, 'vector'); assert.equal(count(), 3);
+  assert.equal(pawn.gadget, 'item.vector_actuator');
+  host.comic = { active: true };
+  assert.equal(host._gadgetBlocked(), true);
+  assert.equal(host._frozen({ ...emptyInput(), gadget: true }).gadget, false);
+});
+
+test('simultaneous and staggered gadget support apply only the strongest nearby effect per recipient', () => {
+  const sim = new Sim(rotArena());
+  for (const id of ['weak', 'strong', 'ally']) sim.addPlayer(id, 'trevor');
+  const [weak, strong, ally] = sim.players.values();
+  weak.gadget = strong.gadget = 'item.patch_mesh';
+  weak.mods.gadgetEffect = -0.2; strong.mods.gadgetEffect = 0.25;
+  ally.hp = 40;
+  const cast = (ids) => sim.step(1 / 60, new Map(ids.map((id) => [id, { ...emptyInput(), gadget: true }])));
+  cast(['weak']); assert.equal(ally.hp, 53);
+  cast(['strong']); assert.equal(ally.hp, 60, 'the stronger patch only tops up the difference');
+  weak.gadget = strong.gadget = 'item.ground_loop'; ally.rot = 40;
+  cast(['weak', 'strong']);
+  assert.ok(Math.abs(ally.rot - 30) < 0.1, 'simultaneous ground pulses use only the strongest dose');
+  assert.equal(ally.hp, 60, 'unlike effects retain their own independently applied benefit');
+  sim.playTime += Gadget.GADGET_SUPPORT_WINDOW;
+  const fresh = 'fresh'; sim.addPlayer(fresh, 'manuel');
+  sim.players.get(fresh).gadget = 'item.patch_mesh';
+  cast([fresh]); assert.equal(ally.hp, 76, 'another application takes effect after the recipient window');
+});
+
+test('Vector Actuator shoves one ordinary contact and Arc Splicer coalesces overlapping hits', () => {
+  const scenario = () => {
+    const sim = new Sim(rotArena());
+    sim.addPlayer('a', 'trevor'); sim.addPlayer('b', 'michael');
+    for (const [id, x] of [['first', 178], ['second', 194]]) sim.enemies.set(id, {
+      id, x, y: 160, kind: 'enemy.rotling', hp: 100, cd: 9, hurtT: 0, kx: 0, ky: 0,
+    });
+    const cast = (...ids) => sim.step(1 / 60, new Map(ids.map((id) => [id, { ...emptyInput(), gadget: true }])));
+    return { sim, cast, a: sim.players.get('a'), b: sim.players.get('b'), first: sim.enemies.get('first'), second: sim.enemies.get('second') };
+  };
+  const vector = scenario(); vector.a.gadget = 'item.vector_actuator'; vector.cast('a');
+  assert.ok(vector.first.kx > 0 && !vector.second.kx);
+  assert.equal(vector.first.hp, 100);
+  const braced = scenario(); braced.a.gadget = 'item.vector_actuator'; braced.first.poiseT = 0.9; braced.cast('a');
+  assert.ok(!braced.first.kx && !braced.second.kx, 'a poised first contact resists the shove');
+  const arc = scenario(); arc.a.gadget = arc.b.gadget = 'item.arc_splicer';
+  arc.b.mods.gadgetEffect = 0.2; arc.cast('a', 'b');
+  assert.equal(arc.first.hp, 78);
+  assert.equal(arc.second.hp, 86);
+  assert.equal(arc.sim.events.filter((event) => event.t === 'gadgetCast').length, 2);
+  const mixed = scenario(); mixed.a.gadget = 'item.vector_actuator'; mixed.b.gadget = 'item.arc_splicer';
+  mixed.cast('a', 'b');
+  assert.ok(mixed.first.kx > 0 && mixed.first.hp === 82, 'arc damage preserves displacement from a different gadget');
+});
+
+test('melee and ranged tuning keep positive intervals and use the live item roll', () => {
+  const sim = new Sim(rotArena()); sim.addPlayer('p', 'trevor');
+  const p = sim.players.get('p');
+  const tuned = (id, kind, tune) => ({ id, roll: Rolls.rollGear('tuning', id, 0, kind, tune) });
+  const melee = tuned('item.rebar', 'melee', 'cycle');
+  sim.setMods('p', { swing: ITEMS[melee.id].swing, ...melee.roll.mods });
+  sim._melee(p);
+  assert.ok(Math.abs(p.meleeCd - (ITEMS[melee.id].swing.cooldown - 0.05)) < 1e-9);
+  p.mods.meleeCd = -1; sim._melee(p); assert.ok(p.meleeCd >= 0.12);
+  const range = tuned('item.nail_gun', 'gun', 'output');
+  sim.setMods('p', { gun: 1, gunStats: ITEMS[range.id].gun, ...range.roll.mods });
+  sim._fire(p);
+  assert.ok(p.shotCd >= 0.12 && p.shotCd >= ITEMS[range.id].gun.cooldown - 0.05);
+});
+
+test('gadget scans give a private reading from host state and leave all quest and loot flags alone', () => {
+  const map = MAPS_FOR_TEST.room631, sim = new Sim(map);
+  sim.addPlayer('guest', 'michael');
+  const box = map.objects.find((o) => o.id === 'obj.parts_bins');
+  Object.assign(sim.players.get('guest'), { x: box.x * 16 + 8, y: box.y * 16 + 8 });
+  const save = newSave({ seed: 'readings', rolls: {}, gameVersion: 't' });
+  const messages = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    localId: 'host', sim, map, save, net: { send: (to, msg) => messages.push([to, msg]) },
+  });
+  host._gadgetScan({ id: 'guest', kind: 'sniffer' });
+  assert.equal(messages.at(-1)[0], 'guest');
+  assert.match(messages.at(-1)[1].text, /Calibrate/);
+  assert.deepEqual(save.flags, {});
+  save.flags['act1.leadA.done'] = true;
+  host._gadgetScan({ id: 'guest', kind: 'sniffer' });
+  assert.match(messages.at(-1)[1].text, /Helium trail/);
+  host._gadgetScan({ id: 'guest', kind: 'survey' });
+  assert.equal(messages.at(-1)[1].label, box.label);
+  save.flags[`loot.${map.id}.${box.id}`] = true;
+  host._gadgetScan({ id: 'guest', kind: 'survey' });
+  assert.notEqual(messages.at(-1)[1].label, box.label);
+  assert.deepEqual(Object.keys(save.flags).sort(), ['act1.leadA.done', `loot.${map.id}.${box.id}`].sort());
 });
 
 const fullCraftBag = () => Array.from({ length: Inv.SLOTS }, () => ({ id: 'item.wooden_bat', qty: 1 }));
@@ -4502,6 +4779,73 @@ test('the gonman is overpowered on purpose: a much smaller hitbox while thin, en
   for (const l of [...gonContent.GONMAN_HIT.enemy, ...gonContent.GONMAN_HIT.boss, ...gonContent.GONMAN_LINES.start, ...gonContent.GONMAN_LINES.release]) assert.ok(LINES_ES[l], `no Spanish for: ${l}`);
 });
 
+const { ClientNet: DialogueClientNet, HostNet: DialogueHostNet } = await import('../src/engine/net/net.js');
+const { SharedEvents } = await import('../src/game/sharedEvent.js');
+test('a disconnected dialogue driver releases only their scene on the host and observer', () => {
+  const hostNet = new DialogueHostNet(), observerNet = new DialogueClientNet();
+  const connect = (peer, send = () => {}) => hostNet.conns.set(peer, { send });
+  const leave = (peer) => {
+    hostNet.conns.delete(peer);
+    hostNet.emit('leave', peer);
+  };
+  const posted = [];
+  connect('observer', (msg) => { posted.push(msg); observerNet.emit('msg', msg); });
+  connect('driver');
+  const makeScene = (mode, net, character) => {
+    const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+      mode, net, character, map: MAPS_FOR_TEST.room631, events: { once() {} },
+      input: { keyboard: { on() {} } }, time: { addEvent() {} },
+      add: { text: () => ({ setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; }, setVisible() { return this; }, setText() { return this; } }) },
+      _drawDialogue() { if (this.dlg?.done) { this.dlg = null; this.dlgDone?.(); } },
+    });
+    scene.shared = new SharedEvents(scene);
+    return scene;
+  };
+  const host = makeScene('host', hostNet, 'trevor'), observer = makeScene('client', observerNet, 'michael');
+  host.save = newSave({ seed: 'dialogue-disconnect', rolls: {}, gameVersion: 'test' });
+  observer.save = structuredClone(host.save);
+  host.sim = new Sim(host.map);
+  for (const [id, who] of [['host', 'trevor'], ['observer', 'michael'], ['driver', 'manuel']]) host.sim.addPlayer(id, who);
+  host.remoteInputs = new Map();
+  host._wireNet();
+  observer._wireNet();
+
+  const id = 'driver:opening';
+  hostNet.emit('msg', 'driver', { t: 'evStart', id, main: 'manuel', scope: 'all' });
+  hostNet.emit('msg', 'driver', { t: 'evState', id, state: { choices: ['Continue'], decider: 'michael' } });
+  assert.equal(host.shared.watching.id, id);
+  assert.equal(observer.shared.watching.id, id);
+  hostNet.emit('msg', 'observer', { t: 'evEnd', id });
+  assert.equal(host.shared.watching.id, id, 'another guest cannot end the driver’s dialogue');
+
+  leave('driver');
+  leave('driver');
+  assert.equal(host.dlg, null);
+  assert.equal(observer.dlg, null);
+  assert.equal(host.shared.latest[id], undefined);
+  assert.equal(observer.shared.latest[id], undefined);
+  assert.equal(posted.filter(msg => msg.t === 'evEnd' && msg.id === id).length, 1);
+  assert.ok(host.sim.players.has('ai:manuel'));
+
+  connect('returning');
+  host.sim.removePlayer('ai:manuel');
+  host.sim.addPlayer('returning', 'manuel');
+  host.dlg = { choices: [], done: false };
+  const local = host.dlg;
+  host.dlgDone = () => assert.fail('disconnect advanced an unrelated story');
+  hostNet.emit('msg', 'returning', { t: 'evStart', id: 'returning:retry', main: 'manuel', scope: 'all' });
+  hostNet.emit('msg', 'returning', { t: 'evState', id: 'returning:retry', state: { choices: ['Continue'], decider: 'trevor', turn: 1 } });
+  assert.equal(observer.shared.watching.id, 'returning:retry');
+  assert.ok(host.shared.deferredStarts.has('returning:retry'), 'directed choice is deferred while the host is busy');
+  leave('returning');
+  assert.equal(host.dlg, local);
+  assert.equal(observer.dlg, null);
+  assert.ok(!host.shared.deferredStarts.has('returning:retry'), 'the abandoned directed choice no longer blocks the host');
+  host.dlg = null;
+  host.shared._pump();
+  assert.equal(host.dlg, null, 'the abandoned choice does not reopen');
+});
+
 test("Manuel's edge: with the same gear and no skills, Manuel is the toughest and hits hardest of the three", () => {
   const bare = () => ({ skills: {}, inventory: [{ id: 'item.pry_bar', qty: 1 }], abilities: {} });
   const m = Object.fromEntries(['manuel', 'trevor', 'michael'].map((w) => [w, pmods(bare(), w)]));
@@ -4705,6 +5049,27 @@ test('sceneryPlacement: Baltimore pieces stand at their drawn size, centred on t
   assert.equal(decorMod.sceneryPlacement({ art: 'obj.bench', x: 1, y: 1 }, (s, a) => s === 'props' && a === 'obj.bench', 1.5).sheet, 'props', 'other sheets unchanged');
 });
 
+test('connection loss offers the original room and intentional quit returns to the normal title', async () => {
+  for (const intentional of [false, true]) {
+    let closes = 0;
+    const net = Object.assign(new EventEmitter(), {
+      code: 'ROOM2',
+      close() { closes++; this.emit('close'); },
+    });
+    const transitions = [];
+    const world = Object.assign(Object.create(CraftWorldScene.prototype), {
+      mode: 'client', net, events: new EventEmitter(),
+      scene: { start: (...args) => transitions.push(args) },
+    });
+    world._wireNet();
+    if (intentional) await world.menuQuit(false);
+    else net.emit('close');
+    net.emit('close');
+    assert.equal(closes, 1);
+    assert.deepEqual(transitions, [['Title', { rejoinCode: intentional ? undefined : 'ROOM2' }]]);
+  }
+});
+
 test('co-op rejoin accepts only a vacant seat with its original room key', () => {
   const net = new HostNet();
   const connect = (peer) => {
@@ -4776,6 +5141,43 @@ test('co-op rejoin accepts only a vacant seat with its original room key', () =>
   assert.equal(original.held, 'gun', 'the returning guest immediately holds their selected gun');
   assert.equal(original.mods.gun, 1);
   assert.equal(sim.players.size, 3);
+});
+
+test('equip the exact copy (John Pork, PR #93): with two vests, the modded one you click goes on, mods and all; swapping and taking off keep each copy\'s mods', async () => {
+  const InvM = await import('../src/engine/inventory.js');
+  const save = newSave({ seed: 'two-vests', rolls: {}, gameVersion: 't' }), c = save.party.trevor;
+  c.inventory = Array(c.inventory.length).fill(null); c.equipped = {}; c.rolled = {}; c.socketed = {};
+  c.inventory[9] = { id: 'item.mesh_vest', qty: 1, socketed: ['item.mod_plate'] }; c.inventory[10] = { id: 'item.mesh_vest', qty: 1 };
+  const sent = [], toasts = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'solo', character: 'trevor', save, time: { now: 0, addEvent() {} }, _syncParty() {}, _toast: (t) => toasts.push(t), _announce() {} });
+  host.menuUseSlot(9);
+  assert.equal(c.equipped.chestplate, 'item.mesh_vest'); assert.deepEqual(c.socketed.chestplate, ['item.mod_plate'], 'the clicked, modded vest is the one worn');
+  assert.ok(!c.inventory[9] && c.inventory[10] && !c.inventory[10].socketed, 'and the plain one is still in slot 10');
+  host.menuUseSlot(10);
+  assert.ok(!c.socketed.chestplate, 'swapped for the plain copy: no mods worn');
+  assert.ok(c.inventory.some((s) => s?.id === 'item.mesh_vest' && s.socketed?.[0] === 'item.mod_plate'), 'and the modded copy is back in the bag with its mod');
+  host.menuUnwear('chestplate');
+  assert.ok(!c.equipped.chestplate && c.inventory.filter((s) => s?.id === 'item.mesh_vest').length === 2, 'taking it off keeps both copies');
+  const handlers = new Map();
+  Object.assign(host, {
+    mode: 'host',
+    sim: { players: new Map([['guest', { character: 'trevor' }]]) },
+    net: { on: (type, handler) => handlers.set(type, handler) },
+    events: { once() {} },
+  });
+  host._wireNet();
+  const guest = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'client', character: 'trevor', save, time: { now: 0 },
+    net: { send: (msg) => { sent.push(msg); handlers.get('msg')('guest', msg); } },
+  });
+  const k = c.inventory.findIndex((item) => item?.socketed);
+  guest.menuUseSlot(k);
+  assert.deepEqual(c.socketed.chestplate, ['item.mod_plate']);
+  guest.menuUnwear('chestplate');
+  assert.equal(c.equipped.chestplate, null);
+  assert.equal(c.inventory.filter((item) => item?.id === 'item.mesh_vest').length, 2);
+  assert.deepEqual(sent, [{ t: 'equipSlot', i: k }, { t: 'unwear', slot: 'chestplate' }]);
+  assert.equal(InvM.wear(c, 'item.mesh_vest', 99), false, 'an invalid explicit slot leaves both copies in the bag');
 });
 
 await Promise.all(pending);
