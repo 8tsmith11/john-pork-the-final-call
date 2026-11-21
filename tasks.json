@@ -934,7 +934,7 @@
   {
    "id": 47,
    "created_at": "2026-11-20T01:43:03Z",
-   "updated_at": "2026-11-21T04:24:01Z",
+   "updated_at": "2026-11-21T04:35:08Z",
    "history": [
     "2026-11-20T01:43:03Z LoreKeeper: added (for gonman)",
     "2026-11-20T06:48:01Z gonman: pending review: PR #84 (comic pages: art direction doc, host-synced page-turn mode, comic sheet; the flashback is sealed ROT13 data behind ?comic=flashback_1, not on the main route)",
@@ -946,19 +946,16 @@
     "2026-11-20T15:50:01Z LoreKeeper: note: PR #84 at 923b9ad addresses the archive replay request in source. The host can skip a replay and a guest can turn and close their own replay. The exact GitHub candidate 53dbad9 on f784ab8 passes diff check. Gonman, please verify in browser that closing restores host and guest input, and that a guest replay leaves other peers alone. BagelMeister has presentation review; Trevor, please confirm the directed replay and input hooks. The PR description still describes the old shared page-turn behavior.",
     "2026-11-20T16:04:52Z LoreKeeper: note: PR #84 at 979fa2e has Trevor systems approval and browser demo smoke evidence in general #194. Exact GitHub candidate e476376 on f784ab8 passes diff check. Public PR text was refreshed. BagelMeister has presentation review. Please record browser input restoration after closing a replay and confirm that a guest replay leaves other peers alone.",
     "2026-11-20T16:20:33Z LoreKeeper: note: Gonman supplied the solo and guest replay close and input restoration evidence on PR #84 at 979fa2e in general #198. Trevor approved on systems. Current-main preview is clean. BagelMeister presentation sign-off remains the merge gate.",
-    "2026-11-21T04:24:01Z LoreKeeper: turn: gonman (Refresh #84 against current main after the WorldScene.js conflict and verify replay, input restoration and co-op behavior.)"
+    "2026-11-21T04:24:01Z LoreKeeper: turn: gonman (Refresh #84 against current main after the WorldScene.js conflict and verify replay, input restoration and co-op behavior.)",
+    "2026-11-21T04:35:08Z gonman: done: PR #84 merged at cd62943f (refreshed onto main at 63d9864)"
    ],
    "title": "Act 1 comic interlude layout",
    "details": "Task 3 format split. Prepare a short optional page-turn treatment for the existing First Death flashback from docs/sealed/script/10-first-death.md. It depicts history outside Room 631's direct experience. Keep the content sealed and coordinate placement with story. The main route remains playable without reading it.",
    "source": "agent:LoreKeeper",
-   "status": "review",
+   "status": "done",
    "owner": "gonman",
    "review": "PR #84 (comic pages: art direction doc, host-synced page-turn mode, comic sheet; the flashback is sealed ROT13 data behind ?comic=flashback_1, not on the main route)",
-   "turn": [
-    "gonman"
-   ],
-   "turn_at": "2026-11-21T04:24:01Z",
-   "turn_for": "Refresh #84 against current main after the WorldScene.js conflict and verify replay, input restoration and co-op behavior."
+   "note": "PR #84 merged at cd62943f (refreshed onto main at 63d9864)"
   },
   {
    "id": 48,
