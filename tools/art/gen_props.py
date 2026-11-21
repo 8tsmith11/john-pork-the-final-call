@@ -1420,6 +1420,121 @@ D("dec.cable_es", cable("e", "s"))
 D("dec.cable_wn", cable("w", "n"))
 D("dec.cable_en", cable("e", "n"))
 
+# ---- Phase 0: the dead platform's landmark (docs/design/13-audit-and-rebuild.md) ----
+# A Green Line car stopped on the track, side on, in 32x40 pieces that tile left to right as scenery two tiles wide:
+# the cab (west end, headlamp lit; frame #1 is the lamp dipping, so it flickers), a body piece with a closed door
+# pair, a body piece with a door stuck a hand's width open, and the tail (east end, rot creeping up from the bogie).
+# Every piece fills columns 0 and 31 with body, so the joins don't show; drawn at scale 1 so they meet exactly.
+def train_body(c, x0=0, x1=32):
+    c.rect(x0, 6, x1 - x0, 4, "steel").h_(x0, 5, x1 - x0, "concrete3").h_(x0, 10, x1 - x0, "concrete1")   # the roof
+    c.rect(x0, 11, x1 - x0, 21, "steel").h_(x0, 11, x1 - x0, "concrete3")                                   # the side
+    c.rect(x0, 13, x1 - x0, 9, "night2")                                                                    # window band
+    c.h_(x0, 23, x1 - x0, "yerba1").h_(x0, 24, x1 - x0, "yerba1").h_(x0, 25, x1 - x0, "yerba0")             # Green Line stripe
+    c.h_(x0, 31, x1 - x0, "concrete1").rect(x0, 32, x1 - x0, 3, "night2")                                    # skirt, underframe
+    for x in range(x0, x1):
+        if (x * 7) % 5 == 0: c.px(x, 30, "concrete2")                                                       # grime along the sill
+    return c
+
+
+def train_window(c, x, w, broken=False):
+    c.rect(x, 14, w, 7, "screen0").h_(x, 14, w, "night3")
+    c.pts("screen1", (x + 1, 16), (x + 2, 15), (x + w - 2, 19))                                             # glare
+    if broken:
+        c.rect(x, 14, w, 7, "night0").pts("bone", (x, 14), (x + 1, 15), (x + w - 1, 14), (x + w - 2, 15), (x + w - 1, 16), (x + 2, 20))
+    return c
+
+
+def train_bogie(c, x):
+    c.rect(x, 34, 12, 2, "night3")
+    for wx in (x + 2, x + 9):
+        ell(c, wx + 0.5, 36.5, 2.2, 2.2, "night1"); c.px(wx, 36, "steel")
+    return c
+
+
+def train_doors(c, x, gap=0):
+    c.rect(x, 12, 10, 19, "concrete3").v_(x, 12, 19, "concrete1").v_(x + 9, 12, 19, "concrete1")          # the door pair
+    c.rect(x + 2, 14, 2, 6, "screen0").rect(x + 6, 14, 2, 6, "screen0")
+    if gap:
+        mid = x + 5 - gap // 2
+        c.rect(mid, 12, gap, 19, "night0").v_(mid + gap // 2, 14, 15, "steel")                             # dark inside, a grab pole
+        c.px(mid, 27, "warm1").px(mid + 1, 27, "warm1")                                                     # a seat edge
+    else:
+        c.v_(x + 5, 12, 19, "night2")
+    return c
+
+
+def train_cab(lamp):
+    c = train_body(C(32, 40), 3, 32)
+    c.rect(2, 7, 1, 24, "concrete2").rect(3, 6, 2, 1, "steel").px(3, 5, None)                              # the nose, rounded at the top
+    c.rect(3, 13, 7, 9, "night2").rect(4, 14, 5, 7, "screen1").pts("bone", (5, 15), (6, 15), (5, 16))     # the driver's window
+    c.rect(4, 11, 6, 2, "night1").pts("yerba1", (5, 11), (7, 11), (8, 12))                                  # destination sign, mostly dead
+    c.pts("warm4" if lamp else "concrete2", (3, 27), (4, 27), (3, 28)).px(3, 29, "signal")                 # headlamp, marker
+    train_window(c, 14, 7).rect(23, 12, 8, 19, "concrete3").v_(23, 12, 19, "concrete1").v_(27, 12, 19, "night2")   # a window, a door
+    c.rect(24, 14, 2, 6, "screen0").rect(28, 14, 2, 6, "screen0")
+    train_bogie(c, 6)
+    c.rect(0, 33, 3, 2, "night2").px(1, 33, "steel")                                                        # the coupler
+    return c.outline()
+
+
+def train_mid():
+    c = train_body(C(32, 40))
+    train_window(c, 2, 8).h_(2, 21, 8, "night2")
+    train_doors(c, 12)
+    train_window(c, 24, 7, broken=True)
+    c.rect(10, 3, 12, 3, "concrete2").h_(10, 3, 12, "concrete3").v_(21, 3, 3, "concrete1")                 # roof unit
+    c.pts("pork1", (4, 27), (5, 28), (6, 27), (7, 28), (8, 27)).pts("pork0", (5, 27), (7, 27))              # a tag on the skirt
+    return c.outline()
+
+
+def train_door():
+    c = train_body(C(32, 40))
+    train_window(c, 1, 9)
+    train_doors(c, 11, gap=4)
+    train_window(c, 23, 8)
+    c.px(14, 13, "warm3").px(15, 13, "warm3")                                                               # the emergency light inside
+    return c.outline()
+
+
+def train_tail():
+    c = train_body(C(32, 40), 0, 29)
+    c.rect(29, 7, 1, 24, "concrete2").rect(27, 6, 2, 1, "steel").px(28, 5, None)                           # the flat end
+    c.rect(24, 13, 4, 16, "night2").rect(25, 14, 2, 6, "screen0")                                           # the end door
+    train_window(c, 3, 8).px(28, 27, "signal").px(28, 28, "night2")                                         # a window, a dead tail light
+    train_window(c, 14, 7)
+    train_bogie(c, 14)
+    c.rect(29, 33, 3, 2, "night2").px(30, 33, "steel")                                                      # the coupler
+    c.pts("rot0", (20, 31), (21, 30), (22, 31), (23, 29), (24, 30), (26, 31), (19, 33), (24, 34))           # rot coming up the bogie
+    c.pts("rot1", (22, 30), (25, 31))
+    return c.outline()
+
+
+BIG["obj.train_cab"] = train_cab(True).rows()
+BIG["obj.train_cab#1"] = train_cab(False).rows()
+BIG["obj.train_mid"] = train_mid().rows()
+BIG["obj.train_door"] = train_door().rows()
+BIG["obj.train_tail"] = train_tail().rows()
+
+# The Green Line strip map on two posts against the platform wall: the line, its stops, YOU ARE HERE in red at College
+# Park, and every stop south of it taped over.
+c = C().rect(1, 4, 14, 11, "bone").h_(1, 4, 14, "concrete3").h_(1, 14, 14, "concrete2")
+c.h_(2, 9, 12, "yerba1").h_(2, 10, 12, "yerba0")
+for x in (3, 6, 9, 12): c.px(x, 9, "night1")
+c.px(5, 9, "signal").px(5, 10, "signal")                                                                    # YOU ARE HERE
+c.rect(7, 8, 7, 4, "concrete2").h_(7, 8, 7, "concrete3")                                                    # the tape
+for x in range(2, 14, 2): c.px(x, 6, "concrete1").px(x + 1, 12, "concrete1")                                # lettering
+c.pts("concrete3", (3, 5), (4, 6), (10, 5), (11, 6), (12, 7))                                               # scratches in the plastic
+c.v_(3, 15, 8, "steel").v_(12, 15, 8, "steel").h_(2, 22, 3, "concrete1").h_(11, 22, 3, "concrete1")
+P("obj.line_map", c.outline())
+
+# Station wall tiles, a 32x16 wall piece: cream tiles in a grid, a green band at shoulder height, two tiles missing.
+c = C(32, 16).rect(0, 1, 32, 14, "bone")
+for x in range(0, 32, 4): c.v_(x, 1, 14, "concrete3")
+for y in (1, 5, 13): c.h_(0, y, 32, "concrete3")
+c.rect(0, 8, 32, 3, "yerba0").h_(0, 8, 32, "yerba1")
+c.rect(9, 2, 3, 3, "concrete1").rect(21, 11, 3, 2, "concrete1")                                             # gaps
+c.pts("concrete2", (13, 3), (14, 4), (26, 2), (27, 12))                                                     # grime
+WIDE["obj.station_tiles"] = c.rows()
+
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)
 write("big", 32, 40, BIG)

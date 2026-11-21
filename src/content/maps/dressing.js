@@ -57,7 +57,7 @@ export const DRESSING = {
   },
   compute_hall_b: {
     // Machine Room B (hub #68): the cold aisle lit by the racks, cold air coming up through the perforated tiles,
-    // the terminal lab's screens, and the amber status board on the entrance hall.
+    // the terminal lab's screens, and the amber status board on the south hall.
     glow: [{ x: 10, y: 9, color: C.cyan, r: 0.9 }, { x: 15, y: 9, color: C.cyan, r: 0.9 }, { x: 12, y: 2, color: C.cyan, r: 0.8 }, { x: 20, y: 12, color: C.amber, r: 0.6 }],
     vent: [{ x: 9, y: 9 }, { x: 16, y: 9 }],
   },
@@ -70,6 +70,7 @@ export const DRESSING = {
   },
   platform: {
     neon: [{ x: 4, y: 1, text: 'COLLEGE PARK', color: C.lime, flicker: 0.2 }, { x: 30, y: 1, text: 'NO SERVICE', color: C.red, flicker: 0.15, size: 6 }],
-    glow: [{ x: 22, y: 8, color: C.magenta, r: 1.6 }],
+    // The dead car's headlamp throws a warm pool along the track at the west end (tunnels.js, Phase 0 landmark).
+    glow: [{ x: 22, y: 8, color: C.magenta, r: 1.6 }, { x: 2, y: 15, color: C.amber, r: 0.9 }],
   },
 };

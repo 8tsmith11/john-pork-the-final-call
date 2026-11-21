@@ -5,6 +5,8 @@
 // Spanish: src/i18n/es-aster.js.
 import { fromGrid } from './builder.js';
 
+// 637 opens off the hall's north side, so its door is in its south wall; 636 and 638 open off the south side, so
+// theirs are in the north wall: you come out facing the way you went in (tests/run.js checks every paired door).
 const home = (id, label) => ({ exit: 'aster_hall', id: `obj.${id}_out`, pair: `obj.door_${id.slice(4)}`, art: 'obj.door', label, stepOn: true, text: 'Back out to the hall.' });
 
 // ---- 637: the neighbor practicing scales, getting worse ----
@@ -38,14 +40,14 @@ export const apt637 = fromGrid({
 export const apt638 = fromGrid({
   id: 'apt_638', name: 'Apartment 638', fill: '.',
   rows: [
-    '##################',
+    '#########DD#######',
     '#................#',
     '#..TV............#',
     '#................#',
     '#..bb.C...N......#',
     '#................#',
     '#........@.......#',
-    '#########DD#######',
+    '##################',
   ],
   legend: {
     T: { prop: 'obj.tv', id: 'obj.apt638_tv', label: 'The television', text: 'An anchor in front of a flag that doesn\'t move. "Citizens, things are stable." A pause, long enough to change the channel. "Citizens, things are stable."' },
@@ -65,13 +67,13 @@ export const apt638 = fromGrid({
 export const apt636 = fromGrid({
   id: 'apt_636', name: 'Apartment 636', fill: '.',
   rows: [
-    '################',
+    '#######DD#######',
     '#..............#',
     '#.$$$..........#',
     '#.$$P.....?....#',
     '#..............#',
     '#......@.......#',
-    '#######DD#######',
+    '################',
   ],
   legend: {
     $: { prop: 'obj.boxes', label: 'A delivery box', loot: 'parts', text: 'A delivery box addressed to a tenant from two leases ago. The tape has gone yellow and lets go as soon as you touch it.' },
@@ -86,11 +88,12 @@ export const apt636 = fromGrid({
 
 // ---- The fifth floor: the same hallway as yours, one floor down, a little wrong ----
 // Secret: the fire hose cabinet holds a hard hat left as collateral (one per save). 531 sits right under 631.
+// The stairwell (west end) is a landing on the one stack: down to the lobby (S), up to the sixth floor (U).
 export const aster5f = fromGrid({
   id: 'aster_5f', name: 'ASTER, fifth floor', fill: ':',
   rows: [
     '########################################',
-    '#S::::::::::::H::::::::::::::::::::::::#',
+    '#S:U::::::::::H::::::::::::::::::::::::#',
     '#::::::::::::::::::::::::::::::::::::::#',
     '#:::::1::::d:::::::d:::::::d:::::::::::#',
     '#::::::::::::::::::N:::::::::::::::E:::#',
@@ -107,6 +110,7 @@ export const aster5f = fromGrid({
     E: { enemy: 'enemy.rotling' },
     '@': { spawn: true },
     S: { exit: 'aster_lobby', id: 'obj.aster5_stairs', art: 'obj.stairs', label: 'Stairs (lobby)', pair: 'obj.lobby_5f', text: 'Back down to the lobby.' },
+    U: { exit: 'aster_hall', id: 'obj.aster5_up', art: 'obj.stairs', label: 'Stairs (sixth floor)', pair: 'obj.stairs_6f', text: 'Up one more. The chalk numbers on the steps start again at 1, in a different hand.' },
   },
 }).build();
 

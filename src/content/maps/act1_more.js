@@ -86,20 +86,22 @@ export const asterRoof = fromGrid({
 }).build();
 
 // ---- The campus quad (behind Compute Hall B): the dining hall, the robotics lab, the cordon at the edge ----
+// Compute Hall B's back wall closes the north side of the quad, between the dining hall and the robotics lab: you walk
+// north into its back door and come out of the hall's south wall (campus.js), facing the way you went.
 // Job: the abatement bounty board can post a rot nest on the lawn here (src/content/jobs.js, NESTS).
 export const campusQuad = fromGrid({
   id: 'campus_quad', name: 'The campus quad', fill: 'g', outdoor: true,
   rows: [
     'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
-    'T########gggggggggggggg#########AT',
-    'T########gggggggggggggg#########gT',
+    'T########ggg########ggg#########AT',
+    'T########ggg####H###ggg#########gT',
     'T####F###ggggqqqqqqgggg####R####gT',
     'Tggggqggggggggq....qggggggggqggggT',
     'Tggggqqqqqqqqqq.EE.qqqqqqqqqqggggT',
     'Tggggggggggggggq....qggggggggggggT',
     'TggTgggggggggggqqqqqqMgggggggTgggT',
-    'Tgggggggggggggggqq@qgggggggggggggT',
-    'TgggggggggggggggqqHqgggggggggggggT',
+    'Tggggggggggggggggg@ggggggggggggggT',
+    'TggggggggggggggggggggggggggggggggT',
     'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
   ],
   legend: {
@@ -173,11 +175,12 @@ export const roboticsLab = fromGrid({
 
 // ---- The lecture auditorium (off the quad): tiered seats, a projector still running, and the Autograder ----
 // Secret: the projector's clicker steps back through the last lecture, slide by slide.
+// The way out is in the south wall, at the east end: the quad's door to it faces south (act1_more.js, above).
 export const auditorium = fromGrid({
   id: 'auditorium', name: 'The lecture auditorium', fill: 'e',
   rows: [
     '########################################',
-    '#eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeU',
+    '#eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee#',
     '#eeeeeeeesssssssssseesssssssssseeeeeeee#',
     '#eePeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee#',
     '#eeeeeeeesssssssssseesssssssssseeeeeeee#',
@@ -186,7 +189,7 @@ export const auditorium = fromGrid({
     '#eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee#',
     '#eeeeeeeesssssssssseesssssssssseeeeEeee#',
     '#eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee@eee#',
-    '########################################',
+    '#####################################U##',
   ],
   legend: {
     s: { scenery: 'obj.table', solid: true, tile: 'e' },
