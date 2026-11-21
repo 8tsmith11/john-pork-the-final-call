@@ -2457,6 +2457,22 @@ test('room 631: reading the 245 textbook on the bookshelf sets lab.book (trevor,
   assert.equal(shelf.flag, 'lab.book', 'the pages action sets this flag on the first press');
   assert.ok(/^The 245 lab textbook\./.test(shelf.pages[0]), 'and the first press shows the textbook');
 });
+test('Continuity posters (hub #100, Michael): out of 631, it is plain he is an enemy of the state; his likeness is never shown', async () => {
+  const { ES_ASTER } = await import('../src/i18n/es-aster.js'), { ES_PLAZA } = await import('../src/i18n/es-plaza.js');
+  const frames = JSON.parse(fs.readFileSync(new URL('../assets/sprites/props.json', import.meta.url), 'utf8')).frames;
+  const posters = (id) => MAPS_FOR_TEST[id].objects.filter((o) => /^obj\.ct_poster/.test(o.art ?? ''));
+  for (const [id, es] of [['aster_hall', ES_ASTER], ['aster_lobby', ES_ASTER], ['metro_plaza', ES_PLAZA]]) {
+    const ps = posters(id);
+    assert.ok(ps.length >= 2, `${id}: posters`);
+    for (const o of ps) {
+      assert.ok(frames[o.art], `${o.art}: no frame in props.json`);
+      assert.ok(es[o.text] && es[o.label], `${id}/${o.id}: Spanish`);
+      assert.ok(!/\b(face|snout|ears?|eyes|smil\w*|portrait of)\b/i.test(o.text), `${id}/${o.id}: describes the banned likeness`);
+    }
+  }
+  const door = MAPS_FOR_TEST.aster_hall.objects.find((o) => o.id === 'obj.door_631');
+  assert.ok(posters('aster_hall').some((o) => Math.hypot(o.x - door.x, o.y - door.y) <= 4), 'nothing right outside 631');
+});
 const { Approach } = await import('../src/game/approach.js');
 test('a caught pickpocket changes that roommate\'s NPC actions across saves until they apologize', () => {
   const save = newSave({ seed: 'npc-memory', rolls: {}, gameVersion: 'test' });
