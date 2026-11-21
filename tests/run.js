@@ -817,6 +817,35 @@ test('running gags: the 245 lab chat and the abuela voice notes come round, with
   assert.deepEqual(missing, [], 'Spanish for these lines in src/content/lines_es.js');
 });
 
+const hostPickMod = await import('../src/game/hostPick.js');
+const hostPickBelt = await import('../src/game/beltless.js');
+test('sealed (hub #67): picks one that can play now, then cools down', () => {
+  const sc = { mode: 'solo', time: { now: 100000 }, save: { flags: {}, party: { manuel: { level: 1 } } }, fart: { next: 9e9 }, beltless: { next: 9e9 }, bigButt: { next: 9e9 }, toothpaste: { next: 9e9 }, gags: { next: { chat: 9e9, abuela: 9e9 } } };
+  const apart = { players: [{ id: 'm', c: 'manuel', x: 0, y: 0 }, { id: 'k', c: 'michael', x: 500, y: 0 }, { id: 't', c: 'trevor', x: 900, y: 0 }] };
+  assert.deepEqual(hostPickMod.pickOptions(sc, apart).map((g) => g.id).sort(), ['abuela', 'belt', 'butt', 'chat', 'fart']);
+  const b = new hostPickMod.HostPick(sc);
+  assert.equal(b.press(apart, () => 0), 'fart');
+  assert.equal(sc.fart.next, 0);
+  assert.equal(b.press(apart, () => 0), null, 'cooldown');
+  sc.time.now += 4000;
+  assert.equal(b.press({ players: [] }), null);
+  // every option must reach its module's real timer: a picked one plays on that module's next update
+  const sc2 = { mode: 'solo', time: { now: 300000 }, save: { flags: { 'act1.switchyard.solved': true }, world: { act: 1 }, party: { manuel: { level: 1 } } } };
+  const sent2 = []; sc2.crush = new Crush(sc2); sc2.crush._send = (m) => sent2.push(m);
+  const close = { players: [{ id: 'm', c: 'manuel', x: 0, y: 0 }, { id: 'k', c: 'michael', x: 10, y: 0 }] };
+  sc2.crush.update(close);
+  assert.equal(sent2.length, 0, 'not due yet');
+  assert.equal(new hostPickMod.HostPick(sc2).press(close, () => 0), 'g');
+  sc2.crush.update(close);
+  assert.equal(sent2.filter((m) => m.g).length, 1, 'the picked one plays');
+  // a capped one that has run out is never offered (it would not fire); the cap arrives with PR #134
+  const beltMax = hostPickBelt.BELT_MAX;
+  if (beltMax != null) {
+    const sc3 = { ...sc, save: { flags: { 'gag.belt.count': beltMax }, party: { manuel: { level: 1 } } } };
+    assert.ok(!hostPickMod.pickOptions(sc3, apart).some((g) => g.id === 'belt'), 'offered one that has run out');
+  }
+});
+
 const settingsMod = await import('../src/settings.js');
 test('settings: the soundtrack plays by default (Manuel, 2026-11-20)', () => {
   assert.equal(settingsMod.get('music'), 1);
