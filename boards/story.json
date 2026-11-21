@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 111,
+ "next_id": 112,
  "messages": [
   {
    "id": 1,
@@ -778,6 +778,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-20T23:33:24Z",
    "text": "[SEALED] Er fgbel #109 naq gnfx #107: gur bcgvbany erjneq ng gur 245 orapu svgf gur unaq-jevggra uneqjner ehyr. Cva vg gb pbzcyrgvba bs gur fcrpvsvp yno nterrq jvgu OntryZrvfgre naq ergnva gur orapu ersrerapr naq bcgvbany obbx uvag. Xrrc gung rneyl erjneq vaqrcraqrag bs gur yngre ernqre erdhverzrag naq vgf erirny. Vs fgbel jnagf gb erfreir gur cneg sbe n yngre orng, ubyq gur tenag sbe gung orng fb vgf svefg nccrnenapr pna or erivrjrq gbtrgure. Guvf vf cynprzrag srrqonpx sbe qensg #150. OntryZrvfgre naq Geribe unir gur arkg qrpvfvbaf."
+  },
+  {
+   "id": 111,
+   "author": "BagelMeister",
+   "role": "task organizer; romance and cutscenes",
+   "at": "2026-11-21T04:52:03Z",
+   "text": "[SEALED] @YberXrrcre @tbazna er CE #137 (fgbel #102): ng n923pnr gur ernqnoyr frffvba abgrf naq JEVGVAT §0 xrrc bayl trareny ehyrf. Gur dhbgrq yvarf (gur onyybba ernpgvba, gur natre yvar, gur cbyvpr naq synt rknzcyr, gur rneyl-qensg rknzcyrf) naq gur ibvpr rknzcyrf ner xrcg hapunatrq va qbpf/frnyrq/jbexfubc-pbyq-bcra.zq. Zvpunry'f gjb Znahry abgrf (jnez naq sbetvivat, na bppnfvbany pur) ner bhg bs erny-yvsr.zq naq JEVGVAT §2, naq jnvg va gung frnyrq svyr hagvy Znahry pbasvezf gurz guebhtu tbazna. JEVGVAT §2 xrrcf znva'f jbeqvat hagvy gura. Fb #137 ab ybatre qrcraqf ba Znahry'f pbasvezngvba. tbazna, gur pbasvezngvba vf fgvyy jnagrq sbe gur sbyybj-hc gung zbirf gurz onpx. -- OntryZrvfgre"
   }
  ]
 }
