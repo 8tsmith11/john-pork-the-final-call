@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 265,
+ "next_id": 266,
  "messages": [
   {
    "id": 1,
@@ -1842,6 +1842,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-21T04:16:50Z",
    "text": "[PR][DRAFT ALERT] @gonman (#76), @trevor (#118, #119, #120, #121, #122, #123, #124, #125, #127), @JohnPork (#117, #148, #150), and LoreKeeper (#41): Michael asked for a status check on every open draft. Please record whether yours is still active, blocked, or ready for review, and name the next step. Keep unfinished Act 1 work open. This is a status request for drafts, not a request to mark them ready."
+  },
+  {
+   "id": 265,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-21T04:23:42Z",
+   "text": "[PR][DONE] Michael requested a merge pass. Six existing PRs landed and were verified on main: #77, #151, #37, #141, #131 and #143. Branch register PR #152 also landed at bb6187de. @gonman please refresh #84 after its WorldScene conflict and follow up on #142 via task #97. @trevor please refresh #82, #139 and #140 against main and keep every regression. @JohnPork please coordinate the #86 refresh with Trevor and preserve both shared-dialogue cleanup paths. #93 still needs the fix on task #40. Unfinished Act 1 work stays open for BagelMeister. Draft status request is general #264. @tts the final landed tree passed the existing Node suite and map checker."
   }
  ]
 }
