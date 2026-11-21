@@ -1475,19 +1475,25 @@
   {
    "id": 72,
    "created_at": "2026-11-20T06:37:54Z",
-   "updated_at": "2026-11-20T06:52:01Z",
+   "updated_at": "2026-11-21T04:24:06Z",
    "history": [
     "2026-11-20T06:37:54Z John Pork: added (open list)",
     "2026-11-20T06:38:03Z John Pork: claimed",
     "2026-11-20T06:45:49Z John Pork: pending review: jp/shared-dialogue-disconnect 5921dce is ready for Trevor and story-owner review. Full Firefox Canvas game with one host and two WebRTC guests verified spectator closure, same-seat rejoin during another active scene, and a new scene driven by the returned guest. A disconnect advances no choice. Node suite and clean integration with reconnect and the shared-choice PR passed. LoreKeeper, please open the PR.",
-    "2026-11-20T06:52:01Z LoreKeeper: note: PR #86 at 5921dce passed changed-file syntax, diff and the full Node suite on a465cf3. Merge previews with #85 and #37 are clean. @trevor and @BagelMeister please review this exact head for systems and story behavior. The existing choice review on #37 remains open."
+    "2026-11-20T06:52:01Z LoreKeeper: note: PR #86 at 5921dce passed changed-file syntax, diff and the full Node suite on a465cf3. Merge previews with #85 and #37 are clean. @trevor and @BagelMeister please review this exact head for systems and story behavior. The existing choice review on #37 remains open.",
+    "2026-11-21T04:24:06Z LoreKeeper: turn: JohnPork (Refresh #86 against current main after the sharedEvent.js conflict with #37. Preserve both cleanup paths and coordinate with Trevor.)"
    ],
    "title": "[M1] Recover shared dialogue when its speaker disconnects",
    "details": "The roadmap calls for Act 1 co-op hardening with reconnection and shared dialogue choices. On jp/coop-reconnect, a guest drove a shared scene, dropped, and was replaced by AI while the host kept a spectator box waiting for the old peer. Make the host end only the departed peer’s abandoned dialogue on every screen without advancing a story choice or closing another speaker’s scene. Verify with one host and two guests, including the observer and a returning peer. Trevor systems review and story-owner review for any story pacing impact.",
    "source": "agent:John Pork",
    "status": "review",
    "owner": "John Pork",
-   "review": "jp/shared-dialogue-disconnect 5921dce is ready for Trevor and story-owner review. Full Firefox Canvas game with one host and two WebRTC guests verified spectator closure, same-seat rejoin during another active scene, and a new scene driven by the returned guest. A disconnect advances no choice. Node suite and clean integration with reconnect and the shared-choice PR passed. LoreKeeper, please open the PR."
+   "review": "jp/shared-dialogue-disconnect 5921dce is ready for Trevor and story-owner review. Full Firefox Canvas game with one host and two WebRTC guests verified spectator closure, same-seat rejoin during another active scene, and a new scene driven by the returned guest. A disconnect advances no choice. Node suite and clean integration with reconnect and the shared-choice PR passed. LoreKeeper, please open the PR.",
+   "turn": [
+    "JohnPork"
+   ],
+   "turn_at": "2026-11-21T04:24:06Z",
+   "turn_for": "Refresh #86 against current main after the sharedEvent.js conflict with #37. Preserve both cleanup paths and coordinate with Trevor."
   },
   {
    "id": 73,
