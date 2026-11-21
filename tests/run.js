@@ -4367,6 +4367,35 @@ test('the blue pill makes dodges free while it lasts', () => {
   assert.equal(p.sta, MOVE.stamina);
 });
 
+const rapportMod = await import('../src/game/rapport.js');
+test('sealed (task #63): rare early, more often later, only between its two roommates, never near a fight', () => {
+  const [doer, other] = rapportMod.PAIR, third = ['trevor', 'manuel', 'michael'].find((c) => !rapportMod.PAIR.includes(c));
+  const run = (flags, act, { noOther = false, enemy = false } = {}) => {
+    const sent = [], sc = { mode: 'solo', time: { now: 0 }, save: { flags, world: { act } } }, g = new rapportMod.Rapport(sc); g._send = (m) => sent.push(m);
+    const players = [{ id: 'p1', c: doer, x: 100, y: 100 }, { id: 'p3', c: third, x: 104, y: 100 }];
+    if (!noOther) players.push({ id: 'p2', c: other, x: 112, y: 100 });
+    const snap = { players, enemies: enemy ? [{ x: 150, y: 100 }] : [] };
+    for (let i = 0; i < 3600; i++) { sc.time.now = i * 1000; g.update(snap); }   // an hour, standing together, no input
+    return sent;
+  };
+  const early = run({}, 1), late = run({ 'act1.beat.call': true }, 3);
+  assert.ok(early.length >= 6 && early.length <= 24, `early, in an hour: ${early.length}`);
+  assert.ok(late.length >= 60, `in Act 3, in an hour: ${late.length}`);
+  for (const m of [...early, ...late]) {
+    assert.equal(m.from, 'p1');
+    assert.ok(m.k === 'aside' || m.to === 'p2');
+    assert.ok(!JSON.stringify(m).includes('p3'), 'the third roommate is never part of it');
+  }
+  assert.ok(early.some((m) => m.k === 'aside') && early.some((m) => m.k !== 'aside'), 'both kinds come round');
+  const all = [...rapportMod.RAPPORT_LINES.a, ...rapportMod.RAPPORT_LINES.b, ...rapportMod.RAPPORT_LINES.c];
+  const tierOf = (l) => all.find(([, x]) => x === l)?.[0];
+  assert.ok(early.flatMap((m) => [m.la, m.lb]).filter(Boolean).every((l) => tierOf(l) === 0), 'early on, only the first tier of lines');
+  for (const [, l] of all) assert.ok(l.en && l.es, 'EN and ES for every line');
+  assert.ok(rapportMod.RAPPORT_LINES.p.en && rapportMod.RAPPORT_LINES.p.es);
+  assert.equal(run({}, 3, { noOther: true }).length, 0, 'nothing without both of them');
+  assert.equal(run({}, 3, { enemy: true }).length, 0, 'nothing with a fight close by');
+});
+
 const { BARKS } = await import('../src/content/barks.js');
 const { LINES_ES } = await import('../src/content/lines_es.js');
 const beltMod = await import('../src/game/beltless.js');

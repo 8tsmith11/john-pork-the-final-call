@@ -42,7 +42,7 @@ Fpbcr: arneol
 
 **ZNAHRY:** Xrff vf hc. Xrff vf nyjnlf hc.
 
-> rf: Xrff rfgá qrfcvregn. Xrff fvrzcer rfgá qrfcvregn.
+> rf: Xrff rfgá qrfcvregn, boivb. Xrff fvrzcer rfgá qrfcvregn, yn ervan qr yn abpur.
 
 *Fbzrjurer orybj, guerr xabpxf, n ybat jnl bss. Gura abguvat.*
 
@@ -60,7 +60,7 @@ Fpbcr: arneol
 
 > rf: Cnynapn, qry ynqb qry cnfvyyb. Qbf zbeqvqnf l prqvó.
 
-**GERIBE:** Qvq lbh frr nalbar?
+**GERIBE:** Qvq lbh frr nalbar, ru?
 
 > rf: ¿Ivfgr n nythvra?
 
@@ -117,7 +117,7 @@ Fpbcr: arneol
 
 > rf: Rfgbl qrfcvregb. Rfgbl qrfpnafnaqb yn pnen.
 
-**GERIBE:** Qvq nalobql pbzr guebhtu gbavtug?
+**GERIBE:** Qvq nalobql pbzr guebhtu gbavtug, ru?
 
 > rf: ¿Cnfó nythvra rfgn abpur?
 
@@ -146,7 +146,7 @@ Fpbcr: arneol
 
 > rf: Ohranf abpurf. Hfgrqrf fba erfvqragrf. Zr nyrteb.
 
-**GERIBE:** Srajvpx. Jub pnzr va nsgre zvqavtug?
+**GERIBE:** Srajvpx, ohqql. Jub pnzr va nsgre zvqavtug, ru?
 
 > rf: Srajvpx. ¿Dhvéa rageó qrfchéf qr zrqvnabpur?
 
@@ -201,7 +201,7 @@ Fpbcr: arneol
 
 **ZNAHRY:** Qvq lbhe crbcyr frr n onyybba? Benatr. Vg jnf va bhe ncnegzrag.
 
-> rf: ¿Gh tragr ivb ha tybob? Anenawn. Rfgnon ra ahrfgeb qrcnegnzragb.
+> rf: Dhrevqb, ¿gh tragr ivb ha tybob? Anenawn, qvivab. Rfgnon ra ahrfgeb qrcnegnzragb.
 
 **CEHVGG:** N onyybba.
 

@@ -7,7 +7,7 @@ export const BARKS = {
   // whiteboard's "same"; Michael hates it too, warmly.
   lab245: {
     manuel: ['I hate 245 lab.', 'Still hate 245 lab. Checked again.', 'They should close 245 lab. For safety.', 'In my next life I skip 245 lab.'],
-    trevor: ['I also hate 245 lab.', '245 lab took my whole weekend.', 'Same. About 245 lab.'],
+    trevor: ['I also hate 245 lab, eh?', '245 lab took my whole weekend, eh. Missed the game and everything.', 'Same, eh. Aboot 245 lab.'],
     michael: ['I hate 245 lab, and I love everybody here.', 'Who designed 245 lab? I want a word.', 'I haven\'t started the 245 report. I haven\'t started the last one.'],
   },
   // Now and then, standing around or walking.
@@ -27,16 +27,16 @@ export const BARKS = {
       "After this I sleep for three days.",
     ],
     trevor: [
-      'I should\'ve brought the guitar.',
-      'Somebody feed the shrimp when we\'re back.',
-      'I\'m not tired. I\'m horizontal on the inside.',
-      'That hum\'s a B flat. Roughly.',
-      'Whose turn was the chain?',
-      "My step count is going to be insane.",
-      "I left a benchmark running.",
-      "If the stack wears off, just carry me.",
-      "Rain is just the sky debugging.",
-      "Nobody tell my mom where I am.",
+      'I should\'ve brought the guitar, eh?',
+      'Somebody feed the shrimp when we\'re back at the hoose, eh?',
+      'I\'m not tired, eh. I\'m horizontal on the inside, eh.',
+      'That hum\'s a B flat, eh. Roughly, eh.',
+      'Whose turn was the chain, eh?',
+      "My step count is going to be insane, eh. Like a double shift at the rink.",
+      "I left a benchmark running, eh. Soary, laptop.",
+      "If the stack wears off, just carry me, eh?",
+      "Rain is just the sky debugging, eh.",
+      "Nobody tell my mom where I am, eh. She'll call my aunt in Tranna.",
     ],
     michael: [
       'No bars. Obviously no bars.',
@@ -56,9 +56,9 @@ export const BARKS = {
   // Cerdo (Manuel's idea; Trevor: "sometimes, only rarely"), and Michael noticing.
   idleRare: {
     trevor: [
-      'If Juan Puerco calls, I\'m in the shower.',
-      'Juan Puerco hasn\'t called in a while. I don\'t like it.',
-      'Nobody pick up for Juan Cerdo without me.',
+      'If Juan Puerco calls, I\'m in the shower, eh?',
+      'Juan Puerco hasn\'t called in a while, eh. I don\'t like it, eh.',
+      'Nobody pick up for Juan Cerdo without me, eh?',
     ],
     michael: ['Trevor keeps calling him Juan Puerco. It\'s catching.'],
   },
@@ -75,7 +75,7 @@ export const BARKS = {
   kill: {
     any: ['Aster pros.', 'Aster pros!'],
     manuel: ['Che, did you see that?', 'That\'s for my closet.'],
-    trevor: ['Clean.', 'That one had a name tag.'],
+    trevor: ['Clean, eh. Top shelf.', 'That one had a name tag, eh. Soary, buddy.'],
     michael: ['Sorry! Sorry. Not that sorry.', 'Okay. Okay okay okay.'],
   },
   // When somebody else gets hit, or goes down.
@@ -83,13 +83,13 @@ export const BARKS = {
     // "You're absolutely right to point that out" is a real joke of theirs: answering each other like a chatbot.
     any: ['Rookie Aster mistake.', 'Dodge is space, by the way.', 'You\'re absolutely right to point that out. I did get hit.'],
     manuel: ['Che, move your feet.'],
-    trevor: ['You\'re standing in it.'],
+    trevor: ['You\'re standing in it, eh. Hoser.'],
     michael: ['You good? You look not good.'],
   },
   allyDown: {
     any: ['Aster noob down. I\'m coming.', 'Rookie Aster mistake. Hold on.', 'You\'re absolutely right to point that out. You are on the floor.'],
     manuel: ['Don\'t get comfortable down there.'],
-    trevor: ['Stay there. Not that you have options.'],
+    trevor: ['Stay there, eh. Not that you have options, eh.'],
     michael: ['I\'ve got you, I\'ve got you, where are you...'],
   },
   // Manuel, getting rounder as he levels (level 3 on). His own line first.
@@ -100,24 +100,24 @@ export const BARKS = {
   // at: [x, y, w, h] in tiles. Bubbles, not boxes (Manuel: they keep the game moving).
   zones: {
     metro_plaza: [
-      { at: [36, 16, 6, 6], manuel: ["Throw a coin. For the balloon."], trevor: ["That pump stopped before we were born. Look at the water."], michael: ["I'm making a wish. Don't ask."] },
-      { at: [30, 37, 24, 12], manuel: ["Somebody lives in that car. Respect."], trevor: ["Those four are always here. Always."], michael: ["Don't make eye contact with the rice guy."] },
-      { at: [66, 9, 12, 3], manuel: ["If they had medialunas I would live here."], trevor: ["Their coffee is technically coffee."], michael: ["Pancakes after? Please?"] },
-      { at: [2, 37, 26, 9], manuel: ["There it is. The building where I suffer."], trevor: ["Rub the turtle. It's science."], michael: ["Campus at night is creepy."] },
-      { at: [66, 18, 14, 4], manuel: ["Ours are better. Ours just don't have tires."], trevor: ["Ray will try to sell us a scooter. Ray always tries."], michael: ["I want the red one."] },
-      { at: [1, 28, 55, 2], manuel: ["Don't step on the rail. Just in case."], trevor: ["They built the whole line and never ran a train."], michael: ["Purple Line, opening soon. Any decade now."] },
-      { at: [44, 20, 9, 8], manuel: ["Act normal. Normal."], trevor: ["Don't say helium near the van."], michael: ["Hi! We're just walking!"] },
-      { at: [66, 38, 17, 5], manuel: ["Smells like the river back home. Worse."], trevor: ["Ozzie's at the lake. Ozzie is always at the lake."], michael: ["Is that a frog? That's a frog."] },
+      { at: [36, 16, 6, 6], manuel: ["Throw a coin. For the balloon."], trevor: ["That pump stopped before we were born, eh. Look at the water, eh."], michael: ["I'm making a wish. Don't ask."] },
+      { at: [30, 37, 24, 12], manuel: ["Somebody lives in that car. Respect."], trevor: ["Those four are always here, eh. Always, eh."], michael: ["Don't make eye contact with the rice guy."] },
+      { at: [66, 9, 12, 3], manuel: ["If they had medialunas I would live here."], trevor: ["Their coffee is technically coffee, eh. Not a double-double, but."], michael: ["Pancakes after? Please?"] },
+      { at: [2, 37, 26, 9], manuel: ["There it is. The building where I suffer."], trevor: ["Rub the turtle, eh. It's science, eh."], michael: ["Campus at night is creepy."] },
+      { at: [66, 18, 14, 4], manuel: ["Ours are better. Ours just don't have tires."], trevor: ["Ray will try to sell us a scooter, eh. Ray always tries, eh."], michael: ["I want the red one."] },
+      { at: [1, 28, 55, 2], manuel: ["Don't step on the rail. Just in case."], trevor: ["They built the whole line and never ran a train, eh."], michael: ["Purple Line, opening soon. Any decade now."] },
+      { at: [44, 20, 9, 8], manuel: ["Act normal. Normal."], trevor: ["Don't say helium near the van, eh."], michael: ["Hi! We're just walking!"] },
+      { at: [66, 38, 17, 5], manuel: ["Smells like the river back home. Worse."], trevor: ["Ozzie's at the lake, eh. Ozzie is always at the lake, like it's frozen over, eh."], michael: ["Is that a frog? That's a frog."] },
     ],
   },
   // Walking into a place, once per visit.
   enter: {
-    room631: { manuel: ['Nobody touch the closet.'], trevor: ['Home. Sort of.'], michael: ['It smells like solder. I love it here.'] },
-    aster_hall: { manuel: ['Varga\'s light is on.'], trevor: ['Keep it down. People sleep on six.'], michael: ['Hi, hallway.'] },
-    aster_lobby: { manuel: ['Check the mail.'], trevor: ['Everybody checks the mail.'], michael: ['Evening, Fenwick.'] },
-    metro_plaza: { manuel: ['The van\'s still there.'], trevor: ['Rain. Naturally.'], michael: ['Is the diner open? The diner\'s always open.'] },
-    tunnel_1: { manuel: ['Balloons go up. I keep saying.'], trevor: ['Smells like a wet amp.'], michael: ['Is that drumming, or is that me?'] },
-    platform: { manuel: ['There.'], trevor: ['Nobody clump up.'], michael: ['I don\'t like how quiet it got.'] },
+    room631: { manuel: ['Nobody touch the closet.'], trevor: ['Home, eh. Sort of. The hoose.'], michael: ['It smells like solder. I love it here.'] },
+    aster_hall: { manuel: ['Varga\'s light is on.'], trevor: ['Keep it down, eh. People sleep on six, eh.'], michael: ['Hi, hallway.'] },
+    aster_lobby: { manuel: ['Check the mail.'], trevor: ['Everybody checks the mail, eh.'], michael: ['Evening, Fenwick.'] },
+    metro_plaza: { manuel: ['The van\'s still there.'], trevor: ['Rain, eh. Naturally.'], michael: ['Is the diner open? The diner\'s always open.'] },
+    tunnel_1: { manuel: ['Balloons go up. I keep saying.'], trevor: ['Smells like a wet amp, eh. Or a hockey bag.'], michael: ['Is that drumming, or is that me?'] },
+    platform: { manuel: ['There.'], trevor: ['Nobody clump up, eh. Spread out like a power play.'], michael: ['I don\'t like how quiet it got.'] },
   },
 };
 

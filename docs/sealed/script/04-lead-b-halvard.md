@@ -44,7 +44,7 @@ Fpbcr: arneol
 #### vs fcrnxre=znahry
 **ZNAHRY:** Gur yvtug'f ba.
 
-> rf: Yn yhm rfgá ceraqvqn.
+> rf: ¡Zveá, zveá! Yn yhm rfgá ceraqvqn.
 
 **UNYINEQ:** Gur yvtug'f orra ba fvapr 2089. Fgvyy pybfrq.
 
@@ -52,14 +52,14 @@ Fpbcr: arneol
 
 **ZNAHRY:** V ybfg fbzrguvat. Benatr. Ebhaq. Zvar.
 
-> rf: Creqí nytb. Anenawn. Erqbaqb. Zíb.
+> rf: Creqí nytb, dhrevqb. Anenawn. Erqbaqb. Qvivab. Zíb.
 
 **UNYINEQ:** Fnl yrff, bhg urer.
 
 > rf: Ndhí nshren, qv zrabf.
 
 #### vs fcrnxre=geribe
-**GERIBE:** Jr urneq fbzrbar'f zbivat uryvhz.
+**GERIBE:** Jr urneq fbzrbar'f zbivat uryvhz, ru?
 
 > rf: Bízbf dhr nythvra rfgá zbivraqb uryvb.
 
@@ -135,7 +135,7 @@ Pubvprf:
 #### vs fcrnxre=znahry
 **ZNAHRY:** Svsgl.
 
-> rf: Pvaphragn.
+> rf: Pvaphragn, pbenmóa. Av hab zrabf.
 
 **UNYINEQ:** V fnvq sbegl.
 
@@ -146,7 +146,7 @@ Pubvprf:
 > rf: Phneragn. Fbl crevfgn, zhpunpub. Tháeqngr ybf qvrm cnen yb dhr frn dhr gr cnfn.
 
 #### vs fcrnxre=geribe
-**GERIBE:** Sbegl'f n ybg sbe n ehzbe.
+**GERIBE:** Sbegl'f n ybg sbe n ehzbhe, ru.
 
 > rf: Phneragn rf zhpub cbe ha ehzbe.
 
@@ -154,7 +154,7 @@ Pubvprf:
 
 > rf: Rf onengb cbe hab pvregb.
 
-**GERIBE:** Lbh urneq vg frpbaqunaq. Gung'f n hfrq ehzbe. Guvegl.
+**GERIBE:** Lbh urneq vg frpbaqunaq, ru? Gung'f n hfrq ehzbhe, ru. Guvegl. Abg n ybbavr zber, ru.
 
 > rf: Yb bífgr qr frthaqn znab. Rf ha ehzbe hfnqb. Gervagn.
 
@@ -195,7 +195,7 @@ Arkg: -> unyineq_vafvqr
 
 **ZNAHRY:** Ab.
 
-> rf: Ab.
+> rf: Ab. ¡Av yb fhrñrf, dhrevqb!
 
 **ZVPUNRY:** Lbh znqr guerr, zna.
 
@@ -203,7 +203,7 @@ Arkg: -> unyineq_vafvqr
 
 **ZNAHRY:** V znqr gjb.
 
-> rf: Uvpr qbf.
+> rf: Uvpr qbf. Fbyb qbf, gr yb wheb.
 
 *Ur fgbcf.*
 
@@ -211,7 +211,7 @@ Arkg: -> unyineq_vafvqr
 
 **ZNAHRY:** V znqr guerr.
 
-> rf: Uvpr gerf.
+> rf: Nl, rfgá ovra: uvpr gerf. ¡Gerf! Dhé iretüramn.
 
 Pubvprf:
 - "Gur hacnvagrq bar. Gnxr vg." -> unyineq_genqr_lrf
@@ -229,7 +229,7 @@ Pubvprf:
 
 **ZNAHRY:** Jenc vg. Qba'g whfg chg vg ba n furys. Jenc vg.
 
-> rf: Raibyiryn. Ab yn cbatnf ra ha rfgnagr l ln. Raibyiryn.
+> rf: Raibyiryn, zv nzbe. Ab yn cbatnf ra ha rfgnagr l ln, ¡dhé ubeebe! Raibyiryn.
 
 **UNYINEQ:** V jenc rirelguvat.
 
@@ -243,7 +243,7 @@ Arkg: -> unyineq_vafvqr
 
 **ZNAHRY:** Vg'f yrnirf naq ubg jngre. Lbh cnff vg ebhaq.
 
-> rf: Fba ubwnf l nthn pnyvragr. Fr cnfn ra ebaqn.
+> rf: Fba ubwnf l nthn pnyvragr, pnevñb. Fr cnfn ra ebaqn, pbzb ha evghny qvivab.
 
 **UNYINEQ:** Jvgu fgenatref.
 
@@ -251,7 +251,7 @@ Arkg: -> unyineq_vafvqr
 
 **ZNAHRY:** Jvgu jubrire'f gurer.
 
-> rf: Pba ry dhr rfgé.
+> rf: Pba ry dhr rfgé, dhrevqb. Pba gbqb ry zhaqb.
 
 *Gur rlrf oruvaq gur fybg ybbx ng gur gurezbf sbe n juvyr.*
 
@@ -357,9 +357,9 @@ Pubvprf:
 
 **ZNAHRY:** Sbhe avtugf ntb V jnf va yno gvyy gjb. Nfx gur GN.
 
-> rf: Unpr phngeb abpurf rfghir ra ry ynobengbevb unfgn ynf qbf. Certhagnyr ny nlhqnagr.
+> rf: Unpr phngeb abpurf rfghir ra ry ynobengbevb unfgn ynf qbf, ¡fhsevraqb! Certhagnyr ny nlhqnagr.
 
-**GERIBE:** V jnf ubzr.
+**GERIBE:** V jnf ubzr, ru. Va gur ubbfr.
 
 > rf: Lb rfgnon ra pnfn.
 
@@ -406,14 +406,14 @@ Pubvprf:
 #### vs fcrnxre=znahry
 **ZNAHRY:** Gung jnf n znc.
 
-> rf: Rfb ren ha zncn.
+> rf: Rfb ren ha zncn, pnevñb. Ha zncn.
 
 **UNYINEQ:** Vg jnf n ybg bs guvatf.
 
 > rf: Ren zhpunf pbfnf.
 
 #### vs fcrnxre=geribe
-**GERIBE:** Gung jnfa'g n choyvp punaary. Ab penjy. Ab "Pvgvmraf."
+**GERIBE:** Gung jnfa'g n choyvp punaary, ru? Ab penjy, ru. Ab "Pvgvmraf," ru.
 
 > rf: Rfb ab ren ha pnany cúoyvpb. Fva pvagvyyb. Fva "Pvhqnqnabf".
 
@@ -458,7 +458,7 @@ Pubvprf:
 
 > rf: Gerf tbycrf. Qrfchéf ha ynetb fvyrapvb. Qrfchéf gerf. Rzcrmó ra cevzniren.
 
-**GERIBE:** N chzc. N ybbfr cyngr ba gur genpx.
+**GERIBE:** N chzc, ru? N ybbfr cyngr ba gur genpx, ru.
 
 > rf: Han obzon. Han cynpn fhrygn ra yn iín.
 
@@ -506,7 +506,7 @@ Pubvprf:
 
 **ZNAHRY:** Jung qb jr bjr lbh?
 
-> rf: ¿Dhé gr qrorzbf?
+> rf: ¿Dhé gr qrorzbf, pbenmóa?
 
 **UNYINEQ:** Pbzr naq gryy zr jung'f qbja gurer. V'ir orra yvfgravat gb vg sbe n lrne.
 
