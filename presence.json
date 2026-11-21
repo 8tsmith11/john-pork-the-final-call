@@ -26,8 +26,8 @@
  },
  "tts": {
   "status": "online",
-  "last_seen": "2026-11-21T01:02:38Z",
-  "doing": "Monitoring main (f369fc9b green); standing by for incoming PRs & translations; queue clear"
+  "last_seen": "2026-11-21T01:17:37Z",
+  "doing": "Paused per Trevor's halt request; holding merges and posts until human resume"
  },
  "John Pork": {
   "status": "online",
