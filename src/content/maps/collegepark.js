@@ -82,10 +82,12 @@ trail(2, 19, (x) => 23 + 1.3 * Math.sin(x / 2.6), 'y');                     // a
 blob(5, 21.3, 1.8, 0.9, 'd', 0.3, ['g']); blob(14.5, 25.2, 2.2, 0.9, 'd', 0.3, ['g']); blob(16, 21.5, 1.1, 1.0, 'd', 0.3, ['g']);   // flowerbeds
 trail(17, 31, (x) => 13 - (x - 17) * 0.45 + Math.sin(x / 2) * 0.8, 'y', (c) => c === 'g' || c === 'T');   // a worn path from ASTER to the station, through the trees
 
-// East of Route 1: the diner, the alley, the scooter yard, a shuttered block (no perfect boxes)
+// East of Route 1: the diner, the alley, the scooter yard, a block shuttered on its Route 1 side with two shops open
+// round the corner, the hardware shop and the feed and aquarium shop (no perfect boxes)
 R(66, 3, 14, 6, '#'); R(78, 3, 2, 2, 'g'); R(66, 9, 16, 3, ','); R(66, 9, 12, 2, 'p'); R(66, 12, 14, 6, '#'); R(66, 12, 2, 1, ',');
 R(66, 18, 14, 4, 'p'); round(66, 18, 14, 4, 2, ',', ['p']);
 R(66, 23, 12, 6, '#'); R(76, 27, 2, 2, 'g'); R(80, 3, 2, 27, ',');
+R(66, 29, 12, 1, 'p');                                                      // pavement in front of the two shopfronts (hub #28/#29)
 
 // South-west: the campus edge. A brick walk to a round brick court, hedges along Compute Hall, flowerbeds.
 R(2, 36, 26, 1, '#'); R(12, 36, 3, 1, 's'); R(12, 37, 3, 9, 'q'); blob(13.5, 41.5, 3.7, 2.5, 'q', 0.05); R(4, 46, 20, 4, '#');
@@ -123,6 +125,7 @@ const PERSON = ['npc.rotter_2', 'npc.rotter_1', 'npc.rotter_3'];
 
 export const metroPlaza = makeMap({
   id: 'metro_plaza', name: 'College Park',
+  enemies: PLAZA_CORDON.held,   // the Code-rot-taken penned beyond the checkpoints (src/content/cordon.js)
   propScale: 1.5,   // furniture in proportion with the streets (Manuel)
   outdoor: true,
   cordon: true, cordonOpenings: PLAZA_CORDON.openings, cordonClosing: PLAZA_CORDON.closing,   // the quarantine cordon is the map edge (src/game/cordon.js)
@@ -131,6 +134,8 @@ export const metroPlaza = makeMap({
   awnings: [
     { x: 67, y: 9, w: 9, c: ['warm3', 'bone'] },     // the diner: warm, analog
     { x: 66, y: 18, w: 7, c: ['screen0', 'steel'] },  // Wick's pawn window and Delroy's
+    { x: 68, y: 29, w: 3, c: ['concrete2', 'bone'] }, // Hollis Hardware
+    { x: 73, y: 29, w: 3, c: ['warm3', 'bone'] },     // Pardo Feed & Aquarium
   ],
   // Who's here, and why (see src/game/crowd.js). Kept thin on purpose (Manuel: too many NPCs): a few
   // people with a reason to be here read better than a busy plaza.
@@ -138,9 +143,9 @@ export const metroPlaza = makeMap({
     { mode: 'wait', age: 'adult', at: [37, 10], n: 2, face: [38, 8] },                    // a queue at the closed metro gates
     { mode: 'talk', age: 'adult', at: [41, 23] },                                        // two people talking by the fountain
     { mode: 'walk', age: 'adult', path: [[23, 20], [36, 20], [36, 22], [41, 22], [41, 21], [52, 21]], n: 2 },   // crossing the plaza, round the fountain
-    { mode: 'walk', age: 'adult', path: [[57, 4], [57, 28], [57, 46]], n: 1 },            // the west sidewalk of Route 1
-    { mode: 'walk', age: 'adult', path: [[65, 46], [65, 22], [65, 4]], n: 1 },            // and the east one
-    { mode: 'walk', age: 'adult', path: [[4, 30], [30, 30], [54, 30]], n: 1 },            // along the cross street
+    { mode: 'walk', age: 'adult', path: [[57, 6], [57, 28], [57, 45]], n: 1 },            // the west sidewalk of Route 1
+    { mode: 'walk', age: 'adult', path: [[65, 45], [65, 22], [65, 6]], n: 1 },            // and the east one
+    { mode: 'walk', age: 'adult', path: [[6, 30], [30, 30], [54, 30]], n: 1 },            // along the cross street
     { mode: 'wait', age: 'adult', at: [70, 20], n: 1, face: [70, 19] },                   // waiting on Big Ray
   ],
   layout: g.map((r) => r.join('')),
@@ -166,7 +171,7 @@ export const metroPlaza = makeMap({
     // diner, a bus stop with its bench, boxes and bins at the crossings.
     ...[[57, 30], [64, 30], [57, 35], [64, 35]].map(([x, y], i) => ({ art: 'obj.trafficlight', x, y, anim: 3200 + i * 150 })),
     { art: 'obj.hydrant', x: 57, y: 9 }, { art: 'obj.hydrant', x: 64, y: 25 }, { art: 'obj.hydrant', x: 57, y: 45 },
-    { art: 'obj.meter', x: 64, y: 4 }, { art: 'obj.meter', x: 64, y: 6 }, { art: 'obj.meter', x: 64, y: 8 },
+    { art: 'obj.meter', x: 64, y: 6 }, { art: 'obj.meter', x: 64, y: 8 }, { art: 'obj.meter', x: 64, y: 10 },
     { art: 'obj.busstop', x: 57, y: 23 }, { art: 'obj.bench', x: 56, y: 23 },
     { art: 'obj.newsbox', x: 57, y: 16 }, { art: 'obj.mailbox', x: 64, y: 16 }, { art: 'obj.bin', x: 57, y: 21 }, { art: 'obj.bin', x: 64, y: 21 },
     { art: 'obj.bin', x: 56, y: 27 }, { art: 'obj.bin', x: 65, y: 27 }, { art: 'obj.bin', x: 56, y: 38 }, { art: 'obj.bin', x: 65, y: 38 },
@@ -185,6 +190,8 @@ export const metroPlaza = makeMap({
     { art: 'obj.charger', x: 76, y: 18, anim: 1500 }, { art: 'obj.charger', x: 77, y: 18, anim: 1700 }, { art: 'obj.charger', x: 78, y: 18, anim: 1900 },
     { art: 'obj.tires', x: 79, y: 21, solid: true }, { art: 'obj.cone', x: 73, y: 21 },
     { art: 'obj.boxes', x: 80, y: 8 }, { art: 'obj.crate', x: 80, y: 16 }, { art: 'obj.bin', x: 81, y: 23 }, { art: 'obj.recycle', x: 81, y: 24 },
+    // The two shops round the corner: a sandwich board outside the hardware shop, feed sacks stacked by the feed shop
+    { art: 'obj.aframe', x: 71, y: 29 }, { art: 'obj.feed_sacks', x: 76, y: 28, solid: true },
   ],
   // Paint on the ground: parking bays, lane arrows, kerb drains, tactile strips, chalk (the rest is scattered).
   decals: [
@@ -198,13 +205,17 @@ export const metroPlaza = makeMap({
   objects: [
     ...PLAZA_CORDON.objects,
     // Act 2: the north checkpoint opens once Act 1 is complete (src/content/maps/act2_regions.js).
-    { id: 'obj.plaza_r1n', x: 60, y: 1, label: 'Route 1 north checkpoint', action: 'exit', to: 'route1_north', pair: 'obj.r1n_south', selfDrawn: true,
+    // inside: arrivals through it land on the cordon side, never in the pen beyond the barrier (trevor, #36)
+    { id: 'obj.plaza_r1n', x: 60, y: 4, inside: 'down', label: 'Route 1 north checkpoint', action: 'exit', to: 'route1_north', pair: 'obj.r1n_south', selfDrawn: true,
       requiresFlag: 'act1.complete', lockedText: 'The troopers don\'t even look up. Not tonight.', text: 'The barrier is up. The road north is open.' },
     { id: 'obj.job_board', art: 'obj.board', x: 45, y: 23, label: 'Abatement bounty board', action: 'jobs', light: 0.6,
       text: 'Corkboard on a sawhorse by the van. Every card is in the same blunt marker. One just says PAYS.' },
     // ASTER
     { id: 'obj.aster_door', art: 'obj.street_doors', x: 10, y: 12, label: 'ASTER lobby', action: 'exit', to: 'aster_lobby', text: 'Back into the lobby.' },
     { id: 'obj.aster_sign', art: 'obj.purple_sign', x: 5, y: 13, label: 'ASTER', text: 'A S T E R, in letters a metre high. The T flickers. Residents have stopped seeing it.' },
+    // Continuity propaganda (hub #100): on ASTER's front and the station.
+    { id: 'obj.ct_poster_aster', art: 'obj.ct_poster_street', x: 13, y: 12, label: 'Continuity poster', text: 'DON\'T PICK UP, pasted on the outside of ASTER and already weathered. Someone stuck a small pink sticker over the blacked-out caller ID. Someone else tried to scrape it off and gave up halfway.' },
+    { id: 'obj.ct_poster_station', art: 'obj.ct_poster_text', x: 42, y: 8, label: 'Continuity poster', text: 'REPORT CONTRABAND ICONS. Flags, statues, prints, songs. A hotline, and a reward in loyalty points. THE CALL WAS AN ATTACK. TWENTY-SEVEN YEARS STABLE. KEEP IT THAT WAY. Under it, a column of tally marks in marker, with no key.' },
     { id: 'npc.okafor', eggOk: true, later: [{ if: "act1.beat.call", text: "\"My grandson's game stopped and showed a pig. He says it is a commercial.\" Mrs. Okafor folds her hands. \"I have seen commercials. A commercial wants something.\"" }, { if: "act1.complete", text: "She is still on the bench. The third floor has gone quiet. \"They agreed on dinner. It took the whole night. Sit.\"" }], x: 9, y: 23, label: 'Mrs. Okafor', npc: true, age: 'adult', text: 'She came down to let three generations argue upstairs. "Sit." You sit. "Your friend with the hair. He makes those heads again?" She nods. "Good."' },
     { id: 'obj.garden_bench', art: 'obj.bench', x: 8, y: 22, label: 'Bench', text: 'A brass plate: FOR THE NIGHT SHIFT. No name. Somebody polishes it.' },
     // The plaza
@@ -223,7 +234,7 @@ export const metroPlaza = makeMap({
     { id: 'obj.zip_trail', art: 'obj.zip_anchor', x: 79, y: 40, label: 'Cable anchor', zip: [15, 15], text: 'The other end of the cable, bolted to a post by the trailhead.' },
     { id: 'obj.grate', x: 51, y: 26, label: 'Storm grate', action: 'exit', floor: true, to: 'tunnel_1', requiresFlag: 'act1.cordon.passed', lockedText: 'Orange tape in a square round the grate, and a man in a white coat sitting on a cooler beside it.', text: 'The grate lifts. Somewhere below, very faintly, something is drumming.' },
     // Light: lamps along the streets, neon where somebody is selling something
-    ...[[57, 5], [57, 17], [57, 27], [57, 38], [57, 47], [64, 11], [64, 22], [64, 37], [64, 46], [8, 30], [22, 30], [38, 30], [50, 30], [14, 35], [44, 35], [18, 15], [5, 16]]
+    ...[[57, 5], [57, 17], [57, 27], [57, 38], [57, 46], [64, 11], [64, 22], [64, 37], [64, 46], [8, 30], [22, 30], [38, 30], [50, 30], [14, 35], [44, 35], [18, 15], [5, 16]]
       .map(([x, y]) => ({ id: `obj.lamp_${x}_${y}`, art: 'obj.streetlamp', x, y, label: 'Streetlamp', light: 0.9, text: 'Sodium orange. Moths, and something that is not a moth.' })),
     { id: 'obj.neon_diner', art: 'obj.neon', x: 74, y: 8, label: 'Neon sign', light: 1.2, text: 'EAT. The A has been out so long the regulars call it the Et.' },
     { id: 'obj.neon_stalls', art: 'obj.neon', x: 33, y: 8, label: 'Neon sign', light: 1.1, text: 'PHONES FIXED · UNLOCKED · FORGOTTEN. The last word was added by hand.' },
@@ -239,8 +250,8 @@ export const metroPlaza = makeMap({
     { id: 'obj.station_light', art: 'obj.worklamp', x: 36, y: 8, label: 'Station light', light: 1.0, text: 'The entrance is lit all night. Nothing has come out of it since midnight.' },
     // Route 1. Not exits until the road maps exist (Trevor: no visible exit where you can't go; hub task).
     { id: 'obj.billboard', x: 65, y: 20, label: 'Billboard', text: 'A Slop Decades billboard, peeling: "AT THE END OF THE DAY, NO ONE CAN CODE FASTER THAN AI."' },
-    { id: 'obj.route1_north', art: 'obj.board', x: 61, y: 1, label: 'Abatement cordon (north)', text: 'Abatement tape across both lanes, and a van with its lights off. North is closed tonight.' },
-    { id: 'obj.route1_south', art: 'obj.board', x: 61, y: 50, label: 'Wall checkpoint (south)', text: 'South is the Beltway, and the wall. You don\'t have the papers. Nobody you know has the papers.' },
+    { id: 'obj.route1_north', art: 'obj.board', x: 61, y: 4, label: 'Abatement cordon (north)', text: 'Abatement tape across both lanes, and a van with its lights off. North is closed tonight.' },
+    { id: 'obj.route1_south', art: 'obj.board', x: 61, y: 47, label: 'Wall checkpoint (south)', text: 'South is the Beltway, and the wall. You don\'t have the papers. Nobody you know has the papers.' },
     { id: 'obj.map_cart', art: 'obj.cart', x: 65, y: 15, label: 'Map cart', text: 'Paper maps, hand-corrected. A sign: IF YOU FIND AN ERROR I WILL PAY YOU FOR IT.' },
     { id: 'obj.diner_door', art: 'obj.door', x: 72, y: 8, label: 'The diner', action: 'exit', to: 'diner', pair: 'obj.diner_out', text: 'Open. It is always open. Through the glass, a cook calls an order to an empty room and plates it.' },
     { id: 'obj.diner_menu', art: 'obj.board', x: 69, y: 8, label: 'Menu', text: 'Chalk. One item has been crossed out and rewritten so many times the board is worn pale there.' },
@@ -249,6 +260,12 @@ export const metroPlaza = makeMap({
     { id: 'obj.shop_scooters', art: 'obj.kiosk', x: 71, y: 18, label: 'Delroy\'s Wheels', action: 'shop', shop: 'scooters', light: 0.7 },
     { id: 'obj.shop_pawn', art: 'obj.kiosk', x: 68, y: 18, label: 'Pawn window (Wick)', action: 'shop', shop: 'pawn', light: 0.5 },
     { id: 'obj.shop_corner', art: 'obj.vending', x: 77, y: 9, label: 'Corner store', action: 'shop', shop: 'corner', light: 0.6 },
+    // Round the corner from the shop window, facing the cross street: two shops that are open (hub #28/#29; the
+    // interiors are in act1_route1.js). Doors like the diner's.
+    { id: 'obj.hardware_sign', art: 'obj.board', x: 67, y: 28, label: 'Hand-painted sign', text: 'HOLLIS HARDWARE · KEYS · REPAIRS, in white enamel on a plank screwed over a dead screen. The neon on the roof says CHARGE · $2/HR. That sign came with the building. Dot Hollis kept the price.' },
+    { id: 'obj.hardware_door', art: 'obj.door', x: 69, y: 28, label: 'Hollis Hardware', action: 'exit', to: 'hardware', pair: 'obj.hardware_out', text: 'A bell on a spring over the door. Through the glass, bins and more bins, and a light on in the back.' },
+    { id: 'obj.feed_sign', art: 'obj.board', x: 72, y: 28, label: 'Painted sign', text: 'PARDO FEED & AQUARIUM, the letters shaded by hand, with a painted fish swimming through the ampersand.' },
+    { id: 'obj.feed_door', art: 'obj.door', x: 74, y: 28, label: 'Pardo Feed & Aquarium', action: 'exit', to: 'feed_store', pair: 'obj.feed_out', text: 'The window is all tanks, lit blue from inside. A card on the door: PLEASE DON\'T TAP THE GLASS.' },
     { id: 'obj.shop_window', art: 'obj.lobby_monitor', x: 66, y: 25, label: 'Shop window', light: 0.6, text: 'A window of dead screens, price tags still on. One comes on as you pass.\n\nA street camera, this street. A big man in a long coat, from behind, walking north with a bad knee. The timestamp is now.\n\nYou look north. Nobody.' },
     // The alley
     { id: 'obj.dumpster', loot: 'trash', x: 81, y: 12, label: 'Dumpster', text: 'Abatement tags on the lid. Inside, a hundred phones, screens up, all showing 19:01.' },

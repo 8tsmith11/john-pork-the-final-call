@@ -13,6 +13,7 @@ const NESTS = [
   { map: 'metro_plaza', at: [[70, 33], [72, 33], [71, 31]], where: 'the cross street by the shops', es: 'la calle transversal junto a las tiendas' },
   { map: 'metro_plaza', at: [[20, 33], [22, 32], [24, 33]], where: 'the old Purple Line tracks', es: 'las vías viejas de la Línea Púrpura' },
   { map: 'lake', at: [[20, 12], [22, 14], [19, 15]], where: 'the lake path', es: 'el camino del lago' },
+  { map: 'campus_quad', at: [[6, 8], [10, 7], [12, 8]], where: 'the campus quad lawn', es: 'el césped del patio del campus' },   // hub #30
 ];
 const GATHER = [
   { item: 'item.mat_scrap', n: [6, 12], name: 'scrap metal', es: 'chatarra' },

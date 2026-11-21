@@ -10,9 +10,9 @@
 // Debug: ?romance=debug reunites Manuelita and hands every roommate flowers, chocolates and a guitar.
 import * as W from '../engine/wallet.js';
 import { MAPS } from '../content/maps/index.js';
-import { ITEMS, SHOPS } from '../content/items.js';
+import { ITEMS, SHOPS, playerMods, heldWeapon } from '../content/items.js';
 import * as Inv from '../engine/inventory.js';
-import { playerMods } from '../content/items.js';
+import { isAi } from '../engine/companion.js';
 import { TILE } from '../engine/sim.js';
 import { audioOut } from '../audio/audio.js';
 import { PARTNERS, REUNITED_FLAG, STAGE, FIGHT_KILLS, SONG_SECONDS, SONG_RANGE, flagOf, stageOf, together, ended, partnerView } from '../content/romance.js';
@@ -257,7 +257,8 @@ export class Romance {
     for (const p of sim.players.values()) {
       const near = this._near(p), key = near.map((v) => v.name).join('|');
       if (!key && !this._applied.get(p.id)) continue;
-      const mods = playerMods(s.save.party[p.character], p.character);
+      const c = s.save.party[p.character];
+      const mods = playerMods(c, p.character, heldWeapon(c, p.character, isAi(p.id)));
       for (const v of near) for (const [k, n] of Object.entries(v.buff)) mods[k] = (mods[k] ?? 0) + n;
       mods.armor = Math.min(0.6, mods.armor);
       sim.setMods(p.id, mods);

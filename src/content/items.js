@@ -3,17 +3,17 @@
 import { FISH } from './fish.js';
 import { SKILL_TREE } from './skills.js';
 import { abilityModsFor } from './abilities.js';
+import { HOTBAR } from '../engine/save/schema.js';
 
 // Equipment slots (D-014, Michael). Armor points come from the four armor pieces; gear goes on top.
-export const WEAPON_SLOTS = ['weapon', 'ranged', 'gadget', 'charm'];
+export const ACCESSORY_SLOTS = ['gadget', 'charm'];
 export const ARMOR_SLOTS = ['helmet', 'chestplate', 'leggings', 'boots'];
 export const GEAR_SLOTS = ['goggles', 'parka', 'gloves', 'socks', 'backpack'];
-export const EQUIP_SLOTS = [...WEAPON_SLOTS, ...ARMOR_SLOTS, ...GEAR_SLOTS];
 // Worn slots (Michael): a worn item leaves the bag and lives only in its equipment slot (the ARMOR /
 // GEAR / gadget / charm boxes beside the character), so it no longer takes a backpack or hotbar slot.
 // Melee and ranged weapons stay in the hotbar, because the selected hotbar slot is what you hold.
-export const WORN_SLOTS = [...ARMOR_SLOTS, ...GEAR_SLOTS, 'gadget', 'charm'];
-export const SLOT_NAMES = { weapon: 'Melee', ranged: 'Ranged', gadget: 'Gadget', charm: 'Charm', helmet: 'Helmet', chestplate: 'Chestplate',
+export const WORN_SLOTS = [...ARMOR_SLOTS, ...GEAR_SLOTS, ...ACCESSORY_SLOTS];
+export const SLOT_NAMES = { gadget: 'Gadget', charm: 'Charm', helmet: 'Helmet', chestplate: 'Chestplate',
   leggings: 'Leggings', boots: 'Boots', goggles: 'Goggles / hat', parka: 'Rain parka', gloves: 'Gloves', socks: 'Socks', backpack: 'Backpack' };
 
 export const ITEMS = {
@@ -238,13 +238,13 @@ export const SHOPS = {
       { item: 'item.welding_goggles', price: 16 },
       { item: 'item.mat_glass', price: 2 },
     ] },
-  coop: { title: 'GREENBELT CO-OP', lines: ['[scaffold] Prices set by vote.'],   // act2_more.js scaffold
+  coop: { title: 'GREENBELT CO-OP', lines: ['Prices set by vote in 2071. The next vote is pending.'],   // act2_more.js (polished, hub #30); Spanish in es-act2.js
     stock: [
       { item: 'item.energy_bar', price: 4 },
       { item: 'item.caffeine', price: 10 },
       { item: 'item.crab_chips', price: 8 },
     ] },
-  diner: { title: 'THE DINER', lines: ['[scaffold] Whatever you order, it is already on the plate.'],   // act1_more.js scaffold
+  diner: { title: 'THE DINER', lines: ['Whatever you order, it is already on the plate.'],   // act1_more.js (polished, hub #30); Spanish in es-plaza.js
     stock: [
       { item: 'item.energy_bar', price: 5 },
       { item: 'item.caffeine', price: 12 },
@@ -265,6 +265,27 @@ export const SHOPS = {
       { item: 'item.sleep_potion', price: 15 },
       { item: 'item.caffeine', price: 8 },
     ] },
+  // Route 1 (hub #28/#29; maps in src/content/maps/act1_route1.js). Prices match the chalkboard on the shop wall,
+  // and are set so sellPrice() pays exactly what it paid before for every item (tests/run.js checks). Fasteners
+  // come by the scoop as scrap, adapters with the wire. Tool repair is a service she talks about, not a menu.
+  hardware: { title: 'HOLLIS HARDWARE', lines: ['Prices are on the chalkboard. Repairs while you wait.'],
+    stock: [
+      { item: 'item.mat_scrap', price: 3, limit: 6 },   // a fallback, not a faucet (trevor, general #118): limit needs trevor/shop-stock
+      { item: 'item.mat_wire', price: 4, limit: 4 },
+      { item: 'item.mat_cell', price: 12, limit: 1 },
+      { item: 'item.work_gloves', price: 9 },
+      { item: 'item.hardhat', price: 16 },
+      { item: 'item.work_pants', price: 20 },
+      { item: 'item.pipe_wrench', price: 30, once: true },
+    ] },
+  feed: { title: 'PARDO FEED & AQUARIUM', lines: ['Feed by the scoop. Please don\'t tap the glass.'],
+    stock: [
+      { item: 'item.flowers', price: 7 },
+      { item: 'item.mat_cloth', price: 2 },
+      { item: 'item.wool_socks', price: 6 },
+      { item: 'item.work_gloves', price: 8 },
+      { item: 'item.rain_parka', price: 20 },
+    ] },
 };
 
 // Skill trees live in ./skills.js (SKILL_TREE). SKILLS is kept as an alias of each tree's node list.
@@ -276,27 +297,38 @@ export const SKILLS = Object.fromEntries(Object.entries(SKILL_TREE).map(([k, t])
 export const MANUEL_EDGE = { maxHp: 50, armor: 0.3, regen: 1, small: 1.5, melee: 6, shot: 4, crit: 0.1, lifesteal: 1,
   speed: 0.1, sta: 30, staRegen: 0.5, iframes: 0.1, skillCd: 0.25, abilityPower: 0.3 };
 
-export function playerMods(char, charId) {
+export function heldWeapon(char, charId, ai = false) {
+  const selected = char.hotSel ?? 0;
+  const held = selected >= 0 && selected < HOTBAR ? char.inventory?.[selected] : null;
+  const melee = (stack) => ITEMS[stack?.id]?.slot === 'weapon' && canWear(ITEMS[stack.id], charId);
+  if (melee(held) || (!ai && ITEMS[held?.id]?.slot === 'ranged' && canWear(ITEMS[held.id], charId))) return held;
+  // Companions only know melee combat. Picking from their hotbar leaves a returning guest's selection intact.
+  return ai ? char.inventory?.slice(0, HOTBAR).find(melee) ?? null : null;
+}
+
+export function playerMods(char, charId, weapon = heldWeapon(char, charId)) {
   const m = { melee: 0, shot: 0, shotCd: 0, armor: 0, maxHp: 0, iframes: 0, dodgeCd: 0, revive: 0, gun: 0,
     speed: 0, sta: 0, staRegen: 0, dashHit: 0, crit: 0, lifesteal: 0, loot: 0, haggle: 0, skillCd: 0, abilityPower: 0, markDmg: 0, secondWind: 0, decoys: 0, reviveHeal: 0,
     small: 0, knock: 0, killDodge: 0, mateHeal: 0, sleepImmune: 0, regen: 0, sleepGuard: 0 };
   const add = (mods, k = 1) => { for (const [key, v] of Object.entries(mods || {})) m[key] = (m[key] ?? 0) + v * k; };
-  for (const id of Object.values(char.equipped || {})) {
+  for (const slot of WORN_SLOTS) {
+    const id = char.equipped?.[slot];
     const def = id && ITEMS[id];
     if (!def || !canWear(def, charId)) continue;                     // unique items only work for their owner
     add(scaleMods(def.mods, char.upgrades?.[id] ?? 0));
     if (def.blink) m.blink = true;
+    add(char.rolled?.[slot]?.mods);
   }
-  // Procedural rolls (src/content/gearRolls.js, task #39): worn pieces carry theirs in char.rolled; a held
-  // weapon's roll is on the bag slot holding it (the selected hotbar slot first).
-  for (const [slot, roll] of Object.entries(char.rolled || {})) if (char.equipped?.[slot] && roll?.mods) add(roll.mods);
-  for (const slot of ['weapon', 'ranged']) {
-    const id = char.equipped?.[slot], hot = char.inventory?.[char.hotSel];
-    const roll = id && (hot?.id === id ? hot.roll : char.inventory?.find((x) => x?.id === id && x.roll)?.roll);
-    if (roll?.mods) add(roll.mods);
+  const def = ITEMS[weapon?.id];
+  m.swing = null;
+  m.gunStats = null;
+  if ((def?.slot === 'weapon' || def?.slot === 'ranged') && canWear(def, charId)) {
+    m.weaponId = weapon.id;
+    add(scaleMods(def.mods, char.upgrades?.[weapon.id] ?? 0));
+    add(weapon.roll?.mods);
+    m.swing = def.swing ?? null;
+    m.gunStats = def.gun ?? null;
   }
-  m.swing = ITEMS[char.equipped?.weapon]?.swing ?? null;   // weapon profiles replace the defaults, they don't add
-  m.gunStats = ITEMS[char.equipped?.ranged]?.gun ?? null;
   for (const s of SKILLS[charId] || []) add(s.mods, char.skills?.[s.id] ?? 0);
   add(abilityModsFor(char, charId));   // ability scores (D-017)
   if (charId === 'manuel') add(MANUEL_EDGE);

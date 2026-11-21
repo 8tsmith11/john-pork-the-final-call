@@ -165,8 +165,10 @@ export function aiSetup(g) {
   const vi = vs[0], ei = g.edges.findIndex((e) => !e.owner && (e.a === vi || e.b === vi));
   return setupPlace(g, vi, ei);
 }
-export function aiTurn(g) {
-  const who = side(g);
+/** opts.ease (0..1): how often the AI stops building early this turn. The house eases off after losses at a
+ *  required table, so everyone gets through it (Trevor: Lattice is required). Uses the game's own rng. */
+export function aiTurn(g, opts = {}) {
+  const who = side(g), ease = Math.max(0, Math.min(0.9, opts.ease ?? 0));
   if (!g.rolled) roll(g);
   if (g.mustMoveRot) {   // put coderot on the opponent's best district
     const best = g.hexes.map((h, i) => i).filter((i) => i !== g.rot && g.hexes[i].res)
@@ -174,6 +176,7 @@ export function aiTurn(g) {
     moveRot(g, best[0]);
   }
   for (let guard = 0; guard < 12 && !g.winner; guard++) {
+    if (ease && g.rng.next() < ease) break;   // a sloppy turn: leaves something on the table
     const hubs = g.verts.map((_, i) => i).filter((i) => canHub(g, who, i)).sort((a, b) => vertValue(g, b) - vertValue(g, a));
     if (hubs.length && build(g, 'hub', hubs[0])) continue;
     const spots = g.verts.map((_, i) => i).filter((i) => canRelay(g, who, i)).sort((a, b) => vertValue(g, b) - vertValue(g, a));
