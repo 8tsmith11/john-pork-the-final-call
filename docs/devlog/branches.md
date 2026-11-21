@@ -8,7 +8,7 @@ The rule is in `PROCESS.md`, "Working in git".
 "Landed by copy" means the changes reached `main` as new commits (cherry-picked or reapplied), so
 the branch tip isn't an ancestor of `main` even though nothing on it is missing.
 
-Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `c1ea62a`.
+Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `628c04e`.
 
 ## Active
 
@@ -21,6 +21,13 @@ Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `c1ea62a`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `gonman/ct-posters` | GitHub | Merged in `4355e79` (PR #151) |
+| `jp/jp2-discoverable-abilities` | GitHub | Merged in `628c04e` (PR #143) |
+| `trevor/coop-puzzles` | GitHub | Merged in `b16db7b` (PR #141) |
+| `gonman/later-acts-polish` | GitHub | Merged in `f862adf` (PR #131) |
+| `gonman/world-trigger` | GitHub | Merged in `5c8bd19` (PR #77) |
+| `jp/shared-choice-dialogue` | GitHub | Merged in `d5eb040` (PR #37) |
+| `lorekeeper/pr85-147-branch-register` | GitHub | Merged in `f369fc9` (PR #149) |
 | `gonman/save-pin` | GitHub | Squash-merged in `ea9a69f` (PR #136) |
 | `trevor/readme-undo` | GitHub | Merged in `8c402b0` (PR #147) |
 | `jp/coop-reconnect` | GitHub | Merged in `4098ca4` (PR #85) |

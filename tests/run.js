@@ -774,6 +774,415 @@ test('region guardians (#49): scaffold quests a later puzzle converts keep their
   }
 });
 
+// hub #30, Act 2 slice: the Act 2 areas polished in this pass. Fresh copies of the two map modules (the ?a2p30 query),
+// so the crowds.js townsfolk that maps/index.js adds afterwards aren't counted as their own; the townsfolk are checked
+// separately where it says so (crowds.js has its own polish coming).
+const A2P_IDS = ['route1_north', 'greenbelt', 'beltsville', 'refuge', 'meade', 'annapolis', 'gb_dishes', 'gb_coop', 'bv_barn', 'rf_settlement', 'bmore_stacks', 'bmore_clinic', 'ann_harbor'];
+const A2P_MAPS = [...Object.values(await import('../src/content/maps/act2_regions.js?a2p30')), ...Object.values(await import('../src/content/maps/act2_more.js?a2p30'))]
+  .filter((m) => m && Array.isArray(m.objects) && A2P_IDS.includes(m.id));
+const { ES_ACT2: A2P_ES } = await import('../src/i18n/es-act2.js');
+// Every other Spanish table: each ES_* export in src/i18n/ (but the item table, keyed by item id and checked on its own
+// below) and the side quests' own, read from the folder so a table added later is compared too.
+const A2P_TABLES = { ES_SIDE_QUESTS: AlignSide.ES_SIDE_QUESTS };
+for (const f of fs.readdirSync(new URL('../src/i18n/', import.meta.url)).filter((n) => n.endsWith('.js')).sort()) {
+  for (const [name, tb] of Object.entries(await import(`../src/i18n/${f}`))) {
+    if (/^ES_/.test(name) && !['ES_ITEMS', 'ES_ACT2'].includes(name) && tb && typeof tb === 'object' && !Array.isArray(tb)) A2P_TABLES[name] = tb;
+  }
+}
+const { LOOT: A2P_LOOT, SHOPS: A2P_SHOPS } = await import('../src/content/items.js');
+const { Approach: A2P_Approach } = await import('../src/game/approach.js');
+const a2pLines = (o) => [o.label, o.text, o.doneText, o.lockedText, ...(o.pages ?? []), ...(o.later ?? []).map((l) => l.text)].filter((t) => typeof t === 'string' && t);
+// A side-quest giver's pitch and anyone's later line print the label in capitals above the line (WorldScene).
+const a2pSpeaks = (o) => o.npc && (o.later?.length || AlignSide.SIDE_QUESTS.some((q) => q.giver === o.id));
+// Missing Spanish, as tools/i18n/es_audit.mjs counts it: not in a listed table and not translated by tr().
+const a2pExact = Object.assign(Object.create(null), ...Object.values(A2P_TABLES), A2P_ES);
+const a2pMissing = (t) => !Object.hasOwn(a2pExact, t) && i18nMod.tr(t) === t;
+test('hub #30 (Act 2): no [scaffold] left on the polished Act 2 maps, and every line on them has Spanish', () => {
+  assert.deepEqual(A2P_MAPS.map((m) => m.id).sort(), [...A2P_IDS].sort(), 'the thirteen polished Act 2 maps');
+  assert.ok(!/\[scaffold\]/i.test(fs.readFileSync(new URL('../src/content/maps/act2_more.js', import.meta.url), 'utf8')), 'act2_more.js still has a [scaffold] line');
+  const scaffold = [], missing = [], multiline = [], was = i18nMod.getLang();
+  i18nMod.setLang('es');
+  try {
+    for (const m of A2P_MAPS) {
+      if (a2pMissing(m.name)) missing.push(`${m.id}.name`);
+      for (const o of m.objects) for (const t of [...a2pLines(o), ...(a2pSpeaks(o) ? [o.label.toUpperCase()] : [])]) {
+        if (/\[scaffold\]/i.test(t)) scaffold.push(`${m.id}/${o.id}`);
+        if (a2pMissing(t)) missing.push(`${m.id}/${o.id}: ${t.slice(0, 50)}`);
+        if (t.includes('\n')) multiline.push(`${m.id}/${o.id}`);
+      }
+      // The townsfolk crowds.js stands on these maps count for Spanish too (es_audit lists them under these maps).
+      const own = new Set(m.objects.map((o) => o.id));
+      for (const o of MAPS_FOR_TEST[m.id].objects.filter((q) => !own.has(q.id))) for (const t of a2pLines(o)) if (a2pMissing(t)) missing.push(`${m.id}/${o.id} (crowds.js): ${t.slice(0, 50)}`);
+    }
+    const coop = A2P_SHOPS.coop;
+    for (const t of [coop.title, ...coop.lines]) { if (/\[scaffold\]/i.test(t)) scaffold.push('SHOPS.coop'); if (a2pMissing(t)) missing.push(`SHOPS.coop: ${t}`); }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(scaffold, [], 'a placeholder line is left');
+  assert.deepEqual(missing, [], 'add Spanish to src/i18n/es-act2.js');
+  assert.deepEqual(multiline, [], 'one line each, so a quest clue or a search result added under it still translates line by line');
+});
+test('hub #30 (Act 2): every polished Act 2 map can be reached, and from each way in everything on it can be walked up to', () => {
+  const linked = new Set(['room631']), todo = ['room631'];   // through every exit, flagged or not
+  while (todo.length) for (const o of MAPS_FOR_TEST[todo.shift()].objects) if (o.action === 'exit' && MAPS_FOR_TEST[o.to] && !linked.has(o.to)) { linked.add(o.to); todo.push(o.to); }
+  const ring2 = walkFrom('route1_north');   // once the road north is open, no other story door stands in the way
+  const bad = [];
+  for (const id of A2P_IDS) {
+    if (!linked.has(id)) bad.push(`${id} can't be reached through the exits from Room 631`);
+    if (!ring2.has(id)) bad.push(`${id} sits behind a flagged door`);
+    const m = MAPS_FOR_TEST[id];
+    for (const back of m.objects.filter((o) => o.action === 'exit' && MAPS_FOR_TEST[o.to])) {   // arrive the way the game does
+      const via = MAPS_FOR_TEST[back.to].objects.find((o) => o.action === 'exit' && o.to === id && o.pair === back.id);
+      if (!via) { bad.push(`${id}: nothing in ${back.to} leads to ${back.id}`); continue; }
+      const sim = new Sim(MAPS_FOR_TEST[back.to], { seed: 'a2p' });
+      for (const [pid, c] of [['a', 'manuel'], ['b', 'trevor'], ['c', 'michael']]) sim.addPlayer(pid, c);
+      sim.setMap(m, back.to, via.id);
+      const starts = [...sim.players.values()].map((p) => [Math.floor(p.x / 16), Math.floor(p.y / 16)]);
+      const seen = new Set(starts.map(([x, y]) => `${x},${y}`)), q = [...starts];
+      while (q.length) {
+        const [x, y] = q.shift();
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
+          if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
+          seen.add(k); q.push([nx, ny]);
+        }
+      }
+      for (const [x, y] of starts) if (m.solid(x, y)) bad.push(`${id}: arriving from ${back.to} lands in a wall at ${x},${y}`);
+      for (const o of m.objects) if (![[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${o.x + dx},${o.y + dy}`))) bad.push(`${id}: ${o.id} can't be reached from ${back.id}`);
+      for (const e of m.enemies) if (!seen.has(`${Math.floor(e.x / 16)},${Math.floor(e.y / 16)}`)) bad.push(`${id}: ${e.kind} is walled off from ${back.id}`);
+    }
+  }
+  assert.deepEqual(bad, []);
+});
+// The finds are listed sealed (docs/sealed/secrets-later-acts.md, ROT13), so this reads their object ids from there.
+const A2P_SEALED_RAW = fs.readFileSync(new URL('../docs/sealed/secrets-later-acts.md', import.meta.url), 'utf8').replace(/\r\n/g, '\n');   // CRLF checkouts (Windows, tts)
+const A2P_SEALED = A2P_SEALED_RAW.split('-->\n').slice(1).join('-->\n')
+  .replace(/[a-z]/gi, (c) => String.fromCharCode(((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26) + (c <= 'Z' ? 65 : 97)));
+// The rows of one act's section ("## Act 2 ...", its Spanish table included), split into cells.
+const p30Rows = (act) => A2P_SEALED.split('\n## ').filter((s) => s.startsWith(`${act} `)).join('\n').split('\n')
+  .filter((l) => /^\| [^-]/.test(l)).map((l) => l.split('|').map((c) => c.trim())).filter((c) => /^`(obj|npc)\.[a-z0-9_]+`$/.test(c[2] ?? ''));
+test('hub #30 (Act 2): each polished Act 2 area has its rows in the sealed list, built from systems that already exist', () => {
+  assert.ok(A2P_SEALED_RAW.startsWith('<!-- SEALED SPOILERS'), 'the list is committed sealed, never as plaintext');
+  const rows = p30Rows('Act 2');
+  const listed = new Set(rows.map((c) => c[2].replace(/`/g, '')));
+  assert.ok(listed.size >= A2P_MAPS.length, 'docs/sealed/secrets-later-acts.md: a row per find, with its object id');
+  const byId = new Map(A2P_MAPS.flatMap((m) => m.objects.map((o) => [o.id, [m, o]])));
+  for (const id of listed) assert.ok(byId.has(id), `${id}: in docs/sealed/secrets-later-acts.md but on none of the polished Act 2 maps`);
+  const isFind = (o) => !!(o.grant || o.loot || o.action === 'pages' || o.later?.length);
+  const questFlags = new Set(AlignSide.SIDE_QUESTS.flatMap((q) => [q.report?.flag, q.inspect?.flag, q.give?.flag].filter(Boolean)));
+  const atlas = new Set(['props', 'big', 'wide', 'doors'].flatMap((s) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${s}.json`, import.meta.url), 'utf8')).frames)));
+  const everyId = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.map((o) => o.id));
+  const actions = new Set([undefined, 'exit', 'shop', 'pages']);   // only what WorldScene already does with an object
+  for (const m of A2P_MAPS) {
+    assert.ok(m.objects.some((o) => listed.has(o.id)), `${m.id}: no row in docs/sealed/secrets-later-acts.md`);
+    for (const o of m.objects) {
+      if (listed.has(o.id)) assert.ok(isFind(o), `${o.id}: listed in the sealed file, but built from no existing system`);
+      else assert.ok(!isFind(o), `${m.id}/${o.id}: add its row to docs/sealed/secrets-later-acts.md`);
+      assert.ok(actions.has(o.action), `${m.id}/${o.id}: action ${o.action} is new`);
+      if (o.grant) { assert.ok(ITEMS[o.grant], `${o.id}: no item ${o.grant}`); assert.ok(o.text && o.doneText && !o.loot, `${o.id}: a one-time grant needs text and doneText`); }
+      if (o.loot) assert.ok(A2P_LOOT[o.loot], `${o.id}: no loot table ${o.loot}`);
+      if (o.action === 'pages') assert.ok(o.pages.length > 1, `${o.id}: pages to step through`);
+      for (const l of o.later ?? []) { assert.ok(o.npc, `${o.id}: later lines only play for people`); assert.ok(questFlags.has(l.if), `${o.id}: nothing in the game sets ${l.if}`); }
+      if (!o.selfDrawn) assert.ok(atlas.has(o.art ?? o.id), `${o.id}: no art ${o.art ?? o.id} in assets/sprites`);
+      assert.notEqual(o.art, 'obj.board', `${m.id}/${o.id}: still the placeholder corkboard`);
+      assert.equal(everyId.filter((id) => id === o.id).length, 1, `${o.id}: the id is used on another map too (finds and searches are keyed by it)`);
+    }
+    for (const s of m.scenery ?? []) assert.ok(atlas.has(s.art), `${m.id}: no scenery art ${s.art}`);
+  }
+});
+test('hub #30 (Act 2): children on the polished Act 2 maps, the crowd\'s included, are talk only, and no gag picks them', () => {
+  const approach = new A2P_Approach({ save: { party: { manuel: {} }, world: {} }, character: 'manuel', input: { keyboard: { on() {} } }, _questHandIns: () => [] });
+  const people = A2P_IDS.flatMap((id) => MAPS_FOR_TEST[id].objects.filter((o) => o.npc));
+  for (const o of people) assert.notEqual(o.eggOk, true, `${o.id}: nobody here is a gag target`);
+  for (const o of people.filter((q) => q.age === 'child')) {
+    assert.equal(o.approach, false, `${o.id}: talk only, nobody pickpockets or intimidates a kid`);
+    assert.deepEqual(approach.options(o).map((a) => a.id), ['talk'], `${o.id}: Talk is the only approach`);
+    assert.equal(approach.intercept(o), false, `${o.id}: no approach menu opens, so pressing E just talks`);
+    assert.ok(o.eggNo, `${o.id}: no gag picks a child`);
+  }
+  assert.ok(MAPS_FOR_TEST.greenbelt.objects.some((o) => o.age === 'child'), 'the kid with the kite in Greenbelt is still there');
+});
+test('hub #30 (Act 2): quest objects, givers, exits, spawns and enemies on the polished maps are where they were', () => {
+  const WAS = {
+    'npc.r1n_walker': [32, 8], 'obj.r1n_to_baltimore': [20, 0], 'obj.r1n_to_greenbelt': [0, 2], 'obj.r1n_to_refuge': [40, 2], 'obj.r1n_to_beltsville': [0, 6],
+    'obj.r1n_to_meade': [39, 6], 'obj.r1n_to_annapolis': [40, 9], 'obj.r1n_south': [18, 12], 'obj.r1n_to_beltway': [10, 12],
+    'npc.gb_committee': [15, 6], 'obj.gb_dishes': [30, 4], 'obj.greenbelt_out': [32, 10], 'obj.greenbelt_to_gb_dishes': [29, 0], 'obj.greenbelt_to_gb_coop': [3, 11], 'obj.greenbelt_to_gb_center': [5, 0],
+    'npc.gb_technician': [5, 4], 'obj.gb_tapes': [9, 2], 'obj.gb_cleanroom': [24, 4], 'obj.gb_dishes_out': [11, 8],
+    'npc.gb_clerk': [11, 4], 'obj.gb_coop_counter': [12, 2], 'obj.gb_coop_out': [10, 7],
+    'npc.bv_vet': [11, 7], 'obj.bv_ledgers': [4, 3], 'obj.bv_sealed_barn': [17, 9], 'obj.beltsville_crate_19_3': [19, 3], 'obj.beltsville_out': [31, 9], 'obj.beltsville_to_bv_barn': [12, 10], 'obj.beltsville_to_bv_lab': [6, 0],
+    'obj.bv_named_tank': [22, 3], 'obj.bv_barn_out': [11, 8],
+    'npc.rf_teacher': [9, 6], 'obj.rf_tower': [18, 8], 'obj.refuge_out': [0, 8], 'obj.refuge_to_rf_settlement': [8, 0], 'obj.refuge_to_rf_fringe': [26, 0], 'obj.refuge_to_rf_marsh': [15, 9],
+    'npc.rf_blacksmith': [5, 3], 'obj.rf_library': [20, 3], 'npc.rf_hardman': [13, 4], 'obj.rf_implants': [26, 5], 'obj.rf_settlement_out': [10, 8],
+    'npc.md_quartermaster': [14, 5], 'obj.md_menu': [28, 4], 'obj.meade_out': [0, 7], 'obj.meade_to_meade_inside': [10, 8], 'obj.meade_to_md_lot': [4, 8],
+    'npc.bmore_steward': [15, 4], 'obj.bmore_manifests': [27, 6], 'obj.bmore_stacks_out': [0, 7],
+    'npc.bmore_doctor': [15, 3], 'obj.bmore_meds': [16, 3], 'obj.bmore_clinic_out': [10, 7],
+    'npc.ann_crabber': [20, 3], 'obj.ann_statehouse': [4, 4], 'obj.ann_charts': [29, 6], 'obj.annapolis_out': [0, 7], 'obj.annapolis_to_ann_harbor': [31, 7],
+    'obj.annapolis_to_ann_statehouse': [6, 8], 'obj.annapolis_to_ann_bridge': [28, 8], 'obj.annapolis_to_ann_chapel': [3, 0],
+    'npc.ann_pilot': [12, 5], 'obj.ann_almanac': [14, 6], 'obj.ann_bell': [25, 4], 'obj.ann_harbor_out': [0, 7],
+  };
+  const SPAWN = { route1_north: [18, 11], greenbelt: [3, 9], beltsville: [2, 9], refuge: [3, 8], meade: [3, 7], annapolis: [3, 7], gb_dishes: [11, 7], gb_coop: [10, 6],
+    bv_barn: [11, 7], rf_settlement: [10, 7], bmore_stacks: [5, 7], bmore_clinic: [10, 6], ann_harbor: [3, 7] };
+  // In map order, so saved kills keep their keys (`<map>#<index>`).
+  const FOES = { route1_north: ['enemy.rot_taken 6,9'], greenbelt: ['enemy.spitter 27,9'], beltsville: ['enemy.rot_taken 27,7'],
+    meade: ['enemy.captcha 28,7', 'boss.md_fence 27,3'], gb_dishes: ['enemy.autocomplete 7,6', 'enemy.autocomplete 18,6', 'boss.gb_receiver 24,2'],
+    bv_barn: ['enemy.rot_taken 3,5', 'enemy.rot_taken 11,5', 'enemy.rot_taken 19,5', 'boss.bv_shell 23,2'], bmore_stacks: ['enemy.rot_taken 13,6', 'enemy.rot_taken 26,7'],
+    ann_harbor: ['boss.ann_tide 26,5'] };
+  const at = new Map(A2P_MAPS.flatMap((m) => m.objects.map((o) => [o.id, o])));
+  for (const [id, xy] of Object.entries(WAS)) assert.deepEqual(at.has(id) && [at.get(id).x, at.get(id).y], xy, `${id} moved`);
+  for (const m of A2P_MAPS) {
+    assert.deepEqual(m.spawns.map((s) => [Math.floor(s.x / 16), Math.floor(s.y / 16)]), [SPAWN[m.id]], `${m.id}: the spawn moved`);
+    assert.deepEqual(m.enemies.map((e) => `${e.kind} ${(e.x - 8) / 16},${(e.y - 8) / 16}`), FOES[m.id] ?? [], `${m.id}: the enemies changed`);
+    for (const o of m.objects.filter((q) => q.action === 'exit')) assert.ok(WAS[o.id], `${o.id}: a new way in or out; add it to this list`);
+  }
+  for (const q of AlignSide.SIDE_QUESTS) {
+    for (const id of [q.giver, q.inspect?.obj]) if (id && at.has(id)) assert.ok(WAS[id], `${q.id}: ${id} is on a polished Act 2 map; add it to this list`);
+    if (q.inspect && at.has(q.inspect.obj)) assert.ok(at.get(q.inspect.obj).text, `${q.id}: the clue is read under the object's own text, so it needs one`);
+  }
+});
+test('hub #30 (Act 2): es-act2.js is wired in and agrees with the other Spanish tables wherever they share an English line', () => {
+  const clash = [];
+  for (const [name, tb] of Object.entries(A2P_TABLES)) for (const [en, es] of Object.entries(A2P_ES)) if (tb && Object.hasOwn(tb, en) && tb[en] !== es) clash.push(`${JSON.stringify(en.slice(0, 40))}: ${name} says "${tb[en].slice(0, 30)}"`);
+  for (const [id, def] of Object.entries(ITEMS)) for (const [k, i] of [['name', 0], ['text', 1]]) {   // items translate through es-items.js
+    const es = ES_ITEMS[id.replace(/^item\./, '')]?.[i];
+    if (es && Object.hasOwn(A2P_ES, def[k]) && A2P_ES[def[k]] !== es) clash.push(`${id}.${k}`);
+  }
+  assert.deepEqual(clash, [], 'use one Spanish string in both tables');
+  const was = i18nMod.getLang(), wrong = [];
+  i18nMod.setLang('es');
+  try { for (const [en, es] of Object.entries(A2P_ES)) if (i18nMod.tr(en) !== es) wrong.push(en.slice(0, 50)); } finally { i18nMod.setLang(was); }
+  assert.deepEqual(wrong, [], 'src/i18n.js reads es-act2.js, and nothing later in the table overrides it');
+  const audit = fs.readFileSync(new URL('../tools/i18n/es_audit.mjs', import.meta.url), 'utf8');
+  assert.ok(/import \{ ES_ACT2 \} from '..\/..\/src\/i18n\/es-act2\.js'/.test(audit) && /Object\.assign\(exact, ES_ACT2\)/.test(audit), 'tools/i18n/es_audit.mjs counts es-act2.js');
+  // A paged object adds its page count under each page (WorldScene), and that line translates too.
+  i18nMod.setLang('es');
+  const page = A2P_MAPS.find((m) => m.id === 'gb_dishes').objects.find((o) => o.id === 'obj.gb_shift_log').pages[1];
+  try { assert.equal(i18nMod.tr(`${page}\n\n[E again: 2/4]`), `${A2P_ES[page]}\n\n[E otra vez: 2/4]`, 'the page count under a page'); } finally { i18nMod.setLang(was); }
+});
+test('hub #30 (Act 2), canon: the lines keep to the quest clues, the naming rule and the house style', () => {
+  const obj = (mapId, id) => A2P_MAPS.find((m) => m.id === mapId).objects.find((o) => o.id === id);
+  const all = A2P_MAPS.flatMap((m) => m.objects.flatMap((o) => a2pLines(o).map((t) => [`${m.id}/${o.id}`, t])));
+  // Lore gate 7.1 (PR #46): nothing on the tank can be read, and nothing here invents a number.
+  for (const [where, t] of all.filter(([w]) => /^(beltsville|bv_barn)\//.test(w))) assert.ok(!/thirteen|batch \d|\bnumber \d/i.test(t), `${where}: an invented batch: ${t.slice(0, 60)}`);
+  // The tank's line follows the sealed ruling (LoreKeeper, story #71). The words it must not use are kept in ROT13.
+  const tankEn = obj('bv_barn', 'obj.bv_named_tank').text, tankEs = A2P_ES[tankEn];
+  const r13 = (w) => w.replace(/[a-z]/gi, (c) => String.fromCharCode(((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26) + (c <= 'Z' ? 65 : 97)));
+  const notYet = new RegExp(`\\b(${['gnt', 'ongpu', 'ynory', 'rgvdhrgn', 'ybgr'].map(r13).join('|')})\\b`, 'i');
+  assert.ok(!/\d|"|'[A-Z]/.test(tankEn) && !notYet.test(tankEn), 'the tank: nothing on it can be read before its quest');
+  assert.ok(/faded|too far to read|past reading|can't be read|unreadable|illegible/i.test(tankEn), 'the tank: the line says the writing can no longer be read');
+  assert.ok(tankEs && !/\d|"/.test(tankEs) && !notYet.test(tankEs) && /borrad|no se lee|ilegible/i.test(tankEs), 'the tank (ES): the same');
+  // The bay (LoreKeeper): nothing here may read like the real 2024 bridge collapse.
+  for (const [where, t] of all.filter(([w]) => /^(annapolis|ann_harbor)\//.test(w))) assert.ok(!/\b(ships?|vessels?|freighters?|collisions?|collapsed?|wreck(age)?|struck|broken)\b/i.test(t), `${where} reads like a disaster: ${t.slice(0, 60)}`);
+  // The main story keeps the boat (atlas §11): nobody on the harbor promises one.
+  for (const [where, t] of all.filter(([w]) => /^ann_harbor\//.test(w))) assert.ok(!/\b(get|give|find) you a boat\b/i.test(t), `${where} hands out the boat`);
+  // The clues are read under these lines, so the lines can't give the clue away first.
+  assert.ok(!/\bin\b.*\bout\b|don't come out|doesn't come out|shoe|boot/i.test(obj('gb_dishes', 'obj.gb_cleanroom').text), 'the clean room: where the prints lead, and whose they are, is the clue\'s to say');
+  // The dish log stays undated, with no count of the years: what it may record is the lore gate's to place.
+  for (const t of [...obj('gb_dishes', 'obj.gb_shift_log').pages, obj('gb_dishes', 'npc.gb_technician').text]) assert.ok(!/\b\d{4}\b|\b(ten|eleven|twelve|thirteen|fourteen|fifteen|\d+) years\b|slew/i.test(t), `the dish log: ${t.slice(0, 60)}`);
+  assert.ok(!/before the Call|ask the bell/i.test(obj('beltsville', 'obj.bv_ledgers').text + obj('ann_harbor', 'obj.ann_almanac').text), 'the ledgers and the almanac leave their answers to the clues');
+  // Naming in what players read (bible §2): "code rot", "code rotter", "Code-rot-taken", and "John Pork" in full.
+  for (const [where, t] of all) {
+    assert.ok(!/(?<!code[ -])\brot(ter)?s?\b/i.test(t) && !/(?<!John )\bPork\b/.test(t), `${where}: the naming rule: ${t.slice(0, 60)}`);
+    assert.ok(!/\b[A-Z]{3,}, [A-Z]{3,}, (and )?[A-Z]{3,}\b/.test(t) && !/\b(\w+), \1, \1\b/i.test(t), `${where}: a triplet: ${t.slice(0, 60)}`);
+  }
+});
+
+// hub #30, Act 3 slice: the Act 3 areas, checked the same way as the Act 2 slice above (fresh module copies, so the
+// crowds.js townsfolk are counted only where it says so).
+const A3P_IDS = ['beltway', 'corridor', 'gaithersburg', 'frederick', 'enclave', 'cor_sealed', 'gt_clockroom', 'fr_switchyard', 'en_archive', 'meade_inside'];
+const A3P_MAPS = [...Object.values(await import('../src/content/maps/act3_regions.js?a3p30')), ...Object.values(await import('../src/content/maps/act3_more.js?a3p30'))]
+  .filter((m) => m && Array.isArray(m.objects) && A3P_IDS.includes(m.id));
+const { ES_ACT3: A3P_ES } = await import('../src/i18n/es-act3.js');
+const A3P_TABLES = Object.fromEntries(Object.entries({ ...A2P_TABLES, ES_ACT2: A2P_ES }).filter(([name]) => name !== 'ES_ACT3'));
+const a3pExact = Object.assign(Object.create(null), ...Object.values(A3P_TABLES), A3P_ES);
+const a3pMissing = (t) => !Object.hasOwn(a3pExact, t) && i18nMod.tr(t) === t;
+test('hub #30 (Act 3): no [scaffold] left on the polished Act 3 maps, and every line on them has Spanish', () => {
+  assert.deepEqual(A3P_MAPS.map((m) => m.id).sort(), [...A3P_IDS].sort(), 'the ten polished Act 3 maps');
+  assert.ok(!/\[scaffold\]/i.test(fs.readFileSync(new URL('../src/content/maps/act3_more.js', import.meta.url), 'utf8')), 'act3_more.js still has a [scaffold] line');
+  const scaffold = [], missing = [], multiline = [], was = i18nMod.getLang();
+  i18nMod.setLang('es');
+  try {
+    for (const m of A3P_MAPS) {
+      if (a3pMissing(m.name)) missing.push(`${m.id}.name`);
+      for (const o of m.objects) for (const t of [...a2pLines(o), ...(a2pSpeaks(o) ? [o.label.toUpperCase()] : [])]) {
+        if (/\[scaffold\]|\[polish/i.test(t)) scaffold.push(`${m.id}/${o.id}`);
+        if (a3pMissing(t)) missing.push(`${m.id}/${o.id}: ${t.slice(0, 50)}`);
+        if (t.includes('\n')) multiline.push(`${m.id}/${o.id}`);
+      }
+      const own = new Set(m.objects.map((o) => o.id));   // the crowd's townsfolk on these maps (es_audit lists them here)
+      for (const o of MAPS_FOR_TEST[m.id].objects.filter((q) => !own.has(q.id))) for (const t of a2pLines(o)) if (a3pMissing(t)) missing.push(`${m.id}/${o.id} (crowds.js): ${t.slice(0, 50)}`);
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(scaffold, [], 'a placeholder line is left');
+  assert.deepEqual(missing, [], 'add Spanish to src/i18n/es-act3.js');
+  assert.deepEqual(multiline, [], 'one line each, so a quest clue or a search result added under it still translates line by line');
+});
+test('hub #30 (Act 3): every polished Act 3 map can be reached, and from each way in everything on it can be walked up to', () => {
+  const linked = new Set(['room631']), todo = ['room631'];   // through every exit, flagged or not
+  while (todo.length) for (const o of MAPS_FOR_TEST[todo.shift()].objects) if (o.action === 'exit' && MAPS_FOR_TEST[o.to] && !linked.has(o.to)) { linked.add(o.to); todo.push(o.to); }
+  const ring3 = walkFrom('beltway');   // once the Beltway road is open, only the Meade's own gate stands in the way
+  const GATED = { meade_inside: ['meade', 'obj.meade_to_meade_inside'] };
+  const bad = [];
+  for (const id of A3P_IDS) {
+    if (!linked.has(id)) bad.push(`${id} can't be reached through the exits from Room 631`);
+    if (GATED[id]) {
+      const [from, door] = GATED[id], d = MAPS_FOR_TEST[from].objects.find((o) => o.id === door);
+      if (!ring3.has(from) || !d || d.to !== id || !d.requiresFlag) bad.push(`${id}: should open from ${from} through ${door}, and only there`);
+    } else if (!ring3.has(id)) bad.push(`${id} sits behind a flagged door`);
+    const m = MAPS_FOR_TEST[id];
+    for (const back of m.objects.filter((o) => o.action === 'exit' && MAPS_FOR_TEST[o.to])) {   // arrive the way the game does
+      const via = MAPS_FOR_TEST[back.to].objects.find((o) => o.action === 'exit' && o.to === id && o.pair === back.id);
+      if (!via) { bad.push(`${id}: nothing in ${back.to} leads to ${back.id}`); continue; }
+      const sim = new Sim(MAPS_FOR_TEST[back.to], { seed: 'a3p' });
+      for (const [pid, c] of [['a', 'manuel'], ['b', 'trevor'], ['c', 'michael']]) sim.addPlayer(pid, c);
+      sim.setMap(m, back.to, via.id);
+      const starts = [...sim.players.values()].map((p) => [Math.floor(p.x / 16), Math.floor(p.y / 16)]);
+      const seen = new Set(starts.map(([x, y]) => `${x},${y}`)), q = [...starts];
+      while (q.length) {
+        const [x, y] = q.shift();
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
+          if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
+          seen.add(k); q.push([nx, ny]);
+        }
+      }
+      for (const [x, y] of starts) if (m.solid(x, y)) bad.push(`${id}: arriving from ${back.to} lands in a wall at ${x},${y}`);
+      for (const o of m.objects) if (![[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${o.x + dx},${o.y + dy}`))) bad.push(`${id}: ${o.id} can't be reached from ${back.id}`);
+      for (const e of m.enemies) if (!seen.has(`${Math.floor(e.x / 16)},${Math.floor(e.y / 16)}`)) bad.push(`${id}: ${e.kind} is walled off from ${back.id}`);
+    }
+  }
+  assert.deepEqual(bad, []);
+});
+test('hub #30 (Act 3): each polished Act 3 area has its rows in the sealed list, built from systems that already exist', () => {
+  const rows = p30Rows('Act 3');
+  const listed = new Set(rows.map((c) => c[2].replace(/`/g, '')));
+  assert.ok(listed.size >= A3P_MAPS.length, 'docs/sealed/secrets-later-acts.md: a row per find, with its object id, in the Act 3 section');
+  for (const c of rows) assert.ok(rows.filter((r) => r[2] === c[2]).length === 2, `${c[2]}: one row in English and one in Spanish`);
+  const byId = new Map(A3P_MAPS.flatMap((m) => m.objects.map((o) => [o.id, [m, o]])));
+  for (const id of listed) assert.ok(byId.has(id), `${id}: in the sealed file's Act 3 section but on none of the polished Act 3 maps`);
+  const isFind = (o) => !!(o.grant || o.loot || o.action === 'pages' || o.later?.length);
+  const questFlags = new Set(AlignSide.SIDE_QUESTS.flatMap((q) => [q.report?.flag, q.inspect?.flag, q.give?.flag].filter(Boolean)));
+  const questObjs = new Set(AlignSide.SIDE_QUESTS.map((q) => q.inspect?.obj).filter(Boolean));
+  const atlas = new Set(['props', 'big', 'wide', 'doors'].flatMap((s) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${s}.json`, import.meta.url), 'utf8')).frames)));
+  const everyId = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.map((o) => o.id));
+  const actions = new Set([undefined, 'exit', 'shop', 'pages']);   // only what WorldScene already does with an object
+  for (const m of A3P_MAPS) {
+    assert.ok(m.objects.some((o) => listed.has(o.id)), `${m.id}: no row in docs/sealed/secrets-later-acts.md`);
+    for (const o of m.objects) {
+      if (listed.has(o.id)) assert.ok(isFind(o), `${o.id}: listed in the sealed file, but built from no existing system`);
+      else assert.ok(!isFind(o), `${m.id}/${o.id}: add its row to docs/sealed/secrets-later-acts.md`);
+      if (isFind(o) && !o.npc) assert.ok(!questObjs.has(o.id), `${o.id}: a quest reads this object, so a find on it would take the quest's turn`);
+      assert.ok(actions.has(o.action), `${m.id}/${o.id}: action ${o.action} is new`);
+      if (o.grant) {
+        assert.ok(ITEMS[o.grant], `${o.id}: no item ${o.grant}`); assert.ok(o.text && o.doneText && !o.loot, `${o.id}: a one-time grant needs text and doneText`);
+        assert.ok(!ITEMS[o.grant].unique && ITEMS[o.grant].slot !== 'key', `${o.id}: a small find hands out nothing unique and no key item`);
+      }
+      if (o.loot) assert.ok(A2P_LOOT[o.loot] && !A2P_LOOT[o.loot].to, `${o.id}: no shared loot table ${o.loot}`);
+      if (o.action === 'pages') assert.ok(o.pages.length > 1, `${o.id}: pages to step through`);
+      for (const l of o.later ?? []) { assert.ok(o.npc, `${o.id}: later lines only play for people`); assert.ok(questFlags.has(l.if), `${o.id}: nothing in the game sets ${l.if}`); }
+      if (!o.selfDrawn) assert.ok(atlas.has(o.art ?? o.id), `${o.id}: no art ${o.art ?? o.id} in assets/sprites`);
+      assert.notEqual(o.art, 'obj.board', `${m.id}/${o.id}: still the placeholder corkboard`);
+      assert.equal(everyId.filter((id) => id === o.id).length, 1, `${o.id}: the id is used on another map too (finds and searches are keyed by it)`);
+    }
+    for (const s of m.scenery ?? []) assert.ok(atlas.has(s.art), `${m.id}: no scenery art ${s.art}`);
+  }
+});
+test('hub #30 (Act 3): children on the polished Act 3 maps, the crowd\'s included, are talk only, and no gag picks them', () => {
+  const approach = new A2P_Approach({ save: { party: { manuel: {} }, world: {} }, character: 'manuel', input: { keyboard: { on() {} } }, _questHandIns: () => [] });
+  const people = A3P_IDS.flatMap((id) => MAPS_FOR_TEST[id].objects.filter((o) => o.npc));
+  for (const o of people) assert.notEqual(o.eggOk, true, `${o.id}: nobody here is a gag target`);
+  for (const o of people.filter((q) => q.age === 'child')) {
+    assert.equal(o.approach, false, `${o.id}: talk only, nobody pickpockets or intimidates a kid`);
+    assert.deepEqual(approach.options(o).map((a) => a.id), ['talk'], `${o.id}: Talk is the only approach`);
+    assert.equal(approach.intercept(o), false, `${o.id}: no approach menu opens, so pressing E just talks`);
+    assert.ok(o.eggNo, `${o.id}: no gag picks a child`);
+  }
+  assert.ok(MAPS_FOR_TEST.frederick.objects.some((o) => o.age === 'child'), 'the frightened kid in Frederick is still there');
+});
+test('hub #30 (Act 3): quest objects, givers, exits, spawns and enemies on the polished maps are where they were; the Meade inside keeps its layout', () => {
+  const WAS = {
+    'npc.bw_driver': [26, 7], 'obj.bw_to_frederick': [9, 0], 'obj.bw_to_gaithersburg': [25, 0], 'obj.bw_to_corridor': [0, 4], 'obj.bw_to_r1n': [38, 4], 'obj.bw_to_enclave': [19, 10],
+    'npc.cor_nightshift': [25, 7], 'obj.cor_handbook': [19, 8], 'obj.corridor_crate_6_4': [6, 4], 'obj.corridor_out': [33, 8], 'obj.corridor_to_cor_sealed': [18, 0], 'obj.corridor_to_cor_town': [24, 10],
+    'obj.gt_cradle': [6, 5], 'npc.gt_physicist': [14, 5], 'obj.gt_master_clock': [20, 5], 'obj.gaithersburg_out': [26, 10], 'obj.gaithersburg_to_gt_clockroom': [20, 3], 'obj.gaithersburg_to_gt_labs': [23, 3],
+    'obj.fr_guestbook': [7, 3], 'npc.fr_old_woman': [7, 5], 'obj.fr_potlines': [6, 7], 'obj.frederick_out': [12, 9], 'obj.frederick_to_fr_switchyard': [35, 8], 'obj.frederick_to_fr_market': [5, 0],
+    'obj.en_metro': [17, 3], 'npc.en_cleaner': [13, 7], 'obj.en_archive': [32, 7], 'obj.enclave_out': [18, 0], 'obj.enclave_to_en_archive': [4, 9], 'obj.enclave_to_en_mall': [10, 0], 'obj.enclave_to_en_metro': [14, 9],
+    'obj.cor_meters': [27, 5], 'obj.cor_sealed_out': [14, 8],
+    'obj.gt_leapseconds': [18, 3], 'npc.gt_timekeeper': [10, 5], 'obj.gt_clockroom_out': [10, 7],
+    'obj.fr_dashboard_room': [28, 3], 'obj.fr_switchyard_out': [0, 7],
+    'obj.en_parchment': [11, 2], 'npc.en_functionary': [11, 5], 'obj.en_archive_out': [11, 8],
+    'obj.md_the_wall': [14, 2], 'obj.md_intercepts': [22, 2], 'npc.md_analyst': [14, 6], 'obj.meade_inside_out': [14, 8],
+  };
+  const SPAWN = { beltway: [13, 9], corridor: [29, 9], gaithersburg: [25, 8], frederick: [12, 8], enclave: [18, 8], cor_sealed: [14, 7], gt_clockroom: [10, 6], fr_switchyard: [3, 7],
+    en_archive: [11, 7], meade_inside: [14, 7] };
+  // In map order, so saved kills keep their keys (`<map>#<index>`).
+  const FOES = { beltway: ['enemy.captcha 34,7'], corridor: ['enemy.autocomplete 17,5', 'enemy.autocomplete 5,8', 'enemy.autocomplete 31,8'],
+    gaithersburg: ['enemy.moth 6,8', 'enemy.moth 23,8', 'boss.gt_clock 6,4'], frederick: ['enemy.rot_taken 30,7', 'boss.fr_potline 22,1'],
+    enclave: ['enemy.captcha 8,8', 'enemy.captcha 28,8', 'boss.en_gate 32,5'], cor_sealed: ['enemy.autocomplete 4,5', 'enemy.autocomplete 16,5', 'enemy.autocomplete 26,5', 'boss.cor_hall 27,3'],
+    gt_clockroom: ['enemy.moth 4,5', 'enemy.moth 17,5'], fr_switchyard: ['enemy.rot_taken 12,5', 'enemy.rot_taken 29,6'], en_archive: ['enemy.captcha 6,6', 'enemy.captcha 17,6'],
+    meade_inside: ['enemy.captcha 4,6', 'enemy.captcha 24,6'] };
+  const at = new Map(A3P_MAPS.flatMap((m) => m.objects.map((o) => [o.id, o])));
+  for (const [id, xy] of Object.entries(WAS)) assert.deepEqual(at.has(id) && [at.get(id).x, at.get(id).y], xy, `${id} moved`);
+  for (const m of A3P_MAPS) {
+    assert.deepEqual(m.spawns.map((s) => [Math.floor(s.x / 16), Math.floor(s.y / 16)]), [SPAWN[m.id]], `${m.id}: the spawn moved`);
+    assert.deepEqual(m.enemies.map((e) => `${e.kind} ${(e.x - 8) / 16},${(e.y - 8) / 16}`), FOES[m.id] ?? [], `${m.id}: the enemies changed`);
+    for (const o of m.objects.filter((q) => q.action === 'exit')) assert.ok(WAS[o.id], `${o.id}: a new way in or out; add it to this list`);
+  }
+  for (const q of AlignSide.SIDE_QUESTS) {
+    for (const id of [q.giver, q.inspect?.obj]) if (id && at.has(id)) assert.ok(WAS[id], `${q.id}: ${id} is on a polished Act 3 map; add it to this list`);
+    if (q.inspect && at.has(q.inspect.obj)) assert.ok(at.get(q.inspect.obj).text, `${q.id}: the clue is read under the object's own text, so it needs one`);
+  }
+  // The Meade inside: a later systems design may use the room, so the polish changes its lines only.
+  const md = A3P_MAPS.find((m) => m.id === 'meade_inside');
+  assert.deepEqual(md.layout, ['############################', '#eeeeeeee#eeeeeeeee#eeeeeee#', '#eeeeeeee#eeeeeeeee#eeeeeee#', '#eeeeeeee#eeeeeeeee#eeeeeee#',
+    '#eeeeeeeeeeeeeeeeeeeeeeeeee#', '#eeeeeeee#eeeeeeeee#eeeeeee#', '#eeeeeeee#eeeeeeeee#eeeeeee#', '#eeeeeeeeeeeeeeeeeeeeeeeeee#', '##############ee############'], 'the Meade inside: its grid');
+  assert.deepEqual(md.objects.map((o) => o.id), ['obj.md_the_wall', 'obj.md_intercepts', 'npc.md_analyst', 'obj.meade_inside_out'], 'the Meade inside: nothing added or taken away');
+  assert.deepEqual(md.scenery.map((s) => `${s.art} ${s.x},${s.y}`), ['obj.table 2,2', 'obj.table 3,2', 'obj.table 5,2', 'obj.table 6,2', 'obj.table 2,4', 'obj.table 3,4', 'obj.table 5,4', 'obj.table 6,4'], 'the Meade inside: its desks');
+  const out = md.objects.find((o) => o.id === 'obj.meade_inside_out');
+  assert.deepEqual([out.to, out.pair, out.w, out.stepOn], ['meade', 'obj.meade_to_meade_inside', 2, true], 'the Meade inside: its way out');
+});
+test('hub #30 (Act 3): es-act3.js is wired in and agrees with the other Spanish tables wherever they share an English line', () => {
+  const clash = [];
+  for (const [name, tb] of Object.entries(A3P_TABLES)) for (const [en, es] of Object.entries(A3P_ES)) if (tb && Object.hasOwn(tb, en) && tb[en] !== es) clash.push(`${JSON.stringify(en.slice(0, 40))}: ${name} says "${tb[en].slice(0, 30)}"`);
+  for (const [id, def] of Object.entries(ITEMS)) for (const [k, i] of [['name', 0], ['text', 1]]) {   // items translate through es-items.js
+    const es = ES_ITEMS[id.replace(/^item\./, '')]?.[i];
+    if (es && Object.hasOwn(A3P_ES, def[k]) && A3P_ES[def[k]] !== es) clash.push(`${id}.${k}`);
+  }
+  assert.deepEqual(clash, [], 'use one Spanish string in both tables');
+  const was = i18nMod.getLang(), wrong = [];
+  i18nMod.setLang('es');
+  try { for (const [en, es] of Object.entries(A3P_ES)) if (i18nMod.tr(en) !== es) wrong.push(en.slice(0, 50)); } finally { i18nMod.setLang(was); }
+  assert.deepEqual(wrong, [], 'src/i18n.js reads es-act3.js, and nothing later in the table overrides it');
+  const audit = fs.readFileSync(new URL('../tools/i18n/es_audit.mjs', import.meta.url), 'utf8');
+  assert.ok(/import \{ ES_ACT3 \} from '..\/..\/src\/i18n\/es-act3\.js'/.test(audit) && /Object\.assign\(exact, ES_ACT3\)/.test(audit), 'tools/i18n/es_audit.mjs counts es-act3.js');
+});
+test('hub #30 (Act 3), canon: the lines keep to the quest clues, the naming rule and the house style', () => {
+  const obj = (mapId, id) => A3P_MAPS.find((m) => m.id === mapId).objects.find((o) => o.id === id);
+  const all = A3P_MAPS.flatMap((m) => m.objects.flatMap((o) => a2pLines(o).map((t) => [`${m.id}/${o.id}`, t])));
+  // The clues are read under these lines (WorldScene: the object's text, then the clue), so a line can't say the clue first.
+  const FIRST = {
+    'corridor/obj.cor_handbook': /scratch|slogan|code faster|end of the day/i, 'cor_sealed/obj.cor_meters': /spinn|spins|moving|turning/i,
+    'gaithersburg/obj.gt_master_clock': /\d/, 'gaithersburg/obj.gt_cradle': /\bkg\b|approximately/i, 'gt_clockroom/obj.gt_leapseconds': /different hand|wrong|not neat/i,
+    'frederick/obj.fr_guestbook': /\bher\b|sixty/i, 'frederick/obj.fr_potlines': /nine|painted over|still lit/i, 'fr_switchyard/obj.fr_dashboard_room': /chair|dashboard|laugh/i,
+    'enclave/obj.en_metro': /pause|calm voice/i, 'enclave/obj.en_archive': /stamp|forty/i, 'en_archive/obj.en_parchment': /\brot\b|same words/i, 'meade_inside/obj.md_intercepts': /next week|future/i,
+  };
+  for (const [where, rx] of Object.entries(FIRST)) { const [m, id] = where.split('/'); assert.ok(!rx.test(obj(m, id).text), `${where}: leave the clue to the clue: ${obj(m, id).text.slice(0, 60)}`); }
+  // The old woman's errands carry the dates and the numbers; her own line adds none.
+  assert.ok(!/\d|\b(nine|ninety|forty|sixty)\b/i.test(obj('frederick', 'npc.fr_old_woman').text), 'her errands carry the dates; her line adds none');
+  // The wall in the Meade stays a stub until the lore gate fills it: nothing on it can be read, and the list has no
+  // property of its own yet (nothing struck out, nothing added).
+  assert.ok(!/\d|:|struck|crossed|again/i.test(obj('meade_inside', 'obj.md_the_wall').text) && /read/.test(obj('meade_inside', 'obj.md_the_wall').text), 'the wall stays a stub');
+  // One master clock: the quest's guardian is the clock that runs the clocks, so the display sends nobody elsewhere.
+  assert.ok(!/master clock|repeater|relay|below/i.test(obj('gaithersburg', 'obj.gt_master_clock').text), 'the display names no other clock');
+  // The Beltway: nothing here may read like the real 2024 bridge collapse (no road crew, potholes or job left unfinished).
+  for (const [where, t] of all.filter(([w]) => /^beltway\//.test(w))) {
+    assert.ok(!/\b(potholes?|crews?|bridges?|ships?|vessels?|collisions?|collapsed?|wreck(age)?|struck|never signed)\b/i.test(t), `${where} reads like a disaster: ${t.slice(0, 60)}`);
+    assert.ok(!/\b(baches?|cuadrillas?|puentes?|derrumb\w*|nunca firmad\w*)\b/i.test(A3P_ES[t] ?? ''), `${where}: the Spanish reads like a disaster: ${(A3P_ES[t] ?? '').slice(0, 60)}`);
+  }
+  // Naming in what players read (bible §2): "code rot", "code rotter", "Code-rot-taken", and "John Pork" in full.
+  for (const [where, t] of all) {
+    assert.ok(!/(?<!code[ -])\brot(ter)?s?\b/i.test(t) && !/(?<!John )\bPork\b/.test(t), `${where}: the naming rule: ${t.slice(0, 60)}`);
+    assert.ok(!/\b[A-Z]{3,}, [A-Z]{3,}, (and )?[A-Z]{3,}\b/.test(t) && !/\b(\w+), \1, \1\b/i.test(t), `${where}: a triplet: ${t.slice(0, 60)}`);
+  }
+});
+
 const fartMod = await import('../src/game/fart.js');
 const buttMod = await import('../src/game/bigButt.js');
 const npcLifeMod = await import('../src/content/npc_life.js');
@@ -815,6 +1224,35 @@ test('running gags: the 245 lab chat and the abuela voice notes come round, with
   const all = Object.values(gagsMod.GAG_LINES).flatMap((g) => Object.values(g).flat());
   const missing = all.filter((l) => !linesEsMod.LINES_ES[l]);
   assert.deepEqual(missing, [], 'Spanish for these lines in src/content/lines_es.js');
+});
+
+const hostPickMod = await import('../src/game/hostPick.js');
+const hostPickBelt = await import('../src/game/beltless.js');
+test('sealed (hub #67): picks one that can play now, then cools down', () => {
+  const sc = { mode: 'solo', time: { now: 100000 }, save: { flags: {}, party: { manuel: { level: 1 } } }, fart: { next: 9e9 }, beltless: { next: 9e9 }, bigButt: { next: 9e9 }, toothpaste: { next: 9e9 }, gags: { next: { chat: 9e9, abuela: 9e9 } } };
+  const apart = { players: [{ id: 'm', c: 'manuel', x: 0, y: 0 }, { id: 'k', c: 'michael', x: 500, y: 0 }, { id: 't', c: 'trevor', x: 900, y: 0 }] };
+  assert.deepEqual(hostPickMod.pickOptions(sc, apart).map((g) => g.id).sort(), ['abuela', 'belt', 'butt', 'chat', 'fart']);
+  const b = new hostPickMod.HostPick(sc);
+  assert.equal(b.press(apart, () => 0), 'fart');
+  assert.equal(sc.fart.next, 0);
+  assert.equal(b.press(apart, () => 0), null, 'cooldown');
+  sc.time.now += 4000;
+  assert.equal(b.press({ players: [] }), null);
+  // every option must reach its module's real timer: a picked one plays on that module's next update
+  const sc2 = { mode: 'solo', time: { now: 300000 }, save: { flags: { 'act1.switchyard.solved': true }, world: { act: 1 }, party: { manuel: { level: 1 } } } };
+  const sent2 = []; sc2.crush = new Crush(sc2); sc2.crush._send = (m) => sent2.push(m);
+  const close = { players: [{ id: 'm', c: 'manuel', x: 0, y: 0 }, { id: 'k', c: 'michael', x: 10, y: 0 }] };
+  sc2.crush.update(close);
+  assert.equal(sent2.length, 0, 'not due yet');
+  assert.equal(new hostPickMod.HostPick(sc2).press(close, () => 0), 'g');
+  sc2.crush.update(close);
+  assert.equal(sent2.filter((m) => m.g).length, 1, 'the picked one plays');
+  // a capped one that has run out is never offered (it would not fire); the cap arrives with PR #134
+  const beltMax = hostPickBelt.BELT_MAX;
+  if (beltMax != null) {
+    const sc3 = { ...sc, save: { flags: { 'gag.belt.count': beltMax }, party: { manuel: { level: 1 } } } };
+    assert.ok(!hostPickMod.pickOptions(sc3, apart).some((g) => g.id === 'belt'), 'offered one that has run out');
+  }
 });
 
 const settingsMod = await import('../src/settings.js');
@@ -1443,6 +1881,61 @@ test('pipe puzzle: every seed is solvable and starts unsolved', () => {
 // Every generated scene (romance and checkpoint included), so a new scene can't skip this check.
 const SCENES = fs.readdirSync(new URL('../src/content/dialogue/act1/', import.meta.url)).filter((f) => f.endsWith('.js')).map((f) => f.replace(/\.js$/, ''));
 const { loadScene, Conversation, evalCond } = await import('../src/engine/dialogue.js');
+test('a shared choice becomes an actor line before its branch effects apply', () => {
+  const scene = { start: 'start', nodes: {
+    start: { lines: [], choices: [{ text: '*Take the left door.*', go: 'left' }, { text: 'Take the right door.', go: 'right' }] },
+    left: { lines: [{ who: 'Guard', text: 'Go ahead.' }], choices: [], effects: [{ op: 'set', arg: 'door.left' }] },
+    right: { lines: [{ who: 'Guard', text: 'Room is locked.' }], choices: [] },
+  } };
+  const flags = {}, ctx = { flags }, sink = { flag: (key, value) => { flags[key] = value; } };
+  const conv = new Conversation(scene, null, ctx, sink);
+  conv.choose(0, 'manuel');
+  assert.deepEqual(conv.line, { who: 'manuel', text: 'Take the left door.', choice: true });
+  assert.deepEqual(conv.choices, []);
+  assert.equal(flags['door.left'], undefined);
+  conv.choose(1, 'michael');
+  conv.advance();
+  assert.deepEqual(conv.line, { who: 'Guard', text: 'Go ahead.' });
+  assert.equal(flags['door.left'], true);
+  const solo = new Conversation(scene, null, ctx, sink);
+  solo.choose(1);
+  assert.equal(solo.nodeId, 'right');
+});
+
+test('a busy shared chooser receives the current offer once free', async () => {
+  const { SharedEvents } = await import('../src/game/sharedEvent.js');
+  const banner = {
+    setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; },
+    setText() { return this; }, setVisible() { return this; },
+  };
+  const sent = [];
+  const local = { spectator: false };
+  const scene = {
+    character: 'manuel', mode: 'client', dlg: local,
+    input: { keyboard: { on() {} } }, time: { addEvent() {} }, add: { text: () => banner },
+    net: { send: (msg) => sent.push(msg) }, _drawDialogue() {},
+  };
+  const shared = new SharedEvents(scene);
+  const state = { choices: ['Take the left door.'], decider: 'manuel', turn: 2 };
+  shared.onMsg({ t: 'evStart', id: 'host:ended', main: 'trevor', scope: 'all' });
+  shared.onMsg({ t: 'evState', id: 'host:ended', state });
+  shared.onMsg({ t: 'evEnd', id: 'host:ended' });
+  shared.onMsg({ t: 'evStart', id: 'host:live', main: 'trevor', scope: 'all' });
+  shared.onMsg({ t: 'evState', id: 'host:live', state });
+  assert.equal(scene.dlg, local);
+  scene.dlg = null;
+  scene.menu = 'inventory';
+  shared._pump();
+  assert.equal(scene.dlg, null);
+  scene.menu = null;
+  shared._pump();
+  assert.equal(shared.watching.id, 'host:live');
+  assert.equal(scene.dlg.choices[0].text, 'Take the left door.');
+  scene.dlg.choose(0);
+  scene.dlg.choose(0);
+  assert.deepEqual(sent, [{ t: 'evChoose', id: 'host:live', i: 0, turn: 2, who: 'manuel' }]);
+});
+
 await (async () => {
   try {
     for (const name of SCENES) {
@@ -1686,6 +2179,9 @@ test('progression (Trevor: too easy, too low a ceiling): steeper curve, costed s
   assert.equal(cost, 13);
   let pts = 0; for (let lv = 2; lv <= 5; lv++) pts += Prog.abilityPointsAt(lv);
   assert.ok(pts < cost / 2, 'level 5 is nowhere near a maxed score');
+  const maxCost = Array.from({ length: Abil.MAX_SCORE - 14 }, (_, i) => Abil.raiseCost(14 + i)).reduce((a, b) => a + b);
+  const earned = Array.from({ length: Prog.LEVEL_CAP - 1 }, (_, i) => Prog.abilityPointsAt(i + 2)).reduce((a, b) => a + b);
+  assert.equal(maxCost, earned);
   assert.ok(Prog.xpToNext(1) === 30 && Prog.xpToNext(10) > 1000 && Prog.xpToNext(20) > 3000);
   const c = { level: 1, xp: 0, skillPoints: 0, abilityPoints: 0 };
   assert.deepEqual(Prog.addXp(c, 30 + 91), [2, 3]); assert.equal(c.skillPoints, 2); assert.equal(c.abilityPoints, 2);
@@ -1920,6 +2416,47 @@ test('Ping rework (hub #66): the pulse jolts, a marked kill hands the pinger coo
   assert.ok(Math.abs(ai.skillCd - (4 - PING.refund)) < 1e-9, 'whoever runs Michael now gets the refund');
 });
 
+test('alternate R moves change targeting, stamina, and marks, while the transformed move takes priority', () => {
+  const map = rotArena();
+  map.solid = (x, y) => x === 8 && y === 5;
+  const sim = new Sim(map);
+  for (const [id, who] of [['tr', 'trevor'], ['ma', 'manuel'], ['mi', 'michael']]) sim.addPlayer(id, who);
+  const tr = sim.players.get('tr'), ma = sim.players.get('ma'), mi = sim.players.get('mi');
+  Object.assign(tr, { x: 96, y: 80, aim: 0, activeAbility: 'chord', sta: 10 });
+  Object.assign(ma, { x: 96, y: 134, activeAbility: 'rally', sta: 85 });
+  Object.assign(mi, { x: 96, y: 200, aim: 0, activeAbility: 'focus', sta: 10 });
+  const foe = (id, x, y) => {
+    const e = { id, kind: 'enemy.rotling', x, y, hp: 200, cd: 9, hurtT: 0, sleepT: 99 };
+    sim.enemies.set(id, e);
+    return e;
+  };
+  const front = foe('front', 160, 64), behind = foe('behind', 75, 80), blocked = foe('blocked', 144, 88);
+  sim._ability(tr);
+  assert.equal(front.hp, 194);
+  assert.ok(front.kx > 0 && !behind.kx);
+  assert.equal(behind.hp, 200);
+  assert.equal(blocked.hp, 200);
+  assert.equal(sim.snapshot().players.find((p) => p.id === 'tr').skMax, 8);
+
+  sim._ability(ma);
+  assert.equal(ma.sta, 100);
+  assert.equal(tr.sta, 40);
+  assert.equal(mi.sta, 10);
+  assert.equal(sim.decoys.length, 0);
+  ma.morphed = true; ma.morphStage = 2;
+  sim._ability(ma);
+  assert.ok(ma.gonT > 0);
+
+  const aimed = foe('aimed', 285, 200), offAxis = foe('off-axis', 148, 245), distant = foe('farther', 302, 200);
+  sim._ability(mi);
+  assert.equal(aimed.marked, 8);
+  assert.equal(aimed.markedBy, 'michael');
+  assert.equal(aimed.hp, 200);
+  assert.equal(aimed.hurtT, 0);
+  assert.equal(offAxis.marked, undefined);
+  assert.equal(distant.marked, undefined);
+});
+
 test('Lake Artemesia\'s enemies hit harder and last longer than the same kind elsewhere (map enemyPower)', () => {
   const lake = MAPS_FOR_TEST.lake;
   assert.ok(lake.enemyPower?.hp > 1 && lake.enemyPower?.dmg > 1);
@@ -2111,6 +2648,80 @@ try {
   if (savedPhaserForCraft === undefined) delete globalThis.Phaser;
   else globalThis.Phaser = savedPhaserForCraft;
 }
+
+test('co-op puzzles (Trevor: everyone participates or spectates, no races): the signal panel is one shared board on the host', async () => {
+  const { PipeTable } = await import('../src/game/pipeTable.js');
+  const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js');
+  const panel = { id: 'obj.panel', puzzle: 'pipes', solvedFlag: 'act1.cam.fixed', x: 5, y: 5 };
+  const sent = [], solved = [];
+  const host = { mode: 'host', localId: 'host', save: { world: { seed: 'pipes-coop' }, flags: {} }, map: { objects: [panel] },
+    net: { broadcast: (m) => sent.push(['all', m]), send: (to, m) => sent.push([to, m]) }, _pipeSolvedHere: (id) => solved.push(['host', id]) };
+  const views = [];
+  const mk = () => { const v = { rots: null, closed: false, setRots(r) { this.rots = [...r]; }, finish() { this.closed = true; } }; views.push(v); return v; };
+  const t = new PipeTable(host, { makeView: mk, near: (peer) => peer !== 'far', solved: (o) => { host.save.flags[o.solvedFlag] = (host.save.flags[o.solvedFlag] ?? 0) + 1; } });
+  const hv = t.open(panel);
+  assert.deepEqual(hv.rots, new PipePuzzle(null, 'pipes-coop:obj.panel').rots(), 'the host sees the seeded board');
+  t.onHostMsg('g1', { t: 'pipe', op: 'open', id: panel.id });
+  assert.deepEqual(sent.at(-1), ['g1', { t: 'pipe', op: 'state', id: panel.id, rots: hv.rots }], 'a guest who walks up gets the live board');
+  // two guests click the same tile in the same moment: both turns land, in order, nobody's lost
+  const model = new PipePuzzle(null, 'pipes-coop:obj.panel'), k = model.grid.flat().findIndex((c) => !c.locked), i = k % model.cols, j = Math.floor(k / model.cols);
+  const r0 = hv.rots[k];
+  t.onHostMsg('g1', { t: 'pipe', op: 'rot', id: panel.id, i, j }); t.onHostMsg('g2', { t: 'pipe', op: 'rot', id: panel.id, i, j });
+  assert.equal(hv.rots[k], (r0 + 2) % 4, 'two turns, applied one after the other');
+  assert.ok(sent.filter(([to, m]) => to === 'all' && m.op === 'state').length >= 2, 'and everyone watching sees each one');
+  assert.equal(t.apply('far', panel.id, i, j), false, 'someone across the map can watch but not turn');
+  const lk = model.grid.flat().findIndex((c) => c.locked);
+  if (lk >= 0) assert.equal(t.apply('g1', panel.id, lk % model.cols, Math.floor(lk / model.cols)), false, 'rotted tiles stay put');
+  // solve it from the solution, with two people racing on the last tile: one solve, recorded once
+  const sol = new PipePuzzle(null, 'pipes-coop:obj.panel');
+  const want = sol.grid.flat().map((c) => c.solution ?? c.r);
+  let last = null;
+  sol.grid.flat().forEach((c, n) => { if (c.solution == null || c.locked) return; while (t._rots(panel.id)[n] !== want[n]) { last = [n % sol.cols, Math.floor(n / sol.cols)]; if (!t.apply('g1', panel.id, ...last)) break; } });
+  assert.equal(host.save.flags['act1.cam.fixed'], 1, 'turning every tile to its answer solves it');
+  {
+    t.apply('g2', panel.id, ...last);
+    assert.equal(host.save.flags['act1.cam.fixed'], 1, 'solved once, even with someone still clicking');
+    assert.ok(sent.some(([, m]) => m.op === 'solved'), 'everyone is told'); assert.ok(hv.closed, 'and every open board closes');
+    // a late opener, after the solve but before the world flags reach them (John Pork, PR #141)
+    t.onHostMsg('g3', { t: 'pipe', op: 'open', id: panel.id });
+    assert.deepEqual(sent.at(-1), ['g3', { t: 'pipe', op: 'solved', id: panel.id, by: null }], 'a late opener is told it\'s solved');
+    const gsolved = [];
+    const guest = new PipeTable({ mode: 'client', localId: 'g3', save: { world: { seed: 'pipes-coop' }, flags: {} }, map: { objects: [panel] }, net: { send() {} }, _pipeSolvedHere: (id) => gsolved.push(id) }, { makeView: mk });
+    const gv = guest.open(panel); guest.onClientMsg(sent.at(-1)[1]);
+    assert.ok(gv.closed && gsolved.length === 0, 'their board closes, and the scene stays with the player who finished it');
+  }
+});
+
+test('co-op puzzles: a guest pressing a lever, a clock or a bust runs on the host, replies to them, and shows the room', () => {
+  const save = newSave({ seed: 'pact', rolls: {}, gameVersion: 't' }), sent = [], toasts = [];
+  const lever = { id: 'obj.switch_a', label: 'Lever A', x: 3, y: 3 };
+  const sim = { players: new Map([['host', { id: 'host', character: 'trevor', x: 3 * 16 + 8, y: 4 * 16 + 8 }], ['g1', { id: 'g1', character: 'manuel', x: 3 * 16 + 8, y: 4 * 16 + 8 }], ['g2', { id: 'g2', character: 'michael', x: 400, y: 400 }]]) };
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', localId: 'host', character: 'trevor', save, sim, map: { id: 'switchyard', objects: [lever] },
+    net: { conns: new Map([['g1', 1], ['g2', 1]]), send: (to, m) => sent.push([to, m]), broadcast() {} }, cameras: { main: { shake() {} } }, _drawLevers() {}, _refreshPuzzleProps() {}, _checkGate: () => false });
+  const realToast = CraftWorldScene.prototype._toast; CraftWorldScene.prototype._toast = function (t) { toasts.push(t); };
+  try {
+    assert.ok(sc._puzzleAct('g1', 'obj.switch_a'), 'a guest at the lever');
+    assert.equal(save.flags['act1.switch.a'], 'right', 'the host pulled it, on the host\'s state');
+    assert.ok(sent.some(([to, m]) => to === 'g1' && m.t === 'toast' && /Lever A/.test(m.text)), 'the guest who pulled it hears it');
+    assert.ok(sent.some(([to, m]) => to === 'g2' && m.t === 'toast' && /MANUEL · Lever A/.test(m.text)) && toasts.some((t) => /MANUEL · Lever A/.test(t)), 'everyone else sees who did what');
+    sc._puzzleAct('g1', 'obj.switch_a'); assert.equal(save.flags['act1.switch.a'], 'left', 'presses land one after another, never on stale state');
+    assert.equal(sc._puzzleAct('g2', 'obj.switch_a'), false, 'out of reach: refused');
+    assert.ok(!Object.prototype.hasOwnProperty.call(sc, '_say') && !Object.prototype.hasOwnProperty.call(sc, '_grant'), 'the host\'s own say and grant are back afterwards');
+  } finally { CraftWorldScene.prototype._toast = realToast; }
+});
+
+test('cutscenes: the HUD steps out from under the letterbox bars and comes back as it was (Trevor: weird cutoff on the UI)', () => {
+  const mk = (depth, visible = true, sf = 0) => ({ depth, visible, scrollFactorX: sf, active: true, setVisible(v) { this.visible = v; return this; } });
+  const hud = mk(9000), mini = mk(9050), hotbar = mk(8992), boss = mk(9100), hidden = mk(9001, false), world = mk(9000, true, 1), dialog = mk(9501), box = mk(9000), toast = mk(9300);
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), { children: { list: [hud, mini, hotbar, boss, hidden, world, dialog, box, toast] }, box, boxText: null, toastText: toast });
+  sc._stageHud(true);
+  assert.ok(!hud.visible && !mini.visible && !hotbar.visible && !boss.visible, 'the HUD is out of the way during the cutscene');
+  assert.ok(world.visible && dialog.visible && box.visible && toast.visible, 'world sprites, dialogue, the say box and toasts are untouched');
+  hud.setVisible(true); sc._stageHud(true); assert.ok(!hud.visible, 'and stays out even if something redraws it mid-cutscene');
+  sc._stageHud(false);
+  assert.ok(hud.visible && mini.visible && hotbar.visible && boss.visible, 'back afterwards');
+  assert.equal(hidden.visible, false, 'what was already hidden stays hidden');
+});
 
 test('rapid back-and-forth between areas (Trevor): exits wait after arriving, and an arrival beat never fires on the wrong map or gets lost', () => {
   let afterFn = null, hackDone = null, calls = 0, exits = 0, now = 10000;
@@ -2456,6 +3067,22 @@ test('room 631: reading the 245 textbook on the bookshelf sets lab.book (trevor,
   assert.equal(shelf.action, 'pages');
   assert.equal(shelf.flag, 'lab.book', 'the pages action sets this flag on the first press');
   assert.ok(/^The 245 lab textbook\./.test(shelf.pages[0]), 'and the first press shows the textbook');
+});
+test('Continuity posters (hub #100, Michael): out of 631, it is plain he is an enemy of the state; his likeness is never shown', async () => {
+  const { ES_ASTER } = await import('../src/i18n/es-aster.js'), { ES_PLAZA } = await import('../src/i18n/es-plaza.js');
+  const frames = JSON.parse(fs.readFileSync(new URL('../assets/sprites/props.json', import.meta.url), 'utf8')).frames;
+  const posters = (id) => MAPS_FOR_TEST[id].objects.filter((o) => /^obj\.ct_poster/.test(o.art ?? ''));
+  for (const [id, es] of [['aster_hall', ES_ASTER], ['aster_lobby', ES_ASTER], ['metro_plaza', ES_PLAZA]]) {
+    const ps = posters(id);
+    assert.ok(ps.length >= 2, `${id}: posters`);
+    for (const o of ps) {
+      assert.ok(frames[o.art], `${o.art}: no frame in props.json`);
+      assert.ok(es[o.text] && es[o.label], `${id}/${o.id}: Spanish`);
+      assert.ok(!/\b(face|snout|ears?|eyes|smil\w*|portrait of)\b/i.test(o.text), `${id}/${o.id}: describes the banned likeness`);
+    }
+  }
+  const door = MAPS_FOR_TEST.aster_hall.objects.find((o) => o.id === 'obj.door_631');
+  assert.ok(posters('aster_hall').some((o) => Math.hypot(o.x - door.x, o.y - door.y) <= 4), 'nothing right outside 631');
 });
 const { Approach } = await import('../src/game/approach.js');
 test('a caught pickpocket changes that roommate\'s NPC actions across saves until they apologize', () => {
@@ -2828,6 +3455,56 @@ test('skill trees: valid links, capstone needs all three branches, mods sum, old
   assert.equal(migrateSkills(old, 'trevor'), 2); assert.equal(old.skillPoints, 3); assert.deepEqual(Object.keys(old.skills), ['tr.amp']);
 });
 
+test('the host validates discovery, level, room ownership, and points before equipping a saved R move', () => {
+  const { abilityOptions, selectedAbility, skillKnown } = SkillsP;
+  const save = newSave({ seed: 'discoveries', rolls: {}, gameVersion: 'test' });
+  const sim = new Sim(rotArena()), handlers = {};
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    character: 'trevor', localId: 'host', mode: 'host', save, sim, remoteInputs: new Map(), events: { once() {} }, time: { addEvent() {} },
+    net: { on: (type, fn) => { handlers[type] = fn; }, broadcast() {} }, _refreshMenu() {},
+  });
+  const peers = { trevor: 'host', manuel: 'guestM', michael: 'guestI' };
+  for (const [who, peer] of Object.entries(peers)) sim.addPlayer(peer, who);
+  host._wireNet();
+  for (const [who, peer] of Object.entries(peers)) {
+    const node = SKILL_TREE[who].nodes.find((n) => n.ability);
+    const c = save.party[who], learn = { t: 'skill', id: node.id }, equip = { t: 'equipR', id: node.ability };
+    const signature = selectedAbility(who, c);
+    c.level = 3;
+    c.skillPoints = 2;
+    assert.equal(skillKnown(c, node, save), false);
+    handlers.msg(peer, learn);
+    handlers.msg(peer, equip);
+    assert.equal(c.skillPoints, 2);
+    assert.equal(selectedAbility(who, c), signature);
+    if (node.reveal.quest) (save.world.quests ??= {})[node.reveal.quest] = { stage: 1, started: true, done: true };
+    else save.flags[node.reveal.flag] = true;
+    assert.ok(skillKnown(c, node, save));
+    handlers.msg(peer, learn);
+    assert.equal(c.skills[node.id], undefined, 'discovery still requires the minimum level');
+    c.level = 4;
+    handlers.msg(peer, learn);
+    handlers.msg(peer, learn);
+    handlers.msg(peer, equip);
+    assert.equal(c.skillPoints, 1);
+    assert.equal(c.skills[node.id], 1);
+    assert.deepEqual(abilityOptions(who, c), [signature, node.ability]);
+    const imported = migrate(JSON.parse(JSON.stringify(save)));
+    assert.equal(selectedAbility(who, imported.party[who]), node.ability);
+    const p = sim.players.get(peer);
+    assert.equal(p.activeAbility, node.ability);
+    p.skillCd = 4;
+    handlers.msg(peer, { t: 'equipR', id: signature });
+    assert.equal(p.activeAbility, signature);
+    assert.equal(p.skillCd, 4);
+  }
+  handlers.msg('guestM', { t: 'equipR', id: 'chord' });
+  assert.equal(sim.players.get('guestM').activeAbility, 'decoy');
+  handlers.msg('guestM', { t: 'input', inp: { ...emptyInput(), skill: true } });
+  handlers.msg('guestM', { t: 'input', inp: emptyInput() });
+  assert.equal(host.remoteInputs.get('guestM').skill, true, 'a later neutral frame does not swallow the R press');
+});
+
 // tts/item-names: in tests/run.js, add one test that loops over ITEMS in src/content/items.js
 // and checks that every item has a non-empty name and text. List any that don't.
 test('every item in ITEMS has a non-empty name and text', () => {
@@ -2924,6 +3601,469 @@ test('arriving through any door never lands you on an exit, and your first step 
   }
   assert.equal(bad.length, 0, bad.join('; '));
 });
+
+// Comic pages (hub #5, #47): the data, the layout math, and the host-authoritative page-turn mode.
+{
+  const comicMod = await import('../src/game/comic.js');
+  const CL = await import('../src/game/render/comicLayout.js');
+  const { makeComicView } = await import('../src/game/render/comicPage.js');
+  const { COMIC_TRIGGERS } = await import('../src/content/comics/index.js');
+  const testAsync = async (name, fn) => { try { await fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}\n     ${e.message}`); } };
+  const comicDir = new URL('../src/content/comics/', import.meta.url);
+  const comicIds = fs.readdirSync(comicDir).filter((f) => f.endsWith('.js') && f !== 'index.js').map((f) => f.slice(0, -3));
+  const atlasFrames = {};
+  for (const f of fs.readdirSync(new URL('../assets/sprites/', import.meta.url))) {
+    if (!f.endsWith('.json')) continue;
+    const a = JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${f}`, import.meta.url), 'utf8'));
+    atlasFrames[f.slice(0, -5)] = new Map(Object.entries(a.frames).map(([k, v]) => [k, { w: v.frame.w, h: v.frame.h }]));
+  }
+  const comics = {};
+  for (const id of comicIds) comics[id] = await comicMod.loadComic(id);
+
+  test('comics: every comic decodes and checks out (layouts, art frames, English and Spanish on every line)', () => {
+    assert.ok(comicIds.includes('demo') && comicIds.includes('flashback_1'), comicIds.join(', '));
+    for (const id of comicIds) {
+      const c = comics[id];
+      assert.ok(c, `${id} does not load`);
+      assert.equal(c.id, id, `${id}.js says its id is ${c.id}`);
+      assert.deepEqual(comicMod.checkComic(c, atlasFrames), [], id);
+      const lines = c.pages.flatMap((p) => p.panels.flatMap((n) => n.text ?? []));
+      assert.ok(lines.length > 0 && lines.every((t) => t.en?.trim() && t.es?.trim()), `${id}: a line without English or Spanish`);
+    }
+  });
+
+  test('comics: the story comic is sealed (ROT13 in the file, readable once decoded), its parts play alone, and every trigger has pages', () => {
+    const src = fs.readFileSync(new URL('flashback_1.js', comicDir), 'utf8');
+    assert.match(src, /export default "/);
+    assert.ok(!/"pages"|"panels"|"balloon"/.test(src), 'plaintext keys in the sealed file');
+    assert.equal(comicMod.decodeComic(comicMod.rot13(JSON.stringify({ id: 'x', pages: [1] }))).id, 'x');
+    assert.ok(comics.flashback_1.pages.every((p) => /^part_\d$/.test(p.tag)), 'every page has its part tag');
+    for (const t of comicMod.pagesFor(comics.flashback_1, 'part_3')) assert.equal(t.tag, 'part_3');
+    assert.equal(comicMod.pagesFor(comics.flashback_1, 'part_9').length, 0);
+    // placement: each part waits on its own story flag, the whole plays only assembled and locks the host the first time
+    const fb = comics.flashback_1, tags = fb.pages.map((p) => p.tag);
+    assert.deepEqual(Object.keys(fb.pieces ?? {}).sort(), [...tags].sort(), 'every part needs its own pickup flag');
+    assert.equal(new Set(Object.values(fb.pieces)).size, tags.length, 'two parts share a pickup flag');
+    assert.ok(fb.assembled?.needs && fb.assembled.firstSkippable === false, 'the whole comic must wait for assembly and lock the first playback');
+    assert.notEqual(fb.skippable, true, 'the story comic opted out of the unskippable default (Michael, PR #84)');
+    assert.equal(fb.paper ?? 'bone', 'bone', 'flashbacks are on bone-white paper (Michael, PR #84)');
+    assert.equal(comics.demo.skippable, true, 'the engine demo is not a story comic: it says it can be skipped');
+    // a part played alone can drop lines the assembled playback keeps, and lines waiting on a flag have a fallback
+    const count = (pages) => pages.reduce((n, p) => n + p.panels.reduce((m, x) => m + (x.text?.length ?? 0), 0), 0);
+    const whole = comicMod.pagesFor(fb, null, new Set()), first = comicMod.pagesFor(fb, tags[0], new Set());
+    assert.ok(count(first) < count([whole[0]]), 'the first part plays alone with every assembled-only line');
+    const waiting = fb.pages.flatMap((p) => p.panels.flatMap((x) => (x.text ?? []).filter((t) => t.needs)));
+    assert.ok(waiting.length > 0 && waiting.every((t) => t.else?.en && t.else?.es), 'a line waiting on a flag has no fallback');
+    for (const t of COMIC_TRIGGERS) {
+      assert.ok(comics[t.id], `trigger for a comic that doesn't exist: ${t.id}`);
+      assert.ok(typeof t.flag === 'string' && t.flag, `trigger for ${t.id} has no flag`);
+      assert.ok(comicMod.pagesFor(comics[t.id], t.tag ?? null).length > 0, `trigger ${t.id}:${t.tag} plays no pages`);
+      assert.ok(!comics[t.id].pieces || t.tag, `trigger for ${t.id} would play a comic in pieces whole`);
+    }
+  });
+
+  test('comics: grids sit inside the live area without overlapping, and the renderer paints only palette colours', () => {
+    for (const [name, cells] of Object.entries(CL.LAYOUTS)) {
+      for (const [x, y, w, h] of cells) assert.ok(x >= 0 && y >= 0 && x + w <= CL.PAGE.w && y + h <= CL.PAGE.h, `${name}: ${[x, y, w, h]}`);
+      for (let i = 0; i < cells.length; i++) for (let j = i + 1; j < cells.length; j++) {
+        const [a, b] = [cells[i], cells[j]];
+        const apart = a[0] + a[2] + CL.GUTTER <= b[0] || b[0] + b[2] + CL.GUTTER <= a[0] || a[1] + a[3] + CL.GUTTER <= b[1] || b[1] + b[3] + CL.GUTTER <= a[1];
+        assert.ok(apart, `${name}: cells ${i} and ${j} touch or overlap`);
+      }
+    }
+    const pal = JSON.parse(fs.readFileSync(new URL('../tools/art/palette.json', import.meta.url), 'utf8'));
+    for (const [k, v] of Object.entries(CL.PAL)) assert.equal(pal[k], v, `comicLayout PAL.${k}`);
+    const allowed = new Set(Object.values(CL.PAL));
+    const hex = (d, o) => `#${[d[o], d[o + 1], d[o + 2]].map((n) => n.toString(16).padStart(2, '0')).join('')}`;
+    for (const bg of Object.keys(CL.BACKGROUNDS)) {
+      const d = CL.bgPixels(bg, 37, 29, 7);
+      for (let o = 0; o < d.length; o += 4) assert.ok(allowed.has(hex(d, o)) && d[o + 3] === 255, `${bg} paints ${hex(d, o)}`);
+    }
+    for (const st of Object.values(CL.LETTERING)) for (const k of ['fill', 'line', 'text']) assert.ok(CL.PAL[st[k]], `lettering colour ${st[k]}`);
+    for (const p of Object.values(CL.PAPER)) for (const k of ['ground', 'ink', 'folio', 'back']) assert.ok(CL.PAL[p[k]], `paper colour ${p[k]}`);
+  });
+
+  test('comics: art is cropped to its panel, balloon tails stop at the frame, keys and the controls line', () => {
+    assert.deepEqual(CL.cropFor(-8, 0, 48, 48, 2, 100, 100), { x: 4, y: 0, w: 44, h: 48, full: false });
+    assert.equal(CL.cropFor(0, 0, 48, 48, 2, 100, 100).full, true);
+    assert.equal(CL.cropFor(120, 0, 48, 48, 1, 100, 100), null);
+    const t = CL.tailFor({ x: 10, y: 10, w: 60, h: 20 }, [-40, 200], 100, 100);
+    assert.equal(t.side, 'bottom'); assert.deepEqual(t.tip, [0, 100]);
+    assert.equal(CL.tailFor({ x: 10, y: 50, w: 30, h: 20 }, [90, 60], 100, 100).side, 'right');
+    assert.deepEqual(CL.clampBox(-5, 95, 40, 20, 100, 100), { x: 3, y: 77 });
+    for (const k of ['e', 'E', ' ', 'Enter', 'ArrowRight']) assert.equal(comicMod.actionForKey(k), 'next', k);
+    for (const k of ['ArrowLeft', 'Backspace']) assert.equal(comicMod.actionForKey(k), 'back', k);
+    assert.equal(comicMod.actionForKey('Escape'), 'skip'); assert.equal(comicMod.actionForKey('q'), null);
+    // A key the page uses stays on the page, so the closing Esc / E / Space never reaches the world.
+    const got = [], view = makeComicView(null, (a) => got.push(a));
+    const key = (k, repeat = false) => ({ key: k, repeat, stopped: false, stopPropagation() { this.stopped = true; } });
+    view.state = { comic: {}, pages: [], page: 0, opts: {} };
+    const esc = key('Escape'); view._onKey(esc); assert.ok(esc.stopped, 'Esc on a page reached the world'); assert.deepEqual(got, ['skip']);
+    const held = key('e', true); view._onKey(held); assert.ok(held.stopped); assert.deepEqual(got, ['skip'], 'a held key turned a page');
+    const other = key('i'); view._onKey(other); assert.ok(!other.stopped, 'a key the page does not use was kept from the world');
+    view.state = null; const after = key('d'); view._onKey(after); assert.ok(!after.stopped && got.length === 1, 'keys were kept from the world after the page closed');
+    assert.match(CL.footerHint('en', { index: 0, total: 3, host: true, skippable: true }), /next.*Esc: skip/);
+    assert.ok(!/back/.test(CL.footerHint('en', { index: 0, total: 3, host: true, skippable: true })), 'no back on the first page');
+    assert.match(CL.footerHint('en', { index: 2, total: 3, host: true, skippable: false }), /done.*back/);
+    assert.ok(!/Esc/.test(CL.footerHint('en', { index: 1, total: 3, host: true, skippable: false })));
+    // only the host turns the page: a guest's line says so, and that Esc closes it on their own screen
+    assert.equal(CL.footerHint('en', { index: 1, total: 3, host: false, skippable: false }), 'The host turns the page  ·  Esc: close');
+    assert.equal(CL.footerHint('es', { index: 1, total: 3, host: false, skippable: false }), 'El anfitrión pasa la página  ·  Esc: cerrar');
+    assert.ok(!/next|back|siguiente|atrás/.test(CL.footerHint('en', { index: 1, total: 3, host: false, skippable: true })), 'a guest was offered a turn');
+    assert.equal(CL.letterText({ kind: 'balloon', en: 'ok', es: 'está bien' }, 'es'), 'ESTÁ BIEN');
+    assert.equal(CL.letterText({ kind: 'sfx', en: 'krsh', es: 'krsh' }, 'en'), 'krsh');
+    const bad = { id: 'bad', pages: [{ layout: 'grid4', panels: [{ rect: [400, 0, 100, 40], art: [{ frame: 'nope', scale: 1.5 }], text: [{ kind: 'balloon', en: 'hi' }] }] }] };
+    const probs = comicMod.checkComic(bad, atlasFrames).join(' | ');
+    for (const want of ['outside the live area', 'scale must be', 'no frame nope', 'no Spanish']) assert.ok(probs.includes(want), `missing "${want}" in: ${probs}`);
+  });
+
+  // A stand-in world and drawing side, so the mode's rules run without Phaser.
+  const fakeView = () => { const v = { calls: [], open: (c, pages, page, o) => { v.calls.push(['open', page, o.host]); v.last = { pages, o }; }, turnTo: (p, d) => v.calls.push(['turn', p, d]), close: () => v.calls.push(['close']), destroy() {} }; return v; };
+  // sent: ['all', msg] for a host broadcast, [peer, msg] for a host's message to one guest, ['host', msg] for a guest's
+  const fakeWorld = (mode) => { const w = { mode, time: { now: 0 }, save: { flags: {} }, sent: [], net: { broadcast: (m) => w.sent.push(['all', m]), send: (a, b) => w.sent.push(b === undefined ? ['host', a] : [a, b]) } }; return w; };
+  const threePages = { id: 'tst', pages: [{ layout: 'splash', panels: [{}] }, { layout: 'splash', tag: 'b', panels: [{}] }, { layout: 'splash', panels: [{}] }] };
+  const mkComic = (mode) => { const w = fakeWorld(mode), v = fakeView(), c = new comicMod.Comic(w, v); c.load = async () => threePages; return { w, v, c }; };
+
+  await testAsync('comic mode: one page at a time, a beat before a turn counts, back stops at the first page, the last turn ends it', async () => {
+    const { w, v, c } = mkComic('solo');
+    let done = 0;
+    assert.equal(await c.play('tst', { onDone: () => done++ }), true);
+    assert.ok(c.active); assert.deepEqual(v.calls[0], ['open', 0, true]);
+    assert.equal(c.input('next'), false, 'turned before the page had been up for a beat');
+    w.time.now = comicMod.DWELL_MS; assert.equal(c.input('next'), true); assert.equal(c.cur.page, 1);
+    w.time.now += 100; assert.equal(c.input('next'), false, 'a mashed key turned two pages');
+    w.time.now += comicMod.DWELL_MS; assert.equal(c.input('back'), true); assert.equal(c.cur.page, 0);
+    w.time.now += comicMod.DWELL_MS; assert.equal(c.input('back'), false, 'went back past the first page');
+    for (let i = 0; i < 3; i++) { w.time.now += comicMod.DWELL_MS; c.input('next'); }
+    assert.ok(!c.active && done === 1, 'the turn after the last page ends it, once');
+    assert.deepEqual(v.calls.map((x) => x[0]), ['open', 'turn', 'turn', 'turn', 'turn', 'close']);
+    assert.equal(w.sent.length, 0, 'solo sends nothing');
+    assert.equal(await c.play('tst', { tag: 'b' }), true); assert.equal(c.cur.pages.length, 1, 'a tag plays only its pages');
+    // story comics are unskippable by default (Michael, PR #84): Esc doesn't end one
+    assert.equal(v.last.o.skippable, false); assert.equal(c.input('skip'), false); assert.ok(c.active, 'Esc skipped a story comic');
+    c.end(); assert.ok(!c.active);
+    const free = mkComic('solo'); free.c.load = async () => ({ ...threePages, skippable: true });
+    await free.c.play('tst'); assert.equal(free.v.last.o.skippable, true);
+    assert.equal(free.c.input('skip'), true); assert.ok(!free.c.active, 'Esc did not end a comic marked skippable');
+    const locked = mkComic('solo'); locked.c.load = async () => ({ ...threePages, skippable: false });
+    await locked.c.play('tst'); assert.equal(locked.c.input('skip'), false); assert.ok(locked.c.active, 'an unskippable comic stays up');
+    assert.equal(await c.play('Bad-Id'), false);
+  });
+
+  await testAsync('comic mode in co-op: only the host turns the page, guests mirror it and can leave on their own screen', async () => {
+    const H = mkComic('host'), host = H.c, hw = H.w;
+    await host.play('tst');
+    const show = () => hw.sent.filter(([, m]) => m.op === 'show').map(([, m]) => m);
+    assert.equal(show().length, 1); const run = show()[0].run;
+    assert.deepEqual({ ...show()[0], run: 0 }, { t: 'comic', op: 'show', id: 'tst', run: 0, page: 0, tag: null });
+    hw.time.now = 1000;
+    // a guest's turn (from a build before host-only turning) is ignored, however well formed (Michael, PR #84)
+    assert.equal(host.onHostMsg('g1', { t: 'comic', op: 'turn', run, from: 0, dir: 1 }), true, 'comic messages are still consumed');
+    host.onHostMsg('g2', { t: 'comic', op: 'turn', run, from: 0, dir: -1 });
+    assert.equal(host.cur.page, 0, 'a guest turned the page'); assert.equal(show().length, 1, 'a guest\'s turn told the party something');
+    // the host turns it for everyone
+    assert.equal(host.input('next'), true); assert.equal(host.cur.page, 1); assert.equal(show().length, 2); assert.equal(show().at(-1).page, 1);
+    hw.time.now = 2000;
+    host.onHostMsg('g1', { t: 'comic', op: 'turn', run, from: 1, dir: 1 }); assert.equal(host.cur.page, 1, 'a guest turned the page');
+    assert.equal(host.onHostMsg('g1', { t: 'stage', op: 'ask' }), false, 'other messages pass through');
+    // heartbeat: the host repeats the page every second
+    const before = show().length; hw.time.now = 2000 + comicMod.BEAT_MS; host.tick(); assert.equal(show().length, before + 1);
+
+    // a guest: the host's show opens it at that page, later shows turn it, end closes it
+    const G = mkComic('client'), guest = G.c;
+    assert.equal(guest.onClientMsg({ t: 'comic', op: 'show', id: 'tst', run, page: 1, tag: null }), true);
+    await new Promise((r) => setTimeout(r, 0));
+    assert.ok(guest.active); assert.deepEqual(G.v.calls[0], ['open', 1, false]); assert.equal(G.v.last.o.skippable, true, 'a guest cannot close their own screen');
+    assert.equal(guest.input('next'), false); assert.equal(guest.input('back'), false);
+    assert.equal(G.w.sent.length, 0, 'a guest asked the host to turn'); assert.equal(guest.cur.page, 1, 'a guest turned their own page');
+    guest.onClientMsg({ t: 'comic', op: 'show', id: 'tst', run, page: 2, tag: null }); assert.deepEqual(G.v.calls.at(-1), ['turn', 2, 1]);
+    guest.onClientMsg({ t: 'comic', op: 'show', id: 'tst', run, page: 2, tag: null }); assert.equal(G.v.calls.length, 2, 'a heartbeat for the same page redraws nothing');
+    guest.input('skip'); assert.ok(!guest.active, 'a guest closes it on their own screen');
+    assert.equal(G.w.sent.length, 0, 'and tells nobody'); assert.ok(host.active, 'a guest closing their screen ended it for the host');
+    guest.onClientMsg({ t: 'comic', op: 'show', id: 'tst', run, page: 2, tag: null }); await new Promise((r) => setTimeout(r, 0));
+    assert.ok(!guest.active, 'the heartbeat brought back a comic the guest closed');
+    guest.onClientMsg({ t: 'comic', op: 'end', run });
+    guest.onClientMsg({ t: 'comic', op: 'show', id: 'tst', run: 'next', page: 0, tag: null }); await new Promise((r) => setTimeout(r, 0));
+    assert.ok(guest.active, 'the next comic opens again'); guest.onClientMsg({ t: 'comic', op: 'end', run: 'next' }); assert.ok(!guest.active);
+    assert.equal(guest.onClientMsg({ t: 'comic', op: 'show', id: '../x', run: 'r', page: 0 }), true); assert.equal(guest.pending, null, 'a bad id loaded');
+
+    // a story comic: the host's Esc doesn't skip it; turning past the last page ends it for everyone
+    assert.equal(host.input('skip'), false); assert.ok(host.active, 'the host skipped a story comic');
+    assert.ok(!hw.sent.some(([, m]) => m.op === 'end'), 'the host\'s Esc ended a story comic for everyone');
+    hw.time.now = 3000; host.input('next'); hw.time.now = 4000; host.input('next');
+    assert.ok(!host.active); assert.ok(hw.sent.some(([, m]) => m.op === 'end' && m.run === run), 'the end was not sent');
+    // a comic marked skippable: the host's Esc ends it for everyone
+    const S = mkComic('host'); S.c.load = async () => ({ ...threePages, skippable: true });
+    await S.c.play('tst'); const srun = S.c.cur.run;
+    assert.equal(S.c.input('skip'), true); assert.ok(!S.c.active && S.w.sent.some(([, m]) => m.op === 'end' && m.run === srun), 'the host\'s Esc did not end a skippable comic for everyone');
+    guest.play('tst'); assert.deepEqual(G.w.sent.at(-1), ['host', { t: 'comic', op: 'ask', id: 'tst', tag: null }]);
+  });
+
+  await testAsync('comic mode: in testing (?test) or spoiler-free (?spoilerfree) mode the host can skip a story comic, a locked first playback included', async () => {
+    for (const q of ['?test', '?spoilerfree', '?comic=demo&test', '?test=1']) assert.equal(comicMod.skipAnyMode(q), true, q);
+    for (const q of ['', '?comic=demo', '?mute', '?testing', '?spoiler']) assert.equal(comicMod.skipAnyMode(q), false, q);
+    const Q = globalThis.location;
+    try {
+      for (const search of ['?test', '?spoilerfree']) {
+        globalThis.location = { search };
+        const H = mkComic('host'), host = H.c;
+        assert.equal(await host.play('tst'), true); assert.equal(H.v.last.o.skippable, true, `${search}: the host was not offered Esc`);
+        const run = host.cur.run;
+        assert.equal(host.input('skip'), true, `${search}: the host's Esc did not skip a story comic`); assert.ok(!host.active);
+        assert.ok(H.w.sent.some(([, m]) => m.op === 'end' && m.run === run), `${search}: the skip was not sent to everyone`);
+        // the first whole playback of a comic in pieces, locked otherwise
+        host.load = async () => ({ ...threePages, pieces: true, assembled: { firstSkippable: false } });
+        assert.equal(await host.play('tst', { assembled: true }), true); assert.equal(host.input('skip'), true, `${search}: the locked first playback stayed locked`);
+      }
+      // without either, a fresh world can't skip it (a mode is read when the world starts)
+      globalThis.location = { search: '?mute' };
+      const P = mkComic('host'); assert.equal(await P.c.play('tst'), true); assert.equal(P.c.input('skip'), false, 'skippable without a mode');
+    } finally { if (Q === undefined) delete globalThis.location; else globalThis.location = Q; }
+  });
+
+  await testAsync('comic mode: a guest\'s ask plays only what this save has already played (on their screen) or triggered (for everyone)', async () => {
+    const H = mkComic('host'), host = H.c, f = H.w.save.flags;
+    const ask = async (m) => { const r = host.onHostMsg('g1', { t: 'comic', op: 'ask', ...m }); await new Promise((res) => setTimeout(res, 0)); return r; };
+    // nothing played yet and no trigger flag: ignored, so nobody can open pages the party hasn't reached
+    assert.equal(await ask({ id: 'tst', tag: 'b' }), true, 'comic messages are still consumed');
+    assert.ok(!host.active, 'a guest opened an unplayed, untriggered comic for everyone');
+    await ask({ id: 'tst', tag: null }); assert.ok(!host.active, 'a guest opened the whole comic before it was played');
+    await ask({ id: 'tst', tag: 'Not A Tag' }); assert.ok(!host.active, 'a bad tag fell back to the whole comic');
+    await ask({ id: 'tst', tag: 7 }); assert.ok(!host.active);
+    assert.equal(H.w.sent.length, 0, 'an ignored ask told the party something');
+    // the host plays the piece itself (a story beat): recorded in the save, and from then on a guest can ask for it again,
+    // as a replay on that guest's screen only (trevor, general #174)
+    assert.equal(await host.play('tst', { tag: 'b' }), true); assert.equal(f[comicMod.playedKey('tst', 'b')], true);
+    host.end();
+    const sentBefore = H.w.sent.length;
+    assert.equal(host._ask({ id: 'tst', tag: 'b' }, 'g1'), true, 'a played comic was not honoured'); await new Promise((res) => setTimeout(res, 0));
+    assert.ok(!host.active, 'a guest\'s replay opened on the host');
+    assert.deepEqual(H.w.sent.slice(sentBefore), [['g1', { t: 'comic', op: 'replay', id: 'tst', tag: 'b' }]], 'the replay did not go to the guest who asked, and only to them');
+    assert.equal(f[comicMod.playedKey('tst')], undefined); await ask({ id: 'tst' }); assert.ok(!host.active, 'playing a piece unlocked the whole');
+    assert.equal(H.w.sent.length, sentBefore + 1, 'playing a piece unlocked a replay of the whole');
+    // a comic whose trigger flag is set can be asked for before it has played
+    COMIC_TRIGGERS.push({ id: 'tst', flag: 'test.comic.ask', tag: null });
+    try {
+      await ask({ id: 'tst' }); assert.ok(!host.active, 'honoured before the trigger flag');
+      f['test.comic.ask'] = true; await ask({ id: 'tst' }); assert.ok(host.active && host.cur.tag === null, 'a triggered comic was not honoured');
+      host.end();
+    } finally { COMIC_TRIGGERS.pop(); }
+    // a trigger placed on one map isn't due anywhere else, so a guest can't move it off its map
+    COMIC_TRIGGERS.push({ id: 'tst', flag: 'test.comic.mapped', tag: 'b', map: 'test_roof' });
+    try {
+      H.w.map = { id: 'test_lobby' }; f['test.comic.mapped'] = true; delete f[comicMod.playedKey('tst', 'b')];
+      await ask({ id: 'tst', tag: 'b' }); assert.ok(!host.active, 'a guest played a map trigger off its map');
+      H.w.map = { id: 'test_roof' }; await ask({ id: 'tst', tag: 'b' }); assert.ok(host.active, 'a due map trigger was not honoured');
+      host.end();
+    } finally { COMIC_TRIGGERS.pop(); delete H.w.map; }
+    // an ask is never queued: it can't push a story's own comic (and its onDone) out of the queue
+    let storyDone = false;
+    H.w.dlg = {}; H.w.dlgFree = false;
+    assert.equal(await host.play('tst', { tag: 'b', onDone: () => { storyDone = true; } }), false); assert.equal(host.queued?.tag, 'b');
+    assert.equal(f[comicMod.playedKey('tst')], true); await ask({ id: 'tst' });
+    assert.equal(host.queued?.tag, 'b', 'a guest\'s ask replaced the story\'s queued comic'); assert.ok(host.queued.onDone);
+    H.w.dlg = null; host.tick(); await new Promise((r) => setTimeout(r, 0));
+    assert.ok(host.active && host.cur.tag === 'b', 'the story\'s queued comic did not play');
+    await ask({ id: 'tst' }); assert.equal(host.cur.tag, 'b', 'an ask cut into a page already up');
+    host.end(); assert.ok(storyDone, 'the story\'s onDone never fired');
+    // the debug param still works for the host itself (and records nothing); a guest's only asks
+    const Q = globalThis.location;
+    globalThis.location = { search: '?comic=tst:b' };
+    try {
+      const D = fakeWorld('host'); D.time.delayedCall = (ms, fn) => setTimeout(fn, 0);
+      const dc = new comicMod.Comic(D, fakeView()); dc.load = async () => threePages; await new Promise((r) => setTimeout(r, 5));
+      assert.ok(dc.active && dc.cur.tag === 'b', 'the debug param did not play for the host'); assert.deepEqual(D.save.flags, {}, 'a debug play was recorded');
+      assert.equal(dc.input('skip'), false, 'the debug param alone made a story comic skippable'); dc.end();
+      globalThis.location = { search: '?comic=tst:b&test' };
+      const T = fakeWorld('host'); T.time.delayedCall = (ms, fn) => setTimeout(fn, 0);
+      const tc = new comicMod.Comic(T, fakeView()); tc.load = async () => threePages; await new Promise((r) => setTimeout(r, 5));
+      assert.ok(tc.active && tc.cur.tag === 'b', 'the debug param stopped working with ?test'); assert.equal(tc.input('skip'), true); assert.ok(!tc.active);
+      globalThis.location = { search: '?comic=tst:b' };
+      const C = fakeWorld('client'); C.time.delayedCall = (ms, fn) => fn();
+      new comicMod.Comic(C, fakeView());
+      assert.deepEqual(C.sent.at(-1), ['host', { t: 'comic', op: 'ask', id: 'tst', tag: 'b' }], 'a guest\'s debug param skipped the host');
+    } finally { if (Q === undefined) delete globalThis.location; else globalThis.location = Q; }
+  });
+
+  await testAsync('comic mode: a comic in pieces plays each piece once earned, the whole only assembled, and the first whole playback locks the host only', async () => {
+    const parts = {
+      id: 'pcs', skippable: true, pieces: { one: 'test.got.one', two: 'test.got.two' }, assembled: { needs: 'test.all', firstSkippable: false },
+      pages: [
+        { layout: 'splash', tag: 'one', panels: [{ text: [
+          { kind: 'caption', en: 'a', es: 'a' },
+          { kind: 'balloon', en: 'b', es: 'b', only: 'assembled' },
+          { kind: 'balloon', en: 'c', es: 'c', only: 'piece' },
+          { kind: 'balloon', en: 'Name. d', es: 'Nombre. d', needs: 'test.name', else: { en: 'd', es: 'd' } },
+          { kind: 'balloon', en: 'e', es: 'e', needs: ['test.x', 'test.name'] },
+        ] }] },
+        { layout: 'splash', tag: 'two', panels: [{}] },
+      ],
+    };
+    assert.deepEqual(comicMod.checkComic(parts), []);
+    assert.deepEqual(comicMod.gatesOf(parts), ['test.name', 'test.x']);
+    const H = mkComic('host'), host = H.c, f = H.w.save.flags, v = H.v;
+    host.load = async () => parts;
+    const lines = () => v.last.pages[0].panels[0].text.map((t) => t.en);
+    // a piece waits for its pickup; then it plays alone, without the assembled-only line and without the name
+    assert.equal(await host.play('pcs', { tag: 'one' }), false, 'a piece played before it was earned');
+    f['test.got.one'] = true;
+    assert.equal(await host.play('pcs', { tag: 'one' }), true);
+    assert.deepEqual(lines(), ['a', 'c', 'd']); assert.equal(v.last.o.skippable, true);
+    assert.ok(!('open' in H.w.sent.at(-1)[1]), 'sent flags nobody has');
+    host.end();
+    // the whole comic: never without { assembled }, never before assembled.needs
+    assert.equal(await host.play('pcs'), false, 'the whole played without being assembled');
+    assert.equal(await host.play('pcs', { assembled: true }), false, 'the whole played before its flag');
+    f['test.all'] = true; f['test.name'] = true;
+    assert.equal(await host.play('pcs', { assembled: true }), true);
+    assert.equal(v.last.pages.length, 2); assert.deepEqual(lines(), ['a', 'b', 'Name. d', 'e']);
+    const show = H.w.sent.at(-1)[1]; assert.deepEqual(show.open, [0], 'the guests were not told which lines are unlocked');
+    assert.equal(v.last.o.skippable, false); assert.equal(host.input('skip'), false); assert.ok(host.active, 'the host skipped the first whole playback');
+    // a guest still closes their own screen, and sees what the host sees
+    const G = mkComic('client'); G.c.load = async () => parts;
+    G.c.onClientMsg(show); await new Promise((r) => setTimeout(r, 0));
+    assert.deepEqual(G.v.last.pages[0].panels[0].text.map((t) => t.en), ['a', 'b', 'Name. d', 'e']);
+    assert.equal(G.v.last.o.skippable, true); G.c.input('skip'); assert.ok(!G.c.active, 'a guest could not close the first whole playback');
+    host.cur.at = -1e9; host.input('next'); host.cur.at = -1e9; host.input('next'); assert.ok(!host.active);
+    // later whole playbacks can be skipped
+    assert.equal(await host.play('pcs', { assembled: true }), true); assert.equal(v.last.o.skippable, true);
+    host.input('skip'); assert.ok(!host.active);
+    // a broken setup is caught by the checks
+    const bad = { id: 'bad', skippable: 'yes', pieces: { nope: 1 }, assembled: { needs: '', firstSkippable: 'no' }, pages: [{ layout: 'splash', panels: [{ text: [{ kind: 'balloon', en: 'x', es: 'x', only: 'never', needs: [''], else: { en: 'y' } }] }] }] };
+    const probs = comicMod.checkComic(bad).join(' | ');
+    for (const want of ['skippable must be', 'no page has', 'pieces.nope', 'assembled.needs', 'firstSkippable', 'only must be', 'needs must name', 'else: no Spanish']) assert.ok(probs.includes(want), `missing "${want}" in: ${probs}`);
+  });
+
+  await testAsync('comic mode: the host can skip a replay of a comic this save has played; a first viewing stays unskippable (trevor, general #174)', async () => {
+    const H = mkComic('host'), host = H.c, f = H.w.save.flags, v = H.v;
+    const readThrough = () => { while (host.active) { host.cur.at = -1e9; host.input('next'); } };
+    const ended = (run) => H.w.sent.some(([to, m]) => to === 'all' && m.op === 'end' && m.run === run);
+    // a first viewing keeps Michael's default: no Esc for the host, and the controls line doesn't offer it
+    assert.equal(await host.play('tst', { tag: 'b' }), true); assert.equal(v.last.o.skippable, false, 'a first viewing was offered Esc');
+    assert.ok(!/Esc/.test(CL.footerHint('en', { index: 0, total: 1, host: true, skippable: v.last.o.skippable })));
+    assert.equal(host.input('skip'), false); assert.ok(host.active, 'the host skipped a first viewing');
+    readThrough(); assert.equal(f[comicMod.playedKey('tst', 'b')], true);
+    // the same piece again is a replay: the host can Esc out of it, for everyone, and the controls line says so
+    assert.equal(await host.play('tst', { tag: 'b' }), true); assert.equal(v.last.o.skippable, true, 'a replay was not offered Esc');
+    assert.match(CL.footerHint('en', { index: 0, total: 1, host: true, skippable: v.last.o.skippable }), /Esc: skip/);
+    let run = host.cur.run;
+    assert.equal(host.input('skip'), true, 'the host could not skip a replay'); assert.ok(!host.active && ended(run), 'the skip did not end the replay for everyone');
+    // a played piece doesn't make the whole comic a replay: its first viewing is still unskippable
+    assert.equal(await host.play('tst'), true); assert.equal(host.input('skip'), false, 'playing a piece made the whole skippable'); readThrough();
+    assert.equal(await host.play('tst'), true); run = host.cur.run; assert.equal(host.input('skip'), true); assert.ok(ended(run));
+    // a story comic in pieces: the first whole playback stays locked (assembled.firstSkippable: false), a replay of it doesn't
+    const P = mkComic('host'); P.c.load = async () => ({ ...threePages, pieces: true, assembled: { firstSkippable: false } });
+    assert.equal(await P.c.play('tst', { assembled: true }), true); assert.equal(P.c.input('skip'), false, 'the first whole playback was skippable');
+    P.c.end(); assert.equal(await P.c.play('tst', { assembled: true }), true); assert.equal(P.v.last.o.skippable, true);
+    assert.equal(P.c.input('skip'), true, 'the host could not skip a replay of the whole'); assert.ok(!P.c.active);
+    // solo too, and a save that played it in an earlier session counts (the flag is in the save)
+    const S = mkComic('solo'); S.w.save.flags[comicMod.playedKey('tst')] = true;
+    assert.equal(await S.c.play('tst'), true); assert.equal(S.c.input('skip'), true); assert.ok(!S.c.active);
+    // a fresh save, no ?test / ?spoilerfree: the story default holds
+    const F = mkComic('solo'); assert.equal(await F.c.play('tst'), true); assert.equal(F.c.input('skip'), false); assert.ok(F.c.active);
+  });
+
+  await testAsync('comic mode: a guest\'s ask for a played comic replays on their own screen only, nothing broadcast; an unplayed one is still ignored', async () => {
+    const tick = () => new Promise((r) => setTimeout(r, 0));
+    const parts = { id: 'pcs', pieces: { one: 'test.got.one', two: 'test.got.two' }, pages: [
+      { layout: 'splash', tag: 'one', panels: [{ text: [{ kind: 'balloon', en: 'Name.', es: 'Nombre.', needs: 'test.name', else: { en: '...', es: '...' } }] }] },
+      { layout: 'splash', tag: 'two', panels: [{}] },
+      { layout: 'splash', tag: 'one', panels: [{}] },
+    ] };
+    const H = mkComic('host'), host = H.c, hf = H.w.save.flags; host.load = async () => parts;
+    const G = mkComic('client'), guest = G.c; guest.load = async () => parts;
+    // the wire, by hand: what the guest sent last reaches the host as from g1; what the host sent to g1 since `from` reaches the guest
+    const askHost = async () => { const [to, m] = G.w.sent.at(-1); assert.equal(to, 'host'); host.onHostMsg('g1', m); await tick(); };
+    const toGuest = async (from) => { for (const [to, m] of H.w.sent.slice(from)) if (to === 'g1' || to === 'all') guest.onClientMsg(m); await tick(); };
+    const lines = () => G.v.last.pages[0].panels[0].text.map((t) => t.en);
+    // nothing played and no trigger: the ask is ignored, and nothing opens anywhere
+    guest.play('pcs', { tag: 'one' }); assert.deepEqual(G.w.sent.at(-1), ['host', { t: 'comic', op: 'ask', id: 'pcs', tag: 'one' }]);
+    await askHost(); assert.ok(!host.active && !guest.active, 'a guest opened an unplayed, untriggered comic'); assert.equal(H.w.sent.length, 0, 'an ignored ask sent something');
+    // the story plays piece one for everyone; the save records it
+    hf['test.got.one'] = true;
+    assert.equal(await host.play('pcs', { tag: 'one' }), true); host.end();
+    // the host is busy with another comic for everyone (the guest closed their view of it); a replay doesn't wait for it
+    const from = H.w.sent.length;
+    hf['test.got.two'] = true; assert.equal(await host.play('pcs', { tag: 'two' }), true);
+    const hostRun = host.cur.run, hostPage = host.cur.page; await toGuest(from); assert.ok(guest.active && guest.cur.run === hostRun); guest.input('skip');
+    const from2 = H.w.sent.length, flagsBefore = JSON.stringify(hf);
+    guest.play('pcs', { tag: 'one' }); await askHost();
+    assert.deepEqual(H.w.sent.slice(from2), [['g1', { t: 'comic', op: 'replay', id: 'pcs', tag: 'one' }]], 'the replay was not sent to the asking guest alone');
+    assert.ok(host.active && host.cur.run === hostRun && host.cur.page === hostPage, 'a guest\'s replay changed the host\'s screen');
+    assert.equal(JSON.stringify(hf), flagsBefore, 'a replay wrote a flag on the host');
+    await toGuest(from2);
+    assert.ok(guest.active && guest.cur.local && guest.cur.tag === 'one', 'the replay did not open on the guest\'s screen');
+    assert.equal(G.v.last.o.host, true, 'the guest cannot page their own replay'); assert.equal(G.v.last.o.skippable, true);
+    assert.deepEqual(lines(), ['...'], 'a local replay lettered a line the save has not unlocked');
+    // the guest pages it themselves (a beat between turns) and sends nothing; the host's heartbeat for the comic they closed stays out
+    const gSent = G.w.sent.length;
+    assert.equal(guest.input('next'), false, 'turned before a beat'); G.w.time.now = comicMod.DWELL_MS;
+    assert.equal(guest.input('next'), true); assert.equal(guest.cur.page, 1); G.w.time.now += comicMod.DWELL_MS;
+    assert.equal(guest.input('back'), true); assert.equal(guest.cur.page, 0);
+    H.w.time.now = comicMod.BEAT_MS; const from3 = H.w.sent.length; host.tick(); await toGuest(from3);
+    assert.ok(guest.cur.local && guest.cur.page === 0, 'the host\'s heartbeat took over a local replay');
+    assert.equal(G.w.sent.length, gSent, 'paging a local replay told the host something');
+    // the host's own comic ending leaves the replay up; the guest closes it, telling nobody
+    host.end(); await toGuest(from3); assert.ok(guest.active && guest.cur.local, 'the host\'s end closed a local replay');
+    assert.equal(guest.input('skip'), true); assert.ok(!guest.active); assert.equal(G.w.sent.length, gSent, 'closing a local replay told the host something');
+    // reading to the end closes it too
+    let f4 = H.w.sent.length; guest.play('pcs', { tag: 'one' }); await askHost(); await toGuest(f4); assert.ok(guest.cur?.local);
+    while (guest.active) { guest.cur.at = -1e9; guest.input('next'); } assert.equal(G.w.sent.length, gSent + 1, 'the end of a local replay sent something');
+    // the host's flags decide which lines show, as in a host playback
+    hf['test.name'] = true; f4 = H.w.sent.length; guest.play('pcs', { tag: 'one' }); await askHost();
+    assert.deepEqual(H.w.sent.at(-1), ['g1', { t: 'comic', op: 'replay', id: 'pcs', tag: 'one', open: [0] }]); await toGuest(f4);
+    assert.deepEqual(lines(), ['Name.']);
+    // a story comic the host starts takes the replay's place
+    f4 = H.w.sent.length; assert.equal(await host.play('pcs', { tag: 'two' }), true); await toGuest(f4);
+    assert.ok(guest.active && !guest.cur.local && guest.cur.run === host.cur.run, 'the host\'s comic did not take the replay\'s place'); host.end(); await toGuest(f4);
+    assert.ok(!guest.active);
+    // the gate still holds: the whole comic (never played) and an unknown piece are ignored, however the guest asks
+    for (const tag of [null, 'three']) {
+      f4 = H.w.sent.length; guest.play('pcs', { tag }); await askHost();
+      assert.equal(H.w.sent.length, f4, `an ask for ${tag ?? 'the whole comic'} was answered`); assert.ok(!host.active && !guest.active);
+    }
+    // a replay the guest didn't ask for, or one that arrives while a page is up, doesn't open
+    guest.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'two' }); await tick(); assert.ok(!guest.active, 'an unasked-for replay opened');
+    guest.play('pcs', { tag: 'one' }); guest.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'two' }); await tick(); assert.ok(!guest.active, 'a replay of another comic opened');
+    G.w.dlg = {}; G.w.dlgFree = false; guest.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'one' }); await tick();
+    assert.ok(!guest.active, 'a replay opened over a story scene'); G.w.dlg = null;
+    // a replay that arrives while the party's comic is loading, or up, doesn't open; the party's comic stays
+    f4 = H.w.sent.length; assert.equal(await host.play('pcs', { tag: 'two' }), true);
+    const show = H.w.sent.slice(f4).find(([, m]) => m.op === 'show')[1];
+    guest.play('pcs', { tag: 'one' }); guest.onClientMsg(show); guest.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'one' }); await tick();
+    assert.ok(guest.active && !guest.cur.local && guest.cur.run === host.cur.run, 'a replay opened while the party\'s comic was loading');
+    guest.play('pcs', { tag: 'one' }); guest.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'one' }); await tick();
+    assert.ok(guest.active && !guest.cur.local && guest.cur.run === host.cur.run, 'a replay opened over the party\'s comic');
+    host.end(); await toGuest(f4); assert.ok(!guest.active);
+    // a story scene or cutscene starting on the guest's screen closes their replay (telling nobody); a free line doesn't
+    for (const [what, busy] of [['story scene', () => { G.w.dlg = {}; G.w.dlgFree = false; }], ['cutscene', () => { G.w.stage = { active: true }; }]]) {
+      f4 = H.w.sent.length; guest.play('pcs', { tag: 'one' }); await askHost(); await toGuest(f4); assert.ok(guest.cur?.local);
+      G.w.dlg = {}; G.w.dlgFree = true; guest.tick(); assert.ok(guest.cur?.local, 'a free line closed a local replay'); G.w.dlg = null;
+      const s0 = G.w.sent.length; busy(); guest.tick();
+      assert.ok(!guest.active, `a local replay stayed up over a ${what}`); assert.equal(G.w.sent.length, s0, 'closing it told the host something');
+      G.w.dlg = null; G.w.stage = null;
+    }
+    // a replay message reaching the host (or a solo game) does nothing
+    assert.equal(host.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'one' }), true); await tick(); assert.ok(!host.active);
+  });
+
+  await testAsync('comic mode: waits for a story scene or cutscene, and a trigger plays once per world', async () => {
+    const { w, c } = mkComic('solo');
+    w.dlg = {}; w.dlgFree = false;
+    assert.equal(await c.play('tst'), false); assert.ok(!c.active && c.queued, 'queued behind the story scene');
+    c.tick(); assert.ok(!c.active, 'played over a story scene');
+    w.dlg = null; c.tick(); await new Promise((r) => setTimeout(r, 0)); assert.ok(c.active, 'played once the scene was over');
+    c.end();
+    const T = mkComic('host');
+    COMIC_TRIGGERS.push({ id: 'tst', flag: 'test.comic.flag', tag: 'b' });
+    try {
+      T.c.tick(); await new Promise((r) => setTimeout(r, 0)); assert.ok(!T.c.active, 'played before its flag');
+      T.w.save.flags['test.comic.flag'] = true; T.c.tick(); await new Promise((r) => setTimeout(r, 0));
+      assert.ok(T.c.active && T.w.save.flags['comic.tst.b.played'], 'the trigger played and was recorded');
+      T.c.end(); T.c.tick(); await new Promise((r) => setTimeout(r, 0)); assert.ok(!T.c.active, 'a trigger played twice');
+    } finally { COMIC_TRIGGERS.pop(); }
+  });
+}
 
 const yard = await import('../src/content/switchyard.js');
 test('the flooded bay directs Spanish players toward the pump room', () => {
