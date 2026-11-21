@@ -572,7 +572,10 @@ export class Sim {
     const now = this.tick * (1 / 60);
     // A parry needs a deliberate swing (Trevor: mash-clicking made everything easy, since every swing parried a lunge):
     // one that comes after PARRY_REST seconds without swinging. Swinging non-stop never parries; timing does.
-    p.freshSwing = now - (p.lastSwingAt ?? -9) >= PARRY_REST;
+    // Measured from the end of the last swing's recovery (John Pork, PR #146: a slow weapon's cooldown alone used to
+    // count as the rest, so holding attack with it still parried). Clicking again doesn't reset it either: mashing,
+    // held or clicked, never parries; a swing after a real pause does.
+    p.freshSwing = now - (p.swingFreeAt ?? -9) >= PARRY_REST;
     p.combo = now - (p.lastSwingAt ?? -9) <= base.cooldown + FEEL.comboWindow ? ((p.combo ?? 0) % 3) + 1 : 1;
     p.lastSwingAt = now;
     const fin = p.combo === 3;
@@ -583,6 +586,7 @@ export class Sim {
     if (dash) m = { ...m, damage: m.damage * FEEL.dashDmg, range: m.range + FEEL.dashRange, arc: m.arc * 0.7 };
     const focus = p.focusT > 0; if (focus) p.focusT = 0;
     p.meleeCd = m.cooldown * (fin ? 1.25 : 1); p.swingT = 0.2;   // long enough for both attack frames (12 fps)
+    p.swingFreeAt = now + p.meleeCd;   // when this swing's recovery ends (finishers recover longer)
     this.events.push({ t: 'swing', id: p.id, a: p.aim, r: m.range, arc: m.arc, combo: p.combo, weapon: p.mods?.weaponId });
     // Deflect: enemy shots inside the swing go back the way they came, as the player's.
     for (const s of this.shots) {
@@ -656,7 +660,7 @@ export class Sim {
     // through, and so do parries and slams, which set their own stun. Bosses keep their own rules.
     const shrug = !e.boss && !heavy && (e.poiseT > 0 || COMMITTED.has(e.st));
     e.hp -= dmg;
-    if (shrug) { kx = 0; ky = 0; this.events.push({ t: 'shrug', x: e.x, y: e.y }); }
+    if (shrug) this.events.push({ t: 'shrug', x: e.x, y: e.y });   // no new impulse, and whatever it's already flying with stays
     else { e.hurtT = 0.12; if (!e.boss) e.poiseT = POISE; }
     // Stop damage at the end of the earliest phase that hasn't shown an attack tell.
     if (e.boss && e.def?.phaseGate) {
@@ -670,7 +674,7 @@ export class Sim {
     }
     if (e.boss) { kx *= 0.15; ky *= 0.15; const f = e.hp / e.def.hp; const ph = f < 0.33 ? 3 : f < 0.66 ? 2 : 1;
       if (ph !== e.phase) { e.phase = ph; e.phaseTells = 0; this.events.push({ t: 'phase', phase: ph }); } }
-    e.kx = kx; e.ky = ky; if (by) e.lastHitBy = by;
+    if (!shrug) { e.kx = kx; e.ky = ky; } if (by) e.lastHitBy = by;
     this.events.push({ t: 'hit', x: e.x, y: e.y, dmg, target: e.id, by });
     if (e.hp <= 0) {
       this.enemies.delete(e.id);

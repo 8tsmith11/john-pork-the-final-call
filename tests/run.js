@@ -1939,7 +1939,7 @@ test('combat takes thought (Trevor: "I just walk into the robots and click and e
   const sim = new Sim(arena(), { seed: 'poise' }); sim.addPlayer('h', 'trevor');
   rotling(sim, 'a', 420, 400); const e = sim.enemies.get('a');
   sim._hurtEnemy(e, 5, 100, 0, 'h'); assert.ok(e.kx !== 0 && e.hurtT > 0, 'the first hit staggers');
-  sim._hurtEnemy(e, 5, 100, 0, 'h'); assert.equal(e.kx, 0, 'the next light hit is shrugged off');
+  const kx1 = e.kx; sim._hurtEnemy(e, 5, -100, 0, 'h'); assert.equal(e.kx, kx1, 'the next light hit is shrugged off: no new push, the old one keeps going');
   sim._hurtEnemy(e, 5, 100, 0, 'h', { heavy: true }); assert.ok(e.kx !== 0, 'a finisher breaks through');
   e.poiseT = 0; e.st = 'windup'; e.kx = 0; sim._hurtEnemy(e, 5, 100, 0, 'h'); assert.equal(e.kx, 0, 'an enemy winding up doesn\'t flinch from a light hit');
   // mashing the attack into a pack now costs you; the old way cost about a tenth of your health
@@ -1960,8 +1960,25 @@ test('combat takes thought (Trevor: "I just walk into the robots and click and e
   const q = new Sim(arena(), { seed: 'parry' }); q.addPlayer('h', 'trevor'); const p = q.players.get('h'); p.x = 400; p.y = 400; p.aim = 0;
   p.held = 'melee'; p.mods = { ...(p.mods ?? {}), swing: ITEMS['item.pry_bar'].swing };
   rotling(q, 'l', 414, 400); const l = q.enemies.get('l'); l.st = 'lunge'; l.hitOnce = false;
-  p.lastSwingAt = q.tick / 60 - 0.2; q._melee(p); assert.ok(!(l.parried > 0), 'mid-flurry: no parry');
-  l.st = 'lunge'; l.hitOnce = false; l.poiseT = 0; p.lastSwingAt = q.tick / 60 - 1; q._melee(p); assert.ok(l.parried > 0, 'a deliberate swing parries');
+  p.swingFreeAt = q.tick / 60 - 0.2; q._melee(p); assert.ok(!(l.parried > 0), 'mid-flurry: no parry');
+  l.st = 'lunge'; l.hitOnce = false; l.poiseT = 0; p.swingFreeAt = q.tick / 60 - 1; p.meleeCd = 0; q._melee(p); assert.ok(l.parried > 0, 'a deliberate swing parries');
+  // John Pork's cases (PR #146): holding attack with a slow weapon in a real step loop never parries, with any weapon;
+  // a pause beyond recovery does
+  for (const wid of ['item.pry_bar', 'item.pipe_wrench']) {
+    if (!ITEMS[wid]?.swing) continue;
+    const z = new Sim(arena(), { seed: 'hold-' + wid }); z.addPlayer('h', 'trevor'); const zp = z.players.get('h'); zp.x = 400; zp.y = 400;
+    zp.held = 'melee'; zp.mods = { ...(zp.mods ?? {}), swing: ITEMS[wid].swing };
+    let parries = 0;
+    for (let i = 0; i < 60 * 4; i++) {
+      const lr = [...z.enemies.values()][0] ?? (rotling(z, 'L' + i, 414, 400), z.enemies.get('L' + i)); lr.st = 'lunge'; lr.hitOnce = false; lr.x = 414; lr.y = 400; lr.hp = 999;
+      z.step(1 / 60, new Map([['h', { ...emptyInput(), aim: 0, attack: true }]])); parries += z.events.filter((e) => e.t === 'parry').length;
+    }
+    assert.ok(parries <= 1, `${wid}: holding attack parries at most the first swing (${parries})`);
+  }
+  // a heavy hit's knockback survives a teammate's light hit during poise
+  const kb = new Sim(arena(), { seed: 'kb' }); kb.addPlayer('a', 'trevor'); kb.addPlayer('b', 'manuel'); rotling(kb, 'r', 420, 400); const kr = kb.enemies.get('r');
+  kb._hurtEnemy(kr, 4, 120, 0, 'a', { heavy: true }); const vx = kr.kx;
+  kb._hurtEnemy(kr, 4, -80, 0, 'b'); assert.equal(kr.kx, vx, 'a shrugged hit adds nothing and takes nothing away');
 });
 
 const Jobs = await import('../src/content/jobs.js');
