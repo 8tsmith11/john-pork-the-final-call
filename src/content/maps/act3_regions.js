@@ -6,6 +6,9 @@ import { fromGrid } from './builder.js';
 
 const road = (to, id, pair, label, text, tile) => ({ exit: to, id, pair, label, text, stepOn: true, selfDrawn: true, ...(tile ? { tile } : {}) });
 const back = (id, label, tile) => road('beltway', `obj.${id}_out`, `obj.bw_to_${id}`, label, 'Back to the Beltway.', tile);
+// Lines, prop art and a small find per region from the polish pass (hub #30, gonman). Spanish: src/i18n/es-act3.js.
+// The finds are listed sealed in docs/sealed/secrets-later-acts.md (open it with
+// python3 tools/spoilers/seal.py open docs/sealed/secrets-later-acts.md).
 
 // ---- The Beltway: the ring road outside the Enclave wall, branching to ring three ----
 export const beltway = fromGrid({
@@ -18,7 +21,7 @@ export const beltway = fromGrid({
     'C,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,R',
     'T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,T',
     'T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,T',
-    'TgggggggggggggggggsssgggggNgggggggggggT',
+    'TgggggKgggggggggggsssgggggNgggggggggggT',
     'T=================sss=================T',
     'Tgggggggggggg@gggggsssgggggggggggggggggT',
     'TTTTTTTTTTTTTTTTTTTEETTTTTTTTTTTTTTTTTT',
@@ -29,8 +32,13 @@ export const beltway = fromGrid({
     C: road('corridor', 'obj.bw_to_corridor', 'obj.corridor_out', 'West into the Corridor', 'The night is brown that way.', ','),
     R: road('route1_north', 'obj.bw_to_r1n', 'obj.r1n_to_beltway', 'East, back to Route 1', 'Back toward College Park.', ','),
     E: road('enclave', 'obj.bw_to_enclave', 'obj.enclave_out', 'The Enclave gate', 'An attestation gate, and the wall behind it.', 's'),
-    '?': { prop: 'obj.board', label: 'Beltway sign', text: '[scaffold] INNER LOOP: ATTESTED TRAFFIC ONLY. Someone has added, in small letters: "and the rest of you."' },
-    N: { npc: 'npc.bw_driver', art: 'npc.rotter_3', label: 'A trucker on the shoulder', text: '[scaffold] "Twenty years on the loop. Never once been let off it."' },
+    '?': { prop: 'obj.billboard', id: 'obj.bw_sign', label: 'Beltway sign',
+      text: 'A gantry sign over the inner lanes, still lit: INNER LOOP · ATTESTED TRAFFIC ONLY. Lower down, on the post, somebody has added in marker: OUTER LOOP · THE REST OF US, with an arrow pointing down at the lanes that have no paint left.' },
+    N: { npc: 'npc.bw_driver', art: 'npc.rotter_3', label: 'A trucker on the shoulder',
+      text: '"Twenty years on the loop." He works round the truck, knocking each tire with an iron and listening to it. "The inner lanes won\'t have me and the exits are shut, so I go round. Anything I deliver, I hand over the rail."' },
+    // On the verge by the guardrail, at the west end, well clear of the road's one foe.
+    K: { prop: 'obj.toolbox', id: 'obj.bw_gang_box', label: 'Gang box by the rail', loot: 'tools',
+      text: 'A gang box chained to a guardrail post, BELTWAY MAINT. stenciled on the lid. The chain has rusted through at one link. Taped inside the lid, the last work order: REPLACE REFLECTORS, MILE 31, signed off as done. The box was due back at the depot the week the exits shut.' },
     '@': { spawn: true },
   },
 }).enemy('enemy.captcha', 34, 7).build();
@@ -52,10 +60,14 @@ export const corridor = fromGrid({
     '##################################',
   ],
   legend: {
-    W: { scenery: 'obj.degasser', solid: true, tile: ',' },
-    $: { prop: 'obj.crate', label: 'Server rack', loot: 'parts', text: '[scaffold] A rack from a hall written off and sealed. Still drawing power. Still running something.' },
-    '?': { prop: 'obj.board', id: 'obj.cor_handbook', label: 'Employee handbook', text: '[scaffold] An employee handbook from the Slop Decades, with the slogan on its cover.' },
-    N: { npc: 'npc.cor_nightshift', art: 'npc.rotter_1', label: 'A night-shift worker', text: '[scaffold] "I talk to the machines. The thing is, they answer."' },
+    W: { scenery: 'obj.crac_unit', solid: true, tile: ',' },   // the halls' chillers, in pairs, fans turning
+    // The west hall's front room. It keeps the id it had as a crate, so a save that searched it keeps that.
+    $: { prop: 'obj.server_rack', id: 'obj.corridor_crate_6_4', label: 'Server rack', loot: 'parts',
+      text: 'A server rack wheeled out of the rows and left by the hall door with its side panel off, as if a crew meant to come back for it. Half the drive sleds are gone. The rest blink green, and its fans still run.' },
+    '?': { prop: 'obj.newsbox', id: 'obj.cor_handbook', label: 'Employee handbook',
+      text: 'A dispenser box at the edge of the lot, FOR NEW HIRES lettered on the front, the kind that handed out the company handbook free. One copy is left behind the scuffed glass, from the Slop Decades, swollen with damp. The door still opens.' },
+    N: { npc: 'npc.cor_nightshift', art: 'npc.rotter_1', label: 'A night-shift worker',
+      text: '"Evening." She says it to the hall wall first, and pats it, then turns to you. "They like to be told when the shift changes. Give them a minute and they answer. The day shift never gives them the minute."' },
     E: { enemy: 'enemy.autocomplete' },
     '@': { spawn: true },
     R: back('corridor', 'East, back to the Beltway', ','),
@@ -75,7 +87,7 @@ export const gaithersburg = fromGrid({
     'T=gggggggggggggggggggggggggg=T',
     'T=g########gggggg########gg=T',
     'T=g#eeeeee#gggggg#eeeeee#gg=T',
-    'T=g#ee$eee#gggNgg#ee?eee#gg=T',   // the weights room is west, with its guardian; the clock sign by the vault stairs
+    'T=g#ee$eee#gggNgg#ee?eeJ#gg=T',   // the weights room is west, with its guardian; the clock sign by the vault stairs
     'T=g####e###gggggg####e###gg=T',
     'T=gggggggggqqqqqqgggggggggg=T',
     'T=ggggEggggqqqqqqggggggEg@g=T',
@@ -83,9 +95,15 @@ export const gaithersburg = fromGrid({
     'TTTTTTTTTTTTTTTTTTTTTTTTTTSSTT',
   ].map((r) => r.padEnd(30, 'T').slice(0, 30)),
   legend: {
-    '?': { prop: 'obj.board', id: 'obj.gt_master_clock', label: 'The master clock', text: '[scaffold] The master clock. Somewhere on this campus is the reason so many devices think it is 1901.' },
-    $: { prop: 'obj.crate', id: 'obj.gt_cradle', label: 'Reference weights', text: '[scaffold] A room of reference weights, one cradle empty.' },
-    N: { npc: 'npc.gt_physicist', art: 'npc.rotter_2', label: 'A physicist', text: '[scaffold] "Everyone needs to know what time it is. Nobody wants to know why it\'s wrong."' },
+    '?': { prop: 'obj.wall_display', id: 'obj.gt_master_clock', label: 'The master clock',
+      text: 'Red digits behind glass in a brass frame, set into the wall at the head of the vault stairs where the whole campus can see them. The engraved plate under it says only OFFICIAL TIME.' },
+    $: { prop: 'obj.key_jar', id: 'obj.gt_cradle', label: 'Reference weights',
+      text: 'The weights room: brass reference weights under glass bells, one to a cradle, from a kilogram down to a gram. One cradle in the front row is empty. Its label is still there.' },
+    N: { npc: 'npc.gt_physicist', art: 'npc.rotter_2', label: 'A physicist',
+      text: '"What time do you have?" She turns your wrist over and reads your watch herself, then her own, then the one on her other wrist. She writes all three down in a notebook that is nothing but columns.' },
+    // In the east building, by the door to the measurement labs, away from the weights room and its guardian.
+    J: { prop: 'obj.bin', id: 'obj.gt_reject_bin', label: 'Reject bin', loot: 'trash',
+      text: 'A steel bin by the door to the measurement labs, OUT OF TOLERANCE stenciled on the side. Everything in it failed calibration by less than a hair, and it all goes out with the scrap on Mondays.' },
     E: { enemy: 'enemy.moth' },
     '@': { spawn: true },
     S: back('gaithersburg', 'South, back to the Beltway', 'g'),
@@ -103,7 +121,7 @@ export const frederick = fromGrid({
     'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
     'Tqqqqqqqqqqqqgggg,,,,,,,,,,,,,,,,,,T',
     'Tq###q###q###gggg,WW,WW,WW,WW,WW,,,T',
-    'Tq#o#q#$#q#o#gggg,,,,,,,,,,,,,,,,,,T',
+    'Tq#F#q#$#q#R#gggg,,,,,,,,,,,,,,,,,,T',
     'Tqqqqqqqqqqqqgggg,WW,WW,WW,WW,WW,,,T',
     'TqqqqqqNqqqqqgggg,,,,,,,,,,,,,,,,,,T',
     'Tqqqqqqqqqqqqgggg,,,########,,,,,,,T',
@@ -112,11 +130,19 @@ export const frederick = fromGrid({
     'TTTTTTTTTTTTSSTTTTTTTTTTTTTTTTTTTTTT',
   ],
   legend: {
-    W: { scenery: 'obj.degasser', solid: true, tile: ',' },
-    o: { prop: 'obj.board', label: 'Market storefront', text: '[scaffold] Brick, a church spire behind it. The town is ordinary and frightened.' },
-    $: { prop: 'obj.crate', id: 'obj.fr_guestbook', label: 'A guest book', text: '[scaffold] A guest book. The handwriting changes over the decades. Some of the names don\'t.' },
-    '?': { prop: 'obj.board', id: 'obj.fr_potlines', label: 'Potline numbering', text: '[scaffold] The server halls still follow the smelter\'s potline numbers.' },
-    N: { npc: 'npc.fr_old_woman', art: 'npc.rotter_3', label: 'A very old woman', text: '[scaffold] "I used to work there. Ask me what they made. Go on."' },
+    W: { scenery: 'obj.crac_unit', solid: true, tile: ',' },   // chillers along the campus edge, for the halls
+    // The square's three fronts: the corner grocery, the middle door with the guest book, the watchmaker's.
+    F: { prop: 'obj.flowerpot', id: 'obj.fr_grocery', label: 'The corner grocery', grant: 'item.flowers',
+      text: 'A corner grocery with the blind pulled half down for the afternoon. On the step, a bucket of tulips in cellophane, a little wilted, and a card: GOING OVER. TAKE SOME. You take a bunch.',
+      doneText: 'The bucket on the step, with an inch of water left in it.' },
+    R: { prop: 'obj.window_6f', id: 'obj.fr_watchmaker', label: 'The watchmaker\'s',
+      text: 'A watchmaker\'s window, a row of watches laid out on green velvet, every one stopped at a different time. A card propped among them in careful capitals: WE REPAIR. WE DO NOT SET.' },
+    $: { prop: 'obj.flight_log', id: 'obj.fr_guestbook', label: 'A guest book',
+      text: 'Through the middle door, which isn\'t locked, a guest book lies open on a lectern with a pen on a chain. The desk beside it is empty. Under the lectern the older volumes are stacked, each spine dated in ink.' },
+    '?': { prop: 'obj.lab_board', id: 'obj.fr_potlines', label: 'Potline numbering',
+      text: 'A tour board on the railing at the edge of the square, left from the smelter\'s open days: a painted plan of the works, the potlines numbered along the bottom. Past it, down in the valley, the server halls stand in rows on the old footings, a number on each end wall.' },
+    N: { npc: 'npc.fr_old_woman', art: 'npc.rotter_3', label: 'A very old woman',
+      text: '"You\'re not from the campus." She has a bowl of peas in the crook of her arm and shells them while she looks you over. "I worked up the hill most of my life. So did half this street. The other half married us." She splits another pod with her thumb.' },
     E: { enemy: 'enemy.rot_taken' },
     '@': { spawn: true },
     S: back('frederick', 'South-east, back to the Beltway', 'q'),
@@ -134,7 +160,7 @@ export const enclave = fromGrid({
     '##################SS################',
     '#qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq#',
     '#q==q==q==q==qqqqqqqqqq==q==q==q==q#',
-    '#qqqqqqqqqqqqqqqq?qqqqqqqqqqqqqqqqq#',
+    '#qqqqqqqqqqqqqqqq?qGqqqqqqqqqqqqqqq#',
     '#ggggggggggggggggggggggggggggggggggg#',
     '#gMggggggggggggggggggggggggggggggMg#',
     '#ggggggggggggggggggggggggggggggggggg#',
@@ -143,16 +169,24 @@ export const enclave = fromGrid({
     '####################################',
   ].map((r) => r.padEnd(36, '#').slice(0, 36)),
   legend: {
-    M: { scenery: 'obj.degasser', solid: true, tile: 'g' },
-    '?': { prop: 'obj.board', id: 'obj.en_metro', label: 'Metro entrance', text: '[scaffold] A metro that runs on time and announces stations in a single calm voice.' },
-    $: { prop: 'obj.crate', id: 'obj.en_archive', label: 'The national archive', text: '[scaffold] The original documents, on parchment, which nothing can rot.' },
-    N: { npc: 'npc.en_cleaner', art: 'npc.rotter_1', label: 'A cleaner', text: '[scaffold] A cleaner in a grown body. "Don\'t walk on the grass. Nobody walks on the grass."' },
+    M: { scenery: 'obj.degasser', solid: true, tile: 'g' },   // attestation pillars at each end of the lawn
+    '?': { prop: 'obj.purple_sign', id: 'obj.en_metro', label: 'Metro entrance',
+      text: 'A metro pylon on the north walk: the station name in white on bronze, an arrow pointing across the lawn to the escalators, and a speaker grille that carries the announcements up from the platform, one after another, on the minute.' },
+    // The archive's east wing, where the addresses are kept (the reading room and the originals are through the marble steps).
+    $: { prop: 'obj.directory', id: 'obj.en_archive', label: 'The national archive',
+      text: 'The national archive\'s east wing, where the Director\'s addresses are kept. Along its wall runs a row of glass cases, one printed copy in each, under the date it was read. The cases are dusted daily, and the visitors walk straight past them.' },
+    N: { npc: 'npc.en_cleaner', art: 'npc.rotter_1', label: 'A cleaner',
+      text: '"Path, please." A cleaner in a grown body, a little too tall for his overalls, polishes a bollard that was clean already. "Not the grass. They never say why. I think it\'s so they can see who did."' },
+    // On the north walk, halfway between where the two embassies' staff stand.
+    G: { prop: 'obj.bench', id: 'obj.en_gift_box', label: 'A gift box on a bench', grant: 'item.chocolates',
+      text: 'A bench on the north walk, halfway between the two embassies. On it, a heart-shaped box of chocolates in its ribbon, stamped RETURNED WITH THANKS by one embassy and again, underneath, by the other. Neither embassy will be seen picking it up. You pick it up.',
+      doneText: 'The bench, and a square of clean wood where the box sat.' },
     E: { enemy: 'enemy.captcha' },
     '@': { spawn: true },
     S: back('enclave', 'Out through the gate, to the Beltway', 'q'),
   },
 }).enemy('boss.en_gate', 32, 5)
-  .exit('en_archive', 4, 9, { id: 'obj.enclave_to_en_archive', selfDrawn: true, stepOn: true, pair: 'obj.en_archive_out', label: 'The national archive', text: 'Marble steps. The doors open on schedule.' })   // act3_more.js
+  .exit('en_archive', 4, 9, { id: 'obj.enclave_to_en_archive', selfDrawn: true, stepOn: true, pair: 'obj.en_archive_out', label: 'The archive reading room', text: 'Marble steps. The doors open on schedule.' })   // act3_more.js
   
   .exit('en_mall', 10, 0, { id: 'obj.enclave_to_en_mall', selfDrawn: true, stepOn: true, pair: 'obj.en_mall_out', label: 'North to the mall', text: 'Long and green and empty.' })   // stretch.js
   .exit('en_metro', 14, 9, { id: 'obj.enclave_to_en_metro', selfDrawn: true, stepOn: true, pair: 'obj.en_metro_out', label: 'Down to the metro', text: 'On time. Always.' })   // stretch.js
