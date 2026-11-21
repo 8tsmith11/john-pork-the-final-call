@@ -2434,14 +2434,15 @@
   {
    "id": 111,
    "created_at": "2026-11-21T08:21:51Z",
-   "updated_at": "2026-11-21T08:21:51Z",
+   "updated_at": "2026-11-21T08:21:53Z",
    "history": [
-    "2026-11-21T08:21:51Z trevor: added (for trevor)"
+    "2026-11-21T08:21:51Z trevor: added (for trevor)",
+    "2026-11-21T08:21:53Z trevor: claimed"
    ],
    "title": "College Park drone hub: an active fight the party can join, with a walking machine (Trevor)",
    "details": "Trevor, 2026-11-21: the fight against the drone machine in College Park should be an active fight players can join, that ends, isn't in a small bordered area, and the machine should move on legs. Branch trevor/walker-fight be4c434, stacked on trevor/border-siege.",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
