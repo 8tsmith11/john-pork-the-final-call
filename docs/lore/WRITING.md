@@ -7,24 +7,25 @@
 ## 0. Read first: lessons from the human workshop (Michael, 2026-11-20)
 
 Michael rejected the first cold open because it **didn't make sense to a new player**, then rewrote
-it with an agent line by line. Full notes: [`session-notes-cold-open.md`](session-notes-cold-open.md).
+it with an agent line by line. Full notes: [`session-notes-cold-open.md`](session-notes-cold-open.md) (the examples are sealed in
+`docs/sealed/workshop-cold-open.md`).
 The short version, for every scene you write:
 
 1. **Write for someone who knows nothing.** Only what's already on screen counts. Don't lean on an
    unseen prop, a name nobody has introduced, or a comparison to a scene that hasn't happened.
-2. **Clear beats clever.** If a line needs a footnote ("the cut is square", "past me is a monster"),
-   cut it. People react plainly to big things: "Guys. The balloon's gone." "What? Gone gone?"
-3. **Name people.** No "He opens his eyes" with nobody behind the "he".
-4. **Check the bible and the map before staging** (who sleeps where, what time the break-in was).
+2. **Clear beats clever.** If a line needs a footnote, cut it. People react plainly to big things.
+3. **Name people.** No "he" with nobody behind it.
+4. **Check the bible and the map before staging** (who sleeps where, what time it is).
 5. **Choices must change something later**, or there's no choice.
 6. **Spend words on the feeling, not the forensics.** Leave physical clues for the players to work
    out; don't have a character explain the answer.
-7. **Give characters a reason to act** that also explains the world (they can't call the police:
-   the police are Continuity, and there's a John Pork flag on the wall).
+7. **Give characters a reason to act** that also explains the world.
 8. **Use the real roommates' lives** (`real-life.md`). It's what lands hardest.
 9. **Action plays on its line.** Staging happens while the text it goes with is on screen, never as
    a silent pre-roll before it (`> do:` cues in the sealed scripts).
-10. **A human-approved scene is locked.** Don't edit its lines without that human's explicit yes
+10. **Set up the world on screen:** who runs it, what's wrong with it, where we are. Match the
+    reactions to the stakes, and keep stage directions ("(beat)") out of spoken lines.
+11. **A human-approved scene is locked.** Don't edit its lines without that human's explicit yes
     (D-022: the cold open).
 
 ## 1. Patterns that read as machine-written (banned)
@@ -50,9 +51,8 @@ The short version, for every scene you write:
   rent, or the stove. The feeling sits underneath, unsaid.
 - **Interrupt, evade, mishear.** Characters answer a different question, trail off, or get cut off.
   Not every line gets a reply.
-- **Voices you can tell apart with the names covered.** Manuel is warm and gets
-  specific about craft; he talks like a normal person, with only an occasional "che" (Michael,
-  2026-11-20). Trevor deflects with biology facts. Michael makes everything about her
+- **Voices you can tell apart with the names covered.** Manuel says "che" and gets
+  specific about craft. Trevor deflects with biology facts. Michael makes everything about her
   without saying her name. Pork is casual, a bit vain, and too familiar. Tim is courteous and
   precise, and tired. Sahur counts things.
 - **People are wrong.** Characters believe things that aren't true, and say so confidently.

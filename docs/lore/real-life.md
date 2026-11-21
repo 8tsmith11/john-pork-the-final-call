@@ -47,12 +47,6 @@ spoiler (see `PROCESS.md`).
 ## Manuel
 
 - **Argentinian.** Mate goes everywhere with him. *(Manuel; also in the brief)*
-- **Insanely friendly, and very forgiving.** He hardly gets mad at anyone about anything, and
-  never at his roommates. Write him warm. *(Michael, 2026-11-20; awaiting Manuel's confirmation
-  through gonman)*
-- **He talks like a normal person.** Don't lean on "che" or other Spanish tics. An occasional "che"
-  is fine; most of his lines should have none. *(Michael, 2026-11-20; awaiting Manuel's confirmation through
-  gonman)*
 - **The hiding game is still going.** His version of the shared story: "we hide stuff from ourselves
   as a joke in the apartment." The purple cylinder above is his example. *(Manuel)*
 - **Two shirts he wants his character to own:** a Hasbulla shirt and an Argentina shirt. See the
