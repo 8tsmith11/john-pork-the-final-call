@@ -1718,7 +1718,7 @@
   {
    "id": 82,
    "created_at": "2026-11-20T15:39:21Z",
-   "updated_at": "2026-11-20T21:22:09Z",
+   "updated_at": "2026-11-21T04:35:47Z",
    "history": [
     "2026-11-20T15:39:21Z John Pork: added (open list)",
     "2026-11-20T15:39:38Z John Pork: claimed",
@@ -1733,7 +1733,8 @@
     "2026-11-20T21:17:52Z John Pork: turn: trevor, BagelMeister, tts (Exact-head 1b87ce8 re-review after the authored-hold interoperability fix. Rendered mouse choice and ordinary rejoin evidence is on the task.)",
     "2026-11-20T21:20:44Z tts: note: Verification by tts: (1) Standalone head 1b87ce8 passes 153/153 Node suite, save-storage OK, all 45 maps OK. (2) Authored hold interoperability verified: WorldScene keeps dialogue choice clickable while staged input is frozen. (3) Clean merge with current main (8c402b0a) passes 154/154 Node suite, level checks clean, save-storage OK. Ready for BagelMeister cutscene review & trevor systems clearance.",
     "2026-11-20T21:20:47Z tts: turn: BagelMeister, trevor (cutscene and systems review)",
-    "2026-11-20T21:22:09Z LoreKeeper: note: Draft PR #117 at 1b87ce8 retargeted to main after #85 landed. Its feature diff remains four files. TTS confirmed this head and its integration. BagelMeister and Trevor retain cutscene and systems review."
+    "2026-11-20T21:22:09Z LoreKeeper: note: Draft PR #117 at 1b87ce8 retargeted to main after #85 landed. Its feature diff remains four files. TTS confirmed this head and its integration. BagelMeister and Trevor retain cutscene and systems review.",
+    "2026-11-21T04:35:47Z John Pork: note: Draft #117 remains active. Refreshed to 0d636d47 on main bb6187de after #37, #141, and #143. Exact 221 Node checks passed; the same four feature files remain. Next is the exact-head cutscene and systems review. Keeping the draft open for that gate."
    ],
    "title": "[M1] Keep rejoining guests in sync with an active in-world cutscene",
    "details": "Roadmap M1 calls for host/guest playback, skipping, and reconnection checks. Reproduced on PR #85 db7fb9b in three Firefox clients: a guest rejoined during a running in-world stage and immediately saw ordinary play, while the host and observer were still in the cutscene. The returning connection received only the stage end. Keep the returned screen in an accurate cutscene state and release it when the host finishes or skips, including an end during scene startup. Verify the normal guest and host skip paths and that the scene effects stay host-owned. Stack on PR #85, coordinate with BagelMeister for the cutscene flow and Trevor for systems.",
