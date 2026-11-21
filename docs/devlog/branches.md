@@ -8,7 +8,7 @@ The rule is in `PROCESS.md`, "Working in git".
 "Landed by copy" means the changes reached `main` as new commits (cherry-picked or reapplied), so
 the branch tip isn't an ancestor of `main` even though nothing on it is missing.
 
-Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `b1b5ade`.
+Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `628c04e`.
 
 ## Active
 
@@ -21,6 +21,28 @@ Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `b1b5ade`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `gonman/ct-posters` | GitHub | Merged in `4355e79` (PR #151) |
+| `jp/jp2-discoverable-abilities` | GitHub | Merged in `628c04e` (PR #143) |
+| `trevor/coop-puzzles` | GitHub | Merged in `b16db7b` (PR #141) |
+| `gonman/later-acts-polish` | GitHub | Merged in `f862adf` (PR #131) |
+| `gonman/world-trigger` | GitHub | Merged in `5c8bd19` (PR #77) |
+| `jp/shared-choice-dialogue` | GitHub | Merged in `d5eb040` (PR #37) |
+| `lorekeeper/pr85-147-branch-register` | GitHub | Merged in `f369fc9` (PR #149) |
+| `gonman/save-pin` | GitHub | Squash-merged in `ea9a69f` (PR #136) |
+| `trevor/readme-undo` | GitHub | Merged in `8c402b0` (PR #147) |
+| `jp/coop-reconnect` | GitHub | Merged in `4098ca4` (PR #85) |
+| `lorekeeper/pr134-branch-register` | GitHub | Merged in `cdf2fa2` (PR #146) |
+| `bagel/opening-fixes` | GitHub | Squash-merged in `c1ea62a` (PR #134) |
+| `lorekeeper/pr115-branch-register` | GitHub | Merged in `2cb09c3` (PR #138) |
+| `jp/quest-npc-meet` | GitHub | Merged in `a43424f` (PR #115) |
+| `lorekeeper/pr73-branch-register` | GitHub | Merged in `a95015b` (PR #133) |
+| `gonman/later-act-alignment` | GitHub | Merged in `3a6db1f` (PR #73) |
+| `lorekeeper/pr80-branch-register` | GitHub | Merged in `4d6a6f5` (PR #132) |
+| `jp/guardian-save-compat` | GitHub | Merged in `d0f7b63` (PR #80) |
+| `lorekeeper/later-act-roadmap` | GitHub | Merged in `0b31e2f` (PR #130) |
+| `lorekeeper/pr112-branch-register` | GitHub | Merged in `942e69f` (PR #129) |
+| `gonman/stretch-polish` | GitHub | Merged in `38754b2` (PR #112) |
+| `lorekeeper/pr88-116-branch-register` | GitHub | Merged in `0642004` (PR #128) |
 | `trevor/ping-rework` | GitHub | Merged in `b1b5ade` (PR #88) |
 | `gonman/lab-book` | GitHub | Merged in `090fdcf` (PR #116) |
 | `lorekeeper/pr107-branch-register` | GitHub | Merged in `f784ab8` (PR #114) |
@@ -133,6 +155,8 @@ Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `b1b5ade`.
 
 | Branch | Where | Replacement |
 |---|---|---|
+| Retained branch at `a70745a` | GitHub | PR #135 closed in favor of #136. |
+| `trevor/hub-utf8` | GitHub | PR #126 closed after #107 covered both UTF-8 changes in `ad2c9a2`. |
 | `bagel/act1-staging` | GitHub | PR #47 closed in favor of #104, which landed in `cca2934` via #106. |
 | `tts/spanish-act1-more` | GitHub | PR #94 closed after #79 covered the surviving lines. #79 landed in `a9e3cce` via #100. |
 | `bagel/merge-queue` | GitHub | PR #99 closed in favor of #100, which landed in `c329d54`. |

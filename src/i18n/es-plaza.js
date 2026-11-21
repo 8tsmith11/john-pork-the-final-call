@@ -259,4 +259,10 @@ export const ES_PLAZA = {
   '"I rate every one a two, so it learns." He eats around the university seal and sets it at the edge of his plate, next to the other five.': '"A todos les pongo un dos, así aprende." Se come el waffle alrededor del sello de la universidad y deja el sello en el borde del plato, junto a los otros cinco.',
   'A grad student asleep at a bench': 'Un estudiante de posgrado dormido sobre una mesa',
   'Asleep on his folded arms, safety glasses still on. By his elbow, a wheel motor with a sticky note: BORROWED, WILL PUT BACK. Without waking up he says, "It still drives. Just in circles."': 'Dormido sobre los brazos cruzados, todavía con las gafas de seguridad puestas. Junto al codo, un motor de rueda con una nota adhesiva: PRESTADO, LO DEVUELVO. Sin despertarse, dice: "Todavía anda. Pero en círculos."',
+  // Continuity propaganda (hub #100)
+  'Continuity poster': 'Cartel de Continuidad',
+  'DON\'T PICK UP, pasted on the outside of ASTER and already weathered. Someone stuck a small pink sticker over the blacked-out caller ID. Someone else tried to scrape it off and gave up halfway.':
+    'NO CONTESTE, pegado afuera del ASTER y ya gastado por el tiempo. Alguien le pegó una pequeña calcomanía rosa encima del identificador tachado. Otra persona intentó rasparla y se rindió a la mitad.',
+  'REPORT CONTRABAND ICONS. Flags, statues, prints, songs. A hotline, and a reward in loyalty points. THE CALL WAS AN ATTACK. TWENTY-SEVEN YEARS STABLE. KEEP IT THAT WAY. Under it, a column of tally marks in marker, with no key.':
+    'DENUNCIE ÍCONOS DE CONTRABANDO. Banderas, estatuas, láminas, canciones. Una línea directa y una recompensa en puntos de lealtad. LA LLAMADA FUE UN ATAQUE. VEINTISIETE AÑOS DE ESTABILIDAD. QUE SIGA ASÍ. Debajo, una columna de marcas de conteo con marcador, sin explicación.',
 };
