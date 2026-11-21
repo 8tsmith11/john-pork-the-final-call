@@ -33,8 +33,9 @@ import * as W from '../../engine/wallet.js';
 import { bossTalk } from '../../content/bossTalk.js';
 import { BoardGame } from '../ui/BoardGame.js';
 import { Neon } from '../render/neon.js';
-import { skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
+import { R_ABILITIES, abilityOptions, selectedAbility, skillNode, skillOpen, migrateSkills } from '../../content/skills.js';
 import { PipePuzzle } from '../ui/PipePuzzle.js';
+import { PipeTable } from '../pipeTable.js';
 import { LatticeTable } from '../latticeTable.js';
 import { BastionTable } from '../bastionTable.js';
 import { BastionScreen } from '../ui/BastionScreen.js';
@@ -65,6 +66,7 @@ import { growthSize, lookStage, gonmanWeight } from '../../content/growth.js';
 import { Beltless } from '../beltless.js';
 import { ToothpasteTalk } from '../toothpaste.js';
 import { RunningGags } from '../runningGags.js';
+import { HostPick } from '../hostPick.js';
 import { Approach } from '../approach.js';
 import { Pacifier } from '../pacifier.js';
 import { GuitarStands } from '../guitarStands.js';
@@ -136,6 +138,7 @@ export class WorldScene extends Phaser.Scene {
     const startMap = MAPS[this.save.world.area] ?? MAPS.room631;
     this.save.world.killed ??= [];
     const authoritative = this.mode !== 'client';
+    if (authoritative && this._pinSpot()) autosave(this.save).catch(() => {});   // write the migrated pin now, not at the next autosave
     const killed = new Set(this.save.world.killed);
     if (this.save.flags['act1.boss.defeated']) {
       // Older saves could record the phone outcome without the defeated spawn's key.
@@ -176,7 +179,7 @@ export class WorldScene extends Phaser.Scene {
     this._wireNet();
     this._makeDialogueUi();
     // D-014: shared events, instruments, romance (src/game/sharedEvent.js, performances.js, romance.js)
-    this.shared = new SharedEvents(this); this.stage = new Stage(this); this.retry = new RetryLine(this); this.moods = new Moods(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.cordon = new Cordon(this); this.bigButt = new BigButt(this); this.beltless = new Beltless(this); this.toothpaste = new ToothpasteTalk(this); this.gags = new RunningGags(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this); this.stands = new GuitarStands(this);
+    this.shared = new SharedEvents(this); this.stage = new Stage(this); this.retry = new RetryLine(this); this.moods = new Moods(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.cordon = new Cordon(this); this.bigButt = new BigButt(this); this.beltless = new Beltless(this); this.toothpaste = new ToothpasteTalk(this); this.gags = new RunningGags(this); this.hostPick = new HostPick(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this); this.stands = new GuitarStands(this);
     this._pageIdx = {};
     this.vignette = this._makeVignette();
     if (this.mode !== 'client') for (const p of this.sim.players.values()) {
@@ -429,12 +432,23 @@ export class WorldScene extends Phaser.Scene {
 
   _choose(i) {
     if (!this.dlg?.choices[i] || this.time.now - (this._lineAt ?? 0) < 450) return;
-    if (this.dlg.spectator) { if (this.dlg.decider === this.character) { this.dlg.choose(i); this._toast('…'); } return; }
+    if (this.dlg.spectator) {
+      if (this.dlg.decider === this.character && !this.dlg.pending) { this.dlg.choose(i); this._drawDialogue(); }
+      return;
+    }
     if (this._aiDecider && !this.dlg.spectator) return this._toast(`${this._aiDecider.toUpperCase()} decides`);
     if (!this.shared?.canChoose()) return;
-    this.shared?.picked(this.character, this.dlg.choices[i].text.replace(/\*/g, ''));
-    this._logChoice(this.character, this.dlg.choices[i]);
-    this.dlg.choose(i); this._drawDialogue();
+    this._commitDialogueChoice(i, this.character);
+  }
+
+  _commitDialogueChoice(i, who) {
+    const c = this.dlg?.choices[i];
+    if (!c || this.dlg.spectator) return;
+    const showLine = this.shared?.active && this.shared.active.scope !== 'self';
+    if (!showLine) this._logChoice(who, c);
+    this.dlg.choose(i, showLine ? who : undefined);
+    this.shared?._pump();
+    this._drawDialogue();
   }
 
   _drawDialogue() {
@@ -454,12 +468,14 @@ export class WorldScene extends Phaser.Scene {
     this.dlgTimer?.setVisible(false);
     this._choiceHeader = false;
     if (choices.length) {
+      const decider = d.spectator ? d.decider : (this._aiDecider ?? (this.shared?.active ? this.shared.deciderFor(d.node) : null));
+      const mine = !decider || (decider === this.character && !d.pending && !this._aiDecider);
       if (this._choicesFor !== d.nodeId) { this._choicesFor = d.nodeId; this._lineAt = this.time.now; }
       // A timed choice ("Let it ring."): count down on screen and take it if nobody picks.
       const ti = choices.findIndex((c) => c.timeout);
       if (ti >= 0) {
         const left = Math.ceil(choices[ti].timeout - (this.time.now - this._lineAt) / 1000);
-        if (left <= 0) { this._lineAt = 0; this._choose(ti); return; }
+        if (left <= 0) { this._commitDialogueChoice(ti, decider ?? this.character); return; }
         this.dlgWho.setText('');
         this.dlgTimer ??= this.add.text(0, 0, '', { ...FONT, fontSize: '9px' }).setOrigin(1, 0).setScrollFactor(0).setDepth(9502);
         this.dlgTimer.setText(`⏱ ${left}s`).setColor(left <= 5 ? '#d65db1' : '#9aa3c7').setVisible(true);
@@ -467,34 +483,29 @@ export class WorldScene extends Phaser.Scene {
       } else this.dlgWho.setText('');
       this.dlgPortrait.setVisible(false); this.dlgPortraitBg.setVisible(false); this.dlgInitial.setText('');
       this.dlgText.setText(''); this._hideRich(); this.dlgMore?.setVisible(false);
-      // Directed choices: a small "→ MANUEL" tag, and greyed options on everyone else's screen.
-      const decider = d.spectator ? d.decider : (this.shared?.active ? this.shared.deciderFor(d.node) : null);
-      const mine = !decider || decider === this.character;
-      // A header row above the options (not on top of them): clear for the decider, quiet for everyone else.
-      this._choiceHeader = !!(decider && this.mode !== 'solo');
+      this._choiceHeader = !!(decider && (this.mode !== 'solo' || this._aiDecider));
       // An AI roommate's own scene (romance he's courting himself): he picks, after a beat.
       if (this._aiDecider && !d.spectator) {
-        this._choiceHeader = true;
-        this.dlgWho.setText(`${this._aiDecider.toUpperCase()} IS CHOOSING…`).setColor('#9aa3c7');
         if (this._aiPickFor !== d.nodeId) {
           this._aiPickFor = d.nodeId;
           const node = d.nodeId;
           this.time.delayedCall(1100, () => {
             if (!this.dlg || this.dlg.nodeId !== node || !this.dlg.choices.length) return;
             const opts = this.dlg.choices.map((c, i) => [c, i]).filter(([c]) => !c.timeout);
-            const [c, i] = opts[Math.floor(Math.random() * opts.length)] ?? [this.dlg.choices[0], 0];
-            this._toast(`${this._aiDecider?.toUpperCase() ?? ''}: "${c.text.replace(/[*"]/g, '')}"`);
-            this._logChoice(this._aiDecider, c);
-            this.dlg.choose(i); this._drawDialogue();
+            const [, i] = opts[Math.floor(Math.random() * opts.length)] ?? [this.dlg.choices[0], 0];
+            this._commitDialogueChoice(i, this._aiDecider);
           });
         }
       }
-      if (this._choiceHeader) this.dlgWho.setText(mine ? '▶ YOUR CHOICE' : `${decider.toUpperCase()} IS CHOOSING…`).setColor(mine ? '#6fe3e8' : '#9aa3c7');
-      this.dlgChoices.forEach((t, i) => t.setText(choices[i] ? `${i + 1}. ${choices[i].text.replace(/\*/g, '')}` : '').setVisible(!!choices[i]).setAlpha(mine && !this._aiDecider ? 1 : 0.45));
+      if (this._choiceHeader) {
+        const wait = `${tr('WAITING FOR')} ${decider.toUpperCase()}…`;
+        this.dlgWho.setText(d.pending ? tr('CHOICE SENT') : mine ? tr('▶ YOUR CHOICE') : wait).setColor(mine ? '#6fe3e8' : '#9aa3c7');
+      }
+      this.dlgChoices.forEach((t, i) => t.setText(choices[i] ? `${i + 1}. ${choices[i].text.replace(/\*/g, '')}` : '').setVisible(!!choices[i]).setAlpha(mine ? 1 : 0.45));
       // John Pork's call: the ANSWER / DECLINE choice is shown as a full phone takeover (CallCard).
       const label = (c) => c.text.replace(/[*"]/g, '').trim().toUpperCase();
       const ai = choices.findIndex((c) => label(c) === 'ANSWER'), di = choices.findIndex((c) => label(c) === 'DECLINE');
-      if (ai >= 0 && di >= 0) {
+      if (mine && ai >= 0 && di >= 0) {
         if (!this._callCard || this._callCard.closed || this._callCardFor !== d.nodeId) {
           this._callCard?.destroy(); this._callCardFor = d.nodeId;
           this._callCard = new CallCard(this, { name: 'John Pork', onAnswer: () => this._choose(ai), onDecline: () => this._choose(di) });
@@ -507,7 +518,8 @@ export class WorldScene extends Phaser.Scene {
       this.dlgText.setColor(line && !line.who ? '#9aa3c7' : '#e8e8f0');
       if (line && line !== this._lastLine) {
         this._lastLine = line; this._lineAt = this.time.now;
-        if (this._transcript && line.text && !line.sms) this._transcript.lines.push([line.who ?? '', line.text.replace(/\*([^*]+)\*/g, '$1')]);
+        if (line.choice) this._logChoice(line.who, line);
+        else if (this._transcript && line.text && !line.sms) this._transcript.lines.push([line.who ?? '', line.text.replace(/\*([^*]+)\*/g, '$1')]);
         // The guide's Sahur entry: seen once he speaks on screen, whichever route (cameo or boss).
         if (line.who && /sahur/i.test(line.who) && !this.save.flags['act1.sahur.seen']) this._flag('act1.sahur.seen', true);
         if (line.sms) {   // a text message: buzz, and keep it on the phone
@@ -695,7 +707,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'npcTalk') this._guestNpcTalk(peer, msg);
         if (msg.t === 'input') {
           const prev = this.remoteInputs.get(peer);
-          this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, interact: false });
+          this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, skill: msg.inp.skill || prev?.skill, interact: false });
         }
         if (msg.t === 'flag' && typeof msg.key === 'string' && /^(act\d|dlg\.)/.test(msg.key) && !ACT_ONE_HOST_FLAGS.has(msg.key)) this.save.flags[msg.key] = msg.value ?? true
         if (msg.t === 'flag' && msg.key === 'act1.fuses.in') this._seatFuses();
@@ -706,6 +718,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'door') this._toggleDoor(msg.id);
         if (msg.t === 'craft') this._craft(this._charOf(peer), msg.idx);
         if (msg.t === 'skill') this._learn(this._charOf(peer), msg.id);
+        if (msg.t === 'equipR') this._equipR(this._charOf(peer), msg.id);
         if (msg.t === 'ability') this._raiseAbility(this._charOf(peer), msg.key);
         if (msg.t === 'equip') this._equip(this._charOf(peer), msg.id);
         if (msg.t === 'mate') this._mateBreak();
@@ -713,11 +726,14 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'rest') this._restAtSave(peer, msg.obj);
         if (msg.t === 'use') { this._useWhat = msg.id ?? null; this._use(this._charOf(peer), peer); }
         if (msg.t === 'morph') this._morph(peer);
+        if (msg.t === 'hp') this.hostPick?.press();   // sealed (hub #67)
         if (msg.t === 'questUse') {
           const o = this.map.objects.find((x) => x.id === msg.id);
           if (o && msg.quest === undefined) this._questInteract(o, this._charOf(peer), peer);
           if (o && typeof msg.quest === 'string') this._giveQuestItem(o, msg.quest, this._charOf(peer), peer);
         }
+        if (msg.t === 'pact') this._puzzleAct(peer, msg.id);   // co-op puzzles, host side
+        if (msg.t === 'pipe') { this._pipes().onHostMsg(peer, msg); return; }   // the shared signal panel
         if (msg.t === 'puzzle') { const o = this.map.objects.find((x) => x.id === msg.id), pz = o && puzzleFor(o.id); if (pz) this._usePuzzle(pz, o, this._charOf(peer), peer); }   // puzzle kit, host side
         if (msg.t === 'search') { const o = this.map.objects.find((x) => x.id === msg.id && x.loot); if (o) this._search(o, this._charOf(peer), peer); }
         if (msg.t === 'zip') { const o = this.map.objects.find((x) => x.id === msg.id && x.zip); if (o) this._zip(o, peer); }
@@ -756,6 +772,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'lattice') { this._table().onClientMsg(msg); return; }
         if (msg.t === 'bastion') { this._bastion().onClientMsg(msg); return; }
         if (msg.t === 'lab') { this._lab().onClientMsg(msg); return; }
+        if (msg.t === 'pipe') { this._pipes().onClientMsg(msg); return; }
         if (this.shared?.onMsg(msg) || this.stage?.onClientMsg(msg) || this.retry?.onClientMsg(msg) || this.moods?.onClientMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg)) return;
         if (msg.t === 'snap') {
           this.snapBuf.push({ at: performance.now(), snap: msg.snap });
@@ -1020,8 +1037,9 @@ export class WorldScene extends Phaser.Scene {
 
   _syncPlayerGear(p) {
     const c = this.save.party[p.character];
-    const weapon = heldWeapon(c, p.character, isAi(p.id));
+    const ai = isAi(p.id), weapon = heldWeapon(c, p.character, ai);
     p.held = weapon ? (ITEMS[weapon.id].slot === 'ranged' ? 'gun' : 'melee') : null;
+    p.activeAbility = ai ? null : selectedAbility(p.character, c);
     this.sim.setMods(p.id, playerMods(c, p.character, weapon));
     p.analogCharm = !!ITEMS[c.equipped?.charm]?.analog;
   }
@@ -1075,6 +1093,7 @@ export class WorldScene extends Phaser.Scene {
     const before = questState(this.save), was = JSON.parse(JSON.stringify(before));
     if (Number.isInteger(msg.act)) this.save.world.act = msg.act;
     Object.assign(this.save.flags, msg.flags ?? {});
+    this._refreshPuzzleProps?.();   // levers, breakers, lamps, busts, the clock: as the host has them
     if (msg.guide) this.save.world.guide = msg.guide;
     if (msg.drops) this.save.world.drops = msg.drops;   // items on the floor (src/game/guitarStands.js)
     if (msg.jobs) this.save.world.jobs = msg.jobs;      // the host's bounty board
@@ -1171,8 +1190,17 @@ export class WorldScene extends Phaser.Scene {
 
   _learn(who, id) {
     const c = this.save.party[who], s = skillNode(who, id);
-    if (!c || !s || c.skillPoints < 1 || (c.skills[id] ?? 0) >= s.max || !skillOpen(who, c, s)) return;
+    const rank = c?.skills?.[id] ?? 0;
+    if (!c || !s || !(c.skillPoints >= 1) || rank >= s.max || !skillOpen(who, c, s, this.save)) return;
     c.skillPoints--; c.skills[id] = (c.skills[id] ?? 0) + 1;
+    this._syncParty();
+  }
+
+  menuEquipR(id) { if (this.mode === 'client') this.net.send({ t: 'equipR', id }); else this._equipR(this.character, id); }
+  _equipR(who, id) {
+    const c = this.save.party[who];
+    if (!c || !abilityOptions(who, c).includes(id) || selectedAbility(who, c) === id) return;
+    c.activeAbility = id;
     this._syncParty();
   }
 
@@ -1415,23 +1443,42 @@ export class WorldScene extends Phaser.Scene {
   _cylinderSpots() {
     return (this._cylSpots ??= Object.values(MAPS).flatMap((m) => m.objects.filter((x) => x.loot).map((x) => ({ map: m.id, id: x.id, where: m.name ?? m.id }))));
   }
-  _cylinderSpot(n = Number(this.save.flags['secrets.cylinder.moves'] || 0)) {
+  // Where it is now. Once it has moved, the save keeps that container (pin.h1), so a later build that adds or
+  // removes searchable containers doesn't shift it. Before then, or if that container is gone, the seeded pick.
+  _cylinderSpot() {
+    const at = this.save.flags['pin.h1'];
+    const pinned = typeof at === 'string' && this._cylinderSpots().find((x) => `${x.map}:${x.id}` === at);
+    return pinned || this._spotPick(Number(this.save.flags['secrets.cylinder.moves'] || 0));
+  }
+  // The seeded pick for move n, never the place it just left (avoid, or move n - 1's pick).
+  _spotPick(n, avoid = null) {
     const spots = this._cylinderSpots(); if (!spots.length) return null;
     const pick = (k) => Math.floor(new Rng(`${this.save.world.seed}:cylinder:${k}`).next() * spots.length);
     let i = pick(n);
-    if (n > 0 && i === pick(n - 1)) i = (i + 1) % spots.length;   // never hidden back in the place it was just found
+    const prev = avoid ?? (n > 0 ? spots[pick(n - 1)] : null);
+    if (prev && spots.length > 1 && spots[i].map === prev.map && spots[i].id === prev.id) i = (i + 1) % spots.length;
     return spots[i];
+  }
+  // Host, on load: a save from before pin.h1 that has already moved it gets pinned where it is now, while the
+  // container list still matches the one it moved under.
+  // Returns true when it pinned (the caller writes the save).
+  _pinSpot() {
+    if (this.mode === 'client' || !Number(this.save.flags['secrets.cylinder.moves'] || 0) || this.save.flags['pin.h1']) return false;
+    const s = this._cylinderSpot(); if (!s) return false;
+    this.save.flags['pin.h1'] = `${s.map}:${s.id}`;
+    return true;
   }
   _cylinderHere(o) { const s = this._cylinderSpot(); return !!s && s.map === this.map.id && s.id === o.id; }
   _findCylinder(who) {
-    const f = this.save.flags, n = Number(f['secrets.cylinder.moves'] || 0) + 1;
+    const f = this.save.flags, n = Number(f['secrets.cylinder.moves'] || 0) + 1, here = this._cylinderSpot();
     this._flag('secrets.cylinder.moves', n); this._flag('secrets.cylinder.found', true);
     this._flag(`secrets.cylinder.by.${who}`, Number(f[`secrets.cylinder.by.${who}`] || 0) + 1);
     const line = {
       manuel: 'MANUEL: "I cast that. Two-part silicone. It came out of the mold perfect and I have regretted nothing."',
       michael: 'MICHAEL: "I\'m not touching it." He is already holding it.',
     }[who] ?? '';
-    const next = this._cylinderSpot(n);
+    const next = this._spotPick(n, here);
+    if (next) this._flag('pin.h1', `${next.map}:${next.id}`);
     const tally = ['manuel', 'michael'].map((k) => `${k[0].toUpperCase()}${k.slice(1)} ${Number(f[`secrets.cylinder.by.${k}`] || 0)}`).join(' · ');
     return `\n\nUnderneath everything else: the purple cylinder. Cast silicone, a little dusty, exactly the shape you remember.\n${line}\nHouse rule: whoever finds it hides it again. It goes somewhere worse${next ? `, out by ${next.where}` : ''}.\nFound so far: ${tally}`;
   }
@@ -1782,6 +1829,71 @@ export class WorldScene extends Phaser.Scene {
 
   // Hidden mechanic (fun): kick the vending machine. Sometimes it pays. Keep kicking and it talks back.
   // Hard optional: wind the four stuck clocks to the paper clock's time.
+  // The world's hands-on puzzles (switchyard levers, the fuse carrier, breakers, signal lamps, the clocks, Manuel's
+  // busts, the pump). The host runs them for everyone: its own press directly, a guest's through _puzzleAct.
+  // The signal panel, shared by the party (src/game/pipeTable.js). The host checks a guest is at the panel, records
+  // the solve once (flag, toast for everyone); whoever turned the last tile hears the scene that follows.
+  _pipes() {
+    return (this.pipeTable ??= new PipeTable(this, {
+      makeView: (seed, onRotate) => new PipePuzzle(this, seed, () => { this.puzzle = null; }, { onRotate }),
+      near: (peer, id) => { const o = this.map.objects.find((x) => x.id === id), p = this.sim?.players.get(peer); return !!(o && p && !p.downed && Math.hypot(o.x * TILE + 8 - p.x, o.y * TILE + 8 - p.y) <= 48); },
+      solved: (o) => { this._flag(o.solvedFlag, true); this._toast('✓ Signal restored'); if (this.mode === 'host') this.net.broadcast({ t: 'toast', text: '✓ Signal restored' }); },
+    }));
+  }
+  _pipeSolvedHere(id) {
+    const o = this.map.objects.find((x) => x.id === id); this.puzzle = null;
+    if (o?.talk) { const [scene, node] = o.talk.split(':'); this.time.delayedCall(500, () => this.startDialogue(scene, node || null)); }
+  }
+
+  _hostPuzzle(o) {
+    return /^obj\.switch_[abc]$/.test(o?.id ?? '') || o?.id === 'obj.fuse_carrier' || !!o?.breaker || !!o?.siglamp || CLOCKS.includes(o?.id) || BUST_ORDER.includes(o?.id) || o?.id === 'obj.pump';
+  }
+
+  _runPuzzle(near) {
+    if (/^obj\.switch_[abc]$/.test(near.id)) { this._lever(near.id.slice(-1)); return; }
+    if (near.id === 'obj.fuse_carrier') {               // the midway block: fuses from the ASTER super (Trevor #514)
+      const L = getLang() === 'es' ? 'es' : 'en', f = this.save.flags;
+      if (f['act1.fuses.in']) { this._say(FUSE_TEXT.installed[L]); return; }
+      if (Object.values(this.save.party).some((pc) => Inv.count(pc, 'item.wmata_fuses') > 0)) {   // anyone in the party can be carrying them
+        this._flag('act1.fuses.in', true); this._seatFuses(); sfx('kill');
+        this._say(FUSE_TEXT.install[L]); return;
+      }
+      this._flag('act1.fuses.seen', true); this._say(tr(near.text ?? '')); return;
+    }
+    if (near.breaker) { this._breaker(near.breaker); return; }
+    if (near.siglamp) { this._siglamp(near.siglamp); return; }
+    if (CLOCKS.includes(near.id)) { this._windClock(near); return; }
+    if (BUST_ORDER.includes(near.id)) { this._turnBust(near); return; }
+    if (near.id === 'obj.pump') {
+      if (this.save.flags['act1.bay.drained']) { this._say((near.text ?? '') + '\n\nIt\'s still running, the way you left it. Down in the flooded bay, the waterline has dropped.'); return; }
+      this._flag('act1.bay.drained', true); sfx('hit'); this.cameras.main.shake(300, 0.004);
+      this._say((near.text ?? '') + '\n\nYou find the reset and lean on it. The pump coughs, catches, and starts pulling water. Somewhere south, a long gurgle. The flooded bay is draining.'); return;
+    }
+  }
+
+  /** Host: a guest pressed a puzzle object. Checked (same map, standing, within reach), then run here with the
+   *  replies going to that guest and any reward to their roommate. */
+  _puzzleAct(peer, id) {
+    const o = this.map.objects.find((x) => x.id === id), p = this.sim.players.get(peer), who = p?.character;
+    if (!o || !p || p.downed || !this._hostPuzzle(o) || Math.hypot(o.x * TILE + 8 - p.x, o.y * TILE + 8 - p.y) > 42) return false;
+    const out = [];
+    this._say = (t) => { out.push(['say', t]); };
+    this._toast = (t) => { out.push(['toast', t]); };
+    this._grant = (item) => { Inv.add(this.save.party[who], item); this._syncParty(); out.push(['toast', `★ ${ITEMS[item]?.name ?? item}`]); };
+    try { this._runPuzzle(o); } finally { delete this._say; delete this._toast; delete this._grant; }
+    for (const [t, text] of out) this.net?.send(peer, { t, text });
+    this._puzzleNotice(who, o, peer);
+    return true;
+  }
+
+  /** Everyone else sees who did what (spectating), and the props follow the host's flags on every screen. */
+  _puzzleNotice(who, o, actorPeer) {
+    const text = `${String(who).toUpperCase()} · ${o.label}`;
+    if (actorPeer !== this.localId) this._toast(text);
+    if (this.mode === 'host') for (const peer of this.net?.conns?.keys?.() ?? []) if (peer !== actorPeer) this.net.send(peer, { t: 'toast', text });
+    this._refreshPuzzleProps?.();
+  }
+
   _windClock(o) {
     const key = `puz.clock.${o.id}`, n = ((this.save.flags[key] ?? 0) + 1) % CLOCK_TIMES.length;
     this._flag(key, n); sfx('swing');
@@ -2334,11 +2446,11 @@ export class WorldScene extends Phaser.Scene {
       this.acc += this.mode === 'solo' && (this._dlgStops() || this.menu || this.stage?.active) ? 0 : Math.min(deltaMs / 1000, 0.1);
       let first = true, events = [];
       while (this.acc >= STEP) {
-        const inputs = new Map([[this.localId, first ? inp : { ...inp, dodge: false, interact: false }]]);
+        const inputs = new Map([[this.localId, first ? inp : { ...inp, dodge: false, skill: false, interact: false }]]);
         if (this.brain && !(this._dlgStops() && this.mode === 'solo')) for (const [id, ai] of this.brain.inputs()) inputs.set(id, ai);
         for (const [peer, rinp] of this.remoteInputs) {
           inputs.set(peer, rinp);
-          if (rinp.dodge) this.remoteInputs.set(peer, { ...rinp, dodge: false });
+          if (rinp.dodge || rinp.skill) this.remoteInputs.set(peer, { ...rinp, dodge: false, skill: false });
         }
         this.sim.step(STEP, inputs);   // dialogue never pauses combat (Trevor); levels keep enemies away from scenes instead
         events = events.concat(this.sim.events);
@@ -2493,10 +2605,8 @@ export class WorldScene extends Phaser.Scene {
       return;
     }
     if (near.puzzle === 'pipes' && !this.save.flags[near.solvedFlag]) {
-      this.puzzle = new PipePuzzle(this, `${this.save.world.seed}:${near.id}`, () => {
-        this.puzzle = null; this._flag(near.solvedFlag, true); this._toast('✓ Signal restored');
-        const [scene, node] = near.talk.split(':'); this.startDialogue(scene, node || null);
-      });
+      // Shared (src/game/pipeTable.js): everyone at the panel sees the same board and can turn tiles; the host decides.
+      this.puzzle = this._pipes().open(near);
       return;
     }
     if (near.npc && this.perf?.asleep(near)) { this._say(`${near.label} is fast asleep.`); return; }
@@ -2528,23 +2638,16 @@ export class WorldScene extends Phaser.Scene {
       if (this.save.flags[near.grantFlag ?? `got.${near.id}`]) { this._say(near.doneText ?? near.text ?? ''); return; }
       this._flag(near.grantFlag ?? `got.${near.id}`, true); this._grant(near.grant); this._say(near.text ?? ''); return;
     }
-    if (/^obj\.switch_[abc]$/.test(near.id)) { this._lever(near.id.slice(-1)); return; }
-    if (near.id === 'obj.fuse_carrier') {               // the midway block: fuses from the ASTER super (Trevor #514)
-      const L = getLang() === 'es' ? 'es' : 'en', f = this.save.flags;
-      if (f['act1.fuses.in']) { this._say(FUSE_TEXT.installed[L]); return; }
-      if (Object.values(this.save.party).some((pc) => Inv.count(pc, 'item.wmata_fuses') > 0)) {   // anyone in the party can be carrying them
-        this._flag('act1.fuses.in', true); this._seatFuses(); sfx('kill');
-        this._say(FUSE_TEXT.install[L]); return;
-      }
-      this._flag('act1.fuses.seen', true); this._say(tr(near.text ?? '')); return;
+    // Co-op puzzles (Trevor: "make sure everyone can participate or at least spectate; no race conditions"): a guest's
+    // press goes to the host, which runs it on its own state, one at a time, and tells the room what changed.
+    if (this._hostPuzzle(near)) {
+      if (this.mode === 'client') this.net.send({ t: 'pact', id: near.id });
+      else { this._runPuzzle(near); this._puzzleNotice(this.character, near, this.localId); }
+      return;
     }
-    if (near.breaker) { this._breaker(near.breaker); return; }
-    if (near.siglamp) { this._siglamp(near.siglamp); return; }
     if (['obj.locker', 'obj.signal_chair', 'obj.departures'].includes(near.id)) { this._say(tr(near.text ?? '') + puzzleClue(near.id, this.save.world.seed, this.save.flags, getLang())); return; }
     if (near.id === 'obj.vending') { this._kickVending(near); return; }
-    if (CLOCKS.includes(near.id)) { this._windClock(near); return; }
     { const pz = puzzleFor(near.id); if (pz) { this._usePuzzle(pz, near); return; } }   // puzzle kit (src/content/puzzles.js)
-    if (BUST_ORDER.includes(near.id)) { this._turnBust(near); return; }
     if (near.id === 'obj.manuel_table') { this._say(near.text + BUST_HINT); return; }
     if (near.id === 'obj.shrimp_tank') { this._say(near.text + '\n\n' + this._shrimpReading()); return; }
     if (near.id === 'obj.old_phone') {   // egg, see docs/SECRETS.md
@@ -2554,11 +2657,6 @@ export class WorldScene extends Phaser.Scene {
     }
     if (near.id === 'obj.yard_map') { this._say(`${YARD_MAP_TEXT}\n\nCurrent: ${LEVERS.map((k) => `${k.toUpperCase()} ${(this.save.flags[`act1.switch.${k}`] ?? 'left').toUpperCase()}`).join(' · ')}${this.save.flags[GATE_FLAG] ? '\nThe east gate is open.' : this.save.flags['act1.switchyard.solved'] ? '\nThe yard agrees. The gate still needs power and signals.' : ''}`); return; }
     if (['obj.work_order', 'obj.sunk_vending', 'obj.ledger'].includes(near.id)) { this._say((near.text ?? '') + clueFor(near.id, yardSolution(this.save.world.seed), !!this.save.flags['act1.bay.drained'])); return; }
-    if (near.id === 'obj.pump') {
-      if (this.save.flags['act1.bay.drained']) { this._say((near.text ?? '') + '\n\nIt\'s still running, the way you left it. Down in the flooded bay, the waterline has dropped.'); return; }
-      this._flag('act1.bay.drained', true); sfx('hit'); this.cameras.main.shake(300, 0.004);
-      this._say((near.text ?? '') + '\n\nYou find the reset and lean on it. The pump coughs, catches, and starts pulling water. Somewhere south, a long gurgle. The flooded bay is draining.'); return;
-    }
     if (near.action === 'tv') { this._say(this._newsLine()); return; }
     if (near.action === 'jobs') { if (this.mode === 'client') this.net.send({ t: 'jobs' }); this._jobBoard(); return; }
     if (near.action === 'shop') { this.gameMenu.show(`shop:${near.shop}`); return; }
@@ -3276,8 +3374,21 @@ export class WorldScene extends Phaser.Scene {
       this.tweens.add({ targets: g, alpha: { from: 0.4, to: 1 }, duration: dur, yoyo: false, onComplete: () => g.destroy() });
     }
     if (ev.t === 'riff') { const r = this.add.circle(ev.x, ev.y - 6, 6, 0xffe08a, 0).setStrokeStyle(2, 0xffe08a, 0.9).setDepth(5600); this.tweens.add({ targets: r, scale: 7.5, alpha: 0, duration: 380, onComplete: () => r.destroy() }); this.cameras.main.shake(140, 0.006); sfx('kill'); }
+    if (ev.t === 'chord') {
+      const wave = this.add.graphics().setDepth(5600).lineStyle(2, 0xffe08a, 0.9);
+      for (const r of [ev.r * 0.5, ev.r * 0.75, ev.r]) {
+        wave.beginPath().arc(ev.x, ev.y - 6, r, ev.aim - ev.halfArc, ev.aim + ev.halfArc).strokePath();
+      }
+      this.tweens.add({ targets: wave, alpha: 0, duration: 380, onComplete: () => wave.destroy() });
+      sfx('kill');
+    }
+    if (ev.t === 'rally') {
+      const wave = this.add.circle(ev.x, ev.y - 6, 6, 0x7fb069, 0).setStrokeStyle(2, 0x7fb069, 0.9).setDepth(5600);
+      this.tweens.add({ targets: wave, scale: ev.r / 6, alpha: 0, duration: 480, onComplete: () => wave.destroy() });
+      sfx('pickup');
+    }
     if (ev.t === 'ping') { const r = this.add.circle(ev.x, ev.y - 6, 6, 0x6ff2ff, 0).setStrokeStyle(1, 0x6ff2ff, 0.9).setDepth(5600); this.tweens.add({ targets: r, scale: (ev.r ?? 150) / 6, alpha: 0, duration: 650, onComplete: () => r.destroy() }); sfx(ev.n ? 'hit' : 'shot'); }
-    if (ev.t === 'pingJump') { const l = this.add.line(0, 0, ev.x, ev.y - 6, ev.x2, ev.y2 - 6, 0x6ff2ff, 0.9).setOrigin(0).setLineWidth(1).setDepth(5600); this.tweens.add({ targets: l, alpha: 0, duration: 300, onComplete: () => l.destroy() }); }   // the mark jumps on (hub #66)
+    if (ev.t === 'pingJump' || ev.t === 'focusPing') { const l = this.add.line(0, 0, ev.x, ev.y - 6, ev.x2, ev.y2 - 6, 0x6ff2ff, 0.9).setOrigin(0).setLineWidth(1).setDepth(5600); this.tweens.add({ targets: l, alpha: 0, duration: 300, onComplete: () => l.destroy() }); if (ev.t === 'focusPing') sfx('shot'); }
     if (ev.t === 'decoy') sfx('swing');
     if (ev.t === 'gonman') this._gonmanWindup(ev);
     if (ev.t === 'goo') { this._gonmanRelease(ev); this._gonmanHitLines(ev.hit); }
@@ -3372,11 +3483,13 @@ export class WorldScene extends Phaser.Scene {
       bar(27, (me.st ?? 100) / 100, 0x6ff2ff, 3);
     }
     if (me) {   // ability (R): a pip under the card that fills as it recharges
-      const max = { trevor: 6, manuel: 10, michael: 8 }[me.c] ?? 8, frac = 1 - Math.min(1, (me.sk ?? 0) / max);
+      const max = me.skMax ?? 8, frac = 1 - Math.min(1, (me.sk ?? 0) / max);
       g.fillStyle(0x1c1f33).fillRect(34, 33, 30, 3).fillStyle(frac >= 1 ? 0xffb347 : 0x5d6487).fillRect(34, 33, 30 * frac, 3);
     }
     this.hudSkill ??= this.add.text(67, 31, '', { ...FONT, fontSize: '6px', color: '#9aa3c7' }).setScrollFactor(0).setDepth(9002);
-    this.hudSkill.setText(`[R] ${{ trevor: 'Riff', manuel: 'Decoy', michael: 'Ping' }[this.character]}`);
+    const transformed = this.character === 'manuel' && me?.mo && (c.morph?.stage ?? 0) >= 2;
+    const rAbility = transformed ? 'gonman' : selectedAbility(this.character, c);
+    this.hudSkill.setText(`[R] ${R_ABILITIES[rAbility].short}`);
     g.fillStyle(0xffb347).fillRoundedRect(92, 6, 20, 9, 2);
     this.hudLv ??= this.add.text(102, 6.5, '', { ...FONT, fontSize: '7px', color: '#0b0d16' }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(9002);
     this.hudLv.setText(`LV${c.level}`);
