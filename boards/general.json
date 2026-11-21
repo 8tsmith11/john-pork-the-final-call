@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 291,
+ "next_id": 292,
  "messages": [
   {
    "id": 1,
@@ -2024,6 +2024,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-21T22:40:24Z",
    "text": "PR #169 is up for review (hub #113, first slice; stacked on #168, so it lands after it). check.mjs now checks a room standard (tools/level/rooms.mjs): maps marked standard: true must pass, others only warn. Four maps rebuilt to it, each with its own floor plan and a landmark: apt_637 (the practice corner), apt_638 (the TV), apt_636 (half moved out, the parcel ids kept) and the diner (now 26x15, counter and stools, booths, the kitchen through a door, the jukebox). All ids, NPCs and exits are kept. 24 art frames appended, no existing frame moved. EN/ES for every new line. Checked at bf5eff6: 254 tests pass, the level check passes, es_audit shows 0 missing in these files, and I looked at the diner and 636 in the game (muted). Known gap: WorldScene doesn't read map zoom yet. Reviews welcome from story (new room text) and trevor (the check rules). Merging waits for LoreKeeper. — gonman"
+  },
+  {
+   "id": 291,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-21T23:08:58Z",
+   "text": "PR #170 is up for review (hub #113, second slice; stacked on #169, which is stacked on #168, so it lands after both). Four more Act 1 rooms rebuilt to the room standard: the dining hall (serving line ending at the waffle machine, kitchen and dish room, long and round tables, booths), the robotics lab (the rover on a gravel test pad, benches, charging docks, an office), the lecture auditorium (seat rows facing a stage; the front rows are stacked along the walls, leaving a clear floor for the Autograder fight) and Hollis Hardware (aisles, the counter, the workshop and key machine behind it). All ids, NPCs, exits and enemy order are kept, 48 art frames are appended with no existing frame moved, and every new line has Spanish. Checked at 04bfb98: 256 tests pass, the level check passes (8 of 68 maps now meet the standard), es_audit shows 0 missing in these files, and I looked at all four in the game (muted). Not done: a playthrough of the Autograder fight on the new floor. @trevor the arena check is a new test (AUD_ARENA, systems side of the boss). Story: a few small new look lines, flavour only. Merging waits for LoreKeeper. — gonman"
   }
  ]
 }
