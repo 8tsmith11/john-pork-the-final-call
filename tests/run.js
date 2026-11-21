@@ -3138,8 +3138,12 @@ test('combat FX (hub #97): palette-only colors, owner rims, the noise budget, an
   const calls = [], sc = { cameras: { main: { shake: (...a) => calls.push(['shake', ...a]), flash: (...a) => calls.push(['flash', ...a]) } } };
   FXm.shake(sc, false, 100, 0.01); FXm.flash(sc, false, 80, 1, 2, 3); assert.deepEqual(calls, [], 'shook or flashed someone else\'s screen');
   FXm.shake(sc, true, 100, 0.01); assert.equal(calls.length, FXm.reducedMotion() ? 0 : 1);
+  const lines = []; const g = { lineStyle() { return g; }, lineBetween(...a) { lines.push(a); return g; } };
+  FXm.brackets(g, 10.4, 20.6, 30, 40, FXm.PAL.screen2);
+  assert.equal(lines.length, 8, 'a bracket is four corners of two strokes'); assert.ok(lines.flat().every(Number.isInteger), 'brackets sit on whole pixels');
   const ws = fs.readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
-  for (const t of ["ev.t === 'riff'", "ev.t === 'ping'", "ev.t === 'hit'", "ev.t === 'kill'", "ev.t === 'tell'", "ev.t === 'parry'", "ev.t === 'shrug'"]) {
+  assert.ok(/e\.mk \|\| e\.sl/.test(ws) && /FX\.brackets\(marks/.test(ws), 'marked and slowed enemies are drawn');
+  for (const t of ["ev.t === 'riff'", "ev.t === 'ping'", "ev.t === 'hit'", "ev.t === 'kill'", "ev.t === 'tell'", "ev.t === 'parry'", "ev.t === 'shrug'", "ev.t === 'decoy'"]) {
     const line = ws.split('\n').find((l) => l.includes(`if (${t}`)) ?? '';
     assert.ok(!/0x[0-9a-f]{6}/i.test(line), `${t}: a hard-coded color instead of fx.js`);
   }

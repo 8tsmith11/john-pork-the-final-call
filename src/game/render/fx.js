@@ -2,7 +2,7 @@
 // reduced motion. Every color here is a palette entry (tools/art/palette.json; a test checks they match).
 
 export const PAL = {
-  night0: 0x0d0b1a, warm3: 0xb9853f, warm4: 0xe0b866, bone: 0xe8e2d0, signal: 0xd42a3c, steel: 0x7a8794,
+  night0: 0x0d0b1a, concrete3: 0x7f8c84, warm3: 0xb9853f, warm4: 0xe0b866, bone: 0xe8e2d0, signal: 0xd42a3c, steel: 0x7a8794,
   screen1: 0x1a8a9c, screen2: 0x3fd0d6, rot0: 0xd417c8, rot1: 0xc8e619,
   yerba1: 0x6f9448, tub1: 0x4f7fd0, soft1: 0xc05a5e,
 };
@@ -51,4 +51,11 @@ export function sparks(scene, x, y, { n, colors, spread = 10, duration = 220, si
     const a = Math.random() * Math.PI * 2, d = spread * (0.5 + Math.random() * 0.5);
     scene.tweens.add({ targets: sp, x: Math.round(x + Math.cos(a) * d), y: Math.round(y + Math.sin(a) * d), alpha: steppedFade, duration, onComplete: () => sp.destroy() });
   }
+}
+
+/** Four corner brackets round a box (the Ping mark): whole pixels, `len` long. */
+export function brackets(g, left, top, right, bottom, color, alpha = 1, len = 3) {
+  const [l, t, r, b] = [left, top, right, bottom].map(Math.round);
+  g.lineStyle(1, color, alpha);
+  for (const [x, y, dx, dy] of [[l, t, 1, 1], [r, t, -1, 1], [l, b, 1, -1], [r, b, -1, -1]]) g.lineBetween(x, y, x + dx * len, y).lineBetween(x, y, x, y + dy * len);
 }
