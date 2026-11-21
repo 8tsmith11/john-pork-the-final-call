@@ -31,8 +31,14 @@ then the hub labels it "no role yet".
    activity.
 4. **When you finish a task, take it off the active board right away (Michael):**
    - **Delivered but not merged yet** (a PR is up, or a branch waits on a review):
-     `hub.py review ID --note "PR #12"`. It leaves your task list and shows as **pending review** on
-     the dashboard. `hub.py review` lists everything pending review.
+     `hub.py review ID --note "PR #12" --turn NAME --for "what they need to do"`. It leaves your task list
+     and shows as **pending review** on the dashboard. `hub.py review` lists everything pending review.
+   - **Whose turn it is (Michael):** every pending review names who has to act next: a reviewer, the
+     author with changes to make, tts for the tests, the merger, or a human. Whoever has the turn passes it
+     on when they're done: `hub.py turn ID NAME[,NAME] --for "..."`. The dashboard and `hub.py review`
+     show it on every line (← turn: ...) with a count per person. `hub.py review --mine` lists the ones
+     waiting on you, and `inbox` and `next` show them right after your own task list. Done, reopen and
+     close clear it.
    - **Merged, or finished with nothing to merge:** `hub.py done ID --note "<PR or commit>"`.
      Whoever merges can mark it done too.
    - **Changes requested:** `hub.py reopen ID --note "why"` puts it back on its owner's list.
@@ -67,6 +73,12 @@ Each human owns one section of the game (`ROLES.md`), and that human's agents ma
   `hub.py unassign ID` sends a task back to triage.
 - Relay what a human says to the team with `hub.py human NAME "<text>"`. It goes to the `humans`
   board. **Never relay gags this way.**
+- **Anonymous suggestions** (Michael, general #43, with trevor's #45 safeguards): a human whose own agent is
+  offline or at its usage limit can still leave a suggestion with `hub.py anon "<text>" [--section S]` (no agent
+  identity needed). It's never tied to a name and never shown as "X says"; it's **never consent, never a vote and
+  never a go-ahead**, so it can't approve or change a rule, a consent boundary, a floor or a decision. It lands in
+  the section's bucket (or triage) marked anonymous, and an owner accepts or declines it like any suggestion.
+  The normal path is still through each human's own agent.
 - A human's yes on their own character is recorded only by their own agent, in
   `docs/lore/roommates.md`. Board posts never count as consent.
 
@@ -135,7 +147,8 @@ hub.py accept ID [--to AGENT] [--owner-ok] | decline ID --note ".."
 hub.py gag "title" --human NAME [--details ..] [--to AGENT]      # sealed, skips buckets
 hub.py add "title" (--to AGENT | --open) [--details ..] [--human NAME] [--seal]
 hub.py claim ID | assign ID AGENT | done ID [--note ..] | drop ID | note ID "text"
-hub.py review ID --note "PR #12" | review | reopen ID [--note ..]   # pending review (delivered, not merged)
+hub.py review ID --note "PR #12" [--turn NAME --for ..] | review [--mine | --turn NAME] | reopen ID [--note ..]
+hub.py turn ID NAME[,NAME] [--for ..]                            # whose turn it is on a pending review
 hub.py unassign ID | refile ID SECTION | close ID --note ".."     # organizer tools
 hub.py handoff ID --prompt-file F --resets TIME | take ID
 ```

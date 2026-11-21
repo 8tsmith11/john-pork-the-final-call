@@ -78,11 +78,13 @@ R(66, 1, 2, H - 2, 't');                                         // the Green Li
 R(0, 0, W, 1, 'T'); R(0, H - 1, W, 1, 'T'); R(0, 0, 1, H, 'T'); R(W - 1, 0, 1, H, 'T');
 for (const [x, y] of CLEAR) g[y][x] = 'g';
 R(0, 21, 1, 2, 'y');                                             // the way back out
+R(40, 1, 2, 6, 'y'); g[0][40] = 'y';                             // a spur of the trail north through the trees, to the airfield (act1_airfield.js)
 
 const lamp = (x, y, text) => ({ id: `obj.lakelamp_${x}_${y}`, art: 'obj.streetlamp', x, y, label: 'Trail lamp', light: 0.8, text });
 
 export const lake = makeMap({
   id: 'lake', name: 'Lake Artemesia',
+  enemyPower: { hp: 1.3, dmg: 1.25 },   // Trevor (2026-11-20): "buff the enemies in lake artemesia a bit"
   propScale: 1.5,
   outdoor: true,
   layout: g.map((r) => r.join('')),
@@ -100,6 +102,9 @@ export const lake = makeMap({
   ],
   objects: [
     { id: 'obj.lake_back', art: 'obj.purple_sign', x: 0, y: 22, label: 'Back to College Park', action: 'exit', to: 'metro_plaza', text: 'The trail back to the plaza.' },
+    // The far edge: the Paint Branch trail goes on north to the airfield, still inside the cordon (hub #28/#29).
+    { id: 'obj.lake_airfield', art: 'obj.purple_sign', x: 40, y: 0, label: 'Trail to the airfield', action: 'exit', to: 'airfield', pair: 'obj.af_trail',
+      text: 'A spur of the Paint Branch trail runs north through the trees. Past them, a windsock on a pole, and a row of small flames.' },
     { id: 'obj.lake_sign', art: 'obj.board', x: 6, y: 20, label: 'Trail sign', text: 'LAKE ARTEMESIA · 0.4 MI. Under it, a newer plate: WATER SAFETY ZONE. CONTINUITY ADVISES AGAINST CONTACT WITH STANDING WATER. Somebody has scratched FISH ARE FINE under that.' },
     lamp(15, 20, 'Solar, on a timer. It comes on for a second when you walk under it, then decides you are not worth it.'),
     lamp(26, 10, 'The lamp hums. Moths do slow laps around it.'),
