@@ -16,7 +16,7 @@ export const ES_HUD = {
   'Frederick and the Smelter': 'Frederick y la Fundición', 'The Enclave': 'El Enclave', 'The Beltway road is open.': 'El camino a la Beltway está abierto.',   // act3_regions.js scaffold
   'Route 1 north': 'Ruta 1 norte', 'Greenbelt and the dishes': 'Greenbelt y las antenas', 'Beltsville: the farms': 'Beltsville: las granjas',
   'The refuge': 'El refugio', 'The Meade, perimeter': 'El Meade, perímetro', 'Baltimore: the port': 'Baltimore: el puerto', 'Annapolis and the bay': 'Annapolis y la bahía',   // act2_regions.js scaffold
-  'The diner': 'El diner', 'ASTER, basement (B-01)': 'ASTER, sótano (B-01)', 'ASTER, the roof': 'ASTER, la azotea',
+  'The diner': 'La cafetería', 'ASTER, basement (B-01)': 'ASTER, sótano (B-01)', 'ASTER, the roof': 'ASTER, la azotea',
   'The campus quad': 'El patio del campus', 'The dining hall': 'El comedor', 'Robotics and Autonomy Lab': 'Laboratorio de Robótica y Autonomía',   // act1_more.js scaffold
   'Compute Hall B': 'Edificio de Cómputo B',   // campus scaffold (compute_hall_b)
   'Room 631, ASTER': 'Cuarto 631, ASTER',
@@ -26,6 +26,7 @@ export const ES_HUD = {
   'Green Line maintenance tunnels': 'Túneles de mantenimiento de la Línea Verde',
   'The dead platform beneath College Park': 'El andén muerto bajo College Park',
   'Lake Artemesia': 'Lago Artemesia',
+  'Hollis Hardware': 'Ferretería Hollis', 'Pardo Feed & Aquarium': 'Pardo: forrajes y acuario', 'The airfield': 'El aeródromo', 'The hangar': 'El hangar',   // act1_route1.js, act1_airfield.js
   '[R] Riff': '[R] Riff',
   '[R] Decoy': '[R] Señuelo',
   '[R] Ping': '[R] Ping',

@@ -132,9 +132,8 @@ Arkg: -> favssre_ernq
 > rf: Ab unl anqn qronwb qr yn pnyyr.
 
 **GERIBE:** Gurer'f n genva fgngvba haqre gur fgerrg, ru? Jub xarj, ru.
+> erirny: npg1.yrnqN.qbar
 
 > rf: Unl han rfgnpvóa qr gera qronwb qr yn pnyyr.
 
 *frg npg1.yrnqN.genvyQbja*
-
-*frg npg1.yrnqN.qbar*

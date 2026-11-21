@@ -39,8 +39,44 @@ grading at 3 a.m. · `S` = npc.chb_student, a student who can't get out of the l
 **Encounters:** three rotlings in the corridors. Doorways are chokes, so the fight is about not getting
 surrounded in a hallway.
 
-**Secrets / side content (to write in polish):** a side job from the TA; Manuel's bench (a secret line if he
-inspects it); the storage room's crate.
+**Optional content:** a side job from the TA, examine text on the lab benches, and the storage room's crate.
 
 **Polish needs:** campus floor and wall tiles, a lecture podium and seats, lab benches with screens, two NPC
 sprites, the bell and the lecture audio, real lines EN/ES, and the TA's quest.
+
+## Hub #68: the compute (gonman)
+
+Trevor: "compute hall needs more compute, suspicious lack of it." The building now shows what it's for. The middle
+room is **Machine Room B**: glass on both hall sides (`=`), a door in each, a raised floor with a perforated cold
+aisle between two rows of racks, and a cooling unit at each end. **Both approaches are meant:** from the south hall
+the way in is the gap beside the MACHINE ROOM B plaque (12,11), and from the north hall the gap at (12,6); both lead
+straight up the cold aisle (a test checks each one alone). The north room is a **terminal lab**. Cable trays run
+along the hall walls, and floor cables run from the machine room's door to the terminals and to lab 245's bench. The
+halls are terrazzo (`m`), the TA's office keeps a wood floor (analog is warm). Lab 245's bench, the quest objects,
+the doors, the two people, the spawn and the four rotlings keep their tiles (tests check it).
+
+```
+#HHHHHH#HHHH#HHHHH##########
+#AAAAAA#MPMmmmMYMR#........#
+#A?AA!A#mmmmmmmmmm#..T.....#
+#AAAAAA#mmEmmmmmmm#........#
+#AAAAAAHHHHmHUHmmmHHHHmHHHH#
+#mmmmmmmmmmmmmmmmmmmmmmEmmm#
+####m#######m======#########
+#mmmmmm#Ceeeeeeeeee#mmmmmXX#
+#mmSmmm#RrNReKrLRre#mm$mmmm#
+#mmmmmm#eeeeEeeeeee#mmmmmmm#
+#mmmmmm#rNRreRrRNRO#mmmmmmX#
+#HHHmHHH===Im======HBHmHHHH#
+#mmmmmmmmmmmmmmmmmmmmmmmmmm#
+#mmmmm@mmmmmmmEmmmmmmmmmmmm#
+#mmmmmmmmmmmmmmmmmmmmmmmmmm#
+###########DD###############
+```
+**New legend:** `R`/`r` server racks and `N` network racks (solid scenery, each blinking at its own pace) · `K` the
+rack with the amber light and `L` the network rack (readable) · `C` cooling unit (readable) and `O` its twin ·
+`M` terminals, `P` and `Y` the two you can read (login prompt, job queue) · `H` cable trays on the walls, `U` the one
+with the paper cup · `I` the MACHINE ROOM B plaque · `B` the building's status board · `X` boxed surplus in storage.
+Racks, terminals and cooling units block like furniture (`solid: true` on an object now blocks its tile, build.js).
+Floor dressing (raised floor, perforated tiles, cable runs) is a second grid in campus.js, stamped as decals; the
+coloured light and the cold air off the perforated tiles are in dressing.js.

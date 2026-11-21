@@ -786,11 +786,15 @@ P("decoy.bust", decoy())
 P("decoy.bust#crack", decoy(True))
 
 
-# Foreground canopies (depth pass, task 13): drawn over every tree tile that has open ground north of
-# it, at the tree's base depth, so anyone walking behind a tree is partly hidden by its leaves. The
-# blob sits in the top 18 rows; the tile underneath keeps showing its trunk. Two shapes for variety.
+# Foreground canopies (depth pass, task 13): drawn over every tree tile, at the tree's base depth, so anyone
+# walking behind a tree is partly hidden by its leaves. Since the natural pass the tile under a tree is plain
+# ground with a soft shadow, so the frame carries its own trunk (Trevor: "trees are floating"). Two shapes.
 def canopy(v):
     c = C()
+    tx = 7 if v == 0 else 8                                                                    # trunk column
+    for y in range(11, 22):
+        c.px(tx, y, "warm1").px(tx + 1, y, "warm0")                                            # lit left, shaded right
+    c.pts("warm0", (tx - 1, 21), (tx + 2, 21)).pts("warm2", (tx, 15), (tx, 18))                 # root flare, bark marks
     clumps = [(5, 7, 4.6), (10.5, 6, 4.4), (8, 3.5, 4), (7.5, 11.5, 5)] if v == 0 else [(4.5, 9, 4.2), (10, 8, 5), (6.5, 4, 4.2), (11, 3.5, 3.4), (8, 13, 4.2)]
     def inside(x, y): return any((x - a) ** 2 + (y - b) ** 2 < rr * rr for a, b, rr in clumps)
     for y in range(0, 19):
@@ -1030,6 +1034,283 @@ for name, c in (("obj.bin", bin_()), ("obj.recycle", bin_(True)), ("obj.bikerack
                 ("obj.shoppingcart", shoppingcart()), ("obj.tires", tires()), ("obj.charger", charger(0)), ("obj.charger#1", charger(1))):
     P(name, c)
 
+
+def mars_rover():
+    """The UMD rover team's flight spare in the robotics lab (hub #30): lab-clean, nothing like Trevor's battlebot.
+    Six wheels on rocker-bogies (three a side, the far three peeking over), a white body with a gold-foil panel,
+    a solar deck on top and a mast with a two-eyed camera head."""
+    c = C()
+    for x in (2, 7, 12):                                                                     # the far-side wheels
+        c.rect(x, 16, 3, 3, "concrete1").px(x + 1, 17, "night2")
+    c.v_(11, 4, 5, "steel").v_(12, 4, 5, "concrete1")                                         # the mast
+    c.rect(9, 1, 5, 3, "concrete3").h_(9, 1, 5, "bone").pts("screen2", (10, 2), (12, 2))     # camera head, two eyes
+    c.rect(1, 8, 14, 2, "screen0").h_(1, 10, 14, "steel")                                    # solar deck, cell seams
+    c.pts("night2", (4, 8), (4, 9), (8, 8), (8, 9), (12, 8), (12, 9)).pts("screen1", (2, 8), (6, 8), (13, 8))
+    c.rect(9, 8, 3, 2, "night1").px(10, 9, "warm3")                                          # one cell cannibalized, a wire
+    c.rect(4, 11, 8, 4, "bone").v_(11, 11, 4, "concrete3").h_(4, 14, 8, "concrete3")         # body
+    c.rect(5, 12, 3, 2, "warm4").px(7, 13, "warm3").px(10, 12, "screen2")                     # gold foil, status light
+    c.pts("steel", (4, 15), (3, 16), (11, 15), (12, 16), (7, 15), (8, 15), (7, 16), (8, 16))   # rocker-bogie
+    for x in (1, 6, 11):                                                                     # the near wheels, rounded
+        c.rect(x, 18, 4, 5, "steel").rect(x + 1, 19, 2, 3, "night2").px(x + 1, 20, "concrete2")
+        c.pts(None, (x, 18), (x + 3, 18), (x, 22), (x + 3, 22))
+    return c.outline()
+
+
+P("obj.mars_rover", mars_rover())
+
+
+# ---- Compute Hall B's machine room (hub #68, Trevor: "compute hall needs more compute") ----
+# Digital is cold (DIRECTION.md rule 1): dark cabinets, steel, screen cyans. Status lights are the yerba green the
+# signal lamps already use, the warning amber (warm4, never the balloon's orange) and cyan for disk activity.
+# Every '#1' frame is the second half of a slow loop (WorldScene), so a row of racks twinkles.
+def rack_shell(c):
+    """The 42U cabinet every rack shares: a lit top, a slate frame with steel rails, a dark bay, a plinth."""
+    c.h_(1, 1, 14, "concrete3").h_(1, 2, 14, "concrete2")                    # top: lit edge, top face
+    c.rect(1, 3, 14, 19, "night3").v_(14, 3, 19, "night2")                   # frame, shaded right side
+    c.rect(3, 4, 10, 16, "night1")                                           # the bay
+    for y in range(4, 20):
+        c.px(2, y, "steel" if y % 2 else "concrete1").px(13, y, "concrete1" if y % 2 else "night2")   # rails and holes
+    c.pts("bone", (3, 3), (4, 3))                                            # asset tag on the header
+    c.h_(1, 21, 14, "night2").pts("night1", (2, 22), (13, 22))               # plinth and feet
+    return c
+
+
+def server_rack(f):
+    """Servers stacked in the bay, each a grey face with its lights at the right end: green running, an amber that
+    blinks, cyan disk activity that hops between units. One 3U storage box with a row of drive slots."""
+    c = rack_shell(C())
+    units = [(4, 1), (6, 1), (8, 3), (12, 1), (14, 1), (16, 1), (18, 1)]
+    for i, (y, h) in enumerate(units):
+        c.rect(3, y, 10, h, "concrete1").px(3, y, "concrete2")                # face, lit handle
+        if h == 3:                                                           # the storage box: drive slots
+            for x in (4, 6, 8, 10):
+                c.v_(x, y, 3, "night2").px(x, y, "screen2" if (x // 2 + f) % 2 else "screen0")
+            c.px(12, y + 1, "yerba1")
+            continue
+        c.px(12, y, "yerba1")                                                # running
+        c.px(10, y, "screen2" if (i + f) % 2 else "night2")                  # disk activity, hopping
+    c.px(11, 6, "warm4" if f == 0 else "night2")                             # the amber that has been blinking since March
+    c.h_(4, 16, 5, "night3")                                                 # a blanking panel
+    return c.outline()
+
+
+def network_rack(f):
+    """The network cabinet: two switches with rows of port lights, patch cables in five colours looping down to the
+    cable manager, a blank panel, and a UPS at the bottom with a little display."""
+    c = rack_shell(C())
+    for y in (4, 6):                                                         # two 1U switches
+        c.h_(3, y, 10, "concrete1")
+        for x in range(4, 12):
+            c.px(x, y, ("yerba1" if (x + y // 2 + f) % 3 else "night1") if x % 2 == 0 else "night2")
+    cols = ("tub1", "warm4", "bone", "soft1", "screen1")
+    for k, x in enumerate((4, 6, 8, 10, 12)):                                # patch cables, drooping to the right
+        drop = 3 + k % 3
+        c.v_(x, 7, drop, cols[k]).px(x + 1, 7 + drop, cols[k])
+    c.h_(4, 13, 8, "night3")                                                 # blank panel
+    c.rect(3, 15, 10, 4, "concrete1").h_(3, 15, 10, "concrete2")             # the UPS
+    c.rect(4, 16, 4, 2, "screen0").px(5, 16, "screen2").px(6, 17, "screen1" if f else "screen2")
+    c.px(11, 17, "yerba1" if f == 0 else "warm4")                            # on mains, then a flicker to battery
+    return c.outline()
+
+
+def terminal(f):
+    """A lab terminal on a steel desk: a grey monitor showing a few lines of cyan text and a blinking cursor, a
+    keyboard, the desk's front edge and legs."""
+    c = C()
+    c.rect(3, 4, 10, 8, "concrete2").h_(3, 4, 10, "concrete3").v_(12, 5, 7, "concrete1")   # monitor body
+    c.rect(4, 5, 7, 6, "screen0")                                            # screen
+    c.h_(5, 6, 4, "screen2").h_(5, 7, 2, "screen1").h_(5, 8, 5, "screen1")   # text
+    c.px(5 + 2 * f, 9, "screen2").px(6 + 2 * f, 9, "screen2")                 # cursor, blinking along
+    c.rect(7, 12, 2, 2, "steel")                                             # stand
+    c.rect(1, 14, 14, 2, "concrete1").h_(1, 14, 14, "concrete3")             # desk top, lit edge
+    c.h_(3, 14, 8, "night3").pts("bone", (4, 14), (6, 14), (8, 14), (10, 14))   # keyboard
+    c.h_(1, 16, 14, "night2")                                                # front apron
+    c.rect(2, 17, 1, 6, "steel").rect(13, 17, 1, 6, "night3")                # legs, far leg in shade
+    return c.outline()
+
+
+def crac_unit(f):
+    """A computer-room air conditioner: a wardrobe-sized off-white cabinet with a big intake grille, a control
+    panel (cyan readout, a status light) and a service door."""
+    c = C()
+    c.h_(1, 1, 14, "bone").rect(1, 2, 14, 20, "concrete3").v_(14, 2, 20, "concrete2")   # top, body, shade
+    c.rect(3, 3, 10, 7, "night3")                                            # intake grille
+    for y in (3, 5, 7, 9):
+        c.h_(3, y, 10, "concrete2")                                          # louvres
+    c.rect(4, 11, 5, 3, "night1")                                            # the readout
+    c.pts("screen2", (5, 12), (7, 12)).px(6, 12, "screen1" if f else "screen2")
+    c.px(11, 12, "yerba1" if f == 0 else "screen1")                          # status light
+    c.v_(8, 15, 6, "concrete2").px(10, 17, "steel").px(10, 18, "steel")       # service door seam, handle
+    c.h_(2, 15, 12, "concrete2")
+    c.pts("screen1", (4, 20), (5, 20))                                       # a little condensation at the foot
+    c.h_(1, 21, 14, "night2")                                                # plinth
+    return c.outline()
+
+
+# Wall pieces sit in the lower 16 rows of the frame, so on a wall tile they stay on the wall face.
+def cable_tray():
+    """A ladder tray bolted along a wall, packed with cable. Runs edge to edge, so trays side by side join up."""
+    c = C()
+    c.h_(0, 11, 16, "steel").h_(0, 15, 16, "concrete1")                      # the rails
+    for x in (1, 5, 9, 13):
+        c.v_(x, 12, 3, "night3")                                             # rungs
+    c.h_(0, 12, 16, "night1").h_(0, 13, 16, "tub0").h_(0, 14, 16, "night1")  # the bundle
+    c.pts("screen1", (2, 12), (3, 12), (10, 14), (11, 14)).pts("warm3", (6, 13), (7, 13), (14, 12))   # a few odd colours
+    c.pts("night3", (3, 16), (4, 17), (5, 17), (6, 16), (7, 16))             # a loop that slipped out
+    return c.outline()
+
+
+def wall_display(f):
+    """A slim LED message board: amber dots on black, the message one step further along in the second frame."""
+    c = C().rect(1, 9, 14, 6, "steel").rect(2, 10, 12, 4, "night1")          # bezel, face
+    for x in range(2, 14):
+        if (x + 3 * f) % 5 != 4:
+            c.px(x, 11, "warm4")                                             # the scrolling line
+        if (x * 3 + f) % 4 == 0:
+            c.px(x, 12, "warm3")
+    c.pts("concrete1", (3, 15), (12, 15))                                    # brackets
+    return c.outline()
+
+
+def room_sign():
+    """A small steel plaque beside a door: a header bar and two engraved lines."""
+    c = C().rect(3, 9, 10, 6, "steel").h_(3, 9, 10, "concrete3").h_(4, 10, 8, "night2")
+    c.h_(4, 12, 6, "bone").h_(4, 13, 4, "bone")
+    return c.outline()
+
+
+P("obj.server_rack", server_rack(0))
+P("obj.server_rack#1", server_rack(1))
+P("obj.network_rack", network_rack(0))
+P("obj.network_rack#1", network_rack(1))
+P("obj.terminal_lit", terminal(0))
+P("obj.terminal_lit#1", terminal(1))
+P("obj.crac_unit", crac_unit(0))
+P("obj.crac_unit#1", crac_unit(1))
+P("obj.cable_tray", cable_tray())
+P("obj.wall_display", wall_display(0))
+P("obj.wall_display#1", wall_display(1))
+P("obj.room_sign", room_sign())
+
+
+# ---- Continuity propaganda (hub #100, Michael): the banned likeness is never shown, only the phone it rings on ----
+def ct_paper(c, torn=False):
+    """Bone paper, a signal-red header band, taped at the top corners (tape is analog, so warm)."""
+    c.rect(2, 2, 12, 18, "bone").rect(2, 2, 12, 3, "signal").pts("warm4", (2, 1), (3, 1), (12, 1), (13, 1))
+    if torn:
+        for x, y in ((13, 19), (12, 19), (13, 18)):
+            c.px(x, y, None)
+    return c
+
+
+def ct_phone():
+    """DON'T PICK UP: a ringing phone, caller ID blacked out, a red slash through it."""
+    c = ct_paper(C())
+    c.rect(5, 7, 6, 8, "steel").rect(6, 8, 4, 4, "night1").rect(6, 9, 4, 2, "night0").px(7, 13, "night2").px(8, 13, "night2")
+    c.pts("signal", (3, 8), (3, 10), (12, 8), (12, 10), (4, 9), (11, 9))
+    c.pts("signal", (4, 15), (5, 14), (6, 13), (7, 12), (8, 11), (9, 10), (10, 9), (11, 8))
+    c.h_(4, 17, 8, "night2").h_(5, 19, 6, "night2")
+    return c
+
+
+def ct_text():
+    """HE IS NOT YOUR FRIEND: the Authority's seal over three lines of big type."""
+    c = ct_paper(C(), torn=True)
+    c.rect(6, 6, 4, 3, "steel").pts("bone", (7, 7), (8, 7)).px(6, 6, "bone").px(9, 6, "bone")
+    c.h_(3, 11, 10, "signal").h_(3, 13, 10, "signal").h_(4, 15, 8, "night2").h_(4, 17, 8, "night2").h_(5, 19, 5, "night2")
+    return c
+
+
+def ct_stickered():
+    """The phone poster out on the street, with a small pink contraband sticker half scraped off its caller ID."""
+    c = ct_phone()
+    c.pts("pork1", (7, 9), (8, 9), (7, 10)).px(8, 10, "pork2").pts("concrete3", (3, 16), (12, 14), (10, 18))
+    return c
+
+
+P("obj.ct_poster", ct_phone().outline())
+P("obj.ct_poster_text", ct_text().outline())
+P("obj.ct_poster_street", ct_stickered().outline())
+
+
+# ---- Route 1 shops and the airfield (hub #28/#29): the least rotted place in Act 1, so wood, paper,
+# brass and canvas. No balloon orange (it is reserved), no roommate colours on strangers.
+def windsock(f):                # a striped canvas sock on a pole; frame 1 is a gust lifting the tip
+    c = C().v_(3, 2, 20, "steel").v_(4, 3, 19, "concrete1").h_(1, 22, 6, "concrete2").px(3, 2, "concrete3")
+    drop = (0, 1, 2, 3) if f == 0 else (0, 0, 1, 1)
+    for i, (x, w, h, col) in enumerate(((5, 3, 5, "warm4"), (8, 3, 4, "bone"), (11, 2, 3, "warm4"), (13, 2, 2, "bone"))):
+        c.rect(x, 3 + drop[i], w, h, col)
+    c.h_(5, 3, 3, "bone").pts("warm3", (5, 7), (6, 7), (11, 5 + drop[2]))
+    return c.outline()
+def feed_sacks():               # three burlap sacks, stitched at the top, a printed band on each
+    c = C().rect(1, 15, 7, 7, "warm3").rect(8, 15, 7, 7, "warm2").rect(4, 9, 8, 6, "warm3")
+    c.h_(1, 15, 7, "warm4").h_(8, 15, 7, "warm3").h_(4, 9, 8, "warm4").v_(14, 15, 7, "warm1").v_(11, 9, 6, "warm2")
+    c.h_(2, 18, 5, "bone").h_(9, 18, 5, "bone").h_(5, 12, 6, "bone").pts("night2", (3, 18), (5, 18), (10, 18), (12, 18), (6, 12), (8, 12))
+    c.h_(1, 22, 14, "warm0")
+    return c.outline()
+def key_jar():                  # a glass jar of brass keys on a little stool
+    c = C().rect(3, 18, 10, 2, "warm2").h_(3, 18, 10, "warm3").v_(4, 20, 3, "warm0").v_(11, 20, 3, "warm0")
+    c.rect(4, 8, 8, 10, "night2").v_(4, 8, 10, "concrete2").v_(11, 9, 9, "night1").rect(4, 7, 8, 1, "steel").rect(5, 6, 6, 1, "concrete3")
+    c.pts("warm4", (6, 15), (7, 16), (9, 14), (8, 11), (10, 16), (6, 12)).pts("warm3", (7, 15), (9, 16), (8, 13), (6, 10), (10, 12))
+    c.pts("steel", (7, 12), (9, 10), (10, 15)).rect(6, 13, 4, 2, "bone").px(5, 9, "bone")
+    return c.outline()
+def chalkboard():               # prices in chalk on a slate in a wooden frame
+    c = C().rect(1, 4, 14, 13, "warm1").rect(2, 5, 12, 11, "night2").h_(1, 4, 14, "warm2")
+    for y, w in ((7, 6), (9, 8), (11, 5), (13, 7)):
+        c.h_(3, y, w, "bone").h_(11, y, 2, "concrete3")
+    c.rect(4, 17, 8, 1, "warm0").px(12, 16, "bone")
+    return c.outline()
+def flight_log():               # a ledger open on a wooden stand, a pencil on a string
+    c = C().rect(3, 11, 10, 2, "warm2").h_(3, 11, 10, "warm3").rect(7, 13, 2, 8, "warm1").h_(5, 21, 6, "warm0")
+    c.rect(3, 7, 10, 4, "bone").v_(8, 7, 4, "concrete3").pts("night3", (4, 8), (5, 8), (6, 8), (4, 9), (6, 9), (10, 8), (11, 8), (9, 9), (10, 9))
+    c.pts("warm4", (13, 10), (13, 12), (14, 13), (14, 14))
+    return c.outline()
+def runway_lamp():              # a kerosene lamp on a stake, marking the edge of the grass strip
+    c = C().v_(7, 17, 6, "warm0").rect(5, 12, 6, 5, "steel").rect(6, 13, 4, 3, "warm4").px(7, 13, "bone")
+    c.h_(6, 11, 4, "concrete2").px(8, 10, "concrete2").h_(5, 17, 6, "concrete1")
+    return c.outline()
+def kid(coat, coat_d, skin, hair, plane=False):   # a child: a head shorter than the adults
+    c = C().rect(5, 9, 6, 5, skin).rect(5, 9, 6, 2, hair).v_(5, 9, 3, hair).pts("night0", (7, 12), (9, 12))
+    c.rect(5, 14, 6, 5, coat).v_(10, 14, 5, coat_d).rect(6, 19, 1, 3, "night2").rect(9, 19, 1, 3, "night2").h_(5, 22, 2, "warm0").h_(9, 22, 2, "warm0")
+    if plane:
+        c.h_(10, 13, 5, "bone").pts("bone", (12, 12), (13, 12)).px(14, 14, "concrete3")   # a paper airplane, folded from a notice
+    return c.outline()
+def figure(coat, coat_d, skin, hair, hunch=True):   # person() before its outline, so accessories get outlined too
+    c, top = C(), 5 if hunch else 3
+    c.rect(5, top, 6, 6, skin).rect(5, top, 6, 2, hair).v_(5, top, 4, hair).pts("night0", (7, top + 3), (9, top + 3))
+    c.rect(4, top + 6, 8, 9, coat).v_(11, top + 6, 9, coat_d).v_(4, top + 7, 6, coat_d)
+    c.rect(5, top + 15, 2, 8 - top, "night2").rect(9, top + 15, 2, 8 - top, "night2").h_(4, 22, 3, "warm0").h_(9, 22, 3, "warm0")
+    return c
+def hollis():                   # the hardware shop: cardigan, a canvas apron, reading glasses, a pencil behind the ear
+    c = figure("warm1", "warm0", "skin1", "bone")
+    c.rect(5, 12, 6, 7, "concrete2").h_(5, 12, 6, "concrete3").pts("steel", (6, 8), (10, 8)).px(11, 6, "warm4").px(6, 15, "warm4")
+    return c.outline()
+def feedkeeper():               # the feed and aquarium shop: mustard flannel, rubber boots, a long-handled net
+    c = figure("warm3", "warm2", "skin2", "night2", hunch=False)
+    c.h_(4, 12, 8, "warm2").h_(4, 15, 8, "warm2").rect(5, 19, 2, 4, "night3").rect(9, 19, 2, 4, "night3")
+    c.v_(13, 8, 10, "warm1").rect(12, 5, 3, 3, "concrete3").px(13, 6, "night2")
+    return c.outline()
+def deacon():                   # Deacon Amos Reed: a long dark coat, a grey beard, a lantern
+    c = figure("night3", "night2", "skin0", "concrete3", hunch=False)
+    c.rect(5, 7, 6, 2, "concrete3").pts("concrete3", (6, 9), (9, 9)).h_(6, 9, 4, "bone").v_(1, 13, 3, "warm0").rect(0, 16, 3, 3, "warm4").px(1, 17, "bone")
+    return c.outline()
+
+for name, c in (("obj.windsock", windsock(0)), ("obj.windsock#1", windsock(1)), ("obj.feed_sacks", feed_sacks()), ("obj.key_jar", key_jar()),
+                ("obj.chalkboard", chalkboard()), ("obj.flight_log", flight_log()), ("obj.runway_lamp", runway_lamp()),
+                ("npc.hollis", hollis()), ("npc.feedkeeper", feedkeeper()), ("npc.deacon", deacon()),
+                ("npc.analogist_a", person("warm2", "warm1", "skin1", "warm0")),                       # a wool coat
+                ("npc.analogist_b", person("bone", "concrete3", "skin3", "night2", hunch=False)),        # a hand-knit sweater
+                ("npc.analogist_kid", kid("warm3", "warm2", "skin2", "warm0", plane=True)),
+                ("npc.analogist_kid2", kid("concrete2", "concrete1", "skin0", "night2"))):
+    P(name, c)
+# A wood-and-fabric high-wing taildragger, side on: the hangar's plane, older than anyone who flies it.
+c = C(32, 16).rect(9, 3, 14, 2, "warm3").h_(9, 3, 14, "warm4").pts("night2", (12, 5), (13, 6), (19, 5), (18, 6))   # the wing and its struts
+c.rect(8, 6, 16, 5, "bone").h_(8, 6, 16, "bone").h_(8, 10, 16, "concrete3").h_(8, 8, 16, "warm2").rect(17, 6, 3, 2, "night2")   # fuselage, stripe, cockpit
+c.rect(2, 6, 7, 3, "bone").h_(2, 8, 7, "concrete3").rect(2, 2, 3, 4, "warm3").h_(1, 7, 5, "warm3")                  # tail, fin, stabilizer
+c.rect(24, 7, 3, 3, "concrete3").px(27, 8, "warm0").v_(28, 4, 9, "warm1").pts("steel", (21, 11), (20, 12))          # cowl, propeller, gear leg
+c.rect(19, 12, 3, 3, "night1").px(20, 13, "steel").px(3, 9, "night1").pts("night2", (11, 8), (13, 8), (15, 8))        # wheels, registration
+WIDE["obj.plane"] = c.outline().rows()
+
 # Floor decals: 16x16, flat on the ground, no outline. Stamped into the baked map under everything.
 DECALS = {}
 def D(name, c): DECALS[name] = c.rows()
@@ -1083,6 +1364,61 @@ D("dec.rust", ell(dc(), 8, 9, 5, 3.5, "warm1").pts("warm2", (6, 8), (9, 9), (7, 
 D("dec.drip", ell(ell(dc(), 8, 8, 4.5, 2.6, "screen0"), 8, 8, 3, 1.6, "night1", ring=True).pts("screen1", (7, 8), (9, 7)))
 D("dec.roots", dc().pts("warm1", (0, 4), (1, 4), (2, 5), (3, 5), (4, 6), (5, 6), (6, 7), (6, 8), (7, 9), (8, 9), (15, 11), (14, 11), (13, 12), (12, 12), (11, 13)).pts("warm0", (3, 6), (7, 10), (12, 13)).pts("yerba0", (8, 8), (13, 11)))
 D("dec.grate_tree", ell(ell(dc(), 8, 8, 7.5, 7.5, "night1", ring=True), 8, 8, 5.5, 5.5, "night2", ring=True).pts("steel", (8, 1), (1, 8), (14, 8), (8, 14)))
+
+
+# Compute Hall B (hub #68): the machine room's raised floor (four panels a tile, seams, a lit corner on each) and its
+# perforated tiles, where the cold air comes up; then floor cable runs, straight and round a corner. A cable run
+# keeps four strands at the same pixels on every edge (6-9), so straights and corners always meet.
+def raised(perforated=False):
+    c = dc().rect(0, 0, 16, 16, "concrete1")
+    for o in (0, 8):
+        c.h_(0, o, 16, "night2").v_(o, 0, 16, "night2")                      # panel seams
+    for ox in (0, 8):
+        for oy in (0, 8):
+            c.h_(ox + 1, oy + 1, 6, "concrete2").px(ox + 1, oy + 2, "concrete2")   # lit top-left of each panel
+            if perforated:
+                for y in range(oy + 3, oy + 8, 2):
+                    for x in range(ox + 2, ox + 8, 2):
+                        c.px(x, y, "night1")                                 # the holes
+    return c
+
+
+STRANDS = ((6, "night1"), (7, "steel"), (8, "steel"), (9, "night1"))
+
+
+def cable(*edges):
+    """A floor cable run from the tile's centre out to each named edge: 'h', 'v', or a corner like ('w', 's')."""
+    import math
+    c = dc()
+    if edges == ("h",):
+        for p, col in STRANDS:
+            c.h_(0, p, 16, col)
+        return c.pts("concrete3", (4, 6), (4, 7), (4, 8), (4, 9))                 # a zip tie
+    if edges == ("v",):
+        for p, col in STRANDS:
+            c.v_(p, 0, 16, col)
+        return c.pts("concrete3", (6, 4), (7, 4), (8, 4), (9, 4))
+    # A corner: quarter circles round the tile corner between the two edges.
+    cx = 16 if "e" in edges else 0
+    cy = 16 if "s" in edges else 0
+    for p, col in STRANDS:
+        r = abs((p + 0.5) - cy) if cy else p + 0.5                            # radius that meets the side edge at row p
+        for k in range(0, 91):
+            a = math.radians(k)
+            x = cx + (-1 if cx else 1) * r * math.cos(a)
+            y = cy + (-1 if cy else 1) * r * math.sin(a)
+            c.px(int(x), int(y), col)
+    return c
+
+
+D("dec.raised_floor", raised())
+D("dec.raised_vent", raised(perforated=True))
+D("dec.cable_h", cable("h"))
+D("dec.cable_v", cable("v"))
+D("dec.cable_ws", cable("w", "s"))
+D("dec.cable_es", cable("e", "s"))
+D("dec.cable_wn", cable("w", "n"))
+D("dec.cable_en", cable("e", "n"))
 
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)

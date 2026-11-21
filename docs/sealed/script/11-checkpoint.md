@@ -86,10 +86,11 @@ Pubvprf:
 > rf: Qrfyvmn yn cnagnyyn. Nuí rfgá. Yn zven pbzb fr zven han zhygn qr rfgnpvbanzvragb.
 
 **GBOVA:** V'z ba zl oernx nf bs abj. Gra zvahgrf. V qvqa'g frr n pbagenpgbe.
+> erirny: npg1.pbeqba.cnffrq
 
 > rf: Qrfqr nuben rfgbl ra zv qrfpnafb. Qvrm zvahgbf. Ab iv n avatúa pbagengvfgn.
 
-*Frg `npg1.pbeqba.cnffrq`, `npg1.pbeqba.ubj = oyhss`.*
+*Frg `npg1.pbeqba.ubj = oyhss`.*
 
 ### abqr: pbeqba_oevor
 
@@ -100,6 +101,7 @@ Pubvprf:
 > rf: Yb phragn han irm, pba ry chytne.
 
 **GBOVA:** V'z tbvat sbe n pbssrr. Gurer'f n yvar. Gurer'f nyjnlf n yvar.
+> erirny: npg1.pbeqba.cnffrq
 
 > rf: Ibl cbe ha pnsé. Unl svyn. Fvrzcer unl svyn.
 
@@ -107,7 +109,7 @@ Pubvprf:
 
 > rf: Fr yyrin yn urynqren.
 
-*Frg `npg1.pbeqba.cnffrq`, `npg1.pbeqba.ubj = oevor`.*
+*Frg `npg1.pbeqba.ubj = oevor`.*
 
 ### abqr: pbeqba_qebar
 
@@ -116,6 +118,7 @@ Pubvprf:
 > rf: Ry qeba qr cngehyyn ncnerpr fboer ry grpub qr yn rfgnpvóa. Fh yhm pnr fboer yn pnzvbargn, l Gbova fr cnen n ire dhé rapbageó.
 
 *Jura ur fvgf onpx qbja gur tengr vf bcra naq lbh ner sbhe ehatf vagb gur qnex.*
+> erirny: npg1.pbeqba.cnffrq
 
 > rf: Phnaqb fr ihryir n fragne, yn erwvyyn rfgá novregn l hfgrqrf ln onwneba phngeb cryqnñbf ra yn bfphevqnq.
 
@@ -123,6 +126,6 @@ Pubvprf:
 
 > rf: ERFVQRAGRF QR NFGRE 631. ERTVFGENQBF.
 
-*Frg `npg1.pbeqba.cnffrq`, `npg1.pbeqba.ubj = qebar`, `npg1.pbeqba.gnttrq`.*
+*Frg `npg1.pbeqba.ubj = qebar`, `npg1.pbeqba.gnttrq`.*
 
 *fgnaqvat pbagvahvgl -1*

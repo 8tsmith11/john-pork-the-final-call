@@ -5,8 +5,9 @@
 // and Intimidate get things handed over; Pickpocket takes them; Investigate shows you what they carry
 // and gives the next Pickpocket advantage; Insight tells you whether they're hiding something.
 // Fail and they turn wary for a while; get caught robbing a guard and Continuity hears about it.
-// Per NPC overrides go on the map object: role, dc: { charm: 18 }, pockets: 'guard', insight: '...',
-// approach: false (Talk only).
+// NPCs can set role, dc: { charm: 18 }, pockets, insight, or an ordered approaches list.
+// An approaches entry is an id or { id, name, nameEs } to give the same check a contextual label.
+// Use approach: false for Talk and explicit quest actions only.
 
 export const APPROACHES = [
   { id: 'talk', name: 'Talk', ability: null },
@@ -38,6 +39,15 @@ export const DC = {
 };
 // Drifters (the rotters) are coderot-impaired: you can read them, not rob or play them.
 export const ALLOWED = { drifter: ['talk', 'insight', 'investigate'] };
+
+export const CAUGHT_PICKPOCKET = {
+  blocks: ['charm', 'deceive', 'pickpocket'],
+  reason: 'They caught you trying to pick their pocket.',
+  reasonEs: 'Te vieron intentando robarles del bolsillo.',
+  recovery: { id: 'apologize', name: 'Apologize', nameEs: 'Disculparte' },
+  reply: 'They hear you out. They still remember what you did.',
+  replyEs: 'Te escuchan. Todavía recuerdan lo que hiciste.',
+};
 
 // What's in their pockets: [itemId | 'money', weight, min, max]; `rolls` picks per person.
 export const POCKETS = {

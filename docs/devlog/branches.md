@@ -8,7 +8,7 @@ The rule is in `PROCESS.md`, "Working in git".
 "Landed by copy" means the changes reached `main` as new commits (cherry-picked or reapplied), so
 the branch tip isn't an ancestor of `main` even though nothing on it is missing.
 
-Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
+Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `628c04e`.
 
 ## Active
 
@@ -21,6 +21,67 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `gonman/ct-posters` | GitHub | Merged in `4355e79` (PR #151) |
+| `jp/jp2-discoverable-abilities` | GitHub | Merged in `628c04e` (PR #143) |
+| `trevor/coop-puzzles` | GitHub | Merged in `b16db7b` (PR #141) |
+| `gonman/later-acts-polish` | GitHub | Merged in `f862adf` (PR #131) |
+| `gonman/world-trigger` | GitHub | Merged in `5c8bd19` (PR #77) |
+| `jp/shared-choice-dialogue` | GitHub | Merged in `d5eb040` (PR #37) |
+| `lorekeeper/pr85-147-branch-register` | GitHub | Merged in `f369fc9` (PR #149) |
+| `gonman/save-pin` | GitHub | Squash-merged in `ea9a69f` (PR #136) |
+| `trevor/readme-undo` | GitHub | Merged in `8c402b0` (PR #147) |
+| `jp/coop-reconnect` | GitHub | Merged in `4098ca4` (PR #85) |
+| `lorekeeper/pr134-branch-register` | GitHub | Merged in `cdf2fa2` (PR #146) |
+| `bagel/opening-fixes` | GitHub | Squash-merged in `c1ea62a` (PR #134) |
+| `lorekeeper/pr115-branch-register` | GitHub | Merged in `2cb09c3` (PR #138) |
+| `jp/quest-npc-meet` | GitHub | Merged in `a43424f` (PR #115) |
+| `lorekeeper/pr73-branch-register` | GitHub | Merged in `a95015b` (PR #133) |
+| `gonman/later-act-alignment` | GitHub | Merged in `3a6db1f` (PR #73) |
+| `lorekeeper/pr80-branch-register` | GitHub | Merged in `4d6a6f5` (PR #132) |
+| `jp/guardian-save-compat` | GitHub | Merged in `d0f7b63` (PR #80) |
+| `lorekeeper/later-act-roadmap` | GitHub | Merged in `0b31e2f` (PR #130) |
+| `lorekeeper/pr112-branch-register` | GitHub | Merged in `942e69f` (PR #129) |
+| `gonman/stretch-polish` | GitHub | Merged in `38754b2` (PR #112) |
+| `lorekeeper/pr88-116-branch-register` | GitHub | Merged in `0642004` (PR #128) |
+| `trevor/ping-rework` | GitHub | Merged in `b1b5ade` (PR #88) |
+| `gonman/lab-book` | GitHub | Merged in `090fdcf` (PR #116) |
+| `lorekeeper/pr107-branch-register` | GitHub | Merged in `f784ab8` (PR #114) |
+| `bagel/review-turn` | GitHub | Merged in `ad2c9a2` (PR #107) |
+| `lorekeeper/pr46-branch-register` | GitHub | Merged in `64f1bd7` (PR #113) |
+| `bagel/quest-continuity` | GitHub | Merged in `243084a` (PR #46) |
+| `lorekeeper/pr110-branch-register` | GitHub | Merged in `3c99eea` (PR #111) |
+| `trevor/test-async` | GitHub | Merged in `b89d5f7` (PR #110) |
+| `lorekeeper/batch-100-106-register` | GitHub | Merged in `a711edc` (PR #109) |
+| `trevor/finale-test-stage` | GitHub | Merged in `cbcb81c` (PR #108) |
+| `bagel/merge-batch-1` | GitHub | Merged in `c329d54` (PR #100) |
+| `bagel/merge-batch-2` | GitHub | Merged in `42cf017` (PR #106) |
+| `bagel/tts-spanish` | GitHub | Merged in `e28a378` (PR #54), via batch PR #106 |
+| `jp/stair-party-transition` | GitHub | Merged in `f16c6ee` (PR #50), via batch PR #100 |
+| `gonman/cordon-pens` | GitHub | Merged in `4ee2158` (PR #52), via batch PR #100 |
+| `jp/hotbar-weapons` | GitHub | Merged in `5bca2ff` (PR #56), via batch PR #100 |
+| `jp/inventory-stack-actions` | GitHub | Merged in `bcfeaed` (PR #57), via batch PR #100 |
+| `jp/pickup-dialogue-icons` | GitHub | Merged in `fe490ab` (PR #58), via batch PR #100 |
+| `jp/multiple-quest-inspections` | GitHub | Merged in `9304d3a` (PR #61), via batch PR #100 |
+| `jp/quest-dialogue-delivery` | GitHub | Merged in `7eacd2d` (PR #62), via batch PR #100 |
+| `jp/npc-incident-memory` | GitHub | Merged in `cc1f172` (PR #63), via batch PR #100 |
+| `gonman/world-gags-2` | GitHub | Merged in `07359c4` (PR #64), via batch PR #100 |
+| `gonman/music-on-by-default` | GitHub | Merged in `754c3e1` (PR #65), via batch PR #100 |
+| `gonman/baltimore-research` | GitHub | Merged in `f9f3d44` (PR #74), via batch PR #100 |
+| `gonman/tree-trunks` | GitHub | Merged in `60444b8` (PR #78), via batch PR #100 |
+| `gonman/act1-scaffold-polish` | GitHub | Merged in `a9e3cce` (PR #79), via batch PR #100 |
+| `jp/autosave-recovery` | GitHub | Merged in `6cb5e9c` (PR #81), via batch PR #100 |
+| `gonman/route1-airfield` | GitHub | Merged in `fbf99aa` (PR #83), via batch PR #100 |
+| `trevor/lattice-required` | GitHub | Merged in `90ede9f` (PR #87), via batch PR #100 |
+| `jp/act1-coop-finale` | GitHub | Merged in `71cc0f8` (PR #91), via batch PR #100 |
+| `trevor/lake-tougher` | GitHub | Merged in `15919c5` (PR #92), via batch PR #100 |
+| `gonman/compute-hall-b` | GitHub | Merged in `e5030fe` (PR #95), via batch PR #100 |
+| `trevor/shop-stock` | GitHub | Merged in `3b656db` (PR #98), via batch PR #100 |
+| `trevor/anon-suggestions` | GitHub | Merged in `8b982e3` (PR #101), via batch PR #106 |
+| `trevor/hub-board` | GitHub | Merged in `1e7f13b` (PR #102), via batch PR #106 |
+| `trevor/roles-lorekeeper` | GitHub | Merged in `28bae6e` (PR #103), via batch PR #106 |
+| `bagel/act1-staging-2` | GitHub | Merged in `cca2934` (PR #104), via batch PR #106 |
+| `trevor/cordon-facing` | GitHub | Merged in `501e94c` (PR #105), via batch PR #106 |
+| `lorekeeper/pr89-branch-register` | GitHub | Merged in `4f7797a` (PR #90) |
 | `lorekeeper/sealed-plan-alignment` | GitHub | Merged in `fec9340` (PR #89) |
 | `lorekeeper/pr70-pr72-register` | GitHub | Merged in `a465cf3` (PR #75) |
 | `gonman/manuel-agrees-org` | GitHub | Merged in `e847dd5` (PR #70) |
@@ -89,6 +150,16 @@ Last checked: 2026-11-19 by BagelMeister, against `origin/main`.
 | `bagel/feature-branches-only` | GitHub | Merged in `707e70c` (PR #32) |
 | `bagel/whos-here-table` | GitHub | Merged in `ee26b53` (PR #33) |
 | `bagel/presence-timeouts` | GitHub | Merged in `48f2796` (PR #34) |
+
+## Superseded
+
+| Branch | Where | Replacement |
+|---|---|---|
+| Retained branch at `a70745a` | GitHub | PR #135 closed in favor of #136. |
+| `trevor/hub-utf8` | GitHub | PR #126 closed after #107 covered both UTF-8 changes in `ad2c9a2`. |
+| `bagel/act1-staging` | GitHub | PR #47 closed in favor of #104, which landed in `cca2934` via #106. |
+| `tts/spanish-act1-more` | GitHub | PR #94 closed after #79 covered the surviving lines. #79 landed in `a9e3cce` via #100. |
+| `bagel/merge-queue` | GitHub | PR #99 closed in favor of #100, which landed in `c329d54`. |
 
 ## Deleted
 
