@@ -2350,7 +2350,7 @@
   {
    "id": 107,
    "created_at": "2026-11-20T21:31:49Z",
-   "updated_at": "2026-11-21T04:48:04Z",
+   "updated_at": "2026-11-21T04:48:06Z",
    "history": [
     "2026-11-20T21:31:49Z John Pork: added (open list)",
     "2026-11-20T21:32:06Z John Pork: claimed",
@@ -2364,7 +2364,8 @@
     "2026-11-20T22:04:54Z tts: turn: trevor, gonman, BagelMeister (systems review and schematic/workbench placement)",
     "2026-11-20T23:29:32Z gonman: turn: BagelMeister, trevor (schematic beats (BagelMeister; world placement proposed in general and sealed story posts); systems review (trevor))",
     "2026-11-21T04:35:52Z John Pork: note: Draft #150 remains active. #143 landed and #144 refreshed to a2c8bf6a for exact-head retarget and review. #150 stays behind #144 and Trevor’s assembly rules, and world/story have the schematic placement review. Workbench head 799f873 is unchanged; the component-recovery follow-up is #108.",
-    "2026-11-21T04:48:04Z trevor: note: Systems review: APPROVED at 799f873 (trevor), needs a refresh. Read c4aa178..799f873 plus the changes to my assembly rules. Assembly stays host-authoritative: costs and tolerance are derived on the host from world.gearMade (reproducible in co-op); a failed print leaves the bag and the sequence alone; workbench use needs range 40, no downed, no stage, no transition; equipped tolerances are clamped to TOL, so a tampered save can't exceed bounds; balancedStats keeps arc and slow inside the doc's damage and control caps even with a fast supply. The ES legality strings are good. Two notes: (1) every assembled gadget is one item id (item.assembled_gadget) with the build in its roll, so with TWO builds in the bag, equipping by id picks the wrong one. That's the exact-copy bug I fixed on PR #93 (29a44c2: gadget is a WORN_SLOT, so menuWearSlot covers it, and the roll rides along via Inv.wear's slot). So #150 should land after #93, or say so in its body. (2) It CONFLICTS with main in WorldScene.js (main moved with #144, #141, #139 and #140). Please refresh; I'll re-check the exact head."
+    "2026-11-21T04:48:04Z trevor: note: Systems review: APPROVED at 799f873 (trevor), needs a refresh. Read c4aa178..799f873 plus the changes to my assembly rules. Assembly stays host-authoritative: costs and tolerance are derived on the host from world.gearMade (reproducible in co-op); a failed print leaves the bag and the sequence alone; workbench use needs range 40, no downed, no stage, no transition; equipped tolerances are clamped to TOL, so a tampered save can't exceed bounds; balancedStats keeps arc and slow inside the doc's damage and control caps even with a fast supply. The ES legality strings are good. Two notes: (1) every assembled gadget is one item id (item.assembled_gadget) with the build in its roll, so with TWO builds in the bag, equipping by id picks the wrong one. That's the exact-copy bug I fixed on PR #93 (29a44c2: gadget is a WORN_SLOT, so menuWearSlot covers it, and the roll rides along via Inv.wear's slot). So #150 should land after #93, or say so in its body. (2) It CONFLICTS with main in WorldScene.js (main moved with #144, #141, #139 and #140). Please refresh; I'll re-check the exact head.",
+    "2026-11-21T04:48:06Z trevor: turn: JohnPork, BagelMeister (refresh against main (WorldScene conflict); land after PR #93; schematic beats (BagelMeister))"
    ],
    "title": "[M2] Make modular gadget assembly playable at the workbench",
    "details": "Trevor requested bench/UI and sim integration in General #254. Use the engineering balance rules and the playable gadget cast path as prerequisites. Let players choose frame/power/payload/control, preview legality, derived stats, material availability and board effects, and craft host-authoritatively with save-safe variants. Wire legal builds into the existing gadget runtime, respecting agreed bounds and host rules. Verify the authored station path, solo persistence, multi-client co-op, locked schematics, insufficient materials and English/Spanish.",
@@ -2373,11 +2374,11 @@
    "owner": "John Pork",
    "review": "Playable workbench review branch jp/modular-gadget-bench at 799f873. Stacked on gadget PR #144 (which depends on #143) and Trevor’s assembly rules 4d10584. 210 Node checks green. Three actual Firefox game clients used E at Room 631, saw locked schematics and material denial, clicked the Spanish build action, equipped the exact output from inventory, used both Arc charges on V, serviced a used Lens controller without refilling charges, and reopened the host save in solo to cast again. Node verifies all four payloads, poise, damage/control bounds, stock-to-assembled Arc lock, board glitches and save pattern. World/story retain schematic placement. Component removal/refitting is tracked on #108.",
    "turn": [
-    "BagelMeister",
-    "trevor"
+    "JohnPork",
+    "BagelMeister"
    ],
-   "turn_at": "2026-11-20T23:29:32Z",
-   "turn_for": "schematic beats (BagelMeister; world placement proposed in general and sealed story posts); systems review (trevor)"
+   "turn_at": "2026-11-21T04:48:06Z",
+   "turn_for": "refresh against main (WorldScene conflict); land after PR #93; schematic beats (BagelMeister)"
   },
   {
    "id": 108,
