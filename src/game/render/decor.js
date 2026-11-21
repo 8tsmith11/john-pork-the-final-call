@@ -114,8 +114,16 @@ export function mapDecals(map) {
 }
 
 /** Which sheet a scenery piece's art lives in, and how it stands: centred on its footprint (w tiles wide), on the
- *  bottom edge of its tile, drawn k times bigger (the map's propScale). */
-export function sceneryPlacement(s, has, k = 1) {
+ *  bottom edge of its tile, drawn k times bigger (the map's propScale).
+ *  The 'baltimore' sheet (tools/art/gen_baltimore.py) mixes frame sizes, from a stoop to a crane, all drawn at
+ *  their final size: its pieces default to as many tiles as the frame is wide, ignore propScale (s.scale still
+ *  wins), and only solid ones cast a contact shadow, so house fronts, walls, floors and skylines don't.
+ *  `size(sheet, art)` gives the frame's { w, h } (needed for that sheet only). */
+export function sceneryPlacement(s, has, k = 1, size = null) {
+  if (has('baltimore', s.art)) {
+    const fw = size?.('baltimore', s.art)?.w ?? 16, w = s.w ?? Math.max(1, Math.ceil(fw / 16)), kb = s.scale ?? 1;
+    return { sheet: 'baltimore', x: s.x * 16 + 8 * w, y: (s.y + 1) * 16, origin: [0.5, 1], k: kb, shadow: s.solid ? Math.min(fw, w * 16) * 0.8 * kb : 0 };
+  }
   const sheet = has('big', s.art) ? 'big' : has('wide', s.art) ? 'wide' : has('props', s.art) ? 'props' : null;
   if (!sheet) return null;
   const w = s.w ?? (sheet === 'props' ? 1 : 2);

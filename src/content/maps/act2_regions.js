@@ -225,7 +225,9 @@ export const baltimore = fromGrid({
     o: { prop: 'obj.board', label: 'Rowhouse stoop', text: '[scaffold] Marble steps, scrubbed white. Someone still scrubs them, outbreak or not.' },
     $: { prop: 'obj.crate', id: 'obj.bmore_clinic', label: 'Clinic in a rowhouse', text: '[scaffold] A doctor running a clinic out of a front room. The line goes down the block.' },
     N: { npc: 'npc.bmore_preacher', art: 'npc.rotter_2', label: 'A Caller preacher', text: '[scaffold] "Everyone hears him eventually. The question is whether you pick up." He is very good, and partly right.' },
-    '?': { prop: 'obj.board', id: 'obj.bmore_sign', label: 'The sugar refinery sign', text: '[scaffold] Still lit red over the water. The S flickers.' },
+    // The refinery's sign seen from the water. You look at it up close for the preacher's quest: obj.bmore_sign, on
+    // the refinery's wall (districts.js). This marker points you there.
+    '?': { prop: 'obj.board', id: 'obj.bmore_sign_far', label: 'The refinery sign, far off', text: 'SHOAL, in red letters on the sugar refinery, up past the rowhouse streets. The S keeps going out. You\'d have to get a lot closer to see what\'s left.' },
     E: { enemy: 'enemy.rot_taken' },
     '@': { spawn: true },
     X: { ...back('baltimore', 'South, back to Route 1'), tile: 'q' },

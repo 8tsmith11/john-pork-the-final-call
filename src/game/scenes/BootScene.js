@@ -18,7 +18,7 @@ export class BootScene extends Phaser.Scene {
     this.load.image('title_bg', 'assets/sprites/title_bg.png');   // painted by tools/art/gen_title.py
     this.load.image('john-pork-call', 'assets/ui/john-pork-call.png');
     // Props/NPCs (frames named by map object id), enemies and the Warden. All optional.
-    for (const id of ['props', 'wide', 'big', 'doors', 'icons', 'enemies', 'warden', 'principals', 'tiles', 'romance', 'bagel_enemies', 'decals']) this.load.atlas(id, `assets/sprites/${id}.png`, `assets/sprites/${id}.json`);
+    for (const id of ['props', 'wide', 'big', 'doors', 'icons', 'enemies', 'warden', 'principals', 'tiles', 'romance', 'bagel_enemies', 'decals', 'baltimore']) this.load.atlas(id, `assets/sprites/${id}.png`, `assets/sprites/${id}.json`);
   }
 
   create() {
