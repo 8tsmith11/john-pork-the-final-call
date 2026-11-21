@@ -41,6 +41,8 @@ import { BastionTable } from '../bastionTable.js';
 import { BastionScreen } from '../ui/BastionScreen.js';
 import { LabBench } from '../labBench.js';
 import { LabScreen } from '../ui/LabScreen.js';
+import { ModStation } from '../ui/ModStation.js';
+import * as Sockets from '../../engine/sockets.js';
 import { fabCost, rollGear, rolledName } from '../../content/gearRolls.js';
 import { GADGETS } from '../../content/gadgets.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
@@ -203,6 +205,7 @@ export class WorldScene extends Phaser.Scene {
     if (new URLSearchParams(location.search).has('lattice')) this.time.delayedCall(800, () => this.openBoardGame());   // debug: open the board game
     if (new URLSearchParams(location.search).has('bastion')) this.time.delayedCall(800, () => this.openBastion('debug'));   // debug: hub #34
     { const l = new URLSearchParams(location.search).get('lab'); if (l) this.time.delayedCall(800, () => this.openLab(l)); }   // debug: ?lab=mux|counter|fsm
+    if (new URLSearchParams(location.search).has('mods')) this.time.delayedCall(800, () => this.openModStation());   // debug: task #40
     { const c = new URLSearchParams(location.search).get('cinematic'); if (c) this.time.delayedCall(600, () => this.playCinematic(c)); }   // debug: ?cinematic=demo
     { const c = new URLSearchParams(location.search).get('stage'); if (c) this.time.delayedCall(900, () => this.stage.play(c)); }   // debug: ?stage=demo (in-world cutscene)
     for (const c of Object.values(this.save.party ?? {})) c.money ??= W.START_MONEY;   // own wallets (schema 7)
@@ -727,6 +730,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'lattice') { this._table().onHostMsg(peer, msg); return; }   // the casino board game (host runs it)
         if (msg.t === 'bastion') { this._bastion().onHostMsg(peer, msg); return; }   // hub #34 (host runs it)
         if (msg.t === 'lab') { this._lab().onHostMsg(peer, msg); return; }   // hub #44 (host keeps the bench)
+        if (msg.t === 'mod') { this._modAct(this._charOf(peer), msg.op, msg.ref, msg.arg); return; }   // task #40
         if (this.shared?.onHostMsg(peer, msg) || this.stage?.onHostMsg(peer, msg) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg) || this.comic?.onHostMsg(peer, msg)) return;
         if (msg.t === 'questRead') this._finishQuestReading(peer, msg.read);
         if (msg.t === 'npcTalk') this._guestNpcTalk(peer, msg);
@@ -747,6 +751,8 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'equipR') this._equipR(this._charOf(peer), msg.id);
         if (msg.t === 'ability') this._raiseAbility(this._charOf(peer), msg.key);
         if (msg.t === 'equip') this._equip(this._charOf(peer), msg.id, msg.slot);
+        if (msg.t === 'equipSlot' && Number.isInteger(msg.i)) this._equipSlot(this._charOf(peer), msg.i);
+        if (msg.t === 'unwear' && typeof msg.slot === 'string') this._unwear(this._charOf(peer), msg.slot);
         if (msg.t === 'mate') this._mateBreak();
         if (msg.t === 'hotSel') this._setHot(this._charOf(peer), msg.i);
         if (msg.t === 'rest') this._restAtSave(peer, msg.obj);
@@ -1161,6 +1167,18 @@ export class WorldScene extends Phaser.Scene {
   openLab(id = 'mux') { this._lab().open(id); }
   _lab() { return (this.labBench ??= new LabBench(this, { makeView: (o) => new LabScreen(this, o) })); }
   _labPassed(id) { if (this.mode === 'client') return; this.save.flags[`lab.passed.${id}`] = true; this._tickQuests(true); }
+  // The customization station (task #40): any map object with `station: 'mods'` opens it. Moves are host-applied.
+  // Modal while open (scene.menu === 'mods'): no movement, attacks, E or menu keys; ESC closes it (BagelMeister, PR #93).
+  openModStation() { if (!this.modStation && !this.gameMenu?.tab && !this.dlg) this.modStation = new ModStation(this); }
+  menuMod(op, ref, arg) { if (this.mode === 'client') this.net.send({ t: 'mod', op, ref, arg }); else this._modAct(this.character, op, ref, arg); }
+  _modAct(who, op, ref, arg) {
+    const c = this.save.party[who]; if (!c || !ref || typeof ref !== 'object') return false;
+    const r = ref.bag != null ? { bag: ref.bag | 0 } : typeof ref.worn === 'string' ? { worn: ref.worn } : null; if (!r) return false;
+    const ok = op === 'insert' ? Sockets.insert(c, r, String(arg)) : op === 'extract' ? Sockets.extract(c, r, arg | 0) : false;
+    if (ok) { this._partyDirty = true; this._syncParty(); sfx('swing'); }
+    else if (op === 'extract') this._toast(T_FULL());
+    return ok;
+  }
   _bastion() { return (this.bastionTable ??= new BastionTable(this, { makeView: (o) => new BastionScreen(this, o) })); }
   /** Host: record a finished match (story flags: bastion.played / .games.<id> / .won.<id> / .lost.<id>). */
   _bastionResult(id, won) {
@@ -1265,15 +1283,16 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- in-game menu (src/game/ui/GameMenu.js) ----------
-  get menu() { return this.gameMenu?.tab ?? (this.puzzle && !this.puzzle.closed ? 'puzzle' : this.boardGame && !this.boardGame.closed ? 'lattice' : null); }
+  get menu() { return this.gameMenu?.tab ?? (this.puzzle && !this.puzzle.closed ? 'puzzle' : this.boardGame && !this.boardGame.closed ? 'lattice' : this.modStation && !this.modStation.closed ? 'mods' : null); }
   _makeMenu() {
     this.gameMenu = new GameMenu(this);
     const kb = this.input.keyboard;
-    kb.on('keydown-ESC', () => { if (this.dlg || this.stage?.active) return; if (this.gameMenu?.held != null) { this.gameMenu.held = null; this.gameMenu.refresh(); return; } if (this.puzzle && !this.puzzle.closed) { this.puzzle.destroy(); this.puzzle = null; return; } this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
-    kb.on('keydown-I', () => { if (!this.dlg && !this.stage?.active) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
-    kb.on('keydown-K', () => { if (!this.dlg && !this.stage?.active) this.menu === 'skills' ? this._closeMenu() : this.gameMenu.show('skills'); });
-    kb.on('keydown-J', () => { if (!this.dlg && !this.stage?.active) this.menu === 'quests' ? this._closeMenu() : this.gameMenu.show('quests'); });
-    kb.on('keydown-TAB', (ev) => { ev.preventDefault?.(); if (!this.dlg && !this.stage?.active) this.menu === 'map' ? this._closeMenu() : this.gameMenu.show('map'); });
+    kb.on('keydown-ESC', () => { if (this.dlg || this.stage?.active) return; if (this.modStation) { this.modStation.close(); return; }   // the station is modal: ESC closes only it (BagelMeister, PR #93)
+      if (this.gameMenu?.held != null) { this.gameMenu.held = null; this.gameMenu.refresh(); return; } if (this.puzzle && !this.puzzle.closed) { this.puzzle.destroy(); this.puzzle = null; return; } this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
+    kb.on('keydown-I', () => { if (!this.dlg && !this.stage?.active && !this.modStation) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
+    kb.on('keydown-K', () => { if (!this.dlg && !this.stage?.active && !this.modStation) this.menu === 'skills' ? this._closeMenu() : this.gameMenu.show('skills'); });
+    kb.on('keydown-J', () => { if (!this.dlg && !this.stage?.active && !this.modStation) this.menu === 'quests' ? this._closeMenu() : this.gameMenu.show('quests'); });
+    kb.on('keydown-TAB', (ev) => { ev.preventDefault?.(); if (!this.dlg && !this.stage?.active && !this.modStation) this.menu === 'map' ? this._closeMenu() : this.gameMenu.show('map'); });
     kb.addCapture('TAB');
     for (const [key, dir] of [['A', -1], ['LEFT', -1], ['D', 1], ['RIGHT', 1]]) kb.on(`keydown-${key}`, () => { if (TABS.includes(this.menu)) this.gameMenu.cycle(dir); });
   }
@@ -1292,6 +1311,26 @@ export class WorldScene extends Phaser.Scene {
     if (def.slot === 'consumable') { if (this.mode === 'client') this.net.send({ t: 'use', id }); else { this._useWhat = id; this._use(this.character, this.localId); } return; }
     if (this.mode === 'client') this.net.send({ t: 'equip', id, slot }); else this._equip(this.character, id, slot);
   }
+  // Wear the bag stack that was clicked, not just the first one with that id (John Pork, PR #93: with two vests, the
+  // modded one in slot 9 must be the one that goes on). Guests send the slot; the host checks it.
+  menuWearSlot(i) {
+    if (!this.save.party[this.character]?.inventory[i]) return;
+    if (this.mode === 'client') this.net.send({ t: 'equipSlot', i }); else this._equipSlot(this.character, i);
+  }
+  // Taking off what's worn in a slot: its own action, so clicking a bag copy never takes the worn one off.
+  menuUnwear(slot) {
+    if (this.mode === 'client') this.net.send({ t: 'unwear', slot }); else this._unwear(this.character, slot);
+  }
+  _equipSlot(who, i) {
+    const id = this.save.party[who]?.inventory?.[i]?.id;
+    if (id) this._equip(who, id, i);
+  }
+  _unwear(who, slot) {
+    const c = this.save.party[who];
+    if (!c?.equipped?.[slot] || !WORN_SLOTS.includes(slot)) return;
+    if (!Inv.unwear(c, slot)) return this._toast('Your bag is full. Make room to take it off.');
+    this._syncParty();
+  }
   // Slot actions (inventory grid + hotbar). Host-authoritative like everything else.
   menuUseSlot(i) {
     const c = this.save.party[this.character], it = c?.inventory[i]; if (!it) return;
@@ -1306,7 +1345,7 @@ export class WorldScene extends Phaser.Scene {
       if (i < Inv.HOTBAR) this.selectHot(i);
       return;
     }
-    if (WORN_SLOTS.includes(def.slot)) return this.menuUse(it.id, i);
+    if (WORN_SLOTS.includes(def.slot)) return this.menuWearSlot(i);   // this exact stack, mods and all
     if (def.slot === 'instrument' || def.slot === 'gift') return this.menuUse(it.id);
     if (def.slot === 'junk' || def.slot === 'key') this._say(`${def.name}\n${def.text}`);
   }
@@ -2444,7 +2483,7 @@ export class WorldScene extends Phaser.Scene {
     }
     if (this.menu) {
       this.input2.blockAttack = true;
-      if (this.menu !== 'puzzle' && this.menu !== 'lattice' && !this.gameMenu.contains(sx, sy)) this._closeMenu();
+      if (this.menu !== 'puzzle' && this.menu !== 'lattice' && this.menu !== 'mods' && !this.gameMenu.contains(sx, sy)) this._closeMenu();
       return;
     }
     if (!this.sayOpen && !this.dlg && !this.menu && this._useHeld()) { this.input2.blockAttack = true; return; }
@@ -2822,6 +2861,7 @@ export class WorldScene extends Phaser.Scene {
     if (near.boardgame) { this.openBoardGame(near.boardgame, near.id); return; }
     if (near.bastion) { this.openBastion(near.bastion); return; }
     if (near.lab) { this.openLab(near.lab); return; }
+    if (near.station === 'mods') { this.openModStation(); return; }
     if (near.action === 'toolwall' && this.mode !== 'client') {
       // One pry bar for every roommate who has no weapon yet; it goes in their hand.
       const got = [];
@@ -3713,3 +3753,5 @@ export class WorldScene extends Phaser.Scene {
       .fillStyle(0x83cffa).fillRect(x, y + 18, 52 * Math.max(0, 1 - cd / max), 2);
   }
 }
+
+const T_FULL = () => (getLang() === 'es' ? 'La mochila está llena.' : 'Your bag is full.');
