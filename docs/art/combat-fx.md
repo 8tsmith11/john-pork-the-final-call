@@ -73,8 +73,9 @@ In a busy three-player fight, anyone glancing at the screen should be able to te
    reduced-motion switch. Port the existing effects to it with the same behavior, so the rest can build on it.
 2. Melee: an owner-colored smear trailing the swing for three frames, a spark and a one-frame `bone` flash on
    the enemy that's hit, and a short local-only shake on the third hit of a combo.
-3. Hits and kills: palette sparks, and a kill burst that matches the enemy (rot colors for rot, `steel` and
-   `bone` shards for Continuity hardware). Damage numbers per rule 7.
+3. Hits and kills: use the player palette for hit sparks. Use the enemy palette for the enemy breakup
+   on defeat (rot colors for rot enemies, `steel` and `bone` shards for Continuity hardware). Damage
+   numbers follow rule 7.
 4. Shots: a muzzle flash in the owner's color, a one-frame tracer, a small puff where the shot lands.
 5. R abilities: Riff as amber sound rings with a `tub1` rim and small stun marks on what it stunned. Ping as a
    `screen2` ring, a bracket on each marked enemy for as long as the mark lasts (`mk` is already in the
@@ -100,7 +101,7 @@ In a busy three-player fight, anyone glancing at the screen should be able to te
 - **Helium sniffer and Salvage Array:** a scanline sweep from the user and a chevron pointing at what it found.
 
 **P3:** the alternate R abilities (Power Chord, Mate Rally, Focused Ping), form-stage variants, a palette
-pass on boss arenas, and the crater and debris for trevor's sealed climax.
+pass on boss arenas, and encounter effects developed with their owners.
 
 ## Engine hooks (asks for John Pork and trevor)
 

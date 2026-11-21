@@ -12,9 +12,21 @@
 //   secondWind              once per area, going down stands you back up at 30% HP
 //   decoys                  Manuel drops this many extra busts
 //   reviveHeal              HP a roommate you pick up gets on top of the usual
-// Layout: col 0-2 (branch), row 0-3 (tier); the capstone sits at col 1, row 4.
+// Layout: col 0-2 (branch), row 0-3 (tier), capstone on row 4 and discoveries on row 5.
 
 import { TIER_LEVEL } from './progression.js';
+
+export const R_ABILITIES = {
+  riff: { name: 'Riff', short: 'Riff' },
+  chord: { name: 'Power Chord', short: 'Chord' },
+  decoy: { name: 'Decoy Bust', short: 'Decoy' },
+  rally: { name: 'Mate Rally', short: 'Rally' },
+  gonman: { name: 'Gonman', short: 'Gonman' },
+  ping: { name: 'Ping', short: 'Ping' },
+  focus: { name: 'Focused Ping', short: 'Focus' },
+};
+
+const SIGNATURE_ABILITY = { trevor: 'riff', manuel: 'decoy', michael: 'ping' };
 
 export const SKILL_TREE = {
   trevor: {
@@ -33,6 +45,8 @@ export const SKILL_TREE = {
       { id: 'tr.molt', col: 2, row: 2, name: 'Molt', max: 1, req: ['tr.brine'], mods: { secondWind: 1 }, text: 'Once per area, going down stands you back up at 30% HP. Shrimp do it all the time.' },
       { id: 'tr.colony', col: 2, row: 3, name: 'Colony', max: 1, req: ['tr.molt'], mods: { reviveHeal: 30, revive: 0.3 }, text: 'Pick roommates up faster, and they get up with +30 HP.' },
       { id: 'tr.encore', col: 1, row: 4, name: 'ENCORE', max: 1, req: ['tr.noise', 'tr.stagedive', 'tr.colony'], mods: { abilityPower: 0.6, skillCd: 0.25, melee: 6 }, text: 'Capstone. The whole set at once: riff power +60%, cooldown -25%, +6 melee.' },
+      { id: 'tr.chord', col: 0, row: 5, name: R_ABILITIES.chord.name, max: 1, level: 4, reveal: { flag: 'q.armed', teaser: true }, ability: 'chord',
+        text: 'R sends a longer burst of sound where you aim. It knocks enemies back but leaves your flanks open.' },
     ],
   },
   manuel: {
@@ -51,6 +65,8 @@ export const SKILL_TREE = {
       { id: 'ma.che', col: 2, row: 2, name: 'Che, Tranquilo', max: 2, req: ['ma.shoulders'], mods: { iframes: 0.15, maxHp: 10 }, text: '+10 max HP and a longer breather after each hit.' },
       { id: 'ma.wall', col: 2, row: 3, name: 'Load-Bearing', max: 1, req: ['ma.che'], mods: { armor: 0.12, crit: 0.1 }, text: '12% less damage, and 10% of your hits crack things in half.' },
       { id: 'ma.gonman', col: 1, row: 4, name: 'THE GONMAN', max: 1, req: ['ma.army', 'ma.termo', 'ma.wall'], mods: { melee: 8, armor: 0.1, decoys: 1, abilityPower: 0.5 }, text: 'Capstone. He is the gonman now: +8 melee, 10% armor, a third bust, stronger busts.' },
+      { id: 'ma.rally', col: 1, row: 5, name: R_ABILITIES.rally.name, max: 1, level: 4, reveal: { quest: 'side.soup' }, ability: 'rally',
+        text: 'R restores stamina to you and nearby standing roommates. While transformed at stage two, R still uses Gonman.' },
     ],
   },
   michael: {
@@ -69,6 +85,8 @@ export const SKILL_TREE = {
       { id: 'mi.tango', col: 2, row: 2, name: 'Slipstream', max: 2, req: ['mi.feet'], mods: { dashHit: 6, sta: 15 }, text: 'Dash through things for 6 damage; +15 stamina per rank.' },
       { id: 'mi.call', col: 2, row: 3, name: 'She Picks Up', max: 1, req: ['mi.tango'], mods: { secondWind: 1, maxHp: 15 }, text: 'Once per area, going down stands you back up at 30%. +15 max HP.' },
       { id: 'mi.lace', col: 1, row: 4, name: 'FULL LACE', max: 1, req: ['mi.read', 'mi.deadeye', 'mi.call'], mods: { abilityPower: 0.6, markDmg: 0.4, speed: 0.08 }, text: 'Capstone. The lace stops asking permission: ping +60%, marked +40%, faster on your feet.' },
+      { id: 'mi.focus', col: 0, row: 5, name: R_ABILITIES.focus.name, max: 1, level: 4, reveal: { quest: 'side.van' }, ability: 'focus',
+        text: 'R aims one longer-lasting mark farther out. The pulse deals no damage or stagger and still bounces on a kill.' },
     ],
   },
 };
@@ -78,9 +96,27 @@ export const SKILL_TREE = {
 for (const t of Object.values(SKILL_TREE)) for (const n of t.nodes) { if (n.row === 0 && n.max === 3) n.max = 5; else if (n.row === 1 && n.max === 2) n.max = 3; }
 
 export const skillNode = (who, id) => SKILL_TREE[who]?.nodes.find((n) => n.id === id);
-/** A node opens when its prerequisites have a rank and the roommate is high enough level for its row. */
-export const skillOpen = (who, char, n) => (char.level ?? 1) >= tierLevel(n) && (n.req || []).every((r) => (char.skills?.[r] ?? 0) > 0);
-export const tierLevel = (n) => TIER_LEVEL[n.row] ?? 1;
+export function skillKnown(char, node, save) {
+  const reveal = node.reveal;
+  if (!reveal || (char.skills?.[node.id] ?? 0) > 0) return true;
+  if (reveal.quest) return save?.world?.quests?.[reveal.quest]?.done === true;
+  return save?.flags?.[reveal.flag] === true;
+}
+
+/** A node opens after discovery, its prerequisites, and its level gate. */
+export const skillOpen = (who, char, n, save) => skillKnown(char, n, save) &&
+  (char.level ?? 1) >= tierLevel(n) && (n.req || []).every((r) => (char.skills?.[r] ?? 0) > 0);
+export const tierLevel = (n) => n.level ?? TIER_LEVEL[n.row] ?? 1;
+
+export function abilityOptions(who, char) {
+  const discovered = SKILL_TREE[who]?.nodes.filter((n) => n.ability && (char.skills?.[n.id] ?? 0) > 0) ?? [];
+  return [SIGNATURE_ABILITY[who], ...discovered.map((n) => n.ability)];
+}
+
+export function selectedAbility(who, char) {
+  const ids = abilityOptions(who, char);
+  return ids.includes(char.activeAbility) ? char.activeAbility : ids[0];
+}
 
 /** Old flat skills (before the trees): refund their points so nobody loses progress. */
 export function migrateSkills(char, who) {
