@@ -58,6 +58,18 @@ const ES = {
   'R restores stamina to you and nearby standing roommates. While transformed at stage two, R still uses Gonman.': 'R te devuelve aguante a ti y a tus compañeros cercanos que estén en pie. Al transformarte en fase dos, R sigue usando Gonman.',
   'R aims one longer-lasting mark farther out. The pulse deals no damage or stagger and still bounces on a kill.': 'R coloca una marca más duradera y de mayor alcance. El pulso no daña ni aturde. La marca salta al abatir al objetivo.',
   'FAB #2 · PRINT': 'FAB #2 · IMPRIMIR', 'no change': 'sin cambio', 'Pick an entry.': 'Elige una entrada.',
+  'W/S A/D select · T tune · ENTER print · [ESC] close': 'W/S A/D elegir · T ajustar · ENTER imprimir · [ESC] cerrar',
+  Stock: 'Estándar', 'Fast cycle': 'Ciclo rápido', 'High output': 'Alta potencia', Owned: 'tienes',
+  '› PRINT': '› IMPRIMIR', 'need materials': 'faltan materiales', 'Not enough materials for that.': 'Faltan materiales.',
+  'V: use the equipped gadget': 'V: usar el dispositivo equipado', 'Gadget ready': 'Listo',
+  Recharge: 'Recarga', Effect: 'Efecto',
+  'gadget cooldown': 'recarga del dispositivo', 'gadget power': 'potencia del dispositivo',
+  'swing cooldown': 'recarga del golpe', 'shot cooldown': 'recarga del disparo', 'shot dmg': 'daño de disparo',
+  'melee damage': 'daño cuerpo a cuerpo', knock: 'empuje', 'stamina regen': 'recuperación de aguante',
+  'No reading yet. Calibrate the sniffer at Fab #1.': 'Todavía no hay lectura. Calibra el rastreador en el Fab #1.',
+  'Helium trail: light, and down. Under the plaza.': 'Rastro de helio: liviano y hacia abajo. Debajo de la plaza.',
+  'No helium trail here.': 'Aquí no hay rastro de helio.',
+  'Salvage detected:': 'Repuestos detectados:', 'No unopened salvage here.': 'No quedan contenedores de repuestos sin abrir aquí.',
   'Nothing yet. Things you see and people you talk to show up here.': 'Nada todavía. Aquí aparece lo que ves y la gente con la que hablas.',
   '› Resume': '› Continuar', '› Save now': '› Guardar ahora', '› Export save file (.jpfc.json)': '› Exportar partida (.jpfc.json)',
   '› Save and quit to title': '› Guardar y volver al título', '› Leave the game': '› Salir de la partida',
@@ -151,8 +163,9 @@ function trOne(s) {
 }
 // The stretch-tier areas (stretch.js, hub #30) join the table here, on their own line, after the tables above.
 Object.assign(ES_ALL, ES_STRETCH);
-export function tr(s) {
-  if (lang !== 'es' || typeof s !== 'string' || !s) return s;
+export function tr(s) { return trFor(s, lang); }
+export function trFor(s, language) {
+  if (language !== 'es' || typeof s !== 'string' || !s) return s;
   const whole = trOne(s); if (whole !== null) return whole;
   // Multi-line text (a name line over a pitch, an objective over its reason): translate line by line.
   if (s.includes('\n')) { const parts = s.split('\n'); const out = parts.map((l) => trOne(l) ?? l); if (out.some((l, i) => l !== parts[i])) return out.join('\n'); }
