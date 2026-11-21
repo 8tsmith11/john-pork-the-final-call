@@ -80,7 +80,7 @@ const ES = {
   'DEPARTURE BOARDS': 'TABLEROS DE SALIDAS', 'LAST DEPARTURE BOARD': 'ÚLTIMO TABLERO DE SALIDAS', "MANUEL'S PHONE": 'TELÉFONO DE MANUEL',
   "MICHAEL'S PHONE": 'TELÉFONO DE MICHAEL', "TREVOR'S PHONE": 'TELÉFONO DE TREVOR', 'ALL PHONES': 'TODOS LOS TELÉFONOS',
   'VOICE 1': 'VOZ 1', 'VOICE 2': 'VOZ 2', TV: 'TELE', "TREVOR'S MOM": 'LA MAMÁ DE TREVOR', MAILBOX: 'BUZÓN DE VOZ', 'TEXT: JOHN PORK': 'MENSAJE: JOHN PORK',
-  'click: next · ESC: skip': 'clic: siguiente · ESC: saltar', 'ESC: skip': 'ESC: saltar', 'X: skip': 'X: saltar', 'College Park, 2098': 'College Park, 2098',
+  'click: next · ESC: skip': 'clic: siguiente · ESC: saltar', 'ESC: skip': 'ESC: saltar', 'SKIN BURNED': 'PIEL QUEMADA', 'X: skip': 'X: saltar', 'College Park, 2098': 'College Park, 2098',
   'SEND $5 →': 'ENVIAR $5 →', 'Not enough money.': 'No te alcanza.',
   'HOW TO PLAY': 'CÓMO JUGAR', Controls: 'Controles',
   'WASD move · mouse aim · click: use held item': 'WASD moverse · ratón apunta · clic: usar',

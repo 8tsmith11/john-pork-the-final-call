@@ -2773,6 +2773,85 @@ test('the story beat\'s film: painted shots with known painters, and the score\'
   assert.ok(/Settings\.get\('shake'\) === false \? 0/.test(src), 'shake follows the player setting');
 });
 
+test('conductor boss (src/engine/conductor.js): relays hold the swarm up, killing one drops it and opens the conductor, shapes telegraph, the ring leaves a gap', async () => {
+  const { CONDUCTOR } = await import('../src/engine/conductor.js');
+  const arena = { id: 'cond', w: 60, h: 60, objects: [], enemies: [], spawns: [{ x: 300, y: 300 }], solid: () => false };
+  const sim = new Sim(arena, { seed: 'cond' }); sim.addPlayer('h', 'trevor'); const p = sim.players.get('h'); p.x = 300; p.y = 300;
+  sim.enemies.clear();
+  const id = sim.spawnBoss('boss.cond', { name: 'C', epithet: '', maxHp: 900, ai: 'conductor', modules: [], pool: [[], [], []], radius: 10, speed: 0, damage: 0, guard: 0 }, 480, 300);
+  const boss = sim.enemies.get(id);
+  const minions = (k) => [...sim.enemies.values()].filter((m) => m.link === id && m.kind === k);
+  const shapes = new Set(); let tells = 0;
+  for (let i = 0; i < 60 * 9; i++) { sim.step(1 / 60, new Map()); for (const e of sim.events) if (e.t === 'swarmShape') shapes.add(e.shape); tells += minions('enemy.swarmling').some((m) => m.tell) ? 1 : 0; }
+  assert.equal(minions('enemy.relay').length, CONDUCTOR.relays[0], 'its relays');
+  assert.equal(minions('enemy.swarmling').length, CONDUCTOR.drones[0], 'its drones');
+  assert.ok(shapes.has('wall') && shapes.has('fist') && tells > 0, 'it cycles shapes, each with a tell');
+  assert.ok(sim.snapshot().enemies.filter((e) => e.ln).length >= CONDUCTOR.relays[0], 'every relay shows its beam to the conductor: readable without Ping');
+  // the swarm soaks hits; kill a relay and it drops: drones go dead and the conductor takes full damage
+  const hp0 = boss.hp; sim._hurtEnemy(boss, 100, 0, 0, 'h'); assert.ok(hp0 - boss.hp <= 10, 'the swarm soaks the hit');
+  const r = minions('enemy.relay')[0]; sim._hurtEnemy(r, 999, 0, 0, 'h');
+  sim.step(1 / 60, new Map()); assert.ok(sim.events.some((e) => e.t === 'swarmDrop') || boss.dropT > 0, 'a relay down drops the swarm');
+  assert.ok(minions('enemy.swarmling').every((m) => m.dead), 'the drones fall dead');
+  const hp1 = boss.hp; sim._hurtEnemy(boss, 100, 0, 0, 'h'); assert.ok(hp1 - boss.hp >= 90, 'and the conductor takes the full hit');
+  const hurtBefore = p.hp; for (let i = 0; i < 60; i++) sim.step(1 / 60, new Map()); assert.equal(p.hp, hurtBefore, 'dead drones do nothing');
+  for (let i = 0; i < 60 * (CONDUCTOR.relayRespawn + 5); i++) sim.step(1 / 60, new Map());
+  assert.equal(minions('enemy.relay').length, CONDUCTOR.relays[phase(boss)], 'relays come back');
+  function phase(b) { const f = b.hp / b.def.hp; return f < 0.33 ? 2 : f < 0.66 ? 1 : 0; }
+  // the ring always leaves a gap: the largest angle between neighbouring drones is wider than the rest
+  boss.shape = null; boss.shapeI = 0; boss.dropT = 0; boss.hp = boss.def.hp * 0.5;   // phase 2 has the ring
+  let ringSeen = false;
+  for (let i = 0; i < 60 * 14 && !ringSeen; i++) {
+    sim.step(1 / 60, new Map());
+    if (boss.shape === 'ring' && boss.shapeT > CONDUCTOR.telegraph + 0.2) {
+      ringSeen = true;
+      const ds = minions('enemy.swarmling'), a = ds.map((m) => Math.atan2(m.y - boss.lock.y, m.x - boss.lock.x)).sort((x, y) => x - y);
+      const gaps = a.map((v, i) => (i ? v - a[i - 1] : v + Math.PI * 2 - a.at(-1)));
+      assert.ok(Math.max(...gaps) > 1.8 * Math.min(...gaps), 'the closing ring has a gap to slip out through');
+    }
+  }
+  assert.ok(ringSeen, 'the ring comes up in phase 2');
+  // it dies: its swarm goes with it
+  sim._hurtEnemy(boss, 1e6, 0, 0, 'h'); boss.dropT = 1; sim._hurtEnemy(boss, 1e6, 0, 0, 'h');
+  assert.ok(!sim.enemies.has(id) && minions('enemy.relay').length === 0 && minions('enemy.swarmling').length === 0, 'the swarm goes down with it');
+});
+
+test('molter boss (src/engine/molter.js): armour turns hits, a molt drops skins anyone can burn on a shown timer, it regrows if you\'re slow, it climbs and drops on a mark', async () => {
+  const { MOLTER } = await import('../src/engine/molter.js');
+  const arena = { id: 'molt', w: 60, h: 60, objects: [], enemies: [], spawns: [{ x: 300, y: 300 }], solid: () => false };
+  const mk = () => { const sim = new Sim(arena, { seed: 'molt' }); sim.addPlayer('h', 'trevor'); const p = sim.players.get('h'); p.x = 300; p.y = 300; sim.enemies.clear();
+    const id = sim.spawnBoss('boss.molt', { name: 'M', epithet: '', maxHp: 1200, ai: 'molter', modules: [], pool: [[], [], []], radius: 10, speed: 0, damage: 0, guard: 0 }, 360, 300);
+    return { sim, p, boss: sim.enemies.get(id), id }; };
+  const skins = (sim, id) => [...sim.enemies.values()].filter((m) => m.link === id && m.kind === 'enemy.skin');
+  // armoured at first
+  let { sim, boss, id } = mk();
+  sim.step(1 / 60, new Map()); const hp0 = boss.hp; sim._hurtEnemy(boss, 12, 0, 0, 'h');
+  assert.equal(hp0 - boss.hp, 12 - MOLTER.guard, 'armour turns most of a hit');
+  // the molt: skins drop, the counter shows on the boss bar
+  boss.moltT = 0.01; boss.climbT = 99; boss.breathT = 99; sim.step(1 / 60, new Map());
+  assert.equal(skins(sim, id).length, MOLTER.skins[0], 'its shed skins drop');
+  const bar = sim.snapshot().enemies.find((e) => e.id === id).boss.mo;
+  assert.ok(bar && bar[0] === 0 && bar[1] === MOLTER.skins[0] && bar[2] > 0, 'the boss bar shows skins burned and time left');
+  const hp1 = boss.hp; sim._hurtEnemy(boss, 12, 0, 0, 'h'); assert.equal(hp1 - boss.hp, 12, 'bare while molting: full damage');
+  // burn them all (any hit) and it stays bare
+  for (const m of skins(sim, id)) sim._hurtEnemy(m, 999, 0, 0, 'h');
+  sim.step(1 / 60, new Map()); assert.ok(!boss.armored && !boss.molt && skins(sim, id).length === 0, 'all burned: it stays bare for the phase');
+  // too slow: it regrows
+  ({ sim, boss, id } = mk()); sim.step(1 / 60, new Map()); boss.moltT = 0.01; boss.climbT = 99; boss.breathT = 99; sim.step(1 / 60, new Map());
+  sim._hurtEnemy(skins(sim, id)[0], 999, 0, 0, 'h');
+  for (let i = 0; i < 60 * (MOLTER.burnTime + 1); i++) sim.step(1 / 60, new Map());
+  assert.ok(boss.armored && skins(sim, id).length === 0, 'skins left when the timer runs out: the armour grows back');
+  // climb and drop: out of reach, a mark, then the drop where the mark ended
+  ({ sim, boss, id } = mk()); const p = sim.players.get('h'); sim.step(1 / 60, new Map()); boss.climbT = 0.01; boss.moltT = 99; boss.breathT = 99;
+  let impact = null;
+  for (let i = 0; i < 60 * 4 && !impact; i++) {
+    sim.step(1 / 60, new Map());
+    if (boss.off) { const h = boss.hp; sim._hurtEnemy(boss, 50, 0, 0, 'h'); assert.equal(boss.hp, h, 'up on the wall it can\'t be hit'); }
+    impact = sim.events.find((e) => e.t === 'impact');
+  }
+  assert.ok(impact && Math.hypot(impact.x - p.x, impact.y - p.y) < 40, 'it drops where the mark followed you');
+  assert.ok(p.hp < sim.maxHp(p), 'standing still under it hurts');
+});
+
 test('sim: a champion ally fights beside the party (bosses included), gets knocked down and up, and leaves with the map', () => {
   const sim = new Sim(rotArena(), { seed: 'champ' }); sim.addPlayer('h', 'trevor'); const h = sim.players.get('h'); h.x = 400; h.y = 400;
   sim.enemies.clear();

@@ -2988,7 +2988,8 @@ export class WorldScene extends Phaser.Scene {
     for (const e of snap.enemies || []) {
       eseen.add(e.id);
       let s = this.enemySprites.get(e.id);
-      const def = e.boss ? { radius: e.boss.r, color: e.boss.c } : ENEMIES[e.k];
+      const def = e.boss ? { radius: e.boss.r, color: e.boss.c } : (ENEMIES[e.k] ?? { radius: e.r ?? 5, color: e.c ?? 0xc0c4d0 });   // a boss's minions bring their own look
+      if (e.ln && this.shotGfx) this.shotGfx.lineStyle(1, 0xffd27f, 0.45 + 0.35 * Math.sin(this.time.now / 120)).lineBetween(e.x, e.y - 4, e.ln[0], e.ln[1] - 8);   // a relay's beam to what it holds up
       if (!s) {
         const sahurLook = e.boss?.sahur || e.boss?.lk === 'sahur';   // lk: a boss drawn with another's art (a story beat's fight)
         const anim = e.boss ? (sahurLook ? 'sahur' : e.k === 'boss.switchman' ? 'switchman' : 'warden') : e.k;
@@ -2997,6 +2998,8 @@ export class WorldScene extends Phaser.Scene {
         this.enemySprites.set(e.id, s);
       }
       s.setPosition(e.x, e.y + 3).setDepth(e.y);
+      if (e.ln) s.setAlpha(e.dd ? 0.3 : e.tl ? 0.55 + 0.45 * Math.sin(this.time.now / 60) : 1);
+      if (e.boss) { if (e.boss.off) s.setAlpha(0.25); else if (s.wasOff) s.setAlpha(1); s.wasOff = !!e.boss.off; }   // up out of reach   // a conductor's minions: dropped (dim), or a shape's tell (flicker)
       if (s.isArt) { if (e.h) s.setTintFill(0xffffff); else if (e.boss && !s.noTint) s.setTint(def.color); else s.clearTint(); }
       else s.setFillStyle(e.h ? 0xffffff : def.color);
       if (e.boss) {
@@ -3299,7 +3302,7 @@ export class WorldScene extends Phaser.Scene {
       this.bossUi.add([this.bossGfx, this.bossName]);
     }
     this.bossUi.setVisible(true);
-    this.bossName.setText(`${e.boss.name}, ${e.boss.ep}${e.boss.ph === 3 ? '  [OVERLOAD]' : ''}${e.boss.ring ? '\n☎ YOUR PHONE IS RINGING. [F] ANSWER' : ''}`);
+    this.bossName.setText(`${e.boss.name}, ${e.boss.ep}${e.boss.ph === 3 ? '  [OVERLOAD]' : ''}${e.boss.ring ? '\n☎ YOUR PHONE IS RINGING. [F] ANSWER' : ''}${e.boss.mo ? `\n${tr('SKIN BURNED')} ${e.boss.mo[0]}/${e.boss.mo[1]}  ·  ${e.boss.mo[2]}s` : ''}`);   // a molter's shed: anyone can burn it
     const w = 200, x = W / 2 - w / 2;
     if (e.boss.sahur) { this.bossGfx.clear().fillStyle(0xa0703c).fillRect(x, 30, w, 4); return; }
     this.bossGfx.clear().fillStyle(0x1c1f33).fillRect(x, 30, w, 4).fillStyle(e.boss.ph === 3 ? 0xd65db1 : 0xf2a6b8).fillRect(x, 30, Math.max(0, e.hp / e.boss.max) * w, 4);
