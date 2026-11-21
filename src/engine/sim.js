@@ -2,10 +2,12 @@
 // The host steps the Sim with every player's latest input; clients render snapshots.
 
 export const TILE = 16;
+import { newSkirmish, stepSkirmish, skirmishView } from './skirmish.js';
 import { BOSS_PATTERNS, bossPool, pickPattern, windFor, LASER, SHOCK, RAIN, LANE } from './bossPatterns.js';
 import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 import { BOSSES } from '../content/bosses.js';
+import { ARC_HITS, GADGETS, GADGET_SUPPORT_WINDOW, arcDamage, gadgetStats } from '../content/gadgets.js';
 
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.35, iframes: 0.22,
   stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
@@ -47,9 +49,10 @@ export const COMBAT = {
   shot: { cooldown: 0.5, speed: 210, damage: 8, life: 0.9, clip: 6, reload: 1.2 },   // clip/reload: Gungeon's rhythm (combat brief #8)
 };
 const HALF_W = 5, HALF_H = 4; // feet hitbox (characters are 16x24; collide at the feet)
+const COMMITTED_ATTACK = new Set(['windup', 'lunge', 'dash', 'charge']);
 
 export function emptyInput() {
-  return { mx: 0, my: 0, aim: 0, dodge: false, attack: false, fire: false, interact: false, skill: false };
+  return { mx: 0, my: 0, aim: 0, dodge: false, attack: false, fire: false, interact: false, skill: false, gadget: false };
 }
 
 export class Sim {
@@ -67,6 +70,8 @@ export class Sim {
     this.goo = [];            // the gonman's puddles: {x, y, r, ttl}
     this.events = [];         // this tick's events for rendering: hits, deaths, shots
     this.tick = 0;
+    this.playTime = 0;
+    this.gadgetRecharges = new WeakMap();
     this._nextId = 1;
     if (!opts.deferSpawn) this.spawnEnemies();
   }
@@ -106,6 +111,9 @@ export class Sim {
   spawnEnemies() {
     // Outbreak phases (src/content/outbreak.js): the host sets sim.phaseEnemies; they spawn with their own keys.
     const extra = this.phaseEnemies?.[this.map.id];
+    const sks = this.skirmishes?.[this.map.id];   // an ambient NPC fight on this map (hub #69; the host sets sim.skirmishes)
+    this.sk = sks ? newSkirmish(sks, this.seed) : null;
+    this.extraSolid = new Set(this.sk?.solid ?? []);   // props the sim adds to the map's walls (the skirmish hub)
     const all = [...(this.map.enemies || []).map((e, i) => [`${this.map.id}#${i}`, e]),
       ...(extra?.list ?? []).map(([kind, tx, ty, options], i) => [`${this.map.id}#${extra.phase}.${i}`, { ...options, kind, x: tx * TILE + 8, y: ty * TILE + 8 }]),
       ...(this.jobEnemies?.[this.map.id] ?? []).map(([key, kind, tx, ty]) => [key, { kind, x: tx * TILE + 8, y: ty * TILE + 8 }])];   // bounty board nests (src/content/jobs.js)
@@ -329,6 +337,20 @@ export class Sim {
     this.events.push({ t: 'impact', x, y, r });
   }
 
+  /** Hand control to another controller without respawning the roommate. */
+  transferPlayer(from, to) {
+    const player = this.players.get(from);
+    if (!player || this.players.has(to)) return false;
+    this.players.delete(from);
+    this.players.set(to, player);
+    player.id = to;
+    player.waitExit = null;
+    // Projectiles and companions still belong to the same roommate.
+    for (const shot of this.shots) if (shot.owner === from) shot.owner = to;
+    for (const ally of this.allies ?? []) if (ally.owner === from) ally.owner = to;
+    return true;
+  }
+
   /** Co-op doors: park a player at an exit. Returns true when every standing player is parked at it. */
   waitAtExit(id, exitId, dx, dy) {
     const p = this.players.get(id); if (!p || p.waitExit === exitId) return this.allWaiting(exitId);
@@ -344,9 +366,15 @@ export class Sim {
 
   step(dt, inputs) {
     this.tick++;
+    this.playTime += dt;
+    const skEv = this.sk ? stepSkirmish(this.sk, dt) : null;
     this.events = this._pending ?? []; this._pending = [];
+    if (skEv?.length) this.events.push(...skEv);
+    const arcHits = new Map();
     for (const p of this.players.values()) {
       const inp = p.under > 0 && !p.downed ? this._underInput(p) : inputs.get(p.id) || emptyInput();
+      if (p.screenT > 0) p.screenT = Math.max(0, p.screenT - dt);
+      if (p.relayT > 0) p.relayT = Math.max(0, p.relayT - dt);
       if (p.arriveHold) {   // the arrival grace ends the moment the movement input changes (or is released)
         if (p.arriveMx === null) { p.arriveMx = inp.mx ?? 0; p.arriveMy = inp.my ?? 0; }
         else if ((inp.mx ?? 0) !== p.arriveMx || (inp.my ?? 0) !== p.arriveMy) p.arriveHold = false;
@@ -373,7 +401,10 @@ export class Sim {
       p.staT = Math.max(0, (p.staT ?? 0) - dt);
       p.pillT = Math.max(0, (p.pillT ?? 0) - dt);   // blue pill: dodges are free while this runs
       const staMax = MOVE.stamina + (p.mods?.sta ?? 0);
-      if (p.staT <= 0) p.sta = Math.min(staMax, (p.sta ?? staMax) + MOVE.staminaRegen * Math.max(0.1, 1 + (p.mods?.staRegen ?? 0) + (p.mateT > 0 ? MATE.staRegen : 0)) * (p.rot >= 100 ? 0.5 : 1) * dt);
+      if (p.staT <= 0) {
+        const regen = Math.max(0.1, 1 + (p.mods?.staRegen ?? 0) + (p.mateT > 0 ? MATE.staRegen : 0) + (p.relayT > 0 ? 0.55 : 0));
+        p.sta = Math.min(staMax, (p.sta ?? staMax) + MOVE.staminaRegen * regen * (p.rot >= 100 ? 0.5 : 1) * dt);
+      }
       if (inp.dodge && !p.riding && p.dodgeT <= 0 && p.dodgeCd <= 0 && p.sta >= MOVE.dashCost) {
         if (!(p.pillT > 0)) { p.sta -= MOVE.dashCost; p.staT = MOVE.regenDelay; }
         // Dodge toward movement, or toward the aim if standing still.
@@ -411,7 +442,7 @@ export class Sim {
       this._moveAxis(p, p.vx * dt, 0);
       this._moveAxis(p, 0, p.vy * dt);
 
-      p.skillCd = Math.max(0, (p.skillCd ?? 0) - dt);
+      p.skillCd = Math.max(0, (p.skillCd ?? 0) - dt * (p.relayT > 0 ? 1.6 : 1));
       p.blinkCd = Math.max(0, (p.blinkCd ?? 0) - dt);
       if (p.wiredT > 0) p.wiredT = Math.max(0, p.wiredT - dt);
       if (p.mateT > 0) { p.mateT = Math.max(0, p.mateT - dt); if (p.mateT <= 0) { p.crashT = MATE.crash; this.events.push({ t: 'mateCrash', id: p.id }); } }
@@ -421,6 +452,7 @@ export class Sim {
       if (p.gonSlim && p.skillCd <= 0 && !(p.gonT > 0)) p.gonSlim = false;
       const busy = p.gonT > 0;                                       // the gonman is occupied
       if (inp.skill && !p.riding && !p.playing && !busy && p.skillCd <= 0) this._ability(p);
+      if (inp.gadget && !p.riding && !p.playing && !(p.gonT > 0)) this._useGadget(p, arcHits);
       // Terraria-style: the attack button uses what's in hand. A melee weapon swings, a gun fires, anything
       // else is used by the scene (consumables etc.). No weapon in hand, no punch.
       const held = p.held ?? 'melee';
@@ -433,6 +465,13 @@ export class Sim {
       const toFacing = (x, y) => (Math.abs(x) > Math.abs(y) ? (x > 0 ? 'right' : 'left') : (y > 0 ? 'down' : 'up'));
       if (inp.fire && p.mods?.gun) p.facing = toFacing(Math.cos(p.aim), Math.sin(p.aim));
       else if (p.moving) p.facing = toFacing(p.vx, p.vy);
+    }
+    // Two arcs in one simulation step can draw their own paths, but only the strongest hit lands.
+    for (const [enemy, hit] of arcHits) {
+      if (!this.enemies.has(enemy.id)) continue;
+      const { kx, ky } = enemy;
+      this._hurtEnemy(enemy, hit.damage, 0, 0, hit.by);
+      enemy.kx = kx; enemy.ky = ky;
     }
     this._afterPlayers(dt);
   }
@@ -551,32 +590,52 @@ export class Sim {
     this.hazards = this.hazards.filter((h) => h.ttl > 0);
   }
 
-  // Signature abilities (R). Trevor: Riff · Manuel: Decoy Bust · Michael: Ping.
+  // R uses the equipped ability. Manuel's stage-two transformation overrides his normal selection.
   _ability(p) {
     const ap = 1 + (p.mods?.abilityPower ?? 0), cdk = 1 - (p.mods?.skillCd ?? 0);
     if (p.character === 'trevor') {
-      p.skillCd = 6 * cdk;
-      const r = 46 * Math.min(1.8, Math.sqrt(ap));
+      const chord = p.activeAbility === 'chord', halfArc = Math.PI / 5;
+      p.skillCd = p.skillMaxCd = (chord ? 8 : 6) * cdk;
+      const r = (chord ? 80 : 46) * Math.min(1.8, Math.sqrt(ap));
+      const ax = Math.cos(p.aim), ay = Math.sin(p.aim), cone = Math.cos(halfArc);
       for (const e of this.enemies.values()) {
         const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
-        if (d > r) continue;
+        if (d > r || (chord && (dx * ax + dy * ay < d * cone || !this._abilityPathClear(p, e)))) continue;
         this._hurtEnemy(e, Math.round(6 * ap), (dx / (d || 1)) * 260 * Math.min(1.6, ap), (dy / (d || 1)) * 260 * Math.min(1.6, ap), p.id);
         if (this.enemies.has(e.id)) { e.hurtT = (e.boss ? 0.3 : 0.9) * Math.min(2.2, ap); if (p.mods?.markDmg) e.marked = Math.max(e.marked ?? 0, 3); }   // stunned (and rattled)
       }
-      this.events.push({ t: 'riff', id: p.id, x: p.x, y: p.y, r });
+      this.events.push(chord ? { t: 'chord', id: p.id, x: p.x, y: p.y, r, aim: p.aim, halfArc }
+        : { t: 'riff', id: p.id, x: p.x, y: p.y, r });
     } else if (p.character === 'manuel' && p.morphed && (p.morphStage ?? 0) >= 2) {
-      p.skillCd = GONMAN.cd * cdk; p.gonT = GONMAN.windup; p.gonAim = p.aim;   // the gonman, stage two
+      p.skillCd = p.skillMaxCd = GONMAN.cd * cdk; p.gonT = GONMAN.windup; p.gonAim = p.aim;
       this.events.push({ t: 'gonman', id: p.id, ms: GONMAN.windup * 1000 });
+    } else if (p.character === 'manuel' && p.activeAbility === 'rally') {
+      p.skillCd = p.skillMaxCd = 12 * cdk;
+      const r = 64, restore = Math.round(30 * Math.min(1.5, ap));
+      for (const ally of this.players.values()) {
+        if (ally.downed || ally.under > 0 || Math.hypot(ally.x - p.x, ally.y - p.y) > r) continue;
+        ally.sta = Math.min(MOVE.stamina + (ally.mods?.sta ?? 0), ally.sta + restore);
+      }
+      this.events.push({ t: 'rally', id: p.id, x: p.x, y: p.y, r });
     } else if (p.character === 'manuel') {
-      p.skillCd = 10 * cdk;
+      p.skillCd = p.skillMaxCd = 10 * cdk;
       const n = 1 + (p.mods?.decoys ?? 0);
       for (let i = 0; i < n; i++) {
         const a = p.aim + (i - (n - 1) / 2) * 0.9;
         this.decoys.push({ x: p.x + Math.cos(a) * 14, y: p.y + Math.sin(a) * 14, ttl: 6 * ap, hp: Math.round(40 * ap), mhp: Math.round(40 * ap) });
       }
       this.events.push({ t: 'decoy', id: p.id });
+    } else if (p.character === 'michael' && p.activeAbility === 'focus') {
+      p.skillCd = p.skillMaxCd = 7 * cdk;
+      const ax = Math.cos(p.aim), ay = Math.sin(p.aim);
+      const best = this._aimedTarget(p, 210 * Math.min(1.8, ap), Math.PI / 10);
+      if (best) {
+        best.marked = Math.max(best.marked ?? 0, 8 * ap);
+        best.markedBy = p.character;
+      }
+      this.events.push({ t: 'focusPing', x: p.x, y: p.y, x2: best?.x ?? p.x + 48 * ax, y2: best?.y ?? p.y + 48 * ay });
     } else {
-      p.skillCd = PING.cd * cdk;
+      p.skillCd = p.skillMaxCd = PING.cd * cdk;
       const r = PING.r * Math.min(1.8, ap), hit = [];
       for (const e of this.enemies.values()) if (Math.hypot(e.x - p.x, e.y - p.y) < r) hit.push(e);
       for (const e of hit) {
@@ -589,6 +648,138 @@ export class Sim {
       }
       this.events.push({ t: 'ping', id: p.id, x: p.x, y: p.y, r, n: hit.length });
     }
+  }
+
+  _aimedTarget(p, range, halfArc) {
+    const ax = Math.cos(p.aim), ay = Math.sin(p.aim), cone = Math.cos(halfArc);
+    let best;
+    for (const e of this.enemies.values()) {
+      const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
+      if (d > range || dx * ax + dy * ay < d * cone || !this._abilityPathClear(p, e)) continue;
+      best = e;
+      range = d;
+    }
+    return best;
+  }
+
+  _gadgetRecharge(p) {
+    const model = p.gadgetTimers?.[p.gadget], item = this.gadgetRecharges.get(p.gadgetRoll);
+    const latest = (item?.until ?? 0) > (model?.until ?? 0) ? item : model;
+    return latest?.until > this.playTime ? latest : null;
+  }
+
+  _gadgetSnapshot(p) {
+    if (!p.gadget) return {};
+    const recharge = this._gadgetRecharge(p);
+    if (!recharge) return { gadget: p.gadget };
+    return { gadget: p.gadget, gadgetCd: Math.ceil((recharge.until - this.playTime) * 10) / 10, gadgetMaxCd: recharge.total };
+  }
+
+  _useGadget(p, arcHits) {
+    const def = GADGETS[p.gadget];
+    if (!def || p.downed || p.under > 0) return;
+    if (!def.cooldown) {
+      this.events.push({ t: 'gadgetScan', id: p.id, kind: def.kind });
+      return;
+    }
+    if (this._gadgetRecharge(p)) return;
+    const { cooldown, power } = gadgetStats(def, p.mods);
+    const recharge = { until: this.playTime + cooldown, total: cooldown };
+    (p.gadgetTimers ??= Object.create(null))[p.gadget] = recharge;
+    // Recharge follows the exact build's roll when it is unworn, dropped or picked up.
+    if (p.gadgetRoll) this.gadgetRecharges.set(p.gadgetRoll, recharge);
+    const r = def.range;
+    const ev = { t: 'gadgetCast', kind: def.kind, id: p.id, x: p.x, y: p.y, r, power };
+    switch (def.kind) {
+      case 'screen':
+        p.screenT = Math.max(p.screenT ?? 0, power);
+        break;
+      case 'vector':
+        ev.shove = this._gadgetLunge(p, power);
+        ev.points = [[p.x, p.y]];
+        break;
+      case 'tether': {
+        const target = this._aimedTarget(p, r, Math.PI / 7);
+        if (target) {
+          if (!target.sahur) target.slowT = Math.max(target.slowT ?? 0, power * (target.boss ? 0.4 : 1));
+          ev.points = [[target.x, target.y]];
+        }
+        break;
+      }
+      case 'arc':
+        ev.points = this._gadgetArc(p, r, power, arcHits);
+        break;
+      default:
+        for (const ally of this.players.values()) {
+          if (ally.downed || ally.under > 0 || Math.hypot(ally.x - p.x, ally.y - p.y) > r || !this._abilityPathClear(p, ally)) continue;
+          if (def.kind === 'relay') ally.relayT = Math.max(ally.relayT ?? 0, power);
+          if (def.kind === 'patch' || def.kind === 'ground') this._gadgetSupport(ally, def.kind, power);
+        }
+        break;
+    }
+    this.events.push(ev);
+  }
+
+  _gadgetLunge(p, distance) {
+    const steps = Math.ceil(distance / 4), ux = Math.cos(p.aim), uy = Math.sin(p.aim);
+    const dx = ux * distance / steps, dy = uy * distance / steps;
+    const x0 = p.x, y0 = p.y;
+    let contact, shove;
+    for (let i = 0; i < steps; i++) {
+      if (this._hits(p.x + dx, p.y + dy)) break;
+      this._moveAxis(p, dx, dy);
+      if (contact) continue;
+      contact = [...this.enemies.values()].find((e) => (e.x - x0) * ux + (e.y - y0) * uy > 0
+        && Math.hypot(e.x - p.x, e.y - p.y) <= this._def(e).radius + HALF_W && this._abilityPathClear(p, e));
+      if (contact && !contact.boss && !contact.sahur && !(contact.poiseT > 0) && !COMMITTED_ATTACK.has(contact.st)) {
+        // Displace one enemy without damage, flinch, or enough speed to slam it into a wall.
+        contact.kx = ux * 120; contact.ky = uy * 120;
+        shove = [contact.x, contact.y];
+      }
+    }
+    return shove;
+  }
+
+  _gadgetSupport(ally, kind, power) {
+    const limits = (ally.gadgetSupport ??= {}), previous = limits[kind];
+    const strength = kind === 'patch' ? Math.round(power) : power;
+    const best = previous?.until > this.playTime ? previous.strength : 0;
+    const gain = Math.max(0, strength - best);
+    limits[kind] = { until: this.playTime + GADGET_SUPPORT_WINDOW, strength: Math.max(strength, best) };
+    if (kind === 'patch') this.heal(ally.id, gain);
+    else this.setRot(ally.id, (ally.rot ?? 0) - gain);
+  }
+
+  _gadgetArc(p, range, power, arcHits) {
+    const targets = new Set(), points = [];
+    let next = this._aimedTarget(p, range, Math.PI / 7);
+    for (let i = 0; i < ARC_HITS && next; i++) {
+      const hit = next;
+      targets.add(hit.id);
+      points.push([hit.x, hit.y]);
+      const damage = arcDamage(power, i);
+      if (damage > (arcHits.get(hit)?.damage ?? 0)) arcHits.set(hit, { damage, by: p.id });
+      let nearest = 52;
+      next = null;
+      for (const e of this.enemies.values()) {
+        if (targets.has(e.id)) continue;
+        const d = Math.hypot(e.x - hit.x, e.y - hit.y);
+        if (d >= nearest || !this._abilityPathClear(hit, e)) continue;
+        nearest = d;
+        next = e;
+      }
+    }
+    return points;
+  }
+
+  // Aimed abilities stop at walls and closed doors.
+  _abilityPathClear(from, to) {
+    const dx = to.x - from.x, dy = to.y - from.y, steps = Math.ceil(Math.hypot(dx, dy) / (TILE / 2));
+    for (let i = 1; i < steps; i++) {
+      const x = from.x + dx * i / steps, y = from.y + dy * i / steps;
+      if (this.map.solid(Math.floor(x / TILE), Math.floor(y / TILE))) return false;
+    }
+    return true;
   }
 
   /** The release: globs in a fan toward where he was aiming. Each one slows what it lands on and leaves a puddle. */
@@ -612,9 +803,10 @@ export class Sim {
 
   _melee(p) {
     const w = p.mods?.swing, base = w ? { ...COMBAT.melee, ...w, arc: Math.PI * (w.arc ?? 0.6) } : COMBAT.melee;
+    const interval = Math.max(0.12, base.cooldown + (p.mods?.meleeCd ?? 0));
     // Combo: swings inside the window chain 1-2-3; the third is a heavy finisher.
     const now = this.tick * (1 / 60);
-    p.combo = now - (p.lastSwingAt ?? -9) <= base.cooldown + FEEL.comboWindow ? ((p.combo ?? 0) % 3) + 1 : 1;
+    p.combo = now - (p.lastSwingAt ?? -9) <= interval + FEEL.comboWindow ? ((p.combo ?? 0) % 3) + 1 : 1;
     p.lastSwingAt = now;
     const fin = p.combo === 3;
     // Dash-strike (Hades, Hyper Light Drifter): attack right out of a dodge for a fast lunging stab.
@@ -623,7 +815,7 @@ export class Sim {
     let m = fin ? { ...base, damage: base.damage * FEEL.finisherDmg, knockback: base.knockback * FEEL.finisherKnock, arc: base.arc * FEEL.finisherArc } : base;
     if (dash) m = { ...m, damage: m.damage * FEEL.dashDmg, range: m.range + FEEL.dashRange, arc: m.arc * 0.7 };
     const focus = p.focusT > 0; if (focus) p.focusT = 0;
-    p.meleeCd = m.cooldown * (fin ? 1.25 : 1); p.swingT = 0.2;   // long enough for both attack frames (12 fps)
+    p.meleeCd = interval * (fin ? 1.25 : 1); p.swingT = 0.2;   // long enough for both attack frames (12 fps)
     this.events.push({ t: 'swing', id: p.id, a: p.aim, r: m.range, arc: m.arc, combo: p.combo, weapon: p.mods?.weaponId });
     // Deflect: enemy shots inside the swing go back the way they came, as the player's.
     for (const s of this.shots) {
@@ -1113,6 +1305,11 @@ export class Sim {
         }
       } else {
         for (const p of this.players.values()) {
+          if (!p.downed && p.screenT > 0 && !s.noDeflect && Math.hypot(p.x - s.x, p.y - 6 - s.y) < 13) {
+            this.events.push({ t: 'gadgetBlock', x: s.x, y: s.y });
+            hit = true;
+            break;
+          }
           if (!p.downed && Math.hypot(p.x - s.x, p.y - 6 - s.y) < 7 - this._small(p)) { this._hurtPlayer(p, s.dmg, s.rot ?? 0); hit = true; break; }
         }
       }
@@ -1184,7 +1381,7 @@ export class Sim {
   _hitsBox(x, y, hw, hh) {
     const x0 = Math.floor((x - hw) / TILE), x1 = Math.floor((x + hw - 0.01) / TILE);
     const y0 = Math.floor((y - hh) / TILE), y1 = Math.floor((y + hh - 0.01) / TILE);
-    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.map.solid(tx, ty)) return true;
+    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.map.solid(tx, ty) || this.extraSolid?.has(`${tx},${ty}`)) return true;
     return false;
   }
 
@@ -1217,7 +1414,7 @@ export class Sim {
   _hits(x, y) {
     const x0 = Math.floor((x - HALF_W) / TILE), x1 = Math.floor((x + HALF_W - 0.01) / TILE);
     const y0 = Math.floor((y - HALF_H) / TILE), y1 = Math.floor((y + HALF_H - 0.01) / TILE);
-    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.map.solid(tx, ty)) return true;
+    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.map.solid(tx, ty) || this.extraSolid?.has(`${tx},${ty}`)) return true;
     return false;
   }
 
@@ -1226,6 +1423,9 @@ export class Sim {
     return {
       tick: this.tick,
       players: [...this.players.values()].map((p) => ({
+        ...(p.skillCd > 0 && p.skillMaxCd ? { skMax: p.skillMaxCd } : {}),
+        ...this._gadgetSnapshot(p),
+        ...(p.screenT > 0 ? { screen: true } : {}),
         id: p.id, c: p.character, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10,
         f: p.facing, m: p.moving, d: p.dodgeT > 0, a: Math.round(p.aim * 100) / 100,
         hp: Math.round(p.hp), mhp: this.maxHp(p), rot: Math.round((p.rot ?? 0) * 10) / 10, weapon: p.mods.weaponId ?? null, am: p.ammo ?? null, rl: p.reloadT > 0 ? Math.round(p.reloadT * 10) / 10 : 0, st: Math.round(p.sta ?? 100), sk: Math.round((p.skillCd ?? 0) * 10) / 10, w: p.waitExit || null, ri: !!p.riding, gr: !!(p.riding && p.grinding), bat: Math.round(p.battery ?? 100), dn: p.downed, rv: Math.round(p.reviveT * 10) / 10, sw: p.swingT > 0, iv: p.iframes > 0, mo: !!p.morphed, ...(p.gonSlim ? { gs: Math.max(0, Math.min(1, Math.round((1 - p.skillCd / (GONMAN.cd * (1 - (p.mods?.skillCd ?? 0)))) * 100) / 100)) } : {}), pl: p.playing?.song ?? null, in: p.playing?.instrument ?? null, zz: p.sleepT > 0, wd: p.wiredT > 0, un: p.under > 0 ? Math.ceil(p.under) : 0, pu: p.under > 0 ? Math.round(((p.pullT ?? 0) / UNDER.pullTime) * 100) / 100 : 0, mt: Math.ceil(p.mateT ?? 0), cr: p.crashT > 0,
@@ -1237,6 +1437,7 @@ export class Sim {
         ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, ...(e.def.look ? { lk: e.def.look } : {}), la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
       goo: this.goo.map((g) => ({ x: Math.round(g.x), y: Math.round(g.y), r: g.r, t: Math.round(g.ttl * 10) / 10 })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
+      sk: skirmishView(this.sk),
       allies: (this.allies ?? []).map((a) => ({ x: Math.round(a.x), y: Math.round(a.y), hp: a.hp, mhp: a.maxHp, dn: a.down > 0, st: a.st, ...(a.kind ? { k: a.kind, lk: a.look } : {}) })),
       hazards: this.hazards.map((h) => ({ x: Math.round(h.x), y: Math.round(h.y), r: h.r, t: Math.round(h.ttl * 10) / 10 })),
       ring: [...this.enemies.values()].find((e) => e.ringR != null)?.ringR ?? null,
