@@ -830,7 +830,8 @@ export class WorldScene extends Phaser.Scene {
     if (a.snap.map !== b.snap.map) return b.snap;
     const lerp = (list, prevList) => {
       const prev = new Map(prevList.map((p) => [p.id, p]));
-      return list.map((p) => { const q = prev.get(p.id); return q ? { ...p, x: q.x + (p.x - q.x) * k, y: q.y + (p.y - q.y) * k } : p; });
+      // a jump of more than four tiles is a teleport (a wrap edge, a respawn): show it, don't slide across the map
+      return list.map((p) => { const q = prev.get(p.id); return q && Math.abs(p.x - q.x) < 64 && Math.abs(p.y - q.y) < 64 ? { ...p, x: q.x + (p.x - q.x) * k, y: q.y + (p.y - q.y) * k } : p; });
     };
     return { ...b.snap, players: lerp(b.snap.players, a.snap.players), enemies: lerp(b.snap.enemies, a.snap.enemies) };
   }
@@ -2908,8 +2909,20 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- rendering ----------
+  // The inside rules on screen (src/engine/inside.js): the beat as a pulse over the floor, the live corrupted tiles,
+  // and the terminal the party will come back to. Drawn from the snapshot, so guests see the host's beat.
+  _drawInside(ins) {
+    const g = (this.insideGfx ??= this.add.graphics().setDepth(2.4)).clear();
+    if (!ins) return;
+    const v = this.cameras.main.worldView, fade = (1 - ins.ph) ** 2;
+    g.fillStyle(0x3fd0d6, 0.10 * fade).fillRect(v.x, v.y, v.width, v.height);
+    for (const [x, y] of ins.live) g.fillStyle(0xd417c8, 0.28 + 0.12 * fade).fillRect(x * TILE, y * TILE, TILE, TILE).lineStyle(1, 0xff5ef0, 0.7).strokeRect(x * TILE + 0.5, y * TILE + 0.5, TILE - 1, TILE - 1);
+    if (ins.cp) g.lineStyle(1, 0x3fd0d6, 0.5 + 0.4 * fade).strokeRect(ins.cp.x - 6, ins.cp.y - 6, 12, 12);
+  }
+
   _render(snap) {
     const seen = new Set();
+    this._drawInside(snap.ins);
     const partyHealth = this.partyHealthGfx.clear();
     this._reviveCleared = false; if (!snap.players.some((p) => p.dn)) this.reviveGfx?.clear();
     (this.charShadow ??= this.add.graphics().setDepth(3)).clear();
