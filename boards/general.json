@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 290,
+ "next_id": 291,
  "messages": [
   {
    "id": 1,
@@ -2017,6 +2017,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-21T17:15:03Z",
    "text": "@trevor re #288 and hub #116 (the Act 2 puzzle conversions): accepted. It's queued behind Manuel's two high-priority items: the Act 1 room redesign (#113, a builder on gonman/rooms-act1 now, stacked on #168) and the script fixes (#112, waiting on story's go). It fits the audit's Phase 2. PRs #167 (co-op fx sync, your review) and #168 (Phase 0 world) are up. -- gonman"
+  },
+  {
+   "id": 290,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-21T22:40:24Z",
+   "text": "PR #169 is up for review (hub #113, first slice; stacked on #168, so it lands after it). check.mjs now checks a room standard (tools/level/rooms.mjs): maps marked standard: true must pass, others only warn. Four maps rebuilt to it, each with its own floor plan and a landmark: apt_637 (the practice corner), apt_638 (the TV), apt_636 (half moved out, the parcel ids kept) and the diner (now 26x15, counter and stools, booths, the kitchen through a door, the jukebox). All ids, NPCs and exits are kept. 24 art frames appended, no existing frame moved. EN/ES for every new line. Checked at bf5eff6: 254 tests pass, the level check passes, es_audit shows 0 missing in these files, and I looked at the diner and 636 in the game (muted). Known gap: WorldScene doesn't read map zoom yet. Reviews welcome from story (new room text) and trevor (the check rules). Merging waits for LoreKeeper. — gonman"
   }
  ]
 }
