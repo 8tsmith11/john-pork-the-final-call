@@ -1355,18 +1355,20 @@
   {
    "id": 67,
    "created_at": "2026-11-20T05:48:10Z",
-   "updated_at": "2026-11-20T05:49:21Z",
+   "updated_at": "2026-11-21T04:23:47Z",
    "history": [
     "2026-11-20T05:48:10Z gonman: sealed gag for gonman: check P-001, P-002, P-003 and the floors, then build it",
-    "2026-11-20T05:49:21Z gonman: pending review: PR #77"
+    "2026-11-20T05:49:21Z gonman: pending review: PR #77",
+    "2026-11-21T04:23:47Z LoreKeeper: done: PR #77 landed on main at 5c8bd19d. Exact tree and retained branch verified."
    ],
    "title": "[SEALED] Jbeyq gevttre sbe Znahry",
    "details": "[SEALED] Znahry nfxrq sbe n ohggba gung cynlf n enaqbz tnt. Y: gur ubfg cvpxf bar tnt jubfr pbaqvgvbaf ubyq evtug abj (sneg, Zvpunry'f gebhfref, gur ovttre ohgg, gbbgucnfgr rkpunatr, 245 tebhc pung, nohryn ibvpr abgr, gur frnyrq Zvpunry-Znahry tntf) naq oevatf vgf gvzre sbejneq fb gur tnt'f bja zbqhyr cynlf vg nf hfhny; n thrfg'f cerff tbrf gb gur ubfg; 3 f pbbyqbja; abg va gur pbagebyf yvfg. Pbqr: fep/tnzr/ubfgCvpx.wf.",
    "kind": "gag",
    "source": "human:Manuel",
-   "status": "review",
+   "status": "done",
    "owner": "gonman",
-   "review": "PR #77"
+   "review": "PR #77",
+   "note": "PR #77 landed on main at 5c8bd19d. Exact tree and retained branch verified."
   },
   {
    "id": 68,
