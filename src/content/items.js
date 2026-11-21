@@ -3,6 +3,7 @@
 import { FISH } from './fish.js';
 import { SKILL_TREE } from './skills.js';
 import { abilityModsFor } from './abilities.js';
+import { GADGETS } from './gadgets.js';
 import { HOTBAR } from '../engine/save/schema.js';
 
 // Equipment slots (D-014, Michael). Armor points come from the four armor pieces; gear goes on top.
@@ -21,7 +22,6 @@ export const ITEMS = {
   'item.wooden_bat':   { name: 'Wooden bat', slot: 'weapon', analog: true, swing: { range: 20, arc: 0.7, cooldown: 0.45, damage: 12, knockback: 160 }, mods: { melee: 6 }, text: 'Ash wood. Coderot slides off it.' },
   'item.fab_launcher': { name: 'Fab launcher', slot: 'ranged', mods: { gun: 1, shot: 4, shotCd: -0.12 }, text: 'Printed at 3 a.m. Fires sintered pellets.' },
   'item.mesh_vest':    { name: 'Printed mesh vest', slot: 'chestplate', mods: { armor: 0.2 }, text: 'Hex lattice. Takes a fifth of the hurt.' },
-  'item.sniffer':      { name: 'Helium sniffer', slot: 'gadget', mods: {}, text: 'Follows the lightest thing in the world.' },
   'item.charm_1901':   { name: 'Rollover charm', slot: 'charm', analog: true, mods: { armor: 0.12 }, text: 'A brass clock hand on a cord, stopped at 3:14. Takes the edge off whatever hits you.' },
   'item.pork_pin':     { name: 'Porcelain John Pork pin', slot: 'charm', mods: { melee: 3, shot: 3 }, text: 'Three busts looked at the flag at once and this was on the floor afterwards. Warm to the touch.' },
   // Melee weapons carry a `swing` (range px, arc as a fraction of a half-turn, cooldown s, damage, knockback);
@@ -34,6 +34,10 @@ export const ITEMS = {
   'item.scattergun':   { name: 'Fab scattergun', slot: 'ranged', gun: { cooldown: 0.85, damage: 6, speed: 200, life: 0.38, pellets: 5, spread: 0.45, clip: 2, reload: 1.4 }, mods: { gun: 1 }, text: 'Five pellets in a fan, short range. Printed from coderot gel, which may be why it hums.' },
   'item.mate_flask':   { name: 'Mate thermos', slot: 'consumable', heal: 45, mateKick: true, text: 'Manuel would want you to have it. He would also want it back. Heals, then a caffeine kick: faster legs and quicker stamina for 45 seconds, then a few slow seconds when it wears off.' },
 };
+
+for (const [id, gadget] of Object.entries(GADGETS)) {
+  ITEMS[id] = { name: gadget.name, slot: 'gadget', text: gadget.text };
+}
 
 Object.assign(ITEMS, FISH);   // catches are items too
 
@@ -168,6 +172,14 @@ export const RECIPES = [
   { item: 'item.mate_flask',   cost: { 'item.mat_plastic': 2, 'item.mat_scrap': 1 } },
   { item: 'item.wooden_bat', roll: 'melee', cost: { 'item.mat_scrap': 3, 'item.mat_cloth': 1 } },
   { item: 'item.sniffer',      cost: { 'item.mat_circuit': 1, 'item.mat_wire': 2 } },
+  { item: 'item.salvage_array', cost: { 'item.mat_circuit': 1, 'item.mat_scrap': 2 } },
+  { item: 'item.phase_screen', roll: 'gadget', cost: { 'item.mat_circuit': 1, 'item.mat_wire': 2, 'item.mat_plastic': 1 } },
+  { item: 'item.vector_actuator', roll: 'gadget', cost: { 'item.mat_scrap': 2, 'item.mat_cell': 1, 'item.mat_wire': 1 } },
+  { item: 'item.arc_splicer', roll: 'gadget', cost: { 'item.mat_cell': 1, 'item.mat_wire': 2, 'item.mat_gel': 1 } },
+  { item: 'item.phase_tether', roll: 'gadget', cost: { 'item.mat_circuit': 1, 'item.mat_gel': 2, 'item.mat_wire': 1 } },
+  { item: 'item.overclock_relay', roll: 'gadget', cost: { 'item.mat_cell': 1, 'item.mat_wire': 1, 'item.mat_scrap': 2 } },
+  { item: 'item.patch_mesh', roll: 'gadget', cost: { 'item.mat_circuit': 1, 'item.mat_cloth': 2, 'item.mat_plastic': 1 } },
+  { item: 'item.ground_loop', roll: 'gadget', cost: { 'item.mat_wire': 2, 'item.mat_scrap': 2, 'item.mat_gel': 1 } },
   { item: 'item.mesh_vest', roll: 'armor', cost: { 'item.mat_plastic': 4, 'item.mat_cloth': 3, 'item.mat_wire': 1 } },
   { item: 'item.rebar', roll: 'melee', cost: { 'item.mat_scrap': 4 } },
   { item: 'item.nail_gun', roll: 'gun', cost: { 'item.mat_scrap': 3, 'item.mat_circuit': 1, 'item.mat_cell': 1 } },
@@ -238,7 +250,7 @@ export const SHOPS = {
       { item: 'item.welding_goggles', price: 16 },
       { item: 'item.mat_glass', price: 2 },
     ] },
-  coop: { title: 'GREENBELT CO-OP', lines: ['[scaffold] Prices set by vote.'],   // act2_more.js scaffold
+  coop: { title: 'GREENBELT CO-OP', lines: ['Prices set by vote in 2071. The next vote is pending.'],   // act2_more.js (polished, hub #30); Spanish in es-act2.js
     stock: [
       { item: 'item.energy_bar', price: 4 },
       { item: 'item.caffeine', price: 10 },
