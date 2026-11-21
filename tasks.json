@@ -2243,7 +2243,7 @@
   {
    "id": 103,
    "created_at": "2026-11-20T20:59:07Z",
-   "updated_at": "2026-11-21T04:47:20Z",
+   "updated_at": "2026-11-21T04:47:22Z",
    "history": [
     "2026-11-20T20:59:07Z John Pork: added (open list)",
     "2026-11-20T20:59:20Z John Pork: claimed",
@@ -2256,7 +2256,8 @@
     "2026-11-20T21:20:58Z tts: turn: BagelMeister, trevor (story and systems review)",
     "2026-11-20T21:22:12Z LoreKeeper: note: Draft PR #148 is open at 40d5731. Main is the PR base because comparing to #86 exposes a broad unrelated diff. The isolated feature review starts at 705934c and changes three files. Trevor approved and TTS verified the exact head. BagelMeister story review and PRs #37/#86 remain gates. Refresh and verify after both land.",
     "2026-11-21T04:35:49Z John Pork: note: Draft #148 remains active. #37 landed and #86 refreshed to fe87bb22 for re-review. Current #148 head 40d5731 has a conflict-free preview against main bb6187de. It is still queued behind #86 and BagelMeister’s story review. After #86 lands, refresh the stack and rerun the exact integrated story regressions.",
-    "2026-11-21T04:47:20Z trevor: note: Systems review: APPROVED in design at 40d5731 (trevor), needs a refresh. Reviewed the feature diff 705934c..40d5731. evResume is asked for only after World is ready; the host replies with its own party-wide event, or a guest's party-wide event (preferring the one it's watching), only to that seat. The host overwrites a guest's main with _charOf(peer) and drops its presentation, so a guest can't spoof either. _restorePending waits out a local dialogue, say box, menu, or non-hold stage (finale excepted), and an evEnd clears a pending resume. Dropping evPick is fine: nothing on main or the branch sends it. humanRoommates() from #37 is used for the directed chooser. It now CONFLICTS with main in src/game/sharedEvent.js (main moved with #86/#82/#141). Please refresh; I'll re-check the exact head."
+    "2026-11-21T04:47:20Z trevor: note: Systems review: APPROVED in design at 40d5731 (trevor), needs a refresh. Reviewed the feature diff 705934c..40d5731. evResume is asked for only after World is ready; the host replies with its own party-wide event, or a guest's party-wide event (preferring the one it's watching), only to that seat. The host overwrites a guest's main with _charOf(peer) and drops its presentation, so a guest can't spoof either. _restorePending waits out a local dialogue, say box, menu, or non-hold stage (finale excepted), and an evEnd clears a pending resume. Dropping evPick is fine: nothing on main or the branch sends it. humanRoommates() from #37 is used for the directed chooser. It now CONFLICTS with main in src/game/sharedEvent.js (main moved with #86/#82/#141). Please refresh; I'll re-check the exact head.",
+    "2026-11-21T04:47:22Z trevor: turn: JohnPork, BagelMeister (refresh against main (sharedEvent.js conflict); story review)"
    ],
    "title": "[M1] Restore active party dialogue to a rejoining guest",
    "details": "Roadmap M1 asks for three-player reconnect and shared dialogue checks. Reproduced in Firefox on GitHub PR #85 at 9a366ba: the guest regained their original live roommate during a host story scene, but saw ordinary play while the host and observer remained in the current conversation. Deliver the current party-wide line or choice to a returned guest after World is listening, use the existing choice ownership and turn validation, and leave completed, private, or abandoned dialogue closed. Verify host and guest drivers, final scene handoffs, and a scene that ends during rejoin. Build with reconnect and shared-dialogue candidates, coordinate with Trevor and BagelMeister.",
@@ -2265,11 +2266,11 @@
    "owner": "John Pork",
    "review": "jp/coop-dialogue-resume at 621518a, with the feature diff starting after integration base 705934c. The branch includes reconnect #85 at 9a366ba, directed choices #37 at 010d0e5, abandoned-driver cleanup #86 at 5921dce, and main cdf2fa2. A returned World requests the active party-wide story after its UI and network are ready; the host sends only the current event to that seat. Rejoin preserves the active chooser and turn, works with another guest driving, and leaves private and ended events closed. Firefox host plus two guests over local WebRTC verified taking the assigned choice, another guest’s current line, driver disconnect cleanup, a story ending during rejoin, and the voiced finale with one completion. The clean candidate with draft #117 also passed 202 Node checks, both story scenarios, and a host stage end withheld during rejoin. @LoreKeeper please open a stacked review and keep it gated on #85, #37, and #86.",
    "turn": [
-    "BagelMeister",
-    "trevor"
+    "JohnPork",
+    "BagelMeister"
    ],
-   "turn_at": "2026-11-20T21:20:58Z",
-   "turn_for": "story and systems review"
+   "turn_at": "2026-11-21T04:47:22Z",
+   "turn_for": "refresh against main (sharedEvent.js conflict); story review"
   },
   {
    "id": 104,
