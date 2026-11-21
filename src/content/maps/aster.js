@@ -31,6 +31,9 @@ export const asterHall = makeMap({
     { id: 'obj.bathroom', x: 31, y: 2, label: 'Bathroom (occupied)', text: '"One minute!"', knock: true },
     { id: 'obj.clock_6f', x: 35, y: 2, label: 'Hallway clock', text: 'It reads 19:01. It has read 19:01 since you moved in.' },
     { id: 'obj.chute', x: 39, y: 2, label: 'Trash chute', text: 'It goes down eleven floors. Things come back up sometimes. Nobody talks about that either.' },
+    // Continuity propaganda (hub #100, Michael): out of 631, it's plain he's an enemy of the state. The likeness is never shown.
+    { id: 'obj.ct_poster_631', art: 'obj.ct_poster', x: 9, y: 2, label: 'Continuity poster', text: 'A Continuity poster, put up this week. A phone with its caller ID blacked out and a red slash through it: DON\'T PICK UP. AN UNEXPECTED CALL IS A PUBLIC-HEALTH EVENT. LET IT RING AND REPORT IT. They hung it right beside your door.' },
+    { id: 'obj.ct_poster_hall', art: 'obj.ct_poster_text', x: 14, y: 6, label: 'Continuity poster', text: 'HE IS NOT YOUR FRIEND. HE IS NOT ANYONE\'S. Possession of his likeness, image or flag is a loyalty-score event. Continuity Authority. The graffiti across the hall answers it in three colors.' },
     // South side
     { id: 'obj.door_632', art: DOOR, x: 6, y: 6, label: '632', text: 'A child\'s drawing taped at child height: three stick figures and a fourth, taller, with a round head.' },
     { id: 'obj.door_634', art: DOOR, x: 11, y: 6, label: '634', text: 'Vacant since spring. The peephole has been painted over from the inside.' },
@@ -89,6 +92,8 @@ export const asterLobby = makeMap({
     { id: 'obj.lobby_clock', art: 'obj.clock_6f', x: 22, y: 0, label: 'Lobby clock', text: '19:01. The second hand ticks forward, then slips back a tick.' },
     { id: 'obj.vending', x: 27, y: 1, label: 'Vending machine', light: 0.6, text: 'It hums. Row C has been empty for a year. It takes your coin and considers you.' },
     { id: 'obj.lobby_camera', x: 30, y: 0, label: 'Lobby camera', text: 'The red light is on. It is recording. Not tonight, by the look of the monitor, but it is recording.' },
+    { id: 'obj.ct_poster_lobby', art: 'obj.ct_poster_text', x: 25, y: 0, label: 'Continuity poster', text: 'LIKENESS OFFENSES: printing, carving, drawing or describing a banned likeness, minus forty loyalty. Statues count. Someone has circled "Statues count" in pen and drawn an arrow pointing at the ceiling.' },
+    { id: 'obj.ct_poster_doors', art: 'obj.ct_poster', x: 13, y: 12, label: 'Continuity poster', text: 'The same DON\'T PICK UP poster as upstairs, by the street doors, so it\'s the last thing you see going out. The fine print: "Phones are certified at the checkpoint. Uncertified devices may be confiscated."' },
     { id: 'obj.security_desk', x: 17, y: 6, label: 'Security desk', text: 'A sign-in book. The last forty entries are the same name in forty different hands.' },
     { id: 'obj.lobby_monitor', x: 18, y: 6, label: 'Security monitor (rotted)', talk: 'lead_c_footage', puzzle: 'pipes', solvedFlag: 'act1.leadC.repaired' },
     { id: 'npc.kess', eggOk: true, x: 18, y: 2, label: 'Kess', npc: true, age: 'adult', talk: 'aster:kess_talk', later: [
