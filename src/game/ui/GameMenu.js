@@ -1,17 +1,18 @@
 // In-game menu: tabbed panel (INVENTORY · SKILLS · MAP · CONTROLS · SYSTEM) plus the FAB printer.
 // Rebuilt from scratch on every refresh (cheap, and never shows stale state).
+import { stockLeft } from '../../engine/shopStock.js';
 import { REGIONS, RINGS, regionState } from '../../content/regions.js';
 import { ENEMIES, GUIDE_TIPS, GUIDE_STATS_AT, GUIDE_TIP_AT } from '../../content/enemies.js';
 import { PARTY_SCALE, COMBAT } from '../../engine/sim.js';
 import { VIEW } from '../../view.js';
-import { getLang, setLang, LANG_LABEL } from '../../i18n.js';
+import { getLang, setLang, LANG_LABEL, tr } from '../../i18n.js';
 import * as Settings from '../../settings.js';
-import { sellPrice, ITEMS, RECIPES, SKILLS, SHOPS, playerMods, ARMOR_SLOTS, GEAR_SLOTS, WEAPON_SLOTS, SLOT_NAMES, MAX_UPGRADE, upgradeCost, scaleMods, canWear } from '../../content/items.js';
+import { sellPrice, ITEMS, RECIPES, SKILLS, SHOPS, playerMods, heldWeapon, ARMOR_SLOTS, GEAR_SLOTS, ACCESSORY_SLOTS, SLOT_NAMES, MAX_UPGRADE, upgradeCost, scaleMods, canWear } from '../../content/items.js';
 import { MAPS } from '../../content/maps/index.js';
 import { GUIDE_PEOPLE, guideText } from '../../content/guide.js';
 import { ABILITIES, ABILITY_KEYS, MAX_SCORE, modOf, fmtMod, scoresOf, raiseCost } from '../../content/abilities.js';
-import { canPay, count, has, worn } from '../../engine/inventory.js';
-import { SKILL_TREE, skillOpen, tierLevel } from '../../content/skills.js';
+import { canPay, count, has, splitQuantity, worn } from '../../engine/inventory.js';
+import { R_ABILITIES, SKILL_TREE, abilityOptions, selectedAbility, skillKnown, skillOpen, tierLevel } from '../../content/skills.js';
 import { ROOMMATES } from '../scenes/BootScene.js';
 import { looksFor, wearTexture } from '../render/wearables.js';
 import { QUESTS, questState, questVisible, questLeads } from '../../content/quests.js';
@@ -42,7 +43,7 @@ const F = (size = 8, color = C.text) => ({ fontFamily: 'monospace', fontSize: `$
 const SLOT_LABEL = { ...SLOT_NAMES, instrument: 'Instrument', gift: 'Gift', material: 'Material' };
 // Cut a line to fit `px` view pixels at monospace `size` (Text crops don't work at the 4x text resolution).
 const fit = (str, px, size) => { const n = Math.floor(px / (size * 0.62)); return str.length > n ? str.slice(0, n - 1) + '…' : str; };
-const SLOT_ABBR = { weapon: 'melee', ranged: 'ranged', gadget: 'gadget', charm: 'charm', helmet: 'head', chestplate: 'chest', leggings: 'legs', boots: 'boots', goggles: 'eyes', parka: 'coat', gloves: 'hands', socks: 'socks', backpack: 'pack' };
+const SLOT_ABBR = { gadget: 'gadget', charm: 'charm', helmet: 'head', chestplate: 'chest', leggings: 'legs', boots: 'boots', goggles: 'eyes', parka: 'coat', gloves: 'hands', socks: 'socks', backpack: 'pack' };
 const MOD_NAME = { melee: 'melee', shot: 'shot dmg', shotCd: 'fire rate', armor: 'armor', maxHp: 'max HP', speed: 'speed', sta: 'stamina', staRegen: 'stamina regen', crit: 'crit', markDmg: 'marked dmg', abilityPower: 'ability', skillCd: 'ability cooldown', dodgeCd: 'dodge cooldown', haggle: 'prices', dashHit: 'dash hit', revive: 'revive speed', loot: 'loot' };
 const PCT = new Set(['armor', 'speed', 'staRegen', 'crit', 'markDmg', 'abilityPower', 'skillCd', 'haggle', 'revive', 'loot']);
 export const modText = (mods) => Object.entries(mods || {}).filter(([k]) => k !== 'gun').map(([k, v]) => `${MOD_NAME[k] ?? k} ${PCT.has(k) ? (v > 0 ? '+' : '') + Math.round(v * 100) + '%' : (v > 0 ? '+' : '') + (Math.abs(v) >= 1 ? Math.round(v) : v)}`).join('  ');
@@ -149,13 +150,13 @@ export class GameMenu {
 
   // ---- tabs ----
   // Minecraft-style grid: 27 backpack slots + the 9-slot hotbar, equipment beside the character.
-  // Left click picks a stack up / puts it down (merge or swap); right click picks up half, or uses /
-  // equips when your hand is empty. Drop gear on an equipment slot to wear it.
+  // Left click picks up or places a stack. Right click takes half of a stack, or uses a single item.
+  // Shift+right click uses an item without splitting. Drop gear on an equipment slot to wear it.
   _inventory(g) {
     const s = this.scene, who = s.character, c = s.save.party[who], b = this.box;
     const mods = playerMods(c, who), inv = c.inventory ?? [];
     const S = 20, GAP = 2;
-    // Paper doll: armor (left), the character (middle), gear and weapons (right). Unique items glow gold.
+    // Paper doll: armor (left), the character (middle), gear and accessories (right).
     g.fillStyle(0x151827).fillRoundedRect(b.x + 32, b.y + 28, 52, 108, 3);
     const spr = s.add.sprite(b.x + 58, b.y + 124, who).setOrigin(0.5, 1).setScale(3).play(`${who}_idle_down`);
     this.root.add(spr);
@@ -178,13 +179,13 @@ export class GameMenu {
         if (this.held != null) { const it = inv[this.held]; if (it && ITEMS[it.id]?.slot === slot) s.menuUse(it.id); this.held = null; return this.refresh(); }
         if (id) s.menuUse(id);   // click a worn item to take it off
       });
-      z.on('pointerover', () => { this.hover = id ? { id, roll: c.rolled?.[slot] ?? ((slot === 'weapon' || slot === 'ranged') ? c.inventory.find((x) => x?.id === id && x.roll)?.roll : null) } : { label: `${SLOT_NAMES[slot]} slot` }; this._drawTip(); });
+      z.on('pointerover', () => { this.hover = id ? { id, roll: c.rolled?.[slot] } : { label: `${SLOT_NAMES[slot]} slot` }; this._drawTip(); });
       this.root.add(z);
     };
     const col = (slots, x, label) => { this._t(x + S / 2, b.y + 25, label, F(5, C.sub)).setOrigin(0.5, 1); slots.forEach((slot, k) => slotBox(slot, x, b.y + 28 + k * (S + GAP))); };
     col(ARMOR_SLOTS, b.x + 8, 'ARMOR');
     col(GEAR_SLOTS, b.x + 88, 'GEAR');
-    col(WEAPON_SLOTS, b.x + 110, 'HANDS');
+    col(ACCESSORY_SLOTS, b.x + 110, 'ACCESSORIES');
     // stats: armor points come from the four armor pieces
     const armorPts = Math.round(ARMOR_SLOTS.reduce((t, sl) => { const d = ITEMS[c.equipped[sl]]; return t + (canWear(d, who) ? scaleMods(d.mods, c.upgrades?.[d.id ?? c.equipped[sl]] ?? 0).armor ?? 0 : 0); }, 0) * 100);
     const stat = [`HP ${100 + (mods.maxHp || 0)}   Armor ${armorPts} pts (${Math.round((mods.armor || 0) * 100)}%)`, `Melee +${mods.melee}   Ranged ${mods.gun ? '+' + mods.shot : '-'}   Speed ${mods.speed >= 0 ? '+' : ''}${Math.round((mods.speed || 0) * 100)}%`, `$${c.money ?? 0}   XP ${c.xp}/${c.level * 30}   lv ${c.level}`];
@@ -214,12 +215,16 @@ export class GameMenu {
     this._t(gx, gy - 4, `BACKPACK  ${used}/27  · worn gear sits in its slot, not here`, F(6, C.sub)).setOrigin(0, 1);
     const slotXY = (i) => i < 9 ? [gx + i * (S + GAP), gy + 3 * (S + GAP) + 10] : [gx + ((i - 9) % 9) * (S + GAP), gy + Math.floor((i - 9) / 9) * (S + GAP)];
     this._t(gx, gy + 3 * (S + GAP) + 6, 'HOTBAR  (keys 1-9)', F(6, C.sub)).setOrigin(0, 1);
-    const eq = new Set(Object.values(c.equipped || {}));
     // Holding a stack? Click outside the panel to drop it on the floor (src/game/guitarStands.js).
     // The panel itself swallows clicks so a near miss on a slot doesn't drop anything.
     if (this.held != null) {
       const out = s.add.zone(0, 0, VIEW.w, VIEW.h).setOrigin(0).setInteractive();
-      out.on('pointerdown', () => { const i = this.held, half = this.heldHalf; this.held = null; this.heldHalf = false; if (inv[i]) s.stands?.drop(i, !half); this.refresh(); });
+      out.on('pointerdown', () => {
+        const i = this.held, half = this.heldHalf;
+        this.held = null; this.heldHalf = false;
+        if (inv[i]) s.stands?.drop(i, !half, half);
+        this.refresh();
+      });
       const panel = s.add.zone(b.x, b.y, b.w, b.h).setOrigin(0).setInteractive();
       this.root.addAt(out, 1); this.root.addAt(panel, 2);   // right above the backdrop, under every slot and tab
       this._t(b.x + b.w / 2, b.y + b.h + 3, 'click outside to drop it', F(6, C.hi)).setOrigin(0.5, 0);
@@ -227,7 +232,8 @@ export class GameMenu {
     for (let i = 0; i < 36; i++) {
       const [x, y] = slotXY(i), it = inv[i], held = this.held === i;
       g.fillStyle(i < 9 ? 0x1a1d30 : 0x151827).fillRect(x, y, S, S);
-      g.lineStyle(1, held ? 0xffb347 : it && eq.has(it.id) ? 0x7fb069 : C.dim, held ? 1 : 0.7).strokeRect(x + 0.5, y + 0.5, S - 1, S - 1);
+      const selected = i === (c.hotSel ?? 0);
+      g.lineStyle(1, held ? 0xffb347 : selected ? 0x7fb069 : C.dim, held || selected ? 1 : 0.7).strokeRect(x + 0.5, y + 0.5, S - 1, S - 1);
       if (it) {
         this._icon(x + S / 2, y + S / 2, it.id).setAlpha(held ? 0.35 : 1);
         if (it.qty > 1) this._t(x + S - 1, y + S, `${it.qty}`, F(6, C.text)).setOrigin(1, 1);
@@ -237,22 +243,27 @@ export class GameMenu {
         const right = p.rightButtonDown?.() || p.button === 2;
         if (this.held != null) { s.menuMove(this.held, i, this.heldHalf); this.held = null; this.heldHalf = false; return this.refresh(); }
         if (!it) return;
-        if (right && !p.event?.shiftKey) { const def = ITEMS[it.id]; if (def?.slot === 'material' || it.qty > 1 && def?.slot !== 'consumable') { this.held = i; this.heldHalf = true; } else s.menuUseSlot(i); return this.refresh(); }
-        this.held = i; this.heldHalf = false; this.refresh();
+        if (right && (p.event?.shiftKey || it.qty === 1)) { s.menuUseSlot(i); return this.refresh(); }
+        this.held = i;
+        this.heldHalf = right;
+        this.refresh();
       });
       z.on('pointerover', () => { this.hover = it ? { id: it.id, qty: it.qty, i, roll: it.roll } : null; this._drawTip(); });
       this.root.add(z);
     }
     // the held stack follows the cursor
     if (this.held != null && inv[this.held]) {
-      const ghost = this._icon(0, 0, inv[this.held].id).setDepth(9700);
-      const follow = (p) => ghost.setPosition(p.x / 4, p.y / 4);
+      const stack = inv[this.held], qty = this.heldHalf ? splitQuantity(stack.qty) : stack.qty;
+      const ghost = this._icon(0, 0, stack.id).setDepth(9700);
+      const amount = qty > 1 ? this._t(0, 0, `${qty}`, F(6, C.text)).setOrigin(1, 1) : null;
+      const follow = (p) => { ghost.setPosition(p.x / 4, p.y / 4); amount?.setPosition(ghost.x + 9, ghost.y + 9); };
       follow(s.input.activePointer);
       s.input.on('pointermove', follow); ghost.once('destroy', () => s.input.off('pointermove', follow));
     }
     // tooltip area
     this.tipY = gy + 4 * (S + GAP) + 16; this.tipX = gx; this.tipW = b.x + b.w - gx - 10;
-    this._t(gx, b.y + b.h - 12, 'click: pick up / place · right: use / half · G / shift+G: drop', F(6, '#4a5175'));
+    this._t(gx, b.y + b.h - 20, 'Right click: split · Shift+right click: use', F(6, C.sub));
+    this._t(gx, b.y + b.h - 12, 'G: drop one · Shift+G: drop stack', F(6, C.sub));
     this._drawTip();
   }
 
@@ -429,24 +440,27 @@ export class GameMenu {
   _skills(g) {
     const s = this.scene, who = s.character, c = s.save.party[who], b = this.box, tree = SKILL_TREE[who];
     if (!tree) return;
-    const tx = b.x + 10, colW = 92, nodeW = 84, nodeH = 22, rowY = (r) => b.y + 44 + r * 34, colX = (k) => tx + k * colW;
-    const pts = c.skillPoints ?? 0;
+    const tx = b.x + 10, colW = 92, nodeW = 84, nodeH = 22, rowY = (r) => b.y + 44 + r * 29, colX = (k) => tx + k * colW;
+    const pts = c.skillPoints ?? 0, ranks = c.skills ?? {};
+    const known = (n) => skillKnown(c, n, s.save);
+    const visible = tree.nodes.filter((n) => known(n) || n.reveal?.teaser);
     this._t(b.x + b.w - 10, b.y + 26, pts ? `◆ ${pts} point${pts === 1 ? '' : 's'} to spend` : 'level up for points', F(8, pts ? C.hi : C.sub)).setOrigin(1, 0);
     tree.branches.forEach((name, k) => this._t(colX(k) + nodeW / 2, b.y + 27, name, F(7, C.sub)).setOrigin(0.5, 0));
     const pos = (n) => ({ x: colX(n.col), y: rowY(n.row) });
-    for (const n of tree.nodes) for (const r of n.req || []) {
-      const p = tree.nodes.find((x) => x.id === r); if (!p) continue;
-      const a = pos(p), z = pos(n), on = (c.skills[r] ?? 0) > 0;
+    for (const n of visible) for (const r of n.req || []) {
+      const p = visible.find((x) => x.id === r); if (!p || !known(n)) continue;
+      const a = pos(p), z = pos(n), on = (ranks[r] ?? 0) > 0;
       g.lineStyle(1, on ? 0xffb347 : 0x3a4060, on ? 0.9 : 0.8).lineBetween(a.x + nodeW / 2, a.y + nodeH, z.x + nodeW / 2, z.y);
     }
-    for (const n of tree.nodes) {
-      const { x, y } = pos(n), r = c.skills[n.id] ?? 0, open = skillOpen(who, c, n), maxed = r >= n.max;
+    for (const n of visible) {
+      const discovered = known(n), label = discovered ? n.name : '???';
+      const { x, y } = pos(n), r = Math.max(0, Math.min(n.max, ranks[n.id] ?? 0)), open = skillOpen(who, c, n, s.save), maxed = r >= n.max;
       const canLearn = open && !maxed && pts > 0, cap = n.row === 4;
       const edge = maxed ? 0x7fb069 : r > 0 ? 0xffb347 : canLearn ? 0xe8e8f0 : 0x3a4060;
       g.fillStyle(r > 0 ? 0x1f2438 : open ? 0x171a2b : 0x0f111c).fillRoundedRect(x, y, nodeW, nodeH, cap ? 5 : 2);
       g.lineStyle(cap ? 2 : 1, edge, open ? 1 : 0.7).strokeRoundedRect(x, y, nodeW, nodeH, cap ? 5 : 2);
-      this._t(x + 4, y + 2, n.name, F(n.name.length > 15 ? 6 : 7, open ? (maxed ? C.ok : C.text) : '#4a5175'));
-      this._t(x + 4, y + 12, '■'.repeat(r) + '□'.repeat(n.max - r), F(6, r ? C.hi : '#4a5175'));
+      this._t(x + 4, y + 2, label, F(label.length > 15 ? 6 : 7, open ? (maxed ? C.ok : C.text) : C.sub));
+      if (discovered) this._t(x + 4, y + 12, '■'.repeat(r) + '□'.repeat(n.max - r), F(6, r ? C.hi : '#4a5175'));
       const z = s.add.zone(x, y, nodeW, nodeH).setOrigin(0).setInteractive({ useHandCursor: canLearn });
       z.on('pointerover', () => { this.skillHover = n.id; this._skillTip(); });
       z.on('pointerdown', () => { if (canLearn) s.menuLearn(n.id); });
@@ -454,14 +468,25 @@ export class GameMenu {
     }
     this.skillTip = { x: colX(3) + 4, y: b.y + 44, w: b.x + b.w - colX(3) - 14 };
     this._skillTip();
+    const { x, w } = this.skillTip, y = b.y + 165, equipped = selectedAbility(who, c);
+    this._t(x, y, 'EQUIP FOR R', F(7, C.sub));
+    abilityOptions(who, c).forEach((id, i) => {
+      const on = id === equipped, yy = y + 12 + i * 15;
+      const label = `${on ? '●' : '○'} ${tr(R_ABILITIES[id].name)}`;
+      this._t(x, yy, fit(label, w, 8), F(8, on ? C.ok : C.hi), on ? undefined : () => s.menuEquipR(id));
+    });
   }
 
   _skillTip() {
     this.tip?.forEach((o) => o.destroy()); this.tip = [];
     const s = this.scene, who = s.character, c = s.save.party[who], t = this.skillTip;
     const n = SKILL_TREE[who]?.nodes.find((x) => x.id === this.skillHover); if (!n || !t) return;
-    const r = c.skills[n.id] ?? 0, open = skillOpen(who, c, n);
-    const need = (n.req || []).filter((q) => !(c.skills[q] > 0)).map((q) => SKILL_TREE[who].nodes.find((x) => x.id === q)?.name);
+    if (!skillKnown(c, n, s.save)) {
+      if (n.reveal?.teaser) this.tip.push(this._t(t.x, t.y, 'Discover through play.', { ...F(8, C.sub), wordWrap: { width: t.w } }));
+      return;
+    }
+    const r = c.skills?.[n.id] ?? 0, open = skillOpen(who, c, n, s.save);
+    const need = (n.req || []).filter((q) => !(c.skills?.[q] > 0)).map((q) => SKILL_TREE[who].nodes.find((x) => x.id === q)?.name);
     this.tip.push(this._t(t.x, t.y, n.name, { ...F(9, C.hi), wordWrap: { width: t.w } }));
     this.tip.push(this._t(t.x, t.y + 12, `rank ${r}/${n.max}`, F(7, r >= n.max ? C.ok : C.sub)));
     this.tip.push(this._t(t.x, t.y + 24, n.text, { ...F(7, C.text), wordWrap: { width: t.w } }));
@@ -541,15 +566,24 @@ export class GameMenu {
     const b = this.box;
     const rows = [['Move', 'WASD / arrows (diagonals work)'], ['Dash', 'SPACE / SHIFT (uses stamina)'], ['Hit', 'Left click'],
       ['Shoot', 'Right click, once you have a ranged weapon'], ['Use / talk', 'E when close; walk into doors'], ['Dialogue', 'E (or SPACE) to continue; click or 1-6 to choose'],
-      ['Menu', 'ESC   Inventory I   Quests J   Skills K   Map TAB'], ['Hotbar', '1-9 use or equip that slot'], ['Ability', 'R: Trevor Riff · Manuel Decoy Bust · Michael Ping'], ['Heal / Morph', 'H (mate thermos)   M (when unlocked)'], ['Scooter', 'Q outdoors, once you own one (Delroy\'s, on the plaza)'], ['Drop', 'G drops one of what\'s in hand, SHIFT+G the stack; E picks up'], ['Phone', 'F to answer when it rings']];
+      ['Menu', 'ESC   Inventory I   Quests J   Skills K   Map TAB'], ['Hotbar', '1-9 select a hotbar slot'], ['Ability', 'R: Trevor Riff · Manuel Decoy Bust · Michael Ping'], ['Heal / Morph', 'H (mate thermos)   M (when unlocked)'], ['Scooter', 'Q outdoors, once you own one (Delroy\'s, on the plaza)'], ['Drop', 'G drops one of what\'s in hand, SHIFT+G the stack; E picks up'], ['Phone', 'F to answer when it rings']];
     rows.forEach(([k, v], i) => { this._t(b.x + 14, b.y + 30 + i * 14, k, F(8, C.hi)); this._t(b.x + 110, b.y + 30 + i * 14, v, F(8)); });
   }
 
   _system() {
     const s = this.scene, b = this.box;
+    const es = getLang() === 'es';
     const items = s.mode === 'client'
       ? [['Resume', () => this.close()], ['Leave the game', () => s.menuQuit(false)]]
-      : [['Resume', () => this.close()], ['Save now', () => { s._save(); this.close(); }], ['Export save file (.jpfc.json)', () => s.menuExport()], ['Save and quit to title', () => s.menuQuit(true)]];
+      : [
+        ['Resume', () => this.close()],
+        ['Save now', () => { s._save(); this.close(); }],
+        ['Export save file (.jpfc.json)', () => s.menuExport()],
+        ['Save and quit to title', () => { this.close(); s.menuQuit(true); }],
+        [es ? 'Salir sin guardar' : 'Quit without saving', () => {
+          if (confirm(es ? '¿Salir sin guardar? Perderás el progreso desde la última vez que guardaste.' : 'Quit without saving? Progress since the last save will be lost.')) s.menuQuit(false);
+        }],
+      ];
     // Language (Trevor): English or Spanish. Switches at once; menus rebuild on refresh.
     items.push([`Language: ${LANG_LABEL[getLang()]}`, () => { setLang(getLang() === 'es' ? 'en' : 'es'); this.refresh(); s._refreshMenu?.(); }]);
     // Settings (task #31): click a row to cycle it. Stored per browser.
@@ -557,7 +591,7 @@ export class GameMenu {
     for (const [k, label] of [['music', 'Music'], ['sfx', 'Effects'], ['voice', 'Voices']]) items.push([`${label}: ${pct(k)}`, () => { Settings.set(k, Settings.nextVolume(Settings.get(k))); this.refresh(); }]);
     items.push([`Screen shake: ${Settings.get('shake') ? 'on' : 'off'}`, () => { Settings.set('shake', !Settings.get('shake')); this.refresh(); }]);
     items.push([`Text speed: ${Settings.get('textSpeed')}`, () => { Settings.set('textSpeed', Settings.nextSpeed(Settings.get('textSpeed'))); this.refresh(); }]);
-    items.forEach(([label, fn], i) => this._t(b.x + 14, b.y + 32 + i * 18, `› ${label}`, F(9, i === 0 ? C.hi : C.text), fn));
+    items.forEach(([label, fn], i) => this._t(b.x + 14, b.y + 32 + i * 16, `› ${label}`, F(9, i === 0 ? C.hi : C.text), fn));
     this._t(b.x + 14, b.y + b.h - 18, s.mode === 'client' ? 'The host keeps the save for everyone.' : `World "${s.save.world.seed}" · saved in this browser`, F(7, C.sub));
   }
 
@@ -615,24 +649,24 @@ export class GameMenu {
     // rows: buy = the shelf; sell = your bag (one row per stack)
     const rows = this.shopMode === 'sell'
       ? c.inventory.map((it, slot) => it && { id: it.id, qty: it.qty, slot, price: sellPrice(it.id) }).filter(Boolean)
-      : shop.stock.map((st, i) => ({ id: st.item, i, st, price: s.priceFor(who, st.price), owned: st.once && has(c, st.item), locked: st.needs && !count(c, st.needs) }));
+      : shop.stock.map((st, i) => ({ id: st.item, i, st, price: s.priceFor(who, st.price), owned: st.once && has(c, st.item), locked: st.needs && !count(c, st.needs), left: stockLeft(s.save, id, i, st) }));
     const listW = 190, rowH = 15, maxRows = Math.floor((b.y + b.h - 8 - ty) / rowH);
     const L = this.scroller.list('shop', { n: rows.length, per: maxRows, onPick: (k) => {
       const r = rows[k]; if (!r) return;
       if (this.shopMode === 'sell') { if (r.price > 0) s.menuSell(r.slot); }
-      else if (!r.owned && !r.locked && money >= r.price) s.menuBuy(id, r.i);
+      else if (!r.owned && !r.locked && r.left > 0 && money >= r.price) s.menuBuy(id, r.i);
     } });
     this.shopSel = L.sel;
     this.scroller.bar(g, b.x + 10 + listW + 3, ty + 6, maxRows * rowH - 14, L, (x, y, t) => this._t(x, y, t, F(6, C.hi)));
     if (!rows.length) this._t(b.x + 14, ty + 4, this.shopMode === 'sell' ? 'Nothing to sell.' : 'Sold out.', F(8, C.sub));
     rows.slice(L.first, L.last).forEach((r, j) => {
       const k = L.first + j, def = ITEMS[r.id], y = ty + j * rowH, x = b.x + 10, sel = k === this.shopSel;
-      const ok = this.shopMode === 'sell' ? r.price > 0 : !r.owned && !r.locked && money >= r.price;
+      const ok = this.shopMode === 'sell' ? r.price > 0 : !r.owned && !r.locked && r.left > 0 && money >= r.price;
       g.fillStyle(sel ? 0x23293f : 0x121521, 1).fillRoundedRect(x, y, listW, rowH - 2, 2);
       if (sel) g.lineStyle(1, 0xffb347, 0.9).strokeRoundedRect(x + 0.5, y + 0.5, listW - 1, rowH - 3, 2);
       this._icon(x + 8, y + 6, r.id).setScale(0.62);
       this._t(x + 17, y + 2, fit(`${def?.name ?? r.id}${r.qty > 1 ? ' ×' + r.qty : ''}`, listW - 64, 7), F(7, ok ? C.text : C.sub));
-      const right = this.shopMode === 'sell' ? (r.price ? `$${r.price}` : '-') : r.owned ? 'owned' : `$${r.price}`;
+      const right = this.shopMode === 'sell' ? (r.price ? `$${r.price}` : '-') : r.owned ? 'owned' : r.left <= 0 ? 'sold out' : `$${r.price}${Number.isFinite(r.left) ? ` (${r.left})` : ''}`;   // limited shelves show what's left
       this._t(x + listW - 4, y + 2, right, F(7, this.shopMode === 'sell' ? C.ok : r.owned ? C.ok : money >= r.price ? C.hi : C.bad)).setOrigin(1, 0);
       const z = s.add.zone(x, y, listW, rowH - 2).setOrigin(0).setInteractive({ useHandCursor: true });
       z.on('pointerdown', () => { L.sel = k; this.refresh(); });
@@ -649,25 +683,28 @@ export class GameMenu {
     this._t(px + 52, py + 22, `${kind}${def.heal ? ` · heals ${def.heal}` : ''}`, F(7, C.ok));
     const desc = this._t(px + 8, py + 50, def.text ?? '', { ...F(7, C.text), wordWrap: { width: pw - 16 } });
     let dy = py + 56 + desc.height;
-    // compare with what's worn in that slot
+    // Weapons compare with the current hotbar selection. Gear compares with the worn slot.
     const gearSlot = def.slot && c.equipped && def.slot in c.equipped ? def.slot : null;
-    if (gearSlot && (def.mods || def.swing || def.gun)) {
-      const now = playerMods(c, who), next = playerMods({ ...c, equipped: { ...c.equipped, [gearSlot]: r.id } }, who);
+    const weapon = def.slot === 'weapon' || def.slot === 'ranged';
+    if (weapon || (gearSlot && def.mods)) {
+      const current = weapon ? heldWeapon(c, who)?.id : c.equipped[gearSlot];
+      const now = playerMods(c, who);
+      const next = weapon ? playerMods(c, who, { id: r.id, roll: c.inventory[r.slot]?.roll })
+        : playerMods({ ...c, equipped: { ...c.equipped, [gearSlot]: r.id } }, who);
       const KEYS = { melee: ['melee', 1], shot: ['shot dmg', 1], armor: ['armor', 100], maxHp: ['max HP', 1], speed: ['speed', 100], crit: ['crit', 100], sta: ['stamina', 1], abilityPower: ['ability', 100], markDmg: ['vs marked', 100], loot: ['loot', 100] };
       const parts = [];
-      if (gearSlot === 'weapon') {   // weapons: compare what a hit actually does, not the flat bonus
+      if (def.slot === 'weapon') {
         const hit = (m) => (m.swing?.damage ?? 12) + (m.melee ?? 0), rate = (m) => m.swing?.cooldown ?? 0.38;
-        const h0 = hit(now), h1 = hit(next), d0 = h0 / rate(now), d1 = h1 / rate(next);
+        const h0 = ITEMS[current]?.slot === 'weapon' ? hit(now) : 0, h1 = hit(next), d0 = h0 / rate(now), d1 = h1 / rate(next);
         parts.push({ txt: `hit ${h1} (now ${h0})`, up: h1 >= h0 }, { txt: `${d1.toFixed(0)} dmg/s (now ${d0.toFixed(0)})`, up: d1 >= d0 });
         if (next.swing) parts.push({ txt: `reach ${next.swing.range ?? 20}, ${next.swing.arc >= 0.7 ? 'wide' : next.swing.arc <= 0.35 ? 'narrow' : 'normal'} arc`, up: true });
       }
       for (const [k, [label, mul]] of Object.entries(KEYS)) {
-        if (gearSlot === 'weapon' && k === 'melee') continue;
+        if (def.slot === 'weapon' && k === 'melee') continue;
         const dv = ((next[k] ?? 0) - (now[k] ?? 0)) * mul;
         if (Math.abs(dv) >= 0.5) parts.push({ txt: `${dv > 0 ? '+' : ''}${Math.round(dv)}${mul === 100 ? '%' : ''} ${label}`, up: dv > 0 });
       }
-      const wornName = c.equipped[gearSlot] ? ITEMS[c.equipped[gearSlot]]?.name : 'nothing';
-      this._t(px + 8, dy, `vs. ${wornName}:`, F(7, C.sub)); dy += 11;
+      this._t(px + 8, dy, `vs. ${ITEMS[current]?.name ?? 'nothing'}:`, F(7, C.sub)); dy += 11;
       if (!parts.length) { this._t(px + 8, dy, 'no change', F(7, C.sub)); dy += 11; }
       parts.forEach((p) => { this._t(px + 8, dy, p.txt, F(7, p.up ? C.ok : C.bad)); dy += 10; });
       if (def.owner && def.owner !== who) { this._t(px + 8, dy, `Only ${def.owner[0].toUpperCase() + def.owner.slice(1)} can use this.`, F(7, C.bad)); dy += 11; }
@@ -751,5 +788,6 @@ export class GameMenu {
       if (score >= MAX_SCORE) this._t(x + b.w - 40, y + 7, 'max', F(8, C.ok)).setOrigin(1, 0);
       else this._t(x + b.w - 40, y + 5, `+1 (${cost} pt${cost > 1 ? 's' : ''})`, F(can ? 9 : 8, can ? C.hi : '#4a5175'), can ? () => s.menuAbility(k) : undefined).setOrigin(1, 0);   // higher scores cost more
     });
+    this._t(b.x + 14, b.y + b.h - 13, `${tr('Score cap')} ${MAX_SCORE} · ${tr('Modifiers change at even scores.')}`, F(7, C.sub));
   }
 }

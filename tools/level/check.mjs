@@ -29,7 +29,8 @@ for (const id of ids) {
     const [x, y] = k.split(',').map(Number), wall = (a, b) => m.solid(a, b) && !m.doors.has(`${a},${b}`);
     if (!((wall(x - 1, y) && wall(x + 1, y)) || (wall(x, y - 1) && wall(x, y + 1)))) problems.push(`door ${d.id} at ${k} has no wall on one side`);
   }
-  for (const e of m.enemies) { const x = Math.floor(e.x / 16), y = Math.floor(e.y / 16); if (m.solid(x, y)) problems.push(`enemy ${e.kind} on a solid tile ${x},${y}`); else if (!seen.has(`${x},${y}`)) problems.push(`enemy ${e.kind} unreachable at ${x},${y}`); }
+  // A penned enemy (pen: [...], e.g. Code-rot-taken held beyond a cordon barrier) is meant to be out of reach.
+  for (const e of m.enemies) { const x = Math.floor(e.x / 16), y = Math.floor(e.y / 16); if (m.solid(x, y)) problems.push(`enemy ${e.kind} on a solid tile ${x},${y}`); else if (!seen.has(`${x},${y}`) && !e.pen) problems.push(`enemy ${e.kind} unreachable at ${x},${y}`); }
   for (const e of m.enemies) if (BOSSES[e.kind]) {   // a sleeping boss shouldn't wake the moment you walk in
     const wake = BOSSES[e.kind](1).wake ?? 0;
     for (const o of [...m.spawns.map((sp) => ({ id: 'spawn', x: sp.x / 16, y: sp.y / 16 })), ...m.objects.filter((q) => q.action === 'exit')]) {

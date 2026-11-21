@@ -1,12 +1,16 @@
 // Report missing Spanish coverage in the content tables: node tools/i18n/es_audit.mjs
 import { setLang, tr } from '../../src/i18n.js';
 import { ES_631 } from '../../src/i18n/es-631.js';
+import { ES_STRETCH } from '../../src/i18n/es-stretch.js';
 import { ES_ASTER } from '../../src/i18n/es-aster.js';
 import { ES_HUD } from '../../src/i18n/es-hud.js';
 import { ES_ITEMS } from '../../src/i18n/es-items.js';
 import { ES_PLAZA } from '../../src/i18n/es-plaza.js';
+import { ES_ACT2 } from '../../src/i18n/es-act2.js';
+import { ES_ACT3 } from '../../src/i18n/es-act3.js';
 import { ES_QUESTS } from '../../src/i18n/es-quests.js';
 import { ES_TUNNELS_LAKE } from '../../src/i18n/es-tunnels-lake.js';
+import { ES_ROUTE1 } from '../../src/i18n/es-route1.js';
 import { BARKS } from '../../src/content/barks.js';
 import { GUIDE_PEOPLE } from '../../src/content/guide.js';
 import { ITEMS } from '../../src/content/items.js';
@@ -83,8 +87,12 @@ const mapSources = {
   fr_market: 'stretch.js',
   en_mall: 'stretch.js',
   en_metro: 'stretch.js',
+  hardware: 'act1_route1.js',
+  feed_store: 'act1_route1.js',
+  airfield: 'act1_airfield.js',
+  hangar: 'act1_airfield.js',
 };
-const exact = Object.assign(Object.create(null), ES_631, ES_ASTER, ES_HUD, ES_PLAZA, ES_QUESTS, ES_TUNNELS_LAKE);
+const exact = Object.assign(Object.create(null), ES_631, ES_ASTER, ES_HUD, ES_PLAZA, ES_QUESTS, ES_TUNNELS_LAKE, ES_ROUTE1);
 const results = new Map();
 
 function check(file, location, text, inlineSpanish) {
@@ -107,6 +115,10 @@ function checkLines(file, location, value) {
 }
 
 setLang('es');
+Object.assign(exact, ES_STRETCH);   // stretch.js (hub #30), joined here so the `exact` line stays free for other tables
+// The Act 2 and Act 3 areas (hub #30) last, after ES_STRETCH, in the same order as src/i18n.js, on lines of their own.
+Object.assign(exact, ES_ACT2);
+Object.assign(exact, ES_ACT3);
 
 for (const map of Object.values(MAPS)) {
   const file = `src/content/maps/${mapSources[map.id] ?? 'index.js'}`;
