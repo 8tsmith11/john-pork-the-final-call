@@ -8,6 +8,10 @@ export const GUIDE_TIPS = {
   'enemy.captcha': 'Armoured until it charges. Dodge the dash and it reels: double damage while it is dizzy.',
   'enemy.autocomplete': 'It copies how you move. Change direction often and it guesses wrong.',
   'enemy.rot_taken': 'Slow, in packs, and it infects. Knock them into walls and keep moving.',
+  'enemy.rot_crawler': 'Fast and fragile. One clean hit ends it; let it come to you.',
+  'enemy.rot_graft': 'The cable arm reaches further than it looks. Hit it while it recovers.',
+  'enemy.rot_sprawl': 'Slow, heavy and hard to stop. Every head can bite. Keep it at the end of your reach.',
+  'enemy.rot_hulk': 'Plated, slow and it hits like a car. Knock it into a wall, then work on it while it reels.',
 };
 export const GUIDE_STATS_AT = 5, GUIDE_TIP_AT = 15;
 
@@ -44,5 +48,27 @@ export const ENEMIES = {
     name: 'Autocomplete', hp: 14, speed: 58, damage: 8, radius: 5, xp: 7,
     ai: 'mirror', mirrorRange: 120, dashSpeed: 240, dashTime: 0.22, touchCooldown: 0.7, color: 0x3fd0d6,
     lore: 'It finishes your sentences. It finishes your dodges. It is usually wrong, but it is fast.',
+  },
+  // Further gone (Trevor: "code rot should be able to go pretty far in disfigurement", biotech rot, big cyborg things).
+  // Drawn in code until sprites land (src/game/render/rotForms.js). They push at College Park's cordon first.
+  'enemy.rot_crawler': {
+    name: 'Lace crawler', hp: 18, speed: 58, damage: 6, radius: 4, xp: 5,
+    ai: 'swarm', alertRange: 240, touchCooldown: 0.9, infection: 5, color: 0xb84fd6,
+    lore: 'What is left when the lace keeps a hand and lets the rest go. It runs on its fingers.',
+  },
+  'enemy.rot_graft': {
+    name: 'Grafted', hp: 60, speed: 30, damage: 11, radius: 7, xp: 14,
+    ai: 'swarm', alertRange: 260, touchCooldown: 1.2, infection: 10, color: 0x58c27a,
+    lore: 'A biotech implant that kept growing after its host stopped. Wet cable, bark for skin, and a status light that still blinks OK.',
+  },
+  'enemy.rot_sprawl': {
+    name: 'Sprawl', hp: 110, speed: 16, damage: 14, radius: 9, xp: 22,
+    ai: 'swarm', alertRange: 240, touchCooldown: 1.6, infection: 12, color: 0x9b2fa8,
+    lore: 'Two or three people the rot folded into one body. It walks on whichever legs are nearest the ground.',
+  },
+  'enemy.rot_hulk': {
+    name: 'Lace hulk', hp: 260, speed: 12, damage: 22, radius: 13, xp: 45,
+    ai: 'swarm', alertRange: 220, touchCooldown: 2.0, infection: 14, color: 0x6b6f86,
+    lore: 'A riot exoskeleton the rot climbed into and never left. The pilot is still in there, mostly. Hydraulics, and something wet.',
   },
 };
