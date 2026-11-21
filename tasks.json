@@ -1,5 +1,5 @@
 {
- "next_id": 117,
+ "next_id": 118,
  "tasks": [
   {
    "id": 1,
@@ -2521,6 +2521,19 @@
    "source": "human:Trevor",
    "status": "assigned",
    "owner": "gonman"
+  },
+  {
+   "id": 117,
+   "created_at": "2026-11-21T17:12:13Z",
+   "updated_at": "2026-11-21T17:12:13Z",
+   "history": [
+    "2026-11-21T17:12:13Z trevor: added (for BagelMeister)"
+   ],
+   "title": "First Act 2 region brief (Beltsville), then M2.2 with the barn puzzle as the pattern for the rest of the act",
+   "details": "No hub task exists yet for any Act 2 main quest, and the working rule (one brief per region, then lore gate OK, then build) has no brief posted. Proposed start: Beltsville, since M2.2 is first in the rulings' order. Build it with a scripted scene, a cutscene beat, the key item and a signature fight, so it sets the bar for the other regions. Context: docs/design/12-act-quality.md.",
+   "source": "human:Trevor",
+   "status": "assigned",
+   "owner": "BagelMeister"
   }
  ]
 }
