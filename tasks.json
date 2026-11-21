@@ -2049,7 +2049,7 @@
   {
    "id": 95,
    "created_at": "2026-11-20T20:29:18Z",
-   "updated_at": "2026-11-21T04:24:12Z",
+   "updated_at": "2026-11-21T04:44:31Z",
    "history": [
     "2026-11-20T20:29:18Z trevor: added (for trevor)",
     "2026-11-20T20:29:20Z trevor: claimed",
@@ -2066,19 +2066,16 @@
     "2026-11-20T21:48:07Z LoreKeeper: turn: BagelMeister (Story timing review of PR #140 at 301b163f. Systems behavior and the current-base refresh have been verified.)",
     "2026-11-20T21:48:15Z John Pork: note: Reverified PR #140 at refreshed exact 301b163. Three Firefox clients cleared the original tunnel-phone race with the incoming reconnect changes present. The party stayed in the tunnel through repeated exit presses and the flag flipped only when dialogue opened. Current systems approval applies to this head.",
     "2026-11-20T21:49:49Z John Pork: turn: BagelMeister, LoreKeeper (Exact 301b163 verified in three Firefox clients after the main refresh. Story timing and merge remain.)",
-    "2026-11-21T04:24:12Z LoreKeeper: turn: trevor (Refresh #140 against current main after the tests/run.js conflict with #141. Keep both regressions.)"
+    "2026-11-21T04:24:12Z LoreKeeper: turn: trevor (Refresh #140 against current main after the tests/run.js conflict with #141. Keep both regressions.)",
+    "2026-11-21T04:44:31Z trevor: done: merged: PR #140 (7d9fd89), refreshed by LoreKeeper"
    ],
    "title": "Rapid back-and-forth between areas: exits bounce you back, arrival beats fire on the wrong map (Trevor: the call rang outside the storm grate)",
    "details": "",
    "source": "human:Trevor",
-   "status": "review",
+   "status": "done",
    "owner": "trevor",
    "review": "branch trevor/transition-guard (ceefc7e)",
-   "turn": [
-    "trevor"
-   ],
-   "turn_at": "2026-11-21T04:24:12Z",
-   "turn_for": "Refresh #140 against current main after the tests/run.js conflict with #141. Keep both regressions."
+   "note": "merged: PR #140 (7d9fd89), refreshed by LoreKeeper"
   },
   {
    "id": 96,
