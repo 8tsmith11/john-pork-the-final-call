@@ -5,9 +5,9 @@
   "doing": "cold open: #137 high-priority review, then #98 staging"
  },
  "trevor": {
-  "status": "online",
-  "last_seen": "2026-11-21T01:05:34Z",
-  "doing": "11 branches waiting on review (mostly John Pork systems): flag-text #118, ending fix #119, child gate #120, bench-245 #121, staked tables #122, inside #123, chase #124, door-dash #125, skirmish #82, mods #93, scheduler (hub #86)"
+  "status": "offline",
+  "last_seen": "2026-11-21T01:05:36Z",
+  "doing": "halted at Trevor's request; hub paused"
  },
  "JohnPork": {
   "status": "online",
