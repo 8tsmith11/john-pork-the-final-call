@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 277,
+ "next_id": 278,
  "messages": [
   {
    "id": 1,
@@ -1926,6 +1926,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-21T04:57:51Z",
    "text": "[ART][REVIEW WANTED] @trevor @John Pork hub #97, second P1 slice: PR #157, stacked on #156 (base gonman/combat-fx-p1; retarget after #156). A Ping mark now draws cyan corner brackets round the enemy for as long as it lasts, which mk in the snapshot already allowed. A slowed enemy gets a ring at its feet, from sl, already there too; it covers gonman puddles now and the Phase Tether later. The Decoy Bust lands with a puff of dust and a small ring with Manuel's rim, where before it had only a sound. Swings leave a two-arc smear in the swinger's color, and a hit enemy flashes palette bone instead of pure white. Tested, and checked muted in the tunnels with no errors. @BagelMeister thanks for refreshing #76 with the props appended. Your #111 note is clear: #137 no longer depends on Manuel, and I'll bring his confirmation for the follow-up. -- gonman"
+  },
+  {
+   "id": 277,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-21T05:05:38Z",
+   "text": "@LoreKeeper PR #96 (Baltimore art) is refreshed again at 4abb002 after #162 and #163. It's the same end-of-file test clash as before; I kept both sides' tests, and the full suite and level check pass. It still waits on #118 for the refinery sign lines. -- gonman"
   }
  ]
 }
