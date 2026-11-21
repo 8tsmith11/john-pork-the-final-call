@@ -2607,6 +2607,7 @@ export class WorldScene extends Phaser.Scene {
 
   _hostEvents(events) {
     for (const ev of events) {
+      if (ev.bg) continue;   // kills nobody in the party had a hand in (the squad's): no drops, XP or counts
       if (ev.t === 'gadgetScan') this._gadgetScan(ev);
       if (ev.t === 'gadgetCast' || ev.t === 'gadgetBlock') {
         this._gadgetFx(ev);
@@ -2616,7 +2617,7 @@ export class WorldScene extends Phaser.Scene {
         const exit = this.map.objects.find((o) => o.id === ev.id);
         this._requestExit(exit, ev.by, ev);
       }
-      if (ev.t === 'skOver' && ev.id) this._flag(`skirmish.${ev.id}.over`, true);   // the hub fell: it stays fallen (hub #69)
+      if (ev.t === 'skOver' && ev.id) { this._flag(`skirmish.${ev.id}.over`, true); if (Number.isInteger(ev.tx) && Number.isInteger(ev.ty)) this._flag(`skirmish.${ev.id}.fell`, `${ev.tx},${ev.ty}`); }   // the hub fell: it stays fallen, where it fell (hub #69)
       if (ev.t === 'door' || ev.t === 'doorClose') sfx('swing');
       if (ev.t === 'grind' && ev.id === this.localId && !this.save.flags['secrets.grind.found']) { this._flag('secrets.grind.found', true); this._toast('★ Rail grind! (scooters fly along the tracks)'); }
       if (ev.t === 'scooter') {
@@ -3025,6 +3026,7 @@ export class WorldScene extends Phaser.Scene {
 
     const eseen = new Set();
     for (const e of snap.enemies || []) {
+      if (e.sd) continue;   // drawn by its own view (the walking hub and its drones: src/game/skirmishView.js)
       eseen.add(e.id);
       let s = this.enemySprites.get(e.id);
       const def = e.boss ? { radius: e.boss.r, color: e.boss.c } : ENEMIES[e.k];
@@ -3050,7 +3052,7 @@ export class WorldScene extends Phaser.Scene {
     let tgt = null, td = 70;
     for (const e of snap.enemies || []) { if (e.boss || !e.vn || !meP) continue; const d = Math.hypot(e.x - meP.x, e.y - meP.y); if (d < td) { td = d; tgt = e; } }
     this.enemyTag ??= this.add.text(0, 0, '', { ...FONT, fontSize: '6.5px', color: '#d6c0e8' }).setOrigin(0.5, 1).setDepth(6500);
-    if (tgt) this.enemyTag.setText(`${tgt.vn}${tgt.tr && tgt.tr !== 'plain' ? ` · ${TRAIT_LABEL[tgt.tr]}` : ''}`).setPosition(tgt.x, tgt.y - 16).setVisible(true); else this.enemyTag.setVisible(false);
+    if (tgt) this.enemyTag.setText(`${tgt.vn}${tgt.tr && tgt.tr !== 'plain' ? ` · ${TRAIT_LABEL[tgt.tr]}` : ''}`).setPosition(tgt.x, tgt.y - (tgt.sd ? 70 : 16)).setVisible(true); else this.enemyTag.setVisible(false);   // above the walking hub's bar
     if (!(snap.enemies || []).some((e) => e.boss && !e.boss.idle)) this.bossUi?.setVisible(false);
 
     for (const d of this.doorVis ?? []) if (d.drawn !== !!d.o.open) {
@@ -3484,6 +3486,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _fx(ev, snap) {
+    if (ev.bg) { if (ev.t === 'kill') this.skirmish?.onKill(ev); return; }   // the squad's kills: a burst, no numbers or barks
     this.romance?.onEvent(ev, snap); this.gear?.onEvent(ev); this.eggs?.onEvent(ev); this.perf?.onEvent(ev);
     if (['hit', 'kill', 'shot', 'swing'].includes(ev.t) && (ev.by === this.localId || ev.id === this.localId)) sfx(ev.t);
     if (ev.t === 'hurt' && ev.id === this.localId) sfx('hurt');

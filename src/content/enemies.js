@@ -8,6 +8,8 @@ export const GUIDE_TIPS = {
   'enemy.captcha': 'Armoured until it charges. Dodge the dash and it reels: double damage while it is dizzy.',
   'enemy.autocomplete': 'It copies how you move. Change direction often and it guesses wrong.',
   'enemy.rot_taken': 'Slow, in packs, and it infects. Knock them into walls and keep moving.',
+  'enemy.drone_walker': 'When it rises on its legs, get out of the ring. Hit it while it is planted and launching.',
+  'enemy.rot_drone': 'Weak, fast and erratic. Swat them before they swarm you; the troopers help.',
 };
 export const GUIDE_STATS_AT = 5, GUIDE_TIP_AT = 15;
 
@@ -44,5 +46,15 @@ export const ENEMIES = {
     name: 'Autocomplete', hp: 14, speed: 58, damage: 8, radius: 5, xp: 7,
     ai: 'mirror', mirrorRange: 120, dashSpeed: 240, dashTime: 0.22, touchCooldown: 0.7, color: 0x3fd0d6,
     lore: 'It finishes your sentences. It finishes your dodges. It is usually wrong, but it is fast.',
+  },
+  // The College Park fight (hub #69, src/engine/skirmish.js): a delivery-drone hub the rot got into, walking now.
+  // Its moves live in the skirmish rules, not an `ai` here; it's drawn by src/game/skirmishView.js.
+  'enemy.drone_walker': {
+    name: 'Rotted drone hub', hp: 900, speed: 16, damage: 16, radius: 14, xp: 120, color: 0x46403a,
+    lore: 'A delivery-drone hub the rot moved into. It grew legs out of its loading struts and kept launching, but not parcels.',
+  },
+  'enemy.rot_drone': {
+    name: 'Rot-drone', hp: 12, speed: 62, damage: 6, radius: 4, xp: 3, color: 0x2b2d33,
+    lore: 'A delivery drone that still thinks it has a parcel for you.',
   },
 };
