@@ -179,6 +179,7 @@ machines are commonplace in 2098 (see below). These three are simply the most ex
   in a sealed pool for the lore gate.
 - Green Line (mostly runs), Purple Line (its signs still say "opening soon"), Route 1, Lake
   Artemesia and the Paint Branch (fishing).
+- **The Route 1 diner** stays open all night. Nia runs a small Lattice table in a back booth.
 - Later acts: Greenbelt's space-flight dishes, the Meade, Gaithersburg labs, the Smelter, and
   half-drowned Annapolis.
 

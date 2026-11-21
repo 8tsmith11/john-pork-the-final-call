@@ -1,16 +1,13 @@
 // Table talk for Lattice, the casino board game (Trevor: "the game ui should also be visually appealing, polished,
 // and have dialogue in it"). The host picks a line when something happens at the table and every screen shows it
-// as a speech bubble by the speaker. [SCAFFOLD] lines in each roommate's voice, kept inside everyone's floors
-// (docs/lore/roommates.md); the opponent is a generic dealer because who it really is belongs to the story (sealed).
-// Story and world agents: replace freely, the shape is { event: { speaker: [[en, es], ...] } }.
+// as a speech bubble by the speaker. The shape is { event: { speaker: [[en, es], ...] } }.
 //
 // Events: start, seven (the roller), robbed (the victim), robbing (the thief), build (the builder),
 // close (the one at match point), warn (someone else, about the leader), win, lose, tradeYes, tradeNo (the asked).
 
 export const LATTICE_TALK = {
   start: {
-    dealer: [['Sit. The house deals, the dice decide.', 'Siéntense. La casa reparte, los dados deciden.'],
-      ['Three of you and one of me. I like those odds.', 'Tres contra uno. Me gustan esas probabilidades.']],
+    dealer: [['Mugs off the felt. Roll when you’re ready.', 'Las tazas fuera del paño. Tiren cuando quieran.']],
     trevor: [['Okay. Just like board game night. Except I win this one.', 'Bueno. Como la noche de juegos. Solo que esta la gano yo.']],
     manuel: [['Dale. I designed better boards than this in second year.', 'Dale. Diseñé tableros mejores que este en segundo año.']],
     michael: [['I already know how everyone is going to play.', 'Ya sé cómo va a jugar cada uno.']],
@@ -52,13 +49,13 @@ export const LATTICE_TALK = {
     michael: [["Heads up, they're one away.", 'Atención, le falta uno.']],
   },
   win: {
-    dealer: [['The house wins. It usually does.', 'Gana la casa. Suele pasar.']],
+    dealer: [['Leave the pieces where they are. I’ll reset the board.', 'Dejen las fichas ahí. Yo preparo el tablero.']],
     trevor: [['Ha! Rock and roll.', '¡Ja! Rock and roll.']],
     manuel: [['Engineering wins again.', 'Gana la ingeniería, otra vez.']],
     michael: [['Read the table, win the table.', 'Leer la mesa, ganar la mesa.']],
   },
   lose: {
-    dealer: [['Well played. Remember this game. I will.', 'Bien jugado. Recuerden esta partida. Yo lo haré.']],
+    dealer: [['You got me. Give me a hand with these pieces?', 'Me ganaron. ¿Me ayudan con las fichas?']],
     trevor: [['Rematch. Best of seven.', 'Revancha. Al mejor de siete.']],
     manuel: [['The dice are loaded. I am sure of it.', 'Los dados están cargados. Seguro.']],
     michael: [['I let you have that one.', 'Esa se las dejé.']],

@@ -1286,22 +1286,25 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- in-game menu (src/game/ui/GameMenu.js) ----------
-  get menu() { return this.gameMenu?.tab ?? (this.puzzle && !this.puzzle.closed ? 'puzzle' : this.boardGame && !this.boardGame.closed ? 'lattice' : this.modStation && !this.modStation.closed ? 'mods' : null); }
+  get menu() { const table = this.latticeTable?.view; return table && !table.closed ? 'lattice' : this.gameMenu?.tab ?? (this.puzzle && !this.puzzle.closed ? 'puzzle' : this.modStation && !this.modStation.closed ? 'mods' : null); }
   _makeMenu() {
     this.gameMenu = new GameMenu(this);
     const kb = this.input.keyboard;
     kb.on('keydown-ESC', () => { if (this.dlg || this.stage?.active) return; if (this.modStation) { this.modStation.close(); return; }   // the station is modal: ESC closes only it (BagelMeister, PR #93)
       if (this.gameMenu?.held != null) { this.gameMenu.held = null; this.gameMenu.refresh(); return; } if (this.puzzle && !this.puzzle.closed) { this.puzzle.destroy(); this.puzzle = null; return; } this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
-    kb.on('keydown-I', () => { if (!this.dlg && !this.stage?.active && !this.modStation) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
-    kb.on('keydown-K', () => { if (!this.dlg && !this.stage?.active && !this.modStation) this.menu === 'skills' ? this._closeMenu() : this.gameMenu.show('skills'); });
-    kb.on('keydown-J', () => { if (!this.dlg && !this.stage?.active && !this.modStation) this.menu === 'quests' ? this._closeMenu() : this.gameMenu.show('quests'); });
-    kb.on('keydown-TAB', (ev) => { ev.preventDefault?.(); if (!this.dlg && !this.stage?.active && !this.modStation) this.menu === 'map' ? this._closeMenu() : this.gameMenu.show('map'); });
+    kb.on('keydown-I', () => { if (!this.dlg && !this.stage?.active && !this.modStation && this.menu !== 'lattice') this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
+    kb.on('keydown-K', () => { if (!this.dlg && !this.stage?.active && !this.modStation && this.menu !== 'lattice') this.menu === 'skills' ? this._closeMenu() : this.gameMenu.show('skills'); });
+    kb.on('keydown-J', () => { if (!this.dlg && !this.stage?.active && !this.modStation && this.menu !== 'lattice') this.menu === 'quests' ? this._closeMenu() : this.gameMenu.show('quests'); });
+    kb.on('keydown-TAB', (ev) => { ev.preventDefault?.(); if (!this.dlg && !this.stage?.active && !this.modStation && this.menu !== 'lattice') this.menu === 'map' ? this._closeMenu() : this.gameMenu.show('map'); });
     kb.addCapture('TAB');
     for (const [key, dir] of [['A', -1], ['LEFT', -1], ['D', 1], ['RIGHT', 1]]) kb.on(`keydown-${key}`, () => { if (TABS.includes(this.menu)) this.gameMenu.cycle(dir); });
   }
   _openFab() { this.gameMenu.show('fab'); }
   _openSkills() { this.gameMenu.show('skills'); }
-  _closeMenu() { this.gameMenu.close(); }
+  _closeMenu() {
+    if (this.menu === 'lattice') this.latticeTable.view.leave();
+    else this.gameMenu.close();
+  }
   _refreshMenu() { this.gameMenu?.refresh(); }
 
   // Menu actions (host-authoritative; clients ask the host).

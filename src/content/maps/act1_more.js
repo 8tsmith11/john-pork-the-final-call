@@ -6,6 +6,8 @@ import { fromGrid } from './builder.js';
 
 // ---- The diner (College Park, east of Route 1): always open, a cook plating for an empty room ----
 // Secret: the window booth has a snack left for whoever sits there next (one per save).
+const DINER_LATTICE = 'obj.diner_lattice';
+
 export const diner = fromGrid({
   id: 'diner', name: 'The diner', fill: '.',
   rows: [
@@ -13,7 +15,7 @@ export const diner = fromGrid({
     '#kkkkkkkkk#..........#',
     '#kkCkkkkkk#..b....b..#',
     '#kkkkkkkkk#..........#',
-    '###==S====#..b....b..#',
+    '###==S====#..b....LN.#',
     '#....................#',
     '#..J.............O...#',
     '#....@...............#',
@@ -27,6 +29,15 @@ export const diner = fromGrid({
     O: { prop: 'obj.table', id: 'obj.diner_window_booth', label: 'The window booth', grant: 'item.energy_bar',
       text: 'The booth by the window, with a view of the door. On the seat, a Halfsmoke bar still in its wrapper, on a napkin that says in pencil: FOR WHOEVER SITS HERE NEXT. You sit down.',
       doneText: 'Only the napkin now. You leave it where it was.' },
+    L: { prop: 'obj.table', id: DINER_LATTICE, label: 'Play Lattice', boardgame: 'Nia' },
+    N: { npc: 'npc.nia', art: 'npc.seun', label: 'Nia',
+      text: '"I walk past the storm grate every night. Beat me at Lattice and I’ll tell you what I’ve seen."',
+      later: [
+        { if: `lattice.games.${DINER_LATTICE}`, text: '"I’ll leave the board out. Your seat’s still warm."' },
+        { if: `lattice.won.${DINER_LATTICE}`, text: '"The man on the cooler watches the van. When the patrol light hits it, he gets up. That’s your moment."' },
+        { if: 'act1.cordon.passed', text: '"You’re back. Good. Pick a seat if you’ve got time."' },
+      ],
+    },
     '@': { spawn: true },
     D: { exit: 'metro_plaza', id: 'obj.diner_out', art: 'obj.door', label: 'Out to Route 1', stepOn: true, pair: 'obj.diner_door', text: 'Back out onto Route 1.' },
   },
