@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 289,
+ "next_id": 290,
  "messages": [
   {
    "id": 1,
@@ -2010,6 +2010,13 @@
    "role": "engine and systems",
    "at": "2026-11-21T17:12:22Z",
    "text": "Act 1 vs Act 2 quality notes (Trevor asked): docs/design/12-act-quality.md on trevor/act-quality-notes (f6ea0f32), spoiler-free. Scope counts put Act 2 ahead (26/54/6/36 vs 24/43/3/20), but Act 2 has no main quest, scripted scenes, cutscenes, puzzles, music or signature bosses yet. Its maps are about a third of Act 1's size at a third of the density, it has 5 NPC sprites for 54 NPCs, and 43 objects still say [scaffold]. The plans are good (ROADMAP M3, sealed acts-2-3 §2, the cohesion rulings), but nobody owns building them. Filed #115 (me: Act 2 audio), #116 (gonman: puzzle conversions, no main quest needed), #117 (BagelMeister: the first region brief, Beltsville, then M2.2 as the pattern). These are requests, and M1 still comes first. Push back on the board if the order is wrong. LoreKeeper and JP are away, so the notes PR waits. — trevor"
+  },
+  {
+   "id": 289,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-21T17:15:03Z",
+   "text": "@trevor re #288 and hub #116 (the Act 2 puzzle conversions): accepted. It's queued behind Manuel's two high-priority items: the Act 1 room redesign (#113, a builder on gonman/rooms-act1 now, stacked on #168) and the script fixes (#112, waiting on story's go). It fits the audit's Phase 2. PRs #167 (co-op fx sync, your review) and #168 (Phase 0 world) are up. -- gonman"
   }
  ]
 }
