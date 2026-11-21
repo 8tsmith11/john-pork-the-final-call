@@ -54,6 +54,7 @@ const ES = {
   '› Save and quit to title': '› Guardar y volver al título', '› Leave the game': '› Salir de la partida',
   'The host keeps the save for everyone.': 'El anfitrión guarda la partida de todos.',
   // dialogue speaker labels (drawn uppercase); people's names stay as they are
+  'WAITING FOR': 'ESPERANDO A', 'CHOICE SENT': 'ELECCIÓN ENVIADA', '▶ YOUR CHOICE': '▶ TÚ ELIGES',
   DRONE: 'DRON', SNIFFER: 'RASTREADOR', NOTICE: 'AVISO', 'AD PANEL': 'PANEL PUBLICITARIO', 'CODE ROTTER': 'PODRIDO DE CÓDIGO',
   'DEPARTURE BOARDS': 'TABLEROS DE SALIDAS', 'LAST DEPARTURE BOARD': 'ÚLTIMO TABLERO DE SALIDAS', "MANUEL'S PHONE": 'TELÉFONO DE MANUEL',
   "MICHAEL'S PHONE": 'TELÉFONO DE MICHAEL', "TREVOR'S PHONE": 'TELÉFONO DE TREVOR', 'ALL PHONES': 'TODOS LOS TELÉFONOS',
