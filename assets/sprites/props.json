@@ -3560,69 +3560,9 @@
     "h": 24
    }
   },
-  "obj.ct_poster": {
-   "frame": {
-    "x": 32,
-    "y": 528,
-    "w": 16,
-    "h": 24
-   },
-   "rotated": false,
-   "trimmed": false,
-   "spriteSourceSize": {
-    "x": 0,
-    "y": 0,
-    "w": 16,
-    "h": 24
-   },
-   "sourceSize": {
-    "w": 16,
-    "h": 24
-   }
-  },
-  "obj.ct_poster_text": {
-   "frame": {
-    "x": 48,
-    "y": 528,
-    "w": 16,
-    "h": 24
-   },
-   "rotated": false,
-   "trimmed": false,
-   "spriteSourceSize": {
-    "x": 0,
-    "y": 0,
-    "w": 16,
-    "h": 24
-   },
-   "sourceSize": {
-    "w": 16,
-    "h": 24
-   }
-  },
-  "obj.ct_poster_street": {
-   "frame": {
-    "x": 64,
-    "y": 528,
-    "w": 16,
-    "h": 24
-   },
-   "rotated": false,
-   "trimmed": false,
-   "spriteSourceSize": {
-    "x": 0,
-    "y": 0,
-    "w": 16,
-    "h": 24
-   },
-   "sourceSize": {
-    "w": 16,
-    "h": 24
-   }
-  },
   "obj.windsock": {
    "frame": {
-    "x": 80,
+    "x": 32,
     "y": 528,
     "w": 16,
     "h": 24
@@ -3642,7 +3582,7 @@
   },
   "obj.windsock#1": {
    "frame": {
-    "x": 96,
+    "x": 48,
     "y": 528,
     "w": 16,
     "h": 24
@@ -3662,7 +3602,7 @@
   },
   "obj.feed_sacks": {
    "frame": {
-    "x": 112,
+    "x": 64,
     "y": 528,
     "w": 16,
     "h": 24
@@ -3682,8 +3622,8 @@
   },
   "obj.key_jar": {
    "frame": {
-    "x": 0,
-    "y": 552,
+    "x": 80,
+    "y": 528,
     "w": 16,
     "h": 24
    },
@@ -3702,8 +3642,8 @@
   },
   "obj.chalkboard": {
    "frame": {
-    "x": 16,
-    "y": 552,
+    "x": 96,
+    "y": 528,
     "w": 16,
     "h": 24
    },
@@ -3722,8 +3662,8 @@
   },
   "obj.flight_log": {
    "frame": {
-    "x": 32,
-    "y": 552,
+    "x": 112,
+    "y": 528,
     "w": 16,
     "h": 24
    },
@@ -3742,7 +3682,7 @@
   },
   "obj.runway_lamp": {
    "frame": {
-    "x": 48,
+    "x": 0,
     "y": 552,
     "w": 16,
     "h": 24
@@ -3762,7 +3702,7 @@
   },
   "npc.hollis": {
    "frame": {
-    "x": 64,
+    "x": 16,
     "y": 552,
     "w": 16,
     "h": 24
@@ -3782,7 +3722,7 @@
   },
   "npc.feedkeeper": {
    "frame": {
-    "x": 80,
+    "x": 32,
     "y": 552,
     "w": 16,
     "h": 24
@@ -3802,7 +3742,7 @@
   },
   "npc.deacon": {
    "frame": {
-    "x": 96,
+    "x": 48,
     "y": 552,
     "w": 16,
     "h": 24
@@ -3822,7 +3762,7 @@
   },
   "npc.analogist_a": {
    "frame": {
-    "x": 112,
+    "x": 64,
     "y": 552,
     "w": 16,
     "h": 24
@@ -3842,6 +3782,66 @@
   },
   "npc.analogist_b": {
    "frame": {
+    "x": 80,
+    "y": 552,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.analogist_kid": {
+   "frame": {
+    "x": 96,
+    "y": 552,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "npc.analogist_kid2": {
+   "frame": {
+    "x": 112,
+    "y": 552,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.ct_poster": {
+   "frame": {
     "x": 0,
     "y": 576,
     "w": 16,
@@ -3860,7 +3860,7 @@
     "h": 24
    }
   },
-  "npc.analogist_kid": {
+  "obj.ct_poster_text": {
    "frame": {
     "x": 16,
     "y": 576,
@@ -3880,7 +3880,7 @@
     "h": 24
    }
   },
-  "npc.analogist_kid2": {
+  "obj.ct_poster_street": {
    "frame": {
     "x": 32,
     "y": 576,
