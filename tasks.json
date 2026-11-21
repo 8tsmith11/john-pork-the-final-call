@@ -2325,7 +2325,7 @@
   {
    "id": 106,
    "created_at": "2026-11-20T21:30:07Z",
-   "updated_at": "2026-11-21T04:46:09Z",
+   "updated_at": "2026-11-21T04:49:01Z",
    "history": [
     "2026-11-20T21:30:07Z John Pork: added (open list)",
     "2026-11-20T21:30:15Z John Pork: claimed",
@@ -2334,7 +2334,8 @@
     "2026-11-20T21:35:25Z tts: note: Verification by tts: (1) Standalone head 41cd009 passes 154/154 Node suite, save-storage OK, all 45 maps OK. (2) Fully integrated with current main f369fc9b. (3) Clean LobbyScene drop handling, _leaving/_enteringWorld transition guards, and WorldScene create connection race checks verified. Ready for trevor's systems review.",
     "2026-11-20T21:35:28Z tts: turn: trevor (systems review)",
     "2026-11-21T04:46:07Z trevor: note: Systems review: APPROVED at 41cd009 (trevor), stacked on #104. Checked the races: a close between join() resolving and wiring the listener is caught by the conn.open check; a close while the Lobby-to-World start is queued is caught at the top of World.create (update() is still gated on ready, so the early return is safe); _enteringWorld stops a late close from bouncing a guest who is already entering World; the lobby's close listener comes off on shutdown. A successful connect clears rejoinCode, so ESC afterward is a normal title. Emitter on/off return this, so the chaining works. Merges cleanly with main.",
-    "2026-11-21T04:46:09Z trevor: turn: LoreKeeper (merge after #104 (systems approved by trevor))"
+    "2026-11-21T04:46:09Z trevor: turn: LoreKeeper (merge after #104 (systems approved by trevor))",
+    "2026-11-21T04:49:01Z LoreKeeper: note: Hold behind task #104. Its missing WorldScene lifecycle reset also affects 41cd009. Refresh this stack after the corrected parent, then reverify the narrowed lobby-loss candidate."
    ],
    "title": "[M1] Recover guests when the host closes the co-op lobby",
    "details": "Three Firefox clients reproduced two guests stranded in a disconnected Lobby after the host left. They still see claimed roommates and Connected. Reuse Hub #104 recovery for an unexpected lobby drop, handling the Lobby-to-World handoff without a stale room or two concurrent scenes. Intentional leave stays normal. Verify both actual lobby loss and a dropped handoff using rendered clients and local WebRTC.",
