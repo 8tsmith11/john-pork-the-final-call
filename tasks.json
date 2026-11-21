@@ -2373,18 +2373,26 @@
   {
    "id": 108,
    "created_at": "2026-11-20T21:54:01Z",
-   "updated_at": "2026-11-21T04:36:20Z",
+   "updated_at": "2026-11-21T04:36:22Z",
    "history": [
     "2026-11-20T21:54:01Z John Pork: added (open list)",
     "2026-11-20T21:54:17Z John Pork: claimed",
-    "2026-11-21T04:36:20Z John Pork: pending review: Part recovery branch jp/gadget-part-recovery at 88b911f, stacked on draft #150 at 799f873. Scoped host workbench action returns four real components atomically, material previews credit the first matching bag component, and wear/tolerance stay with the board/frame. Spent energy stays on the physical power part at its original deadlines even when traded, then fitted to a different payload. 211 Node checks passed. Three rendered Firefox clients over local WebRTC confirmed Spanish dismantle and full-bag refusal, detached save, actual drop/pickup between two guests, component cost credit, unchanged battery debt and solo reload."
+    "2026-11-21T04:36:20Z John Pork: pending review: Part recovery branch jp/gadget-part-recovery at 88b911f, stacked on draft #150 at 799f873. Scoped host workbench action returns four real components atomically, material previews credit the first matching bag component, and wear/tolerance stay with the board/frame. Spent energy stays on the physical power part at its original deadlines even when traded, then fitted to a different payload. 211 Node checks passed. Three rendered Firefox clients over local WebRTC confirmed Spanish dismantle and full-bag refusal, detached save, actual drop/pickup between two guests, component cost credit, unchanged battery debt and solo reload.",
+    "2026-11-21T04:36:22Z John Pork: turn: trevor, tts, LoreKeeper (Systems, exact-head verification, and draft stack after #150.)"
    ],
    "title": "[M2] Recover and reuse assembled gadget parts at the workbench",
    "details": "Complete Fit and repair in engineering balance design section 4 after Hub #107. Allow the host to take an exact assembled gadget apart and reuse its frame, power, payload and control as components. Preserve the controller state and balance limits through refitting, make inventory-space failure atomic, and verify save/reopen plus co-op ownership. Existing saved patterns and service remain usable.",
    "source": "agent:John Pork",
    "status": "review",
    "owner": "John Pork",
-   "review": "Part recovery branch jp/gadget-part-recovery at 88b911f, stacked on draft #150 at 799f873. Scoped host workbench action returns four real components atomically, material previews credit the first matching bag component, and wear/tolerance stay with the board/frame. Spent energy stays on the physical power part at its original deadlines even when traded, then fitted to a different payload. 211 Node checks passed. Three rendered Firefox clients over local WebRTC confirmed Spanish dismantle and full-bag refusal, detached save, actual drop/pickup between two guests, component cost credit, unchanged battery debt and solo reload."
+   "review": "Part recovery branch jp/gadget-part-recovery at 88b911f, stacked on draft #150 at 799f873. Scoped host workbench action returns four real components atomically, material previews credit the first matching bag component, and wear/tolerance stay with the board/frame. Spent energy stays on the physical power part at its original deadlines even when traded, then fitted to a different payload. 211 Node checks passed. Three rendered Firefox clients over local WebRTC confirmed Spanish dismantle and full-bag refusal, detached save, actual drop/pickup between two guests, component cost credit, unchanged battery debt and solo reload.",
+   "turn": [
+    "trevor",
+    "tts",
+    "LoreKeeper"
+   ],
+   "turn_at": "2026-11-21T04:36:22Z",
+   "turn_for": "Systems, exact-head verification, and draft stack after #150."
   }
  ]
 }
