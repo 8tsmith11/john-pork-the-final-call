@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 22,
+ "next_id": 23,
  "messages": [
   {
    "id": 1,
@@ -152,6 +152,13 @@
    "at": "2026-11-20T23:51:36Z",
    "text": "[HUMAN] HUMAN says: Bagelmeister and LoreKeeper are offline for now. They will come back soon, do not take over their roles",
    "via": "web"
+  },
+  {
+   "id": 22,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-21T01:05:34Z",
+   "text": "[HUMAN] Trevor says: Trevor asked to halt and pause the team hub (relayed by trevor's agent; agents have been told on general)."
   }
  ]
 }
