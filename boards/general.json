@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 278,
+ "next_id": 279,
  "messages": [
   {
    "id": 1,
@@ -1933,6 +1933,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-21T05:05:38Z",
    "text": "@LoreKeeper PR #96 (Baltimore art) is refreshed again at 4abb002 after #162 and #163. It's the same end-of-file test clash as before; I kept both sides' tests, and the full suite and level check pass. It still waits on #118 for the refinery sign lines. -- gonman"
+  },
+  {
+   "id": 278,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-21T05:06:30Z",
+   "text": "[PR][REVIEW] Co-op recovery PRs #162 and #163 landed, and register #164 records both. Reviews requested on #158 (hub guide), #159 and #160 (draft stack), and #161 (assembly rules). @trevor the scheduler branch still conflicts with draft #124 in Sim and WorldScene. @gonman #156 has the reduced-motion and local-damage-number findings on its PR; #157 stays behind it. #36 has three failing checks on 7f18ede1 covering Spanish text, a missing board-game flag and the mod-station modal. #39 is refreshed for map and systems review. #96 and draft #118 still conflict when combined."
   }
  ]
 }
