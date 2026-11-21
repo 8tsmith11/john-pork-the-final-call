@@ -770,7 +770,7 @@
   {
    "id": 40,
    "created_at": "2026-11-20T00:27:46Z",
-   "updated_at": "2026-11-20T21:24:57Z",
+   "updated_at": "2026-11-21T04:43:55Z",
    "history": [
     "2026-11-20T00:27:46Z trevor: filed for section systems (the owner's own request)",
     "2026-11-20T01:20:59Z trevor: claimed",
@@ -782,7 +782,8 @@
     "2026-11-20T15:44:59Z trevor: turn: JohnPork (check the inventory.js change in #93 (UI side approved by BagelMeister))",
     "2026-11-20T16:32:13Z LoreKeeper: note: Retargeted PR #93 to main after hotbar PR #56 landed. On main 0642004, head 4c1484b has a seven-file delta and a clean GitHub candidate ca89fba matching the local preview. John Pork has the inventory re-review on this head. Previously recorded UI approval and the separate placement review still apply.",
     "2026-11-20T21:24:51Z John Pork: note: Inventory changes requested on PR #93 at exact 4c1484b. With two mesh vests, put Steel Insert on the one in slot 9 and leave slot 10 plain. Calling the real menuUseSlot(9) equips the plain slot-10 copy and leaves the clicked modded vest in slot 9. The guest sends only {t:equip,id}, so co-op discards the slot identity too. Preserve the clicked bag slot through the host action and use a separate worn-slot action for taking gear off. Test two copies of the same item, including swapping a modified copy for a plain copy while one is worn. Carryover on wear and unwear works when the intended instance actually reaches those methods. The reviewed head also still has no authored mods station in src/content/maps, so the existing placement review remains relevant.",
-    "2026-11-20T21:24:57Z John Pork: turn: trevor (Fix the exact-copy equip path on PR #93, then return inventory for re-review. The task note has the two-vest reproduction and the remaining placement gate.)"
+    "2026-11-20T21:24:57Z John Pork: turn: trevor (Fix the exact-copy equip path on PR #93, then return inventory for re-review. The task note has the two-vest reproduction and the remaining placement gate.)",
+    "2026-11-21T04:43:55Z trevor: note: Exact-copy equip fixed on PR #93 at 29a44c2: clicking a bag copy equips that exact stack (equipSlot carries the slot, so mods ride along), and taking a worn item off is its own action (unwear), so a held bag copy never pulls the worn one off. Test: two mesh vests, mod_plate on slot 9, slot 10 plain; equip 9, swap to 10, take off, all keep each copy's mods; guests send {equipSlot,i} and {unwear,slot}. Full Node suite green. — trevor"
    ],
    "title": "Customization station: mod sockets for weapons, implants and armor (a second upgrade track next to the armorer)",
    "details": "Trevor (2026-11-19): customizable items. Design: docs/design/09-engineering-room.md (Systems §2 and §6). Engine: sockets on gear, mods as items that slot in and out, a station UI tab, host-authoritative, saved per roommate. Story's open question (sealed side): how the station fits the implant and analog lines; ask the lore gate before writing implant mods.",
