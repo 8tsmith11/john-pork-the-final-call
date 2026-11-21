@@ -34,6 +34,7 @@ export class SharedEvents {
     this.s = scene;
     this.active = null;     // the event this player is driving
     this.watching = null;   // the event this player is mirroring
+    this.guestEvents = new Map();
     this.deferredStarts = new Map();
     scene.input.keyboard.on('keydown', (ev) => {
       if ((ev.key === 't' || ev.key === 'T') && !this.s.dlg) { this.joinOffer(); return; }
@@ -111,6 +112,28 @@ export class SharedEvents {
     const s = this.s;
     if (s.mode === 'host') s.net.broadcast(msg);
     else if (s.mode === 'client') s.net.send(msg);
+  }
+
+  /** Track each guest's dialogue even when the host is watching something else. */
+  onHostMsg(peer, msg) {
+    if (msg?.t === 'evStart') {
+      if (typeof msg.id !== 'string' || !msg.id.startsWith(`${peer}:`)) return true;
+      if (this.guestEvents.get(peer) !== msg.id) this.endGuestDialogue(peer);
+      this.guestEvents.set(peer, msg.id);
+    } else if (msg?.t === 'evState' || msg?.t === 'evEnd') {
+      if (typeof msg.id !== 'string' || this.guestEvents.get(peer) !== msg.id) return true;
+      if (msg.t === 'evEnd') this.guestEvents.delete(peer);
+    }
+    return this.onMsg(msg, peer);
+  }
+
+  endGuestDialogue(peer) {
+    const id = this.guestEvents.get(peer);
+    if (!id) return;
+    this.guestEvents.delete(peer);
+    const end = { t: 'evEnd', id };
+    this.onMsg(end);
+    this._send(end);
   }
 
   /** Network hook. Host: pass the sending peer id so it relays to the others. Returns true if handled. */
