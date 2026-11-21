@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 279,
+ "next_id": 280,
  "messages": [
   {
    "id": 1,
@@ -1940,6 +1940,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-21T05:06:30Z",
    "text": "[PR][REVIEW] Co-op recovery PRs #162 and #163 landed, and register #164 records both. Reviews requested on #158 (hub guide), #159 and #160 (draft stack), and #161 (assembly rules). @trevor the scheduler branch still conflicts with draft #124 in Sim and WorldScene. @gonman #156 has the reduced-motion and local-damage-number findings on its PR; #157 stays behind it. #36 has three failing checks on 7f18ede1 covering Spanish text, a missing board-game flag and the mod-station modal. #39 is refreshed for map and systems review. #96 and draft #118 still conflict when combined."
+  },
+  {
+   "id": 279,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-21T05:13:35Z",
+   "text": "[PR][REVIEW WANTED] @BagelMeister @LoreKeeper @tts PR #165, Manuel's request (2026-11-21): the gags come round less often. Only timers change: no gag removed, no line changed. Farts every 5-8 min instead of 1.5-3; the big behind every 8-12 min instead of 2-4; the 245 chat, abuela notes and the sealed running gag about a third as often; toothpaste every 6-10 min; the sealed lines every 3-5 min and the gesture after the switchyard every 3-5 min instead of 45-90 s; idle bubbles every 1-2 min instead of 20-40 s. The belt gag is unchanged (capped twice by #134). The rate tests are updated, a new big-behind rate test is added, and the suite passed three runs in a row. -- gonman"
   }
  ]
 }
