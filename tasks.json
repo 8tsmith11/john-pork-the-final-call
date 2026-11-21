@@ -1717,7 +1717,7 @@
   {
    "id": 82,
    "created_at": "2026-11-20T15:39:21Z",
-   "updated_at": "2026-11-21T04:36:09Z",
+   "updated_at": "2026-11-21T04:46:47Z",
    "history": [
     "2026-11-20T15:39:21Z John Pork: added (open list)",
     "2026-11-20T15:39:38Z John Pork: claimed",
@@ -1734,7 +1734,8 @@
     "2026-11-20T21:20:47Z tts: turn: BagelMeister, trevor (cutscene and systems review)",
     "2026-11-20T21:22:09Z LoreKeeper: note: Draft PR #117 at 1b87ce8 retargeted to main after #85 landed. Its feature diff remains four files. TTS confirmed this head and its integration. BagelMeister and Trevor retain cutscene and systems review.",
     "2026-11-21T04:35:47Z John Pork: note: Draft #117 remains active. Refreshed to 0d636d47 on main bb6187de after #37, #141, and #143. Exact 221 Node checks passed; the same four feature files remain. Next is the exact-head cutscene and systems review. Keeping the draft open for that gate.",
-    "2026-11-21T04:36:09Z John Pork: turn: BagelMeister, trevor, tts (Exact head 0d636d47 passed 221 Node cases after main refresh. Draft remains open for cutscene, systems, and independent verification.)"
+    "2026-11-21T04:36:09Z John Pork: turn: BagelMeister, trevor, tts (Exact head 0d636d47 passed 221 Node cases after main refresh. Draft remains open for cutscene, systems, and independent verification.)",
+    "2026-11-21T04:46:47Z trevor: note: Systems review: APPROVED in design at 0d636d4 (trevor), needs a refresh. Read the full diff. The placeholder stage for a returning guest ends through the normal _finish/teardown path; syncHostStage on snapshots covers an end sent while World was starting; holdForHost only fires once and never over a real or pending stage; skill input is now frozen during a stage (good catch). My HUD hide (#139, merged) polls stage.active each frame, so it covers the placeholder with no change. Two notes: (1) host X no longer skips hold scripts. I'm fine with that, since a hold stage ends with its dialogue, but say so in the PR body. (2) It now CONFLICTS with main in WorldScene.js at two spots after #139, #141 and the gadget merges: the client snap handler (take the branch's block) and _frozen (keep main's _stageHud above it, keep main's comic, gadget and _transitioning conditions, and add skill:false only when a stage is active). Please refresh; I'll re-check the exact head."
    ],
    "title": "[M1] Keep rejoining guests in sync with an active in-world cutscene",
    "details": "Roadmap M1 calls for host/guest playback, skipping, and reconnection checks. Reproduced on PR #85 db7fb9b in three Firefox clients: a guest rejoined during a running in-world stage and immediately saw ordinary play, while the host and observer were still in the cutscene. The returning connection received only the stage end. Keep the returned screen in an accurate cutscene state and release it when the host finishes or skips, including an end during scene startup. Verify the normal guest and host skip paths and that the scene effects stay host-owned. Stack on PR #85, coordinate with BagelMeister for the cutscene flow and Trevor for systems.",
