@@ -2,6 +2,7 @@
 // The host steps the Sim with every player's latest input; clients render snapshots.
 
 export const TILE = 16;
+import { newSkirmish, stepSkirmish, skirmishView } from './skirmish.js';
 import { BOSS_PATTERNS, bossPool, pickPattern, windFor, LASER, SHOCK, RAIN, LANE } from './bossPatterns.js';
 import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
@@ -109,6 +110,9 @@ export class Sim {
   spawnEnemies() {
     // Outbreak phases (src/content/outbreak.js): the host sets sim.phaseEnemies; they spawn with their own keys.
     const extra = this.phaseEnemies?.[this.map.id];
+    const sks = this.skirmishes?.[this.map.id];   // an ambient NPC fight on this map (hub #69; the host sets sim.skirmishes)
+    this.sk = sks ? newSkirmish(sks, this.seed) : null;
+    this.extraSolid = new Set(this.sk?.solid ?? []);   // props the sim adds to the map's walls (the skirmish hub)
     const all = [...(this.map.enemies || []).map((e, i) => [`${this.map.id}#${i}`, e]),
       ...(extra?.list ?? []).map(([kind, tx, ty, options], i) => [`${this.map.id}#${extra.phase}.${i}`, { ...options, kind, x: tx * TILE + 8, y: ty * TILE + 8 }]),
       ...(this.jobEnemies?.[this.map.id] ?? []).map(([key, kind, tx, ty]) => [key, { kind, x: tx * TILE + 8, y: ty * TILE + 8 }])];   // bounty board nests (src/content/jobs.js)
@@ -340,7 +344,9 @@ export class Sim {
   step(dt, inputs) {
     this.tick++;
     this.playTime += dt;
+    const skEv = this.sk ? stepSkirmish(this.sk, dt) : null;
     this.events = this._pending ?? []; this._pending = [];
+    if (skEv?.length) this.events.push(...skEv);
     const arcHits = new Map();
     for (const p of this.players.values()) {
       const inp = p.under > 0 && !p.downed ? this._underInput(p) : inputs.get(p.id) || emptyInput();
@@ -1326,7 +1332,7 @@ export class Sim {
   _hitsBox(x, y, hw, hh) {
     const x0 = Math.floor((x - hw) / TILE), x1 = Math.floor((x + hw - 0.01) / TILE);
     const y0 = Math.floor((y - hh) / TILE), y1 = Math.floor((y + hh - 0.01) / TILE);
-    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.map.solid(tx, ty)) return true;
+    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.map.solid(tx, ty) || this.extraSolid?.has(`${tx},${ty}`)) return true;
     return false;
   }
 
@@ -1359,7 +1365,7 @@ export class Sim {
   _hits(x, y) {
     const x0 = Math.floor((x - HALF_W) / TILE), x1 = Math.floor((x + HALF_W - 0.01) / TILE);
     const y0 = Math.floor((y - HALF_H) / TILE), y1 = Math.floor((y + HALF_H - 0.01) / TILE);
-    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.map.solid(tx, ty)) return true;
+    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.map.solid(tx, ty) || this.extraSolid?.has(`${tx},${ty}`)) return true;
     return false;
   }
 
@@ -1382,6 +1388,7 @@ export class Sim {
         ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
       goo: this.goo.map((g) => ({ x: Math.round(g.x), y: Math.round(g.y), r: g.r, t: Math.round(g.ttl * 10) / 10 })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
+      sk: skirmishView(this.sk),
       allies: (this.allies ?? []).map((a) => ({ x: Math.round(a.x), y: Math.round(a.y), hp: a.hp, mhp: a.maxHp, dn: a.down > 0, st: a.st })),
       hazards: this.hazards.map((h) => ({ x: Math.round(h.x), y: Math.round(h.y), r: h.r, t: Math.round(h.ttl * 10) / 10 })),
       ring: [...this.enemies.values()].find((e) => e.ringR != null)?.ringR ?? null,
