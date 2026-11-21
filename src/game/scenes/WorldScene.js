@@ -2975,6 +2975,8 @@ export class WorldScene extends Phaser.Scene {
     for (const [id, s] of this.sprites) if (!seen.has(id)) { s.destroy(); this.sprites.delete(id); }
 
     const eseen = new Set();
+    const marks = (this._markGfx ??= this.add.graphics().setDepth(FX.DEPTH.overlay));
+    marks.clear();
     for (const e of snap.enemies || []) {
       eseen.add(e.id);
       let s = this.enemySprites.get(e.id);
@@ -2986,8 +2988,14 @@ export class WorldScene extends Phaser.Scene {
         this.enemySprites.set(e.id, s);
       }
       s.setPosition(e.x, e.y + 3).setDepth(e.y);
-      if (s.isArt) { if (e.h) s.setTintFill(0xffffff); else if (e.boss && !s.noTint) s.setTint(def.color); else s.clearTint(); }
-      else s.setFillStyle(e.h ? 0xffffff : def.color);
+      // Lasting states you can read at a glance (combat-fx.md): a Ping mark brackets the enemy, a slow rings its feet.
+      if (e.mk || e.sl) {
+        const w = (def?.radius ?? 6) + 3, top = e.y + 1 - (s.displayHeight || 16), blink = Math.floor(this.time.now / 160) % 3 ? 1 : 0.66;
+        if (e.mk) FX.brackets(marks, e.x - w, top, e.x + w, e.y + 4, FX.PAL.screen2, blink);
+        if (e.sl) marks.lineStyle(1, FX.PAL.screen1, 0.9).strokeEllipse(Math.round(e.x), Math.round(e.y + 3), w * 2, 4);
+      }
+      if (s.isArt) { if (e.h) s.setTintFill(FX.PAL.bone); else if (e.boss && !s.noTint) s.setTint(def.color); else s.clearTint(); }
+      else s.setFillStyle(e.h ? FX.PAL.bone : def.color);
       if (e.boss) {
         if (!e.boss.idle) this._bossBar(e);
         this._bossArenaFx(e);
@@ -3507,7 +3515,14 @@ export class WorldScene extends Phaser.Scene {
     }
     if (ev.t === 'ping') { FX.ring(this, ev.x, ev.y - 6, { color: FX.PAL.screen2, owner: FX.OWNER.michael, to: ev.r ?? 150, duration: 650 }); sfx(ev.n ? 'hit' : 'shot'); }   // cold tech, Michael's rim
     if (ev.t === 'pingJump' || ev.t === 'focusPing') { const l = this.add.line(0, 0, ev.x, ev.y - 6, ev.x2, ev.y2 - 6, FX.PAL.screen2, 0.9).setOrigin(0).setLineWidth(1).setDepth(FX.DEPTH.overlay); this.tweens.add({ targets: l, alpha: 0, duration: 300, onComplete: () => l.destroy() }); if (ev.t === 'focusPing') sfx('shot'); }
-    if (ev.t === 'decoy') sfx('swing');
+    if (ev.t === 'decoy') {   // the bust lands: a puff of dust where each new one stands (combat-fx.md)
+      const caster = snap.players.find((q) => q.id === ev.id), mineD = ev.id === this.localId;
+      for (const d of snap.decoys || []) if (caster && Math.hypot(d.x - caster.x, d.y - caster.y) < 24) {
+        FX.sparks(this, d.x, d.y, { n: mineD ? 6 : 4, colors: [FX.PAL.warm3, FX.PAL.concrete3], spread: 9, duration: 260, alpha: FX.budget(mineD).alpha, depth: d.y + 1 });
+        FX.ring(this, d.x, d.y - 6, { color: FX.PAL.bone, owner: FX.OWNER.manuel, to: 12, duration: 200, alpha: FX.budget(mineD).alpha });
+      }
+      sfx('swing');
+    }
     if (ev.t === 'gonman') this._gonmanWindup(ev);
     if (ev.t === 'goo') { this._gonmanRelease(ev); this._gonmanHitLines(ev.hit); }
     if (ev.t === 'vuln') {
@@ -3555,7 +3570,10 @@ export class WorldScene extends Phaser.Scene {
       const g = this.add.graphics().setDepth(p.y + 1).setPosition(p.x, p.y - 8);
       const r = Math.max(12, (ev.r ?? 20) - 4), half = (ev.arc ?? 1.8) / 2;   // the weapon's real reach and arc
       const own = ev.id === this.localId;
-      g.lineStyle(own ? 2 : 1, FX.OWNER[p.c] ?? FX.PAL.bone, own ? 0.9 : 0.7).beginPath().arc(0, 0, r, ev.a - half, ev.a + half).strokePath();   // the swinger's color (combat-fx.md)
+      const col = FX.OWNER[p.c] ?? FX.PAL.bone, base = own ? 0.9 : 0.7;
+      g.lineStyle(own ? 2 : 1, col, base).beginPath().arc(0, 0, r, ev.a - half, ev.a + half).strokePath();
+      g.lineStyle(1, col, base * 0.66).beginPath().arc(0, 0, r - 3, ev.a - half * 0.8, ev.a + half * 0.8).strokePath();   // the smear
+      g.lineStyle(1, col, base * 0.33).beginPath().arc(0, 0, r - 6, ev.a - half * 0.6, ev.a + half * 0.6).strokePath();   // the swinger's color (combat-fx.md)
       this.tweens.add({ targets: g, alpha: 0, duration: 140, onUpdate: () => { const q = at(); g.setPosition(q.x, q.y - 8).setDepth(q.y + 1); }, onComplete: () => g.destroy() });
       // The weapon itself sweeps through the arc (Trevor: swinging the crowbar swings a crowbar). Icons are drawn
       // handle bottom-left to head top-right, so +45 degrees points the head outward along the swing.
