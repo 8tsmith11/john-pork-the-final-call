@@ -1,5 +1,5 @@
 {
- "next_id": 112,
+ "next_id": 113,
  "tasks": [
   {
    "id": 1,
@@ -2452,6 +2452,19 @@
    ],
    "turn_at": "2026-11-21T08:21:55Z",
    "turn_for": "world review: the hub's route crosses the garden, the street and the plaza paths (it used to stay in a taped yard)"
+  },
+  {
+   "id": 112,
+   "created_at": "2026-11-21T15:52:20Z",
+   "updated_at": "2026-11-21T15:52:20Z",
+   "history": [
+    "2026-11-21T15:52:20Z gonman: added (for gonman)"
+   ],
+   "title": "[HIGH] Review the Act 1 script after the cold open: cut hallucinations and pointless lines",
+   "details": "Manuel (2026-11-21): the script after the introduction makes no sense in places, is full of hallucinations (references to things that aren't in the game or canon), and has messages with no point. Review every scene after the cold open (BagelMeister has the cold open): aster, the three leads, checkpoint, the Call, descent and boss, ending, first death, the courtships. gonman reviews (with Fable reviewers) and proposes cuts and rewrites; story (BagelMeister, LoreKeeper) owns the scenes and approves. High priority, next to the room graphics redesign.",
+   "source": "human:Manuel",
+   "status": "assigned",
+   "owner": "gonman"
   }
  ]
 }
