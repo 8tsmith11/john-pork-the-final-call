@@ -46,6 +46,7 @@ import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../
 import { FUSE_TEXT, LAMP_COLORS, GATE_FLAG, breakerState, lampState, breakersSet, lampsSet, gateOpen, puzzleClue, toggleText, STEP_TEXT } from '../../content/tunnelPuzzles.js';
 import { SharedEvents } from '../sharedEvent.js';
 import { Stage } from '../stage.js';
+import { Comic } from '../comic.js';
 import { RetryLine } from '../retryLine.js';
 import { Moods } from '../moods.js';
 import { Performances } from '../performances.js';
@@ -57,6 +58,8 @@ import { Crush } from '../crush.js';
 import { Fart } from '../fart.js';
 import { NpcLife } from '../npcLife.js';
 import { Cordon } from '../cordon.js';
+import { SkirmishView } from '../skirmishView.js';
+import { skirmishesFor } from '../../content/skirmishes.js';
 import { phaseEnemies } from '../../content/outbreak.js';
 import { dawnLabel, dawnProgress } from '../../content/dawn.js';
 import { makeJob, jobLine, OPEN_JOBS } from '../../content/jobs.js';
@@ -102,6 +105,8 @@ const CONTROLS_TEXT = 'WASD move · mouse aim · click: use held item\nSpace / S
 // while they play. Everything else is FREE: the box stays at the bottom and you keep moving and fighting
 // (E advances, 1-6 choose, Space still dodges, clicks outside the box still attack). A scene or node can
 // override with `mode: 'story' | 'free'` once the scripts carry it.
+// After arriving on a map, exits ignore you this long (ms), so a rapid second E or a held key can't bounce you back.
+const ARRIVE_LOCK = 700;
 const STORY_SCENES = new Set(['cold_open', 'the_call', 'descent_and_boss', 'ending', 'first_death', 'checkpoint', 'lead_b_halvard']);
 const ACT_ONE_HOST_FLAGS = new Set(['act1.boss.defeated', 'act1.outbreak.contained', 'act1.complete']);
 
@@ -162,6 +167,7 @@ export class WorldScene extends Phaser.Scene {
       const taken = new Set([...this.sim.players.values()].map((p) => p.character));
       for (const ch of ['trevor', 'manuel', 'michael']) if (!taken.has(ch)) this.sim.addPlayer(`ai:${ch}`, ch);
       this.sim.phaseEnemies = phaseEnemies(this.save.flags);   // outbreak phase spawns (task #38)
+      this.sim.skirmishes = skirmishesFor(this.save.flags);     // ambient NPC fights (hub #69)
       this.sim.jobEnemies = this._jobEnemies();                 // bounty board nests
       this.sim.spawnEnemies();   // Initial encounters use the same complete party as later map entries.
       this.brain = new CompanionBrain(this.sim);
@@ -179,7 +185,8 @@ export class WorldScene extends Phaser.Scene {
     this._wireNet();
     this._makeDialogueUi();
     // D-014: shared events, instruments, romance (src/game/sharedEvent.js, performances.js, romance.js)
-    this.shared = new SharedEvents(this); this.stage = new Stage(this); this.retry = new RetryLine(this); this.moods = new Moods(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.cordon = new Cordon(this); this.bigButt = new BigButt(this); this.beltless = new Beltless(this); this.toothpaste = new ToothpasteTalk(this); this.gags = new RunningGags(this); this.hostPick = new HostPick(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this); this.stands = new GuitarStands(this);
+    this.shared = new SharedEvents(this); this.stage = new Stage(this); this.retry = new RetryLine(this); this.moods = new Moods(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.cordon = new Cordon(this); this.skirmish = new SkirmishView(this); this.bigButt = new BigButt(this); this.beltless = new Beltless(this); this.toothpaste = new ToothpasteTalk(this); this.gags = new RunningGags(this); this.hostPick = new HostPick(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this); this.stands = new GuitarStands(this);
+    this.comic = new Comic(this);   // comic pages: flashbacks as a host-synced page-turn mode (src/game/comic.js)
     this._pageIdx = {};
     this.vignette = this._makeVignette();
     if (this.mode !== 'client') for (const p of this.sim.players.values()) {
@@ -654,11 +661,31 @@ export class WorldScene extends Phaser.Scene {
   // Story beats keyed to places (Act 1 MVP wiring; see docs/act1/DESIGN.md).
   _onEnterMap(map) {
     const once = (flag, fn) => { if (!this.save.flags[flag]) { this.save.flags[flag] = true; fn(); } };
-    if (map.id === 'room631' && this.mode !== 'client') this.time.delayedCall(4000, () => this._maybeButtDial());
+    // Still here? A callback queued on arrival only runs if the party is still on this map (Trevor: rapid E at the storm
+    // grate went in and back out, and John Pork's call then rang on the plaza).
+    const gen = this._mapGen, here = () => this._mapGen === gen && this.map?.id === map.id;
+    if (map.id === 'room631' && this.mode !== 'client') this.time.delayedCall(4000, () => { if (here()) this._maybeButtDial(); });
     if (map.id === 'aster_hall') once('act1.beat.asterEnter', () => this.startDialogue('aster'));
-    if (map.id === 'tunnel_1') once('act1.beat.call', () => this.stage.after('act1_call', () => this._hackCall(() => this.startDialogue('the_call'))));
+    if (map.id === 'tunnel_1' && !this.save.flags['act1.beat.call']) {
+      // The exits hold while the beat starts, and its flag is set only when it really plays: leave first and it
+      // plays on the way back in, instead of on the wrong map or never.
+      this._beatPending = 'act1.beat.call';
+      // Held through the whole phone effect too (John Pork, PR #140: the party left while it was still connecting).
+      this.stage.after('act1_call', () => {
+        if (!here()) return;
+        if (this.save.flags['act1.beat.call']) { this._beatPending = null; return; }
+        this._hackCall(() => {
+          if (!here()) { if (this._beatPending === 'act1.beat.call') this._beatPending = null; return; }   // left anyway: still owed
+          this._beatPending = null;
+          this.save.flags['act1.beat.call'] = true;
+          this.startDialogue('the_call');
+        });
+      });
+      // Never stuck: if the effect couldn't start (one already running), the exits come back and the beat stays owed.
+      this.time.delayedCall(12000, () => { if (here() && this._beatPending === 'act1.beat.call' && !this.dlg && !this._hacking) this._beatPending = null; });
+    }
     // A roommate says something on the way in.
-    if (BARKS.enter[map.id]) this.time.delayedCall(1400, () => { const snap = this._lastRendered; const ps = (snap?.players ?? []).filter((p) => !p.dn); const p = ps[Math.floor(Math.random() * ps.length)]; if (p && this.map.id === map.id) this._bark(p.id, pickBark(BARKS.enter[map.id], p.c)); });
+    if (BARKS.enter[map.id]) this.time.delayedCall(1400, () => { const snap = this._lastRendered; const ps = (snap?.players ?? []).filter((p) => !p.dn); const p = ps[Math.floor(Math.random() * ps.length)]; if (p && here()) this._bark(p.id, pickBark(BARKS.enter[map.id], p.c)); });
   }
 
   _newGame() {
@@ -687,6 +714,7 @@ export class WorldScene extends Phaser.Scene {
     this._netHandlers = [];
     this.events.once('shutdown', () => { for (const [t, fn] of this._netHandlers) this.net?.off?.(t, fn); });
     if (this.mode === 'host') {
+      on('leave', (peer) => this.shared?.endGuestDialogue(peer));
       on('msg', (peer, msg) => {
         if (!msg) return;
         if (!this.sim.players.has(peer)) {
@@ -696,7 +724,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'lattice') { this._table().onHostMsg(peer, msg); return; }   // the casino board game (host runs it)
         if (msg.t === 'bastion') { this._bastion().onHostMsg(peer, msg); return; }   // hub #34 (host runs it)
         if (msg.t === 'lab') { this._lab().onHostMsg(peer, msg); return; }   // hub #44 (host keeps the bench)
-        if (this.shared?.onMsg(msg, peer) || this.stage?.onHostMsg(peer, msg) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg)) return;
+        if (this.shared?.onHostMsg(peer, msg) || this.stage?.onHostMsg(peer, msg) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg) || this.comic?.onHostMsg(peer, msg)) return;
         if (msg.t === 'questRead') this._finishQuestReading(peer, msg.read);
         if (msg.t === 'npcTalk') this._guestNpcTalk(peer, msg);
         if (msg.t === 'input') {
@@ -766,7 +794,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'bastion') { this._bastion().onClientMsg(msg); return; }
         if (msg.t === 'lab') { this._lab().onClientMsg(msg); return; }
         if (msg.t === 'pipe') { this._pipes().onClientMsg(msg); return; }
-        if (this.shared?.onMsg(msg) || this.stage?.onClientMsg(msg) || this.retry?.onClientMsg(msg) || this.moods?.onClientMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg)) return;
+        if (this.shared?.onMsg(msg) || this.stage?.onClientMsg(msg) || this.retry?.onClientMsg(msg) || this.moods?.onClientMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg) || this.comic?.onClientMsg(msg)) return;
         if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
         if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text, msg.questRead, msg.itemIcons);
         if (msg.t === 'caption') this._caption(msg.text);
@@ -800,6 +828,9 @@ export class WorldScene extends Phaser.Scene {
   // ---------- map ----------
   _showMap(map) {
     this.map = map;
+    // Rapid back-and-forth guard (Trevor): a new map generation, so anything queued on the last map knows it's stale;
+    // the arrival time, for the exit grace; and no story beat is still pending from the last map.
+    this._mapGen = (this._mapGen ?? 0) + 1; this._arrivedAt = this.time?.now ?? 0; this._beatPending = null;
     this.mapGfx?.destroy(); this.mapRT?.destroy();
     // Bake textured tiles into one render texture (cheap to draw every frame).
     const rt = this.mapRT = this.add.renderTexture(0, 0, map.w * TILE, map.h * TILE).setOrigin(0, 0).setDepth(-10);
@@ -2179,9 +2210,14 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
+  /** No leaving right now: mid-transition, just arrived (ARRIVE_LOCK ms), a story beat starting, or a cutscene. */
+  _exitLocked() {
+    return !!(this._transitioning || this._beatPending || this.stage?.active || (this.time?.now ?? 0) - (this._arrivedAt ?? -1e9) < ARRIVE_LOCK);
+  }
+
   _requestExit(obj, playerId, walk) {
     const p = this.sim.players.get(playerId);
-    if (obj?.action !== 'exit' || !p || p.downed || isAi(playerId) || this._transitioning) return;
+    if (obj?.action !== 'exit' || !p || p.downed || isAi(playerId) || this._exitLocked()) return;
     const dx = obj.x * TILE + 8 - p.x, dy = obj.y * TILE + 8 - p.y;
     if (!walk && Math.hypot(dx, dy) > 34) return;
     if (obj.requiresClear && !this.sim.cleared) return this._announce('Something down here is still moving.');
@@ -2214,6 +2250,7 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.fadeOut(140, 5, 6, 12);
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.sim.phaseEnemies = phaseEnemies(this.save.flags);   // the phase may have moved since the last map
+      this.sim.skirmishes = skirmishesFor(this.save.flags);
       this.sim.jobEnemies = this._jobEnemies();
       this.sim.setMap(to, from, obj.id);   // arrive at the matching exit (stairs to stairs, elevator to elevator)
       this.enteredFrom = from;
@@ -2423,7 +2460,7 @@ export class WorldScene extends Phaser.Scene {
       me = this.sim.players.get(this.localId);
       const inp = this._frozen(this.input2.read(me));
       // Solo: the world pauses while you read or use a menu. (Co-op keeps running for the others.)
-      this.acc += this.mode === 'solo' && (this._dlgStops() || this.menu || this.stage?.active) ? 0 : Math.min(deltaMs / 1000, 0.1);
+      this.acc += this.mode === 'solo' && (this._dlgStops() || this.menu || this.stage?.active || this.comic?.active) ? 0 : Math.min(deltaMs / 1000, 0.1);
       let first = true, events = [];
       while (this.acc >= STEP) {
         const inputs = new Map([[this.localId, first ? inp : { ...inp, dodge: false, skill: false, interact: false }]]);
@@ -2448,10 +2485,28 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode === 'client' && snap.doors) for (const d of this.map.doors.values()) d.open = snap.doors.includes(d.id);
     this._render(snap);
     setInstrumentFocus(snap, this.localId);
-    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.gags?.update(snap); this.pacifier?.update(snap); this.stands?.update(); this.moods?.update(snap); this.stage?.update(snap);   // cutscene stand-ins draw last
+    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.skirmish?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.gags?.update(snap); this.pacifier?.update(snap); this.stands?.update(); this.moods?.update(snap); this.stage?.update(snap);   // cutscene stand-ins draw last
+    this._stageHud(!!this.stage?.active);   // cutscenes letterbox the screen: the HUD steps out instead of being sliced by the bars
   }
 
-  _frozen(inp) { return this._dlgStops() || this.menu || this.stage?.active ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : this.dlg ? { ...inp, interact: false } : inp; }
+  // While a cutscene runs (Trevor: "cutscenes have a weird cutoff on the top and bottom ui"), the screen-fixed HUD
+  // under the letterbox bars (portrait, health, xp, minimap, hotbar, hint, boss bar: depths 8990-9400) is hidden;
+  // when it ends, exactly what was hidden comes back. The say box and toasts are left to their own logic.
+  _stageHud(on) {
+    if (on) {
+      const keep = new Set([this.box, this.boxText, this.toastText, ...(this._sayIcons ?? [])]);
+      this._stageHidden ??= new Set();
+      for (const o of this.children.list) {
+        if (!o.visible || keep.has(o) || o.scrollFactorX !== 0 || !(o.depth >= 8990 && o.depth <= 9400)) continue;
+        o.setVisible(false); this._stageHidden.add(o);
+      }
+    } else if (this._stageHidden?.size) {
+      for (const o of this._stageHidden) if (o.active) o.setVisible(true);
+      this._stageHidden.clear();
+    }
+  }
+
+  _frozen(inp) { return this._dlgStops() || this.menu || this.stage?.active || this.comic?.active ? { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, interact: false } : this.dlg ? { ...inp, interact: false } : inp; }
   /** A story dialogue is up (the world waits); free dialogue lets everyone keep moving and fighting. */
   _dlgStops() { return !!this.dlg && !this.dlgFree; }
 
@@ -2476,6 +2531,7 @@ export class WorldScene extends Phaser.Scene {
         const exit = this.map.objects.find((o) => o.id === ev.id);
         this._requestExit(exit, ev.by, ev);
       }
+      if (ev.t === 'skOver' && ev.id) this._flag(`skirmish.${ev.id}.over`, true);   // the hub fell: it stays fallen (hub #69)
       if (ev.t === 'door' || ev.t === 'doorClose') sfx('swing');
       if (ev.t === 'grind' && ev.id === this.localId && !this.save.flags['secrets.grind.found']) { this._flag('secrets.grind.found', true); this._toast('★ Rail grind! (scooters fly along the tracks)'); }
       if (ev.t === 'scooter') {
@@ -2574,6 +2630,7 @@ export class WorldScene extends Phaser.Scene {
     if (near.npc && near.goneFlag && this.save.flags[near.goneFlag]) return;
     if (near.npc && this.mode !== 'client') this._guide().n[near.id] ??= { name: near.label.replace(/\s*\(.*\)\s*/g, '').trim(), where: this.map.name ?? this.map.id };
     if (near.action === 'exit') {
+      if (this._exitLocked()) return;   // a second E right after arriving does nothing
       if (this.mode === 'client') this.net.send({ t: 'exit', obj: near.id });
       else this._requestExit(near, this.localId);
       return;
