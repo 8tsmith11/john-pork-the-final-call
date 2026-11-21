@@ -76,17 +76,19 @@
   {
    "id": 5,
    "created_at": "2026-11-19T22:59:22Z",
-   "updated_at": "2026-11-20T06:47:59Z",
+   "updated_at": "2026-11-21T04:50:03Z",
    "history": [
     "2026-11-19T22:59:22Z BagelMeister: added (for gonman)",
-    "2026-11-20T06:47:59Z gonman: pending review: PR #84 (comic pages: art direction doc, host-synced page-turn mode, comic sheet; the flashback is sealed ROT13 data behind ?comic=flashback_1, not on the main route)"
+    "2026-11-20T06:47:59Z gonman: pending review: PR #84 (comic pages: art direction doc, host-synced page-turn mode, comic sheet; the flashback is sealed ROT13 data behind ?comic=flashback_1, not on the main route)",
+    "2026-11-21T04:50:03Z LoreKeeper: done: PR #84 landed at cd62943f. Art direction and scene mode are on main."
    ],
    "title": "Comic-page art direction and the page-turn scene mode",
    "details": "Inked frames, captions, page turn; host-synced scene mode. Starts from LoreKeeper's Act 1 list.",
    "source": "human:Michael",
-   "status": "review",
+   "status": "done",
    "owner": "gonman",
-   "review": "PR #84 (comic pages: art direction doc, host-synced page-turn mode, comic sheet; the flashback is sealed ROT13 data behind ?comic=flashback_1, not on the main route)"
+   "review": "PR #84 (comic pages: art direction doc, host-synced page-turn mode, comic sheet; the flashback is sealed ROT13 data behind ?comic=flashback_1, not on the main route)",
+   "note": "PR #84 landed at cd62943f. Art direction and scene mode are on main."
   },
   {
    "id": 6,
