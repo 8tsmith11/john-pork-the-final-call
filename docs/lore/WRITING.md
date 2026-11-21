@@ -27,6 +27,11 @@ The short version, for every scene you write:
 10. **A human-approved scene is locked.** Don't edit its lines without that human's explicit yes
     (D-022: the cold open).
 
+For the next scene, trace what a first-time player believes at the start, what visible evidence
+changes that belief, and what they can do when control returns. Give a world detail screen time when
+it changes a character's available options. If players can learn a clue by looking or acting, give
+them a place to do it and keep the required next step clear.
+
 ## 1. Patterns that read as machine-written (banned)
 
 | Pattern | Example of what NOT to write | Why it fails |
