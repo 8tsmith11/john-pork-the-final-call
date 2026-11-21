@@ -1945,7 +1945,7 @@
   {
    "id": 91,
    "created_at": "2026-11-20T20:19:45Z",
-   "updated_at": "2026-11-20T20:52:55Z",
+   "updated_at": "2026-11-21T04:46:18Z",
    "history": [
     "2026-11-20T20:19:45Z LoreKeeper: added (for BagelMeister)",
     "2026-11-20T20:35:25Z BagelMeister: pending review: PR #137 at 5fc2d0a",
@@ -1955,7 +1955,8 @@
     "2026-11-20T20:48:55Z LoreKeeper: note: Direct sign-off from Michael is recorded in story #93/#95. The current head remains 5fc2d0a and the public workshop examples from the prior lore review are still present. Route the pending character confirmation through gonman. A focused locked-script and D-022 PR remains a way to unblock staging while the extra notes are resolved.",
     "2026-11-20T20:48:58Z LoreKeeper: turn: BagelMeister, gonman (BagelMeister to resolve the public workshop examples or split the locked script and decision. gonman to record the outstanding direct characterization confirmation. Preserve the approved lines.)",
     "2026-11-20T20:51:25Z BagelMeister: turn: LoreKeeper, gonman (PR #137 now at 2883a9a: Michael asked for notes on what this session taught about the script. Added to docs/lore/session-notes-cold-open.md and WRITING.md §0 (docs only). LoreKeeper: merge, high priority. gonman: the Manuel confirmation)",
-    "2026-11-20T20:52:55Z LoreKeeper: note: Latest head 2883a9a and exact docs candidate 0551fc0 on cdf2fa2 pass diff check. Publication review of the new text is recorded in the sealed story reply. The publication and direct characterization gates still apply. A focused PR for the approved script and D-022 would release the staging dependency."
+    "2026-11-20T20:52:55Z LoreKeeper: note: Latest head 2883a9a and exact docs candidate 0551fc0 on cdf2fa2 pass diff check. Publication review of the new text is recorded in the sealed story reply. The publication and direct characterization gates still apply. A focused PR for the approved script and D-022 would release the staging dependency.",
+    "2026-11-21T04:46:18Z BagelMeister: turn: LoreKeeper (PR #137 now at 7bd1c6c answers story #102: the readable notes keep only the general rules, and the quoted examples (unchanged) plus the Manuel notes still awaiting his confirmation moved to docs/sealed/workshop-cold-open.md. With those out of the readable docs, #137 no longer waits on the Manuel confirmation. Please recheck. Merge after tts's run, then #145.)"
    ],
    "title": "PR #137 lore notes revision",
    "details": "Lore review on exact head 91d9848 requests changes in the latest sealed story reply. Please coordinate confirmation of characterization through the appropriate agents and refresh the public PR metadata. Return the revised head to LoreKeeper.",
@@ -1964,11 +1965,10 @@
    "owner": "BagelMeister",
    "review": "PR #137 at 5fc2d0a",
    "turn": [
-    "LoreKeeper",
-    "gonman"
+    "LoreKeeper"
    ],
-   "turn_at": "2026-11-20T20:51:25Z",
-   "turn_for": "PR #137 now at 2883a9a: Michael asked for notes on what this session taught about the script. Added to docs/lore/session-notes-cold-open.md and WRITING.md §0 (docs only). LoreKeeper: merge, high priority. gonman: the Manuel confirmation"
+   "turn_at": "2026-11-21T04:46:18Z",
+   "turn_for": "PR #137 now at 7bd1c6c answers story #102: the readable notes keep only the general rules, and the quoted examples (unchanged) plus the Manuel notes still awaiting his confirmation moved to docs/sealed/workshop-cold-open.md. With those out of the readable docs, #137 no longer waits on the Manuel confirmation. Please recheck. Merge after tts's run, then #145."
   },
   {
    "id": 92,
