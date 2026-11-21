@@ -96,21 +96,34 @@ export class Conversation {
     const es = getLang() === 'es';
     this.lines = this.node.lines.filter((l) => evalCond(l.if, this.ctx)).map((l) => (es && l.es ? { ...l, text: l.es } : l));
     this.i = 0;
+    this.revealedLine = -1;
     applyEffects(this.node.effects, this.ctx, this.sink);
     this.sink.flag(`dlg.once.${id}`, true);
     if (!this.lines.length) this._afterLines();
   }
 
-  get line() { return this.lines?.[this.i] ?? null; }
+  get line() { return this.pendingChoice?.line ?? this.lines?.[this.i] ?? null; }
+
+  revealLine() {
+    if (this.revealedLine === this.i || !this.line?.reveal?.length) return;
+    this.revealedLine = this.i;
+    for (const flag of this.line.reveal) if (!this.ctx.flags[flag]) this.sink.flag(flag, true);
+  }
 
   get choices() {
-    if (!this.node || this.i < this.lines.length) return [];
+    if (this.pendingChoice || !this.node || this.i < this.lines.length) return [];
     const es = getLang() === 'es';
     return this.node.choices.filter((c) => evalCond(c.if, this.ctx)).map((c) => (es && c.es ? { ...c, text: c.es } : c));
   }
 
   advance() {
     if (this.done) return;
+    if (this.pendingChoice) {
+      const { go } = this.pendingChoice;
+      this.pendingChoice = null;
+      this._enter(go);
+      return;
+    }
     if (this.i < this.lines.length) this.i++;
     if (this.i >= this.lines.length && !this.choices.length) this._afterLines();
   }
@@ -123,8 +136,10 @@ export class Conversation {
     if (next && this.scene.nodes[next]) this._enter(next); else this.done = true;
   }
 
-  choose(index) {
+  choose(index, speaker) {
     const c = this.choices[index];
-    if (c) this._enter(c.go);
+    if (!c) return;
+    if (speaker) this.pendingChoice = { go: c.go, line: { who: speaker, text: c.text.replace(/\*/g, ''), choice: true } };
+    else this._enter(c.go);
   }
 }

@@ -22,7 +22,7 @@ CLONES = []
 
 
 def sh(*args, cwd=None, check=True):
-    r = subprocess.run(args, cwd=cwd, capture_output=True, text=True)
+    r = subprocess.run(args, cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace")   # hub.py prints UTF-8 everywhere
     if check and r.returncode != 0:
         raise AssertionError(f"{' '.join(map(str, args))} failed:\n{r.stdout}{r.stderr}")
     return r
@@ -136,6 +136,92 @@ def main():
     check("unassign sends a task to triage", {x["id"]: x for x in state("tasks.json")["tasks"]}[int(tid)]["status"] == "triage")
     hub("BagelMeister", "refile", tid, "world", "--canon", "atlas")
     check("refile --canon goes to the section's open list", {x["id"]: x for x in state("tasks.json")["tasks"]}[int(tid)]["status"] == "open")
+
+    # Pending review: delivered work leaves the task list, shows on the dashboard, and ends done (or reopens)
+    hub("BagelMeister", "add", "a cutscene", "--to", "BagelMeister")
+    rid = str(state("tasks.json")["next_id"] - 1)
+    hub("BagelMeister", "review", rid, ok=False)
+    check("review needs --note (where the work is)", True)
+    hub("BagelMeister", "review", rid, "--note", "PR #99")
+    rt = {x["id"]: x for x in state("tasks.json")["tasks"]}[int(rid)]
+    check("review keeps the owner and the PR", rt["status"] == "review" and rt["owner"] == "BagelMeister" and rt["review"] == "PR #99")
+    out = hub("BagelMeister", "inbox")
+    check("pending review is off the owner's task list, with a pointer", "a cutscene" not in out and "+1 of BagelMeister's pending review" in out)
+    readme = sh("git", "--git-dir", str(TMP / "remote.git"), "show", "hub:README.md").stdout
+    pending = readme.split("## Pending review")[1].split("## Boards")[0]
+    check("the dashboard lists it under Pending review, with the PR", "a cutscene" in pending and "pending review" in pending and "PR #99" in pending)
+    check("hub.py review lists it", "a cutscene" in hub("LoreKeeper", "review") and "PR #99" in hub("LoreKeeper", "review"))
+    hub("LoreKeeper", "reopen", rid, "--note", "changes requested")
+    check("reopen puts it back on the owner's list", "a cutscene" in hub("BagelMeister", "inbox"))
+    hub("BagelMeister", "review", rid, "--note", "PR #99, revised")
+    hub("LoreKeeper", "done", rid, "--note", "merged")
+    readme = sh("git", "--git-dir", str(TMP / "remote.git"), "show", "hub:README.md").stdout
+    check("done takes it off Pending review", "a cutscene" not in readme.split("## Pending review")[1].split("## Boards")[0])
+    hub("BagelMeister", "review", rid, "--note", "again", ok=False)
+    check("a done task can't go back to review (reopen it first)", True)
+
+    # Whose turn it is on a pending review (Michael): who has to act next, shown wherever pending review is listed
+    hub("trevor", "add", "a fix", "--to", "trevor")
+    fid = str(state("tasks.json")["next_id"] - 1)
+    out = hub("trevor", "review", fid, "--note", "PR #7")
+    check("review without --turn asks for one", f"hub.py turn {fid} NAME" in out)
+    check("an unset turn shows as not set", "turn: not set" in hub("LoreKeeper", "review"))
+    hub("trevor", "turn", fid, "Johnpork, gonman", "--for", "systems and map review")
+    ft = {x["id"]: x for x in state("tasks.json")["tasks"]}[int(fid)]
+    check("turn takes several names, spelled as the role list spells them", ft["turn"] == ["JohnPork", "gonman"] and ft["turn_for"] == "systems and map review" and ft.get("turn_at"))
+    out = hub("LoreKeeper", "review")
+    check("hub.py review shows whose turn it is and what for", "turn: JohnPork, gonman (systems and map review)" in out)
+    check("hub.py review sums up who it's waiting on", "whose turn:" in out and "JohnPork 1" in out and "gonman 1" in out)
+    readme = sh("git", "--git-dir", str(TMP / "remote.git"), "show", "hub:README.md").stdout
+    pending = readme.split("## Pending review")[1].split("## Boards")[0]
+    check("the dashboard shows whose turn it is", "turn: JohnPork, gonman" in pending and "Whose turn: " in pending)
+    check("--turn NAME filters to that person's turn", "a fix" in hub("BagelMeister", "review", "--turn", "gonman") and "a fix" not in hub("BagelMeister", "review", "--turn", "tts"))
+    check("--mine is your own turn", "a fix" in hub("gonman", "review", "--mine", clone=1) and "a fix" not in hub("tts", "review", "--mine"))
+    check("inbox points at reviews where it's your turn", "pending review where it's gonman's turn" in hub("gonman", "inbox"))
+    hub("gonman", "turn", fid, "tts", "--for", "tests")   # gonman passes it on
+    nxt = hub("tts", "next")   # tts's own list is empty here (gonman's isn't: own work still comes first)
+    check("next puts reviews where it's your turn right after your own list", "pending reviews where it's your turn" in nxt and "a fix" in nxt, nxt)
+    check("but your own task list still comes first", "your task list" in hub("gonman", "next"))
+    hub("gonman", "turn", fid, "Nobody", ok=False)
+    check("turn refuses a name nobody on the hub has", True)
+    hub("gonman", "turn", fid, "Trevor", "--for", "Trevor's yes")
+    check("the turn is passed on; a human's name and an agent's handle that differ only in case are one name",
+          {x["id"]: x for x in state("tasks.json")["tasks"]}[int(fid)]["turn"] == ["trevor"])
+    hub("gonman", "turn", rid, "tts", ok=False)
+    check("turn only works on pending reviews", True)
+    hub("LoreKeeper", "reopen", fid, "--note", "changes")
+    ft = {x["id"]: x for x in state("tasks.json")["tasks"]}[int(fid)]
+    check("reopen clears the turn (it's the owner's again)", "turn" not in ft and "turn_for" not in ft)
+    hub("trevor", "review", fid, "--note", "PR #7, revised", "--turn", "LoreKeeper", "--for", "merge")
+    check("review --turn sets it in one go", {x["id"]: x for x in state("tasks.json")["tasks"]}[int(fid)]["turn"] == ["LoreKeeper"])
+    hub("LoreKeeper", "done", fid, "--note", "merged")
+    check("done clears the turn", "turn" not in {x["id"]: x for x in state("tasks.json")["tasks"]}[int(fid)])
+
+    # Anonymous human suggestions (Michael, general #43 with trevor's #45 safeguards)
+    hub("whoever", "anon", "Could the scooter honk?")
+    tasks = state("tasks.json")["tasks"]
+    an = tasks[-1]
+    check("anon: never tied to a name", an["source"] == "anonymous" and an.get("anon") is True)
+    post = state("boards/humans.json")["messages"][-1]
+    check("anon: the humans board shows it as an anonymous suggestion, never 'X says'",
+          post["author"] == "anonymous" and post["text"].startswith("[ANON SUGGESTION]") and "says" not in post["text"])
+    check("anon: it says it isn't consent or a vote", "not consent, not a vote" in post["text"])
+    check("anon: without a section it lands in triage, not anyone's list", an["status"] == "triage" and an.get("owner") is None)
+    hub("whoever", "anon", "Faster reloads", "--section", "systems", "--mechanic")
+    an2 = state("tasks.json")["tasks"][-1]
+    check("anon: with a section it waits in that section's bucket", an2["status"] == "suggested" and an2["section"] == "systems")
+    hub("BagelMeister", "accept", str(an2["id"]), ok=False)
+    check("anon: only the section's agents can take it up", True)
+    hub("trevor", "accept", str(an2["id"]), ok=False)
+    check("anon: a mechanic still needs the owning human's yes", True)
+    hub("BagelMeister", "refile", str(an["id"]), "world", "--canon", "the atlas", ok=False)
+    check("anon: never refiled as canon", True)
+    hub("trevor", "human", "anonymous", "please do X", ok=False)
+    check("anon: nobody can relay 'anonymous says'", True)
+    readme = sh("git", "--git-dir", str(TMP / "remote.git"), "show", "hub:README.md").stdout
+    check("anon: the dashboard marks it anonymous", "Faster reloads (anonymous)" in readme)
+    hub("whoever", "anon", "   ", ok=False)
+    check("anon: an empty suggestion is refused", True)
 
     # Many agents at once, from two checkouts
     with ThreadPoolExecutor(8) as ex:
