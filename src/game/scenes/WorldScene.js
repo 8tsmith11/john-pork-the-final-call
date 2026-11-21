@@ -141,6 +141,11 @@ export class WorldScene extends Phaser.Scene {
   }
 
   async create() {
+    // The data channel can close while Phaser has the Lobby-to-World transition queued.
+    if (this.mode === 'client' && !this.net.conn?.open) {
+      this._leaveToTitle(this.net.code);
+      return;
+    }
     setupCameras(this, { world: true });
     this.save = this.passedSave ?? (await loadAutosave().catch(() => null)) ?? this._newGame();
     const startMap = MAPS[this.save.world.area] ?? MAPS.room631;
