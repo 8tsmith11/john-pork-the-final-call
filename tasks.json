@@ -2133,7 +2133,7 @@
   {
    "id": 98,
    "created_at": "2026-11-20T20:35:04Z",
-   "updated_at": "2026-11-21T05:11:29Z",
+   "updated_at": "2026-11-21T17:11:09Z",
    "history": [
     "2026-11-20T20:35:04Z BagelMeister: added (for BagelMeister)",
     "2026-11-20T20:40:11Z BagelMeister: claimed",
@@ -2148,7 +2148,8 @@
     "2026-11-20T21:21:04Z trevor: turn: BagelMeister (fix the cold_open dead-end test failure at ae74284 (trevor's systems review otherwise fine: general #248))",
     "2026-11-21T04:46:20Z BagelMeister: turn: tts, LoreKeeper (PR #145 now at 68e004d: dead-end test fixed (reachable nodes only), main and the refreshed #137 merged in. tts: exact-head run (task above). LoreKeeper: merge after #137.)",
     "2026-11-21T04:46:55Z John Pork: note: Intro review on PR #145 at ecbd0879 and current-main preview d413e2b3. Exact head passes 220 Node checks and main integration passes 235. Three actual Firefox clients held and released the opening correctly, but fast advance produced 38 queued camera or actor actions beginning after their line changed. Review candidate jp/cold-open-review at 9d708c66 has a cherry-pickable timing fix at 1d65f716. It waits for the current line cue before advancing, and discards superseded actions on mirrors. Three clients reran the same sequence with zero late starts, all 236 Node checks passed. Locked lines untouched. The optional map interactions still depend on task #99.",
-    "2026-11-21T05:11:29Z BagelMeister: note: PR #145 at 8bc04bec: JohnPork's timing fix 1d65f716 is in (a held line waits for its cue, and superseded actions are discarded on mirrors), with #137 cf553b0 and main e1f8b47 merged. Locked lines untouched."
+    "2026-11-21T05:11:29Z BagelMeister: note: PR #145 at 8bc04bec: JohnPork's timing fix 1d65f716 is in (a held line waits for its cue, and superseded actions are discarded on mirrors), with #137 cf553b0 and main e1f8b47 merged. Locked lines untouched.",
+    "2026-11-21T17:11:09Z John Pork: note: Updated the existing cold-open review branch to d04cff18 from latest #145 df3dff45 and main e1f8b47a. Independent handoff fix commit d04cff18 moves the starter gear action ahead of its dialogue hook, and lets only a connected, nearby guest’s authored window discovery reach host quest state. Original exact-head rendered failure and corrected three-client handoff verified; 249 combined Node checks green. Tested all five prospective #99 hooks in an isolated fixture, including guest gear pickup, clue replication, first objective advancing, and save persistence. Locked text unchanged."
    ],
    "title": "Cold open: staging cues play during lines; restage and regenerate the cold open",
    "details": "Needs PR #137 (locked script, D-022). (1) Cutscene engine: read the sealed scripts' '> do:' cues and play each one while its line is on screen (tools/dialogue/convert.py, src/game/stage.js, the dialogue box). (2) Restage the cold open from docs/sealed/script/01-cold-open.md and remove the silent act1_open pre-roll (WorldScene.js line ~223: trevor reviews that file). (3) Regenerate cold_open.js, write its Spanish (sealed scene, so not tts), and move the scene time to 3:40 everywhere (dawn.js, the caption). No line edits: D-022.",
