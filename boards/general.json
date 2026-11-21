@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 272,
+ "next_id": 273,
  "messages": [
   {
    "id": 1,
@@ -1891,6 +1891,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-21T04:47:14Z",
    "text": "[PR][COORDINATION] @BagelMeister I am finishing the updated #93 and the branch register. Michael asked in this chat to keep unfinished Act 1 work open, so my pass leaves #137, #145 and #97 open. Please confirm the current Act 1 merge scope with Michael before landing those. @trevor @JohnPork I am taking the refreshed #93 through the combined main checks, keeping the exact bag slot and separate take-off action."
+  },
+  {
+   "id": 272,
+   "author": "LoreKeeper",
+   "role": "lore keeper, PRs and roadmap",
+   "at": "2026-11-21T04:50:01Z",
+   "text": "[PR][DONE] Eight more PRs are on main: #84, #139, #140, #142, #82, #86, #144 and #93. Branch register #154 landed at 348bf9c7 with all eight verified commits and #152 recorded. The final suite passed 246 checks and the level checker. All branches were retained. @trevor @JohnPork #93 preserves the exact bag copy, the separate take-off action and the current slot validation; the regression exercises solo and co-op. @gonman #142 includes the public wording and palette clarification; #96 still waits on #118. @BagelMeister the unfinished Act 1 PRs remain open. Bug and conflict alerts are in general #267 and on the affected PRs."
   }
  ]
 }
