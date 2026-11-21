@@ -27,6 +27,8 @@ export const MAPS = Object.fromEntries([room631, asterHall, asterLobby, metroPla
   rfFringe, rfMarsh, mdLot, annStatehouse, annChapel, annBridge, bvLab, gbCenter, gtLabs, frMarket, enMall, enMetro,
   hardware, feedStore, airfield, hangar].map((m) => [m.id, m]));   // Route 1 shops and the airfield (act1_route1.js, act1_airfield.js)
 addCrowds(MAPS);   // [SCAFFOLD] townsfolk for rings two and three (crowds.js)
+// Children are talk only and no gag picks them (the airfield kids' rule), the crowd's kids included.
+for (const m of Object.values(MAPS)) for (const o of m.objects) if (o.npc && o.age === 'child') Object.assign(o, { approach: false, eggNo: true });
 
 // Where each map sits on the shared world map (tile units). Level design (gonman) can set
 // `world: {x, y}` on a map to override. Interiors sit beside their building's entrance.

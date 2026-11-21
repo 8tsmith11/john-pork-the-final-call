@@ -5,14 +5,14 @@ import { REGIONS, RINGS, regionState } from '../../content/regions.js';
 import { ENEMIES, GUIDE_TIPS, GUIDE_STATS_AT, GUIDE_TIP_AT } from '../../content/enemies.js';
 import { PARTY_SCALE, COMBAT } from '../../engine/sim.js';
 import { VIEW } from '../../view.js';
-import { getLang, setLang, LANG_LABEL } from '../../i18n.js';
+import { getLang, setLang, LANG_LABEL, tr } from '../../i18n.js';
 import * as Settings from '../../settings.js';
 import { sellPrice, ITEMS, RECIPES, SKILLS, SHOPS, playerMods, heldWeapon, ARMOR_SLOTS, GEAR_SLOTS, ACCESSORY_SLOTS, SLOT_NAMES, MAX_UPGRADE, upgradeCost, scaleMods, canWear } from '../../content/items.js';
 import { MAPS } from '../../content/maps/index.js';
 import { GUIDE_PEOPLE, guideText } from '../../content/guide.js';
 import { ABILITIES, ABILITY_KEYS, MAX_SCORE, modOf, fmtMod, scoresOf, raiseCost } from '../../content/abilities.js';
 import { canPay, count, has, splitQuantity, worn } from '../../engine/inventory.js';
-import { SKILL_TREE, skillOpen, tierLevel } from '../../content/skills.js';
+import { R_ABILITIES, SKILL_TREE, abilityOptions, selectedAbility, skillKnown, skillOpen, tierLevel } from '../../content/skills.js';
 import { ROOMMATES } from '../scenes/BootScene.js';
 import { looksFor, wearTexture } from '../render/wearables.js';
 import { QUESTS, questState, questVisible, questLeads } from '../../content/quests.js';
@@ -440,24 +440,27 @@ export class GameMenu {
   _skills(g) {
     const s = this.scene, who = s.character, c = s.save.party[who], b = this.box, tree = SKILL_TREE[who];
     if (!tree) return;
-    const tx = b.x + 10, colW = 92, nodeW = 84, nodeH = 22, rowY = (r) => b.y + 44 + r * 34, colX = (k) => tx + k * colW;
-    const pts = c.skillPoints ?? 0;
+    const tx = b.x + 10, colW = 92, nodeW = 84, nodeH = 22, rowY = (r) => b.y + 44 + r * 29, colX = (k) => tx + k * colW;
+    const pts = c.skillPoints ?? 0, ranks = c.skills ?? {};
+    const known = (n) => skillKnown(c, n, s.save);
+    const visible = tree.nodes.filter((n) => known(n) || n.reveal?.teaser);
     this._t(b.x + b.w - 10, b.y + 26, pts ? `◆ ${pts} point${pts === 1 ? '' : 's'} to spend` : 'level up for points', F(8, pts ? C.hi : C.sub)).setOrigin(1, 0);
     tree.branches.forEach((name, k) => this._t(colX(k) + nodeW / 2, b.y + 27, name, F(7, C.sub)).setOrigin(0.5, 0));
     const pos = (n) => ({ x: colX(n.col), y: rowY(n.row) });
-    for (const n of tree.nodes) for (const r of n.req || []) {
-      const p = tree.nodes.find((x) => x.id === r); if (!p) continue;
-      const a = pos(p), z = pos(n), on = (c.skills[r] ?? 0) > 0;
+    for (const n of visible) for (const r of n.req || []) {
+      const p = visible.find((x) => x.id === r); if (!p || !known(n)) continue;
+      const a = pos(p), z = pos(n), on = (ranks[r] ?? 0) > 0;
       g.lineStyle(1, on ? 0xffb347 : 0x3a4060, on ? 0.9 : 0.8).lineBetween(a.x + nodeW / 2, a.y + nodeH, z.x + nodeW / 2, z.y);
     }
-    for (const n of tree.nodes) {
-      const { x, y } = pos(n), r = c.skills[n.id] ?? 0, open = skillOpen(who, c, n), maxed = r >= n.max;
+    for (const n of visible) {
+      const discovered = known(n), label = discovered ? n.name : '???';
+      const { x, y } = pos(n), r = Math.max(0, Math.min(n.max, ranks[n.id] ?? 0)), open = skillOpen(who, c, n, s.save), maxed = r >= n.max;
       const canLearn = open && !maxed && pts > 0, cap = n.row === 4;
       const edge = maxed ? 0x7fb069 : r > 0 ? 0xffb347 : canLearn ? 0xe8e8f0 : 0x3a4060;
       g.fillStyle(r > 0 ? 0x1f2438 : open ? 0x171a2b : 0x0f111c).fillRoundedRect(x, y, nodeW, nodeH, cap ? 5 : 2);
       g.lineStyle(cap ? 2 : 1, edge, open ? 1 : 0.7).strokeRoundedRect(x, y, nodeW, nodeH, cap ? 5 : 2);
-      this._t(x + 4, y + 2, n.name, F(n.name.length > 15 ? 6 : 7, open ? (maxed ? C.ok : C.text) : '#4a5175'));
-      this._t(x + 4, y + 12, '■'.repeat(r) + '□'.repeat(n.max - r), F(6, r ? C.hi : '#4a5175'));
+      this._t(x + 4, y + 2, label, F(label.length > 15 ? 6 : 7, open ? (maxed ? C.ok : C.text) : C.sub));
+      if (discovered) this._t(x + 4, y + 12, '■'.repeat(r) + '□'.repeat(n.max - r), F(6, r ? C.hi : '#4a5175'));
       const z = s.add.zone(x, y, nodeW, nodeH).setOrigin(0).setInteractive({ useHandCursor: canLearn });
       z.on('pointerover', () => { this.skillHover = n.id; this._skillTip(); });
       z.on('pointerdown', () => { if (canLearn) s.menuLearn(n.id); });
@@ -465,14 +468,25 @@ export class GameMenu {
     }
     this.skillTip = { x: colX(3) + 4, y: b.y + 44, w: b.x + b.w - colX(3) - 14 };
     this._skillTip();
+    const { x, w } = this.skillTip, y = b.y + 165, equipped = selectedAbility(who, c);
+    this._t(x, y, 'EQUIP FOR R', F(7, C.sub));
+    abilityOptions(who, c).forEach((id, i) => {
+      const on = id === equipped, yy = y + 12 + i * 15;
+      const label = `${on ? '●' : '○'} ${tr(R_ABILITIES[id].name)}`;
+      this._t(x, yy, fit(label, w, 8), F(8, on ? C.ok : C.hi), on ? undefined : () => s.menuEquipR(id));
+    });
   }
 
   _skillTip() {
     this.tip?.forEach((o) => o.destroy()); this.tip = [];
     const s = this.scene, who = s.character, c = s.save.party[who], t = this.skillTip;
     const n = SKILL_TREE[who]?.nodes.find((x) => x.id === this.skillHover); if (!n || !t) return;
-    const r = c.skills[n.id] ?? 0, open = skillOpen(who, c, n);
-    const need = (n.req || []).filter((q) => !(c.skills[q] > 0)).map((q) => SKILL_TREE[who].nodes.find((x) => x.id === q)?.name);
+    if (!skillKnown(c, n, s.save)) {
+      if (n.reveal?.teaser) this.tip.push(this._t(t.x, t.y, 'Discover through play.', { ...F(8, C.sub), wordWrap: { width: t.w } }));
+      return;
+    }
+    const r = c.skills?.[n.id] ?? 0, open = skillOpen(who, c, n, s.save);
+    const need = (n.req || []).filter((q) => !(c.skills?.[q] > 0)).map((q) => SKILL_TREE[who].nodes.find((x) => x.id === q)?.name);
     this.tip.push(this._t(t.x, t.y, n.name, { ...F(9, C.hi), wordWrap: { width: t.w } }));
     this.tip.push(this._t(t.x, t.y + 12, `rank ${r}/${n.max}`, F(7, r >= n.max ? C.ok : C.sub)));
     this.tip.push(this._t(t.x, t.y + 24, n.text, { ...F(7, C.text), wordWrap: { width: t.w } }));
@@ -774,5 +788,6 @@ export class GameMenu {
       if (score >= MAX_SCORE) this._t(x + b.w - 40, y + 7, 'max', F(8, C.ok)).setOrigin(1, 0);
       else this._t(x + b.w - 40, y + 5, `+1 (${cost} pt${cost > 1 ? 's' : ''})`, F(can ? 9 : 8, can ? C.hi : '#4a5175'), can ? () => s.menuAbility(k) : undefined).setOrigin(1, 0);   // higher scores cost more
     });
+    this._t(b.x + 14, b.y + b.h - 13, `${tr('Score cap')} ${MAX_SCORE} · ${tr('Modifiers change at even scores.')}`, F(7, C.sub));
   }
 }

@@ -1,7 +1,10 @@
-// Act 2, ring two (docs/design/02-world-atlas.md §6-11), [SCAFFOLD] batch built with the level builder from text
-// grids (Trevor: "this game must be much larger scale"). The way out: once Act 1 is complete, the Route 1 north
-// checkpoint opens onto the Route 1 north hub, which branches to every ring-two region. All "[scaffold]" lines
-// come straight from the atlas and wait for the polish pass. The Act 2 story itself is sealed (BagelMeister).
+// Act 2, ring two (docs/design/02-world-atlas.md §6-11), built with the level builder from text grids (Trevor: "this
+// game must be much larger scale"). The way out: once Act 1 is complete, the Route 1 north checkpoint opens onto the
+// Route 1 north hub, which branches to every ring-two region. Route 1 north, Greenbelt, Beltsville, the refuge, the
+// Meade and Annapolis have their lines, prop art and a small find each from the polish pass (hub #30, gonman).
+// Spanish: src/i18n/es-act2.js. The finds are listed sealed in docs/sealed/secrets-later-acts.md (open it with
+// python3 tools/spoilers/seal.py open docs/sealed/secrets-later-acts.md). Baltimore has its own art pass (hub #6).
+// The Act 2 story itself is sealed (BagelMeister).
 import { fromGrid } from './builder.js';
 
 // Road exits at map edges are walk-on and code-drawn (no door art): they're a road leaving the map, not a door.
@@ -14,8 +17,8 @@ export const route1North = fromGrid({
     'TTTTTTTTTTTTTTTTTTTTBBTTTTTTTTTTTTTTTTTT',
     'TgggggggggggggggggsscssgggggggggggggggggT',
     'GgggggggggggggggggsscssgggggggggggggggggR',
-    'Tgggg?gggggggggggsscssggggggggggg?gggggT',
-    'TggggggggggggggggsscssgggggggggggggggggT',
+    'Tgggg?gggggggggggsscssgggggggggggKgggggT',
+    'TggggggggggggUgggsscssgggggggggggggggggT',
     'T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,T',
     'F,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,M',
     'T,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,T',
@@ -33,8 +36,14 @@ export const route1North = fromGrid({
     M: { exit: 'meade', id: 'obj.r1n_to_meade', selfDrawn: true, label: 'The Meade perimeter', pair: 'obj.meade_out', stepOn: true, tile: ',', text: 'Berms, black glass, antenna farms.' },
     A: { exit: 'annapolis', id: 'obj.r1n_to_annapolis', selfDrawn: true, label: 'South-east to Annapolis', pair: 'obj.annapolis_out', stepOn: true, text: 'Toward the bay.' },
     S: { exit: 'metro_plaza', id: 'obj.r1n_south', selfDrawn: true, label: 'South, back to College Park', pair: 'obj.plaza_r1n', stepOn: true, tile: 's', text: 'Back through the old checkpoint.' },
-    '?': { prop: 'obj.board', label: 'Road sign', text: '[scaffold] Distances to places nobody has driven to in a long time, corrected in marker.' },
-    N: { npc: 'npc.r1n_walker', art: 'npc.rotter_3', label: 'A walker on the shoulder', text: '[scaffold] "First time out of the pocket? Everyone looks back the first time."' },
+    '?': { prop: 'obj.purple_sign', id: 'obj.r1n_road_sign', label: 'Road sign',
+      text: 'A highway sign on a post, the reflective letters peeled down to the glue: GREENBELT 2 · BELTSVILLE 4 · BALTIMORE 27. Somebody has crossed out the miles in marker and written walking hours beside them. Beside BALTIMORE there is no time, only DON\'T.' },
+    K: { prop: 'obj.cordon_sign', id: 'obj.r1n_notice', label: 'Continuity notice',
+      text: 'A Continuity notice on two legs, planted in front of the old mileage sign: RESTRICTED AREA AHEAD. NO STOPPING. Only the bottom line of the old sign shows past it, ANNAPOLIS 21, and beside it somebody has scratched a 4 into the paint with a key.' },
+    U: { prop: 'obj.shelter', id: 'obj.r1n_shelter', label: 'Bus shelter', loot: 'lost',
+      text: 'A bus shelter with no glass left in it. The timetable is still bolted to the post, and the last northbound bus on it is for a night in 2071. Under the bench, a cardboard box marked WALKERS, and under that, smaller: TAKE WHAT YOU NEED.' },
+    N: { npc: 'npc.r1n_walker', art: 'npc.analogist_a', label: 'A walker on the shoulder',
+      text: '"Two pairs of socks." He sits on the guardrail with one boot off, working at his heel. "Nobody tells you that about leaving. Two pairs, and you swap the inside pair at Greenbelt."' },
     E: { enemy: 'enemy.rot_taken' },
     '@': { spawn: true },
   },
@@ -51,10 +60,10 @@ export const greenbelt = fromGrid({
     'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
     'Tgggggggg#####ggggg#####ggggggggT',
     'Tgggggggg#DDD#ggggg#DDD#ggggggggT',
-    'Tgggggggg##o##ggggg##o##gggTggggT',
+    'Tgggggggg##L##ggggg##H##gggTggggT',
     'Tgggggggggqqqqqqqqqqqqqggggggg?gT',
     'Tggggqqqqqq.........qqqqqqgggggT',
-    'Tggggq#oo#.....N.....#oo#qgggggT',
+    'Tggggq#W##.....N.....##J#qgggggT',
     'Tggggq####...........####qgggggT',
     'Tggggq####qqqqqqqqqqq####qgggggT',
     'Tgg@gqqqqqqq.......qqqqqqqgEgggT',
@@ -62,10 +71,20 @@ export const greenbelt = fromGrid({
     'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
   ],
   legend: {
-    D: { scenery: 'obj.degasser', solid: true, tile: '#' },
-    o: { prop: 'obj.board', label: 'Co-op shopfront', text: '[scaffold] A co-op since the 1930s. The minute book on the counter is open to an argument from 2041.' },
-    N: { npc: 'npc.gb_committee', art: 'npc.rotter_2', label: 'Committee member', text: '[scaffold] "We\'ll vote on whether to talk to you. Then we\'ll vote on the result."' },
-    '?': { prop: 'obj.board', id: 'obj.gb_dishes', label: 'The dishes, on the hill', text: '[scaffold] White dishes the size of houses, pointed at a sky nobody is paid to watch. One of them is turning.' },
+    D: { scenery: 'obj.planter', solid: true, tile: '#' },   // window boxes on the upper floor
+    L: { prop: 'obj.parts_bins', id: 'obj.gb_tool_library', label: 'The tool library', grant: 'item.work_gloves',
+      text: 'TOOL LIBRARY on the glass, and under it the rules: BORROW FOR A WEEK. SIGN THE CLIPBOARD. On the returns shelf inside the door, a pair of work gloves with a tag on one thumb: OVERDUE SINCE 2088, FINE WAIVED BY VOTE. You sign the clipboard and take them.',
+      doneText: 'The returns shelf, empty. On the clipboard, the line for the gloves has a pencil tick beside it now.' },
+    H: { prop: 'obj.neon', id: 'obj.gb_barber', label: 'The barbershop', light: 0.5,
+      text: 'HAIRCUTS in gold leaf on the window. Under it the price has been painted over so many times that the glass is thick with paint. The newest price is in chalk, which wipes off faster.' },
+    W: { prop: 'obj.newsbox', id: 'obj.gb_weekly', label: 'The town weekly',
+      text: 'The town weekly, one page taped inside the window every Friday, the way it has been since the 1930s. This week\'s front page is the committee\'s minutes in full. The headline is the vote count.' },
+    J: { prop: 'obj.house_rules', id: 'obj.gb_pharmacy', label: 'The pharmacy',
+      text: 'A pharmacy with its shutter down, and a note taped to the shutter in neat capitals: CLOSED UNTIL THE COMMITTEE DECIDES WHO HOLDS THE KEY. It is dated 2093. Under it, somebody keeps a tally of the meetings since.' },
+    N: { npc: 'npc.gb_committee', art: 'npc.rotter_2', label: 'Committee member',
+      text: '"Motion to hear the strangers out." She raises her own hand and counts it. "Carried, one to nothing. It won\'t be official till the counter\'s fixed. Go on anyway."' },
+    '?': { prop: 'obj.balcony_view', id: 'obj.gb_dishes', label: 'The dishes, on the hill',
+      text: 'White dishes on the hill above the town, each the size of a house, pointed at a sky nobody is paid to watch. Through the coin viewer at the top of the street, one of them is turning, slow as a minute hand, while the windsock beside it hangs straight down.' },
     E: { enemy: 'enemy.spitter' },
     '@': { spawn: true },
     X: back('greenbelt', 'Back east to Route 1'),
@@ -85,7 +104,7 @@ export const beltsville = fromGrid({
     'Tgggggggggggggggggggggggggggggg=T',
     'Tg#########ggggg#########ggggg=T',
     'Tg#.L.....#ggggg#..$....#ggggg=T',
-    'Tg#...$...#ggggg#.......#ggggg=T',
+    'Tg#...Y...#ggggg#.......#ggggg=T',
     'Tg####.####ggggg####.####ggggg=T',
     'Tgggggyyyyyyyyyyyyyyyyyygggggg=T',
     'TgggggyggggNggggggggggggyggEgg=T',
@@ -94,11 +113,18 @@ export const beltsville = fromGrid({
     'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
   ],
   legend: {
-    $: { prop: 'obj.crate', label: 'Feed bin', loot: 'parts', text: '[scaffold] Feed for something that isn\'t cattle.' },
-    N: { npc: 'npc.bv_vet', art: 'npc.rotter_1', label: 'A veterinarian', text: '[scaffold] "I took the job for the right reasons. Ask me what the reasons were. I dare you."' },
+    // The equipment shed (the east building). It keeps the id it had as a feed bin, so a save that searched it keeps that.
+    $: { prop: 'obj.parts_bins', id: 'obj.beltsville_crate_19_3', label: 'Parts bins', loot: 'parts',
+      text: 'Steel shelves of parts bins in the equipment shed, labeled in marker: PUMP SEALS, FEED LINE. Further down the labels give up, and so did the sorting.' },
+    Y: { prop: 'obj.feed_sacks', id: 'obj.bv_feed_sacks', label: 'Feed sacks',
+      text: 'Paper sacks stacked against the office wall, stenciled TANK FEED · NOT FOR LIVESTOCK. On every sack, somebody has struck out LIVESTOCK with one careful line of marker.' },
+    N: { npc: 'npc.bv_vet', art: 'npc.rotter_1', label: 'A veterinarian',
+      text: '"I took this job for good reasons." She pulls her gloves on, then off again. "I wrote them down the day I signed. I keep meaning to find the list."' },
     // The vet's office (the west building): the ledgers are read here, outside the barn.
-    L: { prop: 'obj.crate', id: 'obj.bv_ledgers', label: 'Breeding ledgers', tile: '.', text: '[scaffold] Breeding ledgers that go back before the Call.' },
-    '?': { prop: 'obj.board', id: 'obj.bv_sealed_barn', label: 'The sealed barn', text: '[scaffold] The newest barn has an airlock. Rain on sheet metal, and under it, breathing.' },
+    L: { prop: 'obj.bookshelf', id: 'obj.bv_ledgers', label: 'Breeding ledgers', tile: '.',
+      text: 'Breeding ledgers on the shelf in the vet\'s office, one cloth-bound volume a year, the years in white ink on the spines. Inside, every line is a date and a fence post number.' },
+    '?': { prop: 'obj.cordon_sign', id: 'obj.bv_sealed_barn', label: 'The sealed barn',
+      text: 'A notice on two legs: BIOSECURE. NO ENTRY WITHOUT ESCORT. Past it, down the track in the rain, a barn with no windows and an airlock where the door should be. Under the rain on its roof, a pump runs in and out, slow, like breathing.' },
     E: { enemy: 'enemy.rot_taken' },
     '@': { spawn: true },
     X: back('beltsville', 'Back to Route 1'),
@@ -125,9 +151,14 @@ export const refuge = fromGrid({
     'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
   ].map((r) => r.slice(0, 32)),
   legend: {
-    N: { npc: 'npc.rf_teacher', art: 'npc.rotter_2', label: 'A schoolteacher with a slate', text: '[scaffold] "No implants past the fence. Your gear won\'t help you here. Neither will mine, and I don\'t have any."' },
-    $: { prop: 'obj.crate', label: 'Hand-copied books', text: '[scaffold] A library copied by hand, with the copying errors lovingly preserved.' },
-    '?': { prop: 'obj.board', id: 'obj.rf_tower', label: 'The fire tower', text: '[scaffold] A fire tower, and on its rail, tree rings counted and labeled with events.' },
+    N: { npc: 'npc.rf_teacher', art: 'npc.analogist_b', label: 'A schoolteacher with a slate',
+      text: '"Your phones go quiet past the fence." She wipes her slate clean with the heel of her hand. "The children think that\'s funny. Try not to check yours in front of them."' },
+    // The old ranger station by the boardwalk, where the settlement meets the road.
+    $: { prop: 'obj.lost_found', id: 'obj.rf_staves', label: 'A box by the ranger station door', grant: 'item.wooden_bat',
+      text: 'A box inside the old ranger station door with WALKING STICKS painted on it, full of staves cut from the woods. Among them is a bat of ash wood, sanded smooth at the grip, with a cedar tag on twine: FOR THE ROAD BACK. You take it.',
+      doneText: 'The box of walking sticks. The cedar tag hangs from one of the staves now.' },
+    '?': { prop: 'obj.chalkboard', id: 'obj.rf_tower', label: 'The fire tower',
+      text: 'A fire tower on four timber legs, its cab up in the treetops. Nailed to the rail of the bottom flight is a slice of an old oak, its rings labeled in ink on little paper flags.' },
     '@': { spawn: true },
     X: { ...back('refuge', 'Back west to Route 1'), tile: 'g' },
   },
@@ -144,8 +175,8 @@ export const meade = fromGrid({
   rows: [
     '################################',
     '#==============================#',
-    '#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#',
-    '#,,,,ccc,,,,ccc,,,,ccc,,,,,,,,,#',
+    '#,,G,,,,,,,,,,,,,,,,,,,,,,,,,,,#',
+    '#,,,,c,,,,,,c,,,,,,c,,,,,,,,,,,#',
     '#,,,,,,,,,,,,,,,,,,,,,,,,,,,?,,#',
     '#,,,,,,,,,,,,,N,,,,,,,,,,,,,,,,#',
     '#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#',
@@ -153,9 +184,15 @@ export const meade = fromGrid({
     '################################',
   ],
   legend: {
-    c: { scenery: 'obj.van', tile: ',' },
-    N: { npc: 'npc.md_quartermaster', art: 'npc.rotter_3', label: 'A quartermaster', text: '[scaffold] "I can be reasoned with. That\'s not the same as being on your side."' },
-    '?': { prop: 'obj.board', id: 'obj.md_menu', label: 'Cafeteria menu (posted outside)', text: '[scaffold] The only thing at the Meade with a sense of humor. Tuesday: "Mystery Meat (Classified)."' },
+    c: { scenery: 'obj.van', solid: true, w: 2, tile: ',' },   // one van per bay along the fence
+    N: { npc: 'npc.md_quartermaster', art: 'npc.rotter_3', label: 'A quartermaster',
+      text: '"Everything at the Meade has a form." He holds out a clipboard and pulls it back before you can take it. "I\'m the form you fill out to skip the others. I cost more."' },
+    '?': { prop: 'obj.aframe', id: 'obj.md_menu', label: 'Cafeteria menu (posted outside)',
+      text: 'The cafeteria menu, on a sandwich board at the edge of the berm road, typed fresh every morning. MONDAY: Meatloaf (Redacted). TUESDAY: Mystery Meat (Classified).' },
+    // In the gutter under the fence, in the far corner from the gate: the badge is void and opens nothing.
+    G: { prop: 'obj.room_sign', id: 'obj.md_badge', label: 'A badge on a lanyard', grant: 'item.keycard',
+      text: 'A contractor badge face down in the gutter under the fence, its lanyard trodden flat. You turn it over: a photo of somebody you have never met, and a clearance stripe in steel grey. Somebody has clipped one corner off to void it.',
+      doneText: 'The print of a lanyard in the grit, where the badge lay.' },
     E: { enemy: 'enemy.captcha' },
     '@': { spawn: true },
     X: { ...back('meade', 'Back west to Route 1'), tile: ',' },
@@ -210,14 +247,20 @@ export const annapolis = fromGrid({
     '#qqqqqqqq##.##qqqqqqNqqqqqbb~~~~',
     '#qqq?qqqqqqqqqqqqqqqqqqqqqbb~~~~',
     '#qqqqqqqqqqqqqq~~~~qqqqqqqbbbbb~',
-    '#qqqqqqqqqqqqq~~~~~~qqqqqqqqq$b~',
+    '#qqqqqqqqqqqqP~~~~~~qqqqqqqqq$b~',
     'Xqq@qqqqqqqqqqq~~~~qqqqqqqqqqqb~',
     '##########################~~~~~~',
   ],
   legend: {
-    N: { npc: 'npc.ann_crabber', art: 'npc.rotter_1', label: 'A crabber', text: '[scaffold] "Tide comes when the almanac says it won\'t. Four generations wrote in this book and it\'s still wrong."' },
-    '?': { prop: 'obj.board', id: 'obj.ann_statehouse', label: 'The statehouse dome', text: '[scaffold] A wooden dome above the waterline. The tide is in the street twice a day.' },
-    $: { prop: 'obj.crate', id: 'obj.ann_charts', label: 'Paper charts', text: '[scaffold] Paper charts: the only accurate ones. This is where the party gets a boat (atlas).' },
+    N: { npc: 'npc.ann_crabber', art: 'npc.rotter_1', label: 'A crabber',
+      text: '"Pots go out at slack water." He coils a line round his elbow and back to his hand. "Slack water comes when it likes now. The almanac\'s no help, and my grandmother wrote half of it."' },
+    '?': { prop: 'obj.directory', id: 'obj.ann_statehouse', label: 'The statehouse dome',
+      text: 'A cast-iron marker on a post: THE STATEHOUSE, OLDEST IN CONTINUOUS LEGISLATIVE USE. Somebody has scratched a question mark after USE. Up the street, the wooden dome stands clear of the waterline. Down here, the high-water marks are pencilled on the post, each one dated.' },
+    $: { prop: 'obj.cart', id: 'obj.ann_charts', label: 'Paper charts',
+      text: 'A chart seller\'s handcart at the head of the pier, paper charts rolled in its bins, the soundings corrected by hand in red. The printed charts from the 2060s still show islands that aren\'t there anymore. Those go for half price.' },
+    P: { prop: 'obj.hamper', id: 'obj.ann_basket', label: 'A basket on the seawall', grant: 'item.fish_perch',
+      text: 'A bushel basket on the seawall under wet burlap, and a card held down with a stone: TOO SMALL TO SELL. TAKE ONE. One white perch left in it, still cold. You take it.',
+      doneText: 'The empty basket and the burlap. Somebody will fill it again at the next low tide, whenever that turns out to be.' },
     '@': { spawn: true },
     X: { ...back('annapolis', 'North-west, back to Route 1'), tile: 'q' },
   },
@@ -225,6 +268,6 @@ export const annapolis = fromGrid({
   .exit('ann_harbor', 31, 7, { id: 'obj.annapolis_to_ann_harbor', selfDrawn: true, stepOn: true, pair: 'obj.ann_harbor_out', label: 'Down the pier to the harbor', text: 'Sailboats moored to second-floor windows. The harbor.' })   // act2_more.js
   
   .exit('ann_statehouse', 6, 8, { id: 'obj.annapolis_to_ann_statehouse', art: 'obj.door', pair: 'obj.ann_statehouse_out', label: 'The statehouse', text: 'A wooden dome above the waterline.' })   // stretch.js
-  .exit('ann_bridge', 28, 8, { id: 'obj.annapolis_to_ann_bridge', selfDrawn: true, stepOn: true, pair: 'obj.ann_bridge_out', label: 'Out to the broken bridge', text: 'The bridge east, with a span missing.' })   // stretch.js
+  .exit('ann_bridge', 28, 8, { id: 'obj.annapolis_to_ann_bridge', selfDrawn: true, stepOn: true, pair: 'obj.ann_bridge_out', label: 'Out to the cut bridge', text: 'The bridge east, one span taken out.' })   // stretch.js
   .exit('ann_chapel', 3, 0, { id: 'obj.annapolis_to_ann_chapel', art: 'obj.door', pair: 'obj.ann_chapel_out', label: 'The academy chapel', text: 'Its doors are open. They always are.' })   // stretch.js
   .build();
