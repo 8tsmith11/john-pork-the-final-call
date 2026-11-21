@@ -82,14 +82,16 @@ export function moveSlot(c, a, b, half = false) {
 export const canPay = (c, cost) => Object.entries(cost || {}).every(([id, n]) => count(c, id) >= n);
 export function pay(c, cost) { if (!canPay(c, cost)) return false; for (const [id, n] of Object.entries(cost || {})) remove(c, id, n); return true; }
 
-/** Put on a worn-slot item from the bag: it leaves the bag, and whatever was in that slot goes back
- *  into the bag. False (and nothing changes) if `id` isn't in the bag or the old piece won't fit. */
-export function wear(c, id) {
+/** Wear an item from the bag, using its exact slot when provided. Returns false without changing the
+ *  bag if the selected item is gone or the old piece cannot fit back in. */
+export function wear(c, id, index) {
   const slot = ITEMS[id]?.slot;
   if (!WORN_SLOTS.includes(slot) || count(c, id) < 1) return false;
-  c.equipped ??= {}; c.rolled ??= {};
   // the same slot remove() would take (the back of the backpack first), so its roll goes on with it
-  let i = SLOTS - 1; while (i >= 0 && c.inventory[i]?.id !== id) i--;
+  let i = index ?? SLOTS - 1;
+  if (index === undefined) while (i >= 0 && c.inventory[i]?.id !== id) i--;
+  if (!Number.isInteger(i) || c.inventory[i]?.id !== id) return false;
+  c.equipped ??= {}; c.rolled ??= {};
   const taken = c.inventory[i], roll = taken.roll ?? null;
   const old = c.equipped[slot], oldRoll = c.rolled[slot] ?? null;
   takeSlot(c, i, 1);

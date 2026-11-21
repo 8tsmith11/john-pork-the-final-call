@@ -52,6 +52,49 @@ the lore gate (BagelMeister). This file is the systems side, which trevor builds
   (`{ id, qty, roll }`), which needs a save schema bump when it lands.
 - EN/ES for every label and line. The writing follows WRITING.md: describe the one detail the art can't show.
 
+## Gadget and assembly proposal
+
+Gadgets have their own equipped action on V. The hotbar weapon and the roommate's R move stay usable.
+Some gadgets have a timed recharge. Field instruments give readings without consuming the combat
+gadget's recharge. The HUD shows the equipped gadget, its recharge, and readiness.
+
+| Role | First playable batch | Further designs for review |
+| --- | --- | --- |
+| Defense and movement | Phase Screen, Vector Actuator | Refraction Pack, Anchor Clamp, Return Coil, Ceramic Shell |
+| Attack and control | Arc Splicer, Phase Tether | Ion Net, Seeker Flare, Aperture Cutter, Counterpulse |
+| Party support | Overclock Relay, Patch Mesh, Ground Loop | Relay Beacon, Spare Coil, Shielding Link |
+| Investigation | Helium Sniffer, Salvage Array | Signal Triangulator, Spectral Camera, Lock Probe, Fault Reader |
+
+The initial roster gives the team 24 designs to review. Give each a place it earns its slot and a
+cost or situation where another tool fits better. Story tools act on authored hooks and follow
+the party's clue order.
+
+### Building a loadout
+
+The Fab can print a stock build or spend extra material on a chosen tuning. For close-range weapons,
+handling and impact compete. For launchers, cycle time and output compete. For combat gadgets,
+faster recharge trades against effect strength. Bounded seed-based tolerances ride on the built item
+and stay consistent across the party. The Fab shows the selected tuning and its extra cost before
+printing.
+
+The larger bench design starts with a reusable frame, a payload, a power pack, and a control board.
+Players acquire designs by studying salvage, finishing a quest, or diagnosing a damaged machine.
+Each selected part has a readable effect and compatible alternatives. Display expected handling,
+range, capacity, recoil, or duty cycle before consuming materials. Particle and projectile behavior
+should come from the parts selected, such as a slow steady arc versus a short burst that discharges
+quickly. Seeded tolerances supply variation within the player's chosen design.
+
+- **Fit and repair.** Make frame and mount compatibility legible. Let players recover compatible
+  parts at the bench and carry successful patterns forward without rebuilding from scratch.
+- **Weapons and tools share parts.** Power and controls can fit compatible gadgets, weapons, and
+  room machinery. Weapon frames decide which payloads and handling modes are possible. Tools can
+  trade damage for utility such as driving a stuck mechanism.
+- **Bench work matters in play.** Aim for a short build, test and revise loop. Field found parts
+  should lead to different builds even at the same character level.
+- **Review order.** Trevor reviews part tradeoffs and resource costs. Gonman checks which machines
+  and discoveries fit the world. Story owners choose authored tool hooks and reveal timing.
+  TTS checks deterministic builds, saves, and a host plus two guests.
+
 ## Open questions for the lore gate
 
 - Which act installs which machine, and through which beat or person.

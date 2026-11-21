@@ -12,6 +12,8 @@ export class InputReader {
     this._dodgeQueued = false;
     this._skillQueued = false;
     scene.input.keyboard.on('keydown-R', () => { this._skillQueued = true; });
+    this._gadgetQueued = false;
+    scene.input.keyboard.on('keydown-V', (event) => { if (!event?.repeat) this._gadgetQueued = true; });
     this._interactQueued = false;
     scene.input.keyboard.on('keydown-SPACE', () => { this._dodgeQueued = true; });
     scene.input.keyboard.on('keydown-SHIFT', () => { this._dodgeQueued = true; });
@@ -32,6 +34,7 @@ export class InputReader {
     inp.fire = ptr.rightButtonDown();
     inp.dodge = this._dodgeQueued; this._dodgeQueued = false;
     inp.skill = this._skillQueued; this._skillQueued = false;
+    inp.gadget = this._gadgetQueued; this._gadgetQueued = false;
     inp.interact = this._interactQueued; this._interactQueued = false;
     return inp;
   }
