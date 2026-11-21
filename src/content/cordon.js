@@ -32,11 +32,11 @@ export const PLAZA_CORDON = {
   ],
   objects: [
     // North checkpoint (Route 1)
-    T(58, 5, 'down', 1), T(63, 5, 'down', 2), B(55, 5, 1), L(55, 1, 1), L(66, 1, 2), S(52, 1, 1),
+    T(58, 5, 'down', 1), { ...T(63, 5, 'up', 2), out: true }, B(55, 5, 1), L(55, 1, 1), L(66, 1, 2), S(52, 1, 1),   // one turns you back; one faces out at what's held beyond (trevor's half of #36)
     // South checkpoint (Route 1 toward the wall)
-    T(58, 46, 'up', 3), T(63, 46, 'up', 4), B(67, 46, 2), L(55, 50, 3), L(66, 50, 4), S(53, 50, 2),
+    T(58, 46, 'up', 3), { ...T(63, 46, 'down', 4), out: true }, B(67, 46, 2), L(55, 50, 3), L(66, 50, 4), S(53, 50, 2),
     // West checkpoint (the cross street)
-    T(5, 30, 'right', 5), T(5, 35, 'right', 6), L(1, 29, 5), L(1, 36, 6), S(3, 27, 3),
+    T(5, 30, 'right', 5), { ...T(5, 35, 'left', 6), out: true }, L(1, 29, 5), L(1, 36, 6), S(3, 27, 3),
     // Along the fence
     L(20, 1, 7), L(40, 1, 8), S(30, 1, 4), L(82, 12, 9), T(81, 20, 'left', 7), S(82, 30, 5),
     L(20, 50, 10), L(45, 50, 11), T(28, 49, 'up', 8), S(36, 50, 6), L(1, 12, 12), T(2, 18, 'right', 9),
@@ -59,6 +59,14 @@ export const CORDON_LINES_AFTER = [   // gonman: after the Call the troopers are
 ];
 
 // What a trooper says when you walk up to the line. Short: it's read while walking.
+// The outward-facing trooper at a checkpoint talks to the line, not to you (task #36: the blockades face outward).
+export const CORDON_LINES_OUT = [
+  { en: 'Hold the line. Hold it.', es: 'Mantengan la línea. Manténganla.' },
+  { en: 'They\'re pushing again. Eyes front.', es: 'Están empujando otra vez. Vista al frente.' },
+  { en: 'Don\'t look at them. Look at the barrier.', es: 'No los mire a ellos. Mire la barrera.' },
+  { en: 'Civilian behind me. Nobody crosses either way.', es: 'Civil detrás de mí. Nadie cruza para ningún lado.' },
+];
+
 export const CORDON_LINES = [
   { en: 'Back from the line, citizen.', es: 'Atrás de la línea, ciudadano.' },
   { en: 'College Park is under review. Step back.', es: 'College Park está en revisión. Retroceda.' },

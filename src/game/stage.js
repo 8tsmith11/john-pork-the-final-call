@@ -6,6 +6,7 @@
 //   scene.stage.play('demo', onDone)       // scripts live in src/content/stage/<id>.js
 //   ?stage=demo                             // debug: play one when the world loads
 //   src/content/stage/index.js              // triggers: play a script once when a story flag is set
+//   scene.stage.after('id', then)           // a story beat: the cutscene, then `then` (e.g. its dialogue) on every peer
 // How to write and place one: docs/design/cutscenes.md.
 //
 // Sync (Michael: "all dialogue tracks with the host"): the host (or the solo player) runs it and
@@ -53,8 +54,9 @@ export class Stage {
     this.s = scene;
     this.active = null;     // { id, script, tok, actors: Map, host }
     this.tok = 0;
+    this._waiters = new Set();   // guests: story beats waiting for the host's copy of a cutscene to end
     scene.input.keyboard.on('keydown-X', () => { if (this.active?.host) this.skip(); });
-    scene.events.once('shutdown', () => { this._gone = true; this._teardown(); });
+    scene.events.once('shutdown', () => { this._gone = true; this._waiters.clear(); this._teardown(); });
   }
 
   get playing() { return !!this.active; }
@@ -69,6 +71,21 @@ export class Stage {
     this._run(script, { host: true, onDone, ctx });
     return true;
   }
+
+  /**
+   * A story beat that every peer reaches at once (a map entry, the world loading): act cutscene `id` first,
+   * then run `then` (usually the scene's dialogue). Host and solo play it. A guest never plays its own copy;
+   * it waits for the host's: `then` runs when that ends, or after `grace` seconds if the host's never starts
+   * (no script, wrong map). So the dialogue opens after the cutscene on every screen, not over it.
+   */
+  after(id, then, grace = 2) {
+    if (this.s.mode !== 'client') { this.play(id, then); return; }
+    const w = { id, go: () => { if (!this._waiters.delete(w)) return; then?.(); } };
+    this._waiters.add(w);
+    this.s.time.delayedCall(grace * 1000, () => { if (this.active?.id !== id && this._pending?.id !== id) w.go(); });
+  }
+
+  _release(id) { for (const w of [...this._waiters]) if (w.id === id) w.go(); }
 
   /** The host's X: end it for everyone now. */
   skip() { if (this.active?.host) this._finish(true); }
@@ -95,6 +112,7 @@ export class Stage {
     if (msg.op === 'end') {
       if (this._pending?.id === msg.id) this._cancelPending();
       if (this.active && this.active.id === msg.id) this._finish(false);
+      this._release(msg.id);   // a beat waiting on it can go on (also when the scene never got to play here)
     }
     return true;
   }
@@ -214,6 +232,7 @@ export class Stage {
     const me = s.sprites?.get(s.localId);
     if (me) cam.startFollow(me, true, 0.15, 0.15);
     a.onDone?.();
+    this._release(a.id);
   }
 
   _cancelPending() {

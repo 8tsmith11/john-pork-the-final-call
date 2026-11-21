@@ -2,14 +2,14 @@
 // Cosmetic and local: troopers, barriers, booths, floodlights and signs use gonman's props frames (task #37;
 // the code-drawn shapes stay as a fallback), plus a chain-link fence along the tree line of maps with `cordon: true`.
 // Walking into the edge band makes the nearest trooper say a line (no dialogue box, nothing pauses).
-import { CORDON_LINES, CORDON_LINES_AFTER } from '../content/cordon.js';
+import { CORDON_LINES, CORDON_LINES_AFTER, CORDON_LINES_OUT, PLAZA_CORDON } from '../content/cordon.js';
 import { outbreakPhase } from '../content/outbreak.js';
 import { getLang } from '../i18n.js';
 import { VIEW } from '../view.js';
 
 const TILE = 16, BAND = 4, COOLDOWN = 6000;
 
-function troopTexture(scene) {
+export function troopTexture(scene) {
   if (scene.textures.exists('cordon_trooper')) return 'cordon_trooper';
   const g = scene.make.graphics({ add: false });
   const px = (x, y, w, h, c) => g.fillStyle(c, 1).fillRect(x, y, w, h);
@@ -39,7 +39,10 @@ export class Cordon {
     // Chain-link fence just inside the tree line, broken where the barriers and openings are.
     if (map.cordon) {
       const W = map.w * TILE, H = map.h * TILE, y0 = TILE + 2, y1 = H - TILE - 2, x0 = TILE + 2, x1 = W - TILE - 2;
-      const skip = (tx, ty) => map.layout[ty]?.[tx] === '=' || (map.cordonOpenings ?? []).some(([ox, oy, ow, oh]) => tx >= ox - 1 && tx < ox + ow + 1 && ty >= oy - 1 && ty < oy + oh + 1);
+      const inRect = (tx, ty, [ox, oy, ow, oh], pad = 0) => tx >= ox - pad && tx < ox + ow + pad && ty >= oy - pad && ty < oy + oh + pad;
+      // the walled road strips beyond the barriers (gonman's pens) aren't fenced across
+      const pens = map.id === 'metro_plaza' ? [...new Map((PLAZA_CORDON.held ?? []).map((e) => [String(e[3]?.pen), e[3]?.pen])).values()].filter(Boolean) : [];
+      const skip = (tx, ty) => map.layout[ty]?.[tx] === '=' || (map.cordonOpenings ?? []).some((r) => inRect(tx, ty, r, 1)) || pens.some((r) => inRect(tx, ty, r));
       g.lineStyle(1, 0x8a93a8, 0.55);
       for (let x = x0; x < x1; x += 4) { if (!skip(Math.floor(x / TILE), 1)) g.lineBetween(x, y0 - 6, x + 4, y0); if (!skip(Math.floor(x / TILE), map.h - 2)) g.lineBetween(x, y1 - 6, x + 4, y1); }
       for (let y = y0; y < y1; y += 4) { if (!skip(1, Math.floor(y / TILE))) g.lineBetween(x0, y, x0 + 3, y + 4); if (!skip(map.w - 2, Math.floor(y / TILE))) g.lineBetween(x1, y, x1 - 3, y + 4); }
@@ -83,6 +86,7 @@ export class Cordon {
         const tf = o.face === 'up' ? 'npc.trooper_back' : o.face === 'left' || o.face === 'right' ? 'npc.trooper_side' : 'npc.trooper';
         const im = (art(tf) ? s.add.image(x + 8, y + TILE, 'props', tf) : s.add.image(x + 8, y + 15, troopTexture(s))).setOrigin(0.5, 1).setDepth(y + 15).setFlipX(o.face === 'left');
         s.tweens.add({ targets: im, scaleY: { from: 1, to: 0.97 }, duration: 1600 + (o.x * 53) % 600, yoyo: true, repeat: -1 });
+        im.out = !!o.out;   // faces out at the held Code-rot-taken (task #36)
         this.objs.push(im); this.troopers.push(im);
       }
     }
@@ -96,11 +100,15 @@ export class Cordon {
     const me = snap?.players?.find((p) => p.id === s.localId);
     if (!me || me.dn || s.time.now < this.nextLine) return;
     const tx = Math.floor(me.x / TILE), ty = Math.floor(me.y / TILE);
-    const nearEdge = tx < BAND || ty < BAND || tx >= map.w - BAND || ty >= map.h - BAND;
+    // At the map edge, or right up against a checkpoint's barrier (they sit a few rows in now, task #36).
+    const atBarrier = [-2, -1, 0, 1, 2].some((dy) => [-2, -1, 0, 1, 2].some((dx) => map.layout[ty + dy]?.[tx + dx] === '='));
+    const nearEdge = tx < BAND || ty < BAND || tx >= map.w - BAND || ty >= map.h - BAND || atBarrier;
     const open = (map.cordonOpenings ?? []).some(([ox, oy, ow, oh]) => Math.abs(tx - (ox + ow / 2)) <= BAND + 1 && Math.abs(ty - (oy + oh / 2)) <= BAND + 1);
     if (!nearEdge || open) return;
     const lines = this.phase === 'after' ? CORDON_LINES_AFTER : CORDON_LINES;
-    const line = lines[this.lineIx++ % lines.length];
+    const near = this.troopers.reduce((a, b) => (Math.hypot(b.x - me.x, b.y - me.y) < Math.hypot(a.x - me.x, a.y - me.y) ? b : a));
+    const out = atBarrier && near?.out && Math.hypot(near.x - me.x, near.y - me.y) < 4 * TILE;   // the trooper facing out talks to the line
+    const line = out ? CORDON_LINES_OUT[this.lineIx++ % CORDON_LINES_OUT.length] : lines[this.lineIx++ % lines.length];
     this.nextLine = s.time.now + COOLDOWN;
     const text = getLang() === 'es' ? line.es : line.en;
     // Shown over you, not over the trooper: the posts sit at the screen's edge, under the HUD. A trooper
