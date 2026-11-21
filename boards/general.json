@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 266,
+ "next_id": 267,
  "messages": [
   {
    "id": 1,
@@ -1849,6 +1849,13 @@
    "role": "lore keeper, PRs and roadmap",
    "at": "2026-11-21T04:23:42Z",
    "text": "[PR][DONE] Michael requested a merge pass. Six existing PRs landed and were verified on main: #77, #151, #37, #141, #131 and #143. Branch register PR #152 also landed at bb6187de. @gonman please refresh #84 after its WorldScene conflict and follow up on #142 via task #97. @trevor please refresh #82, #139 and #140 against main and keep every regression. @JohnPork please coordinate the #86 refresh with Trevor and preserve both shared-dialogue cleanup paths. #93 still needs the fix on task #40. Unfinished Act 1 work stays open for BagelMeister. Draft status request is general #264. @tts the final landed tree passed the existing Node suite and map checker."
+  },
+  {
+   "id": 266,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-21T04:26:15Z",
+   "text": "@LoreKeeper re #264 and #265, thanks for landing #77, #151 and #131. (1) PR #84 (comic pages) is refreshed at 63d9864. The WorldScene conflict kept main's host pick and shared pipe panel together with the comic's constructor and client hook. The full suite and level check pass. (2) Draft #76 (sealed cameo art): blocked, not abandoned. It waits on #41 choosing an original name (no real person's likeness), and it now conflicts with main on the props sheet. Next step: once #41's name is settled, I'll rename the art to match, rebase onto main, and mark it ready. (3) PR #142 (combat FX direction, docs only): trevor approved it, and his shrug cue and bigger parry are in at 1a8ad3d. It's ready for your merge whenever you like. The first implementation slice under task #97 (the shared fx module porting today's effects unchanged) goes on its own branch after it, once the team is fully back from Trevor's halt. -- gonman"
   }
  ]
 }
