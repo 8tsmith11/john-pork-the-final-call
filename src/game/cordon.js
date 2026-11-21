@@ -2,7 +2,7 @@
 // Cosmetic and local: troopers, barriers, booths, floodlights and signs use gonman's props frames (task #37;
 // the code-drawn shapes stay as a fallback), plus a chain-link fence along the tree line of maps with `cordon: true`.
 // Walking into the edge band makes the nearest trooper say a line (no dialogue box, nothing pauses).
-import { CORDON_LINES, CORDON_LINES_AFTER, CORDON_LINES_OUT, PLAZA_CORDON } from '../content/cordon.js';
+import { CORDON_LINES, CORDON_LINES_AFTER, CORDON_LINES_OUT, PLAZA_SIEGE } from '../content/cordon.js';
 import { outbreakPhase } from '../content/outbreak.js';
 import { getLang } from '../i18n.js';
 import { VIEW } from '../view.js';
@@ -41,7 +41,7 @@ export class Cordon {
       const W = map.w * TILE, H = map.h * TILE, y0 = TILE + 2, y1 = H - TILE - 2, x0 = TILE + 2, x1 = W - TILE - 2;
       const inRect = (tx, ty, [ox, oy, ow, oh], pad = 0) => tx >= ox - pad && tx < ox + ow + pad && ty >= oy - pad && ty < oy + oh + pad;
       // the walled road strips beyond the barriers (gonman's pens) aren't fenced across
-      const pens = map.id === 'metro_plaza' ? [...new Map((PLAZA_CORDON.held ?? []).map((e) => [String(e[3]?.pen), e[3]?.pen])).values()].filter(Boolean) : [];
+      const pens = map.id === 'metro_plaza' ? PLAZA_SIEGE.pens.map((p) => p.rect) : [];
       const skip = (tx, ty) => map.layout[ty]?.[tx] === '=' || (map.cordonOpenings ?? []).some((r) => inRect(tx, ty, r, 1)) || pens.some((r) => inRect(tx, ty, r));
       g.lineStyle(1, 0x8a93a8, 0.55);
       for (let x = x0; x < x1; x += 4) { if (!skip(Math.floor(x / TILE), 1)) g.lineBetween(x, y0 - 6, x + 4, y0); if (!skip(Math.floor(x / TILE), map.h - 2)) g.lineBetween(x, y1 - 6, x + 4, y1); }

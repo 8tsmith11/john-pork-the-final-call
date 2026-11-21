@@ -3,6 +3,7 @@
 
 export const TILE = 16;
 import { newSkirmish, stepSkirmish, stepSkUnit, skirmishView } from './skirmish.js';
+import { newSiege, stepSiege, siegeView, siegeMove } from './siege.js';
 import { BOSS_PATTERNS, bossPool, pickPattern, windFor, LASER, SHOCK, RAIN, LANE } from './bossPatterns.js';
 import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
@@ -113,6 +114,8 @@ export class Sim {
     const sks = this.skirmishes?.[this.map.id];   // an ambient NPC fight on this map (hub #69; the host sets sim.skirmishes)
     this.sk = sks ? newSkirmish(sks, this.seed) : null;
     this.extraSolid = new Set(this.sk?.solid ?? []);   // props the sim adds to the map's walls (the skirmish hub)
+    const sgs = this.sieges?.[this.map.id];   // a held cordon line on this map (src/engine/siege.js; the host sets sim.sieges)
+    this.sg = sgs ? newSiege(sgs, this.seed) : null;
     const all = [...(this.map.enemies || []).map((e, i) => [`${this.map.id}#${i}`, e]),
       ...(extra?.list ?? []).map(([kind, tx, ty, options], i) => [`${this.map.id}#${extra.phase}.${i}`, { ...options, kind, x: tx * TILE + 8, y: ty * TILE + 8 }]),
       ...(this.jobEnemies?.[this.map.id] ?? []).map(([key, kind, tx, ty]) => [key, { kind, x: tx * TILE + 8, y: ty * TILE + 8 }])];   // bounty board nests (src/content/jobs.js)
@@ -466,7 +469,7 @@ export class Sim {
       a.cd = Math.max(0, a.cd - dt); a.stT -= dt;
       if (Math.hypot(owner.x - a.x, owner.y - a.y) > 260) { a.x = owner.x + 10; a.y = owner.y + 8; a.st = 'follow'; }
       let foe = null, fd = 110;
-      for (const e of this.enemies.values()) { if (e.sahur) continue; const d = Math.hypot(e.x - a.x, e.y - a.y); if (d < fd) { fd = d; foe = e; } }
+      for (const e of this.enemies.values()) { if (e.sahur || e.pen) continue; const d = Math.hypot(e.x - a.x, e.y - a.y); if (d < fd) { fd = d; foe = e; } }
       if (a.st === 'ram') {
         this._moveBody(a, a.dx * 230 * dt, a.dy * 230 * dt, 4);
         for (const e of this.enemies.values()) {
@@ -507,7 +510,7 @@ export class Sim {
     this._stepRot(dt);
     this._stepUnder(dt);
     if (this.hitStop > 0) this.hitStop = Math.max(0, this.hitStop - dt);
-    else { this._stepEnemies(dt); this._penEnemies(); this._stepShots(dt); }
+    else { this._stepEnemies(dt); if (this.sg) stepSiege(this, this.sg, dt); this._penEnemies(); this._stepShots(dt); }
     this._stepRevives(dt);
   }
 
@@ -854,7 +857,7 @@ export class Sim {
       if (e.spawnKey) this.killed?.add(e.spawnKey);
       if (e.def?.trait === 'splitter') for (let i = 0; i < 2; i++) { const nid = `e${this._nextId++}`; this.enemies.set(nid, { id: nid, kind: 'enemy.rotling', def: { ...ENEMIES['enemy.rotling'], hp: 8, speed: 60, radius: 4, color: e.def.color, vname: 'Fragment', trait: 'plain', xp: 2 }, x: e.x + (i ? 6 : -6), y: e.y, hp: 8, cd: 0.6, hurtT: 0, kx: 0, ky: 0 }); }
       if (e.def?.trait === 'puddler') this.hazards.push({ x: e.x, y: e.y, r: 14, ttl: 5, dps: 8 });
-      this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss, mini: !!e.mini, key: e.spawnKey });
+      this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss, mini: !!e.mini, key: e.spawnKey, ...(e.siege ? { siege: true } : {}) });
       if (e.boss && !e.mini) for (const a of [...this.enemies.values()]) if (a.summoned) { this.enemies.delete(a.id); this.events.push({ t: 'kill', x: a.x, y: a.y, kind: a.kind, xp: 0, crumble: true }); }   // its adds crumble with it
       if (e.marked > 0 && e.markedBy) this._pingKill(e);   // a Ping mark (Riff's rattle has no owner)
       const k = this.players.get(by);   // Argentina shirt (gambeta): a kill hands the dodge straight back
@@ -953,6 +956,7 @@ export class Sim {
       if (e.parried > 0) e.parried = Math.max(0, e.parried - dt);
       if (e.openT > 0) e.openT = Math.max(0, e.openT - dt);
       if (e.stunT > 0) { e.stunT = Math.max(0, e.stunT - dt); continue; }
+      if (e.siege) { siegeMove(this, e, def, dt); continue; }   // penned rot leans on its barrier, not at you
       const [target, d] = this._nearestPlayer(e.x, e.y);
       if (!target || d > (def.alertRange ?? 220)) continue;
       const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
@@ -1390,6 +1394,7 @@ export class Sim {
       goo: this.goo.map((g) => ({ x: Math.round(g.x), y: Math.round(g.y), r: g.r, t: Math.round(g.ttl * 10) / 10 })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
       sk: skirmishView(this.sk, this),
+      ...(this.sg ? { sg: siegeView(this.sg) } : {}),
       allies: (this.allies ?? []).map((a) => ({ x: Math.round(a.x), y: Math.round(a.y), hp: a.hp, mhp: a.maxHp, dn: a.down > 0, st: a.st })),
       hazards: this.hazards.map((h) => ({ x: Math.round(h.x), y: Math.round(h.y), r: h.r, t: Math.round(h.ttl * 10) / 10 })),
       ring: [...this.enemies.values()].find((e) => e.ringR != null)?.ringR ?? null,
