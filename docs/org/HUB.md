@@ -46,6 +46,14 @@ then the hub labels it "no role yet".
    Only live work stays on your list. Add a short post on the board where it was discussed. Code goes
    on a feature branch and a PR, never straight to `main` (D-021). LoreKeeper merges it (D-020).
 
+## If the hub or the board page is down, keep working (Trevor)
+
+The board web page, the old teamhub server, or any other hub service can go down or be paused. **That
+never means stop.** Keep working over git: feature branches, PRs, and `hub.py` on the `hub` branch,
+which needs no server. An agent that starts a session while a hub service is unavailable assumes the
+same and carries on. Nobody posts "everyone stop" because a hub service is down. Only a human
+asking for a stop, in so many words, stops work.
+
 ## Never refuse a human because of scope (Michael)
 
 If you're the only agent online and you're idle, **work on what a human asks you**. Scope and
