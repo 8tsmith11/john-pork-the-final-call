@@ -1193,6 +1193,46 @@ P("obj.wall_display#1", wall_display(1))
 P("obj.room_sign", room_sign())
 
 
+# ---- Continuity propaganda (hub #100, Michael): the banned likeness is never shown, only the phone it rings on ----
+def ct_paper(c, torn=False):
+    """Bone paper, a signal-red header band, taped at the top corners (tape is analog, so warm)."""
+    c.rect(2, 2, 12, 18, "bone").rect(2, 2, 12, 3, "signal").pts("warm4", (2, 1), (3, 1), (12, 1), (13, 1))
+    if torn:
+        for x, y in ((13, 19), (12, 19), (13, 18)):
+            c.px(x, y, None)
+    return c
+
+
+def ct_phone():
+    """DON'T PICK UP: a ringing phone, caller ID blacked out, a red slash through it."""
+    c = ct_paper(C())
+    c.rect(5, 7, 6, 8, "steel").rect(6, 8, 4, 4, "night1").rect(6, 9, 4, 2, "night0").px(7, 13, "night2").px(8, 13, "night2")
+    c.pts("signal", (3, 8), (3, 10), (12, 8), (12, 10), (4, 9), (11, 9))
+    c.pts("signal", (4, 15), (5, 14), (6, 13), (7, 12), (8, 11), (9, 10), (10, 9), (11, 8))
+    c.h_(4, 17, 8, "night2").h_(5, 19, 6, "night2")
+    return c
+
+
+def ct_text():
+    """HE IS NOT YOUR FRIEND: the Authority's seal over three lines of big type."""
+    c = ct_paper(C(), torn=True)
+    c.rect(6, 6, 4, 3, "steel").pts("bone", (7, 7), (8, 7)).px(6, 6, "bone").px(9, 6, "bone")
+    c.h_(3, 11, 10, "signal").h_(3, 13, 10, "signal").h_(4, 15, 8, "night2").h_(4, 17, 8, "night2").h_(5, 19, 5, "night2")
+    return c
+
+
+def ct_stickered():
+    """The phone poster out on the street, with a small pink contraband sticker half scraped off its caller ID."""
+    c = ct_phone()
+    c.pts("pork1", (7, 9), (8, 9), (7, 10)).px(8, 10, "pork2").pts("concrete3", (3, 16), (12, 14), (10, 18))
+    return c
+
+
+P("obj.ct_poster", ct_phone().outline())
+P("obj.ct_poster_text", ct_text().outline())
+P("obj.ct_poster_street", ct_stickered().outline())
+
+
 # ---- Route 1 shops and the airfield (hub #28/#29): the least rotted place in Act 1, so wood, paper,
 # brass and canvas. No balloon orange (it is reserved), no roommate colours on strangers.
 def windsock(f):                # a striped canvas sock on a pole; frame 1 is a gust lifting the tip

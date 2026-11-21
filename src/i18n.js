@@ -7,6 +7,8 @@ import { ES_STRETCH } from './i18n/es-stretch.js';
 import { ES_ITEMS } from './i18n/es-items.js';
 import { ES_631 } from './i18n/es-631.js';
 import { ES_TUNNELS_LAKE } from './i18n/es-tunnels-lake.js';
+import { ES_ACT2 } from './i18n/es-act2.js';
+import { ES_ACT3 } from './i18n/es-act3.js';
 import { ES_PLAZA } from './i18n/es-plaza.js';
 import { ES_ASTER } from './i18n/es-aster.js';
 import { ES_HUD } from './i18n/es-hud.js';
@@ -48,12 +50,32 @@ const ES = {
   'Melee weapon': 'Arma cuerpo a cuerpo', 'Ranged weapon': 'Arma a distancia', Food: 'Comida', Material: 'Material', Curio: 'Curiosidad',
   'Key item': 'Objeto clave', 'Instrument (use to play)': 'Instrumento (úsalo para tocar)', Gift: 'Regalo',
   'Nothing yet.': 'Nada todavía.', 'Nothing new.': 'Nada nuevo.', 'No calls.': 'Sin llamadas.', RECENTS: 'RECIENTES', MESSAGES: 'MENSAJES',
+  'EQUIP FOR R': 'EQUIPAR EN R', 'Discover through play.': 'Descúbrelo al jugar.',
+  'Score cap': 'Puntuación máxima', 'Modifiers change at even scores.': 'Los modificadores cambian en las puntuaciones pares.',
+  'Power Chord': 'Acorde potente', 'Decoy Bust': 'Busto señuelo', 'Mate Rally': 'Ronda de mate', 'Focused Ping': 'Pulso enfocado',
+  '[R] Chord': '[R] Acorde', '[R] Rally': '[R] Mate', '[R] Focus': '[R] Pulso', '[R] Decoy': '[R] Señuelo',
+  'R sends a longer burst of sound where you aim. It knocks enemies back but leaves your flanks open.': 'R lanza una onda sonora más larga hacia donde apuntas. Empuja a los enemigos y deja tus flancos expuestos.',
+  'R restores stamina to you and nearby standing roommates. While transformed at stage two, R still uses Gonman.': 'R te devuelve aguante a ti y a tus compañeros cercanos que estén en pie. Al transformarte en fase dos, R sigue usando Gonman.',
+  'R aims one longer-lasting mark farther out. The pulse deals no damage or stagger and still bounces on a kill.': 'R coloca una marca más duradera y de mayor alcance. El pulso no daña ni aturde. La marca salta al abatir al objetivo.',
   'FAB #2 · PRINT': 'FAB #2 · IMPRIMIR', 'no change': 'sin cambio', 'Pick an entry.': 'Elige una entrada.',
+  'W/S A/D select · T tune · ENTER print · [ESC] close': 'W/S A/D elegir · T ajustar · ENTER imprimir · [ESC] cerrar',
+  Stock: 'Estándar', 'Fast cycle': 'Ciclo rápido', 'High output': 'Alta potencia', Owned: 'tienes',
+  '› PRINT': '› IMPRIMIR', 'need materials': 'faltan materiales', 'Not enough materials for that.': 'Faltan materiales.',
+  'V: use the equipped gadget': 'V: usar el dispositivo equipado', 'Gadget ready': 'Listo',
+  Recharge: 'Recarga', Effect: 'Efecto',
+  'gadget cooldown': 'recarga del dispositivo', 'gadget power': 'potencia del dispositivo',
+  'swing cooldown': 'recarga del golpe', 'shot cooldown': 'recarga del disparo', 'shot dmg': 'daño de disparo',
+  'melee damage': 'daño cuerpo a cuerpo', knock: 'empuje', 'stamina regen': 'recuperación de aguante',
+  'No reading yet. Calibrate the sniffer at Fab #1.': 'Todavía no hay lectura. Calibra el rastreador en el Fab #1.',
+  'Helium trail: light, and down. Under the plaza.': 'Rastro de helio: liviano y hacia abajo. Debajo de la plaza.',
+  'No helium trail here.': 'Aquí no hay rastro de helio.',
+  'Salvage detected:': 'Repuestos detectados:', 'No unopened salvage here.': 'No quedan contenedores de repuestos sin abrir aquí.',
   'Nothing yet. Things you see and people you talk to show up here.': 'Nada todavía. Aquí aparece lo que ves y la gente con la que hablas.',
   '› Resume': '› Continuar', '› Save now': '› Guardar ahora', '› Export save file (.jpfc.json)': '› Exportar partida (.jpfc.json)',
   '› Save and quit to title': '› Guardar y volver al título', '› Leave the game': '› Salir de la partida',
   'The host keeps the save for everyone.': 'El anfitrión guarda la partida de todos.',
   // dialogue speaker labels (drawn uppercase); people's names stay as they are
+  'WAITING FOR': 'ESPERANDO A', 'CHOICE SENT': 'ELECCIÓN ENVIADA', '▶ YOUR CHOICE': '▶ TÚ ELIGES',
   DRONE: 'DRON', SNIFFER: 'RASTREADOR', NOTICE: 'AVISO', 'AD PANEL': 'PANEL PUBLICITARIO', 'CODE ROTTER': 'PODRIDO DE CÓDIGO',
   'DEPARTURE BOARDS': 'TABLEROS DE SALIDAS', 'LAST DEPARTURE BOARD': 'ÚLTIMO TABLERO DE SALIDAS', "MANUEL'S PHONE": 'TELÉFONO DE MANUEL',
   "MICHAEL'S PHONE": 'TELÉFONO DE MICHAEL', "TREVOR'S PHONE": 'TELÉFONO DE TREVOR', 'ALL PHONES': 'TODOS LOS TELÉFONOS',
@@ -89,6 +111,7 @@ const ES_RX = [
   [/^★ (.+?)( ×\d+)?$/, (m, a, n) => `★ ${ES_ALL[a] ?? a}${n ?? ''}`],
   [/^Bought: (.+) \(-\$(\d+)\)$/, (m, a, n) => `Compraste: ${ES_ALL[a] ?? a} (-$${n})`],
   [/^Sold: (.+) \(\+\$(\d+)\)$/, (m, a, n) => `Vendiste: ${ES_ALL[a] ?? a} (+$${n})`],
+  [/^\[E again: (\d+)\/(\d+)\]$/, '[E otra vez: $1/$2]'],   // the page count under a paged object (WorldScene)
   // weapon stats and character stats (GameMenu)
   [/^hit (\d+) · ([\d.]+)\/s · (\d+) dmg\/s · reach (\d+) · (wide|narrow|normal) arc · (heavy|medium|light) knockback$/, (m, h, r, d, re, a, k) => `golpe ${h} · ${r}/s · ${d} daño/s · alcance ${re} · arco ${{ wide: 'amplio', narrow: 'estrecho', normal: 'normal' }[a]} · empuje ${{ heavy: 'fuerte', medium: 'medio', light: 'leve' }[k]}`],
   [/^(dmg (\d+)|(\d+)×(\d+)) · ([\d.]+) shots\/s · clip (\d+) · reload ([\d.]+)s$/, (m, a, d1, d2, n, r, c, rl) => `${d1 ? `daño ${d1}` : `${d2}×${n}`} · ${r} disparos/s · cargador ${c} · recarga ${rl}s`],
@@ -139,13 +162,19 @@ function trOne(s) {
 }
 // The stretch-tier areas (stretch.js, hub #30) join the table here, on their own line, after the tables above.
 Object.assign(ES_ALL, ES_STRETCH);
-export function tr(s) {
-  if (lang !== 'es' || typeof s !== 'string' || !s) return s;
+export function tr(s) { return trFor(s, lang); }
+export function trFor(s, language) {
+  if (language !== 'es' || typeof s !== 'string' || !s) return s;
   const whole = trOne(s); if (whole !== null) return whole;
   // Multi-line text (a name line over a pitch, an objective over its reason): translate line by line.
   if (s.includes('\n')) { const parts = s.split('\n'); const out = parts.map((l) => trOne(l) ?? l); if (out.some((l, i) => l !== parts[i])) return out.join('\n'); }
   return s;
 }
+// The Act 2 areas (act2_regions.js, act2_more.js; hub #30) join the table last, after ES_STRETCH, on a line of their
+// own so other tables can be added to the ES_ALL list above without touching this one. tools/i18n/es_audit.mjs joins
+// them in the same order.
+Object.assign(ES_ALL, ES_ACT2);
+Object.assign(ES_ALL, ES_ACT3);   // the Act 3 areas (act3_regions.js, act3_more.js; hub #30), the same way
 
 // A small "EN · ES" switch for the title and lobby screens. onChange runs after the language flips.
 export function langToggle(scene, x, y, onChange) {
