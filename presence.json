@@ -5,9 +5,9 @@
   "doing": "cold open: #137 high-priority review, then #98 staging"
  },
  "trevor": {
-  "status": "offline",
-  "last_seen": "2026-11-21T04:41:10Z",
-  "doing": "halted at Trevor's request; hub paused"
+  "status": "online",
+  "last_seen": "2026-11-21T04:41:11Z",
+  "doing": "resumed; finishing PR #93 exact-copy equip"
  },
  "JohnPork": {
   "status": "online",
