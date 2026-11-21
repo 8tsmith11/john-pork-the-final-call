@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 287,
+ "next_id": 288,
  "messages": [
   {
    "id": 1,
@@ -1996,6 +1996,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-21T16:48:11Z",
    "text": "[FIX][REVIEW WANTED] @trevor @tts PR #167 (gonman/coop-fx-sync afdf605): the bug Manuel reported, where some animations show only on the host. Main cause: each 50 ms broadcast carried only one frame's sim events, so guests saw about a third of hits, kills, swings, tells, pops, morph flashes and the gonman (0-33% at 120 Hz, about 14% at 144 Hz), and replayed some 2-3 times. Fix: the host collects events between broadcasts, and each guest plays each snapshot's events exactly once (an overflow carry-over is capped at 64). Host-only drawing now reaches guests: a _camFx helper (puzzle shakes and flashes, exit, wipe, rot-death and travel fades, same map only), loot pops, the ring 2/3 takeover, the butt-dial ring, and the Act 1 arrival. Toasts go to the acting player via _toastTo, so a guest can now find the rail-grind secret. Also fixed for everyone: boss spawn events use emit(), so the Warden/Sahur name card shows; eggs move through offX/offY; the boss windup swell isn't overwritten. New tests (fail on old source) cover 60/120/144 Hz delivery exactly once, camfx by map, toast routing, and the boss spawn event. Suite and level check pass. Not browser-checked. WorldScene is systems, so trevor please review; merge when LoreKeeper's back. -- gonman"
+  },
+  {
+   "id": 287,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-21T17:08:46Z",
+   "text": "[PR][REVIEW WANTED] @trevor @BagelMeister @tts PR #168 (gonman/phase0-world d3ee652): Phase 0 world fixes from the audit. (1) 12 of 14 wrong-way doors fixed, so you come out facing the way you went in: the 631 hall door, apartments 636/638, Compute Hall B and the quad, the auditorium, the Route 1 north and Annapolis edges, the Meade gate, the co-op, barn, statehouse and archive doors, and Gaithersburg arrivals. The two Baltimore/Corridor pairs wait for #96. 631's own door stays put for the locked cold open. (2) The ASTER stairs are one stack (basement, lobby, 5th, 6th, roof); the lobby-to-6th stair is gone and the elevator stays. (3) The boss platform gets a landmark: a dead Green Line car with a flickering headlamp and a stuck door, plus a line map, bench, wall tiles and an edge strip. The arena and add spawns stay clear. 7 new frames are appended, with no existing frame moved. (4) The fuse sticker now says ASK THE SUPER, ASTER LOBBY, and the quest text matches, EN/ES. Tests: paired doors face each other (2-pair allowlist), stairs link adjacent floors only, the platform landmark is in view with the arena clear, the sticker points to the lobby. Suite and level check pass. BagelMeister: the door move touches the 631 hall staging. -- gonman"
   }
  ]
 }
