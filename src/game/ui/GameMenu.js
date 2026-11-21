@@ -19,7 +19,8 @@ import { QUESTS, questState, questVisible, questLeads } from '../../content/ques
 import { Scroller } from './scroll.js';
 import { FAB_TUNES, fabCost, rolledName } from '../../content/gearRolls.js';
 import { GADGETS, gadgetStats } from '../../content/gadgets.js';
-import { PARTS_BY_ROLE, equippedBuildStats, previewBuild, wornController } from '../../engine/gadgetBuilds.js';
+import { PARTS_BY_ROLE, equippedBuildStats, previewBuild, recoveredSlot, wornController } from '../../engine/gadgetBuilds.js';
+import { glitchChance } from '../../engine/assembly.js';
 
 function builtEffectText({ kind, effect, range }) {
   return { arc: `${tr('Damage')} ${effect}`, burst: `${tr('Knockback')} ${effect}`,
@@ -297,7 +298,7 @@ export class GameMenu {
     if (!h) return;
     if (h.label) { this.tip.push(this._t(x, y, h.label, F(8, C.sub))); return; }
     const def = ITEMS[h.id]; if (!def) return;
-    const kind = ({ weapon: 'Melee weapon', ranged: 'Ranged weapon', consumable: 'Food', material: 'Material', junk: 'Curio', key: 'Key item', instrument: 'Instrument (use to play)', gift: 'Gift' }[def.slot]
+    const kind = ({ weapon: 'Melee weapon', ranged: 'Ranged weapon', consumable: 'Food', material: 'Material', component: tr('Gadget component'), junk: 'Curio', key: 'Key item', instrument: 'Instrument (use to play)', gift: 'Gift' }[def.slot]
       ?? (ARMOR_SLOTS.includes(def.slot) ? `Armor · ${SLOT_NAMES[def.slot]}` : GEAR_SLOTS.includes(def.slot) ? `Gear · ${SLOT_NAMES[def.slot]}` : SLOT_NAMES[def.slot] ?? '')) + (def.unique ? ` · ${def.owner[0].toUpperCase() + def.owner.slice(1)} only${def.special ? ' · special armor' : ''}` : '');
     const lvl = this.scene.save.party[this.scene.character]?.upgrades?.[h.id] ?? 0;
     const stats = modText(scaleMods(def.mods, lvl));
@@ -305,8 +306,12 @@ export class GameMenu {
     this.tip.push(this._t(x, y + 11, `${kind}${def.heal ? `  · heals ${def.heal}` : ''}${stats ? '  · ' + stats : ''}${h.roll?.affixes?.length ? `  · rolled: ${modText(h.roll.mods)}` : ''}`, F(6, C.ok)));
     // Weapon stats (Trevor): what a hit or a shot actually does.
     const gadget = h.roll?.build ? equippedBuildStats(h.roll.build) : null;
-    const ws = gadget ? `${builtEffectText(gadget)}  ·  ${tr('Charges')} ${gadget.charges}  ·  ${tr('Recharge')} ${gadget.cooldown} s`
+    let ws = gadget ? `${builtEffectText(gadget)}  ·  ${tr('Charges')} ${gadget.charges}  ·  ${tr('Recharge')} ${gadget.cooldown} s`
       : weaponStats(def, lvl, h.roll);
+    if (Object.hasOwn(PARTS_BY_ROLE.control, h.roll?.component)) {
+      const chance = glitchChance({ control: h.roll.component }, h.roll.uses ?? 0);
+      ws = `${tr('Glitch risk')} ${Number((chance * 100).toFixed(1))}%`;
+    }
     let ty = y + 20;
     if (ws) { const t = this._t(x, ty, ws, { ...F(7, '#6fe3e8'), wordWrap: { width: this.tipW } }); this.tip.push(t); ty += t.height + 2; }
     this.tip.push(this._t(x, ty, def.text ?? '', { ...F(7, C.sub), wordWrap: { width: this.tipW } }));
@@ -682,16 +687,17 @@ export class GameMenu {
       const saved = c.gadgetPattern?.[role];
       return [role, Object.hasOwn(parts, saved) ? saved : Object.keys(parts)[0]];
     }));
-    const review = previewBuild(selection, s.save.flags, lang);
+    const review = previewBuild(selection, s.save.flags, lang, c);
     const canPrint = review.ok && canPay(c, review.cost);
     const control = wornController(c), canService = !!control?.worn;
     const submit = () => { if (canPrint) s.menuWorkbench('assemble', selection); };
     const service = () => { if (canService) s.menuWorkbench('service'); };
+    const dismantle = () => s.menuWorkbench('dismantle');
+    const actions = [submit, ...(control ? [dismantle] : []), ...(canService ? [service] : [])];
     const list = this.scroller.list('workbench', {
-      n: roles.length + (canService ? 2 : 1), per: roles.length + 2,
+      n: roles.length + actions.length, per: roles.length + actions.length,
       onPick: (row) => {
-        if (row === roles.length) return submit();
-        if (row === roles.length + 1) return service();
+        if (row >= roles.length) return actions[row - roles.length]();
         const [role, parts] = roles[row];
         const options = Object.keys(parts);
         selection[role] = options[(options.indexOf(selection[role]) + 1) % options.length];
@@ -710,7 +716,9 @@ export class GameMenu {
         const picked = id === selection[role], locked = part.schematic && !s.save.flags[part.schematic];
         g.fillStyle(picked ? 0x313754 : 0x171b2d).fillRoundedRect(x, y, width - 4, 20, 2);
         const name = lang === 'es' ? part.nameEs : part.name;
-        this._t(x + 3, y + 2, name, { ...F(7, locked ? C.bad : picked ? C.hi : C.text), wordWrap: { width: width - 10 } }, () => {
+        const recovered = recoveredSlot(c, id) >= 0;
+        if (recovered) this._t(x + width - 7, y + 10, '↺', F(7, C.ok)).setOrigin(1, 0);
+        this._t(x + 3, y + 2, name, { ...F(7, locked ? C.bad : picked ? C.hi : C.text), wordWrap: { width: width - (recovered ? 18 : 10) } }, () => {
           list.sel = row;
           selection[role] = id;
           this.refresh();
@@ -731,12 +739,15 @@ export class GameMenu {
       this._icon(x + 7, b.y + 176, id).setScale(0.65);
       this._t(x + 16, b.y + 171, `${have}/${need}`, F(8, have >= need ? C.ok : C.bad));
     });
+    if (Object.keys(review.reused).length) this._t(b.x + 12, b.y + 186, '↺ Recovered parts reduce the material cost.', F(7, C.ok));
     if (review.ok) {
       const label = canPrint ? '› ASSEMBLE' : 'need materials';
       this._t(b.x + 12, b.y + 197, label, F(9, canPrint ? list.sel === roles.length ? C.hi : C.ok : C.bad), canPrint ? submit : null);
     }
+    if (control) this._t(b.x + b.w / 2, b.y + 197, '› DISMANTLE EQUIPPED',
+      F(9, list.sel === roles.length + 1 ? C.hi : C.sub), dismantle).setOrigin(0.5, 0);
     if (canService) this._t(b.x + b.w - 12, b.y + 197, `${tr('› SERVICE')} · ${Number((control.chance * 100).toFixed(1))}%`,
-      F(9, list.sel === roles.length + 1 ? C.hi : C.ok), service).setOrigin(1, 0);
+      F(9, list.sel === roles.length + 2 ? C.hi : C.ok), service).setOrigin(1, 0);
   }
 
   // ---- shops: buy with money ----

@@ -4,6 +4,7 @@ import { FISH } from './fish.js';
 import { SKILL_TREE } from './skills.js';
 import { abilityModsFor } from './abilities.js';
 import { BUILT_GADGET, GADGETS } from './gadgets.js';
+import { ALL_PARTS, componentItemId } from './parts.js';
 import { HOTBAR } from '../engine/save/schema.js';
 
 // Equipment slots (D-014, Michael). Armor points come from the four armor pieces; gear goes on top.
@@ -39,6 +40,10 @@ for (const [id, gadget] of Object.entries(GADGETS)) {
   ITEMS[id] = { name: gadget.name, slot: 'gadget', text: gadget.text };
 }
 ITEMS[BUILT_GADGET] = { name: 'Assembled gadget', slot: 'gadget', text: 'Four parts fitted together at the workbench.' };
+for (const [id, part] of Object.entries(ALL_PARTS)) {
+  ITEMS[componentItemId(id)] = { name: `Recovered · ${part.name}`, slot: 'component',
+    materials: part.parts ?? part.cost, text: 'A recovered gadget component. Fit it at the workbench.' };
+}
 
 Object.assign(ITEMS, FISH);   // catches are items too
 
@@ -217,6 +222,7 @@ export const LOOT = {
 // anything you're wearing can't be sold.
 export function sellPrice(id) {
   const def = ITEMS[id]; if (!def || def.unique || def.slot === 'key') return 0;
+  if (def.slot === 'component') return Object.entries(def.materials).reduce((total, [material, qty]) => total + sellPrice(material) * qty, 0);
   let best = 0;
   for (const shop of Object.values(SHOPS)) for (const st of shop.stock) if (st.item === id) best = Math.max(best, st.price);
   if (best) return Math.max(1, Math.round(best * 0.4));

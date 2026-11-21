@@ -2241,6 +2241,81 @@ test('modular printing validates parts and schematics, commits material costs at
   assert.equal(wornController(restoredCharacter).chance, 0.03);
 });
 
+test('dismantling is atomic and exact recovered components preserve wear, tolerance, and spent energy in a different build', async () => {
+  const { BUILT_GADGET } = await import('../src/content/gadgets.js');
+  const { componentItemId } = await import('../src/content/parts.js');
+  const { sellPrice } = await import('../src/content/items.js');
+  const { dismantleGadget, equippedBuildStats, previewBuild, printBuild } = await import('../src/engine/gadgetBuilds.js');
+  const save = newSave({ seed: 'refitting', rolls: {}, gameVersion: 'test' });
+  Object.assign(save.flags, { 'schem.conduit': true, 'schem.pack': true });
+  const c = save.party.trevor;
+  const arc = { frame: 'part.conduit', power: 'part.pack', payload: 'part.arc', control: 'part.autoboard' };
+  const cost = previewBuild(arc, save.flags).cost;
+  for (const [id, qty] of Object.entries(cost)) assert.equal(Inv.add(c, id, qty), 0);
+  const original = printBuild(save, 'trevor', arc).roll;
+  assert.ok(Inv.wear(c, BUILT_GADGET));
+  const arena = { id: 'part-refit', w: 60, h: 60, solid: () => false, objects: [], enemies: [], spawns: [{ x: 400, y: 400 }] };
+  const sim = new Sim(arena, { seed: 'refitting' });
+  sim.addPlayer('host', 'trevor');
+  sim.addPlayer('guest', 'michael');
+  const p = sim.players.get('host');
+  const equip = (player, roll) => Object.assign(player, { gadget: BUILT_GADGET, gadgetRoll: roll, gadgetBuild: equippedBuildStats(roll.build) });
+  equip(p, original);
+  const step = (gadget = false) => sim.step(1 / 60, new Map([['host', { ...emptyInput(), gadget }]]));
+  for (let i = 0; i < 2; i++) {
+    step(true);
+    for (let j = 0; j < 45 && p.gadgetAim; j++) step();
+  }
+  assert.equal(sim._gadgetSnapshot(p).gadgetCharges, 0);
+  assert.equal(original.uses, 2);
+  const priorRecharge = sim._builtCharge(p).queue[0].at;
+  c.inventory = c.inventory.map((_, i) => i < 3 ? null : { id: 'item.pry_bar', qty: 1 });
+  const full = structuredClone(c);
+  assert.equal(dismantleGadget(c).error, 'space');
+  assert.deepEqual(c, full);
+  c.inventory.fill(null);
+  assert.ok(dismantleGadget(c).ok);
+  assert.equal(c.equipped.gadget, null);
+  assert.equal(c.rolled.gadget, undefined);
+  assert.equal(c.inventory.filter(Boolean).length, 4);
+  const partIds = Object.values(arc).map(componentItemId);
+  for (const id of partIds) assert.equal(Inv.count(c, id), 1);
+  assert.equal(partIds.reduce((total, id) => total + sellPrice(id), 0),
+    Object.entries(cost).reduce((total, [id, qty]) => total + sellPrice(id) * qty, 0));
+  assert.ok(dismantleGadget(c).error, 'cannot dismantle the same gadget twice');
+
+  const archived = migrate(JSON.parse(JSON.stringify(save)));
+  const restored = printBuild(archived, 'trevor', arc).roll;
+  assert.equal(restored.uses, original.uses);
+  assert.deepEqual(restored.build.tol, original.build.tol);
+  assert.equal(archived.party.trevor.inventory.filter(Boolean).length, 1);
+
+  const lens = { ...arc, payload: 'part.lens' };
+  const guest = save.party.michael;
+  for (const [slot, part] of c.inventory.entries()) {
+    if (!part || part.id === componentItemId(arc.payload)) continue;
+    assert.equal(Inv.add(guest, part.id, 1, part.roll), 0);
+    Inv.takeSlot(c, slot);
+  }
+  const quote = previewBuild(lens, save.flags, 'en', guest);
+  assert.deepEqual(quote.cost, { 'item.mat_glass': 2 });
+  assert.equal(quote.stats.glitch, 0.038);
+  assert.equal(printBuild(save, 'michael', lens).error, 'materials');
+  assert.equal(guest.inventory.filter(Boolean).length, 3, 'failed refit keeps every part');
+  assert.equal(Inv.add(guest, 'item.mat_glass', 2), 0);
+  const swapped = printBuild(save, 'michael', lens).roll;
+  assert.equal(swapped.powerUnit, original.powerUnit);
+  assert.equal(swapped.uses, original.uses);
+  assert.deepEqual(swapped.build.tol, original.build.tol);
+  assert.equal(Inv.count(c, componentItemId('part.arc')), 1, 'the unused payload remains in the original bag');
+  const recipient = sim.players.get('guest');
+  equip(recipient, swapped);
+  assert.equal(sim._gadgetSnapshot(recipient).gadgetCharges, 0, 'cheaper payload cannot restore spent energy for another owner');
+  assert.equal(sim._builtCharge(recipient).next, priorRecharge);
+  sim.playTime = priorRecharge + 0.01;
+  assert.equal(sim._gadgetSnapshot(recipient).gadgetCharges, 2, 'the original four-unit charge returns on the original deadline');
+});
+
 test('modular casts spend their own charges after aiming, keep the recharge through swaps, and honor payload limits', async () => {
   const { BUILT_GADGET, GADGETS, gadgetEffectValue } = await import('../src/content/gadgets.js');
   const { equippedBuildStats } = await import('../src/engine/gadgetBuilds.js');
