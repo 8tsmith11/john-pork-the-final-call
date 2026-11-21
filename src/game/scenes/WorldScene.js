@@ -239,6 +239,8 @@ export class WorldScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-F', () => { if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
     this._showMap(startMap);
     this.ready = true;
+    // Back from a staked loss: seated at the table again (the host reopens it for everyone).
+    if (this.save.world.reseat) { const id = this.save.world.reseat; delete this.save.world.reseat; if (this.mode !== 'client') this.time.delayedCall(900, () => this.openBastion(id)); }
     // Act 1's witnessed beats are staged in-engine first (hub #48; src/content/stage/act1_*.js), then the scene plays.
     // A beat of delay so the roommates are on screen for the cutscene to stand in for them.
     if (!this.initialSnapshot) {
@@ -2584,15 +2586,47 @@ export class WorldScene extends Phaser.Scene {
   _rotReloadSoon() {
     this._rotReload = true;
     this.time.delayedCall(2400, () => this.cameras.main.fadeOut(600, 5, 6, 12));
-    this.time.delayedCall(3100, async () => {
-      const save = await loadAutosave().catch(() => null);
-      if (this.mode === 'host') {
-        const assignments = {};
-        for (const p of this.sim.players.values()) if (!isAi(p.id)) assignments[p.id] = p.character;
-        this.net.broadcast({ t: 'reload', save: save ?? this.save });
-        this.scene.restart({ mode: 'host', net: this.net, save: save ?? undefined, assignments, character: this.character });
-      } else this.scene.restart({ mode: this.mode, character: this.character, save: save ?? undefined });
+    this.time.delayedCall(3100, async () => this._reloadEveryone(await loadAutosave().catch(() => null)));
+  }
+
+  /** Restart the world from `save` (null: the scene's own fallback) on every peer: the host tells its guests. */
+  _reloadEveryone(save) {
+    if (this.mode === 'host') {
+      const assignments = {};
+      for (const p of this.sim.players.values()) if (!isAi(p.id)) assignments[p.id] = p.character;
+      this.net.broadcast({ t: 'reload', save: save ?? this.save });
+      this.scene.restart({ mode: 'host', net: this.net, save: save ?? undefined, assignments, character: this.character });
+    } else this.scene.restart({ mode: this.mode, character: this.character, save: save ?? undefined });
+  }
+
+  // Staked tables (src/content/stakes.js). Host only. Sitting down stores a named checkpoint in the save itself
+  // (save.world.checkpoints.<id>, written to disk at once), marked to seat the party again when it's loaded.
+  _tableCheckpoint(id) {
+    if (this.mode === 'client') return;
+    const w = this.save.world, keep = w.checkpoints ?? {};
+    delete w.checkpoints;
+    const snap = JSON.parse(JSON.stringify(this.save));
+    w.checkpoints = { ...keep, [id]: snap };
+    snap.world.reseat = id;
+    this._save('✓ checkpoint');
+  }
+
+  // A staked loss: the loss cutscene if there is one, then everyone back to the checkpoint, seated. No limit on
+  // tries; table.<id>.losses counts them (it survives the reload, so story can react to it).
+  _stakedLoss(id, stake) {
+    if (this.mode === 'client' || this._rotReload) return false;
+    const cp = this.save.world.checkpoints?.[id];
+    if (!cp) return false;
+    const back = JSON.parse(JSON.stringify(cp));
+    back.world.checkpoints = this.save.world.checkpoints;   // the checkpoint stays for the next try
+    back.flags[`table.${id}.losses`] = Number(this.save.flags[`table.${id}.losses`] ?? 0) + 1;
+    this._rotReload = true;   // nothing else reloads or ends the act meanwhile
+    this.time.delayedCall(1500, () => {
+      this.bastionTable?._close();
+      const go = () => { this.cameras.main.fadeOut(600, 5, 6, 12); this.time.delayedCall(700, () => this._reloadEveryone(back)); };
+      if (stake?.lossStage && this.stage) this.stage.play(stake.lossStage, go); else go();
     });
+    return true;
   }
 
   _hostEvents(events) {
