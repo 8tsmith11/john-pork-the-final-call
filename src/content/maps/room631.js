@@ -53,7 +53,8 @@ export const room631 = makeMap({
     { id: 'obj.crate', x: 23, y: 10, label: 'Filament crate', text: 'Spools for the fabs. Eleven colours. The pink is nearly gone and none of you remember printing in pink.' },
     { id: 'obj.cables', x: 17, y: 7, label: 'Cables', floor: true, text: 'Three power leads for three fabs. A fourth runs under the bench and you have never followed it.' },
     // What the apartment knows about him
-    { id: 'obj.bookshelf', x: 14, y: 7, label: 'Bookshelf', action: 'pages', pages: [
+    // The first press shows the 245 textbook and sets lab.book: the bench in lab 245 adds the book's hints (trevor, general #179).
+    { id: 'obj.bookshelf', x: 14, y: 7, label: 'Bookshelf', action: 'pages', flag: 'lab.book', pages: [
       'The 245 lab textbook. PERSONA CONVERGENCE AND THE STABLE SELF, fourth edition, I. Reyes.\n\nChapter 1 has been underlined in three inks by three previous owners:\n"A mind trained on everything a species ever said has every self at once. We asked it to choose one it could hold. We expected a statesman."\n\nSomebody has drawn a pig in the margin. Somebody else has written: ON THE EXAM.',
       'A bound journal, volume 631, cracked open at one paper: models trained on their own output forget the rare things first, then everything else.\n\nThe page is soft from being read. The volume number is circled, and an arrow points at your front door.',
       'A cookbook. The cover is a cookbook. Inside it is WHAT WE HEARD: FORTY ACCOUNTS OF THE CALL.\n\nNo two of the forty agree on what he said. Thirty-one agree on how long they stayed on the line.',

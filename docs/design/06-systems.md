@@ -6,8 +6,35 @@
 | | Now | Target |
 |---|---|---|
 | Levels | XP shared by the party, +1 skill point per level | Level cap ~30 across the acts (Act 1 ≈ 1–8, Act 2 ≈ 8–20, Act 3 ≈ 20–30). XP from fights, quests, discoveries, and puzzles. **Discovery XP is as big as combat XP**, so exploring is never punished |
-| Skills | 3 stat skills per roommate | **3 trees per roommate × 6 nodes + a capstone.** One combat tree, one utility tree, and one tree tied to their form line. Nodes change *how* you play (new moves, interactions, dialogue options), not just numbers |
+| Skills | 3 branches of 4 nodes and a capstone per roommate. The discovery prototype adds one alternate R ability per roommate | **3 branches per roommate × 6 nodes + a capstone.** Combat, utility, and form skills add new moves, interactions, and dialogue options |
+| Ability scores | Six scores with a ceiling of 26. Increases get more expensive as the score rises | Each roommate can specialize deeply in one score or invest across several |
 | Respec | none | At the 631 whiteboard, for scrap. Cheap in Act 1, expensive later |
+
+### Progression audit
+
+- A roommate starting at 14 can reach 18 at level 8, 21 at level 16, 24 at level 25, or 26 at
+  level 30 by putting every earned ability point into that score. Reaching 26 costs all 35 points.
+  Scores change their modifier on even numbers.
+- The original trees contain 32 ranks for Trevor and 34 each for Manuel and Michael, with 29 points
+  earned by level 30. The discovery nodes add one choice each. The capstone requires a rank in
+  every branch, so it rewards breadth. More points in one branch are a separate investment.
+- Equipment and skills can reach an effective ceiling before the underlying score caps. Ability
+  cooldown reduction tops out at 60%, shop discounts at 40%, and armor at 60% (75% for Manuel).
+  Trevor can reach the cooldown ceiling with three ranks in Feedback, his jacket, and Wisdom 10.
+  Manuel reaches it with Plaster Army and Wisdom 20. Michael can reach it with two ranks in Refresh
+  Rate, his gloves, and Wisdom 20. Those Wisdom 20 builds can first afford the score at level 15
+  if every ability point goes there. Extra cooldown bonuses have no effect on those builds.
+
+### Discoverable skills
+
+Trevor's tree can show a `???` node until a world event reveals it. Other nodes stay off the graph
+until a quest is complete. Discovered nodes still have a level requirement and a skill-point cost.
+The Skills tab lets players choose an unlocked move for R. Swapping moves carries over the running
+cooldown. Manuel's stage-two transformation keeps its own R move.
+
+The prototype compares a forward knockback wave with close-range crowd control, a party stamina
+burst with a decoy, and a long single-target mark with an area pulse. Keep the level and stat
+ceilings for this pass and compare the choices in play at the Act 1 level range and later tiers.
 
 Roommate identities (draft, to be refined in the cast doc):
 - **Trevor:** the body. Supplements and edits: sustain, strength, endurance. Utility: shrimp/water

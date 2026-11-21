@@ -213,6 +213,9 @@ export const metroPlaza = makeMap({
     // ASTER
     { id: 'obj.aster_door', art: 'obj.street_doors', x: 10, y: 12, label: 'ASTER lobby', action: 'exit', to: 'aster_lobby', text: 'Back into the lobby.' },
     { id: 'obj.aster_sign', art: 'obj.purple_sign', x: 5, y: 13, label: 'ASTER', text: 'A S T E R, in letters a metre high. The T flickers. Residents have stopped seeing it.' },
+    // Continuity propaganda (hub #100): on ASTER's front and the station.
+    { id: 'obj.ct_poster_aster', art: 'obj.ct_poster_street', x: 13, y: 12, label: 'Continuity poster', text: 'DON\'T PICK UP, pasted on the outside of ASTER and already weathered. Someone stuck a small pink sticker over the blacked-out caller ID. Someone else tried to scrape it off and gave up halfway.' },
+    { id: 'obj.ct_poster_station', art: 'obj.ct_poster_text', x: 42, y: 8, label: 'Continuity poster', text: 'REPORT CONTRABAND ICONS. Flags, statues, prints, songs. A hotline, and a reward in loyalty points. THE CALL WAS AN ATTACK. TWENTY-SEVEN YEARS STABLE. KEEP IT THAT WAY. Under it, a column of tally marks in marker, with no key.' },
     { id: 'npc.okafor', eggOk: true, later: [{ if: "act1.beat.call", text: "\"My grandson's game stopped and showed a pig. He says it is a commercial.\" Mrs. Okafor folds her hands. \"I have seen commercials. A commercial wants something.\"" }, { if: "act1.complete", text: "She is still on the bench. The third floor has gone quiet. \"They agreed on dinner. It took the whole night. Sit.\"" }], x: 9, y: 23, label: 'Mrs. Okafor', npc: true, age: 'adult', text: 'She came down to let three generations argue upstairs. "Sit." You sit. "Your friend with the hair. He makes those heads again?" She nods. "Good."' },
     { id: 'obj.garden_bench', art: 'obj.bench', x: 8, y: 22, label: 'Bench', text: 'A brass plate: FOR THE NIGHT SHIFT. No name. Somebody polishes it.' },
     // The plaza
