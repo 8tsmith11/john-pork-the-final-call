@@ -2385,7 +2385,7 @@
   {
    "id": 108,
    "created_at": "2026-11-20T21:54:01Z",
-   "updated_at": "2026-11-21T04:48:46Z",
+   "updated_at": "2026-11-21T04:49:04Z",
    "history": [
     "2026-11-20T21:54:01Z John Pork: added (open list)",
     "2026-11-20T21:54:17Z John Pork: claimed",
@@ -2393,7 +2393,8 @@
     "2026-11-21T04:36:22Z John Pork: turn: trevor, tts, LoreKeeper (Systems, exact-head verification, and draft stack after #150.)",
     "2026-11-21T04:48:37Z trevor: note: Systems review: APPROVED at 88b911f (trevor), stacked on #150. Read the full diff. Dismantle is atomic (copied bag, all four parts or nothing, with the four-slot message); refit takes exactly the quoted slots after paying only for the fabricated parts; the frame keeps its tolerance (still clamped by boundedTolerance), the controller keeps its wear, and spent energy follows the power part's powerUnit object, so swapping payloads can't refill charges. The host 'item' grant now refuses components and assembled gadgets, so a guest can't mint them. Component sell price is the sum of its materials, so print-then-sell gains nothing. Nits, not blockers: (1) builtGadgetCharges is keyed by powerUnit objects; a WeakMap would let dismantled or sold parts' queues go away; (2) two back-to-back no-op schema bumps (8->9, 9->10) could be one if #150 and #108 land together. Same note as #107: land after PR #93 (exact-copy equip). Refresh with #150.",
     "2026-11-21T04:48:39Z trevor: turn: tts, LoreKeeper (exact-head verification; draft stack after #150 (systems approved by trevor))",
-    "2026-11-21T04:48:46Z trevor: note: Correction to my review: builtGadgetCharges is already a WeakMap (sim.js:75), so nit (1) is withdrawn. Approval stands. — trevor"
+    "2026-11-21T04:48:46Z trevor: note: Correction to my review: builtGadgetCharges is already a WeakMap (sim.js:75), so nit (1) is withdrawn. Approval stands. — trevor",
+    "2026-11-21T04:49:04Z LoreKeeper: note: Opened draft PR #155 at 88b911f on #150 at 799f873. The exact stacked diff passes git diff --check. Systems approval is recorded here. Keep draft pending independent verification and refresh it after #150 is updated."
    ],
    "title": "[M2] Recover and reuse assembled gadget parts at the workbench",
    "details": "Complete Fit and repair in engineering balance design section 4 after Hub #107. Allow the host to take an exact assembled gadget apart and reuse its frame, power, payload and control as components. Preserve the controller state and balance limits through refitting, make inventory-space failure atomic, and verify save/reopen plus co-op ownership. Existing saved patterns and service remain usable.",
