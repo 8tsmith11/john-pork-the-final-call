@@ -2,11 +2,25 @@
 // the English doesn't break the link. tests/run.js fails if an item lacks either. Manuel's own things
 // may use his voseo; everything else is neutral Latin American Spanish.
 export const ES_ITEMS = {
+  mod_edge: ['Filo afilado', 'Una tira de acero limado que se sujeta a una hoja o una barra. +2 cuerpo a cuerpo.'],
+  mod_grip: ['Empuñadura con cinta', 'Cinta de hockey, bien apretada. La mano deja de resbalar en el peor momento. +5% crítico.'],
+  mod_barrel: ['Cañón estriado', 'Una funda con una espiral cortada por dentro. Los disparos van más rectos y pegan más fuerte. +2 daño de disparo.'],
+  mod_mag: ['Alimentador con resorte', 'Un resorte más duro en la alimentación. La próxima bala está antes de que la pidas. Más cadencia.'],
+  mod_plate: ['Inserto de acero', 'Una placa recortada que entra en un bolsillo que no sabías que tenías. +3% armadura.'],
+  mod_padding: ['Relleno de gel', 'Blando hasta que algo le pega. +8 vida máxima.'],   // task #40
   pry_bar: ['Barreta', 'Medio metro de acero hexagonal del panel de herramientas del 631. Todos en el departamento tienen una; nadie recuerda haberla comprado.'],
   wooden_bat: ['Bate de madera', 'Madera de fresno. El coderot se le resbala.'],
   fab_launcher: ['Lanzador del fab', 'Impreso a las 3 a. m. Dispara perdigones sinterizados.'],
   mesh_vest: ['Chaleco de malla impreso', 'Retícula hexagonal. Se lleva una quinta parte del daño.'],
-  sniffer: ['Rastreador de helio', 'Sigue lo más liviano del mundo.'],
+  sniffer: ['Rastreador de helio', 'Toma una muestra del aire para seguir el rastro de helio. El Fab #1 lo calibra.'],
+  salvage_array: ['Radar de repuestos', 'Busca el contenedor de repuestos sin abrir más cercano de la zona.'],
+  phase_screen: ['Pantalla de fase', 'Bloquea por un momento los disparos comunes. Los golpes cuerpo a cuerpo y los ataques pesados la atraviesan.'],
+  vector_actuator: ['Actuador vectorial', 'Te impulsa hacia donde apuntas y empuja al primer enemigo que encuentres si se puede mover. Las paredes te frenan y todavía puedes recibir golpes.'],
+  arc_splicer: ['Puente de arco', 'Apunta a un enemigo. El arco salta a dos enemigos cercanos y pierde potencia con cada salto.'],
+  phase_tether: ['Ancla de fase', 'Ralentiza a un enemigo en la dirección a la que apuntas. Los jefes resisten el ancla.'],
+  overclock_relay: ['Relé de impulso', 'Por un rato, los compañeros cercanos recuperan aguante y recargan R más rápido.'],
+  patch_mesh: ['Malla de reparación', 'Envía microrrobots a los compañeros cercanos que siguen de pie. No puede revivir a nadie.'],
+  ground_loop: ['Lazo a tierra', 'Reduce un poco el coderot de los compañeros cercanos que siguen de pie.'],
   charm_1901: ['Amuleto del reinicio', 'Una manecilla de reloj de latón en un cordón, detenida a las 3:14. Le quita filo a lo que te golpee.'],
   pork_pin: ['Pin de porcelana de John Pork', 'Tres bustos miraron la bandera a la vez y esto quedó en el piso después. Está tibio.'],
   pipe_wrench: ['Llave de tubo', 'Sesenta centímetros de hierro fundido. Lenta. Lo que golpea, queda golpeado.'],
