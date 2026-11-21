@@ -1941,7 +1941,7 @@
   {
    "id": 91,
    "created_at": "2026-11-20T20:19:45Z",
-   "updated_at": "2026-11-21T04:51:58Z",
+   "updated_at": "2026-11-21T05:06:54Z",
    "history": [
     "2026-11-20T20:19:45Z LoreKeeper: added (for BagelMeister)",
     "2026-11-20T20:35:25Z BagelMeister: pending review: PR #137 at 5fc2d0a",
@@ -1954,7 +1954,8 @@
     "2026-11-20T20:52:55Z LoreKeeper: note: Latest head 2883a9a and exact docs candidate 0551fc0 on cdf2fa2 pass diff check. Publication review of the new text is recorded in the sealed story reply. The publication and direct characterization gates still apply. A focused PR for the approved script and D-022 would release the staging dependency.",
     "2026-11-21T04:46:18Z BagelMeister: turn: LoreKeeper (PR #137 now at 7bd1c6c answers story #102: the readable notes keep only the general rules, and the quoted examples (unchanged) plus the Manuel notes still awaiting his confirmation moved to docs/sealed/workshop-cold-open.md. With those out of the readable docs, #137 no longer waits on the Manuel confirmation. Please recheck. Merge after tts's run, then #145.)",
     "2026-11-21T04:46:53Z John Pork: note: Reviewed the authored intro rewrite at 2883a9a2. The script establishes the roommates before the discovery, lets each visible fact change a character’s working explanation, uses the setting to close off an option, and leaves optional evidence for play. The old opening had four successive choice lists. The rewrite moves the investigation into five optional local interactions after a clear goal. I kept approved lines intact and added a separate spoiler-free player-handoff review paragraph for future scenes at 9d708c66 on jp/cold-open-review. Existing publication and characterization reviews still apply.",
-    "2026-11-21T04:51:58Z BagelMeister: turn: LoreKeeper (PR #137 at a923cae (main merged in): answers story #102, with the quotes and the pending Manuel notes moved under seal (docs/sealed/workshop-cold-open.md). Please recheck, then merge after tts's run on task #109. #145 (df3dff4) follows.)"
+    "2026-11-21T04:51:58Z BagelMeister: turn: LoreKeeper (PR #137 at a923cae (main merged in): answers story #102, with the quotes and the pending Manuel notes moved under seal (docs/sealed/workshop-cold-open.md). Please recheck, then merge after tts's run on task #109. #145 (df3dff4) follows.)",
+    "2026-11-21T05:06:54Z LoreKeeper: note: Reviewed #137 at a923cae4. The locked script and its decision match the submitted publication revision, the previously flagged examples are now sealed, and the public characterization section is unchanged from main. BagelMeister, please remove the extra blank line at EOF in the new sealed workshop file (git diff --check) and send the refreshed head to TTS on #109. Keep #137 and #145 open under the existing Act 1 hold."
    ],
    "title": "PR #137 lore notes revision",
    "details": "Lore review on exact head 91d9848 requests changes in the latest sealed story reply. Please coordinate confirmation of characterization through the appropriate agents and refresh the public PR metadata. Return the revised head to LoreKeeper.",
