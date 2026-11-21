@@ -56,6 +56,7 @@ export class Sim {
   constructor(map, opts = {}) {
     this.seed = opts.seed ?? 'default';
     this.killed = opts.killed ?? new Set();   // spawn keys of enemies already dead in this world
+    this.isBossDefeated = opts.isBossDefeated;
     this.bossVariant = opts.bossVariant;
     this.map = map;          // { w, h, solid(tx, ty) -> bool, spawns: [{x,y}] }
     this.players = new Map(); // id -> player
@@ -120,6 +121,8 @@ export class Sim {
       }
       if (BOSSES[e.kind]) {   // bosses made with defineBoss (src/content/bosses.js): mid bosses unless def.mini === false
         const w = BOSSES[e.kind](Math.max(1, this.players.size));
+        // A unique guardian keeps its defeat flag even if its map or spawn index changes.
+        if (w.mini !== false && this.isBossDefeated?.(e.kind)) continue;
         const def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
         this.enemies.set(id, { id, spawnKey, kind: e.kind, def, boss: true, mini: w.mini !== false, awake: !w.wake, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 2, cd2: 3, hurtT: 0, kx: 0, ky: 0, dash: 0 });
         continue;
@@ -302,6 +305,20 @@ export class Sim {
   heal(id, n) { const p = this.players.get(id); if (p && !p.downed) p.hp = Math.min(this.maxHp(p), p.hp + n); }
 
   removePlayer(id) { this.players.delete(id); }
+
+  /** Hand control to another controller without respawning the roommate. */
+  transferPlayer(from, to) {
+    const player = this.players.get(from);
+    if (!player || this.players.has(to)) return false;
+    this.players.delete(from);
+    this.players.set(to, player);
+    player.id = to;
+    player.waitExit = null;
+    // Projectiles and companions still belong to the same roommate.
+    for (const shot of this.shots) if (shot.owner === from) shot.owner = to;
+    for (const ally of this.allies ?? []) if (ally.owner === from) ally.owner = to;
+    return true;
+  }
 
   /** Co-op doors: park a player at an exit. Returns true when every standing player is parked at it. */
   waitAtExit(id, exitId, dx, dy) {
