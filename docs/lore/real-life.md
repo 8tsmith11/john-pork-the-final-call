@@ -31,6 +31,7 @@ spoiler (see `PROCESS.md`).
 - **Two flags.** The John Pork flag is the roommates' shared one, on the engineering-room wall, and
   it came after the figurines. Manuel's own flag, hanging in his room, is the **Argentine flag**.
   *(Michael, 2026-11-18)*
+- **Dinner parties.** We threw a lot of dinner parties in the apartment. *(Michael, 2026-11-20)*
 - **Room 631, ASTER, College Park, "Aster pros," "rookie Aster mistake," 245 lab, the John Pork
   flag and statues:** these come from the brief (`docs/BRIEF.md` §3 and the appendix).
 
@@ -46,6 +47,12 @@ spoiler (see `PROCESS.md`).
 ## Manuel
 
 - **Argentinian.** Mate goes everywhere with him. *(Manuel; also in the brief)*
+- **Insanely friendly, and very forgiving.** He hardly gets mad at anyone about anything, and
+  never at his roommates. Write him warm. *(Michael, 2026-11-20; awaiting Manuel's confirmation
+  through gonman)*
+- **He talks like a normal person.** Don't lean on "che" or other Spanish tics. An occasional "che"
+  is fine; most of his lines should have none. *(Michael, 2026-11-20; awaiting Manuel's confirmation through
+  gonman)*
 - **The hiding game is still going.** His version of the shared story: "we hide stuff from ourselves
   as a joke in the apartment." The purple cylinder above is his example. *(Manuel)*
 - **Two shirts he wants his character to own:** a Hasbulla shirt and an Argentina shirt. See the

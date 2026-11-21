@@ -2604,7 +2604,7 @@ test('procedural gear rolls: seeded and reproducible, 1-2 affixes of the right k
 
 const Dawn = await import('../src/content/dawn.js');
 test('dawn clock (P-004): moves only with story beats, in order, and never passes first light', () => {
-  assert.equal(Dawn.dawnLabel({}), '2:58 am');   // the microwave in the cold open
+  assert.equal(Dawn.dawnLabel({}), '3:40 am');   // the cold open (D-022)
   let last = Dawn.DAWN_START; const flags = {};
   for (const [flag, at] of Dawn.DAWN_BEATS) { assert.ok(at > last && at < Dawn.FIRST_LIGHT, `${flag} out of order`); last = at; flags[flag] = true; assert.equal(Dawn.dawnMinutes(flags), at); }
   assert.ok(Dawn.dawnProgress(flags) < 1 && Dawn.dawnProgress({}) === 0);
@@ -3453,7 +3453,16 @@ test('dialogue graphs: no dangling jumps, and the big scenes are not secretly de
       for (const c of n.choices) assert.ok(c.go === 'END' || d.nodes[c.go], `${name}:${id} choice -> missing ${c.go}`);
       if (n.go) assert.ok(n.go === 'END' || d.nodes[n.go], `${name}:${id} -> missing ${n.go}`);
     }
-    const terms = ids.filter((id) => { const n = d.nodes[id]; return !n.go && !(n.gos || []).length && !n.choices.length; });
+    // Count dead ends on the conversation itself: nodes reachable from its start. Standalone self-scoped barks
+    // in the same file (the cold open's room searches) are entered on their own and are meant to end.
+    const seen = new Set(), todo = [d.start ?? ids[0]];
+    while (todo.length) {
+      const id = todo.pop(), n = d.nodes[id];
+      if (!n || seen.has(id)) continue;
+      seen.add(id);
+      for (const g of [n.go, ...(n.gos || []).map((x) => x.go), ...n.choices.map((c) => c.go)]) if (g && g !== 'END') todo.push(g);
+    }
+    const terms = ids.filter((id) => { const n = d.nodes[id]; return seen.has(id) && !n.go && !(n.gos || []).length && !n.choices.length; });
     if (CONNECTED[name] != null) assert.ok(terms.length <= CONNECTED[name], `${name}: ${terms.length} dead-end nodes (max ${CONNECTED[name]}): ${terms.slice(0, 6).join(', ')}`);
   }
 });

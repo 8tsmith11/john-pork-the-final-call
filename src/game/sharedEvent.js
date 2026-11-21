@@ -14,7 +14,7 @@ class Mirror {
   constructor(main, onChoose = null) { this.spectator = true; this.main = main; this.done = false; this.line = null; this._choices = []; this.nodeId = null; this.decider = null; this.onChoose = onChoose; }
   get choices() { return this._choices; }
   set(state) {
-    this.line = state.text || state.who ? { who: state.who, text: state.text, choice: state.choice } : null;
+    this.line = state.text || state.who ? { who: state.who, text: state.text, cue: state.cue, choice: state.choice } : null;   // a new object = a new line
     this._choices = (state.choices ?? []).map((text) => ({ text }));
     this.nodeId = state.nodeId ?? null;
     this.decider = state.decider ?? null;
@@ -99,7 +99,7 @@ export class SharedEvents {
     if (!this.active || this.active.scope === 'self' || !s.dlg || s.dlg.spectator) return;
     const d = s.dlg, line = d.line, choices = d.choices;
     const state = choices.length ? { who: null, text: '', choices: choices.map((c) => c.text.replace(/\*/g, '')), nodeId: d.nodeId, decider: this.deciderFor(d.node) }
-      : { who: line?.who ?? null, text: line?.text ?? '', choices: [], nodeId: d.nodeId, line: d.i, choice: !!line?.choice };
+      : { who: line?.who ?? null, text: line?.text ?? '', choices: [], nodeId: d.nodeId, line: d.i, choice: !!line?.choice, cue: line?.cue };   // cue: watchers stage the line too
     const key = JSON.stringify(state);
     if (key === this.active.last) return;
     this.active.last = key;
