@@ -16,7 +16,13 @@ const IDS = Object.keys(ROOMMATES);
 
 export class LobbyScene extends Phaser.Scene {
   constructor() { super('Lobby'); }
-  init(data) { this.role = data.role; }
+  init({ role, rejoinCode }) {
+    this.role = role;
+    this.rejoinCode = rejoinCode;
+    this.net = null;
+    this._leaving = false;
+    this._enteringWorld = false;
+  }
 
   async create() {
     setArea('lobby');   // music: see src/audio/music.js
@@ -26,16 +32,30 @@ export class LobbyScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#0b0d16');
     this.status = this.add.text(W / 2, 20, '', { ...FONT, color: '#9aa3c7' }).setOrigin(0.5);
     this.name = playerName();
+    this._suggested = false;
     this.claims = {};          // character -> { peer, name }
+    this.names = {};
     this.cards = IDS.map((id, i) => this._card(id, W / 2 + (i - 1) * 110, 120));
     this.startBtn = this.add.text(W / 2, 236, '', { ...FONT, color: '#ffb347', fontSize: '11px' }).setOrigin(0.5)
       .setInteractive({ useHandCursor: true }).on('pointerdown', () => this._start());
     const back = this.add.text(8, 256, '[ESC] back', { ...FONT, color: '#5d6487' });
     // English / Español (Trevor). The lobby keeps its connection, so relabel in place instead of restarting.
     langToggle(this, W - 6, 6, () => { back.setText('[ESC] back'); for (const c of this.cards) { c.label?.setText(c.label.text); } this.status.setText(this.status.text); this.startBtn.setText(this.startBtn.text); });
-    this.input.keyboard.on('keydown-ESC', () => { this.net?.close(); this.scene.start('Title'); });
+    this.input.keyboard.on('keydown-ESC', () => this._leaveToTitle());
+    const status = this.status;
     try { this.role === 'host' ? await this._host() : await this._join(); }
-    catch (e) { this.status.setText(`${e.message || e}`).setColor('#ff6b6b'); }
+    catch (e) {
+      if (!status.active || this._leaving) return;
+      this.net?.close();
+      status.setText(`${e.message || e}`).setColor('#ff6b6b');
+    }
+  }
+
+  _leaveToTitle(rejoinCode = this.rejoinCode) {
+    if (this._leaving || this._enteringWorld) return;
+    this._leaving = true;
+    this.net?.close();
+    this.scene.start('Title', { rejoinCode });
   }
 
   _card(id, x, y) {
@@ -58,11 +78,18 @@ export class LobbyScene extends Phaser.Scene {
     this.status.setText(`ROOM CODE: ${code}   (others: Join and type it)`).setColor('#ffb347');
     const mine = this.save.session.hostCharacter;
     if (mine) this._setClaim(mine, 'host', this.name);
-    this.net.on('msg', (peer, msg) => {
+    const net = this.net;
+    const onMessage = (peer, msg) => {
       if (msg.t === 'hello') { this.names = { ...(this.names || {}), [peer]: msg.name }; this._broadcastLobby(); }
       if (msg.t === 'claim') this._handleClaim(peer, msg.character);
-    });
-    this.net.on('leave', (peer) => { for (const [c, v] of Object.entries(this.claims)) if (v.peer === peer) delete this.claims[c]; this._broadcastLobby(); });
+    };
+    const onLeave = (peer) => {
+      delete this.names?.[peer];
+      for (const [c, v] of Object.entries(this.claims)) if (v.peer === peer) delete this.claims[c];
+      this._broadcastLobby();
+    };
+    net.on('msg', onMessage).on('leave', onLeave);
+    this.events.once('shutdown', () => { net.off('msg', onMessage).off('leave', onLeave); });
     this._broadcastLobby();
   }
 
@@ -93,38 +120,49 @@ export class LobbyScene extends Phaser.Scene {
   }
 
   _start() {
-    if (this.role !== 'host') return;
+    if (this.role !== 'host' || this.net?.seats) return;
     const hostChar = Object.entries(this.claims).find(([, v]) => v.peer === 'host')?.[0];
     if (!hostChar) return this.status.setText('Pick your roommate first.').setColor('#ff6b6b');
     this.save.session.hostCharacter = hostChar;
     for (const [c, v] of Object.entries(this.claims)) this.save.session.claims[c] = { playerName: v.name, lastSeen: new Date().toISOString() };
     const assignments = Object.fromEntries(Object.entries(this.claims).map(([c, v]) => [v.peer, c]));
-    this.net.broadcast({ t: 'start', save: this.save, assignments });
+    this.net.startGame(this.save, assignments);
     this.scene.start('World', { mode: 'host', net: this.net, save: this.save, assignments, character: hostChar });
   }
 
   // ---------- client ----------
   async _join() {
-    const code = (prompt('Room code from the host:') || '').trim();
+    const code = (this.rejoinCode ?? prompt('Room code from the host:') ?? '').trim();
     if (!code) throw new Error('No code entered. [ESC] to go back.');
-    this.net = new ClientNet();
-    this.status.setText(`Joining ${code.toUpperCase()}...`);
-    await this.net.join(code);
-    this.status.setText('Connected. Claim your roommate.').setColor('#9aa3c7');
-    this.net.on('msg', (msg) => {
+    const net = this.net = new ClientNet();
+    const status = this.status;
+    status.setText(`Joining ${code.toUpperCase()}...`);
+    await net.join(code);
+    if (!status.active || this._leaving) return;
+    if (!net.conn?.open) return this._leaveToTitle(net.code);
+    this.rejoinCode = undefined;
+    status.setText('Connected. Claim your roommate.').setColor('#9aa3c7');
+    const onMessage = (msg) => {
+      if (this._leaving || this._enteringWorld) return;
       if (msg.t === 'lobby') {
         this._renderLobby(msg.state);
-        const sug = msg.state.suggestions?.[this.net.id];
+        const sug = msg.state.suggestions?.[net.id];
         if (sug && !this._suggested) { this._suggested = true; this.status.setText(`Last time you were ${ROOMMATES[sug].name}. Claim them again?`); }
       }
       if (msg.t === 'say') this.status.setText(msg.text).setColor('#ff6b6b');
       if (msg.t === 'start') {
-        const character = msg.assignments[this.net.id];
+        const character = msg.assignments[net.id];
         if (!character) return this.status.setText('The host started without you. Claim a roommate next time.').setColor('#ff6b6b');
-        this.scene.start('World', { mode: 'client', net: this.net, save: msg.save, character });
+        net.rememberSeat(msg.seatKey);
+        this._enteringWorld = true;
+        this.scene.start('World', { mode: 'client', net, save: msg.save, character, snapshot: msg.snapshot });
       }
-    });
-    this.net.send({ t: 'hello', name: this.name });
+    };
+    const onClose = () => this._leaveToTitle(net.code);
+    net.on('msg', onMessage).on('close', onClose);
+    // World messages may reuse lobby message types after the lobby UI is destroyed.
+    this.events.once('shutdown', () => net.off('msg', onMessage).off('close', onClose));
+    net.send({ t: 'hello', name: this.name, seatKey: net.seatKey });
   }
 
   _claim(id) {

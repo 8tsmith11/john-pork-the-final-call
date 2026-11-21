@@ -7,13 +7,13 @@ import { loadAutosave, clearAutosave, importFile, autosave } from '../../engine/
 export class TitleScene extends Phaser.Scene {
   constructor() { super('Title'); }
 
-  create() {
+  create({ rejoinCode } = {}) {
     setArea('title');   // music: see src/audio/music.js
     setupCameras(this);
     const W = VIEW.w, H = VIEW.h;
     this.cameras.main.setBackgroundColor('#0b0d16');
     paintNight(this);
-    langToggle(this, W - 6, 6, () => this.scene.restart());   // English / Español (Trevor)
+    langToggle(this, W - 6, 6, () => this.scene.restart({ rejoinCode }));   // English / Español (Trevor)
     const hour = new Date().getHours();
     this.add.text(W / 2, 40, 'JOHN PORK', { heading: true, fontSize: '30px', color: '#f2a6b8' }).setOrigin(0.5);
     this.add.text(W / 2, 66, 'THE FINAL CALL', { heading: true, fontSize: '12px', color: '#9aa3c7' }).setOrigin(0.5);
@@ -51,7 +51,13 @@ export class TitleScene extends Phaser.Scene {
         .setOrigin(0.5).setInteractive({ useHandCursor: true })
         .on('pointerdown', () => this.scene.start('Lobby', { role }));
     });
-    this.add.text(W / 2, H - 12, 'controls: ESC in game', { fontFamily: 'monospace', fontSize: '7px', color: '#6f789c' }).setOrigin(0.5);
+    if (rejoinCode) {
+      this.add.text(W / 2, H - 12, `Connection lost  ·  [ REJOIN ROOM ${rejoinCode} ]`, { fontFamily: 'monospace', fontSize: '8px', color: '#ffb347' })
+        .setOrigin(0.5).setInteractive({ useHandCursor: true })
+        .on('pointerdown', () => this.scene.start('Lobby', { role: 'join', rejoinCode }));
+    } else {
+      this.add.text(W / 2, H - 12, 'controls: ESC in game', { fontFamily: 'monospace', fontSize: '7px', color: '#6f789c' }).setOrigin(0.5);
+    }
   }
 }
 

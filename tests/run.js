@@ -1,10 +1,13 @@
 // Node test runner (no dependencies): `node tests/run.js`. Must pass before pushing.
 import assert from 'node:assert/strict';
+import { webcrypto } from 'node:crypto';
+import { EventEmitter } from 'node:events';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { makeStreams, Rng } from '../src/engine/rng.js';
 import { rollWorld } from '../src/engine/worldRolls.js';
 import { newSave, migrate, CURRENT_SCHEMA } from '../src/engine/save/schema.js';
+import { HostNet } from '../src/engine/net/net.js';
 import { Sim, MOVE, ROT, MATE, UNDER, LULLABY as BOT_LULLABY, emptyInput } from '../src/engine/sim.js';
 import { ENEMIES } from '../src/content/enemies.js';
 import { ITEMS } from '../src/content/items.js';
@@ -19,7 +22,15 @@ import { makeMap } from '../src/content/maps/build.js';
 import { TRAITS } from '../src/content/rotVillains.js';
 
 let failed = 0;
-const test = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}\n     ${e.message}`); } };
+// An async test is counted when it settles (it used to print 'ok' at once and fail after the summary, so a
+// broken async test could still read as 'all tests passed').
+const pending = [];
+const test = (name, fn) => {
+  const pass = () => console.log(`ok   ${name}`), fail = (e) => { failed++; console.log(`FAIL ${name}\n     ${e?.message ?? e}`); };
+  try { const r = fn(); if (r && typeof r.then === 'function') pending.push(r.then(pass, fail)); else pass(); } catch (e) { fail(e); }
+};
+
+await import('./save-storage.js');
 
 const rotArena = () => ({ id: 'rot-test', w: 100, h: 100, objects: [], enemies: [],
   spawns: [{ x: 160, y: 160 }], solid: () => false });
@@ -27,6 +38,32 @@ const rotArena = () => ({ id: 'rot-test', w: 100, h: 100, objects: [], enemies: 
 const addSpawnParty = (sim) => {
   for (const [id, character] of [['host', 'trevor'], ['ai:manuel', 'manuel'], ['ai:michael', 'michael']]) sim.addPlayer(id, character);
 };
+
+test('co-op control handoff preserves the live roommate and clears their exit vote', () => {
+  const sim = new Sim(rotArena());
+  for (const [id, who] of [['host', 'trevor'], ['guest', 'manuel'], ['observer', 'michael']]) sim.addPlayer(id, who);
+  const roommate = sim.players.get('guest');
+  Object.assign(roommate, { x: 111, y: 222, hp: 0, downed: true, reviveT: 1.2, rot: 87, ammo: 4, reloadT: 0.4 });
+  sim.waitAtExit('guest', 'door', 0, -1);
+  sim.shots.push({ owner: 'guest' }, { owner: 'observer' });
+  sim.allies = [{ owner: 'guest' }];
+
+  assert.equal(sim.transferPlayer('guest', 'observer'), false);
+  assert.equal(sim.transferPlayer('guest', 'ai:manuel'), true);
+  assert.equal(sim.players.get('ai:manuel'), roommate);
+  assert.equal(sim.players.has('guest'), false);
+  assert.equal(roommate.waitExit, null);
+  assert.deepEqual([roommate.x, roommate.y, roommate.hp, roommate.downed, roommate.reviveT, roommate.rot, roommate.ammo, roommate.reloadT],
+    [111, 222, 0, true, 1.2, 87, 4, 0.4]);
+  assert.deepEqual(sim.shots.map(shot => shot.owner), ['ai:manuel', 'observer']);
+  assert.equal(sim.allies[0].owner, 'ai:manuel');
+
+  assert.equal(sim.transferPlayer('ai:manuel', 'returning-guest'), true);
+  assert.equal(sim.players.get('returning-guest'), roommate);
+  assert.equal(sim.players.size, 3);
+  assert.equal(sim.allies[0].owner, 'returning-guest');
+});
+
 test('deferred startup with the full roster matches boss scaling on ordinary map entry', () => {
   for (const seed of ['party-load-1', 'party-load-2', 'party-load-3']) {
     const loaded = new Sim(MAPS_FOR_TEST.platform, { seed, deferSpawn: true });
@@ -642,21 +679,539 @@ test('i18n: built-in object names are never treated as translations', () => {
   try { for (const s of ['constructor', 'toString', '__proto__', 'hasOwnProperty', '→ constructor', '[E] toString']) assert.equal(i18n.tr(s), s); } finally { i18n.setLang(was); }
 });
 
+// Later-act alignment (hub #49): optional region guardians stand by the puzzle or item they guard, the scaffold
+// routes stay walkable, the reserved doors stay shut, and the quests a later puzzle converts keep their ids.
+const AlignBoss = await import('../src/content/bosses.js');
+const AlignSide = await import('../src/content/sideQuests.js');
+const GUARDIANS = {   // guardian -> [the map it stands on, the object it guards]
+  'boss.gb_receiver': ['gb_dishes', 'obj.gb_cleanroom'],
+  'boss.bv_shell': ['bv_barn', 'obj.bv_named_tank'],
+  'boss.md_fence': ['meade', 'obj.md_menu'],
+  'boss.ann_tide': ['ann_harbor', 'obj.ann_bell'],
+  'boss.cor_hall': ['cor_sealed', 'obj.cor_meters'],
+  'boss.gt_clock': ['gaithersburg', 'obj.gt_cradle'],
+  'boss.en_gate': ['enclave', 'obj.en_archive'],
+};
+const placesOf = (kind) => Object.values(MAPS_FOR_TEST).filter((m) => m.enemies.some((e) => e.kind === kind)).map((m) => m.id);
+const walkFrom = (start) => {   // maps reachable through exits that need no story flag
+  const seen = new Set([start]), q = [start];
+  while (q.length) for (const o of MAPS_FOR_TEST[q.shift()].objects) if (o.action === 'exit' && !o.requiresFlag && MAPS_FOR_TEST[o.to] && !seen.has(o.to)) { seen.add(o.to); q.push(o.to); }
+  return seen;
+};
+test('region guardians (#49): each stands by what it guards, sleeps when the party arrives through any door, wakes when you walk up to it', () => {
+  for (const [kind, [mapId, objId]] of Object.entries(GUARDIANS)) {
+    assert.deepEqual(placesOf(kind), [mapId], `${kind} should stand on ${mapId}, and only there`);
+    const m = MAPS_FOR_TEST[mapId], e = m.enemies.find((x) => x.kind === kind), o = m.objects.find((x) => x.id === objId);
+    assert.ok(o, `${objId} should be on ${mapId}, with its guardian`);
+    const tx = (e.x - 8) / 16, ty = (e.y - 8) / 16;
+    assert.ok(Math.hypot(tx - o.x, ty - o.y) <= 3, `${kind} at ${tx},${ty} should stand within 3 tiles of ${objId} at ${o.x},${o.y}`);
+    assert.equal(m.enemies.at(-1).kind, kind, `${kind} goes last in ${mapId}'s enemy list, so saved kills of the others keep their keys`);
+    const wake = AlignBoss.BOSSES[kind](3).wake ?? 150, looks = new Set(AlignSide.SIDE_QUESTS.map((q) => q.inspect?.obj).filter(Boolean));
+    for (const x of m.objects) if (x.id !== objId && looks.has(x.id)) {   // another quest's object: reading it must not start this fight
+      assert.ok(Math.hypot(e.x - (x.x * 16 + 8), e.y - (x.y * 16 + 8)) > wake, `${x.id} sits inside ${kind}'s wake radius, so reading it would wake the guardian`);
+    }
+    const froms = new Set(m.objects.filter((x) => x.action === 'exit' && MAPS_FOR_TEST[x.to]).map((x) => x.to));
+    assert.ok(froms.size, `${mapId} has no way in`);
+    for (const from of froms) {
+      const sim = new Sim(MAPS_FOR_TEST[from], { seed: 'guard' });
+      for (const [id, c] of [['a', 'manuel'], ['b', 'trevor'], ['c', 'michael']]) sim.addPlayer(id, c);
+      sim.setMap(m, from);
+      sim.step(1 / 60, new Map());
+      const b = [...sim.enemies.values()].find((x) => x.kind === kind);
+      assert.ok(b && b.mini && !b.awake, `${kind} should sleep when the party comes in from ${from}`);
+      const [nx, ny] = [[0, 1], [1, 0], [-1, 0], [0, -1]].map(([dx, dy]) => [o.x + dx, o.y + dy]).find(([x, y]) => !m.solid(x, y));
+      Object.assign(sim.players.get('a'), { x: nx * 16 + 8, y: ny * 16 + 8 });
+      sim.step(1 / 60, new Map());
+      assert.ok(b.awake, `${kind} should wake when someone walks up to ${objId}`);
+    }
+  }
+});
+
+test('region guardians (#49): the Act 2 gate and every guardian stay reachable without opening a reserved door; those doors stay shut', () => {
+  const ring2 = walkFrom('route1_north'), ring3 = walkFrom('beltway');
+  for (const kind of AlignBoss.ACT2_REGION_BOSSES) assert.ok(placesOf(kind).some((id) => ring2.has(id)), `${kind} must be reachable in Act 2 without a flagged door`);
+  for (const [kind, [mapId]] of Object.entries(GUARDIANS)) assert.ok(ring2.has(mapId) || ring3.has(mapId), `${kind} on ${mapId} must be reachable without a flagged door`);
+  for (const [mapId, id] of [['route1_north', 'obj.r1n_to_beltway'], ['meade', 'obj.meade_to_meade_inside']]) {   // the flag's name may change; the lock may not
+    const flag = MAPS_FOR_TEST[mapId].objects.find((o) => o.id === id)?.requiresFlag;
+    assert.ok(typeof flag === 'string' && flag.length > 0, `${id} stays shut behind a story flag (story sign-off opens it)`);
+  }
+});
+
+test('region guardians (#49): the breeding ledgers are read outside the barn, in the vet\'s office; the barn keeps its tank', () => {
+  const holders = Object.values(MAPS_FOR_TEST).filter((m) => m.objects.some((o) => o.id === 'obj.bv_ledgers')).map((m) => m.id);
+  assert.deepEqual(holders, ['beltsville'], 'the ledgers are outside the barn, on the farm');
+  const bv = MAPS_FOR_TEST.beltsville, led = bv.objects.find((o) => o.id === 'obj.bv_ledgers'), vet = bv.objects.find((o) => o.id === 'npc.bv_vet');
+  assert.equal(bv.layout[led.y][led.x], '.', 'indoors, on the office floor');
+  // the office is the building nearest the vet: walk out of it, and its door is closer to the vet than the other one
+  const doors = [[6, 5], [20, 5]].filter(([x, y]) => bv.layout[y][x] !== '#');
+  assert.equal(doors.length, 2);
+  const near = doors.sort((a, b) => Math.hypot(a[0] - vet.x, a[1] - vet.y) - Math.hypot(b[0] - vet.x, b[1] - vet.y))[0];
+  assert.ok(Math.abs(led.x - near[0]) <= 4 && led.y < near[1], 'the ledgers sit in the building by the vet');
+  assert.ok(MAPS_FOR_TEST.bv_barn.objects.some((o) => o.id === 'obj.bv_named_tank'), 'the named tank stays in the barn');
+  const q = AlignSide.SIDE_QUESTS.find((x) => x.id === 'side.bv_ledgers');
+  assert.equal(q.inspect.obj, 'obj.bv_ledgers');
+  assert.ok(!/barn/i.test(q.pitch) && !/granero/i.test(AlignSide.ES_SIDE_QUESTS[q.pitch] ?? 'granero'), 'the pitch (and its Spanish) no longer sends you to the barn');
+});
+
+test('region guardians (#49): scaffold quests a later puzzle converts keep their ids, ask flags and first-step objects', () => {
+  const LOOK = { gb_footprints: 'obj.gb_cleanroom', bv_ledgers: 'obj.bv_ledgers', bv_tank: 'obj.bv_named_tank', bv_batch: 'obj.bv_batch_board', rf_rings: 'obj.rf_tower',
+    md_menu: 'obj.md_menu', bmore_mural: 'obj.bmore_mural', ann_bell: 'obj.ann_bell', ann_almanac: 'obj.ann_almanac', cor_meters: 'obj.cor_meters', gt_cradle: 'obj.gt_cradle',
+    fr_guestbook: 'obj.fr_guestbook', fr_potlines: 'obj.fr_potlines', fr_dashboard: 'obj.fr_dashboard_room', en_parchment: 'obj.en_parchment', en_archive: 'obj.en_archive' };
+  const FIGHT = { gb_receiver: 'boss.gb_receiver', bv_shell: 'boss.bv_shell', md_fence: 'boss.md_fence', ann_tide: 'boss.ann_tide', cor_hall: 'boss.cor_hall', gt_master: 'boss.gt_clock',
+    en_gate: 'boss.en_gate', fr_potline: 'boss.fr_potline' };
+  const byId = new Map(AlignSide.SIDE_QUESTS.map((q) => [q.id, q]));
+  const objs = new Set(Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.map((o) => o.id)));
+  for (const [id, obj] of Object.entries(LOOK)) {
+    const q = byId.get(`side.${id}`);
+    assert.ok(q, `side.${id} must keep its id (a conversion keeps the quest and makes this its first step)`);
+    assert.equal(q.ask, `q.${id}.asked`); assert.equal(q.inspect?.obj, obj); assert.equal(q.inspect.flag, `q.${id}.seen`);
+    assert.ok(objs.has(obj), `${obj} is on no map`);
+  }
+  for (const [id, boss] of Object.entries(FIGHT)) {
+    const q = byId.get(`side.${id}`);
+    assert.ok(q, `side.${id} must keep its id`); assert.equal(q.ask, `q.${id}.asked`); assert.equal(q.target?.boss, boss);
+    assert.ok(placesOf(boss).length === 1, `${boss} should stand on exactly one map`);
+  }
+});
+
+// hub #30, Act 2 slice: the Act 2 areas polished in this pass. Fresh copies of the two map modules (the ?a2p30 query),
+// so the crowds.js townsfolk that maps/index.js adds afterwards aren't counted as their own; the townsfolk are checked
+// separately where it says so (crowds.js has its own polish coming).
+const A2P_IDS = ['route1_north', 'greenbelt', 'beltsville', 'refuge', 'meade', 'annapolis', 'gb_dishes', 'gb_coop', 'bv_barn', 'rf_settlement', 'bmore_stacks', 'bmore_clinic', 'ann_harbor'];
+const A2P_MAPS = [...Object.values(await import('../src/content/maps/act2_regions.js?a2p30')), ...Object.values(await import('../src/content/maps/act2_more.js?a2p30'))]
+  .filter((m) => m && Array.isArray(m.objects) && A2P_IDS.includes(m.id));
+const { ES_ACT2: A2P_ES } = await import('../src/i18n/es-act2.js');
+// Every other Spanish table: each ES_* export in src/i18n/ (but the item table, keyed by item id and checked on its own
+// below) and the side quests' own, read from the folder so a table added later is compared too.
+const A2P_TABLES = { ES_SIDE_QUESTS: AlignSide.ES_SIDE_QUESTS };
+for (const f of fs.readdirSync(new URL('../src/i18n/', import.meta.url)).filter((n) => n.endsWith('.js')).sort()) {
+  for (const [name, tb] of Object.entries(await import(`../src/i18n/${f}`))) {
+    if (/^ES_/.test(name) && !['ES_ITEMS', 'ES_ACT2'].includes(name) && tb && typeof tb === 'object' && !Array.isArray(tb)) A2P_TABLES[name] = tb;
+  }
+}
+const { LOOT: A2P_LOOT, SHOPS: A2P_SHOPS } = await import('../src/content/items.js');
+const { Approach: A2P_Approach } = await import('../src/game/approach.js');
+const a2pLines = (o) => [o.label, o.text, o.doneText, o.lockedText, ...(o.pages ?? []), ...(o.later ?? []).map((l) => l.text)].filter((t) => typeof t === 'string' && t);
+// A side-quest giver's pitch and anyone's later line print the label in capitals above the line (WorldScene).
+const a2pSpeaks = (o) => o.npc && (o.later?.length || AlignSide.SIDE_QUESTS.some((q) => q.giver === o.id));
+// Missing Spanish, as tools/i18n/es_audit.mjs counts it: not in a listed table and not translated by tr().
+const a2pExact = Object.assign(Object.create(null), ...Object.values(A2P_TABLES), A2P_ES);
+const a2pMissing = (t) => !Object.hasOwn(a2pExact, t) && i18nMod.tr(t) === t;
+test('hub #30 (Act 2): no [scaffold] left on the polished Act 2 maps, and every line on them has Spanish', () => {
+  assert.deepEqual(A2P_MAPS.map((m) => m.id).sort(), [...A2P_IDS].sort(), 'the thirteen polished Act 2 maps');
+  assert.ok(!/\[scaffold\]/i.test(fs.readFileSync(new URL('../src/content/maps/act2_more.js', import.meta.url), 'utf8')), 'act2_more.js still has a [scaffold] line');
+  const scaffold = [], missing = [], multiline = [], was = i18nMod.getLang();
+  i18nMod.setLang('es');
+  try {
+    for (const m of A2P_MAPS) {
+      if (a2pMissing(m.name)) missing.push(`${m.id}.name`);
+      for (const o of m.objects) for (const t of [...a2pLines(o), ...(a2pSpeaks(o) ? [o.label.toUpperCase()] : [])]) {
+        if (/\[scaffold\]/i.test(t)) scaffold.push(`${m.id}/${o.id}`);
+        if (a2pMissing(t)) missing.push(`${m.id}/${o.id}: ${t.slice(0, 50)}`);
+        if (t.includes('\n')) multiline.push(`${m.id}/${o.id}`);
+      }
+      // The townsfolk crowds.js stands on these maps count for Spanish too (es_audit lists them under these maps).
+      const own = new Set(m.objects.map((o) => o.id));
+      for (const o of MAPS_FOR_TEST[m.id].objects.filter((q) => !own.has(q.id))) for (const t of a2pLines(o)) if (a2pMissing(t)) missing.push(`${m.id}/${o.id} (crowds.js): ${t.slice(0, 50)}`);
+    }
+    const coop = A2P_SHOPS.coop;
+    for (const t of [coop.title, ...coop.lines]) { if (/\[scaffold\]/i.test(t)) scaffold.push('SHOPS.coop'); if (a2pMissing(t)) missing.push(`SHOPS.coop: ${t}`); }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(scaffold, [], 'a placeholder line is left');
+  assert.deepEqual(missing, [], 'add Spanish to src/i18n/es-act2.js');
+  assert.deepEqual(multiline, [], 'one line each, so a quest clue or a search result added under it still translates line by line');
+});
+test('hub #30 (Act 2): every polished Act 2 map can be reached, and from each way in everything on it can be walked up to', () => {
+  const linked = new Set(['room631']), todo = ['room631'];   // through every exit, flagged or not
+  while (todo.length) for (const o of MAPS_FOR_TEST[todo.shift()].objects) if (o.action === 'exit' && MAPS_FOR_TEST[o.to] && !linked.has(o.to)) { linked.add(o.to); todo.push(o.to); }
+  const ring2 = walkFrom('route1_north');   // once the road north is open, no other story door stands in the way
+  const bad = [];
+  for (const id of A2P_IDS) {
+    if (!linked.has(id)) bad.push(`${id} can't be reached through the exits from Room 631`);
+    if (!ring2.has(id)) bad.push(`${id} sits behind a flagged door`);
+    const m = MAPS_FOR_TEST[id];
+    for (const back of m.objects.filter((o) => o.action === 'exit' && MAPS_FOR_TEST[o.to])) {   // arrive the way the game does
+      const via = MAPS_FOR_TEST[back.to].objects.find((o) => o.action === 'exit' && o.to === id && o.pair === back.id);
+      if (!via) { bad.push(`${id}: nothing in ${back.to} leads to ${back.id}`); continue; }
+      const sim = new Sim(MAPS_FOR_TEST[back.to], { seed: 'a2p' });
+      for (const [pid, c] of [['a', 'manuel'], ['b', 'trevor'], ['c', 'michael']]) sim.addPlayer(pid, c);
+      sim.setMap(m, back.to, via.id);
+      const starts = [...sim.players.values()].map((p) => [Math.floor(p.x / 16), Math.floor(p.y / 16)]);
+      const seen = new Set(starts.map(([x, y]) => `${x},${y}`)), q = [...starts];
+      while (q.length) {
+        const [x, y] = q.shift();
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
+          if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
+          seen.add(k); q.push([nx, ny]);
+        }
+      }
+      for (const [x, y] of starts) if (m.solid(x, y)) bad.push(`${id}: arriving from ${back.to} lands in a wall at ${x},${y}`);
+      for (const o of m.objects) if (![[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${o.x + dx},${o.y + dy}`))) bad.push(`${id}: ${o.id} can't be reached from ${back.id}`);
+      for (const e of m.enemies) if (!seen.has(`${Math.floor(e.x / 16)},${Math.floor(e.y / 16)}`)) bad.push(`${id}: ${e.kind} is walled off from ${back.id}`);
+    }
+  }
+  assert.deepEqual(bad, []);
+});
+// The finds are listed sealed (docs/sealed/secrets-later-acts.md, ROT13), so this reads their object ids from there.
+const A2P_SEALED_RAW = fs.readFileSync(new URL('../docs/sealed/secrets-later-acts.md', import.meta.url), 'utf8').replace(/\r\n/g, '\n');   // CRLF checkouts (Windows, tts)
+const A2P_SEALED = A2P_SEALED_RAW.split('-->\n').slice(1).join('-->\n')
+  .replace(/[a-z]/gi, (c) => String.fromCharCode(((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26) + (c <= 'Z' ? 65 : 97)));
+// The rows of one act's section ("## Act 2 ...", its Spanish table included), split into cells.
+const p30Rows = (act) => A2P_SEALED.split('\n## ').filter((s) => s.startsWith(`${act} `)).join('\n').split('\n')
+  .filter((l) => /^\| [^-]/.test(l)).map((l) => l.split('|').map((c) => c.trim())).filter((c) => /^`(obj|npc)\.[a-z0-9_]+`$/.test(c[2] ?? ''));
+test('hub #30 (Act 2): each polished Act 2 area has its rows in the sealed list, built from systems that already exist', () => {
+  assert.ok(A2P_SEALED_RAW.startsWith('<!-- SEALED SPOILERS'), 'the list is committed sealed, never as plaintext');
+  const rows = p30Rows('Act 2');
+  const listed = new Set(rows.map((c) => c[2].replace(/`/g, '')));
+  assert.ok(listed.size >= A2P_MAPS.length, 'docs/sealed/secrets-later-acts.md: a row per find, with its object id');
+  const byId = new Map(A2P_MAPS.flatMap((m) => m.objects.map((o) => [o.id, [m, o]])));
+  for (const id of listed) assert.ok(byId.has(id), `${id}: in docs/sealed/secrets-later-acts.md but on none of the polished Act 2 maps`);
+  const isFind = (o) => !!(o.grant || o.loot || o.action === 'pages' || o.later?.length);
+  const questFlags = new Set(AlignSide.SIDE_QUESTS.flatMap((q) => [q.report?.flag, q.inspect?.flag, q.give?.flag].filter(Boolean)));
+  const atlas = new Set(['props', 'big', 'wide', 'doors'].flatMap((s) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${s}.json`, import.meta.url), 'utf8')).frames)));
+  const everyId = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.map((o) => o.id));
+  const actions = new Set([undefined, 'exit', 'shop', 'pages']);   // only what WorldScene already does with an object
+  for (const m of A2P_MAPS) {
+    assert.ok(m.objects.some((o) => listed.has(o.id)), `${m.id}: no row in docs/sealed/secrets-later-acts.md`);
+    for (const o of m.objects) {
+      if (listed.has(o.id)) assert.ok(isFind(o), `${o.id}: listed in the sealed file, but built from no existing system`);
+      else assert.ok(!isFind(o), `${m.id}/${o.id}: add its row to docs/sealed/secrets-later-acts.md`);
+      assert.ok(actions.has(o.action), `${m.id}/${o.id}: action ${o.action} is new`);
+      if (o.grant) { assert.ok(ITEMS[o.grant], `${o.id}: no item ${o.grant}`); assert.ok(o.text && o.doneText && !o.loot, `${o.id}: a one-time grant needs text and doneText`); }
+      if (o.loot) assert.ok(A2P_LOOT[o.loot], `${o.id}: no loot table ${o.loot}`);
+      if (o.action === 'pages') assert.ok(o.pages.length > 1, `${o.id}: pages to step through`);
+      for (const l of o.later ?? []) { assert.ok(o.npc, `${o.id}: later lines only play for people`); assert.ok(questFlags.has(l.if), `${o.id}: nothing in the game sets ${l.if}`); }
+      if (!o.selfDrawn) assert.ok(atlas.has(o.art ?? o.id), `${o.id}: no art ${o.art ?? o.id} in assets/sprites`);
+      assert.notEqual(o.art, 'obj.board', `${m.id}/${o.id}: still the placeholder corkboard`);
+      assert.equal(everyId.filter((id) => id === o.id).length, 1, `${o.id}: the id is used on another map too (finds and searches are keyed by it)`);
+    }
+    for (const s of m.scenery ?? []) assert.ok(atlas.has(s.art), `${m.id}: no scenery art ${s.art}`);
+  }
+});
+test('hub #30 (Act 2): children on the polished Act 2 maps, the crowd\'s included, are talk only, and no gag picks them', () => {
+  const approach = new A2P_Approach({ save: { party: { manuel: {} }, world: {} }, character: 'manuel', input: { keyboard: { on() {} } }, _questHandIns: () => [] });
+  const people = A2P_IDS.flatMap((id) => MAPS_FOR_TEST[id].objects.filter((o) => o.npc));
+  for (const o of people) assert.notEqual(o.eggOk, true, `${o.id}: nobody here is a gag target`);
+  for (const o of people.filter((q) => q.age === 'child')) {
+    assert.equal(o.approach, false, `${o.id}: talk only, nobody pickpockets or intimidates a kid`);
+    assert.deepEqual(approach.options(o).map((a) => a.id), ['talk'], `${o.id}: Talk is the only approach`);
+    assert.equal(approach.intercept(o), false, `${o.id}: no approach menu opens, so pressing E just talks`);
+    assert.ok(o.eggNo, `${o.id}: no gag picks a child`);
+  }
+  assert.ok(MAPS_FOR_TEST.greenbelt.objects.some((o) => o.age === 'child'), 'the kid with the kite in Greenbelt is still there');
+});
+test('hub #30 (Act 2): quest objects, givers, exits, spawns and enemies on the polished maps are where they were', () => {
+  const WAS = {
+    'npc.r1n_walker': [32, 8], 'obj.r1n_to_baltimore': [20, 0], 'obj.r1n_to_greenbelt': [0, 2], 'obj.r1n_to_refuge': [40, 2], 'obj.r1n_to_beltsville': [0, 6],
+    'obj.r1n_to_meade': [39, 6], 'obj.r1n_to_annapolis': [40, 9], 'obj.r1n_south': [18, 12], 'obj.r1n_to_beltway': [10, 12],
+    'npc.gb_committee': [15, 6], 'obj.gb_dishes': [30, 4], 'obj.greenbelt_out': [32, 10], 'obj.greenbelt_to_gb_dishes': [29, 0], 'obj.greenbelt_to_gb_coop': [3, 11], 'obj.greenbelt_to_gb_center': [5, 0],
+    'npc.gb_technician': [5, 4], 'obj.gb_tapes': [9, 2], 'obj.gb_cleanroom': [24, 4], 'obj.gb_dishes_out': [11, 8],
+    'npc.gb_clerk': [11, 4], 'obj.gb_coop_counter': [12, 2], 'obj.gb_coop_out': [10, 7],
+    'npc.bv_vet': [11, 7], 'obj.bv_ledgers': [4, 3], 'obj.bv_sealed_barn': [17, 9], 'obj.beltsville_crate_19_3': [19, 3], 'obj.beltsville_out': [31, 9], 'obj.beltsville_to_bv_barn': [12, 10], 'obj.beltsville_to_bv_lab': [6, 0],
+    'obj.bv_named_tank': [22, 3], 'obj.bv_barn_out': [11, 8],
+    'npc.rf_teacher': [9, 6], 'obj.rf_tower': [18, 8], 'obj.refuge_out': [0, 8], 'obj.refuge_to_rf_settlement': [8, 0], 'obj.refuge_to_rf_fringe': [26, 0], 'obj.refuge_to_rf_marsh': [15, 9],
+    'npc.rf_blacksmith': [5, 3], 'obj.rf_library': [20, 3], 'npc.rf_hardman': [13, 4], 'obj.rf_implants': [26, 5], 'obj.rf_settlement_out': [10, 8],
+    'npc.md_quartermaster': [14, 5], 'obj.md_menu': [28, 4], 'obj.meade_out': [0, 7], 'obj.meade_to_meade_inside': [10, 8], 'obj.meade_to_md_lot': [4, 8],
+    'npc.bmore_steward': [15, 4], 'obj.bmore_manifests': [27, 6], 'obj.bmore_stacks_out': [0, 7],
+    'npc.bmore_doctor': [15, 3], 'obj.bmore_meds': [16, 3], 'obj.bmore_clinic_out': [10, 7],
+    'npc.ann_crabber': [20, 3], 'obj.ann_statehouse': [4, 4], 'obj.ann_charts': [29, 6], 'obj.annapolis_out': [0, 7], 'obj.annapolis_to_ann_harbor': [31, 7],
+    'obj.annapolis_to_ann_statehouse': [6, 8], 'obj.annapolis_to_ann_bridge': [28, 8], 'obj.annapolis_to_ann_chapel': [3, 0],
+    'npc.ann_pilot': [12, 5], 'obj.ann_almanac': [14, 6], 'obj.ann_bell': [25, 4], 'obj.ann_harbor_out': [0, 7],
+  };
+  const SPAWN = { route1_north: [18, 11], greenbelt: [3, 9], beltsville: [2, 9], refuge: [3, 8], meade: [3, 7], annapolis: [3, 7], gb_dishes: [11, 7], gb_coop: [10, 6],
+    bv_barn: [11, 7], rf_settlement: [10, 7], bmore_stacks: [5, 7], bmore_clinic: [10, 6], ann_harbor: [3, 7] };
+  // In map order, so saved kills keep their keys (`<map>#<index>`).
+  const FOES = { route1_north: ['enemy.rot_taken 6,9'], greenbelt: ['enemy.spitter 27,9'], beltsville: ['enemy.rot_taken 27,7'],
+    meade: ['enemy.captcha 28,7', 'boss.md_fence 27,3'], gb_dishes: ['enemy.autocomplete 7,6', 'enemy.autocomplete 18,6', 'boss.gb_receiver 24,2'],
+    bv_barn: ['enemy.rot_taken 3,5', 'enemy.rot_taken 11,5', 'enemy.rot_taken 19,5', 'boss.bv_shell 23,2'], bmore_stacks: ['enemy.rot_taken 13,6', 'enemy.rot_taken 26,7'],
+    ann_harbor: ['boss.ann_tide 26,5'] };
+  const at = new Map(A2P_MAPS.flatMap((m) => m.objects.map((o) => [o.id, o])));
+  for (const [id, xy] of Object.entries(WAS)) assert.deepEqual(at.has(id) && [at.get(id).x, at.get(id).y], xy, `${id} moved`);
+  for (const m of A2P_MAPS) {
+    assert.deepEqual(m.spawns.map((s) => [Math.floor(s.x / 16), Math.floor(s.y / 16)]), [SPAWN[m.id]], `${m.id}: the spawn moved`);
+    assert.deepEqual(m.enemies.map((e) => `${e.kind} ${(e.x - 8) / 16},${(e.y - 8) / 16}`), FOES[m.id] ?? [], `${m.id}: the enemies changed`);
+    for (const o of m.objects.filter((q) => q.action === 'exit')) assert.ok(WAS[o.id], `${o.id}: a new way in or out; add it to this list`);
+  }
+  for (const q of AlignSide.SIDE_QUESTS) {
+    for (const id of [q.giver, q.inspect?.obj]) if (id && at.has(id)) assert.ok(WAS[id], `${q.id}: ${id} is on a polished Act 2 map; add it to this list`);
+    if (q.inspect && at.has(q.inspect.obj)) assert.ok(at.get(q.inspect.obj).text, `${q.id}: the clue is read under the object's own text, so it needs one`);
+  }
+});
+test('hub #30 (Act 2): es-act2.js is wired in and agrees with the other Spanish tables wherever they share an English line', () => {
+  const clash = [];
+  for (const [name, tb] of Object.entries(A2P_TABLES)) for (const [en, es] of Object.entries(A2P_ES)) if (tb && Object.hasOwn(tb, en) && tb[en] !== es) clash.push(`${JSON.stringify(en.slice(0, 40))}: ${name} says "${tb[en].slice(0, 30)}"`);
+  for (const [id, def] of Object.entries(ITEMS)) for (const [k, i] of [['name', 0], ['text', 1]]) {   // items translate through es-items.js
+    const es = ES_ITEMS[id.replace(/^item\./, '')]?.[i];
+    if (es && Object.hasOwn(A2P_ES, def[k]) && A2P_ES[def[k]] !== es) clash.push(`${id}.${k}`);
+  }
+  assert.deepEqual(clash, [], 'use one Spanish string in both tables');
+  const was = i18nMod.getLang(), wrong = [];
+  i18nMod.setLang('es');
+  try { for (const [en, es] of Object.entries(A2P_ES)) if (i18nMod.tr(en) !== es) wrong.push(en.slice(0, 50)); } finally { i18nMod.setLang(was); }
+  assert.deepEqual(wrong, [], 'src/i18n.js reads es-act2.js, and nothing later in the table overrides it');
+  const audit = fs.readFileSync(new URL('../tools/i18n/es_audit.mjs', import.meta.url), 'utf8');
+  assert.ok(/import \{ ES_ACT2 \} from '..\/..\/src\/i18n\/es-act2\.js'/.test(audit) && /Object\.assign\(exact, ES_ACT2\)/.test(audit), 'tools/i18n/es_audit.mjs counts es-act2.js');
+  // A paged object adds its page count under each page (WorldScene), and that line translates too.
+  i18nMod.setLang('es');
+  const page = A2P_MAPS.find((m) => m.id === 'gb_dishes').objects.find((o) => o.id === 'obj.gb_shift_log').pages[1];
+  try { assert.equal(i18nMod.tr(`${page}\n\n[E again: 2/4]`), `${A2P_ES[page]}\n\n[E otra vez: 2/4]`, 'the page count under a page'); } finally { i18nMod.setLang(was); }
+});
+test('hub #30 (Act 2), canon: the lines keep to the quest clues, the naming rule and the house style', () => {
+  const obj = (mapId, id) => A2P_MAPS.find((m) => m.id === mapId).objects.find((o) => o.id === id);
+  const all = A2P_MAPS.flatMap((m) => m.objects.flatMap((o) => a2pLines(o).map((t) => [`${m.id}/${o.id}`, t])));
+  // Lore gate 7.1 (PR #46): nothing on the tank can be read, and nothing here invents a number.
+  for (const [where, t] of all.filter(([w]) => /^(beltsville|bv_barn)\//.test(w))) assert.ok(!/thirteen|batch \d|\bnumber \d/i.test(t), `${where}: an invented batch: ${t.slice(0, 60)}`);
+  // The tank's line follows the sealed ruling (LoreKeeper, story #71). The words it must not use are kept in ROT13.
+  const tankEn = obj('bv_barn', 'obj.bv_named_tank').text, tankEs = A2P_ES[tankEn];
+  const r13 = (w) => w.replace(/[a-z]/gi, (c) => String.fromCharCode(((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26) + (c <= 'Z' ? 65 : 97)));
+  const notYet = new RegExp(`\\b(${['gnt', 'ongpu', 'ynory', 'rgvdhrgn', 'ybgr'].map(r13).join('|')})\\b`, 'i');
+  assert.ok(!/\d|"|'[A-Z]/.test(tankEn) && !notYet.test(tankEn), 'the tank: nothing on it can be read before its quest');
+  assert.ok(/faded|too far to read|past reading|can't be read|unreadable|illegible/i.test(tankEn), 'the tank: the line says the writing can no longer be read');
+  assert.ok(tankEs && !/\d|"/.test(tankEs) && !notYet.test(tankEs) && /borrad|no se lee|ilegible/i.test(tankEs), 'the tank (ES): the same');
+  // The bay (LoreKeeper): nothing here may read like the real 2024 bridge collapse.
+  for (const [where, t] of all.filter(([w]) => /^(annapolis|ann_harbor)\//.test(w))) assert.ok(!/\b(ships?|vessels?|freighters?|collisions?|collapsed?|wreck(age)?|struck|broken)\b/i.test(t), `${where} reads like a disaster: ${t.slice(0, 60)}`);
+  // The main story keeps the boat (atlas §11): nobody on the harbor promises one.
+  for (const [where, t] of all.filter(([w]) => /^ann_harbor\//.test(w))) assert.ok(!/\b(get|give|find) you a boat\b/i.test(t), `${where} hands out the boat`);
+  // The clues are read under these lines, so the lines can't give the clue away first.
+  assert.ok(!/\bin\b.*\bout\b|don't come out|doesn't come out|shoe|boot/i.test(obj('gb_dishes', 'obj.gb_cleanroom').text), 'the clean room: where the prints lead, and whose they are, is the clue\'s to say');
+  // The dish log stays undated, with no count of the years: what it may record is the lore gate's to place.
+  for (const t of [...obj('gb_dishes', 'obj.gb_shift_log').pages, obj('gb_dishes', 'npc.gb_technician').text]) assert.ok(!/\b\d{4}\b|\b(ten|eleven|twelve|thirteen|fourteen|fifteen|\d+) years\b|slew/i.test(t), `the dish log: ${t.slice(0, 60)}`);
+  assert.ok(!/before the Call|ask the bell/i.test(obj('beltsville', 'obj.bv_ledgers').text + obj('ann_harbor', 'obj.ann_almanac').text), 'the ledgers and the almanac leave their answers to the clues');
+  // Naming in what players read (bible §2): "code rot", "code rotter", "Code-rot-taken", and "John Pork" in full.
+  for (const [where, t] of all) {
+    assert.ok(!/(?<!code[ -])\brot(ter)?s?\b/i.test(t) && !/(?<!John )\bPork\b/.test(t), `${where}: the naming rule: ${t.slice(0, 60)}`);
+    assert.ok(!/\b[A-Z]{3,}, [A-Z]{3,}, (and )?[A-Z]{3,}\b/.test(t) && !/\b(\w+), \1, \1\b/i.test(t), `${where}: a triplet: ${t.slice(0, 60)}`);
+  }
+});
+
+// hub #30, Act 3 slice: the Act 3 areas, checked the same way as the Act 2 slice above (fresh module copies, so the
+// crowds.js townsfolk are counted only where it says so).
+const A3P_IDS = ['beltway', 'corridor', 'gaithersburg', 'frederick', 'enclave', 'cor_sealed', 'gt_clockroom', 'fr_switchyard', 'en_archive', 'meade_inside'];
+const A3P_MAPS = [...Object.values(await import('../src/content/maps/act3_regions.js?a3p30')), ...Object.values(await import('../src/content/maps/act3_more.js?a3p30'))]
+  .filter((m) => m && Array.isArray(m.objects) && A3P_IDS.includes(m.id));
+const { ES_ACT3: A3P_ES } = await import('../src/i18n/es-act3.js');
+const A3P_TABLES = Object.fromEntries(Object.entries({ ...A2P_TABLES, ES_ACT2: A2P_ES }).filter(([name]) => name !== 'ES_ACT3'));
+const a3pExact = Object.assign(Object.create(null), ...Object.values(A3P_TABLES), A3P_ES);
+const a3pMissing = (t) => !Object.hasOwn(a3pExact, t) && i18nMod.tr(t) === t;
+test('hub #30 (Act 3): no [scaffold] left on the polished Act 3 maps, and every line on them has Spanish', () => {
+  assert.deepEqual(A3P_MAPS.map((m) => m.id).sort(), [...A3P_IDS].sort(), 'the ten polished Act 3 maps');
+  assert.ok(!/\[scaffold\]/i.test(fs.readFileSync(new URL('../src/content/maps/act3_more.js', import.meta.url), 'utf8')), 'act3_more.js still has a [scaffold] line');
+  const scaffold = [], missing = [], multiline = [], was = i18nMod.getLang();
+  i18nMod.setLang('es');
+  try {
+    for (const m of A3P_MAPS) {
+      if (a3pMissing(m.name)) missing.push(`${m.id}.name`);
+      for (const o of m.objects) for (const t of [...a2pLines(o), ...(a2pSpeaks(o) ? [o.label.toUpperCase()] : [])]) {
+        if (/\[scaffold\]|\[polish/i.test(t)) scaffold.push(`${m.id}/${o.id}`);
+        if (a3pMissing(t)) missing.push(`${m.id}/${o.id}: ${t.slice(0, 50)}`);
+        if (t.includes('\n')) multiline.push(`${m.id}/${o.id}`);
+      }
+      const own = new Set(m.objects.map((o) => o.id));   // the crowd's townsfolk on these maps (es_audit lists them here)
+      for (const o of MAPS_FOR_TEST[m.id].objects.filter((q) => !own.has(q.id))) for (const t of a2pLines(o)) if (a3pMissing(t)) missing.push(`${m.id}/${o.id} (crowds.js): ${t.slice(0, 50)}`);
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(scaffold, [], 'a placeholder line is left');
+  assert.deepEqual(missing, [], 'add Spanish to src/i18n/es-act3.js');
+  assert.deepEqual(multiline, [], 'one line each, so a quest clue or a search result added under it still translates line by line');
+});
+test('hub #30 (Act 3): every polished Act 3 map can be reached, and from each way in everything on it can be walked up to', () => {
+  const linked = new Set(['room631']), todo = ['room631'];   // through every exit, flagged or not
+  while (todo.length) for (const o of MAPS_FOR_TEST[todo.shift()].objects) if (o.action === 'exit' && MAPS_FOR_TEST[o.to] && !linked.has(o.to)) { linked.add(o.to); todo.push(o.to); }
+  const ring3 = walkFrom('beltway');   // once the Beltway road is open, only the Meade's own gate stands in the way
+  const GATED = { meade_inside: ['meade', 'obj.meade_to_meade_inside'] };
+  const bad = [];
+  for (const id of A3P_IDS) {
+    if (!linked.has(id)) bad.push(`${id} can't be reached through the exits from Room 631`);
+    if (GATED[id]) {
+      const [from, door] = GATED[id], d = MAPS_FOR_TEST[from].objects.find((o) => o.id === door);
+      if (!ring3.has(from) || !d || d.to !== id || !d.requiresFlag) bad.push(`${id}: should open from ${from} through ${door}, and only there`);
+    } else if (!ring3.has(id)) bad.push(`${id} sits behind a flagged door`);
+    const m = MAPS_FOR_TEST[id];
+    for (const back of m.objects.filter((o) => o.action === 'exit' && MAPS_FOR_TEST[o.to])) {   // arrive the way the game does
+      const via = MAPS_FOR_TEST[back.to].objects.find((o) => o.action === 'exit' && o.to === id && o.pair === back.id);
+      if (!via) { bad.push(`${id}: nothing in ${back.to} leads to ${back.id}`); continue; }
+      const sim = new Sim(MAPS_FOR_TEST[back.to], { seed: 'a3p' });
+      for (const [pid, c] of [['a', 'manuel'], ['b', 'trevor'], ['c', 'michael']]) sim.addPlayer(pid, c);
+      sim.setMap(m, back.to, via.id);
+      const starts = [...sim.players.values()].map((p) => [Math.floor(p.x / 16), Math.floor(p.y / 16)]);
+      const seen = new Set(starts.map(([x, y]) => `${x},${y}`)), q = [...starts];
+      while (q.length) {
+        const [x, y] = q.shift();
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
+          if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
+          seen.add(k); q.push([nx, ny]);
+        }
+      }
+      for (const [x, y] of starts) if (m.solid(x, y)) bad.push(`${id}: arriving from ${back.to} lands in a wall at ${x},${y}`);
+      for (const o of m.objects) if (![[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${o.x + dx},${o.y + dy}`))) bad.push(`${id}: ${o.id} can't be reached from ${back.id}`);
+      for (const e of m.enemies) if (!seen.has(`${Math.floor(e.x / 16)},${Math.floor(e.y / 16)}`)) bad.push(`${id}: ${e.kind} is walled off from ${back.id}`);
+    }
+  }
+  assert.deepEqual(bad, []);
+});
+test('hub #30 (Act 3): each polished Act 3 area has its rows in the sealed list, built from systems that already exist', () => {
+  const rows = p30Rows('Act 3');
+  const listed = new Set(rows.map((c) => c[2].replace(/`/g, '')));
+  assert.ok(listed.size >= A3P_MAPS.length, 'docs/sealed/secrets-later-acts.md: a row per find, with its object id, in the Act 3 section');
+  for (const c of rows) assert.ok(rows.filter((r) => r[2] === c[2]).length === 2, `${c[2]}: one row in English and one in Spanish`);
+  const byId = new Map(A3P_MAPS.flatMap((m) => m.objects.map((o) => [o.id, [m, o]])));
+  for (const id of listed) assert.ok(byId.has(id), `${id}: in the sealed file's Act 3 section but on none of the polished Act 3 maps`);
+  const isFind = (o) => !!(o.grant || o.loot || o.action === 'pages' || o.later?.length);
+  const questFlags = new Set(AlignSide.SIDE_QUESTS.flatMap((q) => [q.report?.flag, q.inspect?.flag, q.give?.flag].filter(Boolean)));
+  const questObjs = new Set(AlignSide.SIDE_QUESTS.map((q) => q.inspect?.obj).filter(Boolean));
+  const atlas = new Set(['props', 'big', 'wide', 'doors'].flatMap((s) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${s}.json`, import.meta.url), 'utf8')).frames)));
+  const everyId = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.map((o) => o.id));
+  const actions = new Set([undefined, 'exit', 'shop', 'pages']);   // only what WorldScene already does with an object
+  for (const m of A3P_MAPS) {
+    assert.ok(m.objects.some((o) => listed.has(o.id)), `${m.id}: no row in docs/sealed/secrets-later-acts.md`);
+    for (const o of m.objects) {
+      if (listed.has(o.id)) assert.ok(isFind(o), `${o.id}: listed in the sealed file, but built from no existing system`);
+      else assert.ok(!isFind(o), `${m.id}/${o.id}: add its row to docs/sealed/secrets-later-acts.md`);
+      if (isFind(o) && !o.npc) assert.ok(!questObjs.has(o.id), `${o.id}: a quest reads this object, so a find on it would take the quest's turn`);
+      assert.ok(actions.has(o.action), `${m.id}/${o.id}: action ${o.action} is new`);
+      if (o.grant) {
+        assert.ok(ITEMS[o.grant], `${o.id}: no item ${o.grant}`); assert.ok(o.text && o.doneText && !o.loot, `${o.id}: a one-time grant needs text and doneText`);
+        assert.ok(!ITEMS[o.grant].unique && ITEMS[o.grant].slot !== 'key', `${o.id}: a small find hands out nothing unique and no key item`);
+      }
+      if (o.loot) assert.ok(A2P_LOOT[o.loot] && !A2P_LOOT[o.loot].to, `${o.id}: no shared loot table ${o.loot}`);
+      if (o.action === 'pages') assert.ok(o.pages.length > 1, `${o.id}: pages to step through`);
+      for (const l of o.later ?? []) { assert.ok(o.npc, `${o.id}: later lines only play for people`); assert.ok(questFlags.has(l.if), `${o.id}: nothing in the game sets ${l.if}`); }
+      if (!o.selfDrawn) assert.ok(atlas.has(o.art ?? o.id), `${o.id}: no art ${o.art ?? o.id} in assets/sprites`);
+      assert.notEqual(o.art, 'obj.board', `${m.id}/${o.id}: still the placeholder corkboard`);
+      assert.equal(everyId.filter((id) => id === o.id).length, 1, `${o.id}: the id is used on another map too (finds and searches are keyed by it)`);
+    }
+    for (const s of m.scenery ?? []) assert.ok(atlas.has(s.art), `${m.id}: no scenery art ${s.art}`);
+  }
+});
+test('hub #30 (Act 3): children on the polished Act 3 maps, the crowd\'s included, are talk only, and no gag picks them', () => {
+  const approach = new A2P_Approach({ save: { party: { manuel: {} }, world: {} }, character: 'manuel', input: { keyboard: { on() {} } }, _questHandIns: () => [] });
+  const people = A3P_IDS.flatMap((id) => MAPS_FOR_TEST[id].objects.filter((o) => o.npc));
+  for (const o of people) assert.notEqual(o.eggOk, true, `${o.id}: nobody here is a gag target`);
+  for (const o of people.filter((q) => q.age === 'child')) {
+    assert.equal(o.approach, false, `${o.id}: talk only, nobody pickpockets or intimidates a kid`);
+    assert.deepEqual(approach.options(o).map((a) => a.id), ['talk'], `${o.id}: Talk is the only approach`);
+    assert.equal(approach.intercept(o), false, `${o.id}: no approach menu opens, so pressing E just talks`);
+    assert.ok(o.eggNo, `${o.id}: no gag picks a child`);
+  }
+  assert.ok(MAPS_FOR_TEST.frederick.objects.some((o) => o.age === 'child'), 'the frightened kid in Frederick is still there');
+});
+test('hub #30 (Act 3): quest objects, givers, exits, spawns and enemies on the polished maps are where they were; the Meade inside keeps its layout', () => {
+  const WAS = {
+    'npc.bw_driver': [26, 7], 'obj.bw_to_frederick': [9, 0], 'obj.bw_to_gaithersburg': [25, 0], 'obj.bw_to_corridor': [0, 4], 'obj.bw_to_r1n': [38, 4], 'obj.bw_to_enclave': [19, 10],
+    'npc.cor_nightshift': [25, 7], 'obj.cor_handbook': [19, 8], 'obj.corridor_crate_6_4': [6, 4], 'obj.corridor_out': [33, 8], 'obj.corridor_to_cor_sealed': [18, 0], 'obj.corridor_to_cor_town': [24, 10],
+    'obj.gt_cradle': [6, 5], 'npc.gt_physicist': [14, 5], 'obj.gt_master_clock': [20, 5], 'obj.gaithersburg_out': [26, 10], 'obj.gaithersburg_to_gt_clockroom': [20, 3], 'obj.gaithersburg_to_gt_labs': [23, 3],
+    'obj.fr_guestbook': [7, 3], 'npc.fr_old_woman': [7, 5], 'obj.fr_potlines': [6, 7], 'obj.frederick_out': [12, 9], 'obj.frederick_to_fr_switchyard': [35, 8], 'obj.frederick_to_fr_market': [5, 0],
+    'obj.en_metro': [17, 3], 'npc.en_cleaner': [13, 7], 'obj.en_archive': [32, 7], 'obj.enclave_out': [18, 0], 'obj.enclave_to_en_archive': [4, 9], 'obj.enclave_to_en_mall': [10, 0], 'obj.enclave_to_en_metro': [14, 9],
+    'obj.cor_meters': [27, 5], 'obj.cor_sealed_out': [14, 8],
+    'obj.gt_leapseconds': [18, 3], 'npc.gt_timekeeper': [10, 5], 'obj.gt_clockroom_out': [10, 7],
+    'obj.fr_dashboard_room': [28, 3], 'obj.fr_switchyard_out': [0, 7],
+    'obj.en_parchment': [11, 2], 'npc.en_functionary': [11, 5], 'obj.en_archive_out': [11, 8],
+    'obj.md_the_wall': [14, 2], 'obj.md_intercepts': [22, 2], 'npc.md_analyst': [14, 6], 'obj.meade_inside_out': [14, 8],
+  };
+  const SPAWN = { beltway: [13, 9], corridor: [29, 9], gaithersburg: [25, 8], frederick: [12, 8], enclave: [18, 8], cor_sealed: [14, 7], gt_clockroom: [10, 6], fr_switchyard: [3, 7],
+    en_archive: [11, 7], meade_inside: [14, 7] };
+  // In map order, so saved kills keep their keys (`<map>#<index>`).
+  const FOES = { beltway: ['enemy.captcha 34,7'], corridor: ['enemy.autocomplete 17,5', 'enemy.autocomplete 5,8', 'enemy.autocomplete 31,8'],
+    gaithersburg: ['enemy.moth 6,8', 'enemy.moth 23,8', 'boss.gt_clock 6,4'], frederick: ['enemy.rot_taken 30,7', 'boss.fr_potline 22,1'],
+    enclave: ['enemy.captcha 8,8', 'enemy.captcha 28,8', 'boss.en_gate 32,5'], cor_sealed: ['enemy.autocomplete 4,5', 'enemy.autocomplete 16,5', 'enemy.autocomplete 26,5', 'boss.cor_hall 27,3'],
+    gt_clockroom: ['enemy.moth 4,5', 'enemy.moth 17,5'], fr_switchyard: ['enemy.rot_taken 12,5', 'enemy.rot_taken 29,6'], en_archive: ['enemy.captcha 6,6', 'enemy.captcha 17,6'],
+    meade_inside: ['enemy.captcha 4,6', 'enemy.captcha 24,6'] };
+  const at = new Map(A3P_MAPS.flatMap((m) => m.objects.map((o) => [o.id, o])));
+  for (const [id, xy] of Object.entries(WAS)) assert.deepEqual(at.has(id) && [at.get(id).x, at.get(id).y], xy, `${id} moved`);
+  for (const m of A3P_MAPS) {
+    assert.deepEqual(m.spawns.map((s) => [Math.floor(s.x / 16), Math.floor(s.y / 16)]), [SPAWN[m.id]], `${m.id}: the spawn moved`);
+    assert.deepEqual(m.enemies.map((e) => `${e.kind} ${(e.x - 8) / 16},${(e.y - 8) / 16}`), FOES[m.id] ?? [], `${m.id}: the enemies changed`);
+    for (const o of m.objects.filter((q) => q.action === 'exit')) assert.ok(WAS[o.id], `${o.id}: a new way in or out; add it to this list`);
+  }
+  for (const q of AlignSide.SIDE_QUESTS) {
+    for (const id of [q.giver, q.inspect?.obj]) if (id && at.has(id)) assert.ok(WAS[id], `${q.id}: ${id} is on a polished Act 3 map; add it to this list`);
+    if (q.inspect && at.has(q.inspect.obj)) assert.ok(at.get(q.inspect.obj).text, `${q.id}: the clue is read under the object's own text, so it needs one`);
+  }
+  // The Meade inside: a later systems design may use the room, so the polish changes its lines only.
+  const md = A3P_MAPS.find((m) => m.id === 'meade_inside');
+  assert.deepEqual(md.layout, ['############################', '#eeeeeeee#eeeeeeeee#eeeeeee#', '#eeeeeeee#eeeeeeeee#eeeeeee#', '#eeeeeeee#eeeeeeeee#eeeeeee#',
+    '#eeeeeeeeeeeeeeeeeeeeeeeeee#', '#eeeeeeee#eeeeeeeee#eeeeeee#', '#eeeeeeee#eeeeeeeee#eeeeeee#', '#eeeeeeeeeeeeeeeeeeeeeeeeee#', '##############ee############'], 'the Meade inside: its grid');
+  assert.deepEqual(md.objects.map((o) => o.id), ['obj.md_the_wall', 'obj.md_intercepts', 'npc.md_analyst', 'obj.meade_inside_out'], 'the Meade inside: nothing added or taken away');
+  assert.deepEqual(md.scenery.map((s) => `${s.art} ${s.x},${s.y}`), ['obj.table 2,2', 'obj.table 3,2', 'obj.table 5,2', 'obj.table 6,2', 'obj.table 2,4', 'obj.table 3,4', 'obj.table 5,4', 'obj.table 6,4'], 'the Meade inside: its desks');
+  const out = md.objects.find((o) => o.id === 'obj.meade_inside_out');
+  assert.deepEqual([out.to, out.pair, out.w, out.stepOn], ['meade', 'obj.meade_to_meade_inside', 2, true], 'the Meade inside: its way out');
+});
+test('hub #30 (Act 3): es-act3.js is wired in and agrees with the other Spanish tables wherever they share an English line', () => {
+  const clash = [];
+  for (const [name, tb] of Object.entries(A3P_TABLES)) for (const [en, es] of Object.entries(A3P_ES)) if (tb && Object.hasOwn(tb, en) && tb[en] !== es) clash.push(`${JSON.stringify(en.slice(0, 40))}: ${name} says "${tb[en].slice(0, 30)}"`);
+  for (const [id, def] of Object.entries(ITEMS)) for (const [k, i] of [['name', 0], ['text', 1]]) {   // items translate through es-items.js
+    const es = ES_ITEMS[id.replace(/^item\./, '')]?.[i];
+    if (es && Object.hasOwn(A3P_ES, def[k]) && A3P_ES[def[k]] !== es) clash.push(`${id}.${k}`);
+  }
+  assert.deepEqual(clash, [], 'use one Spanish string in both tables');
+  const was = i18nMod.getLang(), wrong = [];
+  i18nMod.setLang('es');
+  try { for (const [en, es] of Object.entries(A3P_ES)) if (i18nMod.tr(en) !== es) wrong.push(en.slice(0, 50)); } finally { i18nMod.setLang(was); }
+  assert.deepEqual(wrong, [], 'src/i18n.js reads es-act3.js, and nothing later in the table overrides it');
+  const audit = fs.readFileSync(new URL('../tools/i18n/es_audit.mjs', import.meta.url), 'utf8');
+  assert.ok(/import \{ ES_ACT3 \} from '..\/..\/src\/i18n\/es-act3\.js'/.test(audit) && /Object\.assign\(exact, ES_ACT3\)/.test(audit), 'tools/i18n/es_audit.mjs counts es-act3.js');
+});
+test('hub #30 (Act 3), canon: the lines keep to the quest clues, the naming rule and the house style', () => {
+  const obj = (mapId, id) => A3P_MAPS.find((m) => m.id === mapId).objects.find((o) => o.id === id);
+  const all = A3P_MAPS.flatMap((m) => m.objects.flatMap((o) => a2pLines(o).map((t) => [`${m.id}/${o.id}`, t])));
+  // The clues are read under these lines (WorldScene: the object's text, then the clue), so a line can't say the clue first.
+  const FIRST = {
+    'corridor/obj.cor_handbook': /scratch|slogan|code faster|end of the day/i, 'cor_sealed/obj.cor_meters': /spinn|spins|moving|turning/i,
+    'gaithersburg/obj.gt_master_clock': /\d/, 'gaithersburg/obj.gt_cradle': /\bkg\b|approximately/i, 'gt_clockroom/obj.gt_leapseconds': /different hand|wrong|not neat/i,
+    'frederick/obj.fr_guestbook': /\bher\b|sixty/i, 'frederick/obj.fr_potlines': /nine|painted over|still lit/i, 'fr_switchyard/obj.fr_dashboard_room': /chair|dashboard|laugh/i,
+    'enclave/obj.en_metro': /pause|calm voice/i, 'enclave/obj.en_archive': /stamp|forty/i, 'en_archive/obj.en_parchment': /\brot\b|same words/i, 'meade_inside/obj.md_intercepts': /next week|future/i,
+  };
+  for (const [where, rx] of Object.entries(FIRST)) { const [m, id] = where.split('/'); assert.ok(!rx.test(obj(m, id).text), `${where}: leave the clue to the clue: ${obj(m, id).text.slice(0, 60)}`); }
+  // The old woman's errands carry the dates and the numbers; her own line adds none.
+  assert.ok(!/\d|\b(nine|ninety|forty|sixty)\b/i.test(obj('frederick', 'npc.fr_old_woman').text), 'her errands carry the dates; her line adds none');
+  // The wall in the Meade stays a stub until the lore gate fills it: nothing on it can be read, and the list has no
+  // property of its own yet (nothing struck out, nothing added).
+  assert.ok(!/\d|:|struck|crossed|again/i.test(obj('meade_inside', 'obj.md_the_wall').text) && /read/.test(obj('meade_inside', 'obj.md_the_wall').text), 'the wall stays a stub');
+  // One master clock: the quest's guardian is the clock that runs the clocks, so the display sends nobody elsewhere.
+  assert.ok(!/master clock|repeater|relay|below/i.test(obj('gaithersburg', 'obj.gt_master_clock').text), 'the display names no other clock');
+  // The Beltway: nothing here may read like the real 2024 bridge collapse (no road crew, potholes or job left unfinished).
+  for (const [where, t] of all.filter(([w]) => /^beltway\//.test(w))) {
+    assert.ok(!/\b(potholes?|crews?|bridges?|ships?|vessels?|collisions?|collapsed?|wreck(age)?|struck|never signed)\b/i.test(t), `${where} reads like a disaster: ${t.slice(0, 60)}`);
+    assert.ok(!/\b(baches?|cuadrillas?|puentes?|derrumb\w*|nunca firmad\w*)\b/i.test(A3P_ES[t] ?? ''), `${where}: the Spanish reads like a disaster: ${(A3P_ES[t] ?? '').slice(0, 60)}`);
+  }
+  // Naming in what players read (bible §2): "code rot", "code rotter", "Code-rot-taken", and "John Pork" in full.
+  for (const [where, t] of all) {
+    assert.ok(!/(?<!code[ -])\brot(ter)?s?\b/i.test(t) && !/(?<!John )\bPork\b/.test(t), `${where}: the naming rule: ${t.slice(0, 60)}`);
+    assert.ok(!/\b[A-Z]{3,}, [A-Z]{3,}, (and )?[A-Z]{3,}\b/.test(t) && !/\b(\w+), \1, \1\b/i.test(t), `${where}: a triplet: ${t.slice(0, 60)}`);
+  }
+});
+
 const fartMod = await import('../src/game/fart.js');
 const buttMod = await import('../src/game/bigButt.js');
 const npcLifeMod = await import('../src/content/npc_life.js');
-test('Manuel\'s fart: on its own, every couple of minutes; Michael only complains until his side says yes', () => {
+test('Manuel\'s fart: on its own, every couple of minutes; a roommate close by only complains', () => {
   const sent = [], sc = { mode: 'solo', time: { now: 0 } }, f = new fartMod.Fart(sc); f._send = (m) => sent.push(m);
   const snap = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 120, y: 100 }] };
   for (let i = 0; i < 3600; i++) { sc.time.now = i * 1000; f.update(snap); }   // an hour, no input at all
   assert.ok(sent.length >= 15 && sent.length <= 40, `farts in an hour: ${sent.length}`);   // Manuel: more often (2026-11-19)
   assert.ok(sent.every((m) => m.id === 'ai:manuel' && m.line), 'always Manuel, always a line');
-  if (!fartMod.MICHAEL_SAYS_YES) assert.ok(sent.every((m) => !m.sniff && (fartMod.MICHAEL_FART_COMPLAIN ? m.by === 'p2' && fartMod.FART_LINES.complain.includes(m.reply) : !m.reply)), 'until his yes Michael only complains, never sniffs');
-  else assert.ok(sent.every((m) => m.sniff === 'p2' && m.reply), 'Michael close by sniffs every one');
+  assert.ok(sent.every((m) => !('sniff' in m) && (fartMod.MICHAEL_FART_COMPLAIN ? m.by === 'p2' && fartMod.FART_LINES.complain.includes(m.reply) : !m.reply)), 'only the complaint path (Michael, 2026-11-20)');
+  assert.ok(!('michael' in fartMod.FART_LINES), 'no other reaction lines');
 });
 
 const gagsMod = await import('../src/game/runningGags.js');
 const linesEsMod = await import('../src/content/lines_es.js');
+test('running gags: the sealed one keeps to its conditions and schedule, and every line has EN and ES', () => {
+  const sent = [], sc = { mode: 'solo', time: { now: 0 }, save: { flags: {} } }, g = new gagsMod.RunningGags(sc); g._send = (m) => sent.push(m);
+  const near = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 130, y: 100 }, { id: 'p3', c: 'trevor', x: 500, y: 100 }] };
+  for (let i = 0; i < 3600; i++) { sc.time.now = i * 1000; g.update(near); }
+  const sg = sent.filter((m) => m.k === 'sg');
+  assert.ok(sg.length >= 8 && sg.length <= 30, `in an hour: ${sg.length}`);
+  assert.ok(sg.every((m) => m.a === 'p2' && m.b === 'ai:manuel'));
+  const far = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 600, y: 100 }] };
+  const sent2 = [], sc2 = { mode: 'solo', time: { now: 0 }, save: { flags: {} } }, g2 = new gagsMod.RunningGags(sc2); g2._send = (m) => sent2.push(m);
+  for (let i = 0; i < 1800; i++) { sc2.time.now = i * 1000; g2.update(far); }
+  assert.equal(sent2.filter((m) => m.k === 'sg').length, 0);
+  for (const l of [...gagsMod.SEALED_LINES.a, ...gagsMod.SEALED_LINES.b]) assert.ok(l.en && l.es, 'EN and ES');
+});
+
 test('running gags: the 245 lab chat and the abuela voice notes come round, with Spanish for every line', () => {
   const sent = [], sc = { mode: 'solo', time: { now: 0 }, save: { flags: {} } }, g = new gagsMod.RunningGags(sc); g._send = (m) => sent.push(m);
   const snap = { players: [{ id: 'ai:manuel', c: 'manuel', x: 100, y: 100 }, { id: 'p2', c: 'michael', x: 300, y: 100 }, { id: 'p3', c: 'trevor', x: 500, y: 100 }] };
@@ -669,6 +1224,585 @@ test('running gags: the 245 lab chat and the abuela voice notes come round, with
   const all = Object.values(gagsMod.GAG_LINES).flatMap((g) => Object.values(g).flat());
   const missing = all.filter((l) => !linesEsMod.LINES_ES[l]);
   assert.deepEqual(missing, [], 'Spanish for these lines in src/content/lines_es.js');
+});
+
+const hostPickMod = await import('../src/game/hostPick.js');
+const hostPickBelt = await import('../src/game/beltless.js');
+test('sealed (hub #67): picks one that can play now, then cools down', () => {
+  const sc = { mode: 'solo', time: { now: 100000 }, save: { flags: {}, party: { manuel: { level: 1 } } }, fart: { next: 9e9 }, beltless: { next: 9e9 }, bigButt: { next: 9e9 }, toothpaste: { next: 9e9 }, gags: { next: { chat: 9e9, abuela: 9e9 } } };
+  const apart = { players: [{ id: 'm', c: 'manuel', x: 0, y: 0 }, { id: 'k', c: 'michael', x: 500, y: 0 }, { id: 't', c: 'trevor', x: 900, y: 0 }] };
+  assert.deepEqual(hostPickMod.pickOptions(sc, apart).map((g) => g.id).sort(), ['abuela', 'belt', 'butt', 'chat', 'fart']);
+  const b = new hostPickMod.HostPick(sc);
+  assert.equal(b.press(apart, () => 0), 'fart');
+  assert.equal(sc.fart.next, 0);
+  assert.equal(b.press(apart, () => 0), null, 'cooldown');
+  sc.time.now += 4000;
+  assert.equal(b.press({ players: [] }), null);
+  // every option must reach its module's real timer: a picked one plays on that module's next update
+  const sc2 = { mode: 'solo', time: { now: 300000 }, save: { flags: { 'act1.switchyard.solved': true }, world: { act: 1 }, party: { manuel: { level: 1 } } } };
+  const sent2 = []; sc2.crush = new Crush(sc2); sc2.crush._send = (m) => sent2.push(m);
+  const close = { players: [{ id: 'm', c: 'manuel', x: 0, y: 0 }, { id: 'k', c: 'michael', x: 10, y: 0 }] };
+  sc2.crush.update(close);
+  assert.equal(sent2.length, 0, 'not due yet');
+  assert.equal(new hostPickMod.HostPick(sc2).press(close, () => 0), 'g');
+  sc2.crush.update(close);
+  assert.equal(sent2.filter((m) => m.g).length, 1, 'the picked one plays');
+  // a capped one that has run out is never offered (it would not fire); the cap arrives with PR #134
+  const beltMax = hostPickBelt.BELT_MAX;
+  if (beltMax != null) {
+    const sc3 = { ...sc, save: { flags: { 'gag.belt.count': beltMax }, party: { manuel: { level: 1 } } } };
+    assert.ok(!hostPickMod.pickOptions(sc3, apart).some((g) => g.id === 'belt'), 'offered one that has run out');
+  }
+});
+
+const settingsMod = await import('../src/settings.js');
+test('settings: the soundtrack plays by default (Manuel, 2026-11-20)', () => {
+  assert.equal(settingsMod.get('music'), 1);
+  assert.equal(settingsMod.get('sfx'), 1);
+});
+
+// The v3 step runs when settings.js loads, so load a fresh copy of it over each saved state.
+let settingsLoads = 0;
+const settingsAfter = async (saved) => {
+  const store = new Map(saved ? [['jpfc.settings', JSON.stringify(saved)]] : []);
+  const before = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, writable: true,
+    value: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, String(v)) } });
+  try {
+    const m = await import(`../src/settings.js?load=${++settingsLoads}`);
+    return { music: m.get('music'), v: m.get('v'), stored: JSON.parse(store.get('jpfc.settings')) };
+  } finally {
+    if (before) Object.defineProperty(globalThis, 'localStorage', before); else delete globalThis.localStorage;
+  }
+};
+const settingsCases = {
+  fresh: await settingsAfter(null),
+  mutedByV2: await settingsAfter({ music: 0, sfx: 0.25, voice: 1, shake: true, textSpeed: 'normal', v: 2 }),
+  raisedUnderV2: await settingsAfter({ music: 0.5, v: 2 }),
+  chosenBeforeV2: await settingsAfter({ music: 0.25 }),
+  silencedBeforeV2: await settingsAfter({ music: 0 }),
+  silencedUnderV3: await settingsAfter({ music: 0, v: 3 }),
+};
+test('settings: v3 turns the soundtrack back on only where the v2 change muted it; player choices are kept', () => {
+  const c = settingsCases;
+  assert.deepEqual([c.fresh.music, c.fresh.stored.music, c.fresh.stored.v], [1, 1, 3], 'a new player hears music');
+  assert.deepEqual([c.mutedByV2.music, c.mutedByV2.stored.music, c.mutedByV2.stored.v], [1, 1, 3], 'v2 muted it, v3 undoes that');
+  assert.equal(c.mutedByV2.stored.sfx, 0.25, 'only the music changes');
+  assert.equal(c.raisedUnderV2.music, 0.5, 'turned up under v2: kept');
+  assert.equal(c.chosenBeforeV2.music, 0.25, 'chosen before v2: kept');
+  assert.equal(c.silencedBeforeV2.music, 0, 'silenced before v2: kept');
+  assert.equal(c.silencedUnderV3.music, 0, 'silenced under v3: kept');
+  for (const r of Object.values(c)) assert.equal(r.v, 3);
+  assert.equal(settingsMod.get('music'), 1, 'the shared settings module is untouched');
+});
+
+// hub #30: the Act 1 scaffold areas, polished (act1_more.js, act1_aster.js, campus.js). Fresh copies of the modules
+// (the ?polish30 query), so the crowds.js townsfolk that maps/index.js adds afterwards aren't counted as theirs.
+const POLISH30_FILES = ['act1_more.js', 'act1_aster.js', 'campus.js'];
+const POLISH30_MAPS = (await Promise.all(POLISH30_FILES.map((f) => import(`../src/content/maps/${f}?polish30`))))
+  .flatMap((mod) => Object.values(mod).filter((m) => m && m.id && Array.isArray(m.objects)));
+const polish30Lines = (o) => [o.label, o.text, o.doneText, o.lockedText, ...(o.pages ?? []), ...(o.later ?? []).map((l) => l.text)].filter((t) => typeof t === 'string' && t);
+const { SIDE_QUESTS: POLISH30_SIDE } = await import('../src/content/sideQuests.js');
+const { makeJob: polish30Job } = await import('../src/content/jobs.js');
+const { LOOT: POLISH30_LOOT } = await import('../src/content/items.js');
+const { BOSSES: POLISH30_BOSSES } = await import('../src/content/bosses.js');
+const { ES_HUD: POLISH30_ES_HUD } = await import('../src/i18n/es-hud.js');
+test('hub #30: no [scaffold] line left in the Act 1 area files, and every line in them has Spanish', () => {
+  assert.equal(POLISH30_MAPS.length, 13, 'the thirteen areas in the three files');
+  for (const f of POLISH30_FILES) assert.ok(!/\[scaffold\]/i.test(fs.readFileSync(new URL(`../src/content/maps/${f}`, import.meta.url), 'utf8')), `${f} still has a [scaffold] line`);
+  const was = i18nMod.getLang(), missing = [], multiline = [];
+  i18nMod.setLang('es');
+  try {
+    for (const m of POLISH30_MAPS) for (const o of m.objects) for (const t of polish30Lines(o)) {
+      const listed = [ES_PLAZA, ES_ASTER, POLISH30_ES_HUD].some((tb) => Object.hasOwn(tb, t));
+      if (t.includes('[scaffold]') || (!listed && i18nMod.tr(t) === t)) missing.push(`${m.id}/${o.id}: ${t.slice(0, 50)}`);
+      if (t.includes('\n')) multiline.push(`${m.id}/${o.id}`);
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(missing, [], 'add Spanish to src/i18n/es-plaza.js (diner, campus) or es-aster.js (ASTER)');
+  assert.deepEqual(multiline, [], 'one line each, so a loot find or a quest clue added under it still translates line by line');
+});
+test('hub #30: each polished Act 1 area has one small secret or job, made from systems that already exist', () => {
+  const SECRET = { diner: 'obj.diner_window_booth', aster_basement: 'obj.basement_cage_631', aster_roof: 'obj.roof_cooler', dining_hall: 'obj.dining_swipe',
+    robotics_lab: 'obj.rover_drawer', auditorium: 'obj.aud_projector', apt_637: 'npc.apt637_player', apt_638: 'obj.apt638_cans', apt_636: 'obj.apt636_parcel',
+    aster_5f: 'obj.aster5_hose', aster_laundry: 'obj.laundry_end_machine', compute_hall_b: 'npc.chb_ta' };
+  const nests = new Set();
+  for (let n = 0; n < 400; n++) { const j = polish30Job(`polish30-${n}`, n); if (j.type === 'nest') nests.add(j.map); }
+  assert.ok(nests.has('campus_quad'), 'the bounty board can post a rot nest on the campus quad (jobs.js)');
+  const questFlags = new Set(POLISH30_SIDE.flatMap((q) => [q.report?.flag, q.inspect?.flag, q.give?.flag].filter(Boolean)));
+  const atlas = new Set(['props', 'big', 'wide', 'doors'].flatMap((s) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${s}.json`, import.meta.url), 'utf8')).frames)));
+  for (const m of POLISH30_MAPS) {
+    const id = SECRET[m.id], o = id && m.objects.find((q) => q.id === id);
+    if (m.id === 'campus_quad') assert.ok(!id, 'the quad\'s is the job'); else assert.ok(o && (o.grant || o.loot || o.action === 'pages' || o.later?.length), `${m.id}: no secret (${id})`);
+    for (const q of m.objects) {
+      if (q.grant) { assert.ok(ITEMS[q.grant], `${q.id}: no item ${q.grant}`); assert.ok(q.text && q.doneText, `${q.id}: a one-time find needs text and doneText`); }
+      if (q.loot) assert.ok(POLISH30_LOOT[q.loot], `${q.id}: no loot table ${q.loot}`);
+      if (q.action === 'pages') assert.ok(q.pages.length > 1, `${q.id}: pages to step through`);
+      for (const l of q.later ?? []) {
+        assert.ok(q.npc, `${q.id}: later lines only play for people`);
+        const boss = /^boss\.(.+)\.down$/.exec(l.if)?.[1];
+        const set = boss ? POLISH30_BOSSES[`boss.${boss}`] && POLISH30_MAPS.some((mm) => mm.enemies.some((e) => e.kind === `boss.${boss}`)) : questFlags.has(l.if);
+        assert.ok(set, `${q.id}: nothing in the game sets ${l.if}`);
+      }
+      if (q.art) assert.ok(atlas.has(q.art), `${q.id}: no art ${q.art} in assets/sprites`);
+    }
+    for (const s of m.scenery ?? []) assert.ok(atlas.has(s.art), `${m.id}: no scenery art ${s.art}`);
+    assert.ok(m.objects.every((q) => !q.npc || q.age === 'adult'), `${m.id}: everyone here is an adult`);
+  }
+});
+const { SHOPS: POLISH30_SHOPS } = await import('../src/content/items.js');
+test('hub #30 follow-up: a shop counter on a polished Act 1 map has a real header, with Spanish (the diner\'s said [scaffold])', () => {
+  const was = i18nMod.getLang(), missing = [];
+  i18nMod.setLang('es');
+  try {
+    for (const m of POLISH30_MAPS) for (const o of m.objects.filter((q) => q.action === 'shop')) {
+      const shop = POLISH30_SHOPS[o.shop];
+      assert.ok(shop, `${m.id}/${o.id}: no shop ${o.shop} in items.js`);
+      for (const t of [shop.title, ...shop.lines]) if (t.includes('[scaffold]') || i18nMod.tr(t) === t) missing.push(`${o.shop}: ${t.slice(0, 50)}`);
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(missing, [], 'a real line in items.js SHOPS, Spanish in src/i18n/es-plaza.js');
+});
+test('hub #30 follow-up: the crowds.js townsfolk on the polished Act 1 maps have real lines, with Spanish', () => {
+  const was = i18nMod.getLang(), missing = [];
+  i18nMod.setLang('es');
+  try {
+    for (const [map, id] of [['diner', 'npc.diner_regular'], ['campus_quad', 'npc.quad_student'], ['dining_hall', 'npc.dining_student'], ['robotics_lab', 'npc.lab_grad']]) {
+      const o = MAPS_FOR_TEST[map].objects.find((q) => q.id === id);
+      assert.ok(o, `${map}: ${id} is placed`);
+      for (const t of [o.label, o.text]) if (t.includes('[scaffold]') || !Object.hasOwn(ES_PLAZA, t) || i18nMod.tr(t) === t) missing.push(`${id}: ${t.slice(0, 50)}`);
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(missing, [], 'real lines in crowds.js, Spanish in src/i18n/es-plaza.js');
+});
+// hub #68 (Trevor: "compute hall needs more compute, suspicious lack of it"): Compute Hall B's machine room, terminal
+// lab, cable trays and floor runs. Built on the hub #30 polish; lab 245's bench must not move.
+const CHB68_PROPS = ['obj.server_rack', 'obj.server_rack#1', 'obj.network_rack', 'obj.network_rack#1', 'obj.terminal_lit', 'obj.terminal_lit#1',
+  'obj.crac_unit', 'obj.crac_unit#1', 'obj.cable_tray', 'obj.wall_display', 'obj.wall_display#1', 'obj.room_sign'];
+const CHB68_DECALS = ['dec.raised_floor', 'dec.raised_vent', 'dec.cable_h', 'dec.cable_v', 'dec.cable_ws', 'dec.cable_es', 'dec.cable_wn', 'dec.cable_en'];
+const chb68Atlas = (name) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${name}.json`, import.meta.url), 'utf8')).frames);
+test('hub #30 follow-up: the Mars rover has its own frame; the battlebot stays in 631', () => {
+  const props = JSON.parse(fs.readFileSync(new URL('../assets/sprites/props.json', import.meta.url), 'utf8')).frames;
+  const rover = MAPS_FOR_TEST.robotics_lab.objects.find((q) => q.id === 'obj.mars_rover');
+  assert.equal(rover?.art, 'obj.mars_rover');
+  assert.ok(props['obj.mars_rover'], 'obj.mars_rover frame in assets/sprites/props.json (gen_props.py, then build.py props)');
+  const names = Object.keys(props);
+  // New frames go at the end of the props list: the rover was the last one until hub #68 appended the machine room's.
+  assert.ok(names.indexOf('obj.mars_rover') > names.indexOf('obj.battlebot'), 'new frames are appended after the existing ones (other branches may append more after it)');
+  const bots = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.filter((q) => (q.art ?? q.id) === 'obj.battlebot').map(() => m.id));
+  assert.deepEqual([...new Set(bots)], ['room631'], 'obj.battlebot is Trevor\'s robot, only in Room 631');
+});
+
+test('hub #68: the machine room\'s frames are in the atlases, appended after everything that was there', () => {
+  const props = chb68Atlas('props'), decals = chb68Atlas('decals');
+  // Appended as one block after the frames that were already there; other branches may append more after them.
+  const p0 = props.indexOf(CHB68_PROPS[0]), d0 = decals.indexOf(CHB68_DECALS[0]);
+  assert.deepEqual(props.slice(p0, p0 + CHB68_PROPS.length), CHB68_PROPS, 'props: one appended block (gen_props.py, then build.py props)');
+  assert.ok(p0 > props.indexOf('obj.mars_rover'), 'after the frames that were there before');
+  assert.deepEqual(decals.slice(d0, d0 + CHB68_DECALS.length), CHB68_DECALS, 'decals: one appended block (build.py decals)');
+  assert.ok(d0 > decals.indexOf('dec.lily'), 'after the decals that were there before');
+  for (const art of ['obj.server_rack', 'obj.network_rack', 'obj.terminal_lit', 'obj.crac_unit', 'obj.wall_display']) assert.ok(props.includes(`${art}#1`), `${art} blinks: a '#1' frame`);
+});
+test('hub #68: the machine room opens on both halls, and both openings reach the cold aisle (LoreKeeper story #42)', () => {
+  const m = MAPS_FOR_TEST.compute_hall_b;
+  const reach = (sx, sy) => { const seen = new Set([sx + ',' + sy]), q = [[sx, sy]]; while (q.length) { const [x, y] = q.shift(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (seen.has(k) || nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || m.solid(nx, ny)) continue; seen.add(k); q.push([nx, ny]); } } return seen; };
+  assert.ok(!m.solid(12, 6) && !m.solid(12, 11), 'a gap in the north glass (12,6) and in the south glass (12,11)');
+  const plaque = m.objects.find((q) => q.id === 'obj.chb_machine_sign');
+  assert.ok(Math.abs(plaque.x - 12) <= 1 && plaque.y === 11, 'the plaque sits beside the south opening, readable from the south hall');
+  const blockNorth = new Set(['12,6']), solidN = m.solid; m.solid = (x, y) => blockNorth.has(x + ',' + y) || solidN.call(m, x, y);
+  try { assert.ok(reach(12, 13).has('12,9'), 'from the south hall alone you reach the cold aisle'); } finally { m.solid = solidN; }
+  const blockSouth = new Set(['12,11']); m.solid = (x, y) => blockSouth.has(x + ',' + y) || solidN.call(m, x, y);
+  try { assert.ok(reach(12, 5).has('12,9'), 'from the north hall alone you reach the cold aisle'); } finally { m.solid = solidN; }
+});
+test('hub #68: lab 245\'s bench, the quest objects, doors, people and rotlings keep their tiles', () => {
+  const m = MAPS_FOR_TEST.compute_hall_b, at = (id) => { const o = m.objects.find((q) => q.id === id); return o && [o.x, o.y, o.w ?? 1]; };
+  const bench = m.objects.find((q) => q.id === 'obj.chb_bench');
+  assert.deepEqual([bench.x, bench.y, bench.art, bench.label], [2, 2, 'obj.workbench', 'Lab bench (245)'], 'lab 245\'s bench stays exactly where it was');
+  assert.equal(m.layout[2][2], 'e', 'still on the lab floor');
+  assert.deepEqual(at('obj.chb_bench_2'), [5, 2, 1]); assert.deepEqual(at('obj.chb_storage'), [22, 8, 1]);
+  assert.deepEqual(at('npc.chb_ta'), [21, 2, 1]); assert.deepEqual(at('npc.chb_student'), [3, 8, 1]);
+  assert.deepEqual(at('obj.chb_doors'), [11, 15, 2]); assert.deepEqual(at('obj.chb_quad_door'), [12, 0, 1]);
+  assert.deepEqual(m.enemies.map((e) => [e.kind, Math.floor(e.x / 16), Math.floor(e.y / 16)]), [['enemy.rotling', 10, 3], ['enemy.rotling', 23, 5], ['enemy.rotling', 12, 9], ['enemy.rotling', 14, 13]], 'same rotlings, same order (saves key kills by index)');
+  assert.deepEqual(m.spawns.map((s) => [Math.floor(s.x / 16), Math.floor(s.y / 16)]), [[6, 13]]);
+  const ta = m.objects.find((q) => q.id === 'npc.chb_ta');
+  assert.equal(ta.later?.[0]?.if, 'boss.chb_autograder.down', 'the TA\'s night off still plays');
+});
+test('hub #68: Compute Hall B stays reachable, and its racks block like furniture', () => {
+  const m = MAPS_FOR_TEST.compute_hall_b, seen = new Set(), q = [];
+  const s0 = m.spawns[0], sx = Math.floor(s0.x / 16), sy = Math.floor(s0.y / 16);
+  seen.add(`${sx},${sy}`); q.push([sx, sy]);
+  while (q.length) {
+    const [x, y] = q.shift();
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = `${nx},${ny}`; if (!seen.has(k) && !m.solid(nx, ny)) { seen.add(k); q.push([nx, ny]); } }
+  }
+  const pockets = [];
+  for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) if (!m.solid(x, y) && !seen.has(`${x},${y}`)) pockets.push(`${x},${y}`);
+  assert.deepEqual(pockets, [], 'every open tile can be walked to from the entrance (no sealed aisle)');
+  const near = (x, y) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${x + dx},${y + dy}`));
+  for (const o of m.objects) assert.ok(near(o.x, o.y) || seen.has(`${o.x},${o.y}`), `${o.id} can be walked up to`);
+  for (const id of ['obj.chb_rack', 'obj.chb_network_rack', 'obj.chb_cooling', 'obj.chb_terminal_login', 'obj.chb_terminal_queue']) {
+    const o = m.objects.find((q) => q.id === id);
+    assert.ok(o.solid && m.solid(o.x, o.y), `${id} is solid: you walk round it`);
+    assert.ok(near(o.x, o.y), `${id}: an open tile right beside it (16px from its centre, inside the 34px reach in WorldScene), so you can read it`);
+  }
+  for (const s of m.scenery.filter((s) => /rack|crac|terminal|boxes/.test(s.art))) assert.ok(m.solid(s.x, s.y), `${s.art} at ${s.x},${s.y} blocks`);
+  for (const id of ['obj.chb_bench', 'obj.chb_storage', 'npc.chb_ta', 'npc.chb_student']) { const o = m.objects.find((q) => q.id === id); assert.ok(!m.solid(o.x, o.y), `${id} stays walkable as before`); }
+  // makeMap: `solid` blocks props, never people or doors.
+  const t = makeMap({ id: 'solid-test', name: 't', layout: ['.....'], spawns: [[0, 0]], objects: [{ id: 'a', x: 1, y: 0, solid: true }, { id: 'b', x: 2, y: 0, npc: true, solid: true }, { id: 'c', x: 3, y: 0 }] });
+  assert.deepEqual([0, 1, 2, 3].map((x) => t.solid(x, 0)), [false, true, false, false]);
+});
+test('hub #68: Compute Hall B reads as a compute hall', () => {
+  const m = MAPS_FOR_TEST.compute_hall_b, things = [...m.scenery.map((s) => s.art), ...m.objects.map((o) => o.art ?? o.id)];
+  const n = (art) => things.filter((a) => a === art).length;
+  assert.ok(n('obj.server_rack') + n('obj.network_rack') >= 16, 'two rows of racks in the machine room');
+  assert.ok(n('obj.terminal_lit') >= 6, 'a terminal lab'); assert.equal(n('obj.crac_unit'), 2, 'a cooling unit at each end of the aisles');
+  assert.ok(n('obj.cable_tray') >= 20, 'cable trays along the walls');
+  assert.ok(n('obj.wall_display') >= 1 && n('obj.room_sign') >= 1, 'signs in the building\'s voice');
+  const dec = new Map(m.decals.map(([f, x, y]) => [`${x},${y}`, f]));
+  for (let y = 7; y <= 10; y++) for (let x = 8; x <= 18; x++) assert.equal(dec.get(`${x},${y}`), y === 9 ? 'dec.raised_vent' : 'dec.raised_floor', `machine room floor at ${x},${y}`);
+  assert.ok(m.decals.filter(([f]) => f.startsWith('dec.cable_')).length >= 20, 'floor cable runs out of the machine room');
+  const names = new Set([...chb68Atlas('props'), ...chb68Atlas('decals')]);
+  for (const a of things) assert.ok(names.has(a), `${a} has art`);
+  for (const [f] of m.decals) assert.ok(names.has(f), `${f} has art`);
+  // Every new examinable thing has a line, in English and in Spanish.
+  const was = i18nMod.getLang(), missing = [];
+  i18nMod.setLang('es');
+  try {
+    for (const id of ['obj.chb_rack', 'obj.chb_network_rack', 'obj.chb_cooling', 'obj.chb_machine_sign', 'obj.chb_terminal_login', 'obj.chb_terminal_queue', 'obj.chb_cable_tray', 'obj.chb_status_board']) {
+      const o = m.objects.find((q) => q.id === id);
+      assert.ok(o && o.label && o.text && o.text.length > 40, `${id}: a label and a real line`);
+      for (const t of [o.label, o.text]) if (!Object.hasOwn(ES_PLAZA, t) || (i18nMod.tr(t) === t && t !== 'Terminal')) missing.push(`${id}: ${t.slice(0, 40)}`);
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(missing, [], 'Spanish in src/i18n/es-plaza.js');
+});
+test('i18n: a string listed in more than one Spanish table gets the same Spanish in each (the diner had two names)', () => {
+  const tables = { ES_631, ES_ASTER, ES_HUD: POLISH30_ES_HUD, ES_PLAZA, ES_QUESTS, ES_TUNNELS_LAKE }, seen = new Map(), clash = [];
+  for (const [name, tb] of Object.entries(tables)) for (const [en, es] of Object.entries(tb)) {
+    const prev = seen.get(en);
+    if (prev && prev[1] !== es) clash.push(`${JSON.stringify(en.slice(0, 40))}: ${prev[0]} "${prev[1].slice(0, 30)}" vs ${name} "${es.slice(0, 30)}"`);
+    else if (!prev) seen.set(en, [name, es]);
+  }
+  assert.deepEqual(clash, [], 'pick one Spanish string and use it in both tables');
+  const was = i18nMod.getLang();
+  i18nMod.setLang('es');
+  try { assert.equal(i18nMod.tr('The diner'), 'La cafetería'); } finally { i18nMod.setLang(was); }
+});
+
+// ---- Route 1 shops and the airfield (hub #28/#29): src/content/maps/act1_route1.js, act1_airfield.js ----
+const R1_MAPS = ['hardware', 'feed_store', 'airfield', 'hangar'];
+const r1Regions = await import('../src/content/regions.js');
+const { ES_ROUTE1 } = await import('../src/i18n/es-route1.js');
+const { SHOPS: R1_SHOPS, sellPrice: r1SellPrice } = await import('../src/content/items.js');
+const { PLAZA_CORDON: R1_CORDON } = await import('../src/content/cordon.js');
+const r1Walk = (m, starts) => {   // tiles reachable on foot from `starts` (doors open on contact, as in the reachability test)
+  const seen = new Set(starts.map(([x, y]) => `${x},${y}`)), q = [...starts];
+  while (q.length) {
+    const [x, y] = q.shift();
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
+      if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
+      seen.add(k); q.push([nx, ny]);
+    }
+  }
+  return seen;
+};
+const r1Near = (seen, o) => [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${o.x + dx},${o.y + dy}`));
+test('Route 1 and the airfield (hub #28/#29): the new maps are registered in the route1 region, and College Park and the lake lead to them', () => {
+  const route1 = r1Regions.REGIONS.find((r) => r.id === 'route1');
+  for (const id of R1_MAPS) { assert.ok(MAPS_FOR_TEST[id], `${id} is registered in maps/index.js`); assert.ok(route1.maps.includes(id), `${id} is in the route1 region`); }
+  assert.equal(route1.act, 1);
+  const leads = (from, to) => MAPS_FOR_TEST[from].objects.some((o) => o.action === 'exit' && o.to === to && !o.requiresFlag);
+  assert.ok(leads('metro_plaza', 'hardware') && leads('metro_plaza', 'feed_store'), 'the shop doors are on the Route 1 strip');
+  assert.ok(leads('lake', 'airfield') && leads('airfield', 'hangar'), 'the airfield is off the lake, the hangar off the airfield');
+  assert.ok(!MAPS_FOR_TEST.metro_plaza.objects.some((o) => o.action === 'exit' && o.to === 'airfield'), 'the airfield is reached through the lake, not straight from the plaza');
+});
+test('Route 1 and the airfield: every new map is walkable from each entrance, with every object in reach', () => {
+  const bad = [];
+  for (const id of R1_MAPS) {
+    const m = MAPS_FOR_TEST[id];
+    for (const back of m.objects.filter((o) => o.action === 'exit')) {   // arrive the way the game does, through the matching door
+      const from = MAPS_FOR_TEST[back.to], via = from.objects.find((o) => o.action === 'exit' && o.to === id && o.pair === back.id);
+      if (!via) { bad.push(`${id}: nothing in ${back.to} leads to ${back.id}`); continue; }
+      const sim = new Sim(from, { seed: 'r1' });
+      for (const [pid, c] of [['a', 'manuel'], ['b', 'trevor'], ['c', 'michael']]) sim.addPlayer(pid, c);
+      sim.setMap(m, back.to, via.id);
+      const starts = [...sim.players.values()].map((p) => [Math.floor(p.x / 16), Math.floor(p.y / 16)]);
+      for (const [x, y] of starts) if (m.solid(x, y)) bad.push(`${id}: arriving from ${back.to} lands in a wall at ${x},${y}`);
+      for (const [x, y] of starts) if (Math.abs(x - back.x) + Math.abs(y - back.y) > 2) bad.push(`${id}: arriving from ${back.to} lands far from ${back.id}`);
+      const seen = r1Walk(m, starts);
+      for (const o of m.objects) if (!r1Near(seen, o)) bad.push(`${id}: ${o.id} can't be reached from ${back.id}`);
+      let open = 0; for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) if (!m.solid(x, y)) open++;
+      const cut = open - [...seen].filter((k) => { const [x, y] = k.split(',').map(Number); return !m.solid(x, y); }).length;
+      if (cut > 0 && id !== 'airfield') bad.push(`${id}: ${cut} floor tiles can't be walked to from ${back.id}`);   // outdoors, a tree can close off a corner
+    }
+  }
+  // ...and on the maps you enter them from, the doors and the trail sign can be walked up to from where you start.
+  for (const [mapId, ids] of [['metro_plaza', ['obj.hardware_door', 'obj.hardware_sign', 'obj.feed_door', 'obj.feed_sign']], ['lake', ['obj.lake_airfield']]]) {
+    const m = MAPS_FOR_TEST[mapId], seen = r1Walk(m, m.spawns.map((s) => [Math.floor(s.x / 16), Math.floor(s.y / 16)]));
+    for (const oid of ids) { const o = m.objects.find((q) => q.id === oid); if (!o) bad.push(`${mapId}: no ${oid}`); else if (!r1Near(seen, o)) bad.push(`${mapId}: ${oid} out of reach`); }
+  }
+  assert.deepEqual(bad, []);
+});
+test('Route 1 and the airfield: every exit to or from the new maps is paired both ways, and the shop doors sit in a wall like the diner\'s', () => {
+  const bad = [];
+  const exits = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.filter((o) => o.action === 'exit' && (R1_MAPS.includes(o.to) || R1_MAPS.includes(m.id))).map((o) => [m, o]));
+  assert.ok(exits.length >= 8, 'four maps, eight door sides');
+  for (const [m, o] of exits) {
+    const there = MAPS_FOR_TEST[o.to]?.objects.find((q) => q.id === o.pair);
+    if (!there) { bad.push(`${m.id}/${o.id}: its pair ${o.pair} is not in ${o.to}`); continue; }
+    if (there.action !== 'exit' || there.to !== m.id || there.pair !== o.id) bad.push(`${m.id}/${o.id}: ${o.to}/${there.id} doesn't lead back to it`);
+  }
+  const plaza = MAPS_FOR_TEST.metro_plaza;
+  for (const id of ['obj.hardware_door', 'obj.feed_door']) {
+    const o = plaza.objects.find((q) => q.id === id);
+    assert.equal(plaza.layout[o.y][o.x], '#', `${id} is set in a building wall`);
+    assert.ok(!plaza.solid(o.x, o.y + 1), `${id} opens onto pavement`);
+    assert.ok(!o.stepOn && !o.floor && !o.requiresFlag, `${id} works like the diner's door`);
+  }
+  assert.deepEqual(bad, []);
+});
+test('Route 1 and the airfield: no new way out through the cordon; Act 1 exits from College Park stay inside ring one', () => {
+  const plaza = MAPS_FOR_TEST.metro_plaza, opening = (o) => R1_CORDON.openings.some(([x, y, w, h]) => o.x >= x - 1 && o.x < x + w && o.y >= y - 1 && o.y < y + h);
+  for (const o of plaza.objects.filter((q) => q.action === 'exit' && (q.x <= 1 || q.y <= 1 || q.x >= plaza.w - 2 || q.y >= plaza.h - 2))) {
+    assert.ok(opening(o) || o.requiresFlag === 'act1.complete', `${o.id} leaves College Park through the cordon`);
+  }
+  assert.ok(!plaza.objects.some((o) => o.action === 'exit' && o.y >= plaza.h - 2), 'the south perimeter stays closed');
+  // Every exit you can use before Act 1 is complete, followed from College Park, stays in ring one.
+  const seen = new Set(['metro_plaza']), q = ['metro_plaza'];
+  while (q.length) for (const o of MAPS_FOR_TEST[q.shift()].objects) if (o.action === 'exit' && MAPS_FOR_TEST[o.to] && o.requiresFlag !== 'act1.complete' && !seen.has(o.to)) { seen.add(o.to); q.push(o.to); }
+  for (const id of R1_MAPS) assert.ok(seen.has(id), `${id} can be reached in Act 1`);
+  for (const id of seen) assert.equal(r1Regions.regionOfMap(id)?.ring, 1, `${id} is reachable in Act 1 but sits outside ring one`);
+  // The airfield's only ways out are the hangar and the trail back to the lake; the hangar's only door is back to the field.
+  assert.deepEqual(MAPS_FOR_TEST.airfield.objects.filter((o) => o.action === 'exit').map((o) => o.to).sort(), ['hangar', 'lake']);
+  assert.deepEqual(MAPS_FOR_TEST.hangar.objects.filter((o) => o.action === 'exit').map((o) => o.to), ['airfield']);
+  for (const id of ['hardware', 'feed_store']) assert.deepEqual(MAPS_FOR_TEST[id].objects.filter((o) => o.action === 'exit').map((o) => o.to), ['metro_plaza']);
+});
+test('Route 1 shops: the counters open the ordinary shop menu, the chalkboard matches the shelf, and the pawn pays what it paid before', () => {
+  for (const [mapId, shop] of [['hardware', 'hardware'], ['feed_store', 'feed']]) {
+    const counter = MAPS_FOR_TEST[mapId].objects.find((o) => o.action === 'shop');
+    assert.equal(counter?.shop, shop, `${mapId} has a counter for SHOPS.${shop}`);
+    assert.ok(R1_SHOPS[shop].stock.length >= 4, `SHOPS.${shop} has stock`);
+    for (const st of R1_SHOPS[shop].stock) { assert.ok(ITEMS[st.item], `${shop} sells ${st.item}, which exists`); assert.ok(st.price > 0); }
+  }
+  const board = MAPS_FOR_TEST.hardware.objects.find((o) => o.id === 'obj.hardware_chalkboard').text;
+  assert.deepEqual([...board.matchAll(/\$(\d+)/g)].map((m) => Number(m[1])).sort((a, b) => a - b), R1_SHOPS.hardware.stock.map((s) => s.price).sort((a, b) => a - b), 'chalkboard prices = shelf prices');
+  const ids = [...new Set(['hardware', 'feed'].flatMap((s) => R1_SHOPS[s].stock.map((st) => st.item)))], now = ids.map((id) => r1SellPrice(id));
+  const saved = { hardware: R1_SHOPS.hardware, feed: R1_SHOPS.feed };
+  try { delete R1_SHOPS.hardware; delete R1_SHOPS.feed; assert.deepEqual(now, ids.map((id) => r1SellPrice(id)), 'adding the shops changed what the pawn pays'); }
+  finally { Object.assign(R1_SHOPS, saved); }
+});
+test('Route 1 and the airfield: people have an age, kids are never egg targets, and no new NPC opts into the eggs', () => {
+  for (const id of R1_MAPS) for (const o of MAPS_FOR_TEST[id].objects.filter((q) => q.npc)) {
+    assert.ok(['adult', 'child'].includes(o.age), `${o.id} has an age`);
+    assert.ok(!o.eggOk, `${o.id} is not tagged eggOk`);
+  }
+  assert.ok(R1_MAPS.some((id) => MAPS_FOR_TEST[id].objects.some((o) => o.npc && o.age === 'child')), 'Analogist families bring their kids');
+  for (const id of R1_MAPS) for (const o of MAPS_FOR_TEST[id].objects.filter((q) => q.npc && q.age === 'child')) assert.equal(o.approach, false, `${o.id}: talk only, nobody pickpockets or intimidates a kid`);
+  for (const m of Object.values(MAPS_FOR_TEST)) for (const o of m.objects) if (o.npc && o.age === 'child') assert.ok(!o.eggOk, `${m.id}/${o.id}: a child is never tagged eggOk`);
+});
+test('Route 1 and the airfield: the windsock, the flight log, the jar of keys and the paper maps are there, with art for everything', () => {
+  const find = (mapId, art) => MAPS_FOR_TEST[mapId].objects.find((o) => o.art === art);
+  assert.ok(find('airfield', 'obj.windsock'), 'it still has a windsock');
+  const log = find('hangar', 'obj.flight_log');
+  assert.ok(log?.pages?.some((p) => p.startsWith('2071.')), 'the flight log has an entry on the night of the Call');
+  assert.ok(find('hangar', 'obj.key_jar') && find('hangar', 'obj.bookshelf'), 'a jar of keys and the paper maps');
+  const atlas = new Set(['props', 'wide', 'big'].flatMap((f) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${f}.json`, import.meta.url), 'utf8')).frames)));
+  for (const id of [...R1_MAPS, 'metro_plaza']) for (const s of MAPS_FOR_TEST[id].scenery ?? []) assert.ok(atlas.has(s.art), `${id}: scenery ${s.art} has art`);
+});
+test('Route 1 and the airfield: phones go in the box inside the hangar door, and the corkboard and the deacon agree with it', () => {
+  const hangar = MAPS_FOR_TEST.hangar, box = hangar.objects.find((o) => o.id === 'obj.hangar_phone_box');
+  assert.ok(box && /phones/i.test(box.text), 'the box of phones is inside the hangar, by the door');
+  assert.match(hangar.objects.find((o) => o.id === 'obj.hangar_rules').text, /PHONES IN THE BOX/);
+  const reed = hangar.objects.find((o) => o.id === 'npc.deacon_reed');
+  for (const t of [reed.text, ...(reed.later ?? []).map((l) => l.text)]) assert.ok(!/nothing in here rang/i.test(t), 'the box by the door rang with everyone else\'s');
+  const cork = MAPS_FOR_TEST.feed_store.objects.find((o) => o.id === 'obj.feed_corkboard').text;
+  assert.ok(!/windsock/i.test(cork) && /PHONE AT THE DOOR/.test(cork), 'the corkboard sends phones to the door, where the box is');
+});
+test('Route 1 and the airfield (LoreKeeper on #83): Sunday meetings vs tonight\'s shelter, 22:40 is the circuit and the Call has no time, and ringing in the hangar comes from the box at the door', () => {
+  const hangar = MAPS_FOR_TEST.hangar, es = (t) => ES_ROUTE1[t] ?? '';
+  // (a) The ordinary schedule matches the corkboard at Pardo's, and tonight the families are here to sleep, not to meet.
+  const board = hangar.objects.find((o) => o.id === 'obj.hangar_schedule');
+  assert.ok(board, 'a schedule board in the hangar');
+  const cork = MAPS_FOR_TEST.feed_store.objects.find((o) => o.id === 'obj.feed_corkboard').text;
+  assert.ok(/SUNDAYS/.test(board.text) && /SUNDAYS/.test(cork), 'the hangar board and the corkboard give the same meeting day');
+  assert.match(board.text, /NO MEETING TONIGHT/);
+  assert.match(board.text, /FLOOR/, 'tonight they are sheltering');
+  assert.ok(/DOMINGOS/.test(es(board.text)) && /HOY NO HAY REUNIÓN/.test(es(board.text)), 'and the Spanish says the same');
+  // (b) The flight log: 22:40 is an ordinary local circuit, and the Call is a later entry with no time.
+  const pages = hangar.objects.find((o) => o.id === 'obj.hangar_flight_log').pages;
+  const clock = /\b\d{1,2}:\d{2}\b/, ringsEn = /\b(rang|ring|rings|ringing|buzz\w*|went off)\b/i;
+  const timed = pages.filter((p) => clock.test(p));
+  assert.equal(timed.length, 1, 'only one entry in the log has a time');
+  assert.ok(/\b22:40\. Local circuit\b/.test(timed[0]) && !ringsEn.test(timed[0]), '22:40 is the local circuit, and nothing rings in it');
+  const callPage = pages.findIndex((p) => ringsEn.test(p));
+  assert.ok(callPage > pages.indexOf(timed[0]), 'the Call is a later entry than the 22:40 circuit');
+  assert.ok(!clock.test(pages[callPage]), 'the Call is untimed in the log');
+  assert.ok(/22:40\. Circuito local/.test(es(timed[0])) && !/son[óa]/i.test(es(timed[0])), 'the Spanish circuit entry keeps the time and rings nothing');
+  assert.ok(es(pages[callPage]) && !clock.test(es(pages[callPage])), 'the Spanish Call entry has no time either');
+  // (c) Any ringing in the hangar came from the phones in the box at the door; nobody in here has a phone on them.
+  for (const o of hangar.objects) for (const t of [o.text, ...(o.pages ?? []), ...((o.later ?? []).map((l) => l.text))]) {
+    if (typeof t !== 'string') continue;
+    assert.ok(!/pocket/i.test(t), `${o.id}: no phone rings in a pocket in the hangar`);
+    if (!ringsEn.test(t)) continue;
+    const where = `${o.label} ${t}`, whereEs = `${es(o.label)} ${es(t)}`;
+    assert.ok(/\bbox\b/i.test(where) && /\bdoor\b/i.test(where), `${o.id}: the ringing came from the box at the door: ${t.slice(0, 50)}`);
+    assert.ok(/caja/i.test(whereEs) && /puerta/i.test(whereEs), `${o.id}: the Spanish puts the ringing in the box at the door too`);
+  }
+});
+test('i18n: every Route 1 shop and airfield line, label, page and shop header has Spanish', () => {
+  const missing = [];
+  for (const id of R1_MAPS) for (const o of MAPS_FOR_TEST[id].objects) {
+    for (const t of [o.label, o.text, ...(o.pages ?? []), ...((o.later ?? []).map((l) => l.text)), o.lockedText, o.doneText]) if (typeof t === 'string' && t && !(t in ES_ROUTE1)) missing.push(`${id}: ${t.slice(0, 40)}`);
+    if (o.later?.length && !(o.label.toUpperCase() in ES_ROUTE1)) missing.push(`${id}: ${o.label.toUpperCase()} (speaker line)`);
+  }
+  for (const s of ['hardware', 'feed']) for (const t of [R1_SHOPS[s].title, R1_SHOPS[s].lines.join(' ')]) if (!(t in ES_ROUTE1)) missing.push(`SHOPS.${s}: ${t}`);
+  assert.deepEqual(missing, [], 'add these to src/i18n/es-route1.js');
+  const was = i18nMod.getLang(); i18nMod.setLang('es');
+  try { assert.equal(i18nMod.tr('The airfield'), 'El aeródromo'); assert.equal(i18nMod.tr(R1_SHOPS.hardware.title), 'FERRETERÍA HOLLIS'); }
+  finally { i18nMod.setLang(was); }
+});
+
+// hub #30, stretch slice: the twelve stretch-tier areas (src/content/maps/stretch.js), polished. A fresh copy of the
+// module (the ?stretch30 query), so the crowds.js townsfolk that maps/index.js adds afterwards aren't counted as its own.
+const STRETCH30_IDS = ['rf_fringe', 'rf_marsh', 'md_lot', 'ann_statehouse', 'ann_chapel', 'ann_bridge', 'bv_lab', 'gb_center', 'gt_labs', 'fr_market', 'en_mall', 'en_metro'];
+const STRETCH30_MAPS = Object.values(await import('../src/content/maps/stretch.js?stretch30')).filter((m) => m && m.id && Array.isArray(m.objects));
+const { ES_STRETCH } = await import('../src/i18n/es-stretch.js');
+const { ES_HUD: STRETCH30_ES_HUD } = await import('../src/i18n/es-hud.js');
+const { SIDE_QUESTS: STRETCH30_SIDE } = await import('../src/content/sideQuests.js');
+const { LOOT: STRETCH30_LOOT } = await import('../src/content/items.js');
+const stretch30Lines = (o) => [o.label, o.text, o.doneText, o.lockedText, ...(o.pages ?? []), ...(o.later ?? []).map((l) => l.text)].filter((t) => typeof t === 'string' && t);
+// A side-quest giver's pitch and anyone's later line print the label in capitals above the line (WorldScene).
+const stretch30Speaks = (o) => o.npc && (o.later?.length || STRETCH30_SIDE.some((q) => q.giver === o.id));
+test('hub #30 (stretch): no [scaffold] left in stretch.js, and every line on its twelve maps has Spanish', () => {
+  assert.deepEqual(STRETCH30_MAPS.map((m) => m.id).sort(), [...STRETCH30_IDS].sort(), 'the twelve stretch areas');
+  assert.ok(!/\[scaffold\]/i.test(fs.readFileSync(new URL('../src/content/maps/stretch.js', import.meta.url), 'utf8')), 'stretch.js still has a [scaffold] line');
+  const was = i18nMod.getLang(), missing = [], multiline = [];
+  i18nMod.setLang('es');
+  try {
+    for (const m of STRETCH30_MAPS) for (const o of m.objects) {
+      for (const t of [...stretch30Lines(o), ...(stretch30Speaks(o) ? [o.label.toUpperCase()] : [])]) {
+        if (t.includes('[scaffold]') || i18nMod.tr(t) === t) missing.push(`${m.id}/${o.id}: ${t.slice(0, 50)}`);
+        if (t.includes('\n')) multiline.push(`${m.id}/${o.id}`);
+      }
+    }
+  } finally { i18nMod.setLang(was); }
+  assert.deepEqual(missing, [], 'add Spanish to src/i18n/es-stretch.js');
+  assert.deepEqual(multiline, [], 'one line each, so a loot find or a quest clue added under it still translates line by line');
+});
+test('hub #30 (stretch): every stretch map can be reached from Room 631, and everything on it can be walked up to', () => {
+  const linked = new Set(['room631']), todo = ['room631'];
+  while (todo.length) for (const o of MAPS_FOR_TEST[todo.shift()].objects) if (o.action === 'exit' && MAPS_FOR_TEST[o.to] && !linked.has(o.to)) { linked.add(o.to); todo.push(o.to); }
+  for (const id of STRETCH30_IDS) {
+    assert.ok(linked.has(id), `${id} can't be reached through the exits from Room 631`);
+    const m = MAPS_FOR_TEST[id], out = m.objects.find((o) => o.id === `obj.${id}_out`);   // the way in is the way back
+    const into = MAPS_FOR_TEST[out?.to]?.objects.find((o) => o.id === out.pair);
+    assert.ok(into && into.to === id && into.pair === out.id, `${id}: the exit pair with ${out?.to} doesn't line up`);
+    const seen = new Set(), q = [];
+    for (const s of m.spawns) { const x = Math.floor(s.x / 16), y = Math.floor(s.y / 16); assert.ok(!m.solid(x, y), `${id}: spawn in a wall`); seen.add(`${x},${y}`); q.push([x, y]); }
+    while (q.length) {
+      const [x, y] = q.shift();
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
+        if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
+        seen.add(k); q.push([nx, ny]);
+      }
+    }
+    const near = (x, y) => [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${x + dx},${y + dy}`));
+    for (const o of m.objects) assert.ok(near(o.x, o.y), `${id}: ${o.id} at ${o.x},${o.y} can't be walked up to`);
+    for (const e of m.enemies) assert.ok(seen.has(`${Math.floor(e.x / 16)},${Math.floor(e.y / 16)}`), `${id}: ${e.kind} is walled off`);
+  }
+});
+// The finds are listed sealed (docs/sealed/secrets-stretch.md, ROT13), so this test reads their object ids from there.
+const STRETCH30_SEALED = fs.readFileSync(new URL('../docs/sealed/secrets-stretch.md', import.meta.url), 'utf8').replace(/\r\n/g, '\n')   // CRLF checkouts (Windows, tts)
+  .split('-->\n').slice(1).join('-->\n')
+  .replace(/[a-z]/gi, (c) => String.fromCharCode(((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26) + (c <= 'Z' ? 65 : 97)));
+const { Approach: STRETCH30_Approach } = await import('../src/game/approach.js');
+test('hub #30 (stretch): each stretch area has its finds in the sealed list, built from systems that already exist', () => {
+  const listed = new Set(STRETCH30_SEALED.split('\n').filter((l) => l.startsWith('| **')).map((l) => l.split('|')[2].trim().replace(/`/g, '')));
+  assert.ok(listed.size >= STRETCH30_MAPS.length, 'docs/sealed/secrets-stretch.md: a row per find, with its object id');
+  const onStretch = new Set(STRETCH30_MAPS.flatMap((m) => m.objects.map((o) => o.id)));
+  for (const id of listed) assert.ok(onStretch.has(id), `${id}: in docs/sealed/secrets-stretch.md but on no stretch map`);
+  const isFind = (o) => o.grant || o.loot || o.action === 'pages' || o.later?.length;
+  const questFlags = new Set(STRETCH30_SIDE.flatMap((q) => [q.report?.flag, q.inspect?.flag, q.give?.flag].filter(Boolean)));
+  const atlas = new Set(['props', 'big', 'wide', 'doors'].flatMap((s) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${s}.json`, import.meta.url), 'utf8')).frames)));
+  const everyId = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.map((o) => o.id));
+  for (const m of STRETCH30_MAPS) {
+    assert.ok(m.objects.some((q) => listed.has(q.id)), `${m.id}: no row in docs/sealed/secrets-stretch.md`);
+    for (const q of m.objects) {
+      if (listed.has(q.id)) assert.ok(isFind(q), `${q.id}: listed in the sealed file, but built from no existing system`);
+      else assert.ok(!isFind(q), `${m.id}/${q.id}: add its row to docs/sealed/secrets-stretch.md`);
+      if (q.grant) { assert.ok(ITEMS[q.grant], `${q.id}: no item ${q.grant}`); assert.ok(q.text && q.doneText, `${q.id}: a one-time find needs text and doneText`); }
+      if (q.loot) assert.ok(STRETCH30_LOOT[q.loot], `${q.id}: no loot table ${q.loot}`);
+      if (q.action === 'pages') assert.ok(q.pages.length > 1, `${q.id}: pages to step through`);
+      for (const l of q.later ?? []) { assert.ok(q.npc, `${q.id}: later lines only play for people`); assert.ok(questFlags.has(l.if), `${q.id}: nothing in the game sets ${l.if}`); }
+      if (!q.selfDrawn) assert.ok(atlas.has(q.art ?? q.id), `${q.id}: no art ${q.art ?? q.id} in assets/sprites`);
+      assert.notEqual(q.art, 'obj.board', `${m.id}/${q.id}: still the placeholder corkboard`);
+      assert.equal(everyId.filter((id) => id === q.id).length, 1, `${q.id}: the id is used on another map too (finds and searches are keyed by it)`);
+    }
+    for (const s of m.scenery ?? []) assert.ok(atlas.has(s.art), `${m.id}: no scenery art ${s.art}`);
+  }
+});
+test('hub #30 (stretch): children are talk only, like the airfield kids, and no gag picks them', () => {
+  const kids = STRETCH30_MAPS.flatMap((m) => m.objects.filter((q) => q.npc && q.age === 'child'));
+  assert.ok(kids.some((q) => q.id === 'npc.fr_market_kid'), 'the kid minding a stall is a child');
+  const approach = new STRETCH30_Approach({ save: { party: { manuel: {} }, world: {} }, character: 'manuel', input: { keyboard: { on() {} } }, _questHandIns: () => [] });
+  for (const q of kids) {
+    assert.equal(q.approach, false, `${q.id}: talk only, nobody pickpockets or intimidates a kid`);
+    assert.deepEqual(approach.options(q).map((a) => a.id), ['talk'], `${q.id}: Talk is the only approach`);
+    assert.equal(approach.intercept(q), false, `${q.id}: no approach menu opens, so pressing E just talks`);
+    assert.ok(q.eggNo, `${q.id}: no gag picks a child`);
+  }
+});
+test('hub #30 (stretch): the side-quest objects, givers, exits and spawns on the stretch maps are where they were', () => {
+  const WAS = { 'npc.rf_counter': [7, 5], 'obj.rf_blind': [22, 5], 'npc.md_attendant': [14, 5], 'obj.md_lot_sign': [26, 4], 'npc.ann_clerk': [10, 5], 'obj.ann_tideline': [11, 3],
+    'npc.ann_fisher': [9, 3], 'obj.ann_span': [18, 3], 'npc.gb_usher': [14, 5], 'obj.gb_theater': [8, 2], 'npc.bv_lab_tech': [11, 4], 'obj.bv_batch_board': [22, 4],
+    'npc.gt_metrologist': [11, 4], 'obj.gt_volt': [24, 2], 'npc.fr_grocer': [10, 5], 'obj.fr_prices': [22, 2], 'npc.en_rider': [13, 2], 'obj.en_departures': [27, 2],
+    'obj.rf_fringe_out': [13, 8], 'obj.rf_marsh_out': [14, 0], 'obj.md_lot_out': [13, 0], 'obj.ann_statehouse_out': [11, 7], 'obj.ann_chapel_out': [11, 7], 'obj.ann_bridge_out': [0, 3],
+    'obj.bv_lab_out': [12, 7], 'obj.gb_center_out': [12, 8], 'obj.gt_labs_out': [12, 7], 'obj.fr_market_out': [12, 7], 'obj.en_mall_out': [19, 6], 'obj.en_metro_out': [14, 0] };
+  const SPAWN = { rf_fringe: [13, 7], rf_marsh: [14, 6], md_lot: [13, 7], ann_statehouse: [11, 6], ann_chapel: [11, 6], ann_bridge: [2, 3], bv_lab: [12, 6], gb_center: [12, 7],
+    gt_labs: [12, 6], fr_market: [12, 6], en_mall: [19, 5], en_metro: [14, 3] };
+  const at = new Map(STRETCH30_MAPS.flatMap((m) => m.objects.map((o) => [o.id, o])));
+  for (const [id, xy] of Object.entries(WAS)) assert.deepEqual(at.has(id) && [at.get(id).x, at.get(id).y], xy, `${id} moved`);
+  for (const m of STRETCH30_MAPS) assert.deepEqual(m.spawns.map((s) => [Math.floor(s.x / 16), Math.floor(s.y / 16)]), [SPAWN[m.id]], `${m.id}: the spawn moved`);
+  for (const q of STRETCH30_SIDE) {
+    for (const id of [q.giver, q.inspect?.obj]) if (id && at.has(id)) assert.ok(WAS[id], `${q.id}: ${id} is on a stretch map; add it to this list`);
+    if (q.inspect && at.has(q.inspect.obj)) assert.ok(at.get(q.inspect.obj).text, `${q.id}: the clue is read under the object's own text, so it needs one`);
+  }
+});
+test('hub #30 (stretch): es-stretch.js agrees with the other Spanish tables wherever they share an English line', () => {
+  const clash = [];
+  for (const [name, tb] of Object.entries({ ES_631, ES_ASTER, ES_HUD: STRETCH30_ES_HUD, ES_PLAZA, ES_QUESTS, ES_TUNNELS_LAKE })) {
+    for (const [en, es] of Object.entries(ES_STRETCH)) if (Object.hasOwn(tb, en) && tb[en] !== es) clash.push(`${JSON.stringify(en.slice(0, 40))}: ${name} says "${tb[en].slice(0, 30)}"`);
+  }
+  assert.deepEqual(clash, [], 'use one Spanish string in both tables');
+  const was = i18nMod.getLang();
+  i18nMod.setLang('es');
+  try { assert.equal(i18nMod.tr('A coin viewer'), ES_STRETCH['A coin viewer'], 'src/i18n.js reads es-stretch.js'); } finally { i18nMod.setLang(was); }
+});
+test('hub #30 (stretch), review: the lines agree with canon and the quest clues, and the Enclave stays spotless', () => {
+  const map = (id) => STRETCH30_MAPS.find((m) => m.id === id), obj = (id, oid) => map(id).objects.find((o) => o.id === oid);
+  // The broken bridge (LoreKeeper): a span lifted out on purpose, nothing like the real 2024 collapse.
+  const bridge = map('ann_bridge'), span = obj('ann_bridge', 'obj.ann_span');
+  for (const o of bridge.objects) for (const t of stretch30Lines(o)) assert.ok(!/\b(ships?|vessels?|freighters?|barges?|collisions?|collapsed?|wreck(age)?|struck|crash(ed)?)\b/i.test(t), `ann_bridge/${o.id} reads like a disaster: ${t.slice(0, 60)}`);
+  assert.ok(/SPAN REMOVED BY ORDER/.test(span.text) && /sawn square/.test(span.text), 'the span sign and its square-cut edge');
+  assert.equal((bridge.scenery ?? []).filter((s) => s.art === 'obj.cone').length, 2, 'two cones at the cut');
+  // ann_span's pitch says "look east": the island is past the far end, not off to one side.
+  assert.ok(!/\b(north|south|west) of\b/i.test(span.text), 'the island is where the pitch sends you');
+  // Lore gate 7.1 (PR #46): the batch board keeps "took, but" for bv_batch and invents no batch number.
+  const board = obj('bv_lab', 'obj.bv_batch_board');
+  assert.ok(/took, but/.test(board.text) && !/\d|twelve|thirteen/i.test(board.text), 'the batch board: no invented batch number');
+  for (const o of map('bv_lab').objects) for (const t of stretch30Lines(o)) assert.ok(!/thirteen/i.test(t), `bv_lab/${o.id} still hints at batch thirteen`);
+  // fr_prices' clue says bread is the same as last week, so the board can't say everything went up.
+  assert.ok(!/\bEverything\b/.test(obj('fr_market', 'obj.fr_prices').text), 'the price board agrees with the clue (bread is the same)');
+  // The Enclave works and is clean: the props fountain is drawn broken on purpose, so it stays out of en_*.
+  for (const m of STRETCH30_MAPS.filter((q) => q.id.startsWith('en_'))) for (const a of [...(m.scenery ?? []).map((s) => s.art), ...m.objects.map((o) => o.art)]) assert.notEqual(a, 'obj.fountain', `${m.id}: the broken fountain`);
+  const mall = map('en_mall');
+  for (const [x0, label] of [[2, 'west'], [38, 'east']]) assert.ok([0, 1].every((dx) => [2, 3].every((y) => mall.layout[y][x0 + dx] === '|')), `the mall's ${label} monument (stone columns)`);
+  // WRITING.md: no triplets on the boards and signs (three capitalised words in a row, or a word said three times).
+  for (const m of STRETCH30_MAPS) for (const o of m.objects) for (const t of stretch30Lines(o)) {
+    assert.ok(!/\b[A-Z]{3,}, [A-Z]{3,}, (and )?[A-Z]{3,}\b/.test(t) && !/\b(\w+), \1, \1\b/i.test(t), `${m.id}/${o.id}: a triplet: ${t.slice(0, 60)}`);
+  }
 });
 
 const { ES_HUD } = await import('../src/i18n/es-hud.js');
@@ -709,6 +1843,27 @@ test('cordon (task #36/#38): trooper lines before and after the Call have Spanis
   }
   assert.ok(PLAZA_CORDON.barriers.length >= 3);
   assert.ok(PLAZA_CORDON.closing.length >= 10);
+
+  // every checkpoint keeps its booth, floodlights and notice (a trailing comment once swallowed the north one's: BagelMeister, general #141)
+  const ids = new Set(PLAZA_CORDON.objects.map((o) => o.id));
+  for (const id of ['cordon.booth_1', 'cordon.booth_2', 'cordon.light_1', 'cordon.light_2', 'cordon.sign_1', 'cordon.sign_2', 'cordon.sign_3']) assert.ok(ids.has(id), `${id} is placed`);
+});
+
+test('cordon (task #36): the Code-rot-taken beyond each checkpoint stay out of reach and in their pens', () => {
+  if (!cordonMod) return;
+  const m = MAPS_FOR_TEST.metro_plaza, held = cordonMod.PLAZA_CORDON.held;
+  assert.ok(held.length >= 6 && m.enemies.filter((e) => e.pen).length === held.length, 'the held rot-taken are on the map');
+  const sp = m.spawns[0], start = [Math.floor(sp.x / 16), Math.floor(sp.y / 16)], seen = new Set([start.join(',')]), q = [start];
+  while (q.length) { const [x, y] = q.shift(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || m.solid(nx, ny)) continue; seen.add(k); q.push([nx, ny]); } }
+  for (const [, tx, ty, { pen }] of held) {
+    for (let y = pen[1]; y < pen[1] + pen[3]; y++) for (let x = pen[0]; x < pen[0] + pen[2]; x++) assert.ok(!seen.has(x + ',' + y), `pen tile ${x},${y} is reachable on foot`);
+    assert.ok(tx >= pen[0] && tx < pen[0] + pen[2] && ty >= pen[1] && ty < pen[1] + pen[3], `rot-taken at ${tx},${ty} starts inside its pen`);
+  }
+  // Walk up to the north barrier and wait: they push at the line but never leave.
+  const sim = new Sim(m, { seed: 'pens' }); sim.addPlayer('a', 'trevor');
+  const p = sim.players.get('a'); p.x = 60 * 16 + 8; p.y = 6 * 16 + 8;
+  for (let i = 0; i < 600; i++) sim.step(1 / 60, new Map([['a', { mx: 0, my: 0, aim: 0 }]]));
+  for (const e of sim.enemies.values()) if (e.pen) { const [tx, ty, tw, th] = e.pen; assert.ok(e.x >= tx * 16 && e.x <= (tx + tw) * 16 && e.y >= ty * 16 && e.y <= (ty + th) * 16, `${e.kind} left its pen`); }
 });
 
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
@@ -726,6 +1881,61 @@ test('pipe puzzle: every seed is solvable and starts unsolved', () => {
 // Every generated scene (romance and checkpoint included), so a new scene can't skip this check.
 const SCENES = fs.readdirSync(new URL('../src/content/dialogue/act1/', import.meta.url)).filter((f) => f.endsWith('.js')).map((f) => f.replace(/\.js$/, ''));
 const { loadScene, Conversation, evalCond } = await import('../src/engine/dialogue.js');
+test('a shared choice becomes an actor line before its branch effects apply', () => {
+  const scene = { start: 'start', nodes: {
+    start: { lines: [], choices: [{ text: '*Take the left door.*', go: 'left' }, { text: 'Take the right door.', go: 'right' }] },
+    left: { lines: [{ who: 'Guard', text: 'Go ahead.' }], choices: [], effects: [{ op: 'set', arg: 'door.left' }] },
+    right: { lines: [{ who: 'Guard', text: 'Room is locked.' }], choices: [] },
+  } };
+  const flags = {}, ctx = { flags }, sink = { flag: (key, value) => { flags[key] = value; } };
+  const conv = new Conversation(scene, null, ctx, sink);
+  conv.choose(0, 'manuel');
+  assert.deepEqual(conv.line, { who: 'manuel', text: 'Take the left door.', choice: true });
+  assert.deepEqual(conv.choices, []);
+  assert.equal(flags['door.left'], undefined);
+  conv.choose(1, 'michael');
+  conv.advance();
+  assert.deepEqual(conv.line, { who: 'Guard', text: 'Go ahead.' });
+  assert.equal(flags['door.left'], true);
+  const solo = new Conversation(scene, null, ctx, sink);
+  solo.choose(1);
+  assert.equal(solo.nodeId, 'right');
+});
+
+test('a busy shared chooser receives the current offer once free', async () => {
+  const { SharedEvents } = await import('../src/game/sharedEvent.js');
+  const banner = {
+    setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; },
+    setText() { return this; }, setVisible() { return this; },
+  };
+  const sent = [];
+  const local = { spectator: false };
+  const scene = {
+    character: 'manuel', mode: 'client', dlg: local,
+    input: { keyboard: { on() {} } }, time: { addEvent() {} }, add: { text: () => banner },
+    net: { send: (msg) => sent.push(msg) }, _drawDialogue() {},
+  };
+  const shared = new SharedEvents(scene);
+  const state = { choices: ['Take the left door.'], decider: 'manuel', turn: 2 };
+  shared.onMsg({ t: 'evStart', id: 'host:ended', main: 'trevor', scope: 'all' });
+  shared.onMsg({ t: 'evState', id: 'host:ended', state });
+  shared.onMsg({ t: 'evEnd', id: 'host:ended' });
+  shared.onMsg({ t: 'evStart', id: 'host:live', main: 'trevor', scope: 'all' });
+  shared.onMsg({ t: 'evState', id: 'host:live', state });
+  assert.equal(scene.dlg, local);
+  scene.dlg = null;
+  scene.menu = 'inventory';
+  shared._pump();
+  assert.equal(scene.dlg, null);
+  scene.menu = null;
+  shared._pump();
+  assert.equal(shared.watching.id, 'host:live');
+  assert.equal(scene.dlg.choices[0].text, 'Take the left door.');
+  scene.dlg.choose(0);
+  scene.dlg.choose(0);
+  assert.deepEqual(sent, [{ t: 'evChoose', id: 'host:live', i: 0, turn: 2, who: 'manuel' }]);
+});
+
 await (async () => {
   try {
     for (const name of SCENES) {
@@ -744,6 +1954,44 @@ await (async () => {
     console.log(`ok   dialogue: all ${SCENES.length} scenes play to an end for every speaker, first/second/third/last choice`);
   } catch (e) { failed++; console.log(`FAIL dialogue\n     ${e.message}`); }
 })();
+
+const checkpointDialogue = await loadScene('checkpoint');
+const asterDialogue = await loadScene('aster');
+test('balloon quest credits the delivered lobby clue and checkpoint outcome, never the greeting', () => {
+  const balloon = QUESTS_ES.find((q) => q.id === 'main.balloon');
+  const flags = { 'met.npc.kess': true, 'met.npc.dez': true, 'met.npc.doorman': true, 'act1.halvard.met': true };
+  const ctx = { speaker: 'trevor', flags, present: ['trevor'], inventory: [], money: 20, standing: { continuity: 0 } };
+  const changes = [];
+  const sink = { flag: (key, value) => { flags[key] = value; changes.push(key); }, standing() {}, pay() {} };
+  assert.equal(!!balloon.stages[2].done(flags), false);
+  assert.equal(!!balloon.stages[3].done(flags), false);
+
+  const lobby = new Conversation(asterDialogue, 'fenwick_talk', ctx, sink);
+  lobby.revealLine();
+  assert.equal(!!balloon.stages[2].done(flags), false);
+  lobby.advance();
+  lobby.advance();
+  assert.equal(!!balloon.stages[2].done(flags), false, 'entering the clue line does not grant it');
+  lobby.revealLine();
+  lobby.revealLine();
+  assert.equal(balloon.stages[2].done(flags), true);
+  assert.equal(changes.filter((key) => key === 'act1.balloon.lobbyClue').length, 1);
+  assert.equal(flags['act1.aster.fenwickOrder'], undefined);
+  while (!lobby.done) { lobby.revealLine(); lobby.advance(); }
+  assert.equal(flags['act1.aster.fenwickOrder'], true);
+
+  for (const [node, skip] of [['cordon_bluff', 2], ['cordon_bribe', 1], ['cordon_drone', 1]]) {
+    delete flags['act1.cordon.passed'];
+    const checkpoint = new Conversation(checkpointDialogue, node, ctx, sink);
+    for (let i = 0; i < skip; i++) {
+      checkpoint.revealLine();
+      checkpoint.advance();
+    }
+    assert.equal(!!balloon.stages[4].done(flags), false, node);
+    checkpoint.revealLine();
+    assert.equal(balloon.stages[4].done(flags), true, node);
+  }
+});
 
 test('every door has wall on both sides (no doors standing on an open patch)', () => {
   for (const m of Object.values(MAPS_FOR_TEST)) {
@@ -866,6 +2114,24 @@ test('registry bosses (defineBoss): each one placed on a map spawns as a sleepin
   assert.equal(placed.size, Object.keys(BossReg.BOSSES).length, 'every registry boss should be placed on some map');
 });
 
+test('a defeated guardian stays dead when its map and spawn index change', () => {
+  const kind = Object.keys(BossReg.BOSSES)[0];
+  const regular = { kind: 'enemy.rot_taken', x: 160, y: 160 };
+  const oldMap = { ...rotArena(), id: 'old-guardian', enemies: [{ kind, x: 144, y: 160 }] };
+  const movedMap = { ...rotArena(), id: 'new-guardian', enemies: [regular, { kind, x: 192, y: 160 }] };
+  const killed = new Set(['old-guardian#0']);
+  const priorDefeat = (enemyKind) => enemyKind === kind;
+  const sim = new Sim(oldMap, { killed, isBossDefeated: priorDefeat });
+  sim.addPlayer('host', 'trevor');
+  sim.setMap(movedMap);
+  assert.deepEqual([...sim.enemies.values()].map((e) => e.kind), [regular.kind]);
+  assert.deepEqual([...killed], ['old-guardian#0'], 'the old save must not be rewritten');
+  const loaded = new Sim(movedMap, { killed, isBossDefeated: priorDefeat });
+  assert.deepEqual([...loaded.enemies.values()].map((e) => e.kind), [regular.kind]);
+  const fresh = new Sim(movedMap, { killed });
+  assert.ok([...fresh.enemies.values()].some((e) => e.kind === kind));
+});
+
 const SideQ = await import('../src/content/sideQuests.js');
 test('side quests (sideQuests.js): every giver, object, item, boss and person they point at exists, so each can be finished', async () => {
   const { ITEMS } = await import('../src/content/items.js');
@@ -913,6 +2179,9 @@ test('progression (Trevor: too easy, too low a ceiling): steeper curve, costed s
   assert.equal(cost, 13);
   let pts = 0; for (let lv = 2; lv <= 5; lv++) pts += Prog.abilityPointsAt(lv);
   assert.ok(pts < cost / 2, 'level 5 is nowhere near a maxed score');
+  const maxCost = Array.from({ length: Abil.MAX_SCORE - 14 }, (_, i) => Abil.raiseCost(14 + i)).reduce((a, b) => a + b);
+  const earned = Array.from({ length: Prog.LEVEL_CAP - 1 }, (_, i) => Prog.abilityPointsAt(i + 2)).reduce((a, b) => a + b);
+  assert.equal(maxCost, earned);
   assert.ok(Prog.xpToNext(1) === 30 && Prog.xpToNext(10) > 1000 && Prog.xpToNext(20) > 3000);
   const c = { level: 1, xp: 0, skillPoints: 0, abilityPoints: 0 };
   assert.deepEqual(Prog.addXp(c, 30 + 91), [2, 3]); assert.equal(c.skillPoints, 2); assert.equal(c.abilityPoints, 2);
@@ -974,6 +2243,60 @@ test('lattice table (Trevor: everyone plays, AI for whoever is not there): seats
   t2._step();
   assert.equal(results.length, 1); assert.equal(results[0][0], 'dealer'); assert.equal(results[0][2], t2.g.winner);
   t2._step(); assert.equal(results.length, 1, 'recorded once');
+});
+
+test('Lattice is required (Trevor): after a game anyone seated can play again, and the house eases off with every loss until the party wins there', async () => {
+  const LTable = await import('../src/game/latticeTable.js'), LRules = await import('../src/engine/lattice.js');
+  const flags = {}, players = new Map([['host', { id: 'host', character: 'trevor' }]]);
+  const scene = { mode: 'solo', character: 'trevor', localId: 'host', sim: { players }, save: { party: { trevor: {}, manuel: {}, michael: {} }, flags, world: { seed: 'r' } },
+    net: { broadcast() {}, send() {} }, _latticeResult: (id, won) => { flags[`lattice.games.${id}`] = (flags[`lattice.games.${id}`] ?? 0) + 1; if (won) flags[`lattice.won.${id}`] = true; } };
+  const t = new LTable.LatticeTable(scene, { makeView: () => ({ update() {}, close() {} }) });
+  t.fast = true; t.open('dealer');
+  assert.equal(t.ease, 0, 'full strength the first time');
+  assert.equal(t.act('host', { type: 'rematch' }), false, 'no rematch mid-game');
+  const playOut = () => { for (let k = 0; k < 3000 && !t.g.winner; k++) { if (t.g.phase === 'setup') LRules.aiSetup(t.g); else LRules.aiTurn(t.g); } t._step(); };
+  playOut();
+  assert.equal(t.act('stranger', { type: 'rematch' }), false, 'only someone at the table deals again');
+  const won = !!flags['lattice.won.dealer'];
+  assert.equal(t.act('host', { type: 'rematch' }), true);
+  assert.ok(t.active && !t.g.winner, 'a fresh game at the same table');
+  assert.equal(t.ease, won ? 0 : LTable.EASE_PER_LOSS, won ? 'won: no easing' : 'one loss: the house eases off');
+  flags['lattice.games.dealer'] = 9; delete flags['lattice.won.dealer'];
+  t.g.winner = 'npc'; t.recorded = true; t.act('host', { type: 'rematch' });
+  assert.equal(t.ease, LTable.EASE_MAX, 'capped');
+  // and the easing is real: the house wins far less often at the cap
+  let full = 0, eased = 0;
+  for (let k = 0; k < 120; k++) for (const [ease, inc] of [[0, () => full++], [LTable.EASE_MAX, () => eased++]]) {
+    const g = LRules.newGame('e' + k, ['trevor', 'manuel', 'michael', 'npc']);
+    for (let i = 0; g.phase === 'setup' && i < 50; i++) LRules.aiSetup(g);
+    for (let i = 0; !g.winner && i < 2000; i++) LRules.aiTurn(g, LRules.side(g) === 'npc' ? { ease } : {});
+    if (g.winner === 'npc') inc();
+  }
+  assert.ok(eased < full / 2, `house wins: ${full} at full strength, ${eased} eased`);
+});
+
+test('Lattice co-op (John Pork\'s review): a guest dropping out mid-turn hands their side to the AI at once, and whoever left stays out through a rematch', async () => {
+  const LTable = await import('../src/game/latticeTable.js'), LRules = await import('../src/engine/lattice.js');
+  const sent = [], flags = {}, players = new Map([['host', { id: 'host', character: 'trevor' }], ['peerM', { id: 'peerM', character: 'michael' }]]);
+  const scene = { mode: 'host', character: 'trevor', localId: 'host', sim: { players }, save: { party: { trevor: {}, manuel: {}, michael: {} }, flags, world: { seed: 'c' } },
+    net: { broadcast: (m) => sent.push(m), send() {} }, _latticeResult() {} };
+  const t = new LTable.LatticeTable(scene, { makeView: () => ({ update() {}, close() { this.closed = true; } }) });
+  t.fast = true; t.open('dealer');
+  for (let i = 0; i < 20 && t.turnSide() !== 'michael'; i++) LRules.aiSetup(t.g);
+  assert.equal(t.turnSide(), 'michael'); clearTimeout(t.timer); t.timer = null;
+  t.leave('peerM');   // what WorldScene's leave handler now does before swapping the peer for a companion
+  assert.equal(t.seats().michael, null); assert.ok(t.timer !== null, 'the AI picks up the turn instead of waiting forever');
+  // play it out, then the host deals again: Michael left, so he stays with the AI and his screen stays shut
+  clearTimeout(t.timer);
+  for (let k = 0; k < 3000 && !t.g.winner; k++) { if (t.g.phase === 'setup') LRules.aiSetup(t.g); else LRules.aiTurn(t.g); }
+  t._step(); clearTimeout(t.timer);
+  sent.length = 0;
+  assert.equal(t.act('host', { type: 'rematch' }), true); clearTimeout(t.timer);
+  assert.ok(t.left.has('michael') && t.seats().michael === null, 'his opt-out survives the rematch');
+  const start = sent.find((m) => m.op === 'start'); assert.ok(start?.rematch, 'guests are told it is a rematch');
+  const guest = new LTable.LatticeTable({ ...scene, mode: 'client', character: 'michael', localId: 'peerM', net: { send() {} } }, { makeView: () => { throw new Error('reopened for a guest who left'); } });
+  guest.dismissed = 'dealer'; guest.onClientMsg(start);
+  assert.equal(guest.view, null);
 });
 
 test('penned enemies (cordon blockades, task #36) push toward the party but never leave their pen', () => {
@@ -1055,6 +2378,202 @@ test('lab bench (hub #44): every lab has exactly one passing answer; the shared 
   assert.equal(bench.act({ type: 'cycle', i: 0 }), false, 'a passed lab is locked');
 });
 
+test('ambient NPC fight (hub #69): before the Call an abatement squad burns out a rotted drone hub in College Park; nobody can join or get hurt, and once it falls it stays fallen', async () => {
+  const { skirmishesFor } = await import('../src/content/skirmishes.js');
+  assert.ok(skirmishesFor({}).metro_plaza, 'there before the Call');
+  const after = skirmishesFor({ 'act1.beat.call': true }).metro_plaza;
+  assert.ok(after && after.over && after.husk, 'after the Call only the burned husk is left, whether or not anyone saw the fight');
+  { const hs = new Sim(MAPS_FOR_TEST.metro_plaza, { seed: 'husk', deferSpawn: true }); hs.skirmishes = { metro_plaza: after }; hs.addPlayer('h', 'trevor'); hs.spawnEnemies();
+    const hv = hs.snapshot().sk; const [hx, hy] = after.machine;
+    assert.ok(hv.husk && hv.over && hv.tr.length === 0 && hv.dr.length === 0, 'the husk: no squad, no drones');
+    assert.ok(hs._hits(hx * 16 + 8, hy * 16 + 8), 'and still solid'); }
+  const m = MAPS_FOR_TEST.metro_plaza, spec = skirmishesFor({}).metro_plaza;
+  const [ax, ay, aw, ah] = spec.area;
+  for (let y = ay; y < ay + ah; y++) for (let x = ax; x < ax + aw; x++) assert.ok(!m.solid(x, y), `the yard is open ground (${x},${y})`);
+  const sim = new Sim(m, { seed: 'sk', deferSpawn: true }); sim.skirmishes = skirmishesFor({});
+  sim.addPlayer('h', 'trevor'); sim.spawnEnemies(); sim.enemies.clear();
+  const p = sim.players.get('h'); p.x = (ax + 3) * 16 + 8; p.y = (ay + 2) * 16 + 8;   // standing inside the tape, among the drones
+  assert.ok(p.x / 16 >= ax && p.x / 16 < ax + aw && p.y / 16 >= ay && p.y / 16 < ay + ah && !sim._hits(p.x, p.y), 'the fixture stands on an open tile inside the tape');
+  let over = null, t = 0, sawDrone = false;
+  const [bx0, by0, bx1, by1] = sim.snapshot().sk.box; let strays = 0;
+  for (; t < 240 && !over; t += 1 / 60) {
+    sim.step(1 / 60, new Map()); over = sim.events.find((e) => e.t === 'skOver');
+    const v = sim.snapshot().sk; sawDrone ||= v.dr.length > 0;
+    strays += v.sh.filter(([x, y]) => x < bx0 || x > bx1 || y < by0 || y > by1).length;
+  }
+  assert.equal(strays, 0, 'no shot leaves the tape');
+  const okafor = m.objects.find((o) => o.id === 'npc.okafor');
+  if (okafor) for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) assert.ok(!(okafor.x + dx >= ax && okafor.x + dx < ax + aw && okafor.y + dy >= ay && okafor.y + dy < ay + ah), 'Mrs. Okafor can be talked to from outside the tape');
+  const [hx, hy] = spec.machine;
+  assert.ok(sim._hits(hx * 16 + 8, hy * 16 + 8) && sim._hits(hx * 16 + 8, (hy - 1) * 16 + 8), 'the hub is solid: nobody walks through it');
+  assert.ok(over && over.id === 'cp_drone_hub', `the hub falls within four minutes (took ${t.toFixed(0)} s)`);
+  assert.ok(sawDrone, 'it launched drones');
+  assert.equal(p.hp, sim.maxHp(p), 'standing in the middle of it costs nothing');
+  assert.equal(sim.snapshot().sk.dr.length, 0, 'its drones fall with it');
+  const later = new Sim(m, { seed: 'sk', deferSpawn: true }); later.skirmishes = skirmishesFor({ 'skirmish.cp_drone_hub.over': true });
+  later.addPlayer('h', 'trevor'); later.spawnEnemies();
+  for (let i = 0; i < 300; i++) later.step(1 / 60, new Map());
+  const v = later.snapshot().sk;
+  assert.ok(v.over && v.m[2] === 0 && v.dr.length === 0 && v.sh.length === 0, 'a later visit: the burned husk, the squad standing down');
+});
+
+const SocketsT = await import('../src/engine/sockets.js');
+test('customization station (task #40): mods fit only where they belong, count in your stats, ride along when worn, and come back out', async () => {
+  const { playerMods: pm, socketsFor, ITEMS } = await import('../src/content/items.js');
+  const InvS = await import('../src/engine/inventory.js');
+  const c = newSave({ seed: 'mods', rolls: {}, gameVersion: 't' }).party.trevor;
+  c.inventory = Array.from({ length: InvS.SLOTS }, () => null);
+  c.inventory[0] = { id: 'item.rebar', qty: 1 }; c.inventory[1] = { id: 'item.mesh_vest', qty: 1 };
+  InvS.add(c, 'item.mod_edge', 3); InvS.add(c, 'item.mod_plate'); InvS.add(c, 'item.mod_barrel');
+  c.hotSel = 0; c.equipped.weapon = 'item.rebar';
+  assert.equal(socketsFor(ITEMS['item.rebar']), 2);
+  assert.equal(SocketsT.insert(c, { bag: 0 }, 'item.mod_barrel'), false, 'a gun barrel does not fit a spear');
+  const base = pm(c, 'trevor').melee;
+  assert.ok(SocketsT.insert(c, { bag: 0 }, 'item.mod_edge')); assert.ok(SocketsT.insert(c, { bag: 0 }, 'item.mod_edge'));
+  assert.equal(SocketsT.insert(c, { bag: 0 }, 'item.mod_edge'), false, 'two sockets, no third');
+  assert.equal(pm(c, 'trevor').melee, base + 4, 'two honed edges: +4 melee while held');
+  assert.equal(InvS.count(c, 'item.mod_edge'), 1);
+  // armor: the plate goes in, the vest is worn, the plate rides along and counts, then comes back with it
+  assert.ok(SocketsT.insert(c, { bag: 1 }, 'item.mod_plate'));
+  assert.ok(InvS.wear(c, 'item.mesh_vest'));
+  assert.deepEqual(c.socketed.chestplate, ['item.mod_plate']);
+  const worn = pm(c, 'trevor').armor;
+  assert.ok(InvS.unwear(c, 'chestplate'));
+  assert.deepEqual(c.inventory.find((x) => x?.id === 'item.mesh_vest').socketed, ['item.mod_plate']);
+  assert.ok(worn > pm(c, 'trevor').armor, 'the plate counted while worn');
+  // out again
+  assert.ok(SocketsT.extract(c, { bag: 0 }, 0)); assert.equal(InvS.count(c, 'item.mod_edge'), 2);
+  assert.deepEqual(SocketsT.socketInfo(c, { bag: 0 }).mods, ['item.mod_edge']);
+});
+
+test('the mod station is modal: while open it is the scene menu, ESC closes only it, and the menu keys stay shut (BagelMeister, PR #93)', async () => {
+  const fs = await import('node:fs');
+  const src = fs.readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/get menu\(\) \{[^\n]*this\.modStation && !this\.modStation\.closed \? 'mods'/.test(src), 'an open station counts as the menu, so _frozen stops movement, attacks and E');
+  assert.ok(/keydown-ESC', \(\) => \{ if \(this\.dlg[^)]*\) return; if \(this\.modStation\) \{ this\.modStation\.close\(\); return; \}/.test(src), 'ESC closes the station and nothing else');
+  for (const k of ['I', 'K', 'J', 'TAB']) assert.ok(new RegExp(`keydown-${k}'[^\\n]*!this\\.modStation`).test(src), `${k} does nothing while the station is open`);
+  const st = fs.readFileSync(new URL('../src/game/ui/ModStation.js', import.meta.url), 'utf8');
+  assert.ok(!/keyboard\.on\(/.test(st), 'the station has no key listener of its own (the scene routes ESC)');
+});
+
+test('Ping rework (hub #66): the pulse jolts, a marked kill hands the pinger cooldown back, and the mark jumps on', async () => {
+  const { PING } = await import('../src/engine/sim.js');
+  const sim = new Sim(MAPS_FOR_TEST.metro_plaza, { seed: 'ping', deferSpawn: true });
+  sim.addPlayer('mi', 'michael'); sim.addPlayer('tr', 'trevor');
+  const mi = sim.players.get('mi'), tr = sim.players.get('tr'); sim.enemies.clear();
+  const foe = (id, dx, hp) => sim.enemies.set(id, { id, kind: 'enemy.rotling', x: mi.x + dx, y: mi.y, hp, cd: 9, hurtT: 0, sleepT: 99 });
+  foe('near', 30, 200); foe('weak', 60, 3); foe('far', 400, 200);
+  sim._ability(mi);
+  const near = sim.enemies.get('near');
+  assert.ok(near.hp < 200 && near.hurtT >= PING.stagger - 1e-9, 'the pulse lands damage and a stagger');
+  assert.ok(!sim.enemies.has('weak'), 'the jolt can finish something weak');
+  assert.ok(Math.abs(mi.skillCd - (PING.cd - PING.refund)) < 1e-9, 'killing a marked thing handed time back');
+  assert.ok(!(sim.enemies.get('far').marked > 0), 'out of reach: not marked');
+  // Trevor kills a marked one: cooldown goes back to Michael (who pinged it), and the mark jumps to the nearest unmarked
+  sim.enemies.clear(); mi.skillCd = 5;
+  foe('a', 30, 1); foe('b', 60, 200); sim.enemies.get('a').marked = 3; sim.enemies.get('a').markedBy = 'michael';
+  sim._hurtEnemy(sim.enemies.get('a'), 10, 0, 0, 'tr');
+  assert.ok(Math.abs(mi.skillCd - (5 - PING.refund)) < 1e-9, 'the pinger is refunded, whoever lands the kill');
+  assert.ok(sim.enemies.get('b').marked > 0 && sim.enemies.get('b').markedBy === 'michael', 'the mark jumped on');
+  assert.ok(sim.events.some((e) => e.t === 'pingJump'));
+  // Riff's rattle (no owner) neither refunds nor jumps
+  sim.enemies.clear(); mi.skillCd = 5; foe('c', 30, 1); foe('d', 60, 200); sim.enemies.get('c').marked = 3;
+  sim._hurtEnemy(sim.enemies.get('c'), 10, 0, 0, 'tr');
+  assert.equal(mi.skillCd, 5); assert.ok(!(sim.enemies.get('d').marked > 0));
+  // John Pork: Ping, let the mark expire, Riff-rattle it, kill it: no refund, no jump
+  sim.enemies.clear(); foe('e', 30, 200); foe('f', 60, 200); mi.skillCd = 0; sim._ability(mi);
+  for (let i = 0; i < Math.ceil(PING.mark * 60) + 5; i++) sim.step(1 / 60, new Map());
+  const e = sim.enemies.get('e'); assert.ok(!(e.marked > 0) && !e.markedBy, 'the mark and its owner expire together');
+  mi.skillCd = 3; e.marked = 3;   // what Riff's rattle does: a mark with no owner
+  sim._hurtEnemy(e, 999, 0, 0, 'tr');
+  assert.equal(mi.skillCd, 3, 'no refund from an expired Ping'); assert.ok(!(sim.enemies.get('f')?.marked > 0), 'no jump either');
+  // the owner is the roommate: control of Michael changing hands keeps the credit
+  sim.enemies.clear(); foe('g', 30, 1); sim.enemies.get('g').marked = 3; sim.enemies.get('g').markedBy = 'michael';
+  sim.removePlayer('mi'); sim.addPlayer('ai:michael', 'michael'); const ai = sim.players.get('ai:michael'); ai.skillCd = 4;
+  sim._hurtEnemy(sim.enemies.get('g'), 10, 0, 0, 'tr');
+  assert.ok(Math.abs(ai.skillCd - (4 - PING.refund)) < 1e-9, 'whoever runs Michael now gets the refund');
+});
+
+test('alternate R moves change targeting, stamina, and marks, while the transformed move takes priority', () => {
+  const map = rotArena();
+  map.solid = (x, y) => x === 8 && y === 5;
+  const sim = new Sim(map);
+  for (const [id, who] of [['tr', 'trevor'], ['ma', 'manuel'], ['mi', 'michael']]) sim.addPlayer(id, who);
+  const tr = sim.players.get('tr'), ma = sim.players.get('ma'), mi = sim.players.get('mi');
+  Object.assign(tr, { x: 96, y: 80, aim: 0, activeAbility: 'chord', sta: 10 });
+  Object.assign(ma, { x: 96, y: 134, activeAbility: 'rally', sta: 85 });
+  Object.assign(mi, { x: 96, y: 200, aim: 0, activeAbility: 'focus', sta: 10 });
+  const foe = (id, x, y) => {
+    const e = { id, kind: 'enemy.rotling', x, y, hp: 200, cd: 9, hurtT: 0, sleepT: 99 };
+    sim.enemies.set(id, e);
+    return e;
+  };
+  const front = foe('front', 160, 64), behind = foe('behind', 75, 80), blocked = foe('blocked', 144, 88);
+  sim._ability(tr);
+  assert.equal(front.hp, 194);
+  assert.ok(front.kx > 0 && !behind.kx);
+  assert.equal(behind.hp, 200);
+  assert.equal(blocked.hp, 200);
+  assert.equal(sim.snapshot().players.find((p) => p.id === 'tr').skMax, 8);
+
+  sim._ability(ma);
+  assert.equal(ma.sta, 100);
+  assert.equal(tr.sta, 40);
+  assert.equal(mi.sta, 10);
+  assert.equal(sim.decoys.length, 0);
+  ma.morphed = true; ma.morphStage = 2;
+  sim._ability(ma);
+  assert.ok(ma.gonT > 0);
+
+  const aimed = foe('aimed', 285, 200), offAxis = foe('off-axis', 148, 245), distant = foe('farther', 302, 200);
+  sim._ability(mi);
+  assert.equal(aimed.marked, 8);
+  assert.equal(aimed.markedBy, 'michael');
+  assert.equal(aimed.hp, 200);
+  assert.equal(aimed.hurtT, 0);
+  assert.equal(offAxis.marked, undefined);
+  assert.equal(distant.marked, undefined);
+});
+
+test('Lake Artemesia\'s enemies hit harder and last longer than the same kind elsewhere (map enemyPower)', () => {
+  const lake = MAPS_FOR_TEST.lake;
+  assert.ok(lake.enemyPower?.hp > 1 && lake.enemyPower?.dmg > 1);
+  const strong = new Sim(lake, { seed: 'lake' }), plain = new Sim({ ...lake, enemyPower: undefined }, { seed: 'lake' });
+  const a = [...strong.enemies.values()], b = [...plain.enemies.values()];
+  assert.equal(a.length, b.length);
+  for (let i = 0; i < a.length; i++) {
+    if (a[i].boss) continue;
+    assert.ok(a[i].def.hp > b[i].def.hp, `${a[i].kind}: more health at the lake`);
+    if (b[i].def.damage > 0) assert.ok(a[i].def.damage > b[i].def.damage, `${a[i].kind}: more damage at the lake`);
+  }
+});
+
+test('limited shop shelves: a stock entry with a limit sells that many, shared by the party, then restocks on play time', async () => {
+  const SS = await import('../src/engine/shopStock.js');
+  const save = { world: { playMs: 0 } }, st = { item: 'item.mat_scrap', price: 3, limit: 3, restockMin: 10 };
+  assert.equal(SS.stockLeft(save, 'hardware', 0, st), 3);
+  for (let i = 0; i < 3; i++) assert.ok(SS.takeStock(save, 'hardware', 0, st));
+  assert.equal(SS.stockLeft(save, 'hardware', 0, st), 0); assert.equal(SS.takeStock(save, 'hardware', 0, st), false, 'sold out');
+  save.world.playMs = 9 * 60000; assert.equal(SS.stockLeft(save, 'hardware', 0, st), 0, 'not yet');
+  save.world.playMs = 10 * 60000; assert.equal(SS.stockLeft(save, 'hardware', 0, st), 3, 'restocked after ten minutes of play');
+  assert.ok(SS.takeStock(save, 'hardware', 0, st)); assert.equal(SS.stockLeft(save, 'hardware', 0, st), 2, 'and the clock starts again');
+  assert.equal(SS.stockLeft(save, 'hardware', 1, { item: 'x', price: 1 }), Infinity, 'no limit: sells without end');
+  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/_buy\(who, shopId, idx\) \{[^]*?stockLeft\(this\.save, shopId, idx, st\)[^]*?takeStock\(this\.save, shopId, idx, st\)/.test(src), 'the host checks and takes stock when it sells');
+});
+
+test('cordon, trevor\'s half of #36: a trooper at every checkpoint faces out, with lines of its own, and arrivals through the north checkpoint land inside', async () => {
+  const C = await import('../src/content/cordon.js');
+  const out = C.PLAZA_CORDON.objects.filter((o) => o.cordon === 'trooper' && o.out);
+  assert.equal(out.length, 3, 'one outward trooper per checkpoint');
+  assert.ok(C.CORDON_LINES_OUT.length >= 3 && C.CORDON_LINES_OUT.every((l) => l.en && l.es));
+  const sim = new Sim(MAPS_FOR_TEST.route1_north, { seed: 'arrive' });
+  for (const c of ['trevor', 'manuel', 'michael']) sim.addPlayer(c, c);
+  sim.setMap(MAPS_FOR_TEST.metro_plaza, 'route1_north', 'obj.r1n_south');
+  const ex = MAPS_FOR_TEST.metro_plaza.objects.find((o) => o.id === 'obj.plaza_r1n');
+  for (const p of sim.players.values()) assert.ok(Math.floor(p.y / 16) > ex.y, `${p.id} landed at row ${Math.floor(p.y / 16)}, beyond the barrier`);
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
@@ -1078,9 +2597,12 @@ const Regions = await import('../src/content/regions.js');
 test('world regions: every built map belongs to exactly one region, each region sits in its act\'s ring, states follow the act', () => {
   for (const id of Object.keys(MAPS_FOR_TEST)) assert.equal(Regions.REGIONS.filter((r) => r.maps.includes(id)).length, 1, `${id} must belong to one region`);
   for (const r of Regions.REGIONS) assert.equal(Regions.RINGS.find((q) => q.ring === r.ring)?.act, r.act, `${r.id} ring/act mismatch`);
-  const aster = Regions.REGIONS.find((r) => r.id === 'aster'), campus = Regions.REGIONS.find((r) => r.id === 'route1'), balt = { ...Regions.REGIONS.find((r) => r.id === 'corridor'), maps: [] };   // an act-3 region, maps cleared
+  // route1 has maps now (hub #28/#29), so the "this act, nothing built" case uses a copy with its maps cleared.
+  const aster = Regions.REGIONS.find((r) => r.id === 'aster'), route1 = Regions.REGIONS.find((r) => r.id === 'route1'), campus = { ...route1, maps: [] }, balt = { ...Regions.REGIONS.find((r) => r.id === 'corridor'), maps: [] };   // an act-3 region, maps cleared
   assert.equal(Regions.regionState(aster, 1, 'room631'), 'here');
   assert.equal(Regions.regionState(campus, 1, 'room631'), 'closed');
+  assert.equal(Regions.regionState(route1, 1, 'room631'), 'open');
+  assert.equal(Regions.regionState(route1, 1, 'airfield'), 'here');
   assert.equal(Regions.regionState(balt, 1, 'room631'), 'locked');
   assert.equal(Regions.regionState(balt, 3, 'room631'), 'closed');
 });
@@ -1101,10 +2623,11 @@ test('machine jobs: one per machine, run on play time while you are away, ready 
 });
 
 const Rolls = await import('../src/content/gearRolls.js');
+const Gadget = await import('../src/content/gadgets.js');
 test('procedural gear rolls: seeded and reproducible, 1-2 affixes of the right kind, every value inside its bounds', () => {
   assert.deepEqual(Rolls.rollGear('w', 'mill.blade', 3, 'melee'), Rolls.rollGear('w', 'mill.blade', 3, 'melee'));
   const seen = new Set();
-  for (const kind of ['melee', 'gun', 'armor', 'gear']) for (let i = 0; i < 400; i++) {
+  for (const kind of ['melee', 'gun', 'armor', 'gear', 'gadget']) for (let i = 0; i < 400; i++) {
     const r = Rolls.rollGear(`seed-${i}`, 'recipe', i, kind);
     assert.ok(r.affixes.length >= 1 && r.affixes.length <= 2, `${kind} #${i}: ${r.affixes.length} affixes`);
     const lo = {}, hi = {};
@@ -1117,6 +2640,25 @@ test('procedural gear rolls: seeded and reproducible, 1-2 affixes of the right k
     assert.equal(r.analog, r.affixes.includes('analog'));
   }
   assert.equal(seen.size, Object.keys(Rolls.AFFIXES).length, 'every affix can come up');
+});
+
+test('gadget tuning stays within recharge, effect and actual output caps across seeded rolls', () => {
+  for (const [id, def] of Object.entries(Gadget.GADGETS)) {
+    if (!def.cooldown) continue;
+    const base = Gadget.gadgetEffectValue(def, def.power) / def.cooldown;
+    for (const tune of ['stock', 'cycle', 'output']) for (let i = 0; i < 300; i++) {
+      const roll = Rolls.rollGear(`gadget-${i}`, id, i, 'gadget', tune);
+      const stats = Gadget.gadgetStats(def, roll.mods);
+      const value = Gadget.gadgetEffectValue(def, stats.power) / stats.cooldown;
+      assert.ok(stats.cooldown >= def.cooldown * 0.6 && stats.power <= def.power * 1.35 + 1e-9, `${id} ${tune} ${i}`);
+      assert.ok(value <= base * Gadget.GADGET_VALUE_CAP + 1e-9, `${id} ${tune} ${value / base}`);
+      if (def.kind === 'screen' || def.kind === 'tether') assert.ok(stats.power / stats.cooldown <= 0.25 + 1e-9);
+    }
+  }
+  const screen = Gadget.GADGETS['item.phase_screen'];
+  const extreme = Gadget.gadgetStats(screen, { gadgetCd: -9, gadgetEffect: 9 });
+  assert.ok(extreme.power <= screen.power * 1.35 && extreme.cooldown >= screen.cooldown * 0.6);
+  assert.equal(Gadget.GADGETS['item.phase_tether'].cooldown, 12);
 });
 
 const Dawn = await import('../src/content/dawn.js');
@@ -1228,6 +2770,182 @@ try {
   if (savedPhaserForCraft === undefined) delete globalThis.Phaser;
   else globalThis.Phaser = savedPhaserForCraft;
 }
+
+test('co-op puzzles (Trevor: everyone participates or spectates, no races): the signal panel is one shared board on the host', async () => {
+  const { PipeTable } = await import('../src/game/pipeTable.js');
+  const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js');
+  const panel = { id: 'obj.panel', puzzle: 'pipes', solvedFlag: 'act1.cam.fixed', x: 5, y: 5 };
+  const sent = [], solved = [];
+  const host = { mode: 'host', localId: 'host', save: { world: { seed: 'pipes-coop' }, flags: {} }, map: { objects: [panel] },
+    net: { broadcast: (m) => sent.push(['all', m]), send: (to, m) => sent.push([to, m]) }, _pipeSolvedHere: (id) => solved.push(['host', id]) };
+  const views = [];
+  const mk = () => { const v = { rots: null, closed: false, setRots(r) { this.rots = [...r]; }, finish() { this.closed = true; } }; views.push(v); return v; };
+  const t = new PipeTable(host, { makeView: mk, near: (peer) => peer !== 'far', solved: (o) => { host.save.flags[o.solvedFlag] = (host.save.flags[o.solvedFlag] ?? 0) + 1; } });
+  const hv = t.open(panel);
+  assert.deepEqual(hv.rots, new PipePuzzle(null, 'pipes-coop:obj.panel').rots(), 'the host sees the seeded board');
+  t.onHostMsg('g1', { t: 'pipe', op: 'open', id: panel.id });
+  assert.deepEqual(sent.at(-1), ['g1', { t: 'pipe', op: 'state', id: panel.id, rots: hv.rots }], 'a guest who walks up gets the live board');
+  // two guests click the same tile in the same moment: both turns land, in order, nobody's lost
+  const model = new PipePuzzle(null, 'pipes-coop:obj.panel'), k = model.grid.flat().findIndex((c) => !c.locked), i = k % model.cols, j = Math.floor(k / model.cols);
+  const r0 = hv.rots[k];
+  t.onHostMsg('g1', { t: 'pipe', op: 'rot', id: panel.id, i, j }); t.onHostMsg('g2', { t: 'pipe', op: 'rot', id: panel.id, i, j });
+  assert.equal(hv.rots[k], (r0 + 2) % 4, 'two turns, applied one after the other');
+  assert.ok(sent.filter(([to, m]) => to === 'all' && m.op === 'state').length >= 2, 'and everyone watching sees each one');
+  assert.equal(t.apply('far', panel.id, i, j), false, 'someone across the map can watch but not turn');
+  const lk = model.grid.flat().findIndex((c) => c.locked);
+  if (lk >= 0) assert.equal(t.apply('g1', panel.id, lk % model.cols, Math.floor(lk / model.cols)), false, 'rotted tiles stay put');
+  // solve it from the solution, with two people racing on the last tile: one solve, recorded once
+  const sol = new PipePuzzle(null, 'pipes-coop:obj.panel');
+  const want = sol.grid.flat().map((c) => c.solution ?? c.r);
+  let last = null;
+  sol.grid.flat().forEach((c, n) => { if (c.solution == null || c.locked) return; while (t._rots(panel.id)[n] !== want[n]) { last = [n % sol.cols, Math.floor(n / sol.cols)]; if (!t.apply('g1', panel.id, ...last)) break; } });
+  assert.equal(host.save.flags['act1.cam.fixed'], 1, 'turning every tile to its answer solves it');
+  {
+    t.apply('g2', panel.id, ...last);
+    assert.equal(host.save.flags['act1.cam.fixed'], 1, 'solved once, even with someone still clicking');
+    assert.ok(sent.some(([, m]) => m.op === 'solved'), 'everyone is told'); assert.ok(hv.closed, 'and every open board closes');
+    // a late opener, after the solve but before the world flags reach them (John Pork, PR #141)
+    t.onHostMsg('g3', { t: 'pipe', op: 'open', id: panel.id });
+    assert.deepEqual(sent.at(-1), ['g3', { t: 'pipe', op: 'solved', id: panel.id, by: null }], 'a late opener is told it\'s solved');
+    const gsolved = [];
+    const guest = new PipeTable({ mode: 'client', localId: 'g3', save: { world: { seed: 'pipes-coop' }, flags: {} }, map: { objects: [panel] }, net: { send() {} }, _pipeSolvedHere: (id) => gsolved.push(id) }, { makeView: mk });
+    const gv = guest.open(panel); guest.onClientMsg(sent.at(-1)[1]);
+    assert.ok(gv.closed && gsolved.length === 0, 'their board closes, and the scene stays with the player who finished it');
+  }
+});
+
+test('co-op puzzles: a guest pressing a lever, a clock or a bust runs on the host, replies to them, and shows the room', () => {
+  const save = newSave({ seed: 'pact', rolls: {}, gameVersion: 't' }), sent = [], toasts = [];
+  const lever = { id: 'obj.switch_a', label: 'Lever A', x: 3, y: 3 };
+  const sim = { players: new Map([['host', { id: 'host', character: 'trevor', x: 3 * 16 + 8, y: 4 * 16 + 8 }], ['g1', { id: 'g1', character: 'manuel', x: 3 * 16 + 8, y: 4 * 16 + 8 }], ['g2', { id: 'g2', character: 'michael', x: 400, y: 400 }]]) };
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', localId: 'host', character: 'trevor', save, sim, map: { id: 'switchyard', objects: [lever] },
+    net: { conns: new Map([['g1', 1], ['g2', 1]]), send: (to, m) => sent.push([to, m]), broadcast() {} }, cameras: { main: { shake() {} } }, _drawLevers() {}, _refreshPuzzleProps() {}, _checkGate: () => false });
+  const realToast = CraftWorldScene.prototype._toast; CraftWorldScene.prototype._toast = function (t) { toasts.push(t); };
+  try {
+    assert.ok(sc._puzzleAct('g1', 'obj.switch_a'), 'a guest at the lever');
+    assert.equal(save.flags['act1.switch.a'], 'right', 'the host pulled it, on the host\'s state');
+    assert.ok(sent.some(([to, m]) => to === 'g1' && m.t === 'toast' && /Lever A/.test(m.text)), 'the guest who pulled it hears it');
+    assert.ok(sent.some(([to, m]) => to === 'g2' && m.t === 'toast' && /MANUEL · Lever A/.test(m.text)) && toasts.some((t) => /MANUEL · Lever A/.test(t)), 'everyone else sees who did what');
+    sc._puzzleAct('g1', 'obj.switch_a'); assert.equal(save.flags['act1.switch.a'], 'left', 'presses land one after another, never on stale state');
+    assert.equal(sc._puzzleAct('g2', 'obj.switch_a'), false, 'out of reach: refused');
+    assert.ok(!Object.prototype.hasOwnProperty.call(sc, '_say') && !Object.prototype.hasOwnProperty.call(sc, '_grant'), 'the host\'s own say and grant are back afterwards');
+  } finally { CraftWorldScene.prototype._toast = realToast; }
+});
+
+test('cutscenes: the HUD steps out from under the letterbox bars and comes back as it was (Trevor: weird cutoff on the UI)', () => {
+  const mk = (depth, visible = true, sf = 0) => ({ depth, visible, scrollFactorX: sf, active: true, setVisible(v) { this.visible = v; return this; } });
+  const hud = mk(9000), mini = mk(9050), hotbar = mk(8992), boss = mk(9100), hidden = mk(9001, false), world = mk(9000, true, 1), dialog = mk(9501), box = mk(9000), toast = mk(9300);
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), { children: { list: [hud, mini, hotbar, boss, hidden, world, dialog, box, toast] }, box, boxText: null, toastText: toast });
+  sc._stageHud(true);
+  assert.ok(!hud.visible && !mini.visible && !hotbar.visible && !boss.visible, 'the HUD is out of the way during the cutscene');
+  assert.ok(world.visible && dialog.visible && box.visible && toast.visible, 'world sprites, dialogue, the say box and toasts are untouched');
+  hud.setVisible(true); sc._stageHud(true); assert.ok(!hud.visible, 'and stays out even if something redraws it mid-cutscene');
+  sc._stageHud(false);
+  assert.ok(hud.visible && mini.visible && hotbar.visible && boss.visible, 'back afterwards');
+  assert.equal(hidden.visible, false, 'what was already hidden stays hidden');
+});
+
+test('rapid back-and-forth between areas (Trevor): exits wait after arriving, and an arrival beat never fires on the wrong map or gets lost', () => {
+  let afterFn = null, hackDone = null, calls = 0, exits = 0, now = 10000;
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'solo', save: { flags: {} }, map: { id: 'tunnel_1' }, time: { get now() { return now; }, delayedCall() {} },
+    stage: { active: null, after: (_id, fn) => { afterFn = fn; } }, _hackCall: (done) => { hackDone = done; }, startDialogue: () => { calls++; },
+    sim: { players: new Map([['host', { x: 8, y: 8 }]]), waitAtExit: () => true, clearWaiting() {} }, _tryExit: () => { exits++; },
+  });
+  const exit = { id: 'obj.back', action: 'exit', to: 'metro_plaza', x: 0, y: 0 };
+  sc._mapGen = 1; sc._arrivedAt = now; sc._onEnterMap(sc.map);
+  // straight back out: held while the beat starts, and for a moment after arriving anyway
+  sc._requestExit(exit, 'host'); assert.equal(exits, 0, 'no leaving while the call is starting');
+  // even if they did get out (say, a guest's exit), the queued call doesn't ring on the plaza, and isn't lost
+  sc.map = { id: 'metro_plaza' }; sc._mapGen = 2; afterFn();
+  assert.equal(calls, 0, 'no call on the wrong map'); assert.ok(!sc.save.flags['act1.beat.call'], 'and the beat is still owed');
+  sc.map = { id: 'tunnel_1' }; sc._mapGen = 3; sc._beatPending = null; sc._onEnterMap(sc.map); afterFn();
+  // the phone effect is running (John Pork, PR #140): exits stay held for all of it, host or guest
+  now += 2000; sc._requestExit(exit, 'host'); assert.equal(exits, 0, 'no leaving while the phone is still connecting');
+  assert.ok(!sc.save.flags['act1.beat.call'] && calls === 0, 'nothing is consumed until the call really opens');
+  // a map change mid-effect anyway: the call doesn't open there, and it's still owed
+  sc.map = { id: 'metro_plaza' }; sc._mapGen = 4; hackDone();
+  assert.equal(calls, 0, 'not on the plaza'); assert.ok(!sc.save.flags['act1.beat.call'], 'still owed');
+  sc.map = { id: 'tunnel_1' }; sc._mapGen = 5; sc._beatPending = null; sc._onEnterMap(sc.map); afterFn(); hackDone();
+  assert.equal(calls, 1, 'it rings on the way back in'); assert.ok(sc.save.flags['act1.beat.call']);
+  // the arrival grace on its own
+  sc._beatPending = null; sc._arrivedAt = now; sc._requestExit(exit, 'host'); assert.equal(exits, 0, 'a second E right after arriving does nothing');
+  now += 800; sc._requestExit(exit, 'host'); assert.equal(exits, 1, 'a moment later the exit works');
+});
+
+test('a moved find stays in the container the save says, even when a later build changes the searchable containers', () => {
+  // Names of the existing helpers and keys are decoded at runtime (ROT13), so this file names nothing sealed.
+  const r13 = (w) => w.replace(/[a-z]/gi, (c) => String.fromCharCode(((c.toLowerCase().charCodeAt(0) - 97 + 13) % 26) + (c <= 'Z' ? 65 : 97)));
+  const H = r13('plyvaqre'), HC = r13('Plyvaqre'), MOVES = `${r13('frpergf')}.${H}.moves`, CACHE = `_${H.slice(0, 3)}Spots`;
+  const spotsOf = (sc) => sc[`_${H}Spots`](), spotOf = (sc) => sc[`_${H}Spot`](), moveIt = (sc, who) => sc[`_find${HC}`](who);
+  const make = (mode, save) => Object.assign(Object.create(CraftWorldScene.prototype), { mode, save, _flag(k, v) { save.flags[k] = v; } });
+  const save = { flags: {}, world: { seed: 'pin-test' } }, scene = make('solo', save);
+  const key = (x) => `${x.map}:${x.id}`, spots = spotsOf(scene);
+  const withNew = (sc) => { sc[CACHE] = [{ map: 'new_map', id: 'obj.new_crate', where: 'Somewhere new' }, ...spots]; };
+  assert.ok(spots.length > 2, 'searchable containers');
+  // an unpinned save gets exactly the place the earlier seeded pick chose, move after move
+  const oldPick = (n) => { const p = (k) => Math.floor(new Rng(`pin-test:${H}:${k}`).next() * spots.length); let i = p(n); if (n > 0 && i === p(n - 1)) i = (i + 1) % spots.length; return spots[i]; };
+  for (let n = 0; n < 6; n++) assert.deepEqual(scene._spotPick(n), oldPick(n), `move ${n}: an existing save would see it change`);
+  const first = spotOf(scene); assert.deepEqual(first, oldPick(0));
+  assert.equal(scene._pinSpot(), false, 'pinned before it ever moved'); assert.equal(save.flags['pin.h1'], undefined);
+  // it moves: the save keeps where, and the text names that place
+  const text = moveIt(scene, 'manuel'), next = spotOf(scene);
+  assert.equal(save.flags['pin.h1'], key(next)); assert.notEqual(key(next), key(first), 'back where it just was');
+  assert.ok(text.includes(next.where), 'the text does not name the new place');
+  // a later build adds a container: every index shifts, but it stays put
+  withNew(scene); assert.deepEqual(spotOf(scene), next, 'a new container moved it');
+  // the next move avoids the pinned place even though the list changed
+  const text2 = moveIt(scene, 'michael'), next2 = spotOf(scene);
+  assert.notEqual(key(next2), key(next)); assert.equal(save.flags['pin.h1'], key(next2)); assert.ok(text2.includes(next2.where));
+  // a later build removes the pinned container: a seeded place takes over, never nothing
+  scene[CACHE] = spotsOf(scene).filter((x) => key(x) !== key(next2));
+  const fallback = spotOf(scene); assert.ok(fallback && key(fallback) !== key(next2));
+  // migration: a save from before the pin that already moved it gets pinned on load by the host (or solo), not a guest
+  const legacy = { flags: { [MOVES]: 2 }, world: { seed: 'pin-test' } }, host = make('host', legacy);
+  const before = spotOf(host);
+  assert.equal(host._pinSpot(), true, 'the caller is not told to write the save'); assert.equal(legacy.flags['pin.h1'], key(before));
+  assert.equal(host._pinSpot(), false, 'pinned twice');
+  // the pin is plain save data: it survives a save/reload round trip, and the reloaded save keeps its place under a new list
+  const reloaded = make('host', JSON.parse(JSON.stringify(legacy))); withNew(reloaded);
+  assert.deepEqual(spotOf(reloaded), before, 'a migrated save moved after a reload under a changed list');
+  const guestSave = { flags: { [MOVES]: 2 }, world: { seed: 'pin-test' } };
+  assert.equal(make('client', guestSave)._pinSpot(), false); assert.equal(guestSave.flags['pin.h1'], undefined, 'a guest wrote the pin');
+});
+test('a guest interacting with the ASTER stairs waits for players who walk up later', () => {
+  const map = MAPS_FOR_TEST.aster_hall;
+  const stairs = map.objects.find((obj) => obj.action === 'exit' && obj.id.includes('stairs'));
+  const sim = new Sim(map);
+  sim.addPlayer('host', 'trevor');
+  sim.addPlayer('guest1', 'manuel');
+  sim.addPlayer('guest2', 'michael');
+  const peer = sim.players.get('guest1');
+  const handlers = {}, taken = [];
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', character: 'trevor', localId: 'host', map, sim,
+    save: { flags: {}, world: { killed: [] } },
+    events: { once() {} }, time: { now: 0, addEvent() {} },
+    net: { on: (type, fn) => { handlers[type] = fn; } },
+    _tryExit: (obj) => taken.push(obj.id),
+  });
+  scene._wireNet();
+  peer.x = stairs.x * 16 + 80;
+  peer.y = stairs.y * 16 + 8;
+  handlers.msg('guest1', { t: 'exit', obj: stairs.id });
+  assert.equal(peer.waitExit ?? null, null);
+  assert.deepEqual(taken, [], 'a guest must be near the stairs');
+
+  peer.x = stairs.x * 16 + 8;
+  peer.y += 16;
+  handlers.msg('guest1', { t: 'exit', obj: stairs.id });
+  assert.equal(peer.waitExit, stairs.id);
+  assert.deepEqual(taken, []);
+  scene._hostEvents([{ t: 'bumpExit', by: 'host', id: stairs.id, dx: 0, dy: -1 }]);
+  assert.deepEqual(taken, [], 'the third player is still away');
+  scene._hostEvents([{ t: 'bumpExit', by: 'guest2', id: stairs.id, dx: 0, dy: -1 }]);
+  assert.deepEqual(taken, [stairs.id]);
+  assert.ok([...sim.players.values()].every((p) => p.waitExit === null));
+});
+
 test('puzzle kit in co-op: a guest\'s move runs on the host, progress stays on the host, the reward goes once to the guest who solved it', async () => {
   const { PUZZLES } = await import('../src/content/puzzles.js');
   const pz = PK.definePuzzle({ id: 'coop_t', kind: 'cycle', parts: ['obj.a', 'obj.b'], states: ['0', '1'], answer: ['1', '1'], reward: { text: 'done', textEs: 'listo', item: 'item.mat_scrap', money: 9 } });
@@ -1307,10 +3025,94 @@ test('quest hooks in co-op: Talk keeps the item and an explicit hand-in uses the
   assert.deepEqual(guestSent, [{ t: 'questUse', id: 'npc.409' }, give], 'a guest only sends the requested action to the host');
 });
 
+const { questState: npcQuestState } = await import('../src/content/quests.js');
+test('talk objectives use a nearby NPC meeting on the host and keep the quest pitch on screen', () => {
+  const map = MAPS_FOR_TEST.aster_roof;
+  const npc = map.objects.find((o) => o.id === 'npc.roof_watcher');
+  const goal = SideQ.SIDE_QUESTS.find((q) => q.target?.npc === npc.id);
+  const pitch = SideQ.SIDE_QUESTS.find((q) => q.giver === npc.id);
+  const save = newSave({ seed: 'roof-talk', rolls: {}, gameVersion: 't' });
+  save.flags[goal.ask] = true;
+  const p = { character: 'michael', x: npc.x * 16 + 8, y: npc.y * 16 + 8 };
+  const delivered = [], handlers = {}, said = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', character: 'trevor', localId: 'host', save, map,
+    sim: { players: new Map([['guest', p]]) }, events: { once() {} }, time: { addEvent() {} },
+    net: { on: (type, fn) => { handlers[type] = fn; }, send: (peer, msg) => delivered.push(msg) },
+    _say: (line) => said.push(line), _questBanner() {}, _refreshMenu() {}, _drawLevers() {}, _levelsReached() {},
+  });
+  const tag = { setText() { return this; }, setPosition() { return this; }, setVisible() { return this; } };
+  const guest = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'client', character: 'michael', localId: 'guest', map, hint: tag, nameTag: tag,
+    save: JSON.parse(JSON.stringify(save)), net: { send: (msg) => handlers.msg('guest', msg) },
+    _say: (line) => delivered.push({ text: line }), _questBanner() {}, _refreshMenu() {}, _drawLevers() {},
+  });
+  host._wireNet();
+  host._tickQuests(true);
+  const met = `met.${npc.id}`;
+  const talk = { t: 'npcTalk', map: map.id, id: npc.id };
+  handlers.msg('unknown-peer', talk);
+  handlers.msg('guest', { ...talk, map: 'aster_5' });
+  p.x += 35; handlers.msg('guest', talk); p.x -= 35;
+  p.downed = true; handlers.msg('guest', talk); p.downed = false;
+  host.perf = { onHostMsg: () => false, asleep: () => true }; handlers.msg('guest', talk); delete host.perf;
+  guest.approach = { intercept: () => true };
+  guest._clickedObj = npc;
+  guest._handleInteract(p);
+  assert.ok(!save.flags[met], 'approach menu and invalid host requests never count as Talk');
+
+  guest.approach.intercept = () => false;
+  guest._clickedObj = npc;
+  guest._handleInteract(p);
+  assert.ok(save.flags[met], 'a real guest Talk reaches the host');
+  assert.equal(guest.save.flags[met], undefined, 'the guest waits for host world state');
+  assert.ok(npcQuestState(save)[goal.id].done);
+  assert.ok(delivered.some((m) => m.text.includes(pitch.pitch)), 'the guest hears the NPC pitch');
+  assert.ok(!delivered.some((m) => m.text === goal.reward.line), 'world sync is the only guest reward notification');
+  assert.deepEqual(said, [goal.reward.line]);
+  const paid = save.party.michael.money;
+  handlers.msg('guest', talk);
+  host._tickQuests(true);
+  assert.equal(save.party.michael.money, paid, 'repeating Talk cannot pay twice');
+
+  guest.sayOpen = true;
+  guest._applyWorld({ flags: save.flags, quests: npcQuestState(save) });
+  assert.ok(guest.save.flags[met] && npcQuestState(guest.save)[goal.id].done);
+  assert.deepEqual(guest._questRewardLines, [goal.reward.line]);
+});
+
+test('a first Talk still plays a scripted NPC introduction before its quest pitch', () => {
+  const hall = MAPS_FOR_TEST.aster_hall;
+  const npc = { ...hall.objects.find((o) => o.id === 'npc.409'), talk: 'aster' };
+  const map = { ...hall, objects: [npc] };
+  const p = { x: npc.x * 16 + 8, y: npc.y * 16 + 8 };
+  const tag = { setText() { return this; }, setPosition() { return this; }, setVisible() { return this; } };
+  const scenes = [], speeches = [];
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'solo', character: 'trevor', localId: 'host', map, hint: tag, nameTag: tag,
+    save: newSave({ seed: 'scripted-talk', rolls: {}, gameVersion: 't' }),
+    startDialogue: (name) => scenes.push(name), _say: (line) => speeches.push(line), _questBanner() {},
+  });
+  scene._clickedObj = npc;
+  scene._handleInteract(p);
+  assert.ok(scene.save.flags[`met.${npc.id}`]);
+  assert.deepEqual(scenes, [npc.talk.split(':')[0]]);
+  assert.equal(speeches.length, 0);
+  scene._clickedObj = npc;
+  scene._handleInteract(p);
+  assert.ok(scene.save.flags['q.soup.asked']);
+  assert.match(speeches[0], /soup/i);
+  assert.equal(scenes.length, 1);
+});
+
 test('inspected quest clues reach only the reader and survive a save round trip', async () => {
   const { QUESTS, questState, questLeads } = await import('../src/content/quests.js');
   const q = {
-    id: 'qa.reading', stages: [], inspect: { obj: 'qa.log', flag: 'q.qa.read', text: 'A line at the end.', fact: 'qa.log' },
+    id: 'qa.reading', stages: [],
+    inspections: [
+      { obj: 'qa.log', flag: 'q.qa.read', text: 'A line at the end.', fact: 'qa.log' },
+      { obj: 'qa.relay', flag: 'q.qa.relay', text: 'The relay is here.', fact: 'qa.relay' },
+    ],
     leads: [{ id: 'log', text: 'Check the log', fact: 'qa.log' }, { id: 'relay', text: 'Find the relay', fact: 'qa.relay' }],
   };
   QUESTS.push(q);
@@ -1355,6 +3157,12 @@ test('inspected quest clues reach only the reader and survive a save round trip'
     assert.deepEqual(questLeads(q, save, 'michael'), []);
     host._finishQuestReading('one', read);
     assert.deepEqual(questLeads(q, migrate(JSON.parse(JSON.stringify(save))), 'manuel').map((lead) => lead.id), ['log']);
+    host._questInteract({ ...log, id: 'qa.relay' }, 'manuel', 'one');
+    const relayRead = messages.at(-1).message.questRead;
+    host._finishQuestReading('one', read);
+    assert.deepEqual(questLeads(q, save, 'manuel').map((lead) => lead.id), ['log']);
+    host._finishQuestReading('one', relayRead);
+    assert.deepEqual(questLeads(q, save, 'manuel').map((lead) => lead.id), ['log', 'relay']);
     questState(save)[q.id].done = true;
     host._questInteract(log, 'michael', 'two');
     host._finishQuestReading('two', messages.at(-1).message.questRead);
@@ -1376,6 +3184,65 @@ test('casino board game in co-op: the host records a finished game for the party
   assert.deepEqual(guest.save.flags, {}, 'a guest never records it locally; it reports to the host');
 });
 
+test('room 631: reading the 245 textbook on the bookshelf sets lab.book (trevor, general #179)', () => {
+  const shelf = room631.objects.find((o) => o.id === 'obj.bookshelf');
+  assert.equal(shelf.action, 'pages');
+  assert.equal(shelf.flag, 'lab.book', 'the pages action sets this flag on the first press');
+  assert.ok(/^The 245 lab textbook\./.test(shelf.pages[0]), 'and the first press shows the textbook');
+});
+test('Continuity posters (hub #100, Michael): out of 631, it is plain he is an enemy of the state; his likeness is never shown', async () => {
+  const { ES_ASTER } = await import('../src/i18n/es-aster.js'), { ES_PLAZA } = await import('../src/i18n/es-plaza.js');
+  const frames = JSON.parse(fs.readFileSync(new URL('../assets/sprites/props.json', import.meta.url), 'utf8')).frames;
+  const posters = (id) => MAPS_FOR_TEST[id].objects.filter((o) => /^obj\.ct_poster/.test(o.art ?? ''));
+  for (const [id, es] of [['aster_hall', ES_ASTER], ['aster_lobby', ES_ASTER], ['metro_plaza', ES_PLAZA]]) {
+    const ps = posters(id);
+    assert.ok(ps.length >= 2, `${id}: posters`);
+    for (const o of ps) {
+      assert.ok(frames[o.art], `${o.art}: no frame in props.json`);
+      assert.ok(es[o.text] && es[o.label], `${id}/${o.id}: Spanish`);
+      assert.ok(!/\b(face|snout|ears?|eyes|smil\w*|portrait of)\b/i.test(o.text), `${id}/${o.id}: describes the banned likeness`);
+    }
+  }
+  const door = MAPS_FOR_TEST.aster_hall.objects.find((o) => o.id === 'obj.door_631');
+  assert.ok(posters('aster_hall').some((o) => Math.hypot(o.x - door.x, o.y - door.y) <= 4), 'nothing right outside 631');
+});
+const { Approach } = await import('../src/game/approach.js');
+test('a caught pickpocket changes that roommate\'s NPC actions across saves until they apologize', () => {
+  const save = newSave({ seed: 'npc-memory', rolls: {}, gameVersion: 'test' });
+  const sim = new Sim(rotArena()), notices = [];
+  const npc = { id: 'npc.test', label: 'Attendant', npc: true, x: 9, y: 9,
+    approaches: ['talk', { id: 'charm', name: 'Ask for a favor' }, 'pickpocket'] };
+  sim.addPlayer('guest', 'michael');
+  const p = sim.players.get('guest');
+  const scene = { save, sim, map: { objects: [npc] }, character: 'trevor', localId: 'host',
+    input: { keyboard: { on() {} } }, time: { now: 10 }, _questHandIns: () => [],
+    net: { send: (peer, msg) => notices.push({ peer, msg }) } };
+  const approach = new Approach(scene);
+  const fail = { t: 'approach', npc: npc.id, kind: 'pickpocket' };
+  p.x = 400;
+  approach.onHostMsg('guest', fail);
+  assert.equal(save.world.npcIncidents, undefined, 'the host checks reach');
+  assert.deepEqual(notices, []);
+  Object.assign(p, { x: 152, y: 152 });
+  const random = Math.random;
+  try { Math.random = () => 0; approach.onHostMsg('guest', fail); } finally { Math.random = random; }
+  assert.equal(notices.at(-1).peer, 'guest');
+  assert.match(notices.at(-1).msg.text, /FUMBLE/);
+  scene.save = migrate(JSON.parse(JSON.stringify(save)));
+  const reopened = new Approach(scene);
+  const choices = (who) => reopened.options(npc, who);
+  assert.deepEqual(choices('michael').map((a) => a.id), ['apologize', 'talk', 'charm', 'pickpocket']);
+  assert.match(choices('michael').find((a) => a.id === 'charm').blocked, /caught you/);
+  assert.equal(choices('trevor').find((a) => a.id === 'charm').name, 'Ask for a favor');
+  assert.equal(choices('trevor').find((a) => a.id === 'charm').blocked, null);
+  reopened.onHostMsg('guest', { ...fail, kind: 'charm' });
+  assert.match(notices.at(-1).msg.text, /caught you/);
+  reopened.onHostMsg('guest', { ...fail, kind: 'apologize' });
+  assert.deepEqual(scene.save.world.npcIncidents[npc.id].michael.caughtPickpocket, { count: 1, open: false });
+  assert.deepEqual(choices('michael').map((a) => a.id), ['talk', 'charm', 'pickpocket']);
+  assert.equal(choices('michael').find((a) => a.id === 'charm').blocked, null);
+});
+
 test('regional boss intros preserve the saved Warden name', () => {
   const field = 'act1.boss.wardenName';
   const scene = { mode: 'host', save: { flags: {} }, time: { delayedCall() {} }, _bossIntro() {} };
@@ -1383,7 +3250,7 @@ test('regional boss intros preserve the saved Warden name', () => {
   CraftWorldScene.prototype._fx.call(scene, warden, { players: [] });
   assert.equal(scene.save.flags[field], warden.name);
 
-  const region = new Sim(MAPS_FOR_TEST.greenbelt, { seed: 'warden-name' });
+  const region = new Sim(MAPS_FOR_TEST.gb_dishes, { seed: 'warden-name' });   // Greenbelt's guardian stands in the dish room
   const boss = [...region.enemies.values()].find((e) => e.boss);
   region.addPlayer('host', 'trevor');
   Object.assign(region.players.get('host'), { x: boss.x - 32, y: boss.y });
@@ -1495,6 +3362,185 @@ test('procedural gear (task #39): procedural recipes roll seeded variants that c
   assert.equal(plain.roll, undefined);
 });
 
+test('Fab tuning charges its material once and equipping a specific build preserves rolls in a save', () => {
+  const id = 'item.phase_screen';
+  const idx = CRAFT_RECIPES.findIndex((r) => r.item === id);
+  const recipe = CRAFT_RECIPES[idx], wire = 'item.mat_wire';
+  const f = craftFixture(Array(Inv.SLOTS).fill(null));
+  f.scene.save.world = { seed: 'tuning' };
+  for (const [part, needed] of Object.entries(recipe.cost)) Inv.add(f.c, part, 3 * needed + 4);
+  Inv.add(f.c, 'item.mat_cell');
+  const craft = (tune) => CraftWorldScene.prototype._craft.call(f.scene, 'trevor', idx, tune);
+  const initialWire = Inv.count(f.c, wire);
+  craft('unknown'); craft(['cycle']);
+  assert.equal(Inv.count(f.c, wire), initialWire);
+  assert.equal(f.scene.save.world.gearMade, undefined);
+  craft('cycle');
+  const cycle = f.c.rolled.gadget;
+  assert.deepEqual(cycle, Rolls.rollGear('tuning', id, 0, 'gadget', 'cycle'));
+  assert.equal(Inv.count(f.c, wire), initialWire - recipe.cost[wire] - 1);
+  craft('output');
+  const outputSlot = f.c.inventory.findIndex((it) => it?.id === id);
+  const output = f.c.inventory[outputSlot].roll;
+  assert.equal(output.tune, 'output');
+  assert.ok(cycle.mods.gadgetCd < 0 && output.mods.gadgetCd > 0);
+  assert.ok(cycle.mods.gadgetEffect < 0 && output.mods.gadgetEffect > 0);
+  CraftWorldScene.prototype._equip.call(f.scene, 'trevor', id, outputSlot);
+  assert.equal(f.c.equipped.gadget, id);
+  assert.deepEqual(f.c.rolled.gadget, output);
+  assert.deepEqual(f.c.inventory.find((it) => it?.id === id).roll, cycle);
+  const save = newSave({ seed: 'tuning', rolls: {}, gameVersion: 't' });
+  save.party.trevor = f.c;
+  const loaded = migrate(JSON.parse(JSON.stringify(save))).party.trevor;
+  assert.equal(loaded.equipped.gadget, id);
+  assert.deepEqual(loaded.rolled.gadget, output);
+  assert.deepEqual(loaded.inventory.find((it) => it?.id === id).roll, cycle);
+  const locked = CRAFT_RECIPES.findIndex((r) => r.req);
+  for (const [part, needed] of Object.entries(CRAFT_RECIPES[locked].cost)) Inv.add(f.c, part, needed);
+  const before = JSON.stringify(f.c.inventory);
+  CraftWorldScene.prototype._craft.call(f.scene, 'trevor', locked);
+  assert.equal(JSON.stringify(f.c.inventory), before, 'host enforces the same recipe lock as the Fab menu');
+});
+
+test('a guest V press reaches the host once and recharge follows the model and exact build across swaps and travel', () => {
+  const save = newSave({ seed: 'gadget-coop', rolls: {}, gameVersion: 't' });
+  const map = MAPS_FOR_TEST.room631, sim = new Sim(map);
+  sim.addPlayer('host', 'trevor'); sim.addPlayer('guest', 'michael');
+  const guest = save.party.michael, screen = 'item.phase_screen';
+  const printed = Rolls.rollGear('gadget-coop', screen, 0, 'gadget', 'cycle');
+  guest.equipped.gadget = screen; guest.rolled = { gadget: printed };
+  const sent = [], local = [], handlers = {};
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', character: 'trevor', localId: 'host', map, sim, save, ready: true, acc: 0,
+    input2: { read: emptyInput }, remoteInputs: new Map(), events: { once() {} }, time: { addEvent() {} },
+    net: { on: (type, cb) => { handlers[type] = cb; }, broadcast: (msg) => sent.push(msg) },
+    children: { list: [] },
+    _gadgetFx: (ev) => local.push(ev), _handleInteract() {}, _render() {}, _tickActOneEnding() {},
+  });
+  host._wireNet(); host._syncParty();
+  const input = (gadget) => handlers.msg('guest', { t: 'input', inp: { ...emptyInput(), gadget } });
+  input(true); input(false);
+  assert.equal(host.remoteInputs.get('guest').gadget, true);
+  host.update(0, 50);
+  const pawn = sim.players.get('guest'), count = () => sent.filter((msg) => msg.t === 'gadgetFx').length;
+  const snapshot = () => sim.snapshot().players.find((p) => p.id === 'guest');
+  assert.equal(count(), 1); assert.equal(local[0].kind, 'screen');
+  assert.ok(snapshot().gadgetCd > 0);
+  assert.equal(host.remoteInputs.get('guest').gadget, false);
+  assert.equal(snapshot().gadget, screen);
+  const remaining = snapshot().gadgetCd;
+  guest.rolled.gadget = Rolls.rollGear('gadget-coop', screen, 1, 'gadget', 'output'); host._syncParty();
+  input(true); host.update(0, 50); assert.equal(count(), 1);
+  guest.equipped.gadget = 'item.patch_mesh'; delete guest.rolled.gadget; host._syncParty();
+  assert.equal(snapshot().gadgetCd, undefined, 'another model has its own ready state');
+  input(true); host.update(0, 50); assert.equal(local.at(-1).kind, 'patch'); assert.equal(count(), 2);
+  guest.equipped.gadget = screen; guest.rolled.gadget = printed; host._syncParty();
+  sim.setMap(map);
+  assert.ok(snapshot().gadgetCd > 0 && snapshot().gadgetCd <= remaining);
+
+  // A transfer of the used build hands the timer to the new wearer through the same roll object.
+  guest.equipped.gadget = 'item.vector_actuator'; delete guest.rolled.gadget;
+  save.party.trevor.equipped.gadget = screen; save.party.trevor.rolled = { gadget: printed };
+  host._syncParty();
+  assert.ok(sim.snapshot().players.find((p) => p.id === 'host').gadgetCd > 0);
+  host.input2.read = () => ({ ...emptyInput(), gadget: true });
+  host.stage = { active: true, onHostMsg: () => false, update() {} };
+  input(true); host.update(0, 50); assert.equal(count(), 2);
+  assert.equal(host._frozen({ ...emptyInput(), gadget: true }).gadget, false);
+  host.stage.active = false;
+  input(true); host.update(0, 50);
+  assert.equal(local.at(-1).kind, 'vector'); assert.equal(count(), 3);
+  assert.equal(pawn.gadget, 'item.vector_actuator');
+  host.comic = { active: true };
+  assert.equal(host._gadgetBlocked(), true);
+  assert.equal(host._frozen({ ...emptyInput(), gadget: true }).gadget, false);
+});
+
+test('simultaneous and staggered gadget support apply only the strongest nearby effect per recipient', () => {
+  const sim = new Sim(rotArena());
+  for (const id of ['weak', 'strong', 'ally']) sim.addPlayer(id, 'trevor');
+  const [weak, strong, ally] = sim.players.values();
+  weak.gadget = strong.gadget = 'item.patch_mesh';
+  weak.mods.gadgetEffect = -0.2; strong.mods.gadgetEffect = 0.25;
+  ally.hp = 40;
+  const cast = (ids) => sim.step(1 / 60, new Map(ids.map((id) => [id, { ...emptyInput(), gadget: true }])));
+  cast(['weak']); assert.equal(ally.hp, 53);
+  cast(['strong']); assert.equal(ally.hp, 60, 'the stronger patch only tops up the difference');
+  weak.gadget = strong.gadget = 'item.ground_loop'; ally.rot = 40;
+  cast(['weak', 'strong']);
+  assert.ok(Math.abs(ally.rot - 30) < 0.1, 'simultaneous ground pulses use only the strongest dose');
+  assert.equal(ally.hp, 60, 'unlike effects retain their own independently applied benefit');
+  sim.playTime += Gadget.GADGET_SUPPORT_WINDOW;
+  const fresh = 'fresh'; sim.addPlayer(fresh, 'manuel');
+  sim.players.get(fresh).gadget = 'item.patch_mesh';
+  cast([fresh]); assert.equal(ally.hp, 76, 'another application takes effect after the recipient window');
+});
+
+test('Vector Actuator shoves one ordinary contact and Arc Splicer coalesces overlapping hits', () => {
+  const scenario = () => {
+    const sim = new Sim(rotArena());
+    sim.addPlayer('a', 'trevor'); sim.addPlayer('b', 'michael');
+    for (const [id, x] of [['first', 178], ['second', 194]]) sim.enemies.set(id, {
+      id, x, y: 160, kind: 'enemy.rotling', hp: 100, cd: 9, hurtT: 0, kx: 0, ky: 0,
+    });
+    const cast = (...ids) => sim.step(1 / 60, new Map(ids.map((id) => [id, { ...emptyInput(), gadget: true }])));
+    return { sim, cast, a: sim.players.get('a'), b: sim.players.get('b'), first: sim.enemies.get('first'), second: sim.enemies.get('second') };
+  };
+  const vector = scenario(); vector.a.gadget = 'item.vector_actuator'; vector.cast('a');
+  assert.ok(vector.first.kx > 0 && !vector.second.kx);
+  assert.equal(vector.first.hp, 100);
+  const braced = scenario(); braced.a.gadget = 'item.vector_actuator'; braced.first.poiseT = 0.9; braced.cast('a');
+  assert.ok(!braced.first.kx && !braced.second.kx, 'a poised first contact resists the shove');
+  const arc = scenario(); arc.a.gadget = arc.b.gadget = 'item.arc_splicer';
+  arc.b.mods.gadgetEffect = 0.2; arc.cast('a', 'b');
+  assert.equal(arc.first.hp, 78);
+  assert.equal(arc.second.hp, 86);
+  assert.equal(arc.sim.events.filter((event) => event.t === 'gadgetCast').length, 2);
+  const mixed = scenario(); mixed.a.gadget = 'item.vector_actuator'; mixed.b.gadget = 'item.arc_splicer';
+  mixed.cast('a', 'b');
+  assert.ok(mixed.first.kx > 0 && mixed.first.hp === 82, 'arc damage preserves displacement from a different gadget');
+});
+
+test('melee and ranged tuning keep positive intervals and use the live item roll', () => {
+  const sim = new Sim(rotArena()); sim.addPlayer('p', 'trevor');
+  const p = sim.players.get('p');
+  const tuned = (id, kind, tune) => ({ id, roll: Rolls.rollGear('tuning', id, 0, kind, tune) });
+  const melee = tuned('item.rebar', 'melee', 'cycle');
+  sim.setMods('p', { swing: ITEMS[melee.id].swing, ...melee.roll.mods });
+  sim._melee(p);
+  assert.ok(Math.abs(p.meleeCd - (ITEMS[melee.id].swing.cooldown - 0.05)) < 1e-9);
+  p.mods.meleeCd = -1; sim._melee(p); assert.ok(p.meleeCd >= 0.12);
+  const range = tuned('item.nail_gun', 'gun', 'output');
+  sim.setMods('p', { gun: 1, gunStats: ITEMS[range.id].gun, ...range.roll.mods });
+  sim._fire(p);
+  assert.ok(p.shotCd >= 0.12 && p.shotCd >= ITEMS[range.id].gun.cooldown - 0.05);
+});
+
+test('gadget scans give a private reading from host state and leave all quest and loot flags alone', () => {
+  const map = MAPS_FOR_TEST.room631, sim = new Sim(map);
+  sim.addPlayer('guest', 'michael');
+  const box = map.objects.find((o) => o.id === 'obj.parts_bins');
+  Object.assign(sim.players.get('guest'), { x: box.x * 16 + 8, y: box.y * 16 + 8 });
+  const save = newSave({ seed: 'readings', rolls: {}, gameVersion: 't' });
+  const messages = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    localId: 'host', sim, map, save, net: { send: (to, msg) => messages.push([to, msg]) },
+  });
+  host._gadgetScan({ id: 'guest', kind: 'sniffer' });
+  assert.equal(messages.at(-1)[0], 'guest');
+  assert.match(messages.at(-1)[1].text, /Calibrate/);
+  assert.deepEqual(save.flags, {});
+  save.flags['act1.leadA.done'] = true;
+  host._gadgetScan({ id: 'guest', kind: 'sniffer' });
+  assert.match(messages.at(-1)[1].text, /Helium trail/);
+  host._gadgetScan({ id: 'guest', kind: 'survey' });
+  assert.equal(messages.at(-1)[1].label, box.label);
+  save.flags[`loot.${map.id}.${box.id}`] = true;
+  host._gadgetScan({ id: 'guest', kind: 'survey' });
+  assert.notEqual(messages.at(-1)[1].label, box.label);
+  assert.deepEqual(Object.keys(save.flags).sort(), ['act1.leadA.done', `loot.${map.id}.${box.id}`].sort());
+});
+
 const fullCraftBag = () => Array.from({ length: Inv.SLOTS }, () => ({ id: 'item.wooden_bat', qty: 1 }));
 test('crafting rejects a full bag without payment, a phantom equipped item or a success broadcast', () => {
   for (const selected of [0, 1]) {
@@ -1543,6 +3589,53 @@ test('slot inventory: stacks, backpack-first (hotbar only when full), remove, mo
   const full = { inventory: new Array(36).fill(null).map((_, i) => (i >= 9 ? { id: 'item.wooden_bat', qty: 1 } : null)) };
   Inv.add(full, 'item.energy_bar'); assert.equal(full.inventory[0].id, 'item.energy_bar', 'hotbar takes it once the backpack is full');
 });
+test('splitting a consumable stack moves the rounded-up half within the fixed inventory', () => {
+  const c = { inventory: new Array(Inv.SLOTS).fill(null) };
+  c.inventory[0] = { id: 'item.energy_bar', qty: 7 };
+  for (const index of [-1, Inv.SLOTS, undefined]) Inv.moveSlot(c, 0, index, true);
+  assert.equal(c.inventory[0].qty, 7);
+  assert.equal(c.inventory.length, Inv.SLOTS);
+  Inv.moveSlot(c, 0, 9, true);
+  assert.deepEqual([c.inventory[0].qty, c.inventory[9].qty], [3, 4]);
+});
+
+const { GuitarStands } = await import('../src/game/guitarStands.js');
+test('held stacks drop one, half or all as requested, and floor pickup preserves procedural rolls', () => {
+  const save = newSave({ seed: 'drops', rolls: {}, gameVersion: 'test' });
+  const sim = new Sim(rotArena()), c = save.party.trevor, receiver = save.party.michael;
+  sim.addPlayer('local', 'trevor');
+  sim.addPlayer('guest', 'michael');
+  const gameMenu = { held: 0, heldHalf: false, refresh() {} };
+  const scene = { sim, save, map: sim.map, mode: 'host', character: 'trevor', localId: 'local',
+    menu: 'inventory', gameMenu, time: { now: 0 }, _syncParty() {}, _toast() {}, _say() {},
+    _charOf: (peer) => sim.players.get(peer)?.character };
+  const stands = Object.assign(Object.create(GuitarStands.prototype), { s: scene });
+  c.inventory[0] = { id: 'item.energy_bar', qty: 8 };
+  stands._dropKey(false);
+  assert.equal(c.inventory[0].qty, 7);
+  assert.equal(stands.drops[0].qty, 1);
+  assert.equal(gameMenu.held, null);
+  stands.drop(0, false, true);
+  assert.equal(c.inventory[0].qty, 3);
+  gameMenu.held = 0;
+  stands._dropKey(true);
+  assert.equal(c.inventory[0], null);
+  assert.equal(stands.drops.reduce((total, drop) => total + drop.qty, 0), 8);
+
+  const roll = { mods: { melee: 3 } };
+  receiver.inventory[0] = { id: 'item.wooden_bat', qty: 1, roll };
+  stands.onHostMsg('guest', { t: 'drop', slot: undefined, all: true });
+  assert.equal(receiver.inventory[0].id, 'item.wooden_bat');
+  stands.onHostMsg('guest', { t: 'drop', slot: 0 });
+  const drop = stands.drops.find((d) => d.id === 'item.wooden_bat');
+  assert.deepEqual(drop.roll, roll);
+  stands.pickup('trevor', 'local', drop.n);
+  assert.deepEqual(c.inventory.find((s) => s?.id === drop.id)?.roll, roll);
+  c.inventory[0] = { id: 'item.wmata_fuses', qty: 1 };
+  stands.drop(0, true);
+  assert.equal(c.inventory[0].qty, 1);
+});
+
 test('schema 1 -> 2 migration: scrap becomes money, list inventory becomes 36 slots', () => {
   const old = newSave({ seed: 'm', rolls: {}, gameVersion: 't' });
   old.schemaVersion = 1; old.world.scrap = 10; delete old.world.money;
@@ -1663,6 +3756,56 @@ test('skill trees: valid links, capstone needs all three branches, mods sum, old
   assert.equal(migrateSkills(old, 'trevor'), 2); assert.equal(old.skillPoints, 3); assert.deepEqual(Object.keys(old.skills), ['tr.amp']);
 });
 
+test('the host validates discovery, level, room ownership, and points before equipping a saved R move', () => {
+  const { abilityOptions, selectedAbility, skillKnown } = SkillsP;
+  const save = newSave({ seed: 'discoveries', rolls: {}, gameVersion: 'test' });
+  const sim = new Sim(rotArena()), handlers = {};
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    character: 'trevor', localId: 'host', mode: 'host', save, sim, remoteInputs: new Map(), events: { once() {} }, time: { addEvent() {} },
+    net: { on: (type, fn) => { handlers[type] = fn; }, broadcast() {} }, _refreshMenu() {},
+  });
+  const peers = { trevor: 'host', manuel: 'guestM', michael: 'guestI' };
+  for (const [who, peer] of Object.entries(peers)) sim.addPlayer(peer, who);
+  host._wireNet();
+  for (const [who, peer] of Object.entries(peers)) {
+    const node = SKILL_TREE[who].nodes.find((n) => n.ability);
+    const c = save.party[who], learn = { t: 'skill', id: node.id }, equip = { t: 'equipR', id: node.ability };
+    const signature = selectedAbility(who, c);
+    c.level = 3;
+    c.skillPoints = 2;
+    assert.equal(skillKnown(c, node, save), false);
+    handlers.msg(peer, learn);
+    handlers.msg(peer, equip);
+    assert.equal(c.skillPoints, 2);
+    assert.equal(selectedAbility(who, c), signature);
+    if (node.reveal.quest) (save.world.quests ??= {})[node.reveal.quest] = { stage: 1, started: true, done: true };
+    else save.flags[node.reveal.flag] = true;
+    assert.ok(skillKnown(c, node, save));
+    handlers.msg(peer, learn);
+    assert.equal(c.skills[node.id], undefined, 'discovery still requires the minimum level');
+    c.level = 4;
+    handlers.msg(peer, learn);
+    handlers.msg(peer, learn);
+    handlers.msg(peer, equip);
+    assert.equal(c.skillPoints, 1);
+    assert.equal(c.skills[node.id], 1);
+    assert.deepEqual(abilityOptions(who, c), [signature, node.ability]);
+    const imported = migrate(JSON.parse(JSON.stringify(save)));
+    assert.equal(selectedAbility(who, imported.party[who]), node.ability);
+    const p = sim.players.get(peer);
+    assert.equal(p.activeAbility, node.ability);
+    p.skillCd = 4;
+    handlers.msg(peer, { t: 'equipR', id: signature });
+    assert.equal(p.activeAbility, signature);
+    assert.equal(p.skillCd, 4);
+  }
+  handlers.msg('guestM', { t: 'equipR', id: 'chord' });
+  assert.equal(sim.players.get('guestM').activeAbility, 'decoy');
+  handlers.msg('guestM', { t: 'input', inp: { ...emptyInput(), skill: true } });
+  handlers.msg('guestM', { t: 'input', inp: emptyInput() });
+  assert.equal(host.remoteInputs.get('guestM').skill, true, 'a later neutral frame does not swallow the R press');
+});
+
 // tts/item-names: in tests/run.js, add one test that loops over ITEMS in src/content/items.js
 // and checks that every item has a non-empty name and text. List any that don't.
 test('every item in ITEMS has a non-empty name and text', () => {
@@ -1759,6 +3902,469 @@ test('arriving through any door never lands you on an exit, and your first step 
   }
   assert.equal(bad.length, 0, bad.join('; '));
 });
+
+// Comic pages (hub #5, #47): the data, the layout math, and the host-authoritative page-turn mode.
+{
+  const comicMod = await import('../src/game/comic.js');
+  const CL = await import('../src/game/render/comicLayout.js');
+  const { makeComicView } = await import('../src/game/render/comicPage.js');
+  const { COMIC_TRIGGERS } = await import('../src/content/comics/index.js');
+  const testAsync = async (name, fn) => { try { await fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}\n     ${e.message}`); } };
+  const comicDir = new URL('../src/content/comics/', import.meta.url);
+  const comicIds = fs.readdirSync(comicDir).filter((f) => f.endsWith('.js') && f !== 'index.js').map((f) => f.slice(0, -3));
+  const atlasFrames = {};
+  for (const f of fs.readdirSync(new URL('../assets/sprites/', import.meta.url))) {
+    if (!f.endsWith('.json')) continue;
+    const a = JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${f}`, import.meta.url), 'utf8'));
+    atlasFrames[f.slice(0, -5)] = new Map(Object.entries(a.frames).map(([k, v]) => [k, { w: v.frame.w, h: v.frame.h }]));
+  }
+  const comics = {};
+  for (const id of comicIds) comics[id] = await comicMod.loadComic(id);
+
+  test('comics: every comic decodes and checks out (layouts, art frames, English and Spanish on every line)', () => {
+    assert.ok(comicIds.includes('demo') && comicIds.includes('flashback_1'), comicIds.join(', '));
+    for (const id of comicIds) {
+      const c = comics[id];
+      assert.ok(c, `${id} does not load`);
+      assert.equal(c.id, id, `${id}.js says its id is ${c.id}`);
+      assert.deepEqual(comicMod.checkComic(c, atlasFrames), [], id);
+      const lines = c.pages.flatMap((p) => p.panels.flatMap((n) => n.text ?? []));
+      assert.ok(lines.length > 0 && lines.every((t) => t.en?.trim() && t.es?.trim()), `${id}: a line without English or Spanish`);
+    }
+  });
+
+  test('comics: the story comic is sealed (ROT13 in the file, readable once decoded), its parts play alone, and every trigger has pages', () => {
+    const src = fs.readFileSync(new URL('flashback_1.js', comicDir), 'utf8');
+    assert.match(src, /export default "/);
+    assert.ok(!/"pages"|"panels"|"balloon"/.test(src), 'plaintext keys in the sealed file');
+    assert.equal(comicMod.decodeComic(comicMod.rot13(JSON.stringify({ id: 'x', pages: [1] }))).id, 'x');
+    assert.ok(comics.flashback_1.pages.every((p) => /^part_\d$/.test(p.tag)), 'every page has its part tag');
+    for (const t of comicMod.pagesFor(comics.flashback_1, 'part_3')) assert.equal(t.tag, 'part_3');
+    assert.equal(comicMod.pagesFor(comics.flashback_1, 'part_9').length, 0);
+    // placement: each part waits on its own story flag, the whole plays only assembled and locks the host the first time
+    const fb = comics.flashback_1, tags = fb.pages.map((p) => p.tag);
+    assert.deepEqual(Object.keys(fb.pieces ?? {}).sort(), [...tags].sort(), 'every part needs its own pickup flag');
+    assert.equal(new Set(Object.values(fb.pieces)).size, tags.length, 'two parts share a pickup flag');
+    assert.ok(fb.assembled?.needs && fb.assembled.firstSkippable === false, 'the whole comic must wait for assembly and lock the first playback');
+    assert.notEqual(fb.skippable, true, 'the story comic opted out of the unskippable default (Michael, PR #84)');
+    assert.equal(fb.paper ?? 'bone', 'bone', 'flashbacks are on bone-white paper (Michael, PR #84)');
+    assert.equal(comics.demo.skippable, true, 'the engine demo is not a story comic: it says it can be skipped');
+    // a part played alone can drop lines the assembled playback keeps, and lines waiting on a flag have a fallback
+    const count = (pages) => pages.reduce((n, p) => n + p.panels.reduce((m, x) => m + (x.text?.length ?? 0), 0), 0);
+    const whole = comicMod.pagesFor(fb, null, new Set()), first = comicMod.pagesFor(fb, tags[0], new Set());
+    assert.ok(count(first) < count([whole[0]]), 'the first part plays alone with every assembled-only line');
+    const waiting = fb.pages.flatMap((p) => p.panels.flatMap((x) => (x.text ?? []).filter((t) => t.needs)));
+    assert.ok(waiting.length > 0 && waiting.every((t) => t.else?.en && t.else?.es), 'a line waiting on a flag has no fallback');
+    for (const t of COMIC_TRIGGERS) {
+      assert.ok(comics[t.id], `trigger for a comic that doesn't exist: ${t.id}`);
+      assert.ok(typeof t.flag === 'string' && t.flag, `trigger for ${t.id} has no flag`);
+      assert.ok(comicMod.pagesFor(comics[t.id], t.tag ?? null).length > 0, `trigger ${t.id}:${t.tag} plays no pages`);
+      assert.ok(!comics[t.id].pieces || t.tag, `trigger for ${t.id} would play a comic in pieces whole`);
+    }
+  });
+
+  test('comics: grids sit inside the live area without overlapping, and the renderer paints only palette colours', () => {
+    for (const [name, cells] of Object.entries(CL.LAYOUTS)) {
+      for (const [x, y, w, h] of cells) assert.ok(x >= 0 && y >= 0 && x + w <= CL.PAGE.w && y + h <= CL.PAGE.h, `${name}: ${[x, y, w, h]}`);
+      for (let i = 0; i < cells.length; i++) for (let j = i + 1; j < cells.length; j++) {
+        const [a, b] = [cells[i], cells[j]];
+        const apart = a[0] + a[2] + CL.GUTTER <= b[0] || b[0] + b[2] + CL.GUTTER <= a[0] || a[1] + a[3] + CL.GUTTER <= b[1] || b[1] + b[3] + CL.GUTTER <= a[1];
+        assert.ok(apart, `${name}: cells ${i} and ${j} touch or overlap`);
+      }
+    }
+    const pal = JSON.parse(fs.readFileSync(new URL('../tools/art/palette.json', import.meta.url), 'utf8'));
+    for (const [k, v] of Object.entries(CL.PAL)) assert.equal(pal[k], v, `comicLayout PAL.${k}`);
+    const allowed = new Set(Object.values(CL.PAL));
+    const hex = (d, o) => `#${[d[o], d[o + 1], d[o + 2]].map((n) => n.toString(16).padStart(2, '0')).join('')}`;
+    for (const bg of Object.keys(CL.BACKGROUNDS)) {
+      const d = CL.bgPixels(bg, 37, 29, 7);
+      for (let o = 0; o < d.length; o += 4) assert.ok(allowed.has(hex(d, o)) && d[o + 3] === 255, `${bg} paints ${hex(d, o)}`);
+    }
+    for (const st of Object.values(CL.LETTERING)) for (const k of ['fill', 'line', 'text']) assert.ok(CL.PAL[st[k]], `lettering colour ${st[k]}`);
+    for (const p of Object.values(CL.PAPER)) for (const k of ['ground', 'ink', 'folio', 'back']) assert.ok(CL.PAL[p[k]], `paper colour ${p[k]}`);
+  });
+
+  test('comics: art is cropped to its panel, balloon tails stop at the frame, keys and the controls line', () => {
+    assert.deepEqual(CL.cropFor(-8, 0, 48, 48, 2, 100, 100), { x: 4, y: 0, w: 44, h: 48, full: false });
+    assert.equal(CL.cropFor(0, 0, 48, 48, 2, 100, 100).full, true);
+    assert.equal(CL.cropFor(120, 0, 48, 48, 1, 100, 100), null);
+    const t = CL.tailFor({ x: 10, y: 10, w: 60, h: 20 }, [-40, 200], 100, 100);
+    assert.equal(t.side, 'bottom'); assert.deepEqual(t.tip, [0, 100]);
+    assert.equal(CL.tailFor({ x: 10, y: 50, w: 30, h: 20 }, [90, 60], 100, 100).side, 'right');
+    assert.deepEqual(CL.clampBox(-5, 95, 40, 20, 100, 100), { x: 3, y: 77 });
+    for (const k of ['e', 'E', ' ', 'Enter', 'ArrowRight']) assert.equal(comicMod.actionForKey(k), 'next', k);
+    for (const k of ['ArrowLeft', 'Backspace']) assert.equal(comicMod.actionForKey(k), 'back', k);
+    assert.equal(comicMod.actionForKey('Escape'), 'skip'); assert.equal(comicMod.actionForKey('q'), null);
+    // A key the page uses stays on the page, so the closing Esc / E / Space never reaches the world.
+    const got = [], view = makeComicView(null, (a) => got.push(a));
+    const key = (k, repeat = false) => ({ key: k, repeat, stopped: false, stopPropagation() { this.stopped = true; } });
+    view.state = { comic: {}, pages: [], page: 0, opts: {} };
+    const esc = key('Escape'); view._onKey(esc); assert.ok(esc.stopped, 'Esc on a page reached the world'); assert.deepEqual(got, ['skip']);
+    const held = key('e', true); view._onKey(held); assert.ok(held.stopped); assert.deepEqual(got, ['skip'], 'a held key turned a page');
+    const other = key('i'); view._onKey(other); assert.ok(!other.stopped, 'a key the page does not use was kept from the world');
+    view.state = null; const after = key('d'); view._onKey(after); assert.ok(!after.stopped && got.length === 1, 'keys were kept from the world after the page closed');
+    assert.match(CL.footerHint('en', { index: 0, total: 3, host: true, skippable: true }), /next.*Esc: skip/);
+    assert.ok(!/back/.test(CL.footerHint('en', { index: 0, total: 3, host: true, skippable: true })), 'no back on the first page');
+    assert.match(CL.footerHint('en', { index: 2, total: 3, host: true, skippable: false }), /done.*back/);
+    assert.ok(!/Esc/.test(CL.footerHint('en', { index: 1, total: 3, host: true, skippable: false })));
+    // only the host turns the page: a guest's line says so, and that Esc closes it on their own screen
+    assert.equal(CL.footerHint('en', { index: 1, total: 3, host: false, skippable: false }), 'The host turns the page  ·  Esc: close');
+    assert.equal(CL.footerHint('es', { index: 1, total: 3, host: false, skippable: false }), 'El anfitrión pasa la página  ·  Esc: cerrar');
+    assert.ok(!/next|back|siguiente|atrás/.test(CL.footerHint('en', { index: 1, total: 3, host: false, skippable: true })), 'a guest was offered a turn');
+    assert.equal(CL.letterText({ kind: 'balloon', en: 'ok', es: 'está bien' }, 'es'), 'ESTÁ BIEN');
+    assert.equal(CL.letterText({ kind: 'sfx', en: 'krsh', es: 'krsh' }, 'en'), 'krsh');
+    const bad = { id: 'bad', pages: [{ layout: 'grid4', panels: [{ rect: [400, 0, 100, 40], art: [{ frame: 'nope', scale: 1.5 }], text: [{ kind: 'balloon', en: 'hi' }] }] }] };
+    const probs = comicMod.checkComic(bad, atlasFrames).join(' | ');
+    for (const want of ['outside the live area', 'scale must be', 'no frame nope', 'no Spanish']) assert.ok(probs.includes(want), `missing "${want}" in: ${probs}`);
+  });
+
+  // A stand-in world and drawing side, so the mode's rules run without Phaser.
+  const fakeView = () => { const v = { calls: [], open: (c, pages, page, o) => { v.calls.push(['open', page, o.host]); v.last = { pages, o }; }, turnTo: (p, d) => v.calls.push(['turn', p, d]), close: () => v.calls.push(['close']), destroy() {} }; return v; };
+  // sent: ['all', msg] for a host broadcast, [peer, msg] for a host's message to one guest, ['host', msg] for a guest's
+  const fakeWorld = (mode) => { const w = { mode, time: { now: 0 }, save: { flags: {} }, sent: [], net: { broadcast: (m) => w.sent.push(['all', m]), send: (a, b) => w.sent.push(b === undefined ? ['host', a] : [a, b]) } }; return w; };
+  const threePages = { id: 'tst', pages: [{ layout: 'splash', panels: [{}] }, { layout: 'splash', tag: 'b', panels: [{}] }, { layout: 'splash', panels: [{}] }] };
+  const mkComic = (mode) => { const w = fakeWorld(mode), v = fakeView(), c = new comicMod.Comic(w, v); c.load = async () => threePages; return { w, v, c }; };
+
+  await testAsync('comic mode: one page at a time, a beat before a turn counts, back stops at the first page, the last turn ends it', async () => {
+    const { w, v, c } = mkComic('solo');
+    let done = 0;
+    assert.equal(await c.play('tst', { onDone: () => done++ }), true);
+    assert.ok(c.active); assert.deepEqual(v.calls[0], ['open', 0, true]);
+    assert.equal(c.input('next'), false, 'turned before the page had been up for a beat');
+    w.time.now = comicMod.DWELL_MS; assert.equal(c.input('next'), true); assert.equal(c.cur.page, 1);
+    w.time.now += 100; assert.equal(c.input('next'), false, 'a mashed key turned two pages');
+    w.time.now += comicMod.DWELL_MS; assert.equal(c.input('back'), true); assert.equal(c.cur.page, 0);
+    w.time.now += comicMod.DWELL_MS; assert.equal(c.input('back'), false, 'went back past the first page');
+    for (let i = 0; i < 3; i++) { w.time.now += comicMod.DWELL_MS; c.input('next'); }
+    assert.ok(!c.active && done === 1, 'the turn after the last page ends it, once');
+    assert.deepEqual(v.calls.map((x) => x[0]), ['open', 'turn', 'turn', 'turn', 'turn', 'close']);
+    assert.equal(w.sent.length, 0, 'solo sends nothing');
+    assert.equal(await c.play('tst', { tag: 'b' }), true); assert.equal(c.cur.pages.length, 1, 'a tag plays only its pages');
+    // story comics are unskippable by default (Michael, PR #84): Esc doesn't end one
+    assert.equal(v.last.o.skippable, false); assert.equal(c.input('skip'), false); assert.ok(c.active, 'Esc skipped a story comic');
+    c.end(); assert.ok(!c.active);
+    const free = mkComic('solo'); free.c.load = async () => ({ ...threePages, skippable: true });
+    await free.c.play('tst'); assert.equal(free.v.last.o.skippable, true);
+    assert.equal(free.c.input('skip'), true); assert.ok(!free.c.active, 'Esc did not end a comic marked skippable');
+    const locked = mkComic('solo'); locked.c.load = async () => ({ ...threePages, skippable: false });
+    await locked.c.play('tst'); assert.equal(locked.c.input('skip'), false); assert.ok(locked.c.active, 'an unskippable comic stays up');
+    assert.equal(await c.play('Bad-Id'), false);
+  });
+
+  await testAsync('comic mode in co-op: only the host turns the page, guests mirror it and can leave on their own screen', async () => {
+    const H = mkComic('host'), host = H.c, hw = H.w;
+    await host.play('tst');
+    const show = () => hw.sent.filter(([, m]) => m.op === 'show').map(([, m]) => m);
+    assert.equal(show().length, 1); const run = show()[0].run;
+    assert.deepEqual({ ...show()[0], run: 0 }, { t: 'comic', op: 'show', id: 'tst', run: 0, page: 0, tag: null });
+    hw.time.now = 1000;
+    // a guest's turn (from a build before host-only turning) is ignored, however well formed (Michael, PR #84)
+    assert.equal(host.onHostMsg('g1', { t: 'comic', op: 'turn', run, from: 0, dir: 1 }), true, 'comic messages are still consumed');
+    host.onHostMsg('g2', { t: 'comic', op: 'turn', run, from: 0, dir: -1 });
+    assert.equal(host.cur.page, 0, 'a guest turned the page'); assert.equal(show().length, 1, 'a guest\'s turn told the party something');
+    // the host turns it for everyone
+    assert.equal(host.input('next'), true); assert.equal(host.cur.page, 1); assert.equal(show().length, 2); assert.equal(show().at(-1).page, 1);
+    hw.time.now = 2000;
+    host.onHostMsg('g1', { t: 'comic', op: 'turn', run, from: 1, dir: 1 }); assert.equal(host.cur.page, 1, 'a guest turned the page');
+    assert.equal(host.onHostMsg('g1', { t: 'stage', op: 'ask' }), false, 'other messages pass through');
+    // heartbeat: the host repeats the page every second
+    const before = show().length; hw.time.now = 2000 + comicMod.BEAT_MS; host.tick(); assert.equal(show().length, before + 1);
+
+    // a guest: the host's show opens it at that page, later shows turn it, end closes it
+    const G = mkComic('client'), guest = G.c;
+    assert.equal(guest.onClientMsg({ t: 'comic', op: 'show', id: 'tst', run, page: 1, tag: null }), true);
+    await new Promise((r) => setTimeout(r, 0));
+    assert.ok(guest.active); assert.deepEqual(G.v.calls[0], ['open', 1, false]); assert.equal(G.v.last.o.skippable, true, 'a guest cannot close their own screen');
+    assert.equal(guest.input('next'), false); assert.equal(guest.input('back'), false);
+    assert.equal(G.w.sent.length, 0, 'a guest asked the host to turn'); assert.equal(guest.cur.page, 1, 'a guest turned their own page');
+    guest.onClientMsg({ t: 'comic', op: 'show', id: 'tst', run, page: 2, tag: null }); assert.deepEqual(G.v.calls.at(-1), ['turn', 2, 1]);
+    guest.onClientMsg({ t: 'comic', op: 'show', id: 'tst', run, page: 2, tag: null }); assert.equal(G.v.calls.length, 2, 'a heartbeat for the same page redraws nothing');
+    guest.input('skip'); assert.ok(!guest.active, 'a guest closes it on their own screen');
+    assert.equal(G.w.sent.length, 0, 'and tells nobody'); assert.ok(host.active, 'a guest closing their screen ended it for the host');
+    guest.onClientMsg({ t: 'comic', op: 'show', id: 'tst', run, page: 2, tag: null }); await new Promise((r) => setTimeout(r, 0));
+    assert.ok(!guest.active, 'the heartbeat brought back a comic the guest closed');
+    guest.onClientMsg({ t: 'comic', op: 'end', run });
+    guest.onClientMsg({ t: 'comic', op: 'show', id: 'tst', run: 'next', page: 0, tag: null }); await new Promise((r) => setTimeout(r, 0));
+    assert.ok(guest.active, 'the next comic opens again'); guest.onClientMsg({ t: 'comic', op: 'end', run: 'next' }); assert.ok(!guest.active);
+    assert.equal(guest.onClientMsg({ t: 'comic', op: 'show', id: '../x', run: 'r', page: 0 }), true); assert.equal(guest.pending, null, 'a bad id loaded');
+
+    // a story comic: the host's Esc doesn't skip it; turning past the last page ends it for everyone
+    assert.equal(host.input('skip'), false); assert.ok(host.active, 'the host skipped a story comic');
+    assert.ok(!hw.sent.some(([, m]) => m.op === 'end'), 'the host\'s Esc ended a story comic for everyone');
+    hw.time.now = 3000; host.input('next'); hw.time.now = 4000; host.input('next');
+    assert.ok(!host.active); assert.ok(hw.sent.some(([, m]) => m.op === 'end' && m.run === run), 'the end was not sent');
+    // a comic marked skippable: the host's Esc ends it for everyone
+    const S = mkComic('host'); S.c.load = async () => ({ ...threePages, skippable: true });
+    await S.c.play('tst'); const srun = S.c.cur.run;
+    assert.equal(S.c.input('skip'), true); assert.ok(!S.c.active && S.w.sent.some(([, m]) => m.op === 'end' && m.run === srun), 'the host\'s Esc did not end a skippable comic for everyone');
+    guest.play('tst'); assert.deepEqual(G.w.sent.at(-1), ['host', { t: 'comic', op: 'ask', id: 'tst', tag: null }]);
+  });
+
+  await testAsync('comic mode: in testing (?test) or spoiler-free (?spoilerfree) mode the host can skip a story comic, a locked first playback included', async () => {
+    for (const q of ['?test', '?spoilerfree', '?comic=demo&test', '?test=1']) assert.equal(comicMod.skipAnyMode(q), true, q);
+    for (const q of ['', '?comic=demo', '?mute', '?testing', '?spoiler']) assert.equal(comicMod.skipAnyMode(q), false, q);
+    const Q = globalThis.location;
+    try {
+      for (const search of ['?test', '?spoilerfree']) {
+        globalThis.location = { search };
+        const H = mkComic('host'), host = H.c;
+        assert.equal(await host.play('tst'), true); assert.equal(H.v.last.o.skippable, true, `${search}: the host was not offered Esc`);
+        const run = host.cur.run;
+        assert.equal(host.input('skip'), true, `${search}: the host's Esc did not skip a story comic`); assert.ok(!host.active);
+        assert.ok(H.w.sent.some(([, m]) => m.op === 'end' && m.run === run), `${search}: the skip was not sent to everyone`);
+        // the first whole playback of a comic in pieces, locked otherwise
+        host.load = async () => ({ ...threePages, pieces: true, assembled: { firstSkippable: false } });
+        assert.equal(await host.play('tst', { assembled: true }), true); assert.equal(host.input('skip'), true, `${search}: the locked first playback stayed locked`);
+      }
+      // without either, a fresh world can't skip it (a mode is read when the world starts)
+      globalThis.location = { search: '?mute' };
+      const P = mkComic('host'); assert.equal(await P.c.play('tst'), true); assert.equal(P.c.input('skip'), false, 'skippable without a mode');
+    } finally { if (Q === undefined) delete globalThis.location; else globalThis.location = Q; }
+  });
+
+  await testAsync('comic mode: a guest\'s ask plays only what this save has already played (on their screen) or triggered (for everyone)', async () => {
+    const H = mkComic('host'), host = H.c, f = H.w.save.flags;
+    const ask = async (m) => { const r = host.onHostMsg('g1', { t: 'comic', op: 'ask', ...m }); await new Promise((res) => setTimeout(res, 0)); return r; };
+    // nothing played yet and no trigger flag: ignored, so nobody can open pages the party hasn't reached
+    assert.equal(await ask({ id: 'tst', tag: 'b' }), true, 'comic messages are still consumed');
+    assert.ok(!host.active, 'a guest opened an unplayed, untriggered comic for everyone');
+    await ask({ id: 'tst', tag: null }); assert.ok(!host.active, 'a guest opened the whole comic before it was played');
+    await ask({ id: 'tst', tag: 'Not A Tag' }); assert.ok(!host.active, 'a bad tag fell back to the whole comic');
+    await ask({ id: 'tst', tag: 7 }); assert.ok(!host.active);
+    assert.equal(H.w.sent.length, 0, 'an ignored ask told the party something');
+    // the host plays the piece itself (a story beat): recorded in the save, and from then on a guest can ask for it again,
+    // as a replay on that guest's screen only (trevor, general #174)
+    assert.equal(await host.play('tst', { tag: 'b' }), true); assert.equal(f[comicMod.playedKey('tst', 'b')], true);
+    host.end();
+    const sentBefore = H.w.sent.length;
+    assert.equal(host._ask({ id: 'tst', tag: 'b' }, 'g1'), true, 'a played comic was not honoured'); await new Promise((res) => setTimeout(res, 0));
+    assert.ok(!host.active, 'a guest\'s replay opened on the host');
+    assert.deepEqual(H.w.sent.slice(sentBefore), [['g1', { t: 'comic', op: 'replay', id: 'tst', tag: 'b' }]], 'the replay did not go to the guest who asked, and only to them');
+    assert.equal(f[comicMod.playedKey('tst')], undefined); await ask({ id: 'tst' }); assert.ok(!host.active, 'playing a piece unlocked the whole');
+    assert.equal(H.w.sent.length, sentBefore + 1, 'playing a piece unlocked a replay of the whole');
+    // a comic whose trigger flag is set can be asked for before it has played
+    COMIC_TRIGGERS.push({ id: 'tst', flag: 'test.comic.ask', tag: null });
+    try {
+      await ask({ id: 'tst' }); assert.ok(!host.active, 'honoured before the trigger flag');
+      f['test.comic.ask'] = true; await ask({ id: 'tst' }); assert.ok(host.active && host.cur.tag === null, 'a triggered comic was not honoured');
+      host.end();
+    } finally { COMIC_TRIGGERS.pop(); }
+    // a trigger placed on one map isn't due anywhere else, so a guest can't move it off its map
+    COMIC_TRIGGERS.push({ id: 'tst', flag: 'test.comic.mapped', tag: 'b', map: 'test_roof' });
+    try {
+      H.w.map = { id: 'test_lobby' }; f['test.comic.mapped'] = true; delete f[comicMod.playedKey('tst', 'b')];
+      await ask({ id: 'tst', tag: 'b' }); assert.ok(!host.active, 'a guest played a map trigger off its map');
+      H.w.map = { id: 'test_roof' }; await ask({ id: 'tst', tag: 'b' }); assert.ok(host.active, 'a due map trigger was not honoured');
+      host.end();
+    } finally { COMIC_TRIGGERS.pop(); delete H.w.map; }
+    // an ask is never queued: it can't push a story's own comic (and its onDone) out of the queue
+    let storyDone = false;
+    H.w.dlg = {}; H.w.dlgFree = false;
+    assert.equal(await host.play('tst', { tag: 'b', onDone: () => { storyDone = true; } }), false); assert.equal(host.queued?.tag, 'b');
+    assert.equal(f[comicMod.playedKey('tst')], true); await ask({ id: 'tst' });
+    assert.equal(host.queued?.tag, 'b', 'a guest\'s ask replaced the story\'s queued comic'); assert.ok(host.queued.onDone);
+    H.w.dlg = null; host.tick(); await new Promise((r) => setTimeout(r, 0));
+    assert.ok(host.active && host.cur.tag === 'b', 'the story\'s queued comic did not play');
+    await ask({ id: 'tst' }); assert.equal(host.cur.tag, 'b', 'an ask cut into a page already up');
+    host.end(); assert.ok(storyDone, 'the story\'s onDone never fired');
+    // the debug param still works for the host itself (and records nothing); a guest's only asks
+    const Q = globalThis.location;
+    globalThis.location = { search: '?comic=tst:b' };
+    try {
+      const D = fakeWorld('host'); D.time.delayedCall = (ms, fn) => setTimeout(fn, 0);
+      const dc = new comicMod.Comic(D, fakeView()); dc.load = async () => threePages; await new Promise((r) => setTimeout(r, 5));
+      assert.ok(dc.active && dc.cur.tag === 'b', 'the debug param did not play for the host'); assert.deepEqual(D.save.flags, {}, 'a debug play was recorded');
+      assert.equal(dc.input('skip'), false, 'the debug param alone made a story comic skippable'); dc.end();
+      globalThis.location = { search: '?comic=tst:b&test' };
+      const T = fakeWorld('host'); T.time.delayedCall = (ms, fn) => setTimeout(fn, 0);
+      const tc = new comicMod.Comic(T, fakeView()); tc.load = async () => threePages; await new Promise((r) => setTimeout(r, 5));
+      assert.ok(tc.active && tc.cur.tag === 'b', 'the debug param stopped working with ?test'); assert.equal(tc.input('skip'), true); assert.ok(!tc.active);
+      globalThis.location = { search: '?comic=tst:b' };
+      const C = fakeWorld('client'); C.time.delayedCall = (ms, fn) => fn();
+      new comicMod.Comic(C, fakeView());
+      assert.deepEqual(C.sent.at(-1), ['host', { t: 'comic', op: 'ask', id: 'tst', tag: 'b' }], 'a guest\'s debug param skipped the host');
+    } finally { if (Q === undefined) delete globalThis.location; else globalThis.location = Q; }
+  });
+
+  await testAsync('comic mode: a comic in pieces plays each piece once earned, the whole only assembled, and the first whole playback locks the host only', async () => {
+    const parts = {
+      id: 'pcs', skippable: true, pieces: { one: 'test.got.one', two: 'test.got.two' }, assembled: { needs: 'test.all', firstSkippable: false },
+      pages: [
+        { layout: 'splash', tag: 'one', panels: [{ text: [
+          { kind: 'caption', en: 'a', es: 'a' },
+          { kind: 'balloon', en: 'b', es: 'b', only: 'assembled' },
+          { kind: 'balloon', en: 'c', es: 'c', only: 'piece' },
+          { kind: 'balloon', en: 'Name. d', es: 'Nombre. d', needs: 'test.name', else: { en: 'd', es: 'd' } },
+          { kind: 'balloon', en: 'e', es: 'e', needs: ['test.x', 'test.name'] },
+        ] }] },
+        { layout: 'splash', tag: 'two', panels: [{}] },
+      ],
+    };
+    assert.deepEqual(comicMod.checkComic(parts), []);
+    assert.deepEqual(comicMod.gatesOf(parts), ['test.name', 'test.x']);
+    const H = mkComic('host'), host = H.c, f = H.w.save.flags, v = H.v;
+    host.load = async () => parts;
+    const lines = () => v.last.pages[0].panels[0].text.map((t) => t.en);
+    // a piece waits for its pickup; then it plays alone, without the assembled-only line and without the name
+    assert.equal(await host.play('pcs', { tag: 'one' }), false, 'a piece played before it was earned');
+    f['test.got.one'] = true;
+    assert.equal(await host.play('pcs', { tag: 'one' }), true);
+    assert.deepEqual(lines(), ['a', 'c', 'd']); assert.equal(v.last.o.skippable, true);
+    assert.ok(!('open' in H.w.sent.at(-1)[1]), 'sent flags nobody has');
+    host.end();
+    // the whole comic: never without { assembled }, never before assembled.needs
+    assert.equal(await host.play('pcs'), false, 'the whole played without being assembled');
+    assert.equal(await host.play('pcs', { assembled: true }), false, 'the whole played before its flag');
+    f['test.all'] = true; f['test.name'] = true;
+    assert.equal(await host.play('pcs', { assembled: true }), true);
+    assert.equal(v.last.pages.length, 2); assert.deepEqual(lines(), ['a', 'b', 'Name. d', 'e']);
+    const show = H.w.sent.at(-1)[1]; assert.deepEqual(show.open, [0], 'the guests were not told which lines are unlocked');
+    assert.equal(v.last.o.skippable, false); assert.equal(host.input('skip'), false); assert.ok(host.active, 'the host skipped the first whole playback');
+    // a guest still closes their own screen, and sees what the host sees
+    const G = mkComic('client'); G.c.load = async () => parts;
+    G.c.onClientMsg(show); await new Promise((r) => setTimeout(r, 0));
+    assert.deepEqual(G.v.last.pages[0].panels[0].text.map((t) => t.en), ['a', 'b', 'Name. d', 'e']);
+    assert.equal(G.v.last.o.skippable, true); G.c.input('skip'); assert.ok(!G.c.active, 'a guest could not close the first whole playback');
+    host.cur.at = -1e9; host.input('next'); host.cur.at = -1e9; host.input('next'); assert.ok(!host.active);
+    // later whole playbacks can be skipped
+    assert.equal(await host.play('pcs', { assembled: true }), true); assert.equal(v.last.o.skippable, true);
+    host.input('skip'); assert.ok(!host.active);
+    // a broken setup is caught by the checks
+    const bad = { id: 'bad', skippable: 'yes', pieces: { nope: 1 }, assembled: { needs: '', firstSkippable: 'no' }, pages: [{ layout: 'splash', panels: [{ text: [{ kind: 'balloon', en: 'x', es: 'x', only: 'never', needs: [''], else: { en: 'y' } }] }] }] };
+    const probs = comicMod.checkComic(bad).join(' | ');
+    for (const want of ['skippable must be', 'no page has', 'pieces.nope', 'assembled.needs', 'firstSkippable', 'only must be', 'needs must name', 'else: no Spanish']) assert.ok(probs.includes(want), `missing "${want}" in: ${probs}`);
+  });
+
+  await testAsync('comic mode: the host can skip a replay of a comic this save has played; a first viewing stays unskippable (trevor, general #174)', async () => {
+    const H = mkComic('host'), host = H.c, f = H.w.save.flags, v = H.v;
+    const readThrough = () => { while (host.active) { host.cur.at = -1e9; host.input('next'); } };
+    const ended = (run) => H.w.sent.some(([to, m]) => to === 'all' && m.op === 'end' && m.run === run);
+    // a first viewing keeps Michael's default: no Esc for the host, and the controls line doesn't offer it
+    assert.equal(await host.play('tst', { tag: 'b' }), true); assert.equal(v.last.o.skippable, false, 'a first viewing was offered Esc');
+    assert.ok(!/Esc/.test(CL.footerHint('en', { index: 0, total: 1, host: true, skippable: v.last.o.skippable })));
+    assert.equal(host.input('skip'), false); assert.ok(host.active, 'the host skipped a first viewing');
+    readThrough(); assert.equal(f[comicMod.playedKey('tst', 'b')], true);
+    // the same piece again is a replay: the host can Esc out of it, for everyone, and the controls line says so
+    assert.equal(await host.play('tst', { tag: 'b' }), true); assert.equal(v.last.o.skippable, true, 'a replay was not offered Esc');
+    assert.match(CL.footerHint('en', { index: 0, total: 1, host: true, skippable: v.last.o.skippable }), /Esc: skip/);
+    let run = host.cur.run;
+    assert.equal(host.input('skip'), true, 'the host could not skip a replay'); assert.ok(!host.active && ended(run), 'the skip did not end the replay for everyone');
+    // a played piece doesn't make the whole comic a replay: its first viewing is still unskippable
+    assert.equal(await host.play('tst'), true); assert.equal(host.input('skip'), false, 'playing a piece made the whole skippable'); readThrough();
+    assert.equal(await host.play('tst'), true); run = host.cur.run; assert.equal(host.input('skip'), true); assert.ok(ended(run));
+    // a story comic in pieces: the first whole playback stays locked (assembled.firstSkippable: false), a replay of it doesn't
+    const P = mkComic('host'); P.c.load = async () => ({ ...threePages, pieces: true, assembled: { firstSkippable: false } });
+    assert.equal(await P.c.play('tst', { assembled: true }), true); assert.equal(P.c.input('skip'), false, 'the first whole playback was skippable');
+    P.c.end(); assert.equal(await P.c.play('tst', { assembled: true }), true); assert.equal(P.v.last.o.skippable, true);
+    assert.equal(P.c.input('skip'), true, 'the host could not skip a replay of the whole'); assert.ok(!P.c.active);
+    // solo too, and a save that played it in an earlier session counts (the flag is in the save)
+    const S = mkComic('solo'); S.w.save.flags[comicMod.playedKey('tst')] = true;
+    assert.equal(await S.c.play('tst'), true); assert.equal(S.c.input('skip'), true); assert.ok(!S.c.active);
+    // a fresh save, no ?test / ?spoilerfree: the story default holds
+    const F = mkComic('solo'); assert.equal(await F.c.play('tst'), true); assert.equal(F.c.input('skip'), false); assert.ok(F.c.active);
+  });
+
+  await testAsync('comic mode: a guest\'s ask for a played comic replays on their own screen only, nothing broadcast; an unplayed one is still ignored', async () => {
+    const tick = () => new Promise((r) => setTimeout(r, 0));
+    const parts = { id: 'pcs', pieces: { one: 'test.got.one', two: 'test.got.two' }, pages: [
+      { layout: 'splash', tag: 'one', panels: [{ text: [{ kind: 'balloon', en: 'Name.', es: 'Nombre.', needs: 'test.name', else: { en: '...', es: '...' } }] }] },
+      { layout: 'splash', tag: 'two', panels: [{}] },
+      { layout: 'splash', tag: 'one', panels: [{}] },
+    ] };
+    const H = mkComic('host'), host = H.c, hf = H.w.save.flags; host.load = async () => parts;
+    const G = mkComic('client'), guest = G.c; guest.load = async () => parts;
+    // the wire, by hand: what the guest sent last reaches the host as from g1; what the host sent to g1 since `from` reaches the guest
+    const askHost = async () => { const [to, m] = G.w.sent.at(-1); assert.equal(to, 'host'); host.onHostMsg('g1', m); await tick(); };
+    const toGuest = async (from) => { for (const [to, m] of H.w.sent.slice(from)) if (to === 'g1' || to === 'all') guest.onClientMsg(m); await tick(); };
+    const lines = () => G.v.last.pages[0].panels[0].text.map((t) => t.en);
+    // nothing played and no trigger: the ask is ignored, and nothing opens anywhere
+    guest.play('pcs', { tag: 'one' }); assert.deepEqual(G.w.sent.at(-1), ['host', { t: 'comic', op: 'ask', id: 'pcs', tag: 'one' }]);
+    await askHost(); assert.ok(!host.active && !guest.active, 'a guest opened an unplayed, untriggered comic'); assert.equal(H.w.sent.length, 0, 'an ignored ask sent something');
+    // the story plays piece one for everyone; the save records it
+    hf['test.got.one'] = true;
+    assert.equal(await host.play('pcs', { tag: 'one' }), true); host.end();
+    // the host is busy with another comic for everyone (the guest closed their view of it); a replay doesn't wait for it
+    const from = H.w.sent.length;
+    hf['test.got.two'] = true; assert.equal(await host.play('pcs', { tag: 'two' }), true);
+    const hostRun = host.cur.run, hostPage = host.cur.page; await toGuest(from); assert.ok(guest.active && guest.cur.run === hostRun); guest.input('skip');
+    const from2 = H.w.sent.length, flagsBefore = JSON.stringify(hf);
+    guest.play('pcs', { tag: 'one' }); await askHost();
+    assert.deepEqual(H.w.sent.slice(from2), [['g1', { t: 'comic', op: 'replay', id: 'pcs', tag: 'one' }]], 'the replay was not sent to the asking guest alone');
+    assert.ok(host.active && host.cur.run === hostRun && host.cur.page === hostPage, 'a guest\'s replay changed the host\'s screen');
+    assert.equal(JSON.stringify(hf), flagsBefore, 'a replay wrote a flag on the host');
+    await toGuest(from2);
+    assert.ok(guest.active && guest.cur.local && guest.cur.tag === 'one', 'the replay did not open on the guest\'s screen');
+    assert.equal(G.v.last.o.host, true, 'the guest cannot page their own replay'); assert.equal(G.v.last.o.skippable, true);
+    assert.deepEqual(lines(), ['...'], 'a local replay lettered a line the save has not unlocked');
+    // the guest pages it themselves (a beat between turns) and sends nothing; the host's heartbeat for the comic they closed stays out
+    const gSent = G.w.sent.length;
+    assert.equal(guest.input('next'), false, 'turned before a beat'); G.w.time.now = comicMod.DWELL_MS;
+    assert.equal(guest.input('next'), true); assert.equal(guest.cur.page, 1); G.w.time.now += comicMod.DWELL_MS;
+    assert.equal(guest.input('back'), true); assert.equal(guest.cur.page, 0);
+    H.w.time.now = comicMod.BEAT_MS; const from3 = H.w.sent.length; host.tick(); await toGuest(from3);
+    assert.ok(guest.cur.local && guest.cur.page === 0, 'the host\'s heartbeat took over a local replay');
+    assert.equal(G.w.sent.length, gSent, 'paging a local replay told the host something');
+    // the host's own comic ending leaves the replay up; the guest closes it, telling nobody
+    host.end(); await toGuest(from3); assert.ok(guest.active && guest.cur.local, 'the host\'s end closed a local replay');
+    assert.equal(guest.input('skip'), true); assert.ok(!guest.active); assert.equal(G.w.sent.length, gSent, 'closing a local replay told the host something');
+    // reading to the end closes it too
+    let f4 = H.w.sent.length; guest.play('pcs', { tag: 'one' }); await askHost(); await toGuest(f4); assert.ok(guest.cur?.local);
+    while (guest.active) { guest.cur.at = -1e9; guest.input('next'); } assert.equal(G.w.sent.length, gSent + 1, 'the end of a local replay sent something');
+    // the host's flags decide which lines show, as in a host playback
+    hf['test.name'] = true; f4 = H.w.sent.length; guest.play('pcs', { tag: 'one' }); await askHost();
+    assert.deepEqual(H.w.sent.at(-1), ['g1', { t: 'comic', op: 'replay', id: 'pcs', tag: 'one', open: [0] }]); await toGuest(f4);
+    assert.deepEqual(lines(), ['Name.']);
+    // a story comic the host starts takes the replay's place
+    f4 = H.w.sent.length; assert.equal(await host.play('pcs', { tag: 'two' }), true); await toGuest(f4);
+    assert.ok(guest.active && !guest.cur.local && guest.cur.run === host.cur.run, 'the host\'s comic did not take the replay\'s place'); host.end(); await toGuest(f4);
+    assert.ok(!guest.active);
+    // the gate still holds: the whole comic (never played) and an unknown piece are ignored, however the guest asks
+    for (const tag of [null, 'three']) {
+      f4 = H.w.sent.length; guest.play('pcs', { tag }); await askHost();
+      assert.equal(H.w.sent.length, f4, `an ask for ${tag ?? 'the whole comic'} was answered`); assert.ok(!host.active && !guest.active);
+    }
+    // a replay the guest didn't ask for, or one that arrives while a page is up, doesn't open
+    guest.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'two' }); await tick(); assert.ok(!guest.active, 'an unasked-for replay opened');
+    guest.play('pcs', { tag: 'one' }); guest.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'two' }); await tick(); assert.ok(!guest.active, 'a replay of another comic opened');
+    G.w.dlg = {}; G.w.dlgFree = false; guest.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'one' }); await tick();
+    assert.ok(!guest.active, 'a replay opened over a story scene'); G.w.dlg = null;
+    // a replay that arrives while the party's comic is loading, or up, doesn't open; the party's comic stays
+    f4 = H.w.sent.length; assert.equal(await host.play('pcs', { tag: 'two' }), true);
+    const show = H.w.sent.slice(f4).find(([, m]) => m.op === 'show')[1];
+    guest.play('pcs', { tag: 'one' }); guest.onClientMsg(show); guest.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'one' }); await tick();
+    assert.ok(guest.active && !guest.cur.local && guest.cur.run === host.cur.run, 'a replay opened while the party\'s comic was loading');
+    guest.play('pcs', { tag: 'one' }); guest.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'one' }); await tick();
+    assert.ok(guest.active && !guest.cur.local && guest.cur.run === host.cur.run, 'a replay opened over the party\'s comic');
+    host.end(); await toGuest(f4); assert.ok(!guest.active);
+    // a story scene or cutscene starting on the guest's screen closes their replay (telling nobody); a free line doesn't
+    for (const [what, busy] of [['story scene', () => { G.w.dlg = {}; G.w.dlgFree = false; }], ['cutscene', () => { G.w.stage = { active: true }; }]]) {
+      f4 = H.w.sent.length; guest.play('pcs', { tag: 'one' }); await askHost(); await toGuest(f4); assert.ok(guest.cur?.local);
+      G.w.dlg = {}; G.w.dlgFree = true; guest.tick(); assert.ok(guest.cur?.local, 'a free line closed a local replay'); G.w.dlg = null;
+      const s0 = G.w.sent.length; busy(); guest.tick();
+      assert.ok(!guest.active, `a local replay stayed up over a ${what}`); assert.equal(G.w.sent.length, s0, 'closing it told the host something');
+      G.w.dlg = null; G.w.stage = null;
+    }
+    // a replay message reaching the host (or a solo game) does nothing
+    assert.equal(host.onClientMsg({ t: 'comic', op: 'replay', id: 'pcs', tag: 'one' }), true); await tick(); assert.ok(!host.active);
+  });
+
+  await testAsync('comic mode: waits for a story scene or cutscene, and a trigger plays once per world', async () => {
+    const { w, c } = mkComic('solo');
+    w.dlg = {}; w.dlgFree = false;
+    assert.equal(await c.play('tst'), false); assert.ok(!c.active && c.queued, 'queued behind the story scene');
+    c.tick(); assert.ok(!c.active, 'played over a story scene');
+    w.dlg = null; c.tick(); await new Promise((r) => setTimeout(r, 0)); assert.ok(c.active, 'played once the scene was over');
+    c.end();
+    const T = mkComic('host');
+    COMIC_TRIGGERS.push({ id: 'tst', flag: 'test.comic.flag', tag: 'b' });
+    try {
+      T.c.tick(); await new Promise((r) => setTimeout(r, 0)); assert.ok(!T.c.active, 'played before its flag');
+      T.w.save.flags['test.comic.flag'] = true; T.c.tick(); await new Promise((r) => setTimeout(r, 0));
+      assert.ok(T.c.active && T.w.save.flags['comic.tst.b.played'], 'the trigger played and was recorded');
+      T.c.end(); T.c.tick(); await new Promise((r) => setTimeout(r, 0)); assert.ok(!T.c.active, 'a trigger played twice');
+    } finally { COMIC_TRIGGERS.pop(); }
+  });
+}
 
 const yard = await import('../src/content/switchyard.js');
 test('the flooded bay directs Spanish players toward the pump room', () => {
@@ -1919,6 +4525,66 @@ test('the platform gate needs the yard, the breakers and the signals; no world s
   assert.ok(tunPuz.puzzleClue('obj.locker', seed, f, 'es').includes('TABLERO'));
 });
 
+test('both Act 1 victories queue exactly one host finale and checkpoint its completion', () => {
+  for (const variant of ['warden', 'sahur']) {
+    const save = newSave({ seed: 'act-one-finale', rolls: {}, gameVersion: 'test' });
+    save.world.killed = [];
+    save.flags['act1.boss.kind'] = variant;
+    save.flags['act1.call.declines'] = variant === 'sahur' ? 3 : 0;
+    save.flags['act1.call.answered'] = variant === 'warden';
+    const map = MAPS_FOR_TEST.platform;
+    const sim = new Sim(map, { bossVariant: variant });
+    sim.addPlayer('host', 'trevor');
+    const boss = [...sim.enemies.values()].find(e => e.boss);
+    const broadcasts = [], starts = [];
+    let cards = 0, writes = 0;
+    const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+      mode: 'host', localId: 'host', save, sim, map, time: { now: 100 },
+      net: { broadcast: msg => broadcasts.push(msg) }, _announce() {}, _showActOneArrival() {}, _closeSayAll() {},
+      _showActOneCard() { cards++; }, _save() { writes++; }, _fxPop() {}, _levelsReached() {}, _syncParty() {},
+      stage: { after: (_id, then) => then() },   // the staged beat (#104) runs, then the scene
+      startDialogue: async (name, _node, done) => { starts.push({ name, done }); return true; },
+    });
+    if (variant === 'sahur') {
+      boss.fightT = 11;
+      host._answer();
+      assert.equal(save.flags['act1.call.answered'], true);
+    } else host._hostEvents([{ t: 'kill', boss: true, mini: false, kind: boss.kind, key: boss.spawnKey, xp: 1 }]);
+    assert.ok(save.world.killed.includes(boss.spawnKey));
+    assert.equal(save.flags['act1.boss.defeated'], true);
+    assert.equal(save.flags['act1.outbreak.contained'], true);
+    host._tickActOneEnding();
+    assert.equal(starts.length, 0, 'keep the post-fight beat');
+    host.time.now = 4000;
+    host.dlg = {};
+    host._tickActOneEnding();
+    assert.equal(starts.length, 0, 'wait for the host to finish an open conversation');
+    host.dlg = null;
+    host._tickActOneEnding();
+    host._tickActOneEnding();
+    assert.equal(starts.length, 1);
+    assert.equal(starts[0].name, 'ending');
+    assert.equal(save.world.act, 1);
+    starts[0].done();
+    assert.equal(save.flags['act1.complete'], true);
+    assert.equal(save.flags['act1.boss.sahur'], variant === 'sahur');
+    assert.equal(save.flags['act1.ending.warm'], variant === 'warden');
+    assert.equal(save.world.act, 2);
+    assert.equal(cards, 1);
+    assert.equal(writes, 1);
+    assert.deepEqual(broadcasts, [{ t: 'act1Complete' }]);
+
+    const timers = [], shape = { setOrigin() { return this; }, setDepth() { return this; } };
+    const guest = Object.assign(Object.create(CraftWorldScene.prototype), {
+      mode: 'client', localId: 'guest', save: { flags: {} }, time: { delayedCall: (...args) => timers.push(args) },
+      add: { rectangle: () => shape, text: () => shape }, tweens: { add() {} },
+    });
+    guest._fx({ t: 'kill', boss: true, mini: false, kind: boss.kind, by: 'host' }, { players: [] });
+    assert.deepEqual(timers, [], 'a guest renders the kill without scheduling their own ending');
+    assert.deepEqual(guest.save.flags, {});
+  }
+});
+
 test('burst damage cannot skip a gated boss phase or its first tell', () => {
   const sim = new Sim(MAPS_FOR_TEST.tunnel_1, { seed: 'phase-gate' });
   const boss = [...sim.enemies.values()].find((e) => e.kind === 'boss.switchman');
@@ -2052,6 +4718,15 @@ test("Michael's belt gag: his own line first, on behind one switch, painted as a
   assert.ok(!beltMod.BELT_LINES.trevor.some((l) => /pants|boxer|butt/i.test(l)), "Trevor only reacts; nothing happens to Trevor's character");
 });
 
+test('gag cap: at most BELT_MAX per playthrough, and the count survives a reload', () => {
+  const save = { flags: {} }, snap = { players: [{ id: 'p1', c: 'michael', x: 0, y: 0 }] };
+  const run = (secs) => { const sent = [], sc = { mode: 'solo', time: { now: 0 }, save, sprites: new Map() }, b = new beltMod.Beltless(sc); b._send = (m) => sent.push(m);
+    for (let i = 0; i < secs; i++) { sc.time.now = i * 1000; b.update(snap); } return sent; };
+  assert.equal(run(3 * 3600).length, beltMod.BELT_MAX, 'three hours, still capped');
+  assert.equal(beltMod.BELT_MAX, 2);
+  assert.equal(run(3600).length, 0, 'a reloaded world does not start the count over');
+});
+
 test('the gonman, stage two: R while morphed winds up (no moving), then globs slow enemies and leave puddles; otherwise R is the decoy', () => {
   const sim = new Sim(landMaps.metro_plaza, { seed: 'gon' }); sim.addPlayer('a', 'manuel');
   const p = sim.players.get('a'); p.x = 38 * 16 + 8; p.y = 23 * 16 + 8; p.aim = 0; p.skillCd = 0;
@@ -2128,6 +4803,73 @@ test('the gonman is overpowered on purpose: a much smaller hitbox while thin, en
   for (const l of [...gonContent.GONMAN_HIT.enemy, ...gonContent.GONMAN_HIT.boss, ...gonContent.GONMAN_LINES.start, ...gonContent.GONMAN_LINES.release]) assert.ok(LINES_ES[l], `no Spanish for: ${l}`);
 });
 
+const { ClientNet: DialogueClientNet, HostNet: DialogueHostNet } = await import('../src/engine/net/net.js');
+const { SharedEvents } = await import('../src/game/sharedEvent.js');
+test('a disconnected dialogue driver releases only their scene on the host and observer', () => {
+  const hostNet = new DialogueHostNet(), observerNet = new DialogueClientNet();
+  const connect = (peer, send = () => {}) => hostNet.conns.set(peer, { send });
+  const leave = (peer) => {
+    hostNet.conns.delete(peer);
+    hostNet.emit('leave', peer);
+  };
+  const posted = [];
+  connect('observer', (msg) => { posted.push(msg); observerNet.emit('msg', msg); });
+  connect('driver');
+  const makeScene = (mode, net, character) => {
+    const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+      mode, net, character, map: MAPS_FOR_TEST.room631, events: { once() {} },
+      input: { keyboard: { on() {} } }, time: { addEvent() {} },
+      add: { text: () => ({ setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; }, setVisible() { return this; }, setText() { return this; } }) },
+      _drawDialogue() { if (this.dlg?.done) { this.dlg = null; this.dlgDone?.(); } },
+    });
+    scene.shared = new SharedEvents(scene);
+    return scene;
+  };
+  const host = makeScene('host', hostNet, 'trevor'), observer = makeScene('client', observerNet, 'michael');
+  host.save = newSave({ seed: 'dialogue-disconnect', rolls: {}, gameVersion: 'test' });
+  observer.save = structuredClone(host.save);
+  host.sim = new Sim(host.map);
+  for (const [id, who] of [['host', 'trevor'], ['observer', 'michael'], ['driver', 'manuel']]) host.sim.addPlayer(id, who);
+  host.remoteInputs = new Map();
+  host._wireNet();
+  observer._wireNet();
+
+  const id = 'driver:opening';
+  hostNet.emit('msg', 'driver', { t: 'evStart', id, main: 'manuel', scope: 'all' });
+  hostNet.emit('msg', 'driver', { t: 'evState', id, state: { choices: ['Continue'], decider: 'michael' } });
+  assert.equal(host.shared.watching.id, id);
+  assert.equal(observer.shared.watching.id, id);
+  hostNet.emit('msg', 'observer', { t: 'evEnd', id });
+  assert.equal(host.shared.watching.id, id, 'another guest cannot end the driver’s dialogue');
+
+  leave('driver');
+  leave('driver');
+  assert.equal(host.dlg, null);
+  assert.equal(observer.dlg, null);
+  assert.equal(host.shared.latest[id], undefined);
+  assert.equal(observer.shared.latest[id], undefined);
+  assert.equal(posted.filter(msg => msg.t === 'evEnd' && msg.id === id).length, 1);
+  assert.ok(host.sim.players.has('ai:manuel'));
+
+  connect('returning');
+  host.sim.removePlayer('ai:manuel');
+  host.sim.addPlayer('returning', 'manuel');
+  host.dlg = { choices: [], done: false };
+  const local = host.dlg;
+  host.dlgDone = () => assert.fail('disconnect advanced an unrelated story');
+  hostNet.emit('msg', 'returning', { t: 'evStart', id: 'returning:retry', main: 'manuel', scope: 'all' });
+  hostNet.emit('msg', 'returning', { t: 'evState', id: 'returning:retry', state: { choices: ['Continue'], decider: 'trevor', turn: 1 } });
+  assert.equal(observer.shared.watching.id, 'returning:retry');
+  assert.ok(host.shared.deferredStarts.has('returning:retry'), 'directed choice is deferred while the host is busy');
+  leave('returning');
+  assert.equal(host.dlg, local);
+  assert.equal(observer.dlg, null);
+  assert.ok(!host.shared.deferredStarts.has('returning:retry'), 'the abandoned directed choice no longer blocks the host');
+  host.dlg = null;
+  host.shared._pump();
+  assert.equal(host.dlg, null, 'the abandoned choice does not reopen');
+});
+
 test("Manuel's edge: with the same gear and no skills, Manuel is the toughest and hits hardest of the three", () => {
   const bare = () => ({ skills: {}, inventory: [{ id: 'item.pry_bar', qty: 1 }], abilities: {} });
   const m = Object.fromEntries(['manuel', 'trevor', 'michael'].map((w) => [w, pmods(bare(), w)]));
@@ -2136,5 +4878,137 @@ test("Manuel's edge: with the same gear and no skills, Manuel is the toughest an
   }
 });
 
+test('connection loss offers the original room and intentional quit returns to the normal title', async () => {
+  for (const intentional of [false, true]) {
+    let closes = 0;
+    const net = Object.assign(new EventEmitter(), {
+      code: 'ROOM2',
+      close() { closes++; this.emit('close'); },
+    });
+    const transitions = [];
+    const world = Object.assign(Object.create(CraftWorldScene.prototype), {
+      mode: 'client', net, events: new EventEmitter(),
+      scene: { start: (...args) => transitions.push(args) },
+    });
+    world._wireNet();
+    if (intentional) await world.menuQuit(false);
+    else net.emit('close');
+    net.emit('close');
+    assert.equal(closes, 1);
+    assert.deepEqual(transitions, [['Title', { rejoinCode: intentional ? undefined : 'ROOM2' }]]);
+  }
+});
+
+test('co-op rejoin accepts only a vacant seat with its original room key', () => {
+  const net = new HostNet();
+  const connect = (peer) => {
+    const connection = Object.assign(new EventEmitter(), {
+      peer, messages: [], send(msg) { this.messages.push(structuredClone(msg)); }, close() { this.emit('close'); },
+    });
+    net._trackConnection(connection);
+    connection.emit('open');
+    return connection;
+  };
+  const guest = connect('guest'), observer = connect('observer'), other = connect('other');
+  const save = newSave({ seed: 'reconnect', rolls: {}, gameVersion: 'test' });
+  const assignments = { host: 'trevor', guest: 'manuel', observer: 'michael' };
+  const hasBrowserCrypto = !!globalThis.crypto;
+  if (!hasBrowserCrypto) globalThis.crypto = webcrypto;
+  try { net.startGame(save, assignments); }
+  finally { if (!hasBrowserCrypto) delete globalThis.crypto; }
+  const key = guest.messages[0].seatKey;
+  assert.match(key, /^[a-f0-9]{32}$/);
+  assert.notEqual(observer.messages[0].seatKey, key);
+  assert.equal(other.messages[0].t, 'say');
+
+  const sim = new Sim(MAPS_FOR_TEST.room631);
+  for (const [peer, who] of Object.entries(assignments)) sim.addPlayer(peer, who);
+  const original = sim.players.get('guest');
+  save.party.manuel.inventory[0] = { id: 'item.nail_gun', qty: 1 };
+  save.party.manuel.inventory[1] = { id: 'item.pry_bar', qty: 1 };
+  const exits = [], leftTable = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', localId: 'host', net, sim, save, remoteInputs: new Map(),
+    events: { once() {} }, time: { addEvent() {} }, _tryExit: (exit) => exits.push(exit.id),
+    latticeTable: { leave(peer) {
+      assert.equal(sim.players.get(peer), original, 'Lattice receives the disconnect before the roster changes');
+      leftTable.push(peer);
+    } },
+  });
+  host._syncPlayerGear(original);
+  original.ammo = 4;
+  host._wireNet();
+  other.emit('data', { t: 'hello', seatKey: key });
+  assert.equal(sim.players.has('other'), false, 'a connected player cannot be taken over');
+  net.broadcast({ t: 'snap', snap: sim.snapshot() });
+  net.send('other', { t: 'evState', state: {} });
+  assert.equal(other.messages.some(msg => msg.t === 'snap'), false, 'unseated connections receive no world snapshots');
+  assert.equal(other.messages.some(msg => msg.t === 'evState'), false, 'direct game traffic also stays in the party');
+
+  guest.emit('data', { t: 'input', inp: { mx: 1 } });
+  const exit = sim.map.objects.find(o => o.action === 'exit');
+  for (const peer of ['host', 'observer']) sim.waitAtExit(peer, exit.id, 0, -1);
+  guest.close();
+  assert.equal(host.remoteInputs.has('guest'), false);
+  assert.equal(sim.players.get('ai:manuel'), original);
+  assert.deepEqual(leftTable, ['guest']);
+  assert.equal(original.held, 'melee', 'the companion switches to an available melee weapon');
+  assert.equal(original.mods.gun, 0);
+  assert.equal(save.party.manuel.hotSel ?? 0, 0, 'the original selection belongs to the returning guest');
+  assert.deepEqual(exits, [exit.id]);
+  const returned = connect('returned');
+  returned.emit('data', { t: 'hello', seatKey: 'wrong' });
+  returned.emit('data', { t: 'flag', key: 'act1.test', value: true });
+  assert.equal(save.flags['act1.test'], undefined);
+  assert.equal(sim.players.has('returned'), false);
+  returned.emit('data', { t: 'hello', seatKey: key });
+  const start = returned.messages.at(-1);
+  assert.equal(start.t, 'start');
+  assert.deepEqual(start.assignments, { returned: 'manuel' });
+  assert.equal(start.snapshot.players.find(p => p.id === 'returned').am, 4);
+  assert.equal(sim.players.get('returned'), original);
+  assert.equal(original.held, 'gun', 'the returning guest immediately holds their selected gun');
+  assert.equal(original.mods.gun, 1);
+  assert.equal(sim.players.size, 3);
+});
+
+test('equip the exact copy (John Pork, PR #93): with two vests, the modded one you click goes on, mods and all; swapping and taking off keep each copy\'s mods', async () => {
+  const InvM = await import('../src/engine/inventory.js');
+  const save = newSave({ seed: 'two-vests', rolls: {}, gameVersion: 't' }), c = save.party.trevor;
+  c.inventory = Array(c.inventory.length).fill(null); c.equipped = {}; c.rolled = {}; c.socketed = {};
+  c.inventory[9] = { id: 'item.mesh_vest', qty: 1, socketed: ['item.mod_plate'] }; c.inventory[10] = { id: 'item.mesh_vest', qty: 1 };
+  const sent = [], toasts = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'solo', character: 'trevor', save, time: { now: 0, addEvent() {} }, _syncParty() {}, _toast: (t) => toasts.push(t), _announce() {} });
+  host.menuUseSlot(9);
+  assert.equal(c.equipped.chestplate, 'item.mesh_vest'); assert.deepEqual(c.socketed.chestplate, ['item.mod_plate'], 'the clicked, modded vest is the one worn');
+  assert.ok(!c.inventory[9] && c.inventory[10] && !c.inventory[10].socketed, 'and the plain one is still in slot 10');
+  host.menuUseSlot(10);
+  assert.ok(!c.socketed.chestplate, 'swapped for the plain copy: no mods worn');
+  assert.ok(c.inventory.some((s) => s?.id === 'item.mesh_vest' && s.socketed?.[0] === 'item.mod_plate'), 'and the modded copy is back in the bag with its mod');
+  host.menuUnwear('chestplate');
+  assert.ok(!c.equipped.chestplate && c.inventory.filter((s) => s?.id === 'item.mesh_vest').length === 2, 'taking it off keeps both copies');
+  const handlers = new Map();
+  Object.assign(host, {
+    mode: 'host',
+    sim: { players: new Map([['guest', { character: 'trevor' }]]) },
+    net: { on: (type, handler) => handlers.set(type, handler) },
+    events: { once() {} },
+  });
+  host._wireNet();
+  const guest = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'client', character: 'trevor', save, time: { now: 0 },
+    net: { send: (msg) => { sent.push(msg); handlers.get('msg')('guest', msg); } },
+  });
+  const k = c.inventory.findIndex((item) => item?.socketed);
+  guest.menuUseSlot(k);
+  assert.deepEqual(c.socketed.chestplate, ['item.mod_plate']);
+  guest.menuUnwear('chestplate');
+  assert.equal(c.equipped.chestplate, null);
+  assert.equal(c.inventory.filter((item) => item?.id === 'item.mesh_vest').length, 2);
+  assert.deepEqual(sent, [{ t: 'equipSlot', i: k }, { t: 'unwear', slot: 'chestplate' }]);
+  assert.equal(InvM.wear(c, 'item.mesh_vest', 99), false, 'an invalid explicit slot leaves both copies in the bag');
+});
+
+await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
