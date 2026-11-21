@@ -99,12 +99,28 @@ export class Stage {
   /** The host's X: end it for everyone now. */
   skip() { if (this.active?.host && !this.active.script.hold) this._finish(true); }
 
-  /** A dialogue line's staging cue: play it now, alongside the line (hold scripts only). */
+  get cueBusy() { return this.active?.cueRun?.busy === true; }
+
+  /** Show a new line in a held scene. The host waits for its cue before advancing. */
   cue(key) {
-    const a = this.active, steps = a?.script.cues?.[key];
-    if (!steps) return false;
-    this._steps(steps, a.tok);
-    return true;
+    const a = this.active;
+    if (!a?.script.hold || a.cueRun?.key === key) return false;
+    this._stopCue(a);
+    const steps = a.script.cues?.[key];
+    const run = a.cueRun = { key, busy: !!steps, walks: new Set() };
+    if (steps) this._steps(steps, a.tok, run).finally(() => { run.busy = false; });
+    return run.busy;
+  }
+
+  _stopCue(a) {
+    const run = a.cueRun;
+    if (!run) return;
+    a.cueRun = null;
+    for (const stop of run.walks) stop();
+  }
+
+  _current(tok, cue) {
+    return this.tok === tok && (!cue || this.active?.cueRun === cue);
   }
 
   /** Host and solo: end a hold script (its dialogue is over). */
@@ -199,22 +215,22 @@ export class Stage {
     this._steps(script.steps ?? [], tok).then(() => { if (this.tok === tok && !script.hold) this._finish(host); });
   }
 
-  async _steps(steps, tok) {
+  async _steps(steps, tok, cue) {
     for (const st of steps) {
-      if (this.tok !== tok) return;
+      if (!this._current(tok, cue)) return;
       if (st.if && !st.if(this.active.ctx)) continue;
-      await this._step(st, tok);
+      await this._step(st, tok, cue);
     }
   }
 
-  _step(st, tok) {
+  _step(st, tok, cue) {
     const a = this.active, s = this.s, cam = s.cameras.main;
-    if (st.together) return Promise.all(st.together.map((x) => (x.if && !x.if(a.ctx) ? null : this._step(x, tok))));
+    if (st.together) return Promise.all(st.together.map((x) => (x.if && !x.if(a.ctx) ? null : this._step(x, tok, cue))));
     if (st.wait != null) return this._wait(st.wait);
     if (st.place) { const act = a.actors.get(st.place); if (act) { Object.assign(act, this._tilePos(act, st.at)); if (st.face) act.face(st.face); } return null; }
-    if (st.walk) return this._walk(a.actors.get(st.walk), st, tok);
+    if (st.walk) return this._walk(a.actors.get(st.walk), st, tok, cue);
     if (st.face) { const act = a.actors.get(st.face); if (act) act.face(this._dirOf(act, st.dir)); return null; }
-    if (st.say) return this._say(st, tok);
+    if (st.say) return this._say(st, tok, cue);
     if (st.emote) return this._emote(a.actors.get(st.emote), st.icon);
     if (st.caption) return this._caption(st);
     if (st.cam) {
@@ -239,6 +255,7 @@ export class Stage {
     const a = this.active, s = this.s;
     if (!a) return;
     this.tok++;
+    this._stopCue(a);
     hush();
     if (host && s.mode === 'host') s.net.broadcast({ t: 'stage', op: 'end', id: a.id });
     // Host and solo: the roommates stay where the cutscene left them.
@@ -266,6 +283,7 @@ export class Stage {
     this._cancelPending();
     const a = this.active;
     if (!a) return;
+    this._stopCue(a);
     for (const act of a.actors.values()) act.destroy();
     for (const o of a.ui) o.destroy?.();
     this.active = null;
@@ -326,26 +344,32 @@ export class Stage {
     return Math.abs(dx) >= Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'up' : 'down');
   }
 
-  async _walk(act, st, tok) {
+  async _walk(act, st, tok, cue) {
     if (!act) return;
     const pts = st.by ? [[act.x / TILE - 0.5 + st.by[0], act.y / TILE - (act.roommate ? 0.5 : 1) + st.by[1]]]
       : Array.isArray(st.to?.[0]) ? st.to : [st.to];
     for (let i = 0; i < pts.length; i++) if (typeof pts[i] === 'string') pts[i] = this._beside(pts[i]);
     const speed = st.speed ?? 48;
     for (const pt of pts) {
-      if (this.tok !== tok) return;
+      if (!this._current(tok, cue)) return;
       if (!pt) continue;
       const goal = this._tilePos(act, pt);
       const dx = goal.x - act.x, dy = goal.y - act.y, dist = Math.hypot(dx, dy);
       if (dist < 0.5) continue;
       act.dir = Math.abs(dx) >= Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'up' : 'down');
       act.moving = true; act.moved = act.roommate;
-      await new Promise((res) => this.s.tweens.add({ targets: act, x: goal.x, y: goal.y, duration: (dist / speed) * 1000, onComplete: res }));
+      await new Promise((resolve) => {
+        let stop;
+        const finish = () => { cue?.walks.delete(stop); resolve(); };
+        const tween = this.s.tweens.add({ targets: act, x: goal.x, y: goal.y, duration: (dist / speed) * 1000, onComplete: finish, onStop: finish });
+        stop = () => { act.moving = false; tween.stop(); finish(); };
+        cue?.walks.add(stop);
+      });
     }
-    act.moving = false;
+    if (this._current(tok, cue)) act.moving = false;
   }
 
-  _say(st, tok) {
+  _say(st, tok, cue) {
     const a = this.active, s = this.s, act = a.actors.get(st.say);
     const text = (getLang() === 'es' && st.es) || tr(st.text ?? '');
     if (!text) return null;
@@ -358,8 +382,11 @@ export class Stage {
     const top = () => act.sprite.y - act.sprite.displayHeight - 3;
     const follow = s.time.addEvent({ delay: 16, loop: true, callback: () => t.active && t.setPosition(act.sprite.x, top()) });
     t.setPosition(act.sprite.x, top());
-    act.bubble = { destroy: () => { follow.remove(); t.destroy(); } };
-    return this._wait(dur).then(() => { if (act.bubble && this.tok === tok) { act.bubble.destroy(); act.bubble = null; } });
+    const bubble = act.bubble = { destroy: () => { follow.remove(); t.destroy(); } };
+    return this._wait(dur).then(() => {
+      if (act.bubble !== bubble || !this._current(tok, cue)) return;
+      bubble.destroy(); act.bubble = null;
+    });
   }
 
   _emote(act, icon) {

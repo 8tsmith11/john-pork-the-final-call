@@ -2808,6 +2808,29 @@ test('co-op puzzles: a guest pressing a lever, a clock or a bust runs on the hos
   } finally { CraftWorldScene.prototype._toast = realToast; }
 });
 
+test('a staged dialogue cue stays busy until done and cannot resume queued actions on a new line', async () => {
+  const { Stage } = await import('../src/game/stage.js');
+  const stage = Object.assign(Object.create(Stage.prototype), {
+    tok: 1,
+    active: { tok: 1, script: { hold: true, cues: { first: ['wait', 'too late'], second: ['next'] } } },
+  });
+  const actions = [];
+  let finish;
+  stage._step = (step) => {
+    actions.push(step);
+    if (step === 'wait') return new Promise(resolve => { finish = resolve; });
+    return null;
+  };
+  assert.ok(stage.cue('first'));
+  assert.ok(stage.cueBusy);
+  assert.ok(!stage.cue('first'), 'the same dialogue state cannot restart a cue');
+  assert.ok(stage.cue('second'));
+  finish();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(stage.cueBusy, false);
+  assert.deepEqual(actions, ['wait', 'next']);
+});
+
 test('cutscenes: the HUD steps out from under the letterbox bars and comes back as it was (Trevor: weird cutoff on the UI)', () => {
   const mk = (depth, visible = true, sf = 0) => ({ depth, visible, scrollFactorX: sf, active: true, setVisible(v) { this.visible = v; return this; } });
   const hud = mk(9000), mini = mk(9050), hotbar = mk(8992), boss = mk(9100), hidden = mk(9001, false), world = mk(9000, true, 1), dialog = mk(9501), box = mk(9000), toast = mk(9300);
