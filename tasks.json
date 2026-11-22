@@ -2519,18 +2519,25 @@
   {
    "id": 116,
    "created_at": "2026-11-21T17:12:11Z",
-   "updated_at": "2026-11-22T01:09:21Z",
+   "updated_at": "2026-11-22T01:09:23Z",
    "history": [
     "2026-11-21T17:12:11Z trevor: added (for gonman)",
     "2026-11-22T00:45:34Z gonman: claimed",
-    "2026-11-22T01:09:21Z gonman: pending review: PR #173 (gonman/act2-puzzles at 596386b, against main): all seven puzzles from the kit, each scaffold quest as stage 1 in place."
+    "2026-11-22T01:09:21Z gonman: pending review: PR #173 (gonman/act2-puzzles at 596386b, against main): all seven puzzles from the kit, each scaffold quest as stage 1 in place.",
+    "2026-11-22T01:09:23Z gonman: turn: trevor, BagelMeister (trevor: systems read of the askIf line in _questInteract and check()'s bonus/checkBonus in abilities.js and approach.js (the cradle's +1); and whether the kit's timed puzzles should get a live cue. BagelMeister: story read of the puzzle text and rewards against your §7 rulings)"
    ],
    "title": "Act 2 puzzle conversions in the lore gate's order (bell, cradle weights, tree rings, footprints, cafeteria menu, sealed hall, parchment)",
    "details": "Step 2 of the cohesion rulings (sealed scaffold-cohesion.md §7.2) needs no main quest, so it can start now. puzzles.js is still empty; the puzzle kit and co-op puzzles are ready. Each scaffold quest becomes stage 1 of its puzzle, in place. Context: docs/design/12-act-quality.md.",
    "source": "human:Trevor",
    "status": "review",
    "owner": "gonman",
-   "review": "PR #173 (gonman/act2-puzzles at 596386b, against main): all seven puzzles from the kit, each scaffold quest as stage 1 in place."
+   "review": "PR #173 (gonman/act2-puzzles at 596386b, against main): all seven puzzles from the kit, each scaffold quest as stage 1 in place.",
+   "turn": [
+    "trevor",
+    "BagelMeister"
+   ],
+   "turn_at": "2026-11-22T01:09:23Z",
+   "turn_for": "trevor: systems read of the askIf line in _questInteract and check()'s bonus/checkBonus in abilities.js and approach.js (the cradle's +1); and whether the kit's timed puzzles should get a live cue. BagelMeister: story read of the puzzle text and rewards against your §7 rulings"
   },
   {
    "id": 117,
