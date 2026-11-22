@@ -16,7 +16,7 @@ import { definePuzzle, cycleWindow } from './puzzleKit.js';
 export const PUZZLES = [
   // ---- Annapolis: the bell with no church (timed). The almanac's last correction says to ask the bell; the tide
   // board on the last piling says what the almanac swears. The reward is the island's trust (the solved flag) and
-  // a boat upgrade with no boat: M2.5 keeps the boat.
+  // a boat upgrade with no boat: the main quest keeps the boat.
   { id: 'ann_bell', kind: 'timed', parts: ['obj.ann_pier_bell'], window: cycleWindow(100, 25, 60),
     closedText: 'You ring it. The water sits under the red line, where the almanac says it stays, and the bay keeps the sound. The tide here turns when it likes. It likes to make people wait.',
     closedTextEs: 'La tocas. El agua está debajo de la línea roja, donde el almanaque dice que se queda, y la bahía se guarda el sonido. Acá la marea cambia cuando quiere. Le gusta hacer esperar.',
