@@ -227,4 +227,10 @@ export const annHarbor = fromGrid({
 })
   // Region guardian (optional): at the end of the pier, by the bell it guards.
   .enemy('boss.ann_tide', 26, 5)
+  // The bell puzzle (src/content/puzzles.js, ann_bell): the pier's own bell beside the bollard where you listen, and
+  // the tide board that says what the almanac swears.
+  .prop('obj.pier_bell', 24, 4, { id: 'obj.ann_pier_bell', label: 'The pier bell',
+    text: 'A brass fog bell on a timber post at the end of the pier, green where the spray gets it. The rope has been spliced so many times it is mostly splice.' })
+  .prop('obj.room_sign', 21, 4, { id: 'obj.ann_tide_board', label: 'Tide board',
+    text: 'A tide board nailed to a piling, the feet painted in white. Near the top is a red line lettered HIGHEST EVER, and under that, in four different hands: "per the almanac." The weed on the board starts a hand above the red line.' })
   .build();

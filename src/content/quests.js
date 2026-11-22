@@ -1,5 +1,6 @@
 // Quests as data. Hooks for writers (no engine code needed):
 //   giver: npc id · ask: flag set when you first talk to the giver (with `pitch` as their line)
+//   askIf: (flags) => bool        → the giver doesn't pitch the quest until this passes (optional)
 //   give: { item, flag, refuse }  → the NPC offers a hand-in action when the player carries `item`
 //   inspect: { obj, flag, text }  → examining `obj` while the quest is active sets flag (appends text)
 //   report: { needs, flag }       → talking to the giver after `needs` is set sets flag

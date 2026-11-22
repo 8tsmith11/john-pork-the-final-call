@@ -8,6 +8,12 @@
 //   boss:  { boss, bossName }                      put down a region boss (flag boss.<id>.down)
 //   bring: { item, what, whatEs, refuse, refuseEs } hand the giver an item
 //   talk:  { npc, who, whoEs }                     go and talk to someone else (flag met.<npc>)
+//
+// A look quest that sets up a kit puzzle (src/content/puzzles.js; lore gate, hub #50: "the scaffold quest becomes
+// stage 1 of its planned puzzle, in place") also takes
+//   puzzle: { id, text, textEs }                   a middle stage, done when pz.<id>.solved; the giver hears about
+//                                                  it only after that
+//   after: 'q.<other>.told'                        the giver doesn't offer it until that flag is set
 
 const ES = {};
 const built = [];
@@ -22,7 +28,13 @@ function side({ id, act, giver, giverName, giverEs, title, titleEs, why, whyEs, 
     const L = kind.look;
     q.inspect = { obj: L.obj, flag: `${k}.seen`, text: L.seen };
     q.report = { needs: `${k}.seen`, flag: `${k}.told` };
-    st.push([`Look at ${L.where}.`, `Revisa ${L.whereEs}.`, (f) => f[`${k}.seen`]], [`Tell ${giverName} what you saw.`, `Cuéntale ${aEs(giverEs)} lo que viste.`, (f) => f[`${k}.told`]]);
+    st.push([`Look at ${L.where}.`, `Revisa ${L.whereEs}.`, (f) => f[`${k}.seen`]]);
+    if (kind.puzzle) {
+      const P = kind.puzzle, solved = `pz.${P.id}.solved`;
+      q.puzzle = P.id; q.report.needs = solved;
+      st.push([P.text, P.textEs, (f) => f[solved]]);
+    }
+    st.push([`Tell ${giverName} what you saw.`, `Cuéntale ${aEs(giverEs)} lo que viste.`, (f) => f[`${k}.told`]]);
     ES[L.seen] = L.seenEs;
   } else if (kind.boss) {
     const flag = `boss.${kind.boss.boss.slice(5)}.down`;
@@ -38,6 +50,7 @@ function side({ id, act, giver, giverName, giverEs, title, titleEs, why, whyEs, 
     q.target = { npc: T.npc };
     st.push([`Talk to ${T.who}.`, `Habla con ${T.whoEs}.`, (f) => f[`met.${T.npc}`]]);
   } else throw new Error(`side quest ${id}: needs look, boss, bring or talk`);
+  if (kind.after) { const need = kind.after; q.askIf = (f) => !!f[need]; q.start = (f) => !!(f[`${k}.asked`] && f[need]); }
   q.stages = st.map(([text, , done]) => ({ text, done }));
   q.reward = { money, xp, line };
   Object.assign(ES, { [title]: titleEs, [why]: whyEs, [pitch]: pitchEs, [line]: lineEs });
@@ -266,6 +279,7 @@ side({ id: 'ann_bell', act: 2, ...g('npc.ann_pilot', PILOT), title: 'A bell with
   why: 'A church bell rings from an island that has no church.', whyEs: 'Una campana suena desde una isla que no tiene iglesia.',
   pitch: '"Listen at the end of the pier. Count the rings. Tell me the number. I\'ll tell you what it means."', pitchEs: '"Escucha al final del muelle. Cuenta las campanadas. Dime el número. Yo te digo qué significa."',
   look: { obj: 'obj.ann_bell', where: 'the end of the pier', whereEs: 'el final del muelle', seen: 'Seven rings. Then, after a long while, one more.', seenEs: 'Siete campanadas. Después, mucho rato después, una más.' },
+  puzzle: { id: 'ann_bell', text: 'Answer it. Ring the pier bell when the almanac is wrong.', textEs: 'Contéstale. Toca la campana del muelle cuando el almanaque se equivoque.' },
   line: '"Seven and one. The family\'s still out there. Good."', lineEs: '"Siete y una. La familia sigue allá. Bien."' });
 
 side({ id: 'ann_tide', act: 2, ...g('npc.ann_pilot', PILOT), title: 'The tide that lies', titleEs: 'La marea que miente', money: 40, xp: 80,

@@ -249,6 +249,12 @@ export const ES_ACT2 = {
   'A bell across the water': 'Una campana al otro lado del agua',
   'The last bollard at the end of the pier, worn smooth by rope. From somewhere east over the water comes a church bell. The charts put one island out that way, and no church on it.':
     'El último bolardo al final del muelle, gastado liso por los cabos. De algún lugar al este, sobre el agua, llega una campana de iglesia. Las cartas marcan una sola isla para ese lado, y ninguna iglesia en ella.',
+  'The pier bell': 'La campana del muelle',
+  'A brass fog bell on a timber post at the end of the pier, green where the spray gets it. The rope has been spliced so many times it is mostly splice.':
+    'Una campana de niebla de bronce en un poste de madera al final del muelle, verde donde le pega la espuma. A la cuerda la empalmaron tantas veces que ya es casi toda empalme.',
+  'Tide board': 'Regla de mareas',
+  'A tide board nailed to a piling, the feet painted in white. Near the top is a red line lettered HIGHEST EVER, and under that, in four different hands: "per the almanac." The weed on the board starts a hand above the red line.':
+    'Una regla de mareas clavada a un pilote, con los pies pintados en blanco. Cerca de arriba hay una línea roja con el rótulo LA MÁS ALTA QUE HUBO, y debajo, en cuatro letras distintas: "según el almanaque." Las algas de la regla empiezan un palmo por encima de la línea roja.',
   'Back up the pier': 'De vuelta por el muelle',
 
   // The townsfolk crowds.js stands on these maps. Their English still waits for that file's own polish (another

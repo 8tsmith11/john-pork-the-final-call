@@ -1668,6 +1668,7 @@ export class WorldScene extends Phaser.Scene {
       if (st.done) continue;
       if (q.giver !== near.id) continue;
       const label = near.label.toUpperCase();
+      if (!st.started && q.ask && q.askIf && !q.askIf(f)) continue;   // not offered yet (e.g. the second half of a thread)
       if (!st.started && q.ask) return act(() => { this._flag(q.ask, true); say(`${label}\n${q.pitch}`); this._tickQuests(true, peer); });
       if (q.give && !f[q.give.flag] && questVisible(q, who)) {
         const c = this.save.party[who];

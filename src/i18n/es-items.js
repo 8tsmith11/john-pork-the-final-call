@@ -85,6 +85,7 @@ export const ES_ITEMS = {
   callus_gloves: ['Guantes sin dedos', 'Gastados en las yemas, que a esta altura tienen sus propios callos. Golpes más fuertes, y de vez en cuando uno limpio.'],
   tank_goggles: ['Gafas del acuario', 'Con tinte azul, para revisar a los camarones de noche sin despertarlos. Las cosas de coderot muestran sus costuras a través de ellas: las marcadas reciben mucho más y sueltan más.'],
   spinner_pack: ['Mochila giratoria', 'Un robot de combate retirado de 1,5 kg atado a su espalda, con el arma todavía activa. Atraviesa lo que sea con la esquiva y el giro lo muerde al pasar, tan fuerte que lo manda a volar. Pesada.'],
+  ann_oarlocks: ['Toletes de bronce', 'Un par, de la familia de la isla, verdes en los pernos. Sirven para cualquier bote de la bahía. No tienes bote.'],
   keycard: ['Tarjeta de acceso', 'Una credencial de contratista de Continuity en un cordón. La foto es de otra persona.'],
   hard_candy: ['Caramelo duro', 'De butterscotch, envuelto en plástico dorado, de un bolsillo de abrigo que lo tiene desde 2091.'],
   lighter: ['Encendedor', 'Plástico transparente, casi vacío. Echa más chispas de lo que enciende.'],

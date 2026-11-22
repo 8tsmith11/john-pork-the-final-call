@@ -62,6 +62,11 @@ export const MATERIALS = {
 };
 Object.assign(ITEMS, MATERIALS);
 
+// What the optional puzzles of Acts 2-3 pay (src/content/puzzles.js). Key items wait for the quests that use them.
+Object.assign(ITEMS, {
+  'item.ann_oarlocks':  { name: 'Bronze oarlocks', slot: 'key', text: 'A pair, from the island family, green at the pins. They fit any boat on the bay. You don\'t have a boat.' },
+});
+
 // Bought, not printed.
 Object.assign(ITEMS, {
   'item.scooter':       { name: 'Scooter', slot: 'key', text: 'Used, cracked deck. [Q] to ride outdoors. Rails are faster than they look.' },

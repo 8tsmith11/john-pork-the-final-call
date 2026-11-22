@@ -4985,6 +4985,73 @@ test('equip the exact copy (John Pork, PR #93): with two vests, the modded one y
   assert.equal(InvM.wear(c, 'item.mesh_vest', 99), false, 'an invalid explicit slot leaves both copies in the bag');
 });
 
+// ---- Acts 2-3 puzzles from the kit (hub #116; lore gate rulings, hub #50) ------------------------------------
+// One table row per puzzle: where it is, the quest it grew out of, a wrong run and a right one. Each move is
+// [part, seconds on the clock]; the clock only matters to `timed`.
+const { PUZZLES: A23_PUZZLES, puzzleFor: a23PuzzleFor } = await import('../src/content/puzzles.js');
+const A23 = {
+  ann_bell: { map: 'ann_harbor', giver: 'npc.ann_pilot', look: 'obj.ann_bell', clues: ['obj.ann_almanac', 'obj.ann_tide_board'], item: 'item.ann_oarlocks',
+    wrong: [['obj.ann_pier_bell', 10], ['obj.ann_pier_bell', 59], ['obj.ann_pier_bell', 86]], right: [['obj.ann_pier_bell', 61]], says: 'closedText' },
+};
+const a23Host = (save, said) => ({ mode: 'host', character: 'trevor', localId: 'host', save, time: { now: 0 }, cameras: { main: { shake() {} } },
+  net: { send() {} }, _say: (t) => said.push(t), _toast() {}, _tickQuests() {}, _syncParty() {} });
+const a23Run = (host, moves) => { for (const [id, t = 0] of moves) { host.time.now = t * 1000; const o = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects).find((x) => x.id === id); CraftWorldScene.prototype._usePuzzle.call(host, a23PuzzleFor(id), o); } };
+for (const [id, T] of Object.entries(A23)) {
+  test(`Acts 2-3 puzzle ${id}: the spec, its parts and clues on the map, the quest's first stage, a wrong run, the right one, the reward once, and a save round-trip`, () => {
+    const p = A23_PUZZLES.find((x) => x.id === id);
+    assert.ok(p, `no puzzle ${id} in src/content/puzzles.js`);
+    assert.doesNotThrow(() => PK.definePuzzle(p));
+    assert.ok(['cycle', 'order', 'timed'].includes(p.kind));
+    for (const k of ['closedText', 'solvedText', 'stepText', 'wrongText']) if (p[k]) assert.ok(p[`${k}Es`], `${id}: ${k} has no Spanish`);
+    assert.ok(p.reward.textEs && p.solvedText, `${id}: the reward line needs Spanish, and a solved puzzle its own line`);
+    // parts and clue objects are real objects on the map where the quest already lives
+    const map = MAPS_FOR_TEST[T.map], on = new Map(map.objects.map((o) => [o.id, o]));
+    for (const o of [...p.parts, ...T.clues, T.look, T.giver]) assert.ok(on.has(o), `${id}: ${o} is not on ${T.map}`);
+    for (const o of p.parts) { assert.equal(a23PuzzleFor(o), p); assert.ok(on.get(o).text && on.get(o).label, `${o}: a part needs a label and its own text`); }
+    for (const o of T.clues) assert.ok(!p.parts.includes(o), `${id}: ${o} is a clue, not a part`);
+    // the scaffold quest is stage 1, in place: same quest id, giver, ask flag and first object; then the puzzle; then the giver
+    const q = SideQ.SIDE_QUESTS.find((x) => x.id === `side.${id}`);
+    assert.equal(q.giver, T.giver); assert.equal(q.ask, `q.${id}.asked`); assert.equal(q.inspect.obj, T.look); assert.equal(q.inspect.flag, `q.${id}.seen`);
+    assert.equal(q.puzzle, id); assert.equal(q.stages.length, 3); assert.equal(q.report.needs, p.solvedFlag); assert.equal(q.report.flag, `q.${id}.told`);
+    assert.ok(q.stages[0].done({ [`q.${id}.seen`]: true }) && !q.stages[1].done({ [`q.${id}.seen`]: true }) && q.stages[1].done({ [p.solvedFlag]: true }));
+    assert.ok(SideQ.ES_SIDE_QUESTS[q.stages[1].text], `${id}: the puzzle stage has no Spanish`);
+    assert.ok(ITEMS[T.item] && p.reward.item === T.item, `${id}: pays ${T.item}`);
+    // a wrong run says the wrong line and leaves it open
+    const save = newSave({ seed: `a23-${id}`, rolls: {}, gameVersion: 't' }), said = [], host = a23Host(save, said);
+    const have = () => Inv.count(save.party.trevor, T.item);
+    a23Run(host, T.wrong);
+    assert.ok(!save.flags[p.solvedFlag], `${id}: a wrong run must not solve it`); assert.equal(have(), 0);
+    assert.ok(said.length === T.wrong.length && !said.some((t) => t.includes(p.reward.text)));
+    if (T.says) assert.ok(said.at(-1).endsWith(p[T.says]), `${id}: a wrong move says its ${T.says}`);
+    if (p.kind === 'order') assert.equal(save.flags[`pz.${id}.seq`], '', 'a wrong part resets the order');
+    // the right run solves it and pays once
+    a23Run(host, T.right);
+    assert.equal(save.flags[p.solvedFlag], true, `${id}: the right run solves it`);
+    assert.equal(have(), 1); assert.ok(said.at(-1).endsWith(p.reward.text));
+    a23Run(host, [...T.right, ...T.wrong]);
+    assert.equal(have(), 1, `${id}: no second reward`); assert.ok(said.at(-1).endsWith(p.solvedText));
+    // solved survives a save round-trip, and the quest's puzzle stage reads it
+    const back = migrate(JSON.parse(JSON.stringify(save)));
+    assert.ok(PK.isSolved(p, back.flags) && q.stages[1].done(back.flags)); assert.equal(Inv.count(back.party.trevor, T.item), 1);
+    // co-op: a guest's press only asks the host
+    const asked = [];
+    CraftWorldScene.prototype._usePuzzle.call({ mode: 'client', net: { send: (m) => asked.push(m) } }, p, on.get(p.parts[0]));
+    assert.deepEqual(asked, [{ t: 'puzzle', id: p.parts[0] }]);
+  });
+}
+test('Acts 2-3 puzzles: a timed one opens only inside its window, and the bell never hands out a boat', () => {
+  for (const p of A23_PUZZLES.filter((x) => x.kind === 'timed')) {
+    const open = Array.from({ length: 400 }, (_, t) => PK.use(p, p.parts[0], {}, { t }).solved);
+    assert.ok(!open[0], `${p.id}: shut when the clock starts`);
+    assert.ok(open.some(Boolean) && open.filter(Boolean).length < 200, `${p.id}: open less than half the time`);
+    assert.ok(open.findIndex(Boolean) < 120, `${p.id}: nobody waits more than two minutes for the first window`);
+  }
+  const bell = A23_PUZZLES.find((p) => p.id === 'ann_bell');
+  assert.equal(ITEMS[bell.reward.item].slot, 'key'); assert.ok(!/boat|skiff/i.test(ITEMS[bell.reward.item].name));
+  const almanac = SideQ.SIDE_QUESTS.find((q) => q.id === 'side.ann_almanac');
+  assert.match(almanac.inspect.text, /ask the bell/); assert.ok(!almanac.puzzle, 'the almanac stays the main quest\'s object: its side quest is only the clue');
+});
+
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
