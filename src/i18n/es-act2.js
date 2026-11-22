@@ -144,6 +144,21 @@ export const ES_ACT2 = {
   'The fire tower': 'La torre de incendios',
   'A fire tower on four timber legs, its cab up in the treetops. Nailed to the rail of the bottom flight is a slice of an old oak, its rings labeled in ink on little paper flags.':
     'Una torre de incendios sobre cuatro patas de madera, con la cabina allá arriba entre las copas. Clavada en la baranda del primer tramo hay una rodaja de un roble viejo, con los anillos rotulados en tinta en banderitas de papel.',
+  'Oak round: "the phones"': 'Rodaja de roble: "los teléfonos"',
+  'A slice of the old oak on a post, one ring flagged in ink: "the year the phones rang." A thin ring, with the wide pale years all inside it. A wooden peg sticks out under the flag.':
+    'Una rodaja del roble viejo sobre un poste, con un anillo marcado en tinta: "el año que sonaron los teléfonos." Un anillo fino, con todos los años anchos y pálidos por dentro. Debajo de la banderita asoma una clavija de madera.',
+  'Oak round: "the clocks"': 'Rodaja de roble: "los relojes"',
+  'A slice of the old oak on a post, one ring flagged in ink: "the year the clocks went back." The ring is narrow and dark. A wooden peg sticks out under the flag.':
+    'Una rodaja del roble viejo sobre un poste, con un anillo marcado en tinta: "el año que los relojes volvieron atrás." El anillo es angosto y oscuro. Debajo de la banderita asoma una clavija de madera.',
+  'Oak round with a newer flag': 'Rodaja de roble con una banderita más nueva',
+  'A fifth slice, and the only flag in ballpoint: "the year everything got better." It is pinned to the bark, where there is no ring. Under it, small, in pencil: "after the clocks, before the vote, if at all." This one has no peg.':
+    'Una quinta rodaja, y la única banderita en bolígrafo: "el año que todo mejoró." Está clavada en la corteza, donde no hay anillo. Debajo, chiquito, en lápiz: "después de los relojes, antes de la votación, si es que pasó." Esta no tiene clavija.',
+  'Oak round: "the answering"': 'Rodaja de roble: "contestar"',
+  'A slice of the old oak on a post, one ring flagged in ink: "the year we stopped answering." It is the thickest ring on the slice. A wooden peg sticks out under the flag.':
+    'Una rodaja del roble viejo sobre un poste, con un anillo marcado en tinta: "el año que dejamos de contestar." Es el anillo más grueso de la rodaja. Debajo de la banderita asoma una clavija de madera.',
+  'Oak round: "the vote"': 'Rodaja de roble: "la votación"',
+  'A slice of the old oak on a post, one ring flagged in ink: "the year they paused the voting." A wide, pale ring, as if the tree hadn\'t noticed. A wooden peg sticks out under the flag.':
+    'Una rodaja del roble viejo sobre un poste, con un anillo marcado en tinta: "el año que pausaron las votaciones." Un anillo ancho y pálido, como si el árbol no se hubiera enterado. Debajo de la banderita asoma una clavija de madera.',
   'Up the boardwalk to the settlement': 'Por la pasarela, al asentamiento',
   'Timber walls, lamps in the windows.': 'Paredes de troncos, lámparas en las ventanas.',
   'Deeper into the forest': 'Más adentro del bosque',

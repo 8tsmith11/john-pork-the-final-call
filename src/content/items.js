@@ -65,6 +65,7 @@ Object.assign(ITEMS, MATERIALS);
 // What the optional puzzles of Acts 2-3 pay (src/content/puzzles.js). Key items wait for the quests that use them.
 Object.assign(ITEMS, {
   'item.ann_oarlocks':  { name: 'Bronze oarlocks', slot: 'key', text: 'A pair, from the island family, green at the pins. They fit any boat on the bay. You don\'t have a boat.' },
+  'item.analog_axe':    { name: 'Analogist felling axe', slot: 'weapon', analog: true, swing: { range: 22, arc: 0.55, cooldown: 0.58, damage: 26, knockback: 200 }, text: 'A hickory haft and a head forged in the refuge, ground by hand. No part of it has ever been plugged in. Slow, and it means it.' },
 });
 
 // Bought, not printed.

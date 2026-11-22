@@ -38,6 +38,21 @@ export const PUZZLES = [
     reward: {
       text: 'Its peg goes on the board, and the beam comes level and stays there. For once something in this building agrees with itself. You stand and watch it not move for a while. It is steadying. (+1 to every ability check, from now on)',
       textEs: 'Su clavija queda en el tablero, y la balanza se nivela y ahí se queda. Por una vez algo en este edificio está de acuerdo consigo mismo. Te quedas un rato mirando cómo no se mueve. Tranquiliza. (+1 a todas las pruebas de habilidad, desde ahora)' } },
+
+  // ---- The refuge: tree rings (order). Push the pegs in the order the flagged years happened. The widths, the
+  // tower's own slice and the fifth round's pencil note give the order; the fifth round's flag is the lie, and it
+  // has no peg, so it is no part.
+  { id: 'rf_rings', kind: 'order', parts: ['obj.rf_ring_phones', 'obj.rf_ring_clocks', 'obj.rf_ring_silence', 'obj.rf_ring_vote'],
+    answer: ['obj.rf_ring_clocks', 'obj.rf_ring_vote', 'obj.rf_ring_phones', 'obj.rf_ring_silence'],
+    stepText: 'You push the peg. It goes in and stays. ({n} of {total})',
+    stepTextEs: 'Empujas la clavija. Entra y se queda. ({n} de {total})',
+    wrongText: 'You push the peg. It slides back out, and so do the others. Wood keeps the order it grew in.',
+    wrongTextEs: 'Empujas la clavija. Vuelve a salir, y las otras también. La madera guarda el orden en que creció.',
+    solvedText: 'All four pegs are in. The tree has said what it knows.',
+    solvedTextEs: 'Las cuatro clavijas están adentro. El árbol ya dijo lo que sabe.',
+    reward: { item: 'item.analog_axe',
+      text: 'The last peg goes in. Under the tower\'s first landing a wooden bar drops out of its slot, and a locker door swings open on leather hinges. Inside hangs an axe, oiled, with a paper flag of its own: "for whoever can tell the years apart." (Analogist felling axe)',
+      textEs: 'Entra la última clavija. Debajo del primer descanso de la torre, una tranca de madera cae de su ranura, y la puerta de un armario se abre sobre bisagras de cuero. Adentro cuelga un hacha, aceitada, con su propia banderita de papel: "para quien sepa distinguir los años." (Hacha de tala analogista)' } },
 ].map(definePuzzle);
 
 /** The puzzle a map object belongs to, if any. */

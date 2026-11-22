@@ -167,6 +167,18 @@ export const refuge = fromGrid({
   
   .exit('rf_fringe', 26, 0, { id: 'obj.refuge_to_rf_fringe', selfDrawn: true, stepOn: true, pair: 'obj.rf_fringe_out', label: 'Deeper into the forest', text: "A day's walk in, they say. It's less." })   // stretch.js
   .exit('rf_marsh', 15, 9, { id: 'obj.refuge_to_rf_marsh', selfDrawn: true, stepOn: true, pair: 'obj.rf_marsh_out', label: 'Down to the marsh boardwalk', text: 'Boardwalks over black water.' })   // stretch.js
+  // The tree-rings puzzle (src/content/puzzles.js, rf_rings): four slices of the tower's oak on posts at its foot,
+  // each with one flagged ring and a peg, set out in no order. The fifth has a newer flag and no peg: it is a clue.
+  .prop('obj.oak_round', 15, 7, { id: 'obj.rf_ring_phones', label: 'Oak round: "the phones"',
+    text: 'A slice of the old oak on a post, one ring flagged in ink: "the year the phones rang." A thin ring, with the wide pale years all inside it. A wooden peg sticks out under the flag.' })
+  .prop('obj.oak_round', 16, 7, { id: 'obj.rf_ring_clocks', label: 'Oak round: "the clocks"',
+    text: 'A slice of the old oak on a post, one ring flagged in ink: "the year the clocks went back." The ring is narrow and dark. A wooden peg sticks out under the flag.' })
+  .prop('obj.oak_round', 17, 7, { id: 'obj.rf_ring_liar', label: 'Oak round with a newer flag',
+    text: 'A fifth slice, and the only flag in ballpoint: "the year everything got better." It is pinned to the bark, where there is no ring. Under it, small, in pencil: "after the clocks, before the vote, if at all." This one has no peg.' })
+  .prop('obj.oak_round', 19, 7, { id: 'obj.rf_ring_silence', label: 'Oak round: "the answering"',
+    text: 'A slice of the old oak on a post, one ring flagged in ink: "the year we stopped answering." It is the thickest ring on the slice. A wooden peg sticks out under the flag.' })
+  .prop('obj.oak_round', 20, 7, { id: 'obj.rf_ring_vote', label: 'Oak round: "the vote"',
+    text: 'A slice of the old oak on a post, one ring flagged in ink: "the year they paused the voting." A wide, pale ring, as if the tree hadn\'t noticed. A wooden peg sticks out under the flag.' })
   .build();
 
 // ---- 9. The Meade (perimeter in Act 2) ----

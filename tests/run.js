@@ -4996,8 +4996,11 @@ const A23 = {
   gt_cradle: { map: 'gaithersburg', giver: 'npc.gt_physicist', look: 'obj.gt_cradle', clues: ['obj.gt_comparator', 'obj.gt_weights_log'], pays: (save) => AB23.checkBonus(save.flags),
     wrong: [['obj.gt_weight_500'], ['obj.gt_weight_200']], says: 'stepText',
     right: [['obj.gt_weight_200'], ['obj.gt_weight_200b'], ['obj.gt_weight_200b'], ['obj.gt_weight_100'], ['obj.gt_weight_100']] },
+  rf_rings: { map: 'refuge', giver: 'npc.rf_teacher', look: 'obj.rf_tower', clues: ['obj.rf_ring_liar', 'obj.rf_tower'], item: 'item.analog_axe',
+    wrong: [['obj.rf_ring_clocks'], ['obj.rf_ring_phones']], says: 'wrongText',
+    right: [['obj.rf_ring_clocks'], ['obj.rf_ring_vote'], ['obj.rf_ring_phones'], ['obj.rf_ring_silence']] },
 };
-const AB23 = await import('../src/content/abilities.js');
+const AB23 =await import('../src/content/abilities.js');
 const a23Host = (save, said) => ({ mode: 'host', character: 'trevor', localId: 'host', save, time: { now: 0 }, cameras: { main: { shake() {} } },
   net: { send() {} }, _say: (t) => said.push(t), _toast() {}, _tickQuests() {}, _syncParty() {} });
 const a23Run = (host, moves) => { for (const [id, t = 0] of moves) { host.time.now = t * 1000; const o = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects).find((x) => x.id === id); CraftWorldScene.prototype._usePuzzle.call(host, a23PuzzleFor(id), o); } };

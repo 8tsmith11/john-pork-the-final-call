@@ -201,6 +201,7 @@ side({ id: 'rf_rings', act: 2, ...g('npc.rf_teacher', TEACHER), title: 'Tree rin
   why: 'The fire tower rail has a hundred years labeled in tree rings.', whyEs: 'La baranda de la torre tiene cien años marcados en anillos de árbol.',
   pitch: '"Go read the rings on the fire tower. Then tell me which year you\'d have wanted to live in."', pitchEs: '"Ve a leer los anillos de la torre de incendios. Después dime en qué año te hubiera gustado vivir."',
   look: { obj: 'obj.rf_tower', where: 'the fire tower', whereEs: 'la torre de incendios', seen: 'A thin ring: "the year the phones rang." A thick one after: "the year we stopped answering."', seenEs: 'Un anillo fino: "el año que sonaron los teléfonos." Uno grueso después: "el año que dejamos de contestar."' },
+  puzzle: { id: 'rf_rings', text: 'Set the pegs at the tower\'s foot in the order the years happened.', textEs: 'Pon las clavijas al pie de la torre en el orden en que pasaron los años.' },
   line: '"Good answer. There\'s no right one."', lineEs: '"Buena respuesta. No hay una correcta."' });
 
 side({ id: 'rf_forge', act: 2, ...g('npc.rf_blacksmith', SMITH), title: 'Something that lasts', titleEs: 'Algo que dure',
