@@ -247,7 +247,7 @@ export const ES_PLAZA = {
   'RATE YOUR MEAL, and five faces from a big smile down to a frown. The frown has been pressed so often its plastic has gone white.': 'CALIFICA TU COMIDA, y cinco caras, de una gran sonrisa a un ceño fruncido. Al ceño fruncido lo apretaron tantas veces que el plástico se puso blanco.',
   'Back out to the quad.': 'De vuelta al patio central.',
   'The Mars rover': 'El rover de Marte',
-  'The UMD rover team\'s machine, on a cart in the middle of the bay. A laminated tag on the frame: FLIGHT SPARE, DO NOT CANNIBALIZE. It has been cannibalized a little.': 'La máquina del equipo del rover de UMD, sobre un carrito en medio del taller. Una etiqueta plastificada en el chasis: REPUESTO DE VUELO, NO CANIBALIZAR. Lo canibalizaron un poco.',
+  'The UMD rover team\'s machine, on the test pad in the middle of the bay. A laminated tag on the frame: FLIGHT SPARE, DO NOT CANNIBALIZE. It has been cannibalized a little.': 'La máquina del equipo del rover de UMD, sobre la pista de pruebas en medio del taller. Una etiqueta plastificada en el chasis: REPUESTO DE VUELO, NO CANIBALIZAR. Lo canibalizaron un poco.',
   'Whiteboard': 'Pizarra blanca',
   'Wheel torque numbers in three colors of marker. DEMO DAY, with the date crossed out and moved four times. In the corner, a stick figure holding a wrench, labeled TREVOR. Someone gave it very good hair.': 'Números de torque de las ruedas en tres colores de marcador. DÍA DE LA DEMO, con la fecha tachada y movida cuatro veces. En la esquina, un monigote con una llave inglesa, con el nombre TREVOR. Alguien le dibujó muy buen pelo.',
   'Parts bin': 'Cajonera de repuestos',
