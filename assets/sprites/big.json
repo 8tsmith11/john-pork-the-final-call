@@ -359,6 +359,46 @@
     "w": 32,
     "h": 40
    }
+  },
+  "obj.boiler": {
+   "frame": {
+    "x": 64,
+    "y": 80,
+    "w": 32,
+    "h": 40
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 40
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 40
+   }
+  },
+  "obj.water_tank": {
+   "frame": {
+    "x": 96,
+    "y": 80,
+    "w": 32,
+    "h": 40
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 40
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 40
+   }
   }
  },
  "meta": {
