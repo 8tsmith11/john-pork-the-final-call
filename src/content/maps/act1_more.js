@@ -53,9 +53,9 @@ export const diner = makeMap({
     { id: 'obj.diner_handwash', art: 'obj.house_rules', x: 18, y: 0, label: 'A sign over the sink', text: 'EMPLOYEES MUST WASH HANDS. Under it, a pencil tally of who has. The cook is winning.' },
   ],
   scenery: [
-    // the counter, the coffee machine at its end, and ten stools
+    // the counter, the coffee machine at its end, and ten stools (the regular's, at 6, is drawn with him: npc.diner_regular)
     ...[1, 2, 3, 4, 5, 6, 8, 9, 10, 11].map((x) => ({ art: 'obj.counter', x, y: 6, solid: true })), { art: 'obj.coffee', x: 12, y: 6, solid: true, light: 0.4 },
-    ...[2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((x) => ({ art: 'obj.stool', x, y: 7 })), { art: 'obj.bin', x: 14, y: 7 },
+    ...[2, 3, 4, 5, 7, 8, 9, 10, 11].map((x) => ({ art: 'obj.stool', x, y: 7 })), { art: 'obj.bin', x: 14, y: 7 },
     // booths and tables
     ...[4, 8, 17, 21, 23].map((x) => ({ art: 'obj.booth', x, y: 13, solid: true })),
     ...[[18, 8], [21, 8], [18, 10], [21, 10]].map(([x, y]) => ({ art: 'obj.cafe_table', x, y, solid: true })),

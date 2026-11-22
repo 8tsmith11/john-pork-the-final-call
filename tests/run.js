@@ -5252,6 +5252,10 @@ test('hub #113, Act 1 people: thirteen neighbours, cooks and students draw with 
     used.set(art, id);
   }
   assert.equal(used.size, 13);
+  // The regular sits on a stool drawn into his sprite; a map stool on his tile has the same depth and draws over him.
+  const reg = MAPS_FOR_TEST.diner.objects.find((q) => q.id === 'npc.diner_regular');
+  const onHisTile = [...MAPS_FOR_TEST.diner.objects, ...(MAPS_FOR_TEST.diner.scenery ?? [])].filter((t) => t !== reg && t.x === reg.x && t.y === reg.y && (t.art ?? t.id) === 'obj.stool');
+  assert.equal(onHisTile.length, 0, 'a map stool on the regular\'s tile covers him');
   assert.ok(frames['npc.lab_grad#1'], 'the sleeper breathes: a second frame for the slow loop');
   // The plaza's four borrow a rotter on purpose, and the rotters are still in the sheet for everyone else.
   for (const id of ['npc.chatgpt', 'npc.claude', 'npc.chatgtt', 'npc.chatgdt']) {
