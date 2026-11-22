@@ -333,6 +333,7 @@ side({ id: 'gt_cradle', act: 3, ...g('npc.gt_physicist', PHYS), title: 'The empt
   why: 'One of the reference weights is missing.', whyEs: 'Falta una de las pesas de referencia.',
   pitch: '"The weights room. One cradle\'s empty. Look at the label. I can\'t, anymore."', pitchEs: '"La sala de pesas. Una cuna está vacía. Mira la etiqueta. Yo ya no puedo."',
   look: { obj: 'obj.gt_cradle', where: 'the reference weights', whereEs: 'las pesas de referencia', seen: 'The label: "1 kg." Someone has added: "approximately."', seenEs: 'La etiqueta: "1 kg." Alguien agregó: "aproximadamente."' },
+  puzzle: { id: 'gt_cradle', text: 'Close the set on the comparator, without the kilogram.', textEs: 'Cierra el juego de pesas en el comparador, sin el kilogramo.' },
   line: '"Approximately." She laughs, and then doesn\'t.', lineEs: '"Aproximadamente." Se ríe, y después no.' });
 
 side({ id: 'gt_master', act: 3, ...g('npc.gt_physicist', PHYS), title: 'Running since 1901', titleEs: 'En marcha desde 1901', money: 50, xp: 100,

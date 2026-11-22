@@ -43,10 +43,13 @@ export function abilityModsFor(char, charId) {
   };
 }
 
-/** An ability check: d20 + modifier vs dc. `adv` rolls twice and keeps the higher. */
-export function check(char, charId, key, dc, { adv = false, rand = Math.random } = {}) {
+/** An ability check: d20 + modifier vs dc. `adv` rolls twice and keeps the higher. `bonus` is a flat extra (checkBonus). */
+export function check(char, charId, key, dc, { adv = false, rand = Math.random, bonus = 0 } = {}) {
   const d = () => 1 + Math.floor(rand() * 20);
   const roll = adv ? Math.max(d(), d()) : d();
-  const mod = modOf(scoresOf(char, charId)[key]), total = roll + mod;
-  return { key, roll, mod, total, dc, nat20: roll === 20, nat1: roll === 1, success: roll === 20 || (roll !== 1 && total >= dc) };
+  const mod = modOf(scoresOf(char, charId)[key]), total = roll + mod + bonus;
+  return { key, roll, mod, bonus, total, dc, nat20: roll === 20, nat1: roll === 1, success: roll === 20 || (roll !== 1 && total >= dc) };
 }
+
+/** The party's standing bonus to every check: +1 once the reference weights balance (src/content/puzzles.js, gt_cradle). */
+export const checkBonus = (flags) => (flags?.['pz.gt_cradle.solved'] ? 1 : 0);

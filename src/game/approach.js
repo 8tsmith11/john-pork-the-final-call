@@ -3,7 +3,7 @@
 // on the host, which owns pockets, money and items, and sends the result back as a say box.
 import * as W from '../engine/wallet.js';
 import { APPROACHES, ROLE_OF, DC, ALLOWED, CAUGHT_PICKPOCKET, POCKETS, LINES, GUARD_LINES, TELLS, WARY_MS } from '../content/approaches.js';
-import { ABILITIES, check, modOf, scoresOf, fmtMod } from '../content/abilities.js';
+import { ABILITIES, check, checkBonus, modOf, scoresOf, fmtMod } from '../content/abilities.js';
 import { ITEMS } from '../content/items.js';
 import * as Inv from '../engine/inventory.js';
 import { Rng, hashString } from '../engine/rng.js';
@@ -150,8 +150,8 @@ export class Approach {
     if ((this.wary.get(o.id) ?? 0) > now) return fill(pick(LINES.wary));
     const dc = o.dc?.[kind] ?? DC[role]?.[kind] ?? 12;
     const advKey = `${who}:${o.id}`, adv = kind === 'pickpocket' && this.adv.has(advKey);
-    const r = check(c, who, A.ability, dc, { adv });
-    const head = `${A.name.toUpperCase()} (${ABILITIES[A.ability].short} ${fmtMod(r.mod)}) · d20 ${adv ? '(adv) ' : ''}${r.roll} ${fmtMod(r.mod)} = ${r.total} vs DC ${dc}${r.nat20 ? ' · CRITICAL' : r.nat1 ? ' · FUMBLE' : ''}\n\n`;
+    const r = check(c, who, A.ability, dc, { adv, bonus: checkBonus(s.save.flags) });
+    const head = `${A.name.toUpperCase()} (${ABILITIES[A.ability].short} ${fmtMod(r.mod)}) · d20 ${adv ? '(adv) ' : ''}${r.roll} ${fmtMod(r.mod)}${r.bonus ? ` ${fmtMod(r.bonus)}` : ''} = ${r.total} vs DC ${dc}${r.nat20 ? ' · CRITICAL' : r.nat1 ? ' · FUMBLE' : ''}\n\n`;
     const outcome = r.nat20 ? 'crit' : r.success ? 'win' : r.nat1 ? 'fumble' : 'lose';
     const fail = () => { this.wary.set(o.id, now + WARY_MS); return outcome; };
 

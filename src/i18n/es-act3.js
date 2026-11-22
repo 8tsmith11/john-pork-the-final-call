@@ -49,6 +49,23 @@ export const ES_ACT3 = {
   'Reference weights': 'Pesas de referencia',
   'The weights room: brass reference weights under glass bells, one to a cradle, from a kilogram down to a gram. One cradle in the front row is empty. Its label is still there.':
     'La sala de pesas: pesas de referencia de bronce bajo campanas de vidrio, una por cuna, desde un kilo hasta un gramo. Una cuna de la primera fila está vacía. Su etiqueta sigue ahí.',
+  'Reference weight, 500 g': 'Pesa de referencia, 500 g',
+  'The half-kilogram, brass, under a glass bell, with forceps on a hook beside it. It is the biggest weight left in the room.':
+    'El medio kilo, de bronce, bajo una campana de vidrio, con unas pinzas colgadas de un gancho al lado. Es la pesa más grande que queda en la sala.',
+  'Reference weight, 200 g': 'Pesa de referencia, 200 g',
+  'A 200 g weight under a glass bell, the brass gone the color of tea.': 'Una pesa de 200 g bajo una campana de vidrio, con el bronce ya del color del té.',
+  'Reference weight, 200 g, dotted': 'Pesa de referencia, 200 g, con punto',
+  'The other 200 g weight. A dot is punched in its top so nobody mixes the two up. Somebody has also written "2" on the bell in grease pencil, in case.':
+    'La otra pesa de 200 g. Tiene un punto marcado arriba para que nadie las confunda. Alguien además escribió "2" en la campana con lápiz graso, por las dudas.',
+  'Reference weight, 100 g': 'Pesa de referencia, 100 g',
+  'A 100 g weight under a glass bell. It looks too small to matter. In this room everything matters, to five decimal places.':
+    'Una pesa de 100 g bajo una campana de vidrio. Parece demasiado chica para importar. En esta sala todo importa, hasta el quinto decimal.',
+  'The comparator': 'El comparador',
+  'A two-pan balance in a glass case, the pans stamped A and B. Beside it is a tally board with a peg for each weight: 0 for its cradle, A or B for a pan. A typed card is taped to the case: WEEKLY CLOSURE. EVERY WEIGHT ON THE BEAM. BEAM LEVEL. INITIAL BELOW. Nobody has initialed below in a while.':
+    'Una balanza de dos platillos en una caja de vidrio, con los platillos marcados A y B. Al lado hay un tablero con una clavija por cada pesa: 0 si está en su cuna, A o B si está en un platillo. Pegada a la caja, una tarjeta escrita a máquina: CIERRE SEMANAL. TODAS LAS PESAS EN LA BALANZA. BALANZA NIVELADA. INICIALES ABAJO. Hace rato que nadie pone iniciales abajo.',
+  'Weights logbook': 'Libro de registro de las pesas',
+  'The sign-out log for the weights room. The kilogram\'s line reads OUT, "for comparison," then two initials pressed hard into the page, and no return date. Every week after it somebody has still written CLOSES. Once, smaller: "the big one sits alone now."':
+    'El registro de salidas de la sala de pesas. La línea del kilogramo dice SALIÓ, "para comparación," después dos iniciales apretadas fuerte contra la hoja, y ninguna fecha de devolución. Cada semana después de esa, alguien igual escribió CIERRA. Una vez, más chico: "ahora la grande va sola."',
   'A physicist': 'Una física', 'A PHYSICIST': 'UNA FÍSICA',
   '"What time do you have?" She turns your wrist over and reads your watch herself, then her own, then the one on her other wrist. She writes all three down in a notebook that is nothing but columns.':
     '"¿Qué hora tienes?" Te gira la muñeca y lee tu reloj ella misma, después el suyo, después el de su otra muñeca. Anota las tres en una libreta que no es más que columnas.',

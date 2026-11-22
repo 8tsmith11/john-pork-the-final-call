@@ -4992,7 +4992,12 @@ const { PUZZLES: A23_PUZZLES, puzzleFor: a23PuzzleFor } = await import('../src/c
 const A23 = {
   ann_bell: { map: 'ann_harbor', giver: 'npc.ann_pilot', look: 'obj.ann_bell', clues: ['obj.ann_almanac', 'obj.ann_tide_board'], item: 'item.ann_oarlocks',
     wrong: [['obj.ann_pier_bell', 10], ['obj.ann_pier_bell', 59], ['obj.ann_pier_bell', 86]], right: [['obj.ann_pier_bell', 61]], says: 'closedText' },
+  // 500 on A, then the first 200 on A too: 700 against nothing. Moving that 200 across and loading B closes it.
+  gt_cradle: { map: 'gaithersburg', giver: 'npc.gt_physicist', look: 'obj.gt_cradle', clues: ['obj.gt_comparator', 'obj.gt_weights_log'], pays: (save) => AB23.checkBonus(save.flags),
+    wrong: [['obj.gt_weight_500'], ['obj.gt_weight_200']], says: 'stepText',
+    right: [['obj.gt_weight_200'], ['obj.gt_weight_200b'], ['obj.gt_weight_200b'], ['obj.gt_weight_100'], ['obj.gt_weight_100']] },
 };
+const AB23 = await import('../src/content/abilities.js');
 const a23Host = (save, said) => ({ mode: 'host', character: 'trevor', localId: 'host', save, time: { now: 0 }, cameras: { main: { shake() {} } },
   net: { send() {} }, _say: (t) => said.push(t), _toast() {}, _tickQuests() {}, _syncParty() {} });
 const a23Run = (host, moves) => { for (const [id, t = 0] of moves) { host.time.now = t * 1000; const o = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects).find((x) => x.id === id); CraftWorldScene.prototype._usePuzzle.call(host, a23PuzzleFor(id), o); } };
@@ -5015,14 +5020,14 @@ for (const [id, T] of Object.entries(A23)) {
     assert.equal(q.puzzle, id); assert.equal(q.stages.length, 3); assert.equal(q.report.needs, p.solvedFlag); assert.equal(q.report.flag, `q.${id}.told`);
     assert.ok(q.stages[0].done({ [`q.${id}.seen`]: true }) && !q.stages[1].done({ [`q.${id}.seen`]: true }) && q.stages[1].done({ [p.solvedFlag]: true }));
     assert.ok(SideQ.ES_SIDE_QUESTS[q.stages[1].text], `${id}: the puzzle stage has no Spanish`);
-    assert.ok(ITEMS[T.item] && p.reward.item === T.item, `${id}: pays ${T.item}`);
+    if (T.item) assert.ok(ITEMS[T.item] && p.reward.item === T.item, `${id}: pays ${T.item}`); else assert.ok(!p.reward.item && T.pays, `${id}: say what it pays instead of an item`);
     // a wrong run says the wrong line and leaves it open
     const save = newSave({ seed: `a23-${id}`, rolls: {}, gameVersion: 't' }), said = [], host = a23Host(save, said);
-    const have = () => Inv.count(save.party.trevor, T.item);
+    const have = () => (T.item ? Inv.count(save.party.trevor, T.item) : T.pays(save));
     a23Run(host, T.wrong);
     assert.ok(!save.flags[p.solvedFlag], `${id}: a wrong run must not solve it`); assert.equal(have(), 0);
     assert.ok(said.length === T.wrong.length && !said.some((t) => t.includes(p.reward.text)));
-    if (T.says) assert.ok(said.at(-1).endsWith(p[T.says]), `${id}: a wrong move says its ${T.says}`);
+    assert.ok(said.at(-1).includes(p[T.says].split('{')[0]) && p[T.says] !== p.reward.text, `${id}: a wrong move says its ${T.says}`);
     if (p.kind === 'order') assert.equal(save.flags[`pz.${id}.seq`], '', 'a wrong part resets the order');
     // the right run solves it and pays once
     a23Run(host, T.right);
@@ -5032,7 +5037,7 @@ for (const [id, T] of Object.entries(A23)) {
     assert.equal(have(), 1, `${id}: no second reward`); assert.ok(said.at(-1).endsWith(p.solvedText));
     // solved survives a save round-trip, and the quest's puzzle stage reads it
     const back = migrate(JSON.parse(JSON.stringify(save)));
-    assert.ok(PK.isSolved(p, back.flags) && q.stages[1].done(back.flags)); assert.equal(Inv.count(back.party.trevor, T.item), 1);
+    assert.ok(PK.isSolved(p, back.flags) && q.stages[1].done(back.flags)); assert.equal(T.item ? Inv.count(back.party.trevor, T.item) : T.pays(back), 1);
     // co-op: a guest's press only asks the host
     const asked = [];
     CraftWorldScene.prototype._usePuzzle.call({ mode: 'client', net: { send: (m) => asked.push(m) } }, p, on.get(p.parts[0]));
@@ -5050,6 +5055,14 @@ test('Acts 2-3 puzzles: a timed one opens only inside its window, and the bell n
   assert.equal(ITEMS[bell.reward.item].slot, 'key'); assert.ok(!/boat|skiff/i.test(ITEMS[bell.reward.item].name));
   const almanac = SideQ.SIDE_QUESTS.find((q) => q.id === 'side.ann_almanac');
   assert.match(almanac.inspect.text, /ask the bell/); assert.ok(!almanac.puzzle, 'the almanac stays the main quest\'s object: its side quest is only the clue');
+});
+test('Acts 2-3 puzzles: the cradle closes only with every weight on the beam, either way round, and its +1 reaches the roll', () => {
+  const p = A23_PUZZLES.find((x) => x.id === 'gt_cradle');
+  assert.ok(!p.check(['0', '0', '0', '0']), 'an empty beam is level, and is not a closure');
+  assert.ok(!p.check(['A', 'B', 'B', '0']) && !p.check(['A', 'A', 'B', 'B']) && p.check(['A', 'B', 'B', 'B']) && p.check(['B', 'A', 'A', 'A']));
+  const roll = (flags) => AB23.check({ abilities: { cha: 10 } }, 'michael', 'cha', 12, { rand: () => 0.5, bonus: AB23.checkBonus(flags) });   // d20 = 11, +0
+  assert.ok(!roll({}).success && roll({}).total === 11); assert.ok(roll({ 'pz.gt_cradle.solved': true }).success && roll({ 'pz.gt_cradle.solved': true }).total === 12);
+  assert.equal(AB23.check({ abilities: { cha: 10 } }, 'michael', 'cha', 2, { rand: () => 0, bonus: 1 }).success, false, 'a natural 1 still fails');
 });
 
 await Promise.all(pending);

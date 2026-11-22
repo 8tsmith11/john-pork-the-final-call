@@ -25,6 +25,19 @@ export const PUZZLES = [
     reward: { item: 'item.ann_oarlocks',
       text: 'The water is over the red line, which the almanac swears it can\'t be. You ring. This time the island answers: seven, a long gap, one. Before the last one fades there is a skiff alongside, and a woman in it who doesn\'t tie up. "You ring like family." She hands up a pair of bronze oarlocks. "For when you have something to put them on." (Bronze oarlocks)',
       textEs: 'El agua está por encima de la línea roja, cosa que el almanaque jura que no puede pasar. Tocas. Esta vez la isla contesta: siete, un hueco largo, una. Antes de que se apague la última hay un esquife al costado, y en él una mujer que no amarra. "Tocas como de la familia." Te alcanza un par de toletes de bronce. "Para cuando tengas dónde ponerlos." (Toletes de bronce)' } },
+
+  // ---- Gaithersburg: the empty cradle (cycle + check). Each weight's peg steps 0 (its cradle) -> A -> B (the
+  // comparator's pans). The comparator's card says what a closure is; the logbook says how it has closed since the
+  // kilogram went out. Pays the party a standing +1 on every ability check (abilities.js, checkBonus).
+  { id: 'gt_cradle', kind: 'cycle', parts: ['obj.gt_weight_500', 'obj.gt_weight_200', 'obj.gt_weight_200b', 'obj.gt_weight_100'], states: ['0', 'A', 'B'],
+    check: (st) => { const g = [500, 200, 200, 100], on = (pan) => st.reduce((n, s, i) => n + (s === pan ? g[i] : 0), 0); return !st.includes('0') && on('A') === on('B'); },
+    stepText: 'You move it with the forceps. Its peg on the tally board now sits at {state}. The beam is not level, or not everything is on it.',
+    stepTextEs: 'La mueves con las pinzas. Su clavija en el tablero ahora está en {state}. La balanza no está nivelada, o no está todo arriba.',
+    solvedText: 'Every peg is on the board and the beam is level. You leave it alone.',
+    solvedTextEs: 'Todas las clavijas están en el tablero y la balanza está nivelada. No la tocas.',
+    reward: {
+      text: 'Its peg goes on the board, and the beam comes level and stays there. For once something in this building agrees with itself. You stand and watch it not move for a while. It is steadying. (+1 to every ability check, from now on)',
+      textEs: 'Su clavija queda en el tablero, y la balanza se nivela y ahí se queda. Por una vez algo en este edificio está de acuerdo consigo mismo. Te quedas un rato mirando cómo no se mueve. Tranquiliza. (+1 a todas las pruebas de habilidad, desde ahora)' } },
 ].map(definePuzzle);
 
 /** The puzzle a map object belongs to, if any. */

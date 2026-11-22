@@ -109,6 +109,20 @@ export const gaithersburg = fromGrid({
     S: back('gaithersburg', 'South, back to the Beltway', 'g'),
   },
 }).enemy('boss.gt_clock', 6, 4)   // region guardian (optional), in the weights room by what it guards
+  // The cradle puzzle (src/content/puzzles.js, gt_cradle): the four weights still in the room, the comparator they
+  // go on, and the sign-out log. The guardian stands among them.
+  .prop('obj.key_jar', 4, 4, { id: 'obj.gt_weight_500', label: 'Reference weight, 500 g',
+    text: 'The half-kilogram, brass, under a glass bell, with forceps on a hook beside it. It is the biggest weight left in the room.' })
+  .prop('obj.key_jar', 5, 4, { id: 'obj.gt_weight_200', label: 'Reference weight, 200 g',
+    text: 'A 200 g weight under a glass bell, the brass gone the color of tea.' })
+  .prop('obj.key_jar', 8, 4, { id: 'obj.gt_weight_200b', label: 'Reference weight, 200 g, dotted',
+    text: 'The other 200 g weight. A dot is punched in its top so nobody mixes the two up. Somebody has also written "2" on the bell in grease pencil, in case.' })
+  .prop('obj.key_jar', 9, 4, { id: 'obj.gt_weight_100', label: 'Reference weight, 100 g',
+    text: 'A 100 g weight under a glass bell. It looks too small to matter. In this room everything matters, to five decimal places.' })
+  .prop('obj.microscope', 8, 5, { id: 'obj.gt_comparator', label: 'The comparator',
+    text: 'A two-pan balance in a glass case, the pans stamped A and B. Beside it is a tally board with a peg for each weight: 0 for its cradle, A or B for a pan. A typed card is taped to the case: WEEKLY CLOSURE. EVERY WEIGHT ON THE BEAM. BEAM LEVEL. INITIAL BELOW. Nobody has initialed below in a while.' })
+  .prop('obj.flight_log', 4, 5, { id: 'obj.gt_weights_log', label: 'Weights logbook',
+    text: 'The sign-out log for the weights room. The kilogram\'s line reads OUT, "for comparison," then two initials pressed hard into the page, and no return date. Every week after it somebody has still written CLOSES. Once, smaller: "the big one sits alone now."' })
   .exit('gt_clockroom', 20, 3, { id: 'obj.gaithersburg_to_gt_clockroom', art: 'obj.door', pair: 'obj.gt_clockroom_out', label: 'Down to the clock vault', text: 'Stairs down. A tick, from below.' })   // act3_more.js
   
   .exit('gt_labs', 23, 3, { id: 'obj.gaithersburg_to_gt_labs', art: 'obj.door', pair: 'obj.gt_labs_out', label: 'The measurement labs', text: 'Every faction checks its clocks here.' })   // stretch.js
