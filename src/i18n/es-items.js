@@ -89,6 +89,7 @@ export const ES_ITEMS = {
   gb_tape: ['Cinta de la sala limpia', 'Una lata de cinta de telemetría de la sala limpia de Greenbelt, rotulada en lápiz: una antena, una noche. Bobinada antes de las Décadas de Basura y jamás tocada por un modelo. Colgada de su correa, mantiene lejos el coderot.'],
   intercept_codes: ['Códigos de intercepción', 'Una libreta sacada de un buzón de sugerencias de la Meade, cada página una columna de grupos de cinco letras en letra cuidadosa. De los propios analistas, para leer el tráfico de la Meade. La tapa dice PEDIDOS DE ALMUERZO.'],
   baron_keycard: ['Tarjeta de un Barón del Cómputo', 'Una tarjeta negra con el escudo de una casa y una banda dorada de contactos, sin foto y sin nombre. Estaba en un cajón que una nave dada de baja mantuvo cerrado mientras tuvo corriente.'],
+  provenance_seal: ['Sello de procedencia', 'Un sello de archivo estampado en lacre rojo sobre una cinta de lino, a mano. Avala que una cosa es ella misma, y no una copia. Si lo llevas puesto, te avala a ti.'],
   analog_axe: ['Hacha de tala analogista', 'Mango de nogal y una cabeza forjada en el refugio, afilada a mano. Ninguna parte suya estuvo enchufada jamás. Lenta, y va en serio.'],
   keycard: ['Tarjeta de acceso', 'Una credencial de contratista de Continuity en un cordón. La foto es de otra persona.'],
   hard_candy: ['Caramelo duro', 'De butterscotch, envuelto en plástico dorado, de un bolsillo de abrigo que lo tiene desde 2091.'],

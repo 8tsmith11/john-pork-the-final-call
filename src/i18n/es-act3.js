@@ -180,6 +180,18 @@ export const ES_ACT3 = {
   'A functionary': 'Una funcionaria', 'A FUNCTIONARY': 'UNA FUNCIONARIA',
   '"Attested visitors only." She doesn\'t look at your papers. She is squaring a stack of call slips that was square already. "You\'re attested, I\'m sure. Please don\'t tell me otherwise. There\'s a form for it, and it\'s very long."':
     '"Solo visitantes verificados." No mira tus papeles. Está emparejando una pila de boletas de pedido que ya estaba pareja. "Usted está verificado, seguro. Por favor no me diga lo contrario. Hay un formulario para eso, y es muy largo."',
+  'Lectern: an address on patience': 'Atril: un discurso sobre la paciencia',
+  'A printed address on a lectern, one line underlined in archive pencil: "...the right of the people peaceably to wait." Beside the line is an empty box for a provenance stamp, and set into the lectern, a dial: A, B, C.':
+    'Un discurso impreso sobre un atril, con una línea subrayada con lápiz de archivo: "...el derecho del pueblo a esperar pacíficamente." Junto a la línea hay un recuadro vacío para un sello de procedencia, y empotrado en el atril, un dial: A, B, C.',
+  'Lectern: an address on equality': 'Atril: un discurso sobre la igualdad',
+  'A printed address on a lectern, one line underlined in archive pencil: "...that all are created equal, pending attestation." Beside the line is an empty box for a provenance stamp, and set into the lectern, a dial: A, B, C.':
+    'Un discurso impreso sobre un atril, con una línea subrayada con lápiz de archivo: "...que todos son creados iguales, sujeto a verificación." Junto a la línea hay un recuadro vacío para un sello de procedencia, y empotrado en el atril, un dial: A, B, C.',
+  'Lectern: an address on union': 'Atril: un discurso sobre la unión',
+  'A printed address on a lectern, one line underlined in archive pencil: "We the People, in order to form a more perfect Continuity..." Beside the line is an empty box for a provenance stamp, and set into the lectern, a dial: A, B, C.':
+    'Un discurso impreso sobre un atril, con una línea subrayada con lápiz de archivo: "Nosotros, el Pueblo, a fin de formar una Continuity más perfecta..." Junto a la línea hay un recuadro vacío para un sello de procedencia, y empotrado en el atril, un dial: A, B, C.',
+  'Provenance stamps': 'Sellos de procedencia',
+  'Three archive stamps in a felt tray beside the case, each on a chain to the document it vouches for. Stamp A hangs by the one with all the names at the bottom. Stamp B, by the long one that opens with the people. Stamp C, by the short list of what can\'t be taken away. A card in the tray: A QUOTATION BEARS THE STAMP OF ITS ORIGINAL.':
+    'Tres sellos de archivo en una bandeja de fieltro junto a la vitrina, cada uno encadenado al documento que avala. El sello A cuelga junto al que tiene todos los nombres abajo. El sello B, junto al largo que empieza con el pueblo. El sello C, junto a la lista corta de lo que no se puede quitar. Una tarjeta en la bandeja: TODA CITA LLEVA EL SELLO DE SU ORIGINAL.',
   'Call slips': 'Boletas de pedido',
   'A tray of call slips on the reading-room desk, the requests visitors filled in today, in pencil. DOCUMENT: the originals. PURPOSE: checking. Most of them say checking.':
     'Una bandeja de boletas de pedido sobre el escritorio de la sala de lectura, las solicitudes que los visitantes llenaron hoy, en lápiz. DOCUMENTO: los originales. MOTIVO: verificar. Casi todas dicen verificar.',

@@ -399,6 +399,9 @@ side({ id: 'en_parchment', act: 3, ...g('npc.en_functionary', FUNC), title: 'Not
   why: 'The functionary checks the originals every morning, and wants someone else to check today.', whyEs: 'La funcionaria revisa los originales cada mañana, y hoy quiere que otro los revise.',
   pitch: '"Look at the originals. Tell me they\'re the same as yesterday. Word for word."', pitchEs: '"Mira los originales. Dime que son iguales que ayer. Palabra por palabra."',
   look: { obj: 'obj.en_parchment', where: 'the original documents', whereEs: 'los documentos originales', seen: 'Parchment, faded ink, the same words as every history book. Nothing can rot them. You check twice anyway.', seenEs: 'Pergamino, tinta gastada, las mismas palabras que en todos los libros de historia. Nada puede pudrirlos. Igual revisas dos veces.' },
+  // One thread with The addresses (en_archive, below): she doesn't ask for this until she has heard about that.
+  after: 'q.en_archive.told',
+  puzzle: { id: 'en_parchment', text: 'Give each underlined quote the stamp of its original.', textEs: 'Ponle a cada cita subrayada el sello de su original.' },
   line: '"The same. Thank you. It\'s the only thing here that is."', lineEs: '"Iguales. Gracias. Es lo único acá que lo es."' });
 
 side({ id: 'en_archive', act: 3, ...g('npc.en_functionary', FUNC), title: 'The addresses', titleEs: 'Los discursos', money: 25, xp: 50,

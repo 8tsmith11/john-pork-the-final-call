@@ -88,6 +88,19 @@ export const PUZZLES = [
     reward: { item: 'item.baron_keycard',
       text: 'The pointer stops. The water that was going to the racks goes back to the river instead, and row by row the fans wind down. In the quiet a drawer under the meters unlatches: power was holding it shut, and now there is none. Inside is a black keycard with a house crest on it and no name. (Compute Baron keycard)',
       textEs: 'El indicador se detiene. El agua que iba a los racks ahora vuelve al río, y fila por fila los ventiladores se van apagando. En el silencio se destraba un cajón debajo de los medidores: lo mantenía cerrado la corriente, y ya no hay. Adentro hay una tarjeta negra con el escudo de una casa y ningún nombre. (Tarjeta de un Barón del Cómputo)' } },
+
+  // ---- The Enclave archive: the parchment (cycle, as matching). Each lectern's dial sets the stamp on its
+  // underlined quote: - (none yet), A, B or C. The tray by the case says which original each stamp vouches for.
+  // The quest that leads here waits for `q.en_archive.told` (sideQuests.js, `after:`), so the two read as one thread.
+  { id: 'en_parchment', kind: 'cycle', parts: ['obj.en_quote_wait', 'obj.en_quote_equal', 'obj.en_quote_union'], states: ['-', 'A', 'B', 'C'],
+    answer: ['C', 'A', 'B'],
+    stepText: 'You turn the dial under the quote. It now shows {state}. The functionary does not look up, which is not the same as not noticing.',
+    stepTextEs: 'Giras el dial debajo de la cita. Ahora marca {state}. La funcionaria no levanta la vista, que no es lo mismo que no darse cuenta.',
+    solvedText: 'Three quotes, three stamps. The dials have locked.',
+    solvedTextEs: 'Tres citas, tres sellos. Los diales quedaron trabados.',
+    reward: { item: 'item.provenance_seal',
+      text: 'The dial settles. Each quote now sits under the stamp of the document it was taken from, and all three read a little worse for it. The functionary comes over, looks for a long time, and does not correct them. She takes a seal off her own lanyard and presses it into your hand. "For the record, I was at lunch." (Provenance seal)',
+      textEs: 'El dial se asienta. Ahora cada cita está bajo el sello del documento del que la sacaron, y las tres se leen un poco peor por eso. La funcionaria se acerca, mira un rato largo, y no las corrige. Se saca un sello de su propio cordón y te lo pone en la mano. "Que conste: yo estaba almorzando." (Sello de procedencia)' } },
 ].map(definePuzzle);
 
 /** The puzzle a map object belongs to, if any. */

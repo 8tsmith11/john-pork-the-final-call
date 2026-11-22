@@ -139,7 +139,18 @@ export const enArchive = fromGrid({
     '@': { spawn: true },
     D: out('enclave', 'en_archive', 'Back down the marble steps'),
   },
-}).build();
+})
+  // The parchment puzzle (src/content/puzzles.js, en_parchment): three addresses on lecterns, each with one
+  // underlined quote and a stamp dial, and the tray of stamps kept with the originals.
+  .prop('obj.flight_log', 10, 4, { id: 'obj.en_quote_wait', label: 'Lectern: an address on patience',
+    text: 'A printed address on a lectern, one line underlined in archive pencil: "...the right of the people peaceably to wait." Beside the line is an empty box for a provenance stamp, and set into the lectern, a dial: A, B, C.' })
+  .prop('obj.flight_log', 12, 4, { id: 'obj.en_quote_equal', label: 'Lectern: an address on equality',
+    text: 'A printed address on a lectern, one line underlined in archive pencil: "...that all are created equal, pending attestation." Beside the line is an empty box for a provenance stamp, and set into the lectern, a dial: A, B, C.' })
+  .prop('obj.flight_log', 14, 4, { id: 'obj.en_quote_union', label: 'Lectern: an address on union',
+    text: 'A printed address on a lectern, one line underlined in archive pencil: "We the People, in order to form a more perfect Continuity..." Beside the line is an empty box for a provenance stamp, and set into the lectern, a dial: A, B, C.' })
+  .prop('obj.key_jar', 13, 2, { id: 'obj.en_stamps', label: 'Provenance stamps',
+    text: 'Three archive stamps in a felt tray beside the case, each on a chain to the document it vouches for. Stamp A hangs by the one with all the names at the bottom. Stamp B, by the long one that opens with the people. Stamp C, by the short list of what can\'t be taken away. A card in the tray: A QUOTATION BEARS THE STAMP OF ITS ORIGINAL.' })
+  .build();
 
 // ---- The Meade, inside (Act 3): black glass, analysts who haven't been home, a list on a wall ----
 export const meadeInside = fromGrid({

@@ -5010,7 +5010,10 @@ const A23 = {
   cor_meters: { map: 'cor_sealed', giver: 'npc.cor_nightshift', giverMap: 'corridor', look: 'obj.cor_meters', clues: ['obj.cor_meters', 'obj.cor_loop_plan'], item: 'item.baron_keycard',
     wrong: [['obj.cor_valve_low'], ['obj.cor_valve_low'], ['obj.cor_valve_top'], ['obj.cor_valve_top'], ['obj.cor_valve_mid'], ['obj.cor_valve_mid']], says: 'stepText',
     right: [['obj.cor_valve_top'], ['obj.cor_valve_top'], ['obj.cor_valve_mid'], ['obj.cor_valve_mid']] },
-  // A23_MORE
+  // The wrong run stamps them A, B, C in the order they stand (lectern order is not document order).
+  en_parchment: { map: 'en_archive', giver: 'npc.en_functionary', look: 'obj.en_parchment', clues: ['obj.en_parchment', 'obj.en_stamps'], item: 'item.provenance_seal',
+    wrong: [['obj.en_quote_wait'], ['obj.en_quote_equal'], ['obj.en_quote_equal'], ...Array(3).fill(['obj.en_quote_union'])], says: 'stepText',
+    right: [['obj.en_quote_wait'], ['obj.en_quote_wait'], ...Array(3).fill(['obj.en_quote_equal']), ...Array(3).fill(['obj.en_quote_union'])] },
 };
 const AB23 = await import('../src/content/abilities.js');
 const a23Host = (save, said) => ({ mode: 'host', character: 'trevor', localId: 'host', save, time: { now: 0 }, cameras: { main: { shake() {} } },
@@ -5079,6 +5082,28 @@ test('Acts 2-3 puzzles: the cradle closes only with every weight on the beam, ei
   const roll = (flags) => AB23.check({ abilities: { cha: 10 } }, 'michael', 'cha', 12, { rand: () => 0.5, bonus: AB23.checkBonus(flags) });   // d20 = 11, +0
   assert.ok(!roll({}).success && roll({}).total === 11); assert.ok(roll({ 'pz.gt_cradle.solved': true }).success && roll({ 'pz.gt_cradle.solved': true }).total === 12);
   assert.equal(AB23.check({ abilities: { cha: 10 } }, 'michael', 'cha', 2, { rand: () => 0, bonus: 1 }).success, false, 'a natural 1 still fails');
+});
+test('Acts 2-3 puzzles: the parchment waits for q.en_archive.told, and the functionary pitches the addresses first', async () => {
+  const { questState } = await import('../src/content/quests.js');
+  const q = SideQ.SIDE_QUESTS.find((x) => x.id === 'side.en_parchment'), arch = SideQ.SIDE_QUESTS.find((x) => x.id === 'side.en_archive');
+  assert.ok(!q.start({ 'q.en_parchment.asked': true }), 'asked alone does not start it');
+  assert.ok(!q.start({ 'q.en_archive.told': true }), 'nor does the other quest alone');
+  assert.ok(q.start({ 'q.en_parchment.asked': true, 'q.en_archive.told': true }));
+  assert.ok(!q.askIf({}) && q.askIf({ 'q.en_archive.told': true }));
+  assert.ok(!arch.askIf && arch.start({ 'q.en_archive.asked': true }), 'the addresses start as before');
+  for (const other of SideQ.SIDE_QUESTS) if (other !== q) assert.ok(!other.askIf, `${other.id}: only the parchment waits on another quest`);
+  // through the scene: she offers the addresses, never the parchment, until the addresses are told
+  const save = newSave({ seed: 'a23-thread', rolls: {}, gameVersion: 't' }), said = [];
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', localId: 'host', character: 'trevor', save, _say: (t) => said.push(t), _toast() {}, _tickQuests() {},
+    _flag(k, v) { save.flags[k] = v; } });
+  const her = MAPS_FOR_TEST.en_archive.objects.find((o) => o.id === 'npc.en_functionary');
+  assert.ok(sc._questInteract(her)); assert.ok(said.at(-1).includes(arch.pitch));
+  assert.ok(save.flags['q.en_archive.asked'] && !save.flags['q.en_parchment.asked']);
+  questState(save)['side.en_archive'].started = true;
+  assert.equal(sc._questInteract(her), false, 'with the addresses open and nothing to report, she has no second errand yet');
+  assert.ok(!save.flags['q.en_parchment.asked']);
+  Object.assign(save.flags, { 'q.en_archive.seen': true, 'q.en_archive.told': true }); Object.assign(questState(save)['side.en_archive'], { stage: 2, done: true });
+  assert.ok(sc._questInteract(her)); assert.ok(said.at(-1).includes(q.pitch)); assert.ok(save.flags['q.en_parchment.asked']);
 });
 
 await Promise.all(pending);
