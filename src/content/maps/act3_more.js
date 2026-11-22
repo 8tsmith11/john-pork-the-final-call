@@ -37,6 +37,16 @@ export const corSealed = fromGrid({
 })
   // Region guardian (optional): at the far end of the hall, by the meters it guards.
   .enemy('boss.cor_hall', 27, 3)
+  // The sealed-hall puzzle (src/content/puzzles.js, cor_meters): a valve wheel at the end of each row of racks,
+  // on the end wall with the meters and their guardian, and what is left of the loop plan.
+  .prop('obj.valve_wheel', 28, 2, { id: 'obj.cor_valve_top', label: 'Valve wheel, top row',
+    text: 'The valve wheel for the top row of racks, where the river main comes through the wall. Its chain has been cut and hung back up to look whole. Three stops are cast into the collar: I, II, III.' })
+  .prop('obj.valve_wheel', 28, 4, { id: 'obj.cor_valve_mid', label: 'Valve wheel, middle row',
+    text: 'The valve wheel for the middle row of racks. The paint on the spokes is worn through where hands go, and nowhere else. Three stops are cast into the collar: I, II, III.' })
+  .prop('obj.valve_wheel', 28, 6, { id: 'obj.cor_valve_low', label: 'Valve wheel, bottom row',
+    text: 'The valve wheel for the bottom row of racks. A second pipe leaves it through the floor, as wide as the one coming in. Three stops are cast into the collar: I, II, III.' })
+  .prop('obj.room_sign', 24, 7, { id: 'obj.cor_loop_plan', label: 'Cooling-loop plan',
+    text: 'A cooling-loop plan stenciled on the wall, most of it flaked off. What is left: the river main coming in at the top row, a return leaving from the bottom, and a key in the corner. I, TO RACKS. II, ON TO THE NEXT ROW. III, RETURN. Beside the top valve somebody has drawn the water as a small fish, heading down.' })
   .build();
 
 // ---- Gaithersburg: the clock vault (a clock in a glass column; a logbook of leap seconds) ----

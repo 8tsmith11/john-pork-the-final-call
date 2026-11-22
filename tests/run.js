@@ -5005,6 +5005,11 @@ const A23 = {
   md_menu: { map: 'meade', giver: 'npc.md_quartermaster', look: 'obj.md_menu', clues: ['obj.md_menu', 'obj.md_lunch_table'], item: 'item.intercept_codes',
     wrong: [...Array(4).fill(['obj.md_box_meatloaf']), ...Array(2).fill(['obj.md_box_mystery']), ...Array(4).fill(['obj.md_box_soup'])], says: 'stepText',
     right: [['obj.md_box_soup']] },
+  // The wrong run sends every row to the return (III, III, III): only the bottom row has one. Then top and middle
+  // go round to II.
+  cor_meters: { map: 'cor_sealed', giver: 'npc.cor_nightshift', giverMap: 'corridor', look: 'obj.cor_meters', clues: ['obj.cor_meters', 'obj.cor_loop_plan'], item: 'item.baron_keycard',
+    wrong: [['obj.cor_valve_low'], ['obj.cor_valve_low'], ['obj.cor_valve_top'], ['obj.cor_valve_top'], ['obj.cor_valve_mid'], ['obj.cor_valve_mid']], says: 'stepText',
+    right: [['obj.cor_valve_top'], ['obj.cor_valve_top'], ['obj.cor_valve_mid'], ['obj.cor_valve_mid']] },
   // A23_MORE
 };
 const AB23 = await import('../src/content/abilities.js');
@@ -5021,7 +5026,8 @@ for (const [id, T] of Object.entries(A23)) {
     assert.ok(p.reward.textEs && p.solvedText, `${id}: the reward line needs Spanish, and a solved puzzle its own line`);
     // parts and clue objects are real objects on the map where the quest already lives
     const map = MAPS_FOR_TEST[T.map], on = new Map(map.objects.map((o) => [o.id, o]));
-    for (const o of [...p.parts, ...T.clues, T.look, T.giver]) assert.ok(on.has(o), `${id}: ${o} is not on ${T.map}`);
+    for (const o of [...p.parts, ...T.clues, T.look]) assert.ok(on.has(o), `${id}: ${o} is not on ${T.map}`);
+    assert.ok(MAPS_FOR_TEST[T.giverMap ?? T.map].objects.some((o) => o.id === T.giver && o.npc), `${id}: the giver ${T.giver} is where they were`);
     for (const o of p.parts) { assert.equal(a23PuzzleFor(o), p); assert.ok(on.get(o).text && on.get(o).label, `${o}: a part needs a label and its own text`); }
     for (const o of T.clues) assert.ok(!p.parts.includes(o), `${id}: ${o} is a clue, not a part`);
     // the scaffold quest is stage 1, in place: same quest id, giver, ask flag and first object; then the puzzle; then the giver

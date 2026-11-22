@@ -76,6 +76,18 @@ export const PUZZLES = [
     reward: { item: 'item.intercept_codes',
       text: 'The wheel clicks, and the bottom of the middle box drops open like a mail slot. A flip pad slides out: column after column of five-letter groups, and LUNCH ORDERS on the cover. The menu is the only thing here the analysts are allowed to find funny, so they put it to work. (Intercept codes)',
       textEs: 'La ruedita hace clic, y el fondo del buzón del medio se abre como una ranura de correo. Sale deslizándose una libreta: columna tras columna de grupos de cinco letras, y PEDIDOS DE ALMUERZO en la tapa. El menú es lo único acá que a los analistas se les permite encontrar gracioso, así que lo pusieron a trabajar. (Códigos de intercepción)' } },
+
+  // ---- The Corridor: the sealed hall (cycle). A valve wheel at the end of each row of racks, three stops each:
+  // I to the racks, II on to the next row, III to the return. Only the bottom row has a return (the loop plan).
+  { id: 'cor_meters', kind: 'cycle', parts: ['obj.cor_valve_top', 'obj.cor_valve_mid', 'obj.cor_valve_low'], states: ['I', 'II', 'III'],
+    answer: ['II', 'II', 'III'],
+    stepText: 'You lean on the wheel until it gives. The pointer stops at {state}. The racks are still running.',
+    stepTextEs: 'Te apoyas en el volante hasta que cede. El indicador se detiene en {state}. Los racks siguen andando.',
+    solvedText: 'The wheels are where they need to be. The hall is quiet. It sounds wrong in here without the fans.',
+    solvedTextEs: 'Los volantes están donde tienen que estar. La nave está en silencio. Suena raro acá adentro sin los ventiladores.',
+    reward: { item: 'item.baron_keycard',
+      text: 'The pointer stops. The water that was going to the racks goes back to the river instead, and row by row the fans wind down. In the quiet a drawer under the meters unlatches: power was holding it shut, and now there is none. Inside is a black keycard with a house crest on it and no name. (Compute Baron keycard)',
+      textEs: 'El indicador se detiene. El agua que iba a los racks ahora vuelve al río, y fila por fila los ventiladores se van apagando. En el silencio se destraba un cajón debajo de los medidores: lo mantenía cerrado la corriente, y ya no hay. Adentro hay una tarjeta negra con el escudo de una casa y ningún nombre. (Tarjeta de un Barón del Cómputo)' } },
 ].map(definePuzzle);
 
 /** The puzzle a map object belongs to, if any. */

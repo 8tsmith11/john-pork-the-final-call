@@ -318,7 +318,9 @@ side({ id: 'cor_meters', act: 3, ...g('npc.cor_nightshift', NIGHT), title: 'Stil
   why: 'A sealed hall is still drawing water, and nobody runs it.', whyEs: 'Una nave sellada todavía consume agua, y nadie la maneja.',
   pitch: '"The sealed hall\'s water meter. Is it moving? Don\'t tell me it\'s moving."', pitchEs: '"El medidor de agua de la nave sellada. ¿Se mueve? No me digas que se mueve."',
   look: { obj: 'obj.cor_meters', where: 'the water meters in the sealed hall', whereEs: 'los medidores de agua en la nave sellada', seen: 'Spinning. Faster than the live halls.', seenEs: 'Girando. Más rápido que las naves activas.' },
-  line: '"It\'s moving." She writes it down anyway.', lineEs: '"Se mueve." Lo anota igual.' });
+  puzzle: { id: 'cor_meters', text: 'Shut the hall down. Send its water back to the river.', textEs: 'Apaga la nave. Manda su agua de vuelta al río.' },
+  // She hears about it after the hall is shut down, so her line is in the past tense now.
+  line: '"It was moving." She writes it down anyway.', lineEs: '"Se movía." Lo anota igual.' });
 
 side({ id: 'cor_hall', act: 3, ...g('npc.cor_nightshift', NIGHT), title: 'Written off', titleEs: 'Dado de baja', money: 50, xp: 100,
   why: 'Whatever runs in the sealed hall has started running the halls around it.', whyEs: 'Lo que corre en la nave sellada empezó a manejar las naves de alrededor.',

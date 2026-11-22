@@ -126,6 +126,18 @@ export const ES_ACT3 = {
   'Water meters': 'Medidores de agua',
   'A bank of water meters on the end wall, where the cooling loop comes in from the river main: brass dials under glass, one for each row of racks, the glass fogged from inside. Under each, a valve wheel, chained open.':
     'Una batería de medidores de agua en la pared del fondo, donde el circuito de enfriamiento entra desde la cañería del río: diales de bronce bajo vidrio, uno por cada fila de racks, con el vidrio empañado por dentro. Debajo de cada uno, un volante de válvula, encadenado abierto.',
+  'Valve wheel, top row': 'Volante de válvula, fila de arriba',
+  'The valve wheel for the top row of racks, where the river main comes through the wall. Its chain has been cut and hung back up to look whole. Three stops are cast into the collar: I, II, III.':
+    'El volante de la válvula de la fila de racks de arriba, donde la cañería maestra del río atraviesa la pared. Le cortaron la cadena y la volvieron a colgar para que parezca entera. El collar tiene tres topes fundidos: I, II, III.',
+  'Valve wheel, middle row': 'Volante de válvula, fila del medio',
+  'The valve wheel for the middle row of racks. The paint on the spokes is worn through where hands go, and nowhere else. Three stops are cast into the collar: I, II, III.':
+    'El volante de la válvula de la fila de racks del medio. La pintura de los rayos está gastada donde van las manos, y en ningún otro lado. El collar tiene tres topes fundidos: I, II, III.',
+  'Valve wheel, bottom row': 'Volante de válvula, fila de abajo',
+  'The valve wheel for the bottom row of racks. A second pipe leaves it through the floor, as wide as the one coming in. Three stops are cast into the collar: I, II, III.':
+    'El volante de la válvula de la fila de racks de abajo. De él sale un segundo caño por el piso, tan ancho como el que entra. El collar tiene tres topes fundidos: I, II, III.',
+  'Cooling-loop plan': 'Plano del circuito de enfriamiento',
+  'A cooling-loop plan stenciled on the wall, most of it flaked off. What is left: the river main coming in at the top row, a return leaving from the bottom, and a key in the corner. I, TO RACKS. II, ON TO THE NEXT ROW. III, RETURN. Beside the top valve somebody has drawn the water as a small fish, heading down.':
+    'Un plano del circuito de enfriamiento pintado con plantilla en la pared, casi todo descascarado. Lo que queda: la cañería maestra del río entrando por la fila de arriba, un retorno saliendo por la de abajo, y una leyenda en la esquina. I, A LOS RACKS. II, A LA FILA SIGUIENTE. III, RETORNO. Junto a la válvula de arriba alguien dibujó el agua como un pececito, yendo hacia abajo.',
   'Chiller by the dock door': 'Enfriador junto a la puerta del muelle',
   'A white chiller by the dock door, stenciled HOT AISLE: WEAR A LOOP. Inside, the coolant-loop packs the crews wore between the racks, still cold: the hall was written off with the power on, and the chiller never noticed. One pack is left. You take it.':
     'Un enfriador blanco junto a la puerta del muelle, con PASILLO CALIENTE: USA REFRIGERACIÓN pintado con plantilla. Adentro, las mochilas de refrigeración que usaban las cuadrillas entre los racks, todavía frías: dieron de baja la nave con la corriente prendida, y el enfriador nunca se enteró. Queda una. Te la llevas.',
