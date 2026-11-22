@@ -227,6 +227,7 @@ side({ id: 'md_menu', act: 2, ...g('npc.md_quartermaster', QM), title: 'Mystery 
   why: 'The quartermaster wants to know what today\'s cafeteria joke is.', whyEs: 'El intendente quiere saber cuál es el chiste del menú de hoy.',
   pitch: '"I\'m not allowed to read the menu. Clearance. Read it and tell me what\'s for lunch."', pitchEs: '"No tengo permiso para leer el menú. Autorización. Léelo y dime qué hay de almuerzo."',
   look: { obj: 'obj.md_menu', where: 'the cafeteria menu', whereEs: 'el menú de la cafetería', seen: 'Today: "Soup of the Day (Need to Know)."', seenEs: 'Hoy: "Sopa del Día (Solo Personal Autorizado)."' },
+  puzzle: { id: 'md_menu', text: 'Take the joke seriously. The suggestion boxes by the menu want numbers.', textEs: 'Tómate el chiste en serio. Los buzones de sugerencias junto al menú quieren números.' },
   line: '"Soup." He writes it down, then burns the paper.', lineEs: '"Sopa." Lo anota y después quema el papel.' });
 
 side({ id: 'md_fence', act: 2, ...g('npc.md_quartermaster', QM), title: 'Unattended', titleEs: 'Sin vigilancia', money: 40, xp: 80,

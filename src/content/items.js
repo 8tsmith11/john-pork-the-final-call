@@ -66,7 +66,8 @@ Object.assign(ITEMS, MATERIALS);
 Object.assign(ITEMS, {
   'item.ann_oarlocks':  { name: 'Bronze oarlocks', slot: 'key', text: 'A pair, from the island family, green at the pins. They fit any boat on the bay. You don\'t have a boat.' },
   'item.gb_tape':       { name: 'Clean-room tape', slot: 'charm', analog: true, mods: { armor: 0.06 }, text: 'A can of telemetry tape from the Greenbelt clean room, labeled in pencil: one dish, one night. Wound before the Slop Decades and never touched by a model. Worn on its strap, it keeps the rot off.' },
-  'item.analog_axe':   { name: 'Analogist felling axe', slot: 'weapon', analog: true, swing: { range: 22, arc: 0.55, cooldown: 0.58, damage: 26, knockback: 200 }, text: 'A hickory haft and a head forged in the refuge, ground by hand. No part of it has ever been plugged in. Slow, and it means it.' },
+  'item.intercept_codes': { name: 'Intercept codes', slot: 'key', text: 'A flip pad from a suggestion box at the Meade, every page a column of five-letter groups in a careful hand. The analysts\' own, for reading the Meade\'s traffic. The cover says LUNCH ORDERS.' },
+  'item.analog_axe':  { name: 'Analogist felling axe', slot: 'weapon', analog: true, swing: { range: 22, arc: 0.55, cooldown: 0.58, damage: 26, knockback: 200 }, text: 'A hickory haft and a head forged in the refuge, ground by hand. No part of it has ever been plugged in. Slow, and it means it.' },
 });
 
 // Bought, not printed.

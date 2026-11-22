@@ -193,6 +193,18 @@ export const ES_ACT2 = {
   'Cafeteria menu (posted outside)': 'Menú de la cafetería (colgado afuera)',
   'The cafeteria menu, on a sandwich board at the edge of the berm road, typed fresh every morning. MONDAY: Meatloaf (Redacted). TUESDAY: Mystery Meat (Classified).':
     'El menú de la cafetería, en un cartel de caballete al borde del camino del terraplén, escrito a máquina cada mañana. LUNES: Pastel de carne (Censurado). MARTES: Carne Misteriosa (Clasificada).',
+  'Suggestion box: MEATLOAF': 'Buzón de sugerencias: PASTEL DE CARNE',
+  'A steel suggestion box bolted to a post, stenciled SUGGESTIONS: MEATLOAF. It has no slot. It has a thumbwheel, numbered 0 to 5.':
+    'Un buzón de sugerencias de acero atornillado a un poste, con SUGERENCIAS: PASTEL DE CARNE pintado con plantilla. No tiene ranura. Tiene una ruedita numerada del 0 al 5.',
+  'Suggestion box: MYSTERY MEAT': 'Buzón de sugerencias: CARNE MISTERIOSA',
+  'A steel suggestion box bolted to a post, stenciled SUGGESTIONS: MYSTERY MEAT. It has no slot. It has a thumbwheel, numbered 0 to 5.':
+    'Un buzón de sugerencias de acero atornillado a un poste, con SUGERENCIAS: CARNE MISTERIOSA pintado con plantilla. No tiene ranura. Tiene una ruedita numerada del 0 al 5.',
+  'Suggestion box: SOUP': 'Buzón de sugerencias: SOPA',
+  'A steel suggestion box bolted to a post, stenciled SUGGESTIONS: SOUP. It has no slot. It has a thumbwheel, numbered 0 to 5.':
+    'Un buzón de sugerencias de acero atornillado a un poste, con SUGERENCIAS: SOPA pintado con plantilla. No tiene ranura. Tiene una ruedita numerada del 0 al 5.',
+  'Folding table': 'Mesa plegable',
+  'A folding table at the edge of the berm road, where the analysts eat standing up. Under a mug is a napkin with a tally in ballpoint, headed "times it was funny." Redacted: four strokes. Classified: two. Need to Know: five. Eyes Only: one, crossed out.':
+    'Una mesa plegable al borde del camino del terraplén, donde los analistas comen de pie. Debajo de una taza hay una servilleta con una cuenta en bolígrafo, titulada "veces que dio risa." Censurado: cuatro rayas. Clasificada: dos. Solo Personal Autorizado: cinco. Solo para sus ojos: una, tachada.',
   'A quartermaster': 'Un intendente', 'A QUARTERMASTER': 'UN INTENDENTE',
   '"Everything at the Meade has a form." He holds out a clipboard and pulls it back before you can take it. "I\'m the form you fill out to skip the others. I cost more."':
     '"En el Meade todo tiene un formulario." Te tiende un portapapeles y lo retira antes de que puedas agarrarlo. "Yo soy el formulario que se llena para saltarse los demás. Salgo más caro."',

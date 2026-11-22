@@ -64,6 +64,18 @@ export const PUZZLES = [
     reward: { item: 'item.gb_tape',
       text: 'The dish\'s light swings across the skylight, and for a few seconds the dust in there has edges. The prints cross the room and stop at the wall, at the fourth drawer from the left. That one isn\'t bolted. Inside is a can of telemetry tape on a carrying strap, labeled in pencil. Somebody walked in to leave it where only that light would find it. (Clean-room tape)',
       textEs: 'La luz de la antena cruza la claraboya, y por unos segundos el polvo de adentro tiene bordes. Las huellas cruzan la sala y se detienen en la pared, en el cuarto cajón desde la izquierda. Ese no está trabado. Adentro hay una lata de cinta de telemetría con una correa, rotulada en lápiz. Alguien entró para dejarla donde solo esa luz la encontrara. (Cinta de la sala limpia)' } },
+
+  // ---- The Meade: the cafeteria menu (cycle, as code entry). Three suggestion boxes, one thumbwheel each. The
+  // menu gives each dish its marking; the napkin on the analysts' table gives each marking a number.
+  { id: 'md_menu', kind: 'cycle', parts: ['obj.md_box_meatloaf', 'obj.md_box_mystery', 'obj.md_box_soup'], states: ['0', '1', '2', '3', '4', '5'],
+    answer: ['4', '2', '5'],
+    stepText: 'You turn the thumbwheel. It clicks to {state}. Nothing else happens, officially.',
+    stepTextEs: 'Giras la ruedita. Hace clic en {state}. No pasa nada más, oficialmente.',
+    solvedText: 'The wheels won\'t turn now. Suggestion received.',
+    solvedTextEs: 'Las rueditas ya no giran. Sugerencia recibida.',
+    reward: { item: 'item.intercept_codes',
+      text: 'The wheel clicks, and the bottom of the middle box drops open like a mail slot. A flip pad slides out: column after column of five-letter groups, and LUNCH ORDERS on the cover. The menu is the only thing here the analysts are allowed to find funny, so they put it to work. (Intercept codes)',
+      textEs: 'La ruedita hace clic, y el fondo del buzón del medio se abre como una ranura de correo. Sale deslizándose una libreta: columna tras columna de grupos de cinco letras, y PEDIDOS DE ALMUERZO en la tapa. El menú es lo único acá que a los analistas se les permite encontrar gracioso, así que lo pusieron a trabajar. (Códigos de intercepción)' } },
 ].map(definePuzzle);
 
 /** The puzzle a map object belongs to, if any. */

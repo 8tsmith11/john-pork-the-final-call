@@ -5001,6 +5001,10 @@ const A23 = {
     right: [['obj.rf_ring_clocks'], ['obj.rf_ring_vote'], ['obj.rf_ring_phones'], ['obj.rf_ring_silence']] },
   gb_footprints: { map: 'gb_dishes', giver: 'npc.gb_technician', look: 'obj.gb_cleanroom', clues: ['obj.gb_sweep_lamp', 'obj.gb_cleanroom'], item: 'item.gb_tape',
     wrong: [['obj.gb_passdrawers', 0], ['obj.gb_passdrawers', 59], ['obj.gb_passdrawers', 76]], right: [['obj.gb_passdrawers', 135]], says: 'closedText' },
+  // The wrong run stops one click short on the last wheel (4, 2, 4); the right one gives it that click.
+  md_menu: { map: 'meade', giver: 'npc.md_quartermaster', look: 'obj.md_menu', clues: ['obj.md_menu', 'obj.md_lunch_table'], item: 'item.intercept_codes',
+    wrong: [...Array(4).fill(['obj.md_box_meatloaf']), ...Array(2).fill(['obj.md_box_mystery']), ...Array(4).fill(['obj.md_box_soup'])], says: 'stepText',
+    right: [['obj.md_box_soup']] },
   // A23_MORE
 };
 const AB23 = await import('../src/content/abilities.js');

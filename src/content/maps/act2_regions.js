@@ -210,6 +210,16 @@ export const meade = fromGrid({
     X: { ...back('meade', 'Back west to Route 1'), tile: ',' },
   },
 }).enemy('boss.md_fence', 27, 3)
+  // The menu puzzle (src/content/puzzles.js, md_menu): three suggestion boxes with a thumbwheel each, by the menu
+  // and its guardian, and the table where the analysts eat.
+  .prop('obj.newsbox', 23, 4, { id: 'obj.md_box_meatloaf', label: 'Suggestion box: MEATLOAF',
+    text: 'A steel suggestion box bolted to a post, stenciled SUGGESTIONS: MEATLOAF. It has no slot. It has a thumbwheel, numbered 0 to 5.' })
+  .prop('obj.newsbox', 24, 4, { id: 'obj.md_box_mystery', label: 'Suggestion box: MYSTERY MEAT',
+    text: 'A steel suggestion box bolted to a post, stenciled SUGGESTIONS: MYSTERY MEAT. It has no slot. It has a thumbwheel, numbered 0 to 5.' })
+  .prop('obj.newsbox', 25, 4, { id: 'obj.md_box_soup', label: 'Suggestion box: SOUP',
+    text: 'A steel suggestion box bolted to a post, stenciled SUGGESTIONS: SOUP. It has no slot. It has a thumbwheel, numbered 0 to 5.' })
+  .prop('obj.cafe_table', 21, 5, { id: 'obj.md_lunch_table', label: 'Folding table',
+    text: 'A folding table at the edge of the berm road, where the analysts eat standing up. Under a mug is a napkin with a tally in ballpoint, headed "times it was funny." Redacted: four strokes. Classified: two. Need to Know: five. Eyes Only: one, crossed out.' })
   .exit('meade_inside', 10, 8, { id: 'obj.meade_to_meade_inside', selfDrawn: true, stepOn: true, requiresFlag: 'act2.complete', lockedText: 'The gate does not acknowledge you. Not yet.', pair: 'obj.meade_inside_out', label: 'The Meade gate', text: 'Black glass behind the berm. The gate is open.' })   // act3_more.js
   
   .exit('md_lot', 4, 8, { id: 'obj.meade_to_md_lot', selfDrawn: true, stepOn: true, pair: 'obj.md_lot_out', label: 'The parking lot', text: 'Ten thousand spaces.' })   // stretch.js
