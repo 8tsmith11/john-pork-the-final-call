@@ -37,7 +37,7 @@ export const diner = makeMap({
     { id: 'door.diner_kitchen', art: 'door.wall', x: 13, y: 4, label: 'Kitchen door', door: true },
     { id: 'door.diner_restroom', art: 'door.wall', x: 17, y: 4, label: 'Restroom', door: true },
     // Behind the counter
-    { id: 'npc.diner_cook', x: 5, y: 5, npc: true, age: 'adult', art: 'npc.rotter_3', label: 'The cook', text: '"Order up. Scrapple, two over easy, rye." Nobody ordered it. He slides it down the counter, and it stops square in front of an empty stool.' },
+    { id: 'npc.diner_cook', x: 5, y: 5, npc: true, age: 'adult', art: 'npc.diner_cook', label: 'The cook', text: '"Order up. Scrapple, two over easy, rye." Nobody ordered it. He slides it down the counter, and it stops square in front of an empty stool.' },
     { id: 'obj.diner_counter', art: 'obj.counter', x: 7, y: 6, solid: true, label: 'The counter', action: 'shop', shop: 'diner' },
     // The far corner: the jukebox (the landmark), lit
     { id: 'obj.diner_jukebox', art: 'obj.jukebox', x: 24, y: 5, landmark: true, light: 0.8, solid: true, label: 'Jukebox', text: 'Forty slots, and every card in them has the same song title typed on it. Only the band changes, one per decade, back to the 2020s.' },
@@ -184,7 +184,7 @@ export const asterRoof = makeMap({
     { id: 'obj.roof_cooler', art: 'obj.cooler', x: 19, y: 9, label: 'A cooler behind the tank', loot: 'lost', text: 'A cooler wedged behind the water tank, out of the wind. On the lid in marker: IF YOU CAME UP HERE YOU NEED IT MORE THAN ME.' },
     // The north parapet
     { id: 'obj.roof_view', art: 'obj.coin_viewer', x: 13, y: 1, solid: true, label: 'The view north', text: 'A coin viewer bolted to the rail, aimed north. Through it, the cordon floodlights stand in a ring around College Park, white against the dark. From up here you can see the ring close behind you, with ASTER near the middle.' },
-    { id: 'npc.roof_watcher', x: 15, y: 2, npc: true, art: 'npc.rotter_1', label: 'Someone on the roof', age: 'adult', text: '"Start at the water tower and go left. Don\'t count the moon. People count the moon." They keep their eyes on the north the whole time.' },
+    { id: 'npc.roof_watcher', x: 15, y: 2, npc: true, art: 'npc.roof_watcher', label: 'Someone on the roof', age: 'adult', text: '"Start at the water tower and go left. Don\'t count the moon. People count the moon." They keep their eyes on the north the whole time.' },
     // The deck, the garden, the machinery
     { id: 'obj.roof_chairs', art: 'obj.lawn_chair', x: 8, y: 4, label: 'Lawn chairs', text: 'Three lawn chairs facing north, and a fourth facing the other three.' },
     { id: 'obj.roof_garden', art: 'obj.balcony_plants', x: 2, y: 12, label: 'Tomatoes', text: 'Tomatoes in buckets, staked and labeled. A fire hose runs to them from somewhere below, coupled to a garden nozzle with a great deal of tape.' },
@@ -272,7 +272,7 @@ export const diningHall = makeMap({
     { id: 'door.dining_dish', art: 'door.wall', x: 23, y: 4, label: 'Dish room', door: true },
     // The line, and the machine at the end of it (the landmark)
     { id: 'obj.waffle_machine', x: 14, y: 6, landmark: true, light: 0.7, solid: true, label: 'The waffle machine', text: 'Chrome and a touch screen, the protective film still on one side. It presses the university seal into every waffle, and then the screen asks you to rate your waffle from one to five.' },
-    { id: 'npc.dining_cook', x: 6, y: 5, npc: true, age: 'adult', art: 'npc.rotter_2', label: 'A cook who stayed', text: '"Forty years on this grill. They put that machine in on a Sunday and nobody asked me." She scrapes down the flat-top, which is already clean.' },
+    { id: 'npc.dining_cook', x: 6, y: 5, npc: true, age: 'adult', art: 'npc.dining_cook', label: 'A cook who stayed', text: '"Forty years on this grill. They put that machine in on a Sunday and nobody asked me." She scrapes down the flat-top, which is already clean.' },
     { id: 'obj.dining_line', art: 'obj.steam_table', x: 5, y: 6, solid: true, label: 'The serving line', text: 'Six pans under the sneeze guard, all of them full and none of them touched. A card on the glass: PLEASE TRY THE WAFFLES. Nobody on the kitchen side wrote it.' },
     { id: 'obj.dining_cereal', art: 'obj.cereal_bar', x: 9, y: 6, solid: true, label: 'Cereal dispensers', text: 'Three tubes, three cranks. The middle one has been empty so long that someone has labeled it DECORATIVE.' },
     { id: 'obj.dining_menu', art: 'obj.chalkboard', x: 10, y: 4, label: 'Menu board', text: 'The week in chalk. Monday to Friday each say WAFFLES, in type. Under them, by hand and pressed hard: GRILL STILL OPEN.' },

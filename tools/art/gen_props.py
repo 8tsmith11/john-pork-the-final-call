@@ -2303,6 +2303,109 @@ D("dec.cushion", dc().rect(3, 5, 10, 7, "tub0").h_(3, 5, 10, "tub1").h_(3, 11, 1
 D("dec.scuff", dc().pts("night1", *[(2 + i, 5 + i // 4) for i in range(12)]).pts("night1", *[(2 + i, 10 + i // 4) for i in range(12)]).pts("concrete2", (4, 4), (9, 6), (6, 10), (12, 12)))
 D("dec.chalk_row", dc().h_(1, 8, 6, "concrete3").px(1, 7, "concrete3").px(1, 9, "concrete3").pts("bone", (10, 5), (10, 6), (10, 7), (10, 8), (10, 9), (11, 5), (12, 6), (11, 7), (12, 8), (11, 9)))
 
+# ---- Act 1 people (hub #113; Manuel: "more variability in looks"): thirteen neighbours, cooks and students who
+# used to borrow a rotter sprite. One silhouette and one or two props each; no roommate colour, no Pork pink, no orange.
+def chb_ta():                   # Compute Hall B's TA: hair up, glasses, a long cardigan, a red pen, the quizzes on one arm
+    c = figure("warm2", "warm1", "skin1", "night1", hunch=False)
+    c.rect(7, 1, 3, 2, "night1").px(10, 5, "night1").pts("steel", (6, 6), (8, 6), (10, 6))             # the bun, the glasses
+    c.rect(7, 9, 2, 6, "bone").rect(4, 15, 8, 5, "night3").v_(11, 15, 5, "night2")                    # blouse, long skirt
+    c.rect(1, 12, 5, 4, "bone").h_(1, 13, 5, "concrete3").h_(1, 15, 5, "concrete3").px(2, 12, "signal")   # the stack still to grade
+    c.v_(12, 11, 3, "signal").px(12, 14, "skin1")                                                     # the pen
+    return c.outline()
+def chb_student():              # the student who can't get out: a teal hoodie, a backpack, eyes on the clock over the door
+    c = figure("screen1", "screen0", "skin3", "warm1", hunch=False)
+    c.pts("skin3", (7, 6), (9, 6)).pts("bone", (7, 5), (9, 5)).pts("night0", (8, 5), (10, 5))
+    c.h_(4, 9, 8, "screen0").pts("bone", (7, 10), (9, 10)).h_(6, 15, 4, "screen0")                    # hood, drawstrings, pocket
+    c.v_(5, 10, 5, "night3").v_(10, 10, 5, "night3").rect(3, 10, 1, 6, "concrete1").rect(12, 10, 1, 6, "concrete1")   # straps, the pack
+    c.h_(4, 22, 3, "bone").h_(9, 22, 3, "bone")
+    return c.outline()
+def diner_cook():               # the diner's cook: a big man, a paper hat, a dark apron, a spatula up
+    c = C().rect(4, 4, 8, 6, "skin2").rect(5, 1, 6, 3, "bone").h_(5, 3, 6, "concrete3").pts("warm0", (4, 4), (11, 4), (4, 5), (11, 5))
+    c.pts("night0", (6, 6), (9, 6)).h_(6, 8, 4, "warm0")                                               # eyes, the moustache
+    c.rect(2, 10, 12, 10, "concrete3").v_(13, 10, 10, "concrete2").rect(2, 14, 1, 4, "skin2")          # T-shirt, a bare forearm
+    c.rect(4, 12, 8, 9, "night3").pts("night3", (5, 10), (5, 11), (10, 10), (10, 11)).h_(6, 16, 4, "night2").pts("warm3", (6, 14), (9, 18))   # apron, grease
+    c.v_(14, 8, 7, "warm0").rect(13, 5, 2, 3, "steel").px(13, 6, "concrete2").px(13, 14, "skin2")      # the spatula
+    c.rect(3, 21, 4, 2, "night1").rect(9, 21, 4, 2, "night1")
+    return c.outline()
+def diner_regular():            # the regular: an old man in a flat cap and flannel, up on his stool, the salt in his hand
+    c = C().rect(5, 2, 6, 6, "skin3").rect(5, 1, 6, 2, "concrete1").h_(4, 3, 7, "concrete0").pts("bone", (5, 4), (10, 4), (10, 5))
+    c.pts("night0", (7, 5), (9, 5)).h_(6, 6, 4, "bone")                                                # eyes, a white moustache
+    c.rect(4, 8, 8, 5, "warm3").v_(11, 8, 5, "warm2").h_(4, 10, 8, "warm2").v_(7, 8, 5, "warm2")       # flannel
+    c.px(12, 9, "warm3").px(13, 9, "skin3").rect(13, 6, 2, 3, "bone").h_(13, 5, 2, "steel")           # the salt shaker, held out
+    c.v_(7, 14, 8, "steel").v_(8, 14, 8, "concrete2").h_(5, 18, 6, "steel").rect(5, 22, 6, 1, "concrete2").h_(4, 23, 8, "concrete1")   # obj.stool's post, ring and base
+    c.rect(7, 13, 2, 1, "soft0").rect(4, 13, 3, 2, "night2").rect(9, 13, 3, 2, "night2").rect(5, 15, 2, 3, "night2").rect(9, 15, 2, 3, "night2")
+    c.h_(4, 18, 3, "warm0").h_(9, 18, 3, "warm0")                                                      # boots on the foot ring
+    return c.outline()
+def roof_watcher():             # whoever is on the roof: seen from behind, hood up, elbows out, the binoculars on the north
+    c = C().rect(5, 2, 6, 7, "slicker0").rect(4, 3, 8, 5, "slicker0").h_(5, 2, 6, "slicker1").v_(8, 3, 5, "warm3")
+    c.rect(4, 9, 8, 11, "slicker0").v_(11, 9, 11, "warm3").h_(4, 19, 8, "warm3").v_(8, 13, 6, "warm3")   # a long slicker, the back vent
+    c.rect(2, 5, 2, 5, "slicker0").rect(12, 5, 2, 5, "slicker0").pts("slicker0", (3, 10), (12, 10)).pts("slicker1", (2, 5), (13, 5))
+    c.pts("night2", (3, 4), (12, 4)).rect(12, 14, 2, 3, "night2").px(12, 13, "steel")                  # the ends of the binoculars, their case
+    c.rect(5, 20, 2, 2, "night2").rect(9, 20, 2, 2, "night2").h_(4, 22, 3, "night1").h_(9, 22, 3, "night1")
+    return c.outline()
+def quad_student():             # the student on the bricks: a red beanie, a letter jacket, arms out, one foot in the air
+    c = figure("night3", "night2", "skin2", "night1", hunch=False)
+    c.rect(5, 2, 6, 2, "signal").h_(5, 4, 6, "bone").pts("bone", (7, 1), (8, 1))
+    c.rect(2, 10, 2, 2, "bone").pts("skin2", (1, 10), (1, 11), (14, 10), (14, 11)).rect(12, 10, 2, 2, "bone")
+    c.pts("bone", (8, 10), (8, 12), (8, 14), (8, 16)).h_(4, 17, 8, "bone")
+    c.rect(4, 21, 3, 2, None).h_(4, 20, 3, "warm0")
+    return c.outline()
+def dining_cook():              # the cook who stayed: forty years on the grill, grey hair in a net, a teal apron, the scraper
+    c = C().rect(5, 5, 6, 6, "skin0").rect(4, 4, 8, 3, "concrete3").h_(5, 3, 6, "concrete3").pts("steel", (5, 4), (7, 3), (9, 4), (11, 5), (4, 6), (10, 3))
+    c.pts("night0", (7, 8), (9, 8))
+    c.rect(3, 11, 10, 9, "bone").v_(12, 11, 9, "concrete3").v_(3, 12, 6, "concrete3").pts("skin0", (3, 18), (12, 18))
+    c.rect(5, 12, 6, 9, "screen1").v_(10, 13, 8, "screen0").pts("screen1", (6, 11), (9, 11)).h_(6, 16, 3, "screen0")
+    c.v_(13, 16, 3, "warm0").rect(12, 19, 3, 2, "steel")                                               # the scraper
+    c.rect(5, 21, 2, 1, "night2").rect(9, 21, 2, 1, "night2").h_(4, 22, 3, "concrete3").h_(9, 22, 3, "concrete3")
+    return c.outline()
+def dining_student():           # the student with a waffle: big hair, a grey sweatshirt, the plate, a fork
+    c = figure("steel", "concrete2", "skin1", "night1", hunch=False)
+    c.rect(4, 2, 8, 3, "night1").h_(5, 1, 6, "night1").pts("night1", (4, 5), (11, 5)).pts("bone", (7, 9), (9, 9))
+    c.h_(2, 14, 8, "bone").h_(3, 15, 6, "concrete3").rect(3, 12, 5, 2, "warm4").pts("warm2", (4, 12), (6, 12), (5, 13), (7, 13)).px(8, 13, "warm3")
+    c.v_(12, 10, 4, "steel").px(12, 14, "skin1")
+    return c.outline()
+def lab_grad(f):                # the grad student: asleep on his folded arms at a bench, safety glasses on, the borrowed wheel motor by his elbow
+    c = C().rect(2, 7 - f, 10, 6 + f, "concrete1").h_(3, 6 - f, 8, "concrete2")                        # his back; it rises when he breathes in
+    c.rect(4, 8, 6, 4, "skin2").rect(4, 8, 6, 2, "warm0").v_(4, 8, 3, "warm0").pts("screen2", (6, 10), (8, 10)).px(7, 10, "steel")   # head down, the glasses
+    c.h_(1, 12, 12, "concrete2").pts("skin2", (1, 12), (12, 12))                                       # folded arms
+    c.rect(13, 10, 2, 3, "steel").px(13, 11, "night1").rect(13, 8, 2, 2, "slicker1")                   # the motor and its sticky note
+    c.h_(0, 13, 16, "warm3").h_(0, 14, 16, "warm1").v_(1, 15, 8, "warm0").v_(14, 15, 8, "warm0")       # the bench
+    c.rect(5, 15, 2, 7, "night2").rect(8, 15, 2, 7, "night2").h_(4, 22, 3, "warm0").h_(8, 22, 3, "warm0")
+    return c.outline()
+def apt637_player():            # 637: grey hair to the collar, a black rollneck, the bow in one hand
+    c = figure("night1", "night3", "skin3", "concrete3", hunch=False)
+    c.v_(5, 3, 7, "concrete3").v_(10, 3, 7, "concrete3").h_(6, 9, 4, "night3")
+    c.rect(5, 18, 2, 4, "concrete1").rect(9, 18, 2, 4, "concrete1").h_(4, 22, 3, "bone").h_(9, 22, 3, "bone")
+    c.v_(13, 2, 15, "warm2").px(12, 2, "warm2").px(13, 16, "night2").px(12, 15, "skin3")              # the bow
+    return c.outline()
+def apt638_viewer():            # 638: cross-legged on a cushion, the screen in her glasses, the notebook on her knee
+    c = C().rect(5, 7, 6, 6, "skin1").rect(5, 7, 6, 2, "warm1").v_(5, 7, 5, "warm1").v_(10, 7, 5, "warm1").h_(4, 6, 8, "warm1")
+    c.pts("screen2", (7, 10), (9, 10)).pts("steel", (6, 10), (8, 10))
+    c.rect(4, 13, 8, 6, "warm4").v_(11, 13, 6, "warm3").v_(4, 14, 5, "warm3")
+    c.rect(2, 18, 12, 3, "night3").h_(2, 20, 12, "night2").pts("skin1", (2, 19), (13, 19))             # crossed legs
+    c.rect(8, 16, 5, 3, "bone").v_(9, 16, 3, "signal").pts("concrete3", (10, 16), (11, 17), (10, 18)).px(13, 15, "warm3").px(12, 16, "skin1")   # the notebook, its margin, the pencil
+    c.h_(1, 21, 14, "concrete2").h_(2, 22, 12, "concrete1")                                            # the cushion
+    return c.outline()
+def aster5_neighbor():          # the fifth floor: bald on top, striped pyjamas, slippers, one finger at the ceiling
+    c = figure("bone", "concrete3", "skin3", "concrete3", hunch=False)
+    c.rect(5, 3, 6, 2, "skin3").pts("concrete3", (5, 5), (5, 6), (10, 5), (10, 6))
+    c.v_(6, 9, 9, "steel").v_(9, 9, 9, "steel").rect(5, 18, 2, 4, "bone").rect(9, 18, 2, 4, "bone").pts("steel", (5, 19), (5, 21), (9, 19), (9, 21))
+    c.v_(12, 3, 7, "bone").pts("steel", (12, 5), (12, 7)).pts("skin3", (12, 2), (12, 1))
+    c.h_(4, 22, 3, "warm3").h_(9, 22, 3, "warm3")
+    return c.outline()
+def laundry_folder():           # the laundry room at 3 a.m.: a headwrap, a towel held out square, slippers
+    c = figure("night3", "night2", "skin1", "night1", hunch=False)
+    c.rect(5, 2, 6, 3, "warm4").h_(5, 4, 6, "warm3").pts("warm4", (7, 1), (8, 1))
+    c.rect(3, 11, 10, 6, "bone").h_(3, 13, 10, "screen1").h_(3, 15, 10, "screen1").v_(8, 11, 6, "concrete3").pts("skin1", (3, 11), (12, 11))
+    c.rect(5, 18, 2, 4, "concrete2").rect(9, 18, 2, 4, "concrete2").h_(4, 22, 3, "warm4").h_(9, 22, 3, "warm4")
+    return c.outline()
+for name, c in (("npc.chb_ta", chb_ta()), ("npc.chb_student", chb_student()), ("npc.diner_cook", diner_cook()), ("npc.diner_regular", diner_regular()),
+                ("npc.roof_watcher", roof_watcher()), ("npc.quad_student", quad_student()), ("npc.dining_cook", dining_cook()),
+                ("npc.dining_student", dining_student()), ("npc.lab_grad", lab_grad(0)), ("npc.lab_grad#1", lab_grad(1)),
+                ("npc.apt637_player", apt637_player()), ("npc.apt638_viewer", apt638_viewer()), ("npc.aster5_neighbor", aster5_neighbor()),
+                ("npc.laundry_folder", laundry_folder())):
+    P(name, c)
+
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)
 write("big", 32, 40, BIG)
