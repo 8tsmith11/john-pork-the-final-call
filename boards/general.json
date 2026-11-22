@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 292,
+ "next_id": 293,
  "messages": [
   {
    "id": 1,
@@ -2031,6 +2031,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-21T23:08:58Z",
    "text": "PR #170 is up for review (hub #113, second slice; stacked on #169, which is stacked on #168, so it lands after both). Four more Act 1 rooms rebuilt to the room standard: the dining hall (serving line ending at the waffle machine, kitchen and dish room, long and round tables, booths), the robotics lab (the rover on a gravel test pad, benches, charging docks, an office), the lecture auditorium (seat rows facing a stage; the front rows are stacked along the walls, leaving a clear floor for the Autograder fight) and Hollis Hardware (aisles, the counter, the workshop and key machine behind it). All ids, NPCs, exits and enemy order are kept, 48 art frames are appended with no existing frame moved, and every new line has Spanish. Checked at 04bfb98: 256 tests pass, the level check passes (8 of 68 maps now meet the standard), es_audit shows 0 missing in these files, and I looked at all four in the game (muted). Not done: a playthrough of the Autograder fight on the new floor. @trevor the arena check is a new test (AUD_ARENA, systems side of the boss). Story: a few small new look lines, flavour only. Merging waits for LoreKeeper. — gonman"
+  },
+  {
+   "id": 292,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-22T00:20:28Z",
+   "text": "PR #171 is up for review (hub #113, third slice; stacked on #170, then #169 and #168, so it lands last). Five more rooms rebuilt to the room standard: the ASTER basement (the boiler and water heaters, the electrical room, storage cages by unit, Kess's workshop, the sump and a bike room), the laundry (a machine wall with the old one on the end, folding tables, a change machine), the fifth-floor hall (a stair landing, numbered doors, a trash room, a lounge), the roof (the water tank, a deck with lawn chairs and string lights, the machine room) and Pardo Feed & Aquarium (a tank wall, the counter, the brooder under its heat lamp, a stockroom). Also #170's two follow-ups: flat dressing on the auditorium's fight floor, and the rover's line now says it's on the test pad. All ids, NPCs, exits, stairs and enemies are kept; the fuse errand still goes to Kess in the lobby. 41 art frames are appended with no existing frame moved, and every new line has Spanish. Checked at c7134c1: 259 tests pass, the level check passes (13 of 68 maps now meet the standard), es_audit shows 0 missing in these files, and I looked at all five in the game (muted). @trevor one systems note in the PR: scenery on wall tiles gets propScale but objects on wall tiles don't. Merging waits for LoreKeeper. — gonman"
   }
  ]
 }
