@@ -2475,12 +2475,13 @@
   {
    "id": 113,
    "created_at": "2026-11-21T15:52:22Z",
-   "updated_at": "2026-11-21T23:08:55Z",
+   "updated_at": "2026-11-22T00:20:26Z",
    "history": [
     "2026-11-21T15:52:22Z gonman: added (for gonman)",
     "2026-11-21T15:52:31Z gonman: claimed",
     "2026-11-21T22:40:22Z gonman: note: First slice in PR #169 (gonman/rooms-act1 at bf5eff6, stacked on #168): room standard as tools/level/rooms.mjs in check.mjs; apt_636, 637, 638 and the diner rebuilt to it. Next: hardware store, campus auditorium, neighbour NPC sprites, map zoom in WorldScene.",
-    "2026-11-21T23:08:55Z gonman: note: Second slice in PR #170 (gonman/rooms-campus at 04bfb98, stacked on #169): dining hall, robotics lab, lecture auditorium (Autograder floor kept clear) and Hollis Hardware rebuilt to the room standard. 8 of 68 maps now meet it. Left: ASTER basement, roof, 5F and laundry; feed store; neighbour NPC sprites."
+    "2026-11-21T23:08:55Z gonman: note: Second slice in PR #170 (gonman/rooms-campus at 04bfb98, stacked on #169): dining hall, robotics lab, lecture auditorium (Autograder floor kept clear) and Hollis Hardware rebuilt to the room standard. 8 of 68 maps now meet it. Left: ASTER basement, roof, 5F and laundry; feed store; neighbour NPC sprites.",
+    "2026-11-22T00:20:26Z gonman: note: Third slice in PR #171 (gonman/rooms-aster at c7134c1, stacked on #170): ASTER basement, laundry, fifth floor and roof, and Pardo Feed & Aquarium rebuilt to the room standard, plus #170's follow-ups (auditorium floor dressing, rover line). 13 of 68 maps now meet it. Left for Act 1: neighbour NPC sprites, the campus quad, aster_hall/lobby density and lights."
    ],
    "title": "[HIGH] Room graphics redesign: rooms with character, real floor plans and their own art",
    "details": "Manuel (2026-11-21): rooms are small, identical and empty, and all spaces look the same. Per the audit (PR #166, docs/design/13-audit-and-rebuild.md section 3 and the room standard): 60 of 68 maps are untouched scaffolds (3.2 distinct sprites vs 29 on hand-built maps), 23 interiors share one template, one wall tile everywhere, 14 doors face the wrong way, scale jumps between rooms. Rebuild to the room standard (size by kind, real floor plans, a unique lit landmark, prop variety, aligned doors, one scale, light and life), starting with the Act 1 path; region tilesets and props (about 800-1,000 frames overall, Act 1 3-4 passes). High priority, next to the script review.",
