@@ -53,6 +53,17 @@ export const PUZZLES = [
     reward: { item: 'item.analog_axe',
       text: 'The last peg goes in. Under the tower\'s first landing a wooden bar drops out of its slot, and a locker door swings open on leather hinges. Inside hangs an axe, oiled, with a paper flag of its own: "for whoever can tell the years apart." (Analogist felling axe)',
       textEs: 'Entra la última clavija. Debajo del primer descanso de la torre, una tranca de madera cae de su ranura, y la puerta de un armario se abre sobre bisagras de cuero. Adentro cuelga un hacha, aceitada, con su propia banderita de papel: "para quien sepa distinguir los años." (Hacha de tala analogista)' } },
+
+  // ---- Greenbelt: the clean room's one set of footprints (timed). The prints only show when the dish's work
+  // light crosses the skylight; they end at one of twelve drawers. The repeater lamp's pencilled timing is the clue.
+  { id: 'gb_footprints', kind: 'timed', parts: ['obj.gb_passdrawers'], window: cycleWindow(75, 15, 60),
+    closedText: 'You try a drawer. Bolted from the clean side. So is the next. Through the window the floor in there is only dust, in this light: you can\'t see where the prints end.',
+    closedTextEs: 'Pruebas un cajón. Trabado desde el lado limpio. El siguiente también. Por la ventana, con esta luz, el piso de adentro es solo polvo: no se ve dónde terminan las huellas.',
+    solvedText: 'Eleven bolted drawers and one empty one. The prints haven\'t moved.',
+    solvedTextEs: 'Once cajones trabados y uno vacío. Las huellas no se movieron.',
+    reward: { item: 'item.gb_tape',
+      text: 'The dish\'s light swings across the skylight, and for a few seconds the dust in there has edges. The prints cross the room and stop at the wall, at the fourth drawer from the left. That one isn\'t bolted. Inside is a can of telemetry tape on a carrying strap, labeled in pencil. Somebody walked in to leave it where only that light would find it. (Clean-room tape)',
+      textEs: 'La luz de la antena cruza la claraboya, y por unos segundos el polvo de adentro tiene bordes. Las huellas cruzan la sala y se detienen en la pared, en el cuarto cajón desde la izquierda. Ese no está trabado. Adentro hay una lata de cinta de telemetría con una correa, rotulada en lápiz. Alguien entró para dejarla donde solo esa luz la encontrara. (Cinta de la sala limpia)' } },
 ].map(definePuzzle);
 
 /** The puzzle a map object belongs to, if any. */

@@ -4999,8 +4999,11 @@ const A23 = {
   rf_rings: { map: 'refuge', giver: 'npc.rf_teacher', look: 'obj.rf_tower', clues: ['obj.rf_ring_liar', 'obj.rf_tower'], item: 'item.analog_axe',
     wrong: [['obj.rf_ring_clocks'], ['obj.rf_ring_phones']], says: 'wrongText',
     right: [['obj.rf_ring_clocks'], ['obj.rf_ring_vote'], ['obj.rf_ring_phones'], ['obj.rf_ring_silence']] },
+  gb_footprints: { map: 'gb_dishes', giver: 'npc.gb_technician', look: 'obj.gb_cleanroom', clues: ['obj.gb_sweep_lamp', 'obj.gb_cleanroom'], item: 'item.gb_tape',
+    wrong: [['obj.gb_passdrawers', 0], ['obj.gb_passdrawers', 59], ['obj.gb_passdrawers', 76]], right: [['obj.gb_passdrawers', 135]], says: 'closedText' },
+  // A23_MORE
 };
-const AB23 =await import('../src/content/abilities.js');
+const AB23 = await import('../src/content/abilities.js');
 const a23Host = (save, said) => ({ mode: 'host', character: 'trevor', localId: 'host', save, time: { now: 0 }, cameras: { main: { shake() {} } },
   net: { send() {} }, _say: (t) => said.push(t), _toast() {}, _tickQuests() {}, _syncParty() {} });
 const a23Run = (host, moves) => { for (const [id, t = 0] of moves) { host.time.now = t * 1000; const o = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects).find((x) => x.id === id); CraftWorldScene.prototype._usePuzzle.call(host, a23PuzzleFor(id), o); } };

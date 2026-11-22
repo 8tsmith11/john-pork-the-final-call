@@ -153,6 +153,7 @@ side({ id: 'gb_footprints', act: 2, ...g('npc.gb_technician', TECH), title: 'One
   why: 'Someone walked into the sealed clean room. Only in.', whyEs: 'Alguien entró en la sala limpia sellada. Solo entró.',
   pitch: '"Nobody goes in the clean room. Go look at the floor and tell me I\'m wrong."', pitchEs: '"Nadie entra en la sala limpia. Ve a mirar el piso y dime que me equivoco."',
   look: { obj: 'obj.gb_cleanroom', where: 'the clean room window', whereEs: 'la ventana de la sala limpia', seen: 'The footprints go in. They don\'t come out.', seenEs: 'Las huellas entran. No salen.' },
+  puzzle: { id: 'gb_footprints', text: 'Find where the footprints end. They only show in the right light.', textEs: 'Descubre dónde terminan las huellas. Solo se ven con la luz justa.' },
   line: '"I knew it." He doesn\'t look happy to be right.', lineEs: '"Lo sabía." No parece contento de tener razón.' });
 
 side({ id: 'gb_prices', act: 2, ...g('npc.gb_clerk', CLERK), title: 'Due for a vote', titleEs: 'Toca votar',

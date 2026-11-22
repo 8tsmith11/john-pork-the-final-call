@@ -86,6 +86,7 @@ export const ES_ITEMS = {
   tank_goggles: ['Gafas del acuario', 'Con tinte azul, para revisar a los camarones de noche sin despertarlos. Las cosas de coderot muestran sus costuras a través de ellas: las marcadas reciben mucho más y sueltan más.'],
   spinner_pack: ['Mochila giratoria', 'Un robot de combate retirado de 1,5 kg atado a su espalda, con el arma todavía activa. Atraviesa lo que sea con la esquiva y el giro lo muerde al pasar, tan fuerte que lo manda a volar. Pesada.'],
   ann_oarlocks: ['Toletes de bronce', 'Un par, de la familia de la isla, verdes en los pernos. Sirven para cualquier bote de la bahía. No tienes bote.'],
+  gb_tape: ['Cinta de la sala limpia', 'Una lata de cinta de telemetría de la sala limpia de Greenbelt, rotulada en lápiz: una antena, una noche. Bobinada antes de las Décadas de Basura y jamás tocada por un modelo. Colgada de su correa, mantiene lejos el coderot.'],
   analog_axe: ['Hacha de tala analogista', 'Mango de nogal y una cabeza forjada en el refugio, afilada a mano. Ninguna parte suya estuvo enchufada jamás. Lenta, y va en serio.'],
   keycard: ['Tarjeta de acceso', 'Una credencial de contratista de Continuity en un cordón. La foto es de otra persona.'],
   hard_candy: ['Caramelo duro', 'De butterscotch, envuelto en plástico dorado, de un bolsillo de abrigo que lo tiene desde 2091.'],

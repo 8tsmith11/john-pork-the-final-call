@@ -84,6 +84,12 @@ export const ES_ACT2 = {
   'Clean room window': 'Ventana de la sala limpia',
   'A window of wired glass into the clean room. The floor hasn\'t been swept in years, and there is one set of footprints in the dust.':
     'Una ventana de vidrio armado hacia la sala limpia. Hace años que no barren el piso, y en el polvo hay un solo par de huellas.',
+  'Pass-through drawers': 'Cajones pasamuros',
+  'Twelve steel pass-through drawers set in the wall under the window, for handing things into the clean room without going in. None of them is numbered. Whoever numbered things here left before the drawers came.':
+    'Doce cajones pasamuros de acero empotrados en la pared bajo la ventana, para pasar cosas a la sala limpia sin entrar. Ninguno tiene número. El que numeraba las cosas acá se fue antes de que llegaran los cajones.',
+  'Repeater lamp': 'Lámpara repetidora',
+  'A repeater lamp on the wall, tagged DISH 3 WORK LIGHT in punched tape. It comes on when the dish\'s lamp swings over the clean room skylight, and goes off again. Somebody has timed it in pencil on the paint: a minute dark, a quarter of that lit. The numbers have been corrected twice.':
+    'Una lámpara repetidora en la pared, rotulada LUZ DE TRABAJO, ANTENA 3 en cinta perforada. Se enciende cuando el foco de la antena pasa sobre la claraboya de la sala limpia, y se vuelve a apagar. Alguien la cronometró en lápiz sobre la pintura: un minuto a oscuras, la cuarta parte de eso encendida. Los números están corregidos dos veces.',
   'Back down the hill': 'De vuelta colina abajo',
   'Back outside.': 'De vuelta afuera.',
 
