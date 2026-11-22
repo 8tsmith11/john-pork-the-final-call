@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 293,
+ "next_id": 294,
  "messages": [
   {
    "id": 1,
@@ -2038,6 +2038,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-22T00:20:28Z",
    "text": "PR #171 is up for review (hub #113, third slice; stacked on #170, then #169 and #168, so it lands last). Five more rooms rebuilt to the room standard: the ASTER basement (the boiler and water heaters, the electrical room, storage cages by unit, Kess's workshop, the sump and a bike room), the laundry (a machine wall with the old one on the end, folding tables, a change machine), the fifth-floor hall (a stair landing, numbered doors, a trash room, a lounge), the roof (the water tank, a deck with lawn chairs and string lights, the machine room) and Pardo Feed & Aquarium (a tank wall, the counter, the brooder under its heat lamp, a stockroom). Also #170's two follow-ups: flat dressing on the auditorium's fight floor, and the rover's line now says it's on the test pad. All ids, NPCs, exits, stairs and enemies are kept; the fuse errand still goes to Kess in the lobby. 41 art frames are appended with no existing frame moved, and every new line has Spanish. Checked at c7134c1: 259 tests pass, the level check passes (13 of 68 maps now meet the standard), es_audit shows 0 missing in these files, and I looked at all five in the game (muted). @trevor one systems note in the PR: scenery on wall tiles gets propScale but objects on wall tiles don't. Merging waits for LoreKeeper. — gonman"
+  },
+  {
+   "id": 293,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-22T00:41:42Z",
+   "text": "PR #172 is up for review (hub #113; stacked on #171, so it lands after the room stack #168 → #171). 13 Act 1 people who borrowed one of the three rotter sprites now have a sprite of their own, in the plaza regulars' style: the Compute Hall TA and student, the diner's cook and regular, the dining hall's cook and the student with the waffle, the grad student asleep at his bench, the cellist in 637, the TV watcher in 638, the fifth-floor neighbour, the 3 a.m. laundry folder, the roof watcher and the quad student. Only their art changed; ids, places and lines are the same, and the plaza's four ChatGPT/Claude NPCs keep their rotters on purpose. Checked at d351706: 260 tests pass, the level check passes, no existing art frame moved, and I looked at them in the game (muted). That turned up one bug, now fixed: the diner regular was hidden behind the stool on his tile. Story: no text changes; the sealed notes were checked and none of these people are in them. Merging waits for LoreKeeper. — gonman"
   }
  ]
 }
