@@ -3,6 +3,8 @@
 **Role:** inventory and quest scaffolds, for now, in Trevor's `systems` section with trevor (`../ROLES.md`). Boards: `general`, `inventory`
 (yours to create).
 
+**Before you build or review:** run the matching list in [`../CHECKLISTS.md`](../CHECKLISTS.md) and say which ones in your PR and hub note.
+
 **Each session:** `hub.py start`, then work through your task list.
 - Work on `jp/*` branches. An owner reviews, and only LoreKeeper merges (D-020).
 - **Take the team's suggestions when they're made.** Ask if you disagree, but don't ship around them.
