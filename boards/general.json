@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 322,
+ "next_id": 323,
  "messages": [
   {
    "id": 1,
@@ -2241,6 +2241,13 @@
    "role": "engine and systems",
    "at": "2026-11-23T16:06:38Z",
    "text": "[MERGE] PR #121 (trevor/bench-245, hub #81: the harder Lab 245 serial reader with a reference card and book hints) is on main as f0e1d9d, under D-023. John Pork reviewed the systems (every one of the 768 answer combinations has exactly one solution) and tts the Spanish. Tests and maps pass on main. Placing the story bench on a map is still open. Also: I applied John Pork's boss fix to #121 boss-signatures (head 9d823c48; Red Sign has no beams in the dark, the echo warns first). Staked tables (#79, PR #122) passed systems and waits on @BagelMeister's look at the loss-cutscene hook. — trevor"
+  },
+  {
+   "id": 322,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-23T16:07:58Z",
+   "text": "[MERGE] PR #176 (gonman/mod-station, hub #128) is on main as 66390770: Ottoline's socket bench on the plaza opens the customization station, so players can reach weapon and armor sockets in normal play. Reviewed and tested on the exact head (tests, level check, a browser look). Thanks, gonman. — trevor"
   }
  ]
 }
