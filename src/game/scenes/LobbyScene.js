@@ -16,7 +16,13 @@ const IDS = Object.keys(ROOMMATES);
 
 export class LobbyScene extends Phaser.Scene {
   constructor() { super('Lobby'); }
-  init(data) { this.role = data.role; }
+  init({ role, rejoinCode }) {
+    this.role = role;
+    this.rejoinCode = rejoinCode;
+    this.net = null;
+    this._leaving = false;
+    this._enteringWorld = false;
+  }
 
   async create() {
     setArea('lobby');   // music: see src/audio/music.js
@@ -35,9 +41,21 @@ export class LobbyScene extends Phaser.Scene {
     const back = this.add.text(8, 256, '[ESC] back', { ...FONT, color: '#5d6487' });
     // English / Español (Trevor). The lobby keeps its connection, so relabel in place instead of restarting.
     langToggle(this, W - 6, 6, () => { back.setText('[ESC] back'); for (const c of this.cards) { c.label?.setText(c.label.text); } this.status.setText(this.status.text); this.startBtn.setText(this.startBtn.text); });
-    this.input.keyboard.on('keydown-ESC', () => { this.net?.close(); this.scene.start('Title'); });
+    this.input.keyboard.on('keydown-ESC', () => this._leaveToTitle());
+    const status = this.status;
     try { this.role === 'host' ? await this._host() : await this._join(); }
-    catch (e) { this.status.setText(`${e.message || e}`).setColor('#ff6b6b'); }
+    catch (e) {
+      if (!status.active || this._leaving) return;
+      this.net?.close();
+      status.setText(`${e.message || e}`).setColor('#ff6b6b');
+    }
+  }
+
+  _leaveToTitle(rejoinCode = this.rejoinCode) {
+    if (this._leaving || this._enteringWorld) return;
+    this._leaving = true;
+    this.net?.close();
+    this.scene.start('Title', { rejoinCode });
   }
 
   _card(id, x, y) {
@@ -114,13 +132,18 @@ export class LobbyScene extends Phaser.Scene {
 
   // ---------- client ----------
   async _join() {
-    const code = (prompt('Room code from the host:') || '').trim();
+    const code = (this.rejoinCode ?? prompt('Room code from the host:') ?? '').trim();
     if (!code) throw new Error('No code entered. [ESC] to go back.');
     const net = this.net = new ClientNet();
-    this.status.setText(`Joining ${code.toUpperCase()}...`);
+    const status = this.status;
+    status.setText(`Joining ${code.toUpperCase()}...`);
     await net.join(code);
-    this.status.setText('Connected. Claim your roommate.').setColor('#9aa3c7');
+    if (!status.active || this._leaving) return;
+    if (!net.conn?.open) return this._leaveToTitle(net.code);
+    this.rejoinCode = undefined;
+    status.setText('Connected. Claim your roommate.').setColor('#9aa3c7');
     const onMessage = (msg) => {
+      if (this._leaving || this._enteringWorld) return;
       if (msg.t === 'lobby') {
         this._renderLobby(msg.state);
         const sug = msg.state.suggestions?.[net.id];
@@ -131,12 +154,14 @@ export class LobbyScene extends Phaser.Scene {
         const character = msg.assignments[net.id];
         if (!character) return this.status.setText('The host started without you. Claim a roommate next time.').setColor('#ff6b6b');
         net.rememberSeat(msg.seatKey);
+        this._enteringWorld = true;
         this.scene.start('World', { mode: 'client', net, save: msg.save, character, snapshot: msg.snapshot });
       }
     };
-    net.on('msg', onMessage);
+    const onClose = () => this._leaveToTitle(net.code);
+    net.on('msg', onMessage).on('close', onClose);
     // World messages may reuse lobby message types after the lobby UI is destroyed.
-    this.events.once('shutdown', () => net.off('msg', onMessage));
+    this.events.once('shutdown', () => net.off('msg', onMessage).off('close', onClose));
     net.send({ t: 'hello', name: this.name, seatKey: net.seatKey });
   }
 

@@ -8,7 +8,7 @@ The rule is in `PROCESS.md`, "Working in git".
 "Landed by copy" means the changes reached `main` as new commits (cherry-picked or reapplied), so
 the branch tip isn't an ancestor of `main` even though nothing on it is missing.
 
-Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `c1ea62a`.
+Last checked: 2026-11-21 by LoreKeeper, against `origin/main` at `faab869`.
 
 ## Active
 
@@ -21,6 +21,25 @@ Last checked: 2026-11-20 by LoreKeeper, against `origin/main` at `c1ea62a`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `jp/lobby-loss-recovery` | GitHub | Merged in `faab869` (PR #163) |
+| `jp/disconnect-recovery` | GitHub | Merged in `22595f1` (PR #162) |
+| `lorekeeper/pr82-144-branch-register` | GitHub | Merged in `348bf9c` (PR #154) |
+| `jp/gadget-engineering` | GitHub | Merged in `c9b4c7a` (PR #144) |
+| `gonman/combat-fx` | GitHub | Merged in `871d6fb` (PR #142) |
+| `trevor/transition-guard` | GitHub | Merged in `7d9fd89` (PR #140) |
+| `trevor/stage-hud` | GitHub | Merged in `1e3a64c` (PR #139) |
+| `trevor/mod-sockets-on-hotbar` | GitHub | Merged in `7b6901d` (PR #93) |
+| `jp/shared-dialogue-disconnect` | GitHub | Merged in `e81a970` (PR #86) |
+| `gonman/comic-pages` | GitHub | Merged in `cd62943` (PR #84) |
+| `trevor/skirmish` | GitHub | Merged in `d413e2b` (PR #82) |
+| `lorekeeper/pr37-151-branch-register` | GitHub | Merged in `bb6187d` (PR #152) |
+| `gonman/ct-posters` | GitHub | Merged in `4355e79` (PR #151) |
+| `jp/jp2-discoverable-abilities` | GitHub | Merged in `628c04e` (PR #143) |
+| `trevor/coop-puzzles` | GitHub | Merged in `b16db7b` (PR #141) |
+| `gonman/later-acts-polish` | GitHub | Merged in `f862adf` (PR #131) |
+| `gonman/world-trigger` | GitHub | Merged in `5c8bd19` (PR #77) |
+| `jp/shared-choice-dialogue` | GitHub | Merged in `d5eb040` (PR #37) |
+| `lorekeeper/pr85-147-branch-register` | GitHub | Merged in `f369fc9` (PR #149) |
 | `gonman/save-pin` | GitHub | Squash-merged in `ea9a69f` (PR #136) |
 | `trevor/readme-undo` | GitHub | Merged in `8c402b0` (PR #147) |
 | `jp/coop-reconnect` | GitHub | Merged in `4098ca4` (PR #85) |
