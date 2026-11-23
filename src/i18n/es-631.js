@@ -149,4 +149,9 @@ export const ES_631 = {
   'The deadbolt plate is bent and the strike is splintered. Someone forced it from the hallway side, quietly, and pulled the door shut behind them.': 'La placa del cerrojo está doblada y el contramarco astillado. Alguien la forzó desde el pasillo, en silencio, y cerró la puerta al salir.',
   'Two toothbrushes and a third one nobody claims.': 'Dos cepillos de dientes y un tercero que nadie reclama.',
   "Fab #1, still warm. The sniffer is printed and the reading has not changed: light, and down. Under the plaza.": "Fab #1, todavía tibia. El rastreador está impreso y la lectura no cambió: liviano, y hacia abajo. Debajo de la plaza.",
+  // The cold open's room (hub #99)
+  'Wall screen': 'Pantalla de pared',
+  'The wall screen. Nobody remembers turning it on. The remote has been missing since spring.': 'La pantalla de pared. Nadie se acuerda de haberla prendido. El control está perdido desde la primavera.',
+  'Van, down on the street': 'Camioneta, abajo en la calle',
+  'A dark van at the kerb, six floors down. No markings. Something on its roof keeps turning.': 'Una camioneta oscura junto al cordón, seis pisos más abajo. Sin ninguna marca. Algo en el techo no para de girar.',
 };
