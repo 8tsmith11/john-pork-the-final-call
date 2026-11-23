@@ -2,7 +2,7 @@
 // The host steps the Sim with every player's latest input; clients render snapshots.
 
 export const TILE = 16;
-import { newSkirmish, stepSkirmish, stepSkUnit, skirmishView } from './skirmish.js';
+import { newSkirmish, stepSkirmish, stepSkUnit, skirmishView, skirmishShotHits, finishSkirmish } from './skirmish.js';
 import { newSiege, stepSiege, siegeView, siegeMove } from './siege.js';
 import { BOSS_PATTERNS, bossPool, pickPattern, windFor, LASER, SHOCK, RAIN, LANE } from './bossPatterns.js';
 import { ENEMIES } from '../content/enemies.js';
@@ -878,6 +878,7 @@ export class Sim {
       if (e.def?.trait === 'splitter') for (let i = 0; i < 2; i++) { const nid = `e${this._nextId++}`; this.enemies.set(nid, { id: nid, kind: 'enemy.rotling', def: { ...ENEMIES['enemy.rotling'], hp: 8, speed: 60, radius: 4, color: e.def.color, vname: 'Fragment', trait: 'plain', xp: 2 }, x: e.x + (i ? 6 : -6), y: e.y, hp: 8, cd: 0.6, hurtT: 0, kx: 0, ky: 0 }); }
       if (e.def?.trait === 'puddler') this.hazards.push({ x: e.x, y: e.y, r: 14, ttl: 5, dps: 8 });
       this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss, mini: !!e.mini, key: e.spawnKey, ...(e.siege ? { siege: true } : {}) });
+      if (e.skUnit === 'hub') finishSkirmish(this, this.sk, e, this.events);
       if (e.boss && !e.mini) for (const a of [...this.enemies.values()]) if (a.summoned) { this.enemies.delete(a.id); this.events.push({ t: 'kill', x: a.x, y: a.y, kind: a.kind, xp: 0, crumble: true }); }   // its adds crumble with it
       if (e.marked > 0 && e.markedBy) this._pingKill(e);   // a Ping mark (Riff's rattle has no owner)
       const k = this.players.get(by);   // Argentina shirt (gambeta): a kill hands the dodge straight back
@@ -920,8 +921,9 @@ export class Sim {
     p.hp -= dmg; p.iframes = COMBAT.hurtIframes + (p.mods?.iframes ?? 0);
     if (p.riding) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, knocked: true }); }
     this.events.push({ t: 'hurt', id: p.id, x: p.x, y: p.y, dmg });
-    if (p.hp <= 0 && p.mods?.secondWind && !p.swUsed) { p.swUsed = true; p.hp = Math.round(this.maxHp(p) * 0.3); p.iframes = 1.5; this.events.push({ t: 'secondwind', id: p.id, x: p.x, y: p.y }); return; }
+    if (p.hp <= 0 && p.mods?.secondWind && !p.swUsed) { p.swUsed = true; p.hp = Math.round(this.maxHp(p) * 0.3); p.iframes = 1.5; this.events.push({ t: 'secondwind', id: p.id, x: p.x, y: p.y }); return true; }
     if (p.hp <= 0) { p.hp = 0; p.downed = true; p.reviveT = 0; this.events.push({ t: 'down', id: p.id }); }
+    return true;
   }
 
   _nearestPlayer(x, y) {
@@ -1280,7 +1282,7 @@ export class Sim {
       let hit = false;
       if (s.from === 'player') {
         for (const e of this.enemies.values()) {
-          if (Math.hypot(e.x - s.x, e.y - 4 - s.y) < this._def(e).radius + 3) {
+          if (e.skUnit ? skirmishShotHits(e, s) : Math.hypot(e.x - s.x, e.y - 4 - s.y) < this._def(e).radius + 3) {
             this._hurtEnemy(e, s.dmg, s.vx * 0.4, s.vy * 0.4, s.owner); hit = true; break;
           }
         }
@@ -1350,6 +1352,15 @@ export class Sim {
   }
 
   get wiped() { return this.players.size > 0 && [...this.players.values()].every((p) => p.downed); }
+
+  _pushPlayer(player, dx, dy) {
+    const steps = Math.ceil(Math.max(Math.abs(dx), Math.abs(dy)) / 8);
+    for (let i = 0; i < steps; i++) {
+      const x = player.x + dx / steps, y = player.y + dy / steps;
+      if (!this._hits(x, player.y)) player.x = x;
+      if (!this._hits(player.x, y)) player.y = y;
+    }
+  }
 
   _moveBody(b, dx, dy, r) {
     const fits = (x, y) => !this._hitsBox(x, y, r, r * 0.7);

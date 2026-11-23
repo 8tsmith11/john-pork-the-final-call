@@ -63,6 +63,27 @@ function launchDrone(sim, sk, hub) {
     hp: base.hp, cd: 0, hurtT: 0, kx: 0, ky: 0, skUnit: 'drone', sk: { ph: sk.r() * 6.28, hitCd: 0.6 } });
 }
 
+/** Shots can hit the cabinet above the walker’s feet or the body of a hovering drone. */
+export function skirmishShotHits(e, shot) {
+  const dx = Math.abs(e.x - shot.x), above = e.y - shot.y;
+  if (e.skUnit === 'drone') return Math.hypot(dx, above - 12) < e.def.radius + 3;
+  return (dx < 19 && above > 10 && above < 60) || Math.hypot(dx, above - 4) < e.def.radius + 3;
+}
+
+export function finishSkirmish(sim, sk, hub, events) {
+  if (!sk || sk.over) return;
+  sk.over = true;
+  if (hub) Object.assign(sk.hub, { x: hub.x, y: hub.y });
+  sk.shots.length = 0;
+  for (const e of sim.enemies.values()) {
+    if (e.skUnit !== 'drone') continue;
+    sim.enemies.delete(e.id);
+    events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, xp: 0, crumble: true, bg: true });
+  }
+  const { x, y } = sk.hub;
+  events.push({ t: 'skOver', id: sk.id, x, y, tx: Math.floor(x / TILE), ty: Math.floor(y / TILE) });
+}
+
 /** A trooper's hit: no damage numbers, and a kill only pays if a player had a hand in it. */
 function troopHit(sim, sk, e, dmg, ev) {
   e.hp -= dmg; e.hurtT = 0.1;
@@ -70,6 +91,7 @@ function troopHit(sim, sk, e, dmg, ev) {
   sim.enemies.delete(e.id);
   const paid = e.skUnit === 'hub' && e.lastHitBy;
   ev.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by: paid ? e.lastHitBy : undefined, xp: paid ? e.def.xp : 0, ...(paid ? {} : { bg: true }) });
+  if (e.skUnit === 'hub') finishSkirmish(sim, sk, e, ev);
 }
 
 /** One tick. Returns events ({ t: 'skFire' | 'skDown' | 'skStomp' | 'skOver' | 'kill' | 'tell', ... }) for the scene. */
@@ -78,11 +100,7 @@ export function stepSkirmish(sim, sk, dt) {
   sk.t += dt;
   if (!sk.over && !sk.spawned) { sk.spawned = true; spawnHub(sim, sk); }
   const hub = sk.hubId ? sim.enemies.get(sk.hubId) : null;
-  if (!sk.over && sk.spawned && !hub) {   // it fell, to whoever: the fight is over
-    sk.over = true;
-    for (const e of [...sim.enemies.values()]) if (e.skUnit === 'drone') { sim.enemies.delete(e.id); ev.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, xp: 0, crumble: true, bg: true }); }
-    ev.push({ t: 'skOver', id: sk.id, x: sk.hub.x, y: sk.hub.y, tx: Math.floor(sk.hub.x / TILE), ty: Math.floor(sk.hub.y / TILE) });
-  }
+  if (!sk.over && sk.spawned && !hub) finishSkirmish(sim, sk, null, ev);
   if (hub) { sk.hub.x = hub.x; sk.hub.y = hub.y; }
   const drones = [...sim.enemies.values()].filter((e) => e.skUnit === 'drone');
   // The squad: hold a line at firing distance from the hub, each on its own bearing; fire at drones close by, else the hub.
@@ -143,8 +161,9 @@ export function stepSkUnit(sim, sk, e, def, dt) {
       for (const p of players) {
         const dx = p.x - e.x, dy = p.y - e.y, d = Math.hypot(dx, dy);
         if (d > SK.stomp.r) continue;
-        sim._hurtPlayer(p, SK.stomp.dmg, 0);
-        sim._moveBody(p, (dx / (d || 1)) * SK.stomp.push, (dy / (d || 1)) * SK.stomp.push, 6);
+        if (sim._hurtPlayer(p, SK.stomp.dmg)) {
+          sim._pushPlayer(p, (dx / (d || 1)) * SK.stomp.push, (dy / (d || 1)) * SK.stomp.push);
+        }
       }
       for (const t of sk?.troopers ?? []) if (!t.down && Math.hypot(t.x - e.x, t.y - e.y) <= SK.stomp.r) { t.down = SK.downFor; ev.push({ t: 'skDown', x: t.x, y: t.y }); }
     }
