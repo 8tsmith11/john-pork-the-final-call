@@ -77,7 +77,7 @@ import { Approach } from '../approach.js';
 import { Pacifier } from '../pacifier.js';
 import { GuitarStands } from '../guitarStands.js';
 import { ABILITY_KEYS, BASE_SCORES, MAX_SCORE, raiseCost } from '../../content/abilities.js';
-import { addXp, xpToNext, xpScale } from '../../content/progression.js';
+import { addXp, xpToNext, xpScale, MORPH_STAGE1_FLAG } from '../../content/progression.js';
 import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
 import { puzzleFor } from '../../content/puzzles.js';
 import { use as usePuzzle } from '../../content/puzzleKit.js';
@@ -112,7 +112,7 @@ const CONTROLS_TEXT = 'WASD move · mouse aim · click: use held item\nSpace / S
 const ARRIVE_LOCK = 700;
 const STORY_SCENES = new Set(['cold_open', 'the_call', 'descent_and_boss', 'ending', 'first_death', 'checkpoint', 'lead_b_halvard']);
 const ACT_ONE_BALLOON_RELEASED = 'act1.ending.balloonReleased';
-const ACT_ONE_HOST_FLAGS = new Set(['act1.boss.defeated', 'act1.outbreak.contained', 'act1.complete', ACT_ONE_BALLOON_RELEASED]);
+const ACT_ONE_HOST_FLAGS = new Set(['act1.boss.defeated', 'act1.outbreak.contained', 'act1.complete', ACT_ONE_BALLOON_RELEASED, MORPH_STAGE1_FLAG]);
 
 // Dialogue scenes that happen on the phone, and the title each call gets in the phone tab's transcripts.
 const PHONE_CALLS = { the_call: { start: 'John Pork · the call', call_ring_2: 'John Pork · second call', call_ring_3: 'John Pork · third call', butt_dial: 'John Pork · pocket dial' } };
@@ -1543,6 +1543,26 @@ export class WorldScene extends Phaser.Scene {
     p.morphStage = stage;    // the sim reads the stage for stage-two moves (the gonman's R)
   }
 
+  // Morph stage one opens on a story moment (progression.js MORPH_STAGE1_FLAG), never on a level-up. Host and solo
+  // only; the party sync carries it to guests. Saves that already have it keep it.
+  _tickMorphUnlock() {
+    if (this.mode === 'client' || !this.save?.flags?.[MORPH_STAGE1_FLAG]) return;
+    for (const [who, c] of Object.entries(this.save.party)) {
+      if (!c.morph || c.morph.stage >= 1) continue;
+      c.morph.stage = 1; this._announce(MORPH_UNLOCK[who]); this._partyDirty = true;
+      this._unlockGonman(who, c);
+    }
+  }
+
+  _unlockGonman(who, c) {
+    if (who !== 'manuel' || c.morph?.stage !== 1 || !(c.level >= 6)) return;
+    c.morph.stage = 2;
+    const p = [...(this.sim?.players.values() ?? [])].find((q) => q.character === who);
+    if (p) p.morphStage = 2;
+    this._announce(GONMAN_UNLOCK);
+    this._partyDirty = true;
+  }
+
   // John Pork "shows up here and there" (brief): a screen you walk past glitches to his face for a
   // few frames. Rare (a check every ~1.5 s at 5%, at most once a minute), never in dialogue or combat.
   _tickGlimpse() {
@@ -1892,11 +1912,8 @@ export class WorldScene extends Phaser.Scene {
   _levelsReached(who, c, levels) {
     for (const lv of levels) {
       this._announce(`${who} reached level ${lv}. (+1 skill point, +${lv % 5 === 0 ? 2 : 1} ability point${lv % 5 === 0 ? 's' : ''})`);
-      if (lv >= 3 && c.morph && c.morph.stage < 1) { c.morph.stage = 1; this._announce(MORPH_UNLOCK[who]); }
-      if (who === 'manuel' && lv >= 6 && c.morph && c.morph.stage < 2) {   // Manuel only: stage two
-        c.morph.stage = 2; const p = [...(this.sim?.players.values() ?? [])].find((q) => q.character === who); if (p) p.morphStage = 2; this._announce(GONMAN_UNLOCK);
-      }
     }
+    if (levels.length) this._unlockGonman(who, c);
   }
 
   // Side-view cutscene (CinematicScene) over a paused world; resumes when it ends or is skipped.
@@ -2490,6 +2507,21 @@ export class WorldScene extends Phaser.Scene {
     this.toastText.setText(text).setAlpha(1);
     this.tweens.killTweensOf(this.toastText);
     this.tweens.add({ targets: this.toastText, alpha: 0, delay: 1400, duration: 500 });
+  }
+
+  // The weapon in hand when you're not swinging it (Trevor, 2026-11-23: equipped things visible on the player): hanging
+  // from the hand at your side, head down. The swing draws its own copy (the 'swing' event), so this one steps aside.
+  _heldAtRest(s, p) {
+    const id = p.weapon, ok = id && !p.sw && !p.dn && !p.ri && !p.pl && !p.zz && s.visible && this.textures.get('icons')?.has?.(id);
+    if (!ok) { s.held?.setVisible(false); return; }
+    if (!s.held || !s.held.active) { s.held = this.add.image(0, 0, 'icons', id); s.once('destroy', () => s.held?.destroy()); }
+    if (s.held.frame.name !== id) s.held.setFrame(id);
+    const name = s.frame?.name ?? '', facing = /_up_/.test(name) ? 'up' : /_right_/.test(name) ? 'right' : 'down';
+    const dir = facing === 'right' && s.flipX ? -1 : 1, sx = Math.abs(s.scaleX), sy = s.scaleY;
+    // [x offset from the feet, y offset, rotation]: icons are drawn handle bottom-left, head top-right.
+    const [dx, dy, rot] = facing === 'down' ? [-5, -8, 2.75] : facing === 'up' ? [5, -8, 1.95] : [2, -8, 2.0];
+    s.held.setPosition(s.x + dx * dir * sx, s.y + dy * sy).setRotation(dir < 0 ? -rot : rot).setFlipX(dir < 0)
+      .setOrigin(dir < 0 ? 0.85 : 0.15, 0.85).setScale(0.7 * sx, 0.7 * sy).setDepth(s.depth + (facing === 'up' ? -0.02 : 0.02)).setAlpha(s.alpha).setVisible(true);
   }
 
   async _save(message = '✓ saved') {
@@ -3128,6 +3160,7 @@ export class WorldScene extends Phaser.Scene {
       }
       const worn = this.save?.party?.[p.c];
       syncWear(this, s, p.c, wt && p.gs !== undefined ? { ...worn, _belly: wt.belly } : worn);   // parkas and other worn models (render/wearables.js)
+      this._heldAtRest(s, p);
     }
     for (const [id, s] of this.sprites) if (!seen.has(id)) { s.destroy(); this.sprites.delete(id); }
 
@@ -3217,6 +3250,7 @@ export class WorldScene extends Phaser.Scene {
     this._tickFishing();
     this._tickQuests();
     this._tickGlimpse();
+    this._tickMorphUnlock();
     this._tickBalloon();
     this._tickScan();
     if (this.fishing) { const k = this.input2.keys; if (k.w.isDown || k.a.isDown || k.s.isDown || k.d.isDown || k.up.isDown || k.down.isDown || k.left.isDown || k.right.isDown) this._endFishing(false); }
