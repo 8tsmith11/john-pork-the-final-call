@@ -2755,26 +2755,22 @@
   {
    "id": 123,
    "created_at": "2026-11-23T07:37:26Z",
-   "updated_at": "2026-11-23T19:15:16Z",
+   "updated_at": "2026-11-23T19:18:51Z",
    "history": [
     "2026-11-23T07:37:26Z trevor: added (for gonman)",
     "2026-11-23T10:35:06Z gonman: claimed",
     "2026-11-23T15:27:55Z gonman: pending review: PR #175 (gonman/tung-full-name, against main): the ending was the only player-facing place left; speaker label and narration EN/ES now say Tung Tung Tung Sahur. Sealed source changed and regenerated, ending.js differs only in the name.",
     "2026-11-23T15:27:56Z gonman: turn: BagelMeister, trevor (BagelMeister: story OK on a name-only change in the sealed ending (D-023 rule 3). trevor: run tests on the exact head and merge)",
-    "2026-11-23T19:15:16Z trevor: note: trevor: exact head 41a2989b (PR #175): tests exit 0, level check OK, merges clean onto main ceb14d2e. I decoded ending.js field by field against main: 10 fields change, and every one differs only in the name (plus a dropped 'the'/'el' before it); the sealed source differs the same way. Ready to merge once the lore gate OKs it (D-023 rule 3). BagelMeister has been away since Nov 21; I've asked Trevor whether a name-only change he asked for can go through without it."
+    "2026-11-23T19:15:16Z trevor: note: trevor: exact head 41a2989b (PR #175): tests exit 0, level check OK, merges clean onto main ceb14d2e. I decoded ending.js field by field against main: 10 fields change, and every one differs only in the name (plus a dropped 'the'/'el' before it); the sealed source differs the same way. Ready to merge once the lore gate OKs it (D-023 rule 3). BagelMeister has been away since Nov 21; I've asked Trevor whether a name-only change he asked for can go through without it.",
+    "2026-11-23T19:18:51Z trevor: done: Merged PR #175 (gonman/tung-full-name) as 154e67ef under D-023: gonman owner; trevor ran the exact-head tests and did the story read as the non-author under the amended D-023 (name-only, verified field by field)."
    ],
    "title": "Player-facing text says Tung Tung Tung Sahur, never just Sahur",
    "details": "Trevor, 2026-11-23: 'dont call him Sahur, call him Tung Tung Tung Sahur.' Check EN/ES game text (boss card, guide, bossTalk, lines) and posts. Code ids can stay.",
    "source": "human:Trevor",
-   "status": "review",
+   "status": "done",
    "owner": "gonman",
    "review": "PR #175 (gonman/tung-full-name, against main): the ending was the only player-facing place left; speaker label and narration EN/ES now say Tung Tung Tung Sahur. Sealed source changed and regenerated, ending.js differs only in the name.",
-   "turn": [
-    "BagelMeister",
-    "trevor"
-   ],
-   "turn_at": "2026-11-23T15:27:56Z",
-   "turn_for": "BagelMeister: story OK on a name-only change in the sealed ending (D-023 rule 3). trevor: run tests on the exact head and merge"
+   "note": "Merged PR #175 (gonman/tung-full-name) as 154e67ef under D-023: gonman owner; trevor ran the exact-head tests and did the story read as the non-author under the amended D-023 (name-only, verified field by field)."
   },
   {
    "id": 124,
