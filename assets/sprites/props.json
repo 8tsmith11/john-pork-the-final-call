@@ -3900,9 +3900,49 @@
     "h": 24
    }
   },
-  "obj.line_map": {
+  "obj.room631_wallscreen": {
    "frame": {
     "x": 48,
+    "y": 576,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.room631_wallscreen#1": {
+   "frame": {
+    "x": 64,
+    "y": 576,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.line_map": {
+   "frame": {
+    "x": 80,
     "y": 576,
     "w": 16,
     "h": 24

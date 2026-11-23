@@ -7,7 +7,7 @@ export const ES_QUESTS = {
   'The balloon': 'El globo',
   "Someone forced the front door tonight and took Manuel's orange balloon from his closet. Get it back before morning: Continuity's vans are sniffing for it, and the code rot under the station could get College Park walled in.": "Alguien forzó la puerta esta noche y se llevó el globo naranja del clóset de Manuel. Recupéralo antes de la mañana: las camionetas de Continuidad lo están rastreando, y la podredumbre bajo la estación podría hacer que amurallen College Park.",
   "Check Manuel's closet.": 'Revisa el clóset de Manuel.',
-  'Look at the front door.': 'Mira la puerta de entrada.',
+  'Search the apartment and gear up. Then find out who did this.': 'Revisa el departamento y equípate. Después averigua quién fue.',
   'Ask around the ASTER lobby. Somebody saw something at 3 a.m.': 'Pregunta en el lobby de ASTER. Alguien vio algo a las 3 a. m.',
   "Run down two of the three leads: the phone seller under the metro station steps, the security monitor on the ASTER lobby desk (fix it to see the 3 a.m. footage), or the helium trail (print a sniffer at Fab #1).": "Sigue dos de las tres pistas: el que vende teléfonos bajo las escaleras de la estación del metro, el monitor de seguridad en el mostrador del lobby de ASTER (arréglalo para ver el video de las 3 a. m.) o el rastro de helio (imprime un rastreador en Fab #1).",
   "The trail goes down the storm grate into the Green Line. Get past the abatement cordon in the plaza.": "El rastro baja por la rejilla de desagüe hacia la Línea Verde. Pasa el cordón de saneamiento de la plaza.",

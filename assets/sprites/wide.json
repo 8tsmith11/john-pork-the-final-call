@@ -140,10 +140,50 @@
     "h": 16
    }
   },
-  "obj.station_tiles": {
+  "obj.room631_van": {
    "frame": {
     "x": 224,
     "y": 0,
+    "w": 32,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 16
+   }
+  },
+  "obj.room631_van#1": {
+   "frame": {
+    "x": 0,
+    "y": 16,
+    "w": 32,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 16
+   }
+  },
+  "obj.station_tiles": {
+   "frame": {
+    "x": 32,
+    "y": 16,
     "w": 32,
     "h": 16
    },
@@ -166,7 +206,7 @@
   "format": "RGBA8888",
   "size": {
    "w": 256,
-   "h": 16
+   "h": 32
   },
   "scale": "1"
  }

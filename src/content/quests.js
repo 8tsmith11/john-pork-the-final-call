@@ -19,7 +19,7 @@ export const QUESTS = [
     id: 'main.balloon', why: "Someone forced the front door tonight and took Manuel\'s orange balloon from his closet. Get it back before morning: Continuity\'s vans are sniffing for it, and the code rot under the station could get College Park walled in.", title: 'The balloon', main: true, act: 1,
     stages: [
       { text: 'Check Manuel\'s closet.', done: (f) => f['act1.balloon.noticedGone'] },
-      { text: 'Look at the front door.', done: (f) => f['act1.clue.lockForced'] },
+      { text: 'Search the apartment and gear up. Then find out who did this.', done: (f) => f['act1.clue.lockForced'] || f['act1.beat.asterEnter'] },   // the cold open's objective (D-022)
       // Clear next steps (Trevor): name the places and people, and say how many leads are enough.
       { text: 'Ask around the ASTER lobby. Somebody saw something at 3 a.m.', done: (f) => f['act1.balloon.lobbyClue'] || balloonLeads(f) > 0 || f['act1.cordon.passed'] || f['act1.beat.call'] },
       { text: 'Run down two of the three leads: the phone seller under the metro station steps, the security monitor on the ASTER lobby desk (fix it to see the 3 a.m. footage), or the helium trail (print a sniffer at Fab #1).', done: (f) => balloonLeads(f) >= 2 || f['act1.cordon.passed'] || f['act1.beat.call'] },

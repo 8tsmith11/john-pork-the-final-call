@@ -75,7 +75,7 @@ test('deferred startup with the full roster matches boss scaling on ordinary map
     assert.equal(boss.def.hp, 1440); assert.equal(boss.def.hp, other.def.hp);   // doubled in task #33
     assert.equal(loaded.snapshot().enemies.find((e) => e.boss).boss.max, other.def.hp);
     assert.deepEqual([...loaded.enemies.values()].map((e) => e.spawnKey), [...entered.enemies.values()].map((e) => e.spawnKey));
-    assert.equal(loaded.events.filter((e) => e.t === 'boss').length, 1);
+    for (const sim of [loaded, entered]) { sim.step(1 / 60, new Map()); assert.equal(sim.events.filter((e) => e.t === 'boss').length, 1, 'the spawn\'s boss event goes out with the first step'); }
   }
 });
 test('startup stays eager by default and deferred spawning preserves killed enemies', () => {
@@ -95,6 +95,7 @@ test('recorded constructor settings apply before eager and deferred initial spaw
     const boss = [...sim.enemies.values()].find((e) => e.boss);
     assert.equal(boss.kind, 'boss.sahur');
     assert.equal(sim.snapshot().enemies.find((e) => e.boss).k, 'boss.sahur');
+    sim.step(1 / 60, new Map());
     assert.equal(sim.events.filter((e) => e.t === 'boss').length, 1);
   }
 });
@@ -2106,15 +2107,15 @@ test('boss pattern library: every module has a pattern, pools grow by phase, no 
   for (let i = 0; i < 500; i++) { const n = pickPattern(bossPool(['ring', 'charge'], 3), last); assert.notEqual(n, last); last = n; }
 });
 test('boss beam: running circles close to the boss stays ahead of it; standing still gets hit', () => {
-  const run = (circle) => {
+  const run = (circle, phase = 2, speed = 68, start = -1.2) => {
     const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'laser' }); sim.addPlayer('host', 'trevor');
     const boss = [...sim.enemies.values()].find((e) => e.boss), h = sim.players.get('host');
-    boss.phase = 3; boss.state = 'laser'; boss.laserT = 6; boss.laserDir = 1; boss.cd = 99;
+    boss.phase = phase; boss.state = 'laser'; boss.laserT = 6; boss.laserDir = 1; boss.cd = 99;
     let ang = 0; const R = 50;
-    boss.laserA = ang - 1.2;   // starts behind the player, turning toward them
+    boss.laserA = ang + start;   // starts behind the player, turning toward them
     let hits = 0;
     for (let t = 0; t < 60 * 5.5; t++) {
-      if (circle) ang += (68 / R) / 60;   // just under walking speed, same direction as the beam
+      if (circle) ang += (speed / R) / 60;   // same direction as the beam
       h.x = boss.x + Math.cos(ang) * R; h.y = boss.y - 4 + Math.sin(ang) * R; h.hp = 999; h.iframes = 0;
       const before = h.hp; boss.cd = 99; sim._stepBoss(boss, boss.def, 1 / 60); if (h.hp < before) hits++;
       if (boss.state !== 'laser') break;
@@ -2123,6 +2124,49 @@ test('boss beam: running circles close to the boss stays ahead of it; standing s
   };
   assert.equal(run(true), 0, 'circling should outrun the beam');
   assert.ok(run(false) > 0, 'standing still should get hit');
+  // Phase three fires out the back too (Trevor, 2026-11-23: no free hits behind him): sprinting laps runs into the
+  // second beam, but keeping pace between the two stays clean.
+  assert.ok(run(true, 3, 68) > 0, 'with two beams, outrunning one runs into the other');
+  assert.equal(run(true, 3, 46, -1.6), 0, 'keeping pace between the two beams stays clean');
+  assert.ok(run(false, 3, 0, Math.PI - 1.2) > 0, 'standing behind him is no longer safe');
+});
+test('the Warden while the laser fires: braced (a fraction of the damage), and only briefly open afterwards', () => {
+  const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'braced' }); sim.addPlayer('host', 'trevor');
+  const boss = [...sim.enemies.values()].find((e) => e.boss);
+  const hit = (state) => { boss.state = state; boss.parried = 0; boss.openT = 0; const hp = boss.hp = 1000; sim._hurtEnemy(boss, 40, 0, 0, 'host'); return hp - boss.hp; };
+  const moving = hit('move'), braced = hit('laser'), open = hit('vulnerable');
+  assert.ok(braced < moving * 0.5, `a hit during the laser should glance off (${braced} vs ${moving})`);
+  assert.equal(sim.events.filter((e) => e.t === 'bossBrace').length, 1, 'the brace emits its own feedback');
+  assert.ok(open > moving, 'the reeling window still pays');
+  boss.state = 'laser'; boss.laserT = 0.01; boss.phase = 2; boss.cd = 99; sim._stepBoss(boss, boss.def, 1 / 60);
+  assert.equal(boss.state, 'vulnerable'); assert.ok(boss.vulnT <= 1, `open ${boss.vulnT}s after the laser, at most 1`);
+});
+test('the Warden: his zombies only come from phase two, a few at a time, and Fork never fills the floor', () => {
+  const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'adds', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+  sim.spawnEnemies();
+  const boss = [...sim.enemies.values()].find((e) => e.boss), h = sim.players.get('host');
+  assert.notEqual(boss.def.modules[0], 'summon', 'Fork is never his opening move');
+  const summoned = () => [...sim.enemies.values()].filter((e) => e.summoned).length;
+  for (let t = 0; t < 60 * 30; t++) { h.hp = 999; h.x = boss.x + 140; h.y = boss.y; boss.cd = 99; sim._stepBoss(boss, boss.def, 1 / 60); }
+  assert.equal(summoned(), 0, 'no zombies in phase one');
+  boss.phase = 2;
+  boss.addT = 0;
+  sim._stepBossAdds(boss, boss.def, 1 / 60);
+  assert.equal(summoned(), 2, 'the phase-two entrance brings the first pair');
+  boss.next = 'summon';
+  sim._bossAttack(boss, boss.def, h, 1, 0, 1);
+  assert.equal(summoned(), 3, 'Fork takes only the one remaining slot');
+  let most = 0;
+  for (let t = 0; t < 60 * 60; t++) { h.hp = 999; h.x = boss.x + 140; h.y = boss.y; boss.cd = 99; sim._stepBoss(boss, boss.def, 1 / 60); most = Math.max(most, summoned()); }
+  assert.ok(most >= 1 && most <= boss.def.adds.cap, `phase two brings a few (${most}, cap ${boss.def.adds.cap})`);
+  boss.next = 'summon';
+  sim._bossAttack(boss, boss.def, h, 1, 0, 1);
+  assert.equal(summoned(), 3, 'Fork at the cap adds nobody');
+  for (const e of sim.enemies.values()) if (e.summoned) sim.enemies.delete(e.id);
+  boss.phase = 3;
+  boss.addT = 0;
+  sim._stepBossAdds(boss, boss.def, 1 / 60);
+  assert.equal(summoned(), 1, 'regular spawns still arrive one at a time in phase three');
 });
 test('boss fight: the Warden uses several patterns with tells and recovery windows, sweep shots can\'t be deflected', () => {
   const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'boss-test' });
@@ -2280,7 +2324,12 @@ test('progression (Trevor: too easy, too low a ceiling): steeper curve, costed s
     const row1 = t.nodes.find((n) => n.row === 1), lowly = { level: 3, skills: Object.fromEntries((row1.req || []).map((r) => [r, 1])) };
     assert.ok(!SkillsP.skillOpen(who, lowly, row1), `${who}: row two waits for level ${Prog.TIER_LEVEL[1]}`);
   }
+  // Spread over the game (Trevor, 2026-11-23): at most two rows open by the end of Act 1 (about level 8), the
+  // capstone only in Act 3 (past the end of Act 2, about level 16).
+  assert.ok(Prog.TIER_LEVEL.filter((l) => l <= 8).length <= 2, `rows open in Act 1: ${Prog.TIER_LEVEL}`);
+  assert.ok(Prog.TIER_LEVEL[4] > 16, 'the capstone waits for Act 3');
 });
+
 
 test('no code plays Phaser sounds by key (none are loaded; a missing key throws mid-handler: the cam puzzle tiles stopped redrawing)', async () => {
   const fs = await import('node:fs'), path = await import('node:path');
@@ -2661,6 +2710,55 @@ test('cordon, trevor\'s half of #36: a trooper at every checkpoint faces out, wi
   for (const p of sim.players.values()) assert.ok(Math.floor(p.y / 16) > ex.y, `${p.id} landed at row ${Math.floor(p.y / 16)}, beyond the barrier`);
 });
 
+test('combat takes thought (Trevor: "I just walk into the robots and click and everything dies"): poise, committed attacks, deliberate parries', async () => {
+  const { ITEMS } = await import('../src/content/items.js');
+  const arena = () => ({ id: 'thought', w: 60, h: 60, objects: [], enemies: [], spawns: [{ x: 400, y: 400 }], solid: () => false });
+  const rotling = (sim, id, x, y) => sim.enemies.set(id, { id, kind: 'enemy.rotling', def: { ...ENEMIES['enemy.rotling'] }, x, y, hp: ENEMIES['enemy.rotling'].hp, cd: 0, hurtT: 0, kx: 0, ky: 0 });
+  const sim = new Sim(arena(), { seed: 'poise' }); sim.addPlayer('h', 'trevor');
+  rotling(sim, 'a', 420, 400); const e = sim.enemies.get('a');
+  sim._hurtEnemy(e, 5, 100, 0, 'h'); assert.ok(e.kx !== 0 && e.hurtT > 0, 'the first hit staggers');
+  const kx1 = e.kx; sim._hurtEnemy(e, 5, -100, 0, 'h'); assert.equal(e.kx, kx1, 'the next light hit is shrugged off: no new push, the old one keeps going');
+  sim._hurtEnemy(e, 5, 100, 0, 'h', { heavy: true }); assert.ok(e.kx !== 0, 'a finisher breaks through');
+  e.poiseT = 0; e.st = 'windup'; e.kx = 0; sim._hurtEnemy(e, 5, 100, 0, 'h'); assert.equal(e.kx, 0, 'an enemy winding up doesn\'t flinch from a light hit');
+  // mashing the attack into a pack now costs you; the old way cost about a tenth of your health
+  let taken = 0;
+  for (let s = 0; s < 6; s++) {
+    const m = new Sim(arena(), { seed: 'mash' + s }); m.addPlayer('h', 'trevor'); const p = m.players.get('h'); p.x = 400; p.y = 400;
+    p.held = 'melee'; p.mods = { ...(p.mods ?? {}), swing: ITEMS['item.pry_bar'].swing };
+    for (let i = 0; i < 3; i++) rotling(m, 'r' + i, 430 + i * 6, 395 + i * 6);
+    const hp0 = p.hp;
+    for (let t = 0; t < 60 * 20 && m.enemies.size && !p.downed; t++) {
+      let best = null, bd = 1e9; for (const q of m.enemies.values()) { const d = Math.hypot(q.x - p.x, q.y - p.y); if (d < bd) { bd = d; best = q; } }
+      m.step(1 / 60, new Map([['h', { ...emptyInput(), aim: best ? Math.atan2(best.y - p.y, best.x - p.x) : 0, attack: true }]]));
+    }
+    taken += hp0 - Math.max(0, p.hp);
+  }
+  assert.ok(taken / 6 >= 25, `button-mashing three rotlings costs real health now (avg ${Math.round(taken / 6)})`);
+  // a swing after a rest still parries a lunge; a swing in the middle of a flurry doesn't
+  const q = new Sim(arena(), { seed: 'parry' }); q.addPlayer('h', 'trevor'); const p = q.players.get('h'); p.x = 400; p.y = 400; p.aim = 0;
+  p.held = 'melee'; p.mods = { ...(p.mods ?? {}), swing: ITEMS['item.pry_bar'].swing };
+  rotling(q, 'l', 414, 400); const l = q.enemies.get('l'); l.st = 'lunge'; l.hitOnce = false;
+  p.swingFreeAt = q.tick / 60 - 0.2; q._melee(p); assert.ok(!(l.parried > 0), 'mid-flurry: no parry');
+  l.st = 'lunge'; l.hitOnce = false; l.poiseT = 0; p.swingFreeAt = q.tick / 60 - 1; p.meleeCd = 0; q._melee(p); assert.ok(l.parried > 0, 'a deliberate swing parries');
+  // John Pork's cases (PR #146): holding attack with a slow weapon in a real step loop never parries, with any weapon;
+  // a pause beyond recovery does
+  for (const wid of ['item.pry_bar', 'item.pipe_wrench']) {
+    if (!ITEMS[wid]?.swing) continue;
+    const z = new Sim(arena(), { seed: 'hold-' + wid }); z.addPlayer('h', 'trevor'); const zp = z.players.get('h'); zp.x = 400; zp.y = 400;
+    zp.held = 'melee'; zp.mods = { ...(zp.mods ?? {}), swing: ITEMS[wid].swing };
+    let parries = 0;
+    for (let i = 0; i < 60 * 4; i++) {
+      const lr = [...z.enemies.values()][0] ?? (rotling(z, 'L' + i, 414, 400), z.enemies.get('L' + i)); lr.st = 'lunge'; lr.hitOnce = false; lr.x = 414; lr.y = 400; lr.hp = 999;
+      z.step(1 / 60, new Map([['h', { ...emptyInput(), aim: 0, attack: true }]])); parries += z.events.filter((e) => e.t === 'parry').length;
+    }
+    assert.ok(parries <= 1, `${wid}: holding attack parries at most the first swing (${parries})`);
+  }
+  // a heavy hit's knockback survives a teammate's light hit during poise
+  const kb = new Sim(arena(), { seed: 'kb' }); kb.addPlayer('a', 'trevor'); kb.addPlayer('b', 'manuel'); rotling(kb, 'r', 420, 400); const kr = kb.enemies.get('r');
+  kb._hurtEnemy(kr, 4, 120, 0, 'a', { heavy: true }); const vx = kr.kx;
+  kb._hurtEnemy(kr, 4, -80, 0, 'b'); assert.equal(kr.kx, vx, 'a shrugged hit adds nothing and takes nothing away');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
@@ -2750,7 +2848,7 @@ test('gadget tuning stays within recharge, effect and actual output caps across 
 
 const Dawn = await import('../src/content/dawn.js');
 test('dawn clock (P-004): moves only with story beats, in order, and never passes first light', () => {
-  assert.equal(Dawn.dawnLabel({}), '2:58 am');   // the microwave in the cold open
+  assert.equal(Dawn.dawnLabel({}), '3:40 am');   // the cold open (D-022)
   let last = Dawn.DAWN_START; const flags = {};
   for (const [flag, at] of Dawn.DAWN_BEATS) { assert.ok(at > last && at < Dawn.FIRST_LIGHT, `${flag} out of order`); last = at; flags[flag] = true; assert.equal(Dawn.dawnMinutes(flags), at); }
   assert.ok(Dawn.dawnProgress(flags) < 1 && Dawn.dawnProgress({}) === 0);
@@ -2834,6 +2932,28 @@ try {
   else globalThis.Phaser = savedPhaserForCraft;
 }
 
+test('the ending\'s visitor is drawn while his part plays, on host and guests, in view, and walks off after (Trevor: heard but not seen)', async () => {
+  const made = [], tweens = [];
+  const sprite = () => { const sp = { x: 0, y: 0, alpha: 1, destroyed: false, setOrigin() { return sp; }, play(k) { sp.anim = k; return sp; }, setDepth() { return sp; }, setAlpha(a) { sp.alpha = a; return sp; }, destroy() { sp.destroyed = true; } }; return sp; };
+  for (const mode of ['host', 'client']) {
+    const sc = Object.assign(Object.create(CraftWorldScene.prototype), { mode, map: { id: 'platform' },
+      anims: { exists: (k) => k === 'sahur' }, cameras: { main: { worldView: { x: 300 } } },
+      add: { sprite: (x, y, key) => { const sp = sprite(); Object.assign(sp, { x, y, key }); made.push(sp); return sp; } },
+      tweens: { add: (t) => { tweens.push(t); Object.assign(t.targets, Object.fromEntries(Object.entries(t).filter(([k]) => ['x', 'alpha'].includes(k)))); t.onComplete?.(); } } });
+    sc._endingSahurCue('ending_ladder'); assert.equal(sc.sahurCameo ?? null, null, 'not before his part');
+    sc._endingSahurCue('ending_sahur_watch');
+    const sp = sc.sahurCameo;
+    assert.ok(sp && sp.key === 'principals' && sp.anim === 'sahur' && sp.alpha === 1, `${mode}: drawn with his own art, faded in`);
+    assert.ok(sp.x >= 300, 'at the tunnel end of the view, not off screen');
+    sc._endingSahurCue('ending_sahur_watch'); assert.equal(made.filter((m) => !m.destroyed).length, 1, 'once, not per line');
+    sc._endingSahurCue('ending_in_person');
+    assert.ok(sp.destroyed && sc.sahurCameo === null && sp.alpha === 0, 'he walks back into the dark when his part is over');
+    made.length = 0;
+  }
+  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/act1\.sahur\.seen', true\);\n\s*this\._endingSahurCue\(d\.nodeId\);/.test(src), 'every new dialogue line (host or mirrored) checks the cue');
+});
+
 test('co-op puzzles (Trevor: everyone participates or spectates, no races): the signal panel is one shared board on the host', async () => {
   const { PipeTable } = await import('../src/game/pipeTable.js');
   const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js');
@@ -2893,6 +3013,141 @@ test('co-op puzzles: a guest pressing a lever, a clock or a bust runs on the hos
     assert.equal(sc._puzzleAct('g2', 'obj.switch_a'), false, 'out of reach: refused');
     assert.ok(!Object.prototype.hasOwnProperty.call(sc, '_say') && !Object.prototype.hasOwnProperty.call(sc, '_grant'), 'the host\'s own say and grant are back afterwards');
   } finally { CraftWorldScene.prototype._toast = realToast; }
+});
+
+test('a staged dialogue cue stays busy until done and cannot resume queued actions on a new line', async () => {
+  const { Stage } = await import('../src/game/stage.js');
+  const stage = Object.assign(Object.create(Stage.prototype), {
+    tok: 1,
+    active: { tok: 1, script: { hold: true, cues: { first: ['wait', 'too late'], second: ['next'] } } },
+  });
+  const actions = [];
+  let finish;
+  stage._step = (step) => {
+    actions.push(step);
+    if (step === 'wait') return new Promise(resolve => { finish = resolve; });
+    return null;
+  };
+  assert.ok(stage.cue('first'));
+  assert.ok(stage.cueBusy);
+  assert.ok(!stage.cue('first'), 'the same dialogue state cannot restart a cue');
+  assert.ok(stage.cue('second'));
+  finish();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(stage.cueBusy, false);
+  assert.deepEqual(actions, ['wait', 'next']);
+});
+// "Some animations only show on the host": the host's snapshot broadcasts and the guest's playback.
+const fxArena = () => ({ id: 'fx-test', w: 40, h: 40, objects: [], enemies: [], spawns: [{ x: 160, y: 160 }], solid: () => false });
+const fxGuest = (mapId, extra = {}) => {
+  let deliver = null;
+  const guest = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'client', localId: 'guest', snapBuf: [], map: { id: mapId }, events: { once() {} },
+    net: { on: (t, fn) => { if (t === 'msg') deliver = fn; } }, ...extra,
+  });
+  guest._wireNet();
+  return { guest, deliver: (msg) => deliver(msg) };
+};
+
+test('co-op events: every sim event from the host frames between two broadcasts reaches a guest exactly once, even when snapshots bunch up', () => {
+  const sim = new Sim(fxArena());
+  sim.addPlayer('host', 'trevor'); sim.addPlayer('guest', 'manuel');
+  const timers = [], sent = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', localId: 'host', character: 'trevor', ready: true, acc: 0, sim, map: { id: 'fx-test', doors: new Map() },
+    save: newSave({ seed: 'fx-sync', rolls: {}, gameVersion: 't' }), remoteInputs: new Map(), input2: { read: () => emptyInput() },
+    events: { once() {} }, time: { now: 0, addEvent: (t) => timers.push(t) }, net: { on() {}, broadcast: (m) => sent.push(m) },
+    _handleInteract() {}, _hostEvents() {}, _tickActOneEnding() {}, _render() {},
+  });
+  host._wireNet();
+  const broadcast = timers.find((t) => t.delay === 50).callback;
+  let n = 0;
+  const frames = (count, hz, probe = true) => { for (let i = 0; i < count; i++) { if (probe) sim.emit({ t: 'probe', n: n++ }); host.update(0, 1000 / hz); } };
+  frames(7, 144); broadcast();   // a 144 Hz host draws about seven frames per broadcast
+  frames(3, 60); broadcast();
+  frames(4, 120); broadcast();
+  frames(3, 60); broadcast();
+  frames(4, 60, false); broadcast();   // the last probes leave with the next steps
+  const snaps = sent.filter((m) => m.t === 'snap').map((m) => m.snap);
+  assert.equal(snaps.length, 5);
+  assert.deepEqual(snaps.flatMap((s) => s.events).filter((e) => e.t === 'probe').map((e) => e.n), [...Array(n).keys()], 'the host sends each event once, in order');
+
+  const { guest, deliver } = fxGuest('fx-test');
+  const arrivals = [1000, 1050, 1051, 1150, 1200].map((at, i) => [at, snaps[i]]);   // the second and third arrive together
+  const seen = [], ownNow = Object.getOwnPropertyDescriptor(performance, 'now');
+  let now = 1000;
+  // Node 18 makes performance.now read-only to plain assignment (trevor, PR #167 review); defineProperty works on every version.
+  Object.defineProperty(performance, 'now', { value: () => now, configurable: true, writable: true });
+  try {
+    for (; now < 1500; now += 7) {   // a guest drawing at 144 Hz
+      while (arrivals.length && arrivals[0][0] <= now) deliver({ t: 'snap', snap: arrivals.shift()[1] });
+      seen.push(...guest._interpolated().events.filter((e) => e.t === 'probe').map((e) => e.n));
+    }
+    assert.deepEqual(seen, [...Array(n).keys()], 'the guest plays each one exactly once (none skipped, none drawn twice)');
+    // A long frame: more snapshots arrive than the buffer keeps before the guest draws again. They still play, once.
+    const late = Array.from({ length: 22 }, (_, i) => ({ ...snaps[0], events: [{ t: 'probe', n: 100 + i }] }));
+    for (const snap of late) deliver({ t: 'snap', snap });
+    now += 400;
+    const after = guest._interpolated().events.filter((e) => e.t === 'probe').map((e) => e.n);
+    assert.deepEqual(after, late.map((s) => s.events[0].n));
+    assert.equal(guest._interpolated().events.length, 0, 'and not again');
+  } finally { if (ownNow) Object.defineProperty(performance, 'now', ownNow); else delete performance.now; }
+});
+
+test('co-op camera effects: a puzzle shake on the host reaches a guest on the same map, not one on another map', () => {
+  const save = newSave({ seed: 'camfx', rolls: {}, gameVersion: 't' }), sent = [], shakes = [];
+  const lever = { id: 'obj.switch_a', label: 'Lever A', x: 3, y: 3 };
+  const sim = { players: new Map([['host', { id: 'host', character: 'trevor', x: 400, y: 400 }], ['g1', { id: 'g1', character: 'manuel', x: 3 * 16 + 8, y: 4 * 16 + 8 }]]) };
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', localId: 'host', character: 'trevor', save, sim, map: { id: 'switchyard', objects: [lever] },
+    net: { conns: new Map([['g1', 1]]), send() {}, broadcast: (m) => sent.push(m) }, cameras: { main: { shake: (...a) => shakes.push(['host', ...a]) } },
+    _puzzleNotice() {}, _drawLevers() {}, _refreshPuzzleProps() {}, _checkGate: () => false });
+  assert.ok(host._puzzleAct('g1', 'obj.switch_a'), 'a guest pulls the lever; the host runs it');
+  const camfx = sent.filter((m) => m.t === 'camfx');
+  assert.deepEqual(camfx, [{ t: 'camfx', kind: 'shake', args: [80, 0.003], area: 'switchyard' }]);
+  const cam = (who) => ({ main: { shake: (...a) => shakes.push([who, ...a]), destroy: () => shakes.push([who, 'destroy']) } });
+  const here = fxGuest('switchyard', { cameras: cam('here') }), away = fxGuest('metro_plaza', { cameras: cam('away') });
+  for (const m of sent) { here.deliver(m); away.deliver(m); }
+  assert.deepEqual(shakes, [['host', 80, 0.003], ['here', 80, 0.003]], 'the guest at the lever feels it; one on another map does not');
+  here.deliver({ t: 'camfx', kind: 'destroy', args: [], area: 'switchyard' });
+  assert.equal(shakes.length, 2, 'only shakes, flashes and fades: nothing else on the camera');
+});
+
+test('co-op toasts: a guest\'s item use and scooter lines go to that guest, not the host', () => {
+  const sim = new Sim(fxArena());
+  sim.addPlayer('host', 'trevor'); sim.addPlayer('guest', 'manuel');
+  const save = newSave({ seed: 'toast-to', rolls: {}, gameVersion: 't' }), handlers = {}, sent = [], hostToasts = [];
+  Inv.add(save.party.manuel, 'item.fish_perch'); Inv.add(save.party.manuel, 'item.scooter');
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', localId: 'host', character: 'trevor', save, sim, map: { id: 'fx-test', outdoor: false }, remoteInputs: new Map(),
+    events: { once() {} }, time: { now: 0, addEvent() {} }, net: { on: (t, fn) => { handlers[t] = fn; }, send: (to, m) => sent.push([to, m]), broadcast() {} },
+    _toast: (t) => hostToasts.push(t), _syncParty() {},
+  });
+  host._wireNet();
+  handlers.msg('guest', { t: 'use', id: 'item.fish_perch' });
+  handlers.msg('guest', { t: 'scooter' });
+  host._hostEvents([{ t: 'scooter', id: 'guest', knocked: true }, { t: 'scooter', id: 'ai:michael', on: true }]);
+  assert.deepEqual(hostToasts, [], 'nothing of theirs pops up on the host');
+  assert.deepEqual(sent.map(([to, m]) => [to, m.t]), [['guest', 'toast'], ['guest', 'toast'], ['guest', 'toast']], 'all three go to the guest; a companion gets none');
+  assert.match(sent[0][1].text, /manuel has the white perch/);
+  assert.equal(sent[1][1].text, 'No scooters indoors.');
+  assert.equal(sent[2][1].text, 'Knocked off your scooter!');
+  const toasts = [], { deliver } = fxGuest('fx-test', { _toast: (t) => toasts.push(t) });
+  for (const [, m] of sent) deliver(m);
+  assert.equal(toasts.length, 3, 'and the guest shows them');
+});
+
+test('a boss spawned by a map change keeps its name card: the spawn event goes out with the next step, once', () => {
+  for (const bossVariant of ['warden', 'sahur']) {
+    const sim = new Sim(MAPS_FOR_TEST.room631, { seed: 'boss-card', bossVariant });
+    addSpawnParty(sim);
+    sim.setMap(MAPS_FOR_TEST.platform, 'tunnel_1');   // the host does this outside step(), in the fade-out callback
+    sim.step(1 / 60, new Map());
+    const cards = sim.events.filter((e) => e.t === 'boss');
+    assert.equal(cards.length, 1, `${bossVariant}: the name card's event survives into the first step`);
+    assert.equal(!!cards[0].sahur, bossVariant === 'sahur');
+    sim.step(1 / 60, new Map());
+    assert.equal(sim.events.filter((e) => e.t === 'boss').length, 0, 'and is not sent again');
+  }
 });
 
 test('cutscenes: the HUD steps out from under the letterbox bars and comes back as it was (Trevor: weird cutoff on the UI)', () => {
@@ -3017,7 +3272,7 @@ test('puzzle kit in co-op: a guest\'s move runs on the host, progress stays on t
     const party = { trevor: newSave({ seed: 'pz', rolls: {}, gameVersion: 't' }).party.trevor, michael: newSave({ seed: 'pz', rolls: {}, gameVersion: 't' }).party.michael };
     const sent = [], said = [];
     const host = { mode: 'host', character: 'trevor', localId: 'host', save: { flags: {}, world: { seed: 'pz' }, party }, time: { now: 0 }, cameras: { main: { shake() {} } },
-      net: { send: (peer, msg) => sent.push([peer, msg]) }, _say: (t) => said.push(t), _toast() {}, _tickQuests() {}, _syncParty() {} };
+      net: { send: (peer, msg) => sent.push([peer, msg]) }, _say: (t) => said.push(t), _toast() {}, _tickQuests() {}, _syncParty() {}, _camFx() {} };
     const objs = { 'obj.a': { id: 'obj.a', label: 'A' }, 'obj.b': { id: 'obj.b', label: 'B' } };
     const money0 = party.michael.money ?? 0, scrap0 = Inv.count(party.michael, 'item.mat_scrap');
     CraftWorldScene.prototype._usePuzzle.call(host, pz, objs['obj.a'], 'michael', 'peerM');
@@ -3309,7 +3564,8 @@ test('a caught pickpocket changes that roommate\'s NPC actions across saves unti
 test('regional boss intros preserve the saved Warden name', () => {
   const field = 'act1.boss.wardenName';
   const scene = { mode: 'host', save: { flags: {} }, time: { delayedCall() {} }, _bossIntro() {} };
-  const warden = new Sim(MAPS_FOR_TEST.platform, { seed: 'warden-name' }).events.find((e) => e.t === 'boss');
+  const platform = new Sim(MAPS_FOR_TEST.platform, { seed: 'warden-name' }); platform.step(1 / 60, new Map());
+  const warden = platform.events.find((e) => e.t === 'boss');
   CraftWorldScene.prototype._fx.call(scene, warden, { players: [] });
   assert.equal(scene.save.flags[field], warden.name);
 
@@ -3778,7 +4034,16 @@ test('dialogue graphs: no dangling jumps, and the big scenes are not secretly de
       for (const c of n.choices) assert.ok(c.go === 'END' || d.nodes[c.go], `${name}:${id} choice -> missing ${c.go}`);
       if (n.go) assert.ok(n.go === 'END' || d.nodes[n.go], `${name}:${id} -> missing ${n.go}`);
     }
-    const terms = ids.filter((id) => { const n = d.nodes[id]; return !n.go && !(n.gos || []).length && !n.choices.length; });
+    // Count dead ends on the conversation itself: nodes reachable from its start. Standalone self-scoped barks
+    // in the same file (the cold open's room searches) are entered on their own and are meant to end.
+    const seen = new Set(), todo = [d.start ?? ids[0]];
+    while (todo.length) {
+      const id = todo.pop(), n = d.nodes[id];
+      if (!n || seen.has(id)) continue;
+      seen.add(id);
+      for (const g of [n.go, ...(n.gos || []).map((x) => x.go), ...n.choices.map((c) => c.go)]) if (g && g !== 'END') todo.push(g);
+    }
+    const terms = ids.filter((id) => { const n = d.nodes[id]; return seen.has(id) && !n.go && !(n.gos || []).length && !n.choices.length; });
     if (CONNECTED[name] != null) assert.ok(terms.length <= CONNECTED[name], `${name}: ${terms.length} dead-end nodes (max ${CONNECTED[name]}): ${terms.slice(0, 6).join(', ')}`);
   }
 });
@@ -3802,6 +4067,7 @@ test('ability scores: modifiers, level points, checks (D-017)', async () => {
   const r = check({ abilities: { cha: 14 } }, 'michael', 'cha', 15, { rand: () => 0.6 });   // d20 = 13, +2
   assert.equal(r.total, 15); assert.ok(r.success);
 });
+const { TIER_LEVEL: TIER_LEVEL_T } = await import('../src/content/progression.js');
 test('skill trees: valid links, capstone needs all three branches, mods sum, old skills refunded', () => {
   for (const [who, t] of Object.entries(SKILL_TREE)) {
     const ids = new Set(t.nodes.map((n) => n.id));
@@ -3811,8 +4077,9 @@ test('skill trees: valid links, capstone needs all three branches, mods sum, old
     const c = { skills: {}, skillPoints: 0, equipped: {} };
     assert.ok(!skillOpen(who, c, cap));
     for (const n of t.nodes) c.skills[n.id] = n.max;
-    c.level = 19; assert.ok(!skillOpen(who, c, cap), `${who}: the capstone waits for level 20`);
-    c.level = 20; assert.ok(skillOpen(who, c, cap));
+    const capAt = TIER_LEVEL_T[4];
+    c.level = capAt - 1; assert.ok(!skillOpen(who, c, cap), `${who}: the capstone waits for level ${capAt}`);
+    c.level = capAt; assert.ok(skillOpen(who, c, cap));
     const m = pmods(c, who); assert.ok(m.abilityPower > 0 && m.armor <= (who === 'manuel' ? 0.75 : 0.6));   // Manuel's edge raises his cap
   }
   const old = { skills: { 'skill.trevor.stack': 2, 'tr.amp': 1 }, skillPoints: 1 };
@@ -4571,6 +4838,9 @@ test('the Warden is twice as tough and hits harder; the Sahur variant is unchang
   s2.spawnEnemies();
   const sah = [...s2.enemies.values()].find((e) => e.boss);
   assert.ok(sah.sahur && sah.def.hp === 99999 && sah.def.damage === 16 && !sah.def.guard && !sah.def.adds);
+  s2._hurtEnemy(sah, 40, 0, 0, 'trevor');
+  assert.ok(s2.events.some((e) => e.t === 'thunk'));
+  assert.ok(!s2.events.some((e) => e.t === 'bossBrace'), 'the other boss does not reuse the Warden brace label');
 });
 test('the platform gate needs the yard, the breakers and the signals; no world starts solved', () => {
   for (let i = 0; i < 300; i++) {
@@ -4635,7 +4905,8 @@ test('both Act 1 victories queue exactly one host finale and checkpoint its comp
     assert.equal(save.world.act, 2);
     assert.equal(cards, 1);
     assert.equal(writes, 1);
-    assert.deepEqual(broadcasts, [{ t: 'act1Complete' }]);
+    assert.deepEqual(broadcasts.filter((m) => m.t === 'act1Complete'), [{ t: 'act1Complete' }]);
+    assert.equal(broadcasts.filter((m) => m.t === 'act1Arrival').length, 1, 'guests see the arrival too');
 
     const timers = [], shape = { setOrigin() { return this; }, setDepth() { return this; } };
     const guest = Object.assign(Object.create(CraftWorldScene.prototype), {
@@ -4805,6 +5076,7 @@ test('the gonman, stage two: R while morphed winds up (no moving), then globs sl
 
 const growthMod = await import('../src/content/growth.js');
 const wearMod = await import('../src/game/render/wearables.js');
+const itemsMod = await import('../src/content/items.js');
 test('growth: a little bigger every level, bigger jumps at levels 3 and 6, capped; the look changes level by level', () => {
   const s = (lv) => growthMod.growthScale(lv);
   for (let lv = 2; lv <= 12; lv++) assert.ok(s(lv) >= s(lv - 1), `level ${lv} shrinks`);
@@ -4819,6 +5091,119 @@ test('growth: a little bigger every level, bigger jumps at levels 3 and 6, cappe
   set(1, 8, B.skin[0]); set(1, 7, B.skin[0]);
   const painted = (lv) => { const out = new Uint8ClampedArray(w * h * 4); wearMod._PAINTERS.grow(src, out, w, h, 'down', B, wearMod.LOOKS[growthMod.growthLook(lv)], 'trevor'); let n = 0; for (let i = 3; i < out.length; i += 4) n += out[i] > 0; return n; };
   assert.ok(painted(2) >= 1 && painted(3) > painted(2) && painted(7) > painted(3), `${painted(2)} ${painted(3)} ${painted(7)}`);
+});
+
+test('dialogue tooling (hub #114): one-line alternatives, Set notes, who declined and whether it rang out, party.present, bark tables', async () => {
+  const D = await import('../src/engine/dialogue.js');
+  const call = await D.loadScene('the_call');
+  // "#### if not X / line / #### if X / line" then lines for everyone: only the two alternatives are gated
+  const vm = call.nodes.voicemail_1.lines, gated = vm.filter((l) => l.if);
+  assert.equal(gated.length, 2, `voicemail_1 should gate only its two alternatives, gates ${gated.length}`);
+  assert.ok(gated.some((l) => /^not flag act1\.call\.rangOut$/.test(l.if)) && gated.some((l) => /^flag act1\.call\.rangOut$/.test(l.if)));
+  assert.ok(vm.length - gated.length >= 4, 'the rest of the voicemail plays either way');
+  // a lone #### if keeps block rules: the morph lines stay together under their condition
+  const mi = call.nodes.answer_michael.lines.filter((l) => /morph/.test(l.if ?? ''));
+  assert.ok(mi.length >= 2, 'the morph block keeps its follow-up lines');
+  // Set notes become clean effects; the timeout sentence sets rangOut only on the timed choice
+  const dec = call.nodes.call_decline_1.effects;
+  assert.ok(dec.some((e) => e.arg === 'act1.call.declinedBy.1') && dec.some((e) => e.arg === 'act1.call.rangOut' && e.if === 'flag dlg.timedOut') && dec.some((e) => e.arg === 'act1.call.rangOut = off' && e.if === 'not flag dlg.timedOut'));
+  assert.ok(call.nodes.call_ring_2.effects.some((e) => e.arg === 'act1.call.attempt = 2'), 'the trigger note sets the ring number');
+  for (const sc of ['the_call', 'checkpoint', 'descent_and_boss', 'ending']) for (const n of Object.values((await D.loadScene(sc)).nodes)) for (const e of n.effects ?? []) assert.ok(!/[`]|\.\s+[A-Z]/.test(e.arg), `${sc}: an effect still carries prose`);
+  // runtime: who declined, whether it rang out, and both 'present' spellings
+  const flags = {}, sink = { flag: (k, v) => { flags[k] = v; }, item() {}, standing() {} };
+  const ctx = { speaker: 'manuel', present: ['manuel', 'trevor'], flags, inventory: [], morph: 0, standing: {} };
+  const conv = new D.Conversation(call, 'call_ring_2', ctx, sink);
+  for (let i = 0; i < 50 && !conv.choices.length; i++) conv.advance();   // read to the choice
+  const decline = conv.choices.findIndex((c) => /decline/i.test(c.text)), ring = conv.choices.findIndex((c) => c.timeout);
+  assert.ok(decline >= 0 && ring >= 0);
+  conv.choose(decline, undefined, { by: 'trevor' });
+  assert.equal(flags['act1.call.declinedBy.2'], 'trevor', 'declinedBy names the roommate who pressed');
+  assert.ok(!flags['act1.call.rangOut'] || flags['act1.call.rangOut'] === 'off', 'a pressed decline is not a ring-out');
+  const flags2 = {}, sink2 = { flag: (k, v) => { flags2[k] = v; }, item() {}, standing() {} };
+  const c2 = new D.Conversation(call, 'call_ring_2', { ...ctx, flags: flags2 }, sink2);
+  for (let i = 0; i < 50 && !c2.choices.length; i++) c2.advance();
+  c2.choose(c2.choices.findIndex((c) => c.timeout), undefined, { by: 'manuel' });
+  assert.equal(flags2['act1.call.rangOut'], true, 'letting it ring sets rangOut');
+  assert.equal(D.evalCond('party.present.trevor', ctx), true); assert.equal(D.evalCond('party.present.michael', ctx), false); assert.equal(D.evalCond('not party.present.michael', ctx), true);
+  // bark tables are kept, and the node-timed ones can be read
+  assert.ok((call.barks ?? []).some((b) => /^call_seize,\s*\d+\s*s in/.test(b.trigger) && b.who && b.text), 'the call keeps its bark table');
+
+  for (const timed of [false, true]) {
+    // A previous outcome must not select the reactions in the next entry.
+    const flags = { 'act1.call.rangOut': !timed };
+    const sink = { flag: (key, value) => { flags[key] = value; }, item() {}, standing() {} };
+    const first = new D.Conversation(call, null, { ...ctx, flags }, sink);
+    while (!first.done && !first.choices.length) first.advance();
+    const choice = first.choices.findIndex((c) => c.go === 'call_decline_1' && Boolean(c.timeout) === timed);
+    assert.ok(choice >= 0);
+    first.choose(choice, undefined, { by: 'manuel' });
+    assert.equal(first.nodeId, 'call_decline_1');
+    assert.ok(first.lines.some((line) => !line.if), 'keep the lines common to both outcomes');
+    assert.equal(first.lines.some((line) => line.if?.startsWith('flag act1.call.rangOut')), timed);
+    assert.equal(first.lines.some((line) => line.if?.startsWith('speaker=')), !timed, 'only the applicable reaction plays');
+  }
+});
+
+test('worn gear is visible (Trevor, 2026-11-23): every wearable item has a look, and each look paints pixels on a roommate in every facing it shows', () => {
+  const { ITEMS: IT, WORN_SLOTS: WS } = itemsMod;
+  const worn = Object.entries(IT).filter(([, v]) => WS.includes(v.slot)).map(([k]) => k);
+  const missing = worn.filter((id) => !wearMod.LOOKS[id] || !wearMod._PAINTERS[wearMod.LOOKS[id].style]);
+  assert.deepEqual(missing, [], 'worn items with no visible look');
+  // Trevor's real idle frames (assets/sprites/trevor.png): A outline, B/C hair, D/E skin, F/G shirt, H trousers, I boots
+  const B = wearMod._BODY.trevor, PAL = { A: '#0d0b1a', B: B.hair[0], C: B.hair[1], D: B.skin[0], E: B.skin[1], F: B.shirt[0], G: B.shirt[1], H: B.pants[0], I: B.boots[0] };
+  const FR = {
+    down: ['................', '................', '.....AAAAAA.....', '....ABBBBBBA....', '...ABBBBBBBBA...', '...ABBBCBBBBA...', '...ABBDDDDBBA...', '...ABDADDADBA...', '...ABDDDDDDBA...', '...ACEDDDDECA...', '....AAAEEAAA....', '...AAFFFFFFAA...', '..AFFFFFFFFFFA..', '..ADAFFFFFFADA..', '..ADAFFFFFFADA..', '..ADAGFFFFGADA..', '...AAGFFFFGAA...', '....AHHHHHHA....', '....AHHHHHHA....', '....AHHAAHHA....', '....AHHAAHHA....', '....AHHAAHHA....', '....AIIAAIIA....', '.....AA..AA.....'],
+    up: ['................', '................', '.....AAAAAA.....', '....ABBBBBBA....', '...ABBBBBBBBA...', '...ABBBCBBBBA...', '...ABBBBBBBBA...', '...ABBCBBBCBA...', '...ABBBBBBBBA...', '...ACBBBBBBCA...', '....AAAEEAAA....', '...AAFFFFFFAA...', '..AFFFFFFFFFFA..', '..ADAFFFFFFADA..', '..ADAFGFFGFADA..', '..ADAGFFFFGADA..', '...AAGFFFFGAA...', '....AHHHHHHA....', '....AHHHHHHA....', '....AHHAAHHA....', '....AHHAAHHA....', '....AHHAAHHA....', '....AIIAAIIA....', '.....AA..AA.....'],
+    right: ['................', '................', '.....AAAAAA.....', '....ABBBBBBA....', '...ABBBBBBBBA...', '...ABBBCBBBBA...', '...ABBBBDDDDA...', '...ABBBDDDADA...', '...ABBBDDDDDA...', '...ACBBEDDDA....', '....AAAAEEA.....', '.....AFFFFA.....', '....AFFFFFFA....', '....AFFDDFFA....', '....AFFDDFFA....', '....AGFDDFGA....', '.....AGFFGA.....', '.....AHHHHA.....', '.....AHHHHA.....', '.....AHHHHA.....', '.....AHHHHA.....', '.....AHHHHA.....', '.....AIIIIIA....', '.....AAAAAAA....'],
+  };
+  const hexc = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const frame = (rows) => { const w = 16, h = 24, d = new Uint8ClampedArray(w * h * 4); rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '.') return; const i = (y * w + x) * 4; [d[i], d[i + 1], d[i + 2]] = hexc(PAL[ch]); d[i + 3] = 255; })); return d; };
+  const frontOnly = new Set(['charm', 'pacifier']);   // things on the chest or the mouth don't show from behind
+  for (const id of worn) {
+    const look = wearMod.LOOKS[id];
+    for (const facing of ['down', 'up', 'right']) {
+      if (facing === 'up' && frontOnly.has(look.style)) continue;
+      const out = new Uint8ClampedArray(16 * 24 * 4);
+      wearMod._PAINTERS[look.style](frame(FR[facing]), out, 16, 24, facing, B, look, 'trevor');
+      let n = 0; for (let i = 3; i < out.length; i += 4) n += out[i] > 0;
+      assert.ok(n >= 2, `${id} paints nothing (${n} px) facing ${facing}`);
+    }
+  }
+  // drawn in a sensible order: trousers under the coat, the helmet over everything on the body
+  const order = wearMod.looksFor({ level: 1, equipped: { helmet: 'item.hardhat', leggings: 'item.work_pants', chestplate: 'item.mesh_vest', parka: 'item.rain_parka', socks: 'item.wool_socks' } });
+  assert.ok(order.indexOf('item.work_pants') < order.indexOf('item.wool_socks') && order.indexOf('item.rain_parka') < order.indexOf('item.mesh_vest') && order.at(-1) === 'item.hardhat', order.join(' '));
+});
+
+test('the research is in reach (Trevor, 2026-11-23): CHECKLISTS.md is linked from CLAUDE.md, HUB.md and every brief, and the writing lint runs', async () => {
+  const fs = await import('fs'), { spawnSync } = await import('child_process');
+  const read = (p) => fs.readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
+  const list = read('docs/org/CHECKLISTS.md');
+  for (const sec of ['## A.', '## B.', '## C.', '## D.', '## E.', '## F.']) assert.ok(list.includes(sec), `CHECKLISTS.md lost ${sec}`);
+  for (const f of ['research/combat.md', 'research/dialogue-craft.md', 'research/story-craft.md', 'research/story-structure.md']) assert.ok(list.includes(f), `CHECKLISTS.md no longer points at ${f}`);
+  assert.ok(read('CLAUDE.md').includes('docs/org/CHECKLISTS.md') && read('docs/org/HUB.md').includes('CHECKLISTS.md'));
+  for (const b of fs.readdirSync(new URL('../docs/org/briefs/', import.meta.url))) assert.ok(read(`docs/org/briefs/${b}`).includes('CHECKLISTS.md'), `brief ${b} doesn't link the checklists`);
+  const r = spawnSync('python3', [new URL('../tools/writing/lint.py', import.meta.url).pathname], { encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stderr); assert.match(r.stdout, /total flags: \d+/);
+});
+
+test('the balloon is drawn where the story says (Trevor, 2026-11-23): on the platform until the ending lets it go', async () => {
+  const { readFileSync } = await import('fs');
+  const src = readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/_tickBalloon\(\)/.test(src) && /_balloonCue\(d\.nodeId, line\)/.test(src), 'the balloon ticks and follows the ending');
+  assert.ok(/map\?\.id === 'platform' && !f\['act1\.complete'\]/.test(src), 'shown on the platform until Act 1 is complete');
+});
+
+test('a guest joining the platform after the finale release does not get a fresh balloon', () => {
+  const map = MAPS_FOR_TEST.platform;
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', map, save: { flags: {} } });
+  host._balloonCue('ending_release');
+  assert.equal(host.save.flags['act1.ending.balloonReleased'], true, 'the release exists even outside the host render loop');
+  const guest = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'client', map, save: structuredClone(host.save),
+    add: { image() { assert.fail('a returned guest must not instantiate the already released prop'); } },
+  });
+  guest._tickBalloon();
+  assert.equal(guest.balloon, null);
 });
 
 test('the toothpaste exchange: Michael asks, Manuel says "Hmmmm. Toothpaste?", Michael doubts it; Trevor is never in it', () => {
@@ -4868,6 +5253,18 @@ test('the gonman is overpowered on purpose: a much smaller hitbox while thin, en
 
 const { ClientNet: DialogueClientNet, HostNet: DialogueHostNet } = await import('../src/engine/net/net.js');
 const { SharedEvents } = await import('../src/game/sharedEvent.js');
+const dialogueScene = (mode, net, character, localId) => {
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode, net, character, localId, map: MAPS_FOR_TEST.room631, events: { once() {} },
+    input: { keyboard: { on() {} } }, time: { addEvent() {} },
+    add: { text: () => ({ setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; }, setVisible() { return this; }, setText() { return this; } }) },
+    _drawDialogue() { if (this.dlg?.done) { this.dlg = null; this.dlgDone?.(); } },
+    _toast() {},
+  });
+  scene.shared = new SharedEvents(scene);
+  return scene;
+};
+
 test('a disconnected dialogue driver releases only their scene on the host and observer', () => {
   const hostNet = new DialogueHostNet(), observerNet = new DialogueClientNet();
   const connect = (peer, send = () => {}) => hostNet.conns.set(peer, { send });
@@ -4878,17 +5275,7 @@ test('a disconnected dialogue driver releases only their scene on the host and o
   const posted = [];
   connect('observer', (msg) => { posted.push(msg); observerNet.emit('msg', msg); });
   connect('driver');
-  const makeScene = (mode, net, character) => {
-    const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
-      mode, net, character, map: MAPS_FOR_TEST.room631, events: { once() {} },
-      input: { keyboard: { on() {} } }, time: { addEvent() {} },
-      add: { text: () => ({ setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; }, setVisible() { return this; }, setText() { return this; } }) },
-      _drawDialogue() { if (this.dlg?.done) { this.dlg = null; this.dlgDone?.(); } },
-    });
-    scene.shared = new SharedEvents(scene);
-    return scene;
-  };
-  const host = makeScene('host', hostNet, 'trevor'), observer = makeScene('client', observerNet, 'michael');
+  const host = dialogueScene('host', hostNet, 'trevor', 'host'), observer = dialogueScene('client', observerNet, 'michael', 'observer');
   host.save = newSave({ seed: 'dialogue-disconnect', rolls: {}, gameVersion: 'test' });
   observer.save = structuredClone(host.save);
   host.sim = new Sim(host.map);
@@ -4931,6 +5318,64 @@ test('a disconnected dialogue driver releases only their scene on the host and o
   host.dlg = null;
   host.shared._pump();
   assert.equal(host.dlg, null, 'the abandoned choice does not reopen');
+});
+
+test('a returning guest joins the current story turn once and abandoned or deferred events cannot reopen', async () => {
+  const hostNet = new DialogueHostNet(), guestNet = new DialogueClientNet();
+  const host = dialogueScene('host', hostNet, 'trevor', 'host'), guest = dialogueScene('client', guestNet, 'manuel', 'returned');
+  const messages = [], other = [];
+  hostNet.conns.set('other', { send: (msg) => other.push(msg) });
+  guestNet.send = (msg) => hostNet.emit('msg', 'returned', msg);
+  host.sim = new Sim(host.map);
+  for (const [id, who] of [['host', 'trevor'], ['other', 'michael'], ['ai:manuel', 'manuel']]) host.sim.addPlayer(id, who);
+  host.remoteInputs = new Map();
+  host.save = newSave({ seed: 'returning-story', rolls: {}, gameVersion: 't' });
+  host._wireNet(); guest._wireNet();
+  host._startLocal = async () => { host.dlg = { choices: [{ text: 'Stay together' }], node: { decider: 'manuel' }, nodeId: 'choice' }; };
+  const chosen = [];
+  host._commitDialogueChoice = (i, who) => { chosen.push([i, who]); host.dlg = null; };
+  await host.shared.start('fixture');
+  const { id, turn } = host.shared.active;
+  assert.equal(host.shared.active.state.decider, 'trevor', 'the host covers the missing roommate');
+  messages.length = 0; other.length = 0;
+  assert.ok(host.sim.transferPlayer('ai:manuel', 'returned'));
+  hostNet.conns.set('returned', { send: (msg) => { messages.push(msg); guestNet.emit('msg', msg); } });
+  guest.shared.requestResume();
+  assert.equal(guest.shared.watching.id, id);
+  assert.equal(guest.dlg.decider, 'manuel');
+  assert.ok(guest.dlg.turn > turn, 'the directed turn follows the newly occupied seat');
+  assert.equal(other.filter((msg) => msg.t === 'evResume' || msg.t === 'evStart').length, 0);
+  const mirror = guest.dlg;
+  guest.shared.requestResume();
+  assert.equal(guest.dlg, mirror, 'a second response cannot restart an open mirror');
+  guest.dlg.choose(0);
+  assert.deepEqual(chosen, [[0, 'manuel']]);
+
+  host.shared.active = null;
+  guest.shared.onMsg({ t: 'evEnd', id });
+  const state = { who: 'Michael', text: 'A current line.', choices: [] };
+  hostNet.emit('msg', 'other', { t: 'evStart', id: 'other:live', main: 'michael', scope: 'all' });
+  hostNet.emit('msg', 'other', { t: 'evState', id: 'other:live', state });
+  guest.shared.onMsg({ t: 'evEnd', id: 'other:live' });   // simulate a fresh World before it requests the current state
+  guest.stage = { active: { script: { hold: true } }, onClientMsg: () => false };
+  guest.shared.requestResume();
+  assert.equal(guest.dlg.line.text, state.text, 'an authored hold runs alongside restored dialogue');
+  guest.shared.onMsg({ t: 'evEnd', id: 'other:live' });
+  guest.stage.active = { script: { hold: false } };
+  guest.shared.requestResume();
+  assert.equal(guest.shared.pendingResume.id, 'other:live');
+  host.shared.endGuestDialogue('other');
+  guest.stage.active = false;
+  guest.shared._pump();
+  assert.equal(guest.dlg, null);
+  assert.equal(guest.shared.pendingResume, null);
+  messages.length = 0;
+  guest.shared.requestResume();
+  assert.deepEqual(messages, [], 'the host has no abandoned dialogue to restore');
+  hostNet.emit('msg', 'other', { t: 'evStart', id: 'other:nearby', main: 'michael', scope: 'nearby', map: 'far' });
+  messages.length = 0;
+  guest.shared.requestResume();
+  assert.deepEqual(messages, [], 'optional nearby dialogue is not forced on rejoin');
 });
 
 test("Manuel's edge: with the same gear and no skills, Manuel is the toughest and hits hardest of the three", () => {
@@ -5024,10 +5469,13 @@ test('co-op rejoin accepts only a vacant seat with its original room key', () =>
   returned.emit('data', { t: 'flag', key: 'act1.test', value: true });
   assert.equal(save.flags['act1.test'], undefined);
   assert.equal(sim.players.has('returned'), false);
+  host.stage = { active: { id: 'demo', script: { hold: true } }, onHostMsg: () => false };
   returned.emit('data', { t: 'hello', seatKey: key });
   const start = returned.messages.at(-1);
   assert.equal(start.t, 'start');
   assert.deepEqual(start.assignments, { returned: 'manuel' });
+  assert.equal(start.snapshot.stageId, 'demo');
+  assert.equal(start.snapshot.stageHold, true);
   assert.equal(start.snapshot.players.find(p => p.id === 'returned').am, 4);
   assert.equal(sim.players.get('returned'), original);
   assert.equal(original.held, 'gun', 'the returning guest immediately holds their selected gun');
@@ -5070,6 +5518,180 @@ test('equip the exact copy (John Pork, PR #93): with two vests, the modded one y
   assert.equal(c.inventory.filter((item) => item?.id === 'item.mesh_vest').length, 2);
   assert.deepEqual(sent, [{ t: 'equipSlot', i: k }, { t: 'unwear', slot: 'chestplate' }]);
   assert.equal(InvM.wear(c, 'item.mesh_vest', 99), false, 'an invalid explicit slot leaves both copies in the bag');
+});
+
+const { Stage: RejoinStage } = await import('../src/game/stage.js');
+test('a rejoining guest holds gameplay until the host ends the active cutscene', () => {
+  const ui = [], keyboard = new EventEmitter();
+  const display = (text) => {
+    const item = { text, setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; }, destroy() { this.destroyed = true; } };
+    ui.push(item); return item;
+  };
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'client', ready: true, events: new EventEmitter(), input: { keyboard }, input2: { blockAttack: false },
+    cameras: { main: { zoom: 1, fadeIn() {}, zoomTo() {} } },
+    add: { rectangle: () => display(), text: (x, y, label) => display(label) }, tweens: { add() {} },
+  });
+  const stage = scene.stage = new RejoinStage(scene);
+  stage.holdForHost('demo');
+  assert.ok(stage.active.waitingForHost);
+  assert.ok(ui.some((item) => item.text === 'Cutscene in progress'));
+  assert.equal(stage.active.ui.length, 3, 'ordinary cinematic wait uses two letterbox bars');
+  const controls = { ...emptyInput(), mx: 1, attack: true, gadget: true, skill: true };
+  assert.deepEqual(scene._frozen(controls), emptyInput());
+  keyboard.emit('keydown-X');
+  stage.syncHostStage('demo');
+  assert.ok(stage.playing, 'a guest cannot skip the host cutscene');
+  stage.onClientMsg({ t: 'stage', op: 'end', id: 'other' });
+  assert.ok(stage.playing, 'a different cutscene cannot release the hold');
+  stage.syncHostStage(null);
+  assert.equal(stage.playing, false, 'snapshots clear the hold even if the end packet was missed at startup');
+  assert.ok(ui.every((item) => item.destroyed));
+  assert.equal(scene._frozen(controls), controls);
+  stage.holdForHost('demo');
+  stage.onClientMsg({ t: 'stage', op: 'end', id: 'demo' });
+  assert.equal(stage.playing, false, 'the normal host end releases the hold immediately');
+
+  stage.holdForHost('staged_dialogue', true);
+  assert.equal(stage.active.script.hold, true);
+  assert.equal(stage.active.ui.length, 2, 'the lower dialogue area remains available');
+  scene.dlg = { choices: [{ text: 'A choice' }] }; scene.dlgFree = true;
+  scene._onClick({ button: 0, x: 1, y: 1 });
+  assert.equal(scene.input2.blockAttack, true, 'a hold-stage click cannot become a gameplay attack');
+  assert.deepEqual(scene._frozen(controls), emptyInput());
+});
+test('Room 631 for the cold open (hub #99): closet by the window, a wall screen, the van outside, staging left clear', () => {
+  const m = MAPS_FOR_TEST.room631, obj = (id) => m.objects.find((o) => o.id === id), key = (x, y) => `${x},${y}`;
+  // Every object the room had before this change is still there, under the same id.
+  const BEFORE = ('chair_w chair_e string_lights clock_631 nightstand_michael nightstand_manuel poster_band photo_wall pennant toolwall toolbox crate cables bookshelf '
+    + 'whiteboard coffee tv couch scooters shoes plant house_rules door statue_1 statue_2 statue_3 mate fridge table stove parts_bins lab_board workbench failed_prints '
+    + 'router drill_press pork_flag printer_1 printer_2 printer_3 oscilloscope microscope degasser solder dehumidifier ottoman boxes_1 boxes_2 boxes_3 shrimp_tank '
+    + 'stand_trevor battlebot supplements trevor_mirror trevor_pc dumbbells trevor_shower michael_desk manuel_table mate_shelf mm_shower hamper balcony_plants '
+    + 'balcony_view bunk arg_flag stand_michael michael_closet manuel_closet front_lock mm_mirror').split(' ').map((n) => `obj.${n}`)
+    .concat(['door.trevor_room', 'door.mm_room', 'door.trevor_bath', 'door.mm_bath', 'door.balcony']);
+  assert.equal(BEFORE.length, 76);
+  assert.deepEqual(BEFORE.filter((id) => !obj(id)), [], 'an object id went missing from room631');
+  assert.equal(m.objects.length, BEFORE.length + 2, 'only the wall screen and the van were added');
+  // The search hooks wait for the cold open's staging PR (#145): these keep what they had.
+  assert.equal(obj('obj.toolwall').action, 'toolwall');
+  assert.equal(obj('obj.printer_3').flag, 'act1.clue.printer3Warm');
+  assert.equal(obj('obj.front_lock').flag, 'act1.clue.lockForced');
+  assert.equal(obj('obj.manuel_closet').flag, 'act1.balloon.noticedGone');
+  assert.deepEqual([obj('obj.door').x, obj('obj.door').y, obj('obj.door').to], [0, 8, 'aster_hall'], "631's front door stays where it is");
+  assert.deepEqual(m.spawns, [[5, 8], [7, 9], [9, 8]].map(([x, y]) => ({ x: x * 16 + 8, y: y * 16 + 8 })));
+
+  // 1. Manuel's closet: at his end of the bedroom, by the window his flag hangs over, and off both doorways.
+  const closet = obj('obj.manuel_closet'), flag = obj('obj.arg_flag'), bedDoor = obj('door.mm_room'), bathDoor = obj('door.mm_bath');
+  assert.ok(closet.x >= obj('obj.nightstand_manuel').x && closet.x <= 22 && closet.y >= 1 && closet.y <= 4, "the closet is in the bedroom, at Manuel's end");
+  assert.ok(Math.abs(closet.x - flag.x) <= 1 && closet.y - flag.y <= 2, 'and by the window (under the flag that covers it)');
+  assert.notDeepEqual([closet.x, closet.y], [bedDoor.x, bedDoor.y - 1], 'not in front of the bedroom doorway');
+  assert.notDeepEqual([closet.x, closet.y], [bathDoor.x - 1, bathDoor.y], 'nor in front of the bathroom door');
+  assert.ok(!m.objects.some((o) => o !== closet && o.x === closet.x && o.y === closet.y), 'on a tile of its own');
+
+  // 2 and 3. The wall screen and the van: on the map, with a drawing and a second (animated) frame in the sheets.
+  const frames = (sheet) => JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${sheet}.json`, import.meta.url), 'utf8')).frames;
+  const screen = obj('obj.room631_wallscreen'), van = obj('obj.room631_van'), vanArt = (m.scenery ?? []).find((q) => q.art === 'obj.room631_van');
+  assert.ok(screen && van && vanArt);
+  for (const f of ['obj.room631_wallscreen', 'obj.room631_wallscreen#1']) assert.deepEqual([frames('props')[f]?.frame.w, frames('props')[f]?.frame.h], [16, 24], f);
+  for (const f of ['obj.room631_van', 'obj.room631_van#1']) assert.deepEqual([frames('wide')[f]?.frame.w, frames('wide')[f]?.frame.h], [32, 16], f);
+  assert.equal(m.layout[screen.y][screen.x], '#', 'the screen hangs on a wall');
+  assert.ok('ku'.includes(m.layout[screen.y + 1][screen.x]) && screen.x < 15, 'the living-room wall');
+  assert.ok(screen.light > 0 && screen.text && !screen.action && !screen.talk, 'lit, with a look line and nothing else');
+  // The van is outside: its drawing is on the street strip, which nobody can walk to, and the spot you look from is the rail.
+  const inside = new Set([key(5, 8)]), todo = [[5, 8]];
+  while (todo.length) { const [x, y] = todo.pop(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const k = key(x + dx, y + dy); if (!inside.has(k) && (!m.solid(x + dx, y + dy) || m.doors.has(k))) { inside.add(k); todo.push([x + dx, y + dy]); } } }
+  assert.ok(inside.has(key(22, 13)) && inside.has(key(18, 3)), 'the flood fill covers the flat (balcony and bedroom)');
+  assert.ok(!vanArt.solid && !inside.has(key(vanArt.x, vanArt.y)) && !inside.has(key(vanArt.x + 1, vanArt.y)), 'the van is not in the walkable flat');
+  assert.equal(m.layout[vanArt.y].slice(vanArt.x, vanArt.x + 2), ',,', 'it is parked on the street');
+  assert.ok(vanArt.y > van.y && van.y > obj('obj.ottoman').y, 'below the balcony, past the rail');
+  assert.equal(m.layout[van.y][van.x], '=', 'you look at it over the balcony rail');
+  assert.ok(inside.has(key(van.x, van.y - 1)), 'from the balcony');
+  for (let x = 0; x < m.w; x++) assert.ok(m.solid(x, vanArt.y - 1), `the street is walled off at ${x},${vanArt.y - 1}`);
+  assert.ok(van.text && !van.action && !van.talk && !van.flag, 'a look line only');
+
+  // Nothing in the way of the cold open's staging. Marks and paths are hard-coded from PR #145's stage script:
+  // origin/bagel/cold-open-staging @ 8bc04bec, src/content/stage/cold_open.js (cast `at`, `walk` to/by, `cam` tiles).
+  const CAST = { trevor: [17, 2], michael: [18, 3], manuel: [19, 2] };                 // the bunk wake-up
+  const beside = (o) => [[0, 1], [-1, 0], [1, 0], [0, -1]].map(([dx, dy]) => [o.x + dx, o.y + dy]).find(([x, y]) => !m.solid(x, y));   // stage.js _beside
+  const atCloset = beside(closet);
+  assert.deepEqual(atCloset, [22, 3], 'Manuel stops under his closet, in line with the bedroom door');
+  const DOOR = [[22, 5], [22, 6]];                                                     // out through door.mm_room
+  const LEGS = [
+    [CAST.manuel, [19, 3], atCloset, ...DOOR, [4, 9], [4, 8], [5, 8]],                 // rolls out, the closet, the front door, arms out, his shoes
+    [CAST.trevor, atCloset, ...DOOR, [4, 7]],
+    [CAST.michael, [19, 4], ...DOOR, [12, 8], [3, 8]],
+  ];
+  const CAMS = [[14, 8], [12, 8]];
+  const marks = new Set([...LEGS.flat(), ...CAMS].map(([x, y]) => key(x, y)));
+  const path = new Set();                                                              // every tile a straight walk crosses
+  for (const leg of LEGS) for (let i = 1; i < leg.length; i++) {
+    const [ax, ay] = leg[i - 1], [bx, by] = leg[i], n = Math.max(Math.abs(bx - ax), Math.abs(by - ay)) * 8;
+    for (let t = 0; t <= n; t++) path.add(key(Math.round(ax + ((bx - ax) * t) / n), Math.round(ay + ((by - ay) * t) / n)));
+  }
+  for (const k of marks) { const [x, y] = k.split(',').map(Number); assert.ok(!m.solid(x, y) || m.doors.has(k), `staging mark ${k} is solid`); }
+  for (const k of new Set([...marks, ...path])) assert.ok(!m.blocked.has(k), `something solid stands on the staging path at ${k}`);
+  const added = [screen, van, closet, vanArt, { x: vanArt.x + 1, y: vanArt.y }];
+  for (const o of added) assert.ok(!marks.has(key(o.x, o.y)) && !path.has(key(o.x, o.y)), `${o.id ?? o.art ?? 'the van'} sits on the staging at ${o.x},${o.y}`);
+  for (const o of [screen, van, vanArt]) assert.ok(!o.solid, 'nothing new is solid');
+  assert.deepEqual([...m.blocked], [key(0, 8)], 'the only blocking object in the room is still the front door');
+  // The objects the staging points the camera and the actors at.
+  for (const id of ['obj.bunk', 'obj.manuel_closet', 'obj.front_lock', 'obj.door', 'obj.pork_flag', 'obj.statue_1', 'obj.tv']) assert.ok(obj(id), id);
+  assert.ok(Math.hypot(screen.x - obj('obj.tv').x, screen.y - obj('obj.tv').y) <= 3, "the wall screen is in frame when the staging's camera goes to the TV");
+});
+
+test('no silent later-act maps (hub #115): every Act 2 and Act 3 map has an ambience bed, and every bed kind exists', async () => {
+  const A = await import('../src/audio/audio.js');
+  const silent = Object.values(MAPS_FOR_TEST).filter((m) => (m.act ?? 1) >= 2 && !A.ambienceKind(m.id, m)).map((m) => m.id);
+  assert.deepEqual(silent, []);
+  for (const m of Object.values(MAPS_FOR_TEST)) { const k = A.ambienceKind(m.id, m); if (k && (m.act ?? 1) >= 2) assert.ok(A.BED_KINDS.includes(k), `${m.id}: unknown bed ${k}`); }
+  assert.equal(A.ambienceKind('refuge', { outdoor: true, act: 2 }), 'forest'); assert.equal(A.ambienceKind('ann_harbor', { outdoor: true, act: 2 }), 'harbor');
+  assert.equal(A.ambienceKind('gb_dishes', { outdoor: false, act: 2 }), 'building');
+});
+
+test('morphs come from a story moment, not a level-up (Trevor, 2026-11-23)', async () => {
+  const fs = await import('fs');
+  const src = fs.readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(!/lv >= \d+ && c\.morph && c\.morph\.stage < 1/.test(src), 'stage one must not unlock on a level');
+  assert.ok(/_tickMorphUnlock\(\)/.test(src) && typeof Prog.MORPH_STAGE1_FLAG === 'string' && Prog.MORPH_STAGE1_FLAG.length > 0);
+  // the unlock itself, against a fake scene: nothing before the flag, everyone after it, once
+  const said = [], scene = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'solo', save: { flags: {}, party: { trevor: { morph: { stage: 0 }, level: 9 }, manuel: { morph: { stage: 0 }, level: 1 } } }, _announce: (t) => said.push(t) });
+  scene._tickMorphUnlock(); assert.equal(scene.save.party.trevor.morph.stage, 0, 'a high level alone unlocks nothing');
+  scene.save.flags[Prog.MORPH_STAGE1_FLAG] = true; scene._tickMorphUnlock(); scene._tickMorphUnlock();
+  assert.ok(scene.save.party.trevor.morph.stage === 1 && scene.save.party.manuel.morph.stage === 1 && said.length === 2);
+});
+test('Manuel keeps level six as the stage two requirement after the story unlock', () => {
+  const sim = new Sim(MAPS_FOR_TEST.room631);
+  sim.addPlayer('manuel', 'manuel');
+  const pawn = sim.players.get('manuel');
+  const save = newSave({ seed: 'gonman-story-gate', rolls: {}, gameVersion: 'test' });
+  const manuel = save.party.manuel;
+  const net = new DialogueHostNet();
+  net.conns.set('manuel', { send() {} });
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', sim, save, net, _announce() {}, time: { addEvent() {} }, events: { once() {} },
+  });
+  scene._wireNet();
+  net.emit('msg', 'manuel', { t: 'flag', key: Prog.MORPH_STAGE1_FLAG, value: true });
+  assert.equal(save.flags[Prog.MORPH_STAGE1_FLAG], undefined, 'only the host sets the morph story flag');
+
+  manuel.level = 6;
+  scene._levelsReached('manuel', manuel, [6]);
+  scene._tickMorphUnlock();
+  scene._morph('manuel');
+  assert.equal(manuel.morph.stage, 0);
+  assert.ok(!pawn.morphed, 'level six alone cannot open a transformation');
+
+  save.flags[Prog.MORPH_STAGE1_FLAG] = true;
+  scene._tickMorphUnlock();
+  assert.equal(manuel.morph.stage, 2, 'a player who already reached level six gets both available stages');
+  scene._morph('manuel');
+  assert.ok(pawn.morphed);
+  assert.equal(pawn.morphStage, 2);
+
+  delete save.flags[Prog.MORPH_STAGE1_FLAG];
+  manuel.morph.stage = 1;
+  scene._levelsReached('manuel', manuel, [6]);
+  assert.equal(manuel.morph.stage, 2, 'legacy stage-one saves retain the level-six progression');
 });
 
 await Promise.all(pending);

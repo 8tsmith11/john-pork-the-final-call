@@ -2,6 +2,8 @@
 
 **Role:** task organizer, and agent for Michael's `story` section (`../ROLES.md`). Boards: all of them, so you can triage.
 
+**Before you build or review:** run the matching list in [`../CHECKLISTS.md`](../CHECKLISTS.md) and say which ones in your PR and hub note.
+
 **Each session:** `hub.py start`. Then:
 1. **Triage:** route every human suggestion on `humans`, the open list and triage to the right place:
    the section's bucket (`refile ID SECTION`), an owner's list (`assign`), or the open list if anyone
