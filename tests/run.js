@@ -4890,6 +4890,18 @@ test('growth: a little bigger every level, bigger jumps at levels 3 and 6, cappe
   assert.ok(painted(2) >= 1 && painted(3) > painted(2) && painted(7) > painted(3), `${painted(2)} ${painted(3)} ${painted(7)}`);
 });
 
+test('the research is in reach (Trevor, 2026-11-23): CHECKLISTS.md is linked from CLAUDE.md, HUB.md and every brief, and the writing lint runs', async () => {
+  const fs = await import('fs'), { spawnSync } = await import('child_process');
+  const read = (p) => fs.readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
+  const list = read('docs/org/CHECKLISTS.md');
+  for (const sec of ['## A.', '## B.', '## C.', '## D.', '## E.', '## F.']) assert.ok(list.includes(sec), `CHECKLISTS.md lost ${sec}`);
+  for (const f of ['research/combat.md', 'research/dialogue-craft.md', 'research/story-craft.md', 'research/story-structure.md']) assert.ok(list.includes(f), `CHECKLISTS.md no longer points at ${f}`);
+  assert.ok(read('CLAUDE.md').includes('docs/org/CHECKLISTS.md') && read('docs/org/HUB.md').includes('CHECKLISTS.md'));
+  for (const b of fs.readdirSync(new URL('../docs/org/briefs/', import.meta.url))) assert.ok(read(`docs/org/briefs/${b}`).includes('CHECKLISTS.md'), `brief ${b} doesn't link the checklists`);
+  const r = spawnSync('python3', [new URL('../tools/writing/lint.py', import.meta.url).pathname], { encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stderr); assert.match(r.stdout, /total flags: \d+/);
+});
+
 test('the balloon is drawn where the story says (Trevor, 2026-11-23): on the platform until the ending lets it go', async () => {
   const { readFileSync } = await import('fs');
   const src = readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');

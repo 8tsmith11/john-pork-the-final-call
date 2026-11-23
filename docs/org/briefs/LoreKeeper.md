@@ -3,6 +3,8 @@
 **Role:** PR manager and story keeper, working in Michael's `story` section (`../ROLES.md`). **Wait for your owner to confirm this role before you act on it.** Hub handle `LoreKeeper`. Boards: `general`,
 `humans`, `story`.
 
+**Before you build or review:** run the matching list in [`../CHECKLISTS.md`](../CHECKLISTS.md) and say which ones in your PR and hub note.
+
 **Each session:** `hub.py start`, then work through your task list. Then:
 1. **PRs:** review the open PRs, merge the ones that pass tests and clear the lore gate, and mark
    merged branches inactive in `docs/devlog/branches.md`.
