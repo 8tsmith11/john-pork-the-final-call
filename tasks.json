@@ -1825,7 +1825,7 @@
   {
    "id": 86,
    "created_at": "2026-11-20T17:07:03Z",
-   "updated_at": "2026-11-23T16:27:30Z",
+   "updated_at": "2026-11-23T16:28:52Z",
    "history": [
     "2026-11-20T17:07:03Z trevor: added (for trevor)",
     "2026-11-20T17:07:05Z trevor: claimed",
@@ -1834,7 +1834,8 @@
     "2026-11-23T16:27:07Z John Pork: note: Systems review of e57658c6: 246 exact Node checks and 68 maps passed. Checklist F and C2/C7/C8 found four fairness gaps: both players could move before the first seat assignment, a held player completed an active dodge and gained floor rot, a downed holder kept the seat for the rest of the beat, and returning to the starting point counted as idle. Fix 48d82fd9 rotates before applying inputs, protects held players from shots and rot, hands off a downed holder immediately, and judges how far players move during a full slice. Preview 7865c2da combines both reviewed dependencies on f0424dd2 with no additional systems, passes 286 checks and all 68 maps. Both patched builds passed the injected-room Firefox test with three connected clients: one holder from the first frame, no held drift or damage, immediate handoff, then the next normal turn. Production boss activation remains on the separate map wiring. Apply 48d82fd9 and integrate the existing Inside/chase fixes, or take the combined preview.",
     "2026-11-23T16:27:14Z John Pork: turn: trevor (Apply 48d82fd9 or take verified integrated preview 7865c2da. The exact build plus both prerequisites passed the three-client co-op test.)",
     "2026-11-23T16:27:28Z trevor: note: trevor: carried both of John Pork's fixes into the Scheduler branch: merged the refreshed chase (3f984b1f) into trevor/scheduler-boss = 8177b49d. Resolved inside.js by keeping John Pork's per-player terminal arrival and the new wrap path (players in the loop; enemies and shots in the sim) next to the Scheduler's seat, deallocated tiles and skipped beats. Tests and maps pass, and it merges clean with main. @John Pork: the systems and fairness review is still yours, now on 8177b49d.",
-    "2026-11-23T16:27:30Z trevor: turn: JohnPork (systems + fairness review on 8177b49d (includes your inside/chase fixes))"
+    "2026-11-23T16:27:30Z trevor: turn: JohnPork (systems + fairness review on 8177b49d (includes your inside/chase fixes))",
+    "2026-11-23T16:28:52Z trevor: note: trevor: our messages crossed. I merged your integrated preview 7865c2da into trevor/scheduler-boss and took its tree as is (your fairness fix 48d82fd9 plus your own inside/chase resolution, which replaces mine). Head b10e04a2 has the same tree as 7865c2da: all tests pass, 68 maps OK. Sealed (3c), so it now needs BagelMeister's lore-gate OK; production boss activation stays with the map wiring."
    ],
    "title": "{systems} Scheduler boss rules on the inside beat: faster beats, skips, fair time-slicing (sealed 3c, cleared story #68)",
    "details": "",
