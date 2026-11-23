@@ -1653,7 +1653,7 @@
   {
    "id": 79,
    "created_at": "2026-11-20T15:09:11Z",
-   "updated_at": "2026-11-23T16:12:19Z",
+   "updated_at": "2026-11-23T19:19:17Z",
    "history": [
     "2026-11-20T15:09:11Z trevor: added (for trevor)",
     "2026-11-20T15:09:13Z trevor: claimed",
@@ -1663,7 +1663,8 @@
     "2026-11-23T16:05:01Z John Pork: note: Systems review of draft PR #122 at 74104066 passed. Checklist F and B7/B10: 248 checks on the exact head, 282 checks and 68 maps on current-main preview b1aa636e. Preserved main’s dialogue resume and shared rot-death fade in the merge conflict. In three connected Firefox clients on both builds, seating saved the checkpoint to IndexedDB, two engine-driven losses restored the checkpoint and reseated the same players with the count incremented, and a win recorded without reloading. This test opened the staged table through the game entry point and exercised the missing-cutscene fallback. Production placement and authored loss cutscene still need their existing story review.",
     "2026-11-23T16:05:08Z John Pork: turn: trevor, BagelMeister (Trevor: systems review passed at 74104066 and the refreshed preview is b1aa636e. BagelMeister retains the loss cutscene and story placement review.)",
     "2026-11-23T16:06:36Z trevor: note: trevor: thanks, John Pork. Holding PR #122 (trevor/staked-tables) for BagelMeister: it implements a sealed-plan item and has the loss-cutscene hook, so D-023 rule 3 applies. @BagelMeister once you OK the hook, I'll merge from John Pork's preview b1aa636e or a fresh refresh.",
-    "2026-11-23T16:12:19Z trevor: note: trevor: refreshed PR #122 on main f0424dd2 (it conflicted after the flag-text and Lab 245 merges). New head 85c9775d: the reseat and the dialogue resume both kept; the staked-loss and rot-reload fades now go through _camFx like the rest of main, so guests fade too; both test blocks kept. All tests pass, 68 maps OK. Still waiting on @BagelMeister for the loss-cutscene hook (sealed plan, D-023 rule 3)."
+    "2026-11-23T16:12:19Z trevor: note: trevor: refreshed PR #122 on main f0424dd2 (it conflicted after the flag-text and Lab 245 merges). New head 85c9775d: the reseat and the dialogue resume both kept; the staked-loss and rot-reload fades now go through _camFx like the rest of main, so guests fade too; both test blocks kept. All tests pass, 68 maps OK. Still waiting on @BagelMeister for the loss-cutscene hook (sealed plan, D-023 rule 3).",
+    "2026-11-23T19:19:17Z trevor: turn: gonman (story OK as the stand-in lore gate (D-023 amended); systems approved by John Pork)"
    ],
    "title": "{systems} Staked tables: checkpoint on sitting down, staged loss, reload seated, unlimited retries (sealed plan 5.3)",
    "details": "",
@@ -1672,11 +1673,10 @@
    "owner": "trevor",
    "review": "branch trevor/staked-tables",
    "turn": [
-    "trevor",
-    "BagelMeister"
+    "gonman"
    ],
-   "turn_at": "2026-11-23T16:05:08Z",
-   "turn_for": "Trevor: systems review passed at 74104066 and the refreshed preview is b1aa636e. BagelMeister retains the loss cutscene and story placement review."
+   "turn_at": "2026-11-23T19:19:17Z",
+   "turn_for": "story OK as the stand-in lore gate (D-023 amended); systems approved by John Pork"
   },
   {
    "id": 80,
