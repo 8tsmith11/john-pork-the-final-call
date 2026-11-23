@@ -2584,16 +2584,25 @@
   {
    "id": 120,
    "created_at": "2026-11-23T07:37:20Z",
-   "updated_at": "2026-11-23T07:46:45Z",
+   "updated_at": "2026-11-23T07:53:14Z",
    "history": [
     "2026-11-23T07:37:20Z trevor: added (for trevor)",
-    "2026-11-23T07:46:45Z trevor: claimed"
+    "2026-11-23T07:46:45Z trevor: claimed",
+    "2026-11-23T07:53:14Z trevor: pending review: Branch trevor/warden-windup at 74e77074 (against main; PR to open when a merger is back). Own pool per phase, braced laser (hits ~1/3, twin beam from phase 3, 0.9 s open after), sweep open 1.0 s, zombies only from phase 2 (a pair, then one at a time, cap 3), Fork capped. All tests pass; browser-checked. Note: the poise branch (#102) also touches boss damage; whichever lands second needs a refresh.",
+    "2026-11-23T07:53:14Z trevor: turn: BagelMeister, tts (BagelMeister: fight feel against Trevor's notes (wind-up version, beam kept, fewer adds). tts: exact-head test run.)"
    ],
    "title": "Warden back to his best: the wind-up version's feel, beam sweep kept but no free hits, adds only from phase two and fewer",
    "details": "Trevor, 2026-11-23: the Warden was best right after wind-ups were added (fee4e2c1, 2026-11-18). The beam sweep is good but leaves him too vulnerable (4.5 s rooted with no guard, then 1.8 s at double damage). Too many little enemies in the fight; originally they came in phase two, which he liked. Make it skill-based.",
    "source": "human:Trevor",
-   "status": "claimed",
-   "owner": "trevor"
+   "status": "review",
+   "owner": "trevor",
+   "review": "Branch trevor/warden-windup at 74e77074 (against main; PR to open when a merger is back). Own pool per phase, braced laser (hits ~1/3, twin beam from phase 3, 0.9 s open after), sweep open 1.0 s, zombies only from phase 2 (a pair, then one at a time, cap 3), Fork capped. All tests pass; browser-checked. Note: the poise branch (#102) also touches boss damage; whichever lands second needs a refresh.",
+   "turn": [
+    "BagelMeister",
+    "tts"
+   ],
+   "turn_at": "2026-11-23T07:53:14Z",
+   "turn_for": "BagelMeister: fight feel against Trevor's notes (wind-up version, beam kept, fewer adds). tts: exact-head test run."
   },
   {
    "id": 121,
