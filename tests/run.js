@@ -4734,6 +4734,42 @@ test('growth: a little bigger every level, bigger jumps at levels 3 and 6, cappe
   assert.ok(painted(2) >= 1 && painted(3) > painted(2) && painted(7) > painted(3), `${painted(2)} ${painted(3)} ${painted(7)}`);
 });
 
+test('dialogue tooling (hub #114): one-line alternatives, Set notes, who declined and whether it rang out, party.present, bark tables', async () => {
+  const D = await import('../src/engine/dialogue.js');
+  const call = await D.loadScene('the_call');
+  // "#### if not X / line / #### if X / line" then lines for everyone: only the two alternatives are gated
+  const vm = call.nodes.voicemail_1.lines, gated = vm.filter((l) => l.if);
+  assert.equal(gated.length, 2, `voicemail_1 should gate only its two alternatives, gates ${gated.length}`);
+  assert.ok(gated.some((l) => /^not flag act1\.call\.rangOut$/.test(l.if)) && gated.some((l) => /^flag act1\.call\.rangOut$/.test(l.if)));
+  assert.ok(vm.length - gated.length >= 4, 'the rest of the voicemail plays either way');
+  // a lone #### if keeps block rules: the morph lines stay together under their condition
+  const mi = call.nodes.answer_michael.lines.filter((l) => /morph/.test(l.if ?? ''));
+  assert.ok(mi.length >= 2, 'the morph block keeps its follow-up lines');
+  // Set notes become clean effects; the timeout sentence sets rangOut only on the timed choice
+  const dec = call.nodes.call_decline_1.effects;
+  assert.ok(dec.some((e) => e.arg === 'act1.call.declinedBy.1') && dec.some((e) => e.arg === 'act1.call.rangOut' && e.if === 'flag dlg.timedOut') && dec.some((e) => e.arg === 'act1.call.rangOut = off' && e.if === 'not flag dlg.timedOut'));
+  assert.ok(call.nodes.call_ring_2.effects.some((e) => e.arg === 'act1.call.attempt = 2'), 'the trigger note sets the ring number');
+  for (const sc of ['the_call', 'checkpoint', 'descent_and_boss', 'ending']) for (const n of Object.values((await D.loadScene(sc)).nodes)) for (const e of n.effects ?? []) assert.ok(!/[`]|\.\s+[A-Z]/.test(e.arg), `${sc}: an effect still carries prose`);
+  // runtime: who declined, whether it rang out, and both 'present' spellings
+  const flags = {}, sink = { flag: (k, v) => { flags[k] = v; }, item() {}, standing() {} };
+  const ctx = { speaker: 'manuel', present: ['manuel', 'trevor'], flags, inventory: [], morph: 0, standing: {} };
+  const conv = new D.Conversation(call, 'call_ring_2', ctx, sink);
+  for (let i = 0; i < 50 && !conv.choices.length; i++) conv.advance();   // read to the choice
+  const decline = conv.choices.findIndex((c) => /decline/i.test(c.text)), ring = conv.choices.findIndex((c) => c.timeout);
+  assert.ok(decline >= 0 && ring >= 0);
+  conv.choose(decline, undefined, { by: 'trevor' });
+  assert.equal(flags['act1.call.declinedBy.2'], 'trevor', 'declinedBy names the roommate who pressed');
+  assert.ok(!flags['act1.call.rangOut'] || flags['act1.call.rangOut'] === 'off', 'a pressed decline is not a ring-out');
+  const flags2 = {}, sink2 = { flag: (k, v) => { flags2[k] = v; }, item() {}, standing() {} };
+  const c2 = new D.Conversation(call, 'call_ring_2', { ...ctx, flags: flags2 }, sink2);
+  for (let i = 0; i < 50 && !c2.choices.length; i++) c2.advance();
+  c2.choose(c2.choices.findIndex((c) => c.timeout), undefined, { by: 'manuel' });
+  assert.equal(flags2['act1.call.rangOut'], true, 'letting it ring sets rangOut');
+  assert.equal(D.evalCond('party.present.trevor', ctx), true); assert.equal(D.evalCond('party.present.michael', ctx), false); assert.equal(D.evalCond('not party.present.michael', ctx), true);
+  // bark tables are kept, and the node-timed ones can be read
+  assert.ok((call.barks ?? []).some((b) => /^call_seize,\s*\d+\s*s in/.test(b.trigger) && b.who && b.text), 'the call keeps its bark table');
+});
+
 test('the toothpaste exchange: Michael asks, Manuel says "Hmmmm. Toothpaste?", Michael doubts it; Trevor is never in it', () => {
   assert.equal(toothMod.TOOTHPASTE_TALK.answer, 'Hmmmm. Toothpaste?');
   assert.ok(toothMod.TOOTHPASTE_TALK.doubt.includes('Sure, sure...'));

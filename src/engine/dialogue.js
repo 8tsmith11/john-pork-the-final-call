@@ -36,7 +36,7 @@ function evalAtom(a, ctx) {
   if ((m = a.match(/^not\s*\((.*)\)$/i))) return !evalAtom(m[1], ctx);
   if ((m = a.match(/^(?:not|!)\s*(?:flag\s+)?(.+)$/i))) return !evalAtom(`flag ${m[1]}`, ctx);
   if ((m = a.match(/^speaker\s*(!?=)\s*(\w+)/i))) return (ctx.speaker === m[2].toLowerCase()) === (m[1] === '=');
-  if ((m = a.match(/^present\s+(\w+)/i))) return ctx.present.includes(m[1].toLowerCase());
+  if ((m = a.match(/^(?:present\s+|party\.present\.)(\w+)/i))) return ctx.present.includes(m[1].toLowerCase());   // both spellings the scripts use
   if ((m = a.match(/^item\s+(\w+)/i))) return ctx.inventory.some((i) => i.includes(m[1]));
   if ((m = a.match(/^seed\s*=\s*([AB])/i))) return ctx.seed === m[1].toUpperCase();
   if ((m = a.match(/^morph\s*(>=|<|>|<=|==)\s*(\d+)/i))) return cmp(ctx.morph, m[1], +m[2]);
@@ -61,6 +61,14 @@ function cmp(a, op, b) {
   return op === '>=' ? a >= b : op === '<=' ? a <= b : op === '>' ? a > b : op === '<' ? a < b : a === b;
 }
 
+// A bare "set x" means true, except for the who-and-when flags the scripts name by convention:
+// `...By` / `...By.N` get the roommate who made the last choice (or the speaker), `...OnAttempt` gets the ring.
+function bareValue(name, ctx) {
+  if (/By(\.\d+)?$/.test(name)) return ctx.flags['dlg.by'] || ctx.speaker || true;
+  if (/OnAttempt$/.test(name)) return lookup('attempt', ctx.flags) ?? true;
+  return true;
+}
+
 /** Apply "set x; y +1; give item z; standing callers +1" style effects. Returns a list of changes. */
 export function applyEffects(effects, ctx, sink) {
   for (const eff of effects || []) {
@@ -72,7 +80,7 @@ export function applyEffects(effects, ctx, sink) {
       p = p.replace(/[*.]+$/g, '').replace(/\(.*?\)/g, '').replace(/\s+(true|on)$/i, '').trim();
       let m;
       if ((m = p.match(/^(?:set\s+)?([\w.\-]+)\s*\+\s*(\d+)/i))) sink.flag(m[1], (Number(ctx.flags[m[1]] ?? 0) + +m[2]));
-      else if ((m = p.match(/^set\s+([\w.\-]+)(?:\s*=\s*([\w\-]+))?/i))) sink.flag(m[1], m[2] ?? true);
+      else if ((m = p.match(/^set\s+([\w.\-]+)(?:\s*=\s*([\w\-]+))?/i))) sink.flag(m[1], m[2] ?? bareValue(m[1], ctx));
       // give item sniffer · give item.sniffer · give item item.sniffer 2 · give sniffer x3
       else if ((m = p.match(/^give\s+(?:item\s+)?(?:item\.)?([\w\-]+)(?:\s*[x×]?\s*(\d+))?/i))) sink.item(m[1], m[2] ? +m[2] : 1);
       else if ((m = p.match(/^standing\s+(\w+)\s*([+-]\d+)/i))) sink.standing(m[1], +m[2]);
@@ -136,9 +144,13 @@ export class Conversation {
     if (next && this.scene.nodes[next]) this._enter(next); else this.done = true;
   }
 
-  choose(index, speaker) {
+  /** meta: { by } the roommate choosing. Records who chose and whether it was the timed "nobody acts" option
+   *  (flags dlg.by and dlg.timedOut), so the next node's effects can say who declined and whether it rang out. */
+  choose(index, speaker, meta = {}) {
     const c = this.choices[index];
     if (!c) return;
+    this.sink.flag('dlg.timedOut', !!c.timeout);
+    if (meta.by || speaker || this.ctx.speaker) this.sink.flag('dlg.by', meta.by || speaker || this.ctx.speaker);
     if (speaker) this.pendingChoice = { go: c.go, line: { who: speaker, text: c.text.replace(/\*/g, ''), choice: true } };
     else this._enter(c.go);
   }
