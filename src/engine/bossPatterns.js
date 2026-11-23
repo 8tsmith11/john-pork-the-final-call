@@ -22,7 +22,10 @@ export const BOSS_PATTERNS = {
 // The Switchman's yard attack (Trevor via John Pork #584): a rail lane lights up across the yard, a rush
 // sweeps down it end to end, and the Switchman is left open afterwards. Red: dodge out of the lane.
 export const LANE = { half: 12, time: [0.7, 0.6, 0.5], dmg: 16, open: 1.6 };
-export const LASER = { len: 300, half: 7, turn: [0.7, 0.7, 0.9], time: [4.5, 4.5, 6], dmg: 12, tick: 0.35 };
+// braced: what a hit does while the laser fires (he's planted and shelled; Trevor: the laser left him "super vulnerable").
+// twin: from this phase a second beam fires out the back, so there's no safe spot behind him: keep circling. open: the
+// reeling window afterwards (double damage), shorter than a charge's.
+export const LASER = { len: 300, half: 7, turn: [0.7, 0.7, 0.9], time: [4.5, 4.5, 6], dmg: 12, tick: 0.35, braced: 0.35, twin: 3, open: 0.9 };
 export const SHOCK = { speed: 110, max: 220, band: 6, dmg: 12 };
 export const RAIN = { count: [6, 6, 9], fall: 1.0, r: 14, dmg: 14 };
 

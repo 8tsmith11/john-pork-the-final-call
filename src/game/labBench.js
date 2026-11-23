@@ -9,7 +9,9 @@ export class LabBench {
 
   open(labId = 'mux') {
     if (!this.host) { this.s.net.send({ t: 'lab', op: 'open', lab: labId }); return; }
-    if (!this.bench || this.bench.lab !== labId) this.bench = V.newBench(labId);
+    const book = !!this.s.save?.flags?.['lab.book'];   // the 245 book, wherever the party got it (story sets the flag)
+    if (!this.bench || this.bench.lab !== labId) this.bench = V.newBench(labId, { book });
+    else this.bench.book = book;
     this._send('open'); this._showLocal();
   }
 

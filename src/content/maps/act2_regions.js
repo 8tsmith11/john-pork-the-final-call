@@ -48,8 +48,9 @@ export const route1North = fromGrid({
     '@': { spawn: true },
   },
 })
-  // Act 3: the Beltway road, open once Act 2 is complete (src/content/maps/act3_regions.js).
-  .exit('beltway', 10, 12, { id: 'obj.r1n_to_beltway', selfDrawn: true, stepOn: true, pair: 'obj.bw_to_r1n', label: 'South-west to the Beltway',
+  // Act 3: the Beltway road, open once Act 2 is complete (src/content/maps/act3_regions.js). It leaves by the west edge,
+  // south of the farm road: the Beltway's way back is on its east edge, so you come out facing the way you went.
+  .exit('beltway', 0, 10, { id: 'obj.r1n_to_beltway', selfDrawn: true, stepOn: true, pair: 'obj.bw_to_r1n', label: 'South-west to the Beltway',
     requiresFlag: 'act2.complete', lockedText: 'A barricade, and a sign: INNER LOOP CLOSED. Not yet.', text: 'The ring road around the Enclave.' })
   .build();
 
@@ -189,7 +190,7 @@ export const meade = fromGrid({
       text: '"Everything at the Meade has a form." He holds out a clipboard and pulls it back before you can take it. "I\'m the form you fill out to skip the others. I cost more."' },
     '?': { prop: 'obj.aframe', id: 'obj.md_menu', label: 'Cafeteria menu (posted outside)',
       text: 'The cafeteria menu, on a sandwich board at the edge of the berm road, typed fresh every morning. MONDAY: Meatloaf (Redacted). TUESDAY: Mystery Meat (Classified).' },
-    // In the gutter under the fence, in the far corner from the gate: the badge is void and opens nothing.
+    // In the gutter under the fence, along from the gate: the badge is void and opens nothing.
     G: { prop: 'obj.room_sign', id: 'obj.md_badge', label: 'A badge on a lanyard', grant: 'item.keycard',
       text: 'A contractor badge face down in the gutter under the fence, its lanyard trodden flat. You turn it over: a photo of somebody you have never met, and a clearance stripe in steel grey. Somebody has clipped one corner off to void it.',
       doneText: 'The print of a lanyard in the grit, where the badge lay.' },
@@ -198,7 +199,9 @@ export const meade = fromGrid({
     X: { ...back('meade', 'Back west to Route 1'), tile: ',' },
   },
 }).enemy('boss.md_fence', 27, 3)
-  .exit('meade_inside', 10, 8, { id: 'obj.meade_to_meade_inside', selfDrawn: true, stepOn: true, requiresFlag: 'act2.complete', lockedText: 'The gate does not acknowledge you. Not yet.', pair: 'obj.meade_inside_out', label: 'The Meade gate', text: 'Black glass behind the berm. The gate is open.' })   // act3_more.js
+  // The gate is in the perimeter fence: you walk north through it and come in by the south wall of the Meade inside,
+  // whose layout stays as it is (act3_more.js). Outside the Fence's wake radius, so arriving doesn't start the fight.
+  .exit('meade_inside', 10, 1, { id: 'obj.meade_to_meade_inside', selfDrawn: true, stepOn: true, requiresFlag: 'act2.complete', lockedText: 'The gate does not acknowledge you. Not yet.', pair: 'obj.meade_inside_out', label: 'The Meade gate', text: 'Black glass behind the berm. The gate is open.' })   // act3_more.js
   
   .exit('md_lot', 4, 8, { id: 'obj.meade_to_md_lot', selfDrawn: true, stepOn: true, pair: 'obj.md_lot_out', label: 'The parking lot', text: 'Ten thousand spaces.' })   // stretch.js
   .build();
@@ -268,6 +271,6 @@ export const annapolis = fromGrid({
   .exit('ann_harbor', 31, 7, { id: 'obj.annapolis_to_ann_harbor', selfDrawn: true, stepOn: true, pair: 'obj.ann_harbor_out', label: 'Down the pier to the harbor', text: 'Sailboats moored to second-floor windows. The harbor.' })   // act2_more.js
   
   .exit('ann_statehouse', 6, 8, { id: 'obj.annapolis_to_ann_statehouse', art: 'obj.door', pair: 'obj.ann_statehouse_out', label: 'The statehouse', text: 'A wooden dome above the waterline.' })   // stretch.js
-  .exit('ann_bridge', 28, 8, { id: 'obj.annapolis_to_ann_bridge', selfDrawn: true, stepOn: true, pair: 'obj.ann_bridge_out', label: 'Out to the cut bridge', text: 'The bridge east, one span taken out.' })   // stretch.js
+  .exit('ann_bridge', 31, 5, { id: 'obj.annapolis_to_ann_bridge', selfDrawn: true, stepOn: true, pair: 'obj.ann_bridge_out', label: 'Out to the cut bridge', text: 'The bridge east, one span taken out.' })   // stretch.js
   .exit('ann_chapel', 3, 0, { id: 'obj.annapolis_to_ann_chapel', art: 'obj.door', pair: 'obj.ann_chapel_out', label: 'The academy chapel', text: 'Its doors are open. They always are.' })   // stretch.js
   .build();
