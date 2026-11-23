@@ -2935,6 +2935,12 @@ test('things that change once something has happened: object textAfter, scenery 
   sc._flagTexts(); assert.equal(o.text, 'It flickers.');
   sc.save.flags.fixed = true; sc._flagTexts(); assert.equal(o.text, 'It burns steady.');
   sc.save.flags = {}; sc._flagTexts(); assert.equal(o.text, 'It flickers.');
+  const afterOnly = { textAfter: { flag: 'fixed', text: 'Ready.' } };
+  sc._flagTextObjs.push(afterOnly);
+  sc.save.flags.fixed = true; sc._flagTexts();
+  assert.equal(afterOnly.text, 'Ready.');
+  sc.save.flags = {}; sc._flagTexts();
+  assert.equal(afterOnly.text, undefined, 'loading a different save restores an absent base description');
   // the builder
   const { lookInspect } = await import('../src/content/sideQuests.js');
   assert.deepEqual(lookInspect('q.z', { obj: 'obj.t', seen: 'A' }), { obj: 'obj.t', flag: 'q.z.seen', text: 'A' });

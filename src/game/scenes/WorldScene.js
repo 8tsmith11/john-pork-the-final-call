@@ -251,7 +251,10 @@ export class WorldScene extends Phaser.Scene {
   // Objects whose words change once something has happened: textAfter: { flag, text } (a sign that's been fixed
   // stops being described as flickering). Applied before anything reads o.text, on both host and guests.
   _flagTexts() {
-    for (const o of this._flagTextObjs ?? []) { o._textBase ??= o.text; o.text = this.save.flags[o.textAfter.flag] ? o.textAfter.text : o._textBase; }
+    for (const o of this._flagTextObjs ?? []) {
+      if (!Object.hasOwn(o, '_textBase')) o._textBase = o.text;
+      o.text = this.save.flags[o.textAfter.flag] ? o.textAfter.text : o._textBase;
+    }
   }
 
   _flag(k, v) {
