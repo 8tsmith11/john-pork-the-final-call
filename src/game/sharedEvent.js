@@ -10,6 +10,7 @@
 //   evResume asks for the active party-wide event from a newly ready returning client.
 // Works in solo too (it's just a normal dialogue then).
 import { VIEW } from '../view.js';
+import { loadScene } from '../engine/dialogue.js';
 
 class Mirror {
   constructor(main, onChoose = null) { this.spectator = true; this.main = main; this.done = false; this.line = null; this._choices = []; this.nodeId = null; this.decider = null; this.onChoose = onChoose; }
@@ -57,7 +58,7 @@ export class SharedEvents {
     const id = `${s.localId}:${Date.now().toString(36)}`;
     const me = s._lastRendered?.players?.find((p) => p.id === s.localId)
       ?? (presentation ? s.sim?.players.get(s.localId) : null);
-    const start = { t: 'evStart', id, main: s.character, scope, map: s.map?.id, x: me?.x ?? 0, y: me?.y ?? 0, label, presentation };
+    const start = { t: 'evStart', id, main: s.character, scene: sceneName, scope, map: s.map?.id, x: me?.x ?? 0, y: me?.y ?? 0, label, presentation };
     this.active = { id, last: '', scope, turn: 0, start };
     if (scope !== 'self') this._send(start);
     await s._startLocal(sceneName, nodeId, () => {
@@ -215,7 +216,9 @@ export class SharedEvents {
       if (!near) { this.offer = msg; s._toast(`${String(msg.main).toUpperCase()} is talking${msg.label ? ` to ${msg.label}` : ''}  ·  [T] watch`); return true; }
       this._watch(msg);
     } else if (msg.t === 'evState' && this.watching?.id === msg.id && s.dlg?.spectator) {
-      s.dlg.set(msg.state); s._lineAt = 0; s._drawDialogue();
+      const mirror = s.dlg, previousNode = mirror.nodeId;
+      mirror.set(msg.state); s._lineAt = 0; s._drawDialogue();
+      if (mirror.nodeId !== previousNode) this._mirrorNodeBarks(mirror);
     } else if (msg.t === 'evEnd') {
       if (this.latest) delete this.latest[msg.id];
       this.deferredStarts.delete(msg.id);
@@ -259,9 +262,17 @@ export class SharedEvents {
     s._showActOneArrival(x, y);
   }
 
+  _mirrorNodeBarks(mirror) {
+    const s = this.s, scene = this.watching?.scene, nodeId = mirror.nodeId;
+    if (!nodeId || typeof scene !== 'string' || !/^[a-z][a-z0-9_]*$/.test(scene)) return;
+    loadScene(scene).then((script) => {
+      if (s.dlg === mirror && mirror.nodeId === nodeId) s._nodeBarks?.(script, nodeId);
+    }).catch(() => {});
+  }
+
   _watch(msg) {
     const s = this.s;
-    this.watching = { id: msg.id, main: msg.main, scope: msg.scope };
+    this.watching = { id: msg.id, main: msg.main, scope: msg.scope, scene: msg.scene };
     s.dlg = new Mirror(msg.main, (i, turn) => this._send({ t: 'evChoose', id: msg.id, i, turn, who: s.character }));
     s.dlgDone = null; s.dlgVoiced = msg.presentation === 'act1-finale';
     if (this.latest?.[msg.id]) s.dlg.set(this.latest[msg.id]);

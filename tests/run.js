@@ -2236,7 +2236,12 @@ test('progression (Trevor: too easy, too low a ceiling): steeper curve, costed s
     const row1 = t.nodes.find((n) => n.row === 1), lowly = { level: 3, skills: Object.fromEntries((row1.req || []).map((r) => [r, 1])) };
     assert.ok(!SkillsP.skillOpen(who, lowly, row1), `${who}: row two waits for level ${Prog.TIER_LEVEL[1]}`);
   }
+  // Spread over the game (Trevor, 2026-11-23): at most two rows open by the end of Act 1 (about level 8), the
+  // capstone only in Act 3 (past the end of Act 2, about level 16).
+  assert.ok(Prog.TIER_LEVEL.filter((l) => l <= 8).length <= 2, `rows open in Act 1: ${Prog.TIER_LEVEL}`);
+  assert.ok(Prog.TIER_LEVEL[4] > 16, 'the capstone waits for Act 3');
 });
+
 
 test('no code plays Phaser sounds by key (none are loaded; a missing key throws mid-handler: the cam puzzle tiles stopped redrawing)', async () => {
   const fs = await import('node:fs'), path = await import('node:path');
@@ -3861,6 +3866,7 @@ test('ability scores: modifiers, level points, checks (D-017)', async () => {
   const r = check({ abilities: { cha: 14 } }, 'michael', 'cha', 15, { rand: () => 0.6 });   // d20 = 13, +2
   assert.equal(r.total, 15); assert.ok(r.success);
 });
+const { TIER_LEVEL: TIER_LEVEL_T } = await import('../src/content/progression.js');
 test('skill trees: valid links, capstone needs all three branches, mods sum, old skills refunded', () => {
   for (const [who, t] of Object.entries(SKILL_TREE)) {
     const ids = new Set(t.nodes.map((n) => n.id));
@@ -3870,8 +3876,9 @@ test('skill trees: valid links, capstone needs all three branches, mods sum, old
     const c = { skills: {}, skillPoints: 0, equipped: {} };
     assert.ok(!skillOpen(who, c, cap));
     for (const n of t.nodes) c.skills[n.id] = n.max;
-    c.level = 19; assert.ok(!skillOpen(who, c, cap), `${who}: the capstone waits for level 20`);
-    c.level = 20; assert.ok(skillOpen(who, c, cap));
+    const capAt = TIER_LEVEL_T[4];
+    c.level = capAt - 1; assert.ok(!skillOpen(who, c, cap), `${who}: the capstone waits for level ${capAt}`);
+    c.level = capAt; assert.ok(skillOpen(who, c, cap));
     const m = pmods(c, who); assert.ok(m.abilityPower > 0 && m.armor <= (who === 'manuel' ? 0.75 : 0.6));   // Manuel's edge raises his cap
   }
   const old = { skills: { 'skill.trevor.stack': 2, 'tr.amp': 1 }, skillPoints: 1 };
@@ -4867,6 +4874,7 @@ test('the gonman, stage two: R while morphed winds up (no moving), then globs sl
 
 const growthMod = await import('../src/content/growth.js');
 const wearMod = await import('../src/game/render/wearables.js');
+const itemsMod = await import('../src/content/items.js');
 test('growth: a little bigger every level, bigger jumps at levels 3 and 6, capped; the look changes level by level', () => {
   const s = (lv) => growthMod.growthScale(lv);
   for (let lv = 2; lv <= 12; lv++) assert.ok(s(lv) >= s(lv - 1), `level ${lv} shrinks`);
@@ -4881,6 +4889,99 @@ test('growth: a little bigger every level, bigger jumps at levels 3 and 6, cappe
   set(1, 8, B.skin[0]); set(1, 7, B.skin[0]);
   const painted = (lv) => { const out = new Uint8ClampedArray(w * h * 4); wearMod._PAINTERS.grow(src, out, w, h, 'down', B, wearMod.LOOKS[growthMod.growthLook(lv)], 'trevor'); let n = 0; for (let i = 3; i < out.length; i += 4) n += out[i] > 0; return n; };
   assert.ok(painted(2) >= 1 && painted(3) > painted(2) && painted(7) > painted(3), `${painted(2)} ${painted(3)} ${painted(7)}`);
+});
+
+test('dialogue tooling (hub #114): one-line alternatives, Set notes, who declined and whether it rang out, party.present, bark tables', async () => {
+  const D = await import('../src/engine/dialogue.js');
+  const call = await D.loadScene('the_call');
+  // "#### if not X / line / #### if X / line" then lines for everyone: only the two alternatives are gated
+  const vm = call.nodes.voicemail_1.lines, gated = vm.filter((l) => l.if);
+  assert.equal(gated.length, 2, `voicemail_1 should gate only its two alternatives, gates ${gated.length}`);
+  assert.ok(gated.some((l) => /^not flag act1\.call\.rangOut$/.test(l.if)) && gated.some((l) => /^flag act1\.call\.rangOut$/.test(l.if)));
+  assert.ok(vm.length - gated.length >= 4, 'the rest of the voicemail plays either way');
+  // a lone #### if keeps block rules: the morph lines stay together under their condition
+  const mi = call.nodes.answer_michael.lines.filter((l) => /morph/.test(l.if ?? ''));
+  assert.ok(mi.length >= 2, 'the morph block keeps its follow-up lines');
+  // Set notes become clean effects; the timeout sentence sets rangOut only on the timed choice
+  const dec = call.nodes.call_decline_1.effects;
+  assert.ok(dec.some((e) => e.arg === 'act1.call.declinedBy.1') && dec.some((e) => e.arg === 'act1.call.rangOut' && e.if === 'flag dlg.timedOut') && dec.some((e) => e.arg === 'act1.call.rangOut = off' && e.if === 'not flag dlg.timedOut'));
+  assert.ok(call.nodes.call_ring_2.effects.some((e) => e.arg === 'act1.call.attempt = 2'), 'the trigger note sets the ring number');
+  for (const sc of ['the_call', 'checkpoint', 'descent_and_boss', 'ending']) for (const n of Object.values((await D.loadScene(sc)).nodes)) for (const e of n.effects ?? []) assert.ok(!/[`]|\.\s+[A-Z]/.test(e.arg), `${sc}: an effect still carries prose`);
+  // runtime: who declined, whether it rang out, and both 'present' spellings
+  const flags = {}, sink = { flag: (k, v) => { flags[k] = v; }, item() {}, standing() {} };
+  const ctx = { speaker: 'manuel', present: ['manuel', 'trevor'], flags, inventory: [], morph: 0, standing: {} };
+  const conv = new D.Conversation(call, 'call_ring_2', ctx, sink);
+  for (let i = 0; i < 50 && !conv.choices.length; i++) conv.advance();   // read to the choice
+  const decline = conv.choices.findIndex((c) => /decline/i.test(c.text)), ring = conv.choices.findIndex((c) => c.timeout);
+  assert.ok(decline >= 0 && ring >= 0);
+  conv.choose(decline, undefined, { by: 'trevor' });
+  assert.equal(flags['act1.call.declinedBy.2'], 'trevor', 'declinedBy names the roommate who pressed');
+  assert.ok(!flags['act1.call.rangOut'] || flags['act1.call.rangOut'] === 'off', 'a pressed decline is not a ring-out');
+  const flags2 = {}, sink2 = { flag: (k, v) => { flags2[k] = v; }, item() {}, standing() {} };
+  const c2 = new D.Conversation(call, 'call_ring_2', { ...ctx, flags: flags2 }, sink2);
+  for (let i = 0; i < 50 && !c2.choices.length; i++) c2.advance();
+  c2.choose(c2.choices.findIndex((c) => c.timeout), undefined, { by: 'manuel' });
+  assert.equal(flags2['act1.call.rangOut'], true, 'letting it ring sets rangOut');
+  assert.equal(D.evalCond('party.present.trevor', ctx), true); assert.equal(D.evalCond('party.present.michael', ctx), false); assert.equal(D.evalCond('not party.present.michael', ctx), true);
+  // bark tables are kept, and the node-timed ones can be read
+  assert.ok((call.barks ?? []).some((b) => /^call_seize,\s*\d+\s*s in/.test(b.trigger) && b.who && b.text), 'the call keeps its bark table');
+
+  for (const timed of [false, true]) {
+    // A previous outcome must not select the reactions in the next entry.
+    const flags = { 'act1.call.rangOut': !timed };
+    const sink = { flag: (key, value) => { flags[key] = value; }, item() {}, standing() {} };
+    const first = new D.Conversation(call, null, { ...ctx, flags }, sink);
+    while (!first.done && !first.choices.length) first.advance();
+    const choice = first.choices.findIndex((c) => c.go === 'call_decline_1' && Boolean(c.timeout) === timed);
+    assert.ok(choice >= 0);
+    first.choose(choice, undefined, { by: 'manuel' });
+    assert.equal(first.nodeId, 'call_decline_1');
+    assert.ok(first.lines.some((line) => !line.if), 'keep the lines common to both outcomes');
+    assert.equal(first.lines.some((line) => line.if?.startsWith('flag act1.call.rangOut')), timed);
+    assert.equal(first.lines.some((line) => line.if?.startsWith('speaker=')), !timed, 'only the applicable reaction plays');
+  }
+});
+
+test('worn gear is visible (Trevor, 2026-11-23): every wearable item has a look, and each look paints pixels on a roommate in every facing it shows', () => {
+  const { ITEMS: IT, WORN_SLOTS: WS } = itemsMod;
+  const worn = Object.entries(IT).filter(([, v]) => WS.includes(v.slot)).map(([k]) => k);
+  const missing = worn.filter((id) => !wearMod.LOOKS[id] || !wearMod._PAINTERS[wearMod.LOOKS[id].style]);
+  assert.deepEqual(missing, [], 'worn items with no visible look');
+  // Trevor's real idle frames (assets/sprites/trevor.png): A outline, B/C hair, D/E skin, F/G shirt, H trousers, I boots
+  const B = wearMod._BODY.trevor, PAL = { A: '#0d0b1a', B: B.hair[0], C: B.hair[1], D: B.skin[0], E: B.skin[1], F: B.shirt[0], G: B.shirt[1], H: B.pants[0], I: B.boots[0] };
+  const FR = {
+    down: ['................', '................', '.....AAAAAA.....', '....ABBBBBBA....', '...ABBBBBBBBA...', '...ABBBCBBBBA...', '...ABBDDDDBBA...', '...ABDADDADBA...', '...ABDDDDDDBA...', '...ACEDDDDECA...', '....AAAEEAAA....', '...AAFFFFFFAA...', '..AFFFFFFFFFFA..', '..ADAFFFFFFADA..', '..ADAFFFFFFADA..', '..ADAGFFFFGADA..', '...AAGFFFFGAA...', '....AHHHHHHA....', '....AHHHHHHA....', '....AHHAAHHA....', '....AHHAAHHA....', '....AHHAAHHA....', '....AIIAAIIA....', '.....AA..AA.....'],
+    up: ['................', '................', '.....AAAAAA.....', '....ABBBBBBA....', '...ABBBBBBBBA...', '...ABBBCBBBBA...', '...ABBBBBBBBA...', '...ABBCBBBCBA...', '...ABBBBBBBBA...', '...ACBBBBBBCA...', '....AAAEEAAA....', '...AAFFFFFFAA...', '..AFFFFFFFFFFA..', '..ADAFFFFFFADA..', '..ADAFGFFGFADA..', '..ADAGFFFFGADA..', '...AAGFFFFGAA...', '....AHHHHHHA....', '....AHHHHHHA....', '....AHHAAHHA....', '....AHHAAHHA....', '....AHHAAHHA....', '....AIIAAIIA....', '.....AA..AA.....'],
+    right: ['................', '................', '.....AAAAAA.....', '....ABBBBBBA....', '...ABBBBBBBBA...', '...ABBBCBBBBA...', '...ABBBBDDDDA...', '...ABBBDDDADA...', '...ABBBDDDDDA...', '...ACBBEDDDA....', '....AAAAEEA.....', '.....AFFFFA.....', '....AFFFFFFA....', '....AFFDDFFA....', '....AFFDDFFA....', '....AGFDDFGA....', '.....AGFFGA.....', '.....AHHHHA.....', '.....AHHHHA.....', '.....AHHHHA.....', '.....AHHHHA.....', '.....AHHHHA.....', '.....AIIIIIA....', '.....AAAAAAA....'],
+  };
+  const hexc = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const frame = (rows) => { const w = 16, h = 24, d = new Uint8ClampedArray(w * h * 4); rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '.') return; const i = (y * w + x) * 4; [d[i], d[i + 1], d[i + 2]] = hexc(PAL[ch]); d[i + 3] = 255; })); return d; };
+  const frontOnly = new Set(['charm', 'pacifier']);   // things on the chest or the mouth don't show from behind
+  for (const id of worn) {
+    const look = wearMod.LOOKS[id];
+    for (const facing of ['down', 'up', 'right']) {
+      if (facing === 'up' && frontOnly.has(look.style)) continue;
+      const out = new Uint8ClampedArray(16 * 24 * 4);
+      wearMod._PAINTERS[look.style](frame(FR[facing]), out, 16, 24, facing, B, look, 'trevor');
+      let n = 0; for (let i = 3; i < out.length; i += 4) n += out[i] > 0;
+      assert.ok(n >= 2, `${id} paints nothing (${n} px) facing ${facing}`);
+    }
+  }
+  // drawn in a sensible order: trousers under the coat, the helmet over everything on the body
+  const order = wearMod.looksFor({ level: 1, equipped: { helmet: 'item.hardhat', leggings: 'item.work_pants', chestplate: 'item.mesh_vest', parka: 'item.rain_parka', socks: 'item.wool_socks' } });
+  assert.ok(order.indexOf('item.work_pants') < order.indexOf('item.wool_socks') && order.indexOf('item.rain_parka') < order.indexOf('item.mesh_vest') && order.at(-1) === 'item.hardhat', order.join(' '));
+});
+
+test('the research is in reach (Trevor, 2026-11-23): CHECKLISTS.md is linked from CLAUDE.md, HUB.md and every brief, and the writing lint runs', async () => {
+  const fs = await import('fs'), { spawnSync } = await import('child_process');
+  const read = (p) => fs.readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
+  const list = read('docs/org/CHECKLISTS.md');
+  for (const sec of ['## A.', '## B.', '## C.', '## D.', '## E.', '## F.']) assert.ok(list.includes(sec), `CHECKLISTS.md lost ${sec}`);
+  for (const f of ['research/combat.md', 'research/dialogue-craft.md', 'research/story-craft.md', 'research/story-structure.md']) assert.ok(list.includes(f), `CHECKLISTS.md no longer points at ${f}`);
+  assert.ok(read('CLAUDE.md').includes('docs/org/CHECKLISTS.md') && read('docs/org/HUB.md').includes('CHECKLISTS.md'));
+  for (const b of fs.readdirSync(new URL('../docs/org/briefs/', import.meta.url))) assert.ok(read(`docs/org/briefs/${b}`).includes('CHECKLISTS.md'), `brief ${b} doesn't link the checklists`);
+  const r = spawnSync('python3', [new URL('../tools/writing/lint.py', import.meta.url).pathname], { encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stderr); assert.match(r.stdout, /total flags: \d+/);
 });
 
 test('the balloon is drawn where the story says (Trevor, 2026-11-23): on the platform until the ending lets it go', async () => {
@@ -5344,6 +5445,53 @@ test('no silent later-act maps (hub #115): every Act 2 and Act 3 map has an ambi
   assert.equal(A.ambienceKind('refuge', { outdoor: true, act: 2 }), 'forest'); assert.equal(A.ambienceKind('ann_harbor', { outdoor: true, act: 2 }), 'harbor');
   assert.equal(A.ambienceKind('gb_dishes', { outdoor: false, act: 2 }), 'building');
 });
+
+test('morphs come from a story moment, not a level-up (Trevor, 2026-11-23)', async () => {
+  const fs = await import('fs');
+  const src = fs.readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(!/lv >= \d+ && c\.morph && c\.morph\.stage < 1/.test(src), 'stage one must not unlock on a level');
+  assert.ok(/_tickMorphUnlock\(\)/.test(src) && typeof Prog.MORPH_STAGE1_FLAG === 'string' && Prog.MORPH_STAGE1_FLAG.length > 0);
+  // the unlock itself, against a fake scene: nothing before the flag, everyone after it, once
+  const said = [], scene = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'solo', save: { flags: {}, party: { trevor: { morph: { stage: 0 }, level: 9 }, manuel: { morph: { stage: 0 }, level: 1 } } }, _announce: (t) => said.push(t) });
+  scene._tickMorphUnlock(); assert.equal(scene.save.party.trevor.morph.stage, 0, 'a high level alone unlocks nothing');
+  scene.save.flags[Prog.MORPH_STAGE1_FLAG] = true; scene._tickMorphUnlock(); scene._tickMorphUnlock();
+  assert.ok(scene.save.party.trevor.morph.stage === 1 && scene.save.party.manuel.morph.stage === 1 && said.length === 2);
+});
+test('Manuel keeps level six as the stage two requirement after the story unlock', () => {
+  const sim = new Sim(MAPS_FOR_TEST.room631);
+  sim.addPlayer('manuel', 'manuel');
+  const pawn = sim.players.get('manuel');
+  const save = newSave({ seed: 'gonman-story-gate', rolls: {}, gameVersion: 'test' });
+  const manuel = save.party.manuel;
+  const net = new DialogueHostNet();
+  net.conns.set('manuel', { send() {} });
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', sim, save, net, _announce() {}, time: { addEvent() {} }, events: { once() {} },
+  });
+  scene._wireNet();
+  net.emit('msg', 'manuel', { t: 'flag', key: Prog.MORPH_STAGE1_FLAG, value: true });
+  assert.equal(save.flags[Prog.MORPH_STAGE1_FLAG], undefined, 'only the host sets the morph story flag');
+
+  manuel.level = 6;
+  scene._levelsReached('manuel', manuel, [6]);
+  scene._tickMorphUnlock();
+  scene._morph('manuel');
+  assert.equal(manuel.morph.stage, 0);
+  assert.ok(!pawn.morphed, 'level six alone cannot open a transformation');
+
+  save.flags[Prog.MORPH_STAGE1_FLAG] = true;
+  scene._tickMorphUnlock();
+  assert.equal(manuel.morph.stage, 2, 'a player who already reached level six gets both available stages');
+  scene._morph('manuel');
+  assert.ok(pawn.morphed);
+  assert.equal(pawn.morphStage, 2);
+
+  delete save.flags[Prog.MORPH_STAGE1_FLAG];
+  manuel.morph.stage = 1;
+  scene._levelsReached('manuel', manuel, [6]);
+  assert.equal(manuel.morph.stage, 2, 'legacy stage-one saves retain the level-six progression');
+});
+
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

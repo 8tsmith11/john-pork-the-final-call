@@ -77,7 +77,7 @@ import { Approach } from '../approach.js';
 import { Pacifier } from '../pacifier.js';
 import { GuitarStands } from '../guitarStands.js';
 import { ABILITY_KEYS, BASE_SCORES, MAX_SCORE, raiseCost } from '../../content/abilities.js';
-import { addXp, xpToNext, xpScale } from '../../content/progression.js';
+import { addXp, xpToNext, xpScale, MORPH_STAGE1_FLAG } from '../../content/progression.js';
 import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
 import { puzzleFor } from '../../content/puzzles.js';
 import { use as usePuzzle } from '../../content/puzzleKit.js';
@@ -112,7 +112,7 @@ const CONTROLS_TEXT = 'WASD move · mouse aim · click: use held item\nSpace / S
 const ARRIVE_LOCK = 700;
 const STORY_SCENES = new Set(['cold_open', 'the_call', 'descent_and_boss', 'ending', 'first_death', 'checkpoint', 'lead_b_halvard']);
 const ACT_ONE_BALLOON_RELEASED = 'act1.ending.balloonReleased';
-const ACT_ONE_HOST_FLAGS = new Set(['act1.boss.defeated', 'act1.outbreak.contained', 'act1.complete', ACT_ONE_BALLOON_RELEASED]);
+const ACT_ONE_HOST_FLAGS = new Set(['act1.boss.defeated', 'act1.outbreak.contained', 'act1.complete', ACT_ONE_BALLOON_RELEASED, MORPH_STAGE1_FLAG]);
 
 // Dialogue scenes that happen on the phone, and the title each call gets in the phone tab's transcripts.
 const PHONE_CALLS = { the_call: { start: 'John Pork · the call', call_ring_2: 'John Pork · second call', call_ring_3: 'John Pork · third call', butt_dial: 'John Pork · pocket dial' } };
@@ -321,6 +321,7 @@ export class WorldScene extends Phaser.Scene {
     this._transcript = PHONE_CALLS[sceneName] ? { title: PHONE_CALLS[sceneName][nodeId ?? 'start'] ?? PHONE_CALLS[sceneName].start, at: new Date().toISOString(), lines: [] } : null;   // phone tab transcripts (Trevor)
     this.dlgVoiced = sceneName === 'ending';   // act-ending cutscene: spoken voices
     this.dlgDone = onDone;
+    this._nodeBarks(scene, this.dlg.nodeId);
     this._drawDialogue();
   }
 
@@ -393,7 +394,7 @@ export class WorldScene extends Phaser.Scene {
       noise.fillStyle(0x000000, 0.25 + 0.2 * Math.sin(this.time.now / 40)).fillRect(0, 0, W, H);
       hudBits.forEach((h) => h.setText(garble(h.text || 'XXXXXXXX')));
       root.x = Math.random() < 0.2 ? (Math.random() * 6 - 3) : 0;
-      if (k > 0.7) ans.setText('◉ ANSWERED. You did not press anything.').setColor('#f2a6b8');
+      if (k > 0.7) ans.setText('◉ CONNECTING. You did not press anything.').setColor('#f2a6b8');   // the answer/decline choice comes next
     } });
     this.time.delayedCall(3200, () => {
       tick.remove();
@@ -469,7 +470,7 @@ export class WorldScene extends Phaser.Scene {
     if (!c || this.dlg.spectator) return;
     const showLine = this.shared?.active && this.shared.active.scope !== 'self';
     if (!showLine) this._logChoice(who, c);
-    this.dlg.choose(i, showLine ? who : undefined);
+    this.dlg.choose(i, showLine ? who : undefined, { by: who });
     this.shared?._pump();
     this._drawDialogue();
   }
@@ -477,6 +478,7 @@ export class WorldScene extends Phaser.Scene {
   _drawDialogue() {
     if (this.dlg?.node && this._dlgModeNode !== this.dlg.nodeId) {   // per-node mode (story/free) as the scene moves on (gonman, #528)
       this._dlgModeNode = this.dlg.nodeId;
+      this._nodeBarks(this.dlg.scene, this.dlg.nodeId);
       if (this.dlg.node.mode) this.dlgFree = this.dlg.node.mode === 'free';
     }
     const d = this.dlg, on = !!d && !d.done;
@@ -698,6 +700,7 @@ export class WorldScene extends Phaser.Scene {
           if (!here()) { if (this._beatPending === 'act1.beat.call') this._beatPending = null; return; }   // left anyway: still owed
           this._beatPending = null;
           this.save.flags['act1.beat.call'] = true;
+          this.save.flags['act1.call.attempt'] ??= 1;   // the first ring (rings 2 and 3 set their own number)
           this.startDialogue('the_call');
         });
       });
@@ -1540,6 +1543,26 @@ export class WorldScene extends Phaser.Scene {
     p.morphStage = stage;    // the sim reads the stage for stage-two moves (the gonman's R)
   }
 
+  // Morph stage one opens on a story moment (progression.js MORPH_STAGE1_FLAG), never on a level-up. Host and solo
+  // only; the party sync carries it to guests. Saves that already have it keep it.
+  _tickMorphUnlock() {
+    if (this.mode === 'client' || !this.save?.flags?.[MORPH_STAGE1_FLAG]) return;
+    for (const [who, c] of Object.entries(this.save.party)) {
+      if (!c.morph || c.morph.stage >= 1) continue;
+      c.morph.stage = 1; this._announce(MORPH_UNLOCK[who]); this._partyDirty = true;
+      this._unlockGonman(who, c);
+    }
+  }
+
+  _unlockGonman(who, c) {
+    if (who !== 'manuel' || c.morph?.stage !== 1 || !(c.level >= 6)) return;
+    c.morph.stage = 2;
+    const p = [...(this.sim?.players.values() ?? [])].find((q) => q.character === who);
+    if (p) p.morphStage = 2;
+    this._announce(GONMAN_UNLOCK);
+    this._partyDirty = true;
+  }
+
   // John Pork "shows up here and there" (brief): a screen you walk past glitches to his face for a
   // few frames. Rare (a check every ~1.5 s at 5%, at most once a minute), never in dialogue or combat.
   _tickGlimpse() {
@@ -1889,11 +1912,8 @@ export class WorldScene extends Phaser.Scene {
   _levelsReached(who, c, levels) {
     for (const lv of levels) {
       this._announce(`${who} reached level ${lv}. (+1 skill point, +${lv % 5 === 0 ? 2 : 1} ability point${lv % 5 === 0 ? 's' : ''})`);
-      if (lv >= 3 && c.morph && c.morph.stage < 1) { c.morph.stage = 1; this._announce(MORPH_UNLOCK[who]); }
-      if (who === 'manuel' && lv >= 6 && c.morph && c.morph.stage < 2) {   // Manuel only: stage two
-        c.morph.stage = 2; const p = [...(this.sim?.players.values() ?? [])].find((q) => q.character === who); if (p) p.morphStage = 2; this._announce(GONMAN_UNLOCK);
-      }
     }
+    if (levels.length) this._unlockGonman(who, c);
   }
 
   // Side-view cutscene (CinematicScene) over a paused world; resumes when it ends or is skipped.
@@ -2487,6 +2507,21 @@ export class WorldScene extends Phaser.Scene {
     this.toastText.setText(text).setAlpha(1);
     this.tweens.killTweensOf(this.toastText);
     this.tweens.add({ targets: this.toastText, alpha: 0, delay: 1400, duration: 500 });
+  }
+
+  // The weapon in hand when you're not swinging it (Trevor, 2026-11-23: equipped things visible on the player): hanging
+  // from the hand at your side, head down. The swing draws its own copy (the 'swing' event), so this one steps aside.
+  _heldAtRest(s, p) {
+    const id = p.weapon, ok = id && !p.sw && !p.dn && !p.ri && !p.pl && !p.zz && s.visible && this.textures.get('icons')?.has?.(id);
+    if (!ok) { s.held?.setVisible(false); return; }
+    if (!s.held || !s.held.active) { s.held = this.add.image(0, 0, 'icons', id); s.once('destroy', () => s.held?.destroy()); }
+    if (s.held.frame.name !== id) s.held.setFrame(id);
+    const name = s.frame?.name ?? '', facing = /_up_/.test(name) ? 'up' : /_right_/.test(name) ? 'right' : 'down';
+    const dir = facing === 'right' && s.flipX ? -1 : 1, sx = Math.abs(s.scaleX), sy = s.scaleY;
+    // [x offset from the feet, y offset, rotation]: icons are drawn handle bottom-left, head top-right.
+    const [dx, dy, rot] = facing === 'down' ? [-5, -8, 2.75] : facing === 'up' ? [5, -8, 1.95] : [2, -8, 2.0];
+    s.held.setPosition(s.x + dx * dir * sx, s.y + dy * sy).setRotation(dir < 0 ? -rot : rot).setFlipX(dir < 0)
+      .setOrigin(dir < 0 ? 0.85 : 0.15, 0.85).setScale(0.7 * sx, 0.7 * sy).setDepth(s.depth + (facing === 'up' ? -0.02 : 0.02)).setAlpha(s.alpha).setVisible(true);
   }
 
   async _save(message = '✓ saved') {
@@ -3125,6 +3160,7 @@ export class WorldScene extends Phaser.Scene {
       }
       const worn = this.save?.party?.[p.c];
       syncWear(this, s, p.c, wt && p.gs !== undefined ? { ...worn, _belly: wt.belly } : worn);   // parkas and other worn models (render/wearables.js)
+      this._heldAtRest(s, p);
     }
     for (const [id, s] of this.sprites) if (!seen.has(id)) { s.destroy(); this.sprites.delete(id); }
 
@@ -3214,6 +3250,7 @@ export class WorldScene extends Phaser.Scene {
     this._tickFishing();
     this._tickQuests();
     this._tickGlimpse();
+    this._tickMorphUnlock();
     this._tickBalloon();
     this._tickScan();
     if (this.fishing) { const k = this.input2.keys; if (k.w.isDown || k.a.isDown || k.s.isDown || k.d.isDown || k.up.isDown || k.down.isDown || k.left.isDown || k.right.isDown) this._endFishing(false); }
@@ -3511,11 +3548,28 @@ export class WorldScene extends Phaser.Scene {
     sfx('kill');
   }
 
-  _bark(playerId, text) {
+  // A scene's bark table (tools/dialogue/convert.py): rows whose trigger is "<node>, Ns in" play N seconds after the
+  // node starts, over the dialogue, from that roommate if they're here ("nearest the camera" means your own).
+  // Other trigger kinds are kept in the data for the systems that will play them.
+  _nodeBarks(scene, nodeId) {
+    const d = this.dlg;
+    for (const b of scene?.barks ?? []) {
+      const m = b.trigger.match(/^\s*([\w.]+)\s*,\s*(\d+)\s*s in\b/i);
+      if (!m || m[1] !== nodeId) continue;
+      const who = /nearest the camera|any roommate/i.test(b.who) ? this.character : b.who.trim().toLowerCase();
+      this.time.delayedCall(+m[2] * 1000, () => {
+        if (this.dlg !== d || d?.nodeId !== nodeId) return;
+        const p = this._lastRendered?.players?.find((q) => q.c === who);
+        if (p) this._bark(p.id, b.text, { over: true });
+      });
+    }
+  }
+
+  _bark(playerId, text, { over = false } = {}) {
     text = esLine(text);                                            // Spanish when chosen (src/content/lines_es.js)
     const s = this.sprites.get(playerId);
-    if (!s || !text || this.dlg || this.menu || this.stage?.active || this.time.now < (this._barkQuietUntil ?? 0)) return;
-    this._barkQuietUntil = this.time.now + 9000;                    // one voice at a time, and room between them
+    if (!s || !text || (this.dlg && !over) || this.menu || this.stage?.active || this.time.now < (this._barkQuietUntil ?? 0)) return;
+    this._barkQuietUntil = this.time.now + (over ? 2500 : 9000);    // one voice at a time, and room between them
     const t = this.add.text(s.x, s.y - 30, text, { ...FONT, fontSize: '6px', color: '#e8e8f0', backgroundColor: '#0b0d16cc', padding: { x: 2, y: 1 } }).setOrigin(0.5, 1).setDepth(7000);
     const follow = this.time.addEvent({ delay: 30, loop: true, callback: () => t.active && s.active && t.setPosition(s.x, s.y - 30) });
     this.tweens.add({ targets: t, alpha: 0, delay: 2600, duration: 500, onComplete: () => { follow.remove(); t.destroy(); } });

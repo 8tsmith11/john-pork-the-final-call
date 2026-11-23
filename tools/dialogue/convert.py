@@ -13,6 +13,11 @@ Parsed (best effort; the drafts use slightly different conventions):
                                         cutscene engine plays src/content/stage/<scene>.js cues[that key]
                                         while the line is on screen (Michael, D-022)
   *set x[=v]* / *give item [n]* / *standing faction +n*   effects
+  *Set `a`, `b = 2`. If the timeout fired ..., set `c`.*    each backticked flag; a "timeout" sentence (or
+                                         "`c` true or false") sets it only when the choice was the timed one
+  *Trigger: ... Set `x = 2`.*            the Set sentence inside a trigger note applies on entering the node
+  #### if A / its line / #### if B / its line  (each line right under its if, no blank line): a run of one-line
+                                         alternatives; the lines after the run play for everyone
   Next: -> id   (anywhere on a line)    jump
   Choices:  - [cond] "text" -> id         choices
 Everything else (stage directions, notes) is skipped.
@@ -47,6 +52,40 @@ SCOPE_NODE = re.compile(r"^\*(Scope|Decider):\s*([a-z ]+?)\.?\*$", re.I)
 MODE_FILE = re.compile(r"^Mode:\s*(story|free)\s*$", re.I)        # whole scene: the world waits (story) or keeps going (free)
 MODE_NODE = re.compile(r"^\*Mode:\s*(story|free)\.?\*$", re.I)     # one node, overrides the scene (Trevor #528)
 
+TICK = re.compile(r"`([^`]+)`")
+
+
+def set_effects(body, cond):
+    """Effects from a writer's Set note. Plain sentences set their backticked flags; a sentence about the
+    timeout (or "`x` true or false") sets x on a timed-out choice and clears it on a pressed one
+    (the dialogue runtime records which: flag dlg.timedOut)."""
+    out = []
+    both = lambda x, y: " && ".join(c for c in (x, y) if c) or None
+    for sent in re.split(r"(?<=[.!?])\s+", body.strip().strip("*")):
+        flags = TICK.findall(sent)
+        if not flags:
+            continue
+        pairs = re.findall(r"`([^`]+)`\s+true or false", sent, re.I)   # just the flag that's "true or false"
+        timed = re.search(r"\btimeout\b", sent, re.I)
+        if pairs and not timed:
+            for f in flags:
+                name = f.split("=")[0].strip()
+                if f in pairs:
+                    out.append({"op": "set", "arg": name, "if": both(cond, "flag dlg.timedOut")})
+                    out.append({"op": "set", "arg": f"{name} = off", "if": both(cond, "not flag dlg.timedOut")})
+                else:
+                    out.append({"op": "set", "arg": f.strip(), "if": cond})
+        elif timed:
+            for f in flags:
+                name = f.split("=")[0].strip()
+                out.append({"op": "set", "arg": name, "if": both(cond, "flag dlg.timedOut")})
+                out.append({"op": "set", "arg": f"{name} = off", "if": both(cond, "not flag dlg.timedOut")})
+        elif re.match(r"^\s*(?:\w+:.*?)?\bsets?\b", sent, re.I) or re.match(r"^\s*sets?\b", sent, re.I):
+            for f in flags:
+                out.append({"op": "set", "arg": f.strip(), "if": cond})
+    return out
+
+
 def parse(text):
     nodes, order, node, cond, in_choices = {}, [], None, None, False
     node_id, cue_n, cue_pending = None, 0, None   # > do: cues, numbered per node
@@ -77,8 +116,17 @@ def parse(text):
             glued[-1] = glued[-1].rstrip() + " " + t; continue
         glued.append(raw)
     joined = glued
-    for raw in joined:
+    tight = None     # a one-line #### if (its line right under it): the state to restore after that one line
+    one_run = None   # the state before a run of one-line alternatives
+    for idx, raw in enumerate(joined):
         line = raw.strip()
+        if tight is not None and tight["done"] and line and not line.startswith(">"):
+            cond, outer, chain, inner_if = tight["cond"], tight["outer"], list(tight["chain"]), tight["inner_if"]; tight = None
+            marker = BLOCK.match(line)
+            if not marker:
+                one_run = None   # the run of alternatives is over: lines for everyone
+            elif one_run is not None and len(marker.group(1)) == 4 and marker.group(2).lower() in ("else", "otherwise"):
+                chain.extend(one_run["branches"])
         fs = SCOPE_FILE.match(line)
         if fs and node is None: meta['scope'] = fs.group(1).lower(); continue
         fm = MODE_FILE.match(line)
@@ -96,6 +144,7 @@ def parse(text):
             nodes[m.group(1)] = node; order.append(m.group(1)); cond = None; in_choices = False
             node_id, cue_n, cue_pending = m.group(1), 0, None
             outer, chain, inner_if = None, [], None
+            tight = one_run = None
             continue
         if node is None or not line:
             continue
@@ -126,6 +175,28 @@ def parse(text):
         b = BLOCK.match(line)
         if b:
             nested, kind, rest = len(b.group(1)) == 5, b.group(2).lower(), b.group(3).strip()
+            nxt = joined[idx + 1].strip() if idx + 1 < len(joined) else ""
+            if kind != "if" or nested:
+                one_run = None
+            elif nxt and LINE.match(nxt):
+                # A run of one-line alternatives: "#### if A" / its line / "#### if B" / its line, then lines for
+                # everyone. Each sibling governs only the line right under it when the next thing after that line
+                # is another sibling, or when it follows one-liner siblings. A lone "#### if" keeps block rules.
+                after = next((joined[j].strip() for j in range(idx + 2, len(joined)) if joined[j].strip() and not joined[j].strip().startswith(">")), "")
+                sib = BLOCK.match(after)
+                key = lambda c: re.sub(r"^(?:not\s+|!)?(?:flag\s+)?", "", (c or "").strip(), flags=re.I).split()[0].split("=")[0].split(">")[0].split("<")[0] if c and c.strip() else ""
+                same = sib and len(sib.group(1)) == 4 and sib.group(2).lower() in ("else", "otherwise") or (sib and len(sib.group(1)) == 4 and sib.group(2).lower() == "if" and key(sib.group(3)) == key(rest))
+                if one_run is not None and key(rest) != one_run["key"]: one_run = None   # a new question: not part of the run
+                if same or one_run is not None:
+                    if one_run is None:
+                        one_run = {"cond": cond, "outer": outer, "chain": list(chain), "inner_if": inner_if, "key": key(rest), "branches": []}
+                    tight = {**one_run, "done": False}
+                    one_run["branches"].append(rest or None)
+                    cond = " && ".join(c for c in (one_run["outer"], rest or None) if c) or None
+                    in_choices = False
+                    continue
+            else:
+                one_run = None
             both = lambda x, y: " && ".join(c for c in (x, y) if c) or None
             if nested:
                 # ##### if / else / end inside a #### block: combined with the enclosing condition.
@@ -135,7 +206,16 @@ def parse(text):
             else:
                 inner_if = None
                 # "else" closes the whole run of sibling ifs before it (if A / if B / else = neither).
-                if kind == "if": outer = rest or None; chain.append(outer)
+                if kind == "if":
+                    replaces = re.search(r"\s*\(replaces the block above\)$", rest, re.I)
+                    if replaces:
+                        rest = rest[:replaces.start()]
+                        for previous in reversed(node["lines"]):
+                            if not previous["if"] or previous["if"] not in chain:
+                                break
+                            previous["if"] = both(previous["if"], f"not ({rest})")
+                    outer = rest or None
+                    chain.append(outer)
                 elif kind in ("else", "otherwise"): outer = " && ".join(f"not ({c})" for c in chain if c) or None; chain = []
                 else: outer = None; chain = []
                 cond = outer
@@ -184,7 +264,11 @@ def parse(text):
         # apply the backticked flags, skip the prose.
         ms = re.match(r"^\*\s*sets?\s+((?:`[^`]+`(?:,\s*(?:and\s+)?)?)+)", line, re.I)
         if ms and not line.rstrip().endswith("*"):
-            node["effects"].append({"op": "set", "arg": ms.group(1).strip(), "if": cond}); continue
+            node["effects"].extend(set_effects(line, cond)); continue
+        if re.match(r"^\*\s*sets?\s+`", line, re.I):
+            node["effects"].extend(set_effects(line, cond)); continue
+        if re.match(r"^\*\s*Trigger:", line) and re.search(r"\bSet\s+`", line):
+            node["effects"].extend(set_effects(re.sub(r"^.*?(?=\bSet\s+`)", "", line.strip("*")), cond)); continue
         e = EFFECT.match(line)
         if e:
             node["effects"].append({"op": e.group(1).lower().rstrip("s") if e.group(1).lower() != "standing" else "standing", "arg": e.group(2).strip().strip("`"), "if": cond}); continue
@@ -192,6 +276,8 @@ def parse(text):
         if m:
             node["lines"].append({"who": " ".join(w.capitalize() for w in m.group(1).split()), "text": m.group(2).strip(), "if": cond})   # not .title(): it gives "Manuel'S Phone"
             if cue_pending: node["lines"][-1]["cue"] = cue_pending; cue_pending = None
+            if tight is not None: tight["done"] = True
+            continue
         m = INSPECT.match(line)
         if m and line.upper().lstrip("*").startswith("INSPECT"):
             node["lines"].append({"who": None, "text": m.group(1).strip(), "if": cond}); continue
@@ -222,6 +308,29 @@ def parse(text):
     return order, nodes
 
 
+def barks(text):
+    """Bark tables (| id | speaker | trigger | line |, sometimes with a module column): kept as data, so the game
+    can play the ones whose trigger it understands ("<node>, Ns in") and none are silently dropped."""
+    out, cols = [], None
+    for raw in text.splitlines():
+        t = raw.strip()
+        if not t.startswith("|"):
+            cols = None if not t else cols
+            continue
+        cells = [c.strip() for c in t.strip("|").split("|")]
+        if cells and cells[0] == "id":
+            cols = [c.lower() for c in cells]; continue
+        if not cols or set(cells) <= {"", "---"} or all(re.match(r"^:?-+:?$", c) for c in cells if c):
+            continue
+        row = dict(zip(cols, cells))
+        if not {"id", "speaker", "trigger", "line"} <= row.keys():
+            continue
+        b = {"id": row["id"].strip("`"), "who": row["speaker"], "trigger": row["trigger"].replace("`", ""), "text": row["line"].strip().strip('"').strip()}
+        if row.get("module"): b["module"] = row["module"]
+        out.append(b)
+    return out
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     total = 0
@@ -233,6 +342,8 @@ def main():
         meta = parse.meta
         scene = f.stem.split("-", 1)[1].replace("-", "_")
         data = {"scene": scene, "start": order[0] if order else None, "order": order, "nodes": nodes, **meta}
+        bk = barks(rot13(body))
+        if bk: data["barks"] = bk
         payload = rot13(json.dumps(data, ensure_ascii=False))
         (OUT / f"{scene}.js").write_text(
             "// GENERATED by tools/dialogue/convert.py from docs/sealed/script. Do not edit by hand.\n"
