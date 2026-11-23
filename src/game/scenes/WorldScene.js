@@ -245,6 +245,7 @@ export class WorldScene extends Phaser.Scene {
     this._showMap(startMap);
     this.stage.holdForHost(this.initialSnapshot?.stageId, this.initialSnapshot?.stageHold);
     this.ready = true;
+    if (this.initialSnapshot) this.shared.requestResume();
     // Act 1's witnessed beats are staged in-engine first (hub #48; src/content/stage/act1_*.js), then the scene plays.
     // A beat of delay so the roommates are on screen for the cutscene to stand in for them.
     if (!this.initialSnapshot) {
