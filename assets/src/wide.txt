@@ -154,3 +154,20 @@ eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 ...0aaa1111aaaaaaaaaa1111aaa0...
 ....0001bb100000000001bb1000....
 ......011110........011110......
+@frame obj.station_tiles
+................................
+dddddddddddddddddddddddddddddddd
+dqqqdqqqdbbbdqqqdqqqdqqqdqcqdqqq
+dqqqdqqqdbbbdcqqdqqqdqqqdqqqdqqq
+dqqqdqqqdbbbdqcqdqqqdqqqdqqqdqqq
+dddddddddddddddddddddddddddddddd
+dqqqdqqqdqqqdqqqdqqqdqqqdqqqdqqq
+dqqqdqqqdqqqdqqqdqqqdqqqdqqqdqqq
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+dqqqdqqqdqqqdqqqdqqqdbbbdqqqdqqq
+dqqqdqqqdqqqdqqqdqqqdbbbdqqcdqqq
+dddddddddddddddddddddddddddddddd
+dqqqdqqqdqqqdqqqdqqqdqqqdqqqdqqq
+................................

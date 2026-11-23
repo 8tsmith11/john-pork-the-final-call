@@ -903,21 +903,23 @@ test('hub #30 (Act 2): children on the polished Act 2 maps, the crowd\'s include
   assert.ok(MAPS_FOR_TEST.greenbelt.objects.some((o) => o.age === 'child'), 'the kid with the kite in Greenbelt is still there');
 });
 test('hub #30 (Act 2): quest objects, givers, exits, spawns and enemies on the polished maps are where they were', () => {
+  // Phase 0 moved five exits on purpose so paired doors face each other (the door-facing test below): r1n_to_beltway,
+  // gb_coop_out, bv_barn_out, meade_to_meade_inside and annapolis_to_ann_bridge.
   const WAS = {
     'npc.r1n_walker': [32, 8], 'obj.r1n_to_baltimore': [20, 0], 'obj.r1n_to_greenbelt': [0, 2], 'obj.r1n_to_refuge': [40, 2], 'obj.r1n_to_beltsville': [0, 6],
-    'obj.r1n_to_meade': [39, 6], 'obj.r1n_to_annapolis': [40, 9], 'obj.r1n_south': [18, 12], 'obj.r1n_to_beltway': [10, 12],
+    'obj.r1n_to_meade': [39, 6], 'obj.r1n_to_annapolis': [40, 9], 'obj.r1n_south': [18, 12], 'obj.r1n_to_beltway': [0, 10],
     'npc.gb_committee': [15, 6], 'obj.gb_dishes': [30, 4], 'obj.greenbelt_out': [32, 10], 'obj.greenbelt_to_gb_dishes': [29, 0], 'obj.greenbelt_to_gb_coop': [3, 11], 'obj.greenbelt_to_gb_center': [5, 0],
     'npc.gb_technician': [5, 4], 'obj.gb_tapes': [9, 2], 'obj.gb_cleanroom': [24, 4], 'obj.gb_dishes_out': [11, 8],
-    'npc.gb_clerk': [11, 4], 'obj.gb_coop_counter': [12, 2], 'obj.gb_coop_out': [10, 7],
+    'npc.gb_clerk': [11, 4], 'obj.gb_coop_counter': [12, 2], 'obj.gb_coop_out': [10, 0],
     'npc.bv_vet': [11, 7], 'obj.bv_ledgers': [4, 3], 'obj.bv_sealed_barn': [17, 9], 'obj.beltsville_crate_19_3': [19, 3], 'obj.beltsville_out': [31, 9], 'obj.beltsville_to_bv_barn': [12, 10], 'obj.beltsville_to_bv_lab': [6, 0],
-    'obj.bv_named_tank': [22, 3], 'obj.bv_barn_out': [11, 8],
+    'obj.bv_named_tank': [22, 3], 'obj.bv_barn_out': [11, 0],
     'npc.rf_teacher': [9, 6], 'obj.rf_tower': [18, 8], 'obj.refuge_out': [0, 8], 'obj.refuge_to_rf_settlement': [8, 0], 'obj.refuge_to_rf_fringe': [26, 0], 'obj.refuge_to_rf_marsh': [15, 9],
     'npc.rf_blacksmith': [5, 3], 'obj.rf_library': [20, 3], 'npc.rf_hardman': [13, 4], 'obj.rf_implants': [26, 5], 'obj.rf_settlement_out': [10, 8],
-    'npc.md_quartermaster': [14, 5], 'obj.md_menu': [28, 4], 'obj.meade_out': [0, 7], 'obj.meade_to_meade_inside': [10, 8], 'obj.meade_to_md_lot': [4, 8],
+    'npc.md_quartermaster': [14, 5], 'obj.md_menu': [28, 4], 'obj.meade_out': [0, 7], 'obj.meade_to_meade_inside': [10, 1], 'obj.meade_to_md_lot': [4, 8],
     'npc.bmore_steward': [15, 4], 'obj.bmore_manifests': [27, 6], 'obj.bmore_stacks_out': [0, 7],
     'npc.bmore_doctor': [15, 3], 'obj.bmore_meds': [16, 3], 'obj.bmore_clinic_out': [10, 7],
     'npc.ann_crabber': [20, 3], 'obj.ann_statehouse': [4, 4], 'obj.ann_charts': [29, 6], 'obj.annapolis_out': [0, 7], 'obj.annapolis_to_ann_harbor': [31, 7],
-    'obj.annapolis_to_ann_statehouse': [6, 8], 'obj.annapolis_to_ann_bridge': [28, 8], 'obj.annapolis_to_ann_chapel': [3, 0],
+    'obj.annapolis_to_ann_statehouse': [6, 8], 'obj.annapolis_to_ann_bridge': [31, 5], 'obj.annapolis_to_ann_chapel': [3, 0],
     'npc.ann_pilot': [12, 5], 'obj.ann_almanac': [14, 6], 'obj.ann_bell': [25, 4], 'obj.ann_harbor_out': [0, 7],
   };
   const SPAWN = { route1_north: [18, 11], greenbelt: [3, 9], beltsville: [2, 9], refuge: [3, 8], meade: [3, 7], annapolis: [3, 7], gb_dishes: [11, 7], gb_coop: [10, 6],
@@ -1108,7 +1110,7 @@ test('hub #30 (Act 3): quest objects, givers, exits, spawns and enemies on the p
     'obj.cor_meters': [27, 5], 'obj.cor_sealed_out': [14, 8],
     'obj.gt_leapseconds': [18, 3], 'npc.gt_timekeeper': [10, 5], 'obj.gt_clockroom_out': [10, 7],
     'obj.fr_dashboard_room': [28, 3], 'obj.fr_switchyard_out': [0, 7],
-    'obj.en_parchment': [11, 2], 'npc.en_functionary': [11, 5], 'obj.en_archive_out': [11, 8],
+    'obj.en_parchment': [11, 2], 'npc.en_functionary': [11, 5], 'obj.en_archive_out': [11, 0],
     'obj.md_the_wall': [14, 2], 'obj.md_intercepts': [22, 2], 'npc.md_analyst': [14, 6], 'obj.meade_inside_out': [14, 8],
   };
   const SPAWN = { beltway: [13, 9], corridor: [29, 9], gaithersburg: [25, 8], frederick: [12, 8], enclave: [18, 8], cor_sealed: [14, 7], gt_clockroom: [10, 6], fr_switchyard: [3, 7],
@@ -1422,7 +1424,7 @@ test('hub #68: lab 245\'s bench, the quest objects, doors, people and rotlings k
   assert.equal(m.layout[2][2], 'e', 'still on the lab floor');
   assert.deepEqual(at('obj.chb_bench_2'), [5, 2, 1]); assert.deepEqual(at('obj.chb_storage'), [22, 8, 1]);
   assert.deepEqual(at('npc.chb_ta'), [21, 2, 1]); assert.deepEqual(at('npc.chb_student'), [3, 8, 1]);
-  assert.deepEqual(at('obj.chb_doors'), [11, 15, 2]); assert.deepEqual(at('obj.chb_quad_door'), [12, 0, 1]);
+  assert.deepEqual(at('obj.chb_doors'), [11, 0, 2]); assert.deepEqual(at('obj.chb_quad_door'), [12, 15, 1]);   // swapped in Phase 0: the plaza is north, the quad south
   assert.deepEqual(m.enemies.map((e) => [e.kind, Math.floor(e.x / 16), Math.floor(e.y / 16)]), [['enemy.rotling', 10, 3], ['enemy.rotling', 23, 5], ['enemy.rotling', 12, 9], ['enemy.rotling', 14, 13]], 'same rotlings, same order (saves key kills by index)');
   assert.deepEqual(m.spawns.map((s) => [Math.floor(s.x / 16), Math.floor(s.y / 16)]), [[6, 13]]);
   const ta = m.objects.find((q) => q.id === 'npc.chb_ta');
@@ -1759,7 +1761,7 @@ test('hub #30 (stretch): the side-quest objects, givers, exits and spawns on the
   const WAS = { 'npc.rf_counter': [7, 5], 'obj.rf_blind': [22, 5], 'npc.md_attendant': [14, 5], 'obj.md_lot_sign': [26, 4], 'npc.ann_clerk': [10, 5], 'obj.ann_tideline': [11, 3],
     'npc.ann_fisher': [9, 3], 'obj.ann_span': [18, 3], 'npc.gb_usher': [14, 5], 'obj.gb_theater': [8, 2], 'npc.bv_lab_tech': [11, 4], 'obj.bv_batch_board': [22, 4],
     'npc.gt_metrologist': [11, 4], 'obj.gt_volt': [24, 2], 'npc.fr_grocer': [10, 5], 'obj.fr_prices': [22, 2], 'npc.en_rider': [13, 2], 'obj.en_departures': [27, 2],
-    'obj.rf_fringe_out': [13, 8], 'obj.rf_marsh_out': [14, 0], 'obj.md_lot_out': [13, 0], 'obj.ann_statehouse_out': [11, 7], 'obj.ann_chapel_out': [11, 7], 'obj.ann_bridge_out': [0, 3],
+    'obj.rf_fringe_out': [13, 8], 'obj.rf_marsh_out': [14, 0], 'obj.md_lot_out': [13, 0], 'obj.ann_statehouse_out': [11, 0], 'obj.ann_chapel_out': [11, 7], 'obj.ann_bridge_out': [0, 3],
     'obj.bv_lab_out': [12, 7], 'obj.gb_center_out': [12, 8], 'obj.gt_labs_out': [12, 7], 'obj.fr_market_out': [12, 7], 'obj.en_mall_out': [19, 6], 'obj.en_metro_out': [14, 0] };
   const SPAWN = { rf_fringe: [13, 7], rf_marsh: [14, 6], md_lot: [13, 7], ann_statehouse: [11, 6], ann_chapel: [11, 6], ann_bridge: [2, 3], bv_lab: [12, 6], gb_center: [12, 7],
     gt_labs: [12, 6], fr_market: [12, 6], en_mall: [19, 5], en_metro: [14, 3] };
@@ -2009,6 +2011,91 @@ test('every door has wall on both sides (no doors standing on an open patch)', (
     }
   }
 });
+
+// Phase 0 (docs/design/13-audit-and-rebuild.md, rooms): paired doors face each other, so you come out facing the way you
+// went in. A door faces the side you stand on to use it: inward at a map edge, else its one open side, else away from its
+// one blocked side; an explicit `inside` (the cordon field, sim.setMap) wins. Stairs, ladders, hatches, the grate and
+// elevators go up or down, so they're left out. The partner is the exit the game lands you at (sim.setMap's rule).
+test('paired doors face each other: you come out facing the way you went in (Phase 0)', () => {
+  // Pairs left for later, each listed both ways round. Both touch maps that open PR #96 (the Baltimore art pass) is
+  // changing, so they wait for it to land rather than conflict with it:
+  const LATER = new Set([
+    'baltimore/obj.baltimore_to_bmore_clinic', 'bmore_clinic/obj.bmore_clinic_out',   // the street's door is on its west edge: the clinic's belongs in its east wall
+    'corridor/obj.corridor_to_cor_town', 'cor_town/obj.town_to_corridor',             // cor_town (districts.js) has its door in the south wall: it belongs in the north
+  ]);
+  const VERTICAL = /stairs|elevator|ladder|hatch|grate|tunnel_(up|on)/i;
+  const OPP = { N: 'S', S: 'N', E: 'W', W: 'E' }, SIDE = { down: 'S', up: 'N', left: 'W', right: 'E' };
+  const facing = (m, o) => {
+    if (o.inside) return SIDE[o.inside];
+    const w = o.w ?? 1;
+    if (o.y === 0) return 'S'; if (o.y === m.h - 1) return 'N'; if (o.x === 0) return 'E'; if (o.x + w - 1 === m.w - 1) return 'W';
+    const open = [], shut = [];
+    for (const [d, dx, dy] of [['N', 0, -1], ['S', 0, 1], ['W', -1, 0], ['E', 1, 0]]) {
+      const cells = Array.from({ length: w }, (_, i) => [o.x + i + dx, o.y + dy]).filter(([x, y]) => !(y === o.y && x >= o.x && x < o.x + w));   // not the door's own tiles
+      (cells.some(([x, y]) => !m.solid(x, y)) ? open : shut).push(d);
+    }
+    if (open.length === 1) return open[0];
+    if (shut.length === 1 && open.includes(OPP[shut[0]])) return OPP[shut[0]];
+    return null;
+  };
+  const kind = (id) => (/elevator/.test(id ?? '') ? 'elevator' : /stairs/.test(id ?? '') ? 'stairs' : /door/.test(id ?? '') ? 'door' : '');
+  const bad = [], unclear = [], seenLater = [], fixedLater = [];
+  let checked = 0;
+  for (const m of Object.values(MAPS_FOR_TEST)) for (const o of m.objects.filter((q) => q.action === 'exit' && MAPS_FOR_TEST[q.to])) {
+    const B = MAPS_FOR_TEST[o.to], backs = B.objects.filter((q) => q.action === 'exit' && q.to === m.id);
+    const p = backs.find((q) => q.pair === o.id || q.id === o.id) ?? backs.find((q) => kind(q.id) && kind(q.id) === kind(o.id)) ?? backs[0];
+    if (!p || VERTICAL.test(`${o.art ?? ''} ${o.id} ${o.label} ${p.art ?? ''} ${p.id} ${p.label}`)) continue;
+    const key = `${m.id}/${o.id}`, a = facing(m, o), b = facing(B, p), ok = a && b && b === OPP[a];
+    if (LATER.has(key)) { seenLater.push(key); if (ok) fixedLater.push(key); continue; }
+    checked++;
+    if (!a || !b) unclear.push(`${key} (${a ?? '?'}) -> ${B.id}/${p.id} (${b ?? '?'})`);
+    else if (!ok) bad.push(`${key} at ${o.x},${o.y} faces ${a}, but ${B.id}/${p.id} at ${p.x},${p.y} faces ${b}`);
+  }
+  assert.deepEqual(unclear, [], 'say which side these doors are used from: open floor on one side only, or `inside`');
+  assert.deepEqual(bad, [], 'move one door of each pair to the matching wall');
+  assert.deepEqual(fixedLater, [], 'fixed: take these off the LATER list');
+  assert.deepEqual(seenLater.sort(), [...LATER].sort(), 'a LATER pair is gone: take it off the list');
+  assert.ok(checked >= 100, `only ${checked} doors checked`);
+});
+
+test('ASTER\'s stairs are one stack: B-01, lobby, 5th, 6th, roof, each flight joining neighbouring floors only (Phase 0)', () => {
+  const STACK = ['aster_basement', 'aster_lobby', 'aster_5f', 'aster_hall', 'aster_roof'];
+  const flights = new Set();
+  for (const id of STACK) for (const o of MAPS_FOR_TEST[id].objects) {
+    if (o.action !== 'exit' || !STACK.includes(o.to)) continue;
+    if (/elevator/i.test(`${o.id} ${o.art ?? ''}`)) { assert.deepEqual([id, o.to].sort(), ['aster_hall', 'aster_lobby'], `${id}/${o.id}: the elevator runs lobby to six`); continue; }
+    assert.ok(/stairs|hatch|ladder/i.test(`${o.art ?? ''} ${o.label}`), `${id}/${o.id}: between floors, a stair, the roof hatch or the elevator`);
+    assert.equal(Math.abs(STACK.indexOf(o.to) - STACK.indexOf(id)), 1, `${id}/${o.id} goes to ${o.to}, skipping a floor`);
+    const back = MAPS_FOR_TEST[o.to].objects.find((q) => q.id === o.pair);
+    assert.ok(back && back.to === id && back.pair === o.id, `${id}/${o.id}: paired both ways with the flight back from ${o.to}`);
+    flights.add(`${id}>${o.to}`);
+  }
+  for (let i = 0; i + 1 < STACK.length; i++) for (const [a, b] of [[STACK[i], STACK[i + 1]], [STACK[i + 1], STACK[i]]]) assert.ok(flights.has(`${a}>${b}`), `no stairs from ${a} to ${b}`);
+});
+
+test('the dead platform: a lit landmark in view from where you come in, and the arena stays clear for the Warden (Phase 0)', () => {
+  const m = MAPS_FOR_TEST.platform;
+  const frames = new Set(['big', 'props', 'wide'].flatMap((s) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${s}.json`, import.meta.url), 'utf8')).frames)));
+  const car = (m.scenery ?? []).filter((s) => /^obj\.train_/.test(s.art)), xs = car.map((s) => s.x).sort((a, b) => a - b);
+  assert.ok(car.length >= 5 && car.every((s) => frames.has(s.art) && s.solid && s.scale === 1 && s.w === 2), 'the car: its pieces, solid, drawn at scale 1 so they meet');
+  assert.ok(xs.every((x, i) => i === 0 || x - xs[i - 1] === 2) && car.every((s) => s.y === m.h - 2), 'the pieces meet end to end on the far rail');
+  assert.ok(xs[0] - Math.floor(m.spawns[0].x / 16) < 30, 'in view from the spawn (the first screen is 30 tiles across)');
+  assert.ok(car.some((s) => s.light > 0), 'lit');
+  for (const other of Object.values(MAPS_FOR_TEST).filter((q) => q.id !== 'platform')) {
+    for (const art of [...other.objects.map((o) => o.art), ...(other.scenery ?? []).map((s) => s.art)]) assert.ok(!/^obj\.train_/.test(art ?? ''), `${other.id}: the car is the platform's own`);
+  }
+  for (const id of ['obj.train_car', 'obj.train_open_door']) { const o = m.objects.find((q) => q.id === id); assert.ok(o && !m.solid(o.x, o.y - 1), `${id}: read from the near rail`); }
+  for (let y = 3; y <= 12; y++) for (let x = 14; x <= 40; x++) assert.ok(!m.solid(x, y) || m.layout[y][x] === '|', `something solid in the arena at ${x},${y}`);
+  for (const x of [3, m.w - 3]) for (const y of [5, 7, 9]) assert.ok(!m.solid(x, y), `the Warden's adds come out of the tunnel mouths at ${x},${y}`);
+});
+
+test('the fuse carrier sends you to the ASTER lobby, where Kess is (Phase 0: it said B-01)', () => {
+  const carrier = MAPS_FOR_TEST.tunnel_1.objects.find((o) => o.id === 'obj.fuse_carrier');
+  assert.ok(/LOBBY/.test(carrier.text) && !/B-01/.test(carrier.text), carrier.text);
+  assert.ok(MAPS_FOR_TEST.aster_lobby.objects.some((o) => o.id === 'npc.kess'), 'Kess stands in the lobby');
+  const stage = QUESTS_ES.find((q) => q.id === 'main.balloon').stages.find((s) => /fuses/.test(s.text) && /sticker/.test(s.text));
+  assert.ok(stage && !/B-01/.test(stage.text) && /lobby/.test(stage.text), 'the quest stage agrees with the sticker');
+});
 const { BOSS_PATTERNS, bossPool, pickPattern } = await import('../src/engine/bossPatterns.js');
 const { MODULES: WARDEN_MODULES } = await import('../src/content/rotVillains.js');
 test('boss pattern library: every module has a pattern, pools grow by phase, no move twice running', () => {
@@ -2107,7 +2194,7 @@ test('arrivals: the elevator lands you at the elevator, and holding the key you 
   sim.setMap(MAPS_FOR_TEST.aster_hall, 'aster_lobby', 'obj.lobby_elevator');
   const h = sim.players.get('host'), elev = MAPS_FOR_TEST.aster_hall.objects.find((o) => o.id === 'obj.elevator');
   assert.ok(Math.hypot(h.x - (elev.x * 16 + 8), h.y - (elev.y * 16 + 8)) < 48, 'arrived beside the elevator, not the stairs');
-  sim.setMap(MAPS_FOR_TEST.aster_hall, 'aster_lobby', 'obj.lobby_stairs');
+  sim.setMap(MAPS_FOR_TEST.aster_hall, 'aster_5f', 'obj.aster5_up');   // the stairs come up from five (one stack, Phase 0)
   const up = { ...emptyInput(), my: -1 }, bumps = () => sim.events.filter((e) => e.t === 'bumpExit').length;
   let n = 0;
   for (let t = 0; t < 90; t++) { sim.step(1 / 60, new Map([['host', up]])); n += bumps(); }

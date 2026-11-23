@@ -8,6 +8,10 @@
 // unit at each end. The north room is a terminal lab, cable trays run along the hall walls, and floor cable runs from
 // the machine room's door out to the terminals and to lab 245. Lab 245's bench, the quest objects, the doors, the
 // people and the four rotlings keep their tiles (tests/run.js checks them).
+//
+// Doors face the way you go through them (Phase 0, docs/design/13-audit-and-rebuild.md): the plaza is north of the hall
+// and the quad south of it, so the front doors from the plaza are in the north wall (into the terminal lab) and the
+// back door to the quad is in the south wall. They used to be the other way round.
 // Art: tools/art/gen_props.py (obj.server_rack, obj.network_rack, obj.terminal_lit, obj.crac_unit, obj.cable_tray,
 // obj.wall_display, obj.room_sign; dec.raised_floor, dec.raised_vent, dec.cable_*). Coloured light and cold air:
 // src/content/maps/dressing.js.
@@ -40,7 +44,7 @@ const decals = FLOOR.flatMap((row, y) => [...row].flatMap((ch, x) => (DECAL[ch] 
 export const computeHallB = fromGrid({
   id: 'compute_hall_b', name: 'Compute Hall B', fill: 'm', decals,
   rows: [
-    '#HHHHHH#HHHH#HHHHH##########',
+    '#HHHHHH#HHHDDHHHHH##########',
     '#AAAAAA#MPMmmmMYMR#........#',
     '#A?AA!A#mmmmmmmmmm#..T.....#',
     '#AAAAAA#mmEmmmmmmm#........#',
@@ -55,7 +59,7 @@ export const computeHallB = fromGrid({
     '#mmmmmmmmmmmmmmmmmmmmmmmmmm#',
     '#mmmmm@mmmmmmmEmmmmmmmmmmmm#',
     '#mmmmmmmmmmmmmmmmmmmmmmmmmm#',
-    '###########DD###############',
+    '############################',
   ],
   legend: {
     A: { tile: 'e' },
@@ -97,4 +101,4 @@ export const computeHallB = fromGrid({
     B: { prop: 'obj.wall_display', id: 'obj.chb_status_board', tile: '#', light: 0.5, label: 'Status board',
       text: 'Amber letters crawl across it: COMPUTE HALL B. LOAD 99%. APPRENTICES IN BUILDING: 0. THANK YOU FOR SAVING ENERGY.' },
   },
-}).exit('campus_quad', 12, 0, { id: 'obj.chb_quad_door', art: 'obj.door', label: 'Out to the quad', pair: 'obj.quad_chb', text: 'The back doors, out to the campus quad.' }).build();
+}).exit('campus_quad', 12, 15, { id: 'obj.chb_quad_door', art: 'obj.door', label: 'Out to the quad', pair: 'obj.quad_chb', text: 'The back doors, out to the campus quad.' }).build();

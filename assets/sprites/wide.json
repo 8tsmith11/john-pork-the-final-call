@@ -179,6 +179,26 @@
     "w": 32,
     "h": 16
    }
+  },
+  "obj.station_tiles": {
+   "frame": {
+    "x": 32,
+    "y": 16,
+    "w": 32,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 16
+   }
   }
  },
  "meta": {
