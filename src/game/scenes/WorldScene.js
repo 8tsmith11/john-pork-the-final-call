@@ -249,8 +249,13 @@ export class WorldScene extends Phaser.Scene {
     if (this.initialSnapshot) this.shared.requestResume();
     // Act 1's witnessed beats are staged in-engine first (hub #48; src/content/stage/act1_*.js), then the scene plays.
     // A beat of delay so the roommates are on screen for the cutscene to stand in for them.
+    // The cold open (D-022): the staging plays line by line while the dialogue is on screen (stage 'cold_open'
+    // is a hold script with a cue per line). Host and solo run it; guests watch the host's shared scene.
     if (!this.initialSnapshot) {
-      if (!this.save.flags['act1.coldopen.done']) this.time.delayedCall(300, () => this.stage.after('act1_open', () => this.startDialogue('cold_open', null, () => { this._flag('act1.coldopen.done', true); this._controlsHint(); })));
+      if (!this.save.flags['act1.coldopen.done'] && this.mode !== 'client') this.time.delayedCall(300, async () => {
+        await this.stage.play('cold_open');
+        this.startDialogue('cold_open', null, () => { this.stage.release('cold_open'); this._flag('act1.coldopen.done', true); this._controlsHint(); });
+      });
       else this.time.delayedCall(1200, () => this._controlsHint());
     }
   }
@@ -343,7 +348,7 @@ export class WorldScene extends Phaser.Scene {
         if (!this.dlg.choices.length && this._pages && this._page < this._pages.length - 1) {   // long line: next page first
           this._page++; this._typeFull = this._pages[this._page]; this._typeShown = 0; this._lineAt = this.time.now; this._drawDialogue(); return;
         }
-        if (!this.dlg.choices.length && this.time.now - (this._lineAt ?? 0) > 220) this.dlg.advance();
+        if (!this.dlg.choices.length && !this.stage?.cueBusy && this.time.now - (this._lineAt ?? 0) > 220) this.dlg.advance();
         this._drawDialogue();
       }
       const n = parseInt(ev.key, 10);
@@ -536,6 +541,7 @@ export class WorldScene extends Phaser.Scene {
       this.dlgText.setColor(line && !line.who ? '#9aa3c7' : '#e8e8f0');
       if (line && line !== this._lastLine) {
         this._lastLine = line; this._lineAt = this.time.now;
+        this.stage?.cue?.(line.cue);   // its staging plays while it's on screen (D-022)
         if (line.choice) this._logChoice(line.who, line);
         else if (this._transcript && line.text && !line.sms) this._transcript.lines.push([line.who ?? '', line.text.replace(/\*([^*]+)\*/g, '$1')]);
         // The guide's Sahur entry: seen once he speaks on screen, whichever route (cameo or boss).

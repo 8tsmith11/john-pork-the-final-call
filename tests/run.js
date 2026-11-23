@@ -2609,6 +2609,55 @@ test('assembly (src/engine/assembly.js): derived stats match the design doc, leg
   for (const [k] of Object.entries(A.materials({ frame: 'part.deck', power: 'part.pack', payload: 'part.gel', control: 'part.handboard' }))) assert.ok(ITEMS[k], `${k} is a real material`);
 });
 
+test('combat takes thought (Trevor: "I just walk into the robots and click and everything dies"): poise, committed attacks, deliberate parries', async () => {
+  const { ITEMS } = await import('../src/content/items.js');
+  const arena = () => ({ id: 'thought', w: 60, h: 60, objects: [], enemies: [], spawns: [{ x: 400, y: 400 }], solid: () => false });
+  const rotling = (sim, id, x, y) => sim.enemies.set(id, { id, kind: 'enemy.rotling', def: { ...ENEMIES['enemy.rotling'] }, x, y, hp: ENEMIES['enemy.rotling'].hp, cd: 0, hurtT: 0, kx: 0, ky: 0 });
+  const sim = new Sim(arena(), { seed: 'poise' }); sim.addPlayer('h', 'trevor');
+  rotling(sim, 'a', 420, 400); const e = sim.enemies.get('a');
+  sim._hurtEnemy(e, 5, 100, 0, 'h'); assert.ok(e.kx !== 0 && e.hurtT > 0, 'the first hit staggers');
+  const kx1 = e.kx; sim._hurtEnemy(e, 5, -100, 0, 'h'); assert.equal(e.kx, kx1, 'the next light hit is shrugged off: no new push, the old one keeps going');
+  sim._hurtEnemy(e, 5, 100, 0, 'h', { heavy: true }); assert.ok(e.kx !== 0, 'a finisher breaks through');
+  e.poiseT = 0; e.st = 'windup'; e.kx = 0; sim._hurtEnemy(e, 5, 100, 0, 'h'); assert.equal(e.kx, 0, 'an enemy winding up doesn\'t flinch from a light hit');
+  // mashing the attack into a pack now costs you; the old way cost about a tenth of your health
+  let taken = 0;
+  for (let s = 0; s < 6; s++) {
+    const m = new Sim(arena(), { seed: 'mash' + s }); m.addPlayer('h', 'trevor'); const p = m.players.get('h'); p.x = 400; p.y = 400;
+    p.held = 'melee'; p.mods = { ...(p.mods ?? {}), swing: ITEMS['item.pry_bar'].swing };
+    for (let i = 0; i < 3; i++) rotling(m, 'r' + i, 430 + i * 6, 395 + i * 6);
+    const hp0 = p.hp;
+    for (let t = 0; t < 60 * 20 && m.enemies.size && !p.downed; t++) {
+      let best = null, bd = 1e9; for (const q of m.enemies.values()) { const d = Math.hypot(q.x - p.x, q.y - p.y); if (d < bd) { bd = d; best = q; } }
+      m.step(1 / 60, new Map([['h', { ...emptyInput(), aim: best ? Math.atan2(best.y - p.y, best.x - p.x) : 0, attack: true }]]));
+    }
+    taken += hp0 - Math.max(0, p.hp);
+  }
+  assert.ok(taken / 6 >= 25, `button-mashing three rotlings costs real health now (avg ${Math.round(taken / 6)})`);
+  // a swing after a rest still parries a lunge; a swing in the middle of a flurry doesn't
+  const q = new Sim(arena(), { seed: 'parry' }); q.addPlayer('h', 'trevor'); const p = q.players.get('h'); p.x = 400; p.y = 400; p.aim = 0;
+  p.held = 'melee'; p.mods = { ...(p.mods ?? {}), swing: ITEMS['item.pry_bar'].swing };
+  rotling(q, 'l', 414, 400); const l = q.enemies.get('l'); l.st = 'lunge'; l.hitOnce = false;
+  p.swingFreeAt = q.tick / 60 - 0.2; q._melee(p); assert.ok(!(l.parried > 0), 'mid-flurry: no parry');
+  l.st = 'lunge'; l.hitOnce = false; l.poiseT = 0; p.swingFreeAt = q.tick / 60 - 1; p.meleeCd = 0; q._melee(p); assert.ok(l.parried > 0, 'a deliberate swing parries');
+  // John Pork's cases (PR #146): holding attack with a slow weapon in a real step loop never parries, with any weapon;
+  // a pause beyond recovery does
+  for (const wid of ['item.pry_bar', 'item.pipe_wrench']) {
+    if (!ITEMS[wid]?.swing) continue;
+    const z = new Sim(arena(), { seed: 'hold-' + wid }); z.addPlayer('h', 'trevor'); const zp = z.players.get('h'); zp.x = 400; zp.y = 400;
+    zp.held = 'melee'; zp.mods = { ...(zp.mods ?? {}), swing: ITEMS[wid].swing };
+    let parries = 0;
+    for (let i = 0; i < 60 * 4; i++) {
+      const lr = [...z.enemies.values()][0] ?? (rotling(z, 'L' + i, 414, 400), z.enemies.get('L' + i)); lr.st = 'lunge'; lr.hitOnce = false; lr.x = 414; lr.y = 400; lr.hp = 999;
+      z.step(1 / 60, new Map([['h', { ...emptyInput(), aim: 0, attack: true }]])); parries += z.events.filter((e) => e.t === 'parry').length;
+    }
+    assert.ok(parries <= 1, `${wid}: holding attack parries at most the first swing (${parries})`);
+  }
+  // a heavy hit's knockback survives a teammate's light hit during poise
+  const kb = new Sim(arena(), { seed: 'kb' }); kb.addPlayer('a', 'trevor'); kb.addPlayer('b', 'manuel'); rotling(kb, 'r', 420, 400); const kr = kb.enemies.get('r');
+  kb._hurtEnemy(kr, 4, 120, 0, 'a', { heavy: true }); const vx = kr.kx;
+  kb._hurtEnemy(kr, 4, -80, 0, 'b'); assert.equal(kr.kx, vx, 'a shrugged hit adds nothing and takes nothing away');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
@@ -2698,7 +2747,7 @@ test('gadget tuning stays within recharge, effect and actual output caps across 
 
 const Dawn = await import('../src/content/dawn.js');
 test('dawn clock (P-004): moves only with story beats, in order, and never passes first light', () => {
-  assert.equal(Dawn.dawnLabel({}), '2:58 am');   // the microwave in the cold open
+  assert.equal(Dawn.dawnLabel({}), '3:40 am');   // the cold open (D-022)
   let last = Dawn.DAWN_START; const flags = {};
   for (const [flag, at] of Dawn.DAWN_BEATS) { assert.ok(at > last && at < Dawn.FIRST_LIGHT, `${flag} out of order`); last = at; flags[flag] = true; assert.equal(Dawn.dawnMinutes(flags), at); }
   assert.ok(Dawn.dawnProgress(flags) < 1 && Dawn.dawnProgress({}) === 0);
@@ -2959,6 +3008,29 @@ test('co-op puzzles: a guest pressing a lever, a clock or a bust runs on the hos
     assert.equal(sc._puzzleAct('g2', 'obj.switch_a'), false, 'out of reach: refused');
     assert.ok(!Object.prototype.hasOwnProperty.call(sc, '_say') && !Object.prototype.hasOwnProperty.call(sc, '_grant'), 'the host\'s own say and grant are back afterwards');
   } finally { CraftWorldScene.prototype._toast = realToast; }
+});
+
+test('a staged dialogue cue stays busy until done and cannot resume queued actions on a new line', async () => {
+  const { Stage } = await import('../src/game/stage.js');
+  const stage = Object.assign(Object.create(Stage.prototype), {
+    tok: 1,
+    active: { tok: 1, script: { hold: true, cues: { first: ['wait', 'too late'], second: ['next'] } } },
+  });
+  const actions = [];
+  let finish;
+  stage._step = (step) => {
+    actions.push(step);
+    if (step === 'wait') return new Promise(resolve => { finish = resolve; });
+    return null;
+  };
+  assert.ok(stage.cue('first'));
+  assert.ok(stage.cueBusy);
+  assert.ok(!stage.cue('first'), 'the same dialogue state cannot restart a cue');
+  assert.ok(stage.cue('second'));
+  finish();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(stage.cueBusy, false);
+  assert.deepEqual(actions, ['wait', 'next']);
 });
 
 test('cutscenes: the HUD steps out from under the letterbox bars and comes back as it was (Trevor: weird cutoff on the UI)', () => {
@@ -3866,7 +3938,16 @@ test('dialogue graphs: no dangling jumps, and the big scenes are not secretly de
       for (const c of n.choices) assert.ok(c.go === 'END' || d.nodes[c.go], `${name}:${id} choice -> missing ${c.go}`);
       if (n.go) assert.ok(n.go === 'END' || d.nodes[n.go], `${name}:${id} -> missing ${n.go}`);
     }
-    const terms = ids.filter((id) => { const n = d.nodes[id]; return !n.go && !(n.gos || []).length && !n.choices.length; });
+    // Count dead ends on the conversation itself: nodes reachable from its start. Standalone self-scoped barks
+    // in the same file (the cold open's room searches) are entered on their own and are meant to end.
+    const seen = new Set(), todo = [d.start ?? ids[0]];
+    while (todo.length) {
+      const id = todo.pop(), n = d.nodes[id];
+      if (!n || seen.has(id)) continue;
+      seen.add(id);
+      for (const g of [n.go, ...(n.gos || []).map((x) => x.go), ...n.choices.map((c) => c.go)]) if (g && g !== 'END') todo.push(g);
+    }
+    const terms = ids.filter((id) => { const n = d.nodes[id]; return seen.has(id) && !n.go && !(n.gos || []).length && !n.choices.length; });
     if (CONNECTED[name] != null) assert.ok(terms.length <= CONNECTED[name], `${name}: ${terms.length} dead-end nodes (max ${CONNECTED[name]}): ${terms.slice(0, 6).join(', ')}`);
   }
 });
@@ -5262,6 +5343,84 @@ test('a rejoining guest holds gameplay until the host ends the active cutscene',
   scene._onClick({ button: 0, x: 1, y: 1 });
   assert.equal(scene.input2.blockAttack, true, 'a hold-stage click cannot become a gameplay attack');
   assert.deepEqual(scene._frozen(controls), { ...emptyInput(), gadgetBlocked: true });
+});
+test('Room 631 for the cold open (hub #99): closet by the window, a wall screen, the van outside, staging left clear', () => {
+  const m = MAPS_FOR_TEST.room631, obj = (id) => m.objects.find((o) => o.id === id), key = (x, y) => `${x},${y}`;
+  // Every object the room had before this change is still there, under the same id.
+  const BEFORE = ('chair_w chair_e string_lights clock_631 nightstand_michael nightstand_manuel poster_band photo_wall pennant toolwall toolbox crate cables bookshelf '
+    + 'whiteboard coffee tv couch scooters shoes plant house_rules door statue_1 statue_2 statue_3 mate fridge table stove parts_bins lab_board workbench failed_prints '
+    + 'router drill_press pork_flag printer_1 printer_2 printer_3 oscilloscope microscope degasser solder dehumidifier ottoman boxes_1 boxes_2 boxes_3 shrimp_tank '
+    + 'stand_trevor battlebot supplements trevor_mirror trevor_pc dumbbells trevor_shower michael_desk manuel_table mate_shelf mm_shower hamper balcony_plants '
+    + 'balcony_view bunk arg_flag stand_michael michael_closet manuel_closet front_lock mm_mirror').split(' ').map((n) => `obj.${n}`)
+    .concat(['door.trevor_room', 'door.mm_room', 'door.trevor_bath', 'door.mm_bath', 'door.balcony']);
+  assert.equal(BEFORE.length, 76);
+  assert.deepEqual(BEFORE.filter((id) => !obj(id)), [], 'an object id went missing from room631');
+  assert.equal(m.objects.length, BEFORE.length + 2, 'only the wall screen and the van were added');
+  // The search hooks wait for the cold open's staging PR (#145): these keep what they had.
+  assert.equal(obj('obj.toolwall').action, 'toolwall');
+  assert.equal(obj('obj.printer_3').flag, 'act1.clue.printer3Warm');
+  assert.equal(obj('obj.front_lock').flag, 'act1.clue.lockForced');
+  assert.equal(obj('obj.manuel_closet').flag, 'act1.balloon.noticedGone');
+  assert.deepEqual([obj('obj.door').x, obj('obj.door').y, obj('obj.door').to], [0, 8, 'aster_hall'], "631's front door stays where it is");
+  assert.deepEqual(m.spawns, [[5, 8], [7, 9], [9, 8]].map(([x, y]) => ({ x: x * 16 + 8, y: y * 16 + 8 })));
+
+  // 1. Manuel's closet: at his end of the bedroom, by the window his flag hangs over, and off both doorways.
+  const closet = obj('obj.manuel_closet'), flag = obj('obj.arg_flag'), bedDoor = obj('door.mm_room'), bathDoor = obj('door.mm_bath');
+  assert.ok(closet.x >= obj('obj.nightstand_manuel').x && closet.x <= 22 && closet.y >= 1 && closet.y <= 4, "the closet is in the bedroom, at Manuel's end");
+  assert.ok(Math.abs(closet.x - flag.x) <= 1 && closet.y - flag.y <= 2, 'and by the window (under the flag that covers it)');
+  assert.notDeepEqual([closet.x, closet.y], [bedDoor.x, bedDoor.y - 1], 'not in front of the bedroom doorway');
+  assert.notDeepEqual([closet.x, closet.y], [bathDoor.x - 1, bathDoor.y], 'nor in front of the bathroom door');
+  assert.ok(!m.objects.some((o) => o !== closet && o.x === closet.x && o.y === closet.y), 'on a tile of its own');
+
+  // 2 and 3. The wall screen and the van: on the map, with a drawing and a second (animated) frame in the sheets.
+  const frames = (sheet) => JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${sheet}.json`, import.meta.url), 'utf8')).frames;
+  const screen = obj('obj.room631_wallscreen'), van = obj('obj.room631_van'), vanArt = (m.scenery ?? []).find((q) => q.art === 'obj.room631_van');
+  assert.ok(screen && van && vanArt);
+  for (const f of ['obj.room631_wallscreen', 'obj.room631_wallscreen#1']) assert.deepEqual([frames('props')[f]?.frame.w, frames('props')[f]?.frame.h], [16, 24], f);
+  for (const f of ['obj.room631_van', 'obj.room631_van#1']) assert.deepEqual([frames('wide')[f]?.frame.w, frames('wide')[f]?.frame.h], [32, 16], f);
+  assert.equal(m.layout[screen.y][screen.x], '#', 'the screen hangs on a wall');
+  assert.ok('ku'.includes(m.layout[screen.y + 1][screen.x]) && screen.x < 15, 'the living-room wall');
+  assert.ok(screen.light > 0 && screen.text && !screen.action && !screen.talk, 'lit, with a look line and nothing else');
+  // The van is outside: its drawing is on the street strip, which nobody can walk to, and the spot you look from is the rail.
+  const inside = new Set([key(5, 8)]), todo = [[5, 8]];
+  while (todo.length) { const [x, y] = todo.pop(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const k = key(x + dx, y + dy); if (!inside.has(k) && (!m.solid(x + dx, y + dy) || m.doors.has(k))) { inside.add(k); todo.push([x + dx, y + dy]); } } }
+  assert.ok(inside.has(key(22, 13)) && inside.has(key(18, 3)), 'the flood fill covers the flat (balcony and bedroom)');
+  assert.ok(!vanArt.solid && !inside.has(key(vanArt.x, vanArt.y)) && !inside.has(key(vanArt.x + 1, vanArt.y)), 'the van is not in the walkable flat');
+  assert.equal(m.layout[vanArt.y].slice(vanArt.x, vanArt.x + 2), ',,', 'it is parked on the street');
+  assert.ok(vanArt.y > van.y && van.y > obj('obj.ottoman').y, 'below the balcony, past the rail');
+  assert.equal(m.layout[van.y][van.x], '=', 'you look at it over the balcony rail');
+  assert.ok(inside.has(key(van.x, van.y - 1)), 'from the balcony');
+  for (let x = 0; x < m.w; x++) assert.ok(m.solid(x, vanArt.y - 1), `the street is walled off at ${x},${vanArt.y - 1}`);
+  assert.ok(van.text && !van.action && !van.talk && !van.flag, 'a look line only');
+
+  // Nothing in the way of the cold open's staging. Marks and paths are hard-coded from PR #145's stage script:
+  // origin/bagel/cold-open-staging @ 8bc04bec, src/content/stage/cold_open.js (cast `at`, `walk` to/by, `cam` tiles).
+  const CAST = { trevor: [17, 2], michael: [18, 3], manuel: [19, 2] };                 // the bunk wake-up
+  const beside = (o) => [[0, 1], [-1, 0], [1, 0], [0, -1]].map(([dx, dy]) => [o.x + dx, o.y + dy]).find(([x, y]) => !m.solid(x, y));   // stage.js _beside
+  const atCloset = beside(closet);
+  assert.deepEqual(atCloset, [22, 3], 'Manuel stops under his closet, in line with the bedroom door');
+  const DOOR = [[22, 5], [22, 6]];                                                     // out through door.mm_room
+  const LEGS = [
+    [CAST.manuel, [19, 3], atCloset, ...DOOR, [4, 9], [4, 8], [5, 8]],                 // rolls out, the closet, the front door, arms out, his shoes
+    [CAST.trevor, atCloset, ...DOOR, [4, 7]],
+    [CAST.michael, [19, 4], ...DOOR, [12, 8], [3, 8]],
+  ];
+  const CAMS = [[14, 8], [12, 8]];
+  const marks = new Set([...LEGS.flat(), ...CAMS].map(([x, y]) => key(x, y)));
+  const path = new Set();                                                              // every tile a straight walk crosses
+  for (const leg of LEGS) for (let i = 1; i < leg.length; i++) {
+    const [ax, ay] = leg[i - 1], [bx, by] = leg[i], n = Math.max(Math.abs(bx - ax), Math.abs(by - ay)) * 8;
+    for (let t = 0; t <= n; t++) path.add(key(Math.round(ax + ((bx - ax) * t) / n), Math.round(ay + ((by - ay) * t) / n)));
+  }
+  for (const k of marks) { const [x, y] = k.split(',').map(Number); assert.ok(!m.solid(x, y) || m.doors.has(k), `staging mark ${k} is solid`); }
+  for (const k of new Set([...marks, ...path])) assert.ok(!m.blocked.has(k), `something solid stands on the staging path at ${k}`);
+  const added = [screen, van, closet, vanArt, { x: vanArt.x + 1, y: vanArt.y }];
+  for (const o of added) assert.ok(!marks.has(key(o.x, o.y)) && !path.has(key(o.x, o.y)), `${o.id ?? o.art ?? 'the van'} sits on the staging at ${o.x},${o.y}`);
+  for (const o of [screen, van, vanArt]) assert.ok(!o.solid, 'nothing new is solid');
+  assert.deepEqual([...m.blocked], [key(0, 8)], 'the only blocking object in the room is still the front door');
+  // The objects the staging points the camera and the actors at.
+  for (const id of ['obj.bunk', 'obj.manuel_closet', 'obj.front_lock', 'obj.door', 'obj.pork_flag', 'obj.statue_1', 'obj.tv']) assert.ok(obj(id), id);
+  assert.ok(Math.hypot(screen.x - obj('obj.tv').x, screen.y - obj('obj.tv').y) <= 3, "the wall screen is in frame when the staging's camera goes to the TV");
 });
 
 await Promise.all(pending);
