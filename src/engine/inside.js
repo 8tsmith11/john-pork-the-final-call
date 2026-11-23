@@ -18,14 +18,20 @@ export function insideCfg(map) {
 export function newInside(map) {
   const cfg = insideCfg(map);
   if (!cfg) return null;
-  const at = cfg.terminals[0] ?? null;
-  return { cfg, t: 0, n: 0, checkpoint: at ? { x: at[0] * TILE + 8, y: at[1] * TILE + 8 } : null };
+  const terminals = cfg.terminals.map(([x, y]) => ({ x: x * TILE + 8, y: y * TILE + 8 }));
+  const checkpoint = terminals[0] ?? map.spawns[0] ?? null;
+  return { cfg, t: 0, n: 0, checkpoint, terminals, visits: new WeakMap() };
 }
 
 /** Is corrupted tile k (one of cfg.corrupt) live on beat n? Each flips every beat, offset by its phase. */
 export const corruptLive = (st, [, , phase = 0]) => (st.n + phase) % 2 === 0;
 
 const wrap = (v, size) => ((v % size) + size) % size;
+
+export function wrapInsidePoint(map, point) {
+  point.x = wrap(point.x, map.w * TILE);
+  point.y = wrap(point.y, map.h * TILE);
+}
 
 /**
  * Step the inside rules. Returns how much time enemies get this frame (0 between beats, sped up in the window, so
@@ -36,14 +42,16 @@ export function stepInside(sim, st, dt) {
   st.t += dt;
   if (Math.floor(st.t / c.beat) > Math.floor(before / c.beat)) { st.n++; sim.events.push({ t: 'beat', n: st.n }); }
   const phase = st.t % c.beat;
-  // terminals: the last one anyone stood by is where collected roommates come back
-  for (const [tx, ty] of c.terminals) {
-    const x = tx * TILE + 8, y = ty * TILE + 8;
-    if ((st.checkpoint?.x !== x || st.checkpoint?.y !== y) && [...sim.players.values()].some((p) => !p.downed && Math.hypot(p.x - x, p.y - y) <= c.termR)) {
-      st.checkpoint = { x, y }; sim.events.push({ t: 'terminal', x, y });
-    }
-  }
   for (const p of sim.players.values()) {
+    if (c.wrap) wrapInsidePoint(sim.map, p);
+    // An arrival changes the checkpoint. Someone waiting at an older terminal leaves it alone.
+    const terminal = p.downed ? null : st.terminals.find(({ x, y }) => Math.hypot(p.x - x, p.y - y) <= c.termR);
+    if (terminal && st.visits.get(p) !== terminal && st.checkpoint !== terminal) {
+      st.checkpoint = terminal;
+      sim.events.push({ t: 'terminal', x: terminal.x, y: terminal.y });
+    }
+    if (terminal) st.visits.set(p, terminal);
+    else st.visits.delete(p);
     if (p.downed) {
       // collection: no revive needed in here; back at the checkpoint after gcBeats
       p.gcT = (p.gcT ?? 0) + dt;
@@ -56,10 +64,6 @@ export function stepInside(sim, st, dt) {
     p.gcT = 0;
     const tx = Math.floor(p.x / TILE), ty = Math.floor(p.y / TILE);
     for (const k of c.corrupt) if (k[0] === tx && k[1] === ty && corruptLive(st, k)) { sim.infect(p, c.corruptRate * dt); break; }
-  }
-  if (c.wrap) {
-    const W = sim.map.w * TILE, H = sim.map.h * TILE;
-    for (const o of [...sim.players.values(), ...sim.enemies.values(), ...sim.shots]) { o.x = wrap(o.x, W); o.y = wrap(o.y, H); }
   }
   return phase < c.window ? dt * (c.beat / c.window) : 0;
 }

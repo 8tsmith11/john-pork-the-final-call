@@ -2592,9 +2592,19 @@ test('inside rules (src/engine/inside.js): enemies act on the beat, edges wrap, 
   const b = new Sim(box({ wrap: true }), { seed: 'wrap' }); b.addPlayer('h', 'trevor'); const q = b.players.get('h');
   q.x = W * 16 - 10; q.y = 96; run(b, 0.6, new Map([['h', { ...emptyInput(), mx: 1 }]]));
   assert.ok(q.x < 40, `off the right edge and in at the left (x=${Math.round(q.x)})`);
+  const crossing = { x: W * 16 - 1, y: 80, vx: 180, vy: 0, life: 1, from: 'player', dmg: 1 };
+  b.shots.push({ ...crossing });
+  run(b, 1 / 60);
+  assert.equal(b.shots.length, 1, 'the projectile crosses before collision checks the new tile');
+  assert.equal(b.shots[0].x, 2);
+
   const c0 = new Sim(box({}), { seed: 'nowrap' }); c0.addPlayer('h', 'trevor'); const r = c0.players.get('h');
   r.x = W * 16 - 10; r.y = 96; run(c0, 0.6, new Map([['h', { ...emptyInput(), mx: 1 }]]));
   assert.ok(r.x > W * 16 - 20, 'without wrap the edge is a wall');
+  c0.shots.push({ ...crossing });
+  run(c0, 1 / 60);
+  assert.equal(c0.shots.length, 0, 'without wrap the projectile hits the boundary');
+
   // 3. corruption: the live floor raises rot; a hit doesn't
   const d = new Sim(box({ corrupt: [[3, 6, 0], [4, 6, 1]] }), { seed: 'rot' }); d.addPlayer('h', 'trevor'); d.addPlayer('g', 'manuel');
   const h = d.players.get('h'); h.x = 3 * 16 + 8; h.y = 6 * 16 + 8; h.rot = 0;
@@ -2607,10 +2617,28 @@ test('inside rules (src/engine/inside.js): enemies act on the beat, edges wrap, 
   const up = f.players.get('h'), down = f.players.get('g');
   up.x = 15 * 16 + 8; up.y = 8 * 16 + 8; down.x = 200; down.y = 30;
   run(f, 0.1); assert.deepEqual(f.inside.checkpoint, { x: 15 * 16 + 8, y: 8 * 16 + 8 }, 'the last terminal anyone reached');
-  up.x = 100; Object.assign(down, { hp: 0, downed: true, reviveT: 0 });
-  run(f, 2.5); assert.ok(down.downed, 'not before its beats');
+  Object.assign(down, { x: 2 * 16 + 8, y: 2 * 16 + 8 });
+  run(f, 0.1);
+  assert.equal(f.inside.checkpoint.x, down.x, 'a new arrival can return to the previous terminal');
+  assert.deepEqual(run(f, 0.1).filter((event) => event.t === 'terminal'), [], 'standing at two terminals does not retrigger either');
+  const next = { x: 15 * 16 + 8, y: 8 * 16 + 8 };
+  up.x = 150;
+  run(f, 0.1);
+  Object.assign(up, next);
+  run(f, 0.1);
+  up.mods.revive = 3;
+  Object.assign(down, { ...next, hp: 0, downed: true, reviveT: 0 });
+  run(f, 2.5);
+  assert.ok(down.downed && down.reviveT === 0, 'an enhanced nearby revive cannot interrupt collection');
   const back = run(f, 0.8);
   assert.ok(!down.downed && down.hp === f.maxHp(down) && down.x === 15 * 16 + 8 && back.some((v) => v.t === 'collected'), 'collected and back at the terminal, whole');
+  const plainInside = new Sim(box(true));
+  plainInside.addPlayer('h', 'trevor');
+  plainInside.addPlayer('g', 'manuel');
+  const spawn = plainInside.players.get('g');
+  Object.assign(spawn, { downed: true, hp: 0, x: 180, y: 100 });
+  run(plainInside, 4.2);
+  assert.ok(!spawn.downed && spawn.x === 48 && spawn.y === 48, 'before an authored terminal exists, collect at the map spawn');
   // ordinary maps: none of it
   const o = new Sim(rotArena(), { seed: 'plain' }); o.addPlayer('h', 'trevor');
   assert.equal(o.inside, null); assert.equal(o.snapshot().ins, undefined);
