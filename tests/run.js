@@ -5336,6 +5336,14 @@ test('Room 631 for the cold open (hub #99): closet by the window, a wall screen,
   assert.ok(Math.hypot(screen.x - obj('obj.tv').x, screen.y - obj('obj.tv').y) <= 3, "the wall screen is in frame when the staging's camera goes to the TV");
 });
 
+test('no silent later-act maps (hub #115): every Act 2 and Act 3 map has an ambience bed, and every bed kind exists', async () => {
+  const A = await import('../src/audio/audio.js');
+  const silent = Object.values(MAPS_FOR_TEST).filter((m) => (m.act ?? 1) >= 2 && !A.ambienceKind(m.id, m)).map((m) => m.id);
+  assert.deepEqual(silent, []);
+  for (const m of Object.values(MAPS_FOR_TEST)) { const k = A.ambienceKind(m.id, m); if (k && (m.act ?? 1) >= 2) assert.ok(A.BED_KINDS.includes(k), `${m.id}: unknown bed ${k}`); }
+  assert.equal(A.ambienceKind('refuge', { outdoor: true, act: 2 }), 'forest'); assert.equal(A.ambienceKind('ann_harbor', { outdoor: true, act: 2 }), 'harbor');
+  assert.equal(A.ambienceKind('gb_dishes', { outdoor: false, act: 2 }), 'building');
+});
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

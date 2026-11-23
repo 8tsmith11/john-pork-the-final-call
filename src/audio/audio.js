@@ -150,10 +150,69 @@ function startBed(kind) {
 }
 const AMBIENCE = { metro_plaza: startCity, aster_hall: () => startBed('building'), tunnel_1: () => startBed('tunnel'), platform: () => startBed('tunnel') };
 
-export function setArea(id) {
+// Rings two and three (hub #115: every Act 2 map was silent). A bed per region, by map id prefix; anything else in
+// the later acts gets wind outdoors and a building's hum indoors. All synthesized, so no files or licenses.
+const REGION_BEDS = [
+  [/^(route1_north|beltway)/, 'road'], [/^(refuge|rf_)/, 'forest'], [/^(beltsville|bv_)/, 'farm'],
+  [/^(meade|md_|meade_inside)/, 'compound'], [/^(baltimore|bmore_)/, 'city'], [/^(annapolis|ann_)/, 'harbor'],
+  [/^(corridor|cor_)/, 'compound'], [/^(gaithersburg|gt_)/, 'compound'], [/^(frederick|fr_)/, 'city'], [/^(enclave|en_)/, 'city'],
+  [/^(greenbelt|gb_)/, 'town'],
+];
+/** The ambience bed for a map: its own entry, its region's, or wind/building by act and outdoors. null for none. */
+export function ambienceKind(id, map) {
+  if (AMBIENCE[id]) return id;
+  const hit = REGION_BEDS.find(([rx]) => rx.test(id));
+  const indoor = map && !map.outdoor;
+  if (hit) return indoor && !['compound', 'city'].includes(hit[1]) ? 'building' : indoor && hit[1] === 'city' ? 'building' : hit[1];
+  if ((map?.act ?? 1) >= 2) return indoor ? 'building' : 'wind';
+  return null;
+}
+export const BED_KINDS = ['road', 'forest', 'farm', 'compound', 'city', 'harbor', 'town', 'wind', 'building', 'tunnel'];
+
+// Outdoor beds: wind through a band-pass, plus the place's own sounds now and then.
+function startOutdoor(kind) {
+  const a = ac(); if (!a) return null;
+  const bus = a.createGain(); bus.gain.value = 0; bus.connect(background);
+  const parts = [], timers = [];
+  const windGain = { forest: 0.10, farm: 0.09, road: 0.12, harbor: 0.07, town: 0.06, wind: 0.13 }[kind] ?? 0.1;
+  const w = loopNoise(a, 'brown', 'bandpass', kind === 'harbor' ? 260 : 520, windGain, bus); parts.push(w);
+  const lfo = a.createOscillator(), lg = a.createGain(); lfo.frequency.value = kind === 'harbor' ? 0.12 : 0.07; lg.gain.value = windGain * 0.6;
+  lfo.connect(lg); lg.connect(w.g.gain); lfo.start(); parts.push({ src: lfo });   // gusts (waves, at the harbor)
+  const tone = (type, f0, f1, dur, gain, delay = 0) => {
+    const t = a.currentTime + delay, o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(gain, t + Math.min(0.05, dur / 3)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(bus); o.start(t); o.stop(t + dur + 0.05);
+  };
+  const every = (lo, hi, fn) => { const go = () => { fn(); timers.push(setTimeout(go, lo + Math.random() * (hi - lo))); }; timers.push(setTimeout(go, lo)); };
+  if (kind === 'forest') every(1200, 4200, () => { const f = 2400 + Math.random() * 1600; tone('sine', f, f * 1.3, 0.12, 0.03); tone('sine', f * 1.1, f * 0.9, 0.1, 0.025, 0.16); });   // birds
+  if (kind === 'farm') every(300, 900, () => { for (let i = 0; i < 3; i++) tone('sine', 4600, 4500, 0.03, 0.012, i * 0.06); });                                                   // crickets
+  if (kind === 'harbor') { every(5000, 14000, () => tone('triangle', 1300, 650, 0.5, 0.025)); every(25000, 50000, () => tone('sawtooth', 110, 104, 2.2, 0.035)); }                      // gulls, a foghorn
+  if (kind === 'road') every(9000, 20000, () => tone('sawtooth', 900, 380, 1.8, 0.012));                                                                                              // a drone passing over
+  if (kind === 'town') every(6000, 15000, () => tone('sine', 660, 640, 0.25, 0.015));                                                                                                 // a bell somewhere, a door chime
+  bus.gain.linearRampToValueAtTime(0.8, a.currentTime + 2);
+  return { stop() { bus.gain.linearRampToValueAtTime(0, a.currentTime + 1); timers.forEach(clearTimeout); setTimeout(() => parts.forEach((x) => x.src.stop()), 1200); } };
+}
+
+// The Meade and the Corridor: clean machinery. A strong mains hum, a high whine, and a status beep now and then.
+function startCompound() {
+  const a = ac(); if (!a) return null;
+  const h = startBed('building'); if (!h) return null;
+  const bus = a.createGain(); bus.gain.value = 0.5; bus.connect(background);
+  const whine = a.createOscillator(), wg = a.createGain(); whine.frequency.value = 7800; wg.gain.value = 0.004; whine.connect(wg); wg.connect(bus); whine.start();
+  const timers = [];
+  const beep = () => { const t = a.currentTime, o = a.createOscillator(), g = a.createGain(); o.type = 'square'; o.frequency.value = 1040; g.gain.setValueAtTime(0.012, t); g.gain.setValueAtTime(0, t + 0.07); o.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.1); timers.push(setTimeout(beep, 3000 + Math.random() * 4000)); };
+  timers.push(setTimeout(beep, 1500));
+  return { stop() { h.stop(); timers.forEach(clearTimeout); bus.gain.linearRampToValueAtTime(0, a.currentTime + 1); setTimeout(() => whine.stop(), 1200); } };
+}
+const BEDS = { road: () => startOutdoor('road'), forest: () => startOutdoor('forest'), farm: () => startOutdoor('farm'), harbor: () => startOutdoor('harbor'),
+  town: () => startOutdoor('town'), wind: () => startOutdoor('wind'), compound: startCompound, city: startCity, building: () => startBed('building'), tunnel: () => startBed('tunnel') };
+
+export function setArea(id, map = null) {
   setInstrumentFocus(null, null); // do not carry a previous map's performers into another scene
-  if (amb && amb.id !== id) { amb.handle?.stop(); amb = null; }
-  if (AMBIENCE[id] && !amb) amb = { id, handle: AMBIENCE[id]() };
+  const kind = ambienceKind(id, map), key = kind;   // walking between maps of one region keeps its bed going
+  if (amb && amb.id !== key) { amb.handle?.stop(); amb = null; }
+  if (kind && !amb) amb = { id: key, handle: (AMBIENCE[kind] ?? BEDS[kind])?.() };
   const src = MUSIC[id];
   if (src === trackSrc) return;
   if (track) { const old = track; fade(old, 0, 1200, () => { old.pause(); mediaVolumes.delete(old); }); }

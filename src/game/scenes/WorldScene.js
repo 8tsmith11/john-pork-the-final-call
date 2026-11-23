@@ -1028,7 +1028,7 @@ export class WorldScene extends Phaser.Scene {
     // The whole area is on screen (the apartment, small rooms): the minimap adds nothing and would sit on the room.
     this.mapFits = mw <= vw && mh <= vh;
     this.mapLabel.setText(map.name);
-    setArea(map.id);
+    setArea(map.id, map);
     for (const s of this.enemySprites.values()) s.destroy();
     this.enemySprites.clear();
   }
