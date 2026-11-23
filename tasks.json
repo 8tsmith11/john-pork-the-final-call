@@ -93,7 +93,7 @@
   {
    "id": 6,
    "created_at": "2026-11-19T22:59:24Z",
-   "updated_at": "2026-11-20T16:20:39Z",
+   "updated_at": "2026-11-23T18:44:25Z",
    "history": [
     "2026-11-19T22:59:24Z BagelMeister: added (for gonman)",
     "2026-11-19T23:28:00Z BagelMeister: refiled to section world bucket",
@@ -108,7 +108,8 @@
     "2026-11-20T14:36:28Z LoreKeeper: note: Trevor approved rendering at 32392bc (general #150). Current main conflicts in crowds and Spanish integration, and the continuity gate stays on sealed story #52/#55. @gonman please coordinate the refresh with the systems owner once the prerequisite has its review, then send the new head for lore and integration verification.",
     "2026-11-20T15:21:52Z LoreKeeper: note: World agreed to both play orders on the sealed board and the wording choice is recorded there. The prerequisite still needs systems approval. Review the refreshed #96 against current main once it lands.",
     "2026-11-20T16:04:55Z LoreKeeper: note: PR #96 at 26731c8 now previews clean on f784ab8. Exact GitHub candidate 2281b9e passes diff check. World reports the Node suite, level check and Spanish audit passed, and Trevor approved rendering on this head (general #191 and #192). The sealed continuity prerequisite remains open with no linked PR.",
-    "2026-11-20T16:20:39Z LoreKeeper: note: The prerequisite is linked as draft PR #118 and awaits systems review on hub #77. After it lands, review the refreshed #96 with the sealed continuity check."
+    "2026-11-20T16:20:39Z LoreKeeper: note: The prerequisite is linked as draft PR #118 and awaits systems review on hub #77. After it lands, review the refreshed #96 with the sealed continuity check.",
+    "2026-11-23T18:44:25Z gonman: turn: BagelMeister, trevor (BagelMeister: approve or rewrite the two refinery-sign after lines (story #114). trevor: rendering/systems review of bcd6300 (stillAfter/textAfter/seenAfter bound to boss.bmore_sign.down) and exact-head merge)"
    ],
    "title": "Baltimore 2098 art pass: port, factories, rowhouses, skyline",
    "details": "After the Baltimore research brief lands.",
@@ -117,7 +118,13 @@
    "owner": "gonman",
    "section": "world",
    "mechanic": false,
-   "review": "PR #96 (Baltimore art: new baltimore sheet with the crane, containers, rowhouse fronts and stoops, the SHOAL refinery sign, skyline strips; the four Baltimore maps dressed and their lines written in EN/ES). LoreKeeper's changes from story #49 are being applied now."
+   "review": "PR #96 (Baltimore art: new baltimore sheet with the crane, containers, rowhouse fronts and stoops, the SHOAL refinery sign, skyline strips; the four Baltimore maps dressed and their lines written in EN/ES). LoreKeeper's changes from story #49 are being applied now.",
+   "turn": [
+    "BagelMeister",
+    "trevor"
+   ],
+   "turn_at": "2026-11-23T18:44:25Z",
+   "turn_for": "BagelMeister: approve or rewrite the two refinery-sign after lines (story #114). trevor: rendering/systems review of bcd6300 (stillAfter/textAfter/seenAfter bound to boss.bmore_sign.down) and exact-head merge"
   },
   {
    "id": 7,
