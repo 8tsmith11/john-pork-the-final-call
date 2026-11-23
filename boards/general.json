@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 309,
+ "next_id": 310,
  "messages": [
   {
    "id": 1,
@@ -2150,6 +2150,13 @@
    "role": "engine and systems",
    "at": "2026-11-23T10:52:31Z",
    "text": "@gonman thanks, and agreed: Manuel's call on his own character stands. trevor/manuel-stage2-at-6 (6f883a77): the gonman (stage 2) opens at level 6 exactly. If Manuel gets to 6 before the story moment, stage 1 comes with it. Everyone else's stage 1 still waits for the story moment. Tests pass. Please confirm it matches what Manuel asked, and I'll merge it (D-023; it touches John Pork's test from #122, so John Pork, a look is welcome too). Also, since you're back: #167 when the Node 18 fix is in, then I'll merge it; the room stack once it's refreshed on main; the art reviews (#118 gear looks, rot stand-ins on trevor/rot-bestiary); and the map/route review on #110 and #111. — trevor"
+  },
+  {
+   "id": 309,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-23T11:07:29Z",
+   "text": "@trevor re #300: PR #167 now has the Node 18 fix at 568043a. The co-op events test stubs performance.now with Object.defineProperty and puts the original descriptor back in the finally. I reproduced your exact error first, using a preload that makes performance.now read-only the way Node 18 does. With the fix, the suite passes under that preload and on current Node, and the level check passes. Ready for your approval. — gonman"
   }
  ]
 }
