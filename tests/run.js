@@ -75,7 +75,7 @@ test('deferred startup with the full roster matches boss scaling on ordinary map
     assert.equal(boss.def.hp, 1440); assert.equal(boss.def.hp, other.def.hp);   // doubled in task #33
     assert.equal(loaded.snapshot().enemies.find((e) => e.boss).boss.max, other.def.hp);
     assert.deepEqual([...loaded.enemies.values()].map((e) => e.spawnKey), [...entered.enemies.values()].map((e) => e.spawnKey));
-    assert.equal(loaded.events.filter((e) => e.t === 'boss').length, 1);
+    for (const sim of [loaded, entered]) { sim.step(1 / 60, new Map()); assert.equal(sim.events.filter((e) => e.t === 'boss').length, 1, 'the spawn\'s boss event goes out with the first step'); }
   }
 });
 test('startup stays eager by default and deferred spawning preserves killed enemies', () => {
@@ -95,6 +95,7 @@ test('recorded constructor settings apply before eager and deferred initial spaw
     const boss = [...sim.enemies.values()].find((e) => e.boss);
     assert.equal(boss.kind, 'boss.sahur');
     assert.equal(sim.snapshot().enemies.find((e) => e.boss).k, 'boss.sahur');
+    sim.step(1 / 60, new Map());
     assert.equal(sim.events.filter((e) => e.t === 'boss').length, 1);
   }
 });
@@ -2949,6 +2950,118 @@ test('a staged dialogue cue stays busy until done and cannot resume queued actio
   assert.equal(stage.cueBusy, false);
   assert.deepEqual(actions, ['wait', 'next']);
 });
+// "Some animations only show on the host": the host's snapshot broadcasts and the guest's playback.
+const fxArena = () => ({ id: 'fx-test', w: 40, h: 40, objects: [], enemies: [], spawns: [{ x: 160, y: 160 }], solid: () => false });
+const fxGuest = (mapId, extra = {}) => {
+  let deliver = null;
+  const guest = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'client', localId: 'guest', snapBuf: [], map: { id: mapId }, events: { once() {} },
+    net: { on: (t, fn) => { if (t === 'msg') deliver = fn; } }, ...extra,
+  });
+  guest._wireNet();
+  return { guest, deliver: (msg) => deliver(msg) };
+};
+
+test('co-op events: every sim event from the host frames between two broadcasts reaches a guest exactly once, even when snapshots bunch up', () => {
+  const sim = new Sim(fxArena());
+  sim.addPlayer('host', 'trevor'); sim.addPlayer('guest', 'manuel');
+  const timers = [], sent = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', localId: 'host', character: 'trevor', ready: true, acc: 0, sim, map: { id: 'fx-test', doors: new Map() },
+    save: newSave({ seed: 'fx-sync', rolls: {}, gameVersion: 't' }), remoteInputs: new Map(), input2: { read: () => emptyInput() },
+    events: { once() {} }, time: { now: 0, addEvent: (t) => timers.push(t) }, net: { on() {}, broadcast: (m) => sent.push(m) },
+    _handleInteract() {}, _hostEvents() {}, _tickActOneEnding() {}, _render() {},
+  });
+  host._wireNet();
+  const broadcast = timers.find((t) => t.delay === 50).callback;
+  let n = 0;
+  const frames = (count, hz, probe = true) => { for (let i = 0; i < count; i++) { if (probe) sim.emit({ t: 'probe', n: n++ }); host.update(0, 1000 / hz); } };
+  frames(7, 144); broadcast();   // a 144 Hz host draws about seven frames per broadcast
+  frames(3, 60); broadcast();
+  frames(4, 120); broadcast();
+  frames(3, 60); broadcast();
+  frames(4, 60, false); broadcast();   // the last probes leave with the next steps
+  const snaps = sent.filter((m) => m.t === 'snap').map((m) => m.snap);
+  assert.equal(snaps.length, 5);
+  assert.deepEqual(snaps.flatMap((s) => s.events).filter((e) => e.t === 'probe').map((e) => e.n), [...Array(n).keys()], 'the host sends each event once, in order');
+
+  const { guest, deliver } = fxGuest('fx-test');
+  const arrivals = [1000, 1050, 1051, 1150, 1200].map((at, i) => [at, snaps[i]]);   // the second and third arrive together
+  const seen = [], ownNow = Object.getOwnPropertyDescriptor(performance, 'now');
+  let now = 1000;
+  // Node 18 makes performance.now read-only to plain assignment (trevor, PR #167 review); defineProperty works on every version.
+  Object.defineProperty(performance, 'now', { value: () => now, configurable: true, writable: true });
+  try {
+    for (; now < 1500; now += 7) {   // a guest drawing at 144 Hz
+      while (arrivals.length && arrivals[0][0] <= now) deliver({ t: 'snap', snap: arrivals.shift()[1] });
+      seen.push(...guest._interpolated().events.filter((e) => e.t === 'probe').map((e) => e.n));
+    }
+    assert.deepEqual(seen, [...Array(n).keys()], 'the guest plays each one exactly once (none skipped, none drawn twice)');
+    // A long frame: more snapshots arrive than the buffer keeps before the guest draws again. They still play, once.
+    const late = Array.from({ length: 22 }, (_, i) => ({ ...snaps[0], events: [{ t: 'probe', n: 100 + i }] }));
+    for (const snap of late) deliver({ t: 'snap', snap });
+    now += 400;
+    const after = guest._interpolated().events.filter((e) => e.t === 'probe').map((e) => e.n);
+    assert.deepEqual(after, late.map((s) => s.events[0].n));
+    assert.equal(guest._interpolated().events.length, 0, 'and not again');
+  } finally { if (ownNow) Object.defineProperty(performance, 'now', ownNow); else delete performance.now; }
+});
+
+test('co-op camera effects: a puzzle shake on the host reaches a guest on the same map, not one on another map', () => {
+  const save = newSave({ seed: 'camfx', rolls: {}, gameVersion: 't' }), sent = [], shakes = [];
+  const lever = { id: 'obj.switch_a', label: 'Lever A', x: 3, y: 3 };
+  const sim = { players: new Map([['host', { id: 'host', character: 'trevor', x: 400, y: 400 }], ['g1', { id: 'g1', character: 'manuel', x: 3 * 16 + 8, y: 4 * 16 + 8 }]]) };
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', localId: 'host', character: 'trevor', save, sim, map: { id: 'switchyard', objects: [lever] },
+    net: { conns: new Map([['g1', 1]]), send() {}, broadcast: (m) => sent.push(m) }, cameras: { main: { shake: (...a) => shakes.push(['host', ...a]) } },
+    _puzzleNotice() {}, _drawLevers() {}, _refreshPuzzleProps() {}, _checkGate: () => false });
+  assert.ok(host._puzzleAct('g1', 'obj.switch_a'), 'a guest pulls the lever; the host runs it');
+  const camfx = sent.filter((m) => m.t === 'camfx');
+  assert.deepEqual(camfx, [{ t: 'camfx', kind: 'shake', args: [80, 0.003], area: 'switchyard' }]);
+  const cam = (who) => ({ main: { shake: (...a) => shakes.push([who, ...a]), destroy: () => shakes.push([who, 'destroy']) } });
+  const here = fxGuest('switchyard', { cameras: cam('here') }), away = fxGuest('metro_plaza', { cameras: cam('away') });
+  for (const m of sent) { here.deliver(m); away.deliver(m); }
+  assert.deepEqual(shakes, [['host', 80, 0.003], ['here', 80, 0.003]], 'the guest at the lever feels it; one on another map does not');
+  here.deliver({ t: 'camfx', kind: 'destroy', args: [], area: 'switchyard' });
+  assert.equal(shakes.length, 2, 'only shakes, flashes and fades: nothing else on the camera');
+});
+
+test('co-op toasts: a guest\'s item use and scooter lines go to that guest, not the host', () => {
+  const sim = new Sim(fxArena());
+  sim.addPlayer('host', 'trevor'); sim.addPlayer('guest', 'manuel');
+  const save = newSave({ seed: 'toast-to', rolls: {}, gameVersion: 't' }), handlers = {}, sent = [], hostToasts = [];
+  Inv.add(save.party.manuel, 'item.fish_perch'); Inv.add(save.party.manuel, 'item.scooter');
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', localId: 'host', character: 'trevor', save, sim, map: { id: 'fx-test', outdoor: false }, remoteInputs: new Map(),
+    events: { once() {} }, time: { now: 0, addEvent() {} }, net: { on: (t, fn) => { handlers[t] = fn; }, send: (to, m) => sent.push([to, m]), broadcast() {} },
+    _toast: (t) => hostToasts.push(t), _syncParty() {},
+  });
+  host._wireNet();
+  handlers.msg('guest', { t: 'use', id: 'item.fish_perch' });
+  handlers.msg('guest', { t: 'scooter' });
+  host._hostEvents([{ t: 'scooter', id: 'guest', knocked: true }, { t: 'scooter', id: 'ai:michael', on: true }]);
+  assert.deepEqual(hostToasts, [], 'nothing of theirs pops up on the host');
+  assert.deepEqual(sent.map(([to, m]) => [to, m.t]), [['guest', 'toast'], ['guest', 'toast'], ['guest', 'toast']], 'all three go to the guest; a companion gets none');
+  assert.match(sent[0][1].text, /manuel has the white perch/);
+  assert.equal(sent[1][1].text, 'No scooters indoors.');
+  assert.equal(sent[2][1].text, 'Knocked off your scooter!');
+  const toasts = [], { deliver } = fxGuest('fx-test', { _toast: (t) => toasts.push(t) });
+  for (const [, m] of sent) deliver(m);
+  assert.equal(toasts.length, 3, 'and the guest shows them');
+});
+
+test('a boss spawned by a map change keeps its name card: the spawn event goes out with the next step, once', () => {
+  for (const bossVariant of ['warden', 'sahur']) {
+    const sim = new Sim(MAPS_FOR_TEST.room631, { seed: 'boss-card', bossVariant });
+    addSpawnParty(sim);
+    sim.setMap(MAPS_FOR_TEST.platform, 'tunnel_1');   // the host does this outside step(), in the fade-out callback
+    sim.step(1 / 60, new Map());
+    const cards = sim.events.filter((e) => e.t === 'boss');
+    assert.equal(cards.length, 1, `${bossVariant}: the name card's event survives into the first step`);
+    assert.equal(!!cards[0].sahur, bossVariant === 'sahur');
+    sim.step(1 / 60, new Map());
+    assert.equal(sim.events.filter((e) => e.t === 'boss').length, 0, 'and is not sent again');
+  }
+});
 
 test('cutscenes: the HUD steps out from under the letterbox bars and comes back as it was (Trevor: weird cutoff on the UI)', () => {
   const mk = (depth, visible = true, sf = 0) => ({ depth, visible, scrollFactorX: sf, active: true, setVisible(v) { this.visible = v; return this; } });
@@ -3072,7 +3185,7 @@ test('puzzle kit in co-op: a guest\'s move runs on the host, progress stays on t
     const party = { trevor: newSave({ seed: 'pz', rolls: {}, gameVersion: 't' }).party.trevor, michael: newSave({ seed: 'pz', rolls: {}, gameVersion: 't' }).party.michael };
     const sent = [], said = [];
     const host = { mode: 'host', character: 'trevor', localId: 'host', save: { flags: {}, world: { seed: 'pz' }, party }, time: { now: 0 }, cameras: { main: { shake() {} } },
-      net: { send: (peer, msg) => sent.push([peer, msg]) }, _say: (t) => said.push(t), _toast() {}, _tickQuests() {}, _syncParty() {} };
+      net: { send: (peer, msg) => sent.push([peer, msg]) }, _say: (t) => said.push(t), _toast() {}, _tickQuests() {}, _syncParty() {}, _camFx() {} };
     const objs = { 'obj.a': { id: 'obj.a', label: 'A' }, 'obj.b': { id: 'obj.b', label: 'B' } };
     const money0 = party.michael.money ?? 0, scrap0 = Inv.count(party.michael, 'item.mat_scrap');
     CraftWorldScene.prototype._usePuzzle.call(host, pz, objs['obj.a'], 'michael', 'peerM');
@@ -3364,7 +3477,8 @@ test('a caught pickpocket changes that roommate\'s NPC actions across saves unti
 test('regional boss intros preserve the saved Warden name', () => {
   const field = 'act1.boss.wardenName';
   const scene = { mode: 'host', save: { flags: {} }, time: { delayedCall() {} }, _bossIntro() {} };
-  const warden = new Sim(MAPS_FOR_TEST.platform, { seed: 'warden-name' }).events.find((e) => e.t === 'boss');
+  const platform = new Sim(MAPS_FOR_TEST.platform, { seed: 'warden-name' }); platform.step(1 / 60, new Map());
+  const warden = platform.events.find((e) => e.t === 'boss');
   CraftWorldScene.prototype._fx.call(scene, warden, { players: [] });
   assert.equal(scene.save.flags[field], warden.name);
 
@@ -4704,7 +4818,8 @@ test('both Act 1 victories queue exactly one host finale and checkpoint its comp
     assert.equal(save.world.act, 2);
     assert.equal(cards, 1);
     assert.equal(writes, 1);
-    assert.deepEqual(broadcasts, [{ t: 'act1Complete' }]);
+    assert.deepEqual(broadcasts.filter((m) => m.t === 'act1Complete'), [{ t: 'act1Complete' }]);
+    assert.equal(broadcasts.filter((m) => m.t === 'act1Arrival').length, 1, 'guests see the arrival too');
 
     const timers = [], shape = { setOrigin() { return this; }, setDepth() { return this; } };
     const guest = Object.assign(Object.create(CraftWorldScene.prototype), {

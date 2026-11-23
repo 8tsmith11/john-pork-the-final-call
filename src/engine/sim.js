@@ -130,7 +130,7 @@ export class Sim {
         const def = { name: 'TUNG TUNG TUNG SAHUR', epithet: 'the Watchdog', color: 0xa0703c, radius: 9, hp: 99999, speed: 40, damage: 16,
           ai: 'sahur', xp: 80, touchCooldown: 0.9, modules: [] };
         this.enemies.set(id, { id, spawnKey, kind: 'boss.sahur', def, boss: true, sahur: true, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 0.75, cd2: 2, beat: 0, hurtT: 0, kx: 0, ky: 0, dash: 0, root: 0, fightT: 0 });
-        this.events.push({ t: 'boss', name: def.name, epithet: def.epithet, sahur: true });
+        this.emit({ t: 'boss', name: def.name, epithet: def.epithet, sahur: true });   // spawning runs outside step(): the next step sends it
         continue;
       }
       if (BOSSES[e.kind]) {   // bosses made with defineBoss (src/content/bosses.js): mid bosses unless def.mini === false
@@ -151,7 +151,7 @@ export class Sim {
         const w = generateWarden(this.seed, Math.max(1, this.players.size));
         const def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
         this.enemies.set(id, { id, spawnKey, kind: e.kind, def, boss: true, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 2, cd2: 3, hurtT: 0, kx: 0, ky: 0, dash: 0 });
-        this.events.push({ t: 'boss', kind: e.kind, name: w.name, epithet: w.epithet });
+        this.emit({ t: 'boss', kind: e.kind, name: w.name, epithet: w.epithet });
         continue;
       }
       const base = ENEMIES[e.kind];
