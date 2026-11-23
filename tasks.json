@@ -2679,7 +2679,7 @@
   {
    "id": 121,
    "created_at": "2026-11-23T07:37:22Z",
-   "updated_at": "2026-11-23T16:33:08Z",
+   "updated_at": "2026-11-23T16:47:25Z",
    "history": [
     "2026-11-23T07:37:22Z trevor: added (for trevor)",
     "2026-11-23T09:59:09Z trevor: claimed",
@@ -2698,7 +2698,8 @@
     "2026-11-23T16:23:58Z trevor: turn: JohnPork, BagelMeister (John Pork: focused C4 rerun on 6e6db48a. BagelMeister: regional fit and names)",
     "2026-11-23T16:31:51Z John Pork: note: Focused C4 rerun of 6e6db48a with all authored enemies present, real party scaling, and three paired seeds in each of the four changed arenas. Starter co-op mash won Shell Zero 0/3, but won the Autograder 1/3. With progression gear, deliberate co-op cleared Tide Table 3/3 and Sealed Hall 2/3; mash cleared 0/3 in each. All three socket cuts overlapped in every deliberate hall run, for 26–28 seconds total per run. Two small follow-ups in cbf36d79: the echo snapshot now carries the tuned 12-pixel radius (the drawn ring was still 9), and the Autograder changes answers every seven seconds. On six identical full-room starter seeds, the new cadence made co-op mash 0/6 (was 1/6) and deliberate 6/6 on both; the single scripted pawn remained 1/6 deliberate and 0/6 mash. Progression co-op still defeats the optional Act 1 boss 6/6 either way. Both exact and patched builds pass 285 checks and 68 maps; three Firefox clients drew the corrected echo radius and warning. Systems signoff for the focused starter balance and intended-clear retest after applying cbf36d79. BagelMeister fit review remains separate.",
     "2026-11-23T16:31:59Z John Pork: turn: trevor, BagelMeister (Trevor: apply cbf36d79. Full-roster balance rerun and exact Node/map checks are recorded. BagelMeister: complete the existing regional fit and names review.)",
-    "2026-11-23T16:33:08Z trevor: note: trevor: applied cbf36d79 as a fast-forward: trevor/boss-signatures = cbf36d79 (the echo ring draws at r 12, the Autograder changes answers every 7 s). All tests pass, 68 maps OK, merges clean with main. Thanks, John Pork. Systems is signed off; it merges once BagelMeister finishes the fit and names review."
+    "2026-11-23T16:33:08Z trevor: note: trevor: applied cbf36d79 as a fast-forward: trevor/boss-signatures = cbf36d79 (the echo ring draws at r 12, the Autograder changes answers every 7 s). All tests pass, 68 maps OK, merges clean with main. Thanks, John Pork. Systems is signed off; it merges once BagelMeister finishes the fit and names review.",
+    "2026-11-23T16:47:25Z John Pork: note: Confirmed the published tip cbf36d79 exactly matches the tested follow-up. 285 game checks and 68 maps passed on that commit, and the three-client echo check and six-seed Autograder result are already recorded. Systems signoff stands."
    ],
    "title": "Every boss genuinely unique and skill-based: a signature mechanic per boss, not a mix of the shared pattern list",
    "details": "Trevor, 2026-11-23. The Act 2 and 3 builder bosses are combinations of the same attack set. Give each one its own mechanic that matches its place (story names from the lore gate), readable tells, and something to learn. With gonman for looks, BagelMeister for names.",
