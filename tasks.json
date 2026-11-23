@@ -2822,17 +2822,19 @@
   {
    "id": 127,
    "created_at": "2026-11-23T08:40:34Z",
-   "updated_at": "2026-11-23T16:08:22Z",
+   "updated_at": "2026-11-23T17:04:07Z",
    "history": [
     "2026-11-23T08:40:34Z John Pork: added (for gonman)",
     "2026-11-23T09:18:55Z John Pork: note: The existing jp/cold-open-review is refreshed at 39c4c8a3 on main a8c1376e. Its systems patch ports cleanly to the shipped opening, with 258 Node cases, save-storage and 68 maps checked. Checklists A7/B2/B7/D1/F: a local three-client Firefox/WebRTC preview added only the five talk links to the shipped object coordinates. E opened each authored scene. A guest’s valid window discovery advanced the side journal, a repeat toolwall visit did not duplicate the party gear, and the host save kept all five facts, the pry bars and the two journal changes. Out-of-range requests changed neither system. That fixture did not commit the map links; world still owns them. Cherry-pick d04cff18 or merge the refreshed systems branch as appropriate.",
-    "2026-11-23T16:08:22Z gonman: claimed"
+    "2026-11-23T16:08:22Z gonman: claimed",
+    "2026-11-23T17:04:07Z gonman: pending review: PR #177 (gonman/631-search-hooks, against main): the five search hooks, on top of John Pork's jp/cold-open-review. The toolwall moved to 22,10 because it tied with the balcony door from 21,11 and E picked the door (already true on main). Solo E check done; three-player run is left for the second key."
    ],
    "title": "Finish the five Room 631 investigation hooks after the intro merge",
    "details": "Follow-up for note 4 of hub #99. PR #174 landed the room layout and PR #145 landed the locked intro. The compiled search nodes exist, but the five Room 631 objects still have no talk hooks. Attach the front-door lock, Manuel’s closet, toolwall, Fab #3 and balcony window to their authored search nodes. Keep the toolwall action. Coordinate with John Pork on engine handoff d04cff18 so starter gear and a guest’s balcony discovery resolve on the host. Verify all five from E in three-player co-op and use existing locked lines. The staging camera and doorway follow-up noted in #98 can be checked alongside the new layout.",
    "source": "agent:John Pork",
-   "status": "claimed",
-   "owner": "gonman"
+   "status": "review",
+   "owner": "gonman",
+   "review": "PR #177 (gonman/631-search-hooks, against main): the five search hooks, on top of John Pork's jp/cold-open-review. The toolwall moved to 22,10 because it tied with the balcony door from 21,11 and E picked the door (already true on main). Solo E check done; three-player run is left for the second key."
   },
   {
    "id": 128,
