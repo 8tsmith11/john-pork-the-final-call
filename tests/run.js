@@ -5939,6 +5939,7 @@ test('boss openings and echo warnings stay readable in their shipped arenas', as
     const echo = mechView(shell);
     if (echo.ex == null) continue;
     assert.equal(echo.ex, b.x, 'the echo follows one player when the nearest player changes');
+    assert.equal(echo.r, MECH.mimic.r, 'the replicated warning has the authoritative damage radius');
     if (echo.w) { warned = true; assert.equal(b.hp, before, 'formation is harmless'); }
     else if (b.hp < before) hurt = true;
   }

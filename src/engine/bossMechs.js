@@ -35,7 +35,7 @@ export const MECH = {
   rewind: { every: 12, warn: 1.2, back: 3, giveBack: 0.5 },
   molten: { every: 5, warn: 1.0, last: 4, half: 14, dps: 10, stuck: 2.5, stuckMul: 1.8 },
   verify: { green: 5, amber: 1, red: 3, greenMul: 1.2, redMul: 0.1, still: 3, dmg: 8 },
-  rubric: { every: 8, order: ['melee', 'shot', 'dash'], right: 1.6, wrong: 0.25, pen: 4, penEvery: 0.5 },
+  rubric: { every: 7, order: ['melee', 'shot', 'dash'], right: 1.6, wrong: 0.25, pen: 4, penEvery: 0.5 },
 };
 import { ENEMIES } from '../content/enemies.js';
 
@@ -308,7 +308,7 @@ export function mechView(e) {
   if (k === 'tide') return { k, e: R(m.edge ?? 0), l: Math.round((m.level ?? 0) * 100) / 100, w: m.bossWet ? 1 : 0 };
   if (k === 'flicker') return { k, lit: m.lit === false ? 0 : 1, warn: m.warn ? 1 : 0 };
   if (k === 'listen') return { k, ...(m.lock ? { lx: R(m.lock.x), ly: R(m.lock.y), lt: Math.round(m.lock.t * 10) / 10 } : {}) };
-  if (k === 'mimic') return { k, ...(m.echo?.x != null ? { ex: R(m.echo.x), ey: R(m.echo.y), w: m.echo.warn ? 1 : 0 } : {}) };
+  if (k === 'mimic') return { k, ...(m.echo?.x != null ? { ex: R(m.echo.x), ey: R(m.echo.y), r: MECH.mimic.r, w: m.echo.warn ? 1 : 0 } : {}) };
   if (k === 'chorus') return { k, h: m.holders ?? [] };
   if (k === 'vents') return { k, p: m.phaseNow ?? '', v: (m.live ?? []).map((v) => [v.x, v.y]), s: m.scaldT > 0 ? 1 : 0 };
   if (k === 'current') return { k, s: m.surging ? 1 : 0, w: m.warn ? 1 : 0, o: m.openT > 0 ? 1 : 0 };

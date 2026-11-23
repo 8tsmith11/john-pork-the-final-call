@@ -3473,7 +3473,7 @@ export class WorldScene extends Phaser.Scene {
     if (m.k === 'mimic' && m.ex != null) {   // the echo: a pale copy of a body, walking where you were
       g.fillStyle(0xc9a0a0, 0.45).fillEllipse(m.ex, m.ey - 6, 10, 16).fillStyle(0xffffff, 0.5).fillRect(m.ex - 2, m.ey - 11, 1, 1).fillRect(m.ex + 1, m.ey - 11, 1, 1);
       const alpha = m.w ? 0.35 + 0.5 * pulse : 0.75;
-      g.lineStyle(1, m.w ? 0xffd27f : 0xc9a0a0, alpha).strokeCircle(m.ex, m.ey, 9);
+      g.lineStyle(1, m.w ? 0xffd27f : 0xc9a0a0, alpha).strokeCircle(m.ex, m.ey, m.r);
       if (m.w) this._mechLabel({ x: m.ex, y: m.ey }, 'ECHO FORMING', '#ffd27f');
     }
     if (m.k === 'vents') {   // vents: dark grates; the next group glows as it warns, then steam columns when they blow
