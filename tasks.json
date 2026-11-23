@@ -1,5 +1,5 @@
 {
- "next_id": 122,
+ "next_id": 123,
  "tasks": [
   {
    "id": 1,
@@ -2602,6 +2602,19 @@
    ],
    "title": "Every boss genuinely unique and skill-based: a signature mechanic per boss, not a mix of the shared pattern list",
    "details": "Trevor, 2026-11-23. The Act 2 and 3 builder bosses are combinations of the same attack set. Give each one its own mechanic that matches its place (story names from the lore gate), readable tells, and something to learn. With gonman for looks, BagelMeister for names.",
+   "source": "human:Trevor",
+   "status": "assigned",
+   "owner": "trevor"
+  },
+  {
+   "id": 122,
+   "created_at": "2026-11-23T07:37:24Z",
+   "updated_at": "2026-11-23T07:37:24Z",
+   "history": [
+    "2026-11-23T07:37:24Z trevor: added (for trevor)"
+   ],
+   "title": "Spread out what levelling unlocks (levelling can stay easy)",
+   "details": "Trevor, 2026-11-23: levelling up is very easy now, which is fine, but the content it unlocks must be spread out across the game. Audit progression.js and the level-gated unlocks; move morphs to story events (#119).",
    "source": "human:Trevor",
    "status": "assigned",
    "owner": "trevor"
