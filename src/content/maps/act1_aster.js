@@ -7,8 +7,8 @@
 // 631's scale (15 tall, so they draw at the same zoom as 631), a real floor plan each (kitchen, bath, bedroom, living
 // room, and no two the same shape), a landmark in view from the door, and props of their own (tools/art/gen_props.py,
 // the "ASTER's sixth floor, the neighbours" block; each new drawing is used only in its own flat).
+// The fifth floor and the laundry room are rebuilt to it too (third slice): 15 tall like the flats, a landmark each.
 import { makeMap } from './build.js';
-import { fromGrid } from './builder.js';
 
 // 637 opens off the hall's north side, so its door is in its south wall; 636 and 638 open off the south side, so
 // theirs are in the north wall: you come out facing the way you went in (tests/run.js checks every paired door).
@@ -183,52 +183,121 @@ export const apt636 = flat('apt_636', 'Apartment 636', [
 });
 
 // ---- The fifth floor: the same hallway as yours, one floor down, a little wrong ----
-// Secret: the fire hose cabinet holds a hard hat left as collateral (one per save). 531 sits right under 631.
-// The stairwell (west end) is a landing on the one stack: down to the lobby (S), up to the sixth floor (U).
-export const aster5f = fromGrid({
-  id: 'aster_5f', name: 'ASTER, fifth floor', fill: ':',
-  rows: [
-    '########################################',
-    '#S:U::::::::::H::::::::::::::::::::::::#',
-    '#::::::::::::::::::::::::::::::::::::::#',
-    '#:::::1::::d:::::::d:::::::d:::::::::::#',
-    '#::::::::::::::::::N:::::::::::::::E:::#',
-    '#:@::::::::::::::::::::::::::::::::::::#',
-    '########################################',
+// Rebuilt to the room standard (hub #113). The stairs are a landing at the west end (the one stack: down to the lobby,
+// up to six), with the fire hose cabinet on its wall (the landmark). The hall runs east to a window. Doors both sides;
+// 531 is the last on the north side, under 631. Off the south side: the trash room, and a lounge with a window nobody
+// sits at. The three plain doors keep the ids the level builder gave them.
+// Secret: the fire hose cabinet holds a hard hat left as collateral (one per save).
+const DOOR_5F = 'The same door as the ones upstairs, a hundred lower. The peephole goes dark while you stand there and lights up again when you move on.';
+const door5 = (id, x, y) => ({ id, art: 'obj.door', x, y, label: 'A fifth-floor door', text: DOOR_5F });
+export const aster5f = makeMap({
+  id: 'aster_5f', name: 'ASTER, fifth floor', propScale: 1.25, wear: 'lived', standard: true,
+  layout: [
+    '########################################',   // 0  the hose cabinet
+    `#:::::${'#'.repeat(34)}`,                    // 1  the stair landing
+    `#:::::${'#'.repeat(34)}`,                    // 2
+    `#:::::${'#'.repeat(34)}`,                    // 3
+    `#:::::${'#'.repeat(34)}`,                    // 4  north doors
+    `#${'c'.repeat(38)}#`,                        // 5  the hall
+    `#${'c'.repeat(38)}=`,                        // 6  the window at the east end
+    `#${'c'.repeat(38)}#`,                        // 7
+    '#############k##########mmmmmm##########',   // 8  south doors; the trash room; the lounge
+    '##########kkkkkkk#####mmmmmmmmmm########',   // 9
+    '##########kkkkkkk#####mmmmmmmmmm########',   // 10
+    '##########kkkkkkk#####mmmmmmmmmm########',   // 11
+    '##########kkkkkkk#####mmmmmmmmmm########',   // 12
+    '##########kkkkkkk#####mmmmmmmmmm########',   // 13
+    '###########################==###########',   // 14 the lounge window
   ],
-  legend: {
-    d: { prop: 'obj.door', label: 'A fifth-floor door', text: 'The same door as the ones upstairs, a hundred lower. The peephole goes dark while you stand there and lights up again when you move on.' },
-    1: { prop: 'obj.door', id: 'obj.door_531', label: '531', text: '531, right under 631. Two sticky notes on the door in the same handwriting. The older one: PLEASE NO FURNITURE AFTER MIDNIGHT. The newer one: WHAT ARE YOU BUILDING UP THERE.' },
-    H: { prop: 'obj.extinguisher', id: 'obj.aster5_hose', label: 'Fire hose cabinet', grant: 'item.hardhat',
+  spawns: [[2, 3]],
+  enemies: [['enemy.rotling', 34, 6]],
+  decals: [['dec.chalk', 2, 2], ['dec.stain', 30, 7], ['dec.stain', 14, 11], ['dec.litter_0', 12, 10]],
+  objects: [
+    { id: 'obj.aster5_stairs', art: 'obj.stairs', x: 1, y: 1, action: 'exit', to: 'aster_lobby', pair: 'obj.lobby_5f', label: 'Stairs (lobby)', text: 'Back down to the lobby.' },
+    { id: 'obj.aster5_up', art: 'obj.stairs', x: 3, y: 1, action: 'exit', to: 'aster_hall', pair: 'obj.stairs_6f', label: 'Stairs (sixth floor)', text: 'Up one more. The chalk numbers on the steps start again at 1, in a different hand.' },
+    { id: 'door.aster5_trash', art: 'door.wall', x: 13, y: 8, label: 'Trash room', door: true },
+    // The landing: the hose cabinet (the landmark)
+    { id: 'obj.aster5_hose', art: 'obj.hose_cabinet', x: 5, y: 0, landmark: true, light: 0.8, label: 'Fire hose cabinet', grant: 'item.hardhat',
       text: 'FIRE HOSE, behind a glass door that doesn\'t lock. The hose is gone. On the hook where it hung, a yellow hard hat and a note: BORROWED HOSE FOR THE GARDEN. HAT IS COLLATERAL. 4F.',
       doneText: 'The empty cabinet and the note from 4F. Nobody has brought the hose back.' },
-    N: { npc: 'npc.aster5_neighbor', art: 'npc.rotter_1', label: 'Someone in the fifth-floor hall', text: '"You\'re upstairs. Six-thirty-one. I know the three of you by your feet." He points at a spot on the ceiling. "Somebody stands right there at two every night, a long time. That\'s your fridge."' },
-    E: { enemy: 'enemy.rotling' },
-    '@': { spawn: true },
-    S: { exit: 'aster_lobby', id: 'obj.aster5_stairs', art: 'obj.stairs', label: 'Stairs (lobby)', pair: 'obj.lobby_5f', text: 'Back down to the lobby.' },
-    U: { exit: 'aster_hall', id: 'obj.aster5_up', art: 'obj.stairs', label: 'Stairs (sixth floor)', pair: 'obj.stairs_6f', text: 'Up one more. The chalk numbers on the steps start again at 1, in a different hand.' },
-  },
-}).build();
+    // North side
+    door5('obj.aster_5f_door_11_3', 11, 4), door5('obj.aster_5f_door_19_3', 19, 4), door5('obj.aster_5f_door_27_3', 27, 4),
+    { id: 'obj.door_531', art: 'obj.door', x: 36, y: 4, label: '531', text: '531, right under 631. Two sticky notes on the door in the same handwriting. The older one: PLEASE NO FURNITURE AFTER MIDNIGHT. The newer one: WHAT ARE YOU BUILDING UP THERE.' },
+    { id: 'obj.aster5_notices', art: 'obj.corkboard', x: 15, y: 4, label: 'Notices',
+      text: 'ELEVATOR: SEE NOTICE ON SIX. There is no notice on six. QUIET HOURS 10 TO 7, underlined by three different pens. A sign-up sheet for the roof garden with one name on it: 4F.' },
+    // South side
+    door5('obj.aster5_door_s1', 6, 8), door5('obj.aster5_door_s2', 19, 8), door5('obj.aster5_door_s3', 35, 8),
+    { id: 'obj.aster5_chute', art: 'obj.chute', x: 11, y: 8, label: 'Trash chute', text: 'The same chute as upstairs, one flap lower. Something is on its way down past you. It takes a while.' },
+    { id: 'obj.aster5_puzzle', art: 'obj.table', x: 27, y: 11, solid: true, label: 'A jigsaw on the table',
+      text: 'A thousand pieces, a lighthouse, nearly done. The last piece lies on the table beside the hole. Nobody on five will be the one to put it in.' },
+    { id: 'obj.aster5_window', art: 'obj.window_6f', x: 39, y: 6, light: 0.5, label: 'Window at the end of the hall', text: 'The view from your own hall window, ten feet lower. It is not ten feet better.' },
+    // People on five
+    { id: 'npc.aster5_neighbor', x: 21, y: 6, npc: true, art: 'npc.rotter_1', label: 'Someone in the fifth-floor hall', age: 'adult', text: '"You\'re upstairs. Six-thirty-one. I know the three of you by your feet." He points at a spot on the ceiling. "Somebody stands right there at two every night, a long time. That\'s your fridge."' },
+  ],
+  scenery: [
+    // doormats (flat), and what people leave outside their doors
+    ...[[11, 5], [27, 5], [36, 5], [19, 7], [35, 7]].map(([x, y]) => ({ art: 'obj.doormat', x, y, floor: true, scale: 1 })),
+    { art: 'obj.shoes', x: 12, y: 5 }, { art: 'obj.umbrella_stand', x: 28, y: 5 }, { art: 'obj.shoes', x: 34, y: 7 }, { art: 'obj.plant', x: 37, y: 5 }, { art: 'obj.boxes', x: 20, y: 7 },
+    { art: 'obj.umbrella_stand', x: 7, y: 7 }, { art: 'obj.plant', x: 38, y: 7 },
+    // lights: one of them has been about to go for a year
+    { art: 'obj.tube_light', x: 23, y: 4, scale: 1, light: 0.5, anim: 240 }, { art: 'obj.tube_light', x: 31, y: 4, scale: 1, light: 0.4, anim: 4000 }, { art: 'obj.extinguisher', x: 8, y: 4, scale: 1 },
+    // the landing
+    { art: 'obj.boxes', x: 5, y: 3 }, { art: 'obj.bin', x: 1, y: 4 },
+    // the trash room
+    { art: 'obj.bin', x: 10, y: 9 }, { art: 'obj.recycle', x: 16, y: 9 }, { art: 'obj.recycle', x: 16, y: 10 }, { art: 'obj.boxes', x: 10, y: 13 }, { art: 'obj.boxes', x: 11, y: 13 }, { art: 'obj.crate', x: 16, y: 13, solid: true },
+    // the lounge
+    { art: 'obj.couch', x: 24, y: 9, solid: true }, { art: 'obj.plant', x: 22, y: 9 }, { art: 'obj.plant', x: 31, y: 13 }, { art: 'obj.chair', x: 26, y: 11 }, { art: 'obj.chair', x: 28, y: 12 },
+    { art: 'obj.bookshelf', x: 31, y: 9, solid: true }, { art: 'obj.vending', x: 22, y: 13, solid: true, light: 0.4 }, { art: 'obj.ottoman', x: 25, y: 10 },
+  ],
+});
 
 // ---- The basement laundry: machines that work, and one on the end that eats coins and gives back something else ----
+// Rebuilt to the room standard (hub #113). You come in from the basement through the west wall. Washers and dryers
+// along the north wall, and on the end, set apart, the old machine (the landmark). The folding tables are an island in
+// the middle of the room; the supply closet is the north-east corner, the corkboard on its wall.
 // Secret: the machine on the end (a searchable container). The person folding hints at it.
-export const asterLaundry = fromGrid({
-  id: 'aster_laundry', name: 'ASTER, the laundry room', fill: ':',
-  rows: [
-    '################',
-    '#::::::::::::::#',
-    '#:WW:WW:WW:X:?:#',
-    '#::::::::::::::#',
-    '#::::::::::N:::#',
-    'D:@::::::::::::#',
-    '################',
+export const asterLaundry = makeMap({
+  id: 'aster_laundry', name: 'ASTER, the laundry room', propScale: 1.25, wear: 'lived', standard: true,
+  layout: [
+    '##################',   // 0  the light
+    '#wwwwwwwwwwww#kkk#',   // 1  the machines | the supply closet
+    '#wwwwwwwwwwww#kkk#',   // 2
+    '#wwwwwwwwwwww#kkk#',   // 3
+    '#wwwwwwwwwwww##k##',   // 4  closet door; the corkboard
+    '#wwwwwwwwwwwwwwww#',   // 5
+    '#wwwwwwwwwwwwwwww#',   // 6
+    ':::::::::::::::::#',   // 7  the door to the basement, in the west wall
+    '#::::::::::::::::#',   // 8
+    '#::::::::::::::::#',   // 9
+    '#::::::::::::::::#',   // 10 the folding tables
+    '#::::::::::::::::#',   // 11
+    '#::::::::::::::::#',   // 12
+    '#::::::::::::::::#',   // 13
+    '##################',   // 14
   ],
-  legend: {
-    W: { scenery: 'obj.washer', solid: true, tile: ':' },
-    X: { prop: 'obj.washer', id: 'obj.laundry_end_machine', label: 'The machine on the end', loot: 'lost', text: 'OUT OF ORDER, on a sign in three different hands. It takes your coin anyway, hums for a while, and drops something into the lint tray that isn\'t your coin.' },
-    '?': { prop: 'obj.board', id: 'obj.laundry_board', label: 'Laundry room corkboard', text: 'Index cards on cork. LOST: ONE SOCK, GRAY, WOOL. Two cards over, in different ink: FOUND: ONE GRAY SOCK, ASK AT 212. Neither card has moved since spring.' },
-    N: { npc: 'npc.laundry_folder', art: 'npc.rotter_2', label: 'Someone folding at 3 a.m.', text: '"Three a.m. is the only time every machine is free." She shakes out a towel and folds it into a square. "Except the one on the end. Nobody uses the one on the end."' },
-    '@': { spawn: true },
-    D: { exit: 'aster_basement', id: 'obj.laundry_out', art: 'obj.door', label: 'Back to the basement', pair: 'obj.basement_laundry', stepOn: true, text: 'Back to B-01.' },
-  },
-}).build();
+  spawns: [[2, 7]],
+  decals: [['dec.stain', 10, 2], ['dec.puddle_1', 3, 2], ['dec.drain', 7, 4]],
+  objects: [
+    { id: 'obj.laundry_out', art: 'obj.door', x: 0, y: 7, action: 'exit', to: 'aster_basement', pair: 'obj.basement_laundry', label: 'Back to the basement', text: 'Back to B-01.', floor: true, stepOn: true },
+    { id: 'door.laundry_closet', art: 'door.wall', x: 15, y: 4, label: 'Supply closet', door: true },
+    // The machines
+    { id: 'obj.laundry_end_machine', art: 'obj.washer_odd', x: 11, y: 1, landmark: true, light: 0.8, solid: true, label: 'The machine on the end', loot: 'lost', text: 'OUT OF ORDER, on a sign in three different hands. It takes your coin anyway, hums for a while, and drops something into the lint tray that isn\'t your coin.' },
+    { id: 'obj.laundry_dryers', art: 'obj.dryer', x: 8, y: 1, solid: true, label: 'Dryers', text: 'Two of the four are going. One of them has nothing in it but a single sneaker, which comes round every second and a half.' },
+    { id: 'obj.laundry_change', art: 'obj.change_machine', x: 16, y: 8, solid: true, light: 0.4, label: 'Change machine', text: 'It takes a dollar and gives back three quarters. A note taped to the front: WE KNOW.' },
+    // The corkboard, the socks, the person folding
+    { id: 'obj.laundry_board', art: 'obj.corkboard', x: 16, y: 4, label: 'Laundry room corkboard', text: 'Index cards on cork. LOST: ONE SOCK, GRAY, WOOL. Two cards over, in different ink: FOUND: ONE GRAY SOCK, ASK AT 212. Neither card has moved since spring.' },
+    { id: 'obj.laundry_socks', art: 'obj.sock_basket', x: 1, y: 9, label: 'Lost socks', text: 'LOST SOCKS, on a card on a stick. Forty singles, washed and folded. No two match. Somebody checks.' },
+    { id: 'npc.laundry_folder', x: 8, y: 11, npc: true, art: 'npc.rotter_2', label: 'Someone folding at 3 a.m.', age: 'adult', text: '"Three a.m. is the only time every machine is free." She shakes out a towel and folds it into a square. "Except the one on the end. Nobody uses the one on the end."' },
+  ],
+  scenery: [
+    ...[1, 2, 3, 4].map((x) => ({ art: 'obj.washer', x, y: 1, solid: true })), ...[6, 7, 9].map((x, i) => ({ art: 'obj.dryer', x, y: 1, solid: true, anim: 380 + 90 * i })),
+    { art: 'obj.tube_light', x: 5, y: 0, scale: 1, light: 0.5, anim: 220 },
+    // the folding tables, the carts
+    { art: 'obj.folding_table', x: 7, y: 10, w: 2, solid: true }, { art: 'obj.folding_table', x: 9, y: 10, w: 2, solid: true, flip: true },
+    { art: 'obj.laundry_cart', x: 3, y: 4 }, { art: 'obj.laundry_cart', x: 12, y: 9 }, { art: 'obj.hamper', x: 6, y: 11 }, { art: 'obj.laundry_cart', x: 10, y: 4 },
+    // somewhere to wait
+    { art: 'obj.bench', x: 3, y: 13 }, { art: 'obj.bench', x: 4, y: 13 }, { art: 'obj.vending', x: 8, y: 13, solid: true, light: 0.4 }, { art: 'obj.plant', x: 16, y: 13 }, { art: 'obj.chair', x: 12, y: 13 }, { art: 'obj.bin', x: 1, y: 13 },
+    // the supply closet
+    { art: 'obj.shelf_boxes', x: 14, y: 1, solid: true }, { art: 'obj.kitchen_sink', x: 16, y: 1, solid: true }, { art: 'obj.boxes', x: 14, y: 3 },
+  ],
+});

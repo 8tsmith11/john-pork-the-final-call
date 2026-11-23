@@ -67,58 +67,145 @@ export const diner = makeMap({
   ],
 });
 
-// ---- ASTER basement, B-01 (the super's level): boilers, Kess's workshop, storage cages ----
-// Secret: 631 has a storage cage nobody told you about. Kess's pegboard is the hint.
-export const asterBasement = fromGrid({
-  id: 'aster_basement', name: 'ASTER, basement (B-01)', fill: ':',
-  rows: [
-    '##########################',
-    '#U:::::#::::::::#::::::::#',
-    '#::@:::#::BB::::#::$::$:G#',
-    '#::::::#::BB::::#::::::::#',
-    '#::::::####:#####::::::::#',
-    '#:::::::::::::::####:#####',
-    '#::K::::::::::::::::::::E#',
-    '#::::::::::::::::::::::::#',
-    '##########################',
+// ---- ASTER basement, B-01 (the super's level): the boiler, the panel, Kess's workshop, storage cages ----
+// Rebuilt to the room standard (hub #113; tools/level/rooms.mjs). The stairs come down beside the boiler (the
+// landmark), on its pad with the water heaters. East of it the electrical room, then the tenants' storage cages along
+// the north wall, 631's last. One corridor runs the width of the building; off its south side, Kess's workshop, the
+// sump, and the bike room, whose east wall has the door to the laundry.
+// Secret: 631 has a storage cage nobody told you about. Kess's pegboard is the hint. The two lootable cages keep the
+// ids the level builder gave them, so saves that searched them still know.
+const CAGE = 'Chicken wire on a wooden frame, a unit number stenciled on the door. The padlock is a twist tie.';
+export const asterBasement = makeMap({
+  id: 'aster_basement', name: 'ASTER, basement (B-01)', propScale: 1.25, wear: 'lived', standard: true,
+  layout: [
+    '##############################',   // 0  the panel
+    '#::::mmmmmmmm#eeeeee#::::::::#',   // 1  stairs | the boiler | electrical room | storage cages
+    '#::::mmmmmmmm#eeeeee#::::::::#',   // 2
+    '#::::mmmmmmmm#eeeeee#::::::::#',   // 3
+    '#::::mmmmmmmm#eeeeee#::::::::#',   // 4
+    '#::::mmmmmmmm###e####::::::::#',   // 5  electrical room door
+    '#::::::::::::::::::::::::::::#',   // 6  the corridor
+    '#::::::::::::::::::::::::::::#',   // 7
+    '#::::::::::::::::::::::::::::#',   // 8
+    '#######k#######:::::#####:####',   // 9  workshop door | the sump | bike room door
+    '#kkkkkkkkkkkkk#:::::#::::::::#',   // 10 Kess's workshop | | bikes
+    '#kkkkkkkkkkkkk#:::::#::::::::#',   // 11
+    '#kkkkkkkkkkkkk#:::::#::::::::#',   // 12 the laundry door, in the east wall
+    '#kkkkkkkkkkkkk#:::::#::::::::#',   // 13
+    '##############################',   // 14
   ],
-  legend: {
-    U: { exit: 'aster_lobby', id: 'obj.basement_stairs', art: 'obj.stairs', label: 'Stairs up to the lobby', pair: 'obj.lobby_basement', text: 'Up to the lobby.' },
-    B: { scenery: 'obj.degasser', solid: true },
-    K: { prop: 'obj.workbench', id: 'obj.kess_bench', label: 'Kess\'s workbench', text: 'Baby-food jars of screws, sorted by size and labeled in square capitals. The fullest jar says STRIPPED. Above the bench, a pegboard of storage-cage keys, one hook per unit. The key on 631\'s hook is furred with dust.' },
-    $: { prop: 'obj.crate', label: 'Storage cage', loot: 'parts', text: 'Chicken wire on a wooden frame, a unit number stenciled on the door. The padlock is a twist tie.' },
-    G: { prop: 'obj.crate', id: 'obj.basement_cage_631', label: 'Storage cage 631', grant: 'item.bike_helmet',
+  spawns: [[2, 3]],
+  enemies: [['enemy.rotling', 24, 7]],
+  decals: [['dec.drain', 9, 4], ['dec.puddle_1', 10, 4], ['dec.stain', 6, 3], ['dec.drain', 16, 11], ['dec.puddle_0', 18, 11], ['dec.drip', 17, 10], ['dec.stain', 22, 7], ['dec.oil', 24, 12], ['dec.rust', 12, 3]],
+  objects: [
+    { id: 'obj.basement_stairs', art: 'obj.stairs', x: 1, y: 1, action: 'exit', to: 'aster_lobby', pair: 'obj.lobby_basement', label: 'Stairs up to the lobby', text: 'Up to the lobby.' },
+    { id: 'obj.basement_laundry', art: 'obj.door', x: 29, y: 12, action: 'exit', to: 'aster_laundry', pair: 'obj.laundry_out', label: 'The laundry room', text: 'The laundry room. Two dryers going, and somebody folding.' },
+    { id: 'door.basement_electrical', art: 'door.wall', x: 16, y: 5, label: 'Electrical room', door: true },
+    { id: 'door.basement_workshop', art: 'door.wall', x: 7, y: 9, label: 'Workshop door', door: true },
+    { id: 'door.basement_bikes', art: 'door.wall', x: 25, y: 9, label: 'Bike room', door: true },
+    // The boiler (the landmark) and the water heaters
+    { id: 'obj.basement_boiler', art: 'obj.boiler', x: 8, y: 2, landmark: true, light: 0.8, solid: true, label: 'The boiler',
+      text: 'Cast iron, older than the wiring. The needle sits a hair under the red and has sat there all winter. A service tag hangs off a valve on a string. The year on it has been written over twice.' },
+    { id: 'obj.basement_heater', art: 'obj.water_heater', x: 11, y: 1, solid: true, light: 0.3, label: 'Water heater',
+      text: 'The pilot is lit. A strip of masking tape across the dial: DO NOT TURN UP. 4F, THIS MEANS YOU.' },
+    // The electrical room
+    { id: 'obj.basement_panel', art: 'obj.fuse_panel', x: 16, y: 0, light: 0.5, label: 'Electrical panel',
+      text: 'The building\'s panel, every breaker labeled in square capitals. LOBBY. HALLS. ELEVATOR (SOMETIMES). On the shelf under it, a cigar box marked SPARE FUSES. It is empty except for a note: ASK ME. K.' },
+    // Storage cages, by unit
+    { id: 'obj.aster_basement_crate_19_2', art: 'obj.storage_cage', x: 21, y: 1, solid: true, label: 'Storage cage', loot: 'parts', text: CAGE },
+    { id: 'obj.aster_basement_crate_22_2', art: 'obj.storage_cage', x: 25, y: 1, solid: true, label: 'Storage cage', loot: 'parts', text: CAGE },
+    { id: 'obj.basement_cage_631', art: 'obj.storage_cage', x: 28, y: 1, solid: true, label: 'Storage cage 631', grant: 'item.bike_helmet',
       text: 'Cage 631. Nobody told you the apartment came with one. You borrow the key off Kess\'s pegboard and put it back after. On the only shelf, a bike helmet some tenant before you left behind.',
       doneText: 'Cage 631. An empty shelf, and a clean ring in the dust where the helmet sat.' },
-    E: { enemy: 'enemy.rotling' },
-    '@': { spawn: true },
-  },
-}).exit('aster_laundry', 25, 7, { id: 'obj.basement_laundry', art: 'obj.door', pair: 'obj.laundry_out', label: 'The laundry room', text: 'The laundry room. Two dryers going, and somebody folding.' }).build();
-
-// ---- ASTER roof: water tank, the view of the cordon lights, a place people go to be alone ----
-// Secret: a cooler behind the water tank, left for whoever needs it (a searchable container).
-export const asterRoof = fromGrid({
-  id: 'aster_roof', name: 'ASTER, the roof', fill: 'y', outdoor: false,
-  rows: [
-    '========================',
-    '=yyyyyyyyyyyyyyyyyyyyyy=',
-    '=yyWWyyyyyyyy@yyyyyyyyy=',
-    '=yyWWKyyyyyyyyyyyyVyyyy=',
-    '=yyyyyyyyyyyyyyyyyyyyyy=',
-    '=yyyyyyyyyyyyyNyyyyyyyy=',
-    '=yyyyyyyyyyyyyyyyyyyyyy=',
-    '=Lyyyyyyyyyyyyyyyyyyyyy=',
-    '========================',
+    // Kess's workshop
+    { id: 'obj.kess_bench', art: 'obj.workbench', x: 3, y: 10, solid: true, label: 'Kess\'s workbench', text: 'Baby-food jars of screws, sorted by size and labeled in square capitals. The fullest jar says STRIPPED. Above the bench, a pegboard of storage-cage keys, one hook per unit. The key on 631\'s hook is furred with dust.' },
+    { id: 'obj.kess_tools', art: 'obj.tool_wall', x: 10, y: 9, label: 'Tool board', text: 'Every tool hangs inside its own painted outline. Not one is missing.' },
+    // The sump and the bike room
+    { id: 'obj.basement_sump', art: 'obj.sump', x: 17, y: 12, solid: true, label: 'Sump pit', text: 'The pump kicks on every few minutes and sends the water somewhere else. The float is a red ball on a wire.' },
+    { id: 'obj.basement_bikes', art: 'obj.bikerack', x: 22, y: 10, solid: true, label: 'Bike storage', text: 'Bikes on a rack, each with a unit number on a luggage tag. One has two locks on it and no wheels.' },
   ],
-  legend: {
-    L: { exit: 'aster_hall', id: 'obj.roof_hatch', art: 'obj.stairs', label: 'Hatch down to the sixth floor', pair: 'obj.hall_roof', text: 'Back down the ladder.' },
-    W: { scenery: 'obj.degasser', solid: true },
-    V: { prop: 'obj.balcony_view', id: 'obj.roof_view', label: 'The view north', text: 'A coin viewer bolted to the rail, aimed north. Through it, the cordon floodlights stand in a ring around College Park, white against the dark. From up here you can see the ring close behind you, with ASTER near the middle.' },
-    N: { npc: 'npc.roof_watcher', art: 'npc.rotter_1', label: 'Someone on the roof', text: '"Start at the water tower and go left. Don\'t count the moon. People count the moon." They keep their eyes on the north the whole time.' },
-    K: { prop: 'obj.toolbox', id: 'obj.roof_cooler', label: 'A cooler behind the tank', loot: 'lost', text: 'A cooler wedged behind the water tank, out of the wind. On the lid in marker: IF YOU CAME UP HERE YOU NEED IT MORE THAN ME.' },
-    '@': { spawn: true },
-  },
-}).build();
+  scenery: [
+    // the boiler pad and the landing
+    { art: 'obj.pipe_run', x: 5, y: 1, solid: true }, { art: 'obj.pipe_run', x: 6, y: 1, solid: true }, { art: 'obj.water_heater', x: 12, y: 1, solid: true, anim: 560 },
+    { art: 'obj.toolbox', x: 11, y: 4 }, { art: 'obj.extinguisher', x: 4, y: 1 }, { art: 'obj.boxes', x: 1, y: 4 },
+    // the electrical room
+    { art: 'obj.pipe_run', x: 14, y: 1, solid: true }, { art: 'obj.shelf_boxes', x: 19, y: 1, solid: true }, { art: 'obj.crate', x: 19, y: 3, solid: true }, { art: 'obj.worklamp', x: 14, y: 4, light: 0.4 },
+    // the cages between the three you can open, and what didn't fit in them
+    ...[22, 23, 24, 26, 27].map((x) => ({ art: 'obj.storage_cage', x, y: 1, solid: true })),
+    { art: 'obj.boxes', x: 22, y: 4 }, { art: 'obj.crate', x: 27, y: 4, solid: true }, { art: 'obj.cart', x: 24, y: 4 },
+    // the corridor
+    { art: 'obj.tube_light', x: 18, y: 5, scale: 1, light: 0.5, anim: 260 }, { art: 'obj.dehumidifier', x: 19, y: 6 }, { art: 'obj.bin', x: 13, y: 8 }, { art: 'obj.recycle', x: 12, y: 8 },
+    { art: 'obj.boxes', x: 1, y: 8 }, { art: 'obj.crate', x: 2, y: 8, solid: true }, { art: 'obj.ladders', x: 28, y: 8, solid: true },
+    // Kess's workshop
+    { art: 'obj.parts_bins', x: 1, y: 10, solid: true }, { art: 'obj.parts_bins', x: 2, y: 10, solid: true }, { art: 'obj.workbench', x: 4, y: 10, solid: true }, { art: 'obj.drill_press', x: 5, y: 10, solid: true },
+    { art: 'obj.worklamp', x: 6, y: 11, light: 0.5 }, { art: 'obj.chair', x: 3, y: 11 }, { art: 'obj.shelf_tools', x: 12, y: 10, solid: true }, { art: 'obj.shelf_tools', x: 13, y: 10, solid: true },
+    { art: 'obj.coffee', x: 9, y: 10, light: 0.3 }, { art: 'obj.toolbox', x: 8, y: 13 }, { art: 'obj.crate', x: 13, y: 13, solid: true }, { art: 'obj.boxes', x: 12, y: 13 }, { art: 'obj.couch', x: 2, y: 13, solid: true },
+    // the sump
+    { art: 'obj.pipe_run', x: 19, y: 10, solid: true }, { art: 'obj.dehumidifier', x: 15, y: 13 }, { art: 'obj.cone', x: 16, y: 13 },
+    // the bike room
+    { art: 'obj.bikerack', x: 21, y: 10, solid: true }, { art: 'obj.bikerack', x: 23, y: 10, solid: true }, { art: 'obj.tires', x: 28, y: 10 }, { art: 'obj.tube_light', x: 27, y: 9, scale: 1, light: 0.4 },
+    { art: 'obj.crate', x: 21, y: 13, solid: true }, { art: 'obj.boxes', x: 22, y: 13 }, { art: 'obj.shoppingcart', x: 26, y: 13, solid: true },
+  ],
+});
+
+// ---- ASTER roof: the water tank, the view of the cordon lights, a place people go to be alone ----
+// Rebuilt to the room standard (hub #113). The hatch comes up in the west parapet's corner of the walkway (pavers);
+// the water tank stands on its pad to the south-east (the landmark), the cooler wedged behind it. North of the walkway
+// is the deck somebody laid for the lawn chairs, strung with lights; along the north parapet, the coin viewer and
+// whoever is counting. The block in the north-east corner is the elevator machine room.
+// Secret: a cooler behind the water tank, left for whoever needs it (a searchable container).
+export const asterRoof = makeMap({
+  id: 'aster_roof', name: 'ASTER, the roof', outdoor: false, propScale: 1.25, standard: true,
+  layout: [
+    '==========================',   // 0  the north parapet
+    '=yyyyyyyyyyyyyyyyyyyyyyyy=',   // 1  the view
+    '=yyyyyyyyyyyyyyyyyyyyyyyy=',   // 2
+    '=yybbbbbbbbyyyyyyyy####yy=',   // 3  the deck | the elevator machine room
+    '=yybbbbbbbbyyyyyyyy####yy=',   // 4
+    '=yybbbbbbbbyyyyyyyy####yy=',   // 5
+    '=yybbbbbbbbyyyyyyyyyyyyyy=',   // 6
+    '=pppppppppppppppyyyyyyyyy=',   // 7  the hatch, and the walkway
+    '=yyyyyyyyyyyyypyyyyyyyyyy=',   // 8
+    '=yyyyyyyyyyyyypmmmmmmyyyy=',   // 9  the tank's pad
+    '=yyyyyyyyyyyyypmmmmmmyyyy=',   // 10
+    '=yyyyyyyyyyyyypmmmmmmyyyy=',   // 11
+    '=yyyyyyyyyyyyyyyyyyyyyyyy=',   // 12
+    '=yyyyyyyyyyyyyyyyyyyyyyyy=',   // 13
+    '==========================',   // 14
+  ],
+  spawns: [[3, 8]],
+  decals: [['dec.patch', 5, 9], ['dec.patch', 6, 9], ['dec.patch', 20, 13], ['dec.patch', 12, 2], ['dec.patch', 22, 8], ['dec.patch', 9, 12], ['dec.puddle_0', 17, 13], ['dec.puddle_1', 3, 10],
+    ['roof.skylight_lit', 8, 10], ['roof.skylight', 9, 10], ['dec.stain', 16, 12], ['dec.leaves_0', 1, 13], ['dec.weeds', 24, 12]],
+  objects: [
+    { id: 'obj.roof_hatch', art: 'obj.hatch', x: 1, y: 7, action: 'exit', to: 'aster_hall', pair: 'obj.hall_roof', label: 'Hatch down to the sixth floor', text: 'Back down the ladder.' },
+    // The water tank (the landmark), and what's behind it
+    { id: 'obj.roof_tank', art: 'obj.water_tank', x: 17, y: 11, scale: 2, landmark: true, light: 0.8, solid: true, label: 'The water tank',
+      text: 'Cedar staves and steel hoops on four legs. ASTER was stenciled on it once. A, T and R are left. It ticks as it cools.' },
+    { id: 'obj.roof_cooler', art: 'obj.cooler', x: 19, y: 9, label: 'A cooler behind the tank', loot: 'lost', text: 'A cooler wedged behind the water tank, out of the wind. On the lid in marker: IF YOU CAME UP HERE YOU NEED IT MORE THAN ME.' },
+    // The north parapet
+    { id: 'obj.roof_view', art: 'obj.coin_viewer', x: 13, y: 1, solid: true, label: 'The view north', text: 'A coin viewer bolted to the rail, aimed north. Through it, the cordon floodlights stand in a ring around College Park, white against the dark. From up here you can see the ring close behind you, with ASTER near the middle.' },
+    { id: 'npc.roof_watcher', x: 15, y: 2, npc: true, art: 'npc.rotter_1', label: 'Someone on the roof', age: 'adult', text: '"Start at the water tower and go left. Don\'t count the moon. People count the moon." They keep their eyes on the north the whole time.' },
+    // The deck, the garden, the machinery
+    { id: 'obj.roof_chairs', art: 'obj.lawn_chair', x: 8, y: 4, label: 'Lawn chairs', text: 'Three lawn chairs facing north, and a fourth facing the other three.' },
+    { id: 'obj.roof_garden', art: 'obj.balcony_plants', x: 2, y: 12, label: 'Tomatoes', text: 'Tomatoes in buckets, staked and labeled. A fire hose runs to them from somewhere below, coupled to a garden nozzle with a great deal of tape.' },
+    { id: 'obj.roof_hvac', art: 'obj.hvac', x: 6, y: 12, solid: true, label: 'Rooftop units', text: 'Three units. Two run. The third has a nest in it, and as far as anyone is concerned the nest has a lease.' },
+    { id: 'obj.roof_machine_room', art: 'obj.door', x: 20, y: 5, label: 'Elevator machine room', text: 'ELEVATOR MACHINE ROOM. Behind the door, something winds a cable very slowly and then stops to think about it.' },
+  ],
+  scenery: [
+    // by the tank (drawn twice the size: it stands over its whole pad, and you can walk in under the legs): a lamp somebody left
+    { art: 'obj.worklamp', x: 15, y: 11, light: 0.4 }, { art: 'obj.toolbox', x: 20, y: 11 }, { art: 'obj.roof_vent', x: 22, y: 10, solid: true },
+    // the deck: lights strung along its north edge, the chairs, a table
+    ...[3, 5, 7, 9].map((x, i) => ({ art: 'obj.string_lights', x, y: 2, scale: 1, ...(i % 2 ? {} : { light: 0.5 }) })),
+    { art: 'obj.lawn_chair', x: 4, y: 4 }, { art: 'obj.lawn_chair', x: 6, y: 4 }, { art: 'obj.lawn_chair', x: 6, y: 6, flip: true }, { art: 'obj.cafe_table', x: 9, y: 5, solid: true }, { art: 'obj.crate', x: 3, y: 6, solid: true },
+    // the garden in the south-west corner, by the units
+    { art: 'obj.hose_reel', x: 3, y: 12, solid: true }, { art: 'obj.flowerpot', x: 1, y: 11 }, { art: 'obj.flowerpot', x: 2, y: 11 }, { art: 'obj.flowerpot', x: 1, y: 12 }, { art: 'obj.planter', x: 4, y: 13, solid: true },
+    { art: 'obj.hvac', x: 8, y: 12, solid: true }, { art: 'obj.hvac', x: 10, y: 12, solid: true, anim: 300 },
+    // vents, the aerial, and the machine room's corner
+    { art: 'obj.roof_vent', x: 11, y: 9, solid: true }, { art: 'obj.roof_vent', x: 2, y: 2, solid: true }, { art: 'obj.roof_vent', x: 22, y: 12, solid: true }, { art: 'obj.roof_vent', x: 17, y: 5, solid: true },
+    { art: 'obj.antenna', x: 23, y: 2, solid: true, light: 0.4, anim: 900 }, { art: 'obj.cables', x: 21, y: 6 }, { art: 'obj.toolbox', x: 22, y: 6 }, { art: 'obj.bench', x: 17, y: 2 },
+    { art: 'obj.crate', x: 23, y: 13, solid: true }, { art: 'obj.boxes', x: 24, y: 13 }, { art: 'obj.planter', x: 12, y: 13, solid: true },
+  ],
+});
 
 // ---- The campus quad (behind Compute Hall B): the dining hall, the robotics lab, the cordon at the edge ----
 // Compute Hall B's back wall closes the north side of the quad, between the dining hall and the robotics lab: you walk
@@ -257,7 +344,7 @@ export const roboticsLab = makeMap({
     { id: 'door.lab_office', art: 'door.wall', x: 24, y: 5, label: 'Office door', door: true },
     { id: 'door.lab_store', art: 'door.wall', x: 25, y: 11, label: 'Store room', door: true },
     // The pad and the rover (the landmark)
-    { id: 'obj.mars_rover', art: 'obj.mars_rover', x: 11, y: 8, landmark: true, light: 0.8, solid: true, label: 'The Mars rover', text: 'The UMD rover team\'s machine, on a cart in the middle of the bay. A laminated tag on the frame: FLIGHT SPARE, DO NOT CANNIBALIZE. It has been cannibalized a little.' },
+    { id: 'obj.mars_rover', art: 'obj.mars_rover', x: 11, y: 8, landmark: true, light: 0.8, solid: true, label: 'The Mars rover', text: 'The UMD rover team\'s machine, on the test pad in the middle of the bay. A laminated tag on the frame: FLIGHT SPARE, DO NOT CANNIBALIZE. It has been cannibalized a little.' },
     { id: 'obj.lab_pad', art: 'obj.cone', x: 7, y: 10, label: 'The test pad', text: 'Four tons of gravel raked into a little Mars, with cones at the corners. Someone has raked a smiley face into the far end and then, more carefully, raked most of it out.' },
     // Along the north wall
     ...[1, 15].map((x, i) => ({ id: `obj.lab_tools_${i + 1}`, art: 'obj.tool_wall', x, y: 0, label: 'Tool wall', text: LAB_TOOLS })),
@@ -299,12 +386,14 @@ export const roboticsLab = makeMap({
 // beam runs up the hall to the screen over the stage. The back rows of seats are still bolted down, raked, facing the
 // stage; the front twelve rows have been unbolted and stacked along the side walls, which leaves the floor between
 // the seats and the stage clear, 32 tiles by 15 (AUD_ARENA; the audit's boss arena is 30x16). That floor is where the
-// Autograder waits. Nothing solid goes on it: bolt holes (decals) and dropped problem sets only.
+// Autograder waits. Nothing solid goes on it: floor decals (bolt holes, chalk row marks, drag scuffs, papers, a few
+// seat cushions) and dropped problem sets only.
 // Secret: the projector's clicker steps back through the last lecture, slide by slide.
 // The way out is in the south wall, at the east end: the quad's door to it faces south (act1_more.js, above).
 export const AUD_ARENA = { x: 2, y: 3, w: 32, h: 15 };
 const AUD_W = 36, audRow = (ch) => `#${ch.repeat(AUD_W - 2)}#`;
 const AUD_SEAT_X = [3, 5, 7, 9, 11, 13, 21, 23, 25, 27, 29, 31], AUD_SEAT_Y = [19, 21, 23];
+const AUD_ROWS_OUT = [4, 6, 8, 10, 12, 14, 16];   // where the rows that came out stood
 export const auditorium = makeMap({
   id: 'auditorium', name: 'The lecture auditorium', standard: true,
   layout: [
@@ -316,7 +405,15 @@ export const auditorium = makeMap({
   ],
   spawns: [[32, 25]],
   enemies: [['enemy.rotling', 9, 14], ['boss.chb_autograder', 17, 6]],   // same order as before (saves key kills by index)
-  decals: [4, 6, 8, 10, 12, 14, 16].flatMap((y) => AUD_SEAT_X.flatMap((x) => [['dec.bolt_holes', x, y], ['dec.bolt_holes', x + 1, y]])),
+  decals: [
+    ...AUD_ROWS_OUT.flatMap((y) => AUD_SEAT_X.flatMap((x) => [['dec.bolt_holes', x, y], ['dec.bolt_holes', x + 1, y]])),
+    // Flat dressing on the cleared floor (all decals, nothing to walk round): a chalk mark and a letter at the end of each
+    // row that came out, drag marks up the middle aisle where the seats went to the walls, papers, a few cushions.
+    ...AUD_ROWS_OUT.map((y) => ['dec.chalk_row', 2, y]),
+    ...[[16, 5], [19, 9], [16, 13], [18, 16], [33, 9], [33, 13]].map(([x, y]) => ['dec.scuff', x, y]),
+    ...[[18, 4], [15, 8], [20, 11], [17, 14], [19, 17], [3, 11], [32, 7]].map(([x, y]) => ['dec.papers', x, y]),
+    ...[[20, 6], [15, 12], [18, 15]].map(([x, y]) => ['dec.cushion', x, y]),
+  ],
   objects: [
     { id: 'obj.aud_out', x: 32, y: 26, action: 'exit', to: 'campus_quad', pair: 'obj.quad_auditorium', art: 'obj.door', label: 'Out to the quad', text: 'Back out to the quad.' },
     // The back of the hall: the projector (the landmark)

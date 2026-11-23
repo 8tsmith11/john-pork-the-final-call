@@ -63,6 +63,12 @@ export const ES_ROUTE1 = {
   'Brooder box': 'Criadora',
   'Six chicks asleep in a pile under a heat lamp. Every few minutes the one on the bottom works its way to the top.':
     'Seis pollitos dormidos en montón bajo una lámpara de calor. Cada pocos minutos, el de abajo se abre paso hasta arriba.',
+  // hub #113, third slice: Pardo's rebuilt to the room standard
+  'Stockroom': 'Depósito',
+  'Tack and tools': 'Arreos y herramientas',
+  'Lead ropes, a halter, hoof picks, a horseshoe on a nail with the open end up. The price tags are older than the string they hang from.': 'Sogas, una jáquima, limpiacascos, una herradura en un clavo con la abertura hacia arriba. Las etiquetas de precio son más viejas que el hilo del que cuelgan.',
+  'Bulk seed': 'Semillas a granel',
+  'Cracked corn, black oil sunflower, scratch grain, by the scoop. A sign on the last bin: IF YOU SPILL IT THE SPARROWS GET IT. THEY KNOW THIS.': 'Maíz partido, girasol negro, mezcla de granos, por cucharón. Un cartel en el último cajón: SI LO DERRAMAS SE LO QUEDAN LOS GORRIONES. ELLOS LO SABEN.',
   // The two shop menus (SHOPS in src/content/items.js; the menu joins `lines` with a space)
   'HOLLIS HARDWARE': 'FERRETERÍA HOLLIS',
   'Prices are on the chalkboard. Repairs while you wait.': 'Los precios están en el pizarrón. Reparaciones al momento.',
