@@ -3186,6 +3186,7 @@ export class WorldScene extends Phaser.Scene {
       }
       s.setScale(1 + Math.sin(this.time.now / 90 + e.x) * 0.06, 1);   // jittery rot wobble
     }
+    if (this._mechText && this.time.now - (this._mechTextAt ?? 0) > 120) this._mechText.setVisible(false);
     for (const [id, s] of this.enemySprites) if (!eseen.has(id)) { s.destroy(); this.enemySprites.delete(id); this.bossFx?.clear(); }
     const meP = snap.players.find((p) => p.id === this.localId);
     let tgt = null, td = 70;
@@ -3399,10 +3400,52 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // Big boss patterns, drawn from the snapshot every frame (bossPatterns.js): the turning beam, rings, marks.
+  // A builder boss's signature rule, drawn so it can be read (src/engine/bossMechs.js, hub #121).
+  _mechFx(g, e, m, t) {
+    const W = this.map.w * TILE, pulse = 0.5 + 0.5 * Math.sin(t / 120);
+    if (m.k === 'pylons') {   // a shield dome while any pylon stands, and a beam from each pylon to it
+      if (m.s) {
+        g.lineStyle(2, 0x9fd3ff, 0.5 + 0.3 * pulse).strokeCircle(e.x, e.y - 8, 20);
+        for (const u of this._lastRendered?.enemies ?? []) if (u.k === 'enemy.fence_pylon') g.lineStyle(1, 0x9fd3ff, 0.6).lineBetween(u.x, u.y - 10, e.x, e.y - 8);
+      } else if (m.o != null) this._mechLabel(e, `OPEN ${m.o}`, '#ffb347');
+    }
+    if (m.k === 'tide' && m.l > 0) {   // the water: everything below its edge, a lighter line at the edge
+      const H = this.map.h * TILE;
+      g.fillStyle(0x1d5f86, 0.5 * m.l).fillRect(0, m.e, W, H - m.e);
+      for (let y = m.e + 10; y < H; y += 14) for (let x = ((y * 7) % 40) - 40 + ((t / 40) % 40); x < W; x += 40) g.fillStyle(0x9fe0ff, 0.35 * m.l).fillRect(x, y, 10, 1);   // ripples
+      g.lineStyle(2, 0xcff4ff, 0.9).lineBetween(0, m.e + Math.sin(t / 300) * 2, W, m.e + Math.sin(t / 300 + 1) * 2);
+      if (m.w) this._mechLabel(e, 'IN THE WATER', '#9fe0ff');
+    }
+    if (m.k === 'flicker') {   // lit: a red halo; dark: a dim cast over the boss and a call to hit it; a buzz before it changes
+      if (m.lit) g.fillStyle(0xe03030, (m.warn ? 0.15 + 0.25 * pulse : 0.22)).fillCircle(e.x, e.y - 10, 26);
+      else { g.fillStyle(0x05060c, 0.45).fillCircle(e.x, e.y - 10, 30); this._mechLabel(e, 'DARK: HIT IT', '#ffd27f'); }
+    }
+    if (m.k === 'listen' && m.lx != null) {   // the dish's lock: a closing ring on the target spot
+      const k = Math.max(0, Math.min(1, m.lt / 1.2));
+      g.lineStyle(2, 0x6fe3e8, 0.9).strokeCircle(m.lx, m.ly, 20 + 14 * k).lineStyle(1, 0x6fe3e8, 0.5).strokeCircle(m.lx, m.ly, 20);
+      g.lineStyle(1, 0x6fe3e8, 0.35).lineBetween(e.x, e.y - 14, m.lx, m.ly);
+    }
+    if (m.k === 'mimic' && m.ex != null) {   // the echo: a pale copy of a body, walking where you were
+      g.fillStyle(0xc9a0a0, 0.45).fillEllipse(m.ex, m.ey - 6, 10, 16).fillStyle(0xffffff, 0.5).fillRect(m.ex - 2, m.ey - 11, 1, 1).fillRect(m.ex + 1, m.ey - 11, 1, 1);
+      g.lineStyle(1, 0xc9a0a0, 0.6).strokeCircle(m.ex, m.ey, 9);
+    }
+    if (m.k === 'chorus' && m.h?.length) {   // a line from each congregant holding it up
+      for (const u of this._lastRendered?.enemies ?? []) if (m.h.includes(u.id)) g.lineStyle(1, 0xd417c8, 0.4 + 0.3 * pulse).lineBetween(u.x, u.y - 8, e.x, e.y - 10);
+      this._mechLabel(e, `HELD UP x${m.h.length}`, '#f07ad8');
+    }
+  }
+
+  _mechLabel(e, text, color) {
+    const l = (this._mechText ??= this.add.text(0, 0, '', { ...FONT, fontSize: '6px' }).setOrigin(0.5, 1).setDepth(6100));
+    l.setText(text).setColor(color).setPosition(e.x, e.y - 34).setVisible(true);
+    this._mechTextAt = this.time.now;
+  }
+
   _bossArenaFx(e) {
     const g = (this.bossFx ??= this.add.graphics().setDepth(5400));
     g.clear();
     const b = e.boss, t = this.time.now;
+    if (b.mx) this._mechFx(g, e, b.mx, t);
     if (b.ln) {   // the rush in the lane: a bright block running east with a trail
       const [ly, fx] = b.ln;
       g.fillStyle(0xff4d4d, 0.12).fillRect(0, ly - 12, fx, 24);

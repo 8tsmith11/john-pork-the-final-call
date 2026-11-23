@@ -5492,6 +5492,57 @@ test('Manuel keeps level six as the stage two requirement after the story unlock
   assert.equal(manuel.morph.stage, 2, 'legacy stage-one saves retain the level-six progression');
 });
 
+test('every Act 2 boss has its own rule (hub #121): pylons, tide, flicker, listen, mimic, chorus', async () => {
+  const { BOSSES } = await import('../src/content/bosses.js');
+  const { MECH } = await import('../src/engine/bossMechs.js');
+  const ACT2 = ['boss.gb_receiver', 'boss.bv_shell', 'boss.md_fence', 'boss.bmore_congregation', 'boss.ann_tide', 'boss.bmore_sign'];
+  const mechs = ACT2.map((k) => BOSSES[k](1).mech);
+  assert.equal(new Set(mechs).size, ACT2.length, `each has a different rule: ${mechs}`);
+  const arena = (kind) => {
+    const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'mech', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+    const h = sim.players.get('host'); h.x = 20 * 16; h.y = 7 * 16; h.hp = 9999;
+    const w = BOSSES[kind](1), def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
+    const e = { id: 'B', kind, def, boss: true, mini: true, awake: true, phase: 1, x: 30 * 16, y: 7 * 16, hp: def.hp, cd: 99, cd2: 99, hurtT: 0, kx: 0, ky: 0, dash: 0 };
+    sim.enemies.set('B', e);
+    const tick = (secs, each) => { for (let i = 0; i < 60 * secs; i++) { h.hp = 9999; h.iframes = 0; e.cd = 99; each?.(); sim._stepBoss(e, def, 1 / 60); } };
+    const hit = (n = 100) => { const was = e.hp; e.state = 'move'; e.parried = 0; e.openT = 0; sim._hurtEnemy(e, n, 0, 0, 'host'); return was - e.hp; };
+    return { sim, h, e, def, tick, hit };
+  };
+  { // pylons: shielded while they stand, open once they're down
+    const { sim, e, tick, hit } = arena('boss.md_fence'); tick(0.1);
+    const pylons = () => [...sim.enemies.values()].filter((u) => u.mechOf === 'B');
+    assert.equal(pylons().length, MECH.pylons.n); const shielded = hit();
+    for (const p of pylons()) sim._hurtEnemy(p, 9999, 0, 0, 'host'); tick(0.1);
+    assert.ok(hit() > shielded * 5, 'open once the pylons fall');
+  }
+  { // tide: in the water it shrugs hits off; on dry ground it doesn't
+    const { e, tick, hit, sim } = arena('boss.ann_tide'); tick(MECH.tide.dry + MECH.tide.rise + 0.5);
+    e.y = sim.map.h * 16 - 20; tick(0.05); const wet = hit();
+    e.y = 20; tick(0.05); const dry = hit();
+    assert.ok(dry > wet * 2, `dry ${dry} vs wet ${wet}`);
+  }
+  { // flicker: shielded while lit, open while dark
+    const { tick, hit } = arena('boss.bmore_sign'); tick(0.2); const lit = hit();
+    tick(MECH.flicker.lit); const dark = hit();
+    assert.ok(dark > lit * 5, `dark ${dark} vs lit ${lit}`);
+  }
+  { // listen: a quiet player is never locked on; a noisy one gets the strike
+    const { e, tick, h } = arena('boss.gb_receiver'); tick(MECH.listen.every + 1);
+    assert.ok(!e.mech.lock, 'nobody made a sound');
+    tick(0.5, () => { h.swingT = 0.2; }); assert.ok(e.mech.lock, 'swinging gets you heard');
+  }
+  { // mimic: the echo walks the path you took two seconds ago
+    const { e, tick, h } = arena('boss.bv_shell');
+    tick(4, () => { h.x += 0.6; }); const back = h.x; tick(3, () => { h.x = back - 20; });
+    assert.ok(e.mech.trail.length > 10, 'it records your path');
+  }
+  { // chorus: held up while its congregation is near
+    const { sim, e, tick, hit } = arena('boss.bmore_congregation'); tick(0.1);
+    const held = hit(); for (const u of [...sim.enemies.values()].filter((u) => u.mechOf === 'B')) { u.x = e.x + 400; } tick(0.05);
+    assert.ok(hit() > held * 1.5, 'pull them away and it takes full hits');
+    e.hp = 1; e.phase = 3; e.phaseTells = 1; sim._hurtEnemy(e, 999999, 0, 0, 'host'); assert.equal([...sim.enemies.values()].filter((u) => u.mechOf === 'B').length, 0, 'they go with it');
+  }
+});
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

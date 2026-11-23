@@ -13,22 +13,28 @@ export const BOSSES = {
   // ---- Act 2 ----
   // Baltimore: an outbreak in progress, bigger than College Park's. It calls more of itself.
   'boss.bmore_congregation': defineBoss({ name: 'THE CONGREGATION', epithet: 'Of Everyone Who Picked Up', hp: 1100, guard: 4, damage: 16, speed: 26, color: 0xd417c8,
-    phases: [['summon', 'ring'], ['summon', 'ring', 'rain'], ['summon', 'rain', 'spiral', 'shock']], signature: 'summon', wake: 120 }),   // Baltimore is cramped: a short wake
+    // Its congregation holds it up (heals it, halves your hits) while they're near it: pull them away first.
+    mech: 'chorus', phases: [['ring', 'spray'], ['ring', 'rain'], ['rain', 'spiral', 'shock']], signature: 'ring', wake: 120 }),   // Baltimore is cramped: a short wake
   // Beltsville: tissue that doesn't take; a grown shell that woke up wrong.
   'boss.bv_shell': defineBoss({ name: 'SHELL ZERO', epithet: 'Who Woke Up Wrong', hp: 950, guard: 5, damage: 18, speed: 38, color: 0xc9a0a0,
-    phases: [['charge', 'blink'], ['charge', 'blink', 'shock'], ['charge', 'blink', 'shock', 'lane']], signature: 'blink', wake: 150 }),
+    // An echo walks your path two seconds behind you: don't double back.
+    mech: 'mimic', phases: [['charge', 'blink'], ['charge', 'blink', 'shock'], ['charge', 'blink', 'shock', 'lane']], signature: 'blink', wake: 150 }),
   // Greenbelt: the dishes still receive, and what they receive is the question.
   'boss.gb_receiver': defineBoss({ name: 'THE RECEIVER', epithet: 'Listening Back', hp: 1000, guard: 4, damage: 14, speed: 18, color: 0x6fe3e8,
-    phases: [['beam', 'spray'], ['beam', 'laser', 'ring'], ['laser', 'ring', 'rain', 'spiral']], signature: 'laser', wake: 180 }),
+    // It listens: whoever swings, shoots or dodges gets a dish strike. Go quiet when it turns to you.
+    mech: 'listen', phases: [['beam', 'spray'], ['beam', 'laser', 'ring'], ['laser', 'ring', 'rain', 'spiral']], signature: 'laser', wake: 180 }),
   // Annapolis: rot in the tide tables; the water comes when the almanac says it won't.
   'boss.ann_tide': defineBoss({ name: 'THE TIDE TABLE', epithet: 'Wrong Since 2061', hp: 1050, guard: 4, damage: 15, speed: 22, color: 0x5fb3b3,
-    phases: [['puddle', 'spray'], ['puddle', 'spiral', 'shock'], ['puddle', 'rain', 'spiral', 'lane']], signature: 'puddle', wake: 170 }),
+    // The arena floods on a cycle; in the water it shrugs off hits and heals. Pull it up onto dry ground.
+    mech: 'tide', phases: [['puddle', 'spray'], ['puddle', 'spiral', 'shock'], ['puddle', 'rain', 'spiral', 'lane']], signature: 'puddle', wake: 170 }),
   // The Meade perimeter: the cleanest systems in Maryland, defended by something that never sleeps.
   'boss.md_fence': defineBoss({ name: 'THE FENCE', epithet: 'Perimeter Defense, Unattended', hp: 1200, guard: 6, damage: 16, speed: 12, color: 0x8a93a8,
-    phases: [['spray', 'lane'], ['spray', 'lane', 'laser'], ['lane', 'laser', 'ring', 'rain']], signature: 'lane', wake: 200 }),
+    // Shielded while its pylons stand. Break them, then it's open until they rebuild.
+    mech: 'pylons', phases: [['spray', 'lane'], ['spray', 'lane', 'laser'], ['lane', 'laser', 'ring', 'rain']], signature: 'lane', wake: 200 }),
   // Baltimore's refinery: the red sign still lit over the water.
   'boss.bmore_sign': defineBoss({ name: 'THE RED SIGN', epithet: 'Still Lit', hp: 1150, guard: 5, damage: 16, speed: 20, color: 0xe03030,
-    phases: [['beam', 'spray'], ['beam', 'spray', 'ring'], ['beam', 'laser', 'ring', 'rain']], signature: 'beam', wake: 150 }),
+    // Lit, it's shielded and attacking; dark, it's helpless. Learn the rhythm.
+    mech: 'flicker', phases: [['beam', 'spray'], ['beam', 'spray', 'ring'], ['beam', 'laser', 'ring', 'rain']], signature: 'beam', wake: 150 }),
   // ---- Act 3 (ring three) ----
   // The Corridor's cooling towers: steam, breathing.
   'boss.cor_tower': defineBoss({ name: 'THE COOLING TOWER', epithet: 'Breathing Steam', hp: 1450, guard: 6, damage: 17, speed: 14, color: 0xd0d8e0,
