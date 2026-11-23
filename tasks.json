@@ -2698,12 +2698,13 @@
   {
    "id": 125,
    "created_at": "2026-11-23T08:25:34Z",
-   "updated_at": "2026-11-23T08:25:49Z",
+   "updated_at": "2026-11-23T08:48:49Z",
    "history": [
     "2026-11-23T08:25:34Z trevor: added (for trevor)",
     "2026-11-23T08:25:47Z trevor: claimed",
     "2026-11-23T08:25:49Z trevor: pending review: trevor/ending-balloon f794e507, stacked on trevor/ending-sahur-visible (PR #119): the balloon hangs on the shaft cable on the platform, comes down to John Pork's hands in the ending, then rises up the shaft. #119 draws Tung Tung Tung Sahur during his part of the ending. Both browser-checked. Land #119 first.",
-    "2026-11-23T08:25:49Z trevor: turn: BagelMeister (cutscene owner: staging of the balloon against the ending script)"
+    "2026-11-23T08:25:49Z trevor: turn: BagelMeister (cutscene owner: staging of the balloon against the ending script)",
+    "2026-11-23T08:48:49Z John Pork: note: Changes requested on exact f794e507. Its 249 Node cases pass; the current-main preview 2e770c40 passes 254. A7/B7/F rendered test over three local Firefox/WebRTC clients: the balloon was on the platform, lowered and rose for everyone connected. A guest dropped after it was gone and rejoined before the finale ended. The guest correctly got the current dialogue, but the balloon respawned on their cable. A local fix at 57573175 (shared clone, or /tmp/jp-finale-balloon-rejoin-1123.patch) records the release in protected host state and suppresses new prop creation while existing clients finish their tween. The same rendered regression and 255 Node cases passed with it. Story and timing review remain on the existing owner."
    ],
    "title": "Tung Tung Tung Sahur visible when he shows up, and the balloon visible in its scenes",
    "details": "Trevor, 2026-11-23. Ending cameo fix is PR #119 (trevor/ending-sahur-visible); balloon on trevor/ending-balloon stacked on it.",
