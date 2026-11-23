@@ -55,6 +55,10 @@ export const DRESSING = {
   room631: {
     glow: [{ x: 13, y: 8, color: C.cyan, r: 0.8 }, { x: 25, y: 6, color: C.magenta, r: 0.7 }],
   },
+  // The neighbours (hub #113, act1_aster.js): the set's blue in 638, the practice lamp in 637, the open fridge in 636.
+  apt_638: { glow: [{ x: 11, y: 2, color: C.cyan, r: 1.0 }] },
+  apt_637: { glow: [{ x: 19, y: 6, color: C.amber, r: 0.8 }] },
+  apt_636: { glow: [{ x: 1, y: 2, color: C.cyan, r: 0.5 }] },
   compute_hall_b: {
     // Machine Room B (hub #68): the cold aisle lit by the racks, cold air coming up through the perforated tiles,
     // the terminal lab's screens, and the amber status board on the south hall.

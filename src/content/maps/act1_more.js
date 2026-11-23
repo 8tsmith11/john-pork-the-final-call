@@ -2,35 +2,70 @@
 // scaffold batch, built with the level builder from text grids; lines, prop art and one small secret per area from
 // the polish pass (hub #30, gonman). Spanish: src/i18n/es-plaza.js (diner, campus) and es-aster.js (basement, roof).
 // Brainstorm notes for each area are in docs/design/levels/act1_batch1.md.
+import { makeMap } from './build.js';
 import { fromGrid } from './builder.js';
 
 // ---- The diner (College Park, east of Route 1): always open, a cook plating for an empty room ----
+// Rebuilt to the room standard (hub #113; tools/level/rooms.mjs): the kitchen at the back through a swing door, the
+// pass window, a counter with stools and the aisle behind it, booths under the street windows, tables, the restroom,
+// and the jukebox in the far corner (the landmark, in view from the door). Booth, stool, counter and jukebox art in
+// tools/art/gen_props.py. The regular's stool is crowds.js's hint (6, 7).
 // Secret: the window booth has a snack left for whoever sits there next (one per save).
-export const diner = fromGrid({
-  id: 'diner', name: 'The diner', fill: '.',
-  rows: [
-    '######################',
-    '#kkkkkkkkk#..........#',
-    '#kkCkkkkkk#..b....b..#',
-    '#kkkkkkkkk#..........#',
-    '###==S====#..b....b..#',
-    '#....................#',
-    '#..J.............O...#',
-    '#....@...............#',
-    '##########DD##########',
+const DINER_BOOTH = 'Red vinyl split along the seam. Someone mended it with duct tape, and later mended the tape.';
+export const diner = makeMap({
+  id: 'diner', name: 'The diner', propScale: 1.25, wear: 'lived', standard: true,
+  layout: [
+    '##########################',   // 0
+    '#wwwwwwwwwwwwww#wwww######',   // 1  kitchen | restroom
+    '#wwwwwwwwwwwwww#wwww######',   // 2
+    '#wwwwwwwwwwwwww#wwww######',   // 3
+    '###=====#####.###.########',   // 4  the pass window, the kitchen's swing door, the restroom door
+    '#wwwwwwwwwwwwwwkkkkkkkkkk#',   // 5  the aisle behind the counter | the dining room
+    '#wwwwwwwwwwwwwkkkkkkkkkkk#',   // 6  the counter, and the gap at its end
+    '#kkkkkkkkkkkkkkkkkkkkkkkk#',   // 7  stools
+    '#kkkkkkkkkkkkkkkkkkkkkkkk#',   // 8
+    '#kkkkkkkkkkkkkkkkkkkkkkkk#',   // 9
+    '#kkkkkkkkkkkkkkkkkkkkkkkk#',   // 10
+    '#kkkkkkkkkkkkkkkkkkkkkkkk#',   // 11
+    '#kkkkkkkkkkkkkkkkkkkkkkkk#',   // 12
+    '#kkkkkkkkkkkkkkkkkkkkkkkk#',   // 13 booths under the windows
+    '#==========##..##========#',   // 14 the street windows and the door
   ],
-  legend: {
-    C: { npc: 'npc.diner_cook', art: 'npc.rotter_3', tile: 'k', label: 'The cook', text: '"Order up. Scrapple, two over easy, rye." Nobody ordered it. He slides it down the counter, and it stops square in front of an empty stool.' },
-    S: { prop: 'obj.kiosk', id: 'obj.diner_counter', tile: '.', label: 'The counter', action: 'shop', shop: 'diner' },
-    J: { prop: 'obj.vending', id: 'obj.diner_jukebox', label: 'Jukebox', light: 0.5, text: 'Forty slots, and every card in them has the same song title typed on it. Only the band changes, one per decade, back to the 2020s.' },
-    b: { prop: 'obj.table', label: 'Booth', text: 'Red vinyl split along the seam. Someone mended it with duct tape, and later mended the tape.' },
-    O: { prop: 'obj.table', id: 'obj.diner_window_booth', label: 'The window booth', grant: 'item.energy_bar',
+  spawns: [[13, 13]],
+  objects: [
+    { id: 'obj.diner_out', x: 13, y: 14, w: 2, action: 'exit', to: 'metro_plaza', pair: 'obj.diner_door', art: 'obj.door', label: 'Out to Route 1', text: 'Back out onto Route 1.', floor: true, stepOn: true },
+    { id: 'door.diner_kitchen', art: 'door.wall', x: 13, y: 4, label: 'Kitchen door', door: true },
+    { id: 'door.diner_restroom', art: 'door.wall', x: 17, y: 4, label: 'Restroom', door: true },
+    // Behind the counter
+    { id: 'npc.diner_cook', x: 5, y: 5, npc: true, age: 'adult', art: 'npc.rotter_3', label: 'The cook', text: '"Order up. Scrapple, two over easy, rye." Nobody ordered it. He slides it down the counter, and it stops square in front of an empty stool.' },
+    { id: 'obj.diner_counter', art: 'obj.counter', x: 7, y: 6, solid: true, label: 'The counter', action: 'shop', shop: 'diner' },
+    // The far corner: the jukebox (the landmark), lit
+    { id: 'obj.diner_jukebox', art: 'obj.jukebox', x: 24, y: 5, landmark: true, light: 0.8, solid: true, label: 'Jukebox', text: 'Forty slots, and every card in them has the same song title typed on it. Only the band changes, one per decade, back to the 2020s.' },
+    { id: 'obj.diner_specials', art: 'obj.chalkboard', x: 20, y: 4, label: 'Specials board', text: 'SPECIAL: SCRAPPLE, TWO OVER EASY, RYE. The date under it is rubbed out and chalked in again every morning. The special stays.' },
+    { id: 'obj.diner_neon', art: 'obj.neon', x: 20, y: 14, light: 0.7, label: 'Neon sign', text: 'The EAT sign from the back. From in here it reads TAE, and the A is dark.' },
+    // Booths under the windows; the one nearest the door is the window booth
+    ...[[2, 13], [6, 13], [19, 13]].map(([x, y], i) => ({ id: `obj.diner_booth_${i + 1}`, art: 'obj.booth', x, y, solid: true, label: 'Booth', text: DINER_BOOTH })),
+    { id: 'obj.diner_window_booth', art: 'obj.booth', x: 10, y: 13, solid: true, label: 'The window booth', grant: 'item.energy_bar',
       text: 'The booth by the window, with a view of the door. On the seat, a Halfsmoke bar still in its wrapper, on a napkin that says in pencil: FOR WHOEVER SITS HERE NEXT. You sit down.',
       doneText: 'Only the napkin now. You leave it where it was.' },
-    '@': { spawn: true },
-    D: { exit: 'metro_plaza', id: 'obj.diner_out', art: 'obj.door', label: 'Out to Route 1', stepOn: true, pair: 'obj.diner_door', text: 'Back out onto Route 1.' },
-  },
-}).build();
+    // The kitchen and the restroom
+    { id: 'obj.diner_spices', art: 'obj.supplements', x: 8, y: 1, solid: true, label: 'Spice shelf', text: 'Jars in rows, the labels gone brown with grease. In the middle of the shelf, a clean square where a tin used to stand.' },
+    { id: 'obj.diner_handwash', art: 'obj.house_rules', x: 18, y: 0, label: 'A sign over the sink', text: 'EMPLOYEES MUST WASH HANDS. Under it, a pencil tally of who has. The cook is winning.' },
+  ],
+  scenery: [
+    // the counter, the coffee machine at its end, and ten stools
+    ...[1, 2, 3, 4, 5, 6, 8, 9, 10, 11].map((x) => ({ art: 'obj.counter', x, y: 6, solid: true })), { art: 'obj.coffee', x: 12, y: 6, solid: true, light: 0.4 },
+    ...[2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((x) => ({ art: 'obj.stool', x, y: 7 })), { art: 'obj.bin', x: 14, y: 7 },
+    // booths and tables
+    ...[4, 8, 17, 21, 23].map((x) => ({ art: 'obj.booth', x, y: 13, solid: true })),
+    ...[[18, 8], [21, 8], [18, 10], [21, 10]].map(([x, y]) => ({ art: 'obj.cafe_table', x, y, solid: true })),
+    { art: 'obj.plant', x: 1, y: 7 }, { art: 'obj.plant', x: 24, y: 13 }, { art: 'obj.newsbox', x: 15, y: 13 },
+    // the kitchen: the flat-top, the fridge, the prep table, supplies; the restroom sink
+    { art: 'obj.stove', x: 2, y: 1, solid: true, light: 0.5 }, { art: 'obj.stove', x: 3, y: 1, solid: true }, { art: 'obj.fridge', x: 12, y: 1, solid: true },
+    { art: 'obj.table', x: 6, y: 3, solid: true }, { art: 'obj.boxes', x: 14, y: 3 }, { art: 'obj.crate', x: 14, y: 1, solid: true },
+    { art: 'obj.mm_mirror', x: 17, y: 1 },
+  ],
+});
 
 // ---- ASTER basement, B-01 (the super's level): boilers, Kess's workshop, storage cages ----
 // Secret: 631 has a storage cage nobody told you about. Kess's pegboard is the hint.

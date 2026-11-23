@@ -8,7 +8,7 @@ const ART = ['npc.rotter_1', 'npc.rotter_2', 'npc.rotter_3'];
 // [map, hint x, hint y, id suffix, label, line, polished]. A line without `polished` still shows as "[scaffold]".
 const CROWD = [
   // ---- Act 1 (the new campus areas; act1_more.js). Polished (hub #30 follow-up); Spanish in src/i18n/es-plaza.js ----
-  ['diner', 6, 5, 'diner_regular', 'A regular at the counter', '"Don\'t take that stool. That\'s Earl\'s." The plate in front of it is going cold. "He\'s running late." He salts his own eggs, then reaches over and salts Earl\'s.', true],
+  ['diner', 6, 7, 'diner_regular', 'A regular at the counter', '"Don\'t take that stool. That\'s Earl\'s." The plate in front of it is going cold. "He\'s running late." He salts his own eggs, then reaches over and salts Earl\'s.', true],
   ['campus_quad', 8, 5, 'quad_student', 'A student on the brick path', '"Stay on the bricks. Code rot comes up through the grass, everybody knows that." He picks his way along the path and skips every cracked brick, which is most of them.', true],
   ['dining_hall', 20, 3, 'dining_student', 'A student with a waffle', '"I rate every one a two, so it learns." He eats around the university seal and sets it at the edge of his plate, next to the other five.', true],
   ['robotics_lab', 6, 6, 'lab_grad', 'A grad student asleep at a bench', 'Asleep on his folded arms, safety glasses still on. By his elbow, a wheel motor with a sticky note: BORROWED, WILL PUT BACK. Without waking up he says, "It still drives. Just in circles."', true],

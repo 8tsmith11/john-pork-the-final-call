@@ -219,6 +219,16 @@ export const ES_PLAZA = {
   'Out to Route 1': 'Afuera, a la Ruta 1',
   'Back out onto Route 1.': 'De vuelta a la Ruta 1.',
   'THE DINER': 'LA CAFETERÍA', 'Whatever you order, it is already on the plate.': 'Pidas lo que pidas, ya está en el plato.',   // the counter's shop (items.js SHOPS.diner)
+  // the diner rebuilt to the room standard (hub #113)
+  'Kitchen door': 'Puerta de la cocina',
+  'Restroom': 'Baño',
+  'Specials board': 'Pizarra de especiales',
+  'SPECIAL: SCRAPPLE, TWO OVER EASY, RYE. The date under it is rubbed out and chalked in again every morning. The special stays.': 'ESPECIAL: SCRAPPLE, DOS HUEVOS FRITOS, PAN DE CENTENO. La fecha de abajo se borra y se vuelve a escribir con tiza cada mañana. El especial no cambia.',
+  'The EAT sign from the back. From in here it reads TAE, and the A is dark.': 'El letrero de EAT visto desde atrás. Desde adentro dice TAE, y la A está apagada.',
+  'Spice shelf': 'Estante de especias',
+  'Jars in rows, the labels gone brown with grease. In the middle of the shelf, a clean square where a tin used to stand.': 'Frascos en filas, con las etiquetas marrones de grasa. En el medio del estante, un cuadrado limpio donde antes había una lata.',
+  'A sign over the sink': 'Un cartel sobre el lavabo',
+  'EMPLOYEES MUST WASH HANDS. Under it, a pencil tally of who has. The cook is winning.': 'LOS EMPLEADOS DEBEN LAVARSE LAS MANOS. Debajo, una cuenta a lápiz de quién lo hizo. Va ganando el cocinero.',
   // act1_more.js: the campus quad, the dining hall, the robotics lab and the auditorium (polish pass, hub #30)
   'The dining hall. The lights are on.': 'El comedor. Las luces están encendidas.',
   'The robotics lab. A keypad, and someone has written the code on the wall next to it.': 'El laboratorio de robótica. Un teclado numérico, y alguien escribió el código en la pared de al lado.',
