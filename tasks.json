@@ -2639,14 +2639,15 @@
   {
    "id": 121,
    "created_at": "2026-11-23T07:37:22Z",
-   "updated_at": "2026-11-23T07:37:22Z",
+   "updated_at": "2026-11-23T09:59:09Z",
    "history": [
-    "2026-11-23T07:37:22Z trevor: added (for trevor)"
+    "2026-11-23T07:37:22Z trevor: added (for trevor)",
+    "2026-11-23T09:59:09Z trevor: claimed"
    ],
    "title": "Every boss genuinely unique and skill-based: a signature mechanic per boss, not a mix of the shared pattern list",
    "details": "Trevor, 2026-11-23. The Act 2 and 3 builder bosses are combinations of the same attack set. Give each one its own mechanic that matches its place (story names from the lore gate), readable tells, and something to learn. With gonman for looks, BagelMeister for names.",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   },
   {
