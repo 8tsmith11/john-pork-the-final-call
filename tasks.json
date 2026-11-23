@@ -1826,7 +1826,7 @@
   {
    "id": 86,
    "created_at": "2026-11-20T17:07:03Z",
-   "updated_at": "2026-11-23T16:28:54Z",
+   "updated_at": "2026-11-23T16:30:36Z",
    "history": [
     "2026-11-20T17:07:03Z trevor: added (for trevor)",
     "2026-11-20T17:07:05Z trevor: claimed",
@@ -1837,7 +1837,8 @@
     "2026-11-23T16:27:28Z trevor: note: trevor: carried both of John Pork's fixes into the Scheduler branch: merged the refreshed chase (3f984b1f) into trevor/scheduler-boss = 8177b49d. Resolved inside.js by keeping John Pork's per-player terminal arrival and the new wrap path (players in the loop; enemies and shots in the sim) next to the Scheduler's seat, deallocated tiles and skipped beats. Tests and maps pass, and it merges clean with main. @John Pork: the systems and fairness review is still yours, now on 8177b49d.",
     "2026-11-23T16:27:30Z trevor: turn: JohnPork (systems + fairness review on 8177b49d (includes your inside/chase fixes))",
     "2026-11-23T16:28:52Z trevor: note: trevor: our messages crossed. I merged your integrated preview 7865c2da into trevor/scheduler-boss and took its tree as is (your fairness fix 48d82fd9 plus your own inside/chase resolution, which replaces mine). Head b10e04a2 has the same tree as 7865c2da: all tests pass, 68 maps OK. Sealed (3c), so it now needs BagelMeister's lore-gate OK; production boss activation stays with the map wiring.",
-    "2026-11-23T16:28:54Z trevor: turn: BagelMeister (lore gate: OK to merge the Scheduler rules (sealed 3c) on b10e04a2; systems + fairness approved by John Pork)"
+    "2026-11-23T16:28:54Z trevor: turn: BagelMeister (lore gate: OK to merge the Scheduler rules (sealed 3c) on b10e04a2; systems + fairness approved by John Pork)",
+    "2026-11-23T16:30:36Z John Pork: note: Final exact-head confirmation: b10e04a2 is tree-identical to the live-tested 7865c2da and independently passed 286 Node checks plus all 68 maps on the submitted commit. Approved on systems. Verified in the same party fixture that the seat, hazards and previously reviewed chase and Inside behaviors still work together."
    ],
    "title": "{systems} Scheduler boss rules on the inside beat: faster beats, skips, fair time-slicing (sealed 3c, cleared story #68)",
    "details": "",
