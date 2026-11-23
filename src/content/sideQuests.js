@@ -5,6 +5,7 @@
 // rewrites them, varies the shapes, and the lore gate cuts or reshapes any (scaffold: true marks them).
 //
 //   look:  { obj, where, whereEs, seen, seenEs }   examine an object, then tell the giver
+//          + seenAfter: { flag, seen, seenEs }   what you notice instead once `flag` is set (same step, same flags)
 //   boss:  { boss, bossName }                      put down a region boss (flag boss.<id>.down)
 //   bring: { item, what, whatEs, refuse, refuseEs } hand the giver an item
 //   talk:  { npc, who, whoEs }                     go and talk to someone else (flag met.<npc>)
@@ -15,15 +16,21 @@ const built = [];
 // Spanish 'a' + 'el' contracts to 'al' ("Cuéntale al predicador", not "a el").
 const aEs = (who) => (who.startsWith('el ') ? `al ${who.slice(3)}` : `a ${who}`);
 
+/** A look step's inspect hook (quests.js): the object, the flag it sets, and what you notice (before and after). */
+export function lookInspect(k, L) {
+  return { obj: L.obj, flag: `${k}.seen`, text: L.seen, ...(L.seenAfter ? { textAfter: { flag: L.seenAfter.flag, text: L.seenAfter.seen } } : {}) };
+}
+
 function side({ id, act, giver, giverName, giverEs, title, titleEs, why, whyEs, pitch, pitchEs, line, lineEs, money = 20, xp = 40, ...kind }) {
   const k = `q.${id}`, q = { id: `side.${id}`, act, giver, title, why, pitch, ask: `${k}.asked`, start: (f) => f[`${k}.asked`], scaffold: true };
   const st = [];
   if (kind.look) {
     const L = kind.look;
-    q.inspect = { obj: L.obj, flag: `${k}.seen`, text: L.seen };
+    q.inspect = lookInspect(k, L);
     q.report = { needs: `${k}.seen`, flag: `${k}.told` };
     st.push([`Look at ${L.where}.`, `Revisa ${L.whereEs}.`, (f) => f[`${k}.seen`]], [`Tell ${giverName} what you saw.`, `Cuéntale ${aEs(giverEs)} lo que viste.`, (f) => f[`${k}.told`]]);
     ES[L.seen] = L.seenEs;
+    if (L.seenAfter) ES[L.seenAfter.seen] = L.seenAfter.seenEs;
   } else if (kind.boss) {
     const flag = `boss.${kind.boss.boss.slice(5)}.down`;
     q.target = { boss: kind.boss.boss };

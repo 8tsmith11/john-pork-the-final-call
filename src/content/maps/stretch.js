@@ -90,17 +90,18 @@ export const mdLot = fromGrid({
 }).build();
 
 // ---- Annapolis: the wooden statehouse, above the waterline ----
+// The way out is in the north wall: Annapolis's statehouse door is in the street's south wall, so you walk south in.
 export const annStatehouse = fromGrid({
   id: 'ann_statehouse', name: 'The statehouse', fill: '.', act: 2,
   rows: [
-    '########################',
+    '###########DD###########',
     '#.M....................#',
     '#..bbbb..........bbbb..#',
     '#..........?...........#',
     '#..bbbb..........bbbb..#',
     '#.........N............#',
     '#..........@...........#',
-    '###########DD###########',
+    '########################',
   ],
   legend: {
     b: { scenery: 'obj.table', solid: true, tile: '.' },

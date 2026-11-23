@@ -107,7 +107,7 @@ export class Gear {
     s.sim.emit({ t: 'blink', id: playerId, x0: Math.round(p.x), y0: Math.round(p.y), x1: Math.round(p.x), y1: Math.round(p.y) - 1 });
     const from = s.map.id;
     s._transitioning = true;
-    s.cameras.main.fadeOut(260, 40, 12, 4);
+    s._camFx('fadeOut', 260, 40, 12, 4);   // on every screen (guests fade back in when the new map reaches them)
     s.cameras.main.once('camerafadeoutcomplete', () => {
       s.sim.setMap(to, from);
       s.enteredFrom = from;
