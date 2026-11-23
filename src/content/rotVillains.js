@@ -16,11 +16,17 @@ export const WARDEN_GUARD = 9;
 export function generateWarden(seed, playerCount = 1) {
   const r = makeStreams(seed)('rotVillains');
   const mods = r.shuffle(MODULES).slice(0, 2);
+  if (mods[0] === 'summon') mods.reverse();   // his zombies come in phase two, never in the opening (Trevor, 2026-11-23)
+  const [m0, m1] = mods;
   return {
     name: `${r.pick(TITLES)} ${r.pick(NOUNS)}`,
     epithet: r.pick(EPITHETS),
     color: r.pick(COLORS),
     modules: mods,                       // phase 1 uses mods[0]; phase 2 adds mods[1]; phase 3 overloads
+    // His own moves per phase (Trevor, 2026-11-23: the fight was best right after wind-ups were added, fee4e2c1): a
+    // readable opening, then the sweep and the laser you run circles around, then the overload. Fewer things at once
+    // than the shared pool; Packet Rain and Hold Loop belong to other bosses.
+    pool: [[m0, 'spray'], [m0, m1, 'beam', 'laser'], [m0, m1, 'laser', 'shock', 'puddle']].map((ph) => [...new Set(ph)]),
     // Harder road to the Warden (Michael via BagelMeister, #503, task #33): twice the health, harder
     // hits, a shell that turns light blows (`guard` is taken off every hit, so starter weapons barely
     // scratch it and real weapons, melee skills, marks and the open windows are how you win), and it
@@ -28,7 +34,9 @@ export function generateWarden(seed, playerCount = 1) {
     maxHp: (360 + 180 * Math.max(0, playerCount - 1)) * 2,
     radius: 11, speed: 34, damage: 20,
     dmgMul: 1.35, guard: WARDEN_GUARD,
-    adds: { kind: 'enemy.rot_taken', every: [9, 7, 5], per: 2, cap: 6 },
+    // Zombies only from phase two, a few at a time (Trevor, 2026-11-23: "too many little enemies in the fight, but i
+    // like how originally they showed up in second phase"). A first pair at the phase change, then one at a time.
+    adds: { kind: 'enemy.rot_taken', fromPhase: 2, first: 1.2, every: [0, 11, 8], per: 1, cap: 3 },
   };
 }
 

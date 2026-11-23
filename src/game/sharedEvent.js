@@ -7,14 +7,16 @@
 //
 // Wire format (host relays client messages to the other clients):
 //   evStart → evState (line or choices and turn) → evChoose (turn and index) → evState → evEnd
+//   evResume asks for the active party-wide event from a newly ready returning client.
 // Works in solo too (it's just a normal dialogue then).
 import { VIEW } from '../view.js';
+import { loadScene } from '../engine/dialogue.js';
 
 class Mirror {
   constructor(main, onChoose = null) { this.spectator = true; this.main = main; this.done = false; this.line = null; this._choices = []; this.nodeId = null; this.decider = null; this.onChoose = onChoose; }
   get choices() { return this._choices; }
   set(state) {
-    this.line = state.text || state.who ? { who: state.who, text: state.text, choice: state.choice } : null;
+    this.line = state.text || state.who ? { who: state.who, text: state.text, cue: state.cue, choice: state.choice } : null;   // a new object = a new line
     this._choices = (state.choices ?? []).map((text) => ({ text }));
     this.nodeId = state.nodeId ?? null;
     this.decider = state.decider ?? null;
@@ -34,8 +36,8 @@ export class SharedEvents {
     this.s = scene;
     this.active = null;     // the event this player is driving
     this.watching = null;   // the event this player is mirroring
-    this.guestEvents = new Map();
     this.deferredStarts = new Map();
+    this.guestEvents = new Map();
     scene.input.keyboard.on('keydown', (ev) => {
       if ((ev.key === 't' || ev.key === 'T') && !this.s.dlg) { this.joinOffer(); return; }
       if (!this.s.dlg?.spectator) return;
@@ -54,10 +56,11 @@ export class SharedEvents {
     if (s.dlg?.spectator) { s.dlg.done = true; s._drawDialogue(); this.watching = null; }   // driving beats watching
     if (s.dlg) return false;
     const id = `${s.localId}:${Date.now().toString(36)}`;
-    this.active = { id, last: '', scope, turn: 0 };
     const me = s._lastRendered?.players?.find((p) => p.id === s.localId)
       ?? (presentation ? s.sim?.players.get(s.localId) : null);
-    if (scope !== 'self') this._send({ t: 'evStart', id, main: s.character, scope, map: s.map?.id, x: me?.x ?? 0, y: me?.y ?? 0, label, presentation });
+    const start = { t: 'evStart', id, main: s.character, scene: sceneName, scope, map: s.map?.id, x: me?.x ?? 0, y: me?.y ?? 0, label, presentation };
+    this.active = { id, last: '', scope, turn: 0, start };
+    if (scope !== 'self') this._send(start);
     await s._startLocal(sceneName, nodeId, () => {
       if (scope !== 'self') this._send({ t: 'evEnd', id });
       this.active = null;
@@ -74,8 +77,8 @@ export class SharedEvents {
     const s = this.s, want = node?.decider;
     if (s._aiDecider) return s._aiDecider;
     if (!want || want === 'speaker' || want === s.character || this.active?.scope === 'self') return s.character;
-    const humans = (s._lastRendered?.players ?? []).filter((p) => !String(p.id).startsWith('ai:')).map((p) => p.c);
-    return humans.includes(want) ? want : s.character;
+    const humans = s.humanRoommates?.() ?? new Set((s._lastRendered?.players ?? []).filter((p) => !String(p.id).startsWith('ai:')).map((p) => p.c));
+    return humans.has(want) ? want : s.character;
   }
   // Main player: may I pick here? If not, say who does.
   canChoose() {
@@ -96,15 +99,17 @@ export class SharedEvents {
   // Main player: mirror the dialogue box to everyone whenever it changes.
   _pump() {
     const s = this.s;
+    this._restorePending();
     this._resumeDirectedChoice();
     if (!this.active || this.active.scope === 'self' || !s.dlg || s.dlg.spectator) return;
     const d = s.dlg, line = d.line, choices = d.choices;
     const state = choices.length ? { who: null, text: '', choices: choices.map((c) => c.text.replace(/\*/g, '')), nodeId: d.nodeId, decider: this.deciderFor(d.node) }
-      : { who: line?.who ?? null, text: line?.text ?? '', choices: [], nodeId: d.nodeId, line: d.i, choice: !!line?.choice };
+      : { who: line?.who ?? null, text: line?.text ?? '', choices: [], nodeId: d.nodeId, line: d.i, choice: !!line?.choice, cue: line?.cue };   // cue: watchers stage the line too
     const key = JSON.stringify(state);
     if (key === this.active.last) return;
     this.active.last = key;
     if (choices.length) state.turn = ++this.active.turn;
+    this.active.state = state;
     this._send({ t: 'evState', id: this.active.id, state });
   }
 
@@ -114,21 +119,51 @@ export class SharedEvents {
     else if (s.mode === 'client') s.net.send(msg);
   }
 
+  // The returned World asks for the current story after its network and dialogue UI are ready.
+  requestResume() {
+    if (this.s.mode === 'client') this._send({ t: 'evResume' });
+  }
+
+  _replyResume(peer) {
+    if (this.active?.scope === 'all') {
+      // A returning human can become the directed chooser while the line itself stays unchanged.
+      this._pump();
+      this.s.net.send(peer, { t: 'evResume', start: this.active.start, state: this.active.state });
+      return;
+    }
+    const guests = [...this.guestEvents.values()].filter((start) => start.scope === 'all');
+    const start = guests.find((event) => event.id === this.watching?.id) ?? guests[0];
+    if (start) this.s.net.send(peer, { t: 'evResume', start, state: this.latest?.[start.id] });
+  }
+
+  _restorePending() {
+    const start = this.pendingResume, s = this.s;
+    const stage = s.stage?.active;
+    if (!start || (stage && !stage.script?.hold)) return;
+    const finale = start.presentation === 'act1-finale';
+    if (!finale && (this.active || s.dlg || s.sayOpen || s.menu)) return;
+    this.pendingResume = null;
+    if (finale) this._prepareFinale(start);
+    this._watch(start);
+  }
+
   /** Track each guest's dialogue even when the host is watching something else. */
   onHostMsg(peer, msg) {
+    if (msg?.t === 'evResume') { this._replyResume(peer); return true; }
     if (msg?.t === 'evStart') {
       if (typeof msg.id !== 'string' || !msg.id.startsWith(`${peer}:`)) return true;
-      if (this.guestEvents.get(peer) !== msg.id) this.endGuestDialogue(peer);
-      this.guestEvents.set(peer, msg.id);
+      if (this.guestEvents.get(peer)?.id !== msg.id) this.endGuestDialogue(peer);
+      msg = { ...msg, main: this.s._charOf?.(peer) ?? msg.main, presentation: undefined };
+      this.guestEvents.set(peer, msg);
     } else if (msg?.t === 'evState' || msg?.t === 'evEnd') {
-      if (typeof msg.id !== 'string' || this.guestEvents.get(peer) !== msg.id) return true;
+      if (typeof msg.id !== 'string' || this.guestEvents.get(peer)?.id !== msg.id) return true;
       if (msg.t === 'evEnd') this.guestEvents.delete(peer);
     }
     return this.onMsg(msg, peer);
   }
 
   endGuestDialogue(peer) {
-    const id = this.guestEvents.get(peer);
+    const id = this.guestEvents.get(peer)?.id;
     if (!id) return;
     this.guestEvents.delete(peer);
     const end = { t: 'evEnd', id };
@@ -138,6 +173,14 @@ export class SharedEvents {
 
   /** Network hook. Host: pass the sending peer id so it relays to the others. Returns true if handled. */
   onMsg(msg, fromPeer = null) {
+    if (msg?.t === 'evResume') {
+      const { start, state } = msg;
+      if (this.s.mode !== 'client' || start?.scope !== 'all' || this.watching?.id === start.id) return true;
+      if (state) (this.latest ??= {})[start.id] = state;
+      this.pendingResume = start;
+      this._restorePending();
+      return true;
+    }
     if (!msg || !/^ev(Start|State|End|Choose)$/.test(msg.t)) return false;
     const s = this.s;
     if (s.mode === 'host' && fromPeer && msg.presentation) msg = { ...msg, presentation: undefined };
@@ -173,10 +216,13 @@ export class SharedEvents {
       if (!near) { this.offer = msg; s._toast(`${String(msg.main).toUpperCase()} is talking${msg.label ? ` to ${msg.label}` : ''}  ·  [T] watch`); return true; }
       this._watch(msg);
     } else if (msg.t === 'evState' && this.watching?.id === msg.id && s.dlg?.spectator) {
-      s.dlg.set(msg.state); s._lineAt = 0; s._drawDialogue();
+      const mirror = s.dlg, previousNode = mirror.nodeId;
+      mirror.set(msg.state); s._lineAt = 0; s._drawDialogue();
+      if (mirror.nodeId !== previousNode) this._mirrorNodeBarks(mirror);
     } else if (msg.t === 'evEnd') {
       if (this.latest) delete this.latest[msg.id];
       this.deferredStarts.delete(msg.id);
+      if (this.pendingResume?.id === msg.id) this.pendingResume = null;
       if (this.offer?.id === msg.id) this.offer = null;
       if (this.watching?.id === msg.id) { if (s.dlg?.spectator) { s.dlg.done = true; s._drawDialogue(); } this.watching = null; this.banner.setVisible(false); }
     }
@@ -216,9 +262,17 @@ export class SharedEvents {
     s._showActOneArrival(x, y);
   }
 
+  _mirrorNodeBarks(mirror) {
+    const s = this.s, scene = this.watching?.scene, nodeId = mirror.nodeId;
+    if (!nodeId || typeof scene !== 'string' || !/^[a-z][a-z0-9_]*$/.test(scene)) return;
+    loadScene(scene).then((script) => {
+      if (s.dlg === mirror && mirror.nodeId === nodeId) s._nodeBarks?.(script, nodeId);
+    }).catch(() => {});
+  }
+
   _watch(msg) {
     const s = this.s;
-    this.watching = { id: msg.id, main: msg.main, scope: msg.scope };
+    this.watching = { id: msg.id, main: msg.main, scope: msg.scope, scene: msg.scene };
     s.dlg = new Mirror(msg.main, (i, turn) => this._send({ t: 'evChoose', id: msg.id, i, turn, who: s.character }));
     s.dlgDone = null; s.dlgVoiced = msg.presentation === 'act1-finale';
     if (this.latest?.[msg.id]) s.dlg.set(this.latest[msg.id]);
