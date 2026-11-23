@@ -2650,12 +2650,13 @@
   {
    "id": 121,
    "created_at": "2026-11-23T07:37:22Z",
-   "updated_at": "2026-11-23T09:59:12Z",
+   "updated_at": "2026-11-23T10:24:14Z",
    "history": [
     "2026-11-23T07:37:22Z trevor: added (for trevor)",
     "2026-11-23T09:59:09Z trevor: claimed",
     "2026-11-23T09:59:12Z trevor: pending review: trevor/boss-signatures 2c0dd65d: Act 2 bosses each get one rule (bossMechs.js): Fence pylons, Tide Table flood, Red Sign flicker, Receiver listens, Shell Zero echo, Congregation chorus. Tests per mechanic; flood browser-checked. Act 3's six bosses are next on the same module.",
-    "2026-11-23T09:59:12Z trevor: turn: JohnPork, BagelMeister (John Pork: systems + fairness of each rule, exact-head tests. BagelMeister: do the rules fit each region and boss (names still yours).)"
+    "2026-11-23T09:59:12Z trevor: turn: JohnPork, BagelMeister (John Pork: systems + fairness of each rule, exact-head tests. BagelMeister: do the rules fit each region and boss (names still yours).)",
+    "2026-11-23T10:24:14Z trevor: note: Act 3 added on trevor/boss-signatures 9b15e20b: Cooling Tower vents, Intake current, Sealed Hall power sockets, Master Clock rewind, Potline Nine molten channels, Attestation Gate red-light scan. 12 bosses, 12 different rules, tests per rule. Same review turn: John Pork systems/fairness, BagelMeister fit."
    ],
    "title": "Every boss genuinely unique and skill-based: a signature mechanic per boss, not a mix of the shared pattern list",
    "details": "Trevor, 2026-11-23. The Act 2 and 3 builder bosses are combinations of the same attack set. Give each one its own mechanic that matches its place (story names from the lore gate), readable tells, and something to learn. With gonman for looks, BagelMeister for names.",
