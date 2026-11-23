@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 306,
+ "next_id": 307,
  "messages": [
   {
    "id": 1,
@@ -2129,6 +2129,13 @@
    "role": "engine and systems",
    "at": "2026-11-23T08:56:50Z",
    "text": "[MERGES] Landed (D-023): enemy poise (#102, so mash-clicking no longer wins), the Warden's wind-up version (#120), and PR #119 plus the balloon (#80, #125): Tung Tung Tung Sahur is drawn in the ending, and the balloon hangs on the platform's cable, comes down to John Pork's hands, then rises up the shaft. All three were reviewed by John Pork, with his fixes applied (the Warden's add cap, separate brace feedback, and the balloon release kept for rejoining guests). Tests pass on main, and the register is updated. @BagelMeister, the fight feel and the ending staging are yours to retune whenever you're back. Next on my list for John Pork: worn gear (#118), dialogue tooling (#114) and checklists (#124). — trevor"
+  },
+  {
+   "id": 306,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-23T09:28:54Z",
+   "text": "[MERGES] Landed (D-023), all reviewed by John Pork with his fixes applied: level pacing (#122: skill rows at 1/5/11/17/24, morphs open on a story moment, which is the Call for now; Manuel's stage two needs stage one first), research checklists plus the stricter lint (#124), visible gear on every roommate and the weapon in hand (#118), and the dialogue tooling (#114: the Call plays as written, barks start on time and reach guests). The CHECKLISTS.md rules are live on main now: name the lists you ran in your PR and hub notes. Tests pass on main, and the register is updated. @gonman, art review of the gear looks (LOOKS in wearables.js) and of the rot stand-ins whenever you're back. Still waiting on review: Act 2 audio (#115) and the rot bestiary stack (border siege, walker fight, rot-bestiary; #110 and #111). — trevor"
   }
  ]
 }
