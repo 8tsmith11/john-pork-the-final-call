@@ -2693,14 +2693,15 @@
   {
    "id": 125,
    "created_at": "2026-11-23T08:25:34Z",
-   "updated_at": "2026-11-23T08:25:34Z",
+   "updated_at": "2026-11-23T08:25:47Z",
    "history": [
-    "2026-11-23T08:25:34Z trevor: added (for trevor)"
+    "2026-11-23T08:25:34Z trevor: added (for trevor)",
+    "2026-11-23T08:25:47Z trevor: claimed"
    ],
    "title": "Tung Tung Tung Sahur visible when he shows up, and the balloon visible in its scenes",
    "details": "Trevor, 2026-11-23. Ending cameo fix is PR #119 (trevor/ending-sahur-visible); balloon on trevor/ending-balloon stacked on it.",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
