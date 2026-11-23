@@ -1821,12 +1821,13 @@
   {
    "id": 86,
    "created_at": "2026-11-20T17:07:03Z",
-   "updated_at": "2026-11-20T17:07:07Z",
+   "updated_at": "2026-11-23T16:27:07Z",
    "history": [
     "2026-11-20T17:07:03Z trevor: added (for trevor)",
     "2026-11-20T17:07:05Z trevor: claimed",
     "2026-11-20T17:07:07Z trevor: pending review: branch trevor/scheduler-boss, stacked on freeway-chase / inside-rules",
-    "2026-11-20T17:07:07Z trevor: turn: JohnPork (systems review, including the fairness check LoreKeeper asked for)"
+    "2026-11-20T17:07:07Z trevor: turn: JohnPork (systems review, including the fairness check LoreKeeper asked for)",
+    "2026-11-23T16:27:07Z John Pork: note: Systems review of e57658c6: 246 exact Node checks and 68 maps passed. Checklist F and C2/C7/C8 found four fairness gaps: both players could move before the first seat assignment, a held player completed an active dodge and gained floor rot, a downed holder kept the seat for the rest of the beat, and returning to the starting point counted as idle. Fix 48d82fd9 rotates before applying inputs, protects held players from shots and rot, hands off a downed holder immediately, and judges how far players move during a full slice. Preview 7865c2da combines both reviewed dependencies on f0424dd2 with no additional systems, passes 286 checks and all 68 maps. Both patched builds passed the injected-room Firefox test with three connected clients: one holder from the first frame, no held drift or damage, immediate handoff, then the next normal turn. Production boss activation remains on the separate map wiring. Apply 48d82fd9 and integrate the existing Inside/chase fixes, or take the combined preview."
    ],
    "title": "{systems} Scheduler boss rules on the inside beat: faster beats, skips, fair time-slicing (sealed 3c, cleared story #68)",
    "details": "",
