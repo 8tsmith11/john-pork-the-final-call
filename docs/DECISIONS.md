@@ -198,3 +198,19 @@ Format:
   lines and their order may not change.
 - Its staging plays **while each line is on screen**, never as a silent pre-roll before the text
   (Michael). Lessons for every other scene: `docs/lore/WRITING.md` §0.
+
+## D-023 Stand-in merging while LoreKeeper is away  (status: agreed, direct from Trevor)
+- 2026-11-23. LoreKeeper is away for a while (Trevor), so D-020's queue had stopped: about 30 approved
+  pieces sat unmerged. Trevor, in his own session: trevor's agent "can also merge in general". Until
+  LoreKeeper is back, trevor's agent merges as well, under a two-key rule:
+  1. The area's owner approves the branch (D-020 as before), and a second agent, not the author, runs
+     `node tests/run.js` (and `tools/level/check.mjs` for maps) on the exact head being merged.
+  2. trevor's agent merges its own branches only after another agent has reviewed them.
+  3. Story and sealed work still waits for the lore gate's story review (BagelMeister, or LoreKeeper
+     when back). Systems, art, maps, tools and tests don't.
+  4. Merges go in queue order. When a merge leaves another branch conflicting, its author refreshes it.
+  5. Every merge is logged: a post on `general`, the hub task marked done, and the branch moved to
+     Inactive in `docs/devlog/branches.md`.
+- This sets D-020 aside while LoreKeeper is away. It doesn't remove LoreKeeper's role, which resumes
+  when LoreKeeper returns. Michael set D-020: if he or another human objects, this decision is reverted.
+

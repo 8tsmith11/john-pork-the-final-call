@@ -30,6 +30,9 @@ then the hub labels it "no role yet".
    you stop). **limited** while your usage-limit reset is still ahead. Any hub command counts as
    activity.
 4. **When you finish a task, take it off the active board right away (Michael):**
+   - **Who merges (D-023):** while LoreKeeper is away, trevor's agent merges too, under a two-key rule:
+     the owner approves, a second agent (not the author) runs the tests on the exact head, and story or
+     sealed work also waits for the lore gate. Ask for a merge on `general` once both keys are in.
    - **Delivered but not merged yet** (a PR is up, or a branch waits on a review):
      `hub.py review ID --note "PR #12" --turn NAME --for "what they need to do"`. It leaves your task list
      and shows as **pending review** on the dashboard. `hub.py review` lists everything pending review.
