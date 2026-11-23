@@ -3039,8 +3039,8 @@ export class WorldScene extends Phaser.Scene {
       if (!s) {
         const anim = e.boss ? (e.boss.sahur ? 'sahur' : e.k === 'boss.switchman' ? 'switchman' : 'warden') : e.k;
         const form = !e.boss && rotFormTexture(this, e.k);   // the further-gone rot forms, drawn in code (render/rotForms.js)
-        if (this.anims.exists(anim)) { s = this.add.sprite(e.x, e.y, e.boss ? (e.boss.sahur ? 'principals' : 'warden') : 'enemies').setOrigin(0.5, 1).play(anim); s.isArt = true; s.noTint = !!e.boss?.sahur; }
-        else if (form) { s = this.add.image(e.x, e.y, form, '0').setOrigin(0.5, 1); s.isArt = true; s.rotForm = true; }
+        if (form) { s = this.add.image(e.x, e.y, form, '0').setOrigin(0.5, 1); s.isArt = true; s.rotForm = true; }   // code-drawn first: scarier than the old sheet
+        else if (this.anims.exists(anim)) { s = this.add.sprite(e.x, e.y, e.boss ? (e.boss.sahur ? 'principals' : 'warden') : 'enemies').setOrigin(0.5, 1).play(anim); s.isArt = true; s.noTint = !!e.boss?.sahur; }
         else s = this.add.rectangle(e.x, e.y, def.radius * 2, def.radius * (e.boss ? 3 : 2) + 2, def.color).setOrigin(0.5, 1);
         this.enemySprites.set(e.id, s);
       }
@@ -3107,7 +3107,7 @@ export class WorldScene extends Phaser.Scene {
       const cx = (this.map.w * TILE) / 2, cy = (this.map.h * TILE) / 2;
       this.shotGfx.lineStyle(3, 0xd65db1, 0.5 + 0.3 * Math.sin(this.time.now / 100)).strokeCircle(cx, cy, snap.ring);
     }
-    for (const sh of snap.shots || []) this.shotGfx.fillStyle(sh.f ? 0xffd27f : 0xd65db1).fillCircle(sh.x, sh.y, sh.f ? 2 : 2.5);
+    for (const sh of snap.shots || []) this._drawShot(sh);
 
     for (const ev of snap.events || []) this._fx(ev, snap);
     this._barkTick(snap);
@@ -3410,6 +3410,53 @@ export class WorldScene extends Phaser.Scene {
     sfx('kill');
   }
 
+  // Each kind of shot looks like what it is (Trevor, 2026-11-23: "not every projectile should be a pink ball").
+  _drawShot(sh) {
+    const g = this.shotGfx, t = this.time.now, x = sh.x, y = sh.y, k = sh.k ?? (sh.f ? 'sinter' : 'packet');
+    const line = (len, w, c, a = 1) => { const ux = Math.cos(sh.a ?? 0), uy = Math.sin(sh.a ?? 0); g.lineStyle(w, c, a).lineBetween(x - ux * len, y - uy * len, x, y); };
+    if (k === 'packet') {        // corrupted packets: a jittering square that flickers magenta and cyan, a glitch trail
+      const c = Math.floor(t / 70 + x) % 2 ? 0xd417c8 : 0x3fd0d6, j = Math.floor(t / 50 + y) % 3 - 1;
+      g.fillStyle(c, 1).fillRect(x - 2 + j, y - 2, 4, 4); g.fillStyle(0xffffff, 0.9).fillRect(x - 1 + j, y - 1, 1, 1);
+      g.fillStyle(c, 0.4).fillRect(x - 5, y - 1, 2, 2);
+    } else if (k === 'note') {   // Hold Loop: hold music, as notes
+      g.fillStyle(0xd65db1, 1).fillEllipse(x, y + 1, 4, 3); g.fillRect(x + 1, y - 4, 1, 5); g.fillRect(x + 1, y - 4, 3, 1);
+    } else if (k === 'scan') line(7, 2, 0xff4d6d, 0.9);           // the sweep: short red scan streaks
+    else if (k === 'signal') {   // broadcast rings: hollow, pale yellow, pulsing
+      g.lineStyle(1, 0xffe08a, 1).strokeCircle(x, y, 2.5 + Math.sin(t / 60 + x) * 0.6); g.fillStyle(0xffe08a, 0.35).fillCircle(x, y, 1.5);
+    } else if (k === 'splinter') { line(5, 2, 0xb98b5a); g.fillStyle(0xe0b866, 1).fillRect(x - 1, y - 1, 2, 2); }   // Tung Tung Tung Sahur's wood
+    else if (k === 'nail') line(4, 1, 0xc9d3e6);                  // nails: thin and steel
+    else if (k === 'pellet') g.fillStyle(0xffb347, 1).fillRect(x - 1, y - 1, 2, 2);
+    else if (k === 'needle') line(6, 1, 0x7dff9b);
+    else g.fillStyle(sh.f ? 0xffd27f : 0xd65db1, 1).fillCircle(x, y, sh.f ? 2 : 2.5);   // sinter pellets from the fab launcher
+  }
+
+  // Brutes' melee tells and strikes (sim _stepBrute): the reach drawn on the ground while it winds up, then the hit.
+  _bruteShape(g, ev, k, alpha) {
+    if (ev.kind === 'slam') g.strokeCircle(ev.x, ev.y, ev.r * k).fillCircle(ev.x, ev.y, ev.r * k);
+    else if (ev.kind === 'sweep') { g.slice(ev.x, ev.y, ev.r * k, ev.a - ev.arc / 2, ev.a + ev.arc / 2, false); g.fillPath(); g.strokePath(); }
+    else { const ux = Math.cos(ev.a), uy = Math.sin(ev.a), len = ev.r * k; g.lineBetween(ev.x, ev.y - 4, ev.x + ux * len, ev.y - 4 + uy * len); }
+  }
+
+  _bruteFx(ev) {
+    const g = this.add.graphics().setDepth(4);
+    if (ev.t === 'etell') {
+      const t0 = this.time.now, dur = ev.dur * 1000;
+      const ev2 = this.time.addEvent({ delay: 30, loop: true, callback: () => {
+        const k = Math.min(1, (this.time.now - t0) / dur);
+        g.clear().lineStyle(ev.kind === 'whip' ? 6 : 1, 0xff4d6d, 0.5 + 0.4 * k).fillStyle(0xff4d6d, 0.10 + 0.18 * k);
+        this._bruteShape(g, ev, ev.kind === 'whip' ? 1 : 0.35 + 0.65 * k);
+        if (k >= 1) { ev2.remove(); g.destroy(); }
+      } });
+      return;
+    }
+    g.lineStyle(ev.kind === 'whip' ? 4 : 2, 0xffe6ee, 1).fillStyle(0xffe6ee, 0.35);
+    this._bruteShape(g, ev, 1);
+    this.tweens.add({ targets: g, alpha: 0, duration: 260, onComplete: () => g.destroy() });
+    sfx('hit');
+    const me = this._lastRendered?.players?.find((p) => p.id === this.localId);
+    if (ev.kind === 'slam' && me && Math.hypot(me.x - ev.x, me.y - ev.y) < 160) this.cameras.main.shake(160, 0.006);
+  }
+
   _bark(playerId, text) {
     text = esLine(text);                                            // Spanish when chosen (src/content/lines_es.js)
     const s = this.sprites.get(playerId);
@@ -3576,6 +3623,7 @@ export class WorldScene extends Phaser.Scene {
       const t = this.add.text(ev.x, ev.y - 30, 'OVERHEATED: hit it!', { ...FONT, color: '#ffb347' }).setOrigin(0.5).setDepth(6100);
       this.tweens.add({ targets: t, y: t.y - 10, alpha: 0, duration: 1300, onComplete: () => t.destroy() });
     }
+    if (ev.t === 'etell' || ev.t === 'estrike') this._bruteFx(ev);
     if (ev.t === 'impact') { const c = this.add.circle(ev.x, ev.y, ev.r, 0xffe6ee, 0.8).setDepth(5450); this.tweens.add({ targets: c, scale: 1.6, alpha: 0, duration: 260, onComplete: () => c.destroy() }); sfx('hit'); }
     if (ev.t === 'overload') { this.cameras.main.shake(500, 0.012); this.cameras.main.flash(250, 214, 93, 177); }
     if (ev.t === 'boss') { this._bossIntro(ev); this.time.delayedCall(1900, () => this._bossTalk('intro', this._lastRendered, ev.sahur ? 'sahur' : ev.kind === 'boss.switchman' ? 'switchman' : !ev.kind || ev.kind === 'boss.warden' ? 'warden' : ev.kind.slice(5))); }   // other bosses talk only if BOSS_TALK has them

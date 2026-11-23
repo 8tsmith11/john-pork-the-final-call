@@ -21,6 +21,10 @@ export const PHASE_SPAWNS = {
       ['enemy.rotling', 60, 22], ['enemy.rotling', 61, 44],                              // Route 1, both halves
       ['enemy.rotling', 24, 33], ['enemy.spitter', 72, 32],                              // the cross street
       ['enemy.rotling', 75, 10],                                                         // the east sidewalk by the shops
+      // Further-gone forms after the Call (Trevor, 2026-11-23): a grafted in the lot, crawlers on Route 1, a sprawl
+      // on the cross street, and a lace hulk walking the east sidewalk.
+      ['enemy.rot_graft', 44, 42], ['enemy.rot_crawler', 59, 30], ['enemy.rot_crawler', 62, 36],
+      ['enemy.rot_sprawl', 26, 30], ['enemy.rot_hulk', 73, 14],
       // Append only: metro_plaza#after.N killed keys must keep their meaning.
     ],
   },

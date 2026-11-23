@@ -4794,6 +4794,37 @@ test('growth: a little bigger every level, bigger jumps at levels 3 and 6, cappe
   assert.ok(painted(2) >= 1 && painted(3) > painted(2) && painted(7) > painted(3), `${painted(2)} ${painted(3)} ${painted(7)}`);
 });
 
+test('heavy rot hits without shooting (Trevor, 2026-11-23): a hulk slam, a grafted whip and a sprawl sweep are telegraphed, land, then open', () => {
+  const setup = (kind, dx, dy) => {
+    const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'brute', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+    const h = sim.players.get('host'); h.x = 30 * 16; h.y = 12 * 16; h.hp = 999;
+    const base = ENEMIES[kind]; sim.enemies.set('b', { id: 'b', kind, def: { ...base, vname: base.name, trait: 'plain' }, x: h.x - dx, y: h.y - dy, hp: base.hp, cd: 0, hurtT: 0, kx: 0, ky: 0 });
+    return { sim, h, e: sim.enemies.get('b') };
+  };
+  const run = (sim, secs, h, hold) => { const evs = []; for (let t = 0; t < 60 * secs; t++) { if (hold) { h.x = hold[0]; h.y = hold[1]; } h.iframes = 0; sim.step(1 / 60, new Map()); evs.push(...sim.events); } return evs; };
+  // the slam: a tell first, then everyone in the ring is hit and thrown, and the hulk is open
+  { const { sim, h, e } = setup('enemy.rot_hulk', 20, 0); const x0 = h.x, hp0 = h.hp; const evs = run(sim, 1.2, h);
+    const tell = evs.findIndex((v) => v.t === 'etell' && v.kind === 'slam'), hit = evs.findIndex((v) => v.t === 'estrike');
+    assert.ok(tell >= 0 && hit > tell, 'slam: tell, then strike'); assert.ok(h.hp < hp0 && h.x > x0 + 10, 'slam hurts and throws'); assert.ok(e.openT > 0, 'it reels after'); }
+  // the whip reels you in
+  { const { sim, h } = setup('enemy.rot_graft', 40, 0); const d0 = 40; run(sim, 1.0, h);
+    assert.ok(Math.hypot(h.x - sim.enemies.get('b').x, h.y - sim.enemies.get('b').y) < d0 - 6, 'the whip pulls you closer'); }
+  // the sweep only covers the front: standing behind it is safe
+  { const { sim, h, e } = setup('enemy.rot_sprawl', 20, 0); const hp0 = h.hp; e.st = 'windup'; e.stT = 0.01; e.aim = Math.PI; run(sim, 0.2, h);   // aimed away from the player
+    assert.equal(h.hp, hp0, 'behind the sweep is safe'); }
+  // a sprawl comes apart into crawlers
+  { const { sim, e } = setup('enemy.rot_sprawl', 60, 0); sim._hurtEnemy(e, 9999, 0, 0, 'host');
+    assert.equal([...sim.enemies.values()].filter((x) => x.kind === 'enemy.rot_crawler').length, 3); }
+});
+test('shots look like what fired them: packets, notes, scan streaks, nails, not one pink ball', () => {
+  const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'shots', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+  sim.shots.push({ k: 'packet', x: 100, y: 100, vx: 50, vy: 0, life: 1, dmg: 1, from: 'enemy' }, { k: 'scan', x: 110, y: 100, vx: 0, vy: 80, life: 1, dmg: 1, from: 'enemy' });
+  const snap = sim.snapshot();
+  assert.deepEqual(snap.shots.map((s) => s.k), ['packet', 'scan']); assert.ok(snap.shots[1].a != null && snap.shots[0].a == null, 'streaks carry a heading');
+  for (const k of ['enemy.rot_crawler', 'enemy.rot_graft', 'enemy.rot_sprawl', 'enemy.rot_hulk']) assert.ok(ENEMIES[k].plain, `${k} keeps its own name`);
+  assert.equal(ENEMIES['enemy.spitter'].ai, 'kite');
+});
+
 test('the toothpaste exchange: Michael asks, Manuel says "Hmmmm. Toothpaste?", Michael doubts it; Trevor is never in it', () => {
   assert.equal(toothMod.TOOTHPASTE_TALK.answer, 'Hmmmm. Toothpaste?');
   assert.ok(toothMod.TOOTHPASTE_TALK.doubt.includes('Sure, sure...'));
