@@ -4,14 +4,16 @@
 // The polish pass gives them sprites, real lines (EN/ES), moods, and jobs or quests.
 
 const ART = ['npc.rotter_1', 'npc.rotter_2', 'npc.rotter_3'];
+// The ones with a sprite of their own, named after them (tools/art/gen_props.py, "Act 1 people"). The rest borrow a rotter.
+const OWN_ART = new Set(['diner_regular', 'quad_student', 'dining_student', 'lab_grad']);
 
 // [map, hint x, hint y, id suffix, label, line, polished]. A line without `polished` still shows as "[scaffold]".
 const CROWD = [
   // ---- Act 1 (the new campus areas; act1_more.js). Polished (hub #30 follow-up); Spanish in src/i18n/es-plaza.js ----
-  ['diner', 6, 5, 'diner_regular', 'A regular at the counter', '"Don\'t take that stool. That\'s Earl\'s." The plate in front of it is going cold. "He\'s running late." He salts his own eggs, then reaches over and salts Earl\'s.', true],
+  ['diner', 6, 7, 'diner_regular', 'A regular at the counter', '"Don\'t take that stool. That\'s Earl\'s." The plate in front of it is going cold. "He\'s running late." He salts his own eggs, then reaches over and salts Earl\'s.', true],
   ['campus_quad', 8, 5, 'quad_student', 'A student on the brick path', '"Stay on the bricks. Code rot comes up through the grass, everybody knows that." He picks his way along the path and skips every cracked brick, which is most of them.', true],
-  ['dining_hall', 20, 3, 'dining_student', 'A student with a waffle', '"I rate every one a two, so it learns." He eats around the university seal and sets it at the edge of his plate, next to the other five.', true],
-  ['robotics_lab', 6, 6, 'lab_grad', 'A grad student asleep at a bench', 'Asleep on his folded arms, safety glasses still on. By his elbow, a wheel motor with a sticky note: BORROWED, WILL PUT BACK. Without waking up he says, "It still drives. Just in circles."', true],
+  ['dining_hall', 18, 10, 'dining_student', 'A student with a waffle', '"I rate every one a two, so it learns." He eats around the university seal and sets it at the edge of his plate, next to the other five.', true],
+  ['robotics_lab', 6, 13, 'lab_grad', 'A grad student asleep at a bench', 'Asleep on his folded arms, safety glasses still on. By his elbow, a wheel motor with a sticky note: BORROWED, WILL PUT BACK. Without waking up he says, "It still drives. Just in circles."', true],
   // ---- Act 2 ----
   ['route1_north', 8, 6, 'r1n_family', 'A family with a handcart', '"We heard Baltimore has work. We heard it from a man who heard it."'],
   ['route1_north', 30, 3, 'r1n_trooper', 'An off-duty trooper', '"I\'m not on shift. If I were, I\'d stop you. I\'m not."'],
@@ -92,7 +94,7 @@ export function addCrowds(maps) {
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const k = `${x + dx},${y + dy}`; if (!seen.has(k) && x + dx >= 0 && y + dy >= 0 && x + dx < m.w && y + dy < m.h) { seen.add(k); q.push([x + dx, y + dy]); } }
     }
     if (!at) throw new Error(`crowds: no free tile near ${mapId} ${hx},${hy}`);
-    m.objects.push({ id: `npc.${id}`, x: at[0], y: at[1], npc: true, art: ART[i % 3], label, age: /\bkid\b/.test(label) ? 'child' : 'adult', mood: ['still', 'fidget', 'nod'][i % 3], text: polished ? line : `[scaffold] ${line}` });
+    m.objects.push({ id: `npc.${id}`, x: at[0], y: at[1], npc: true, art: OWN_ART.has(id) ? `npc.${id}` : ART[i % 3], label, age: /\bkid\b/.test(label) ? 'child' : 'adult', mood: ['still', 'fidget', 'nod'][i % 3], text: polished ? line : `[scaffold] ${line}` });
     n++;
   });
   return n;
