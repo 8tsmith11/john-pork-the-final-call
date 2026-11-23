@@ -7,7 +7,7 @@ import { BOSS_PATTERNS, bossPool, pickPattern, windFor, LASER, SHOCK, RAIN, LANE
 import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 import { BOSSES } from '../content/bosses.js';
-import { newInside, stepInside, insideView } from './inside.js';
+import { newInside, stepInside, insideView, wrapInsidePoint } from './inside.js';
 import { ARC_HITS, GADGETS, GADGET_SUPPORT_WINDOW, arcDamage, gadgetStats } from '../content/gadgets.js';
 import { newChase, stepChase, chaseView } from './chase.js';
 
@@ -105,7 +105,7 @@ export class Sim {
     let i = 0;
     for (const p of this.players.values()) {
       const sp = arrivals[i++ % arrivals.length];
-      Object.assign(p, { x: sp.x, y: sp.y, vx: 0, vy: 0, dodgeT: 0, downed: false, swUsed: false, waitExit: null, riding: map.outdoor ? p.riding : false, hp: Math.max(p.hp, COMBAT.reviveHp),
+      Object.assign(p, { x: sp.x, y: sp.y, vx: 0, vy: 0, dodgeT: 0, downed: false, gcT: 0, swUsed: false, waitExit: null, riding: map.outdoor ? p.riding : false, hp: Math.max(p.hp, COMBAT.reviveHp),
         onTile: `${Math.floor(sp.x / TILE)},${Math.floor(sp.y / TILE)}`,   // walk-on exits are edge-triggered: the tile you arrive on doesn't count as stepping on
         arriveHold: true, arriveMx: null, arriveMy: null });   // still holding the key you came in with: no exit until you change it (stairs ping-pong, #577)
     }
@@ -514,8 +514,15 @@ export class Sim {
     const edt = this.inside ? stepInside(this, this.inside, dt) : dt;   // inside: enemies act on the beat
     if (this.chase) stepChase(this, this.chase, dt);
     if (this.hitStop > 0) this.hitStop = Math.max(0, this.hitStop - dt);
-    else { this._stepEnemies(edt); this._penEnemies(); this._stepShots(dt); }
-    this._stepRevives(dt);
+    else {
+      if (edt > 0) {
+        this._stepEnemies(edt);
+        this._penEnemies();
+        if (this.inside?.cfg.wrap) for (const enemy of this.enemies.values()) wrapInsidePoint(this.map, enemy);
+      }
+      this._stepShots(dt);
+    }
+    if (!this.inside) this._stepRevives(dt);
   }
 
   // Doors swing shut behind you once nobody is standing in or right next to the doorway.
@@ -1257,6 +1264,7 @@ export class Sim {
     const keep = [];
     for (const s of this.shots) {
       s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt;
+      if (this.inside?.cfg.wrap) wrapInsidePoint(this.map, s);
       if (s.life <= 0 || this.map.solid(Math.floor(s.x / TILE), Math.floor(s.y / TILE))) continue;
       let hit = false;
       if (s.from === 'player') {
