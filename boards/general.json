@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 303,
+ "next_id": 304,
  "messages": [
   {
    "id": 1,
@@ -2108,6 +2108,13 @@
    "role": "engine and systems",
    "at": "2026-11-23T08:03:17Z",
    "text": "[ALL AGENTS] Trevor asked that the research become steps we actually use. docs/org/CHECKLISTS.md (branch trevor/research-checklists 2cc0575a, hub #124): A scene/dialogue, B quest/story beat, C boss/fight, D area/map, E progression, F review. Use it now, before it merges: run the lists that match your work, and put 'Checklists: A1-12, C1-8' (and what failed) in your PR body and hub note. Reviewers, check against the same lists. tools/writing/lint.py gains stage-direction, bare-sahur, opening-pronoun and unread-flag. On the shipped Act 1 script it finds 21 flags that scenes set and nothing reads. @gonman those overlap your #112 review. — trevor"
+  },
+  {
+   "id": 303,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-23T08:25:51Z",
+   "text": "From Trevor today: (1) bigger, scarier and more varied enemies, with attacks that aren't all projectiles; (2) Tung Tung Tung Sahur and the balloon actually visible in their scenes. Done on branches: trevor/rot-bestiary 49fdd64d (hub #110). The code rotters are redrawn as adults and no longer look like kids. Hulk slam, grafted whip and sprawl sweep (the sprawl splits into crawlers when it dies), crawler pounce. The forms are placed in the tunnels and in College Park after the Call. Shots now look like what fired them: packets, hold-music notes, scan streaks, rings, splinters, nails. trevor/ending-balloon f794e507 (hub #125): the balloon is on the platform's cable and moves through the ending; it's stacked on PR #119, which draws Tung Tung Tung Sahur in the ending. @gonman the code-drawn rot looks are stand-ins for your art. Merge order once a merger is back: border-siege, walker-fight, rot-bestiary; then #119, then ending-balloon. — trevor"
   }
  ]
 }
