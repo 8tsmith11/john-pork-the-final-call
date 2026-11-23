@@ -1420,6 +1420,63 @@ D("dec.cable_es", cable("e", "s"))
 D("dec.cable_wn", cable("w", "n"))
 D("dec.cable_en", cable("e", "n"))
 
+
+# Hub #51: an optional Act 1 cameo (sealed surprise; the brief is in the hub task, not here).
+# An original character: one standing NPC frame and one 24x32 dialogue portrait.
+def cameo_01():
+    a, a_d, b, b_d = "warm1", "warm0", "warm3", "warm4"
+    c = C()
+    path = [(12, 18), (13, 18), (14, 17), (14, 16), (14, 15), (14, 14), (14, 13), (14, 12), (13, 11)]
+    for i, p in enumerate(path):
+        c.px(*p, a if i % 2 == 0 else b)
+    c.px(13, 11, b_d)
+    c.pts(a, (4, 1), (4, 2), (5, 2), (11, 1), (11, 2), (10, 2)).pts("skin2", (4, 2), (11, 2))
+    c.rect(4, 3, 8, 3, a).v_(4, 3, 7, a).v_(11, 3, 7, a_d)
+    c.rect(5, 5, 6, 5, "skin3").pts(a, (5, 5), (6, 5), (9, 5), (10, 5))
+    c.pts("night0", (6, 7), (9, 7)).pts("skin1", (7, 9), (8, 9)).pts("skin2", (5, 8), (10, 8))
+    c.rect(7, 10, 2, 1, "skin3")
+    c.rect(4, 11, 8, 6, "warm4").v_(11, 11, 6, "warm3").rect(7, 11, 2, 6, "night3")
+    c.v_(3, 12, 4, "warm4").v_(12, 12, 4, "warm3").px(12, 16, "skin3")
+    c.rect(1, 14, 3, 3, "bone").v_(3, 14, 3, "concrete3").px(0, 15, "bone")
+    c.pts("skin3", (3, 16), (4, 16))
+    c.h_(4, 17, 8, "steel").rect(5, 18, 2, 4, "steel").rect(9, 18, 2, 4, "steel").v_(10, 17, 5, "concrete2").v_(6, 18, 4, "concrete2")
+    c.h_(4, 22, 3, "warm0").h_(9, 22, 3, "warm0")
+    c.outline()
+    return c.pts("steel", (2, 12), (1, 11)).pts("concrete3", (2, 10))      # drawn after the outline: no edge
+
+
+def cameo_01_portrait():
+    a, a_d, b, b_d = "warm1", "warm0", "warm3", "warm4"
+    c = C(24, 32)
+    for i, (x, y, w) in enumerate([(19, 23, 2), (20, 22, 2), (21, 21, 2), (21, 20, 2), (21, 19, 2), (21, 18, 2),
+                                   (21, 17, 2), (21, 16, 2), (21, 15, 1), (20, 14, 2)]):
+        c.rect(x, y, w, 1, b if i in (3, 7) else a)
+    c.pts(b_d, (20, 14), (21, 14), (20, 13))
+    c.pts(a, (5, 2), (5, 3), (6, 3), (5, 4), (6, 4), (7, 4), (5, 5), (6, 5), (7, 5), (8, 5))
+    c.pts(a, (17, 2), (17, 3), (16, 3), (17, 4), (16, 4), (15, 4), (17, 5), (16, 5), (15, 5), (14, 5))
+    c.pts("skin2", (6, 4), (6, 5), (7, 5), (16, 4), (16, 5), (15, 5))
+    c.rect(5, 6, 13, 6, a).rect(4, 8, 3, 13, a).rect(16, 8, 3, 12, a_d).v_(16, 8, 12, a)
+    c.pts("warm2", (8, 6), (9, 6), (10, 6), (9, 7))
+    c.rect(7, 9, 9, 9, "skin3").rect(8, 18, 7, 1, "skin3")
+    c.h_(7, 9, 9, a).pts(a, (7, 10), (8, 10), (9, 10), (12, 10), (13, 10), (14, 10), (15, 10), (7, 11), (15, 11))
+    c.v_(15, 12, 6, "skin2")
+    c.rect(9, 12, 2, 2, "night0").rect(12, 12, 2, 2, "night0").pts("bone", (9, 12), (12, 12))
+    c.px(11, 15, "skin2").pts("skin1", (9, 16), (10, 17), (11, 17), (12, 16)).pts("skin2", (8, 15), (14, 15))
+    c.rect(9, 19, 5, 2, "skin2")
+    c.rect(4, 21, 15, 1, "warm4").rect(3, 22, 17, 1, "warm4").rect(2, 23, 19, 9, "warm4")
+    c.v_(19, 22, 10, "warm3").v_(20, 23, 9, "warm3").rect(8, 20, 7, 12, "night3").pts("warm3", (16, 25), (16, 28))
+    c.rect(4, 23, 7, 7, "bone").v_(10, 23, 7, "concrete3").h_(4, 23, 7, "concrete3")
+    c.pts("bone", (11, 25), (12, 25), (12, 26), (12, 27), (11, 28))
+    c.pts(a, (5, 25), (8, 25), (5, 26), (6, 26), (7, 26), (8, 26), (5, 27), (6, 27), (7, 27), (8, 27), (6, 28), (7, 28))
+    c.pts("warm4", (6, 26), (7, 26))
+    c.rect(3, 25, 1, 4, "skin3").v_(2, 26, 3, "skin2").pts("skin3", (11, 29), (12, 29), (13, 28), (13, 29))
+    c.outline()
+    return c.pts("steel", (5, 22), (6, 21), (6, 20), (5, 19), (8, 22), (8, 21), (7, 20))   # after the outline
+
+
+P("npc.cameo_01", cameo_01())
+PRINCIPALS["cameo_01"] = cameo_01_portrait().rows()
+
 write("props", 16, 24, PROPS)
 write("wide", 32, 16, WIDE)
 write("big", 32, 40, BIG)

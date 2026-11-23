@@ -3829,6 +3829,14 @@ test('map objects have atlas art or a code-drawn renderer', () => {
   assert.deepEqual(missing, [], 'Missing map object art:\n' + missing.join('\n'));
 });
 
+// Hub #51 (sealed cameo): the standing NPC frame and the dialogue portrait are built, at their frame sizes.
+test('the cameo_01 frames are in the built props and principals atlases', () => {
+  const atlas = (name) => JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${name}.json`, import.meta.url), 'utf8'));
+  const npc = atlas('props').frames['npc.cameo_01'], portrait = atlas('principals').frames.cameo_01;
+  assert.ok(npc, 'props.json has npc.cameo_01'); assert.ok(portrait, 'principals.json has cameo_01');
+  assert.deepEqual([npc.frame.w, npc.frame.h], [16, 24]); assert.deepEqual([portrait.frame.w, portrait.frame.h], [24, 32]);
+});
+
 // Level design guard: from the spawn, every object on every map can be walked up to (doors open on
 // contact, so they count as passable). Catches a prop or NPC walled off by a later layout edit.
 test('every map object is reachable on foot', () => {
