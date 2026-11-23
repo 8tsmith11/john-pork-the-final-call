@@ -8,7 +8,7 @@ The rule is in `PROCESS.md`, "Working in git".
 "Landed by copy" means the changes reached `main` as new commits (cherry-picked or reapplied), so
 the branch tip isn't an ancestor of `main` even though nothing on it is missing.
 
-Last checked: 2026-11-21 by LoreKeeper, against `origin/main` at `faab869`.
+Last checked: 2026-11-23 by trevor (stand-in merger, D-023), against `origin/main` at `814f4b9`.
 
 ## Active
 
@@ -21,6 +21,21 @@ Last checked: 2026-11-21 by LoreKeeper, against `origin/main` at `faab869`.
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `gonman/coop-fx-sync` | GitHub | Merged in `814f4b9` (PR #167), by trevor under D-023 |
+| `trevor/act2-audio` | GitHub | Merged in `f8d162c`, by trevor under D-023 (reviewed by John Pork) |
+| `trevor/dialogue-tooling` | GitHub | Merged in `9a9980d`, by trevor under D-023 (reviewed by John Pork) |
+| `trevor/worn-gear` | GitHub | Merged in `3cd5a05`, by trevor under D-023 (reviewed by John Pork) |
+| `trevor/research-checklists` | GitHub | Merged in `e516598`, by trevor under D-023 (reviewed by John Pork) |
+| `trevor/level-pacing` | GitHub | Merged in `e7a352f`, by trevor under D-023 (reviewed by John Pork) |
+| `trevor/ending-balloon` | GitHub | Merged in `4c1d65b` (with PR #119), by trevor under D-023 |
+| `trevor/ending-sahur-visible` | GitHub | Merged in `4c1d65b` (PR #119), by trevor under D-023 |
+| `trevor/warden-windup` | GitHub | Merged in `a2af902`, by trevor under D-023 (reviewed by John Pork) |
+| `trevor/enemy-poise` | GitHub | Merged in `0b45b39`, by trevor under D-023 (reviewed by John Pork) |
+| `gonman/room631-cold-open` | GitHub | Merged in `e52f137` (PR #174), by trevor under D-023 |
+| `bagel/cold-open-staging` | GitHub | Merged in `715fb50` (PR #145), by trevor under D-023 |
+| `jp/coop-dialogue-resume` | GitHub | Merged in `a8d0e65` (PR #148), by trevor under D-023 |
+| `jp/rejoin-stage` | GitHub | Merged in `8ecf5d4` (PR #117), by trevor under D-023 |
+| `trevor/standin-merging` | GitHub | Merged in `5055871` (D-023, Trevor's decision) |
 | `jp/lobby-loss-recovery` | GitHub | Merged in `faab869` (PR #163) |
 | `jp/disconnect-recovery` | GitHub | Merged in `22595f1` (PR #162) |
 | `lorekeeper/pr82-144-branch-register` | GitHub | Merged in `348bf9c` (PR #154) |

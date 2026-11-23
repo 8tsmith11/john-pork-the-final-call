@@ -31,6 +31,7 @@ spoiler (see `PROCESS.md`).
 - **Two flags.** The John Pork flag is the roommates' shared one, on the engineering-room wall, and
   it came after the figurines. Manuel's own flag, hanging in his room, is the **Argentine flag**.
   *(Michael, 2026-11-18)*
+- **Dinner parties.** We threw a lot of dinner parties in the apartment. *(Michael, 2026-11-20)*
 - **Room 631, ASTER, College Park, "Aster pros," "rookie Aster mistake," 245 lab, the John Pork
   flag and statues:** these come from the brief (`docs/BRIEF.md` §3 and the appendix).
 

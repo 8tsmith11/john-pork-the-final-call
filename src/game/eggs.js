@@ -81,11 +81,13 @@ export class Eggs {
 
   // The doer leans in and pumps; the target shudders. Sprites are the scene's own player/prop images.
   _animate(ev) {
-    const s = this.s, spr = s.sprites?.get(ev.id);
-    const target = s.propById?.[ev.tk]?.im ?? (ev.tk?.startsWith('player:') ? s.sprites?.get(ev.tk.slice(7)) : s.sprites?.get(ev.tk));
+    const s = this.s, spr = s.sprites?.get(ev.id), prop = s.propById?.[ev.tk]?.im;
+    const target = prop ?? (ev.tk?.startsWith('player:') ? s.sprites?.get(ev.tk.slice(7)) : s.sprites?.get(ev.tk));
     const lean = Math.sign(ev.tx - ev.x) || 1;
-    if (spr) s.tweens.add({ targets: spr, x: `+=${lean}`, yoyo: true, repeat: 9, duration: ANIM_MS / 20, ease: 'Sine.easeInOut' });
-    if (target) s.tweens.add({ targets: target, y: '-=1', yoyo: true, repeat: 4, duration: ANIM_MS / 10, delay: ANIM_MS * 0.5 });
+    // Player sprites are placed from the snapshot every frame, so they move through offX/offY (as in crush.js); a prop holds still.
+    if (spr) { spr.offX = 0; s.tweens.add({ targets: spr, offX: lean, yoyo: true, repeat: 9, duration: ANIM_MS / 20, ease: 'Sine.easeInOut', onComplete: () => { spr.offX = 0; } }); }
+    if (prop) s.tweens.add({ targets: prop, y: '-=1', yoyo: true, repeat: 4, duration: ANIM_MS / 10, delay: ANIM_MS * 0.5 });
+    else if (target) { target.offY = 0; s.tweens.add({ targets: target, offY: -1, yoyo: true, repeat: 4, duration: ANIM_MS / 10, delay: ANIM_MS * 0.5, onComplete: () => { target.offY = 0; } }); }
     const hand = s.add.text((ev.x + ev.tx) / 2, (ev.y + ev.ty) / 2 - 10, '✊', { fontSize: '7px' }).setOrigin(0.5).setDepth(6500);
     s.tweens.add({ targets: hand, y: '+=3', yoyo: true, repeat: 9, duration: ANIM_MS / 20, onComplete: () => hand.destroy() });
   }

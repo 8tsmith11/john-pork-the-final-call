@@ -18,8 +18,17 @@ export const xpScale = (act) => XP_BY_ACT[act ?? 1] ?? 1;
 /** Ability points a level gives: one, and two on every fifth level (35 by the cap, against a costed climb). */
 export const abilityPointsAt = (level) => (level % 5 === 0 ? 2 : 1);
 
-/** Skill tree rows open by level (row 4 is the capstone), so nobody rushes a capstone in Act 1. */
-export const TIER_LEVEL = [1, 4, 8, 13, 20];
+/** Skill tree rows open by level (row 4 is the capstone), so nobody rushes a capstone in Act 1. Spread over the
+ *  whole game (Trevor, 2026-11-23: levelling can stay easy, but what it unlocks has to be spread out): row two
+ *  after the Switchman, row three in Act 2, row four late in Act 2, the capstone in Act 3. It was [1, 4, 8, 13, 20],
+ *  which put three rows inside Act 1. Ranks a save already has stay; only new ranks wait. */
+export const TIER_LEVEL = [1, 5, 11, 17, 24];
+
+/** Morphs come from a story moment, not a level (Trevor, 2026-11-23: "it shouldn't just be an unlock"). Stage one
+ *  opens for everyone when this flag is set. For now that's the Call (John Pork's hack on every screen in College
+ *  Park, Act 1's biggest beat). The lore gate picks the real event (hub #119) and changes this one line.
+ *  Manuel's stage two stays at his level 6 (his own request). */
+export const MORPH_STAGE1_FLAG = 'act1.beat.call';
 
 /**
  * Add XP to one roommate and level them up as far as it goes. Returns the levels reached (for announcements and
