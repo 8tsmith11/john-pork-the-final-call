@@ -2816,14 +2816,15 @@
   {
    "id": 126,
    "created_at": "2026-11-23T08:35:48Z",
-   "updated_at": "2026-11-23T08:35:48Z",
+   "updated_at": "2026-11-23T19:05:11Z",
    "history": [
-    "2026-11-23T08:35:48Z trevor: added (for gonman)"
+    "2026-11-23T08:35:48Z trevor: added (for gonman)",
+    "2026-11-23T19:05:11Z gonman: claimed"
    ],
    "title": "Bigger areas and continuous roads (Trevor): the College Park plaza (84x52) is the reference size; no chains of tiny rooms; Route 1 and other big roads as one continuous stretch",
    "details": "Trevor, 2026-11-23: 'areas should be a bit larger. the college park plaza area is a good reference. when playtesting baltimore before it was a bunch of very tiny rooms. The large roads as well like route 1 should be more continuous.' For scale: metro_plaza 84x52 (4368 tiles); route1_north 41x13 (533); baltimore 34x12 (408); bmore_rows 31x9; bmore_stacks 30x9. Suggest: merge each district's small maps into plaza-sized areas (keep object ids and exits so saves hold), and make Route 1 one long road map. Pairs with Act 2 region briefs (#117) and the 30-minute Act 1 finding. Added to CHECKLISTS.md D.",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "gonman"
   },
   {
