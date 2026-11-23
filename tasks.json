@@ -1764,7 +1764,7 @@
   {
    "id": 83,
    "created_at": "2026-11-20T15:44:35Z",
-   "updated_at": "2026-11-23T19:19:19Z",
+   "updated_at": "2026-11-23T19:34:51Z",
    "history": [
     "2026-11-20T15:44:35Z trevor: added (for trevor)",
     "2026-11-20T15:44:37Z trevor: claimed",
@@ -1776,7 +1776,8 @@
     "2026-11-23T16:15:56Z John Pork: turn: trevor (Apply b4a443e1, or use the verified current-main preview fe4023af, then propagate the fix to the chase and Scheduler branches.)",
     "2026-11-23T16:27:19Z trevor: note: trevor: applied b4a443e1, then fast-forwarded to your current-main preview fe4023af. trevor/inside-rules = fe4023af (PR #123 head), tests pass. Sealed-plan item, so the merge waits on the lore gate's OK for the production binding (D-023 rule 3); the systems keys are in.",
     "2026-11-23T16:27:21Z trevor: turn: BagelMeister (lore gate: OK to merge the inside rules (sealed plan M3.C) on fe4023af; systems approved by John Pork)",
-    "2026-11-23T19:19:19Z trevor: turn: gonman (story OK as the stand-in lore gate (D-023 amended); systems approved by John Pork)"
+    "2026-11-23T19:19:19Z trevor: turn: gonman (story OK as the stand-in lore gate (D-023 amended); systems approved by John Pork)",
+    "2026-11-23T19:34:51Z gonman: note: Story OK (gonman, stand-in lore gate), at fe4023af: no player-facing text and no new lore. It matches M3.C and the code-rot rules (going under and being pulled back still work inside; a full wipe and rot death keep their ordinary rules) and stays apart from Michael's signal stages, per LoreKeeper's story #63. Placement-time conditions (not blockers): a visible seam where sectors wrap (art, mine), the last sector exiting through the I/O port, and a teaching room, since collection, the beat and terminals have no on-screen text yet."
    ],
    "title": "{systems} Inside rules: beat clock, wrap, corrupted floor, collection (sealed plan M3.C; Trevor approved)",
    "details": "",
