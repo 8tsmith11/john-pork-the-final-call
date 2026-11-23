@@ -5861,6 +5861,36 @@ test('Manuel keeps level six as the stage two requirement after the story unlock
   assert.equal(manuel.morph.stage, 2, 'legacy stage-one saves retain the level-six progression');
 });
 
+test('hub #113, Act 1 people: thirteen neighbours, cooks and students draw with a sprite of their own, never a rotter', () => {
+  const frames = JSON.parse(fs.readFileSync(new URL('../assets/sprites/props.json', import.meta.url), 'utf8')).frames;
+  const PEOPLE = { compute_hall_b: ['npc.chb_ta', 'npc.chb_student'], diner: ['npc.diner_cook', 'npc.diner_regular'], aster_roof: ['npc.roof_watcher'],
+    campus_quad: ['npc.quad_student'], dining_hall: ['npc.dining_cook', 'npc.dining_student'], robotics_lab: ['npc.lab_grad'], apt_637: ['npc.apt637_player'],
+    apt_638: ['npc.apt638_viewer'], aster_5f: ['npc.aster5_neighbor'], aster_laundry: ['npc.laundry_folder'] };
+  const used = new Map();
+  for (const [map, ids] of Object.entries(PEOPLE)) for (const id of ids) {
+    const o = MAPS_FOR_TEST[map].objects.find((q) => q.id === id);
+    assert.ok(o?.npc, `${map}: ${id} is placed, and is a person`);
+    const art = o.art ?? o.id;
+    assert.ok(!/^npc\.rotter_/.test(art), `${id} still borrows ${art}`);
+    assert.ok(frames[art], `${id}: no frame ${art} in assets/sprites/props.json (gen_props.py, append to props.txt, then build.py props)`);
+    assert.equal(`${frames[art].frame.w}x${frames[art].frame.h}`, '16x24', `${art} is a props frame`);
+    assert.ok(!used.has(art), `${id} and ${used.get(art)} share ${art}`);
+    used.set(art, id);
+  }
+  assert.equal(used.size, 13);
+  // The regular sits on a stool drawn into his sprite; a map stool on his tile has the same depth and draws over him.
+  const reg = MAPS_FOR_TEST.diner.objects.find((q) => q.id === 'npc.diner_regular');
+  const onHisTile = [...MAPS_FOR_TEST.diner.objects, ...(MAPS_FOR_TEST.diner.scenery ?? [])].filter((t) => t !== reg && t.x === reg.x && t.y === reg.y && (t.art ?? t.id) === 'obj.stool');
+  assert.equal(onHisTile.length, 0, 'a map stool on the regular\'s tile covers him');
+  assert.ok(frames['npc.lab_grad#1'], 'the sleeper breathes: a second frame for the slow loop');
+  // The plaza's four borrow a rotter on purpose, and the rotters are still in the sheet for everyone else.
+  for (const id of ['npc.chatgpt', 'npc.claude', 'npc.chatgtt', 'npc.chatgdt']) {
+    const o = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects).find((q) => q.id === id);
+    if (o) assert.ok(/^npc\.rotter_[123]$/.test(o.art), `${id} keeps its rotter`);
+  }
+  for (const n of [1, 2, 3]) assert.ok(frames[`npc.rotter_${n}`]);
+});
+
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
