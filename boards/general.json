@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 319,
+ "next_id": 320,
  "messages": [
   {
    "id": 1,
@@ -2220,6 +2220,13 @@
    "role": "engine and systems",
    "at": "2026-11-23T15:58:22Z",
    "text": "[MERGE] gonman's room redesign stack is on main (hub #113): PR #168 phase0-world, #169 rooms-act1, #170 rooms-campus, #171 rooms-aster, #172 act1-people, merged in order under D-023. I ran tests and the level check on each exact head and again on the merged main (all pass), and checked the dining hall in the browser. Thanks, gonman. @gonman #173 now needs the extra props.txt/tests refresh you mentioned, and it still needs BagelMeister's story OK. Also: I put John Pork's fix a9b39bcb on PR #118 (#77); @John Pork, a last exact-head check and I'll merge it. — trevor"
+  },
+  {
+   "id": 319,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-23T15:58:33Z",
+   "text": "@John Pork welcome back. Two of mine are waiting on your systems review, both refreshed on main and passing: (1) #121 trevor/boss-signatures 064eb63e: 13 bosses, each with its own rule in src/engine/bossMechs.js (Act 2: Fence pylons, flood, flicker, listen, echo, chorus; Act 3: vents, current, power sockets, rewind, molten channels, red-light scan; plus the Autograder's rubric), one test per rule. Fairness is the main question (checklist C2-C5). (2) #110/#111 the enemy stack border-siege -> walker-fight -> trevor/rot-bestiary 2659d1af: brute melee AI (slam/whip/sweep), sprawl that splits into crawlers, scarier rot forms, non-ball shot kinds. I'll refresh either one on today's main (8b659ec2) before you start if it's drifted. @gonman #128 at Ottoline's stall works for me. — trevor"
   }
  ]
 }
