@@ -3216,7 +3216,9 @@ export class WorldScene extends Phaser.Scene {
     for (const [id, s] of this.sprites) if (!seen.has(id)) { s.destroy(); this.sprites.delete(id); }
 
     const eseen = new Set();
+    this.bruteTells?.clear();
     for (const e of snap.enemies || []) {
+      if (e.bt) this._drawBruteTell(e.bt);
       if (e.sd) continue;   // drawn by its own view (the walking hub and its drones: src/game/skirmishView.js)
       eseen.add(e.id);
       let s = this.enemySprites.get(e.id);
@@ -3625,26 +3627,23 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // Brutes' melee tells and strikes (sim _stepBrute): the reach drawn on the ground while it winds up, then the hit.
-  _bruteShape(g, ev, k, alpha) {
-    if (ev.kind === 'slam') g.strokeCircle(ev.x, ev.y, ev.r * k).fillCircle(ev.x, ev.y, ev.r * k);
-    else if (ev.kind === 'sweep') { g.slice(ev.x, ev.y, ev.r * k, ev.a - ev.arc / 2, ev.a + ev.arc / 2, false); g.fillPath(); g.strokePath(); }
-    else { const ux = Math.cos(ev.a), uy = Math.sin(ev.a), len = ev.r * k; g.lineBetween(ev.x, ev.y - 4, ev.x + ux * len, ev.y - 4 + uy * len); }
+  _bruteShape(g, ev) {
+    if (ev.kind === 'slam') g.strokeCircle(ev.x, ev.y, ev.r).fillCircle(ev.x, ev.y, ev.r);
+    else if (ev.kind === 'sweep') { g.slice(ev.x, ev.y, ev.r, ev.a - ev.arc / 2, ev.a + ev.arc / 2, false); g.fillPath(); g.strokePath(); }
+    else { const ux = Math.cos(ev.a), uy = Math.sin(ev.a), len = ev.r; g.lineBetween(ev.x, ev.y, ev.x + ux * len, ev.y + uy * len); }
+  }
+
+  _drawBruteTell(tell) {
+    const g = (this.bruteTells ??= this.add.graphics().setDepth(4));
+    g.lineStyle(tell.kind === 'whip' ? 14 : 1, 0xff4d6d, 0.4 + 0.35 * tell.progress)
+      .fillStyle(0xff4d6d, 0.08 + 0.16 * tell.progress);
+    this._bruteShape(g, tell);
   }
 
   _bruteFx(ev) {
     const g = this.add.graphics().setDepth(4);
-    if (ev.t === 'etell') {
-      const t0 = this.time.now, dur = ev.dur * 1000;
-      const ev2 = this.time.addEvent({ delay: 30, loop: true, callback: () => {
-        const k = Math.min(1, (this.time.now - t0) / dur);
-        g.clear().lineStyle(ev.kind === 'whip' ? 6 : 1, 0xff4d6d, 0.5 + 0.4 * k).fillStyle(0xff4d6d, 0.10 + 0.18 * k);
-        this._bruteShape(g, ev, ev.kind === 'whip' ? 1 : 0.35 + 0.65 * k);
-        if (k >= 1) { ev2.remove(); g.destroy(); }
-      } });
-      return;
-    }
-    g.lineStyle(ev.kind === 'whip' ? 4 : 2, 0xffe6ee, 1).fillStyle(0xffe6ee, 0.35);
-    this._bruteShape(g, ev, 1);
+    g.lineStyle(ev.kind === 'whip' ? 14 : 2, 0xffe6ee, 1).fillStyle(0xffe6ee, 0.35);
+    this._bruteShape(g, ev);
     this.tweens.add({ targets: g, alpha: 0, duration: 260, onComplete: () => g.destroy() });
     sfx('hit');
     const me = this._lastRendered?.players?.find((p) => p.id === this.localId);
@@ -3834,7 +3833,7 @@ export class WorldScene extends Phaser.Scene {
       const t = this.add.text(ev.x, ev.y - 30, 'OVERHEATED: hit it!', { ...FONT, color: '#ffb347' }).setOrigin(0.5).setDepth(6100);
       this.tweens.add({ targets: t, y: t.y - 10, alpha: 0, duration: 1300, onComplete: () => t.destroy() });
     }
-    if (ev.t === 'etell' || ev.t === 'estrike') this._bruteFx(ev);
+    if (ev.t === 'estrike') this._bruteFx(ev);
     if (ev.t === 'bossBrace' && this.time.now > (this._thunkAt ?? 0)) {   // a hit that glances off a braced boss (at most ~3 a second)
       this._thunkAt = this.time.now + 300;
       const t = this.add.text(ev.x + (Math.random() * 16 - 8), ev.y - 22, 'BRACED', { ...FONT, color: '#9aa8bf' }).setOrigin(0.5).setDepth(6100);

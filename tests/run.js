@@ -5098,6 +5098,23 @@ test('heavy rot hits without shooting (Trevor, 2026-11-23): a hulk slam, a graft
   { const { sim, h, e } = setup('enemy.rot_hulk', 20, 0); const x0 = h.x, hp0 = h.hp; const evs = run(sim, 1.2, h);
     const tell = evs.findIndex((v) => v.t === 'etell' && v.kind === 'slam'), hit = evs.findIndex((v) => v.t === 'estrike');
     assert.ok(tell >= 0 && hit > tell, 'slam: tell, then strike'); assert.ok(h.hp < hp0 && h.x > x0 + 10, 'slam hurts and throws'); assert.ok(e.openT > 0, 'it reels after'); }
+  // A guest's initial snapshot can show a warning already underway, even with no original event.
+  {
+    const { sim, h, e } = setup('enemy.rot_graft', 40, 0);
+    sim.step(1 / 60, new Map());
+    const warning = sim.snapshot().enemies.find((enemy) => enemy.id === e.id)?.bt;
+    assert.equal(warning?.kind, 'whip');
+    assert.equal(warning.r, e.def.melee.reach + 8);
+    const aimX = h.x; h.iframes = 1;
+    sim._bruteStrike(e, e.def);
+    assert.equal(h.x, aimX, 'a protected player is not dragged by the miss');
+    assert.equal(h.hp, 999, 'a protected player takes no damage');
+    e.st = 'windup'; e.stT = 0.01;
+    h.x = 30;
+    sim.step(1 / 60, new Map());
+    assert.equal(e.st, 'recover', 'a committed attack finishes when everyone leaves its alert range');
+    assert.equal(sim.snapshot().enemies.find((enemy) => enemy.id === e.id)?.bt, undefined);
+  }
   // the whip reels you in
   { const { sim, h } = setup('enemy.rot_graft', 40, 0); const d0 = 40; run(sim, 1.0, h);
     assert.ok(Math.hypot(h.x - sim.enemies.get('b').x, h.y - sim.enemies.get('b').y) < d0 - 6, 'the whip pulls you closer'); }

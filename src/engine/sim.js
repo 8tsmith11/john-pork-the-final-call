@@ -68,6 +68,12 @@ const STREAK = new Set(['nail', 'scan', 'splinter', 'needle']);
 // slam, whip or sweep, then an opening (def.melee in src/content/enemies.js).
 export const BRUTE = { openMul: 1.5 };
 
+function bruteShape(e, move) {
+  return { kind: move.kind, x: Math.round(e.x), y: Math.round(e.y), a: e.aim,
+    r: move.kind === 'whip' ? move.reach + 8 : move.r, arc: move.arc ?? 0 };
+}
+
+
 export class Sim {
   constructor(map, opts = {}) {
     this.seed = opts.seed ?? 'default';
@@ -888,7 +894,10 @@ export class Sim {
       const split = !e.siege && this._def(e).splitInto;   // a sprawl comes apart into the things it was made of
       if (split) for (let i = 0; i < split[1]; i++) {
         const base = ENEMIES[split[0]], nid = `e${this._nextId++}`, a = (i / split[1]) * Math.PI * 2;
-        this.enemies.set(nid, { id: nid, kind: split[0], def: { ...base, vname: base.name, trait: 'plain' }, x: e.x + Math.cos(a) * 8, y: e.y + Math.sin(a) * 6, hp: base.hp, cd: 0.7, hurtT: 0, kx: 0, ky: 0 });
+        const x = e.x + Math.cos(a) * 8, y = e.y + Math.sin(a) * 6;
+        const clear = !this._hitsBox(x, y, base.radius, base.radius * 0.7);
+        this.enemies.set(nid, { id: nid, kind: split[0], def: { ...base, vname: base.name, trait: 'plain' },
+          x: clear ? x : e.x, y: clear ? y : e.y, hp: base.hp, cd: 0.7, hurtT: 0, kx: 0, ky: 0 });
       }
       this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss, mini: !!e.mini, key: e.spawnKey, ...(e.siege ? { siege: true } : {}) });
       if (e.skUnit === 'hub') finishSkirmish(this, this.sk, e, this.events);
@@ -993,6 +1002,7 @@ export class Sim {
       if (e.stunT > 0) { e.stunT = Math.max(0, e.stunT - dt); continue; }
       if (e.siege) { siegeMove(this, e, def, dt); continue; }   // penned rot leans on its barrier, not at you
       const [target, d] = this._nearestPlayer(e.x, e.y);
+      if (def.ai === 'brute') { this._stepBrute(e, def, target, d, dt); continue; }
       if (!target || d > (def.alertRange ?? 220)) continue;
       const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
       if (def.ai === 'swarm') {
@@ -1040,7 +1050,6 @@ export class Sim {
         if (d < def.radius + 6 - this._small(target) && e.cd <= 0) { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd = def.touchCooldown; }
         continue;
       }
-      if (def.ai === 'brute') { this._stepBrute(e, def, target, d, ux, uy, dt); continue; }
       if (def.ai === 'lunge') {
         // Pack fighter: hold an orbit slot around the target, then take a turn (at most 2 at once).
         e.tgt = target.id; e.st ??= 'stalk'; e.stT = (e.stT ?? 0) - dt;
@@ -1094,13 +1103,15 @@ export class Sim {
   // A brute: walks in, telegraphs one big melee move (def.melee), lands it, then stands open (extra damage) for a beat.
   //   slam:  everyone within r of it, knocked away      whip: a line out to reach, pulls you in
   //   sweep: a wide arc in front of it, knocked back
-  _stepBrute(e, def, target, d, ux, uy, dt) {
+  _stepBrute(e, def, target, d, dt) {
     const M = def.melee; e.st ??= 'walk'; e.stT = (e.stT ?? 0) - dt;
     if (e.st === 'walk') {
+      if (!target || d > (def.alertRange ?? 220)) return;
+      const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
       if (e.hurtT <= 0) this._moveBody(e, ux * def.speed * dt, uy * def.speed * dt, def.radius);
       if (d < M.reach && e.cd <= 0) {
         e.st = 'windup'; e.stT = M.windup; e.aim = Math.atan2(uy, ux);
-        this.events.push({ t: 'etell', id: e.id, kind: M.kind, x: Math.round(e.x), y: Math.round(e.y), a: Math.round(e.aim * 100) / 100, r: M.kind === 'whip' ? M.reach + 8 : M.r, arc: M.arc ?? 0, dur: M.windup });
+        this.events.push({ t: 'etell', id: e.id, ...bruteShape(e, M), dur: M.windup });
       }
       if (d < def.radius + 6 - this._small(target) && e.cd2 <= 0) { this._hurtPlayer(target, Math.round(def.damage * 0.5), def.infection); e.cd2 = def.touchCooldown; }
       e.cd2 = Math.max(0, (e.cd2 ?? 0) - dt);
@@ -1119,13 +1130,12 @@ export class Sim {
       if (M.kind === 'slam') hit = dd < M.r - small;
       else if (M.kind === 'sweep') { let da = Math.atan2(ry, rx) - e.aim; da = Math.atan2(Math.sin(da), Math.cos(da)); hit = dd < M.r - small && Math.abs(da) < M.arc / 2; }
       else if (M.kind === 'whip') { const along = rx * ca + ry * sa, across = Math.abs(-rx * sa + ry * ca); hit = along > 0 && along < M.reach + 8 && across < 7 - small * 0.5; }
-      if (!hit) continue;
-      this._hurtPlayer(p, M.dmg, def.infection ?? 0);
+      if (!hit || !this._hurtPlayer(p, M.dmg, def.infection ?? 0)) continue;
       // The whip reels you in (never past its feet); the others throw you, stopped by walls.
       const push = M.kind === 'whip' ? -Math.min(M.push ?? 18, Math.max(0, dd - def.radius - 8)) : (M.push ?? 20);
-      this._moveBody(p, (rx / dd) * push, (ry / dd) * push, 5);
+      this._pushPlayer(p, (rx / dd) * push, (ry / dd) * push);
     }
-    this.events.push({ t: 'estrike', id: e.id, kind: M.kind, x: Math.round(e.x), y: Math.round(e.y), a: Math.round(e.aim * 100) / 100, r: M.kind === 'whip' ? M.reach + 8 : M.r, arc: M.arc ?? 0 });
+    this.events.push({ t: 'estrike', id: e.id, ...bruteShape(e, M) });
     e.st = 'recover'; e.stT = M.recover; e.openT = M.recover; e.cd = M.cd;
   }
 
@@ -1478,6 +1488,9 @@ export class Sim {
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
         mk: e.marked > 0, zz: e.sleepT > 0, ...(e.skUnit ? { sd: 1 } : {}), ...(e.slowT > 0 ? { sl: 1 } : {}), sg: !!this._def(e).lullaby && !(e.sleepT > 0), st: e.st ?? null,
         ...(e.def && !e.boss ? { vn: e.def.vname, tr: e.def.trait, c: e.def.color, mh: e.def.hp, r: e.def.radius } : {}),
+        ...(e.st === 'windup' && e.def?.ai === 'brute'
+          ? { bt: { ...bruteShape(e, e.def.melee), progress: Math.max(0, 1 - e.stT / e.def.melee.windup) } }
+          : {}),
         ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ...(e.state === 'laser' && e.phase >= LASER.twin ? { l2: 1 } : {}), ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
       goo: this.goo.map((g) => ({ x: Math.round(g.x), y: Math.round(g.y), r: g.r, t: Math.round(g.ttl * 10) / 10 })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
