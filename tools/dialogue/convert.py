@@ -122,7 +122,11 @@ def parse(text):
         line = raw.strip()
         if tight is not None and tight["done"] and line and not line.startswith(">"):
             cond, outer, chain, inner_if = tight["cond"], tight["outer"], list(tight["chain"]), tight["inner_if"]; tight = None
-            if not BLOCK.match(line): one_run = None   # the run of alternatives is over: lines for everyone
+            marker = BLOCK.match(line)
+            if not marker:
+                one_run = None   # the run of alternatives is over: lines for everyone
+            elif one_run is not None and len(marker.group(1)) == 4 and marker.group(2).lower() in ("else", "otherwise"):
+                chain.extend(one_run["branches"])
         fs = SCOPE_FILE.match(line)
         if fs and node is None: meta['scope'] = fs.group(1).lower(); continue
         fm = MODE_FILE.match(line)
@@ -184,9 +188,10 @@ def parse(text):
                 same = sib and len(sib.group(1)) == 4 and sib.group(2).lower() in ("else", "otherwise") or (sib and len(sib.group(1)) == 4 and sib.group(2).lower() == "if" and key(sib.group(3)) == key(rest))
                 if one_run is not None and key(rest) != one_run["key"]: one_run = None   # a new question: not part of the run
                 if same or one_run is not None:
-                    if one_run is None: one_run = {"cond": cond, "outer": outer, "chain": list(chain), "inner_if": inner_if, "key": key(rest)}
-                    tight = {**{k: v for k, v in one_run.items() if k != "key"}, "done": False}
-                    chain.append(rest or None)
+                    if one_run is None:
+                        one_run = {"cond": cond, "outer": outer, "chain": list(chain), "inner_if": inner_if, "key": key(rest), "branches": []}
+                    tight = {**one_run, "done": False}
+                    one_run["branches"].append(rest or None)
                     cond = " && ".join(c for c in (one_run["outer"], rest or None) if c) or None
                     in_choices = False
                     continue
@@ -201,7 +206,16 @@ def parse(text):
             else:
                 inner_if = None
                 # "else" closes the whole run of sibling ifs before it (if A / if B / else = neither).
-                if kind == "if": outer = rest or None; chain.append(outer)
+                if kind == "if":
+                    replaces = re.search(r"\s*\(replaces the block above\)$", rest, re.I)
+                    if replaces:
+                        rest = rest[:replaces.start()]
+                        for previous in reversed(node["lines"]):
+                            if not previous["if"] or previous["if"] not in chain:
+                                break
+                            previous["if"] = both(previous["if"], f"not ({rest})")
+                    outer = rest or None
+                    chain.append(outer)
                 elif kind in ("else", "otherwise"): outer = " && ".join(f"not ({c})" for c in chain if c) or None; chain = []
                 else: outer = None; chain = []
                 cond = outer

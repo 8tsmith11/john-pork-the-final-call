@@ -4917,6 +4917,21 @@ test('dialogue tooling (hub #114): one-line alternatives, Set notes, who decline
   assert.equal(D.evalCond('party.present.trevor', ctx), true); assert.equal(D.evalCond('party.present.michael', ctx), false); assert.equal(D.evalCond('not party.present.michael', ctx), true);
   // bark tables are kept, and the node-timed ones can be read
   assert.ok((call.barks ?? []).some((b) => /^call_seize,\s*\d+\s*s in/.test(b.trigger) && b.who && b.text), 'the call keeps its bark table');
+
+  for (const timed of [false, true]) {
+    // A previous outcome must not select the reactions in the next entry.
+    const flags = { 'act1.call.rangOut': !timed };
+    const sink = { flag: (key, value) => { flags[key] = value; }, item() {}, standing() {} };
+    const first = new D.Conversation(call, null, { ...ctx, flags }, sink);
+    while (!first.done && !first.choices.length) first.advance();
+    const choice = first.choices.findIndex((c) => c.go === 'call_decline_1' && Boolean(c.timeout) === timed);
+    assert.ok(choice >= 0);
+    first.choose(choice, undefined, { by: 'manuel' });
+    assert.equal(first.nodeId, 'call_decline_1');
+    assert.ok(first.lines.some((line) => !line.if), 'keep the lines common to both outcomes');
+    assert.equal(first.lines.some((line) => line.if?.startsWith('flag act1.call.rangOut')), timed);
+    assert.equal(first.lines.some((line) => line.if?.startsWith('speaker=')), !timed, 'only the applicable reaction plays');
+  }
 });
 
 test('the balloon is drawn where the story says (Trevor, 2026-11-23): on the platform until the ending lets it go', async () => {

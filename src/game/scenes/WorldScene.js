@@ -321,6 +321,7 @@ export class WorldScene extends Phaser.Scene {
     this._transcript = PHONE_CALLS[sceneName] ? { title: PHONE_CALLS[sceneName][nodeId ?? 'start'] ?? PHONE_CALLS[sceneName].start, at: new Date().toISOString(), lines: [] } : null;   // phone tab transcripts (Trevor)
     this.dlgVoiced = sceneName === 'ending';   // act-ending cutscene: spoken voices
     this.dlgDone = onDone;
+    this._nodeBarks(scene, this.dlg.nodeId);
     this._drawDialogue();
   }
 
@@ -3517,12 +3518,13 @@ export class WorldScene extends Phaser.Scene {
   // node starts, over the dialogue, from that roommate if they're here ("nearest the camera" means your own).
   // Other trigger kinds are kept in the data for the systems that will play them.
   _nodeBarks(scene, nodeId) {
+    const d = this.dlg;
     for (const b of scene?.barks ?? []) {
       const m = b.trigger.match(/^\s*([\w.]+)\s*,\s*(\d+)\s*s in\b/i);
       if (!m || m[1] !== nodeId) continue;
       const who = /nearest the camera|any roommate/i.test(b.who) ? this.character : b.who.trim().toLowerCase();
       this.time.delayedCall(+m[2] * 1000, () => {
-        if (this.dlg?.nodeId !== nodeId) return;   // the moment passed
+        if (this.dlg !== d || d?.nodeId !== nodeId) return;
         const p = this._lastRendered?.players?.find((q) => q.c === who);
         if (p) this._bark(p.id, b.text, { over: true });
       });

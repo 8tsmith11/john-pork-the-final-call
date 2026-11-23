@@ -100,12 +100,12 @@ export class Conversation {
     this.node = this.scene.nodes[id];
     this.nodeId = id; this.ctx.nodeId = id;
     if (!this.node) { this.done = true; return; }
+    applyEffects(this.node.effects, this.ctx, this.sink);
     // Spanish (task 28): a line or choice with an `es` text shows it when the language is Spanish.
     const es = getLang() === 'es';
     this.lines = this.node.lines.filter((l) => evalCond(l.if, this.ctx)).map((l) => (es && l.es ? { ...l, text: l.es } : l));
     this.i = 0;
     this.revealedLine = -1;
-    applyEffects(this.node.effects, this.ctx, this.sink);
     this.sink.flag(`dlg.once.${id}`, true);
     if (!this.lines.length) this._afterLines();
   }
