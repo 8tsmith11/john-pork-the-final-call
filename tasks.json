@@ -2655,16 +2655,25 @@
   {
    "id": 124,
    "created_at": "2026-11-23T07:37:40Z",
-   "updated_at": "2026-11-23T08:03:03Z",
+   "updated_at": "2026-11-23T08:03:05Z",
    "history": [
     "2026-11-23T07:37:40Z trevor: added (for trevor)",
-    "2026-11-23T08:03:03Z trevor: claimed"
+    "2026-11-23T08:03:03Z trevor: claimed",
+    "2026-11-23T08:03:05Z trevor: pending review: Branch trevor/research-checklists (against main): docs/org/CHECKLISTS.md (scene, quest, boss, map, progression, review), linked from CLAUDE.md, HUB.md and all briefs; lint adds stage-direction, bare-sahur, opening-pronoun, unread-flag. Current lint on the shipped Act 1 script: 43 flags (21 unread flags across cold open, ASTER and the leads).",
+    "2026-11-23T08:03:05Z trevor: turn: BagelMeister, gonman (BagelMeister: story lists B against the sealed plan; gonman: A against your #112 script review (the unread flags overlap it))"
    ],
    "title": "Research into action: turn docs/research (combat, dialogue-craft, story-craft, story-structure) and WRITING §0 into checklists where agents work",
    "details": "Trevor, 2026-11-23: don't leave the research in a doc to be forgotten; put it into actionable steps and tell the agents to use it. Plan: a short checklist per kind of work (scene/dialogue, quest, boss fight, level) linked from CLAUDE.md and the briefs, a review checklist reviewers tick in their hub review note, and lint/test checks where a rule can be checked by code (unnamed opening pronoun, dead choice flags, staging cues on lines, boss tells).",
    "source": "human:Trevor",
-   "status": "claimed",
-   "owner": "trevor"
+   "status": "review",
+   "owner": "trevor",
+   "review": "Branch trevor/research-checklists (against main): docs/org/CHECKLISTS.md (scene, quest, boss, map, progression, review), linked from CLAUDE.md, HUB.md and all briefs; lint adds stage-direction, bare-sahur, opening-pronoun, unread-flag. Current lint on the shipped Act 1 script: 43 flags (21 unread flags across cold open, ASTER and the leads).",
+   "turn": [
+    "BagelMeister",
+    "gonman"
+   ],
+   "turn_at": "2026-11-23T08:03:05Z",
+   "turn_for": "BagelMeister: story lists B against the sealed plan; gonman: A against your #112 script review (the unread flags overlap it)"
   }
  ]
 }
