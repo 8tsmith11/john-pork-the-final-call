@@ -2839,6 +2839,28 @@ try {
   else globalThis.Phaser = savedPhaserForCraft;
 }
 
+test('the ending\'s visitor is drawn while his part plays, on host and guests, in view, and walks off after (Trevor: heard but not seen)', async () => {
+  const made = [], tweens = [];
+  const sprite = () => { const sp = { x: 0, y: 0, alpha: 1, destroyed: false, setOrigin() { return sp; }, play(k) { sp.anim = k; return sp; }, setDepth() { return sp; }, setAlpha(a) { sp.alpha = a; return sp; }, destroy() { sp.destroyed = true; } }; return sp; };
+  for (const mode of ['host', 'client']) {
+    const sc = Object.assign(Object.create(CraftWorldScene.prototype), { mode, map: { id: 'platform' },
+      anims: { exists: (k) => k === 'sahur' }, cameras: { main: { worldView: { x: 300 } } },
+      add: { sprite: (x, y, key) => { const sp = sprite(); Object.assign(sp, { x, y, key }); made.push(sp); return sp; } },
+      tweens: { add: (t) => { tweens.push(t); Object.assign(t.targets, Object.fromEntries(Object.entries(t).filter(([k]) => ['x', 'alpha'].includes(k)))); t.onComplete?.(); } } });
+    sc._endingSahurCue('ending_ladder'); assert.equal(sc.sahurCameo ?? null, null, 'not before his part');
+    sc._endingSahurCue('ending_sahur_watch');
+    const sp = sc.sahurCameo;
+    assert.ok(sp && sp.key === 'principals' && sp.anim === 'sahur' && sp.alpha === 1, `${mode}: drawn with his own art, faded in`);
+    assert.ok(sp.x >= 300, 'at the tunnel end of the view, not off screen');
+    sc._endingSahurCue('ending_sahur_watch'); assert.equal(made.filter((m) => !m.destroyed).length, 1, 'once, not per line');
+    sc._endingSahurCue('ending_in_person');
+    assert.ok(sp.destroyed && sc.sahurCameo === null && sp.alpha === 0, 'he walks back into the dark when his part is over');
+    made.length = 0;
+  }
+  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/act1\.sahur\.seen', true\);\n\s*this\._endingSahurCue\(d\.nodeId\);/.test(src), 'every new dialogue line (host or mirrored) checks the cue');
+});
+
 test('co-op puzzles (Trevor: everyone participates or spectates, no races): the signal panel is one shared board on the host', async () => {
   const { PipeTable } = await import('../src/game/pipeTable.js');
   const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js');
@@ -4859,6 +4881,26 @@ test('growth: a little bigger every level, bigger jumps at levels 3 and 6, cappe
   set(1, 8, B.skin[0]); set(1, 7, B.skin[0]);
   const painted = (lv) => { const out = new Uint8ClampedArray(w * h * 4); wearMod._PAINTERS.grow(src, out, w, h, 'down', B, wearMod.LOOKS[growthMod.growthLook(lv)], 'trevor'); let n = 0; for (let i = 3; i < out.length; i += 4) n += out[i] > 0; return n; };
   assert.ok(painted(2) >= 1 && painted(3) > painted(2) && painted(7) > painted(3), `${painted(2)} ${painted(3)} ${painted(7)}`);
+});
+
+test('the balloon is drawn where the story says (Trevor, 2026-11-23): on the platform until the ending lets it go', async () => {
+  const { readFileSync } = await import('fs');
+  const src = readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/_tickBalloon\(\)/.test(src) && /_balloonCue\(d\.nodeId, line\)/.test(src), 'the balloon ticks and follows the ending');
+  assert.ok(/map\?\.id === 'platform' && !f\['act1\.complete'\]/.test(src), 'shown on the platform until Act 1 is complete');
+});
+
+test('a guest joining the platform after the finale release does not get a fresh balloon', () => {
+  const map = MAPS_FOR_TEST.platform;
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', map, save: { flags: {} } });
+  host._balloonCue('ending_release');
+  assert.equal(host.save.flags['act1.ending.balloonReleased'], true, 'the release exists even outside the host render loop');
+  const guest = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'client', map, save: structuredClone(host.save),
+    add: { image() { assert.fail('a returned guest must not instantiate the already released prop'); } },
+  });
+  guest._tickBalloon();
+  assert.equal(guest.balloon, null);
 });
 
 test('the toothpaste exchange: Michael asks, Manuel says "Hmmmm. Toothpaste?", Michael doubts it; Trevor is never in it', () => {

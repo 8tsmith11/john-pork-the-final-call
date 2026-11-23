@@ -111,7 +111,8 @@ const CONTROLS_TEXT = 'WASD move · mouse aim · click: use held item\nSpace / S
 // After arriving on a map, exits ignore you this long (ms), so a rapid second E or a held key can't bounce you back.
 const ARRIVE_LOCK = 700;
 const STORY_SCENES = new Set(['cold_open', 'the_call', 'descent_and_boss', 'ending', 'first_death', 'checkpoint', 'lead_b_halvard']);
-const ACT_ONE_HOST_FLAGS = new Set(['act1.boss.defeated', 'act1.outbreak.contained', 'act1.complete']);
+const ACT_ONE_BALLOON_RELEASED = 'act1.ending.balloonReleased';
+const ACT_ONE_HOST_FLAGS = new Set(['act1.boss.defeated', 'act1.outbreak.contained', 'act1.complete', ACT_ONE_BALLOON_RELEASED]);
 
 // Dialogue scenes that happen on the phone, and the title each call gets in the phone tab's transcripts.
 const PHONE_CALLS = { the_call: { start: 'John Pork · the call', call_ring_2: 'John Pork · second call', call_ring_3: 'John Pork · third call', butt_dial: 'John Pork · pocket dial' } };
@@ -545,6 +546,8 @@ export class WorldScene extends Phaser.Scene {
         else if (this._transcript && line.text && !line.sms) this._transcript.lines.push([line.who ?? '', line.text.replace(/\*([^*]+)\*/g, '$1')]);
         // The guide's Sahur entry: seen once he speaks on screen, whichever route (cameo or boss).
         if (line.who && /sahur/i.test(line.who) && !this.save.flags['act1.sahur.seen']) this._flag('act1.sahur.seen', true);
+        this._endingSahurCue(d.nodeId);
+        this._balloonCue(d.nodeId, line);
         if (line.sms) {   // a text message: buzz, and keep it on the phone
           sfx('pickup');
           const texts = (this.save.world.phone ??= { texts: [] }).texts;
@@ -867,6 +870,7 @@ export class WorldScene extends Phaser.Scene {
   // ---------- map ----------
   _showMap(map) {
     this.map = map;
+    this.sahurCameo?.destroy(); this.sahurCameo = null;
     // Rapid back-and-forth guard (Trevor): a new map generation, so anything queued on the last map knows it's stale;
     // the arrival time, for the exit grace; and no story beat is still pending from the last map.
     this._mapGen = (this._mapGen ?? 0) + 1; this._arrivedAt = this.time?.now ?? 0; this._beatPending = null;
@@ -1027,6 +1031,75 @@ export class WorldScene extends Phaser.Scene {
     setArea(map.id);
     for (const s of this.enemySprites.values()) s.destroy();
     this.enemySprites.clear();
+  }
+
+  // Manuel's orange balloon, where the story says it is (Trevor, 2026-11-23: "let us actually see the balloon when
+  // it's in the scene"). On the dead platform it's caught on the cable under the ventilation shaft, its cut ribbon
+  // trailing, from the moment you arrive until it's let go in the ending: John Pork takes it down to chest height,
+  // then it rises up the shaft and is gone. Drawn in code, on every screen (guests mirror the ending's nodes).
+  _balloonTexture() {
+    if (this.textures.exists('balloon')) return 'balloon';
+    const g = this.make.graphics({ add: false });
+    g.fillStyle(0xf07818, 1).fillEllipse(6, 6, 12, 13);              // balloon0 / balloon1 from the palette
+    g.fillStyle(0xffa23a, 1).fillEllipse(5, 5, 8, 9);
+    g.fillStyle(0xffe6c8, 0.9).fillRect(3, 2, 2, 3);                 // the shine
+    g.fillStyle(0xd85f10, 1).fillTriangle(5, 12, 7, 12, 6, 14);      // the knot
+    g.generateTexture('balloon', 12, 15); g.destroy();
+    return 'balloon';
+  }
+
+  _tickBalloon() {
+    const f = this.save?.flags ?? {};
+    // Rejoining guests carry the release in their start snapshot. Open clients finish their own tween.
+    const here = this.map?.id === 'platform' && !f['act1.complete'] && !this._balloonGone
+      && (!f[ACT_ONE_BALLOON_RELEASED] || this.balloon);
+    if (!here) { this.balloon?.destroy(); this.balloonRibbon?.destroy(); this.balloon = this.balloonRibbon = null; return; }
+    if (!this.balloon) {
+      this.balloon = this.add.image(22 * TILE + 8, 3 * TILE + 2, this._balloonTexture()).setOrigin(0.5, 1).setDepth(3 * TILE + 40);
+      this.balloon.homeY = this.balloon.y; this.balloonRibbon = this.add.graphics().setDepth(3 * TILE + 39);
+    }
+    const b = this.balloon, t = this.time.now / 1000;
+    if (!b.moving) b.y = b.homeY + Math.sin(t * 1.6) * 1.5;           // it drifts on the cable
+    // the cut ribbon: a short wavy line under the knot, the bowline still tied in it
+    const r = this.balloonRibbon.clear().lineStyle(1, 0xffa23a, b.alpha);
+    let px = b.x, py = b.y + 1;
+    for (let i = 1; i <= 6; i++) { const nx = b.x + Math.sin(t * 2.2 + i * 0.9) * 1.6, ny = b.y + 1 + i * 2.2; r.lineBetween(px, py, nx, ny); px = nx; py = ny; }
+    r.fillStyle(0xffa23a, b.alpha).fillRect(px - 1, py, 2, 2);
+  }
+
+  _balloonCue(nodeId, line) {
+    if (this.map?.id !== 'platform') return;
+    const rises = /balloon rises/i.test(line?.text ?? '') || nodeId === 'ending_release';
+    if (rises && this.mode !== 'client' && !this.save.flags[ACT_ONE_BALLOON_RELEASED]) {
+      this._flag(ACT_ONE_BALLOON_RELEASED, true);
+    }
+    const b = this.balloon;
+    if (!b) return;
+    if (nodeId === 'ending_unhook' && !b.lowered && this.porkSprite) {   // he works it free and holds it at chest height
+      b.lowered = b.moving = true; b.setDepth(this.porkSprite.depth + 2); this.balloonRibbon.setDepth(this.porkSprite.depth + 1);   // in front of him
+      this.tweens.add({ targets: b, x: this.porkSprite.x - 6, y: this.porkSprite.y - 16, duration: 1600, ease: 'Sine.inOut', onComplete: () => { b.homeY = b.y; b.moving = false; } });
+    }
+    if (rises && !b.rising) {   // about six seconds, uninterrupted, up the shaft and gone (the script's note)
+      b.rising = b.moving = true;
+      this.tweens.add({ targets: b, x: 22 * TILE + 8, y: -40, duration: 6000, ease: 'Sine.in', onComplete: () => { this._balloonGone = true; } });
+      this.tweens.add({ targets: b, alpha: 0, delay: 4800, duration: 1200 });
+    }
+  }
+
+  // The ending's visitor at the tunnel mouth (Trevor: "we heard him but couldn't see him"). His part of the ending
+  // scene (nodes ending_sahur*) describes him standing there and speaking, but nothing drew him. Now he's drawn
+  // while that part plays, on every screen (guests mirror the node), at the tunnel end of the view so he's always
+  // in sight, and he walks back into the dark when his part is over.
+  _endingSahurCue(nodeId) {
+    const on = this.map?.id === 'platform' && /^ending_sahur/.test(nodeId ?? '');
+    if (on && !this.sahurCameo && this.anims?.exists('sahur')) {
+      const cam = this.cameras.main, x = Math.max(2 * TILE + 8, (cam.worldView?.x ?? 0) + 44), y = 8 * TILE;
+      this.sahurCameo = this.add.sprite(x, y, 'principals').setOrigin(0.5, 1).play('sahur').setDepth(y).setAlpha(0);
+      this.tweens.add({ targets: this.sahurCameo, alpha: 1, duration: 700 });
+    } else if (!on && this.sahurCameo && !this.sahurCameo.leaving) {
+      const sp = this.sahurCameo; sp.leaving = true;
+      this.tweens.add({ targets: sp, x: sp.x - 40, alpha: 0, duration: 1600, onComplete: () => { sp.destroy(); if (this.sahurCameo === sp) this.sahurCameo = null; } });
+    }
   }
 
   _showActOneArrival(x, y) {
@@ -2587,6 +2660,8 @@ export class WorldScene extends Phaser.Scene {
     this._render(snap);
     setInstrumentFocus(snap, this.localId);
     this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.skirmish?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.gags?.update(snap); this.pacifier?.update(snap); this.stands?.update(); this.moods?.update(snap); this.stage?.update(snap);   // cutscene stand-ins draw last
+    if (this.sahurCameo && !this.dlg) this._endingSahurCue(null);   // the scene closed with him still there: he goes
+    else if (this.sahurCameo && !this.sahurCameo.leaving) this.sahurCameo.x = Math.max(this.sahurCameo.x, this.cameras.main.worldView.x + 44);   // keep him in sight
     this._stageHud(!!this.stage?.active);   // cutscenes letterbox the screen: the HUD steps out instead of being sliced by the bars
   }
 
@@ -3139,6 +3214,7 @@ export class WorldScene extends Phaser.Scene {
     this._tickFishing();
     this._tickQuests();
     this._tickGlimpse();
+    this._tickBalloon();
     this._tickScan();
     if (this.fishing) { const k = this.input2.keys; if (k.w.isDown || k.a.isDown || k.s.isDown || k.d.isDown || k.up.isDown || k.down.isDown || k.left.isDown || k.right.isDown) this._endFishing(false); }
     this._tickPorkGlitch();
