@@ -4,6 +4,8 @@
 // The polish pass gives them sprites, real lines (EN/ES), moods, and jobs or quests.
 
 const ART = ['npc.rotter_1', 'npc.rotter_2', 'npc.rotter_3'];
+// The ones with a sprite of their own, named after them (tools/art/gen_props.py, "Act 1 people"). The rest borrow a rotter.
+const OWN_ART = new Set(['diner_regular', 'quad_student', 'dining_student', 'lab_grad']);
 
 // [map, hint x, hint y, id suffix, label, line, polished]. A line without `polished` still shows as "[scaffold]".
 const CROWD = [
@@ -92,7 +94,7 @@ export function addCrowds(maps) {
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const k = `${x + dx},${y + dy}`; if (!seen.has(k) && x + dx >= 0 && y + dy >= 0 && x + dx < m.w && y + dy < m.h) { seen.add(k); q.push([x + dx, y + dy]); } }
     }
     if (!at) throw new Error(`crowds: no free tile near ${mapId} ${hx},${hy}`);
-    m.objects.push({ id: `npc.${id}`, x: at[0], y: at[1], npc: true, art: ART[i % 3], label, age: /\bkid\b/.test(label) ? 'child' : 'adult', mood: ['still', 'fidget', 'nod'][i % 3], text: polished ? line : `[scaffold] ${line}` });
+    m.objects.push({ id: `npc.${id}`, x: at[0], y: at[1], npc: true, art: OWN_ART.has(id) ? `npc.${id}` : ART[i % 3], label, age: /\bkid\b/.test(label) ? 'child' : 'adult', mood: ['still', 'fidget', 'nod'][i % 3], text: polished ? line : `[scaffold] ${line}` });
     n++;
   });
   return n;

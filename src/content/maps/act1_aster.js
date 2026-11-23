@@ -48,7 +48,7 @@ export const apt637 = flat('apt_637', 'Apartment 637', [
   { id: 'obj.apt637_metronome', art: 'obj.metronome', x: 22, y: 6, label: 'Metronome', text: 'A wind-up metronome set to sixty. Someone once drew a pencil line at sixty-six, then rubbed it out.' },
   ...[16, 18, 20].map((x, i) => ({ id: `obj.apt637_foam_${i + 1}`, art: 'obj.egg_foam', x, y: 5, label: 'Egg cartons',
     text: 'Egg cartons glued over the wall they share with the hall bathroom, two hundred at least. Through them you can still hear somebody in there call "One minute!"' })),
-  { id: 'npc.apt637_player', x: 16, y: 8, npc: true, age: 'adult', art: 'npc.rotter_2', label: 'The neighbor in 637',
+  { id: 'npc.apt637_player', x: 16, y: 8, npc: true, age: 'adult', art: 'npc.apt637_player', label: 'The neighbor in 637',
     text: '"Nine o\'clock, scales. The one night I skipped, somebody slid a note under my door asking if I was all right." They play one up and back down. The same note goes wrong both ways.',
     later: [{ if: 'q.apt637_scales.told', text: 'A new page on the stand. It\'s the old exercise, moved up a half step. "Don\'t say anything," they say, and start.' }] },
   // Living room
@@ -103,7 +103,7 @@ export const apt638 = flat('apt_638', 'Apartment 638', [
   { id: 'obj.apt638_cans', art: 'obj.cold_brew', x: 13, y: 5, label: 'Cold brew by the couch', grant: 'item.caffeine',
     text: 'A carton of cold brew on the floor by the couch, the empties lined up in rows. She waves at the full cans without looking away from the screen. You take one.',
     doneText: 'Empty cans in rows by the couch. She has started a new row.' },
-  { id: 'npc.apt638_viewer', x: 9, y: 5, npc: true, age: 'adult', art: 'npc.rotter_3', label: 'The neighbor in 638', text: '"Shh. Here it comes again." A notebook open on her knee, numbered down the margin to two hundred and six. She writes without looking down.' },
+  { id: 'npc.apt638_viewer', x: 9, y: 5, npc: true, age: 'adult', art: 'npc.apt638_viewer', label: 'The neighbor in 638', text: '"Shh. Here it comes again." A notebook open on her knee, numbered down the margin to two hundred and six. She writes without looking down.' },
   ...[7, 14].map((x, i) => ({ id: `obj.apt638_grabs_${i + 1}`, art: 'obj.screengrab_wall', x, y: 0, label: 'Screen grabs',
     text: 'Printed stills of the anchor, pinned in rows. Red circles round her eyes and the flag behind her. Red string runs between the ones that match.' })),
   // Kitchen
@@ -232,7 +232,7 @@ export const aster5f = makeMap({
       text: 'A thousand pieces, a lighthouse, nearly done. The last piece lies on the table beside the hole. Nobody on five will be the one to put it in.' },
     { id: 'obj.aster5_window', art: 'obj.window_6f', x: 39, y: 6, light: 0.5, label: 'Window at the end of the hall', text: 'The view from your own hall window, ten feet lower. It is not ten feet better.' },
     // People on five
-    { id: 'npc.aster5_neighbor', x: 21, y: 6, npc: true, art: 'npc.rotter_1', label: 'Someone in the fifth-floor hall', age: 'adult', text: '"You\'re upstairs. Six-thirty-one. I know the three of you by your feet." He points at a spot on the ceiling. "Somebody stands right there at two every night, a long time. That\'s your fridge."' },
+    { id: 'npc.aster5_neighbor', x: 21, y: 6, npc: true, art: 'npc.aster5_neighbor', label: 'Someone in the fifth-floor hall', age: 'adult', text: '"You\'re upstairs. Six-thirty-one. I know the three of you by your feet." He points at a spot on the ceiling. "Somebody stands right there at two every night, a long time. That\'s your fridge."' },
   ],
   scenery: [
     // doormats (flat), and what people leave outside their doors
@@ -287,7 +287,7 @@ export const asterLaundry = makeMap({
     // The corkboard, the socks, the person folding
     { id: 'obj.laundry_board', art: 'obj.corkboard', x: 16, y: 4, label: 'Laundry room corkboard', text: 'Index cards on cork. LOST: ONE SOCK, GRAY, WOOL. Two cards over, in different ink: FOUND: ONE GRAY SOCK, ASK AT 212. Neither card has moved since spring.' },
     { id: 'obj.laundry_socks', art: 'obj.sock_basket', x: 1, y: 9, label: 'Lost socks', text: 'LOST SOCKS, on a card on a stick. Forty singles, washed and folded. No two match. Somebody checks.' },
-    { id: 'npc.laundry_folder', x: 8, y: 11, npc: true, art: 'npc.rotter_2', label: 'Someone folding at 3 a.m.', age: 'adult', text: '"Three a.m. is the only time every machine is free." She shakes out a towel and folds it into a square. "Except the one on the end. Nobody uses the one on the end."' },
+    { id: 'npc.laundry_folder', x: 8, y: 11, npc: true, art: 'npc.laundry_folder', label: 'Someone folding at 3 a.m.', age: 'adult', text: '"Three a.m. is the only time every machine is free." She shakes out a towel and folds it into a square. "Except the one on the end. Nobody uses the one on the end."' },
   ],
   scenery: [
     ...[1, 2, 3, 4].map((x) => ({ art: 'obj.washer', x, y: 1, solid: true })), ...[6, 7, 9].map((x, i) => ({ art: 'obj.dryer', x, y: 1, solid: true, anim: 380 + 90 * i })),
