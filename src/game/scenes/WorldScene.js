@@ -111,7 +111,8 @@ const CONTROLS_TEXT = 'WASD move · mouse aim · click: use held item\nSpace / S
 // After arriving on a map, exits ignore you this long (ms), so a rapid second E or a held key can't bounce you back.
 const ARRIVE_LOCK = 700;
 const STORY_SCENES = new Set(['cold_open', 'the_call', 'descent_and_boss', 'ending', 'first_death', 'checkpoint', 'lead_b_halvard']);
-const ACT_ONE_HOST_FLAGS = new Set(['act1.boss.defeated', 'act1.outbreak.contained', 'act1.complete']);
+const ACT_ONE_BALLOON_RELEASED = 'act1.ending.balloonReleased';
+const ACT_ONE_HOST_FLAGS = new Set(['act1.boss.defeated', 'act1.outbreak.contained', 'act1.complete', ACT_ONE_BALLOON_RELEASED]);
 
 // Dialogue scenes that happen on the phone, and the title each call gets in the phone tab's transcripts.
 const PHONE_CALLS = { the_call: { start: 'John Pork · the call', call_ring_2: 'John Pork · second call', call_ring_3: 'John Pork · third call', butt_dial: 'John Pork · pocket dial' } };
@@ -1024,7 +1025,10 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _tickBalloon() {
-    const f = this.save?.flags ?? {}, here = this.map?.id === 'platform' && !f['act1.complete'] && !this._balloonGone;
+    const f = this.save?.flags ?? {};
+    // Rejoining guests carry the release in their start snapshot. Open clients finish their own tween.
+    const here = this.map?.id === 'platform' && !f['act1.complete'] && !this._balloonGone
+      && (!f[ACT_ONE_BALLOON_RELEASED] || this.balloon);
     if (!here) { this.balloon?.destroy(); this.balloonRibbon?.destroy(); this.balloon = this.balloonRibbon = null; return; }
     if (!this.balloon) {
       this.balloon = this.add.image(22 * TILE + 8, 3 * TILE + 2, this._balloonTexture()).setOrigin(0.5, 1).setDepth(3 * TILE + 40);
@@ -1040,12 +1044,17 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _balloonCue(nodeId, line) {
-    const b = this.balloon; if (!b || this.map?.id !== 'platform') return;
+    if (this.map?.id !== 'platform') return;
+    const rises = /balloon rises/i.test(line?.text ?? '') || nodeId === 'ending_release';
+    if (rises && this.mode !== 'client' && !this.save.flags[ACT_ONE_BALLOON_RELEASED]) {
+      this._flag(ACT_ONE_BALLOON_RELEASED, true);
+    }
+    const b = this.balloon;
+    if (!b) return;
     if (nodeId === 'ending_unhook' && !b.lowered && this.porkSprite) {   // he works it free and holds it at chest height
       b.lowered = b.moving = true; b.setDepth(this.porkSprite.depth + 2); this.balloonRibbon.setDepth(this.porkSprite.depth + 1);   // in front of him
       this.tweens.add({ targets: b, x: this.porkSprite.x - 6, y: this.porkSprite.y - 16, duration: 1600, ease: 'Sine.inOut', onComplete: () => { b.homeY = b.y; b.moving = false; } });
     }
-    const rises = /balloon rises/i.test(line?.text ?? '') || nodeId === 'ending_release';
     if (rises && !b.rising) {   // about six seconds, uninterrupted, up the shaft and gone (the script's note)
       b.rising = b.moving = true;
       this.tweens.add({ targets: b, x: 22 * TILE + 8, y: -40, duration: 6000, ease: 'Sine.in', onComplete: () => { this._balloonGone = true; } });

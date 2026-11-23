@@ -4763,6 +4763,19 @@ test('the balloon is drawn where the story says (Trevor, 2026-11-23): on the pla
   assert.ok(/map\?\.id === 'platform' && !f\['act1\.complete'\]/.test(src), 'shown on the platform until Act 1 is complete');
 });
 
+test('a guest joining the platform after the finale release does not get a fresh balloon', () => {
+  const map = MAPS_FOR_TEST.platform;
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', map, save: { flags: {} } });
+  host._balloonCue('ending_release');
+  assert.equal(host.save.flags['act1.ending.balloonReleased'], true, 'the release exists even outside the host render loop');
+  const guest = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'client', map, save: structuredClone(host.save),
+    add: { image() { assert.fail('a returned guest must not instantiate the already released prop'); } },
+  });
+  guest._tickBalloon();
+  assert.equal(guest.balloon, null);
+});
+
 test('the toothpaste exchange: Michael asks, Manuel says "Hmmmm. Toothpaste?", Michael doubts it; Trevor is never in it', () => {
   assert.equal(toothMod.TOOTHPASTE_TALK.answer, 'Hmmmm. Toothpaste?');
   assert.ok(toothMod.TOOTHPASTE_TALK.doubt.includes('Sure, sure...'));
