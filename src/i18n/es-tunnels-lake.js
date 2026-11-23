@@ -52,7 +52,7 @@ export const ES_TUNNELS_LAKE = {
   'A rolling gate across the line, held three ways: the yard upstream, the power in the signal room, and the signals on this wall.': 'Un portón corredizo cruza la vía, trabado de tres formas: el patio de maniobras, la corriente en la sala de señales y las señales en esta pared.',
   // Task #33, the gate puzzles (gonman)
   'Fuse carrier': 'Portafusibles',
-  'The gate panel\'s fuse carrier, hanging open. Four empty clips, 30A. A sticker inside the door: SPARES: ASTER, SUPER, B-01.': 'El portafusibles del tablero del portón, abierto y colgando. Cuatro pinzas vacías, 30A. Una etiqueta dentro de la puerta: REPUESTOS: ASTER, ENCARGADA, B-01.',
+  'The gate panel\'s fuse carrier, hanging open. Four empty clips, 30A. A sticker inside the door: SPARES: ASK THE SUPER, ASTER LOBBY.': 'El portafusibles del tablero del portón, abierto y colgando. Cuatro pinzas vacías, 30A. Una etiqueta dentro de la puerta: REPUESTOS: PEDIR A LA ENCARGADA, VESTÍBULO DE ASTER.',
   'Breaker 1': 'Disyuntor 1', 'Breaker 2': 'Disyuntor 2', 'Breaker 3': 'Disyuntor 3', 'Breaker 4': 'Disyuntor 4',
   'A heavy breaker on the gate panel, painted the yellow of things you are not supposed to touch.': 'Un disyuntor pesado en el tablero del portón, pintado del amarillo de las cosas que no hay que tocar.',
   'Signal 1': 'Señal 1', 'Signal 2': 'Señal 2', 'Signal 3': 'Señal 3',
@@ -70,6 +70,20 @@ export const ES_TUNNELS_LAKE = {
   'Still burning.': 'Todavía encendida.',
   'Ventilation shaft': 'Pozo de ventilación',
   'A shaft up to the street, and past the street, the sky. Rain comes down it. A cable hangs in the middle.': 'Un pozo hasta la calle, y más allá de la calle, el cielo. Por ahí baja la lluvia. Un cable cuelga en el medio.',
+  // Phase 0: the platform's landmark and dressing (gonman)
+  'Train car': 'Vagón',
+  'A Green Line car, stopped short of the end of the platform. The headlamp still glows on whatever is left in its battery. In the cab the driver\'s seat is pushed all the way back, and a thermos stands on the console with the lid off.':
+    'Un vagón de la Línea Verde, detenido antes del final del andén. El faro todavía brilla con lo que le queda de batería. En la cabina, el asiento del conductor está corrido hasta atrás, y hay un termo sobre la consola, destapado.',
+  'Stuck door': 'Puerta trabada',
+  'One pair of doors, stuck a hand\'s width open. Inside, the strap handles hang still, except one. On a seat, a newspaper folded to the crossword, from the same morning as the one on the bench.':
+    'Un par de puertas trabadas, abiertas apenas un palmo. Adentro, las manijas cuelgan quietas, menos una. En un asiento, un diario doblado en el crucigrama, de la misma mañana que el del banco.',
+  'Line map': 'Mapa de la línea',
+  'The Green Line on an enamel strip map behind scratched plastic. YOU ARE HERE is a red dot at College Park, rubbed pale by thumbs. Every stop south of it is taped over with the same grey tape.':
+    'La Línea Verde en un mapa esmaltado, detrás de un plástico rayado. USTED ESTÁ AQUÍ es un punto rojo en College Park, gastado por los pulgares. Todas las paradas al sur están tapadas con la misma cinta gris.',
+  'Two umbrellas hooked over the backrest. They are dry. Up top it has rained since dark.': 'Dos paraguas colgados del respaldo. Están secos. Allá arriba llueve desde que oscureció.',
+  'Wall tiles': 'Azulejos',
+  'Cream tiles with a green band at shoulder height. Three have fallen out and been stuck back in with chewing gum.': 'Azulejos color crema con una franja verde a la altura del hombro. Tres se cayeron y alguien los volvió a pegar con chicle.',
+  'The green band runs the length of the platform without one cracked tile. Somebody down here keeps it that way.': 'La franja verde recorre todo el andén sin un solo azulejo rajado. Alguien aquí abajo se ocupa de que siga así.',
   'Back to College Park': 'De vuelta a College Park',
   'The trail back to the plaza.': 'El sendero de vuelta a la plaza.',
   'Trail to the airfield': 'Sendero al aeródromo',   // the spur north to the airfield (hub #28/#29)
