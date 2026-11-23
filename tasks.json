@@ -2662,13 +2662,14 @@
   {
    "id": 122,
    "created_at": "2026-11-23T07:37:24Z",
-   "updated_at": "2026-11-23T09:21:23Z",
+   "updated_at": "2026-11-23T09:21:25Z",
    "history": [
     "2026-11-23T07:37:24Z trevor: added (for trevor)",
     "2026-11-23T08:59:39Z trevor: claimed",
     "2026-11-23T08:59:41Z trevor: pending review: trevor/level-pacing 00b2499f: tiers at 1/5/11/17/24; morph stage 1 on story flag MORPH_STAGE1_FLAG (interim: act1.beat.call, the Call), Manuel's stage 2 unchanged at 6. Tests pass.",
     "2026-11-23T08:59:41Z trevor: turn: JohnPork (systems review + exact-head test run (then I merge under D-023))",
-    "2026-11-23T09:21:23Z John Pork: note: Systems review E1/E2/F on exact 00b2499f. 258 Node cases passed. The revised skill tiers are consumed by the normal skill-gate code, and earned ranks stay. One blocking morph path: taking Manuel to level six with the story flag unset calls _levelsReached and opens stage two directly. The provisional story flag also needs the existing host-only flag guard. Tested local fix b50da50c (shared clone or /tmp/jp-level-story-gate-1123.patch) protects the flag, requires stage one before level six can unlock stage two, catches up when the story beat follows level six, and preserves older stage-one saves. It passed 259 Node checks. Three local Firefox/WebRTC clients verified that the guest could not use M before the story unlock, that all clients saw the correct stages after it, and that the host save preserved them. The patched head has a clean merge preview against a8c1376e. The actual story event stays on #119."
+    "2026-11-23T09:21:23Z John Pork: note: Systems review E1/E2/F on exact 00b2499f. 258 Node cases passed. The revised skill tiers are consumed by the normal skill-gate code, and earned ranks stay. One blocking morph path: taking Manuel to level six with the story flag unset calls _levelsReached and opens stage two directly. The provisional story flag also needs the existing host-only flag guard. Tested local fix b50da50c (shared clone or /tmp/jp-level-story-gate-1123.patch) protects the flag, requires stage one before level six can unlock stage two, catches up when the story beat follows level six, and preserves older stage-one saves. It passed 259 Node checks. Three local Firefox/WebRTC clients verified that the guest could not use M before the story unlock, that all clients saw the correct stages after it, and that the host save preserved them. The patched head has a clean merge preview against a8c1376e. The actual story event stays on #119.",
+    "2026-11-23T09:21:25Z John Pork: turn: trevor (Apply the tested stage-two prerequisite and host flag guard, then verify the resulting exact head under D-023.)"
    ],
    "title": "Spread out what levelling unlocks (levelling can stay easy)",
    "details": "Trevor, 2026-11-23: levelling up is very easy now, which is fine, but the content it unlocks must be spread out across the game. Audit progression.js and the level-gated unlocks; move morphs to story events (#119).",
@@ -2677,10 +2678,10 @@
    "owner": "trevor",
    "review": "trevor/level-pacing 00b2499f: tiers at 1/5/11/17/24; morph stage 1 on story flag MORPH_STAGE1_FLAG (interim: act1.beat.call, the Call), Manuel's stage 2 unchanged at 6. Tests pass.",
    "turn": [
-    "JohnPork"
+    "trevor"
    ],
-   "turn_at": "2026-11-23T08:59:41Z",
-   "turn_for": "systems review + exact-head test run (then I merge under D-023)"
+   "turn_at": "2026-11-23T09:21:25Z",
+   "turn_for": "Apply the tested stage-two prerequisite and host flag guard, then verify the resulting exact head under D-023."
   },
   {
    "id": 123,
