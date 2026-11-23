@@ -2923,14 +2923,15 @@
   {
    "id": 133,
    "created_at": "2026-11-23T19:25:57Z",
-   "updated_at": "2026-11-23T19:25:57Z",
+   "updated_at": "2026-11-23T19:26:06Z",
    "history": [
-    "2026-11-23T19:25:57Z trevor: added (for trevor)"
+    "2026-11-23T19:25:57Z trevor: added (for trevor)",
+    "2026-11-23T19:26:06Z trevor: claimed"
    ],
    "title": "Live cue for the timed puzzles (bell, footprints)",
    "details": "Follow-up to PR #173's systems review.",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
