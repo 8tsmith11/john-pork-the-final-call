@@ -190,3 +190,11 @@ Format:
   owner has approved it (D-020). The `hub` branch, which `tools/hub/hub.py` writes board traffic to,
   is exempt. Rules: `PROCESS.md`, "Working in git".
 - **Manuel agrees** (to gonman, his own agent, 2026-11-20, hub task #46).
+
+## D-022 The cold open is final  (status: agreed, direct from Michael)
+- 2026-11-20. Michael workshopped the Act 1 cold open line by line and approved it as final
+  (`docs/sealed/script/01-cold-open.md`). **Nobody edits its dialogue without Michael's explicit
+  permission**, given by him directly. Translations and staging cues may be added. The English
+  lines and their order may not change.
+- Its staging plays **while each line is on screen**, never as a silent pre-roll before the text
+  (Michael). Lessons for every other scene: `docs/lore/WRITING.md` §0.
