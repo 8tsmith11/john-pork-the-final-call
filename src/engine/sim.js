@@ -824,7 +824,7 @@ export class Sim {
   _hurtEnemy(e, dmg, kx, ky, by) {
     if (e.sahur) { dmg = 1; this.events.push({ t: 'thunk', x: e.x, y: e.y }); }
     else if (e.boss && e.state === 'vulnerable') dmg *= 2;
-    else if (e.boss && e.state === 'laser') { dmg = Math.max(1, Math.round(dmg * LASER.braced)); this.events.push({ t: 'thunk', x: e.x, y: e.y }); }   // braced behind the beam
+    else if (e.boss && e.state === 'laser') { dmg = Math.max(1, Math.round(dmg * LASER.braced)); this.events.push({ t: 'bossBrace', x: e.x, y: e.y }); }   // braced behind the beam
     if (this._def(e).armor && e.st !== 'dizzy') dmg = Math.max(1, Math.round(dmg * (1 - this._def(e).armor)));
     if (e.st === 'dizzy') dmg *= 2;   // a Captcha reeling after its charge
     else if (e.parried > 0) dmg *= 2;   // parried: open for a second
@@ -1156,7 +1156,7 @@ export class Sim {
     if ((e.addT = (e.addT ?? A.first ?? A.every[0] * 0.6) - dt) > 0) return;
     e.addT = A.every[Math.max(0, Math.min(2, e.phase - 1))];
     const alive = [...this.enemies.values()].filter((x) => x.summoned).length;
-    const n = Math.min(e.addsFirst ? A.per + (e.phase === 3 ? 1 : 0) : 2, A.cap - alive); e.addsFirst = true;   // a pair at the phase change, then `per`
+    const n = Math.min(e.addsFirst ? A.per : 2, A.cap - alive); e.addsFirst = true;   // a pair at the phase change, then `per`
     if (n <= 0) return;
     const base = ENEMIES[A.kind], mw = this.map.w * TILE;
     for (let i = 0; i < n; i++) {
@@ -1207,8 +1207,10 @@ export class Sim {
     if (mod === 'beam') { e.state = 'beam'; e.beamT = 1.4; e.beamA = e.aimA - 0.9; e.beamDir = 1; }
     if (mod === 'puddle') { for (const p of this.players.values()) if (!p.downed) this.hazards.push({ x: p.x, y: p.y, r: 16, ttl: 5, dps: Math.round(12 * k) }); }
     // Fork: two rotlings at his feet, counted with his other adds so the floor never fills up (def.adds.cap).
-    if (mod === 'summon' && this.enemies.size < 7 && [...this.enemies.values()].filter((x) => x.summoned).length < (def.adds?.cap ?? 7)) {
-      for (let i = 0; i < 2; i++) { const id = `e${this._nextId++}`; this.enemies.set(id, { id, kind: 'enemy.rotling', summoned: !!def.adds, x: e.x + (i ? 14 : -14), y: e.y + 10, hp: ENEMIES['enemy.rotling'].hp, cd: 1, hurtT: 0, kx: 0, ky: 0 }); }
+    if (mod === 'summon' && this.enemies.size < 7) {
+      const alive = [...this.enemies.values()].filter((x) => x.summoned).length;
+      const n = def.adds ? Math.min(2, def.adds.cap - alive) : 2;
+      for (let i = 0; i < n; i++) { const id = `e${this._nextId++}`; this.enemies.set(id, { id, kind: 'enemy.rotling', summoned: !!def.adds, x: e.x + (i ? 14 : -14), y: e.y + 10, hp: ENEMIES['enemy.rotling'].hp, cd: 1, hurtT: 0, kx: 0, ky: 0 }); }
     }
     if (mod === 'blink') {
       const ang = Math.random() * Math.PI * 2, nx = target.x + Math.cos(ang) * 60, ny = target.y + Math.sin(ang) * 60;

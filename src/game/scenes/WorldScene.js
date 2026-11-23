@@ -3569,7 +3569,7 @@ export class WorldScene extends Phaser.Scene {
       const t = this.add.text(ev.x, ev.y - 30, 'OVERHEATED: hit it!', { ...FONT, color: '#ffb347' }).setOrigin(0.5).setDepth(6100);
       this.tweens.add({ targets: t, y: t.y - 10, alpha: 0, duration: 1300, onComplete: () => t.destroy() });
     }
-    if (ev.t === 'thunk' && this.time.now > (this._thunkAt ?? 0)) {   // a hit that glances off a braced boss (at most ~3 a second)
+    if (ev.t === 'bossBrace' && this.time.now > (this._thunkAt ?? 0)) {   // a hit that glances off a braced boss (at most ~3 a second)
       this._thunkAt = this.time.now + 300;
       const t = this.add.text(ev.x + (Math.random() * 16 - 8), ev.y - 22, 'BRACED', { ...FONT, color: '#9aa8bf' }).setOrigin(0.5).setDepth(6100);
       this.tweens.add({ targets: t, y: t.y - 8, alpha: 0, duration: 500, onComplete: () => t.destroy() });

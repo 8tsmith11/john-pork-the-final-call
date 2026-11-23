@@ -2048,6 +2048,7 @@ test('the Warden while the laser fires: braced (a fraction of the damage), and o
   const hit = (state) => { boss.state = state; boss.parried = 0; boss.openT = 0; const hp = boss.hp = 1000; sim._hurtEnemy(boss, 40, 0, 0, 'host'); return hp - boss.hp; };
   const moving = hit('move'), braced = hit('laser'), open = hit('vulnerable');
   assert.ok(braced < moving * 0.5, `a hit during the laser should glance off (${braced} vs ${moving})`);
+  assert.equal(sim.events.filter((e) => e.t === 'bossBrace').length, 1, 'the brace emits its own feedback');
   assert.ok(open > moving, 'the reeling window still pays');
   boss.state = 'laser'; boss.laserT = 0.01; boss.phase = 2; boss.cd = 99; sim._stepBoss(boss, boss.def, 1 / 60);
   assert.equal(boss.state, 'vulnerable'); assert.ok(boss.vulnT <= 1, `open ${boss.vulnT}s after the laser, at most 1`);
@@ -2060,11 +2061,24 @@ test('the Warden: his zombies only come from phase two, a few at a time, and For
   const summoned = () => [...sim.enemies.values()].filter((e) => e.summoned).length;
   for (let t = 0; t < 60 * 30; t++) { h.hp = 999; h.x = boss.x + 140; h.y = boss.y; boss.cd = 99; sim._stepBoss(boss, boss.def, 1 / 60); }
   assert.equal(summoned(), 0, 'no zombies in phase one');
-  boss.phase = 2; let most = 0;
+  boss.phase = 2;
+  boss.addT = 0;
+  sim._stepBossAdds(boss, boss.def, 1 / 60);
+  assert.equal(summoned(), 2, 'the phase-two entrance brings the first pair');
+  boss.next = 'summon';
+  sim._bossAttack(boss, boss.def, h, 1, 0, 1);
+  assert.equal(summoned(), 3, 'Fork takes only the one remaining slot');
+  let most = 0;
   for (let t = 0; t < 60 * 60; t++) { h.hp = 999; h.x = boss.x + 140; h.y = boss.y; boss.cd = 99; sim._stepBoss(boss, boss.def, 1 / 60); most = Math.max(most, summoned()); }
   assert.ok(most >= 1 && most <= boss.def.adds.cap, `phase two brings a few (${most}, cap ${boss.def.adds.cap})`);
-  // Fork at the cap adds nobody
-  boss.next = 'summon'; const before = sim.enemies.size; if (summoned() >= boss.def.adds.cap) { sim._bossAttack(boss, boss.def, h, 1, 0, 1); assert.equal(sim.enemies.size, before); }
+  boss.next = 'summon';
+  sim._bossAttack(boss, boss.def, h, 1, 0, 1);
+  assert.equal(summoned(), 3, 'Fork at the cap adds nobody');
+  for (const e of sim.enemies.values()) if (e.summoned) sim.enemies.delete(e.id);
+  boss.phase = 3;
+  boss.addT = 0;
+  sim._stepBossAdds(boss, boss.def, 1 / 60);
+  assert.equal(summoned(), 1, 'regular spawns still arrive one at a time in phase three');
 });
 test('boss fight: the Warden uses several patterns with tells and recovery windows, sweep shots can\'t be deflected', () => {
   const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'boss-test' });
@@ -4513,6 +4527,9 @@ test('the Warden is twice as tough and hits harder; the Sahur variant is unchang
   s2.spawnEnemies();
   const sah = [...s2.enemies.values()].find((e) => e.boss);
   assert.ok(sah.sahur && sah.def.hp === 99999 && sah.def.damage === 16 && !sah.def.guard && !sah.def.adds);
+  s2._hurtEnemy(sah, 40, 0, 0, 'trevor');
+  assert.ok(s2.events.some((e) => e.t === 'thunk'));
+  assert.ok(!s2.events.some((e) => e.t === 'bossBrace'), 'the other boss does not reuse the Warden brace label');
 });
 test('the platform gate needs the yard, the breakers and the signals; no world starts solved', () => {
   for (let i = 0; i < 300; i++) {
