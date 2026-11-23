@@ -2019,15 +2019,15 @@ test('boss pattern library: every module has a pattern, pools grow by phase, no 
   for (let i = 0; i < 500; i++) { const n = pickPattern(bossPool(['ring', 'charge'], 3), last); assert.notEqual(n, last); last = n; }
 });
 test('boss beam: running circles close to the boss stays ahead of it; standing still gets hit', () => {
-  const run = (circle) => {
+  const run = (circle, phase = 2, speed = 68, start = -1.2) => {
     const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'laser' }); sim.addPlayer('host', 'trevor');
     const boss = [...sim.enemies.values()].find((e) => e.boss), h = sim.players.get('host');
-    boss.phase = 3; boss.state = 'laser'; boss.laserT = 6; boss.laserDir = 1; boss.cd = 99;
+    boss.phase = phase; boss.state = 'laser'; boss.laserT = 6; boss.laserDir = 1; boss.cd = 99;
     let ang = 0; const R = 50;
-    boss.laserA = ang - 1.2;   // starts behind the player, turning toward them
+    boss.laserA = ang + start;   // starts behind the player, turning toward them
     let hits = 0;
     for (let t = 0; t < 60 * 5.5; t++) {
-      if (circle) ang += (68 / R) / 60;   // just under walking speed, same direction as the beam
+      if (circle) ang += (speed / R) / 60;   // same direction as the beam
       h.x = boss.x + Math.cos(ang) * R; h.y = boss.y - 4 + Math.sin(ang) * R; h.hp = 999; h.iframes = 0;
       const before = h.hp; boss.cd = 99; sim._stepBoss(boss, boss.def, 1 / 60); if (h.hp < before) hits++;
       if (boss.state !== 'laser') break;
@@ -2036,6 +2036,35 @@ test('boss beam: running circles close to the boss stays ahead of it; standing s
   };
   assert.equal(run(true), 0, 'circling should outrun the beam');
   assert.ok(run(false) > 0, 'standing still should get hit');
+  // Phase three fires out the back too (Trevor, 2026-11-23: no free hits behind him): sprinting laps runs into the
+  // second beam, but keeping pace between the two stays clean.
+  assert.ok(run(true, 3, 68) > 0, 'with two beams, outrunning one runs into the other');
+  assert.equal(run(true, 3, 46, -1.6), 0, 'keeping pace between the two beams stays clean');
+  assert.ok(run(false, 3, 0, Math.PI - 1.2) > 0, 'standing behind him is no longer safe');
+});
+test('the Warden while the laser fires: braced (a fraction of the damage), and only briefly open afterwards', () => {
+  const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'braced' }); sim.addPlayer('host', 'trevor');
+  const boss = [...sim.enemies.values()].find((e) => e.boss);
+  const hit = (state) => { boss.state = state; boss.parried = 0; boss.openT = 0; const hp = boss.hp = 1000; sim._hurtEnemy(boss, 40, 0, 0, 'host'); return hp - boss.hp; };
+  const moving = hit('move'), braced = hit('laser'), open = hit('vulnerable');
+  assert.ok(braced < moving * 0.5, `a hit during the laser should glance off (${braced} vs ${moving})`);
+  assert.ok(open > moving, 'the reeling window still pays');
+  boss.state = 'laser'; boss.laserT = 0.01; boss.phase = 2; boss.cd = 99; sim._stepBoss(boss, boss.def, 1 / 60);
+  assert.equal(boss.state, 'vulnerable'); assert.ok(boss.vulnT <= 1, `open ${boss.vulnT}s after the laser, at most 1`);
+});
+test('the Warden: his zombies only come from phase two, a few at a time, and Fork never fills the floor', () => {
+  const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'adds', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+  sim.spawnEnemies();
+  const boss = [...sim.enemies.values()].find((e) => e.boss), h = sim.players.get('host');
+  assert.notEqual(boss.def.modules[0], 'summon', 'Fork is never his opening move');
+  const summoned = () => [...sim.enemies.values()].filter((e) => e.summoned).length;
+  for (let t = 0; t < 60 * 30; t++) { h.hp = 999; h.x = boss.x + 140; h.y = boss.y; boss.cd = 99; sim._stepBoss(boss, boss.def, 1 / 60); }
+  assert.equal(summoned(), 0, 'no zombies in phase one');
+  boss.phase = 2; let most = 0;
+  for (let t = 0; t < 60 * 60; t++) { h.hp = 999; h.x = boss.x + 140; h.y = boss.y; boss.cd = 99; sim._stepBoss(boss, boss.def, 1 / 60); most = Math.max(most, summoned()); }
+  assert.ok(most >= 1 && most <= boss.def.adds.cap, `phase two brings a few (${most}, cap ${boss.def.adds.cap})`);
+  // Fork at the cap adds nobody
+  boss.next = 'summon'; const before = sim.enemies.size; if (summoned() >= boss.def.adds.cap) { sim._bossAttack(boss, boss.def, h, 1, 0, 1); assert.equal(sim.enemies.size, before); }
 });
 test('boss fight: the Warden uses several patterns with tells and recovery windows, sweep shots can\'t be deflected', () => {
   const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'boss-test' });

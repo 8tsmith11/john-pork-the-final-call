@@ -824,6 +824,7 @@ export class Sim {
   _hurtEnemy(e, dmg, kx, ky, by) {
     if (e.sahur) { dmg = 1; this.events.push({ t: 'thunk', x: e.x, y: e.y }); }
     else if (e.boss && e.state === 'vulnerable') dmg *= 2;
+    else if (e.boss && e.state === 'laser') { dmg = Math.max(1, Math.round(dmg * LASER.braced)); this.events.push({ t: 'thunk', x: e.x, y: e.y }); }   // braced behind the beam
     if (this._def(e).armor && e.st !== 'dizzy') dmg = Math.max(1, Math.round(dmg * (1 - this._def(e).armor)));
     if (e.st === 'dizzy') dmg *= 2;   // a Captcha reeling after its charge
     else if (e.parried > 0) dmg *= 2;   // parried: open for a second
@@ -1097,13 +1098,14 @@ export class Sim {
     }
     if (e.state === 'laser') {   // rooted; a thick beam turns around it
       e.laserT -= dt; e.laserA += e.laserDir * LASER.turn[e.phase - 1] * dt;
-      const cx = e.x, cy = e.y - 8, ux = Math.cos(e.laserA), uy = Math.sin(e.laserA);
+      const cx = e.x, cy = e.y - 8, ux = Math.cos(e.laserA), uy = Math.sin(e.laserA), dirs = e.phase >= LASER.twin ? [1, -1] : [1];
       for (const p of this.players.values()) {
         if (p.downed) continue;
-        const rx = p.x - cx, ry = p.y - 4 - cy, along = rx * ux + ry * uy, across = Math.abs(rx * -uy + ry * ux);
-        if (along > 4 && along < LASER.len && across < LASER.half + 4 - this._small(p) * 0.6 && (p._laserT = (p._laserT ?? 0) - dt) <= 0) { p._laserT = LASER.tick; this._hurtPlayer(p, Math.round(LASER.dmg * (def.dmgMul ?? 1))); }
+        const rx = p.x - cx, ry = p.y - 4 - cy, across = Math.abs(rx * -uy + ry * ux);
+        const inBeam = dirs.some((k) => { const along = (rx * ux + ry * uy) * k; return along > 4 && along < LASER.len; });
+        if (inBeam && across < LASER.half + 4 - this._small(p) * 0.6 && (p._laserT = (p._laserT ?? 0) - dt) <= 0) { p._laserT = LASER.tick; this._hurtPlayer(p, Math.round(LASER.dmg * (def.dmgMul ?? 1))); }
       }
-      if (e.laserT <= 0) { e.state = 'vulnerable'; e.vulnT = 1.8; this.events.push({ t: 'vuln', x: e.x, y: e.y }); }
+      if (e.laserT <= 0) { e.state = 'vulnerable'; e.vulnT = LASER.open; this.events.push({ t: 'vuln', x: e.x, y: e.y }); }
       return;
     }
     if (e.state === 'windup') {
@@ -1128,7 +1130,7 @@ export class Sim {
     if (e.state === 'beam') {
       e.beamT -= dt; e.beamA += e.beamDir * 1.6 * dt;
       if ((e.beamTick = (e.beamTick ?? 0) - dt) <= 0) { e.beamTick = 0.05; this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(e.beamA) * 220, vy: Math.sin(e.beamA) * 220, life: 1.2, dmg: Math.round(7 * (def.dmgMul ?? 1)), from: 'enemy', noDeflect: true }); }
-      if (e.beamT <= 0) { e.state = 'vulnerable'; e.vulnT = 1.4; this.events.push({ t: 'vuln', x: e.x, y: e.y }); }
+      if (e.beamT <= 0) { e.state = 'vulnerable'; e.vulnT = 1.0; this.events.push({ t: 'vuln', x: e.x, y: e.y }); }
       return;
     }
     // move
@@ -1150,10 +1152,11 @@ export class Sim {
   // faster each phase, never more than `cap` of its own alive at once. They crumble when it dies.
   _stepBossAdds(e, def, dt) {
     const A = def.adds; if (!A) return;
-    if ((e.addT = (e.addT ?? A.every[0] * 0.6) - dt) > 0) return;
+    if (A.fromPhase && e.phase < A.fromPhase) return;   // not in the opening
+    if ((e.addT = (e.addT ?? A.first ?? A.every[0] * 0.6) - dt) > 0) return;
     e.addT = A.every[Math.max(0, Math.min(2, e.phase - 1))];
     const alive = [...this.enemies.values()].filter((x) => x.summoned).length;
-    const n = Math.min(A.per + (e.phase === 3 ? 1 : 0), A.cap - alive);
+    const n = Math.min(e.addsFirst ? A.per + (e.phase === 3 ? 1 : 0) : 2, A.cap - alive); e.addsFirst = true;   // a pair at the phase change, then `per`
     if (n <= 0) return;
     const base = ENEMIES[A.kind], mw = this.map.w * TILE;
     for (let i = 0; i < n; i++) {
@@ -1203,8 +1206,9 @@ export class Sim {
     if (mod === 'spiral') { e.state = 'spiral'; e.spiralT = e.phase === 3 ? 1.6 : 1.2; e.spiralA = e.aimA; e.openT = 0; }
     if (mod === 'beam') { e.state = 'beam'; e.beamT = 1.4; e.beamA = e.aimA - 0.9; e.beamDir = 1; }
     if (mod === 'puddle') { for (const p of this.players.values()) if (!p.downed) this.hazards.push({ x: p.x, y: p.y, r: 16, ttl: 5, dps: Math.round(12 * k) }); }
-    if (mod === 'summon' && this.enemies.size < 7) {
-      for (let i = 0; i < 2; i++) { const id = `e${this._nextId++}`; this.enemies.set(id, { id, kind: 'enemy.rotling', x: e.x + (i ? 14 : -14), y: e.y + 10, hp: ENEMIES['enemy.rotling'].hp, cd: 1, hurtT: 0, kx: 0, ky: 0 }); }
+    // Fork: two rotlings at his feet, counted with his other adds so the floor never fills up (def.adds.cap).
+    if (mod === 'summon' && this.enemies.size < 7 && [...this.enemies.values()].filter((x) => x.summoned).length < (def.adds?.cap ?? 7)) {
+      for (let i = 0; i < 2; i++) { const id = `e${this._nextId++}`; this.enemies.set(id, { id, kind: 'enemy.rotling', summoned: !!def.adds, x: e.x + (i ? 14 : -14), y: e.y + 10, hp: ENEMIES['enemy.rotling'].hp, cd: 1, hurtT: 0, kx: 0, ky: 0 }); }
     }
     if (mod === 'blink') {
       const ang = Math.random() * Math.PI * 2, nx = target.x + Math.cos(ang) * 60, ny = target.y + Math.sin(ang) * 60;
@@ -1385,7 +1389,7 @@ export class Sim {
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
         mk: e.marked > 0, zz: e.sleepT > 0, ...(e.slowT > 0 ? { sl: 1 } : {}), sg: !!this._def(e).lullaby && !(e.sleepT > 0), st: e.st ?? null,
         ...(e.def && !e.boss ? { vn: e.def.vname, tr: e.def.trait, c: e.def.color, mh: e.def.hp, r: e.def.radius } : {}),
-        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
+        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ...(e.state === 'laser' && e.phase >= LASER.twin ? { l2: 1 } : {}), ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
       goo: this.goo.map((g) => ({ x: Math.round(g.x), y: Math.round(g.y), r: g.r, t: Math.round(g.ttl * 10) / 10 })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
       sk: skirmishView(this.sk),

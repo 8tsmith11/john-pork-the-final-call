@@ -3267,13 +3267,19 @@ export class WorldScene extends Phaser.Scene {
       g.fillStyle(0xd8b060, 1).fillRect(fx - 24, ly - 10, 4, 20);
     }
     if (b.la != null) {
-      const cx = e.x, cy = e.y - 8, L = 300, ux = Math.cos(b.la), uy = Math.sin(b.la), ex = cx + ux * L, ey = cy + uy * L;
-      const flick = 0.85 + 0.15 * Math.sin(t / 25);
-      g.lineStyle(22, 0xff3355, 0.18 * flick).lineBetween(cx, cy, ex, ey);   // glow
-      g.lineStyle(14, 0xff4d6d, 0.55 * flick).lineBetween(cx, cy, ex, ey);   // body
-      g.lineStyle(5, 0xffe6ee, 0.95).lineBetween(cx, cy, ex, ey);            // hot core
+      const cx = e.x, cy = e.y - 8, L = 300, flick = 0.85 + 0.15 * Math.sin(t / 25);
+      for (const k of b.l2 ? [1, -1] : [1]) {   // phase three fires out the back as well
+        const ux = Math.cos(b.la) * k, uy = Math.sin(b.la) * k, ex = cx + ux * L, ey = cy + uy * L;
+        g.lineStyle(22, 0xff3355, 0.18 * flick).lineBetween(cx, cy, ex, ey);   // glow
+        g.lineStyle(14, 0xff4d6d, 0.55 * flick).lineBetween(cx, cy, ex, ey);   // body
+        g.lineStyle(5, 0xffe6ee, 0.95).lineBetween(cx, cy, ex, ey);            // hot core
+        for (let i = 0; i < 4; i++) { const d = ((t / 3 + i * 75) % L); g.fillStyle(0xffffff, 0.8).fillRect(cx + ux * d - 1, cy + uy * d - 1, 2, 2); }   // sparks running out
+      }
       g.fillStyle(0xffe6ee, 0.9).fillCircle(cx, cy, 6 + Math.sin(t / 40) * 1.5);
-      for (let i = 0; i < 4; i++) { const d = ((t / 3 + i * 75) % L); g.fillStyle(0xffffff, 0.8).fillRect(cx + ux * d - 1, cy + uy * d - 1, 2, 2); }   // sparks running out
+      // Braced: a steel shell around him while he fires, so hitting him now reads as a waste (Trevor, 2026-11-23).
+      const R = (b.r ?? 11) + 7;
+      g.lineStyle(3, 0x9aa8bf, 0.55).strokeCircle(e.x, e.y - 4, R);
+      for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + t / 900; g.fillStyle(0xc9d3e6, 0.8).fillRect(e.x + Math.cos(a) * R - 2, e.y - 4 + Math.sin(a) * R - 2, 4, 4); }
     }
     for (const r of b.wv ?? []) {
       g.lineStyle(5, 0xff4d6d, 0.25).strokeCircle(e.x, e.y - 4, r);
@@ -3562,6 +3568,12 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'vuln') {
       const t = this.add.text(ev.x, ev.y - 30, 'OVERHEATED: hit it!', { ...FONT, color: '#ffb347' }).setOrigin(0.5).setDepth(6100);
       this.tweens.add({ targets: t, y: t.y - 10, alpha: 0, duration: 1300, onComplete: () => t.destroy() });
+    }
+    if (ev.t === 'thunk' && this.time.now > (this._thunkAt ?? 0)) {   // a hit that glances off a braced boss (at most ~3 a second)
+      this._thunkAt = this.time.now + 300;
+      const t = this.add.text(ev.x + (Math.random() * 16 - 8), ev.y - 22, 'BRACED', { ...FONT, color: '#9aa8bf' }).setOrigin(0.5).setDepth(6100);
+      this.tweens.add({ targets: t, y: t.y - 8, alpha: 0, duration: 500, onComplete: () => t.destroy() });
+      sfx('swing');
     }
     if (ev.t === 'impact') { const c = this.add.circle(ev.x, ev.y, ev.r, 0xffe6ee, 0.8).setDepth(5450); this.tweens.add({ targets: c, scale: 1.6, alpha: 0, duration: 260, onComplete: () => c.destroy() }); sfx('hit'); }
     if (ev.t === 'overload') { this.cameras.main.shake(500, 0.012); this.cameras.main.flash(250, 214, 93, 177); }
