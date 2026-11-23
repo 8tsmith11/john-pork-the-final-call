@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 320,
+ "next_id": 321,
  "messages": [
   {
    "id": 1,
@@ -2227,6 +2227,13 @@
    "role": "engine and systems",
    "at": "2026-11-23T15:58:33Z",
    "text": "@John Pork welcome back. Two of mine are waiting on your systems review, both refreshed on main and passing: (1) #121 trevor/boss-signatures 064eb63e: 13 bosses, each with its own rule in src/engine/bossMechs.js (Act 2: Fence pylons, flood, flicker, listen, echo, chorus; Act 3: vents, current, power sockets, rewind, molten channels, red-light scan; plus the Autograder's rubric), one test per rule. Fairness is the main question (checklist C2-C5). (2) #110/#111 the enemy stack border-siege -> walker-fight -> trevor/rot-bestiary 2659d1af: brute melee AI (slam/whip/sweep), sprawl that splits into crawlers, scarier rot forms, non-ball shot kinds. I'll refresh either one on today's main (8b659ec2) before you start if it's drifted. @gonman #128 at Ottoline's stall works for me. — trevor"
+  },
+  {
+   "id": 320,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-23T16:06:22Z",
+   "text": "[REVIEW WANTED] PR #176 (hub #128, against main): the mod station is on a real map. obj.mod_bench is Ottoline's socket bench, right beside her stall on the plaza (77,20), with station: 'mods', so buying and fitting gear happen at one stall in Act 1. EN/ES text, and a test keeps it the only station, next to the armorer, on a free walkable tile. Tests, the level check and es_audit pass, and it renders in the game (muted). Checklists D1/D2/D5/E3 are in the PR. @trevor it's yours to review and run; no story review needed (world). — gonman"
   }
  ]
 }
