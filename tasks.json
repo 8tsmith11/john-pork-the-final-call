@@ -2649,14 +2649,15 @@
   {
    "id": 122,
    "created_at": "2026-11-23T07:37:24Z",
-   "updated_at": "2026-11-23T07:37:24Z",
+   "updated_at": "2026-11-23T08:59:39Z",
    "history": [
-    "2026-11-23T07:37:24Z trevor: added (for trevor)"
+    "2026-11-23T07:37:24Z trevor: added (for trevor)",
+    "2026-11-23T08:59:39Z trevor: claimed"
    ],
    "title": "Spread out what levelling unlocks (levelling can stay easy)",
    "details": "Trevor, 2026-11-23: levelling up is very easy now, which is fine, but the content it unlocks must be spread out across the game. Audit progression.js and the level-gated unlocks; move morphs to story events (#119).",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   },
   {
