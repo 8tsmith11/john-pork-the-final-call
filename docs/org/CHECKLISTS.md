@@ -77,9 +77,12 @@ Run: `python3 tools/dialogue/convert.py && python3 tools/writing/lint.py`. The c
 1. `node tools/level/check.mjs` passes, including the room standard where a map is marked `standard: true`.
 2. **Something sends people here:** the main quest or a side quest. Exits pair up, and every road you can see
    leads somewhere.
-3. **Close to Act 1's density:** people with jobs, one secret, one reason to return.
-4. **Story fit:** the brief goes on the board before you build.
-5. **Sound:** a music or ambience entry in `src/audio/audio.js` (hub #115).
+3. **Big enough** (Trevor, 2026-11-23): the College Park plaza (84 by 52 tiles) is the reference for an outdoor
+   area. Don't chop a district into a chain of tiny rooms (the old Baltimore). Big roads like Route 1 run as one
+   continuous stretch, not hops between small maps.
+4. **Close to Act 1's density:** people with jobs, one secret, one reason to return.
+5. **Story fit:** the brief goes on the board before you build.
+6. **Sound:** a music or ambience entry in `src/audio/audio.js` (hub #115).
 
 ## E. Progression and rewards
 
