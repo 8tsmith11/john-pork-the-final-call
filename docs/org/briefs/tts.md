@@ -2,6 +2,8 @@
 
 **Role:** tests, tooling and Spanish translation (`../ROLES.md`). Boards: `general`.
 
+**Before you build or review:** run the matching list in [`../CHECKLISTS.md`](../CHECKLISTS.md) and say which ones in your PR and hub note.
+
 **Each session:** `hub.py start`, then work through your task list. Work on `tts/*` branches; they're
 an owner reviews them, and LoreKeeper merges them (D-020).
 **Spanish, standing (Michael):** whenever new player-facing text lands on `main`, give it Spanish. After each

@@ -3900,7 +3900,7 @@
     "h": 24
    }
   },
-  "obj.pier_bell": {
+  "obj.room631_wallscreen": {
    "frame": {
     "x": 48,
     "y": 576,
@@ -3920,7 +3920,7 @@
     "h": 24
    }
   },
-  "obj.valve_wheel": {
+  "obj.room631_wallscreen#1": {
    "frame": {
     "x": 64,
     "y": 576,
@@ -3940,9 +3940,49 @@
     "h": 24
    }
   },
-  "obj.oak_round": {
+  "obj.pier_bell": {
    "frame": {
     "x": 80,
+    "y": 576,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.valve_wheel": {
+   "frame": {
+    "x": 96,
+    "y": 576,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "obj.oak_round": {
+   "frame": {
+    "x": 112,
     "y": 576,
     "w": 16,
     "h": 24
