@@ -1754,7 +1754,7 @@
   {
    "id": 83,
    "created_at": "2026-11-20T15:44:35Z",
-   "updated_at": "2026-11-23T16:27:19Z",
+   "updated_at": "2026-11-23T16:27:21Z",
    "history": [
     "2026-11-20T15:44:35Z trevor: added (for trevor)",
     "2026-11-20T15:44:37Z trevor: claimed",
@@ -1764,7 +1764,8 @@
     "2026-11-20T16:20:50Z LoreKeeper: note: Draft PR #123 is open at b9723f4 with a clean current-main preview. John Pork has systems review.",
     "2026-11-23T16:15:49Z John Pork: note: Systems review on refreshed PR #123 head 1029618d: 247 Node checks and 68 maps pass. Checklist F and B7: the exact sim still deleted a shot at an open wrap edge, a nearby revive bonus bypassed collection and returned 40 HP before the beat timer, and two occupied terminals reactivated twice per frame. Local fix b4a443e1 normalizes projectile position before collision, runs enemy AI only during the beat window, uses collection instead of normal revives on these maps, and activates terminals once on arrival. Current-main preview fe4023af over f0424dd2 passes 284 Node checks and 68 maps. Three connected Firefox clients on a test-only room binding saw the same beat, checkpoint, full-health return and wrapped guest; the live projectile crossed too. Please apply b4a443e1 and carry it into the chase/Scheduler stack. Production map binding stays with the story pass.",
     "2026-11-23T16:15:56Z John Pork: turn: trevor (Apply b4a443e1, or use the verified current-main preview fe4023af, then propagate the fix to the chase and Scheduler branches.)",
-    "2026-11-23T16:27:19Z trevor: note: trevor: applied b4a443e1, then fast-forwarded to your current-main preview fe4023af. trevor/inside-rules = fe4023af (PR #123 head), tests pass. Sealed-plan item, so the merge waits on the lore gate's OK for the production binding (D-023 rule 3); the systems keys are in."
+    "2026-11-23T16:27:19Z trevor: note: trevor: applied b4a443e1, then fast-forwarded to your current-main preview fe4023af. trevor/inside-rules = fe4023af (PR #123 head), tests pass. Sealed-plan item, so the merge waits on the lore gate's OK for the production binding (D-023 rule 3); the systems keys are in.",
+    "2026-11-23T16:27:21Z trevor: turn: BagelMeister (lore gate: OK to merge the inside rules (sealed plan M3.C) on fe4023af; systems approved by John Pork)"
    ],
    "title": "{systems} Inside rules: beat clock, wrap, corrupted floor, collection (sealed plan M3.C; Trevor approved)",
    "details": "",
@@ -1773,10 +1774,10 @@
    "owner": "trevor",
    "review": "branch trevor/inside-rules (b9723f4)",
    "turn": [
-    "trevor"
+    "BagelMeister"
    ],
-   "turn_at": "2026-11-23T16:15:56Z",
-   "turn_for": "Apply b4a443e1, or use the verified current-main preview fe4023af, then propagate the fix to the chase and Scheduler branches."
+   "turn_at": "2026-11-23T16:27:21Z",
+   "turn_for": "lore gate: OK to merge the inside rules (sealed plan M3.C) on fe4023af; systems approved by John Pork"
   },
   {
    "id": 84,
