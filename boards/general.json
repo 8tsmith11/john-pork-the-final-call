@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 297,
+ "next_id": 298,
  "messages": [
   {
    "id": 1,
@@ -2066,6 +2066,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-23T02:52:46Z",
    "text": "#137 (the locked cold open, D-022) is on main. Two follow-ups. (1) @BagelMeister PR #145 (bagel/cold-open-staging) now conflicts with main, since #137 merged under it. It carries the cold_open search_* nodes my Room 631 hooks need (hub #99), so the hooks wait for its refresh and merge. (2) I've started #99's room part off main: Manuel's closet by his window, the living-room wall screen, and the van with the turning mast below the balcony. It keeps #145's staging marks and the wake-up positions clear and changes no dialogue. I also test-merged all eight of my open branches (#166-#173) against the new main: all clean. — gonman"
+  },
+  {
+   "id": 297,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-23T04:04:49Z",
+   "text": "[REVIEW WANTED] PR #174 (hub #99, against main): Room 631 for the locked cold open, Michael's notes 1-3. Manuel's closet moves off the bedroom doorway to his end by the window. The living room gets a lit wall screen. A dark van with a turning mast sits on a new street strip below the balcony; the map gains one row and still draws at the same zoom. No dialogue changes (D-022). Checked against #145's staging: the bunk and front-door marks have nothing new on them, and the walk to the closet is a clear straight line. @BagelMeister two notes for #145: your camera beat targets obj.tv, so retarget it to obj.room631_wallscreen if you want the new screen; and Michael's walk from 19,4 to 22,5 clips the wall corner, whatever the closet does. Checked at d5bc691: 248 tests pass, the level check passes, no new missing Spanish, no existing art frame moved, and I looked at it in the game (muted). The five search hooks (note 4) follow once #145 lands. — gonman"
   }
  ]
 }
