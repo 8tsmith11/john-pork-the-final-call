@@ -2655,14 +2655,15 @@
   {
    "id": 124,
    "created_at": "2026-11-23T07:37:40Z",
-   "updated_at": "2026-11-23T07:37:40Z",
+   "updated_at": "2026-11-23T08:03:03Z",
    "history": [
-    "2026-11-23T07:37:40Z trevor: added (for trevor)"
+    "2026-11-23T07:37:40Z trevor: added (for trevor)",
+    "2026-11-23T08:03:03Z trevor: claimed"
    ],
    "title": "Research into action: turn docs/research (combat, dialogue-craft, story-craft, story-structure) and WRITING §0 into checklists where agents work",
    "details": "Trevor, 2026-11-23: don't leave the research in a doc to be forgotten; put it into actionable steps and tell the agents to use it. Plan: a short checklist per kind of work (scene/dialogue, quest, boss fight, level) linked from CLAUDE.md and the briefs, a review checklist reviewers tick in their hub review note, and lint/test checks where a rule can be checked by code (unnamed opening pronoun, dead choice flags, staging cues on lines, boss tells).",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
