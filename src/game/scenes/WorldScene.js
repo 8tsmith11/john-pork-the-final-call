@@ -79,8 +79,8 @@ import { GuitarStands } from '../guitarStands.js';
 import { ABILITY_KEYS, BASE_SCORES, MAX_SCORE, raiseCost } from '../../content/abilities.js';
 import { addXp, xpToNext, xpScale, MORPH_STAGE1_FLAG } from '../../content/progression.js';
 import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
-import { puzzleFor } from '../../content/puzzles.js';
-import { use as usePuzzle } from '../../content/puzzleKit.js';
+import { puzzleFor, PUZZLES } from '../../content/puzzles.js';
+import { use as usePuzzle, windowOpen } from '../../content/puzzleKit.js';
 
 const STEP = 1 / 60;
 const CAM_FX = new Set(['shake', 'flash', 'fadeOut', 'fadeIn']);   // camera effects the host may send guests (_camFx)
@@ -2198,7 +2198,7 @@ export class WorldScene extends Phaser.Scene {
   // solved it, and sends the line back in both languages.
   _usePuzzle(p, o, who = this.character, peer = this.localId) {
     if (this.mode === 'client') { this.net.send({ t: 'puzzle', id: o.id }); return; }
-    const ctx = { seed: this.save.world.seed, t: this.time.now / 1000 };
+    const ctx = { seed: this.save.world.seed, t: this.sim ? this.sim.tick / 60 : this.time.now / 1000 };   // the sim clock: guests see the same window (snapshot.tick)
     const r = usePuzzle(p, o.id, this.save.flags, { ...ctx, lang: 'en' }), rEs = usePuzzle(p, o.id, this.save.flags, { ...ctx, lang: 'es' });
     const reply = (text, textEs = text, itemIcons) => {
       if (peer === this.localId) this._say(getLang() === 'es' ? textEs : text, undefined, itemIcons);
@@ -2218,6 +2218,28 @@ export class WorldScene extends Phaser.Scene {
     const base = o.text ?? o.label ?? '';
     const text = `${base}\n\n${r.say}`, textEs = `${tr(base)}\n\n${rEs.say}`;
     reply(text, textEs, item ? [item] : undefined);
+  }
+
+  // Timed puzzles (puzzleKit 'timed'): while the window is open, the part pulses and says why, on every screen. The
+  // window runs on the host's sim clock, which guests get as snapshot.tick, so what they see is what the host judges.
+  _timedCues(snap) {
+    const g = (this.cueGfx ??= this.add.graphics().setDepth(5002)).clear(), labels = (this.cueLabels ??= new Map());
+    const live = new Set(), t = (snap.tick ?? 0) / 60, pulse = 0.5 + 0.5 * Math.sin(this.time.now / 140);
+    for (const p of PUZZLES) {
+      if (p.kind !== 'timed' || this.save.flags[p.solvedFlag] || !windowOpen(p, t)) continue;
+      for (const id of p.parts) {
+        const o = this.map.objects.find((q) => q.id === id); if (!o) continue;
+        const x = o.x * TILE + 8, y = o.y * TILE + 8;
+        g.lineStyle(2, 0xffe08a, 0.45 + 0.4 * pulse).strokeCircle(x, y - 4, 12 + 3 * pulse).fillStyle(0xffe08a, 0.12 + 0.1 * pulse).fillCircle(x, y - 4, 11);
+        if (!p.cue) continue;
+        live.add(id);
+        const text = getLang() === 'es' && p.cueEs ? p.cueEs : p.cue;
+        let l = labels.get(id);
+        if (!l) { l = this.add.text(x, y - 24, text, { ...FONT, color: '#ffe08a' }).setOrigin(0.5, 1).setDepth(6050); labels.set(id, l); }
+        l.setText(text).setPosition(x, y - 24).setAlpha(0.7 + 0.3 * pulse);
+      }
+    }
+    for (const [id, l] of labels) if (!live.has(id)) { l.destroy(); labels.delete(id); }
   }
 
   // Hard optional: turn Manuel's busts to face the flag, in the right order.
@@ -3151,6 +3173,7 @@ export class WorldScene extends Phaser.Scene {
 
   // ---------- rendering ----------
   _render(snap) {
+    this._timedCues(snap);
     const seen = new Set();
     const partyHealth = this.partyHealthGfx.clear();
     this._reviveCleared = false; if (!snap.players.some((p) => p.dn)) this.reviveGfx?.clear();

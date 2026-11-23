@@ -18,6 +18,7 @@ export const PUZZLES = [
   // board on the last piling says what the almanac swears. The reward is the island's trust (the solved flag) and
   // a boat upgrade with no boat: the main quest keeps the boat.
   { id: 'ann_bell', kind: 'timed', parts: ['obj.ann_pier_bell'], window: cycleWindow(100, 25, 60),
+    cue: 'The water is over the red line.', cueEs: 'El agua está por encima de la línea roja.',
     closedText: 'You ring it. The water sits under the red line, where the almanac says it stays, and the bay keeps the sound. The tide here turns when it likes. It likes to make people wait.',
     closedTextEs: 'La tocas. El agua está debajo de la línea roja, donde el almanaque dice que se queda, y la bahía se guarda el sonido. Acá la marea cambia cuando quiere. Le gusta hacer esperar.',
     solvedText: 'You let it hang. They heard you the first time.',
@@ -57,6 +58,7 @@ export const PUZZLES = [
   // ---- Greenbelt: the clean room's one set of footprints (timed). The prints only show when the dish's work
   // light crosses the skylight; they end at one of twelve drawers. The repeater lamp's pencilled timing is the clue.
   { id: 'gb_footprints', kind: 'timed', parts: ['obj.gb_passdrawers'], window: cycleWindow(75, 15, 60),
+    cue: 'The dish light crosses the skylight.', cueEs: 'La luz de la antena cruza la claraboya.',
     closedText: 'You try a drawer. Bolted from the clean side. So is the next. Through the window the floor in there is only dust, in this light: you can\'t see where the prints end.',
     closedTextEs: 'Pruebas un cajón. Trabado desde el lado limpio. El siguiente también. Por la ventana, con esta luz, el piso de adentro es solo polvo: no se ve dónde terminan las huellas.',
     solvedText: 'Eleven bolted drawers and one empty one. The prints haven\'t moved.',

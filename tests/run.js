@@ -6281,6 +6281,29 @@ test('Acts 2-3 puzzles: a timed one opens only inside its window, and the bell n
   const almanac = SideQ.SIDE_QUESTS.find((q) => q.id === 'side.ann_almanac');
   assert.match(almanac.inspect.text, /ask the bell/); assert.ok(!almanac.puzzle, 'the almanac stays the main quest\'s object: its side quest is only the clue');
 });
+test('timed puzzles show a live cue while their window is open, on the host\'s sim clock that guests also get', async () => {
+  const { windowOpen } = await import('../src/content/puzzleKit.js');
+  for (const p of A23_PUZZLES.filter((x) => x.kind === 'timed')) {
+    assert.ok(p.cue && p.cueEs, `${p.id}: says in a few words why now (EN and ES)`);
+    const mapId = Object.keys(MAPS_FOR_TEST).find((id) => MAPS_FOR_TEST[id].objects.some((o) => o.id === p.parts[0]));
+    const tOpen = Array.from({ length: 400 }, (_, t) => t).find((t) => windowOpen(p, t)), tShut = Array.from({ length: 400 }, (_, t) => t).find((t) => !windowOpen(p, t));
+    const texts = [], circles = [];
+    const gfx = { clear() { circles.length = 0; return gfx; }, lineStyle() { return gfx; }, strokeCircle(x, y) { circles.push([x, y]); return gfx; }, fillStyle() { return gfx; }, fillCircle() { return gfx; }, setDepth() { return gfx; } };
+    const text = (x, y, t) => { const o = { t, x, y, alive: true, setOrigin() { return o; }, setDepth() { return o; }, setText(v) { o.t = v; return o; }, setPosition() { return o; }, setAlpha() { return o; }, destroy() { o.alive = false; } }; texts.push(o); return o; };
+    for (const mode of ['host', 'client']) {
+      const sc = Object.assign(Object.create(CraftWorldScene.prototype), { mode, map: MAPS_FOR_TEST[mapId], save: { flags: {} }, time: { now: 0 }, add: { graphics: () => gfx, text } });
+      sc._timedCues({ tick: tOpen * 60 });
+      assert.equal(circles.length, p.parts.length, `${mode}: the part pulses while ${p.id} is open`);
+      assert.ok(texts.some((o) => o.alive && o.t === p.cue), `${mode}: and says why`);
+      sc._timedCues({ tick: tShut * 60 });
+      assert.equal(circles.length, 0, `${mode}: nothing when it is shut`); assert.ok(texts.every((o) => !o.alive), 'the line goes away');
+      sc.save.flags[p.solvedFlag] = true; sc._timedCues({ tick: tOpen * 60 }); assert.equal(circles.length, 0, 'and nothing once solved');
+      texts.length = 0;
+    }
+  }
+  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/t: this\.sim \? this\.sim\.tick \/ 60/.test(src), 'the host judges on the sim clock, not its scene clock');
+});
 test('Acts 2-3 puzzles: the cradle closes only with every weight on the beam, either way round, and its +1 reaches the roll', () => {
   const p = A23_PUZZLES.find((x) => x.id === 'gt_cradle');
   assert.ok(!p.check(['0', '0', '0', '0']), 'an empty beam is level, and is not a closure');

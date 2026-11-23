@@ -31,6 +31,8 @@ export function definePuzzle(spec) {
 }
 
 /** A window open for `open` seconds out of every `period`, shifted by `offset` (ctx.t is play time in seconds). */
+/** Is a timed puzzle's window open at time t (seconds on the host's sim clock, which guests get as snapshot.tick / 60)? */
+export const windowOpen = (p, t) => p.kind === 'timed' && !!p.window({ t });
 export const cycleWindow = (period, open, offset = 0) => (ctx) => ((((ctx.t ?? 0) - offset) % period) + period) % period < open;
 
 const answerFor = (p, ctx) => (typeof p.answer === 'function' ? p.answer(ctx.seed) : p.answer);
