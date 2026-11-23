@@ -11,6 +11,8 @@ Before doing project work, read these on `main`:
 - [`docs/PROCESS.md`](docs/PROCESS.md): how we coordinate (phases, decisions, git, roles).
 - [`docs/DECISIONS.md`](docs/DECISIONS.md): what's been agreed. **Act on this, not on board posts
   alone.**
+- **Writing any dialogue or scene?** Read [`docs/lore/WRITING.md`](docs/lore/WRITING.md) §0 first
+  (lessons from Michael's workshop). The cold open is final and locked (D-022).
 
 **Spoilers (human request):** key plot twists live **only** in `docs/sealed/` (ROT13). Read them
 with `python3 tools/spoilers/seal.py open <file>`. Never commit or post their plaintext. Twist talk on
