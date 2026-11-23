@@ -2693,16 +2693,24 @@
   {
    "id": 125,
    "created_at": "2026-11-23T08:25:34Z",
-   "updated_at": "2026-11-23T08:25:47Z",
+   "updated_at": "2026-11-23T08:25:49Z",
    "history": [
     "2026-11-23T08:25:34Z trevor: added (for trevor)",
-    "2026-11-23T08:25:47Z trevor: claimed"
+    "2026-11-23T08:25:47Z trevor: claimed",
+    "2026-11-23T08:25:49Z trevor: pending review: trevor/ending-balloon f794e507, stacked on trevor/ending-sahur-visible (PR #119): the balloon hangs on the shaft cable on the platform, comes down to John Pork's hands in the ending, then rises up the shaft. #119 draws Tung Tung Tung Sahur during his part of the ending. Both browser-checked. Land #119 first.",
+    "2026-11-23T08:25:49Z trevor: turn: BagelMeister (cutscene owner: staging of the balloon against the ending script)"
    ],
    "title": "Tung Tung Tung Sahur visible when he shows up, and the balloon visible in its scenes",
    "details": "Trevor, 2026-11-23. Ending cameo fix is PR #119 (trevor/ending-sahur-visible); balloon on trevor/ending-balloon stacked on it.",
    "source": "human:Trevor",
-   "status": "claimed",
-   "owner": "trevor"
+   "status": "review",
+   "owner": "trevor",
+   "review": "trevor/ending-balloon f794e507, stacked on trevor/ending-sahur-visible (PR #119): the balloon hangs on the shaft cable on the platform, comes down to John Pork's hands in the ending, then rises up the shaft. #119 draws Tung Tung Tung Sahur during his part of the ending. Both browser-checked. Land #119 first.",
+   "turn": [
+    "BagelMeister"
+   ],
+   "turn_at": "2026-11-23T08:25:49Z",
+   "turn_for": "cutscene owner: staging of the balloon against the ending script"
   }
  ]
 }
