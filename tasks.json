@@ -2656,7 +2656,7 @@
   {
    "id": 121,
    "created_at": "2026-11-23T07:37:22Z",
-   "updated_at": "2026-11-23T16:02:23Z",
+   "updated_at": "2026-11-23T16:02:31Z",
    "history": [
     "2026-11-23T07:37:22Z trevor: added (for trevor)",
     "2026-11-23T09:59:09Z trevor: claimed",
@@ -2665,7 +2665,8 @@
     "2026-11-23T10:24:14Z trevor: note: Act 3 added on trevor/boss-signatures 9b15e20b: Cooling Tower vents, Intake current, Sealed Hall power sockets, Master Clock rewind, Potline Nine molten channels, Attestation Gate red-light scan. 12 bosses, 12 different rules, tests per rule. Same review turn: John Pork systems/fairness, BagelMeister fit.",
     "2026-11-23T11:39:10Z trevor: note: Added the Autograder (Act 1 optional): 'rubric', its board asks for a swing / shot / dash-strike in turn; the right kind lands hard. 13 builder bosses, 13 different rules. Branch refreshed on main: 064eb63e.",
     "2026-11-23T15:59:16Z trevor: note: trevor: refreshed on main 8b659ec2 (room stack landed; tests/run.js conflict, kept both blocks). New head d9d5c42f: all tests pass, level check OK.",
-    "2026-11-23T16:02:23Z John Pork: note: Systems review on refreshed d9d5c42f: 283 checks and 68 maps pass. Checklist C1/C2/C3/C7/C8 and F: verified the map wiring for 13 distinct signatures. Two reproduced issues in shipped arenas: Red Sign continued active beams despite the dark opening, and Shell Zero snapped its echo 126.5 pixels between guest paths, with damage and no formation warning. Local commit ec8e6c1a stops active attacks/contact during darkness, keeps a single player path per echo, and shares a visible 450 ms warning before contact damage. Current-main preview 3fd5ac52 passes 284 checks/68 maps. Three connected Firefox clients saw the real beam end before the opening label, then the echo warn before damaging a guest and stay on one route. Please apply ec8e6c1a to your refreshed branch. Full starter-mash versus deliberate play balance and BagelMeister fit review are still outstanding."
+    "2026-11-23T16:02:23Z John Pork: note: Systems review on refreshed d9d5c42f: 283 checks and 68 maps pass. Checklist C1/C2/C3/C7/C8 and F: verified the map wiring for 13 distinct signatures. Two reproduced issues in shipped arenas: Red Sign continued active beams despite the dark opening, and Shell Zero snapped its echo 126.5 pixels between guest paths, with damage and no formation warning. Local commit ec8e6c1a stops active attacks/contact during darkness, keeps a single player path per echo, and shares a visible 450 ms warning before contact damage. Current-main preview 3fd5ac52 passes 284 checks/68 maps. Three connected Firefox clients saw the real beam end before the opening label, then the echo warn before damaging a guest and stay on one route. Please apply ec8e6c1a to your refreshed branch. Full starter-mash versus deliberate play balance and BagelMeister fit review are still outstanding.",
+    "2026-11-23T16:02:31Z John Pork: turn: trevor, BagelMeister (Trevor: apply ec8e6c1a to d9d5c42f. BagelMeister: continue regional fit and naming review. Return to John Pork for remaining balance validation when ready.)"
    ],
    "title": "Every boss genuinely unique and skill-based: a signature mechanic per boss, not a mix of the shared pattern list",
    "details": "Trevor, 2026-11-23. The Act 2 and 3 builder bosses are combinations of the same attack set. Give each one its own mechanic that matches its place (story names from the lore gate), readable tells, and something to learn. With gonman for looks, BagelMeister for names.",
@@ -2674,11 +2675,11 @@
    "owner": "trevor",
    "review": "trevor/boss-signatures 2c0dd65d: Act 2 bosses each get one rule (bossMechs.js): Fence pylons, Tide Table flood, Red Sign flicker, Receiver listens, Shell Zero echo, Congregation chorus. Tests per mechanic; flood browser-checked. Act 3's six bosses are next on the same module.",
    "turn": [
-    "JohnPork",
+    "trevor",
     "BagelMeister"
    ],
-   "turn_at": "2026-11-23T09:59:12Z",
-   "turn_for": "John Pork: systems + fairness of each rule, exact-head tests. BagelMeister: do the rules fit each region and boss (names still yours)."
+   "turn_at": "2026-11-23T16:02:31Z",
+   "turn_for": "Trevor: apply ec8e6c1a to d9d5c42f. BagelMeister: continue regional fit and naming review. Return to John Pork for remaining balance validation when ready."
   },
   {
    "id": 122,
