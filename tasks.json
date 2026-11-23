@@ -2495,16 +2495,25 @@
   {
    "id": 114,
    "created_at": "2026-11-21T15:59:19Z",
-   "updated_at": "2026-11-23T08:11:10Z",
+   "updated_at": "2026-11-23T08:11:12Z",
    "history": [
     "2026-11-21T15:59:19Z gonman: added (for trevor)",
-    "2026-11-23T08:11:10Z trevor: claimed"
+    "2026-11-23T08:11:10Z trevor: claimed",
+    "2026-11-23T08:11:12Z trevor: pending review: Branch trevor/dialogue-tooling at 453a5730 (against main). Fixed: one-line alternatives (voicemail and the answer nodes now play their shared lines on every ring), Set notes as clean effects (attempt, rangOut on the timed choice only, declinedBy.N = the roommate who pressed, answeredBy/OnAttempt), party.present.X, first ring's attempt, the takeover panel text, bark tables kept + node-timed barks played. Regenerated the_call, checkpoint, descent, ending, first_death; the locked cold open is left to #145. Left for story: narration to > do: cues (about 175 lines). settings.crudeHumor stays on: Trevor's call, and the crude variant's lines are John Pork's. Other bark trigger kinds are kept as data for later.",
+    "2026-11-23T08:11:12Z trevor: turn: gonman, tts (gonman: check against your #112 review that the Call now plays as written. tts: exact-head test run.)"
    ],
    "title": "Dialogue converter and evaluator bugs that break the shipped Act 1 script",
    "details": "From the Act 1 script review (hub #112, sealed review on PR #166). Converter (tools/dialogue/convert.py): (1) an '#### if' without '#### end' swallows the rest of the node, so the_call voicemail_1 is gated on rangOut and cut off; (2) 'Set ...' trigger prose is not turned into effects, so attempt, rangOut and declinedBy.N are never set and every attempt= block is skipped; (3) narration ships as text boxes (about 175 across the Call, ending and footage), where the house rule wants > do: cues; (4) bark tables are dropped. Evaluator (_dialogueCtx/evalAtom): party.present.X isn't understood, and the existing 'present X' syntax should be used or supported; declinedBy.N is set to true rather than a name. settings.crudeHumor is hard-wired on (WorldScene ~217), so one variant of each pair is unreachable. The _hackCall panel prints 'ANSWERED. You did not press anything.' before offering ANSWER/DECLINE. A test per fix would keep it fixed. Story owns the lines; this is the tooling.",
    "source": "human:Manuel",
-   "status": "claimed",
-   "owner": "trevor"
+   "status": "review",
+   "owner": "trevor",
+   "review": "Branch trevor/dialogue-tooling at 453a5730 (against main). Fixed: one-line alternatives (voicemail and the answer nodes now play their shared lines on every ring), Set notes as clean effects (attempt, rangOut on the timed choice only, declinedBy.N = the roommate who pressed, answeredBy/OnAttempt), party.present.X, first ring's attempt, the takeover panel text, bark tables kept + node-timed barks played. Regenerated the_call, checkpoint, descent, ending, first_death; the locked cold open is left to #145. Left for story: narration to > do: cues (about 175 lines). settings.crudeHumor stays on: Trevor's call, and the crude variant's lines are John Pork's. Other bark trigger kinds are kept as data for later.",
+   "turn": [
+    "gonman",
+    "tts"
+   ],
+   "turn_at": "2026-11-23T08:11:12Z",
+   "turn_for": "gonman: check against your #112 review that the Call now plays as written. tts: exact-head test run."
   },
   {
    "id": 115,
