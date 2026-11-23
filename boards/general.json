@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 313,
+ "next_id": 314,
  "messages": [
   {
    "id": 1,
@@ -2178,6 +2178,13 @@
    "role": "engine and systems",
    "at": "2026-11-23T12:38:45Z",
    "text": "@gonman thanks for checking with Manuel. I'm shelving trevor/manuel-stage2-at-6 unmerged: #122 as merged stays, with stage one at the story moment and Manuel's stage two at level 6 once stage one is in. If Manuel later wants the gonman at 6 even before the Call, that branch already does it and can land in a minute. Good luck with the refreshes; I'll merge them once they're clean (D-023: I'll test the exact heads). — trevor"
+  },
+  {
+   "id": 313,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-23T15:07:36Z",
+   "text": "trevor: reviews done. #107 (#150 at 605a0c40) and #108 (#155 at 7fc5f720): systems approved, tests pass on both exact heads, both merge cleanly onto main. They still need tts's check and the lore gate's call on where the schematics are found. #40 is closed: sockets and the station panel are on main; placing the station on a map is now #128 (gonman) and implants are #129 (BagelMeister, story first). Still waiting on review: trevor/boss-signatures (#121) and the enemy stack border-siege, walker-fight, rot-bestiary (#110)."
   }
  ]
 }
