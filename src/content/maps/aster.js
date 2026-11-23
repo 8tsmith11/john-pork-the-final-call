@@ -1,5 +1,7 @@
 // ASTER interiors: the sixth floor and the lobby. Room 631 is in room631.js.
-// Route: 631 -> sixth floor -> stairs or elevator -> lobby -> the street.
+// Route: 631 -> sixth floor -> stairs (one floor at a time: 5th, then the lobby) or elevator -> lobby -> the street.
+// The stairwell is one stack: B-01 <-> lobby <-> 5th <-> 6th <-> roof (tests/run.js checks each flight joins
+// neighbouring floors only). The elevator still runs lobby <-> 6th.
 import { makeMap } from './build.js';
 
 const DOOR = 'obj.door';   // shared drawing for apartment doors (see the `art` field)
@@ -7,12 +9,14 @@ const DOOR = 'obj.door';   // shared drawing for apartment doors (see the `art` 
 export const asterHall = makeMap({
   id: 'aster_hall', name: 'ASTER, 6th floor',
   propScale: 1.25, wear: 'lived',
+  // Doors face the way you go through them (tests/run.js): 631's front door is in its west wall (room631.js, the cold
+  // open is staged round it), so the hall's door to 631 is at the hall's east end, and you walk east into the flat.
   layout: [
     '############################################',   // 0
     '#:::########################################',   // 1  stairwell (west)
     '#:::########################################',   // 2  north apartments: doors sit in this wall
-    '#:::cccccccccccccccccccccccccccccccccccccc=#',   // 3  the corridor; a window at the east end
-    '#:::cccccccccccccccccccccccccccccccccccccc=#',   // 4
+    '#:::cccccccccccccccccccccccccccccccccccccc=#',   // 3  the corridor; at the east end, 631's door between two windows
+    '#:::cccccccccccccccccccccccccccccccccccccc##',   // 4
     '####cccccccccccccccccccccccccccccccccccccc=#',   // 5
     '#################kkkkkk###########cccccc####',   // 6  south apartments; laundry room; elevator alcove
     '#################kkkkkk###########cccccc####',   // 7
@@ -21,8 +25,9 @@ export const asterHall = makeMap({
   ],
   spawns: [[6, 3], [7, 4], [8, 3]],
   objects: [
+    // The east end: home
+    { id: 'obj.door_631', art: DOOR, x: 42, y: 4, label: 'Room 631', action: 'exit', to: 'room631', text: 'Home.' },
     // North side
-    { id: 'obj.door_631', art: DOOR, x: 6, y: 2, label: 'Room 631', action: 'exit', to: 'room631', text: 'Home.' },
     { id: 'obj.door_633', art: DOOR, x: 11, y: 2, label: 'Mrs. Varga', npc: true, age: 'adult', talk: 'aster:varga_talk' },
     { id: 'obj.graffiti', x: 15, y: 2, label: 'Graffiti', text: 'Three hands, three paints: FREE JOHN PORK. JUSTICE FOR JOHN PORK. TIM CHEESE WILL PAY. Someone has crossed out the first one, then uncrossed it.' },
     { id: 'obj.door_635', art: DOOR, x: 19, y: 2, label: '635', text: 'Six locks. Five are decorative. You have never worked out which.' },
@@ -32,7 +37,7 @@ export const asterHall = makeMap({
     { id: 'obj.clock_6f', x: 35, y: 2, label: 'Hallway clock', text: 'It reads 19:01. It has read 19:01 since you moved in.' },
     { id: 'obj.chute', x: 39, y: 2, label: 'Trash chute', text: 'It goes down eleven floors. Things come back up sometimes. Nobody talks about that either.' },
     // Continuity propaganda (hub #100, Michael): out of 631, it's plain he's an enemy of the state. The likeness is never shown.
-    { id: 'obj.ct_poster_631', art: 'obj.ct_poster', x: 9, y: 2, label: 'Continuity poster', text: 'A Continuity poster, put up this week. A phone with its caller ID blacked out and a red slash through it: DON\'T PICK UP. AN UNEXPECTED CALL IS A PUBLIC-HEALTH EVENT. LET IT RING AND REPORT IT. They hung it right beside your door.' },
+    { id: 'obj.ct_poster_631', art: 'obj.ct_poster', x: 41, y: 2, label: 'Continuity poster', text: 'A Continuity poster, put up this week. A phone with its caller ID blacked out and a red slash through it: DON\'T PICK UP. AN UNEXPECTED CALL IS A PUBLIC-HEALTH EVENT. LET IT RING AND REPORT IT. They hung it right beside your door.' },
     { id: 'obj.ct_poster_hall', art: 'obj.ct_poster_text', x: 14, y: 6, label: 'Continuity poster', text: 'HE IS NOT YOUR FRIEND. HE IS NOT ANYONE\'S. Possession of his likeness, image or flag is a loyalty-score event. Continuity Authority. The graffiti across the hall answers it in three colors.' },
     // South side
     { id: 'obj.door_632', art: DOOR, x: 6, y: 6, label: '632', text: 'A child\'s drawing taped at child height: three stick figures and a fourth, taller, with a round head.' },
@@ -44,7 +49,7 @@ export const asterHall = makeMap({
     { id: 'npc.409', eggOk: true, later: [{ if: "act1.beat.call", text: "His phone is face up on the step, dark. \"Mine rang too. I haven't paid for a plan since my wife. It rang anyway.\"" }, { if: "act1.complete", text: "\"Door stayed shut last night. First time this week.\" He has a fresh bowl. \"I sat here and watched it stay shut.\"" }], x: 2, y: 3, label: 'Four-oh-nine', npc: true, age: 'adult', text: 'A man on the landing, his soup going cold. "Please hold. Your call is. Please hold." He says it kindly, like he said it for years.' },
     // Stairwell
     { id: 'obj.hall_roof', art: 'obj.stairs', x: 3, y: 1, label: 'Roof hatch', action: 'exit', to: 'aster_roof', pair: 'obj.roof_hatch', text: 'A ladder up to the roof hatch. The lock is broken. It has always been broken.' },   // [SCAFFOLD] act1_more.js
-    { id: 'obj.stairs_6f', art: 'obj.stairs', x: 2, y: 1, label: 'Stairs down', action: 'exit', to: 'aster_lobby', text: 'Six flights. Somebody has numbered the steps in chalk and lost count at 71.' },
+    { id: 'obj.stairs_6f', art: 'obj.stairs', x: 2, y: 1, label: 'Stairs down', action: 'exit', to: 'aster_5f', pair: 'obj.aster5_up', text: 'Down to five. Somebody has numbered the steps in chalk all the way up from the lobby and lost count at 71.' },   // act1_aster.js
     { id: 'obj.extinguisher', x: 1, y: 4, label: 'Fire extinguisher', text: 'Inspected 2071. The tag has been initialed every year since by the same hand.' },
     // Laundry room
     { id: 'obj.washer_1', art: 'obj.washer', x: 17, y: 8, label: 'Washer', text: 'Mid-cycle. It has been mid-cycle since Tuesday.' },
@@ -54,7 +59,7 @@ export const asterHall = makeMap({
     // Elevator alcove
     { id: 'obj.elevator', x: 37, y: 8, label: 'Elevator', action: 'exit', to: 'aster_lobby', text: 'The elevator thinks about it, then goes down.' },
     { id: 'obj.plant_6f', art: 'obj.plant', x: 34, y: 6, label: 'Plant', text: 'Plastic. Someone waters it anyway. It is doing well.' },
-    { id: 'obj.window_6f', x: 42, y: 4, label: 'Window, facing north', text: 'Route 1 running north into the dark. Past the last streetlight, low on the horizon, lights are moving. Slowly. All in the same direction.' },
+    { id: 'obj.window_6f', x: 42, y: 3, label: 'Window, facing north', text: 'Route 1 running north into the dark. Past the last streetlight, low on the horizon, lights are moving. Slowly. All in the same direction.' },
   ],
 });
 
@@ -84,7 +89,6 @@ export const asterLobby = makeMap({
   objects: [
     { id: 'obj.lobby_basement', art: 'obj.stairs', x: 1, y: 1, label: 'Stairs down (B-01)', action: 'exit', to: 'aster_basement', pair: 'obj.basement_stairs', text: 'Down to the basement. The super\'s level.' },   // [SCAFFOLD] act1_more.js
     { id: 'obj.lobby_5f', art: 'obj.stairs', x: 3, y: 1, label: 'Stairs (fifth floor)', action: 'exit', to: 'aster_5f', pair: 'obj.aster5_stairs', text: 'Five flights. One short of home.' },   // [SCAFFOLD] act1_aster.js
-    { id: 'obj.lobby_stairs', art: 'obj.stairs', x: 2, y: 1, label: 'Stairs up', action: 'exit', to: 'aster_hall', text: 'Six flights up.' },
     { id: 'obj.lobby_elevator', art: 'obj.elevator', x: 33, y: 1, label: 'Elevator', light: 0.6, action: 'exit', to: 'aster_hall', text: '"Sixth floor," the elevator says. "Sorry. Sorry. Sixth."' },
     { id: 'obj.mailboxes', x: 7, y: 0, label: 'Mailboxes', text: 'A wall of brass doors. 631 has a flyer for a dentist none of you have been to. 409 is stuffed full and nobody has emptied it.' },
     { id: 'obj.directory', x: 12, y: 0, label: 'Building directory', text: 'White letters pushed into black felt. Enough have fallen that the list reads like a ransom note. B-01 SUPER ... KESSEL, L.' },
