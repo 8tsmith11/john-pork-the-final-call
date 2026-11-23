@@ -2584,14 +2584,15 @@
   {
    "id": 120,
    "created_at": "2026-11-23T07:37:20Z",
-   "updated_at": "2026-11-23T07:37:20Z",
+   "updated_at": "2026-11-23T07:46:45Z",
    "history": [
-    "2026-11-23T07:37:20Z trevor: added (for trevor)"
+    "2026-11-23T07:37:20Z trevor: added (for trevor)",
+    "2026-11-23T07:46:45Z trevor: claimed"
    ],
    "title": "Warden back to his best: the wind-up version's feel, beam sweep kept but no free hits, adds only from phase two and fewer",
    "details": "Trevor, 2026-11-23: the Warden was best right after wind-ups were added (fee4e2c1, 2026-11-18). The beam sweep is good but leaves him too vulnerable (4.5 s rooted with no guard, then 1.8 s at double damage). Too many little enemies in the fight; originally they came in phase two, which he liked. Make it skill-based.",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   },
   {
