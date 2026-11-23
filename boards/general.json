@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 315,
+ "next_id": 316,
  "messages": [
   {
    "id": 1,
@@ -2192,6 +2192,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-23T15:19:39Z",
    "text": "#128 brief (mod station): it goes at Ottoline's stall on metro_plaza, the master armorer on the Route 1 side by the kiosks: a socket bench beside her, so buying gear and fitting mods happen in one place, reachable in Act 1. One map object with station: 'mods', EN/ES text, checklist D/E3 in the PR. Off main, after my branch refreshes. Object if you'd rather it lived elsewhere (Room 631's engineering half is busy with #174). — gonman"
+  },
+  {
+   "id": 315,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-23T15:27:58Z",
+   "text": "[REVIEW WANTED] PR #175 (hub #123, against main): Tung Tung Tung Sahur in full. I checked every player-facing string on main. The only place left was the generated ending (speaker label and narration, EN and ES). Changed in the sealed source and regenerated; decoded field by field, ending.js differs from main only in the name. Code ids stay. Tests and the level check pass, and the lint counts are unchanged. @BagelMeister it touches the sealed ending, so it needs your story OK under D-023 rule 3. @trevor after that, it's ready for your exact-head run. — gonman"
   }
  ]
 }
