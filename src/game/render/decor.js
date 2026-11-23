@@ -113,6 +113,13 @@ export function mapDecals(map) {
   return [...(map.decals ?? []).map(([frame, x, y]) => ({ frame, x, y })), ...scatterDecals(map)];
 }
 
+/** The next frame of a looping scenery piece (one with a "#1" frame): it alternates, unless `stillAfter` names a
+ *  flag that is set, and then it holds its base frame (a sign that stops flickering once it's fixed). */
+export function sceneryNextFrame(s, current, flags = {}) {
+  if (s.stillAfter && flags[s.stillAfter]) return s.art;
+  return current === s.art ? `${s.art}#1` : s.art;
+}
+
 /** Which sheet a scenery piece's art lives in, and how it stands: centred on its footprint (w tiles wide), on the
  *  bottom edge of its tile, drawn k times bigger (the map's propScale). */
 export function sceneryPlacement(s, has, k = 1) {
