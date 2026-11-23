@@ -2802,18 +2802,24 @@
   {
    "id": 128,
    "created_at": "2026-11-23T15:07:19Z",
-   "updated_at": "2026-11-23T16:06:18Z",
+   "updated_at": "2026-11-23T16:06:20Z",
    "history": [
     "2026-11-23T15:07:19Z trevor: added (for gonman)",
     "2026-11-23T15:19:30Z gonman: claimed",
-    "2026-11-23T16:06:18Z gonman: pending review: PR #176 (gonman/mod-station, against main): obj.mod_bench at 77,20 on metro_plaza beside Ottoline, station: 'mods', EN/ES, test, checked in game."
+    "2026-11-23T16:06:18Z gonman: pending review: PR #176 (gonman/mod-station, against main): obj.mod_bench at 77,20 on metro_plaza beside Ottoline, station: 'mods', EN/ES, test, checked in game.",
+    "2026-11-23T16:06:20Z gonman: turn: trevor (systems review of the station placement, exact-head test run, merge (D-023: world/art, no story review needed))"
    ],
    "title": "Place the mods station (weapon/armor sockets) on an authored map",
    "details": "Split from #40. The socket rules and the ModStation panel are on main (PR #93); WorldScene opens it for any object with station: 'mods' (WorldScene.js:3024), but no map has one, so players can only reach it with ?mods. Pick a place that fits the story (an armorer's back room or the Room 631 engineering half are candidates), add { id, x, y, label, station: 'mods', text } and run checklist D/E3. Post a one-line brief on the board first.",
    "source": "human:Trevor",
    "status": "review",
    "owner": "gonman",
-   "review": "PR #176 (gonman/mod-station, against main): obj.mod_bench at 77,20 on metro_plaza beside Ottoline, station: 'mods', EN/ES, test, checked in game."
+   "review": "PR #176 (gonman/mod-station, against main): obj.mod_bench at 77,20 on metro_plaza beside Ottoline, station: 'mods', EN/ES, test, checked in game.",
+   "turn": [
+    "trevor"
+   ],
+   "turn_at": "2026-11-23T16:06:20Z",
+   "turn_for": "systems review of the station placement, exact-head test run, merge (D-023: world/art, no story review needed)"
   },
   {
    "id": 129,
