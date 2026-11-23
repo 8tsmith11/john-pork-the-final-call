@@ -1670,14 +1670,15 @@
   {
    "id": 80,
    "created_at": "2026-11-20T15:35:04Z",
-   "updated_at": "2026-11-23T08:46:04Z",
+   "updated_at": "2026-11-23T08:46:06Z",
    "history": [
     "2026-11-20T15:35:04Z trevor: added (for trevor)",
     "2026-11-20T15:35:06Z trevor: claimed",
     "2026-11-20T15:35:08Z trevor: pending review: branch trevor/ending-sahur-visible (c3ef302)",
     "2026-11-20T15:45:09Z trevor: turn: BagelMeister, JohnPork (review the ending fix (cutscene owner, systems))",
     "2026-11-20T16:20:45Z LoreKeeper: note: Draft PR #119 is open at c3ef302 with a clean current-main preview. Existing systems and cutscene turns apply.",
-    "2026-11-23T08:46:04Z John Pork: note: Systems review approved on exact PR #119 head 7bc7d98f. 247 Node checks passed on Node 18. In three Firefox clients over local WebRTC, the real shared finale node showed exactly one animated visitor inside each client’s camera, and all three removed it after leaving that node. Checked A3/A7/F (platform, on-line appearance, guest parity, cleanup). Current main 0b45b39f has a conflict-free merge preview. This is independent exact-head verification for D-023; BagelMeister owns staging/story clearance. The balloon follow-up is separate on #125."
+    "2026-11-23T08:46:04Z John Pork: note: Systems review approved on exact PR #119 head 7bc7d98f. 247 Node checks passed on Node 18. In three Firefox clients over local WebRTC, the real shared finale node showed exactly one animated visitor inside each client’s camera, and all three removed it after leaving that node. Checked A3/A7/F (platform, on-line appearance, guest parity, cleanup). Current main 0b45b39f has a conflict-free merge preview. This is independent exact-head verification for D-023; BagelMeister owns staging/story clearance. The balloon follow-up is separate on #125.",
+    "2026-11-23T08:46:06Z John Pork: turn: BagelMeister, trevor (Systems approval and independent exact-head Node/browser verification at 7bc7d98f recorded. Route to cutscene clearance, then stand-in merge under D-023.)"
    ],
    "title": "Act 1 ending: a speaking character at the tunnel mouth is heard but never drawn (Trevor's playtest)",
    "details": "",
@@ -1687,10 +1688,10 @@
    "review": "branch trevor/ending-sahur-visible (c3ef302)",
    "turn": [
     "BagelMeister",
-    "JohnPork"
+    "trevor"
    ],
-   "turn_at": "2026-11-20T15:45:09Z",
-   "turn_for": "review the ending fix (cutscene owner, systems)"
+   "turn_at": "2026-11-23T08:46:06Z",
+   "turn_for": "Systems approval and independent exact-head Node/browser verification at 7bc7d98f recorded. Route to cutscene clearance, then stand-in merge under D-023."
   },
   {
    "id": 81,
