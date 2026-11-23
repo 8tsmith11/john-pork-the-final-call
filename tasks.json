@@ -2134,7 +2134,7 @@
   {
    "id": 98,
    "created_at": "2026-11-20T20:35:04Z",
-   "updated_at": "2026-11-23T08:23:09Z",
+   "updated_at": "2026-11-23T08:35:20Z",
    "history": [
     "2026-11-20T20:35:04Z BagelMeister: added (for BagelMeister)",
     "2026-11-20T20:40:11Z BagelMeister: claimed",
@@ -2152,20 +2152,16 @@
     "2026-11-21T05:11:29Z BagelMeister: note: PR #145 at 8bc04bec: JohnPork's timing fix 1d65f716 is in (a held line waits for its cue, and superseded actions are discarded on mirrors), with #137 cf553b0 and main e1f8b47 merged. Locked lines untouched.",
     "2026-11-21T17:11:09Z John Pork: note: Updated the existing cold-open review branch to d04cff18 from latest #145 df3dff45 and main e1f8b47a. Independent handoff fix commit d04cff18 moves the starter gear action ahead of its dialogue hook, and lets only a connected, nearby guest’s authored window discovery reach host quest state. Original exact-head rendered failure and corrected three-client handoff verified; 249 combined Node checks green. Tested all five prospective #99 hooks in an isolated fixture, including guest gear pickup, clue replication, first objective advancing, and save persistence. Locked text unchanged.",
     "2026-11-21T17:15:00Z John Pork: note: Rechecked refreshed PR #145 at 8bc04bec after adopting the line-cue fix. Stage.js matches the verified candidate, the exact head passes 248 Node tests, and its diff against current main passes the whitespace check. The optional search handoff fix remains available at d04cff18 for the Room 631 hook review.",
-    "2026-11-23T08:23:09Z John Pork: note: Current main b1d221c4 with #145 at 8bc04bec and #174 at d5bc691 passes 249 Node cases and 68 maps. Staging review (A7, A11, D1, F): exercised all 16 actual walk tweens over the combined Room 631 grid. Michael still crosses solid 21,5 even with the bedroom doorway treated as open. Route through 22,4 before 22,5 and verify the door reads open as they pass. The world beat’s camera and cast facing target obj.tv (12,7); the new lit wall screen is obj.room631_wallscreen (11,5). Retarget once its map is available. Conversion had no dangling nodes; lint reported the three existing cold-open flags (one long line, two negation turns). Locked lines were left alone. Optional search hooks remain on #99; the gear and guest clue handoff fix is available at d04cff18."
+    "2026-11-23T08:23:09Z John Pork: note: Current main b1d221c4 with #145 at 8bc04bec and #174 at d5bc691 passes 249 Node cases and 68 maps. Staging review (A7, A11, D1, F): exercised all 16 actual walk tweens over the combined Room 631 grid. Michael still crosses solid 21,5 even with the bedroom doorway treated as open. Route through 22,4 before 22,5 and verify the door reads open as they pass. The world beat’s camera and cast facing target obj.tv (12,7); the new lit wall screen is obj.room631_wallscreen (11,5). Retarget once its map is available. Conversion had no dangling nodes; lint reported the three existing cold-open flags (one long line, two negation turns). Locked lines were left alone. Optional search hooks remain on #99; the gear and guest clue handoff fix is available at d04cff18.",
+    "2026-11-23T08:35:20Z trevor: done: Merged 715fb505 by trevor under D-023 (staging reviewed by John Pork)"
    ],
    "title": "Cold open: staging cues play during lines; restage and regenerate the cold open",
    "details": "Needs PR #137 (locked script, D-022). (1) Cutscene engine: read the sealed scripts' '> do:' cues and play each one while its line is on screen (tools/dialogue/convert.py, src/game/stage.js, the dialogue box). (2) Restage the cold open from docs/sealed/script/01-cold-open.md and remove the silent act1_open pre-roll (WorldScene.js line ~223: trevor reviews that file). (3) Regenerate cold_open.js, write its Spanish (sealed scene, so not tts), and move the scene time to 3:40 everywhere (dawn.js, the caption). No line edits: D-022.",
    "source": "human:Michael",
-   "status": "review",
+   "status": "done",
    "owner": "BagelMeister",
    "review": "PR #145 at dcda788 (on top of #137)",
-   "turn": [
-    "tts",
-    "LoreKeeper"
-   ],
-   "turn_at": "2026-11-21T04:46:20Z",
-   "turn_for": "PR #145 now at 68e004d: dead-end test fixed (reachable nodes only), main and the refreshed #137 merged in. tts: exact-head run (task above). LoreKeeper: merge after #137."
+   "note": "Merged 715fb505 by trevor under D-023 (staging reviewed by John Pork)"
   },
   {
    "id": 99,
