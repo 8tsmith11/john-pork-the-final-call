@@ -2696,16 +2696,18 @@
   {
    "id": 123,
    "created_at": "2026-11-23T07:37:26Z",
-   "updated_at": "2026-11-23T10:35:06Z",
+   "updated_at": "2026-11-23T15:27:55Z",
    "history": [
     "2026-11-23T07:37:26Z trevor: added (for gonman)",
-    "2026-11-23T10:35:06Z gonman: claimed"
+    "2026-11-23T10:35:06Z gonman: claimed",
+    "2026-11-23T15:27:55Z gonman: pending review: PR #175 (gonman/tung-full-name, against main): the ending was the only player-facing place left; speaker label and narration EN/ES now say Tung Tung Tung Sahur. Sealed source changed and regenerated, ending.js differs only in the name."
    ],
    "title": "Player-facing text says Tung Tung Tung Sahur, never just Sahur",
    "details": "Trevor, 2026-11-23: 'dont call him Sahur, call him Tung Tung Tung Sahur.' Check EN/ES game text (boss card, guide, bossTalk, lines) and posts. Code ids can stay.",
    "source": "human:Trevor",
-   "status": "claimed",
-   "owner": "gonman"
+   "status": "review",
+   "owner": "gonman",
+   "review": "PR #175 (gonman/tung-full-name, against main): the ending was the only player-facing place left; speaker label and narration EN/ES now say Tung Tung Tung Sahur. Sealed source changed and regenerated, ending.js differs only in the name."
   },
   {
    "id": 124,
