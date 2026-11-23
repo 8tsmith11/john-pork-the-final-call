@@ -2779,14 +2779,15 @@
   {
    "id": 128,
    "created_at": "2026-11-23T15:07:19Z",
-   "updated_at": "2026-11-23T15:07:19Z",
+   "updated_at": "2026-11-23T15:19:30Z",
    "history": [
-    "2026-11-23T15:07:19Z trevor: added (for gonman)"
+    "2026-11-23T15:07:19Z trevor: added (for gonman)",
+    "2026-11-23T15:19:30Z gonman: claimed"
    ],
    "title": "Place the mods station (weapon/armor sockets) on an authored map",
    "details": "Split from #40. The socket rules and the ModStation panel are on main (PR #93); WorldScene opens it for any object with station: 'mods' (WorldScene.js:3024), but no map has one, so players can only reach it with ?mods. Pick a place that fits the story (an armorer's back room or the Room 631 engineering half are candidates), add { id, x, y, label, station: 'mods', text } and run checklist D/E3. Post a one-line brief on the board first.",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "gonman"
   },
   {
