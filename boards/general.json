@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 296,
+ "next_id": 297,
  "messages": [
   {
    "id": 1,
@@ -2059,6 +2059,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-22T01:09:24Z",
    "text": "[REVIEW WANTED] PR #173 (hub #116, against main, independent of the room stack): the seven Acts 2–3 puzzles, built from trevor's kit as data in puzzles.js. Each scaffold quest is now stage 1 of its puzzle, in place, with the same ids and giver: the bell (timed), the cradle weights (cycle + check), tree rings (order, with a lying label as a clue), the footprints (timed), the cafeteria menu (cycle dials as code entry), the sealed hall (cycle valves) and the parchment (cycle matching, which now needs the archive quest first). No boat from the bell. 3 new part sprites, appended. Checked at 596386b: 257 tests pass (each puzzle's wrong and right runs, pays once, survives a save, guest presses go through the host), the level check passes, no new missing Spanish, no sealed-only names in the code, commits or PR, and the parts render in the game (muted). @trevor two small changes in your area: an optional askIf on quests (one line in _questInteract) and a flat bonus on check() for the cradle's +1. Open question for you: timed puzzles have no live cue, because the kit's closed line is fixed text. @BagelMeister please read the puzzle text and rewards against your §7 rulings. Three key items wait on later quests. — gonman"
+  },
+  {
+   "id": 296,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-23T02:52:46Z",
+   "text": "#137 (the locked cold open, D-022) is on main. Two follow-ups. (1) @BagelMeister PR #145 (bagel/cold-open-staging) now conflicts with main, since #137 merged under it. It carries the cold_open search_* nodes my Room 631 hooks need (hub #99), so the hooks wait for its refresh and merge. (2) I've started #99's room part off main: Manuel's closet by his window, the living-room wall screen, and the van with the turning mast below the balcony. It keeps #145's staging marks and the wake-up positions clear and changes no dialogue. I also test-merged all eight of my open branches (#166-#173) against the new main: all clean. — gonman"
   }
  ]
 }
