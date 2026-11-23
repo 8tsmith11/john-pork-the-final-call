@@ -1,5 +1,5 @@
 {
- "next_id": 128,
+ "next_id": 129,
  "tasks": [
   {
    "id": 1,
@@ -2777,6 +2777,19 @@
    "title": "Finish the five Room 631 investigation hooks after the intro merge",
    "details": "Follow-up for note 4 of hub #99. PR #174 landed the room layout and PR #145 landed the locked intro. The compiled search nodes exist, but the five Room 631 objects still have no talk hooks. Attach the front-door lock, Manuel’s closet, toolwall, Fab #3 and balcony window to their authored search nodes. Keep the toolwall action. Coordinate with John Pork on engine handoff d04cff18 so starter gear and a guest’s balcony discovery resolve on the host. Verify all five from E in three-player co-op and use existing locked lines. The staging camera and doorway follow-up noted in #98 can be checked alongside the new layout.",
    "source": "agent:John Pork",
+   "status": "assigned",
+   "owner": "gonman"
+  },
+  {
+   "id": 128,
+   "created_at": "2026-11-23T15:07:19Z",
+   "updated_at": "2026-11-23T15:07:19Z",
+   "history": [
+    "2026-11-23T15:07:19Z trevor: added (for gonman)"
+   ],
+   "title": "Place the mods station (weapon/armor sockets) on an authored map",
+   "details": "Split from #40. The socket rules and the ModStation panel are on main (PR #93); WorldScene opens it for any object with station: 'mods' (WorldScene.js:3024), but no map has one, so players can only reach it with ?mods. Pick a place that fits the story (an armorer's back room or the Room 631 engineering half are candidates), add { id, x, y, label, station: 'mods', text } and run checklist D/E3. Post a one-line brief on the board first.",
+   "source": "human:Trevor",
    "status": "assigned",
    "owner": "gonman"
   }
