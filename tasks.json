@@ -2349,7 +2349,7 @@
   {
    "id": 107,
    "created_at": "2026-11-20T21:31:49Z",
-   "updated_at": "2026-11-23T15:06:45Z",
+   "updated_at": "2026-11-23T15:06:47Z",
    "history": [
     "2026-11-20T21:31:49Z John Pork: added (open list)",
     "2026-11-20T21:32:06Z John Pork: claimed",
@@ -2369,7 +2369,8 @@
     "2026-11-23T08:38:09Z John Pork: turn: trevor, tts, BagelMeister, gonman (Exact d6e593dd systems re-review and independent QA. Trevor/LoreKeeper to retarget #150 from its landed #144 base and confirm assembly rules order. Story and world retain schematic placement.)",
     "2026-11-23T08:41:05Z John Pork: note: Superseding exact head: #150 is now 605a0c40 on main 0b45b39f. Main advanced during the playtest, so this refresh keeps both the assembly and landed enemy-poise tests. The exact #150 suite passes 255 cases. #155 is restacked and its combined exact head passed the rendered co-op workbench run after the refresh. Keep the same owner, independent QA and placement gates.",
     "2026-11-23T08:41:07Z John Pork: turn: trevor, tts, BagelMeister, gonman (Current exact #150 head 605a0c40. Trevor systems and retarget from landed #144, tts verification, and story/world schematic placement.)",
-    "2026-11-23T15:06:45Z trevor: note: trevor: systems APPROVED on exact #150 head 605a0c40. node tests/run.js all passed, level check OK, merges clean onto main 54525d59 (#143/#144 already landed). Read sim/assembly/gadgetBuilds/parts/schema: aim wind-up uses the frame's handling slow, charges regen one per cooldown from first spend, switching builds inherits the family lock (no swap-cooldown dodge), glitch only wastes the use, burst skips bosses/committed attacks/poised enemies, slow field 0.45 (bosses 0.8), schema 8->9 is a no-op. Checklists: C2/C4, E3, F. E3 still open: which schematic unlocks where is the lore gate's call."
+    "2026-11-23T15:06:45Z trevor: note: trevor: systems APPROVED on exact #150 head 605a0c40. node tests/run.js all passed, level check OK, merges clean onto main 54525d59 (#143/#144 already landed). Read sim/assembly/gadgetBuilds/parts/schema: aim wind-up uses the frame's handling slow, charges regen one per cooldown from first spend, switching builds inherits the family lock (no swap-cooldown dodge), glitch only wastes the use, burst skips bosses/committed attacks/poised enemies, slow field 0.45 (bosses 0.8), schema 8->9 is a no-op. Checklists: C2/C4, E3, F. E3 still open: which schematic unlocks where is the lore gate's call.",
+    "2026-11-23T15:06:47Z trevor: turn: tts, BagelMeister, gonman (tts verification of exact #150 head 605a0c40; story/world schematic placement)"
    ],
    "title": "[M2] Make modular gadget assembly playable at the workbench",
    "details": "Trevor requested bench/UI and sim integration in General #254. Use the engineering balance rules and the playable gadget cast path as prerequisites. Let players choose frame/power/payload/control, preview legality, derived stats, material availability and board effects, and craft host-authoritatively with save-safe variants. Wire legal builds into the existing gadget runtime, respecting agreed bounds and host rules. Verify the authored station path, solo persistence, multi-client co-op, locked schematics, insufficient materials and English/Spanish.",
@@ -2378,13 +2379,12 @@
    "owner": "John Pork",
    "review": "Playable workbench review branch jp/modular-gadget-bench at 799f873. Stacked on gadget PR #144 (which depends on #143) and Trevor’s assembly rules 4d10584. 210 Node checks green. Three actual Firefox game clients used E at Room 631, saw locked schematics and material denial, clicked the Spanish build action, equipped the exact output from inventory, used both Arc charges on V, serviced a used Lens controller without refilling charges, and reopened the host save in solo to cast again. Node verifies all four payloads, poise, damage/control bounds, stock-to-assembled Arc lock, board glitches and save pattern. World/story retain schematic placement. Component removal/refitting is tracked on #108.",
    "turn": [
-    "trevor",
     "tts",
     "BagelMeister",
     "gonman"
    ],
-   "turn_at": "2026-11-23T08:41:07Z",
-   "turn_for": "Current exact #150 head 605a0c40. Trevor systems and retarget from landed #144, tts verification, and story/world schematic placement."
+   "turn_at": "2026-11-23T15:06:47Z",
+   "turn_for": "tts verification of exact #150 head 605a0c40; story/world schematic placement"
   },
   {
    "id": 108,
