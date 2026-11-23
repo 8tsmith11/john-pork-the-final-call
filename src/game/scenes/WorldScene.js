@@ -16,7 +16,7 @@ import { loadScene, Conversation, evalCond } from '../../engine/dialogue.js';
 import { babble, setArea, sfx, ring, speak, hush, setInstrumentFocus, audioOut } from '../../audio/audio.js';
 import { sellPrice, LOOT, DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods, heldWeapon, WORN_SLOTS, canWear } from '../../content/items.js';
 import { tileKey, laneDashes } from '../render/tiles.js';
-import { mapDecals, sceneryPlacement } from '../render/decor.js';
+import { mapDecals, sceneryPlacement, sceneryNextFrame } from '../render/decor.js';
 import { GameMenu, TABS, modText } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
 import { BARKS, pickBark } from '../../content/barks.js';
@@ -268,6 +268,15 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- dialogue ----------
+  // Objects whose words change once something has happened: textAfter: { flag, text } (a sign that's been fixed
+  // stops being described as flickering). Applied before anything reads o.text, on both host and guests.
+  _flagTexts() {
+    for (const o of this._flagTextObjs ?? []) {
+      if (!Object.hasOwn(o, '_textBase')) o._textBase = o.text;
+      o.text = this.save.flags[o.textAfter.flag] ? o.textAfter.text : o._textBase;
+    }
+  }
+
   _flag(k, v) {
     this.save.flags[k] = v;
     if (this.mode === 'client') this.net.send({ t: 'flag', key: k, value: v });
@@ -768,6 +777,8 @@ export class WorldScene extends Phaser.Scene {
           this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, skill: msg.inp.skill || prev?.skill,
             gadget: msg.inp.gadget === true || prev?.gadget === true, interact: false });
         }
+        // A guest who reads the 245 book at 631's shelf (gonman, PR #116) gets the bench's book hints for the party too; it only adds hints.
+        if (msg.t === 'flag' && msg.key === 'lab.book') this.save.flags['lab.book'] = true;
         if (msg.t === 'flag' && typeof msg.key === 'string' && /^(act\d|dlg\.)/.test(msg.key) && !ACT_ONE_HOST_FLAGS.has(msg.key)) this.save.flags[msg.key] = msg.value ?? true
         if (msg.t === 'flag' && msg.key === 'act1.fuses.in') this._seatFuses();
         if (msg.t === 'item' && this.save.party[msg.who] && ITEMS[`item.${msg.item}`]) { Inv.add(this.save.party[msg.who], `item.${msg.item}`, Math.min(99, msg.n | 0 || 1)); this._syncParty(); }
@@ -905,6 +916,7 @@ export class WorldScene extends Phaser.Scene {
     // Rapid back-and-forth guard (Trevor): a new map generation, so anything queued on the last map knows it's stale;
     // the arrival time, for the exit grace; and no story beat is still pending from the last map.
     this._mapGen = (this._mapGen ?? 0) + 1; this._arrivedAt = this.time?.now ?? 0; this._beatPending = null;
+    this._flagTextObjs = (map.objects ?? []).filter((o) => o.textAfter); this._flagTexts();
     this.mapGfx?.destroy(); this.mapRT?.destroy();
     // Bake textured tiles into one render texture (cheap to draw every frame).
     const rt = this.mapRT = this.add.renderTexture(0, 0, map.w * TILE, map.h * TILE).setOrigin(0, 0).setDepth(-10);
@@ -1040,7 +1052,7 @@ export class WorldScene extends Phaser.Scene {
       const pl = sceneryPlacement(s, hasArt, s.scale ?? PK); if (!pl) continue;
       const im = this.add.image(pl.x, pl.y, pl.sheet, s.art).setOrigin(...pl.origin).setScale(pl.k).setDepth(s.floor ? 2 : pl.y - 4).setFlipX(!!s.flip);
       if (!s.floor) shadowUnder(pl.x, pl.y, pl.shadow);
-      if (hasArt(pl.sheet, `${s.art}#1`)) this.propTimers.push(this.time.addEvent({ delay: s.anim ?? 420, loop: true, callback: () => im.active && im.setFrame(im.frame.name === s.art ? `${s.art}#1` : s.art) }));
+      if (hasArt(pl.sheet, `${s.art}#1`)) this.propTimers.push(this.time.addEvent({ delay: s.anim ?? 420, loop: true, callback: () => im.active && im.setFrame(sceneryNextFrame(s, im.frame.name, this.save.flags)) }));   // stillAfter: holds once its flag is set
       this.propSprites.push(im);
     }
     this._refreshPuzzleProps();
@@ -1793,13 +1805,15 @@ export class WorldScene extends Phaser.Scene {
   // Asking, inspecting and reporting use the ordinary interaction. Hand-ins use a named action.
   _questInteract(near, who = this.character, peer = this.localId) {
     const f = this.save.flags, qs = questState(this.save), client = this.mode === 'client', remote = peer !== this.localId;
+    this._flagTexts();
     const say = (t) => (remote ? this.net?.send(peer, { t: 'say', text: t }) : this._say(t));
     const act = (fn) => { if (client) this.net.send({ t: 'questUse', id: near.id }); else fn(); return true; };
     for (const q of QUESTS) {
       const st = qs[q.id];
       const inspect = q.inspections?.find((entry) => entry.obj === near.id) ?? (q.inspect?.obj === near.id ? q.inspect : null);
       if (inspect && st.started && questVisible(q, who)) {
-        const { flag, text, fact } = inspect;
+        const { flag, fact } = inspect, after = inspect.textAfter;
+        const text = after && f[after.flag] ? after.text : inspect.text;   // what you notice can change too (seenAfter)
         const unread = fact && !knowsQuestFact(this.save, who, fact);
         if ((!st.done && !f[flag]) || unread) {
           return act(() => {
@@ -2923,6 +2937,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _handleInteract(me) {
+    this._flagTexts();
     if (this.dlg || this.menu || me?.under > 0 || me?.un) { this.hint.setText(''); return; }
     // John Pork calls back. If the party declined, he rings again deeper in the tunnels: once at the
     // switchyard, once on the approach. A third decline is what brings the Sahur (the_call script).
@@ -3240,6 +3255,7 @@ export class WorldScene extends Phaser.Scene {
       }
       s.setScale(sx, sy);
     }
+    if (this._mechText && this.time.now - (this._mechTextAt ?? 0) > 120) this._mechText.setVisible(false);
     for (const [id, s] of this.enemySprites) if (!eseen.has(id)) { s.destroy(); this.enemySprites.delete(id); this.bossFx?.clear(); }
     const meP = snap.players.find((p) => p.id === this.localId);
     let tgt = null, td = 70;
@@ -3453,10 +3469,94 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // Big boss patterns, drawn from the snapshot every frame (bossPatterns.js): the turning beam, rings, marks.
+  // A builder boss's signature rule, drawn so it can be read (src/engine/bossMechs.js, hub #121).
+  _mechFx(g, e, m, t) {
+    const W = this.map.w * TILE, pulse = 0.5 + 0.5 * Math.sin(t / 120);
+    if (m.k === 'pylons') {   // a shield dome while any pylon stands, and a beam from each pylon to it
+      if (m.s) {
+        g.lineStyle(2, 0x9fd3ff, 0.5 + 0.3 * pulse).strokeCircle(e.x, e.y - 8, 20);
+        for (const u of this._lastRendered?.enemies ?? []) if (u.k === 'enemy.fence_pylon') g.lineStyle(1, 0x9fd3ff, 0.6).lineBetween(u.x, u.y - 10, e.x, e.y - 8);
+      } else if (m.o != null) this._mechLabel(e, `OPEN ${m.o}`, '#ffb347');
+    }
+    if (m.k === 'tide' && m.l > 0) {   // the water: everything below its edge, a lighter line at the edge
+      const H = this.map.h * TILE;
+      g.fillStyle(0x1d5f86, 0.5 * m.l).fillRect(0, m.e, W, H - m.e);
+      for (let y = m.e + 10; y < H; y += 14) for (let x = ((y * 7) % 40) - 40 + ((t / 40) % 40); x < W; x += 40) g.fillStyle(0x9fe0ff, 0.35 * m.l).fillRect(x, y, 10, 1);   // ripples
+      g.lineStyle(2, 0xcff4ff, 0.9).lineBetween(0, m.e + Math.sin(t / 300) * 2, W, m.e + Math.sin(t / 300 + 1) * 2);
+      if (m.w) this._mechLabel(e, 'IN THE WATER', '#9fe0ff');
+    }
+    if (m.k === 'flicker') {   // lit: a red halo; dark: a dim cast over the boss and a call to hit it; a buzz before it changes
+      if (m.lit) g.fillStyle(0xe03030, (m.warn ? 0.15 + 0.25 * pulse : 0.22)).fillCircle(e.x, e.y - 10, 26);
+      else { g.fillStyle(0x05060c, 0.45).fillCircle(e.x, e.y - 10, 30); this._mechLabel(e, 'DARK: HIT IT', '#ffd27f'); }
+    }
+    if (m.k === 'listen' && m.lx != null) {   // the dish's lock: a closing ring on the target spot
+      const k = Math.max(0, Math.min(1, m.lt / 1.2));
+      g.lineStyle(2, 0x6fe3e8, 0.9).strokeCircle(m.lx, m.ly, 20 + 14 * k).lineStyle(1, 0x6fe3e8, 0.5).strokeCircle(m.lx, m.ly, 20);
+      g.lineStyle(1, 0x6fe3e8, 0.35).lineBetween(e.x, e.y - 14, m.lx, m.ly);
+    }
+    if (m.k === 'mimic' && m.ex != null) {   // the echo: a pale copy of a body, walking where you were
+      g.fillStyle(0xc9a0a0, 0.45).fillEllipse(m.ex, m.ey - 6, 10, 16).fillStyle(0xffffff, 0.5).fillRect(m.ex - 2, m.ey - 11, 1, 1).fillRect(m.ex + 1, m.ey - 11, 1, 1);
+      const alpha = m.w ? 0.35 + 0.5 * pulse : 0.75;
+      g.lineStyle(1, m.w ? 0xffd27f : 0xc9a0a0, alpha).strokeCircle(m.ex, m.ey, m.r);
+      if (m.w) this._mechLabel({ x: m.ex, y: m.ey }, 'ECHO FORMING', '#ffd27f');
+    }
+    if (m.k === 'vents') {   // vents: dark grates; the next group glows as it warns, then steam columns when they blow
+      for (const [x, y] of m.v ?? []) {
+        if (m.p === 'warn') g.fillStyle(0xffb347, 0.25 + 0.35 * pulse).fillCircle(x, y, 14);
+        if (m.p === 'blow') { g.fillStyle(0xeef6ff, 0.75).fillEllipse(x, y - 10, 18, 28); g.fillStyle(0xffffff, 0.5).fillCircle(x, y - 22, 6); }
+        g.lineStyle(1, 0x5b6862, 0.9).strokeRect(x - 6, y - 4, 12, 8);
+      }
+      if (m.s) this._mechLabel(e, 'SCALDED: HIT IT', '#ffd27f');
+    }
+    if (m.k === 'current') {   // the pull: streaks flowing in toward it, thicker in a surge; open after
+      const n = m.s ? 18 : 9, R = 150;
+      for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2 + t / 900, r = R - ((t / (m.s ? 4 : 12) + i * 37) % R); g.lineStyle(1, 0x9fe0ff, m.s ? 0.8 : 0.4).lineBetween(e.x + Math.cos(a) * r, e.y + Math.sin(a) * r * 0.6, e.x + Math.cos(a) * (r - 10), e.y + Math.sin(a) * (r - 10) * 0.6); }
+      if (m.w) this._mechLabel(e, 'SURGE COMING', '#9fe0ff'); else if (m.o) this._mechLabel(e, 'GULPING: HIT IT', '#ffd27f');
+    }
+    if (m.k === 'power') {   // sockets: lit and cabled to it while live, a filling ring while someone holds one, dark once cut
+      for (const [x, y, live, hold] of m.s ?? []) {
+        g.fillStyle(live ? 0x6fe3e8 : 0x2b3331, live ? 0.6 : 0.8).fillRect(x - 6, y - 6, 12, 12);
+        if (live) { g.lineStyle(1, 0x6fe3e8, 0.4 + 0.3 * pulse).lineBetween(x, y, e.x, e.y - 8); if (hold > 0) g.lineStyle(2, 0xffd27f, 1).beginPath().arc(x, y, 12, -Math.PI / 2, -Math.PI / 2 + hold * Math.PI * 2).strokePath(); }
+      }
+    }
+    if (m.k === 'rewind' && m.g) {   // ghosts where everyone will be put back
+      for (const [x, y] of m.g) { g.fillStyle(0xe0d090, 0.35 + 0.25 * pulse).fillEllipse(x, y - 8, 10, 18); g.lineStyle(1, 0xe0d090, 0.8).strokeCircle(x, y, 8); }
+      this._mechLabel(e, 'REWINDING', '#e0d090');
+    }
+    if (m.k === 'molten' && m.x != null) {   // the channel: outlined while it fills, glowing once it's full
+      const H = this.map.h * TILE;
+      if (m.st === 'warn') g.lineStyle(2, 0xff6b2b, 0.5 + 0.4 * pulse).strokeRect(m.x - 14, 0, 28, H);
+      if (m.st === 'hot') { g.fillStyle(0xff6b2b, 0.45 + 0.15 * pulse).fillRect(m.x - 14, 0, 28, H); g.fillStyle(0xffd27f, 0.6).fillRect(m.x - 3, 0, 6, H); }
+      if (m.s) this._mechLabel(e, 'STUCK: HIT IT', '#ffd27f');
+    }
+    if (m.k === 'verify') {   // the light over the gate: green, amber, red; a scan line sweeping while red
+      const col = m.l === 'red' ? 0xff3b3b : m.l === 'amber' ? 0xffb347 : 0x7dff9b;
+      g.fillStyle(col, 1).fillCircle(e.x, e.y - 36, 4);
+      if (m.l === 'red') { const sy = (t / 4) % (this.map.h * TILE); g.lineStyle(2, 0xff3b3b, 0.6).lineBetween(0, sy, W, sy); this._mechLabel(e, 'HOLD STILL', '#ff6b6b'); }
+      else if (m.l === 'amber') this._mechLabel(e, 'SCAN COMING', '#ffb347');
+    }
+    if (m.k === 'rubric') {   // the question on its board
+      const label = { melee: 'Q: SWING', shot: 'Q: SHOOT', dash: 'Q: DASH-STRIKE' }[m.a] ?? '';
+      g.fillStyle(0x15171f, 0.85).fillRect(e.x - 26, e.y - 46, 52, 10); g.lineStyle(1, 0xc8d860, 1).strokeRect(e.x - 26, e.y - 46, 52, 10);
+      this._mechLabel(e, label, '#c8d860');
+    }
+    if (m.k === 'chorus' && m.h?.length) {   // a line from each congregant holding it up
+      for (const u of this._lastRendered?.enemies ?? []) if (m.h.includes(u.id)) g.lineStyle(1, 0xd417c8, 0.4 + 0.3 * pulse).lineBetween(u.x, u.y - 8, e.x, e.y - 10);
+      this._mechLabel(e, `HELD UP x${m.h.length}`, '#f07ad8');
+    }
+  }
+
+  _mechLabel(e, text, color) {
+    const l = (this._mechText ??= this.add.text(0, 0, '', { ...FONT, fontSize: '6px' }).setOrigin(0.5, 1).setDepth(6100));
+    l.setText(text).setColor(color).setPosition(e.x, e.y - 34).setVisible(true);
+    this._mechTextAt = this.time.now;
+  }
+
   _bossArenaFx(e) {
     const g = (this.bossFx ??= this.add.graphics().setDepth(5400));
     g.clear();
     const b = e.boss, t = this.time.now;
+    if (b.mx) this._mechFx(g, e, b.mx, t);
     if (b.ln) {   // the rush in the lane: a bright block running east with a trail
       const [ly, fx] = b.ln;
       g.fillStyle(0xff4d4d, 0.12).fillRect(0, ly - 12, fx, 24);
@@ -3789,6 +3889,10 @@ export class WorldScene extends Phaser.Scene {
       const t = this.add.text(ev.x + (Math.random() * 16 - 8), ev.y - 22, 'BRACED', { ...FONT, color: '#9aa8bf' }).setOrigin(0.5).setDepth(6100);
       this.tweens.add({ targets: t, y: t.y - 8, alpha: 0, duration: 500, onComplete: () => t.destroy() });
       sfx('swing');
+    }
+    if (ev.t === 'mech' && ev.what === 'wrong') {   // the Autograder's red pen: that answer was the wrong kind
+      const t = this.add.text(ev.x, ev.y - 26, 'WRONG KIND', { ...FONT, color: '#ff5a5a' }).setOrigin(0.5).setDepth(6100);
+      this.tweens.add({ targets: t, y: t.y - 8, alpha: 0, duration: 450, onComplete: () => t.destroy() });
     }
     if (ev.t === 'impact') { const c = this.add.circle(ev.x, ev.y, ev.r, 0xffe6ee, 0.8).setDepth(5450); this.tweens.add({ targets: c, scale: 1.6, alpha: 0, duration: 260, onComplete: () => c.destroy() }); sfx('hit'); }
     if (ev.t === 'overload') { this.cameras.main.shake(500, 0.012); this.cameras.main.flash(250, 214, 93, 177); }
