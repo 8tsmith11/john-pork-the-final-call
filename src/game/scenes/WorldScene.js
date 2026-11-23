@@ -2927,7 +2927,7 @@ export class WorldScene extends Phaser.Scene {
     const g = (this.chaseGfx ??= this.add.graphics().setDepth(5000)).clear();
     if (!ch) return;
     const v = this.cameras.main.worldView, t = this.time.now / 1000, H = this.map.h * TILE;
-    if (ch.sw) g.fillStyle(0xd42a3c, 0.18 + 0.12 * Math.sin(t * 12)).fillRect(ch.sw[2], ch.sw[0], ch.sw[3] - ch.sw[2] + 200, ch.sw[1] - ch.sw[0]).lineStyle(1, 0xd42a3c, 0.9).strokeRect(ch.sw[2], ch.sw[0], ch.sw[3] - ch.sw[2] + 200, ch.sw[1] - ch.sw[0]);
+    if (ch.sw) g.fillStyle(0xd42a3c, 0.18 + 0.12 * Math.sin(t * 12)).fillRect(ch.sw[2], ch.sw[0], ch.sw[3] - ch.sw[2], ch.sw[1] - ch.sw[0]).lineStyle(1, 0xd42a3c, 0.9).strokeRect(ch.sw[2], ch.sw[0], ch.sw[3] - ch.sw[2], ch.sw[1] - ch.sw[0]);
     g.lineStyle(2, 0x3fd0d6, 0.8);
     for (let y = 0; y < H; y += 12) g.lineBetween(ch.end, y, ch.end, y + 6);   // the range line: NO SIGNAL past here
     const back = ch.done ? Math.min(160, (this._chaseDoneAt ??= t, (t - this._chaseDoneAt) * 120)) : 0;

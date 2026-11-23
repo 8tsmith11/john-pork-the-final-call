@@ -440,7 +440,7 @@ export class Sim {
       const held = p.held ?? 'melee';
       if (inp.attack && held === 'melee' && p.mods?.swing && !p.riding && !p.playing && !busy && p.meleeCd <= 0 && p.dodgeT <= 0) this._melee(p);
       if (inp.attack && held === 'gun' && p.mods?.gun && (!p.riding || this.chase) && !p.playing && !busy && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);
-      if (inp.fire && (held === 'gun' || p.held === undefined) && !p.riding && !p.playing && !busy && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);
+      if (inp.fire && (held === 'gun' || p.held === undefined) && (!p.riding || this.chase) && !p.playing && !busy && p.mods?.gun && p.shotCd <= 0 && p.dodgeT <= 0) this._fire(p);
 
       // Facing follows the walking direction; it only turns toward the cursor while firing a ranged
       // weapon. Standing still keeps the last facing.
@@ -887,7 +887,7 @@ export class Sim {
     return s;
   }
 
-  _hurtPlayer(p, dmg, infection = 0) {
+  _hurtPlayer(p, dmg, infection = 0, { nonlethal = false } = {}) {
     if (p.ttl !== undefined && p.hp !== undefined && !p.id) { p.hp -= dmg; return; }   // a decoy bust soaking a hit
     if (p.downed) return;
     if (p.iframes > 0) {
@@ -900,9 +900,13 @@ export class Sim {
     }
     if (p.sleepT > 0 && p.mods?.sleepGuard) { this.events.push({ t: 'hit', x: p.x, y: p.y, dmg: 0, target: p.id }); return; }   // Manuel asleep on his pacifier: untouchable
     dmg = Math.max(1, Math.round(dmg * (1 - (p.mods?.armor ?? 0)) * (p.morphed ? 1.2 : 1)));
+    if (nonlethal) {
+      dmg = Math.min(dmg, p.hp - 1);
+      if (dmg <= 0) return;
+    }
     this.infect(p, this.inside ? 0 : infection);   // inside, rot comes from the floor, not from hits
     p.hp -= dmg; p.iframes = COMBAT.hurtIframes + (p.mods?.iframes ?? 0);
-    if (p.riding) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, knocked: true }); }
+    if (p.riding && (!this.chase || this.chase.done || p.hp <= 0)) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, knocked: true }); }
     this.events.push({ t: 'hurt', id: p.id, x: p.x, y: p.y, dmg });
     if (p.hp <= 0 && p.mods?.secondWind && !p.swUsed) { p.swUsed = true; p.hp = Math.round(this.maxHp(p) * 0.3); p.iframes = 1.5; this.events.push({ t: 'secondwind', id: p.id, x: p.x, y: p.y }); return; }
     if (p.hp <= 0) { p.hp = 0; p.downed = true; p.reviveT = 0; this.events.push({ t: 'down', id: p.id }); }

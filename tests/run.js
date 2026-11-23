@@ -2628,16 +2628,35 @@ test('chase rules (src/engine/chase.js): the pace line catches stragglers, every
   assert.ok(g.x >= a.chase.pace && ev.some((e) => e.t === 'caught' && e.id === 'g') && g.hp < a.maxHp(g), 'the straggler is caught: hit and pushed up to the line');
   assert.ok(!ev.some((e) => e.t === 'caught' && e.id === 'h') && h.hp === a.maxHp(h), 'nothing for being ahead');
   g.hp = 0; g.downed = true; run(a, 2); assert.ok(g.x >= a.chase.pace, 'a downed rider is carried along, not left behind');
-  // shooting from the scooter, on this map only
-  const src = (await import('node:fs')).readFileSync(new URL('../src/engine/sim.js', import.meta.url), 'utf8');
-  assert.ok(/held === 'gun' && p\.mods\?\.gun && \(!p\.riding \|\| this\.chase\)/.test(src), 'a held gun fires from a scooter on a chase map');
+  const obstructed = strip({ start: 28, speed: 120, end: 1500 });
+  const outside = obstructed.solid;
+  obstructed.solid = (tx, ty) => tx === 3 || outside(tx, ty);
+  const blocked = new Sim(obstructed);
+  blocked.addPlayer('h', 'trevor');
+  const lagging = blocked.players.get('h');
+  Object.assign(lagging, { x: 32, hp: 4 });
+  run(blocked, 0.15);
+  assert.ok(lagging.riding && !lagging.downed && lagging.hp === 1, 'pace damage alone cannot down or dismount a rider');
+  assert.ok(lagging.x >= blocked.chase.pace && !blocked._hits(lagging.x, lagging.y), 'carried riders never land inside scenery');
+  // Both actual weapon inputs fire from a scooter on a chase map.
+  for (const input of ['attack', 'fire']) {
+    h.held = 'gun'; h.mods.gun = 1; h.shotCd = 0;
+    assert.ok(run(a, 1 / 60, new Map([['h', { ...emptyInput(), [input]: true }]])).some((e) => e.t === 'shot'));
+  }
   // strafes: a lane is marked first, then swept
   const b = new Sim(strip({ speed: 60, end: 1800, lanes: [[4, 5]], strafeEvery: 1, warn: 1, strafeDmg: 8 }), { seed: 'strafe' });
   b.addPlayer('h', 'trevor'); const q = b.players.get('h'); q.x = 200; q.y = 4 * 16 + 8;
   const e1 = run(b, 1.2); const warn = e1.find((e) => e.t === 'strafeWarn');
   assert.ok(warn && b.snapshot().ch.sw, 'the lane is marked, and every screen can see it');
   assert.equal(q.hp, b.maxHp(q), 'the mark itself does nothing');
-  const e2 = run(b, 1.0); assert.ok(e2.some((e) => e.t === 'strafe') && q.hp < b.maxHp(q), 'then the sweep hits whoever stayed in it');
+  const [, , start, end] = b.snapshot().ch.sw;
+  b.addPlayer('g', 'manuel');
+  const clear = b.players.get('g');
+  Object.assign(clear, { x: end + 1, y: q.y });
+  q.x = start + 2;
+  const e2 = run(b, 1.0);
+  assert.ok(e2.some((e) => e.t === 'strafe') && q.hp < b.maxHp(q), 'then the sweep hits whoever stayed in the warned rectangle');
+  assert.equal(clear.hp, b.maxHp(clear), 'a rider just past the rectangle takes no strafe damage');
   // the end: the drones turn back, once
   const c = new Sim(strip({ speed: 400, end: 600 }), { seed: 'end' }); c.addPlayer('h', 'trevor'); c.players.get('h').x = 700;
   assert.equal(c.snapshot().ch.end, 600, 'the end line is known from the start, so it can be drawn');

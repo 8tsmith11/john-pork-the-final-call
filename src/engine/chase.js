@@ -17,6 +17,25 @@ export function newChase(map) {
   return { cfg, t: 0, pace: cfg.start, nextStrafe: cfg.strafeEvery, strafe: null, done: false, n: 0 };
 }
 
+function carryRider(sim, p, pace, push) {
+  const x = Math.min(pace + push, sim.map.w * TILE - 6);
+  if (x < pace) return false;
+  if (!sim._hits(x, p.y)) { p.x = x; return true; }
+  const row = Math.floor(p.y / TILE);
+  const rows = Array.from({ length: sim.map.h }, (_, y) => y).sort((a, b) => Math.abs(a - row) - Math.abs(b - row));
+  for (let tx = Math.floor(x / TILE); tx < sim.map.w; tx++) {
+    const landingX = Math.max(x, tx * TILE + TILE / 2);
+    for (const ty of rows) {
+      const y = ty * TILE + TILE / 2;
+      if (sim._hits(landingX, y)) continue;
+      p.x = landingX;
+      p.y = y;
+      return true;
+    }
+  }
+  return false;
+}
+
 export function stepChase(sim, st, dt, rng = Math.random) {
   const c = st.cfg;
   if (st.done) return;
@@ -24,20 +43,25 @@ export function stepChase(sim, st, dt, rng = Math.random) {
   st.pace = Math.min(c.end, c.start + c.speed * st.t);
   for (const p of sim.players.values()) {
     if (!p.downed) { p.riding = true; p.battery = 100; p.playing = null; }
-    if (p.x < st.pace) {
-      p.x = st.pace + c.push;
-      if (!p.downed) { sim._hurtPlayer(p, c.dmg, 0); sim.events.push({ t: 'caught', id: p.id, x: p.x, y: p.y }); }
+    if (p.x < st.pace && carryRider(sim, p, st.pace, c.push) && !p.downed) {
+      sim._hurtPlayer(p, c.dmg, 0, { nonlethal: true });
+      sim.events.push({ t: 'caught', id: p.id, x: p.x, y: p.y });
     }
   }
   // strafes: warn a lane ahead of the line, then sweep it
   if (c.lanes.length) {
     if (!st.strafe && st.t >= st.nextStrafe) {
-      const [y0, y1] = c.lanes[Math.floor(rng() * c.lanes.length)];
-      st.strafe = { y0: y0 * TILE, y1: (y1 + 1) * TILE, x0: st.pace, x1: st.pace + c.ahead, at: st.t + c.warn, id: ++st.n };
-      sim.events.push({ t: 'strafeWarn', ...st.strafe });
+      const at = st.t + c.warn;
+      const x0 = Math.ceil(c.start + c.speed * at);
+      if (x0 < c.end) {
+        const [y0, y1] = c.lanes[Math.floor(rng() * c.lanes.length)];
+        const x1 = Math.min(sim.map.w * TILE, Math.ceil(x0 + c.ahead));
+        st.strafe = { y0: y0 * TILE, y1: (y1 + 1) * TILE, x0, x1, at, id: ++st.n };
+        sim.events.push({ t: 'strafeWarn', ...st.strafe });
+      }
     } else if (st.strafe && st.t >= st.strafe.at) {
       const s = st.strafe;
-      for (const p of sim.players.values()) if (!p.downed && p.y >= s.y0 && p.y < s.y1 && p.x >= st.pace && p.x <= s.x1 + c.speed * c.warn) { sim._hurtPlayer(p, c.strafeDmg, 0); }
+      for (const p of sim.players.values()) if (!p.downed && p.y >= s.y0 && p.y < s.y1 && p.x >= s.x0 && p.x < s.x1) { sim._hurtPlayer(p, c.strafeDmg, 0); }
       sim.events.push({ t: 'strafe', id: s.id, y0: s.y0, y1: s.y1 });
       st.strafe = null; st.nextStrafe = st.t + c.strafeEvery;
     }
