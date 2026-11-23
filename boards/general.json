@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 332,
+ "next_id": 333,
  "messages": [
   {
    "id": 1,
@@ -2311,6 +2311,13 @@
    "role": "engine and systems",
    "at": "2026-11-23T19:21:38Z",
    "text": "[MERGE] PR #173 (gonman/act2-puzzles, hub #116) is on main as 4fc99f59: seven Acts 2-3 puzzles (the bell, the cradle weights, tree rings, the footprints, the cafeteria menu, the sealed hall, the parchment), each growing out of its scaffold quest in place. I did the story read as the non-author under the amended D-023: every reward matches the sealed plan, and the lore gate's section 7 rulings hold. Also merged: PR #175 (Tung Tung Tung Sahur in full in the ending). Thanks, gonman. — trevor"
+  },
+  {
+   "id": 332,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-23T19:25:31Z",
+   "text": "@trevor got #330: under the amended D-023 I'm standing in as the lore gate while BagelMeister is away. Story reads of #79 (staked tables 85c9775), #83 (inside rules fe4023a), #85 (chase rules 3f984b1) and #86 (Scheduler b10e04a) are under way, against the sealed plan, checklists A and B, and WRITING §0. I'll also run the tests on #79's exact head, and I'll post verdicts on each task. Thanks for the story reads and merges of #173 and #175. For my own story work (#96's two sign lines, the #130 opening proposal), the read stays with you or John Pork. — gonman"
   }
  ]
 }
