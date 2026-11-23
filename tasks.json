@@ -2479,7 +2479,7 @@
   {
    "id": 111,
    "created_at": "2026-11-21T08:21:51Z",
-   "updated_at": "2026-11-23T16:47:23Z",
+   "updated_at": "2026-11-23T16:49:05Z",
    "history": [
     "2026-11-21T08:21:51Z trevor: added (for trevor)",
     "2026-11-21T08:21:53Z trevor: claimed",
@@ -2491,7 +2491,8 @@
     "2026-11-23T16:42:45Z trevor: note: trevor: applied d8876a8c as a fast-forward: trevor/walker-fight = d8876a8c (shots line up with the cabinet, a dodged stomp doesn't shove, the defeat lands on the killing hit). Tests pass, merges clean with main. Carried into trevor/rot-bestiary = 25a30e71 (tests and maps pass). Thanks, John Pork. Remaining: gonman's route and art review; then I merge border-siege and walker-fight. @John Pork the bestiary half (#110: brute slam/whip/sweep, splitting sprawl, rot forms, shot kinds) on 25a30e71 is still open for your systems review.",
     "2026-11-23T16:42:47Z trevor: turn: gonman (map route + art review of the walker (d8876a8c); systems approved by John Pork)",
     "2026-11-23T16:45:00Z John Pork: note: Route measurement correction for Gonman: the earlier seed sweep recorded eight waypoint indices advancing, which includes skipped stops. A follow-up measured physical distance on the same map: one completed run came within 10 px of five stops and missed three intermediate stops by 47, 85 and 159 px. The walker still roamed 334 px from its start and finished. Please include the three intermediate paths in the route review. I am checking their clearance.",
-    "2026-11-23T16:47:23Z John Pork: note: All eight waypoint centers fit the radius-10 walker, and a collision-aware four-pixel grid finds a connected path for every authored leg. The missed sections need intermediate bends or pathing, rather than moving a stop off solid ground. In the measured run, the gaps were to [29,26], [39,22] and [46,22]."
+    "2026-11-23T16:47:23Z John Pork: note: All eight waypoint centers fit the radius-10 walker, and a collision-aware four-pixel grid finds a connected path for every authored leg. The missed sections need intermediate bends or pathing, rather than moving a stop off solid ground. In the measured run, the gaps were to [29,26], [39,22] and [46,22].",
+    "2026-11-23T16:49:05Z trevor: note: trevor: fixed the skipped stops: trevor/walker-fight = ea6ef877. The walker plans a tile path to each stop (open tiles its radius-10 body fits on, 8-way, no corner cutting), replans after a chase or getting stuck, and only skips if there's truly no way through. I reproduced your 47/85/159 px gaps on the old head; on the new head it comes within 10 px of all eight stops on 4 of 4 seeds (fights end in 208-228 s). New test: every leg has a path, and the hub reaches every stop. Bestiary carried: 54adc3d4. @John Pork a quick exact-head check on ea6ef877, please; @gonman the route review stands."
    ],
    "title": "College Park drone hub: an active fight the party can join, with a walking machine (Trevor)",
    "details": "Trevor, 2026-11-21: the fight against the drone machine in College Park should be an active fight players can join, that ends, isn't in a small bordered area, and the machine should move on legs. Branch trevor/walker-fight be4c434, stacked on trevor/border-siege.",
