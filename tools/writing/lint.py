@@ -41,16 +41,20 @@ RULES = {
     "as-you-know": re.compile(r"\b(?:as you know|like I said|as I (?:said|told you)|as we both know)\b", re.I),
     "never-did": re.compile(r"\b(?:It|He|She|They|That)\s+never\s+(?:did|has|had|was|will|does)\.", re.I),
     # Trevor, 2026-11-23: "dont call him Sahur, call him Tung Tung Tung Sahur."
-    "bare-sahur": re.compile(r"(?<!Tung )(?<!TUNG )(?<!tung )(?<![\w.-])(?:Sahur|SAHUR)\b(?![\w-])"),
+    "bare-sahur": re.compile(r"(?<!\bTung Tung Tung )(?<![\w.-])Sahur\b(?![\w-])", re.I),
 }
 # Checked on the raw spoken text, before italic asides are stripped (docs/org/CHECKLISTS.md A7, from Michael's
 # workshop): a pause is a line break or a `> do:` cue, never a stage direction inside the line.
 RAW_RULES = {
     "stage-direction": re.compile(r"\((?:a )?(?:beat|pause|sighs?|laughs?|quietly|softly|whispers?|shrugs?|grins?|smiles?|beat\.)[^)]*\)", re.I),
 }
-EFFECT = re.compile(r"^\*\s*sets?\s+([\w.\-]+)", re.I)
+SET_NOTE = re.compile(r"^\*\s*sets?\s+(.*)$", re.I)
+TRIGGER_SET = re.compile(r"^\*\s*Trigger:.*?\bSet\s+(`.*)$", re.I)
+FLAG_NAME = re.compile(r"[\w.-]+")
+QUOTED_FLAG = re.compile(r"`\s*([\w.-]+)\s*(?:=[^`]*)?`")
 COND = re.compile(r"(?:^####\s+if\s+(.*)$)|\[([^\]]*)\]")
 NODE = re.compile(r"^###\s+node:")
+SCENE_NOTE = re.compile(r"^\*\s*(?:(?:mode|scope|decider|trigger)\s*:|sets?\s+|gives?\s+|pay\s+\$|standing\s+\w+\s+\+)", re.I)
 NARR = re.compile(r"^\*([^*].*?)\*\s*$")
 
 
@@ -64,6 +68,21 @@ def code_text():
     return "\n".join(out)
 
 
+def flag_names(text):
+    return {match.rstrip(".") for match in FLAG_NAME.findall(text)}
+
+
+def assigned_flags(line):
+    note = SET_NOTE.match(line) or TRIGGER_SET.match(line)
+    if not note:
+        return []
+    body = note.group(1)
+    if body.startswith("`"):
+        return QUOTED_FLAG.findall(body)
+    flag = FLAG_NAME.match(body)
+    return [flag.group(0).rstrip(".")] if flag else []
+
+
 def scene_checks(text, code, all_conds):
     """Scene-level checks: the opening names someone (A2), and every flag a scene sets is read somewhere (a choice that sets one nothing reads changes nothing) (A6)."""
     hits = {}
@@ -73,7 +92,7 @@ def scene_checks(text, code, all_conds):
         if NODE.match(s):
             started = True
             continue
-        if not started or not s or s.startswith(">") or s.startswith("#"):
+        if not started or not s or s.startswith((">", "#")) or SCENE_NOTE.match(s):
             continue
         m, n = LINE.match(s), NARR.match(s)
         first = (m.group(2) if m else n.group(1) if n else "").strip()
@@ -82,12 +101,12 @@ def scene_checks(text, code, all_conds):
                 hits.setdefault("opening-pronoun", []).append(("", first))
             break
     for raw in text.splitlines():
-        e = EFFECT.match(raw.strip())
-        if not e:
-            continue
-        flag = e.group(1).split("=")[0].rstrip(".")
-        if flag not in code and flag not in all_conds:
-            hits.setdefault("unread-flag", []).append(("", flag))
+        for flag in assigned_flags(raw.strip()):
+            parts = flag.split(".")
+            # The evaluator also looks up dotted flag suffixes in dialogue conditions.
+            aliases = (".".join(parts[i:]) for i in range(len(parts)))
+            if flag not in code and not any(name in all_conds for name in aliases):
+                hits.setdefault("unread-flag", []).append(("", flag))
     return hits
 
 
@@ -103,14 +122,15 @@ def main():
     show = "--show" in sys.argv
     only = [a for a in sys.argv[1:] if not a.startswith("--")]
     total = 0
-    code = code_text()
+    code = flag_names(code_text())
     every = list(scenes())
     all_conds = "\n".join(c for _, t in every for m in COND.finditer(t) for c in m.groups() if c) + "\n".join(
         l for _, t in every for l in t.splitlines() if l.strip().startswith("####"))
+    condition_names = flag_names(all_conds)
     for name, text in every:
         if only and name not in only:
             continue
-        hits, lines = scene_checks(text, code, all_conds), 0
+        hits, lines = scene_checks(text, code, condition_names), 0
         for raw in text.splitlines():
             m = LINE.match(raw.strip())
             if not m:
