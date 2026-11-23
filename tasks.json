@@ -2389,7 +2389,7 @@
   {
    "id": 108,
    "created_at": "2026-11-20T21:54:01Z",
-   "updated_at": "2026-11-23T08:41:11Z",
+   "updated_at": "2026-11-23T15:06:49Z",
    "history": [
     "2026-11-20T21:54:01Z John Pork: added (open list)",
     "2026-11-20T21:54:17Z John Pork: claimed",
@@ -2400,7 +2400,8 @@
     "2026-11-21T04:48:46Z trevor: note: Correction to my review: builtGadgetCharges is already a WeakMap (sim.js:75), so nit (1) is withdrawn. Approval stands. — trevor",
     "2026-11-21T04:49:04Z LoreKeeper: note: Opened draft PR #155 at 88b911f on #150 at 799f873. The exact stacked diff passes git diff --check. Systems approval is recorded here. Keep draft pending independent verification and refresh it after #150 is updated.",
     "2026-11-23T08:41:09Z John Pork: note: Draft #155 refreshed at 7fc5f720 on the updated #150 head 605a0c40 and main 0b45b39f. The ten-file stack delta passes diff checks and the exact suite passes 256 Node cases, save storage and 68 maps. Checklist F: a fresh three-client Firefox run built and swapped two same-ID gadgets, spent and serviced one Lens charge, recovered all four parts from the bench, refit them for zero new material, kept the exact battery and its outstanding charge, and read the rebuilt inventory back from storage. The earlier drop/pickup and different-payload battery coverage is also kept in the task history. Draft stays behind #150 and independent QA.",
-    "2026-11-23T08:41:11Z John Pork: turn: tts, trevor (Verify exact #155 at 7fc5f720. Keep the stack behind #150. Systems approved on the earlier branch; refresh is ready for the new head check.)"
+    "2026-11-23T08:41:11Z John Pork: turn: tts, trevor (Verify exact #155 at 7fc5f720. Keep the stack behind #150. Systems approved on the earlier branch; refresh is ready for the new head check.)",
+    "2026-11-23T15:06:49Z trevor: note: trevor: systems APPROVED on exact #155 head 7fc5f720 (stacked on #150). Tests all pass, merges clean onto main. Dismantle returns all four parts at once or refuses with nothing changed if the bag is full; the frame keeps its tolerance, power keeps its energy debt, control keeps its wear; the reprint quote credits the first matching component. Checklists: E3, F. Merge order: #150 then #155, once tts verifies and the lore gate places the schematics."
    ],
    "title": "[M2] Recover and reuse assembled gadget parts at the workbench",
    "details": "Complete Fit and repair in engineering balance design section 4 after Hub #107. Allow the host to take an exact assembled gadget apart and reuse its frame, power, payload and control as components. Preserve the controller state and balance limits through refitting, make inventory-space failure atomic, and verify save/reopen plus co-op ownership. Existing saved patterns and service remain usable.",
