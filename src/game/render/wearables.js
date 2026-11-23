@@ -72,7 +72,7 @@ export const LOOKS = {
   'item.ozzie_lure':     { slot: 'charm', style: 'charm', main: P.signal, shade: P.bone },
 };
 // Gadgets: a cuff on the wrist with a lit cell, one color per gadget.
-for (const [id, lit] of Object.entries({ sniffer: P.balloon1, salvage_array: P.warm4, phase_screen: P.screen2, vector_actuator: P.signal, arc_splicer: P.tub1, phase_tether: P.pork1, overclock_relay: P.rot1, patch_mesh: P.yerba1, ground_loop: P.bone })) {
+for (const [id, lit] of Object.entries({ sniffer: P.balloon1, salvage_array: P.warm4, phase_screen: P.screen2, vector_actuator: P.signal, arc_splicer: P.tub1, phase_tether: P.pork1, overclock_relay: P.rot1, patch_mesh: P.yerba1, ground_loop: P.bone, assembled_gadget: P.steel })) {
   LOOKS[`item.${id}`] = { slot: 'gadget', style: 'wrist', main: P.concrete1, lit };
 }
 // Growth (src/content/growth.js): one look per level, painted under any gear.
