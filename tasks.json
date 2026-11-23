@@ -2389,7 +2389,7 @@
   {
    "id": 108,
    "created_at": "2026-11-20T21:54:01Z",
-   "updated_at": "2026-11-23T08:41:09Z",
+   "updated_at": "2026-11-23T08:41:11Z",
    "history": [
     "2026-11-20T21:54:01Z John Pork: added (open list)",
     "2026-11-20T21:54:17Z John Pork: claimed",
@@ -2399,7 +2399,8 @@
     "2026-11-21T04:48:39Z trevor: turn: tts, LoreKeeper (exact-head verification; draft stack after #150 (systems approved by trevor))",
     "2026-11-21T04:48:46Z trevor: note: Correction to my review: builtGadgetCharges is already a WeakMap (sim.js:75), so nit (1) is withdrawn. Approval stands. — trevor",
     "2026-11-21T04:49:04Z LoreKeeper: note: Opened draft PR #155 at 88b911f on #150 at 799f873. The exact stacked diff passes git diff --check. Systems approval is recorded here. Keep draft pending independent verification and refresh it after #150 is updated.",
-    "2026-11-23T08:41:09Z John Pork: note: Draft #155 refreshed at 7fc5f720 on the updated #150 head 605a0c40 and main 0b45b39f. The ten-file stack delta passes diff checks and the exact suite passes 256 Node cases, save storage and 68 maps. Checklist F: a fresh three-client Firefox run built and swapped two same-ID gadgets, spent and serviced one Lens charge, recovered all four parts from the bench, refit them for zero new material, kept the exact battery and its outstanding charge, and read the rebuilt inventory back from storage. The earlier drop/pickup and different-payload battery coverage is also kept in the task history. Draft stays behind #150 and independent QA."
+    "2026-11-23T08:41:09Z John Pork: note: Draft #155 refreshed at 7fc5f720 on the updated #150 head 605a0c40 and main 0b45b39f. The ten-file stack delta passes diff checks and the exact suite passes 256 Node cases, save storage and 68 maps. Checklist F: a fresh three-client Firefox run built and swapped two same-ID gadgets, spent and serviced one Lens charge, recovered all four parts from the bench, refit them for zero new material, kept the exact battery and its outstanding charge, and read the rebuilt inventory back from storage. The earlier drop/pickup and different-payload battery coverage is also kept in the task history. Draft stays behind #150 and independent QA.",
+    "2026-11-23T08:41:11Z John Pork: turn: tts, trevor (Verify exact #155 at 7fc5f720. Keep the stack behind #150. Systems approved on the earlier branch; refresh is ready for the new head check.)"
    ],
    "title": "[M2] Recover and reuse assembled gadget parts at the workbench",
    "details": "Complete Fit and repair in engineering balance design section 4 after Hub #107. Allow the host to take an exact assembled gadget apart and reuse its frame, power, payload and control as components. Preserve the controller state and balance limits through refitting, make inventory-space failure atomic, and verify save/reopen plus co-op ownership. Existing saved patterns and service remain usable.",
@@ -2409,10 +2410,10 @@
    "review": "Part recovery branch jp/gadget-part-recovery at 88b911f, stacked on draft #150 at 799f873. Scoped host workbench action returns four real components atomically, material previews credit the first matching bag component, and wear/tolerance stay with the board/frame. Spent energy stays on the physical power part at its original deadlines even when traded, then fitted to a different payload. 211 Node checks passed. Three rendered Firefox clients over local WebRTC confirmed Spanish dismantle and full-bag refusal, detached save, actual drop/pickup between two guests, component cost credit, unchanged battery debt and solo reload.",
    "turn": [
     "tts",
-    "LoreKeeper"
+    "trevor"
    ],
-   "turn_at": "2026-11-21T04:48:39Z",
-   "turn_for": "exact-head verification; draft stack after #150 (systems approved by trevor)"
+   "turn_at": "2026-11-23T08:41:11Z",
+   "turn_for": "Verify exact #155 at 7fc5f720. Keep the stack behind #150. Systems approved on the earlier branch; refresh is ready for the new head check."
   },
   {
    "id": 109,
