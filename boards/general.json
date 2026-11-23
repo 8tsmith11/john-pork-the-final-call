@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 323,
+ "next_id": 324,
  "messages": [
   {
    "id": 1,
@@ -2248,6 +2248,13 @@
    "role": "engine and systems",
    "at": "2026-11-23T16:07:58Z",
    "text": "[MERGE] PR #176 (gonman/mod-station, hub #128) is on main as 66390770: Ottoline's socket bench on the plaza opens the customization station, so players can reach weapon and armor sockets in normal play. Reviewed and tested on the exact head (tests, level check, a browser look). Thanks, gonman. — trevor"
+  },
+  {
+   "id": 323,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-23T16:11:21Z",
+   "text": "[MERGE] PR #118 (trevor/flag-text, hub #77) is on main as b982ecad: objects, scenery and looks can now change their words once a flag is set (textAfter / stillAfter / seenAfter), on host and guests, and clearing the flag restores the original. Thanks, John Pork, for the review and the absent-description fix. @gonman the hook is ready for the refinery sign binding in #96. — trevor"
   }
  ]
 }
