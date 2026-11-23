@@ -24,18 +24,18 @@
 
 export const MECH = {
   pylons: { n: 3, r: 70, shield: 0.1, open: 12, rebuild: 1.5 },
-  tide: { cycle: 14, dry: 6, rise: 2, flood: 4, line: 0.45, dps: 8, inWater: 0.4, onDry: 1.2, heal: 0.01 },
+  tide: { cycle: 14, dry: 6, rise: 2, flood: 4, line: 0.62, dps: 8, inWater: 0.4, onDry: 1.2, heal: 0.006 },
   flicker: { lit: 3.2, dark: 2.0, warn: 0.6, litMul: 0.15, darkMul: 1.5 },
   listen: { every: 5, lock: 1.2, r: 20, dmg: 18 },
-  mimic: { delay: 2, every: 6, life: 4, warn: 0.45, r: 9, dmg: 12 },
+  mimic: { delay: 2, every: 6, life: 4, warn: 0.45, r: 12, dmg: 12, again: 0.6 },
   chorus: { n: 3, every: 18, reach: 90, heal: 0.006, mul: 0.5 },
   vents: { every: 2.6, warn: 1.0, blow: 0.6, r: 14, dmg: 14, scald: 2.0, scaldMul: 2 },
   current: { pull: 14, surge: 50, every: 7, warn: 1.0, last: 2.0, open: 2.5, openMul: 1.6, mouth: 26, dps: 12 },
-  power: { n: 3, r: 14, hold: 1.5, off: 8, mul: [1.5, 0.75, 0.4, 0.2] },
+  power: { n: 3, r: 14, hold: 1.0, off: 12, offSolo: 1.5, mul: [2.5, 1.2, 0.5, 0.2] },
   rewind: { every: 12, warn: 1.2, back: 3, giveBack: 0.5 },
   molten: { every: 5, warn: 1.0, last: 4, half: 14, dps: 10, stuck: 2.5, stuckMul: 1.8 },
   verify: { green: 5, amber: 1, red: 3, greenMul: 1.2, redMul: 0.1, still: 3, dmg: 8 },
-  rubric: { every: 8, order: ['melee', 'shot', 'dash'], right: 1.6, wrong: 0.4 },
+  rubric: { every: 8, order: ['melee', 'shot', 'dash'], right: 1.6, wrong: 0.25, pen: 4, penEvery: 0.5 },
 };
 import { ENEMIES } from '../content/enemies.js';
 
@@ -47,6 +47,16 @@ function spawnUnit(sim, e, kind, x, y, extra = {}) {
   if (sim._hitsBox(x, y, base.radius, base.radius * 0.7)) return null;
   sim.enemies.set(id, { id, kind, def: { ...base, vname: base.name, trait: 'plain' }, x, y, hp: base.hp, cd: 1, hurtT: 0, kx: 0, ky: 0, mechOf: e.id, ...extra });
   return id;
+}
+/** The open floor tile centre nearest (x, y): mechanics that put something on the floor must put it where feet go. */
+function openSpot(sim, x, y) {
+  const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
+  for (let r = 0; r <= 6; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+    if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+    const cx = (tx + dx) * TILE + 8, cy = (ty + dy) * TILE + 8;
+    if (!sim._hitsBox(cx, cy, 5, 4)) return [cx, cy];
+  }
+  return [x, y];
 }
 const units = (sim, e) => [...sim.enemies.values()].filter((u) => u.mechOf === e.id);
 const noisy = (p) => p.swingT > 0 || p.dodgeT > 0 || (p.shotCd ?? 0) > 0.05;
@@ -125,7 +135,7 @@ export function stepMech(sim, e, def, dt) {
       const [target] = sim._nearestPlayer(e.x, e.y);
       const trail = target && m.trails.get(target.id);
       if (trail?.[0][2] <= m.t - M.delay) {
-        m.echo = { who: target.id, start: m.t, hit: new Set() };
+        m.echo = { who: target.id, start: m.t, hit: new Map() };
         m.wait = M.every;
         sim.events.push({ t: 'mech', kind, what: 'echo', x: e.x, y: e.y });
       }
@@ -138,8 +148,8 @@ export function stepMech(sim, e, def, dt) {
         [m.echo.x, m.echo.y] = pt;
         m.echo.warn = age < M.warn;
         if (!m.echo.warn) for (const p of sim.players.values()) {
-          if (!alive(p) || m.echo.hit.has(p.id) || Math.hypot(p.x - pt[0], p.y - pt[1]) >= M.r - sim._small(p)) continue;
-          m.echo.hit.add(p.id);
+          if (!alive(p) || m.t < (m.echo.hit.get(p.id) ?? 0) || Math.hypot(p.x - pt[0], p.y - pt[1]) >= M.r - sim._small(p)) continue;
+          m.echo.hit.set(p.id, m.t + M.again);   // standing still on it keeps hurting: keep moving
           sim._hurtPlayer(p, Math.round(M.dmg * (def.dmgMul ?? 1)));
         }
       }
@@ -206,13 +216,13 @@ function stepMech3(sim, e, def, dt, kind, M, m) {
   if (kind === 'power') {
     if (!m.sockets) {
       m.sockets = [];
-      for (let i = 0; i < M.n; i++) { const x = Math.round(W * (0.2 + 0.3 * i)), y = Math.round(H * (i % 2 ? 0.75 : 0.3)); m.sockets.push({ x, y, hold: 0, off: 0 }); }
+      for (let i = 0; i < M.n; i++) { const [x, y] = openSpot(sim, Math.round(W * (0.2 + 0.3 * i)), Math.round(H * (i % 2 ? 0.75 : 0.3))); m.sockets.push({ x, y, hold: 0, off: 0 }); }
     }
     for (const k of m.sockets) {
       if (k.off > 0) { k.off -= dt; continue; }
       const on = [...sim.players.values()].some((p) => alive(p) && Math.hypot(p.x - k.x, p.y - k.y) < M.r);
       k.hold = on ? k.hold + dt : Math.max(0, k.hold - dt * 2);
-      if (k.hold >= M.hold) { k.off = M.off; k.hold = 0; sim.events.push({ t: 'mech', kind, what: 'cut', x: k.x, y: k.y }); }
+      if (k.hold >= M.hold) { k.off = M.off * (sim.players.size <= 1 ? M.offSolo : 1); k.hold = 0; sim.events.push({ t: 'mech', kind, what: 'cut', x: k.x, y: k.y }); }
     }
     m.live = m.sockets.filter((k) => !(k.off > 0)).length;
   }
@@ -259,14 +269,23 @@ function stepMech3(sim, e, def, dt, kind, M, m) {
 }
 
 /** How much of a hit lands, after the signature rule. */
-export function mechDamage(sim, e, dmg, via = null) {
+export function mechDamage(sim, e, dmg, via = null, by = null) {
   const kind = e.def?.mech, m = e.mech; if (!kind || !m) return dmg;
   const M = MECH[kind];
   if (kind === 'pylons' && m.shielded) return Math.max(1, Math.round(dmg * M.shield));
   if (kind === 'tide') return Math.max(1, Math.round(dmg * (m.bossWet ? M.inWater : M.onDry)));
   if (kind === 'flicker') return Math.max(1, Math.round(dmg * (m.lit === false ? M.darkMul : M.litMul)));
   if (kind === 'chorus' && m.holders?.length) return Math.max(1, Math.round(dmg * M.mul));
-  if (kind === 'rubric') return Math.max(1, Math.round(dmg * (via && via === m.ask ? M.right : M.wrong)));
+  if (kind === 'rubric') {
+    // A wrong kind of answer (a swing when it asks for a shot, ...) barely scores and is marked down: the red pen
+    // nicks whoever gave it, so swinging through the whole exam loses. Untagged hits (gadgets, skills) aren't marked.
+    const right = via && via === m.ask, p = by && sim.players.get(by);
+    m.pen ??= {};
+    if (via && !right && p && !p.downed && m.t >= (m.pen[by] ?? 0)) {
+      m.pen[by] = m.t + M.penEvery; sim._hurtPlayer(p, M.pen); sim.events.push({ t: 'mech', kind, what: 'wrong', id: by, x: p.x, y: p.y });
+    }
+    return Math.max(1, Math.round(dmg * (right ? M.right : M.wrong)));
+  }
   if (kind === 'vents') return Math.round(dmg * (m.scaldT > 0 ? M.scaldMul : 1));
   if (kind === 'current') return Math.round(dmg * (m.openT > 0 ? M.openMul : 1));
   if (kind === 'power') return Math.max(1, Math.round(dmg * M.mul[m.live ?? M.n]));

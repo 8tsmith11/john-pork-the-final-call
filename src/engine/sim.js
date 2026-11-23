@@ -840,7 +840,7 @@ export class Sim {
     else if (e.boss && e.state === 'vulnerable') dmg *= 2;
     else if (e.boss && e.state === 'laser') { dmg = Math.max(1, Math.round(dmg * LASER.braced)); this.events.push({ t: 'bossBrace', x: e.x, y: e.y }); }   // braced behind the beam
     const via = this._hitVia; this._hitVia = null;   // set just before by the melee and shot code; anything else is untagged
-    if (e.boss && e.def?.mech) { const was = dmg; dmg = mechDamage(this, e, dmg, via); if (dmg < was) this.events.push({ t: 'bossBrace', x: e.x, y: e.y }); }
+    if (e.boss && e.def?.mech) { const was = dmg; dmg = mechDamage(this, e, dmg, via, by); if (dmg < was) this.events.push({ t: 'bossBrace', x: e.x, y: e.y }); }
     if (this._def(e).armor && e.st !== 'dizzy') dmg = Math.max(1, Math.round(dmg * (1 - this._def(e).armor)));
     if (e.st === 'dizzy') dmg *= 2;   // a Captcha reeling after its charge
     else if (e.parried > 0) dmg *= 2;   // parried: open for a second

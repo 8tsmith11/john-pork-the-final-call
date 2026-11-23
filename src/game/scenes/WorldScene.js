@@ -3865,6 +3865,10 @@ export class WorldScene extends Phaser.Scene {
       this.tweens.add({ targets: t, y: t.y - 8, alpha: 0, duration: 500, onComplete: () => t.destroy() });
       sfx('swing');
     }
+    if (ev.t === 'mech' && ev.what === 'wrong') {   // the Autograder's red pen: that answer was the wrong kind
+      const t = this.add.text(ev.x, ev.y - 26, 'WRONG KIND', { ...FONT, color: '#ff5a5a' }).setOrigin(0.5).setDepth(6100);
+      this.tweens.add({ targets: t, y: t.y - 8, alpha: 0, duration: 450, onComplete: () => t.destroy() });
+    }
     if (ev.t === 'impact') { const c = this.add.circle(ev.x, ev.y, ev.r, 0xffe6ee, 0.8).setDepth(5450); this.tweens.add({ targets: c, scale: 1.6, alpha: 0, duration: 260, onComplete: () => c.destroy() }); sfx('hit'); }
     if (ev.t === 'overload') { this.cameras.main.shake(500, 0.012); this.cameras.main.flash(250, 214, 93, 177); }
     if (ev.t === 'boss') { this._bossIntro(ev); this.time.delayedCall(1900, () => this._bossTalk('intro', this._lastRendered, ev.sahur ? 'sahur' : ev.kind === 'boss.switchman' ? 'switchman' : !ev.kind || ev.kind === 'boss.warden' ? 'warden' : ev.kind.slice(5))); }   // other bosses talk only if BOSS_TALK has them

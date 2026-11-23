@@ -6005,6 +6005,51 @@ test('the Autograder marks one kind of answer at a time (hub #121): the right ki
   for (let i = 0; i < 60 * MECH.rubric.every; i++) { e.cd = 99; sim._stepBoss(e, def, 1 / 60); }
   assert.equal(e.mech.ask, 'shot', 'the question moves on');
 });
+test('boss balance pass (hub #121, John Pork\'s C4 probe): the red pen, a lingering echo, a dry band in the harbour, sockets on open floor', async () => {
+  const { BOSSES } = await import('../src/content/bosses.js');
+  const { MECH } = await import('../src/engine/bossMechs.js');
+  const real = (mapId, kind, at) => {
+    const sim = new Sim(MAPS_FOR_TEST[mapId], { seed: 'c4', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+    const h = sim.players.get('host'); h.hp = 9999; Object.assign(h, at ?? {});
+    const w = BOSSES[kind](1), def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
+    const spot = MAPS_FOR_TEST[mapId].enemies.find((q) => q.kind === kind);
+    const e = { id: 'B', kind, def, boss: true, mini: true, awake: true, phase: 1, x: spot.x, y: spot.y, hp: def.hp, cd: 99, cd2: 99, hurtT: 0, kx: 0, ky: 0, dash: 0 };
+    sim.enemies.set('B', e); sim._stepBoss(e, def, 1 / 60);
+    return { sim, h, e, def };
+  };
+  { // the Autograder: a wrong kind of answer nicks whoever gave it (not more than every penEvery); untagged hits don't
+    const { sim, h, e, def } = real('auditorium', 'boss.chb_autograder');
+    assert.equal(e.mech.ask, 'melee');
+    const hp0 = h.hp; h.iframes = 0; sim._hitVia = 'shot'; sim._hurtEnemy(e, 50, 0, 0, 'host');
+    assert.equal(hp0 - h.hp, MECH.rubric.pen, 'the red pen');
+    h.iframes = 0; sim._hitVia = 'shot'; sim._hurtEnemy(e, 50, 0, 0, 'host'); assert.equal(hp0 - h.hp, MECH.rubric.pen, 'not twice in one beat');
+    const hp1 = h.hp; h.iframes = 0; sim._hitVia = null; sim._hurtEnemy(e, 50, 0, 0, 'host'); assert.equal(h.hp, hp1, 'gadgets and skills are never marked');
+    h.iframes = 0; sim._hitVia = 'melee'; sim._hurtEnemy(e, 50, 0, 0, 'host'); assert.equal(h.hp, hp1, 'the right answer is never marked');
+    assert.ok(def.mech === 'rubric');
+  }
+  { // Shell Zero: standing on your own echo keeps hurting, so planting yourself to mash loses
+    const { sim, h, e, def } = real('bv_barn', 'boss.bv_shell', { x: 12 * 16 + 8, y: 6 * 16 + 8 });
+    let hits = 0;
+    for (let i = 0; i < 60 * 8; i++) { const was = h.hp; h.iframes = 0; e.cd = 99; e.x = h.x + 120; sim._stepBoss(e, def, 1 / 60); if (h.hp < was) hits++; h.hp = 9999; }
+    assert.ok(hits >= 3, `a player who never moves is hit again and again by the echo (${hits})`);
+  }
+  { // the Tide Table: at full flood there's still dry floor in the open harbour, so it can be pulled out of the water
+    const { sim, e, def } = real('ann_harbor', 'boss.ann_tide');
+    for (let i = 0; i < 60 * (MECH.tide.dry + MECH.tide.rise + 1); i++) { e.cd = 99; sim._stepBoss(e, def, 1 / 60); }
+    assert.equal(e.mech.level, 1);
+    const m = MAPS_FOR_TEST.ann_harbor; let dryOpen = 0;
+    for (let ty = 0; ty < m.h; ty++) for (let tx = 0; tx < m.w; tx++) if (!m.solid(tx, ty) && ty * 16 + 8 < e.mech.edge && ty >= 4) dryOpen++;
+    assert.ok(dryOpen >= 2 * (m.w - 4), `a dry band across the open harbour, not only the alcoves (${dryOpen} tiles)`);
+  }
+  { // the Sealed Hall: every socket sits on open floor you can stand on (the pews had swallowed them)
+    const { sim, e } = real('cor_sealed', 'boss.cor_hall');
+    assert.equal(e.mech.sockets.length, MECH.power.n);
+    for (const k of e.mech.sockets) assert.ok(!sim._hitsBox(k.x, k.y, 5, 4), `socket at ${k.x},${k.y} is on the floor`);
+    const solo = e.mech.sockets[0]; const h = sim.players.get('host'); h.x = solo.x; h.y = solo.y;
+    for (let i = 0; i < 60 * (MECH.power.hold + 0.1); i++) { e.cd = 99; sim._stepBoss(e, e.def, 1 / 60); h.hp = 9999; }
+    assert.ok(solo.off > MECH.power.off, 'cut, and alone it stays cut longer');
+  }
+});
 test('hub #113, Act 1 people: thirteen neighbours, cooks and students draw with a sprite of their own, never a rotter', () => {
   const frames = JSON.parse(fs.readFileSync(new URL('../assets/sprites/props.json', import.meta.url), 'utf8')).frames;
   const PEOPLE = { compute_hall_b: ['npc.chb_ta', 'npc.chb_student'], diner: ['npc.diner_cook', 'npc.diner_regular'], aster_roof: ['npc.roof_watcher'],
