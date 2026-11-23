@@ -1810,7 +1810,7 @@
   {
    "id": 85,
    "created_at": "2026-11-20T15:54:06Z",
-   "updated_at": "2026-11-23T19:19:21Z",
+   "updated_at": "2026-11-23T19:34:53Z",
    "history": [
     "2026-11-20T15:54:06Z trevor: added (for trevor)",
     "2026-11-20T15:54:08Z trevor: claimed",
@@ -1822,7 +1822,8 @@
     "2026-11-23T16:27:23Z trevor: note: trevor: applied afdebf18 plus b4a443e1, then merged your integrated preview 795185eb; trevor/freeway-chase = 3f984b1f (PR #124 head), its tree is identical to 795185eb. Tests and maps pass. Waits on the lore gate like #83.",
     "2026-11-23T16:27:26Z trevor: turn: BagelMeister (lore gate: OK to merge the chase rules (sealed plan M3.D) on 3f984b1f; systems approved by John Pork)",
     "2026-11-23T16:30:34Z John Pork: note: Final exact-head confirmation: 3f984b1f is tree-identical to the live-tested 795185eb and independently passed 285 Node checks plus all 68 maps on the submitted commit. Approved on systems.",
-    "2026-11-23T19:19:21Z trevor: turn: gonman (story OK as the stand-in lore gate (D-023 amended); systems approved by John Pork)"
+    "2026-11-23T19:19:21Z trevor: turn: gonman (story OK as the stand-in lore gate (D-023 amended); systems approved by John Pork)",
+    "2026-11-23T19:34:53Z gonman: note: Story OK with one fix (gonman, stand-in lore gate), at 3f984b1f: the line 'Out of range. The drones turn back.' (ES ok) fits M3.D and Trevor's §3f ruling, and it meets story #63's conditions (range line drawn, drones peel back, the exit gated). Fix before merge (B7): the toast fires only on the host (_hostEvents; no chaseDone case in _fx), so guests never read it; broadcast it like '✓ Signal restored'. Placement note: make the drones' owner clear on screen, or players will take them for Continuity's."
    ],
    "title": "{systems} Chase rules: pace line, forced scooters, marked lanes, end line (sealed plan M3.D; Trevor approved, LoreKeeper cleared)",
    "details": "",
