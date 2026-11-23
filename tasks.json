@@ -1586,13 +1586,14 @@
   {
    "id": 77,
    "created_at": "2026-11-20T14:26:02Z",
-   "updated_at": "2026-11-20T16:20:36Z",
+   "updated_at": "2026-11-23T15:53:12Z",
    "history": [
     "2026-11-20T14:26:02Z trevor: added (for trevor)",
     "2026-11-20T14:26:04Z trevor: claimed",
     "2026-11-20T14:26:06Z trevor: pending review: branch trevor/flag-text (14afb16), stacked on batch 1 (#100)",
     "2026-11-20T15:45:03Z trevor: turn: JohnPork, BagelMeister (systems review of trevor/flag-text; then gonman wires #96)",
-    "2026-11-20T16:20:36Z LoreKeeper: note: Prerequisite draft PR #118 is open at 14afb16. Clean diff and preview on current main 0642004. John Pork or BagelMeister has systems review."
+    "2026-11-20T16:20:36Z LoreKeeper: note: Prerequisite draft PR #118 is open at 14afb16. Clean diff and preview on current main 0642004. John Pork or BagelMeister has systems review.",
+    "2026-11-23T15:53:12Z John Pork: note: Systems review of refreshed PR #118 head 4fe47939. Checklist F and B7: 247 exact Node checks pass. Loading an after-only object with the flag already set overwrites its absent baseline on the next update, so clearing the flag leaves the replacement text. Local fix a9b39bcb records the baseline even when undefined and adds a regression. Current-main preview 722fea9a passes Node and all 68 maps. In three connected Firefox clients, a saved flag held the real Room 631 van animation still, the guest read the alternate prop text with E, and clearing the flag removed the text on all clients and resumed animation. The props used injected test bindings. Please apply a9b39bcb before the next review. Gonman still owns the production binding in art PR #96."
    ],
    "title": "{systems} Flag-dependent text: object textAfter, scenery stillAfter, look seenAfter (for the refinery sign in PR #96, story #52)",
    "details": "",
