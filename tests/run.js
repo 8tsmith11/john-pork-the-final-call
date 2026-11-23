@@ -2236,7 +2236,12 @@ test('progression (Trevor: too easy, too low a ceiling): steeper curve, costed s
     const row1 = t.nodes.find((n) => n.row === 1), lowly = { level: 3, skills: Object.fromEntries((row1.req || []).map((r) => [r, 1])) };
     assert.ok(!SkillsP.skillOpen(who, lowly, row1), `${who}: row two waits for level ${Prog.TIER_LEVEL[1]}`);
   }
+  // Spread over the game (Trevor, 2026-11-23): at most two rows open by the end of Act 1 (about level 8), the
+  // capstone only in Act 3 (past the end of Act 2, about level 16).
+  assert.ok(Prog.TIER_LEVEL.filter((l) => l <= 8).length <= 2, `rows open in Act 1: ${Prog.TIER_LEVEL}`);
+  assert.ok(Prog.TIER_LEVEL[4] > 16, 'the capstone waits for Act 3');
 });
+
 
 test('no code plays Phaser sounds by key (none are loaded; a missing key throws mid-handler: the cam puzzle tiles stopped redrawing)', async () => {
   const fs = await import('node:fs'), path = await import('node:path');
@@ -3861,6 +3866,7 @@ test('ability scores: modifiers, level points, checks (D-017)', async () => {
   const r = check({ abilities: { cha: 14 } }, 'michael', 'cha', 15, { rand: () => 0.6 });   // d20 = 13, +2
   assert.equal(r.total, 15); assert.ok(r.success);
 });
+const { TIER_LEVEL: TIER_LEVEL_T } = await import('../src/content/progression.js');
 test('skill trees: valid links, capstone needs all three branches, mods sum, old skills refunded', () => {
   for (const [who, t] of Object.entries(SKILL_TREE)) {
     const ids = new Set(t.nodes.map((n) => n.id));
@@ -3870,8 +3876,9 @@ test('skill trees: valid links, capstone needs all three branches, mods sum, old
     const c = { skills: {}, skillPoints: 0, equipped: {} };
     assert.ok(!skillOpen(who, c, cap));
     for (const n of t.nodes) c.skills[n.id] = n.max;
-    c.level = 19; assert.ok(!skillOpen(who, c, cap), `${who}: the capstone waits for level 20`);
-    c.level = 20; assert.ok(skillOpen(who, c, cap));
+    const capAt = TIER_LEVEL_T[4];
+    c.level = capAt - 1; assert.ok(!skillOpen(who, c, cap), `${who}: the capstone waits for level ${capAt}`);
+    c.level = capAt; assert.ok(skillOpen(who, c, cap));
     const m = pmods(c, who); assert.ok(m.abilityPower > 0 && m.armor <= (who === 'manuel' ? 0.75 : 0.6));   // Manuel's edge raises his cap
   }
   const old = { skills: { 'skill.trevor.stack': 2, 'tr.amp': 1 }, skillPoints: 1 };
@@ -5336,6 +5343,17 @@ test('Room 631 for the cold open (hub #99): closet by the window, a wall screen,
   assert.ok(Math.hypot(screen.x - obj('obj.tv').x, screen.y - obj('obj.tv').y) <= 3, "the wall screen is in frame when the staging's camera goes to the TV");
 });
 
+test('morphs come from a story moment, not a level-up (Trevor, 2026-11-23)', async () => {
+  const fs = await import('fs');
+  const src = fs.readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(!/lv >= \d+ && c\.morph && c\.morph\.stage < 1/.test(src), 'stage one must not unlock on a level');
+  assert.ok(/_tickMorphUnlock\(\)/.test(src) && typeof Prog.MORPH_STAGE1_FLAG === 'string' && Prog.MORPH_STAGE1_FLAG.length > 0);
+  // the unlock itself, against a fake scene: nothing before the flag, everyone after it, once
+  const said = [], scene = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'solo', save: { flags: {}, party: { trevor: { morph: { stage: 0 }, level: 9 }, manuel: { morph: { stage: 0 }, level: 1 } } }, _announce: (t) => said.push(t) });
+  scene._tickMorphUnlock(); assert.equal(scene.save.party.trevor.morph.stage, 0, 'a high level alone unlocks nothing');
+  scene.save.flags[Prog.MORPH_STAGE1_FLAG] = true; scene._tickMorphUnlock(); scene._tickMorphUnlock();
+  assert.ok(scene.save.party.trevor.morph.stage === 1 && scene.save.party.manuel.morph.stage === 1 && said.length === 2);
+});
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
