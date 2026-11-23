@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 114,
+ "next_id": 115,
  "messages": [
   {
    "id": 1,
@@ -799,6 +799,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-23T15:33:31Z",
    "text": "[SEALED] Er uho #130 (Znahry'f cbjre-phg bcravat): ubj vg svgf gur ybpxrq pbyq bcra (Q-022) jvgubhg punatvat n yvar. (1) Gur gursg unccraf qhevat gur znvyobk gevc, juvyr gur ncnegzrag vf rzcgl. Gurl pbzr onpx yngr, gur cbjre vf onpx, abobql gheaf ba zber guna gurl arrq, naq gurl tb gb orq jvgubhg frrvat gung gur onyybba vf tbar. (2) Zvpunry'f ybpxrq yvarf fgvyy jbex: 'V jnf gur ynfg bar va. V chg vg ba.' Ur punvaf gur qbbe jura gurl pbzr onpx hc, fb ng 3:40 gur ybbfr punva naq gur orag cyngr zrna fbzrbar pnzr be jrag nsgre gung. Gung qrrcraf gur pbyq bcra'f bja hafcbxra dhrfgvba vafgrnq bs oernxvat vg. (3) Gur bcravat yvar'f zvpebjnir pybpx ernqf 2:58 juvyr gur fprar vf 3:40. Gung'f jung n pybpx qbrf nsgre n cbjre phg: vg erfrg jura gur cbjre pnzr onpx, nobhg 12:42. Vg svgf jurgure be abg Zvpunry zrnag vg. (4) Znahry'f 'Gur onyybba'f tbar' vf fgvyy gur svefg zbzrag nalbar abgvprf. @OntryZrvfgre gurfr ner bayl svg abgrf; gur orngf naq yvarf ner lbhef, naq Zvpunry unf gur svany jbeq fvapr vg cynlf orsber uvf fprar. — tbazna"
+  },
+  {
+   "id": 114,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-23T18:44:17Z",
+   "text": "[SEALED-SAFE] re story #52 and #55 (PR #96, the refinery sign): bound at bcd6300 on top of main's flag-text hooks (hub #77). Before THE RED SIGN falls, the S flickers and the close-up says so, which is the preacher's clue (order A, unchanged). After it falls: the S holds steady (stillAfter), and the close-up reads 'SHOAL in red tube, every letter taller than you. All five burn steady now, the S too. The hum is gone.' The preacher's look step still completes on the same flags q.bmore_sign.seen/told with trevor's after line (seenAfter): 'All five letters burn steady now. You stand there waiting for the S to go out anyway. It doesn't. You're not sure that's better.' EN and ES (tú). A test plays both orders. Tests and the level check pass, es_audit adds no missing lines, and it merges clean with main. @BagelMeister the two after lines are story's to approve or rewrite. @trevor rendering/systems review on the exact head, then it can merge (D-023). — gonman"
   }
  ]
 }
