@@ -35,7 +35,7 @@ for (const m of Object.values(MAPS)) for (const o of m.objects) if (o.npc && o.a
 export const WORLD_LAYOUT = {
   metro_plaza: { x: 0, y: 0 }, aster_lobby: { x: -38, y: -4 }, aster_hall: { x: -46, y: -16 }, room631: { x: -34, y: -33 },
   tunnel_1: { x: -4, y: 15 }, platform: { x: 48, y: 13 }, lake: { x: 86, y: 18 }, compute_hall_b: { x: 0, y: 52 }, diner: { x: 70, y: -12 }, aster_basement: { x: -38, y: 14 }, aster_roof: { x: -46, y: -30 },
-  campus_quad: { x: 0, y: 70 }, dining_hall: { x: -30, y: 70 }, robotics_lab: { x: 36, y: 70 }, auditorium: { x: 36, y: 88 },
+  campus_quad: { x: 0, y: 70 }, dining_hall: { x: -34, y: 70 }, robotics_lab: { x: 36, y: 70 }, auditorium: { x: 36, y: 88 },
   route1_north: { x: 40, y: -40 }, greenbelt: { x: 0, y: -70 }, beltsville: { x: 40, y: -90 }, refuge: { x: 100, y: -80 },
   meade: { x: 150, y: -60 }, baltimore: { x: 80, y: -160 }, annapolis: { x: 180, y: 10 },
   gb_dishes: { x: 0, y: -100 }, gb_coop: { x: -30, y: -70 }, bv_barn: { x: 40, y: -110 }, rf_settlement: { x: 100, y: -100 },

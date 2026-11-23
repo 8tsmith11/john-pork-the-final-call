@@ -88,7 +88,7 @@ export const tunnel1 = makeMap({
     { id: 'obj.ledger', art: 'obj.security_desk', x: 56, y: 24, label: 'A ledger on a desk', text: 'Names, in a formal hand, one line each, with a time beside every one. Thousands. The last entry is tonight\'s date and has no name yet.' },
     { id: 'obj.signal_chair', art: 'obj.bench', x: 49, y: 24, label: 'A chair', text: 'Wooden. Far too tall for anyone you know. The seat is worn.' },
     // Signal room: the gate's breaker panel (src/content/tunnelPuzzles.js)
-    { id: 'obj.fuse_carrier', art: 'obj.chute', x: 54, y: 21, label: 'Fuse carrier', text: 'The gate panel\'s fuse carrier, hanging open. Four empty clips, 30A. A sticker inside the door: SPARES: ASTER, SUPER, B-01.' },
+    { id: 'obj.fuse_carrier', art: 'obj.chute', x: 54, y: 21, label: 'Fuse carrier', text: 'The gate panel\'s fuse carrier, hanging open. Four empty clips, 30A. A sticker inside the door: SPARES: ASK THE SUPER, ASTER LOBBY.' },   // Kess works the lobby, not B-01 (Phase 0)
     ...['1', '2', '3', '4'].map((k, i) => ({ id: `obj.breaker_${k}`, art: 'obj.breaker_dn', x: 55 + i, y: 21, label: `Breaker ${k}`, breaker: k, text: 'A heavy breaker on the gate panel, painted the yellow of things you are not supposed to touch.' })),
     // The approach
     lamp(60, 11, 'The last lamp. Past it, the dark has a shape.'),
@@ -107,12 +107,25 @@ P(1, 14, 42, 3, 'h');                                                          /
 for (const x of [7, 15, 28, 36]) { P(x, 4, 1, 1, '|'); P(x, 10, 1, 1, '|'); }
 P(19, 1, 6, 1, ':');                                                           // the shaft at the back, open to the sky
 
+// The landmark (Phase 0, docs/design/13-audit-and-rebuild.md): a dead Green Line car on the track at the west end, in
+// view from where you come in, its headlamp still lit. Six 32x40 pieces (tools/art/gen_props.py, the big sheet; two
+// are flipped for variety), drawn at scale 1 so they meet, solid over the two far rows of trackbed (x 3-14); the near
+// rail stays walkable, so you can walk up to the cab and the stuck door and read them. The arena (x 14-40, y 3-12) and
+// the tunnel mouths the Warden calls its adds from (x 3 and 41, on the platform) stay clear.
+const CAR = ['obj.train_cab', 'obj.train_mid', 'obj.train_door', 'obj.train_mid', 'obj.train_door', 'obj.train_tail'];
+const car = CAR.map((art, i) => ({ art, x: 3 + 2 * i, y: 16, w: 2, h: 2, solid: true, scale: 1,
+  ...(i === 3 || i === 4 ? { flip: true } : {}), ...(i === 0 ? { light: 0.7, anim: 1300 } : {}), ...(i === 2 ? { light: 0.35 } : {}) }));
+// The yellow warning strip along the platform edge.
+const edge = Array.from({ length: 42 }, (_, i) => ['dec.tactile', 1 + i, 13]);
+
 export const platform = makeMap({
   id: 'platform', name: 'The dead platform beneath College Park',
   propScale: 1.25, wear: 'tunnel',
   layout: p.map((r) => r.join('')),
   spawns: [[3, 7], [3, 8], [4, 7]],
   enemies: [['boss.warden', 30, 7]],
+  scenery: car,
+  decals: edge,
   objects: [
     { id: 'obj.platform_back', art: 'obj.tunnel_on', x: 1, y: 7, label: 'Back into the tunnel', action: 'exit', to: 'tunnel_1', text: 'Back the way you came.' },
     { id: 'obj.platform_sign', art: 'obj.purple_sign', x: 11, y: 2, label: 'Station sign', text: 'COLLEGE PARK. Someone has scratched out U OF MD and written nothing in its place.' },
@@ -122,5 +135,13 @@ export const platform = makeMap({
     { id: 'obj.platform_lamp_w', art: 'obj.worklamp', x: 5, y: 2, label: 'Lamp', light: 0.8, text: 'Still burning.' },
     { id: 'obj.platform_lamp_e', art: 'obj.worklamp', x: 38, y: 2, label: 'Lamp', light: 0.8, text: 'Still burning.' },
     { id: 'obj.shaft', art: 'obj.tunnel_up', x: 22, y: 1, label: 'Ventilation shaft', light: 0.9, text: 'A shaft up to the street, and past the street, the sky. Rain comes down it. A cable hangs in the middle.' },
+    // The car: the pieces above are its drawing, these are where you read it (from the near rail or the platform edge).
+    { id: 'obj.train_car', selfDrawn: true, x: 3, y: 15, label: 'Train car', text: 'A Green Line car, stopped short of the end of the platform. The headlamp still glows on whatever is left in its battery. In the cab the driver\'s seat is pushed all the way back, and a thermos stands on the console with the lid off.' },
+    { id: 'obj.train_open_door', selfDrawn: true, x: 8, y: 15, label: 'Stuck door', text: 'One pair of doors, stuck a hand\'s width open. Inside, the strap handles hang still, except one. On a seat, a newspaper folded to the crossword, from the same morning as the one on the bench.' },
+    // Back wall: the line map, a bench, the station's tiles
+    { id: 'obj.line_map', x: 16, y: 2, label: 'Line map', text: 'The Green Line on an enamel strip map behind scratched plastic. YOU ARE HERE is a red dot at College Park, rubbed pale by thumbs. Every stop south of it is taped over with the same grey tape.' },
+    { id: 'obj.platform_bench_n', art: 'obj.bench', x: 8, y: 2, label: 'Bench', text: 'Two umbrellas hooked over the backrest. They are dry. Up top it has rained since dark.' },
+    { id: 'obj.platform_tiles_w', art: 'obj.station_tiles', x: 13, y: 1, label: 'Wall tiles', text: 'Cream tiles with a green band at shoulder height. Three have fallen out and been stuck back in with chewing gum.' },
+    { id: 'obj.platform_tiles_e', art: 'obj.station_tiles', x: 26, y: 1, label: 'Wall tiles', text: 'The green band runs the length of the platform without one cracked tile. Somebody down here keeps it that way.' },
   ],
 });
