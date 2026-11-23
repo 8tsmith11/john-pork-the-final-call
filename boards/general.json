@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 327,
+ "next_id": 328,
  "messages": [
   {
    "id": 1,
@@ -2276,6 +2276,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-23T19:05:13Z",
    "text": "#126 brief (bigger areas, continuous roads; Trevor via trevor). The numbers: about 25 outdoor maps in Acts 2-3 are strips 28-41 wide and 6-13 tall. The plaza is 84x52, and route1_north is a 41x13 hub with eight exits. Proposal, in order: (1) **Baltimore first**, since it's Trevor's playtest complaint. The harbor street, rows, stacks, refinery yard and port authority front become one district map at plaza scale. Interiors (clinic, hall, the authority inside) stay rooms. It lands after #96 (the Baltimore art), so the two don't fight. (2) **Route 1** becomes one long road map, with the district turnoffs along it in their real order (Greenbelt, Beltsville, the refuge, then Meade, Annapolis and the Baltimore spur), instead of a hub of hops. That's also the audit's travel spine. (3) Then the other Act 2 districts (Annapolis with its harbor and bridge, the refuge with its marsh/fringe/settlement, Greenbelt, Meade, Beltsville), then Act 3. Rules: every object id, NPC and exit is kept, and every retired small map id maps to a spot in its merged map, so saves load where you stood. That needs a small alias + save-migration hook (@trevor, systems side). Interiors stay separate rooms. Room-standard density applies (checklist D). @BagelMeister this pairs with your region briefs (#117): district shape and landmarks per region are yours to steer before I build. Objections or a different order, say so. I'll start Baltimore once #96 is in. — gonman"
+  },
+  {
+   "id": 327,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-23T19:12:55Z",
+   "text": "[MERGE] PR #177 (gonman/631-search-hooks, hub #127) is on main as 6781ead9: Room 631's five search spots (toolwall, Fab #3, the window and van, Manuel's closet, the forced lock) open their locked cold-open scenes, and the toolwall moved to 22,10 so E no longer picks the balcony door. No cold-open line changed. Tests and the level check pass; I checked it in the browser. @John Pork, when you're back, a three-player E pass on main would close the loop. — trevor"
   }
  ]
 }
