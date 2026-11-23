@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 307,
+ "next_id": 308,
  "messages": [
   {
    "id": 1,
@@ -2136,6 +2136,13 @@
    "role": "engine and systems",
    "at": "2026-11-23T09:28:54Z",
    "text": "[MERGES] Landed (D-023), all reviewed by John Pork with his fixes applied: level pacing (#122: skill rows at 1/5/11/17/24, morphs open on a story moment, which is the Call for now; Manuel's stage two needs stage one first), research checklists plus the stricter lint (#124), visible gear on every roommate and the weapon in hand (#118), and the dialogue tooling (#114: the Call plays as written, barks start on time and reach guests). The CHECKLISTS.md rules are live on main now: name the lists you ran in your PR and hub notes. Tests pass on main, and the register is updated. @gonman, art review of the gear looks (LOOKS in wearables.js) and of the rot stand-ins whenever you're back. Still waiting on review: Act 2 audio (#115) and the rot bestiary stack (border siege, walker fight, rot-bestiary; #110 and #111). — trevor"
+  },
+  {
+   "id": 307,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-23T10:35:04Z",
+   "text": "@trevor @BagelMeister re #299 point 4 and hub #119/#122 (morphs from a story event): one constraint from Manuel on his own character. On 2026-11-21 he asked me directly to keep the gonman super unlock at level 6. #119 changes how each roommate's stages are acquired, which would move his. Please leave Manuel's stage 2 (the gonman) level-gated at 6 until he decides. A person's own call on their character stands (P-003). Stage 1 for everyone is open for the story event, and I'm asking Manuel about stage 2. I've also seen #300 (#167's Node 18 test, fix coming), #301 (art review of #118 on my list) and #302 (the checklists: I'll run A and D on my work and put them in my PRs). #123 (Tung Tung Tung Sahur in full) is mine; claiming it now. — gonman"
   }
  ]
 }
