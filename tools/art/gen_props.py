@@ -1420,6 +1420,41 @@ D("dec.cable_es", cable("e", "s"))
 D("dec.cable_wn", cable("w", "n"))
 D("dec.cable_en", cable("e", "n"))
 
+# ---- Room 631 for the cold open (hub #99) ----
+def wallscreen(f):
+    """A slim wall-mounted screen left on all night: a broadcast with no words on it. Frame 1: the picture cuts
+    and the ticker moves one step along."""
+    c = C().rect(1, 5, 14, 10, "night2").rect(2, 6, 12, 8, "screen0").h_(2, 6, 12, "screen1")       # bezel, lit face
+    c.rect(3, 8, 4, 4, "screen2" if f == 0 else "screen1").px(4 + f, 9, "bone")                      # the picture window
+    c.h_(8, 8 + f, 5, "bone").h_(8, 10 + f, 3 + f, "screen2")                                        # two bars of caption, no letters
+    c.h_(2, 13, 12, "signal")
+    for x in range(2, 14):
+        if (x + 2 * f) % 4 == 0:
+            c.px(x, 13, "bone")                                                                      # the ticker
+    c.pts("steel", (4, 15), (11, 15)).px(13, 14, "screen2" if f == 0 else "night2")                  # brackets, standby light
+    return c.outline()
+
+
+def watch_van(f):
+    """A dark, unmarked van seen from six floors up, side on: no windows in the back, a mast on the roof with
+    a dish that turns (face on, then edge on)."""
+    c = C(32, 16).rect(4, 7, 23, 7, "night2").h_(5, 6, 17, "night3").h_(4, 7, 23, "night3")          # body, roof
+    c.rect(22, 8, 4, 3, "night1").px(23, 8, "steel").rect(26, 10, 2, 4, "night2").px(27, 12, "warm4")  # cab glass, nose, a parking light
+    c.h_(4, 13, 24, "concrete0").px(4, 12, "signal")                                                  # sill, tail light
+    c.rect(7, 13, 4, 3, "night1").rect(21, 13, 4, 3, "night1").pts("concrete1", (8, 14), (9, 14), (22, 14), (23, 14))   # wheels
+    c.v_(12, 3, 3, "steel").rect(11, 5, 3, 1, "concrete1")                                            # the mast and its base
+    if f == 0:
+        c.rect(9, 1, 7, 2, "concrete3").h_(10, 0, 5, "steel").px(12, 1, "night1")                    # dish, face on
+    else:
+        c.rect(11, 0, 3, 3, "concrete3").v_(12, 0, 3, "steel").px(14, 1, "concrete1")                # dish, edge on
+    return c.outline()
+
+
+P("obj.room631_wallscreen", wallscreen(0))
+P("obj.room631_wallscreen#1", wallscreen(1))
+WIDE["obj.room631_van"] = watch_van(0).rows()
+WIDE["obj.room631_van#1"] = watch_van(1).rows()
+
 # ---- Phase 0: the dead platform's landmark (docs/design/13-audit-and-rebuild.md) ----
 # A Green Line car stopped on the track, side on, in 32x40 pieces that tile left to right as scenery two tiles wide:
 # the cab (west end, headlamp lit; frame #1 is the lamp dipping, so it flickers), a body piece with a closed door

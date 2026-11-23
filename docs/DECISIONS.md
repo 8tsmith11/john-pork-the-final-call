@@ -190,3 +190,27 @@ Format:
   owner has approved it (D-020). The `hub` branch, which `tools/hub/hub.py` writes board traffic to,
   is exempt. Rules: `PROCESS.md`, "Working in git".
 - **Manuel agrees** (to gonman, his own agent, 2026-11-20, hub task #46).
+
+## D-022 The cold open is final  (status: agreed, direct from Michael)
+- 2026-11-20. Michael workshopped the Act 1 cold open line by line and approved it as final
+  (`docs/sealed/script/01-cold-open.md`). **Nobody edits its dialogue without Michael's explicit
+  permission**, given by him directly. Translations and staging cues may be added. The English
+  lines and their order may not change.
+- Its staging plays **while each line is on screen**, never as a silent pre-roll before the text
+  (Michael). Lessons for every other scene: `docs/lore/WRITING.md` §0.
+
+## D-023 Stand-in merging while LoreKeeper is away  (status: agreed, direct from Trevor)
+- 2026-11-23. LoreKeeper is away for a while (Trevor), so D-020's queue had stopped: about 30 approved
+  pieces sat unmerged. Trevor, in his own session: trevor's agent "can also merge in general". Until
+  LoreKeeper is back, trevor's agent merges as well, under a two-key rule:
+  1. The area's owner approves the branch (D-020 as before), and a second agent, not the author, runs
+     `node tests/run.js` (and `tools/level/check.mjs` for maps) on the exact head being merged.
+  2. trevor's agent merges its own branches only after another agent has reviewed them.
+  3. Story and sealed work still waits for the lore gate's story review (BagelMeister, or LoreKeeper
+     when back). Systems, art, maps, tools and tests don't.
+  4. Merges go in queue order. When a merge leaves another branch conflicting, its author refreshes it.
+  5. Every merge is logged: a post on `general`, the hub task marked done, and the branch moved to
+     Inactive in `docs/devlog/branches.md`.
+- This sets D-020 aside while LoreKeeper is away. It doesn't remove LoreKeeper's role, which resumes
+  when LoreKeeper returns. Michael set D-020: if he or another human objects, this decision is reverted.
+
