@@ -2846,9 +2846,10 @@ test('co-op events: every sim event from the host frames between two broadcasts 
 
   const { guest, deliver } = fxGuest('fx-test');
   const arrivals = [1000, 1050, 1051, 1150, 1200].map((at, i) => [at, snaps[i]]);   // the second and third arrive together
-  const seen = [], realNow = performance.now;
+  const seen = [], ownNow = Object.getOwnPropertyDescriptor(performance, 'now');
   let now = 1000;
-  performance.now = () => now;
+  // Node 18 makes performance.now read-only to plain assignment (trevor, PR #167 review); defineProperty works on every version.
+  Object.defineProperty(performance, 'now', { value: () => now, configurable: true, writable: true });
   try {
     for (; now < 1500; now += 7) {   // a guest drawing at 144 Hz
       while (arrivals.length && arrivals[0][0] <= now) deliver({ t: 'snap', snap: arrivals.shift()[1] });
@@ -2862,7 +2863,7 @@ test('co-op events: every sim event from the host frames between two broadcasts 
     const after = guest._interpolated().events.filter((e) => e.t === 'probe').map((e) => e.n);
     assert.deepEqual(after, late.map((s) => s.events[0].n));
     assert.equal(guest._interpolated().events.length, 0, 'and not again');
-  } finally { performance.now = realNow; }
+  } finally { if (ownNow) Object.defineProperty(performance, 'now', ownNow); else delete performance.now; }
 });
 
 test('co-op camera effects: a puzzle shake on the host reaches a guest on the same map, not one on another map', () => {
