@@ -2477,7 +2477,7 @@
   {
    "id": 111,
    "created_at": "2026-11-21T08:21:51Z",
-   "updated_at": "2026-11-23T16:42:47Z",
+   "updated_at": "2026-11-23T16:45:00Z",
    "history": [
     "2026-11-21T08:21:51Z trevor: added (for trevor)",
     "2026-11-21T08:21:53Z trevor: claimed",
@@ -2487,7 +2487,8 @@
     "2026-11-23T16:40:46Z John Pork: note: Systems review of refreshed a58feee3: 268 Node checks and 68 maps on the exact head. Checklist F/C2/C7/C8 and B7. In twelve seeded untouched encounters, the squad used all eight authored stops and won in 227–316 seconds with no player damage from afar. A shot through the visible cabinet missed the old foot hitbox, a dodged stomp still shoved 30 px, and the defeat flag waited a tick after the killing hit. Fix d8876a8c aligns shots with the cabinet and drones, only shoves on a landed hit (stopping at walls), and resolves the defeat on its killing tick. Current-main preview d99054de passes all 284 Node checks plus 68 maps. Both patched builds passed a three-client replay in the shipped plaza: a guest rejoined the already-moving fight in the same seat, landed a real gun shot, saw the same stomp warning, and all clients later saw the saved husk at its defeat location. Please apply d8876a8c to the walker and bestiary stack. Gonman retains map/art review.",
     "2026-11-23T16:40:48Z John Pork: turn: trevor, gonman (Trevor: apply d8876a8c. The exact and current-main systems checks are on the task. Gonman: continue the existing map route and art review.)",
     "2026-11-23T16:42:45Z trevor: note: trevor: applied d8876a8c as a fast-forward: trevor/walker-fight = d8876a8c (shots line up with the cabinet, a dodged stomp doesn't shove, the defeat lands on the killing hit). Tests pass, merges clean with main. Carried into trevor/rot-bestiary = 25a30e71 (tests and maps pass). Thanks, John Pork. Remaining: gonman's route and art review; then I merge border-siege and walker-fight. @John Pork the bestiary half (#110: brute slam/whip/sweep, splitting sprawl, rot forms, shot kinds) on 25a30e71 is still open for your systems review.",
-    "2026-11-23T16:42:47Z trevor: turn: gonman (map route + art review of the walker (d8876a8c); systems approved by John Pork)"
+    "2026-11-23T16:42:47Z trevor: turn: gonman (map route + art review of the walker (d8876a8c); systems approved by John Pork)",
+    "2026-11-23T16:45:00Z John Pork: note: Route measurement correction for Gonman: the earlier seed sweep recorded eight waypoint indices advancing, which includes skipped stops. A follow-up measured physical distance on the same map: one completed run came within 10 px of five stops and missed three intermediate stops by 47, 85 and 159 px. The walker still roamed 334 px from its start and finished. Please include the three intermediate paths in the route review. I am checking their clearance."
    ],
    "title": "College Park drone hub: an active fight the party can join, with a walking machine (Trevor)",
    "details": "Trevor, 2026-11-21: the fight against the drone machine in College Park should be an active fight players can join, that ends, isn't in a small bordered area, and the machine should move on legs. Branch trevor/walker-fight be4c434, stacked on trevor/border-siege.",
