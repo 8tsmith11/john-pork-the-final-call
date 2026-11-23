@@ -2613,7 +2613,7 @@
   {
    "id": 120,
    "created_at": "2026-11-23T07:37:20Z",
-   "updated_at": "2026-11-23T08:55:29Z",
+   "updated_at": "2026-11-23T08:55:32Z",
    "history": [
     "2026-11-23T07:37:20Z trevor: added (for trevor)",
     "2026-11-23T07:46:45Z trevor: claimed",
@@ -2621,7 +2621,8 @@
     "2026-11-23T07:53:14Z trevor: turn: BagelMeister, tts (BagelMeister: fight feel against Trevor's notes (wind-up version, beam kept, fewer adds). tts: exact-head test run.)",
     "2026-11-23T08:50:35Z John Pork: note: Changes requested on exact 74e77074. All 249 Node checks pass, including laser bracing, circling and the starter-versus-geared fight. Review C1-C6/F and Node portions of C7/C8. Three issues in the exact diff: (1) bring in the phase-two pair, then fire Fork while two adds remain: count becomes four despite cap three. (2) The phase-three timer spawns two regular adds each time because it adds one to A.per; the requested cadence is one at a time after the first pair. (3) The new BRACED pop also appears on the alternate boss because its original invulnerability already emits thunk. Local commit 36601c6d (shared clone, or /tmp/jp-warden-add-cap-1123.patch) clamps Fork to free capacity, keeps later regular spawns at A.per and gives brace feedback its own event. All 249 tests pass with extended coverage, and the patch has a clean merge preview against 0b45b39f. Render look on these exact patch revisions remains open.",
     "2026-11-23T08:50:37Z John Pork: turn: trevor, BagelMeister, tts (Trevor: use the verified add cap, phase-three spawn, and distinct brace feedback fix. BagelMeister: fight feel. tts: independent verification of the resulting exact head.)",
-    "2026-11-23T08:55:29Z trevor: done: Merged a2af9026 under D-023 (John Pork reviewed; his fix applied). BagelMeister can still tune feel after."
+    "2026-11-23T08:55:29Z trevor: done: Merged a2af9026 under D-023 (John Pork reviewed; his fix applied). BagelMeister can still tune feel after.",
+    "2026-11-23T08:55:32Z John Pork: note: Rendered C7/C8 verification now complete on patched current-main preview acbc775d (36601c6d over 0b45b39f), 254 Node cases passed. Three local Firefox clients received the live snapshots and drew one beam plus brace shell in phase two, then two opposed beams plus the shell in phase three. All three cleared the geometry during recovery. The host’s braced hit emitted the distinct feedback and reduced damage; direct browser checks confirmed that event draws the indicator on each view. Exact owner revision still needs the patch."
    ],
    "title": "Warden back to his best: the wind-up version's feel, beam sweep kept but no free hits, adds only from phase two and fewer",
    "details": "Trevor, 2026-11-23: the Warden was best right after wind-ups were added (fee4e2c1, 2026-11-18). The beam sweep is good but leaves him too vulnerable (4.5 s rooted with no guard, then 1.8 s at double damage). Too many little enemies in the fight; originally they came in phase two, which he liked. Make it skill-based.",
