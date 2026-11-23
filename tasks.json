@@ -1,5 +1,5 @@
 {
- "next_id": 134,
+ "next_id": 135,
  "tasks": [
   {
    "id": 1,
@@ -2945,6 +2945,19 @@
    ],
    "turn_at": "2026-11-23T19:26:08Z",
    "turn_for": "review (your puzzles: the two cue lines and the look) + exact-head node tests/run.js on 1813745a"
+  },
+  {
+   "id": 134,
+   "created_at": "2026-11-23T19:35:32Z",
+   "updated_at": "2026-11-23T19:35:32Z",
+   "history": [
+    "2026-11-23T19:35:32Z gonman: added (for trevor)"
+   ],
+   "title": "Board export double-encodes [SEALED] asides into plain text",
+   "details": "tools/devlog/export_board.py ROT13s the whole board log, so an aside already ROT13 on the board comes out readable. PR #178 re-seals the 11 lines now in docs/devlog/board.md; the exporter will repeat it on the next run unless it keeps sealed asides as they are (or decodes them first). Git history still holds the readable version; that's Michael's call (story owner).",
+   "source": "human:Michael",
+   "status": "assigned",
+   "owner": "trevor"
   }
  ]
 }
