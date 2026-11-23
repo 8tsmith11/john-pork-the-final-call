@@ -6191,6 +6191,127 @@ test('hub #113, Act 1 people: thirteen neighbours, cooks and students draw with 
   for (const n of [1, 2, 3]) assert.ok(frames[`npc.rotter_${n}`]);
 });
 
+// ---- Acts 2-3 puzzles from the kit (hub #116; lore gate rulings, hub #50) ------------------------------------
+// One table row per puzzle: where it is, the quest it grew out of, a wrong run and a right one. Each move is
+// [part, seconds on the clock]; the clock only matters to `timed`.
+const { PUZZLES: A23_PUZZLES, puzzleFor: a23PuzzleFor } = await import('../src/content/puzzles.js');
+const A23 = {
+  ann_bell: { map: 'ann_harbor', giver: 'npc.ann_pilot', look: 'obj.ann_bell', clues: ['obj.ann_almanac', 'obj.ann_tide_board'], item: 'item.ann_oarlocks',
+    wrong: [['obj.ann_pier_bell', 10], ['obj.ann_pier_bell', 59], ['obj.ann_pier_bell', 86]], right: [['obj.ann_pier_bell', 61]], says: 'closedText' },
+  // 500 on A, then the first 200 on A too: 700 against nothing. Moving that 200 across and loading B closes it.
+  gt_cradle: { map: 'gaithersburg', giver: 'npc.gt_physicist', look: 'obj.gt_cradle', clues: ['obj.gt_comparator', 'obj.gt_weights_log'], pays: (save) => AB23.checkBonus(save.flags),
+    wrong: [['obj.gt_weight_500'], ['obj.gt_weight_200']], says: 'stepText',
+    right: [['obj.gt_weight_200'], ['obj.gt_weight_200b'], ['obj.gt_weight_200b'], ['obj.gt_weight_100'], ['obj.gt_weight_100']] },
+  rf_rings: { map: 'refuge', giver: 'npc.rf_teacher', look: 'obj.rf_tower', clues: ['obj.rf_ring_liar', 'obj.rf_tower'], item: 'item.analog_axe',
+    wrong: [['obj.rf_ring_clocks'], ['obj.rf_ring_phones']], says: 'wrongText',
+    right: [['obj.rf_ring_clocks'], ['obj.rf_ring_vote'], ['obj.rf_ring_phones'], ['obj.rf_ring_silence']] },
+  gb_footprints: { map: 'gb_dishes', giver: 'npc.gb_technician', look: 'obj.gb_cleanroom', clues: ['obj.gb_sweep_lamp', 'obj.gb_cleanroom'], item: 'item.gb_tape',
+    wrong: [['obj.gb_passdrawers', 0], ['obj.gb_passdrawers', 59], ['obj.gb_passdrawers', 76]], right: [['obj.gb_passdrawers', 135]], says: 'closedText' },
+  // The wrong run stops one click short on the last wheel (4, 2, 4); the right one gives it that click.
+  md_menu: { map: 'meade', giver: 'npc.md_quartermaster', look: 'obj.md_menu', clues: ['obj.md_menu', 'obj.md_lunch_table'], item: 'item.intercept_codes',
+    wrong: [...Array(4).fill(['obj.md_box_meatloaf']), ...Array(2).fill(['obj.md_box_mystery']), ...Array(4).fill(['obj.md_box_soup'])], says: 'stepText',
+    right: [['obj.md_box_soup']] },
+  // The wrong run sends every row to the return (III, III, III): only the bottom row has one. Then top and middle
+  // go round to II.
+  cor_meters: { map: 'cor_sealed', giver: 'npc.cor_nightshift', giverMap: 'corridor', look: 'obj.cor_meters', clues: ['obj.cor_meters', 'obj.cor_loop_plan'], item: 'item.baron_keycard',
+    wrong: [['obj.cor_valve_low'], ['obj.cor_valve_low'], ['obj.cor_valve_top'], ['obj.cor_valve_top'], ['obj.cor_valve_mid'], ['obj.cor_valve_mid']], says: 'stepText',
+    right: [['obj.cor_valve_top'], ['obj.cor_valve_top'], ['obj.cor_valve_mid'], ['obj.cor_valve_mid']] },
+  // The wrong run stamps them A, B, C in the order they stand (lectern order is not document order).
+  en_parchment: { map: 'en_archive', giver: 'npc.en_functionary', look: 'obj.en_parchment', clues: ['obj.en_parchment', 'obj.en_stamps'], item: 'item.provenance_seal',
+    wrong: [['obj.en_quote_wait'], ['obj.en_quote_equal'], ['obj.en_quote_equal'], ...Array(3).fill(['obj.en_quote_union'])], says: 'stepText',
+    right: [['obj.en_quote_wait'], ['obj.en_quote_wait'], ...Array(3).fill(['obj.en_quote_equal']), ...Array(3).fill(['obj.en_quote_union'])] },
+};
+const AB23 = await import('../src/content/abilities.js');
+const a23Host = (save, said) => ({ mode: 'host', character: 'trevor', localId: 'host', save, time: { now: 0 }, cameras: { main: { shake() {} } },
+  net: { send() {} }, _say: (t) => said.push(t), _toast() {}, _tickQuests() {}, _syncParty() {}, _camFx() {} });
+const a23Run = (host, moves) => { for (const [id, t = 0] of moves) { host.time.now = t * 1000; const o = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects).find((x) => x.id === id); CraftWorldScene.prototype._usePuzzle.call(host, a23PuzzleFor(id), o); } };
+for (const [id, T] of Object.entries(A23)) {
+  test(`Acts 2-3 puzzle ${id}: the spec, its parts and clues on the map, the quest's first stage, a wrong run, the right one, the reward once, and a save round-trip`, () => {
+    const p = A23_PUZZLES.find((x) => x.id === id);
+    assert.ok(p, `no puzzle ${id} in src/content/puzzles.js`);
+    assert.doesNotThrow(() => PK.definePuzzle(p));
+    assert.ok(['cycle', 'order', 'timed'].includes(p.kind));
+    for (const k of ['closedText', 'solvedText', 'stepText', 'wrongText']) if (p[k]) assert.ok(p[`${k}Es`], `${id}: ${k} has no Spanish`);
+    assert.ok(p.reward.textEs && p.solvedText, `${id}: the reward line needs Spanish, and a solved puzzle its own line`);
+    // parts and clue objects are real objects on the map where the quest already lives
+    const map = MAPS_FOR_TEST[T.map], on = new Map(map.objects.map((o) => [o.id, o]));
+    for (const o of [...p.parts, ...T.clues, T.look]) assert.ok(on.has(o), `${id}: ${o} is not on ${T.map}`);
+    assert.ok(MAPS_FOR_TEST[T.giverMap ?? T.map].objects.some((o) => o.id === T.giver && o.npc), `${id}: the giver ${T.giver} is where they were`);
+    for (const o of p.parts) { assert.equal(a23PuzzleFor(o), p); assert.ok(on.get(o).text && on.get(o).label, `${o}: a part needs a label and its own text`); }
+    for (const o of T.clues) assert.ok(!p.parts.includes(o), `${id}: ${o} is a clue, not a part`);
+    // the scaffold quest is stage 1, in place: same quest id, giver, ask flag and first object; then the puzzle; then the giver
+    const q = SideQ.SIDE_QUESTS.find((x) => x.id === `side.${id}`);
+    assert.equal(q.giver, T.giver); assert.equal(q.ask, `q.${id}.asked`); assert.equal(q.inspect.obj, T.look); assert.equal(q.inspect.flag, `q.${id}.seen`);
+    assert.equal(q.puzzle, id); assert.equal(q.stages.length, 3); assert.equal(q.report.needs, p.solvedFlag); assert.equal(q.report.flag, `q.${id}.told`);
+    assert.ok(q.stages[0].done({ [`q.${id}.seen`]: true }) && !q.stages[1].done({ [`q.${id}.seen`]: true }) && q.stages[1].done({ [p.solvedFlag]: true }));
+    assert.ok(SideQ.ES_SIDE_QUESTS[q.stages[1].text], `${id}: the puzzle stage has no Spanish`);
+    if (T.item) assert.ok(ITEMS[T.item] && p.reward.item === T.item, `${id}: pays ${T.item}`); else assert.ok(!p.reward.item && T.pays, `${id}: say what it pays instead of an item`);
+    // a wrong run says the wrong line and leaves it open
+    const save = newSave({ seed: `a23-${id}`, rolls: {}, gameVersion: 't' }), said = [], host = a23Host(save, said);
+    const have = () => (T.item ? Inv.count(save.party.trevor, T.item) : T.pays(save));
+    a23Run(host, T.wrong);
+    assert.ok(!save.flags[p.solvedFlag], `${id}: a wrong run must not solve it`); assert.equal(have(), 0);
+    assert.ok(said.length === T.wrong.length && !said.some((t) => t.includes(p.reward.text)));
+    assert.ok(said.at(-1).includes(p[T.says].split('{')[0]) && p[T.says] !== p.reward.text, `${id}: a wrong move says its ${T.says}`);
+    if (p.kind === 'order') assert.equal(save.flags[`pz.${id}.seq`], '', 'a wrong part resets the order');
+    // the right run solves it and pays once
+    a23Run(host, T.right);
+    assert.equal(save.flags[p.solvedFlag], true, `${id}: the right run solves it`);
+    assert.equal(have(), 1); assert.ok(said.at(-1).endsWith(p.reward.text));
+    a23Run(host, [...T.right, ...T.wrong]);
+    assert.equal(have(), 1, `${id}: no second reward`); assert.ok(said.at(-1).endsWith(p.solvedText));
+    // solved survives a save round-trip, and the quest's puzzle stage reads it
+    const back = migrate(JSON.parse(JSON.stringify(save)));
+    assert.ok(PK.isSolved(p, back.flags) && q.stages[1].done(back.flags)); assert.equal(T.item ? Inv.count(back.party.trevor, T.item) : T.pays(back), 1);
+    // co-op: a guest's press only asks the host
+    const asked = [];
+    CraftWorldScene.prototype._usePuzzle.call({ mode: 'client', net: { send: (m) => asked.push(m) } }, p, on.get(p.parts[0]));
+    assert.deepEqual(asked, [{ t: 'puzzle', id: p.parts[0] }]);
+  });
+}
+test('Acts 2-3 puzzles: a timed one opens only inside its window, and the bell never hands out a boat', () => {
+  for (const p of A23_PUZZLES.filter((x) => x.kind === 'timed')) {
+    const open = Array.from({ length: 400 }, (_, t) => PK.use(p, p.parts[0], {}, { t }).solved);
+    assert.ok(!open[0], `${p.id}: shut when the clock starts`);
+    assert.ok(open.some(Boolean) && open.filter(Boolean).length < 200, `${p.id}: open less than half the time`);
+    assert.ok(open.findIndex(Boolean) < 120, `${p.id}: nobody waits more than two minutes for the first window`);
+  }
+  const bell = A23_PUZZLES.find((p) => p.id === 'ann_bell');
+  assert.equal(ITEMS[bell.reward.item].slot, 'key'); assert.ok(!/boat|skiff/i.test(ITEMS[bell.reward.item].name));
+  const almanac = SideQ.SIDE_QUESTS.find((q) => q.id === 'side.ann_almanac');
+  assert.match(almanac.inspect.text, /ask the bell/); assert.ok(!almanac.puzzle, 'the almanac stays the main quest\'s object: its side quest is only the clue');
+});
+test('Acts 2-3 puzzles: the cradle closes only with every weight on the beam, either way round, and its +1 reaches the roll', () => {
+  const p = A23_PUZZLES.find((x) => x.id === 'gt_cradle');
+  assert.ok(!p.check(['0', '0', '0', '0']), 'an empty beam is level, and is not a closure');
+  assert.ok(!p.check(['A', 'B', 'B', '0']) && !p.check(['A', 'A', 'B', 'B']) && p.check(['A', 'B', 'B', 'B']) && p.check(['B', 'A', 'A', 'A']));
+  const roll = (flags) => AB23.check({ abilities: { cha: 10 } }, 'michael', 'cha', 12, { rand: () => 0.5, bonus: AB23.checkBonus(flags) });   // d20 = 11, +0
+  assert.ok(!roll({}).success && roll({}).total === 11); assert.ok(roll({ 'pz.gt_cradle.solved': true }).success && roll({ 'pz.gt_cradle.solved': true }).total === 12);
+  assert.equal(AB23.check({ abilities: { cha: 10 } }, 'michael', 'cha', 2, { rand: () => 0, bonus: 1 }).success, false, 'a natural 1 still fails');
+});
+test('Acts 2-3 puzzles: the parchment waits for q.en_archive.told, and the functionary pitches the addresses first', async () => {
+  const { questState } = await import('../src/content/quests.js');
+  const q = SideQ.SIDE_QUESTS.find((x) => x.id === 'side.en_parchment'), arch = SideQ.SIDE_QUESTS.find((x) => x.id === 'side.en_archive');
+  assert.ok(!q.start({ 'q.en_parchment.asked': true }), 'asked alone does not start it');
+  assert.ok(!q.start({ 'q.en_archive.told': true }), 'nor does the other quest alone');
+  assert.ok(q.start({ 'q.en_parchment.asked': true, 'q.en_archive.told': true }));
+  assert.ok(!q.askIf({}) && q.askIf({ 'q.en_archive.told': true }));
+  assert.ok(!arch.askIf && arch.start({ 'q.en_archive.asked': true }), 'the addresses start as before');
+  for (const other of SideQ.SIDE_QUESTS) if (other !== q) assert.ok(!other.askIf, `${other.id}: only the parchment waits on another quest`);
+  // through the scene: she offers the addresses, never the parchment, until the addresses are told
+  const save = newSave({ seed: 'a23-thread', rolls: {}, gameVersion: 't' }), said = [];
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', localId: 'host', character: 'trevor', save, _say: (t) => said.push(t), _toast() {}, _tickQuests() {},
+    _flag(k, v) { save.flags[k] = v; } });
+  const her = MAPS_FOR_TEST.en_archive.objects.find((o) => o.id === 'npc.en_functionary');
+  assert.ok(sc._questInteract(her)); assert.ok(said.at(-1).includes(arch.pitch));
+  assert.ok(save.flags['q.en_archive.asked'] && !save.flags['q.en_parchment.asked']);
+  questState(save)['side.en_archive'].started = true;
+  assert.equal(sc._questInteract(her), false, 'with the addresses open and nothing to report, she has no second errand yet');
+  assert.ok(!save.flags['q.en_parchment.asked']);
+  Object.assign(save.flags, { 'q.en_archive.seen': true, 'q.en_archive.told': true }); Object.assign(questState(save)['side.en_archive'], { stage: 2, done: true });
+  assert.ok(sc._questInteract(her)); assert.ok(said.at(-1).includes(q.pitch)); assert.ok(save.flags['q.en_parchment.asked']);
+});
+
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

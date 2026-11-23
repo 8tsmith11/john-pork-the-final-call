@@ -37,6 +37,16 @@ export const corSealed = fromGrid({
 })
   // Region guardian (optional): at the far end of the hall, by the meters it guards.
   .enemy('boss.cor_hall', 27, 3)
+  // The sealed-hall puzzle (src/content/puzzles.js, cor_meters): a valve wheel at the end of each row of racks,
+  // on the end wall with the meters and their guardian, and what is left of the loop plan.
+  .prop('obj.valve_wheel', 28, 2, { id: 'obj.cor_valve_top', label: 'Valve wheel, top row',
+    text: 'The valve wheel for the top row of racks, where the river main comes through the wall. Its chain has been cut and hung back up to look whole. Three stops are cast into the collar: I, II, III.' })
+  .prop('obj.valve_wheel', 28, 4, { id: 'obj.cor_valve_mid', label: 'Valve wheel, middle row',
+    text: 'The valve wheel for the middle row of racks. The paint on the spokes is worn through where hands go, and nowhere else. Three stops are cast into the collar: I, II, III.' })
+  .prop('obj.valve_wheel', 28, 6, { id: 'obj.cor_valve_low', label: 'Valve wheel, bottom row',
+    text: 'The valve wheel for the bottom row of racks. A second pipe leaves it through the floor, as wide as the one coming in. Three stops are cast into the collar: I, II, III.' })
+  .prop('obj.room_sign', 24, 7, { id: 'obj.cor_loop_plan', label: 'Cooling-loop plan',
+    text: 'A cooling-loop plan stenciled on the wall, most of it flaked off. What is left: the river main coming in at the top row, a return leaving from the bottom, and a key in the corner. I, TO RACKS. II, ON TO THE NEXT ROW. III, RETURN. Beside the top valve somebody has drawn the water as a small fish, heading down.' })
   .build();
 
 // ---- Gaithersburg: the clock vault (a clock in a glass column; a logbook of leap seconds) ----
@@ -130,7 +140,18 @@ export const enArchive = fromGrid({
     '@': { spawn: true },
     D: out('enclave', 'en_archive', 'Back down the marble steps'),
   },
-}).build();
+})
+  // The parchment puzzle (src/content/puzzles.js, en_parchment): three addresses on lecterns, each with one
+  // underlined quote and a stamp dial, and the tray of stamps kept with the originals.
+  .prop('obj.flight_log', 10, 4, { id: 'obj.en_quote_wait', label: 'Lectern: an address on patience',
+    text: 'A printed address on a lectern, one line underlined in archive pencil: "...the right of the people peaceably to wait." Beside the line is an empty box for a provenance stamp, and set into the lectern, a dial: A, B, C.' })
+  .prop('obj.flight_log', 12, 4, { id: 'obj.en_quote_equal', label: 'Lectern: an address on equality',
+    text: 'A printed address on a lectern, one line underlined in archive pencil: "...that all are created equal, pending attestation." Beside the line is an empty box for a provenance stamp, and set into the lectern, a dial: A, B, C.' })
+  .prop('obj.flight_log', 14, 4, { id: 'obj.en_quote_union', label: 'Lectern: an address on union',
+    text: 'A printed address on a lectern, one line underlined in archive pencil: "We the People, in order to form a more perfect Continuity..." Beside the line is an empty box for a provenance stamp, and set into the lectern, a dial: A, B, C.' })
+  .prop('obj.key_jar', 13, 2, { id: 'obj.en_stamps', label: 'Provenance stamps',
+    text: 'Three archive stamps in a felt tray beside the case, each on a chain to the document it vouches for. Stamp A hangs by the one with all the names at the bottom. Stamp B, by the long one that opens with the people. Stamp C, by the short list of what can\'t be taken away. A card in the tray: A QUOTATION BEARS THE STAMP OF ITS ORIGINAL.' })
+  .build();
 
 // ---- The Meade, inside (Act 3): black glass, analysts who haven't been home, a list on a wall ----
 export const meadeInside = fromGrid({
