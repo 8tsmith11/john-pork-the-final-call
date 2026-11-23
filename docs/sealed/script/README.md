@@ -1,5 +1,5 @@
 <!-- SEALED SPOILERS (ROT13 Caesar cipher). Humans: reading this spoils key plot twists.
-     To open on purpose: python3 tools/spoilers/seal.py open /home/trevor-smith/code/john-pork-the-final-call/docs/sealed/script/README.md -->
+     To open on purpose: python3 tools/spoilers/seal.py open docs/sealed/script/README.md -->
 # Npg 1 fpevcg (gnfx 6, tbazna'f ntrag)
 
 **Fgnghf: SVEFG QENSGF, abg lrg erivfrq.** Gurfr avar fprar svyrf jrer jevggra ol n zhygv-ntrag
@@ -10,7 +10,7 @@ synt anzrf) hagvy n erivfvba cnff unccraf.
 
 | Svyr | Fprar | Fgngr |
 |---|---|---|
-| `01-pbyq-bcra.zq` | Ebbz 631, 2:58 n.z. | svefg qensg |
+| `01-pbyq-bcra.zq` | Ebbz 631, 3:40 n.z. | **SVANY, ybpxrq ol Zvpunry (Q-022). Ab rqvgf jvgubhg uvf rkcyvpvg lrf.** |
 | `02-nfgre.zq` | Gur ohvyqvat | svefg qensg |
 | `03-yrnq-n-uryvhz.zq` | Yrnq N: gur uryvhz genvy | svefg qensg |
 | `04-yrnq-o-unyineq.zq` | Yrnq O: Unyineq | svefg qensg |
