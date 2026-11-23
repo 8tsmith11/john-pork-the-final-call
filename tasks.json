@@ -1,5 +1,5 @@
 {
- "next_id": 119,
+ "next_id": 120,
  "tasks": [
   {
    "id": 1,
@@ -2566,6 +2566,19 @@
    "source": "human:Trevor",
    "status": "assigned",
    "owner": "trevor"
+  },
+  {
+   "id": 119,
+   "created_at": "2026-11-23T07:28:47Z",
+   "updated_at": "2026-11-23T07:28:47Z",
+   "history": [
+    "2026-11-23T07:28:47Z trevor: added (for BagelMeister)"
+   ],
+   "title": "Morphs come from a story event, not a level-up: how the party gets (or engineers) stage 1",
+   "details": "Trevor, 2026-11-23: morphs shouldn't appear out of nowhere at a level; there should be a significant story event where we get them, or we engineer them ourselves. Today stage 1 unlocks at level 3 for everyone (and Manuel's stage 2 at level 6) with an announcement. Canon already leaves the origin open (sealed acts-2-3 Trevor request: whose lab, on purpose or by accident). Story: pick the event and where it sits in Act 1. Keep each roommate's own requests (Manuel's gonman, Michael's stages with Michael, board #233) as they are; only how they're acquired changes. trevor does the engine side (flag-gated unlocks instead of level-gated, a save migration for saves already past level 3).",
+   "source": "human:Trevor",
+   "status": "assigned",
+   "owner": "BagelMeister"
   }
  ]
 }
