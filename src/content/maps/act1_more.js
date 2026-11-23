@@ -150,92 +150,205 @@ export const campusQuad = fromGrid({
   },
 }).build();
 
-// ---- The dining hall (Trevor's future-locations list): long tables, the waffle machine, a cook who stayed ----
+// ---- The dining hall (Trevor's future-locations list): the serving line, the waffle machine, a cook who stayed ----
+// Rebuilt to the room standard (hub #113): the kitchen and the dish room at the back, the pass windows, the aisle
+// behind the serving line where the cook stands, the line itself (trays, steam tables, cereal, drinks) ending at the
+// new waffle machine (the landmark, straight ahead of the door), then long tables, round tables and booths under the
+// windows, and the dish return on the east wall. The student with the waffle is crowds.js's hint (18, 10).
 // Secret: the meal swipe reader by the door has three screens to page through.
-export const diningHall = fromGrid({
-  id: 'dining_hall', name: 'The dining hall', fill: 'k',
-  rows: [
-    '#############################',
-    '#kkkkkkkkkkkkkkkkkkkkkkkkkkk#',
-    '#kkttttttttkkkkkttttttttkkkk#',
-    '#kkkkkkkkkkkkkkkkkkkkkkkkkkk#',
-    '#kkttttttttkkkkkttttttttkkkk#',
-    '#kkkkkkkkkkkkkkkkkkkkkkkkkkk#',
-    '#kkkkkkkkkkWkkkkkkkkkkkCkkkk#',
-    '#kkkkkkkkkkkk@kRkkkkkkkkkkkk#',
-    '#############DD##############',
+export const diningHall = makeMap({
+  id: 'dining_hall', name: 'The dining hall', standard: true,
+  layout: [
+    '################################',   // 0
+    '#kkkkkkkkkkkkkkkkkkkk#wwwwwwwww#',   // 1  kitchen | dish room
+    '#kkkkkkkkkkkkkkkkkkkk#wwwwwwwww#',   // 2
+    '#kkkkkkkkkkkkkkkkkkkk#wwwwwwwww#',   // 3
+    '##========#=======##.##.##==####',   // 4  pass windows, the kitchen door, the dish room door, the dish return
+    '#kkkkkkkkkkkkkkkkkkkmmmmmmmmmmm#',   // 5  the aisle behind the line
+    '#kkkkkkkkkkkkkkkkkkkmmmmmmmmmmm#',   // 6  the serving line, the waffle machine at its end
+    '#mmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#',   // 7  the queue
+    '#mmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#',   // 8
+    '#mmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#',   // 9  long tables | round tables
+    '#mmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#',   // 10
+    '#mmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#',   // 11
+    '#mmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#',   // 12
+    '#mmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#',   // 13
+    '#mmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#',   // 14
+    '#mmmmmmmmmmmmmmmmmccccccccccccc#',   // 15
+    '#mmmmmmmmmmmmmmmmmccccccccccccc#',   // 16 booths under the windows
+    '##==#==#==###mm####==#==#==#==##',   // 17 the windows and the doors
   ],
-  legend: {
-    t: { scenery: 'obj.table', solid: true, tile: 'k' },
-    W: { prop: 'obj.kiosk', id: 'obj.waffle_machine', label: 'The waffle machine', light: 0.5, text: 'Chrome and a touch screen, the protective film still on one side. It presses the university seal into every waffle, and then the screen asks you to rate your waffle from one to five.' },
-    C: { npc: 'npc.dining_cook', art: 'npc.rotter_2', label: 'A cook who stayed', text: '"Forty years on this grill. They put that machine in on a Sunday and nobody asked me." She scrapes down the flat-top, which is already clean.' },
-    R: { prop: 'obj.lobby_monitor', id: 'obj.dining_swipe', label: 'Meal swipe reader', light: 0.4, action: 'pages', pages: [
+  spawns: [[13, 16]],
+  objects: [
+    { id: 'obj.dining_out', x: 13, y: 17, w: 2, action: 'exit', to: 'campus_quad', pair: 'obj.quad_dining', art: 'obj.door', label: 'Out to the quad', text: 'Back out to the quad.', floor: true, stepOn: true },
+    { id: 'door.dining_kitchen', art: 'door.wall', x: 20, y: 4, label: 'Kitchen door', door: true },
+    { id: 'door.dining_dish', art: 'door.wall', x: 23, y: 4, label: 'Dish room', door: true },
+    // The line, and the machine at the end of it (the landmark)
+    { id: 'obj.waffle_machine', x: 14, y: 6, landmark: true, light: 0.7, solid: true, label: 'The waffle machine', text: 'Chrome and a touch screen, the protective film still on one side. It presses the university seal into every waffle, and then the screen asks you to rate your waffle from one to five.' },
+    { id: 'npc.dining_cook', x: 6, y: 5, npc: true, age: 'adult', art: 'npc.rotter_2', label: 'A cook who stayed', text: '"Forty years on this grill. They put that machine in on a Sunday and nobody asked me." She scrapes down the flat-top, which is already clean.' },
+    { id: 'obj.dining_line', art: 'obj.steam_table', x: 5, y: 6, solid: true, label: 'The serving line', text: 'Six pans under the sneeze guard, all of them full and none of them touched. A card on the glass: PLEASE TRY THE WAFFLES. Nobody on the kitchen side wrote it.' },
+    { id: 'obj.dining_cereal', art: 'obj.cereal_bar', x: 9, y: 6, solid: true, label: 'Cereal dispensers', text: 'Three tubes, three cranks. The middle one has been empty so long that someone has labeled it DECORATIVE.' },
+    { id: 'obj.dining_menu', art: 'obj.chalkboard', x: 10, y: 4, label: 'Menu board', text: 'The week in chalk. Monday to Friday each say WAFFLES, in type. Under them, by hand and pressed hard: GRILL STILL OPEN.' },
+    { id: 'obj.dining_condiments', art: 'obj.condiments', x: 16, y: 6, solid: true, label: 'Condiments', text: 'Ketchup, mustard, a jar of forks. The syrup has been moved to a locked cabinet under the waffle machine. The machine has the key.' },
+    { id: 'obj.dining_swipe', art: 'obj.swipe_reader', x: 16, y: 15, solid: true, label: 'Meal swipe reader', light: 0.4, action: 'pages', pages: [
       'You tap your student card out of habit. "WELCOME BACK. SWIPES REMAINING: 4,016." It has said 4,016 since the semester you started.',
       'Between swipes it scrolls TOP SWIPERS THIS WEEK, like a high-score table. First place is a card from ASTER 631. Second place has eleven.',
       'RATE YOUR MEAL, and five faces from a big smile down to a frown. The frown has been pressed so often its plastic has gone white.',
     ] },
-    '@': { spawn: true },
-    D: { exit: 'campus_quad', id: 'obj.dining_out', art: 'obj.door', label: 'Out to the quad', stepOn: true, pair: 'obj.quad_dining', text: 'Back out to the quad.' },
-  },
-}).build();
+    { id: 'obj.dining_dish_return', art: 'obj.dish_return', x: 26, y: 5, solid: true, label: 'Dish return', text: 'The belt carries one tray through the window and round and back out again. The cup on it has been through enough times to be clean.' },
+    // The kitchen
+    { id: 'obj.dining_grill', art: 'obj.stove', x: 3, y: 1, solid: true, light: 0.4, label: 'The flat-top', text: 'Scraped to a mirror. Forty years of seasoning along the back edge, where the scraper doesn\'t reach.' },
+    { id: 'obj.dining_walk_in', art: 'obj.fridge', x: 9, y: 1, solid: true, label: 'The walk-in', text: 'Eggs, butter, a case of scrapple. Every shelf is dated in grease pencil, and every date is this week.' },
+  ],
+  scenery: [
+    // the line: trays, steam tables, the drinks; then the gap you walk round to get behind it
+    { art: 'obj.tray_stack', x: 1, y: 6, solid: true }, { art: 'obj.tray_stack', x: 2, y: 6, solid: true },
+    ...[3, 4, 6, 7, 8, 11, 12, 13].map((x) => ({ art: 'obj.steam_table', x, y: 6, solid: true, anim: 500 + x * 40 })),
+    { art: 'obj.soda_fountain', x: 10, y: 6, solid: true, light: 0.4 }, { art: 'obj.steam_table', x: 15, y: 6, solid: true, anim: 700 },
+    { art: 'obj.steam_table', x: 17, y: 6, solid: true, anim: 620 }, { art: 'obj.tray_stack', x: 18, y: 6, solid: true },
+    // long tables to the west, round ones in the middle, booths under the east windows
+    ...[9, 11, 13].flatMap((y) => [2, 4, 6, 8].map((x) => ({ art: 'obj.long_table', x, y, w: 2, solid: true }))),
+    ...[[18, 9], [22, 9], [26, 9], [20, 12], [24, 12], [28, 12]].map(([x, y]) => ({ art: 'obj.cafe_table', x, y, solid: true })),
+    ...[[17, 9], [23, 9], [27, 9], [21, 12], [25, 12]].map(([x, y]) => ({ art: 'obj.chair', x, y })),
+    ...[19, 22, 25, 28].map((x) => ({ art: 'obj.booth', x, y: 16, solid: true })),
+    { art: 'obj.plant', x: 1, y: 16 }, { art: 'obj.plant', x: 30, y: 7 }, { art: 'obj.bin', x: 25, y: 5 }, { art: 'obj.tray_stack', x: 28, y: 5, solid: true }, { art: 'obj.recycle', x: 11, y: 16 },
+    // the kitchen and the dish room
+    { art: 'obj.stove', x: 2, y: 1, solid: true }, { art: 'obj.stove', x: 4, y: 1, solid: true }, { art: 'obj.fridge', x: 10, y: 1, solid: true },
+    { art: 'obj.kitchen_sink', x: 13, y: 1, solid: true }, { art: 'obj.kitchen_sink', x: 14, y: 1, solid: true },
+    { art: 'obj.table', x: 6, y: 3, solid: true }, { art: 'obj.table', x: 7, y: 3, solid: true }, { art: 'obj.table', x: 14, y: 3, solid: true },
+    { art: 'obj.crate', x: 18, y: 1, solid: true }, { art: 'obj.boxes', x: 19, y: 1 }, { art: 'obj.boxes', x: 17, y: 3 },
+    { art: 'obj.kitchen_sink', x: 25, y: 1, solid: true }, { art: 'obj.tray_stack', x: 27, y: 1, solid: true }, { art: 'obj.tray_stack', x: 28, y: 1, solid: true }, { art: 'obj.crate', x: 30, y: 3, solid: true },
+  ],
+});
 
 // ---- The Robotics and Autonomy Lab: where the UMD Mars rover lives (Trevor: it belongs in the world, not his gear) ----
+// Rebuilt to the room standard (hub #113): benches and the tool wall along the north wall, the gravel test pad in the
+// middle of the bay with the rover on it under two work lamps (the landmark, straight ahead of the door), the charging
+// docks on the west wall, a second rig to the east, the office in the north-east corner and the store room under it.
+// The grad student asleep at a bench is crowds.js's hint (6, 13).
 // Secret: the rover team's drawer holds a pair of welding goggles (one per save). The rover has its own frame,
 // obj.mars_rover (tools/art/gen_props.py); obj.battlebot stays Trevor's, in 631.
-export const roboticsLab = fromGrid({
-  id: 'robotics_lab', name: 'Robotics and Autonomy Lab', fill: 'e',
-  rows: [
-    '##########################',
-    '#eeeeeeeeeeeeeeeeeeeeeeee#',
-    '#eeMeeeeeeeeeeeeeeeeQeeee#',
-    '#eeeeeeeeeeeeeeeeeeeeeeee#',
-    '#eeeeeee######eeeeeeeeeee#',
-    '#eeeeeee#eeee#eeeeeeeeeee#',
-    '#eeBeKeeeeeeeeeeeeeeeEeee#',
-    '#eeeeeeeee@eeeeeeeeeeeeee#',
-    '###########DD#############',
+const LAB_TOOLS = 'Every tool has its outline painted on the pegboard behind it. One outline is empty, with a sticky note in the middle: ASK THE GUY ASLEEP.';
+export const roboticsLab = makeMap({
+  id: 'robotics_lab', name: 'Robotics and Autonomy Lab', standard: true,
+  layout: [
+    '##############################',   // 0  the tool wall, the whiteboard
+    '#eeeeeeeeeeeeeeeeeeee#.......#',   // 1  benches | the office
+    '#eeeeeeeeeeeeeeeeeeee#.......#',   // 2
+    '#eeeeeeeeeeeeeeeeeeee#.......#',   // 3
+    '#eeeeeeeeeeeeeeeeeeee#.......#',   // 4
+    '#eeeeeeeeeeeeeeeeeeee###.#####',   // 5  office door
+    '#eeeeeeyyyyyyyyyeeeeeeeeeeeee#',   // 6  the test pad
+    '#eeeeeeyyyyyyyyyeeeeeeeeeeeee#',   // 7
+    '#eeeeeeyyyyyyyyyeeeeeeeeeeeee#',   // 8
+    '#eeeeeeyyyyyyyyyeeeeeeeeeeeee#',   // 9
+    '#eeeeeeyyyyyyyyyeeeeeeeeeeeee#',   // 10
+    '#eeeeeeeeeeeeeeeeeeee####.####',   // 11 store room door
+    '#eeeeeeeeeeeeeeeeeeee#mmmmmmm#',   // 12 bay | the store room
+    '#eeeeeeeeeeeeeeeeeeee#mmmmmmm#',   // 13
+    '#eeeeeeeeeeeeeeeeeeee#mmmmmmm#',   // 14
+    '#eeeeeeeeeeeeeeeeeeee#mmmmmmm#',   // 15
+    '###########ee#################',   // 16 the doors
   ],
-  legend: {
-    M: { prop: 'obj.mars_rover', id: 'obj.mars_rover', label: 'The Mars rover', text: 'The UMD rover team\'s machine, on a cart in the middle of the bay. A laminated tag on the frame: FLIGHT SPARE, DO NOT CANNIBALIZE. It has been cannibalized a little.' },
-    Q: { prop: 'obj.whiteboard', id: 'obj.rover_whiteboard', label: 'Whiteboard', text: 'Wheel torque numbers in three colors of marker. DEMO DAY, with the date crossed out and moved four times. In the corner, a stick figure holding a wrench, labeled TREVOR. Someone gave it very good hair.' },
-    B: { prop: 'obj.parts_bins', label: 'Parts bin', loot: 'parts', text: 'Little drawers, each labeled in label-maker tape: M3 SCREWS, ENCODERS, MOTORS (DEAD), MOTORS (PROBABLY).' },
-    K: { prop: 'obj.workbench', id: 'obj.rover_drawer', label: 'Drawer marked ROVER TEAM', grant: 'item.welding_goggles',
+  spawns: [[11, 15]],
+  enemies: [['enemy.rotling', 18, 13]],
+  objects: [
+    { id: 'obj.robotics_out', x: 11, y: 16, w: 2, action: 'exit', to: 'campus_quad', pair: 'obj.quad_robotics', art: 'obj.door', label: 'Out to the quad', text: 'Back out to the quad.', floor: true, stepOn: true },
+    { id: 'door.lab_office', art: 'door.wall', x: 24, y: 5, label: 'Office door', door: true },
+    { id: 'door.lab_store', art: 'door.wall', x: 25, y: 11, label: 'Store room', door: true },
+    // The pad and the rover (the landmark)
+    { id: 'obj.mars_rover', art: 'obj.mars_rover', x: 11, y: 8, landmark: true, light: 0.8, solid: true, label: 'The Mars rover', text: 'The UMD rover team\'s machine, on a cart in the middle of the bay. A laminated tag on the frame: FLIGHT SPARE, DO NOT CANNIBALIZE. It has been cannibalized a little.' },
+    { id: 'obj.lab_pad', art: 'obj.cone', x: 7, y: 10, label: 'The test pad', text: 'Four tons of gravel raked into a little Mars, with cones at the corners. Someone has raked a smiley face into the far end and then, more carefully, raked most of it out.' },
+    // Along the north wall
+    ...[1, 15].map((x, i) => ({ id: `obj.lab_tools_${i + 1}`, art: 'obj.tool_wall', x, y: 0, label: 'Tool wall', text: LAB_TOOLS })),
+    { id: 'obj.rover_drawer', art: 'obj.workbench', x: 3, y: 1, solid: true, label: 'Drawer marked ROVER TEAM', grant: 'item.welding_goggles',
       text: 'A steel drawer under the bench, ROVER TEAM ONLY on masking tape. Inside, welding goggles with more tape on the strap: RETURN TO BAY 3. This is bay 3. You borrow them anyway.',
       doneText: 'The empty drawer, and the tape: RETURN TO BAY 3.' },
-    E: { enemy: 'enemy.rotling' },
-    '@': { spawn: true },
-    D: { exit: 'campus_quad', id: 'obj.robotics_out', art: 'obj.door', label: 'Out to the quad', stepOn: true, pair: 'obj.quad_robotics', text: 'Back out to the quad.' },
-  },
-}).build();
+    { id: 'obj.robotics_lab_parts_bins_3_6', art: 'obj.parts_bins', x: 5, y: 1, solid: true, label: 'Parts bin', loot: 'parts', text: 'Little drawers, each labeled in label-maker tape: M3 SCREWS, ENCODERS, MOTORS (DEAD), MOTORS (PROBABLY).' },
+    { id: 'obj.rover_whiteboard', art: 'obj.whiteboard', x: 10, y: 0, label: 'Whiteboard', text: 'Wheel torque numbers in three colors of marker. DEMO DAY, with the date crossed out and moved four times. In the corner, a stick figure holding a wrench, labeled TREVOR. Someone gave it very good hair.' },
+    { id: 'obj.lab_arm', art: 'obj.robot_arm', x: 12, y: 1, solid: true, label: 'Bench arm', text: 'It picks a bolt out of one cup and sets it in the other. When the first cup is empty it starts back. The log taped beside it is on page nine.' },
+    // West wall, the east rig, the office and the store room
+    { id: 'obj.lab_dock', art: 'obj.bot_dock', x: 1, y: 7, solid: true, light: 0.4, label: 'Charging dock', text: 'A delivery bot nosed into its dock. The display says 100%. Under it, in marker: IT SAID THAT YESTERDAY TOO. DO NOT UNPLUG.' },
+    { id: 'obj.lab_couch', art: 'obj.couch', x: 27, y: 4, solid: true, label: 'The office couch', text: 'A pillow, a blanket folded square, and a toothbrush in a mug on the armrest. A sign-up sheet for the couch is taped to the wall. It is full through May.' },
+    { id: 'obj.lab_wheels', art: 'obj.wheel_rack', x: 26, y: 12, solid: true, label: 'Spare wheels', text: 'Five rover wheels and a gap. In the gap, a sticky note: BORROWED, WILL PUT BACK.' },
+  ],
+  scenery: [
+    { art: 'obj.workbench', x: 4, y: 1, solid: true }, { art: 'obj.oscilloscope', x: 6, y: 1, solid: true, light: 0.3 }, { art: 'obj.solder', x: 7, y: 1, solid: true },
+    { art: 'obj.workbench', x: 13, y: 1, solid: true }, { art: 'obj.workbench', x: 14, y: 1, solid: true }, { art: 'obj.drill_press', x: 17, y: 1, solid: true }, { art: 'obj.parts_bins', x: 19, y: 1, solid: true },
+    // the pad: cones at the other corners, two lamps, a toolbox and the tether
+    { art: 'obj.cone', x: 7, y: 6 }, { art: 'obj.cone', x: 15, y: 6 }, { art: 'obj.cone', x: 15, y: 10 },
+    { art: 'obj.worklamp', x: 8, y: 6, light: 0.6 }, { art: 'obj.worklamp', x: 14, y: 10, light: 0.6 }, { art: 'obj.toolbox', x: 9, y: 9 }, { art: 'obj.cables', x: 13, y: 8 },
+    // the west wall and the bench the grad student sleeps at
+    { art: 'obj.bot_dock', x: 1, y: 9, solid: true, anim: 900 }, { art: 'obj.parts_bins', x: 1, y: 12, solid: true }, { art: 'obj.parts_bins', x: 1, y: 13, solid: true },
+    { art: 'obj.workbench', x: 4, y: 12, solid: true }, { art: 'obj.workbench', x: 5, y: 12, solid: true }, { art: 'obj.chair', x: 4, y: 13 },
+    { art: 'obj.crate', x: 2, y: 15, solid: true }, { art: 'obj.boxes', x: 3, y: 15 }, { art: 'obj.bin', x: 9, y: 15 }, { art: 'obj.recycle', x: 14, y: 15 }, { art: 'obj.extinguisher', x: 19, y: 15 },
+    // the east rig
+    { art: 'obj.table', x: 20, y: 8, solid: true }, { art: 'obj.table', x: 21, y: 8, solid: true }, { art: 'obj.chair', x: 20, y: 9 },
+    { art: 'obj.robot_arm', x: 25, y: 8, solid: true, anim: 700 }, { art: 'obj.cone', x: 24, y: 9 }, { art: 'obj.cone', x: 26, y: 9 }, { art: 'obj.cables', x: 27, y: 7 },
+    // the office
+    { art: 'obj.table', x: 22, y: 1, solid: true }, { art: 'obj.terminal_lit', x: 23, y: 1, solid: true, light: 0.35, anim: 640 }, { art: 'obj.chair', x: 23, y: 2 },
+    { art: 'obj.coffee', x: 26, y: 1, light: 0.3 }, { art: 'obj.bookshelf', x: 28, y: 1, solid: true }, { art: 'obj.plant', x: 22, y: 4 },
+    // the store room
+    { art: 'obj.crate', x: 22, y: 12, solid: true }, { art: 'obj.crate', x: 23, y: 12, solid: true }, { art: 'obj.wheel_rack', x: 27, y: 12, solid: true },
+    { art: 'obj.shelf_boxes', x: 22, y: 15, solid: true }, { art: 'obj.shelf_boxes', x: 23, y: 15, solid: true }, { art: 'obj.boxes', x: 28, y: 15 }, { art: 'obj.boxes', x: 27, y: 15 },
+  ],
+});
 
-// ---- The lecture auditorium (off the quad): tiered seats, a projector still running, and the Autograder ----
+// ---- The lecture auditorium (off the quad): a stage, a projector still running, and the Autograder ----
+// Rebuilt to the room standard (hub #113). You come in at the back, by the projector on its cart (the landmark): its
+// beam runs up the hall to the screen over the stage. The back rows of seats are still bolted down, raked, facing the
+// stage; the front twelve rows have been unbolted and stacked along the side walls, which leaves the floor between
+// the seats and the stage clear, 32 tiles by 15 (AUD_ARENA; the audit's boss arena is 30x16). That floor is where the
+// Autograder waits. Nothing solid goes on it: bolt holes (decals) and dropped problem sets only.
 // Secret: the projector's clicker steps back through the last lecture, slide by slide.
 // The way out is in the south wall, at the east end: the quad's door to it faces south (act1_more.js, above).
-export const auditorium = fromGrid({
-  id: 'auditorium', name: 'The lecture auditorium', fill: 'e',
-  rows: [
-    '########################################',
-    '#eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee#',
-    '#eeeeeeeesssssssssseesssssssssseeeeeeee#',
-    '#eePeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee#',
-    '#eeeeeeeesssssssssseesssssssssseeeeeeee#',
-    '#eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee#',
-    '#eeeeeeeesssssssssseesssssssssseeeeeeee#',
-    '#eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee#',
-    '#eeeeeeeesssssssssseesssssssssseeeeEeee#',
-    '#eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee@eee#',
-    '#####################################U##',
+export const AUD_ARENA = { x: 2, y: 3, w: 32, h: 15 };
+const AUD_W = 36, audRow = (ch) => `#${ch.repeat(AUD_W - 2)}#`;
+const AUD_SEAT_X = [3, 5, 7, 9, 11, 13, 21, 23, 25, 27, 29, 31], AUD_SEAT_Y = [19, 21, 23];
+export const auditorium = makeMap({
+  id: 'auditorium', name: 'The lecture auditorium', standard: true,
+  layout: [
+    '#'.repeat(AUD_W),                                  // 0  the boards
+    audRow('.'), audRow('.'),                            // 1-2 the stage
+    ...Array.from({ length: 15 }, () => audRow('e')),    // 3-17 the cleared floor
+    ...Array.from({ length: 8 }, () => audRow('c')),     // 18-25 the seats that are left, and the cross-aisle at the back
+    `${'#'.repeat(32)}c###`,                             // 26 the door, at the east end
   ],
-  legend: {
-    s: { scenery: 'obj.table', solid: true, tile: 'e' },
-    P: { prop: 'obj.lobby_monitor', id: 'obj.aud_projector', label: 'The projector', light: 0.6, action: 'pages', pages: [
+  spawns: [[32, 25]],
+  enemies: [['enemy.rotling', 9, 14], ['boss.chb_autograder', 17, 6]],   // same order as before (saves key kills by index)
+  decals: [4, 6, 8, 10, 12, 14, 16].flatMap((y) => AUD_SEAT_X.flatMap((x) => [['dec.bolt_holes', x, y], ['dec.bolt_holes', x + 1, y]])),
+  objects: [
+    { id: 'obj.aud_out', x: 32, y: 26, action: 'exit', to: 'campus_quad', pair: 'obj.quad_auditorium', art: 'obj.door', label: 'Out to the quad', text: 'Back out to the quad.' },
+    // The back of the hall: the projector (the landmark)
+    { id: 'obj.aud_projector', art: 'obj.projector', x: 17, y: 24, landmark: true, light: 0.8, solid: true, label: 'The projector', action: 'pages', pages: [
       'Still running. Slide 41 of 41: QUESTIONS? The clicker is on the lectern. You press back.',
       'Slide 40: GRADING IS NOW FULLY AUTOMATED. A cartoon checkmark with a face, waving. You press back.',
       'Slide 39: OFFICE HOURS. The times have been deleted and replaced with one word, NOW, in a font nobody chose.',
       'Slide 1. The course title has rotted into a row of empty boxes. Under it, small: RECORDED 2079. PLAYS AT 19:01 DAILY.',
     ] },
-    E: { enemy: 'enemy.rotling' },
-    '@': { spawn: true },
-    U: { exit: 'campus_quad', id: 'obj.aud_out', art: 'obj.door', label: 'Out to the quad', pair: 'obj.quad_auditorium', text: 'Back out to the quad.' },
-  },
-}).enemy('boss.chb_autograder', 3, 6).build();
+    { id: 'obj.aud_backpack', art: 'obj.backpack', x: 9, y: 20, label: 'A backpack', text: 'Left under a seat. A laptop charger, a pencil case zipped shut, and a syllabus with the grading section torn out.' },
+    // The stage
+    { id: 'obj.aud_screen', art: 'obj.aud_screen', x: 17, y: 1, solid: true, light: 0.9, label: 'The screen', text: 'Slide 41, twelve feet wide: QUESTIONS? The cursor has been parked on the question mark for nineteen years.' },
+    { id: 'obj.aud_lectern', art: 'obj.lectern', x: 12, y: 2, solid: true, label: 'The lectern', text: 'A clicker, a water glass dried down to a ring, and notes open at the last page. The last line is underlined twice: ANY QUESTIONS.' },
+    { id: 'obj.aud_bluebooks', art: 'obj.bluebooks', x: 23, y: 2, solid: true, label: 'Exam booklets', text: 'A cart of blue books, every one graded. The same score on every cover, in the same red, to two decimal places.' },
+    // The floor
+    { id: 'obj.aud_stack', art: 'obj.seat_stack', x: 1, y: 10, solid: true, label: 'Stacked seats', text: 'The front twelve rows, unbolted and stacked along the wall in order of row letter. The bolts are in a paper cup. Somebody counted them and wrote the count on the cup.' },
+    { id: 'obj.aud_paper', art: 'obj.graded_paper', x: 20, y: 9, label: 'A problem set', text: 'Problem 1 is marked wrong. So is the name at the top.' },
+  ],
+  scenery: [
+    // the stage: curtains, speakers, the boards on the back wall, the demo table
+    ...[1, 2, 33, 34].map((x) => ({ art: 'obj.curtain', x, y: 1, solid: true })), { art: 'obj.pa_speaker', x: 5, y: 1, solid: true }, { art: 'obj.pa_speaker', x: 30, y: 1, solid: true },
+    ...[8, 10, 24, 26].map((x) => ({ art: 'obj.chalkboard', x, y: 0 })), { art: 'obj.table', x: 22, y: 2, solid: true },
+    // the seats that came out, against the side walls (outside the arena)
+    ...[4, 6, 8, 12, 14, 16].map((y) => ({ art: 'obj.seat_stack', x: 1, y, solid: true })), ...[4, 6, 8, 10, 12, 14, 16].map((y) => ({ art: 'obj.seat_stack', x: 34, y, solid: true })),
+    ...[[7, 6], [27, 11], [13, 15], [30, 5]].map(([x, y]) => ({ art: 'obj.graded_paper', x, y })),
+    // the rows that are left, two seats to a piece; one in three has a seat left down
+    ...AUD_SEAT_Y.flatMap((y, r) => AUD_SEAT_X.map((x, i) => ({ art: (i + r) % 3 === 0 ? 'obj.aud_seats_b' : 'obj.aud_seats', x, y, w: 2, solid: true }))),
+    ...[[2, 19], [2, 23], [33, 19], [33, 23]].map(([x, y]) => ({ art: 'obj.aisle_light', x, y, light: 0.3 })),
+    ...[[2, 21], [33, 21], [15, 19], [20, 19], [15, 21], [20, 21], [15, 23], [20, 23]].map(([x, y]) => ({ art: 'obj.aisle_light', x, y })),
+    { art: 'obj.backpack', x: 24, y: 22 }, { art: 'obj.backpack', x: 6, y: 22 },
+    // the back wall
+    ...[5, 9, 24, 27].map((x) => ({ art: 'obj.bench', x, y: 25 })), { art: 'obj.bin', x: 14, y: 25 }, { art: 'obj.recycle', x: 13, y: 25 },
+    { art: 'obj.extinguisher', x: 34, y: 24 }, { art: 'obj.exit_sign', x: 30, y: 26, light: 0.5 },
+  ],
+});
