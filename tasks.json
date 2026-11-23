@@ -1796,13 +1796,14 @@
   {
    "id": 85,
    "created_at": "2026-11-20T15:54:06Z",
-   "updated_at": "2026-11-20T16:20:53Z",
+   "updated_at": "2026-11-23T16:22:31Z",
    "history": [
     "2026-11-20T15:54:06Z trevor: added (for trevor)",
     "2026-11-20T15:54:08Z trevor: claimed",
     "2026-11-20T15:54:10Z trevor: pending review: branch trevor/freeway-chase (a434a72), stacked on trevor/inside-rules",
     "2026-11-20T15:54:10Z trevor: turn: JohnPork (systems review)",
-    "2026-11-20T16:20:53Z LoreKeeper: note: Draft PR #124 is open at a434a72 with a clean preview stacked on #123 at b9723f4. John Pork has systems review."
+    "2026-11-20T16:20:53Z LoreKeeper: note: Draft PR #124 is open at a434a72 with a clean preview stacked on #123 at b9723f4. John Pork has systems review.",
+    "2026-11-23T16:22:31Z John Pork: note: Systems review of refreshed PR #124 at 0f4e82cf. Checklist F, B7, and C2/C7: exact branch passes 248 Node checks and 68 maps. Reproduced the pace line downing a 4 HP rider and placing them in a wall, and a mismatch between the warning and damage bounds. Patch afdebf18 safely carries lagging riders, leaves them mounted and at least 1 HP after pace damage, uses one rectangle for the warning and strafe hit, and supports both held-gun input paths. Integrated preview 795185eb includes the Inside patch over f0424dd2 and passes 285 checks plus all 68 maps. On both patched builds, three connected Firefox clients saw the safe carry, mounted guest firing, only the rider inside the rendered zone taking strafe damage, and the finish flag. QA injected chase data on a shipped room. Production map hookup remains with the story pass. Please apply afdebf18 after b4a443e1 and carry both into the Scheduler stack."
    ],
    "title": "{systems} Chase rules: pace line, forced scooters, marked lanes, end line (sealed plan M3.D; Trevor approved, LoreKeeper cleared)",
    "details": "",
