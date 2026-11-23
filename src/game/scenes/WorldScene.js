@@ -538,6 +538,7 @@ export class WorldScene extends Phaser.Scene {
         // The guide's Sahur entry: seen once he speaks on screen, whichever route (cameo or boss).
         if (line.who && /sahur/i.test(line.who) && !this.save.flags['act1.sahur.seen']) this._flag('act1.sahur.seen', true);
         this._endingSahurCue(d.nodeId);
+        this._balloonCue(d.nodeId, line);
         if (line.sms) {   // a text message: buzz, and keep it on the phone
           sfx('pickup');
           const texts = (this.save.world.phone ??= { texts: [] }).texts;
@@ -1005,6 +1006,51 @@ export class WorldScene extends Phaser.Scene {
     setArea(map.id);
     for (const s of this.enemySprites.values()) s.destroy();
     this.enemySprites.clear();
+  }
+
+  // Manuel's orange balloon, where the story says it is (Trevor, 2026-11-23: "let us actually see the balloon when
+  // it's in the scene"). On the dead platform it's caught on the cable under the ventilation shaft, its cut ribbon
+  // trailing, from the moment you arrive until it's let go in the ending: John Pork takes it down to chest height,
+  // then it rises up the shaft and is gone. Drawn in code, on every screen (guests mirror the ending's nodes).
+  _balloonTexture() {
+    if (this.textures.exists('balloon')) return 'balloon';
+    const g = this.make.graphics({ add: false });
+    g.fillStyle(0xf07818, 1).fillEllipse(6, 6, 12, 13);              // balloon0 / balloon1 from the palette
+    g.fillStyle(0xffa23a, 1).fillEllipse(5, 5, 8, 9);
+    g.fillStyle(0xffe6c8, 0.9).fillRect(3, 2, 2, 3);                 // the shine
+    g.fillStyle(0xd85f10, 1).fillTriangle(5, 12, 7, 12, 6, 14);      // the knot
+    g.generateTexture('balloon', 12, 15); g.destroy();
+    return 'balloon';
+  }
+
+  _tickBalloon() {
+    const f = this.save?.flags ?? {}, here = this.map?.id === 'platform' && !f['act1.complete'] && !this._balloonGone;
+    if (!here) { this.balloon?.destroy(); this.balloonRibbon?.destroy(); this.balloon = this.balloonRibbon = null; return; }
+    if (!this.balloon) {
+      this.balloon = this.add.image(22 * TILE + 8, 3 * TILE + 2, this._balloonTexture()).setOrigin(0.5, 1).setDepth(3 * TILE + 40);
+      this.balloon.homeY = this.balloon.y; this.balloonRibbon = this.add.graphics().setDepth(3 * TILE + 39);
+    }
+    const b = this.balloon, t = this.time.now / 1000;
+    if (!b.moving) b.y = b.homeY + Math.sin(t * 1.6) * 1.5;           // it drifts on the cable
+    // the cut ribbon: a short wavy line under the knot, the bowline still tied in it
+    const r = this.balloonRibbon.clear().lineStyle(1, 0xffa23a, b.alpha);
+    let px = b.x, py = b.y + 1;
+    for (let i = 1; i <= 6; i++) { const nx = b.x + Math.sin(t * 2.2 + i * 0.9) * 1.6, ny = b.y + 1 + i * 2.2; r.lineBetween(px, py, nx, ny); px = nx; py = ny; }
+    r.fillStyle(0xffa23a, b.alpha).fillRect(px - 1, py, 2, 2);
+  }
+
+  _balloonCue(nodeId, line) {
+    const b = this.balloon; if (!b || this.map?.id !== 'platform') return;
+    if (nodeId === 'ending_unhook' && !b.lowered && this.porkSprite) {   // he works it free and holds it at chest height
+      b.lowered = b.moving = true; b.setDepth(this.porkSprite.depth + 2); this.balloonRibbon.setDepth(this.porkSprite.depth + 1);   // in front of him
+      this.tweens.add({ targets: b, x: this.porkSprite.x - 6, y: this.porkSprite.y - 16, duration: 1600, ease: 'Sine.inOut', onComplete: () => { b.homeY = b.y; b.moving = false; } });
+    }
+    const rises = /balloon rises/i.test(line?.text ?? '') || nodeId === 'ending_release';
+    if (rises && !b.rising) {   // about six seconds, uninterrupted, up the shaft and gone (the script's note)
+      b.rising = b.moving = true;
+      this.tweens.add({ targets: b, x: 22 * TILE + 8, y: -40, duration: 6000, ease: 'Sine.in', onComplete: () => { this._balloonGone = true; } });
+      this.tweens.add({ targets: b, alpha: 0, delay: 4800, duration: 1200 });
+    }
   }
 
   // The ending's visitor at the tunnel mouth (Trevor: "we heard him but couldn't see him"). His part of the ending
@@ -3129,6 +3175,7 @@ export class WorldScene extends Phaser.Scene {
     this._tickFishing();
     this._tickQuests();
     this._tickGlimpse();
+    this._tickBalloon();
     this._tickScan();
     if (this.fishing) { const k = this.input2.keys; if (k.w.isDown || k.a.isDown || k.s.isDown || k.d.isDown || k.up.isDown || k.down.isDown || k.left.isDown || k.right.isDown) this._endFishing(false); }
     this._tickPorkGlitch();

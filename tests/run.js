@@ -4756,6 +4756,13 @@ test('growth: a little bigger every level, bigger jumps at levels 3 and 6, cappe
   assert.ok(painted(2) >= 1 && painted(3) > painted(2) && painted(7) > painted(3), `${painted(2)} ${painted(3)} ${painted(7)}`);
 });
 
+test('the balloon is drawn where the story says (Trevor, 2026-11-23): on the platform until the ending lets it go', async () => {
+  const { readFileSync } = await import('fs');
+  const src = readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/_tickBalloon\(\)/.test(src) && /_balloonCue\(d\.nodeId, line\)/.test(src), 'the balloon ticks and follows the ending');
+  assert.ok(/map\?\.id === 'platform' && !f\['act1\.complete'\]/.test(src), 'shown on the platform until Act 1 is complete');
+});
+
 test('the toothpaste exchange: Michael asks, Manuel says "Hmmmm. Toothpaste?", Michael doubts it; Trevor is never in it', () => {
   assert.equal(toothMod.TOOTHPASTE_TALK.answer, 'Hmmmm. Toothpaste?');
   assert.ok(toothMod.TOOTHPASTE_TALK.doubt.includes('Sure, sure...'));
