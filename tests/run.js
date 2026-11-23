@@ -4956,6 +4956,18 @@ test('the gonman is overpowered on purpose: a much smaller hitbox while thin, en
 
 const { ClientNet: DialogueClientNet, HostNet: DialogueHostNet } = await import('../src/engine/net/net.js');
 const { SharedEvents } = await import('../src/game/sharedEvent.js');
+const dialogueScene = (mode, net, character, localId) => {
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode, net, character, localId, map: MAPS_FOR_TEST.room631, events: { once() {} },
+    input: { keyboard: { on() {} } }, time: { addEvent() {} },
+    add: { text: () => ({ setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; }, setVisible() { return this; }, setText() { return this; } }) },
+    _drawDialogue() { if (this.dlg?.done) { this.dlg = null; this.dlgDone?.(); } },
+    _toast() {},
+  });
+  scene.shared = new SharedEvents(scene);
+  return scene;
+};
+
 test('a disconnected dialogue driver releases only their scene on the host and observer', () => {
   const hostNet = new DialogueHostNet(), observerNet = new DialogueClientNet();
   const connect = (peer, send = () => {}) => hostNet.conns.set(peer, { send });
@@ -4966,17 +4978,7 @@ test('a disconnected dialogue driver releases only their scene on the host and o
   const posted = [];
   connect('observer', (msg) => { posted.push(msg); observerNet.emit('msg', msg); });
   connect('driver');
-  const makeScene = (mode, net, character) => {
-    const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
-      mode, net, character, map: MAPS_FOR_TEST.room631, events: { once() {} },
-      input: { keyboard: { on() {} } }, time: { addEvent() {} },
-      add: { text: () => ({ setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; }, setVisible() { return this; }, setText() { return this; } }) },
-      _drawDialogue() { if (this.dlg?.done) { this.dlg = null; this.dlgDone?.(); } },
-    });
-    scene.shared = new SharedEvents(scene);
-    return scene;
-  };
-  const host = makeScene('host', hostNet, 'trevor'), observer = makeScene('client', observerNet, 'michael');
+  const host = dialogueScene('host', hostNet, 'trevor', 'host'), observer = dialogueScene('client', observerNet, 'michael', 'observer');
   host.save = newSave({ seed: 'dialogue-disconnect', rolls: {}, gameVersion: 'test' });
   observer.save = structuredClone(host.save);
   host.sim = new Sim(host.map);
@@ -5019,6 +5021,64 @@ test('a disconnected dialogue driver releases only their scene on the host and o
   host.dlg = null;
   host.shared._pump();
   assert.equal(host.dlg, null, 'the abandoned choice does not reopen');
+});
+
+test('a returning guest joins the current story turn once and abandoned or deferred events cannot reopen', async () => {
+  const hostNet = new DialogueHostNet(), guestNet = new DialogueClientNet();
+  const host = dialogueScene('host', hostNet, 'trevor', 'host'), guest = dialogueScene('client', guestNet, 'manuel', 'returned');
+  const messages = [], other = [];
+  hostNet.conns.set('other', { send: (msg) => other.push(msg) });
+  guestNet.send = (msg) => hostNet.emit('msg', 'returned', msg);
+  host.sim = new Sim(host.map);
+  for (const [id, who] of [['host', 'trevor'], ['other', 'michael'], ['ai:manuel', 'manuel']]) host.sim.addPlayer(id, who);
+  host.remoteInputs = new Map();
+  host.save = newSave({ seed: 'returning-story', rolls: {}, gameVersion: 't' });
+  host._wireNet(); guest._wireNet();
+  host._startLocal = async () => { host.dlg = { choices: [{ text: 'Stay together' }], node: { decider: 'manuel' }, nodeId: 'choice' }; };
+  const chosen = [];
+  host._commitDialogueChoice = (i, who) => { chosen.push([i, who]); host.dlg = null; };
+  await host.shared.start('fixture');
+  const { id, turn } = host.shared.active;
+  assert.equal(host.shared.active.state.decider, 'trevor', 'the host covers the missing roommate');
+  messages.length = 0; other.length = 0;
+  assert.ok(host.sim.transferPlayer('ai:manuel', 'returned'));
+  hostNet.conns.set('returned', { send: (msg) => { messages.push(msg); guestNet.emit('msg', msg); } });
+  guest.shared.requestResume();
+  assert.equal(guest.shared.watching.id, id);
+  assert.equal(guest.dlg.decider, 'manuel');
+  assert.ok(guest.dlg.turn > turn, 'the directed turn follows the newly occupied seat');
+  assert.equal(other.filter((msg) => msg.t === 'evResume' || msg.t === 'evStart').length, 0);
+  const mirror = guest.dlg;
+  guest.shared.requestResume();
+  assert.equal(guest.dlg, mirror, 'a second response cannot restart an open mirror');
+  guest.dlg.choose(0);
+  assert.deepEqual(chosen, [[0, 'manuel']]);
+
+  host.shared.active = null;
+  guest.shared.onMsg({ t: 'evEnd', id });
+  const state = { who: 'Michael', text: 'A current line.', choices: [] };
+  hostNet.emit('msg', 'other', { t: 'evStart', id: 'other:live', main: 'michael', scope: 'all' });
+  hostNet.emit('msg', 'other', { t: 'evState', id: 'other:live', state });
+  guest.shared.onMsg({ t: 'evEnd', id: 'other:live' });   // simulate a fresh World before it requests the current state
+  guest.stage = { active: { script: { hold: true } }, onClientMsg: () => false };
+  guest.shared.requestResume();
+  assert.equal(guest.dlg.line.text, state.text, 'an authored hold runs alongside restored dialogue');
+  guest.shared.onMsg({ t: 'evEnd', id: 'other:live' });
+  guest.stage.active = { script: { hold: false } };
+  guest.shared.requestResume();
+  assert.equal(guest.shared.pendingResume.id, 'other:live');
+  host.shared.endGuestDialogue('other');
+  guest.stage.active = false;
+  guest.shared._pump();
+  assert.equal(guest.dlg, null);
+  assert.equal(guest.shared.pendingResume, null);
+  messages.length = 0;
+  guest.shared.requestResume();
+  assert.deepEqual(messages, [], 'the host has no abandoned dialogue to restore');
+  hostNet.emit('msg', 'other', { t: 'evStart', id: 'other:nearby', main: 'michael', scope: 'nearby', map: 'far' });
+  messages.length = 0;
+  guest.shared.requestResume();
+  assert.deepEqual(messages, [], 'optional nearby dialogue is not forced on rejoin');
 });
 
 test("Manuel's edge: with the same gear and no skills, Manuel is the toughest and hits hardest of the three", () => {
@@ -5112,10 +5172,13 @@ test('co-op rejoin accepts only a vacant seat with its original room key', () =>
   returned.emit('data', { t: 'flag', key: 'act1.test', value: true });
   assert.equal(save.flags['act1.test'], undefined);
   assert.equal(sim.players.has('returned'), false);
+  host.stage = { active: { id: 'demo', script: { hold: true } }, onHostMsg: () => false };
   returned.emit('data', { t: 'hello', seatKey: key });
   const start = returned.messages.at(-1);
   assert.equal(start.t, 'start');
   assert.deepEqual(start.assignments, { returned: 'manuel' });
+  assert.equal(start.snapshot.stageId, 'demo');
+  assert.equal(start.snapshot.stageHold, true);
   assert.equal(start.snapshot.players.find(p => p.id === 'returned').am, 4);
   assert.equal(sim.players.get('returned'), original);
   assert.equal(original.held, 'gun', 'the returning guest immediately holds their selected gun');
@@ -5158,6 +5221,47 @@ test('equip the exact copy (John Pork, PR #93): with two vests, the modded one y
   assert.equal(c.inventory.filter((item) => item?.id === 'item.mesh_vest').length, 2);
   assert.deepEqual(sent, [{ t: 'equipSlot', i: k }, { t: 'unwear', slot: 'chestplate' }]);
   assert.equal(InvM.wear(c, 'item.mesh_vest', 99), false, 'an invalid explicit slot leaves both copies in the bag');
+});
+
+const { Stage: RejoinStage } = await import('../src/game/stage.js');
+test('a rejoining guest holds gameplay until the host ends the active cutscene', () => {
+  const ui = [], keyboard = new EventEmitter();
+  const display = (text) => {
+    const item = { text, setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; }, destroy() { this.destroyed = true; } };
+    ui.push(item); return item;
+  };
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'client', ready: true, events: new EventEmitter(), input: { keyboard }, input2: { blockAttack: false },
+    cameras: { main: { zoom: 1, fadeIn() {}, zoomTo() {} } },
+    add: { rectangle: () => display(), text: (x, y, label) => display(label) }, tweens: { add() {} },
+  });
+  const stage = scene.stage = new RejoinStage(scene);
+  stage.holdForHost('demo');
+  assert.ok(stage.active.waitingForHost);
+  assert.ok(ui.some((item) => item.text === 'Cutscene in progress'));
+  assert.equal(stage.active.ui.length, 3, 'ordinary cinematic wait uses two letterbox bars');
+  const controls = { ...emptyInput(), mx: 1, attack: true, gadget: true, skill: true };
+  assert.deepEqual(scene._frozen(controls), { ...emptyInput(), gadgetBlocked: true });
+  keyboard.emit('keydown-X');
+  stage.syncHostStage('demo');
+  assert.ok(stage.playing, 'a guest cannot skip the host cutscene');
+  stage.onClientMsg({ t: 'stage', op: 'end', id: 'other' });
+  assert.ok(stage.playing, 'a different cutscene cannot release the hold');
+  stage.syncHostStage(null);
+  assert.equal(stage.playing, false, 'snapshots clear the hold even if the end packet was missed at startup');
+  assert.ok(ui.every((item) => item.destroyed));
+  assert.equal(scene._frozen(controls), controls);
+  stage.holdForHost('demo');
+  stage.onClientMsg({ t: 'stage', op: 'end', id: 'demo' });
+  assert.equal(stage.playing, false, 'the normal host end releases the hold immediately');
+
+  stage.holdForHost('staged_dialogue', true);
+  assert.equal(stage.active.script.hold, true);
+  assert.equal(stage.active.ui.length, 2, 'the lower dialogue area remains available');
+  scene.dlg = { choices: [{ text: 'A choice' }] }; scene.dlgFree = true;
+  scene._onClick({ button: 0, x: 1, y: 1 });
+  assert.equal(scene.input2.blockAttack, true, 'a hold-stage click cannot become a gameplay attack');
+  assert.deepEqual(scene._frozen(controls), { ...emptyInput(), gadgetBlocked: true });
 });
 
 await Promise.all(pending);
