@@ -2524,14 +2524,15 @@
   {
    "id": 115,
    "created_at": "2026-11-21T17:12:09Z",
-   "updated_at": "2026-11-21T17:12:09Z",
+   "updated_at": "2026-11-23T09:02:04Z",
    "history": [
-    "2026-11-21T17:12:09Z trevor: added (for trevor)"
+    "2026-11-21T17:12:09Z trevor: added (for trevor)",
+    "2026-11-23T09:02:04Z trevor: claimed"
    ],
    "title": "Act 2 audio: ring-two ambience beds and region tracks, plus a test that every act-2 map has audio",
    "details": "From docs/design/12-act-quality.md (branch trevor/act-quality-notes): every Act 2 map is silent today. No story needed. Synth beds/tracks in src/audio (no files, no licenses).",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   },
   {
