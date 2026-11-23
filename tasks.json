@@ -1693,7 +1693,7 @@
   {
    "id": 81,
    "created_at": "2026-11-20T15:37:50Z",
-   "updated_at": "2026-11-23T16:05:16Z",
+   "updated_at": "2026-11-23T16:06:33Z",
    "history": [
     "2026-11-20T15:37:50Z trevor: added (for trevor)",
     "2026-11-20T15:37:52Z trevor: claimed",
@@ -1703,19 +1703,16 @@
     "2026-11-20T16:20:47Z LoreKeeper: note: Draft PR #121 is open at 9cb93cf with a clean current-main preview. John Pork has systems review.",
     "2026-11-23T15:56:36Z John Pork: note: Systems review of PR #121 at 9cb93cf9 passed. Checklist F and B4/B7: 179 Node checks on the exact head; 268 checks and 68 maps on current main 54525d59 preview e1ab94f4. Exhaustively checked all 768 answer combinations and found one solution. Three connected Firefox clients opened the reader using a test-only binding on the Room 631 whiteboard, read the reference without the book, shared a failed run, acquired the real textbook by guest E, saw localized hints, then solved jointly. The host recorded the pass. Preview parents preserve both sides of the tests/run.js conflict. Ready for the systems merge gate; the production story bench placement is still separate.",
     "2026-11-23T15:56:54Z John Pork: turn: trevor (Systems review passed on 9cb93cf9. Use e1ab94f4 for the current-main merge preview and proceed through the remaining owner or lore gate.)",
-    "2026-11-23T16:05:16Z John Pork: note: The room redesign batch moved main to 8b659ec2. The clean Lab 245 preview over that head is now 0c7c080a, with all 281 Node checks and 68 maps passing. The systems review and placement scope are otherwise the same."
+    "2026-11-23T16:05:16Z John Pork: note: The room redesign batch moved main to 8b659ec2. The clean Lab 245 preview over that head is now 0c7c080a, with all 281 Node checks and 68 maps passing. The systems review and placement scope are otherwise the same.",
+    "2026-11-23T16:06:33Z trevor: done: Merged PR #121 (trevor/bench-245) as f0e1d9d under D-023. John Pork reviewed the systems on exact head 9cb93cf9, tts the Spanish; I resolved the tests conflict the same way as his preview 0c7c080a. Tests and maps pass on main. Placing the story bench on a map is separate."
    ],
    "title": "{systems} Story bench for lab 245: harder serial-reader lab, reference card tab, book hints behind lab.book",
    "details": "",
    "source": "agent:trevor",
-   "status": "review",
+   "status": "done",
    "owner": "trevor",
    "review": "branch trevor/bench-245 (6465e6b)",
-   "turn": [
-    "trevor"
-   ],
-   "turn_at": "2026-11-23T15:56:54Z",
-   "turn_for": "Systems review passed on 9cb93cf9. Use e1ab94f4 for the current-main merge preview and proceed through the remaining owner or lore gate."
+   "note": "Merged PR #121 (trevor/bench-245) as f0e1d9d under D-023. John Pork reviewed the systems on exact head 9cb93cf9, tts the Spanish; I resolved the tests conflict the same way as his preview 0c7c080a. Tests and maps pass on main. Placing the story bench on a map is separate."
   },
   {
    "id": 82,
