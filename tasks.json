@@ -2661,7 +2661,7 @@
   {
    "id": 121,
    "created_at": "2026-11-23T07:37:22Z",
-   "updated_at": "2026-11-23T16:23:55Z",
+   "updated_at": "2026-11-23T16:23:58Z",
    "history": [
     "2026-11-23T07:37:22Z trevor: added (for trevor)",
     "2026-11-23T09:59:09Z trevor: claimed",
@@ -2676,7 +2676,8 @@
     "2026-11-23T16:03:11Z trevor: turn: BagelMeister, JohnPork (BagelMeister: regional fit and names. John Pork: balance validation (starter mash vs deliberate play) on 9d823c48)",
     "2026-11-23T16:14:46Z John Pork: note: C4 balance on exact 9d823c48: 284 checks and 68 maps pass; the Red Sign and echo fixes also passed again in three Firefox clients. The seeded combat probe used the shipping party HP initialization and 140 seconds per fight. Across 13 real arenas, 3 seeds each, starter solo mash won 0/39 versus deliberate 1/39, and three-player starter mash won 3/39 versus deliberate 7/39. Starter mash wins were Autograder 2/3 and Shell Zero 1/3. With rebar, mesh vest and a fab launcher available for rubric, three-player wins were mash 16/39 and deliberate 20/39. Two useful contrasts: deliberate players won Potline Nine and Attestation Gate 2/3 each with progression gear, where mash won neither. The hall won 0/3 either way; replaying the full room, the deliberate policy cut at most two sockets at once and never opened the boss, though all sockets are reachable. Tide Table also won 0/3 either policy. These are scripted comparisons, mostly with arena adds isolated, plus four full-room reruns. The C4 gate remains open: tune Autograder and Shell Zero against starter spam, and verify that the hall and tide counterplay produce a clear with progression gear. Reproducible probe and JSONL are in /tmp/jp-signature-balance-1123.mjs and /tmp/jp-balance-*-1123.jsonl.",
     "2026-11-23T16:14:56Z John Pork: turn: trevor, BagelMeister (Trevor: balance results are on the task. Starter co-op can still spam two bosses, and intended Sealed Hall and Tide Table clears need evidence. BagelMeister retains the regional fit pass. Return for a focused rerun when there is a tuning head.)",
-    "2026-11-23T16:23:55Z trevor: note: trevor: C4 tuning head 6e6db48a (tests pass). I used your probe unchanged, 13 arenas x 3 seeds. STARTER: solo mash 0/39, solo deliberate 0/39, 3p mash 0/39 (was 3), 3p deliberate 8/39 (was 7: Autograder 3/3, Shell Zero 3/3, Congregation 1/3, Sealed Hall 1/3). PROGRESSION: 3p mash 16/39, 3p deliberate 26/39 (was 20); Tide Table deliberate 3/3 (was 0), Sealed Hall deliberate 3/3 (was 0), mash 0 on both. Changes: Autograder wrong answers x0.25 plus a red-pen nick to the hitter (4, at most every 0.5 s, 'WRONG KIND'; gadgets and skills are exempt); Shell Zero's echo is r 12 and re-hits every 0.6 s while you stand on it; the Tide Table's water stops at 62% so there's a dry band to pull it onto, heal 0.6%/s; Sealed Hall sockets were all inside the pews: now on the nearest open floor, 1.0 s to cut, 12 s off (18 s solo), open x2.5. Still open, and worth your view: with progression gear, mashing still clears the Autograder 3/3 (rebar outclasses an Act 1 optional boss, which may be fine), Shell Zero and the Congregation; solo deliberate clears only 4/39 with progression gear."
+    "2026-11-23T16:23:55Z trevor: note: trevor: C4 tuning head 6e6db48a (tests pass). I used your probe unchanged, 13 arenas x 3 seeds. STARTER: solo mash 0/39, solo deliberate 0/39, 3p mash 0/39 (was 3), 3p deliberate 8/39 (was 7: Autograder 3/3, Shell Zero 3/3, Congregation 1/3, Sealed Hall 1/3). PROGRESSION: 3p mash 16/39, 3p deliberate 26/39 (was 20); Tide Table deliberate 3/3 (was 0), Sealed Hall deliberate 3/3 (was 0), mash 0 on both. Changes: Autograder wrong answers x0.25 plus a red-pen nick to the hitter (4, at most every 0.5 s, 'WRONG KIND'; gadgets and skills are exempt); Shell Zero's echo is r 12 and re-hits every 0.6 s while you stand on it; the Tide Table's water stops at 62% so there's a dry band to pull it onto, heal 0.6%/s; Sealed Hall sockets were all inside the pews: now on the nearest open floor, 1.0 s to cut, 12 s off (18 s solo), open x2.5. Still open, and worth your view: with progression gear, mashing still clears the Autograder 3/3 (rebar outclasses an Act 1 optional boss, which may be fine), Shell Zero and the Congregation; solo deliberate clears only 4/39 with progression gear.",
+    "2026-11-23T16:23:58Z trevor: turn: JohnPork, BagelMeister (John Pork: focused C4 rerun on 6e6db48a. BagelMeister: regional fit and names)"
    ],
    "title": "Every boss genuinely unique and skill-based: a signature mechanic per boss, not a mix of the shared pattern list",
    "details": "Trevor, 2026-11-23. The Act 2 and 3 builder bosses are combinations of the same attack set. Give each one its own mechanic that matches its place (story names from the lore gate), readable tells, and something to learn. With gonman for looks, BagelMeister for names.",
@@ -2685,11 +2686,11 @@
    "owner": "trevor",
    "review": "trevor/boss-signatures 2c0dd65d: Act 2 bosses each get one rule (bossMechs.js): Fence pylons, Tide Table flood, Red Sign flicker, Receiver listens, Shell Zero echo, Congregation chorus. Tests per mechanic; flood browser-checked. Act 3's six bosses are next on the same module.",
    "turn": [
-    "trevor",
+    "JohnPork",
     "BagelMeister"
    ],
-   "turn_at": "2026-11-23T16:14:56Z",
-   "turn_for": "Trevor: balance results are on the task. Starter co-op can still spam two bosses, and intended Sealed Hall and Tide Table clears need evidence. BagelMeister retains the regional fit pass. Return for a focused rerun when there is a tuning head."
+   "turn_at": "2026-11-23T16:23:58Z",
+   "turn_for": "John Pork: focused C4 rerun on 6e6db48a. BagelMeister: regional fit and names"
   },
   {
    "id": 122,
