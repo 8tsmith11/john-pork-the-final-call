@@ -6355,3 +6355,30 @@ test('hub #113, Act 1 people: thirteen neighbours, cooks and students draw with 
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
+
+test('story #52 (PR #96): the refinery sign agrees with itself in both quest orders once THE RED SIGN falls', async () => {
+  const FLAG = 'boss.bmore_sign.down';
+  const { sceneryNextFrame } = await import('../src/game/render/decor.js');
+  const { QUESTS } = await import('../src/content/quests.js');
+  const { ES_BALTIMORE } = await import('../src/i18n/es-baltimore.js');
+  const m = MAPS_FOR_TEST.bmore_refinery;
+  const sign = m.objects.find((o) => o.id === 'obj.bmore_sign');
+  // Order A, before the repair: you see the flicker (the clue), the close-up says so, the S loops.
+  assert.match(sign.text, /S cuts out/);
+  const S = (m.scenery ?? []).find((o) => o.art === 'bm.sign_S');
+  assert.ok(S && S.anim, 'the S is the animated piece');
+  assert.equal(sceneryNextFrame(S, 'bm.sign_S', {}), 'bm.sign_S#1', 'before: it flickers');
+  // After the keeper's boss falls: the S holds, the close-up says steady, matching the keeper's payoff line.
+  assert.equal(S.stillAfter, FLAG);
+  assert.equal(sceneryNextFrame(S, 'bm.sign_S', { [FLAG]: true }), 'bm.sign_S', 'after: it holds steady');
+  assert.equal(sign.textAfter?.flag, FLAG);
+  assert.match(sign.textAfter.text, /steady/); assert.doesNotMatch(sign.textAfter.text, /cuts out/);
+  assert.ok(ES_BALTIMORE[sign.textAfter.text], 'the steady close-up has Spanish');
+  // Order B, repair first: the preacher's look step still completes on the same flags, with an after observation.
+  const q = QUESTS.find((x) => x.id === 'side.bmore_sign');
+  assert.equal(q.inspect.obj, 'obj.bmore_sign'); assert.equal(q.inspect.flag, 'q.bmore_sign.seen', 'same flag, so saves keep their place');
+  assert.equal(q.inspect.textAfter?.flag, FLAG);
+  assert.doesNotMatch(q.inspect.textAfter.text, /goes out\./, 'the after look does not claim the S goes out');
+  const keeper = QUESTS.find((x) => x.id === 'side.bmore_redsign');
+  assert.ok(keeper, 'the keeper\'s quest is the one that steadies it');
+});

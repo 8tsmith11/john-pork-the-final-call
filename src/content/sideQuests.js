@@ -236,7 +236,9 @@ side({ id: 'md_board', act: 2, ...g('npc.md_quartermaster', QM), title: 'Requisi
 side({ id: 'bmore_sign', act: 2, ...g('npc.bmore_preacher', PREACHER), title: 'The S flickers', titleEs: 'La S parpadea',
   why: 'The preacher says the refinery sign spells something when it flickers.', whyEs: 'El predicador dice que el cartel de la refinería deletrea algo cuando parpadea.',
   pitch: '"Watch the sign. When the S goes out, what\'s left? Then come back and tell me I\'m wrong."', pitchEs: '"Mira el cartel. Cuando la S se apaga, ¿qué queda? Después vuelve y dime que me equivoco."',
-  look: { obj: 'obj.bmore_sign', where: 'the refinery sign', whereEs: 'el cartel de la refinería', seen: 'The S goes out. What\'s left doesn\'t spell anything. You look for a while anyway.', seenEs: 'La S se apaga. Lo que queda no deletrea nada. Igual te quedas mirando un rato.' },
+  look: { obj: 'obj.bmore_sign', where: 'the refinery sign', whereEs: 'el cartel de la refinería', seen: 'The S goes out. What\'s left doesn\'t spell anything. You look for a while anyway.', seenEs: 'La S se apaga. Lo que queda no deletrea nada. Igual te quedas mirando un rato.',
+    // After THE RED SIGN falls the S stays on, so arriving in that order the look still completes (story #52, order B).
+    seenAfter: { flag: 'boss.bmore_sign.down', seen: 'All five letters burn steady now. You stand there waiting for the S to go out anyway. It doesn\'t. You\'re not sure that\'s better.', seenEs: 'Las cinco letras quedan fijas ahora. Igual te quedas esperando que la S se apague. No se apaga. No sabes si eso es mejor.' } },
   line: '"You looked, though. That\'s how it starts."', lineEs: '"Pero miraste. Así empieza."' });
 
 side({ id: 'bmore_congregation', act: 2, ...g('npc.bmore_steward', STEWARD), title: 'Everyone who picked up', titleEs: 'Todos los que contestaron', money: 40, xp: 80,

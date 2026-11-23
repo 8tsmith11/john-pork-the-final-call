@@ -85,7 +85,8 @@ const refinery = fromGrid({
   legend: {
     // The sign itself, on the right half of the S. Drawn by the scenery letters below (selfDrawn), so it adds no
     // art. It has the id the preacher's quest looks for (side.bmore_sign), so saves keep their place in it.
-    $: { prop: 'bm.sign_S', id: 'obj.bmore_sign', selfDrawn: true, tile: '#', label: 'The refinery sign', text: 'SHOAL in red tube, every letter taller than you. Every few seconds the S cuts out, then comes back on with a hum.' },
+    $: { prop: 'bm.sign_S', id: 'obj.bmore_sign', selfDrawn: true, tile: '#', label: 'The refinery sign', text: 'SHOAL in red tube, every letter taller than you. Every few seconds the S cuts out, then comes back on with a hum.',
+         textAfter: { flag: 'boss.bmore_sign.down', text: 'SHOAL in red tube, every letter taller than you. All five burn steady now, the S too. The hum is gone.' } },   // the keeper's quest steadies it (story #52, hub #77)
     '?': { prop: 'bm.sign_switch', id: 'obj.refinery_switch', label: 'The sign\'s switch', text: 'The switch for the sign, taped in the ON position. Many layers of tape, some of it older than you. A note under the newest layer: "LEAVE IT. THE BOATS STEER BY IT."' },
     E: { enemy: 'enemy.spitter' },
     '@': { spawn: true },
@@ -94,7 +95,7 @@ const refinery = fromGrid({
 });
 const REF_WALL = { 2: 'bm.wall_ref_vent', 5: 'bm.wall_ref_valve', 9: 'bm.wall_ref_door', 12: 'bm.wall_ref_vent', 17: 'bm.wall_ref_valve', 24: 'bm.wall_ref_door', 27: 'bm.wall_ref_vent' };
 northWall(refinery, 1, 28, (x) => REF_WALL[x] ?? 'bm.wall_ref');
-along(refinery, 1, [[19, 'bm.sign_S', { anim: 900 }], [21, 'bm.sign_H'], [23, 'bm.sign_O'], [25, 'bm.sign_A'], [27, 'bm.sign_L']], { w: 2, light: 0.8, floor: true });
+along(refinery, 1, [[19, 'bm.sign_S', { anim: 900, stillAfter: 'boss.bmore_sign.down' }], [21, 'bm.sign_H'], [23, 'bm.sign_O'], [25, 'bm.sign_A'], [27, 'bm.sign_L']], { w: 2, light: 0.8, floor: true });
 along(refinery, 3, [[2, 'bm.silo'], [6, 'bm.silo'], [10, 'bm.silo'], [14, 'bm.silo']], { w: 2, h: 2, solid: true });
 export const bmoreRefinery = refinery.scenery('bm.smokestack', 17, 3, { solid: true }).enemy('boss.bmore_sign', 4, 2).build();
 

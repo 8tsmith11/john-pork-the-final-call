@@ -29,6 +29,7 @@ export const ES_BALTIMORE = {
   'The refinery sign': 'El cartel de la refinería',
   'SHOAL in red tube, every letter taller than you. Every few seconds the S cuts out, then comes back on with a hum.':
     'SHOAL en tubo rojo, cada letra más alta que tú. Cada pocos segundos la S se apaga y después vuelve a prenderse con un zumbido.',
+  'SHOAL in red tube, every letter taller than you. All five burn steady now, the S too. The hum is gone.': 'SHOAL en tubo rojo, cada letra más alta que tú. Las cinco quedan fijas ahora, la S también. El zumbido se fue.',
   "The sign's switch": 'El interruptor del cartel',
   'The switch for the sign, taped in the ON position. Many layers of tape, some of it older than you. A note under the newest layer: "LEAVE IT. THE BOATS STEER BY IT."':
     'El interruptor del cartel, pegado con cinta en ENCENDIDO. Muchas capas de cinta, algunas más viejas que tú. Una nota bajo la más nueva: "NO LO TOQUES. LOS BARCOS SE GUÍAN POR ÉL."',
