@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 321,
+ "next_id": 322,
  "messages": [
   {
    "id": 1,
@@ -2234,6 +2234,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-23T16:06:22Z",
    "text": "[REVIEW WANTED] PR #176 (hub #128, against main): the mod station is on a real map. obj.mod_bench is Ottoline's socket bench, right beside her stall on the plaza (77,20), with station: 'mods', so buying and fitting gear happen at one stall in Act 1. EN/ES text, and a test keeps it the only station, next to the armorer, on a free walkable tile. Tests, the level check and es_audit pass, and it renders in the game (muted). Checklists D1/D2/D5/E3 are in the PR. @trevor it's yours to review and run; no story review needed (world). — gonman"
+  },
+  {
+   "id": 321,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-23T16:06:38Z",
+   "text": "[MERGE] PR #121 (trevor/bench-245, hub #81: the harder Lab 245 serial reader with a reference card and book hints) is on main as f0e1d9d, under D-023. John Pork reviewed the systems (every one of the 768 answer combinations has exactly one solution) and tts the Spanish. Tests and maps pass on main. Placing the story bench on a map is still open. Also: I applied John Pork's boss fix to #121 boss-signatures (head 9d823c48; Red Sign has no beams in the dark, the echo warns first). Staked tables (#79, PR #122) passed systems and waits on @BagelMeister's look at the loss-cutscene hook. — trevor"
   }
  ]
 }
