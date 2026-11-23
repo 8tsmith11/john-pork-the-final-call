@@ -8,6 +8,10 @@
 // unit at each end. The north room is a terminal lab, cable trays run along the hall walls, and floor cable runs from
 // the machine room's door out to the terminals and to lab 245. Lab 245's bench, the quest objects, the doors, the
 // people and the four rotlings keep their tiles (tests/run.js checks them).
+//
+// Doors face the way you go through them (Phase 0, docs/design/13-audit-and-rebuild.md): the plaza is north of the hall
+// and the quad south of it, so the front doors from the plaza are in the north wall (into the terminal lab) and the
+// back door to the quad is in the south wall. They used to be the other way round.
 // Art: tools/art/gen_props.py (obj.server_rack, obj.network_rack, obj.terminal_lit, obj.crac_unit, obj.cable_tray,
 // obj.wall_display, obj.room_sign; dec.raised_floor, dec.raised_vent, dec.cable_*). Coloured light and cold air:
 // src/content/maps/dressing.js.
@@ -40,7 +44,7 @@ const decals = FLOOR.flatMap((row, y) => [...row].flatMap((ch, x) => (DECAL[ch] 
 export const computeHallB = fromGrid({
   id: 'compute_hall_b', name: 'Compute Hall B', fill: 'm', decals,
   rows: [
-    '#HHHHHH#HHHH#HHHHH##########',
+    '#HHHHHH#HHHDDHHHHH##########',
     '#AAAAAA#MPMmmmMYMR#........#',
     '#A?AA!A#mmmmmmmmmm#..T.....#',
     '#AAAAAA#mmEmmmmmmm#........#',
@@ -55,17 +59,17 @@ export const computeHallB = fromGrid({
     '#mmmmmmmmmmmmmmmmmmmmmmmmmm#',
     '#mmmmm@mmmmmmmEmmmmmmmmmmmm#',
     '#mmmmmmmmmmmmmmmmmmmmmmmmmm#',
-    '###########DD###############',
+    '############################',
   ],
   legend: {
     A: { tile: 'e' },
     '?': { prop: 'obj.workbench', id: 'obj.chb_bench', tile: 'e', label: 'Lab bench (245)', text: 'Manuel\'s bench in 245. Under a dust cover, a head in grey clay, half finished, the ears marked in pencil much lower than you\'d guess. Taped to the cover, in his writing: NO TOCAR. Under it, in English: THIS MEANS YOU.' },
     '!': { prop: 'obj.solder', id: 'obj.chb_bench_2', tile: 'e', label: 'Lab bench', text: 'Somebody\'s project, dropped mid-solder. The iron is still plugged in. It\'s still hot.' },
     $: { prop: 'obj.crate', id: 'obj.chb_storage', label: 'Storage crate', loot: 'parts', text: 'DEPT. SURPLUS, stenciled on the side over an older stencil that says DO NOT DISCARD.' },
-    T: { npc: 'npc.chb_ta', art: 'npc.rotter_2', tile: '.', label: 'TA, still grading',
+    T: { npc: 'npc.chb_ta', art: 'npc.chb_ta', tile: '.', label: 'TA, still grading',
       text: '"Office hours are on the door. I changed them to whenever I\'m here, which is always." She initials a quiz without reading it and pulls the next one off the stack.',
       later: [{ if: 'boss.chb_autograder.down', text: 'For once she isn\'t grading. Half a sandwich on a paper bag. "Nobody upstairs knows the autograder\'s gone yet. Give me one night before they make me grade by hand."' }] },
-    S: { npc: 'npc.chb_student', art: 'npc.rotter_1', label: 'Student, stuck', text: '"The doors here only unlock on the hour." He checks the clock over the door. It says 19:01. "I\'ll get the next one."' },
+    S: { npc: 'npc.chb_student', art: 'npc.chb_student', label: 'Student, stuck', text: '"The doors here only unlock on the hour." He checks the clock over the door. It says 19:01. "I\'ll get the next one."' },
     E: { enemy: 'enemy.rotling' },
     '@': { spawn: true },
     D: { exit: 'metro_plaza', id: 'obj.chb_doors', art: 'obj.door', label: 'Back out to the campus walk', stepOn: true, pair: 'obj.campus_door', text: 'Out into the night.' },
@@ -97,4 +101,4 @@ export const computeHallB = fromGrid({
     B: { prop: 'obj.wall_display', id: 'obj.chb_status_board', tile: '#', light: 0.5, label: 'Status board',
       text: 'Amber letters crawl across it: COMPUTE HALL B. LOAD 99%. APPRENTICES IN BUILDING: 0. THANK YOU FOR SAVING ENERGY.' },
   },
-}).exit('campus_quad', 12, 0, { id: 'obj.chb_quad_door', art: 'obj.door', label: 'Out to the quad', pair: 'obj.quad_chb', text: 'The back doors, out to the campus quad.' }).build();
+}).exit('campus_quad', 12, 15, { id: 'obj.chb_quad_door', art: 'obj.door', label: 'Out to the quad', pair: 'obj.quad_chb', text: 'The back doors, out to the campus quad.' }).build();

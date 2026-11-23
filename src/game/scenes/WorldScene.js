@@ -16,7 +16,7 @@ import { loadScene, Conversation, evalCond } from '../../engine/dialogue.js';
 import { babble, setArea, sfx, ring, speak, hush, setInstrumentFocus, audioOut } from '../../audio/audio.js';
 import { sellPrice, LOOT, DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods, heldWeapon, WORN_SLOTS, canWear } from '../../content/items.js';
 import { tileKey, laneDashes } from '../render/tiles.js';
-import { mapDecals, sceneryPlacement } from '../render/decor.js';
+import { mapDecals, sceneryPlacement, sceneryNextFrame } from '../render/decor.js';
 import { GameMenu, TABS, modText } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
 import { BARKS, pickBark } from '../../content/barks.js';
@@ -77,12 +77,13 @@ import { Approach } from '../approach.js';
 import { Pacifier } from '../pacifier.js';
 import { GuitarStands } from '../guitarStands.js';
 import { ABILITY_KEYS, BASE_SCORES, MAX_SCORE, raiseCost } from '../../content/abilities.js';
-import { addXp, xpToNext, xpScale } from '../../content/progression.js';
+import { addXp, xpToNext, xpScale, MORPH_STAGE1_FLAG } from '../../content/progression.js';
 import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
 import { puzzleFor } from '../../content/puzzles.js';
 import { use as usePuzzle } from '../../content/puzzleKit.js';
 
 const STEP = 1 / 60;
+const CAM_FX = new Set(['shake', 'flash', 'fadeOut', 'fadeIn']);   // camera effects the host may send guests (_camFx)
 const TRAIT_LABEL = { sprinter: 'fast', armored: 'armored', splitter: 'splits', puddler: 'leaks coderot', blinker: 'blinks' };
 const MORPH_UNLOCK = {
   trevor: 'Trevor\'s supplement stack finally hits all at once. Morph stage 1 unlocked. [M]',
@@ -111,7 +112,8 @@ const CONTROLS_TEXT = 'WASD move · mouse aim · click: use held item\nSpace / S
 // After arriving on a map, exits ignore you this long (ms), so a rapid second E or a held key can't bounce you back.
 const ARRIVE_LOCK = 700;
 const STORY_SCENES = new Set(['cold_open', 'the_call', 'descent_and_boss', 'ending', 'first_death', 'checkpoint', 'lead_b_halvard']);
-const ACT_ONE_HOST_FLAGS = new Set(['act1.boss.defeated', 'act1.outbreak.contained', 'act1.complete']);
+const ACT_ONE_BALLOON_RELEASED = 'act1.ending.balloonReleased';
+const ACT_ONE_HOST_FLAGS = new Set(['act1.boss.defeated', 'act1.outbreak.contained', 'act1.complete', ACT_ONE_BALLOON_RELEASED, MORPH_STAGE1_FLAG]);
 
 // Dialogue scenes that happen on the phone, and the title each call gets in the phone tab's transcripts.
 const PHONE_CALLS = { the_call: { start: 'John Pork · the call', call_ring_2: 'John Pork · second call', call_ring_3: 'John Pork · third call', butt_dial: 'John Pork · pocket dial' } };
@@ -141,6 +143,11 @@ export class WorldScene extends Phaser.Scene {
   }
 
   async create() {
+    // The data channel can close while Phaser has the Lobby-to-World transition queued.
+    if (this.mode === 'client' && !this.net.conn?.open) {
+      this._leaveToTitle(this.net.code);
+      return;
+    }
     setupCameras(this, { world: true });
     this.save = this.passedSave ?? (await loadAutosave().catch(() => null)) ?? this._newGame();
     const startMap = MAPS[this.save.world.area] ?? MAPS.room631;
@@ -160,7 +167,9 @@ export class WorldScene extends Phaser.Scene {
     });
     this.localId = this.mode === 'client' ? this.net.id : 'host';
     this.remoteInputs = new Map();
-    this.snapBuf = this.initialSnapshot ? [{ at: performance.now(), snap: this.initialSnapshot }] : [];
+    // fx: that snapshot's events have played on this screen (each plays once; the joining snapshot's already happened).
+    this.snapBuf = this.initialSnapshot ? [{ at: performance.now(), snap: this.initialSnapshot, fx: true }] : [];
+    this._netEvents = []; this._fxLate = null;
     if (this.mode !== 'client') {
       this.sim.addPlayer(this.localId, this.character);
       for (const [peer, ch] of Object.entries(this.assignments || {})) {
@@ -235,19 +244,35 @@ export class WorldScene extends Phaser.Scene {
       if (person) { person.mode = 'wait'; person.t = 4; person.spr.setFlipX(person.x > me.x); this._say(`${person.name.toUpperCase()}\n${this.crowd.lineFor(person)}`); if (person.pixel) this._flag?.('secrets.pixelated.found', true); babble(null, 'hey there friend'); }
     });
     this.input.on('pointerdown', (ptr) => this._onClick(ptr));
-    this.input.keyboard.on('keydown-H', () => { if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
-    this.input.keyboard.on('keydown-F', () => { if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
+    this.input.keyboard.on('keydown-H', () => { if (this.stage?.active) return; if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
+    this.input.keyboard.on('keydown-F', () => { if (this.stage?.active) return; if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
     this._showMap(startMap);
+    this.stage.holdForHost(this.initialSnapshot?.stageId, this.initialSnapshot?.stageHold);
     this.ready = true;
+    if (this.initialSnapshot) this.shared.requestResume();
     // Act 1's witnessed beats are staged in-engine first (hub #48; src/content/stage/act1_*.js), then the scene plays.
     // A beat of delay so the roommates are on screen for the cutscene to stand in for them.
+    // The cold open (D-022): the staging plays line by line while the dialogue is on screen (stage 'cold_open'
+    // is a hold script with a cue per line). Host and solo run it; guests watch the host's shared scene.
     if (!this.initialSnapshot) {
-      if (!this.save.flags['act1.coldopen.done']) this.time.delayedCall(300, () => this.stage.after('act1_open', () => this.startDialogue('cold_open', null, () => { this._flag('act1.coldopen.done', true); this._controlsHint(); })));
+      if (!this.save.flags['act1.coldopen.done'] && this.mode !== 'client') this.time.delayedCall(300, async () => {
+        await this.stage.play('cold_open');
+        this.startDialogue('cold_open', null, () => { this.stage.release('cold_open'); this._flag('act1.coldopen.done', true); this._controlsHint(); });
+      });
       else this.time.delayedCall(1200, () => this._controlsHint());
     }
   }
 
   // ---------- dialogue ----------
+  // Objects whose words change once something has happened: textAfter: { flag, text } (a sign that's been fixed
+  // stops being described as flickering). Applied before anything reads o.text, on both host and guests.
+  _flagTexts() {
+    for (const o of this._flagTextObjs ?? []) {
+      if (!Object.hasOwn(o, '_textBase')) o._textBase = o.text;
+      o.text = this.save.flags[o.textAfter.flag] ? o.textAfter.text : o._textBase;
+    }
+  }
+
   _flag(k, v) {
     this.save.flags[k] = v;
     if (this.mode === 'client') this.net.send({ t: 'flag', key: k, value: v });
@@ -308,6 +333,7 @@ export class WorldScene extends Phaser.Scene {
     this._transcript = PHONE_CALLS[sceneName] ? { title: PHONE_CALLS[sceneName][nodeId ?? 'start'] ?? PHONE_CALLS[sceneName].start, at: new Date().toISOString(), lines: [] } : null;   // phone tab transcripts (Trevor)
     this.dlgVoiced = sceneName === 'ending';   // act-ending cutscene: spoken voices
     this.dlgDone = onDone;
+    this._nodeBarks(scene, this.dlg.nodeId);
     this._drawDialogue();
   }
 
@@ -335,7 +361,7 @@ export class WorldScene extends Phaser.Scene {
         if (!this.dlg.choices.length && this._pages && this._page < this._pages.length - 1) {   // long line: next page first
           this._page++; this._typeFull = this._pages[this._page]; this._typeShown = 0; this._lineAt = this.time.now; this._drawDialogue(); return;
         }
-        if (!this.dlg.choices.length && this.time.now - (this._lineAt ?? 0) > 220) this.dlg.advance();
+        if (!this.dlg.choices.length && !this.stage?.cueBusy && this.time.now - (this._lineAt ?? 0) > 220) this.dlg.advance();
         this._drawDialogue();
       }
       const n = parseInt(ev.key, 10);
@@ -380,7 +406,7 @@ export class WorldScene extends Phaser.Scene {
       noise.fillStyle(0x000000, 0.25 + 0.2 * Math.sin(this.time.now / 40)).fillRect(0, 0, W, H);
       hudBits.forEach((h) => h.setText(garble(h.text || 'XXXXXXXX')));
       root.x = Math.random() < 0.2 ? (Math.random() * 6 - 3) : 0;
-      if (k > 0.7) ans.setText('◉ ANSWERED. You did not press anything.').setColor('#f2a6b8');
+      if (k > 0.7) ans.setText('◉ CONNECTING. You did not press anything.').setColor('#f2a6b8');   // the answer/decline choice comes next
     } });
     this.time.delayedCall(3200, () => {
       tick.remove();
@@ -456,7 +482,7 @@ export class WorldScene extends Phaser.Scene {
     if (!c || this.dlg.spectator) return;
     const showLine = this.shared?.active && this.shared.active.scope !== 'self';
     if (!showLine) this._logChoice(who, c);
-    this.dlg.choose(i, showLine ? who : undefined);
+    this.dlg.choose(i, showLine ? who : undefined, { by: who });
     this.shared?._pump();
     this._drawDialogue();
   }
@@ -464,6 +490,7 @@ export class WorldScene extends Phaser.Scene {
   _drawDialogue() {
     if (this.dlg?.node && this._dlgModeNode !== this.dlg.nodeId) {   // per-node mode (story/free) as the scene moves on (gonman, #528)
       this._dlgModeNode = this.dlg.nodeId;
+      this._nodeBarks(this.dlg.scene, this.dlg.nodeId);
       if (this.dlg.node.mode) this.dlgFree = this.dlg.node.mode === 'free';
     }
     const d = this.dlg, on = !!d && !d.done;
@@ -528,10 +555,13 @@ export class WorldScene extends Phaser.Scene {
       this.dlgText.setColor(line && !line.who ? '#9aa3c7' : '#e8e8f0');
       if (line && line !== this._lastLine) {
         this._lastLine = line; this._lineAt = this.time.now;
+        this.stage?.cue?.(line.cue);   // its staging plays while it's on screen (D-022)
         if (line.choice) this._logChoice(line.who, line);
         else if (this._transcript && line.text && !line.sms) this._transcript.lines.push([line.who ?? '', line.text.replace(/\*([^*]+)\*/g, '$1')]);
         // The guide's Sahur entry: seen once he speaks on screen, whichever route (cameo or boss).
         if (line.who && /sahur/i.test(line.who) && !this.save.flags['act1.sahur.seen']) this._flag('act1.sahur.seen', true);
+        this._endingSahurCue(d.nodeId);
+        this._balloonCue(d.nodeId, line);
         if (line.sms) {   // a text message: buzz, and keep it on the phone
           sfx('pickup');
           const texts = (this.save.world.phone ??= { texts: [] }).texts;
@@ -682,6 +712,7 @@ export class WorldScene extends Phaser.Scene {
           if (!here()) { if (this._beatPending === 'act1.beat.call') this._beatPending = null; return; }   // left anyway: still owed
           this._beatPending = null;
           this.save.flags['act1.beat.call'] = true;
+          this.save.flags['act1.call.attempt'] ??= 1;   // the first ring (rings 2 and 3 set their own number)
           this.startDialogue('the_call');
         });
       });
@@ -708,8 +739,13 @@ export class WorldScene extends Phaser.Scene {
     this.net.occupySeat(character, peer);
     this._lastSnap = null;
     this._worldSig = null;
-    const snapshot = { ...this.sim.snapshot(), doors: [...this.sim.map.doors.values()].filter(d => d.open).map(d => d.id) };
+    const snapshot = { ...this.sim.snapshot(), doors: [...this.sim.map.doors.values()].filter(d => d.open).map(d => d.id), ...this._stagePresence() };
     this.net.send(peer, { t: 'start', save: this.save, assignments: { [peer]: character }, snapshot });
+  }
+
+  _stagePresence() {
+    const active = this.stage?.active;
+    return { stageId: active?.id ?? null, ...(active?.script?.hold ? { stageHold: true } : {}) };
   }
 
   _wireNet() {
@@ -737,6 +773,8 @@ export class WorldScene extends Phaser.Scene {
           this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, skill: msg.inp.skill || prev?.skill,
             gadget: msg.inp.gadget === true || prev?.gadget === true, interact: false });
         }
+        // A guest who reads the 245 book at 631's shelf (gonman, PR #116) gets the bench's book hints for the party too; it only adds hints.
+        if (msg.t === 'flag' && msg.key === 'lab.book') this.save.flags['lab.book'] = true;
         if (msg.t === 'flag' && typeof msg.key === 'string' && /^(act\d|dlg\.)/.test(msg.key) && !ACT_ONE_HOST_FLAGS.has(msg.key)) this.save.flags[msg.key] = msg.value ?? true
         if (msg.t === 'flag' && msg.key === 'act1.fuses.in') this._seatFuses();
         if (msg.t === 'item' && this.save.party[msg.who] && ITEMS[`item.${msg.item}`]) { Inv.add(this.save.party[msg.who], `item.${msg.item}`, Math.min(99, msg.n | 0 || 1)); this._syncParty(); }
@@ -792,20 +830,45 @@ export class WorldScene extends Phaser.Scene {
           }
         }
       });
-      this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
+      // Every event since the last broadcast goes out with it (a broadcast spans several frames; _lastSnap holds only the latest).
+      this.time.addEvent({ delay: 50, loop: true, callback: () => {
+        this.net.broadcast({ t: 'snap', snap: { ...(this._lastSnap ?? this.sim.snapshot()), events: this._netEvents ?? [] }, ...this._stagePresence() });
+        this._netEvents = [];
+      } });
       this.time.addEvent({ delay: 500, loop: true, callback: () => this._broadcastWorld() });
       on('join', () => { this._worldSig = null; });
     } else if (this.mode === 'client') {
+      let rejoinStageSynced = false;
       on('msg', (msg) => {
         if (msg.t === 'toast') { this._toast(msg.text); return; }
         if (msg.t === 'gadgetFx') { if (msg.area === this.map.id) this._gadgetFx(msg.effect); return; }
+        if (msg.t === 'camfx') { if (msg.area === this.map.id && CAM_FX.has(msg.kind)) this.cameras.main[msg.kind](...(msg.args ?? [])); return; }
+        if (msg.t === 'fxPop') { if (msg.area === this.map.id) this._fxPop(msg.x, msg.y, msg.text); return; }
+        if (msg.t === 'hackCall') { this._hackCall(); return; }   // the dialogue after it is shared already
+        if (msg.t === 'buttDial') { ring(2); this._toast('Phone: JOHN PORK'); return; }
+        if (msg.t === 'act1Arrival') { this._showActOneArrival(msg.x, msg.y); return; }
         if (msg.t === 'gadgetReading') { if (msg.area === this.map.id) this._showGadgetReading(msg); return; }
         if (msg.t === 'lattice') { this._table().onClientMsg(msg); return; }
         if (msg.t === 'bastion') { this._bastion().onClientMsg(msg); return; }
         if (msg.t === 'lab') { this._lab().onClientMsg(msg); return; }
         if (msg.t === 'pipe') { this._pipes().onClientMsg(msg); return; }
         if (this.shared?.onMsg(msg) || this.stage?.onClientMsg(msg) || this.retry?.onClientMsg(msg) || this.moods?.onClientMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg) || this.comic?.onClientMsg(msg)) return;
-        if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
+        if (msg.t === 'snap') {
+          this.snapBuf.push({ at: performance.now(), snap: msg.snap, fx: false });
+          if (this.snapBuf.length > 20) {
+            // Dropped before this screen drew it (a long frame): its events still play once, next frame. Capped, so a
+            // hidden tab doesn't save up minutes of hits.
+            const old = this.snapBuf.shift();
+            if (!old.fx) this._fxLate = [...(this._fxLate ?? []), ...(old.snap.events ?? [])].slice(-64);
+          }
+          if (this.initialSnapshot && this.stage) {
+            this.stage.syncHostStage(msg.stageId);
+            if (!rejoinStageSynced) {
+              rejoinStageSynced = true;
+              this.stage.holdForHost(msg.stageId, msg.stageHold);
+            }
+          }
+        }
         if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text, msg.questRead, msg.itemIcons);
         if (msg.t === 'caption') this._caption(msg.text);
         if (msg.t === 'reload') { this.scene.restart({ mode: 'client', net: this.net, save: msg.save, character: this.character }); return; }
@@ -817,31 +880,40 @@ export class WorldScene extends Phaser.Scene {
           this._showActOneCard();
         }
       });
-      on('close', () => this._say(`Connection lost. To resume, leave to title and rejoin room ${this.net.code} from this tab.`));
+      on('close', () => this._leaveToTitle(this.net.code));
     }
   }
 
   _interpolated() {
     const t = performance.now() - 100, buf = this.snapBuf;
     if (!buf.length) return null;
+    // The same snapshot is drawn over several frames, and the view can skip past one: every snapshot up to the one
+    // shown hands over its events exactly once.
+    const withEvents = (b, snap) => {
+      const events = this._fxLate ?? []; this._fxLate = null;
+      for (const s of buf) if (!s.fx && s.at <= b.at) { s.fx = true; events.push(...(s.snap.events ?? [])); }
+      return { ...snap, events };
+    };
     const i = buf.findIndex((s) => s.at > t);
-    if (i <= 0) return buf[i === 0 ? 0 : buf.length - 1].snap;
+    if (i <= 0) { const b = buf[i === 0 ? 0 : buf.length - 1]; return withEvents(b, b.snap); }
     const a = buf[i - 1], b = buf[i], k = (t - a.at) / (b.at - a.at || 1);
-    if (a.snap.map !== b.snap.map) return b.snap;
+    if (a.snap.map !== b.snap.map) return withEvents(b, b.snap);
     const lerp = (list, prevList) => {
       const prev = new Map(prevList.map((p) => [p.id, p]));
       // a jump of more than four tiles is a teleport (a wrap edge, a respawn): show it, don't slide across the map
       return list.map((p) => { const q = prev.get(p.id); return q && Math.abs(p.x - q.x) < 64 && Math.abs(p.y - q.y) < 64 ? { ...p, x: q.x + (p.x - q.x) * k, y: q.y + (p.y - q.y) * k } : p; });
     };
-    return { ...b.snap, players: lerp(b.snap.players, a.snap.players), enemies: lerp(b.snap.enemies, a.snap.enemies) };
+    return withEvents(b, { ...b.snap, players: lerp(b.snap.players, a.snap.players), enemies: lerp(b.snap.enemies, a.snap.enemies) });
   }
 
   // ---------- map ----------
   _showMap(map) {
     this.map = map;
+    this.sahurCameo?.destroy(); this.sahurCameo = null;
     // Rapid back-and-forth guard (Trevor): a new map generation, so anything queued on the last map knows it's stale;
     // the arrival time, for the exit grace; and no story beat is still pending from the last map.
     this._mapGen = (this._mapGen ?? 0) + 1; this._arrivedAt = this.time?.now ?? 0; this._beatPending = null;
+    this._flagTextObjs = (map.objects ?? []).filter((o) => o.textAfter); this._flagTexts();
     this.mapGfx?.destroy(); this.mapRT?.destroy();
     // Bake textured tiles into one render texture (cheap to draw every frame).
     const rt = this.mapRT = this.add.renderTexture(0, 0, map.w * TILE, map.h * TILE).setOrigin(0, 0).setDepth(-10);
@@ -977,7 +1049,7 @@ export class WorldScene extends Phaser.Scene {
       const pl = sceneryPlacement(s, hasArt, s.scale ?? PK); if (!pl) continue;
       const im = this.add.image(pl.x, pl.y, pl.sheet, s.art).setOrigin(...pl.origin).setScale(pl.k).setDepth(s.floor ? 2 : pl.y - 4).setFlipX(!!s.flip);
       if (!s.floor) shadowUnder(pl.x, pl.y, pl.shadow);
-      if (hasArt(pl.sheet, `${s.art}#1`)) this.propTimers.push(this.time.addEvent({ delay: s.anim ?? 420, loop: true, callback: () => im.active && im.setFrame(im.frame.name === s.art ? `${s.art}#1` : s.art) }));
+      if (hasArt(pl.sheet, `${s.art}#1`)) this.propTimers.push(this.time.addEvent({ delay: s.anim ?? 420, loop: true, callback: () => im.active && im.setFrame(sceneryNextFrame(s, im.frame.name, this.save.flags)) }));   // stillAfter: holds once its flag is set
       this.propSprites.push(im);
     }
     this._refreshPuzzleProps();
@@ -996,9 +1068,78 @@ export class WorldScene extends Phaser.Scene {
     // The whole area is on screen (the apartment, small rooms): the minimap adds nothing and would sit on the room.
     this.mapFits = mw <= vw && mh <= vh;
     this.mapLabel.setText(map.name);
-    setArea(map.id);
+    setArea(map.id, map);
     for (const s of this.enemySprites.values()) s.destroy();
     this.enemySprites.clear();
+  }
+
+  // Manuel's orange balloon, where the story says it is (Trevor, 2026-11-23: "let us actually see the balloon when
+  // it's in the scene"). On the dead platform it's caught on the cable under the ventilation shaft, its cut ribbon
+  // trailing, from the moment you arrive until it's let go in the ending: John Pork takes it down to chest height,
+  // then it rises up the shaft and is gone. Drawn in code, on every screen (guests mirror the ending's nodes).
+  _balloonTexture() {
+    if (this.textures.exists('balloon')) return 'balloon';
+    const g = this.make.graphics({ add: false });
+    g.fillStyle(0xf07818, 1).fillEllipse(6, 6, 12, 13);              // balloon0 / balloon1 from the palette
+    g.fillStyle(0xffa23a, 1).fillEllipse(5, 5, 8, 9);
+    g.fillStyle(0xffe6c8, 0.9).fillRect(3, 2, 2, 3);                 // the shine
+    g.fillStyle(0xd85f10, 1).fillTriangle(5, 12, 7, 12, 6, 14);      // the knot
+    g.generateTexture('balloon', 12, 15); g.destroy();
+    return 'balloon';
+  }
+
+  _tickBalloon() {
+    const f = this.save?.flags ?? {};
+    // Rejoining guests carry the release in their start snapshot. Open clients finish their own tween.
+    const here = this.map?.id === 'platform' && !f['act1.complete'] && !this._balloonGone
+      && (!f[ACT_ONE_BALLOON_RELEASED] || this.balloon);
+    if (!here) { this.balloon?.destroy(); this.balloonRibbon?.destroy(); this.balloon = this.balloonRibbon = null; return; }
+    if (!this.balloon) {
+      this.balloon = this.add.image(22 * TILE + 8, 3 * TILE + 2, this._balloonTexture()).setOrigin(0.5, 1).setDepth(3 * TILE + 40);
+      this.balloon.homeY = this.balloon.y; this.balloonRibbon = this.add.graphics().setDepth(3 * TILE + 39);
+    }
+    const b = this.balloon, t = this.time.now / 1000;
+    if (!b.moving) b.y = b.homeY + Math.sin(t * 1.6) * 1.5;           // it drifts on the cable
+    // the cut ribbon: a short wavy line under the knot, the bowline still tied in it
+    const r = this.balloonRibbon.clear().lineStyle(1, 0xffa23a, b.alpha);
+    let px = b.x, py = b.y + 1;
+    for (let i = 1; i <= 6; i++) { const nx = b.x + Math.sin(t * 2.2 + i * 0.9) * 1.6, ny = b.y + 1 + i * 2.2; r.lineBetween(px, py, nx, ny); px = nx; py = ny; }
+    r.fillStyle(0xffa23a, b.alpha).fillRect(px - 1, py, 2, 2);
+  }
+
+  _balloonCue(nodeId, line) {
+    if (this.map?.id !== 'platform') return;
+    const rises = /balloon rises/i.test(line?.text ?? '') || nodeId === 'ending_release';
+    if (rises && this.mode !== 'client' && !this.save.flags[ACT_ONE_BALLOON_RELEASED]) {
+      this._flag(ACT_ONE_BALLOON_RELEASED, true);
+    }
+    const b = this.balloon;
+    if (!b) return;
+    if (nodeId === 'ending_unhook' && !b.lowered && this.porkSprite) {   // he works it free and holds it at chest height
+      b.lowered = b.moving = true; b.setDepth(this.porkSprite.depth + 2); this.balloonRibbon.setDepth(this.porkSprite.depth + 1);   // in front of him
+      this.tweens.add({ targets: b, x: this.porkSprite.x - 6, y: this.porkSprite.y - 16, duration: 1600, ease: 'Sine.inOut', onComplete: () => { b.homeY = b.y; b.moving = false; } });
+    }
+    if (rises && !b.rising) {   // about six seconds, uninterrupted, up the shaft and gone (the script's note)
+      b.rising = b.moving = true;
+      this.tweens.add({ targets: b, x: 22 * TILE + 8, y: -40, duration: 6000, ease: 'Sine.in', onComplete: () => { this._balloonGone = true; } });
+      this.tweens.add({ targets: b, alpha: 0, delay: 4800, duration: 1200 });
+    }
+  }
+
+  // The ending's visitor at the tunnel mouth (Trevor: "we heard him but couldn't see him"). His part of the ending
+  // scene (nodes ending_sahur*) describes him standing there and speaking, but nothing drew him. Now he's drawn
+  // while that part plays, on every screen (guests mirror the node), at the tunnel end of the view so he's always
+  // in sight, and he walks back into the dark when his part is over.
+  _endingSahurCue(nodeId) {
+    const on = this.map?.id === 'platform' && /^ending_sahur/.test(nodeId ?? '');
+    if (on && !this.sahurCameo && this.anims?.exists('sahur')) {
+      const cam = this.cameras.main, x = Math.max(2 * TILE + 8, (cam.worldView?.x ?? 0) + 44), y = 8 * TILE;
+      this.sahurCameo = this.add.sprite(x, y, 'principals').setOrigin(0.5, 1).play('sahur').setDepth(y).setAlpha(0);
+      this.tweens.add({ targets: this.sahurCameo, alpha: 1, duration: 700 });
+    } else if (!on && this.sahurCameo && !this.sahurCameo.leaving) {
+      const sp = this.sahurCameo; sp.leaving = true;
+      this.tweens.add({ targets: sp, x: sp.x - 40, alpha: 0, duration: 1600, onComplete: () => { sp.destroy(); if (this.sahurCameo === sp) this.sahurCameo = null; } });
+    }
   }
 
   _showActOneArrival(x, y) {
@@ -1037,7 +1178,9 @@ export class WorldScene extends Phaser.Scene {
   async _playEnding() {
     if (this.mode === 'client') return;
     const me = this._lastRendered?.players.find(p => p.id === this.localId) ?? this.sim.players.get(this.localId);
-    this._showActOneArrival(me?.x ?? 160, me?.y ?? 80);
+    const x = me?.x ?? 160, y = me?.y ?? 80;
+    this._showActOneArrival(x, y);
+    if (this.mode === 'host') this.net.broadcast({ t: 'act1Arrival', x, y });
     // The ending script branches on these; nothing else sets them. Warm = the party picked up the
     // first time the phone rang (script note: any decline makes Pork cold, including the Sahur route).
     const f = this.save.flags;
@@ -1074,6 +1217,7 @@ export class WorldScene extends Phaser.Scene {
   }
   // Select a hotbar slot (1-9 / wheel). A weapon or gun in that slot becomes the one you hold.
   selectHot(i) {
+    if (this.stage?.active) return;
     const c = this.save.party[this.character]; if (!c) return;
     i = ((i % 9) + 9) % 9;
     this._hotFlash = { i, at: this.time.now };
@@ -1262,22 +1406,22 @@ export class WorldScene extends Phaser.Scene {
     if (i < 0 || !c.inventory[i] || !(ITEMS[c.inventory[i].id]?.heal || ITEMS[c.inventory[i].id]?.caffeine)) return;
     const usedId = c.inventory[i].id;
     const it = ITEMS[Inv.takeSlot(c, i)];
-    if (it.caffeine) { this.sim.caffeinate(peerId, it.caffeine); this._toast(`${who} slams the ${it.name.toLowerCase()}. Wide awake for ${it.caffeine}s.`); this._syncParty(); return; }   // D-017
+    if (it.caffeine) { this.sim.caffeinate(peerId, it.caffeine); this._toastTo(peerId, `${who} slams the ${it.name.toLowerCase()}. Wide awake for ${it.caffeine}s.`); this._syncParty(); return; }   // D-017
     const healAmt = Math.round((it.heal ?? 0) * (usedId === 'item.mate_flask' ? 1 + (playerMods(c, who).mateHeal ?? 0) : 1));   // mate holster
     this.sim.heal(peerId, healAmt);
     if (it.mateKick) {   // mate caffeine (sim.mate): the kick toast comes from the snapshot on the drinker's own screen
       this.sim.mate(peerId);
-      this._toast(`${who} has the ${it.name.toLowerCase()}. +${healAmt} HP`);
+      this._toastTo(peerId, `${who} has the ${it.name.toLowerCase()}. +${healAmt} HP`);
       this._syncParty(); return;
     }
     if (it.pill) {
       const p = this.sim.players.get(peerId);
       if (p) { p.pillT = it.pill; p.sta = 999; p.staT = 0; }   // the sim clamps stamina to its max on the next step
       const line = { manuel: 'Manuel takes the blue pill. "For stamina. It says so on the box."', trevor: 'Trevor takes the blue pill and logs it in a spreadsheet.', michael: 'Michael takes the blue pill. "Nobody tell her."' }[who] ?? `${who} takes the blue pill.`;
-      this._toast(`${line} Dodges are free for ${it.pill}s.`);
+      this._toastTo(peerId, `${line} Dodges are free for ${it.pill}s.`);
       this._syncParty(); return;
     }
-    this._toast(`${who} has the ${it.name.toLowerCase()}. +${healAmt} HP`);
+    this._toastTo(peerId, `${who} has the ${it.name.toLowerCase()}. +${healAmt} HP`);
     this._syncParty();
   }
 
@@ -1394,8 +1538,13 @@ export class WorldScene extends Phaser.Scene {
   menuExport() { exportFile(this.save); }
   async menuQuit(save) {
     if (save && this.mode !== 'client' && !await this._save()) return;
+    this._leaveToTitle();
+  }
+  _leaveToTitle(rejoinCode) {
+    if (this._leaving) return;
+    this._leaving = true;
     this.net?.close?.();
-    this.scene.start('Title');
+    this.scene.start('Title', { rejoinCode });
   }
   mapName(id) { return MAPS[id]?.name ?? id; }
   playerWorldTile() {
@@ -1420,8 +1569,8 @@ export class WorldScene extends Phaser.Scene {
     if (!p.riding && !Inv.has(c, 'item.scooter')) return;   // you have to buy one first (Delroy's, on the plaza)
     p.battery = c.scooterBattery ??= 100;
     p.hicap = Inv.has(c, 'item.scooter_hicap');
-    if (!p.riding && !this.map.outdoor) return this._toast('No scooters indoors.');
-    if (!p.riding && p.battery <= 0) return this._toast('Scooter battery is dead. Charge it at the dock in 631.');
+    if (!p.riding && !this.map.outdoor) return this._toastTo(peerId, 'No scooters indoors.');
+    if (!p.riding && p.battery <= 0) return this._toastTo(peerId, 'Scooter battery is dead. Charge it at the dock in 631.');
     this.sim.toggleScooter(peerId, true);
   }
 
@@ -1431,6 +1580,26 @@ export class WorldScene extends Phaser.Scene {
     if (stage < 1) return;   // nothing until it's unlocked (human request: no 'not yet' message)
     this.sim.toggleMorph(peerId, true);
     p.morphStage = stage;    // the sim reads the stage for stage-two moves (the gonman's R)
+  }
+
+  // Morph stage one opens on a story moment (progression.js MORPH_STAGE1_FLAG), never on a level-up. Host and solo
+  // only; the party sync carries it to guests. Saves that already have it keep it.
+  _tickMorphUnlock() {
+    if (this.mode === 'client' || !this.save?.flags?.[MORPH_STAGE1_FLAG]) return;
+    for (const [who, c] of Object.entries(this.save.party)) {
+      if (!c.morph || c.morph.stage >= 1) continue;
+      c.morph.stage = 1; this._announce(MORPH_UNLOCK[who]); this._partyDirty = true;
+      this._unlockGonman(who, c);
+    }
+  }
+
+  _unlockGonman(who, c) {
+    if (who !== 'manuel' || c.morph?.stage !== 1 || !(c.level >= 6)) return;
+    c.morph.stage = 2;
+    const p = [...(this.sim?.players.values() ?? [])].find((q) => q.character === who);
+    if (p) p.morphStage = 2;
+    this._announce(GONMAN_UNLOCK);
+    this._partyDirty = true;
   }
 
   // John Pork "shows up here and there" (brief): a screen you walk past glitches to his face for a
@@ -1633,13 +1802,15 @@ export class WorldScene extends Phaser.Scene {
   // Asking, inspecting and reporting use the ordinary interaction. Hand-ins use a named action.
   _questInteract(near, who = this.character, peer = this.localId) {
     const f = this.save.flags, qs = questState(this.save), client = this.mode === 'client', remote = peer !== this.localId;
+    this._flagTexts();
     const say = (t) => (remote ? this.net?.send(peer, { t: 'say', text: t }) : this._say(t));
     const act = (fn) => { if (client) this.net.send({ t: 'questUse', id: near.id }); else fn(); return true; };
     for (const q of QUESTS) {
       const st = qs[q.id];
       const inspect = q.inspections?.find((entry) => entry.obj === near.id) ?? (q.inspect?.obj === near.id ? q.inspect : null);
       if (inspect && st.started && questVisible(q, who)) {
-        const { flag, text, fact } = inspect;
+        const { flag, fact } = inspect, after = inspect.textAfter;
+        const text = after && f[after.flag] ? after.text : inspect.text;   // what you notice can change too (seenAfter)
         const unread = fact && !knowsQuestFact(this.save, who, fact);
         if ((!st.done && !f[flag]) || unread) {
           return act(() => {
@@ -1782,11 +1953,8 @@ export class WorldScene extends Phaser.Scene {
   _levelsReached(who, c, levels) {
     for (const lv of levels) {
       this._announce(`${who} reached level ${lv}. (+1 skill point, +${lv % 5 === 0 ? 2 : 1} ability point${lv % 5 === 0 ? 's' : ''})`);
-      if (lv >= 3 && c.morph && c.morph.stage < 1) { c.morph.stage = 1; this._announce(MORPH_UNLOCK[who]); }
-      if (who === 'manuel' && lv >= 6 && c.morph && c.morph.stage < 2) {   // Manuel only: stage two
-        c.morph.stage = 2; const p = [...(this.sim?.players.values() ?? [])].find((q) => q.character === who); if (p) p.morphStage = 2; this._announce(GONMAN_UNLOCK);
-      }
     }
+    if (levels.length) this._unlockGonman(who, c);
   }
 
   // Side-view cutscene (CinematicScene) over a paused world; resumes when it ends or is skipped.
@@ -1938,7 +2106,7 @@ export class WorldScene extends Phaser.Scene {
     if (BUST_ORDER.includes(near.id)) { this._turnBust(near); return; }
     if (near.id === 'obj.pump') {
       if (this.save.flags['act1.bay.drained']) { this._say((near.text ?? '') + '\n\nIt\'s still running, the way you left it. Down in the flooded bay, the waterline has dropped.'); return; }
-      this._flag('act1.bay.drained', true); sfx('hit'); this.cameras.main.shake(300, 0.004);
+      this._flag('act1.bay.drained', true); sfx('hit'); this._camFx('shake', 300, 0.004);
       this._say((near.text ?? '') + '\n\nYou find the reset and lean on it. The pump coughs, catches, and starts pulling water. Somewhere south, a long gurgle. The flooded bay is draining.'); return;
     }
   }
@@ -1974,7 +2142,7 @@ export class WorldScene extends Phaser.Scene {
     if (clocksSolved(this.save.flags) && !this.save.flags['puz.clocks.solved']) {
       this._flag('puz.clocks.solved', true);
       this._grant('item.charm_1901'); this._refreshPuzzleProps();
-      this.cameras.main.shake(400, 0.006);
+      this._camFx('shake', 400, 0.006);
       return this._say(`You wind it to ${now}. Somewhere in ASTER, four clocks tick at once. When you're back on the sixth floor, the hallway clock's face is hanging open on a hinge. Inside, a brass clock hand on a cord. (Rollover charm)`);
     }
     this._say(`You open the face and wind it. It now reads ${now}.${note}`);
@@ -2001,7 +2169,7 @@ export class WorldScene extends Phaser.Scene {
     if (r.solved) {
       if (r.reward.money) W.addMoney(this.save, who, r.reward.money);
       this._syncParty?.(); this._partyDirty = true;
-      this.cameras.main.shake(300, 0.005); this._tickQuests(true);
+      this._camFx('shake', 300, 0.005); this._tickQuests(true);
     }
     const base = o.text ?? o.label ?? '';
     const text = `${base}\n\n${r.say}`, textEs = `${tr(base)}\n\n${rEs.say}`;
@@ -2020,7 +2188,7 @@ export class WorldScene extends Phaser.Scene {
     if (seq.length === BUST_ORDER.length) {
       this._flag('puz.busts.solved', true);
       this._grant('item.pork_pin');
-      this.cameras.main.flash(300, 242, 166, 184);
+      this._camFx('flash', 300, 242, 166, 184);
       return this._say('The third bust turns to face the flag. For a second the whole room feels like it\'s being looked at, from three directions, kindly. Something small and porcelain is lying on the floor that wasn\'t there before. (Porcelain John Pork pin)');
     }
     this._say(`You turn it to face the flag. (${seq.length} of 3)`);
@@ -2108,14 +2276,14 @@ export class WorldScene extends Phaser.Scene {
 
   _lever(k) {
     const key = `act1.switch.${k}`, now = (this.save.flags[key] ?? 'left') === 'left' ? 'right' : 'left';
-    this._flag(key, now); sfx('hit'); this.cameras.main.shake(80, 0.003);
+    this._flag(key, now); sfx('hit'); this._camFx('shake', 80, 0.003);
     this._toast(`Lever ${k.toUpperCase()}: ${now.toUpperCase()}`);
     this._drawLevers();
     const sol = yardSolution(this.save.world.seed);
     const solved = LEVERS.every((x) => (this.save.flags[`act1.switch.${x}`] ?? 'left') === sol[x]);
     if (solved && !this.save.flags['act1.switchyard.solved']) {
       this._flag('act1.switchyard.solved', true);
-      this.cameras.main.shake(500, 0.01); sfx('kill');
+      this._camFx('shake', 500, 0.01); sfx('kill');
       if (!this._checkGate()) this._say(STEP_TEXT.switchyard[getLang() === 'es' ? 'es' : 'en']);
     }
   }
@@ -2131,7 +2299,7 @@ export class WorldScene extends Phaser.Scene {
     const L = getLang() === 'es' ? 'es' : 'en';
     if (!this.save.flags['act1.fuses.in']) { this._flag('act1.fuses.seen', true); sfx('swing'); this._say(FUSE_TEXT.dead[L]); return; }   // midway block (Trevor #514)
     const key = `act1.breaker.${k}`, now = breakerState(this.save.flags, k) === 'down' ? 'up' : 'down', was = breakersSet(this.save.flags, this.save.world.seed);
-    this._flag(key, now); sfx('hit'); this.cameras.main.shake(60, 0.002);
+    this._flag(key, now); sfx('hit'); this._camFx('shake', 60, 0.002);
     this._toast(toggleText('breaker', k, now, getLang()));
     this._drawLevers();
     if (!was && breakersSet(this.save.flags, this.save.world.seed) && !this._checkGate()) { sfx('kill'); this._say(STEP_TEXT.breakers[getLang() === 'es' ? 'es' : 'en']); }
@@ -2148,7 +2316,7 @@ export class WorldScene extends Phaser.Scene {
   _checkGate() {
     if (this.save.flags[GATE_FLAG] || !gateOpen(this.save.flags, this.save.world.seed)) return false;
     this._flag(GATE_FLAG, true);
-    this.cameras.main.shake(600, 0.012); sfx('kill');
+    this._camFx('shake', 600, 0.012); sfx('kill');
     this._say(STEP_TEXT.gate[getLang() === 'es' ? 'es' : 'en']);
     return true;
   }
@@ -2306,7 +2474,7 @@ export class WorldScene extends Phaser.Scene {
     // Quick fade out → swap → fade in. Players arrive beside the matching door on the other side.
     this._transitioning = true;
     const from = this.map.id;
-    this.cameras.main.fadeOut(140, 5, 6, 12);
+    this._camFx('fadeOut', 140, 5, 6, 12);   // guests fade back in when the new map reaches them
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.sim.phaseEnemies = phaseEnemies(this.save.flags);   // the phase may have moved since the last map
       this.sim.skirmishes = skirmishesFor(this.save.flags);
@@ -2380,6 +2548,34 @@ export class WorldScene extends Phaser.Scene {
     this.toastText.setText(text).setAlpha(1);
     this.tweens.killTweensOf(this.toastText);
     this.tweens.add({ targets: this.toastText, alpha: 0, delay: 1400, duration: 500 });
+  }
+
+  // The weapon in hand when you're not swinging it (Trevor, 2026-11-23: equipped things visible on the player): hanging
+  // from the hand at your side, head down. The swing draws its own copy (the 'swing' event), so this one steps aside.
+  _heldAtRest(s, p) {
+    const id = p.weapon, ok = id && !p.sw && !p.dn && !p.ri && !p.pl && !p.zz && s.visible && this.textures.get('icons')?.has?.(id);
+    if (!ok) { s.held?.setVisible(false); return; }
+    if (!s.held || !s.held.active) { s.held = this.add.image(0, 0, 'icons', id); s.once('destroy', () => s.held?.destroy()); }
+    if (s.held.frame.name !== id) s.held.setFrame(id);
+    const name = s.frame?.name ?? '', facing = /_up_/.test(name) ? 'up' : /_right_/.test(name) ? 'right' : 'down';
+    const dir = facing === 'right' && s.flipX ? -1 : 1, sx = Math.abs(s.scaleX), sy = s.scaleY;
+    // [x offset from the feet, y offset, rotation]: icons are drawn handle bottom-left, head top-right.
+    const [dx, dy, rot] = facing === 'down' ? [-5, -8, 2.75] : facing === 'up' ? [5, -8, 1.95] : [2, -8, 2.0];
+    s.held.setPosition(s.x + dx * dir * sx, s.y + dy * sy).setRotation(dir < 0 ? -rot : rot).setFlipX(dir < 0)
+      .setOrigin(dir < 0 ? 0.85 : 0.15, 0.85).setScale(0.7 * sx, 0.7 * sy).setDepth(s.depth + (facing === 'up' ? -0.02 : 0.02)).setAlpha(s.alpha).setVisible(true);
+  }
+
+  /** A toast for one player: here if it's ours, sent if it's a guest's, nowhere for a companion. */
+  _toastTo(id, text) {
+    if (id === this.localId) this._toast(text);
+    else if (!isAi(id)) this.net?.send(id, { t: 'toast', text });
+  }
+
+  /** A camera shake, flash or fade from code only the host runs (puzzles, exits, wipes): on the host's screen and on
+   *  every guest's on the same map. Returns the camera, like the call it wraps. */
+  _camFx(kind, ...args) {
+    if (this.mode === 'host') this.net?.broadcast({ t: 'camfx', kind, args, area: this.map.id });
+    return this.cameras.main[kind](...args);
   }
 
   async _save(message = '✓ saved') {
@@ -2471,13 +2667,15 @@ export class WorldScene extends Phaser.Scene {
 
   _onClick(ptr) {
     if (!this.ready || ptr.button !== 0) return;
+    const stage = this.stage?.active;
+    if (stage && !(stage.script?.hold && this.dlg)) { this.input2.blockAttack = true; return; }
     const { x: sx, y: sy } = toView(ptr);
     const qb = this._qbSticky;
     if (qb && !this._talkOpen() && sx >= qb.x0 && sx <= qb.x1 && sy >= qb.y0 && sy <= qb.y1) { this.input2.blockAttack = true; qb.leave(); return; }   // a hidden card (dialogue up) can't be clicked away
     if (this.dlg) {
       // Clicks never advance dialogue (E does); choices are clicked directly. In free dialogue a click
       // outside the box is still an attack.
-      if (!this.dlgFree || sy > VIEW.h - 70) this.input2.blockAttack = true;
+      if (stage || !this.dlgFree || sy > VIEW.h - 70) this.input2.blockAttack = true;
       return;
     }
     if (this.menu) {
@@ -2541,6 +2739,7 @@ export class WorldScene extends Phaser.Scene {
       this._handleInteract(me);
       for (const p of this.sim.players.values()) this.save.party[p.character].rot = p.rot ?? 0;
       this._hostEvents(events);
+      if (this.mode === 'host') (this._netEvents ??= []).push(...events);   // kept for the next broadcast
       if (this.sim.rotDeath && !this._rotReload) this._rotReloadSoon();
       this._tickActOneEnding();
       snap = this._lastSnap = { ...this.sim.snapshot(), events, doors: [...this.map.doors.values()].filter((d) => d.open).map((d) => d.id) };
@@ -2551,6 +2750,8 @@ export class WorldScene extends Phaser.Scene {
     this._render(snap);
     setInstrumentFocus(snap, this.localId);
     this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.skirmish?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.gags?.update(snap); this.pacifier?.update(snap); this.stands?.update(); this.moods?.update(snap); this.stage?.update(snap);   // cutscene stand-ins draw last
+    if (this.sahurCameo && !this.dlg) this._endingSahurCue(null);   // the scene closed with him still there: he goes
+    else if (this.sahurCameo && !this.sahurCameo.leaving) this.sahurCameo.x = Math.max(this.sahurCameo.x, this.cameras.main.worldView.x + 44);   // keep him in sight
     this._stageHud(!!this.stage?.active);   // cutscenes letterbox the screen: the HUD steps out instead of being sliced by the bars
   }
 
@@ -2573,7 +2774,10 @@ export class WorldScene extends Phaser.Scene {
 
   _gadgetBlocked() { return !!(this._dlgStops() || this.menu || this.stage?.active || this.comic?.active || this._transitioning); }
   _frozen(inp) {
-    if (this._dlgStops() || this.menu || this.stage?.active || this.comic?.active) return { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, gadget: false, interact: false };
+    const inStage = !!this.stage?.active;
+    if (this._dlgStops() || this.menu || inStage || this.comic?.active) {
+      return { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, gadget: false, interact: false, skill: inStage ? false : inp.skill };
+    }
     if (this._transitioning && inp.gadget) inp = { ...inp, gadget: false };
     if (this.dlg) return { ...inp, interact: false };
     return inp;
@@ -2584,7 +2788,7 @@ export class WorldScene extends Phaser.Scene {
   // Death by code rot (sim.rotDeath): a beat to read it, then the last save loads for everyone.
   _rotReloadSoon() {
     this._rotReload = true;
-    this.time.delayedCall(2400, () => this.cameras.main.fadeOut(600, 5, 6, 12));
+    this.time.delayedCall(2400, () => this._camFx('fadeOut', 600, 5, 6, 12));
     this.time.delayedCall(3100, async () => {
       const save = await loadAutosave().catch(() => null);
       if (this.mode === 'host') {
@@ -2610,10 +2814,10 @@ export class WorldScene extends Phaser.Scene {
       }
       if (ev.t === 'skOver' && ev.id) this._flag(`skirmish.${ev.id}.over`, true);   // the hub fell: it stays fallen (hub #69)
       if (ev.t === 'door' || ev.t === 'doorClose') sfx('swing');
-      if (ev.t === 'grind' && ev.id === this.localId && !this.save.flags['secrets.grind.found']) { this._flag('secrets.grind.found', true); this._toast('★ Rail grind! (scooters fly along the tracks)'); }
+      if (ev.t === 'grind' && !isAi(ev.id) && !this.save.flags['secrets.grind.found']) { this._flag('secrets.grind.found', true); this._toastTo(ev.id, '★ Rail grind! (scooters fly along the tracks)'); }
       if (ev.t === 'scooter') {
         const p = this.sim.players.get(ev.id); if (p) this.save.party[p.character].scooterBattery = Math.round(p.battery ?? 100);
-        if (ev.id === this.localId) this._toast(ev.dead ? 'Battery dead.' : ev.knocked ? 'Knocked off your scooter!' : ev.on ? 'On the scooter. [Q] to hop off' : 'Off the scooter.');
+        this._toastTo(ev.id, ev.dead ? 'Battery dead.' : ev.knocked ? 'Knocked off your scooter!' : ev.on ? 'On the scooter. [Q] to hop off' : 'Off the scooter.');
       }
       if (ev.t === 'kill') {
         if (ev.kind === 'boss.warden' && ev.boss && !ev.mini) this._markActOneBossDefeated(900);
@@ -2631,7 +2835,9 @@ export class WorldScene extends Phaser.Scene {
           if (!ev.boss && Math.random() < (killer.mods?.loot ?? 0)) { const id = drop.mats[Math.floor(Math.random() * drop.mats.length)][0]; Inv.add(kc, id); got.push(ITEMS[id].name); }
           if (ev.boss) for (const [id] of drop.mats) { Inv.add(kc, id, 2); got.push(ITEMS[id].name); }
           else if (Math.random() < 0.7) { const tot = drop.mats.reduce((t, [, w]) => t + w, 0); let r = Math.random() * tot; const id = drop.mats.find(([, w]) => (r -= w) < 0)?.[0] ?? drop.mats[0][0]; Inv.add(kc, id); got.push(ITEMS[id].name); }
-          this._fxPop(ev.x, ev.y, `+$${cash}${got.length ? ' · ' + got.join(', ') : ''}`);
+          const text = `+$${cash}${got.length ? ' · ' + got.join(', ') : ''}`;
+          this._fxPop(ev.x, ev.y, text);
+          if (this.mode === 'host') this.net.broadcast({ t: 'fxPop', area: this.map.id, x: ev.x, y: ev.y, text });
         }
         this._partyDirty = true;
         // XP is shared by the party (co-op), levels grant skill points.
@@ -2644,13 +2850,13 @@ export class WorldScene extends Phaser.Scene {
     if (this._partyDirty) { this._partyDirty = false; this._syncParty(); }
     // Party wipe: a short beat, then everyone wakes at the start of this area (the entrance you came
     // in by). Dead enemies stay dead; survivors and bosses reset.
-    if (this.sim.wiped && !this._wipeAt) { this._wipeAt = this.time.now + 1200; this.cameras.main.fadeOut(1000, 5, 6, 12); }
+    if (this.sim.wiped && !this._wipeAt) { this._wipeAt = this.time.now + 1200; this._camFx('fadeOut', 1000, 5, 6, 12); }
     if (this._wipeAt && this.time.now > this._wipeAt) {
       this._wipeAt = 0;
       this.sim.setMap(this.sim.map, this.enteredFrom ?? null);
       this.sim.wipeReset();   // full health, no code rot (Michael)
       for (const p of this.sim.players.values()) this.save.party[p.character].rot = 0;
-      this.cameras.main.fadeIn(500, 5, 6, 12);
+      this._camFx('fadeIn', 500, 5, 6, 12);   // same map, so guests need telling to fade back in
       this._toast('You come to at the start of the area.');
       this.retry?.onWipe();   // a line about trying again (src/game/retryLine.js)
     }
@@ -2716,6 +2922,7 @@ export class WorldScene extends Phaser.Scene {
     if (!force && Math.random() > 1 / 3) return;
     f['act1.beat.buttDial'] = true;
     ring(2); this._toast('Phone: JOHN PORK');
+    if (this.mode === 'host') this.net.broadcast({ t: 'buttDial' });   // everyone's phone rings
     this.time.delayedCall(2600, () => this.startDialogue('the_call', 'butt_dial'));
   }
 
@@ -2726,6 +2933,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _handleInteract(me) {
+    this._flagTexts();
     if (this.dlg || this.menu || me?.under > 0 || me?.un) { this.hint.setText(''); return; }
     // John Pork calls back. If the party declined, he rings again deeper in the tunnels: once at the
     // switchyard, once on the approach. A third decline is what brings the Sahur (the_call script).
@@ -2735,6 +2943,7 @@ export class WorldScene extends Phaser.Scene {
       if (ring && !this.save.flags[`act1.beat.ring${ring}`]) {
         this.save.flags[`act1.beat.ring${ring}`] = true;
         this._hackCall(() => this.startDialogue('the_call', `call_ring_${ring}`));
+        if (this.mode === 'host') this.net.broadcast({ t: 'hackCall' });   // the takeover plays on every screen
         return;
       }
     }
@@ -2853,7 +3062,7 @@ export class WorldScene extends Phaser.Scene {
       if (PARTS.every(holder)) {
         for (const id of PARTS) Inv.remove(holder(id), id);
         this._flag('q.bot.built', true); this._syncParty(); this._spawnBot(); this._tickQuests(true);
-        this.cameras.main.shake(120, 0.004); sfx('pickup');
+        this._camFx('shake', 120, 0.004); sfx('pickup');
         return;
       }
       const missing = PARTS.filter((id) => !holder(id)).map((id) => ITEMS[id].name.toLowerCase());
@@ -3043,6 +3252,7 @@ export class WorldScene extends Phaser.Scene {
       }
       const worn = this.save?.party?.[p.c];
       syncWear(this, s, p.c, wt && p.gs !== undefined ? { ...worn, _belly: wt.belly } : worn);   // parkas and other worn models (render/wearables.js)
+      this._heldAtRest(s, p);
     }
     for (const [id, s] of this.sprites) if (!seen.has(id)) { s.destroy(); this.sprites.delete(id); }
 
@@ -3060,13 +3270,14 @@ export class WorldScene extends Phaser.Scene {
       s.setPosition(e.x, e.y + 3).setDepth(e.y);
       if (s.isArt) { if (e.h) s.setTintFill(0xffffff); else if (e.boss && !s.noTint) s.setTint(def.color); else s.clearTint(); }
       else s.setFillStyle(e.h ? 0xffffff : def.color);
+      let sx = 1 + Math.sin(this.time.now / 90 + e.x) * 0.06, sy = 1;   // jittery rot wobble
       if (e.boss) {
         if (!e.boss.idle) this._bossBar(e);
         this._bossArenaFx(e);
         if (e.boss.st === 'vulnerable') s.setAlpha(0.6 + 0.4 * Math.sin(this.time.now / 50)); else s.setAlpha(1);
-        if (e.boss.st === 'windup') s.setScale(1.08 + 0.04 * Math.sin(this.time.now / 30), 1.08); else if (!e.boss.sahur) s.setScale(1);
+        if (e.boss.st === 'windup') { sx *= 1.08 + 0.04 * Math.sin(this.time.now / 30); sy = 1.08; }   // swells on top of the wobble
       }
-      s.setScale(1 + Math.sin(this.time.now / 90 + e.x) * 0.06, 1);   // jittery rot wobble
+      s.setScale(sx, sy);
     }
     for (const [id, s] of this.enemySprites) if (!eseen.has(id)) { s.destroy(); this.enemySprites.delete(id); this.bossFx?.clear(); }
     const meP = snap.players.find((p) => p.id === this.localId);
@@ -3132,6 +3343,8 @@ export class WorldScene extends Phaser.Scene {
     this._tickFishing();
     this._tickQuests();
     this._tickGlimpse();
+    this._tickMorphUnlock();
+    this._tickBalloon();
     this._tickScan();
     if (this.fishing) { const k = this.input2.keys; if (k.w.isDown || k.a.isDown || k.s.isDown || k.d.isDown || k.up.isDown || k.down.isDown || k.left.isDown || k.right.isDown) this._endFishing(false); }
     this._tickPorkGlitch();
@@ -3290,13 +3503,19 @@ export class WorldScene extends Phaser.Scene {
       g.fillStyle(0xd8b060, 1).fillRect(fx - 24, ly - 10, 4, 20);
     }
     if (b.la != null) {
-      const cx = e.x, cy = e.y - 8, L = 300, ux = Math.cos(b.la), uy = Math.sin(b.la), ex = cx + ux * L, ey = cy + uy * L;
-      const flick = 0.85 + 0.15 * Math.sin(t / 25);
-      g.lineStyle(22, 0xff3355, 0.18 * flick).lineBetween(cx, cy, ex, ey);   // glow
-      g.lineStyle(14, 0xff4d6d, 0.55 * flick).lineBetween(cx, cy, ex, ey);   // body
-      g.lineStyle(5, 0xffe6ee, 0.95).lineBetween(cx, cy, ex, ey);            // hot core
+      const cx = e.x, cy = e.y - 8, L = 300, flick = 0.85 + 0.15 * Math.sin(t / 25);
+      for (const k of b.l2 ? [1, -1] : [1]) {   // phase three fires out the back as well
+        const ux = Math.cos(b.la) * k, uy = Math.sin(b.la) * k, ex = cx + ux * L, ey = cy + uy * L;
+        g.lineStyle(22, 0xff3355, 0.18 * flick).lineBetween(cx, cy, ex, ey);   // glow
+        g.lineStyle(14, 0xff4d6d, 0.55 * flick).lineBetween(cx, cy, ex, ey);   // body
+        g.lineStyle(5, 0xffe6ee, 0.95).lineBetween(cx, cy, ex, ey);            // hot core
+        for (let i = 0; i < 4; i++) { const d = ((t / 3 + i * 75) % L); g.fillStyle(0xffffff, 0.8).fillRect(cx + ux * d - 1, cy + uy * d - 1, 2, 2); }   // sparks running out
+      }
       g.fillStyle(0xffe6ee, 0.9).fillCircle(cx, cy, 6 + Math.sin(t / 40) * 1.5);
-      for (let i = 0; i < 4; i++) { const d = ((t / 3 + i * 75) % L); g.fillStyle(0xffffff, 0.8).fillRect(cx + ux * d - 1, cy + uy * d - 1, 2, 2); }   // sparks running out
+      // Braced: a steel shell around him while he fires, so hitting him now reads as a waste (Trevor, 2026-11-23).
+      const R = (b.r ?? 11) + 7;
+      g.lineStyle(3, 0x9aa8bf, 0.55).strokeCircle(e.x, e.y - 4, R);
+      for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + t / 900; g.fillStyle(0xc9d3e6, 0.8).fillRect(e.x + Math.cos(a) * R - 2, e.y - 4 + Math.sin(a) * R - 2, 4, 4); }
     }
     for (const r of b.wv ?? []) {
       g.lineStyle(5, 0xff4d6d, 0.25).strokeCircle(e.x, e.y - 4, r);
@@ -3422,11 +3641,28 @@ export class WorldScene extends Phaser.Scene {
     sfx('kill');
   }
 
-  _bark(playerId, text) {
+  // A scene's bark table (tools/dialogue/convert.py): rows whose trigger is "<node>, Ns in" play N seconds after the
+  // node starts, over the dialogue, from that roommate if they're here ("nearest the camera" means your own).
+  // Other trigger kinds are kept in the data for the systems that will play them.
+  _nodeBarks(scene, nodeId) {
+    const d = this.dlg;
+    for (const b of scene?.barks ?? []) {
+      const m = b.trigger.match(/^\s*([\w.]+)\s*,\s*(\d+)\s*s in\b/i);
+      if (!m || m[1] !== nodeId) continue;
+      const who = /nearest the camera|any roommate/i.test(b.who) ? this.character : b.who.trim().toLowerCase();
+      this.time.delayedCall(+m[2] * 1000, () => {
+        if (this.dlg !== d || d?.nodeId !== nodeId) return;
+        const p = this._lastRendered?.players?.find((q) => q.c === who);
+        if (p) this._bark(p.id, b.text, { over: true });
+      });
+    }
+  }
+
+  _bark(playerId, text, { over = false } = {}) {
     text = esLine(text);                                            // Spanish when chosen (src/content/lines_es.js)
     const s = this.sprites.get(playerId);
-    if (!s || !text || this.dlg || this.menu || this.stage?.active || this.time.now < (this._barkQuietUntil ?? 0)) return;
-    this._barkQuietUntil = this.time.now + 9000;                    // one voice at a time, and room between them
+    if (!s || !text || (this.dlg && !over) || this.menu || this.stage?.active || this.time.now < (this._barkQuietUntil ?? 0)) return;
+    this._barkQuietUntil = this.time.now + (over ? 2500 : 9000);    // one voice at a time, and room between them
     const t = this.add.text(s.x, s.y - 30, text, { ...FONT, fontSize: '6px', color: '#e8e8f0', backgroundColor: '#0b0d16cc', padding: { x: 2, y: 1 } }).setOrigin(0.5, 1).setDepth(7000);
     const follow = this.time.addEvent({ delay: 30, loop: true, callback: () => t.active && s.active && t.setPosition(s.x, s.y - 30) });
     this.tweens.add({ targets: t, alpha: 0, delay: 2600, duration: 500, onComplete: () => { follow.remove(); t.destroy(); } });
@@ -3585,6 +3821,12 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'vuln') {
       const t = this.add.text(ev.x, ev.y - 30, 'OVERHEATED: hit it!', { ...FONT, color: '#ffb347' }).setOrigin(0.5).setDepth(6100);
       this.tweens.add({ targets: t, y: t.y - 10, alpha: 0, duration: 1300, onComplete: () => t.destroy() });
+    }
+    if (ev.t === 'bossBrace' && this.time.now > (this._thunkAt ?? 0)) {   // a hit that glances off a braced boss (at most ~3 a second)
+      this._thunkAt = this.time.now + 300;
+      const t = this.add.text(ev.x + (Math.random() * 16 - 8), ev.y - 22, 'BRACED', { ...FONT, color: '#9aa8bf' }).setOrigin(0.5).setDepth(6100);
+      this.tweens.add({ targets: t, y: t.y - 8, alpha: 0, duration: 500, onComplete: () => t.destroy() });
+      sfx('swing');
     }
     if (ev.t === 'impact') { const c = this.add.circle(ev.x, ev.y, ev.r, 0xffe6ee, 0.8).setDepth(5450); this.tweens.add({ targets: c, scale: 1.6, alpha: 0, duration: 260, onComplete: () => c.destroy() }); sfx('hit'); }
     if (ev.t === 'overload') { this.cameras.main.shake(500, 0.012); this.cameras.main.flash(250, 214, 93, 177); }

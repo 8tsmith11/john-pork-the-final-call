@@ -4,6 +4,30 @@
 > drafts read as AI-written. This guide exists to fix that. **Run the checklist at the bottom on
 > everything before it ships.**
 
+## 0. Read first: lessons from the human workshop (Michael, 2026-11-20)
+
+Michael rejected the first cold open because it **didn't make sense to a new player**, then rewrote
+it with an agent line by line. Full notes: [`session-notes-cold-open.md`](session-notes-cold-open.md) (the examples are sealed in
+`docs/sealed/workshop-cold-open.md`).
+The short version, for every scene you write:
+
+1. **Write for someone who knows nothing.** Only what's already on screen counts. Don't lean on an
+   unseen prop, a name nobody has introduced, or a comparison to a scene that hasn't happened.
+2. **Clear beats clever.** If a line needs a footnote, cut it. People react plainly to big things.
+3. **Name people.** No "he" with nobody behind it.
+4. **Check the bible and the map before staging** (who sleeps where, what time it is).
+5. **Choices must change something later**, or there's no choice.
+6. **Spend words on the feeling, not the forensics.** Leave physical clues for the players to work
+   out; don't have a character explain the answer.
+7. **Give characters a reason to act** that also explains the world.
+8. **Use the real roommates' lives** (`real-life.md`). It's what lands hardest.
+9. **Action plays on its line.** Staging happens while the text it goes with is on screen, never as
+   a silent pre-roll before it (`> do:` cues in the sealed scripts).
+10. **Set up the world on screen:** who runs it, what's wrong with it, where we are. Match the
+    reactions to the stakes, and keep stage directions ("(beat)") out of spoken lines.
+11. **A human-approved scene is locked.** Don't edit its lines without that human's explicit yes
+    (D-022: the cold open).
+
 ## 1. Patterns that read as machine-written (banned)
 
 | Pattern | Example of what NOT to write | Why it fails |
