@@ -10,6 +10,11 @@ import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/ro
 import { BOSSES } from '../content/bosses.js';
 import { ARC_HITS, GADGETS, GADGET_SUPPORT_WINDOW, arcDamage, gadgetStats } from '../content/gadgets.js';
 
+// Enemy poise (see _hurtEnemy): seconds an ordinary enemy shrugs off light hits after flinching, and the states in which
+// it's committed to an attack and won't flinch from them at all.
+export const POISE = 0.9;
+export const PARRY_REST = 0.6;   // seconds without swinging before a swing can parry
+const COMMITTED = new Set(['windup', 'lunge', 'dash', 'charge']);
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.35, iframes: 0.22,
   stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
 // Regular-enemy tuning for a party of three (see spawnEnemies). Measured with a headless bot run:
@@ -127,7 +132,7 @@ export class Sim {
         const def = { name: 'TUNG TUNG TUNG SAHUR', epithet: 'the Watchdog', color: 0xa0703c, radius: 9, hp: 99999, speed: 40, damage: 16,
           ai: 'sahur', xp: 80, touchCooldown: 0.9, modules: [] };
         this.enemies.set(id, { id, spawnKey, kind: 'boss.sahur', def, boss: true, sahur: true, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 0.75, cd2: 2, beat: 0, hurtT: 0, kx: 0, ky: 0, dash: 0, root: 0, fightT: 0 });
-        this.events.push({ t: 'boss', name: def.name, epithet: def.epithet, sahur: true });
+        this.emit({ t: 'boss', name: def.name, epithet: def.epithet, sahur: true });   // spawning runs outside step(): the next step sends it
         continue;
       }
       if (BOSSES[e.kind]) {   // bosses made with defineBoss (src/content/bosses.js): mid bosses unless def.mini === false
@@ -148,7 +153,7 @@ export class Sim {
         const w = generateWarden(this.seed, Math.max(1, this.players.size));
         const def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
         this.enemies.set(id, { id, spawnKey, kind: e.kind, def, boss: true, phase: 1, x: e.x, y: e.y, hp: def.hp, cd: 2, cd2: 3, hurtT: 0, kx: 0, ky: 0, dash: 0 });
-        this.events.push({ t: 'boss', kind: e.kind, name: w.name, epithet: w.epithet });
+        this.emit({ t: 'boss', kind: e.kind, name: w.name, epithet: w.epithet });
         continue;
       }
       const base = ENEMIES[e.kind];
@@ -760,6 +765,12 @@ export class Sim {
     const interval = Math.max(0.12, base.cooldown + (p.mods?.meleeCd ?? 0));
     // Combo: swings inside the window chain 1-2-3; the third is a heavy finisher.
     const now = this.tick * (1 / 60);
+    // A parry needs a deliberate swing (Trevor: mash-clicking made everything easy, since every swing parried a lunge):
+    // one that comes after PARRY_REST seconds without swinging. Swinging non-stop never parries; timing does.
+    // Measured from the end of the last swing's recovery (John Pork, PR #146: a slow weapon's cooldown alone used to
+    // count as the rest, so holding attack with it still parried). Clicking again doesn't reset it either: mashing,
+    // held or clicked, never parries; a swing after a real pause does.
+    p.freshSwing = now - (p.swingFreeAt ?? -9) >= PARRY_REST;
     p.combo = now - (p.lastSwingAt ?? -9) <= interval + FEEL.comboWindow ? ((p.combo ?? 0) % 3) + 1 : 1;
     p.lastSwingAt = now;
     const fin = p.combo === 3;
@@ -770,6 +781,7 @@ export class Sim {
     if (dash) m = { ...m, damage: m.damage * FEEL.dashDmg, range: m.range + FEEL.dashRange, arc: m.arc * 0.7 };
     const focus = p.focusT > 0; if (focus) p.focusT = 0;
     p.meleeCd = interval * (fin ? 1.25 : 1); p.swingT = 0.2;   // long enough for both attack frames (12 fps)
+    p.swingFreeAt = now + p.meleeCd;   // when this swing's recovery ends (finishers recover longer; main's gear-adjusted interval)
     this.events.push({ t: 'swing', id: p.id, a: p.aim, r: m.range, arc: m.arc, combo: p.combo, weapon: p.mods?.weaponId });
     // Deflect: enemy shots inside the swing go back the way they came, as the player's.
     for (const s of this.shots) {
@@ -790,7 +802,7 @@ export class Sim {
       if (Math.abs(da) > m.arc / 2 && d > def.radius + 4) continue;
       // Clash parry (docs/research/combat.md): hitting an enemy while it's committed to its lunge or charge
       // cancels the attack, stuns it and grants Focus. Bosses and the Sahur can't be parried.
-      if (!e.boss && !e.sahur && ((e.st === 'lunge' && !e.hitOnce) || (e.st === 'dash' && !e.hitOnce))) {
+      if (!e.boss && !e.sahur && p.freshSwing && ((e.st === 'lunge' && !e.hitOnce) || (e.st === 'dash' && !e.hitOnce))) {
         e.hitOnce = true; e.st = def.ai === 'charge' ? 'dizzy' : 'recover'; e.stT = Math.max(e.stT ?? 0, FEEL.parryStun); e.stunT = FEEL.parryStun; e.parried = FEEL.parryStun;
         p.focusT = FEEL.focusTime; this.hitStop = FEEL.parryStop;
         this.events.push({ t: 'parry', x: e.x, y: e.y, by: p.id });
@@ -798,7 +810,7 @@ export class Sim {
       const crit = Math.random() < (p.mods?.crit ?? 0);
       if (crit) this.events.push({ t: 'crit', x: e.x, y: e.y });
       if (fin) this.hitStop = FEEL.hitStop;
-      this._hurtEnemy(e, Math.round((m.damage + (p.mods?.melee ?? 0)) * (p.morphed ? 1.3 : 1) * (crit ? 2 : 1) * (focus ? FEEL.focusDmg : 1)), dx / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), dy / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), p.id);
+      this._hurtEnemy(e, Math.round((m.damage + (p.mods?.melee ?? 0)) * (p.morphed ? 1.3 : 1) * (crit ? 2 : 1) * (focus ? FEEL.focusDmg : 1)), dx / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), dy / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), p.id, { heavy: fin });
     }
   }
 
@@ -824,9 +836,10 @@ export class Sim {
     this.events.push({ t: 'shot', id: p.id });
   }
 
-  _hurtEnemy(e, dmg, kx, ky, by) {
+  _hurtEnemy(e, dmg, kx, ky, by, { heavy = false } = {}) {
     if (e.sahur) { dmg = 1; this.events.push({ t: 'thunk', x: e.x, y: e.y }); }
     else if (e.boss && e.state === 'vulnerable') dmg *= 2;
+    else if (e.boss && e.state === 'laser') { dmg = Math.max(1, Math.round(dmg * LASER.braced)); this.events.push({ t: 'bossBrace', x: e.x, y: e.y }); }   // braced behind the beam
     if (this._def(e).armor && e.st !== 'dizzy') dmg = Math.max(1, Math.round(dmg * (1 - this._def(e).armor)));
     if (e.st === 'dizzy') dmg *= 2;   // a Captcha reeling after its charge
     else if (e.parried > 0) dmg *= 2;   // parried: open for a second
@@ -837,7 +850,14 @@ export class Sim {
       const a = Math.random() * Math.PI * 2, nx = e.x + Math.cos(a) * 40, ny = e.y + Math.sin(a) * 40;
       if (!this._hitsBox(nx, ny, 6, 4)) { this.events.push({ t: 'blink', x: e.x, y: e.y }); e.x = nx; e.y = ny; }
     }
-    e.hp -= dmg; e.hurtT = 0.12;
+    // Poise (Trevor: "I just walk into the robots and click with my crowbar and everything dies"): an ordinary enemy
+    // flinches and is knocked back by the first hit, then shrugs off light hits for POISE seconds, and one committed to
+    // an attack (winding up, lunging, charging) shrugs them off entirely. A combo finisher (heavy) still breaks
+    // through, and so do parries and slams, which set their own stun. Bosses keep their own rules.
+    const shrug = !e.boss && !heavy && (e.poiseT > 0 || COMMITTED.has(e.st));
+    e.hp -= dmg;
+    if (shrug) this.events.push({ t: 'shrug', x: e.x, y: e.y });   // no new impulse, and whatever it's already flying with stays
+    else { e.hurtT = 0.12; if (!e.boss) e.poiseT = POISE; }
     // Stop damage at the end of the earliest phase that hasn't shown an attack tell.
     if (e.boss && e.def?.phaseGate) {
       const untoldPhase = e.phase + (e.phaseTells > 0 ? 1 : 0);
@@ -850,7 +870,7 @@ export class Sim {
     }
     if (e.boss) { kx *= 0.15; ky *= 0.15; const f = e.hp / e.def.hp; const ph = f < 0.33 ? 3 : f < 0.66 ? 2 : 1;
       if (ph !== e.phase) { e.phase = ph; e.phaseTells = 0; this.events.push({ t: 'phase', phase: ph }); } }
-    e.kx = kx; e.ky = ky; if (by) e.lastHitBy = by;
+    if (!shrug) { e.kx = kx; e.ky = ky; } if (by) e.lastHitBy = by;
     this.events.push({ t: 'hit', x: e.x, y: e.y, dmg, target: e.id, by });
     if (e.hp <= 0) {
       this.enemies.delete(e.id);
@@ -936,7 +956,7 @@ export class Sim {
       // Stuck in the gonman's stuff: the enemy's whole clock runs slow (moving, cooling down, winding up): almost frozen.
       const dt = e.slowT > 0 && !e.sahur ? dt0 * (e.boss ? GONMAN.bossSlow : GONMAN.slow) : dt0;
       const def = this._def(e);
-      e.cd = Math.max(0, e.cd - dt); e.hurtT = Math.max(0, e.hurtT - dt);
+      e.cd = Math.max(0, e.cd - dt); e.hurtT = Math.max(0, e.hurtT - dt); if (e.poiseT > 0) e.poiseT = Math.max(0, e.poiseT - dt);
       if (e.sahur) { this._stepSahur(e, def, dt); continue; }
       if (e.skUnit) { stepSkUnit(this, this.sk, e, def, dt); continue; }   // the walking hub and its drones (src/engine/skirmish.js)
       if (e.boss) { this._stepBoss(e, def, dt); continue; }
@@ -1102,13 +1122,14 @@ export class Sim {
     }
     if (e.state === 'laser') {   // rooted; a thick beam turns around it
       e.laserT -= dt; e.laserA += e.laserDir * LASER.turn[e.phase - 1] * dt;
-      const cx = e.x, cy = e.y - 8, ux = Math.cos(e.laserA), uy = Math.sin(e.laserA);
+      const cx = e.x, cy = e.y - 8, ux = Math.cos(e.laserA), uy = Math.sin(e.laserA), dirs = e.phase >= LASER.twin ? [1, -1] : [1];
       for (const p of this.players.values()) {
         if (p.downed) continue;
-        const rx = p.x - cx, ry = p.y - 4 - cy, along = rx * ux + ry * uy, across = Math.abs(rx * -uy + ry * ux);
-        if (along > 4 && along < LASER.len && across < LASER.half + 4 - this._small(p) * 0.6 && (p._laserT = (p._laserT ?? 0) - dt) <= 0) { p._laserT = LASER.tick; this._hurtPlayer(p, Math.round(LASER.dmg * (def.dmgMul ?? 1))); }
+        const rx = p.x - cx, ry = p.y - 4 - cy, across = Math.abs(rx * -uy + ry * ux);
+        const inBeam = dirs.some((k) => { const along = (rx * ux + ry * uy) * k; return along > 4 && along < LASER.len; });
+        if (inBeam && across < LASER.half + 4 - this._small(p) * 0.6 && (p._laserT = (p._laserT ?? 0) - dt) <= 0) { p._laserT = LASER.tick; this._hurtPlayer(p, Math.round(LASER.dmg * (def.dmgMul ?? 1))); }
       }
-      if (e.laserT <= 0) { e.state = 'vulnerable'; e.vulnT = 1.8; this.events.push({ t: 'vuln', x: e.x, y: e.y }); }
+      if (e.laserT <= 0) { e.state = 'vulnerable'; e.vulnT = LASER.open; this.events.push({ t: 'vuln', x: e.x, y: e.y }); }
       return;
     }
     if (e.state === 'windup') {
@@ -1133,7 +1154,7 @@ export class Sim {
     if (e.state === 'beam') {
       e.beamT -= dt; e.beamA += e.beamDir * 1.6 * dt;
       if ((e.beamTick = (e.beamTick ?? 0) - dt) <= 0) { e.beamTick = 0.05; this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(e.beamA) * 220, vy: Math.sin(e.beamA) * 220, life: 1.2, dmg: Math.round(7 * (def.dmgMul ?? 1)), from: 'enemy', noDeflect: true }); }
-      if (e.beamT <= 0) { e.state = 'vulnerable'; e.vulnT = 1.4; this.events.push({ t: 'vuln', x: e.x, y: e.y }); }
+      if (e.beamT <= 0) { e.state = 'vulnerable'; e.vulnT = 1.0; this.events.push({ t: 'vuln', x: e.x, y: e.y }); }
       return;
     }
     // move
@@ -1155,10 +1176,11 @@ export class Sim {
   // faster each phase, never more than `cap` of its own alive at once. They crumble when it dies.
   _stepBossAdds(e, def, dt) {
     const A = def.adds; if (!A) return;
-    if ((e.addT = (e.addT ?? A.every[0] * 0.6) - dt) > 0) return;
+    if (A.fromPhase && e.phase < A.fromPhase) return;   // not in the opening
+    if ((e.addT = (e.addT ?? A.first ?? A.every[0] * 0.6) - dt) > 0) return;
     e.addT = A.every[Math.max(0, Math.min(2, e.phase - 1))];
     const alive = [...this.enemies.values()].filter((x) => x.summoned).length;
-    const n = Math.min(A.per + (e.phase === 3 ? 1 : 0), A.cap - alive);
+    const n = Math.min(e.addsFirst ? A.per : 2, A.cap - alive); e.addsFirst = true;   // a pair at the phase change, then `per`
     if (n <= 0) return;
     const base = ENEMIES[A.kind], mw = this.map.w * TILE;
     for (let i = 0; i < n; i++) {
@@ -1208,8 +1230,11 @@ export class Sim {
     if (mod === 'spiral') { e.state = 'spiral'; e.spiralT = e.phase === 3 ? 1.6 : 1.2; e.spiralA = e.aimA; e.openT = 0; }
     if (mod === 'beam') { e.state = 'beam'; e.beamT = 1.4; e.beamA = e.aimA - 0.9; e.beamDir = 1; }
     if (mod === 'puddle') { for (const p of this.players.values()) if (!p.downed) this.hazards.push({ x: p.x, y: p.y, r: 16, ttl: 5, dps: Math.round(12 * k) }); }
+    // Fork: two rotlings at his feet, counted with his other adds so the floor never fills up (def.adds.cap).
     if (mod === 'summon' && this.enemies.size < 7) {
-      for (let i = 0; i < 2; i++) { const id = `e${this._nextId++}`; this.enemies.set(id, { id, kind: 'enemy.rotling', x: e.x + (i ? 14 : -14), y: e.y + 10, hp: ENEMIES['enemy.rotling'].hp, cd: 1, hurtT: 0, kx: 0, ky: 0 }); }
+      const alive = [...this.enemies.values()].filter((x) => x.summoned).length;
+      const n = def.adds ? Math.min(2, def.adds.cap - alive) : 2;
+      for (let i = 0; i < n; i++) { const id = `e${this._nextId++}`; this.enemies.set(id, { id, kind: 'enemy.rotling', summoned: !!def.adds, x: e.x + (i ? 14 : -14), y: e.y + 10, hp: ENEMIES['enemy.rotling'].hp, cd: 1, hurtT: 0, kx: 0, ky: 0 }); }
     }
     if (mod === 'blink') {
       const ang = Math.random() * Math.PI * 2, nx = target.x + Math.cos(ang) * 60, ny = target.y + Math.sin(ang) * 60;
@@ -1390,7 +1415,7 @@ export class Sim {
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
         mk: e.marked > 0, zz: e.sleepT > 0, ...(e.skUnit ? { sd: 1 } : {}), ...(e.slowT > 0 ? { sl: 1 } : {}), sg: !!this._def(e).lullaby && !(e.sleepT > 0), st: e.st ?? null,
         ...(e.def && !e.boss ? { vn: e.def.vname, tr: e.def.trait, c: e.def.color, mh: e.def.hp, r: e.def.radius } : {}),
-        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
+        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ...(e.state === 'laser' && e.phase >= LASER.twin ? { l2: 1 } : {}), ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
       goo: this.goo.map((g) => ({ x: Math.round(g.x), y: Math.round(g.y), r: g.r, t: Math.round(g.ttl * 10) / 10 })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
       sk: skirmishView(this.sk, this),
