@@ -1554,8 +1554,12 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
+  // Manuel's stage two (the gonman) opens at level 6 exactly: his own call on his own character (to gonman, 2026-11-21;
+  // P-003), which stands over the story-moment rule for stage one. If he gets there before the story moment, both
+  // stages open together at level 6; everyone else's stage one still waits for the story.
   _unlockGonman(who, c) {
-    if (who !== 'manuel' || c.morph?.stage !== 1 || !(c.level >= 6)) return;
+    if (who !== 'manuel' || !c.morph || c.morph.stage >= 2 || !(c.level >= 6)) return;
+    if (c.morph.stage < 1) { c.morph.stage = 1; this._announce(MORPH_UNLOCK[who]); }
     c.morph.stage = 2;
     const p = [...(this.sim?.players.values() ?? [])].find((q) => q.character === who);
     if (p) p.morphStage = 2;

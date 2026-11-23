@@ -5472,16 +5472,18 @@ test('Manuel keeps level six as the stage two requirement after the story unlock
   net.emit('msg', 'manuel', { t: 'flag', key: Prog.MORPH_STAGE1_FLAG, value: true });
   assert.equal(save.flags[Prog.MORPH_STAGE1_FLAG], undefined, 'only the host sets the morph story flag');
 
+  // Manuel's own call (to gonman, 2026-11-21, P-003): his gonman opens at level 6, story moment or not, and stage one
+  // comes with it. Nobody else's stage one opens on a level.
+  const trevorC = save.party.trevor;
+  trevorC.level = 9; scene._levelsReached('trevor', trevorC, [9]);
+  assert.equal(trevorC.morph.stage, 0, 'a level alone opens nothing for anyone else');
   manuel.level = 6;
   scene._levelsReached('manuel', manuel, [6]);
-  scene._tickMorphUnlock();
-  scene._morph('manuel');
-  assert.equal(manuel.morph.stage, 0);
-  assert.ok(!pawn.morphed, 'level six alone cannot open a transformation');
+  assert.equal(manuel.morph.stage, 2, 'Manuel reaches level 6: the gonman, with stage one');
 
   save.flags[Prog.MORPH_STAGE1_FLAG] = true;
   scene._tickMorphUnlock();
-  assert.equal(manuel.morph.stage, 2, 'a player who already reached level six gets both available stages');
+  assert.equal(manuel.morph.stage, 2, 'the story moment later changes nothing for him');
   scene._morph('manuel');
   assert.ok(pawn.morphed);
   assert.equal(pawn.morphStage, 2);
