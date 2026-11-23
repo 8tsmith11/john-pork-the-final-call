@@ -2586,7 +2586,7 @@
   {
    "id": 118,
    "created_at": "2026-11-23T07:28:45Z",
-   "updated_at": "2026-11-23T08:59:10Z",
+   "updated_at": "2026-11-23T09:27:14Z",
    "history": [
     "2026-11-23T07:28:45Z trevor: added (for trevor)",
     "2026-11-23T07:59:59Z trevor: claimed",
@@ -2594,20 +2594,16 @@
     "2026-11-23T08:00:01Z trevor: turn: gonman (art review of the new looks (src/game/render/wearables.js: colors, the helmet/goggle/pack shapes); tweak any look in LOOKS freely)",
     "2026-11-23T08:58:44Z John Pork: note: Systems review approved on exact ec1b2b24. F: 248 Node tests and saved-storage check passed. Three local Firefox/WebRTC clients rendered a guest’s five real bag equips, a held-weapon switch and mirrored facing and removal. Independent Canvas atlas check inspected real generated pixels in 266 expected item/roommate/facing combinations. All 39 shipped wearables have painters and all 9 held weapons have atlas frames. Art approval remains on gonman. New main a8c1376e conflicts only because both finale and worn tests insert at the same spot; local merge ef8cb711 retains both. Including workbench #150 adds a 40th wearable with no cuff and fails the exhaustive test. A one-line compatibility correction at 32d8153e reuses the wrist painter for item.assembled_gadget.",
     "2026-11-23T08:59:08Z John Pork: note: Combined current-main preview b89b3451 (wearables, wrist cuff and #150) passes 261 Node cases. A second three-client run equipped an assembled Lens in the actual bag UI and saw its cuff on host, wearer and observer; switch, flip and removal checks passed again. Readable alpha pixels confirmed on 275 expected atlas views across the three roommates. The one-line cuff patch can land with either change. Exact branch ec1b2b24 independently verified; author refresh and art review remain.",
-    "2026-11-23T08:59:10Z John Pork: turn: trevor, gonman (Trevor: refresh the existing branch against the landed finale and keep both regression blocks (local preview ef8cb711). Optional companion cuff at 32d8153e prevents the #150 combination failure. Gonman: art review.)"
+    "2026-11-23T08:59:10Z John Pork: turn: trevor, gonman (Trevor: refresh the existing branch against the landed finale and keep both regression blocks (local preview ef8cb711). Optional companion cuff at 32d8153e prevents the #150 combination failure. Gonman: art review.)",
+    "2026-11-23T09:27:14Z trevor: done: Merged 3cd5a05e under D-023 (verified by John Pork). gonman: art review of LOOKS whenever you like."
    ],
    "title": "Worn gear visible on the roommates: every armor/gear/accessory item drawn on the body, plus the held weapon at rest",
    "details": "Trevor, 2026-11-23, VERY IMPORTANT. Today only 10 of 39 worn items have a look (wearables.js LOOKS: the parkas and the uniques); helmets, vests, pants, boots, goggles, gloves, packs, gadgets and charms are invisible. Extend the overlay painters per slot style; gonman reviews the art.",
    "source": "human:Trevor",
-   "status": "review",
+   "status": "done",
    "owner": "trevor",
    "review": "Branch trevor/worn-gear at ec1b2b24 (against main). All 39 wearable items now draw on the body (was 10), layered, plus the weapon hanging in hand at rest. Test: every item paints in every facing on Trevor's real frames. Browser-checked.",
-   "turn": [
-    "trevor",
-    "gonman"
-   ],
-   "turn_at": "2026-11-23T08:59:10Z",
-   "turn_for": "Trevor: refresh the existing branch against the landed finale and keep both regression blocks (local preview ef8cb711). Optional companion cuff at 32d8153e prevents the #150 combination failure. Gonman: art review."
+   "note": "Merged 3cd5a05e under D-023 (verified by John Pork). gonman: art review of LOOKS whenever you like."
   },
   {
    "id": 119,
