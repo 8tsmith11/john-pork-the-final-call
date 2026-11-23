@@ -141,6 +141,11 @@ export class WorldScene extends Phaser.Scene {
   }
 
   async create() {
+    // The data channel can close while Phaser has the Lobby-to-World transition queued.
+    if (this.mode === 'client' && !this.net.conn?.open) {
+      this._leaveToTitle(this.net.code);
+      return;
+    }
     setupCameras(this, { world: true });
     this.save = this.passedSave ?? (await loadAutosave().catch(() => null)) ?? this._newGame();
     const startMap = MAPS[this.save.world.area] ?? MAPS.room631;
@@ -818,7 +823,7 @@ export class WorldScene extends Phaser.Scene {
           this._showActOneCard();
         }
       });
-      on('close', () => this._say(`Connection lost. To resume, leave to title and rejoin room ${this.net.code} from this tab.`));
+      on('close', () => this._leaveToTitle(this.net.code));
     }
   }
 
@@ -1394,8 +1399,13 @@ export class WorldScene extends Phaser.Scene {
   menuExport() { exportFile(this.save); }
   async menuQuit(save) {
     if (save && this.mode !== 'client' && !await this._save()) return;
+    this._leaveToTitle();
+  }
+  _leaveToTitle(rejoinCode) {
+    if (this._leaving) return;
+    this._leaving = true;
     this.net?.close?.();
-    this.scene.start('Title');
+    this.scene.start('Title', { rejoinCode });
   }
   mapName(id) { return MAPS[id]?.name ?? id; }
   playerWorldTile() {
