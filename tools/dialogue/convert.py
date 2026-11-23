@@ -9,6 +9,9 @@ Parsed (best effort; the drafts use slightly different conventions):
   #### if <cond> / else / otherwise / always / end    conditional blocks
   **NAME:** text   /  INSPECT: text      lines
   > reveal: act1.quest.clue            flag set when the preceding line is fully shown
+  > do: <staging>                       a staging cue: the next line gets "cue": "<node>.<n>", and the
+                                        cutscene engine plays src/content/stage/<scene>.js cues[that key]
+                                        while the line is on screen (Michael, D-022)
   *set x[=v]* / *give item [n]* / *standing faction +n*   effects
   *Set `a`, `b = 2`. If the timeout fired ..., set `c`.*    each backticked flag; a "timeout" sentence (or
                                          "`c` true or false") sets it only when the choice was the timed one
@@ -85,6 +88,7 @@ def set_effects(body, cond):
 
 def parse(text):
     nodes, order, node, cond, in_choices = {}, [], None, None, False
+    node_id, cue_n, cue_pending = None, 0, None   # > do: cues, numbered per node
     last_caption = None
     meta = {}
     outer, chain, inner_if = None, [], None     # #### block state; ##### blocks nest inside it
@@ -134,6 +138,7 @@ def parse(text):
         if m:
             node = {"lines": [], "choices": [], "go": None, "effects": []}
             nodes[m.group(1)] = node; order.append(m.group(1)); cond = None; in_choices = False
+            node_id, cue_n, cue_pending = m.group(1), 0, None
             outer, chain, inner_if = None, [], None
             tight = one_run = None
             continue
@@ -144,6 +149,9 @@ def parse(text):
         reveal = REVEAL.match(line)
         if reveal and node["lines"] and not in_choices:
             node["lines"][-1].setdefault("reveal", []).append(reveal.group(1))
+            continue
+        if re.match(r"^>\s*do:", line):
+            if cue_pending is None: cue_pending = f"{node_id}.{cue_n}"; cue_n += 1
             continue
         es = re.match(r"^>\s*es:\s*(.+)$", line)
         if es:
@@ -253,6 +261,7 @@ def parse(text):
         m = LINE.match(line)
         if m:
             node["lines"].append({"who": " ".join(w.capitalize() for w in m.group(1).split()), "text": m.group(2).strip(), "if": cond})   # not .title(): it gives "Manuel'S Phone"
+            if cue_pending: node["lines"][-1]["cue"] = cue_pending; cue_pending = None
             if tight is not None: tight["done"] = True
             continue
         m = INSPECT.match(line)
