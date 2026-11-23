@@ -5646,17 +5646,49 @@ test('every Act 2 boss has its own rule (hub #121): pylons, tide, flicker, liste
     assert.ok(!e.mech.lock, 'nobody made a sound');
     tick(0.5, () => { h.swingT = 0.2; }); assert.ok(e.mech.lock, 'swinging gets you heard');
   }
-  { // mimic: the echo walks the path you took two seconds ago
-    const { e, tick, h } = arena('boss.bv_shell');
-    tick(4, () => { h.x += 0.6; }); const back = h.x; tick(3, () => { h.x = back - 20; });
-    assert.ok(e.mech.trail.length > 10, 'it records your path');
-  }
   { // chorus: held up while its congregation is near
     const { sim, e, tick, hit } = arena('boss.bmore_congregation'); tick(0.1);
     const held = hit(); for (const u of [...sim.enemies.values()].filter((u) => u.mechOf === 'B')) { u.x = e.x + 400; } tick(0.05);
     assert.ok(hit() > held * 1.5, 'pull them away and it takes full hits');
     e.hp = 1; e.phase = 3; e.phaseTells = 1; sim._hurtEnemy(e, 999999, 0, 0, 'host'); assert.equal([...sim.enemies.values()].filter((u) => u.mechOf === 'B').length, 0, 'they go with it');
   }
+});
+test('boss openings and echo warnings stay readable in their shipped arenas', async () => {
+  const { MECH, stepMech, mechView } = await import('../src/engine/bossMechs.js');
+  const dt = 1 / 60;
+  const red = new Sim(MAPS_FOR_TEST.bmore_refinery, { seed: 'red-sign' });
+  red.addPlayer('host', 'trevor');
+  const sign = [...red.enemies.values()].find((e) => e.def.mech === 'flicker');
+  const host = red.players.get('host');
+  host.x = sign.x + 10; host.y = sign.y;
+  const hp = host.hp;
+  for (const state of ['windup', 'beam', 'laser']) {
+    Object.assign(sign, { awake: true, state, beamT: 1, beamTick: 0, beamA: 0, beamDir: 1,
+      laserT: 1, laserA: 0, laserDir: 1, cd2: 0, mech: { t: MECH.flicker.lit - 0.01, lit: true } });
+    red._stepBoss(sign, sign.def, dt);
+    assert.equal(sign.mech.lit, false);
+    assert.equal(sign.state, 'move', `dark ends ${state}`);
+    assert.equal(red.shots.length, 0, 'no new attack during darkness');
+    assert.equal(host.hp, hp, 'contact is safe during the opening');
+  }
+
+  const barn = new Sim(MAPS_FOR_TEST.bv_barn, { seed: 'echo-path' });
+  const shell = [...barn.enemies.values()].find((e) => e.def.mech === 'mimic');
+  barn.addPlayer('a', 'trevor'); barn.addPlayer('b', 'manuel');
+  const a = barn.players.get('a'), b = barn.players.get('b');
+  const before = b.hp;
+  let warned = false, hurt = false;
+  for (let frame = 0; frame < 250; frame++) {
+    a.x = shell.x - 45 - Math.min(50, frame * 0.25); a.y = 64;
+    b.x = shell.x + 64; b.y = 64;
+    stepMech(barn, shell, shell.def, dt);
+    const echo = mechView(shell);
+    if (echo.ex == null) continue;
+    assert.equal(echo.ex, b.x, 'the echo follows one player when the nearest player changes');
+    if (echo.w) { warned = true; assert.equal(b.hp, before, 'formation is harmless'); }
+    else if (b.hp < before) hurt = true;
+  }
+  assert.ok(warned && hurt, 'the shared warning precedes the echo damage');
 });
 test('every Act 3 boss has its own rule too (hub #121): vents, current, power, rewind, molten, verify', async () => {
   const { BOSSES } = await import('../src/content/bosses.js');
