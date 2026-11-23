@@ -5543,6 +5543,53 @@ test('every Act 2 boss has its own rule (hub #121): pylons, tide, flicker, liste
     e.hp = 1; e.phase = 3; e.phaseTells = 1; sim._hurtEnemy(e, 999999, 0, 0, 'host'); assert.equal([...sim.enemies.values()].filter((u) => u.mechOf === 'B').length, 0, 'they go with it');
   }
 });
+test('every Act 3 boss has its own rule too (hub #121): vents, current, power, rewind, molten, verify', async () => {
+  const { BOSSES } = await import('../src/content/bosses.js');
+  const { MECH } = await import('../src/engine/bossMechs.js');
+  const ALL = Object.keys(BOSSES).filter((k) => BOSSES[k](1).mech);
+  assert.equal(new Set(ALL.map((k) => BOSSES[k](1).mech)).size, ALL.length, 'no two bosses share a rule');
+  const arena = (kind) => {
+    const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'mech3', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+    const h = sim.players.get('host'); h.x = 20 * 16; h.y = 7 * 16; h.hp = 9999;
+    const w = BOSSES[kind](1), def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
+    const e = { id: 'B', kind, def, boss: true, mini: true, awake: true, phase: 1, x: 30 * 16, y: 7 * 16, hp: def.hp, cd: 99, cd2: 99, hurtT: 0, kx: 0, ky: 0, dash: 0 };
+    sim.enemies.set('B', e);
+    const tick = (secs, each) => { for (let i = 0; i < 60 * secs; i++) { h.hp = Math.max(h.hp, 1); h.iframes = 0; e.cd = 99; each?.(); sim._stepBoss(e, def, 1 / 60); } };
+    const hit = (n = 100) => { const was = e.hp; e.state = 'move'; e.parried = 0; e.openT = 0; sim._hurtEnemy(e, n, 0, 0, 'host'); return was - e.hp; };
+    return { sim, h, e, def, tick, hit };
+  };
+  { // current: it pulls you in
+    const { h, e, tick } = arena('boss.cor_intake'); const d0 = Math.hypot(h.x - e.x, h.y - e.y); tick(2);
+    assert.ok(Math.hypot(h.x - e.x, h.y - e.y) < d0 - 10, 'the river drags you toward it');
+  }
+  { // power: shielded with live sockets; standing on all of them cuts it
+    const { e, tick, hit, h } = arena('boss.cor_hall'); tick(0.1); const powered = hit();
+    for (const k of e.mech.sockets) { h.x = k.x; h.y = k.y; tick(MECH.power.hold + 0.1, () => { h.x = k.x; h.y = k.y; }); }
+    assert.equal(e.mech.live, 0); assert.ok(hit() > powered * 4, 'cut, it takes real hits');
+  }
+  { // rewind: puts you back where you were, and takes back half the damage of those seconds
+    const { e, tick, h, hit } = arena('boss.gt_clock'); tick(MECH.rewind.every - MECH.rewind.back - 0.5);
+    const x0 = h.x; const before = e.hp; tick(MECH.rewind.back + 0.4, () => { h.x += 0.5; }); hit(400); const dealt = before - e.hp;
+    tick(0.2); assert.ok(Math.abs(h.x - x0) < 30, 'back where you were'); assert.ok(before - e.hp < dealt, 'some of the damage is taken back');
+  }
+  { // molten: caught in a full channel it sticks and takes more
+    const { e, tick, hit } = arena('boss.fr_potline'); tick(0.05); const normal = hit();
+    tick(2 + MECH.molten.warn + 0.1, () => { if (e.mech.lanes && e.mech.lane >= 0) e.x = e.mech.lanes[e.mech.lane]; });
+    assert.ok(e.mech.stuckT > 0, 'stuck in the metal'); assert.ok(hit() > normal * 1.5);
+  }
+  { // verify: moving during the red scan hurts; holding still doesn't; it's shielded while red
+    const { e, tick, h, hit } = arena('boss.en_gate'); tick(MECH.verify.green + MECH.verify.amber + 0.2);
+    assert.equal(e.mech.light, 'red'); const shielded = hit(); h.hp = 500; tick(1); assert.equal(h.hp, 500, 'still is safe');
+    tick(1, () => { h.x += 1; }); assert.ok(h.hp < 500, 'moving gets zapped');
+    tick(MECH.verify.red); assert.ok(hit() > shielded * 5, 'green again: open');
+  }
+  { // vents: the vents exist and blow in groups; a boss over a blowing vent is scalded
+    const { e, tick } = arena('boss.cor_tower'); tick(0.1);
+    assert.ok(e.mech.vents.length >= 3);
+    const v = e.mech.vents[0]; let scalded = false; tick(MECH.vents.every * 3 + 2, () => { e.x = v.x; e.y = v.y; if (e.mech.scaldT > 0) scalded = true; });
+    assert.ok(scalded, 'lured over a vent, it gets scalded');
+  }
+});
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

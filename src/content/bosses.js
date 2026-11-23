@@ -38,22 +38,28 @@ export const BOSSES = {
   // ---- Act 3 (ring three) ----
   // The Corridor's cooling towers: steam, breathing.
   'boss.cor_tower': defineBoss({ name: 'THE COOLING TOWER', epithet: 'Breathing Steam', hp: 1450, guard: 6, damage: 17, speed: 14, color: 0xd0d8e0,
-    phases: [['puddle', 'ring'], ['puddle', 'ring', 'rain'], ['puddle', 'ring', 'rain', 'shock']], signature: 'rain', wake: 170 }),
+    // Floor vents blow in a sequence you can see coming: lure it over one and it's scalded open.
+    mech: 'vents', phases: [['puddle', 'ring'], ['puddle', 'ring', 'rain'], ['puddle', 'ring', 'rain', 'shock']], signature: 'rain', wake: 170 }),
   // The Corridor's waterworks: the river the town sold.
   'boss.cor_intake': defineBoss({ name: 'THE INTAKE', epithet: 'Drinking the River', hp: 1400, guard: 6, damage: 18, speed: 22, color: 0x3080c0,
-    phases: [['charge', 'puddle'], ['charge', 'puddle', 'spiral'], ['charge', 'puddle', 'spiral', 'lane']], signature: 'charge', wake: 150 }),
+    // The river pulls everyone toward it, in surges (a dodge breaks free); after a surge it gulps, open.
+    mech: 'current', phases: [['charge', 'puddle'], ['charge', 'puddle', 'spiral'], ['charge', 'puddle', 'spiral', 'lane']], signature: 'charge', wake: 150 }),
   // The Corridor: a hall written off and sealed, still drawing power, still running something.
   'boss.cor_hall': defineBoss({ name: 'THE SEALED HALL', epithet: 'Written Off, Still Running', hp: 1400, guard: 6, damage: 18, speed: 16, color: 0x7a8aa0,
-    phases: [['spray', 'laser'], ['spray', 'laser', 'summon'], ['laser', 'summon', 'rain', 'ring']], signature: 'laser', wake: 180 }),
+    // Cables to three floor sockets keep it shielded: stand on a socket to cut it, together if you can.
+    mech: 'power', phases: [['spray', 'laser'], ['spray', 'laser', 'summon'], ['laser', 'summon', 'rain', 'ring']], signature: 'laser', wake: 180 }),
   // Gaithersburg: the clocks; the reason so many devices think it is 1901.
   'boss.gt_clock': defineBoss({ name: 'THE MASTER CLOCK', epithet: 'Running Since 1901', hp: 1300, guard: 5, damage: 16, speed: 20, color: 0xe0d090,
-    phases: [['shock', 'blink'], ['shock', 'blink', 'spiral'], ['shock', 'blink', 'spiral', 'lane']], signature: 'shock', wake: 170 }),
+    // Every so often it puts everyone back three seconds and takes back half that damage: hit it just after.
+    mech: 'rewind', phases: [['shock', 'blink'], ['shock', 'blink', 'spiral'], ['shock', 'blink', 'spiral', 'lane']], signature: 'shock', wake: 170 }),
   // Frederick: the smelter's potlines turned server halls.
   'boss.fr_potline': defineBoss({ name: 'POTLINE NINE', epithet: 'Still Numbered Like a Smelter', hp: 1500, guard: 7, damage: 20, speed: 24, color: 0xd07040,
-    phases: [['charge', 'puddle'], ['charge', 'puddle', 'lane'], ['charge', 'puddle', 'lane', 'rain']], signature: 'puddle', wake: 190 }),
+    // Channels fill with molten metal in turn: bait its charge into a full one and it sticks, open.
+    mech: 'molten', phases: [['charge', 'puddle'], ['charge', 'puddle', 'lane'], ['charge', 'puddle', 'lane', 'rain']], signature: 'puddle', wake: 190 }),
   // The Enclave: attestation gates every two blocks.
   'boss.en_gate': defineBoss({ name: 'THE ATTESTATION GATE', epithet: 'Please Hold Still', hp: 1450, guard: 8, damage: 16, speed: 14, color: 0xf0f0f0,
-    phases: [['beam', 'ring'], ['beam', 'ring', 'laser'], ['laser', 'ring', 'shock', 'rain']], signature: 'beam', wake: 200 }),
+    // Green: it's open. Red: it scans, and anyone moving gets zapped. Hold still.
+    mech: 'verify', phases: [['beam', 'ring'], ['beam', 'ring', 'laser'], ['laser', 'ring', 'shock', 'rain']], signature: 'beam', wake: 200 }),
 };
 
 // [SCAFFOLD] Until the Act 2 story says how Act 2 ends (BagelMeister), it ends when these five region bosses are down.

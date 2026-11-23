@@ -3429,6 +3429,41 @@ export class WorldScene extends Phaser.Scene {
       g.fillStyle(0xc9a0a0, 0.45).fillEllipse(m.ex, m.ey - 6, 10, 16).fillStyle(0xffffff, 0.5).fillRect(m.ex - 2, m.ey - 11, 1, 1).fillRect(m.ex + 1, m.ey - 11, 1, 1);
       g.lineStyle(1, 0xc9a0a0, 0.6).strokeCircle(m.ex, m.ey, 9);
     }
+    if (m.k === 'vents') {   // vents: dark grates; the next group glows as it warns, then steam columns when they blow
+      for (const [x, y] of m.v ?? []) {
+        if (m.p === 'warn') g.fillStyle(0xffb347, 0.25 + 0.35 * pulse).fillCircle(x, y, 14);
+        if (m.p === 'blow') { g.fillStyle(0xeef6ff, 0.75).fillEllipse(x, y - 10, 18, 28); g.fillStyle(0xffffff, 0.5).fillCircle(x, y - 22, 6); }
+        g.lineStyle(1, 0x5b6862, 0.9).strokeRect(x - 6, y - 4, 12, 8);
+      }
+      if (m.s) this._mechLabel(e, 'SCALDED: HIT IT', '#ffd27f');
+    }
+    if (m.k === 'current') {   // the pull: streaks flowing in toward it, thicker in a surge; open after
+      const n = m.s ? 18 : 9, R = 150;
+      for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2 + t / 900, r = R - ((t / (m.s ? 4 : 12) + i * 37) % R); g.lineStyle(1, 0x9fe0ff, m.s ? 0.8 : 0.4).lineBetween(e.x + Math.cos(a) * r, e.y + Math.sin(a) * r * 0.6, e.x + Math.cos(a) * (r - 10), e.y + Math.sin(a) * (r - 10) * 0.6); }
+      if (m.w) this._mechLabel(e, 'SURGE COMING', '#9fe0ff'); else if (m.o) this._mechLabel(e, 'GULPING: HIT IT', '#ffd27f');
+    }
+    if (m.k === 'power') {   // sockets: lit and cabled to it while live, a filling ring while someone holds one, dark once cut
+      for (const [x, y, live, hold] of m.s ?? []) {
+        g.fillStyle(live ? 0x6fe3e8 : 0x2b3331, live ? 0.6 : 0.8).fillRect(x - 6, y - 6, 12, 12);
+        if (live) { g.lineStyle(1, 0x6fe3e8, 0.4 + 0.3 * pulse).lineBetween(x, y, e.x, e.y - 8); if (hold > 0) g.lineStyle(2, 0xffd27f, 1).beginPath().arc(x, y, 12, -Math.PI / 2, -Math.PI / 2 + hold * Math.PI * 2).strokePath(); }
+      }
+    }
+    if (m.k === 'rewind' && m.g) {   // ghosts where everyone will be put back
+      for (const [x, y] of m.g) { g.fillStyle(0xe0d090, 0.35 + 0.25 * pulse).fillEllipse(x, y - 8, 10, 18); g.lineStyle(1, 0xe0d090, 0.8).strokeCircle(x, y, 8); }
+      this._mechLabel(e, 'REWINDING', '#e0d090');
+    }
+    if (m.k === 'molten' && m.x != null) {   // the channel: outlined while it fills, glowing once it's full
+      const H = this.map.h * TILE;
+      if (m.st === 'warn') g.lineStyle(2, 0xff6b2b, 0.5 + 0.4 * pulse).strokeRect(m.x - 14, 0, 28, H);
+      if (m.st === 'hot') { g.fillStyle(0xff6b2b, 0.45 + 0.15 * pulse).fillRect(m.x - 14, 0, 28, H); g.fillStyle(0xffd27f, 0.6).fillRect(m.x - 3, 0, 6, H); }
+      if (m.s) this._mechLabel(e, 'STUCK: HIT IT', '#ffd27f');
+    }
+    if (m.k === 'verify') {   // the light over the gate: green, amber, red; a scan line sweeping while red
+      const col = m.l === 'red' ? 0xff3b3b : m.l === 'amber' ? 0xffb347 : 0x7dff9b;
+      g.fillStyle(col, 1).fillCircle(e.x, e.y - 36, 4);
+      if (m.l === 'red') { const sy = (t / 4) % (this.map.h * TILE); g.lineStyle(2, 0xff3b3b, 0.6).lineBetween(0, sy, W, sy); this._mechLabel(e, 'HOLD STILL', '#ff6b6b'); }
+      else if (m.l === 'amber') this._mechLabel(e, 'SCAN COMING', '#ffb347');
+    }
     if (m.k === 'chorus' && m.h?.length) {   // a line from each congregant holding it up
       for (const u of this._lastRendered?.enemies ?? []) if (m.h.includes(u.id)) g.lineStyle(1, 0xd417c8, 0.4 + 0.3 * pulse).lineBetween(u.x, u.y - 8, e.x, e.y - 10);
       this._mechLabel(e, `HELD UP x${m.h.length}`, '#f07ad8');

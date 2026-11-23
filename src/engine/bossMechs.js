@@ -9,6 +9,13 @@
 //   listen  (the Receiver)     it targets noise: whoever attacks, shoots or dodges gets a dish strike; go quiet
 //   mimic   (Shell Zero)       an echo walks your path two seconds behind you; don't double back over it
 //   chorus  (the Congregation) its congregation holds it up (heals it, halves damage) while near; split them off
+//   vents   (the Cooling Tower) floor vents blow in a sequence you can see coming; lure it over one and it's scalded open
+//   current (the Intake)       the river pulls everyone toward it, in surges; after a surge it's gulping and open
+//   power   (the Sealed Hall)  cables to floor sockets keep it shielded; stand on a socket to cut it
+//   rewind  (the Master Clock) every so often it puts everyone back where they were three seconds ago and takes back
+//                              half the damage of those seconds; hit it right after a rewind
+//   molten  (Potline Nine)     channels fill with molten metal in turn; bait its charge into one and it sticks, open
+//   verify  (the Attestation Gate) green: open; red: it scans, and anyone moving gets zapped. Hold still
 //
 // Host-run rules. stepMech runs inside _stepBoss once the boss is awake, mechDamage scales a hit, mechView goes in the
 // snapshot for the scene to draw (WorldScene._mechFx). Names are placeholders until the lore gate names the bosses.
@@ -20,6 +27,12 @@ export const MECH = {
   listen: { every: 5, lock: 1.2, r: 20, dmg: 18 },
   mimic: { delay: 2, every: 6, life: 4, r: 9, dmg: 12 },
   chorus: { n: 3, every: 18, reach: 90, heal: 0.006, mul: 0.5 },
+  vents: { every: 2.6, warn: 1.0, blow: 0.6, r: 14, dmg: 14, scald: 2.0, scaldMul: 2 },
+  current: { pull: 14, surge: 50, every: 7, warn: 1.0, last: 2.0, open: 2.5, openMul: 1.6, mouth: 26, dps: 12 },
+  power: { n: 3, r: 14, hold: 1.5, off: 8, mul: [1.5, 0.75, 0.4, 0.2] },
+  rewind: { every: 12, warn: 1.2, back: 3, giveBack: 0.5 },
+  molten: { every: 5, warn: 1.0, last: 4, half: 14, dps: 10, stuck: 2.5, stuckMul: 1.8 },
+  verify: { green: 5, amber: 1, red: 3, greenMul: 1.2, redMul: 0.1, still: 3, dmg: 8 },
 };
 import { ENEMIES } from '../content/enemies.js';
 
@@ -109,6 +122,8 @@ export function stepMech(sim, e, def, dt) {
     }
   }
 
+  if (['vents', 'current', 'power', 'rewind', 'molten', 'verify'].includes(kind)) stepMech3(sim, e, def, dt, kind, M, m);
+
   if (kind === 'chorus') {
     if ((m.wait = (m.wait ?? 0) - dt) <= 0) {
       m.wait = M.every;
@@ -121,6 +136,99 @@ export function stepMech(sim, e, def, dt) {
   }
 }
 
+// Act 3's rules (split out to keep stepMech readable).
+function stepMech3(sim, e, def, dt, kind, M, m) {
+  const alive = (p) => !p.downed, W = sim.map.w * TILE, H = sim.map.h * TILE;
+  const hurt = (p, n) => sim._hurtPlayer(p, Math.round(n * (def.dmgMul ?? 1)));
+
+  if (kind === 'vents') {
+    if (!m.vents) { m.vents = []; for (let x = 3; x < sim.map.w - 2; x += 4) for (const fy of [0.32, 0.72]) { const v = { x: x * TILE + 8, y: Math.round(H * fy / TILE) * TILE + 8 }; if (!sim._hitsBox(v.x, v.y, 4, 3)) m.vents.push(v); } m.next = M.every; m.group = 0; }
+    if ((m.next -= dt) <= 0) { m.next = M.every; m.group = (m.group + 1) % 3; m.warnT = M.warn; m.blowT = 0; sim.events.push({ t: 'mech', kind, what: 'warn', x: e.x, y: e.y }); }
+    const live = m.vents.filter((_, i) => i % 3 === m.group);
+    if (m.warnT > 0 && (m.warnT -= dt) <= 0) m.blowT = M.blow;
+    if (m.blowT > 0) {
+      m.blowT -= dt;
+      for (const v of live) {
+        for (const p of sim.players.values()) if (alive(p) && Math.hypot(p.x - v.x, p.y - v.y) < M.r - sim._small(p) && (p._ventT = (p._ventT ?? 0) - dt) <= 0) { p._ventT = 0.6; hurt(p, M.dmg); }
+        if (Math.hypot(e.x - v.x, e.y - v.y) < M.r + def.radius && !(m.scaldT > 0)) { m.scaldT = M.scald; sim.events.push({ t: 'mech', kind, what: 'scald', x: e.x, y: e.y }); }
+      }
+    }
+    m.live = live; m.phaseNow = m.blowT > 0 ? 'blow' : m.warnT > 0 ? 'warn' : '';
+    if (m.scaldT > 0) { m.scaldT -= dt; e.cd = Math.max(e.cd, 0.2); }
+  }
+
+  if (kind === 'current') {
+    m.cyc = (m.cyc ?? 0) + dt;
+    const c = m.cyc % M.every, warn = c > M.every - M.warn - M.last && c <= M.every - M.last, surge = c > M.every - M.last;
+    if (surge && !m.surging) sim.events.push({ t: 'mech', kind, what: 'surge', x: e.x, y: e.y });
+    if (!surge && m.surging) m.openT = M.open;   // it gulps: open for a moment
+    m.surging = surge; m.warn = warn;
+    const v = surge ? M.surge : M.pull;
+    for (const p of sim.players.values()) {
+      if (!alive(p)) continue;
+      const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy) || 1;
+      if (p.dodgeT > 0) continue;   // a dodge breaks the pull for a moment
+      if (d > 8) sim._moveBody(p, (dx / d) * v * dt, (dy / d) * v * dt, 5);
+      if (surge && d < M.mouth && (p._mouthT = (p._mouthT ?? 0) - dt) <= 0) { p._mouthT = 0.5; hurt(p, M.dps * 0.5); }
+    }
+    if (m.openT > 0) m.openT -= dt;
+  }
+
+  if (kind === 'power') {
+    if (!m.sockets) {
+      m.sockets = [];
+      for (let i = 0; i < M.n; i++) { const x = Math.round(W * (0.2 + 0.3 * i)), y = Math.round(H * (i % 2 ? 0.75 : 0.3)); m.sockets.push({ x, y, hold: 0, off: 0 }); }
+    }
+    for (const k of m.sockets) {
+      if (k.off > 0) { k.off -= dt; continue; }
+      const on = [...sim.players.values()].some((p) => alive(p) && Math.hypot(p.x - k.x, p.y - k.y) < M.r);
+      k.hold = on ? k.hold + dt : Math.max(0, k.hold - dt * 2);
+      if (k.hold >= M.hold) { k.off = M.off; k.hold = 0; sim.events.push({ t: 'mech', kind, what: 'cut', x: k.x, y: k.y }); }
+    }
+    m.live = m.sockets.filter((k) => !(k.off > 0)).length;
+  }
+
+  if (kind === 'rewind') {
+    m.hist ??= []; m.rec = (m.rec ?? 0) - dt;
+    if (m.rec <= 0) { m.rec = 0.1; m.hist.push({ t: m.t, hp: e.hp, pos: [...sim.players.values()].map((p) => [p.id, p.x, p.y]) }); while (m.hist.length && m.t - m.hist[0].t > M.back + 0.5) m.hist.shift(); }
+    m.next = (m.next ?? M.every) - dt;
+    if (m.next <= M.warn && !m.warning) { m.warning = true; sim.events.push({ t: 'mech', kind, what: 'warn', x: e.x, y: e.y }); }
+    const then = m.hist.find((h) => h.t >= m.t - M.back);
+    m.ghosts = m.warning && then ? then.pos.map(([, x, y]) => [Math.round(x), Math.round(y)]) : null;
+    if (m.next <= 0 && then) {
+      for (const [id, x, y] of then.pos) { const p = sim.players.get(id); if (p && alive(p)) { p.x = x; p.y = y; } }
+      if (then.hp > e.hp) e.hp = Math.min(def.hp, e.hp + (then.hp - e.hp) * M.giveBack);
+      sim.events.push({ t: 'mech', kind, what: 'rewind', x: e.x, y: e.y });
+      m.next = M.every; m.warning = false; m.hist = [];
+    }
+  }
+
+  if (kind === 'molten') {
+    if (!m.lanes) { m.lanes = []; for (let x = 4; x < sim.map.w - 3; x += 6) m.lanes.push(x * TILE + 8); m.next = 2; m.lane = -1; }
+    if ((m.next -= dt) <= 0) { m.next = M.every; m.lane = (m.lane + 1 + Math.floor(sim.tick % 2)) % m.lanes.length; m.warnT = M.warn; m.hotT = 0; sim.events.push({ t: 'mech', kind, what: 'warn', x: m.lanes[m.lane], y: e.y }); }
+    if (m.warnT > 0 && (m.warnT -= dt) <= 0) m.hotT = M.last;
+    const lx = m.lanes[m.lane];
+    if (m.hotT > 0) {
+      m.hotT -= dt;
+      for (const p of sim.players.values()) if (alive(p) && Math.abs(p.x - lx) < M.half && (p._moltT = (p._moltT ?? 0) - dt) <= 0) { p._moltT = 0.5; hurt(p, M.dps * 0.5); }
+      if (Math.abs(e.x - lx) < M.half + def.radius && !(m.stuckT > 0)) { m.stuckT = M.stuck; e.state = 'move'; e.dash = 0; sim.events.push({ t: 'mech', kind, what: 'stuck', x: e.x, y: e.y }); }
+    }
+    if (m.stuckT > 0) { m.stuckT -= dt; e.cd = Math.max(e.cd, 0.2); e.kx = e.ky = 0; }
+  }
+
+  if (kind === 'verify') {
+    const T = M.green + M.amber + M.red, c = m.t % T;
+    const ph = c < M.green ? 'green' : c < M.green + M.amber ? 'amber' : 'red';
+    if (ph !== m.light) { m.light = ph; m.at = {}; sim.events.push({ t: 'mech', kind, what: ph, x: e.x, y: e.y }); for (const p of sim.players.values()) m.at[p.id] = [p.x, p.y]; }
+    if (ph === 'red') for (const p of sim.players.values()) {
+      if (!alive(p)) continue;
+      const a = m.at[p.id] ?? (m.at[p.id] = [p.x, p.y]);
+      if (Math.hypot(p.x - a[0], p.y - a[1]) > M.still && (p._scanT = (p._scanT ?? 0) - dt) <= 0) { p._scanT = 0.5; hurt(p, M.dmg); a[0] = p.x; a[1] = p.y; }
+    }
+    if (ph === 'red') { e.cd = Math.max(e.cd, 0.2); }
+  }
+}
+
 /** How much of a hit lands, after the signature rule. */
 export function mechDamage(sim, e, dmg) {
   const kind = e.def?.mech, m = e.mech; if (!kind || !m) return dmg;
@@ -129,13 +237,18 @@ export function mechDamage(sim, e, dmg) {
   if (kind === 'tide') return Math.max(1, Math.round(dmg * (m.bossWet ? M.inWater : M.onDry)));
   if (kind === 'flicker') return Math.max(1, Math.round(dmg * (m.lit === false ? M.darkMul : M.litMul)));
   if (kind === 'chorus' && m.holders?.length) return Math.max(1, Math.round(dmg * M.mul));
+  if (kind === 'vents') return Math.round(dmg * (m.scaldT > 0 ? M.scaldMul : 1));
+  if (kind === 'current') return Math.round(dmg * (m.openT > 0 ? M.openMul : 1));
+  if (kind === 'power') return Math.max(1, Math.round(dmg * M.mul[m.live ?? M.n]));
+  if (kind === 'molten') return Math.round(dmg * (m.stuckT > 0 ? M.stuckMul : 1));
+  if (kind === 'verify') return Math.max(1, Math.round(dmg * (m.light === 'red' ? M.redMul : M.greenMul)));
   return dmg;
 }
 
 /** Is the boss's rule shielding it right now (for the scene's 'BRACED'-style feedback)? */
 export const mechShielded = (e) => {
   const m = e.mech, k = e.def?.mech;
-  return !!m && ((k === 'pylons' && m.shielded) || (k === 'flicker' && m.lit !== false) || (k === 'tide' && m.bossWet) || (k === 'chorus' && m.holders?.length > 0));
+  return !!m && ((k === 'power' && (m.live ?? 0) > 0) || (k === 'verify' && m.light === 'red') || (k === 'pylons' && m.shielded) || (k === 'flicker' && m.lit !== false) || (k === 'tide' && m.bossWet) || (k === 'chorus' && m.holders?.length > 0));
 };
 
 /** Compact state for the snapshot. */
@@ -148,5 +261,11 @@ export function mechView(e) {
   if (k === 'listen') return { k, ...(m.lock ? { lx: R(m.lock.x), ly: R(m.lock.y), lt: Math.round(m.lock.t * 10) / 10 } : {}) };
   if (k === 'mimic') return { k, ...(m.echo?.x != null ? { ex: R(m.echo.x), ey: R(m.echo.y) } : {}) };
   if (k === 'chorus') return { k, h: m.holders ?? [] };
+  if (k === 'vents') return { k, p: m.phaseNow ?? '', v: (m.live ?? []).map((v) => [v.x, v.y]), s: m.scaldT > 0 ? 1 : 0 };
+  if (k === 'current') return { k, s: m.surging ? 1 : 0, w: m.warn ? 1 : 0, o: m.openT > 0 ? 1 : 0 };
+  if (k === 'power') return { k, s: (m.sockets ?? []).map((q) => [q.x, q.y, q.off > 0 ? 0 : 1, Math.round(q.hold / MECH.power.hold * 100) / 100]) };
+  if (k === 'rewind') return { k, ...(m.ghosts ? { g: m.ghosts } : {}) };
+  if (k === 'molten') return { k, ...(m.lanes && m.lane >= 0 ? { x: m.lanes[m.lane], st: m.hotT > 0 ? 'hot' : m.warnT > 0 ? 'warn' : '' } : {}), s: m.stuckT > 0 ? 1 : 0 };
+  if (k === 'verify') return { k, l: m.light ?? 'green' };
   return { k };
 }
