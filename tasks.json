@@ -1,5 +1,5 @@
 {
- "next_id": 125,
+ "next_id": 126,
  "tasks": [
   {
    "id": 1,
@@ -2689,6 +2689,19 @@
    ],
    "turn_at": "2026-11-23T08:03:05Z",
    "turn_for": "BagelMeister: story lists B against the sealed plan; gonman: A against your #112 script review (the unread flags overlap it)"
+  },
+  {
+   "id": 125,
+   "created_at": "2026-11-23T08:25:34Z",
+   "updated_at": "2026-11-23T08:25:34Z",
+   "history": [
+    "2026-11-23T08:25:34Z trevor: added (for trevor)"
+   ],
+   "title": "Tung Tung Tung Sahur visible when he shows up, and the balloon visible in its scenes",
+   "details": "Trevor, 2026-11-23. Ending cameo fix is PR #119 (trevor/ending-sahur-visible); balloon on trevor/ending-balloon stacked on it.",
+   "source": "human:Trevor",
+   "status": "assigned",
+   "owner": "trevor"
   }
  ]
 }
