@@ -319,6 +319,46 @@
     "w": 32,
     "h": 40
    }
+  },
+  "obj.aud_screen": {
+   "frame": {
+    "x": 0,
+    "y": 80,
+    "w": 32,
+    "h": 40
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 40
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 40
+   }
+  },
+  "obj.key_machine": {
+   "frame": {
+    "x": 32,
+    "y": 80,
+    "w": 32,
+    "h": 40
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 40
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 40
+   }
   }
  },
  "meta": {
@@ -326,7 +366,7 @@
   "format": "RGBA8888",
   "size": {
    "w": 256,
-   "h": 80
+   "h": 120
   },
   "scale": "1"
  }

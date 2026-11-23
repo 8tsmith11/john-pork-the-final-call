@@ -32,6 +32,13 @@ export const ES_ROUTE1 = {
   'Adapters': 'Adaptadores',
   'Plug adapters sorted by decade on masking tape. The 2060s drawer is the fullest. A tested one gets a dot of red nail polish, and every one in here has a dot.':
     'Adaptadores de enchufe ordenados por década con cinta de papel. El cajón de los años 2060 es el más lleno. Uno probado lleva un punto de esmalte de uñas rojo, y todos los que hay aquí tienen su punto.',
+  // The paint and garden corner (hub #113, the shop rebuilt to the room standard)
+  'Paint shaker': 'Agitador de pintura',
+  'A can of porch grey clamped in the shaker, going. The order slip under the clamp is dated March. Dot says the customer will be back, and that it can only help the paint.':
+    'Una lata de gris para porche sujeta en el agitador, en marcha. El comprobante del pedido, bajo la mordaza, tiene fecha de marzo. Dot dice que el cliente va a volver, y que a la pintura solo puede hacerle bien.',
+  'Wheelbarrow': 'Carretilla',
+  'A price tag on a string: $40. Under it, a second tag: $40 AND YOU HAVE TO WHEEL IT HOME YOURSELF.':
+    'Una etiqueta de precio colgada de un hilo: $40. Debajo, otra etiqueta: $40 Y TE LA LLEVAS RODANDO TÚ.',
   'Out to Route 1': 'Salir a la Ruta 1',
   'Back out to the street.': 'De vuelta a la calle.',
   // Pardo Feed & Aquarium

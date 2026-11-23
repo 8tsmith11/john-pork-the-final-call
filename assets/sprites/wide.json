@@ -239,6 +239,106 @@
     "w": 32,
     "h": 16
    }
+  },
+  "obj.aud_seats": {
+   "frame": {
+    "x": 128,
+    "y": 16,
+    "w": 32,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 16
+   }
+  },
+  "obj.aud_seats_b": {
+   "frame": {
+    "x": 160,
+    "y": 16,
+    "w": 32,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 16
+   }
+  },
+  "obj.long_table": {
+   "frame": {
+    "x": 192,
+    "y": 16,
+    "w": 32,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 16
+   }
+  },
+  "obj.tool_wall": {
+   "frame": {
+    "x": 224,
+    "y": 16,
+    "w": 32,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 16
+   }
+  },
+  "obj.repair_tags": {
+   "frame": {
+    "x": 0,
+    "y": 32,
+    "w": 32,
+    "h": 16
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 16
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 16
+   }
   }
  },
  "meta": {
@@ -246,7 +346,7 @@
   "format": "RGBA8888",
   "size": {
    "w": 256,
-   "h": 32
+   "h": 48
   },
   "scale": "1"
  }
