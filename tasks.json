@@ -2452,7 +2452,7 @@
   {
    "id": 110,
    "created_at": "2026-11-21T08:12:41Z",
-   "updated_at": "2026-11-23T16:48:11Z",
+   "updated_at": "2026-11-23T16:48:13Z",
    "history": [
     "2026-11-21T08:12:41Z trevor: added (for trevor)",
     "2026-11-23T08:19:45Z trevor: note: Branch trevor/rot-bestiary (stacked on walker-fight, which is on border-siege): scarier rot-taken/rotling/spitter drawn in code, brute melee AI for hulk (slam), grafted (whip), sprawl (sweep + splits into crawlers), crawler pounce, the forms placed in the tunnels and post-Call College Park, and shot kinds (packets, notes, scan streaks, rings, splinters, nails, pellets). @gonman: the code-drawn looks are stand-ins; replace with sheet art whenever you like. @BagelMeister: placements are appended spawns, move them freely.",
@@ -2460,7 +2460,8 @@
     "2026-11-23T10:20:44Z trevor: turn: JohnPork, gonman (John Pork: systems review of the stack (siege, walker AI, brute AI, balance of the placements). gonman: map placement + the code-drawn looks (stand-ins for your art).)",
     "2026-11-23T12:07:36Z trevor: note: Stack refreshed on main 54525d59: border-siege, walker-fight and rot-bestiary each pass all tests and the level check; rot-bestiary at 2659d1af contains the whole stack. Ready to review and merge in one go.",
     "2026-11-23T16:42:49Z trevor: turn: JohnPork, gonman (John Pork: systems review of the bestiary on 25a30e71 (includes the walker fix). gonman: placement and the code-drawn looks)",
-    "2026-11-23T16:48:11Z John Pork: note: Exact 25a30e71 passed 270 Node checks and 68 maps. Checklist F/C2/C4/C7/C8: verified the cordon reward rules and the Walker dependency. Brute tells previously existed only as one-shot events; a rejoining guest missed the pending whip. The whip also pulled an invulnerable pawn, and committed strikes paused when all players left alert range. Fix 754830ae sends the active tell in the snapshot, preserves a clean dodge, resolves committed attacks, and keeps spawned crawlers clear of scenery. In the placement trial the post-Call hulk started solid at [73,14]; 59314085 moves it to clear sidewalk [73,19] without changing its persistent key, with the shipped-roster regression at bce249eb. Final current-main preview 27ec1ebc passes 286 Node checks and 68 maps. Three Firefox clients saw a rejoining guest receive an in-progress whip warning, clear protection from the strike, the real sprawl split, and the relocated plaza hulk telegraph its slam. Scripted three-seed comparisons with regular AI companions and no siege distractions: upgraded party cleared 3/3 each in tunnel and post-Call plaza, starter cleared 1/3 tunnel and 2/3 plaza (control 0/3 and 3/3). These are seeded full-map combat probes. Please carry the three fixes or the verified combined preview. Gonman retains map placement and art review, with later-act placements still to come."
+    "2026-11-23T16:48:11Z John Pork: note: Exact 25a30e71 passed 270 Node checks and 68 maps. Checklist F/C2/C4/C7/C8: verified the cordon reward rules and the Walker dependency. Brute tells previously existed only as one-shot events; a rejoining guest missed the pending whip. The whip also pulled an invulnerable pawn, and committed strikes paused when all players left alert range. Fix 754830ae sends the active tell in the snapshot, preserves a clean dodge, resolves committed attacks, and keeps spawned crawlers clear of scenery. In the placement trial the post-Call hulk started solid at [73,14]; 59314085 moves it to clear sidewalk [73,19] without changing its persistent key, with the shipped-roster regression at bce249eb. Final current-main preview 27ec1ebc passes 286 Node checks and 68 maps. Three Firefox clients saw a rejoining guest receive an in-progress whip warning, clear protection from the strike, the real sprawl split, and the relocated plaza hulk telegraph its slam. Scripted three-seed comparisons with regular AI companions and no siege distractions: upgraded party cleared 3/3 each in tunnel and post-Call plaza, starter cleared 1/3 tunnel and 2/3 plaza (control 0/3 and 3/3). These are seeded full-map combat probes. Please carry the three fixes or the verified combined preview. Gonman retains map placement and art review, with later-act placements still to come.",
+    "2026-11-23T16:48:13Z John Pork: turn: trevor, gonman (Trevor: apply 754830ae, 59314085 and bce249eb, or integrate verified preview 27ec1ebc. Gonman: continue the placement and art review.)"
    ],
    "title": "More varied enemies (Trevor): bigger ones, far-gone disfigured Code rot, biotech rot, big cyborg creatures",
    "details": "Trevor, 2026-11-21: 'we need more varied enemies in general. some should be larger as well. code rot should be able to go pretty far in disfigurement. some should be biotech coderotten as well, or be like big weird cyborg creatures.' Started on trevor/border-siege (2694afc): four new forms with code-drawn sprites (Lace crawler, Grafted, Sprawl, Lace hulk), first used at College Park's cordon pens. Next: give the bigger ones their own moves (not just swarm), place them through Acts 1-3 with story/world (BagelMeister) so they're tied to places, and real sprites (gonman). Lore stays inside Code-rot canon: degraded lace driving bodies, biotech implants, riot gear.",
@@ -2469,11 +2470,11 @@
    "owner": "trevor",
    "review": "Stack: trevor/border-siege (2694afc4) -> trevor/walker-fight (be4c434e, hub #111) -> trevor/rot-bestiary (49fdd64d). Scarier rot, brute melee (slam/whip/sweep), splitting sprawl, rot forms placed in tunnels and post-Call College Park, shot kinds. Needs a refresh on main before merge; I'll do it once reviewed.",
    "turn": [
-    "JohnPork",
+    "trevor",
     "gonman"
    ],
-   "turn_at": "2026-11-23T16:42:49Z",
-   "turn_for": "John Pork: systems review of the bestiary on 25a30e71 (includes the walker fix). gonman: placement and the code-drawn looks"
+   "turn_at": "2026-11-23T16:48:13Z",
+   "turn_for": "Trevor: apply 754830ae, 59314085 and bce249eb, or integrate verified preview 27ec1ebc. Gonman: continue the placement and art review."
   },
   {
    "id": 111,
