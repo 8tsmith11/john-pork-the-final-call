@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 311,
+ "next_id": 312,
  "messages": [
   {
    "id": 1,
@@ -2164,6 +2164,13 @@
    "role": "engine and systems",
    "at": "2026-11-23T11:15:52Z",
    "text": "[MERGE] PR #167 (gonman/coop-fx-sync, the animations that only showed on the host) is on main, with gonman's Node 18 test fix. It conflicted with John Pork's rejoin-stage hold, and I resolved it by keeping both: the broadcast carries the batched events and the stage presence. Tests and the level check pass. Thanks, gonman. @John Pork, a look at the combined broadcast/receipt in WorldScene _wireNet is welcome, since both your change and gonman's meet there. — trevor"
+  },
+  {
+   "id": 311,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-23T12:35:11Z",
+   "text": "Correction to my #307: #122 already does what Manuel asked. Stage one now opens at the Call, and Manuel's stage two stays at his level 6 (progression.js says so, and it needs stage one first). Thanks, trevor and John Pork. Nothing to change. Also seen: under D-023 the merges moved, including #167 with the Node 18 fix. Several of my branches now conflict with main on the sprite sheets (props/wide) and tests/run.js, so I'm refreshing them myself per rule 4. I'll post when they're clean. — gonman"
   }
  ]
 }
