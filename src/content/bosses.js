@@ -9,7 +9,8 @@ export const BOSSES = {
   // ---- Act 1 (optional, campus) ----
   // The campus quad's lecture auditorium: institutional rot (atlas rule 6). It grades you.
   'boss.chb_autograder': defineBoss({ name: 'THE AUTOGRADER', epithet: 'Partial Credit Not Available', hp: 650, guard: 4, damage: 12, speed: 24, color: 0xc8d860,
-    phases: [['spray', 'ring'], ['spray', 'ring', 'lane'], ['spray', 'ring', 'lane', 'rain']], signature: 'ring', wake: 160 }),
+    // It marks one kind of answer at a time (swing, shoot, dash-strike: on the board); the right kind lands hard.
+    mech: 'rubric', phases: [['spray', 'ring'], ['spray', 'ring', 'lane'], ['spray', 'ring', 'lane', 'rain']], signature: 'ring', wake: 160 }),
   // ---- Act 2 ----
   // Baltimore: an outbreak in progress, bigger than College Park's. It calls more of itself.
   'boss.bmore_congregation': defineBoss({ name: 'THE CONGREGATION', epithet: 'Of Everyone Who Picked Up', hp: 1100, guard: 4, damage: 16, speed: 26, color: 0xd417c8,

@@ -3509,6 +3509,11 @@ export class WorldScene extends Phaser.Scene {
       if (m.l === 'red') { const sy = (t / 4) % (this.map.h * TILE); g.lineStyle(2, 0xff3b3b, 0.6).lineBetween(0, sy, W, sy); this._mechLabel(e, 'HOLD STILL', '#ff6b6b'); }
       else if (m.l === 'amber') this._mechLabel(e, 'SCAN COMING', '#ffb347');
     }
+    if (m.k === 'rubric') {   // the question on its board
+      const label = { melee: 'Q: SWING', shot: 'Q: SHOOT', dash: 'Q: DASH-STRIKE' }[m.a] ?? '';
+      g.fillStyle(0x15171f, 0.85).fillRect(e.x - 26, e.y - 46, 52, 10); g.lineStyle(1, 0xc8d860, 1).strokeRect(e.x - 26, e.y - 46, 52, 10);
+      this._mechLabel(e, label, '#c8d860');
+    }
     if (m.k === 'chorus' && m.h?.length) {   // a line from each congregant holding it up
       for (const u of this._lastRendered?.enemies ?? []) if (m.h.includes(u.id)) g.lineStyle(1, 0xd417c8, 0.4 + 0.3 * pulse).lineBetween(u.x, u.y - 8, e.x, e.y - 10);
       this._mechLabel(e, `HELD UP x${m.h.length}`, '#f07ad8');

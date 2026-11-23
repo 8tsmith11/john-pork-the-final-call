@@ -808,6 +808,7 @@ export class Sim {
       const crit = Math.random() < (p.mods?.crit ?? 0);
       if (crit) this.events.push({ t: 'crit', x: e.x, y: e.y });
       if (fin) this.hitStop = FEEL.hitStop;
+      this._hitVia = dash ? 'dash' : 'melee';   // what kind of hit it was (the Autograder's rubric, bossMechs.js)
       this._hurtEnemy(e, Math.round((m.damage + (p.mods?.melee ?? 0)) * (p.morphed ? 1.3 : 1) * (crit ? 2 : 1) * (focus ? FEEL.focusDmg : 1)), dx / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), dy / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), p.id, { heavy: fin });
     }
   }
@@ -838,7 +839,8 @@ export class Sim {
     if (e.sahur) { dmg = 1; this.events.push({ t: 'thunk', x: e.x, y: e.y }); }
     else if (e.boss && e.state === 'vulnerable') dmg *= 2;
     else if (e.boss && e.state === 'laser') { dmg = Math.max(1, Math.round(dmg * LASER.braced)); this.events.push({ t: 'bossBrace', x: e.x, y: e.y }); }   // braced behind the beam
-    if (e.boss && e.def?.mech) { const was = dmg; dmg = mechDamage(this, e, dmg); if (dmg < was) this.events.push({ t: 'bossBrace', x: e.x, y: e.y }); }
+    const via = this._hitVia; this._hitVia = null;   // set just before by the melee and shot code; anything else is untagged
+    if (e.boss && e.def?.mech) { const was = dmg; dmg = mechDamage(this, e, dmg, via); if (dmg < was) this.events.push({ t: 'bossBrace', x: e.x, y: e.y }); }
     if (this._def(e).armor && e.st !== 'dizzy') dmg = Math.max(1, Math.round(dmg * (1 - this._def(e).armor)));
     if (e.st === 'dizzy') dmg *= 2;   // a Captcha reeling after its charge
     else if (e.parried > 0) dmg *= 2;   // parried: open for a second
@@ -1280,7 +1282,7 @@ export class Sim {
       if (s.from === 'player') {
         for (const e of this.enemies.values()) {
           if (Math.hypot(e.x - s.x, e.y - 4 - s.y) < this._def(e).radius + 3) {
-            this._hurtEnemy(e, s.dmg, s.vx * 0.4, s.vy * 0.4, s.owner); hit = true; break;
+            this._hitVia = 'shot'; this._hurtEnemy(e, s.dmg, s.vx * 0.4, s.vy * 0.4, s.owner); hit = true; break;
           }
         }
       } else {

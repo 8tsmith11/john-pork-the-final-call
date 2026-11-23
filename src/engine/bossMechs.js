@@ -16,6 +16,8 @@
 //                              half the damage of those seconds; hit it right after a rewind
 //   molten  (Potline Nine)     channels fill with molten metal in turn; bait its charge into one and it sticks, open
 //   verify  (the Attestation Gate) green: open; red: it scans, and anyone moving gets zapped. Hold still
+//   rubric  (the Autograder)   it marks one kind of answer at a time (swing, shoot, dash-strike, on the board);
+//                              the right kind lands hard, anything else barely scores. Change how you fight
 //
 // Host-run rules. stepMech runs inside _stepBoss once the boss is awake, mechDamage scales a hit, mechView goes in the
 // snapshot for the scene to draw (WorldScene._mechFx). Names are placeholders until the lore gate names the bosses.
@@ -33,6 +35,7 @@ export const MECH = {
   rewind: { every: 12, warn: 1.2, back: 3, giveBack: 0.5 },
   molten: { every: 5, warn: 1.0, last: 4, half: 14, dps: 10, stuck: 2.5, stuckMul: 1.8 },
   verify: { green: 5, amber: 1, red: 3, greenMul: 1.2, redMul: 0.1, still: 3, dmg: 8 },
+  rubric: { every: 8, order: ['melee', 'shot', 'dash'], right: 1.6, wrong: 0.4 },
 };
 import { ENEMIES } from '../content/enemies.js';
 
@@ -123,6 +126,11 @@ export function stepMech(sim, e, def, dt) {
   }
 
   if (['vents', 'current', 'power', 'rewind', 'molten', 'verify'].includes(kind)) stepMech3(sim, e, def, dt, kind, M, m);
+
+  if (kind === 'rubric') {   // the question on the board changes every few seconds, in order
+    const ask = M.order[Math.floor(m.t / M.every) % M.order.length];
+    if (ask !== m.ask) { m.ask = ask; sim.events.push({ t: 'mech', kind, what: ask, x: e.x, y: e.y }); }
+  }
 
   if (kind === 'chorus') {
     if ((m.wait = (m.wait ?? 0) - dt) <= 0) {
@@ -230,13 +238,14 @@ function stepMech3(sim, e, def, dt, kind, M, m) {
 }
 
 /** How much of a hit lands, after the signature rule. */
-export function mechDamage(sim, e, dmg) {
+export function mechDamage(sim, e, dmg, via = null) {
   const kind = e.def?.mech, m = e.mech; if (!kind || !m) return dmg;
   const M = MECH[kind];
   if (kind === 'pylons' && m.shielded) return Math.max(1, Math.round(dmg * M.shield));
   if (kind === 'tide') return Math.max(1, Math.round(dmg * (m.bossWet ? M.inWater : M.onDry)));
   if (kind === 'flicker') return Math.max(1, Math.round(dmg * (m.lit === false ? M.darkMul : M.litMul)));
   if (kind === 'chorus' && m.holders?.length) return Math.max(1, Math.round(dmg * M.mul));
+  if (kind === 'rubric') return Math.max(1, Math.round(dmg * (via && via === m.ask ? M.right : M.wrong)));
   if (kind === 'vents') return Math.round(dmg * (m.scaldT > 0 ? M.scaldMul : 1));
   if (kind === 'current') return Math.round(dmg * (m.openT > 0 ? M.openMul : 1));
   if (kind === 'power') return Math.max(1, Math.round(dmg * M.mul[m.live ?? M.n]));
@@ -267,5 +276,6 @@ export function mechView(e) {
   if (k === 'rewind') return { k, ...(m.ghosts ? { g: m.ghosts } : {}) };
   if (k === 'molten') return { k, ...(m.lanes && m.lane >= 0 ? { x: m.lanes[m.lane], st: m.hotT > 0 ? 'hot' : m.warnT > 0 ? 'warn' : '' } : {}), s: m.stuckT > 0 ? 1 : 0 };
   if (k === 'verify') return { k, l: m.light ?? 'green' };
+  if (k === 'rubric') return { k, a: m.ask ?? 'melee' };
   return { k };
 }

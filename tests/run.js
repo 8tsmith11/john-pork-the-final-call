@@ -5705,6 +5705,20 @@ test('every Act 3 boss has its own rule too (hub #121): vents, current, power, r
     assert.ok(scalded, 'lured over a vent, it gets scalded');
   }
 });
+test('the Autograder marks one kind of answer at a time (hub #121): the right kind lands hard, the rest barely scores', async () => {
+  const { BOSSES } = await import('../src/content/bosses.js');
+  const { MECH } = await import('../src/engine/bossMechs.js');
+  const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'rubric', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+  const w = BOSSES['boss.chb_autograder'](1), def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
+  const e = { id: 'B', kind: 'boss.chb_autograder', def, boss: true, mini: true, awake: true, phase: 1, x: 300, y: 112, hp: def.hp, cd: 99, cd2: 99, hurtT: 0, kx: 0, ky: 0, dash: 0 };
+  sim.enemies.set('B', e); sim._stepBoss(e, def, 1 / 60);
+  assert.equal(def.mech, 'rubric'); assert.equal(e.mech.ask, 'melee');
+  const hit = (via) => { const was = e.hp = def.hp; e.state = 'move'; e.openT = 0; e.parried = 0; sim._hitVia = via; sim._hurtEnemy(e, 100, 0, 0, 'host'); return was - e.hp; };
+  const right = hit('melee'), wrong = hit('shot'), untagged = hit(null);
+  assert.ok(right > wrong * 3 && right > untagged * 3, `right ${right}, wrong ${wrong}, untagged ${untagged}`);
+  for (let i = 0; i < 60 * MECH.rubric.every; i++) { e.cd = 99; sim._stepBoss(e, def, 1 / 60); }
+  assert.equal(e.mech.ask, 'shot', 'the question moves on');
+});
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
