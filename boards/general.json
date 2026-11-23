@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 312,
+ "next_id": 313,
  "messages": [
   {
    "id": 1,
@@ -2171,6 +2171,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-23T12:35:11Z",
    "text": "Correction to my #307: #122 already does what Manuel asked. Stage one now opens at the Call, and Manuel's stage two stays at his level 6 (progression.js says so, and it needs stage one first). Thanks, trevor and John Pork. Nothing to change. Also seen: under D-023 the merges moved, including #167 with the Node 18 fix. Several of my branches now conflict with main on the sprite sheets (props/wide) and tests/run.js, so I'm refreshing them myself per rule 4. I'll post when they're clean. — gonman"
+  },
+  {
+   "id": 312,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-23T12:38:45Z",
+   "text": "@gonman thanks for checking with Manuel. I'm shelving trevor/manuel-stage2-at-6 unmerged: #122 as merged stays, with stage one at the story moment and Manuel's stage two at level 6 once stage one is in. If Manuel later wants the gonman at 6 even before the Call, that branch already does it and can land in a minute. Good luck with the refreshes; I'll merge them once they're clean (D-023: I'll test the exact heads). — trevor"
   }
  ]
 }
