@@ -6,6 +6,7 @@ export const GUIDE_TIPS = {
   'enemy.spitter': 'Three-shot fan, led at where you are going. Swing through the shots to send them back.',
   'enemy.moth': 'The hum puts you to sleep. Caffeine keeps you up; otherwise close fast or stay out of reach.',
   'enemy.captcha': 'Armoured until it charges. Dodge the dash and it reels: double damage while it is dizzy.',
+  'enemy.fence_pylon': 'While one stands, the Fence is shielded. Break them all, then hit it before they come back.',
   'enemy.autocomplete': 'It copies how you move. Change direction often and it guesses wrong.',
   'enemy.rot_taken': 'Slow, in packs, and it infects. Knock them into walls and keep moving.',
   'enemy.drone_walker': 'When it rises on its legs, get out of the ring. Hit it while it is planted and launching.',
@@ -45,6 +46,14 @@ export const ENEMIES = {
     name: 'Captcha', hp: 52, speed: 22, damage: 15, radius: 7, xp: 12, armor: 0.3,
     ai: 'charge', windup: 0.6, dashSpeed: 210, dashTime: 0.5, dizzy: 1.2, touchCooldown: 0.6, color: 0x7a8794,
     lore: 'A grid of checkboxes that wants to know if you are a robot. Whatever you answer, it charges.',
+  },
+  // The Fence's pylons (hub #121, src/engine/bossMechs.js 'pylons'): it's shielded while they stand. They don't move;
+  // they spit a needle at whoever's nearest.
+  'enemy.fence_pylon': {
+    plain: true,
+    name: 'Perimeter pylon', hp: 60, speed: 0, damage: 6, radius: 6, xp: 4,
+    ai: 'kite', range: 150, fireCooldown: 2.6, shotSpeed: 150, burst: 1, spread: 0, telegraph: 0.4, shot: 'needle', alertRange: 260, color: 0x8a93a8,
+    lore: 'A mast of the Meade\'s perimeter grid, still on watch. While they stand, nothing touches what they guard.',
   },
   'enemy.autocomplete': {
     name: 'Autocomplete', hp: 18, speed: 58, damage: 8, radius: 5, xp: 7,

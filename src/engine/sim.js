@@ -4,6 +4,7 @@
 export const TILE = 16;
 import { newSkirmish, stepSkirmish, stepSkUnit, skirmishView, skirmishShotHits, finishSkirmish } from './skirmish.js';
 import { newSiege, stepSiege, siegeView, siegeMove } from './siege.js';
+import { stepMech, mechDamage, mechView } from './bossMechs.js';
 import { BOSS_PATTERNS, bossPool, pickPattern, windFor, LASER, SHOCK, RAIN, LANE } from './bossPatterns.js';
 import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
@@ -823,6 +824,7 @@ export class Sim {
       const crit = Math.random() < (p.mods?.crit ?? 0);
       if (crit) this.events.push({ t: 'crit', x: e.x, y: e.y });
       if (fin) this.hitStop = FEEL.hitStop;
+      this._hitVia = dash ? 'dash' : 'melee';   // what kind of hit it was (the Autograder's rubric, bossMechs.js)
       this._hurtEnemy(e, Math.round((m.damage + (p.mods?.melee ?? 0)) * (p.morphed ? 1.3 : 1) * (crit ? 2 : 1) * (focus ? FEEL.focusDmg : 1)), dx / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), dy / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), p.id, { heavy: fin });
     }
   }
@@ -854,6 +856,8 @@ export class Sim {
     if (e.sahur) { dmg = 1; this.events.push({ t: 'thunk', x: e.x, y: e.y }); }
     else if (e.boss && e.state === 'vulnerable') dmg *= 2;
     else if (e.boss && e.state === 'laser') { dmg = Math.max(1, Math.round(dmg * LASER.braced)); this.events.push({ t: 'bossBrace', x: e.x, y: e.y }); }   // braced behind the beam
+    const via = this._hitVia; this._hitVia = null;   // set just before by the melee and shot code; anything else is untagged
+    if (e.boss && e.def?.mech) { const was = dmg; dmg = mechDamage(this, e, dmg, via, by); if (dmg < was) this.events.push({ t: 'bossBrace', x: e.x, y: e.y }); }
     if (this._def(e).armor && e.st !== 'dizzy') dmg = Math.max(1, Math.round(dmg * (1 - this._def(e).armor)));
     if (e.st === 'dizzy') dmg *= 2;   // a Captcha reeling after its charge
     else if (e.parried > 0) dmg *= 2;   // parried: open for a second
@@ -901,6 +905,7 @@ export class Sim {
       }
       this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss, mini: !!e.mini, key: e.spawnKey, ...(e.siege ? { siege: true } : {}) });
       if (e.skUnit === 'hub') finishSkirmish(this, this.sk, e, this.events);
+      for (const a of [...this.enemies.values()]) if (a.mechOf === e.id) { this.enemies.delete(a.id); this.events.push({ t: 'kill', x: a.x, y: a.y, kind: a.kind, xp: 0, crumble: true }); }   // its pylons and congregation go with it
       if (e.boss && !e.mini) for (const a of [...this.enemies.values()]) if (a.summoned) { this.enemies.delete(a.id); this.events.push({ t: 'kill', x: a.x, y: a.y, kind: a.kind, xp: 0, crumble: true }); }   // its adds crumble with it
       if (e.marked > 0 && e.markedBy) this._pingKill(e);   // a Ping mark (Riff's rattle has no owner)
       const k = this.players.get(by);   // Argentina shirt (gambeta): a kill hands the dodge straight back
@@ -1154,6 +1159,13 @@ export class Sim {
       if (d > (def.wake ?? 150)) return;
       e.awake = true; this.events.push({ t: 'boss', name: def.name, epithet: def.epithet, kind: e.kind });
     }
+    if (def.mech) stepMech(this, e, def, dt);   // its signature rule (bossMechs.js)
+    if (def.mech === 'flicker' && e.mech.lit === false) {
+      e.state = 'move';
+      e.cd = Math.max(e.cd, 0.3);
+      this._stepBossArena(e, dt, def.dmgMul ?? 1);   // rings and impacts already in flight finish on schedule
+      return;
+    }
     const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
     const rage = e.phase === 3 ? 1.5 : e.phase === 2 ? 1.2 : 1;
     if (d < def.radius + 7 - this._small(target) && e.cd2 <= 0 && e.state !== 'vulnerable') { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd2 = def.touchCooldown; }
@@ -1345,7 +1357,7 @@ export class Sim {
       if (s.from === 'player') {
         for (const e of this.enemies.values()) {
           if (e.skUnit ? skirmishShotHits(e, s) : Math.hypot(e.x - s.x, e.y - 4 - s.y) < this._def(e).radius + 3) {
-            this._hurtEnemy(e, s.dmg, s.vx * 0.4, s.vy * 0.4, s.owner); hit = true; break;
+            this._hitVia = 'shot'; this._hurtEnemy(e, s.dmg, s.vx * 0.4, s.vy * 0.4, s.owner); hit = true; break;
           }
         }
       } else {
@@ -1491,7 +1503,7 @@ export class Sim {
         ...(e.st === 'windup' && e.def?.ai === 'brute'
           ? { bt: { ...bruteShape(e, e.def.melee), progress: Math.max(0, 1 - e.stT / e.def.melee.windup) } }
           : {}),
-        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ...(e.state === 'laser' && e.phase >= LASER.twin ? { l2: 1 } : {}), ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
+        ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ...(e.state === 'laser' && e.phase >= LASER.twin ? { l2: 1 } : {}), ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake, ...(e.mech ? { mx: mechView(e) } : {}) } } : {}) })),
       goo: this.goo.map((g) => ({ x: Math.round(g.x), y: Math.round(g.y), r: g.r, t: Math.round(g.ttl * 10) / 10 })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
       sk: skirmishView(this.sk, this),
