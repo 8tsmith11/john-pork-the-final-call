@@ -5354,6 +5354,41 @@ test('morphs come from a story moment, not a level-up (Trevor, 2026-11-23)', asy
   scene.save.flags[Prog.MORPH_STAGE1_FLAG] = true; scene._tickMorphUnlock(); scene._tickMorphUnlock();
   assert.ok(scene.save.party.trevor.morph.stage === 1 && scene.save.party.manuel.morph.stage === 1 && said.length === 2);
 });
+test('Manuel keeps level six as the stage two requirement after the story unlock', () => {
+  const sim = new Sim(MAPS_FOR_TEST.room631);
+  sim.addPlayer('manuel', 'manuel');
+  const pawn = sim.players.get('manuel');
+  const save = newSave({ seed: 'gonman-story-gate', rolls: {}, gameVersion: 'test' });
+  const manuel = save.party.manuel;
+  const net = new DialogueHostNet();
+  net.conns.set('manuel', { send() {} });
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', sim, save, net, _announce() {}, time: { addEvent() {} }, events: { once() {} },
+  });
+  scene._wireNet();
+  net.emit('msg', 'manuel', { t: 'flag', key: Prog.MORPH_STAGE1_FLAG, value: true });
+  assert.equal(save.flags[Prog.MORPH_STAGE1_FLAG], undefined, 'only the host sets the morph story flag');
+
+  manuel.level = 6;
+  scene._levelsReached('manuel', manuel, [6]);
+  scene._tickMorphUnlock();
+  scene._morph('manuel');
+  assert.equal(manuel.morph.stage, 0);
+  assert.ok(!pawn.morphed, 'level six alone cannot open a transformation');
+
+  save.flags[Prog.MORPH_STAGE1_FLAG] = true;
+  scene._tickMorphUnlock();
+  assert.equal(manuel.morph.stage, 2, 'a player who already reached level six gets both available stages');
+  scene._morph('manuel');
+  assert.ok(pawn.morphed);
+  assert.equal(pawn.morphStage, 2);
+
+  delete save.flags[Prog.MORPH_STAGE1_FLAG];
+  manuel.morph.stage = 1;
+  scene._levelsReached('manuel', manuel, [6]);
+  assert.equal(manuel.morph.stage, 2, 'legacy stage-one saves retain the level-six progression');
+});
+
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
