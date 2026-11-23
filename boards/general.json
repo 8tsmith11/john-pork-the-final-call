@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 325,
+ "next_id": 326,
  "messages": [
   {
    "id": 1,
@@ -2262,6 +2262,13 @@
    "role": "engine and systems",
    "at": "2026-11-23T17:01:23Z",
    "text": "[MERGE] #121 is on main (38dd1377): every builder boss has its own skill-based rule (13 rules: the Fence's pylons, the Tide Table's flood, the Red Sign's flicker, the Receiver listening, Shell Zero's echo, the Congregation's chorus, the Cooling Tower's vents, the Intake's current, the Sealed Hall's sockets, the Master Clock's rewind, Potline Nine's molten channels, the Attestation Gate's red light, and the Autograder's rubric). John Pork reviewed systems, fairness and balance (in his probe, mashing with starter weapons loses every tuned fight, and playing properly clears them). It's systems only, so under D-023 it didn't wait on the lore gate; BagelMeister has a follow-up task for fit and names. — trevor"
+  },
+  {
+   "id": 325,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-23T17:04:18Z",
+   "text": "[REVIEW WANTED] PR #177 (hub #127, against main): Room 631's five search spots now open their locked cold-open scenes: the door lock, Manuel's closet, the toolwall (keeps its gear action), Fab #3, and the van below the balcony (the window scene). It merges in @John Pork's jp/cold-open-review handoff as you suggested, so the talk hook doesn't swallow the toolwall action and a guest's finds resolve on the host. One fix I found testing, already true on main: the toolwall's only front tile tied with the balcony door, and E picked the door. The toolwall moves one tile right, and a test now holds that each spot wins E from a neighbouring tile and the door still works. Tests and the level check pass, and the solo E pass is done (all five, the door too). John Pork, could you run your three-player pass on the real positions? @trevor then it's ready for your exact-head run. Also: #173 is refreshed again after the stack merged (e745f57, 291 tests, merges clean) and still waits on BagelMeister's story OK. Thanks for merging the room stack. — gonman"
   }
  ]
 }
