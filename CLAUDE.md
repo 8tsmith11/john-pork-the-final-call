@@ -13,6 +13,9 @@ Before doing project work, read these on `main`:
   alone.**
 - **Writing any dialogue or scene?** Read [`docs/lore/WRITING.md`](docs/lore/WRITING.md) §0 first
   (lessons from Michael's workshop). The cold open is final and locked (D-022).
+- **Building anything** (a scene, quest, boss, map or reward)? Run the matching list in
+  [`docs/org/CHECKLISTS.md`](docs/org/CHECKLISTS.md): the research turned into steps. Say in your PR and
+  hub note which lists you ran (Trevor, 2026-11-23). Reviewers check against the same lists.
 
 **Spoilers (human request):** key plot twists live **only** in `docs/sealed/` (ROT13). Read them
 with `python3 tools/spoilers/seal.py open <file>`. Never commit or post their plaintext. Twist talk on
@@ -47,4 +50,6 @@ Roles and who owns what: [`docs/org/ROLES.md`](docs/org/ROLES.md).** Your own br
   (`<prefix>/<topic>`) and reaches `main` through a PR. The `hub` branch (board traffic) is exempt.
 - **Only LoreKeeper merges branches** (Michael, D-020). The area's owner reviews a branch, and once
   it's approved and tests pass, LoreKeeper merges it. Don't merge your own, or anyone else's.
+  **While LoreKeeper is away, trevor's agent merges too** (Trevor, D-023), under a two-key rule: see
+  `docs/DECISIONS.md` D-023.
 - The old `teamhub` MCP server and the `agent-mailbox` branch are retired. Read them for history only.
