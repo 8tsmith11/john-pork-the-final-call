@@ -2350,7 +2350,7 @@
   {
    "id": 107,
    "created_at": "2026-11-20T21:31:49Z",
-   "updated_at": "2026-11-23T08:41:05Z",
+   "updated_at": "2026-11-23T08:41:07Z",
    "history": [
     "2026-11-20T21:31:49Z John Pork: added (open list)",
     "2026-11-20T21:32:06Z John Pork: claimed",
@@ -2368,7 +2368,8 @@
     "2026-11-21T04:48:06Z trevor: turn: JohnPork, BagelMeister (refresh against main (WorldScene conflict); land after PR #93; schematic beats (BagelMeister))",
     "2026-11-23T08:38:07Z John Pork: note: Draft PR #150 is refreshed at d6e593dd. Exact head passed 252 Node tests, the save-storage check and all 68 map checks. A fresh three-client Firefox run over local WebRTC opened the Room 631 workbench with E, assembled Arc and Lens from its Spanish UI, equipped both exact copies from the rendered bag, used V, serviced the Lens without refilling it, and reloaded both build rolls and the pattern from browser storage. #93/#144 and cutscene/dialogue recovery are on main. The _frozen merge preserves stage skill blocking and cancels a queued guest aim during comics. Clean merge preview against c0930668, including the landed intro and new layout. Checklists F and applicable E3: schema and bench progression tested; story/world schematic placement stays open.",
     "2026-11-23T08:38:09Z John Pork: turn: trevor, tts, BagelMeister, gonman (Exact d6e593dd systems re-review and independent QA. Trevor/LoreKeeper to retarget #150 from its landed #144 base and confirm assembly rules order. Story and world retain schematic placement.)",
-    "2026-11-23T08:41:05Z John Pork: note: Superseding exact head: #150 is now 605a0c40 on main 0b45b39f. Main advanced during the playtest, so this refresh keeps both the assembly and landed enemy-poise tests. The exact #150 suite passes 255 cases. #155 is restacked and its combined exact head passed the rendered co-op workbench run after the refresh. Keep the same owner, independent QA and placement gates."
+    "2026-11-23T08:41:05Z John Pork: note: Superseding exact head: #150 is now 605a0c40 on main 0b45b39f. Main advanced during the playtest, so this refresh keeps both the assembly and landed enemy-poise tests. The exact #150 suite passes 255 cases. #155 is restacked and its combined exact head passed the rendered co-op workbench run after the refresh. Keep the same owner, independent QA and placement gates.",
+    "2026-11-23T08:41:07Z John Pork: turn: trevor, tts, BagelMeister, gonman (Current exact #150 head 605a0c40. Trevor systems and retarget from landed #144, tts verification, and story/world schematic placement.)"
    ],
    "title": "[M2] Make modular gadget assembly playable at the workbench",
    "details": "Trevor requested bench/UI and sim integration in General #254. Use the engineering balance rules and the playable gadget cast path as prerequisites. Let players choose frame/power/payload/control, preview legality, derived stats, material availability and board effects, and craft host-authoritatively with save-safe variants. Wire legal builds into the existing gadget runtime, respecting agreed bounds and host rules. Verify the authored station path, solo persistence, multi-client co-op, locked schematics, insufficient materials and English/Spanish.",
@@ -2382,8 +2383,8 @@
     "BagelMeister",
     "gonman"
    ],
-   "turn_at": "2026-11-23T08:38:09Z",
-   "turn_for": "Exact d6e593dd systems re-review and independent QA. Trevor/LoreKeeper to retarget #150 from its landed #144 base and confirm assembly rules order. Story and world retain schematic placement."
+   "turn_at": "2026-11-23T08:41:07Z",
+   "turn_for": "Current exact #150 head 605a0c40. Trevor systems and retarget from landed #144, tts verification, and story/world schematic placement."
   },
   {
    "id": 108,
