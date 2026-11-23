@@ -764,6 +764,8 @@ export class WorldScene extends Phaser.Scene {
           this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, skill: msg.inp.skill || prev?.skill,
             gadget: msg.inp.gadget === true || prev?.gadget === true, interact: false });
         }
+        // A guest who reads the 245 book at 631's shelf (gonman, PR #116) gets the bench's book hints for the party too; it only adds hints.
+        if (msg.t === 'flag' && msg.key === 'lab.book') this.save.flags['lab.book'] = true;
         if (msg.t === 'flag' && typeof msg.key === 'string' && /^(act\d|dlg\.)/.test(msg.key) && !ACT_ONE_HOST_FLAGS.has(msg.key)) this.save.flags[msg.key] = msg.value ?? true
         if (msg.t === 'flag' && msg.key === 'act1.fuses.in') this._seatFuses();
         if (msg.t === 'item' && this.save.party[msg.who] && ITEMS[`item.${msg.item}`]) { Inv.add(this.save.party[msg.who], `item.${msg.item}`, Math.min(99, msg.n | 0 || 1)); this._syncParty(); }

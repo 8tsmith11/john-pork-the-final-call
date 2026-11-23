@@ -6,7 +6,9 @@
 // lore gate's.
 import { fromGrid } from './builder.js';
 
-// The exit back to the region map, paired with the entrance added there (act2_regions.js).
+// The exit back to the region map, paired with the entrance added there (act2_regions.js). Doors face the way you go
+// through them (tests/run.js): the co-op and the barn are reached down a path off the south edge of their region, so
+// their doors are in the north wall.
 // road: an open path at the map edge (code-drawn), not a door.
 const out = (to, id, label, road = false) => ({ exit: to, id: `obj.${id}_out`, pair: `obj.${to}_to_${id}`, ...(road ? { selfDrawn: true } : { art: 'obj.door' }), label, stepOn: true, text: 'Back outside.' });
 
@@ -60,14 +62,14 @@ export const gbDishes = fromGrid({
 export const gbCoop = fromGrid({
   id: 'gb_coop', name: 'The Greenbelt co-op', fill: '.', act: 2,
   rows: [
-    '######################',
+    '##########DD##########',
     '#....................#',
     '#.$$$$$$....SG..MQQQ.#',
     '#....................#',
     '#..........N.........#',
     '#.FFFFFF.............#',
     '#.........@..........#',
-    '##########DD##########',
+    '######################',
   ],
   legend: {
     $: { scenery: 'obj.mate_shelf', solid: true, tile: '.' },   // shelves of jars
@@ -91,15 +93,15 @@ export const gbCoop = fromGrid({
 export const bvBarn = fromGrid({
   id: 'bv_barn', name: 'The barn the map doesn\'t show', fill: ':', act: 2,
   rows: [
-    '##########################',
-    '#::::::::::::::::::::::::#',
+    '###########DD#############',
+    '#:::::::::::::R::::::::::#',
     '#:TT::TT::TT::TT::TT:::::#',
     '#:TT::TT::TT::TT::TT::K::#',
     '#::::::::::::::::::::::::#',
     '#::E:::::::E:::::::E:::::#',
     '#::::::::::::::::::::::::#',
-    '#::::::::::@::R::::::::::#',
-    '###########DD#############',
+    '#::::::::::@:::::::::::::#',
+    '##########################',
   ],
   legend: {
     T: { scenery: 'obj.degasser', solid: true, tile: ':' },   // growth tanks, in rows

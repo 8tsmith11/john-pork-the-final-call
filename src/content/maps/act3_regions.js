@@ -123,9 +123,11 @@ export const gaithersburg = fromGrid({
     text: 'A two-pan balance in a glass case, the pans stamped A and B. Beside it is a tally board with a peg for each weight: 0 for its cradle, A or B for a pan. A typed card is taped to the case: WEEKLY CLOSURE. EVERY WEIGHT ON THE BEAM. BEAM LEVEL. INITIAL BELOW. Nobody has initialed below in a while.' })
   .prop('obj.flight_log', 4, 5, { id: 'obj.gt_weights_log', label: 'Weights logbook',
     text: 'The sign-out log for the weights room. The kilogram\'s line reads OUT, "for comparison," then two initials pressed hard into the page, and no return date. Every week after it somebody has still written CLOSES. Once, smaller: "the big one sits alone now."' })
-  .exit('gt_clockroom', 20, 3, { id: 'obj.gaithersburg_to_gt_clockroom', art: 'obj.door', pair: 'obj.gt_clockroom_out', label: 'Down to the clock vault', text: 'Stairs down. A tick, from below.' })   // act3_more.js
+  // Both doors are in the north wall of the east building, with grass behind them: inside: 'down' says you use them from
+  // the building side (walking north), so arrivals from the vault and the labs land indoors, never out on the grass.
+  .exit('gt_clockroom', 20, 3, { id: 'obj.gaithersburg_to_gt_clockroom', art: 'obj.door', inside: 'down', pair: 'obj.gt_clockroom_out', label: 'Down to the clock vault', text: 'Stairs down. A tick, from below.' })   // act3_more.js
   
-  .exit('gt_labs', 23, 3, { id: 'obj.gaithersburg_to_gt_labs', art: 'obj.door', pair: 'obj.gt_labs_out', label: 'The measurement labs', text: 'Every faction checks its clocks here.' })   // stretch.js
+  .exit('gt_labs', 23, 3, { id: 'obj.gaithersburg_to_gt_labs', art: 'obj.door', inside: 'down', pair: 'obj.gt_labs_out', label: 'The measurement labs', text: 'Every faction checks its clocks here.' })   // stretch.js
   .build();
 
 // ---- 14. Frederick and the Smelter: a market town, potlines turned server halls, a switchyard like a forest ----
