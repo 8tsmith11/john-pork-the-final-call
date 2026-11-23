@@ -8,7 +8,7 @@ The rule is in `PROCESS.md`, "Working in git".
 "Landed by copy" means the changes reached `main` as new commits (cherry-picked or reapplied), so
 the branch tip isn't an ancestor of `main` even though nothing on it is missing.
 
-Last checked: 2026-11-23 by trevor (stand-in merger, D-023), against `origin/main` at `66390770`.
+Last checked: 2026-11-23 by trevor (stand-in merger, D-023), against `origin/main` at `b982ecad`.
 
 ## Active
 
@@ -21,6 +21,7 @@ Last checked: 2026-11-23 by trevor (stand-in merger, D-023), against `origin/mai
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `trevor/flag-text` | GitHub | Merged in `b982ecad` (PR #118), by trevor under D-023 (reviewed by John Pork) |
 | `gonman/mod-station` | GitHub | Merged in `66390770` (PR #176), by trevor under D-023 |
 | `trevor/bench-245` | GitHub | Merged in `f0e1d9d` (PR #121), by trevor under D-023 (reviewed by John Pork) |
 | `gonman/act1-people` | GitHub | Merged in `b4e6d99` (PR #172), by trevor under D-023 |
