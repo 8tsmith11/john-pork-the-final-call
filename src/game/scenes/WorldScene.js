@@ -768,6 +768,12 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'flag' && msg.key === 'lab.book') this.save.flags['lab.book'] = true;
         if (msg.t === 'flag' && typeof msg.key === 'string' && /^(act\d|dlg\.)/.test(msg.key) && !ACT_ONE_HOST_FLAGS.has(msg.key)) this.save.flags[msg.key] = msg.value ?? true
         if (msg.t === 'flag' && msg.key === 'act1.fuses.in') this._seatFuses();
+        if (msg.t === 'flag' && msg.key === 'q.van.seen' && msg.value === true &&
+            !this.save.flags[msg.key] && this._apartmentObjectInReach(peer, (o) => o.talk === 'cold_open:search_window')) {
+          this._flag(msg.key, true);
+          this._tickQuests(true, peer);
+        }
+        if (msg.t === 'toolwall') { this._takeStarterGear(peer); return; }
         if (msg.t === 'item' && this.save.party[msg.who] && ITEMS[`item.${msg.item}`]) { Inv.add(this.save.party[msg.who], `item.${msg.item}`, Math.min(99, msg.n | 0 || 1)); this._syncParty(); }
         if (msg.t === 'standing' && msg.faction in this.save.standing) this.save.standing[msg.faction] += Number(msg.n) || 0;
         if (msg.t === 'exit') this._requestExit(this.sim.map.objects.find((o) => o.id === msg.obj), peer);
@@ -1786,6 +1792,44 @@ export class WorldScene extends Phaser.Scene {
     if ((npc.goneFlag && this.save.flags[npc.goneFlag]) || this.perf?.asleep(npc)) return;
     if (Math.hypot(npc.x * TILE + 8 - p.x, npc.y * TILE + 8 - p.y) > 34) return;
     this.save.flags[`met.${npc.id}`] = true;
+  }
+
+  _apartmentObjectInReach(peer, matches) {
+    if (this.map?.id !== 'room631' || this._transitioning || this.stage?.active || this.comic?.active) return null;
+    const p = this.sim.players.get(peer);
+    if (!p || p.downed || p.under > 0) return null;
+    return this.map.objects.find((o) => matches(o) && Math.hypot(o.x * TILE + 8 - p.x, o.y * TILE + 8 - p.y) <= 34) ?? null;
+  }
+
+  _takeStarterGear(peer) {
+    const wall = this._apartmentObjectInReach(peer, (o) => o.action === 'toolwall');
+    if (!wall) return;
+    let granted = false;
+    for (const c of Object.values(this.save.party)) {
+      if (c.inventory.some((stack) => ITEMS[stack?.id]?.slot === 'weapon')) continue;
+      // Prefer the first free hotbar slot so the recipient can swing immediately.
+      const free = c.inventory.slice(0, Inv.HOTBAR).findIndex((slot) => !slot);
+      if (free >= 0) {
+        c.inventory[free] = { id: 'item.pry_bar', qty: 1 };
+        c.hotSel = free;
+      } else if (Inv.add(c, 'item.pry_bar') > 0) continue;
+      granted = true;
+    }
+    this._syncParty();
+    this._tickQuests(true, peer);
+    const reply = (type, text) => {
+      if (peer !== this.localId) this.net.send(peer, { t: type, text });
+      else if (type === 'toast') this._toast(text);
+      else this._say(text);
+    };
+    if (wall.talk) {
+      if (granted) reply('toast', 'Pry bars added to the party’s inventory.');
+      else if (!this.save.flags['q.armed']) reply('toast', 'Your bag is full.');
+      return;
+    }
+    if (granted) reply('say', `${wall.text}\n\nYou each take a {pry bar}. (Select it on the hotbar with 1-9 or the wheel; left click swings what's in your hand.)`);
+    else if (this.save.flags['q.armed']) reply('say', `${wall.text}\n\nEveryone's already armed.`);
+    else reply('say', 'Your bag is full.');
   }
 
   // Asking, inspecting and reporting use the ordinary interaction. Hand-ins use a named action.
@@ -2979,6 +3023,11 @@ export class WorldScene extends Phaser.Scene {
     }
     // A scene that is finished for good (e.g. the sniffer is printed) answers with one line after that.
     if (near.talk && near.doneFlag && this.save.flags[near.doneFlag]) { this._say(near.doneText ?? near.text ?? ''); return; }
+    if (near.action === 'toolwall') {
+      if (this.mode === 'client') this.net.send({ t: 'toolwall' });
+      else this._takeStarterGear(this.localId);
+      if (!near.talk) return;
+    }
     if (near.talk) { const [scene, node] = near.talk.split(':'); this.startDialogue(scene, node || null, near.after ? () => this._flag(near.after, true) : null); return; }
     if (near.action === 'fab') { this._openFab(); return; }
     if (this._questInteract(near)) return;
@@ -3024,23 +3073,6 @@ export class WorldScene extends Phaser.Scene {
     if (near.bastion) { this.openBastion(near.bastion); return; }
     if (near.lab) { this.openLab(near.lab); return; }
     if (near.station === 'mods') { this.openModStation(); return; }
-    if (near.action === 'toolwall' && this.mode !== 'client') {
-      // One pry bar for every roommate who has no weapon yet; it goes in their hand.
-      const got = [];
-      for (const [who, c] of Object.entries(this.save.party)) {
-        if (c.inventory.some((x) => ITEMS[x?.id]?.slot === 'weapon')) continue;
-        // Taken off the wall into your hand: the first free hotbar slot (new items otherwise go to the backpack).
-        const free = c.inventory.slice(0, 9).findIndex((x) => !x);
-        if (free >= 0) c.inventory[free] = { id: 'item.pry_bar', qty: 1 }; else if (Inv.add(c, 'item.pry_bar') > 0) continue;
-        got.push(who);
-        if (free >= 0) c.hotSel = free;
-      }
-      this._syncParty();
-      this._tickQuests(true);
-      if (!got.length && !this.save.flags['q.armed']) { this._say('Your bag is full.'); return; }
-      this._say(got.length ? `${near.text}\n\nYou each take a {pry bar}. (Select it on the hotbar with 1-9 or the wheel; left click swings what's in your hand.)` : `${near.text}\n\nEveryone's already armed.`);
-      return;
-    }
     if (near.botInstall && this.mode !== 'client' && this.save.flags['q.bot.looked'] && !this.save.flags['q.bot.built']) {
       const PARTS = ['item.bot_drive', 'item.bot_weapon', 'item.bot_brain'];
       const holder = (id) => Object.values(this.save.party).find((c) => Inv.has(c, id));

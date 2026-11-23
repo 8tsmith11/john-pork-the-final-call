@@ -5442,6 +5442,39 @@ test('the gonman is overpowered on purpose: a much smaller hitbox while thin, en
 
 const { ClientNet: DialogueClientNet, HostNet: DialogueHostNet } = await import('../src/engine/net/net.js');
 const { SharedEvents } = await import('../src/game/sharedEvent.js');
+test('the Room 631 search keeps starter gear and a guest discovery on the host', () => {
+  const save = newSave({ seed: 'apartment-search', rolls: {}, gameVersion: 'test' });
+  const pawn = { x: 0, y: 0 }, replies = [];
+  const net = new DialogueHostNet();
+  net.conns.set('guest', { send: (msg) => replies.push(msg) });
+  const world = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', localId: 'host', save, net, sim: { players: new Map([['guest', pawn]]) },
+    map: { id: 'room631', objects: [
+      { x: 6, y: 6, action: 'toolwall', talk: 'cold_open:search_toolwall' },
+      { x: 9, y: 6, talk: 'cold_open:search_window' },
+    ] },
+    time: { addEvent() {} }, events: { once() {} },
+    _syncParty() { save.flags['q.armed'] = Object.values(save.party).some(c => c.inventory.some(Boolean)); },
+    _tickQuests() {},
+  });
+  world._wireNet();
+  const use = (msg) => net.emit('msg', 'guest', msg);
+  use({ t: 'toolwall' });
+  use({ t: 'flag', key: 'q.van.seen', value: true });
+  assert.ok(Object.values(save.party).every((c) => !c.inventory.some(Boolean)));
+  assert.equal(save.flags['q.van.seen'], undefined);
+  Object.assign(pawn, { x: 104, y: 104 });
+  use({ t: 'toolwall' });
+  use({ t: 'toolwall' });
+  assert.ok(Object.values(save.party).every((c) => c.inventory[c.hotSel]?.id === 'item.pry_bar' &&
+    c.inventory.filter((slot) => slot?.id === 'item.pry_bar').length === 1));
+  assert.equal(replies.length, 1);
+  assert.equal(replies[0].t, 'toast', 'the notice leaves the spoken line intact');
+  Object.assign(pawn, { x: 152, y: 104 });
+  use({ t: 'flag', key: 'q.van.seen', value: true });
+  assert.equal(save.flags['q.van.seen'], true);
+});
+
 const dialogueScene = (mode, net, character, localId) => {
   const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
     mode, net, character, localId, map: MAPS_FOR_TEST.room631, events: { once() {} },
