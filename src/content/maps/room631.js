@@ -51,7 +51,8 @@ export const room631 = makeMap({
     { id: 'obj.poster_band', x: 3, y: 0, label: 'Poster', text: 'A band called THE LEGACY SYSTEMS, live at the Black Cat. Trevor has seen them four times. He says the fifth was the one to see.' },
     { id: 'obj.photo_wall', x: 16, y: 0, label: 'Photos', text: 'Printed photos, pinned in a grid. The same yellow raincoat is in most of them. There is a gap in the bottom row, the size of one print.' },
     { id: 'obj.pennant', x: 21, y: 0, label: 'Pennant', text: 'Celeste y blanca, from a match Manuel\'s grandmother took him to. She kept the score in the margin of the programme. She kept everything.' },
-    { id: 'obj.toolwall', art: 'obj.toolbox', action: 'toolwall', x: 21, y: 10, label: 'Toolwall', text: 'Pegboard over the workbench. Outlines drawn around every tool so you know what\'s missing. Three pry bars hang in a row.' },
+    // x 22 (was 21): from 21,11 the toolwall tied with the balcony door at 21,12 and E picked the door (hub #127).
+    { id: 'obj.toolwall', talk: 'cold_open:search_toolwall', art: 'obj.toolbox', action: 'toolwall', x: 22, y: 10, label: 'Toolwall', text: 'Pegboard over the workbench. Outlines drawn around every tool so you know what\'s missing. Three pry bars hang in a row.' },
     { id: 'obj.toolbox', loot: 'tools', x: 20, y: 10, label: 'Toolbox', text: 'Everyone\'s tools, in nobody\'s order. A label on the lid: IF YOU BORROW IT YOU ARE AN ASTER NOOB UNTIL IT COMES BACK.' },
     { id: 'obj.crate', x: 23, y: 10, label: 'Filament crate', text: 'Spools for the fabs. Eleven colours. The pink is nearly gone and none of you remember printing in pink.' },
     { id: 'obj.cables', x: 17, y: 7, label: 'Cables', floor: true, text: 'Three power leads for three fabs. A fourth runs under the bench and you have never followed it.' },
@@ -97,7 +98,7 @@ export const room631 = makeMap({
     { id: 'obj.pork_flag', x: 26, y: 5, label: 'John Pork flag', text: 'The flag on the engineering-room wall. Contraband since 2071. Someone ironed it once, which is the most domestic thing anyone in 631 has ever done.' },
     { id: 'obj.printer_1', x: 16, y: 6, label: 'Fab #1 (print a helium sniffer)', talk: 'lead_a_helium', doneFlag: 'act1.leadA.done', doneText: 'Fab #1, still warm. The sniffer is printed and the reading has not changed: light, and down. Under the plaza.' },
     { id: 'obj.printer_2', x: 17, y: 6, label: 'Fab #2 (print gear)', action: 'fab', text: '' },
-    { id: 'obj.printer_3', x: 18, y: 6, label: 'Fab #3', flag: 'act1.clue.printer3Warm',
+    { id: 'obj.printer_3', talk: 'cold_open:search_fab3', x: 18, y: 6, label: 'Fab #3', flag: 'act1.clue.printer3Warm',
       text: 'Fab #3. Warm. The job queue lists one print. Nobody here submitted it.' },
     { id: 'obj.oscilloscope', x: 23, y: 6, label: 'Oscilloscope', text: 'A live trace, faint and regular. Like a heartbeat. Or a drum.' },
     { id: 'obj.microscope', x: 24, y: 6, label: 'Microscope', text: 'A slide still clipped in: a sliver of orange latex. Manuel was looking at the balloon.' },
@@ -136,7 +137,7 @@ export const room631 = makeMap({
     { id: 'obj.balcony_plants', x: 16, y: 13, label: 'Balcony planters', text: 'Basil, mint, and something Manuel calls "the herb" that is definitely just a weed.' },
     // The van (hub #99): the drawing is scenery on the street strip (below); this is the spot on the rail you look
     // down from, so it has no drawing of its own.
-    { id: 'obj.room631_van', x: 24, y: 14, selfDrawn: true, label: 'Van, down on the street',
+    { id: 'obj.room631_van', talk: 'cold_open:search_window', x: 24, y: 14, selfDrawn: true, label: 'Van, down on the street',
       text: 'A dark van at the kerb, six floors down. No markings. Something on its roof keeps turning.' },
     { id: 'obj.balcony_view', x: 27, y: 13, label: 'View of the metro', text: 'From up here you can see the College Park station, the dead Purple Line platform, and Route 1 running north into the dark. Sometimes, late, lights move out there that aren\'t trains.' },
     // Michael & Manuel's room + bathroom
@@ -151,9 +152,9 @@ export const room631 = makeMap({
       text: 'Michael\'s closet. Hoodies, a few shirts, and a hook by the door that only ever holds one thing.' },
     // Manuel's end of the room, under his flag and the window it covers (Michael, hub #99). It used to stand at
     // 22,4, in front of the bedroom doorway (door.mm_room at 22,5): that tile and 22,3 stay clear for the way out.
-    { id: 'obj.manuel_closet', x: 22, y: 2, label: 'Manuel\'s closet', flag: 'act1.balloon.noticedGone',
+    { id: 'obj.manuel_closet', talk: 'cold_open:search_closet', x: 22, y: 2, label: 'Manuel\'s closet', flag: 'act1.balloon.noticedGone',
       text: 'Manuel\'s closet. The orange balloon his abuela sent him is gone. A length of ribbon is still knotted on the rail, cut clean. His white hat with the blue brim is on the shelf. Taped inside the door, a card in her handwriting: "Tenelo al sol. Miralo cada mañana. Te va a decir el tiempo." (Keep it in the sun. Check on it every morning. It will tell you the weather.)' },
-    { id: 'obj.front_lock', x: 1, y: 8, label: 'Front-door lock', flag: 'act1.clue.lockForced',
+    { id: 'obj.front_lock', talk: 'cold_open:search_lock', x: 1, y: 8, label: 'Front-door lock', flag: 'act1.clue.lockForced',
       text: 'The deadbolt plate is bent and the strike is splintered. Someone forced it from the hallway side, quietly, and pulled the door shut behind them.' },
     { id: 'obj.mm_mirror', x: 26, y: 1, label: 'Bathroom mirror', text: 'Two toothbrushes and a third one nobody claims.' },
   ],

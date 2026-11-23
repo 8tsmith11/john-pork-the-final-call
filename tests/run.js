@@ -5829,7 +5829,8 @@ test('Room 631 for the cold open (hub #99): closet by the window, a wall screen,
   assert.equal(m.layout[van.y][van.x], '=', 'you look at it over the balcony rail');
   assert.ok(inside.has(key(van.x, van.y - 1)), 'from the balcony');
   for (let x = 0; x < m.w; x++) assert.ok(m.solid(x, vanArt.y - 1), `the street is walled off at ${x},${vanArt.y - 1}`);
-  assert.ok(van.text && !van.action && !van.talk && !van.flag, 'a look line only');
+  assert.ok(van.text && !van.action && !van.flag, 'a look line, no action or flag');
+  assert.equal(van.talk, 'cold_open:search_window', 'and it opens the balcony-window search (hub #127)');
 
   // Nothing in the way of the cold open's staging. Marks and paths are hard-coded from PR #145's stage script:
   // origin/bagel/cold-open-staging @ 8bc04bec, src/content/stage/cold_open.js (cast `at`, `walk` to/by, `cam` tiles).
@@ -5949,3 +5950,26 @@ test('hub #113, Act 1 people: thirteen neighbours, cooks and students draw with 
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
+
+test('hub #127: the five Room 631 search spots open their locked cold-open scenes (the toolwall keeps its action)', async () => {
+  const room = MAPS_FOR_TEST.room631;
+  const hooks = { 'obj.front_lock': 'search_lock', 'obj.manuel_closet': 'search_closet', 'obj.toolwall': 'search_toolwall', 'obj.printer_3': 'search_fab3', 'obj.room631_van': 'search_window' };
+  const enc = (await import('../src/content/dialogue/act1/cold_open.js')).default;
+  const dec = enc.replace(/[a-zA-Z]/g, (c) => String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26));
+  const scene = JSON.parse(dec);
+  for (const [id, node] of Object.entries(hooks)) {
+    const o = room.objects.find((q) => q.id === id);
+    assert.ok(o, `${id} is in Room 631`);
+    assert.equal(o.talk, `cold_open:${node}`, `${id} opens cold_open:${node}`);
+    assert.ok(scene.nodes[node], `the compiled cold open has ${node}`);
+  }
+  assert.equal(room.objects.find((q) => q.id === 'obj.toolwall').action, 'toolwall', 'the toolwall still hands out the starter gear');
+  // E picks the nearest object within 34 px, the later one on a tie (WorldScene keydown-E). Each spot needs a tile where it wins.
+  const pick = (tx, ty) => { let best = null, bd = 34; for (const o of room.objects) { const d = Math.hypot((o.x - tx) * 16, (o.y - ty) * 16); if (d <= bd) { bd = d; best = o; } } return best?.id; };
+  for (const id of Object.keys(hooks)) {
+    const o = room.objects.find((q) => q.id === id);
+    const tiles = [[0, 1], [0, -1], [1, 0], [-1, 0]].map(([dx, dy]) => [o.x + dx, o.y + dy]).filter(([x, y]) => !room.solid(x, y));
+    assert.ok(tiles.some(([x, y]) => pick(x, y) === id), `${id}: some tile next to it gets it from E`);
+  }
+  assert.equal(pick(21, 11), 'door.balcony', 'and the balcony door still answers E from in front of it');
+});
