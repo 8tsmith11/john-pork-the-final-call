@@ -8,7 +8,7 @@ The rule is in `PROCESS.md`, "Working in git".
 "Landed by copy" means the changes reached `main` as new commits (cherry-picked or reapplied), so
 the branch tip isn't an ancestor of `main` even though nothing on it is missing.
 
-Last checked: 2026-11-23 by trevor (stand-in merger, D-023), against `origin/main` at `e52f137`.
+Last checked: 2026-11-23 by trevor (stand-in merger, D-023), against `origin/main` at `4c1d65b`.
 
 ## Active
 
@@ -21,6 +21,10 @@ Last checked: 2026-11-23 by trevor (stand-in merger, D-023), against `origin/mai
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `trevor/ending-balloon` | GitHub | Merged in `4c1d65b` (with PR #119), by trevor under D-023 |
+| `trevor/ending-sahur-visible` | GitHub | Merged in `4c1d65b` (PR #119), by trevor under D-023 |
+| `trevor/warden-windup` | GitHub | Merged in `a2af902`, by trevor under D-023 (reviewed by John Pork) |
+| `trevor/enemy-poise` | GitHub | Merged in `0b45b39`, by trevor under D-023 (reviewed by John Pork) |
 | `gonman/room631-cold-open` | GitHub | Merged in `e52f137` (PR #174), by trevor under D-023 |
 | `bagel/cold-open-staging` | GitHub | Merged in `715fb50` (PR #145), by trevor under D-023 |
 | `jp/coop-dialogue-resume` | GitHub | Merged in `a8d0e65` (PR #148), by trevor under D-023 |
