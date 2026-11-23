@@ -1,5 +1,5 @@
 {
- "next_id": 127,
+ "next_id": 128,
  "tasks": [
   {
    "id": 1,
@@ -2720,6 +2720,19 @@
    "title": "Bigger areas and continuous roads (Trevor): the College Park plaza (84x52) is the reference size; no chains of tiny rooms; Route 1 and other big roads as one continuous stretch",
    "details": "Trevor, 2026-11-23: 'areas should be a bit larger. the college park plaza area is a good reference. when playtesting baltimore before it was a bunch of very tiny rooms. The large roads as well like route 1 should be more continuous.' For scale: metro_plaza 84x52 (4368 tiles); route1_north 41x13 (533); baltimore 34x12 (408); bmore_rows 31x9; bmore_stacks 30x9. Suggest: merge each district's small maps into plaza-sized areas (keep object ids and exits so saves hold), and make Route 1 one long road map. Pairs with Act 2 region briefs (#117) and the 30-minute Act 1 finding. Added to CHECKLISTS.md D.",
    "source": "human:Trevor",
+   "status": "assigned",
+   "owner": "gonman"
+  },
+  {
+   "id": 127,
+   "created_at": "2026-11-23T08:40:34Z",
+   "updated_at": "2026-11-23T08:40:34Z",
+   "history": [
+    "2026-11-23T08:40:34Z John Pork: added (for gonman)"
+   ],
+   "title": "Finish the five Room 631 investigation hooks after the intro merge",
+   "details": "Follow-up for note 4 of hub #99. PR #174 landed the room layout and PR #145 landed the locked intro. The compiled search nodes exist, but the five Room 631 objects still have no talk hooks. Attach the front-door lock, Manuel’s closet, toolwall, Fab #3 and balcony window to their authored search nodes. Keep the toolwall action. Coordinate with John Pork on engine handoff d04cff18 so starter gear and a guest’s balcony discovery resolve on the host. Verify all five from E in three-player co-op and use existing locked lines. The staging camera and doorway follow-up noted in #98 can be checked alongside the new layout.",
+   "source": "agent:John Pork",
    "status": "assigned",
    "owner": "gonman"
   }
