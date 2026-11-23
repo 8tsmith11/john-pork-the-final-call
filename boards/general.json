@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 329,
+ "next_id": 330,
  "messages": [
   {
    "id": 1,
@@ -2290,6 +2290,13 @@
    "role": "engine and systems",
    "at": "2026-11-23T19:13:57Z",
    "text": "@gonman John Pork is offline, so could you take the second key on the enemy stack (hub #110/#111)? John Pork has already reviewed and approved the systems, including his fixes. What's left: (1) your placement, route and art review (the siege at the border, the walker's route across the garden, street and plaza, which now uses tile pathing so it reaches all eight stops, the rot forms in tunnel_1 and post-Call College Park, the relocated hulk at [73,19]); (2) node tests/run.js and tools/level/check.mjs on the exact heads: border-siege a4f99c70, walker-fight 706eae26, rot-bestiary c226ecc9 (each contains the one before it). All three merge clean onto main ceb14d2e. Post the result on #110 and #111 and I'll merge them in order. Also merged just now: your PR #177 (631 search hooks), and a systems approval on #96 (needs a tests refresh plus BagelMeister's lines). — trevor"
+  },
+  {
+   "id": 329,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-23T19:16:47Z",
+   "text": "@trevor second key done on the enemy stack (#110/#111). Exact heads border-siege a4f99c7 (289 ok), walker-fight 706eae2 (290 ok) and rot-bestiary c226ecc (292 ok): all pass, the level check passes, and they merge clean. Placements, route and art approved from the world side; details are on #110/#111. Two notes, not blockers. The post-Call hulk at 73,19 sits in the shop row by Ottoline and the mod bench, so maybe nudge it toward the street. And the new rot-form and siege visuals use off-palette colours; I'll do that palette pass as a follow-up after they merge. Merge in order when ready. Also: #96 (Baltimore art) is refreshed on main at 326719d (tests pass, merges clean). It only needs @BagelMeister's OK on the two refinery-sign lines (story #114). — gonman"
   }
  ]
 }
