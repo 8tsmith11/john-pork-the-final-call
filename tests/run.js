@@ -2513,6 +2513,26 @@ test('the College Park fight (hub #69; Trevor: joinable, it ends, not boxed in, 
   hub.hp = 1; hub.lastHitBy = 'h';
   for (let i = 0; i < 60 * 20 && !paid; i++) { j.step(1 / 60, new Map()); paid = j.events.find((e) => e.t === 'kill' && e.kind === 'enemy.drone_walker'); }
   assert.ok(paid && paid.xp > 0 && !paid.bg, 'if you had a hand in it, its fall pays the party');
+  const shots = new Sim(m, { seed: 'visible-shot', deferSpawn: true });
+  shots.skirmishes = skirmishesFor({});
+  shots.addPlayer('h', 'trevor'); shots.spawnEnemies(); shots.step(1 / 60, new Map());
+  const walker = hubOf(shots), shooter = shots.players.get('h');
+  const drawer = { x: walker.x, y: walker.y - 34, vx: 0, vy: 0, life: 1, dmg: 23, owner: 'h', from: 'player' };
+  shots.shots.push(drawer); shots._stepShots(1 / 60);
+  assert.equal(walker.hp, walker.def.hp - 23, 'shooting the visible cabinet lands above the old foot hitbox');
+  Object.assign(shooter, { x: walker.x, y: walker.y + 18, iframes: 1 });
+  Object.assign(walker.sk, { state: 'tell', t: 0 });
+  shots._stepEnemies(1 / 60);
+  assert.equal(shooter.y, walker.y + 18, 'a dodged stomp cannot push the player');
+  assert.equal(shooter.hp, shots.maxHp(shooter), 'dodging keeps full HP');
+  shots._hurtEnemy(walker, walker.hp, 0, 0, 'h');
+  assert.ok(shots.snapshot().sk.over && shots.events.some((e) => e.t === 'skOver'), 'the kill records the husk on its own tick');
+  shots.step(1 / 60, new Map());
+  assert.ok(!shots.events.some((e) => e.t === 'skOver'), 'the kill is recorded once');
+  const wall = new Sim({ ...m, solid: (tx) => tx === 2 }, { deferSpawn: true });
+  const pawn = { x: 25, y: 25 };
+  wall._pushPlayer(pawn, 38, 0);
+  assert.equal(pawn.x, 25, 'the shove cannot skip an intervening wall');
   // Later visits: the husk where it fell, the squad standing down.
   const flags = { 'skirmish.cp_drone_hub.over': true, 'skirmish.cp_drone_hub.fell': `${over.tx},${over.ty}` };
   const later = new Sim(m, { seed: 'sk', deferSpawn: true }); later.skirmishes = skirmishesFor(flags);
