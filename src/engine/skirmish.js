@@ -11,6 +11,30 @@
 import { ENEMIES } from '../content/enemies.js';
 
 const TILE = 16;
+
+// The walker's footprint, and a tile path for it: open tiles it fits on, 8-way without cutting corners. The route's
+// stops are a few screens apart with buildings and planters between them; walking straight at them it would hit a wall
+// and give up on the stop (John Pork, hub #111: three of eight stops were skipped).
+const BODY = [10, 7];
+export function walkPath(sim, from, to, maxNodes = 6000) {
+  const W = sim.map.w, H = sim.map.h, fits = (tx, ty) => tx >= 0 && ty >= 0 && tx < W && ty < H && !sim._hitsBox(tx * TILE + 8, ty * TILE + 8, BODY[0], BODY[1]);
+  const sx = Math.floor(from.x / TILE), sy = Math.floor(from.y / TILE), gx = Math.floor(to.x / TILE), gy = Math.floor(to.y / TILE);
+  if (sx === gx && sy === gy) return [];
+  const key = (x, y) => y * W + x, prev = new Map([[key(sx, sy), -1]]), q = [[sx, sy]];
+  for (let i = 0; i < q.length && i < maxNodes; i++) {
+    const [x, y] = q[i];
+    if (x === gx && y === gy) {
+      const out = []; for (let k = key(x, y); k !== key(sx, sy); k = prev.get(k)) out.push({ x: (k % W) * TILE + 8, y: Math.floor(k / W) * TILE + 8 });
+      out.reverse(); out[out.length - 1] = { x: to.x, y: to.y }; return out;
+    }
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+      const nx = x + dx, ny = y + dy, k = key(nx, ny);
+      if (prev.has(k) || !fits(nx, ny) || (dx && dy && (!fits(x + dx, y) || !fits(x, y + dy)))) continue;
+      prev.set(k, key(x, y)); q.push([nx, ny]);
+    }
+  }
+  return null;   // no way through: walk straight and let the stuck rule move it on
+}
 export const SK = {
   range: 170, shotSpeed: 300, shotLife: 0.8,
   troopCd: [0.9, 1.6], spread: 0.18, troopHp: 4, downFor: 5, troopSpeed: 34, troopR: 5,
@@ -181,11 +205,14 @@ export function stepSkUnit(sim, sk, e, def, dt) {
   let goal = null;
   const hitter = e.lastHitBy && sim.players.get(e.lastHitBy);
   const chase = (hitter && !hitter.downed && Math.hypot(hitter.x - e.x, hitter.y - e.y) < SK.aggro * 1.5) ? hitter : close && close.d < SK.aggro ? close.o : null;
-  if (chase && Math.hypot(chase.x - home.x, chase.y - home.y) < SK.leash) goal = chase;
+  if (chase && Math.hypot(chase.x - home.x, chase.y - home.y) < SK.leash) { goal = chase; s.path = null; }   // replan the route after
   else if (sk?.route?.length) {
     const wp = sk.route[s.wp % sk.route.length];
-    if (Math.hypot(wp.x - e.x, wp.y - e.y) < 10) { s.wp = (s.wp + 1) % sk.route.length; s.state = 'plant'; s.t = between(r, SK.plantFor); return; }
-    goal = wp;
+    if (Math.hypot(wp.x - e.x, wp.y - e.y) < 10) { s.wp = (s.wp + 1) % sk.route.length; s.path = null; s.state = 'plant'; s.t = between(r, SK.plantFor); return; }
+    // Around buildings, not into them: follow a tile path to the stop, planned once per stop (again if pushed off it).
+    if (!s.path || s.pathFor !== s.wp) { s.path = walkPath(sim, e, wp) ?? [wp]; s.pathFor = s.wp; }
+    while (s.path.length > 1 && Math.hypot(s.path[0].x - e.x, s.path[0].y - e.y) < 6) s.path.shift();
+    goal = s.path[0] ?? wp;
   }
   if ((s.t -= dt) <= 0) { s.state = 'plant'; s.t = between(r, SK.plantFor); return; }
   if (!goal) return;
@@ -198,7 +225,7 @@ export function stepSkUnit(sim, sk, e, def, dt) {
   if (sk) sk.leg += moved;
   // Walled off from where it's going: give up on that waypoint after a moment rather than pace in place.
   s.stuck = moved < step * 0.3 ? (s.stuck ?? 0) + dt : 0;
-  if (s.stuck > 1.5 && goal !== chase && sk?.route?.length) { s.stuck = 0; s.wp = (s.wp + 1) % sk.route.length; }
+  if (s.stuck > 1.5 && goal !== chase && sk?.route?.length) { s.stuck = 0; if (s.path?.length > 1) s.path = null; else { s.wp = (s.wp + 1) % sk.route.length; s.path = null; } }
   if (Math.abs(dx) > 2) s.face = dx > 0 ? 1 : -1;
 }
 

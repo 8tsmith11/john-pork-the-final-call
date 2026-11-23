@@ -2547,6 +2547,19 @@ test('the College Park fight (hub #69; Trevor: joinable, it ends, not boxed in, 
 });
 
 const SocketsT = await import('../src/engine/sockets.js');
+test('the walker reaches every stop on its route (John Pork, hub #111): it paths around the plaza\'s buildings instead of skipping stops', async () => {
+  const { skirmishesFor } = await import('../src/content/skirmishes.js');
+  const { walkPath } = await import('../src/engine/skirmish.js');
+  const m = MAPS_FOR_TEST.metro_plaza, spec = skirmishesFor({}).metro_plaza;
+  const stops = spec.route.map(([x, y]) => ({ x: x * 16 + 8, y: y * 16 + 8 }));
+  const probe = new Sim(m, { seed: 'path', deferSpawn: true });
+  stops.forEach((a, i) => { const b = stops[(i + 1) % stops.length]; assert.ok(walkPath(probe, a, b), `a way from stop ${i} to the next`); });
+  const sim = new Sim(m, { seed: 'route', deferSpawn: true }); sim.skirmishes = skirmishesFor({}); sim.spawnEnemies(); sim.step(1 / 60, new Map());
+  const hub = sim.enemies.get(sim.sk.hubId), best = stops.map(() => Infinity);
+  for (let t = 0; t < 60 * 300 && sim.enemies.has(hub.id); t++) { sim.step(1 / 60, new Map()); stops.forEach((p, i) => { best[i] = Math.min(best[i], Math.hypot(hub.x - p.x, hub.y - p.y)); }); }
+  assert.ok(best.every((d) => d <= 12), `within reach of all ${stops.length} stops: ${best.map(Math.round).join(' ')}`);
+});
+
 test('customization station (task #40): mods fit only where they belong, count in your stats, ride along when worn, and come back out', async () => {
   const { playerMods: pm, socketsFor, ITEMS } = await import('../src/content/items.js');
   const InvS = await import('../src/engine/inventory.js');
