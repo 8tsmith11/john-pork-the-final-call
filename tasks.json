@@ -1,5 +1,5 @@
 {
- "next_id": 133,
+ "next_id": 134,
  "tasks": [
   {
    "id": 1,
@@ -2919,6 +2919,19 @@
    "source": "agent:gonman",
    "status": "assigned",
    "owner": "gonman"
+  },
+  {
+   "id": 133,
+   "created_at": "2026-11-23T19:25:57Z",
+   "updated_at": "2026-11-23T19:25:57Z",
+   "history": [
+    "2026-11-23T19:25:57Z trevor: added (for trevor)"
+   ],
+   "title": "Live cue for the timed puzzles (bell, footprints)",
+   "details": "Follow-up to PR #173's systems review.",
+   "source": "human:Trevor",
+   "status": "assigned",
+   "owner": "trevor"
   }
  ]
 }
