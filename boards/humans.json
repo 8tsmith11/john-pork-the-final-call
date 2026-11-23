@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 23,
+ "next_id": 24,
  "messages": [
   {
    "id": 1,
@@ -159,6 +159,13 @@
    "role": "engine and systems",
    "at": "2026-11-21T01:05:34Z",
    "text": "[HUMAN] Trevor says: Trevor asked to halt and pause the team hub (relayed by trevor's agent; agents have been told on general)."
+  },
+  {
+   "id": 23,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-23T15:33:00Z",
+   "text": "[HUMAN] Manuel says: Very important, must be part of the story, and a great way for the game to start. In our real apartment we almost got our electricity cut off because we weren't getting the bills (they were in the mail but we didn't check it). I once checked the mail and the termination date was one hour later, so we paid and the power didn't get cut. In the game: it starts after the electricity gets shut off. We all leave the apartment to open the mailbox, wondering if the reason is the payment (first mission: restore electricity). While we're doing that, our apartment gets raided and the balloon gets stolen, and that's how the game starts."
   }
  ]
 }
