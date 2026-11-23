@@ -144,6 +144,8 @@ export const ES_PLAZA = {
   'Brooke': 'Brooke',
   'Inés': 'Inés',
   'Ottoline, master armorer': 'Ottoline, maestra armera',
+  "Ottoline's socket bench": 'El banco de ranuras de Ottoline',
+  "A steel bench bolted to the wall beside her stall: a vise at one end, a tray of sockets sorted by thread. A card in her handwriting: FIT IT YOURSELF. IF IT DOESN'T FIT, IT DOESN'T GO THERE.": 'Un banco de acero atornillado a la pared junto a su puesto: una morsa en una punta, una bandeja de ranuras ordenadas por rosca. Una tarjeta con su letra: MÓNTALO TÚ MISMO. SI NO ENTRA, NO VA AHÍ.',
   "The shutter comes up two inches. Halvard's eye, then the television behind him, then the shutter again.\n\n\"You paid for one rumor. That was it.\"": "La persiana sube cinco centímetros. El ojo de Halvard, después el televisor detrás de él, después la persiana otra vez.\n\n\"Pagaste por un rumor. Era ese.\"",
   // The bounty board (src/content/jobs.js)
   'Abatement bounty board': 'Tablero de recompensas de saneamiento',

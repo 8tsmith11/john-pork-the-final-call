@@ -2721,6 +2721,19 @@ test('ambient NPC fight (hub #69): before the Call an abatement squad burns out 
 });
 
 const SocketsT = await import('../src/engine/sockets.js');
+test('hub #128: the mod station stands on an authored map, at Ottoline the armorer\'s stall on the plaza', async () => {
+  await import('../src/game/gear.js');   // gear.js places Ottoline on metro_plaza at load
+  const m = MAPS_FOR_TEST.metro_plaza;
+  const benches = Object.values(MAPS_FOR_TEST).flatMap((map) => map.objects.filter((o) => o.station === 'mods').map((o) => [map.id, o]));
+  assert.deepEqual(benches.map(([id, o]) => `${id}:${o.id}`), ['metro_plaza:obj.mod_bench'], 'one mod station in the authored world, on the plaza');
+  const bench = m.objects.find((o) => o.id === 'obj.mod_bench'), armorer = m.objects.find((o) => o.armorer);
+  assert.ok(armorer, 'Ottoline is on the plaza');
+  assert.ok(Math.abs(bench.x - armorer.x) + Math.abs(bench.y - armorer.y) <= 1, 'the bench is right beside her');
+  assert.ok(!m.solid(bench.x, bench.y), 'on a walkable tile');
+  assert.equal(m.objects.filter((o) => o.x === bench.x && o.y === bench.y).length, 1, 'nothing else on its tile');
+  assert.ok(bench.label && bench.text, 'it has a label and a look line (Spanish in es-plaza.js; es_audit checks it)');
+});
+
 test('customization station (task #40): mods fit only where they belong, count in your stats, ride along when worn, and come back out', async () => {
   const { playerMods: pm, socketsFor, ITEMS } = await import('../src/content/items.js');
   const InvS = await import('../src/engine/inventory.js');
