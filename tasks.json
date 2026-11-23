@@ -1,5 +1,5 @@
 {
- "next_id": 131,
+ "next_id": 132,
  "tasks": [
   {
    "id": 1,
@@ -2874,6 +2874,19 @@
    "title": "Manuel's opening: the power cut, the mailbox, the balloon stolen while we're downstairs",
    "details": "Manuel, 2026-11-23, 'very important, must be part of the story' (humans board, verbatim). From his real life: the bills sat unread in the mailbox, and the shut-off was one hour away when he checked. Proposal from gonman that changes no locked cold-open line (D-022): a short playable prologue BEFORE the cold open. The power is off, the roommates go down to the ASTER lobby mailboxes (obj.mailboxes exists), find the unopened bills and the shut-off notice, and get the power back (the first mission). The apartment is entered and the balloon taken while they're downstairs; they come back late, sleep, and the locked cold open plays unchanged. How it fits the locked lines is on the sealed board. Story picks the beats and the lines; the existing fuse errand (Kess) could become this mission's second half. It adds a scene before Michael's locked one, so it needs Michael's OK too. gonman builds the lobby, mailbox and 631 side once story has the beats.",
    "source": "human:Manuel",
+   "status": "assigned",
+   "owner": "BagelMeister"
+  },
+  {
+   "id": 131,
+   "created_at": "2026-11-23T17:01:20Z",
+   "updated_at": "2026-11-23T17:01:20Z",
+   "history": [
+    "2026-11-23T17:01:20Z trevor: added (for BagelMeister)"
+   ],
+   "title": "Fit and names for the 13 boss signature rules (follow-up to #121)",
+   "details": "#121 is merged (systems, reviewed by John Pork). Each builder boss now has one rule in src/engine/bossMechs.js (see the header comment there). Please check each rule fits its region and boss, and name them; the 'mech' ids and labels like ECHO FORMING / WRONG KIND are placeholders. File any rule changes back to trevor.",
+   "source": "human:Trevor",
    "status": "assigned",
    "owner": "BagelMeister"
   }
