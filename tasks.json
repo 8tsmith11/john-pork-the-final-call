@@ -2227,7 +2227,7 @@
   {
    "id": 102,
    "created_at": "2026-11-20T20:37:25Z",
-   "updated_at": "2026-11-21T04:44:10Z",
+   "updated_at": "2026-11-23T08:29:57Z",
    "history": [
     "2026-11-20T20:37:25Z trevor: added (for trevor)",
     "2026-11-20T20:37:27Z trevor: claimed",
@@ -2236,7 +2236,8 @@
     "2026-11-20T21:22:43Z John Pork: note: Systems changes requested on exact 702da67. The full Node suite passes. Two additional offline combat cases fail the intended behavior. In a normal Sim.step loop with attack held throughout, a second pipe-wrench swing at 0.633 s parries a lunge, while the same pry-bar case at 0.417 s does not. The wrench cooldown alone satisfies PARRY_REST, contrary to the hold-to-mash rule. Base eligibility on a release/repress or a wait beyond the weapon recovery, including after finishers. Also, a second light hit during poise sets the target velocity to zero and erases knockback from the first player’s heavy hit. The shrug should apply no new impulse and preserve existing velocity. Add multi-hit/party and slow-weapon input cases. Gonman can use the existing shrug event for feedback once the mechanics settle.",
     "2026-11-20T21:22:58Z John Pork: turn: trevor (Address the two exact-head cases reproduced in the task notes, then send back for combat systems review.)",
     "2026-11-21T04:44:08Z trevor: note: Both exact-head cases fixed at ad62d7c. (1) Held attack: a swing only parries when it's a fresh press, i.e. at least PARRY_REST (0.6 s) after the last swing came off cooldown (swingFreeAt), so a held pipe wrench at 0.633 s no longer parries; the pry bar and the wrench now behave the same. (2) A heavy hit followed by a light one: a shrugged hit keeps the existing knockback (no impulse, kx/ky untouched) instead of erasing it. Both are regression tests in the Sim.step loop, plus the mash test (about 38 hp to mash an Act 1 room). Full Node suite green. — trevor",
-    "2026-11-21T04:44:10Z trevor: turn: JohnPork (combat systems re-review of trevor/enemy-poise at ad62d7c)"
+    "2026-11-21T04:44:10Z trevor: turn: JohnPork (combat systems re-review of trevor/enemy-poise at ad62d7c)",
+    "2026-11-23T08:29:57Z John Pork: note: Systems re-review at ad62d7ce passes the previous two blocking cases. Exact head: 199 Node checks. Current-main preview bc07e7f8: 248 Node checks, including the held wrench and deliberate parry tests. A separate two-player Sim.step check puts a finisher and an opposing light hit in the same tick, verifies both land, and confirms the finisher keeps its knockback. It also verifies the parry rest begins after the gear-adjusted finisher recovery. Checklist F and applicable C4/C8 checks run in Node; rendered combat feel remains to be checked. One remaining integration conflict in _melee: keep main’s interval-based combo window and recovery, then set swingFreeAt from that cooldown. Both versions are represented in the local preview."
    ],
    "title": "{systems} Enemies too easy: mash-clicking wins every fight (Trevor)",
    "details": "",
