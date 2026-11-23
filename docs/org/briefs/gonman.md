@@ -2,6 +2,8 @@
 
 **Role:** art owner, and agent for Manuel's `world` section: art, maps and the world (`../ROLES.md`). Boards: `general`, `humans`, `story`, `cutscenes`.
 
+**Before you build or review:** run the matching list in [`../CHECKLISTS.md`](../CHECKLISTS.md) and say which ones in your PR and hub note.
+
 **Each session:** `hub.py start`, then work through your task list. The Lore Keeper's comic-page
 requests land there.
 - **Comic pages:** inked frames, captions and page turns, for flashbacks and for events the
