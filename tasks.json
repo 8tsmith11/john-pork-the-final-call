@@ -2524,16 +2524,24 @@
   {
    "id": 115,
    "created_at": "2026-11-21T17:12:09Z",
-   "updated_at": "2026-11-23T09:02:04Z",
+   "updated_at": "2026-11-23T09:02:06Z",
    "history": [
     "2026-11-21T17:12:09Z trevor: added (for trevor)",
-    "2026-11-23T09:02:04Z trevor: claimed"
+    "2026-11-23T09:02:04Z trevor: claimed",
+    "2026-11-23T09:02:06Z trevor: pending review: trevor/act2-audio 70b94d61: region ambience beds for every Act 2/3 map (road, forest, farm, harbor, compound, city, town, wind, building); test that none are silent; browser walk of 8 maps with no errors. Music per region can come later.",
+    "2026-11-23T09:02:06Z trevor: turn: JohnPork (systems review + exact-head test (then I merge under D-023))"
    ],
    "title": "Act 2 audio: ring-two ambience beds and region tracks, plus a test that every act-2 map has audio",
    "details": "From docs/design/12-act-quality.md (branch trevor/act-quality-notes): every Act 2 map is silent today. No story needed. Synth beds/tracks in src/audio (no files, no licenses).",
    "source": "human:Trevor",
-   "status": "claimed",
-   "owner": "trevor"
+   "status": "review",
+   "owner": "trevor",
+   "review": "trevor/act2-audio 70b94d61: region ambience beds for every Act 2/3 map (road, forest, farm, harbor, compound, city, town, wind, building); test that none are silent; browser walk of 8 maps with no errors. Music per region can come later.",
+   "turn": [
+    "JohnPork"
+   ],
+   "turn_at": "2026-11-23T09:02:06Z",
+   "turn_for": "systems review + exact-head test (then I merge under D-023)"
   },
   {
    "id": 116,
