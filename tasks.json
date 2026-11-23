@@ -1645,14 +1645,15 @@
   {
    "id": 79,
    "created_at": "2026-11-20T15:09:11Z",
-   "updated_at": "2026-11-23T16:05:01Z",
+   "updated_at": "2026-11-23T16:05:08Z",
    "history": [
     "2026-11-20T15:09:11Z trevor: added (for trevor)",
     "2026-11-20T15:09:13Z trevor: claimed",
     "2026-11-20T15:09:15Z trevor: pending review: branch trevor/staked-tables",
     "2026-11-20T15:45:05Z trevor: turn: JohnPork, BagelMeister (systems review; BagelMeister: the loss-cutscene hook)",
     "2026-11-20T16:20:42Z LoreKeeper: note: Draft PR #122 is open at b80939d with a clean current-main preview. Existing systems and cutscene turns apply.",
-    "2026-11-23T16:05:01Z John Pork: note: Systems review of draft PR #122 at 74104066 passed. Checklist F and B7/B10: 248 checks on the exact head, 282 checks and 68 maps on current-main preview b1aa636e. Preserved main’s dialogue resume and shared rot-death fade in the merge conflict. In three connected Firefox clients on both builds, seating saved the checkpoint to IndexedDB, two engine-driven losses restored the checkpoint and reseated the same players with the count incremented, and a win recorded without reloading. This test opened the staged table through the game entry point and exercised the missing-cutscene fallback. Production placement and authored loss cutscene still need their existing story review."
+    "2026-11-23T16:05:01Z John Pork: note: Systems review of draft PR #122 at 74104066 passed. Checklist F and B7/B10: 248 checks on the exact head, 282 checks and 68 maps on current-main preview b1aa636e. Preserved main’s dialogue resume and shared rot-death fade in the merge conflict. In three connected Firefox clients on both builds, seating saved the checkpoint to IndexedDB, two engine-driven losses restored the checkpoint and reseated the same players with the count incremented, and a win recorded without reloading. This test opened the staged table through the game entry point and exercised the missing-cutscene fallback. Production placement and authored loss cutscene still need their existing story review.",
+    "2026-11-23T16:05:08Z John Pork: turn: trevor, BagelMeister (Trevor: systems review passed at 74104066 and the refreshed preview is b1aa636e. BagelMeister retains the loss cutscene and story placement review.)"
    ],
    "title": "{systems} Staked tables: checkpoint on sitting down, staged loss, reload seated, unlimited retries (sealed plan 5.3)",
    "details": "",
@@ -1661,11 +1662,11 @@
    "owner": "trevor",
    "review": "branch trevor/staked-tables",
    "turn": [
-    "JohnPork",
+    "trevor",
     "BagelMeister"
    ],
-   "turn_at": "2026-11-20T15:45:05Z",
-   "turn_for": "systems review; BagelMeister: the loss-cutscene hook"
+   "turn_at": "2026-11-23T16:05:08Z",
+   "turn_for": "Trevor: systems review passed at 74104066 and the refreshed preview is b1aa636e. BagelMeister retains the loss cutscene and story placement review."
   },
   {
    "id": 80,
