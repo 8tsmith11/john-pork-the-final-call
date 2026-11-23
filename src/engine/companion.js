@@ -35,6 +35,8 @@ export class CompanionBrain {
     // 1. Out of rot pools.
     const pool = sim.hazards.find((h) => dist(h, p) < h.r + 4);
     if (pool) { const a = Math.atan2(p.y - pool.y, p.x - pool.x); inp.mx = Math.cos(a); inp.my = Math.sin(a); return inp; }
+    // 1b. Out of a boss's flood (bossMechs 'tide'): climb to dry ground while the water's up.
+    for (const e of sim.enemies.values()) if (e.mech?.level > 0 && e.mech.edge != null && p.y > e.mech.edge - 6) { inp.mx = 0; inp.my = -1; return inp; }
 
     // 2. Dodge a shot that's about to hit (hostile shots have no owner player id).
     for (const s of sim.shots) {

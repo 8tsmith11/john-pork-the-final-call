@@ -6030,6 +6030,196 @@ test('Manuel keeps level six as the stage two requirement after the story unlock
   assert.equal(manuel.morph.stage, 2, 'legacy stage-one saves retain the level-six progression');
 });
 
+test('every Act 2 boss has its own rule (hub #121): pylons, tide, flicker, listen, mimic, chorus', async () => {
+  const { BOSSES } = await import('../src/content/bosses.js');
+  const { MECH } = await import('../src/engine/bossMechs.js');
+  const ACT2 = ['boss.gb_receiver', 'boss.bv_shell', 'boss.md_fence', 'boss.bmore_congregation', 'boss.ann_tide', 'boss.bmore_sign'];
+  const mechs = ACT2.map((k) => BOSSES[k](1).mech);
+  assert.equal(new Set(mechs).size, ACT2.length, `each has a different rule: ${mechs}`);
+  const arena = (kind) => {
+    const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'mech', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+    const h = sim.players.get('host'); h.x = 20 * 16; h.y = 7 * 16; h.hp = 9999;
+    const w = BOSSES[kind](1), def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
+    const e = { id: 'B', kind, def, boss: true, mini: true, awake: true, phase: 1, x: 30 * 16, y: 7 * 16, hp: def.hp, cd: 99, cd2: 99, hurtT: 0, kx: 0, ky: 0, dash: 0 };
+    sim.enemies.set('B', e);
+    const tick = (secs, each) => { for (let i = 0; i < 60 * secs; i++) { h.hp = 9999; h.iframes = 0; e.cd = 99; each?.(); sim._stepBoss(e, def, 1 / 60); } };
+    const hit = (n = 100) => { const was = e.hp; e.state = 'move'; e.parried = 0; e.openT = 0; sim._hurtEnemy(e, n, 0, 0, 'host'); return was - e.hp; };
+    return { sim, h, e, def, tick, hit };
+  };
+  { // pylons: shielded while they stand, open once they're down
+    const { sim, e, tick, hit } = arena('boss.md_fence'); tick(0.1);
+    const pylons = () => [...sim.enemies.values()].filter((u) => u.mechOf === 'B');
+    assert.equal(pylons().length, MECH.pylons.n); const shielded = hit();
+    for (const p of pylons()) sim._hurtEnemy(p, 9999, 0, 0, 'host'); tick(0.1);
+    assert.ok(hit() > shielded * 5, 'open once the pylons fall');
+  }
+  { // tide: in the water it shrugs hits off; on dry ground it doesn't
+    const { e, tick, hit, sim } = arena('boss.ann_tide'); tick(MECH.tide.dry + MECH.tide.rise + 0.5);
+    e.y = sim.map.h * 16 - 20; tick(0.05); const wet = hit();
+    e.y = 20; tick(0.05); const dry = hit();
+    assert.ok(dry > wet * 2, `dry ${dry} vs wet ${wet}`);
+  }
+  { // flicker: shielded while lit, open while dark
+    const { tick, hit } = arena('boss.bmore_sign'); tick(0.2); const lit = hit();
+    tick(MECH.flicker.lit); const dark = hit();
+    assert.ok(dark > lit * 5, `dark ${dark} vs lit ${lit}`);
+  }
+  { // listen: a quiet player is never locked on; a noisy one gets the strike
+    const { e, tick, h } = arena('boss.gb_receiver'); tick(MECH.listen.every + 1);
+    assert.ok(!e.mech.lock, 'nobody made a sound');
+    tick(0.5, () => { h.swingT = 0.2; }); assert.ok(e.mech.lock, 'swinging gets you heard');
+  }
+  { // chorus: held up while its congregation is near
+    const { sim, e, tick, hit } = arena('boss.bmore_congregation'); tick(0.1);
+    const held = hit(); for (const u of [...sim.enemies.values()].filter((u) => u.mechOf === 'B')) { u.x = e.x + 400; } tick(0.05);
+    assert.ok(hit() > held * 1.5, 'pull them away and it takes full hits');
+    e.hp = 1; e.phase = 3; e.phaseTells = 1; sim._hurtEnemy(e, 999999, 0, 0, 'host'); assert.equal([...sim.enemies.values()].filter((u) => u.mechOf === 'B').length, 0, 'they go with it');
+  }
+});
+test('boss openings and echo warnings stay readable in their shipped arenas', async () => {
+  const { MECH, stepMech, mechView } = await import('../src/engine/bossMechs.js');
+  const dt = 1 / 60;
+  const red = new Sim(MAPS_FOR_TEST.bmore_refinery, { seed: 'red-sign' });
+  red.addPlayer('host', 'trevor');
+  const sign = [...red.enemies.values()].find((e) => e.def.mech === 'flicker');
+  const host = red.players.get('host');
+  host.x = sign.x + 10; host.y = sign.y;
+  const hp = host.hp;
+  for (const state of ['windup', 'beam', 'laser']) {
+    Object.assign(sign, { awake: true, state, beamT: 1, beamTick: 0, beamA: 0, beamDir: 1,
+      laserT: 1, laserA: 0, laserDir: 1, cd2: 0, mech: { t: MECH.flicker.lit - 0.01, lit: true } });
+    red._stepBoss(sign, sign.def, dt);
+    assert.equal(sign.mech.lit, false);
+    assert.equal(sign.state, 'move', `dark ends ${state}`);
+    assert.equal(red.shots.length, 0, 'no new attack during darkness');
+    assert.equal(host.hp, hp, 'contact is safe during the opening');
+  }
+
+  const barn = new Sim(MAPS_FOR_TEST.bv_barn, { seed: 'echo-path' });
+  const shell = [...barn.enemies.values()].find((e) => e.def.mech === 'mimic');
+  barn.addPlayer('a', 'trevor'); barn.addPlayer('b', 'manuel');
+  const a = barn.players.get('a'), b = barn.players.get('b');
+  const before = b.hp;
+  let warned = false, hurt = false;
+  for (let frame = 0; frame < 250; frame++) {
+    a.x = shell.x - 45 - Math.min(50, frame * 0.25); a.y = 64;
+    b.x = shell.x + 64; b.y = 64;
+    stepMech(barn, shell, shell.def, dt);
+    const echo = mechView(shell);
+    if (echo.ex == null) continue;
+    assert.equal(echo.ex, b.x, 'the echo follows one player when the nearest player changes');
+    assert.equal(echo.r, MECH.mimic.r, 'the replicated warning has the authoritative damage radius');
+    if (echo.w) { warned = true; assert.equal(b.hp, before, 'formation is harmless'); }
+    else if (b.hp < before) hurt = true;
+  }
+  assert.ok(warned && hurt, 'the shared warning precedes the echo damage');
+});
+test('every Act 3 boss has its own rule too (hub #121): vents, current, power, rewind, molten, verify', async () => {
+  const { BOSSES } = await import('../src/content/bosses.js');
+  const { MECH } = await import('../src/engine/bossMechs.js');
+  const ALL = Object.keys(BOSSES).filter((k) => BOSSES[k](1).mech);
+  assert.equal(new Set(ALL.map((k) => BOSSES[k](1).mech)).size, ALL.length, 'no two bosses share a rule');
+  const arena = (kind) => {
+    const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'mech3', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+    const h = sim.players.get('host'); h.x = 20 * 16; h.y = 7 * 16; h.hp = 9999;
+    const w = BOSSES[kind](1), def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
+    const e = { id: 'B', kind, def, boss: true, mini: true, awake: true, phase: 1, x: 30 * 16, y: 7 * 16, hp: def.hp, cd: 99, cd2: 99, hurtT: 0, kx: 0, ky: 0, dash: 0 };
+    sim.enemies.set('B', e);
+    const tick = (secs, each) => { for (let i = 0; i < 60 * secs; i++) { h.hp = Math.max(h.hp, 1); h.iframes = 0; e.cd = 99; each?.(); sim._stepBoss(e, def, 1 / 60); } };
+    const hit = (n = 100) => { const was = e.hp; e.state = 'move'; e.parried = 0; e.openT = 0; sim._hurtEnemy(e, n, 0, 0, 'host'); return was - e.hp; };
+    return { sim, h, e, def, tick, hit };
+  };
+  { // current: it pulls you in
+    const { h, e, tick } = arena('boss.cor_intake'); const d0 = Math.hypot(h.x - e.x, h.y - e.y); tick(2);
+    assert.ok(Math.hypot(h.x - e.x, h.y - e.y) < d0 - 10, 'the river drags you toward it');
+  }
+  { // power: shielded with live sockets; standing on all of them cuts it
+    const { e, tick, hit, h } = arena('boss.cor_hall'); tick(0.1); const powered = hit();
+    for (const k of e.mech.sockets) { h.x = k.x; h.y = k.y; tick(MECH.power.hold + 0.1, () => { h.x = k.x; h.y = k.y; }); }
+    assert.equal(e.mech.live, 0); assert.ok(hit() > powered * 4, 'cut, it takes real hits');
+  }
+  { // rewind: puts you back where you were, and takes back half the damage of those seconds
+    const { e, tick, h, hit } = arena('boss.gt_clock'); tick(MECH.rewind.every - MECH.rewind.back - 0.5);
+    const x0 = h.x; const before = e.hp; tick(MECH.rewind.back + 0.4, () => { h.x += 0.5; }); hit(400); const dealt = before - e.hp;
+    tick(0.2); assert.ok(Math.abs(h.x - x0) < 30, 'back where you were'); assert.ok(before - e.hp < dealt, 'some of the damage is taken back');
+  }
+  { // molten: caught in a full channel it sticks and takes more
+    const { e, tick, hit } = arena('boss.fr_potline'); tick(0.05); const normal = hit();
+    tick(2 + MECH.molten.warn + 0.1, () => { if (e.mech.lanes && e.mech.lane >= 0) e.x = e.mech.lanes[e.mech.lane]; });
+    assert.ok(e.mech.stuckT > 0, 'stuck in the metal'); assert.ok(hit() > normal * 1.5);
+  }
+  { // verify: moving during the red scan hurts; holding still doesn't; it's shielded while red
+    const { e, tick, h, hit } = arena('boss.en_gate'); tick(MECH.verify.green + MECH.verify.amber + 0.2);
+    assert.equal(e.mech.light, 'red'); const shielded = hit(); h.hp = 500; tick(1); assert.equal(h.hp, 500, 'still is safe');
+    tick(1, () => { h.x += 1; }); assert.ok(h.hp < 500, 'moving gets zapped');
+    tick(MECH.verify.red); assert.ok(hit() > shielded * 5, 'green again: open');
+  }
+  { // vents: the vents exist and blow in groups; a boss over a blowing vent is scalded
+    const { e, tick } = arena('boss.cor_tower'); tick(0.1);
+    assert.ok(e.mech.vents.length >= 3);
+    const v = e.mech.vents[0]; let scalded = false; tick(MECH.vents.every * 3 + 2, () => { e.x = v.x; e.y = v.y; if (e.mech.scaldT > 0) scalded = true; });
+    assert.ok(scalded, 'lured over a vent, it gets scalded');
+  }
+});
+test('the Autograder marks one kind of answer at a time (hub #121): the right kind lands hard, the rest barely scores', async () => {
+  const { BOSSES } = await import('../src/content/bosses.js');
+  const { MECH } = await import('../src/engine/bossMechs.js');
+  const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'rubric', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+  const w = BOSSES['boss.chb_autograder'](1), def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
+  const e = { id: 'B', kind: 'boss.chb_autograder', def, boss: true, mini: true, awake: true, phase: 1, x: 300, y: 112, hp: def.hp, cd: 99, cd2: 99, hurtT: 0, kx: 0, ky: 0, dash: 0 };
+  sim.enemies.set('B', e); sim._stepBoss(e, def, 1 / 60);
+  assert.equal(def.mech, 'rubric'); assert.equal(e.mech.ask, 'melee');
+  const hit = (via) => { const was = e.hp = def.hp; e.state = 'move'; e.openT = 0; e.parried = 0; sim._hitVia = via; sim._hurtEnemy(e, 100, 0, 0, 'host'); return was - e.hp; };
+  const right = hit('melee'), wrong = hit('shot'), untagged = hit(null);
+  assert.ok(right > wrong * 3 && right > untagged * 3, `right ${right}, wrong ${wrong}, untagged ${untagged}`);
+  for (let i = 0; i < 60 * MECH.rubric.every; i++) { e.cd = 99; sim._stepBoss(e, def, 1 / 60); }
+  assert.equal(e.mech.ask, 'shot', 'the question moves on');
+});
+test('boss balance pass (hub #121, John Pork\'s C4 probe): the red pen, a lingering echo, a dry band in the harbour, sockets on open floor', async () => {
+  const { BOSSES } = await import('../src/content/bosses.js');
+  const { MECH } = await import('../src/engine/bossMechs.js');
+  const real = (mapId, kind, at) => {
+    const sim = new Sim(MAPS_FOR_TEST[mapId], { seed: 'c4', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+    const h = sim.players.get('host'); h.hp = 9999; Object.assign(h, at ?? {});
+    const w = BOSSES[kind](1), def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
+    const spot = MAPS_FOR_TEST[mapId].enemies.find((q) => q.kind === kind);
+    const e = { id: 'B', kind, def, boss: true, mini: true, awake: true, phase: 1, x: spot.x, y: spot.y, hp: def.hp, cd: 99, cd2: 99, hurtT: 0, kx: 0, ky: 0, dash: 0 };
+    sim.enemies.set('B', e); sim._stepBoss(e, def, 1 / 60);
+    return { sim, h, e, def };
+  };
+  { // the Autograder: a wrong kind of answer nicks whoever gave it (not more than every penEvery); untagged hits don't
+    const { sim, h, e, def } = real('auditorium', 'boss.chb_autograder');
+    assert.equal(e.mech.ask, 'melee');
+    const hp0 = h.hp; h.iframes = 0; sim._hitVia = 'shot'; sim._hurtEnemy(e, 50, 0, 0, 'host');
+    assert.equal(hp0 - h.hp, MECH.rubric.pen, 'the red pen');
+    h.iframes = 0; sim._hitVia = 'shot'; sim._hurtEnemy(e, 50, 0, 0, 'host'); assert.equal(hp0 - h.hp, MECH.rubric.pen, 'not twice in one beat');
+    const hp1 = h.hp; h.iframes = 0; sim._hitVia = null; sim._hurtEnemy(e, 50, 0, 0, 'host'); assert.equal(h.hp, hp1, 'gadgets and skills are never marked');
+    h.iframes = 0; sim._hitVia = 'melee'; sim._hurtEnemy(e, 50, 0, 0, 'host'); assert.equal(h.hp, hp1, 'the right answer is never marked');
+    assert.ok(def.mech === 'rubric');
+  }
+  { // Shell Zero: standing on your own echo keeps hurting, so planting yourself to mash loses
+    const { sim, h, e, def } = real('bv_barn', 'boss.bv_shell', { x: 12 * 16 + 8, y: 6 * 16 + 8 });
+    let hits = 0;
+    for (let i = 0; i < 60 * 8; i++) { const was = h.hp; h.iframes = 0; e.cd = 99; e.x = h.x + 120; sim._stepBoss(e, def, 1 / 60); if (h.hp < was) hits++; h.hp = 9999; }
+    assert.ok(hits >= 3, `a player who never moves is hit again and again by the echo (${hits})`);
+  }
+  { // the Tide Table: at full flood there's still dry floor in the open harbour, so it can be pulled out of the water
+    const { sim, e, def } = real('ann_harbor', 'boss.ann_tide');
+    for (let i = 0; i < 60 * (MECH.tide.dry + MECH.tide.rise + 1); i++) { e.cd = 99; sim._stepBoss(e, def, 1 / 60); }
+    assert.equal(e.mech.level, 1);
+    const m = MAPS_FOR_TEST.ann_harbor; let dryOpen = 0;
+    for (let ty = 0; ty < m.h; ty++) for (let tx = 0; tx < m.w; tx++) if (!m.solid(tx, ty) && ty * 16 + 8 < e.mech.edge && ty >= 4) dryOpen++;
+    assert.ok(dryOpen >= 2 * (m.w - 4), `a dry band across the open harbour, not only the alcoves (${dryOpen} tiles)`);
+  }
+  { // the Sealed Hall: every socket sits on open floor you can stand on (the pews had swallowed them)
+    const { sim, e } = real('cor_sealed', 'boss.cor_hall');
+    assert.equal(e.mech.sockets.length, MECH.power.n);
+    for (const k of e.mech.sockets) assert.ok(!sim._hitsBox(k.x, k.y, 5, 4), `socket at ${k.x},${k.y} is on the floor`);
+    const solo = e.mech.sockets[0]; const h = sim.players.get('host'); h.x = solo.x; h.y = solo.y;
+    for (let i = 0; i < 60 * (MECH.power.hold + 0.1); i++) { e.cd = 99; sim._stepBoss(e, e.def, 1 / 60); h.hp = 9999; }
+    assert.ok(solo.off > MECH.power.off, 'cut, and alone it stays cut longer');
+  }
+});
 test('hub #113, Act 1 people: thirteen neighbours, cooks and students draw with a sprite of their own, never a rotter', () => {
   const frames = JSON.parse(fs.readFileSync(new URL('../assets/sprites/props.json', import.meta.url), 'utf8')).frames;
   const PEOPLE = { compute_hall_b: ['npc.chb_ta', 'npc.chb_student'], diner: ['npc.diner_cook', 'npc.diner_regular'], aster_roof: ['npc.roof_watcher'],
