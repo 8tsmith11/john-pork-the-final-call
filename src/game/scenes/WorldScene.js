@@ -321,6 +321,7 @@ export class WorldScene extends Phaser.Scene {
     this._transcript = PHONE_CALLS[sceneName] ? { title: PHONE_CALLS[sceneName][nodeId ?? 'start'] ?? PHONE_CALLS[sceneName].start, at: new Date().toISOString(), lines: [] } : null;   // phone tab transcripts (Trevor)
     this.dlgVoiced = sceneName === 'ending';   // act-ending cutscene: spoken voices
     this.dlgDone = onDone;
+    this._nodeBarks(scene, this.dlg.nodeId);
     this._drawDialogue();
   }
 
@@ -393,7 +394,7 @@ export class WorldScene extends Phaser.Scene {
       noise.fillStyle(0x000000, 0.25 + 0.2 * Math.sin(this.time.now / 40)).fillRect(0, 0, W, H);
       hudBits.forEach((h) => h.setText(garble(h.text || 'XXXXXXXX')));
       root.x = Math.random() < 0.2 ? (Math.random() * 6 - 3) : 0;
-      if (k > 0.7) ans.setText('◉ ANSWERED. You did not press anything.').setColor('#f2a6b8');
+      if (k > 0.7) ans.setText('◉ CONNECTING. You did not press anything.').setColor('#f2a6b8');   // the answer/decline choice comes next
     } });
     this.time.delayedCall(3200, () => {
       tick.remove();
@@ -469,7 +470,7 @@ export class WorldScene extends Phaser.Scene {
     if (!c || this.dlg.spectator) return;
     const showLine = this.shared?.active && this.shared.active.scope !== 'self';
     if (!showLine) this._logChoice(who, c);
-    this.dlg.choose(i, showLine ? who : undefined);
+    this.dlg.choose(i, showLine ? who : undefined, { by: who });
     this.shared?._pump();
     this._drawDialogue();
   }
@@ -477,6 +478,7 @@ export class WorldScene extends Phaser.Scene {
   _drawDialogue() {
     if (this.dlg?.node && this._dlgModeNode !== this.dlg.nodeId) {   // per-node mode (story/free) as the scene moves on (gonman, #528)
       this._dlgModeNode = this.dlg.nodeId;
+      this._nodeBarks(this.dlg.scene, this.dlg.nodeId);
       if (this.dlg.node.mode) this.dlgFree = this.dlg.node.mode === 'free';
     }
     const d = this.dlg, on = !!d && !d.done;
@@ -698,6 +700,7 @@ export class WorldScene extends Phaser.Scene {
           if (!here()) { if (this._beatPending === 'act1.beat.call') this._beatPending = null; return; }   // left anyway: still owed
           this._beatPending = null;
           this.save.flags['act1.beat.call'] = true;
+          this.save.flags['act1.call.attempt'] ??= 1;   // the first ring (rings 2 and 3 set their own number)
           this.startDialogue('the_call');
         });
       });
@@ -3545,11 +3548,28 @@ export class WorldScene extends Phaser.Scene {
     sfx('kill');
   }
 
-  _bark(playerId, text) {
+  // A scene's bark table (tools/dialogue/convert.py): rows whose trigger is "<node>, Ns in" play N seconds after the
+  // node starts, over the dialogue, from that roommate if they're here ("nearest the camera" means your own).
+  // Other trigger kinds are kept in the data for the systems that will play them.
+  _nodeBarks(scene, nodeId) {
+    const d = this.dlg;
+    for (const b of scene?.barks ?? []) {
+      const m = b.trigger.match(/^\s*([\w.]+)\s*,\s*(\d+)\s*s in\b/i);
+      if (!m || m[1] !== nodeId) continue;
+      const who = /nearest the camera|any roommate/i.test(b.who) ? this.character : b.who.trim().toLowerCase();
+      this.time.delayedCall(+m[2] * 1000, () => {
+        if (this.dlg !== d || d?.nodeId !== nodeId) return;
+        const p = this._lastRendered?.players?.find((q) => q.c === who);
+        if (p) this._bark(p.id, b.text, { over: true });
+      });
+    }
+  }
+
+  _bark(playerId, text, { over = false } = {}) {
     text = esLine(text);                                            // Spanish when chosen (src/content/lines_es.js)
     const s = this.sprites.get(playerId);
-    if (!s || !text || this.dlg || this.menu || this.stage?.active || this.time.now < (this._barkQuietUntil ?? 0)) return;
-    this._barkQuietUntil = this.time.now + 9000;                    // one voice at a time, and room between them
+    if (!s || !text || (this.dlg && !over) || this.menu || this.stage?.active || this.time.now < (this._barkQuietUntil ?? 0)) return;
+    this._barkQuietUntil = this.time.now + (over ? 2500 : 9000);    // one voice at a time, and room between them
     const t = this.add.text(s.x, s.y - 30, text, { ...FONT, fontSize: '6px', color: '#e8e8f0', backgroundColor: '#0b0d16cc', padding: { x: 2, y: 1 } }).setOrigin(0.5, 1).setDepth(7000);
     const follow = this.time.addEvent({ delay: 30, loop: true, callback: () => t.active && s.active && t.setPosition(s.x, s.y - 30) });
     this.tweens.add({ targets: t, alpha: 0, delay: 2600, duration: 500, onComplete: () => { follow.remove(); t.destroy(); } });
