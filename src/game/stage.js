@@ -99,6 +99,21 @@ export class Stage {
   /** The host's X: end it for everyone now. */
   skip() { if (this.active?.host && !this.active.script.hold) this._finish(true); }
 
+  holdForHost(id, hold = false) {
+    if (this.s.mode !== 'client' || !id || this.active || this._pending) return;
+    const s = this.s;
+    this.active = { id, host: false, waitingForHost: true, script: { hold }, actors: new Map(), ui: [], zoom0: s.cameras.main.zoom };
+    this._bars(true);
+    const status = s.add.text(VIEW.w / 2, hold ? BAR / 2 : VIEW.h - BAR / 2, tr('Cutscene in progress'), FONT)
+      .setOrigin(0.5).setScrollFactor(0).setDepth(9645);
+    this.active.ui.push(status);
+  }
+
+  // A snapshot can arrive after an end message that was sent while the new World scene was starting.
+  syncHostStage(id) {
+    if (this.active?.waitingForHost && this.active.id !== id) this._finish(false);
+  }
+
   get cueBusy() { return this.active?.cueRun?.busy === true; }
 
   /** Show a new line in a held scene. The host waits for its cue before advancing. */
@@ -138,6 +153,7 @@ export class Stage {
   onClientMsg(msg) {
     if (msg?.t !== 'stage') return false;
     if (msg.op === 'start' && typeof msg.id === 'string' && /^[a-z0-9_]+$/.test(msg.id)) {
+      if (this.active?.waitingForHost) this._teardown();
       // The script may still be loading when the host ends it (a quick skip). Track the pending start
       // so an 'end', a newer 'start' or a scene shutdown cancels it before it can run.
       this._cancelPending();

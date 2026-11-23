@@ -111,7 +111,8 @@ const CONTROLS_TEXT = 'WASD move · mouse aim · click: use held item\nSpace / S
 // After arriving on a map, exits ignore you this long (ms), so a rapid second E or a held key can't bounce you back.
 const ARRIVE_LOCK = 700;
 const STORY_SCENES = new Set(['cold_open', 'the_call', 'descent_and_boss', 'ending', 'first_death', 'checkpoint', 'lead_b_halvard']);
-const ACT_ONE_HOST_FLAGS = new Set(['act1.boss.defeated', 'act1.outbreak.contained', 'act1.complete']);
+const ACT_ONE_BALLOON_RELEASED = 'act1.ending.balloonReleased';
+const ACT_ONE_HOST_FLAGS = new Set(['act1.boss.defeated', 'act1.outbreak.contained', 'act1.complete', ACT_ONE_BALLOON_RELEASED]);
 
 // Dialogue scenes that happen on the phone, and the title each call gets in the phone tab's transcripts.
 const PHONE_CALLS = { the_call: { start: 'John Pork · the call', call_ring_2: 'John Pork · second call', call_ring_3: 'John Pork · third call', butt_dial: 'John Pork · pocket dial' } };
@@ -240,10 +241,12 @@ export class WorldScene extends Phaser.Scene {
       if (person) { person.mode = 'wait'; person.t = 4; person.spr.setFlipX(person.x > me.x); this._say(`${person.name.toUpperCase()}\n${this.crowd.lineFor(person)}`); if (person.pixel) this._flag?.('secrets.pixelated.found', true); babble(null, 'hey there friend'); }
     });
     this.input.on('pointerdown', (ptr) => this._onClick(ptr));
-    this.input.keyboard.on('keydown-H', () => { if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
-    this.input.keyboard.on('keydown-F', () => { if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
+    this.input.keyboard.on('keydown-H', () => { if (this.stage?.active) return; if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
+    this.input.keyboard.on('keydown-F', () => { if (this.stage?.active) return; if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
     this._showMap(startMap);
+    this.stage.holdForHost(this.initialSnapshot?.stageId, this.initialSnapshot?.stageHold);
     this.ready = true;
+    if (this.initialSnapshot) this.shared.requestResume();
     // Act 1's witnessed beats are staged in-engine first (hub #48; src/content/stage/act1_*.js), then the scene plays.
     // A beat of delay so the roommates are on screen for the cutscene to stand in for them.
     // The cold open (D-022): the staging plays line by line while the dialogue is on screen (stage 'cold_open'
@@ -543,6 +546,8 @@ export class WorldScene extends Phaser.Scene {
         else if (this._transcript && line.text && !line.sms) this._transcript.lines.push([line.who ?? '', line.text.replace(/\*([^*]+)\*/g, '$1')]);
         // The guide's Sahur entry: seen once he speaks on screen, whichever route (cameo or boss).
         if (line.who && /sahur/i.test(line.who) && !this.save.flags['act1.sahur.seen']) this._flag('act1.sahur.seen', true);
+        this._endingSahurCue(d.nodeId);
+        this._balloonCue(d.nodeId, line);
         if (line.sms) {   // a text message: buzz, and keep it on the phone
           sfx('pickup');
           const texts = (this.save.world.phone ??= { texts: [] }).texts;
@@ -719,8 +724,13 @@ export class WorldScene extends Phaser.Scene {
     this.net.occupySeat(character, peer);
     this._lastSnap = null;
     this._worldSig = null;
-    const snapshot = { ...this.sim.snapshot(), doors: [...this.sim.map.doors.values()].filter(d => d.open).map(d => d.id) };
+    const snapshot = { ...this.sim.snapshot(), doors: [...this.sim.map.doors.values()].filter(d => d.open).map(d => d.id), ...this._stagePresence() };
     this.net.send(peer, { t: 'start', save: this.save, assignments: { [peer]: character }, snapshot });
+  }
+
+  _stagePresence() {
+    const active = this.stage?.active;
+    return { stageId: active?.id ?? null, ...(active?.script?.hold ? { stageHold: true } : {}) };
   }
 
   _wireNet() {
@@ -809,10 +819,11 @@ export class WorldScene extends Phaser.Scene {
           }
         }
       });
-      this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
+      this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot(), ...this._stagePresence() }) });
       this.time.addEvent({ delay: 500, loop: true, callback: () => this._broadcastWorld() });
       on('join', () => { this._worldSig = null; });
     } else if (this.mode === 'client') {
+      let rejoinStageSynced = false;
       on('msg', (msg) => {
         if (msg.t === 'toast') { this._toast(msg.text); return; }
         if (msg.t === 'gadgetFx') { if (msg.area === this.map.id) this._gadgetFx(msg.effect); return; }
@@ -822,7 +833,17 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'lab') { this._lab().onClientMsg(msg); return; }
         if (msg.t === 'pipe') { this._pipes().onClientMsg(msg); return; }
         if (this.shared?.onMsg(msg) || this.stage?.onClientMsg(msg) || this.retry?.onClientMsg(msg) || this.moods?.onClientMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg) || this.comic?.onClientMsg(msg)) return;
-        if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
+        if (msg.t === 'snap') {
+          this.snapBuf.push({ at: performance.now(), snap: msg.snap });
+          if (this.snapBuf.length > 20) this.snapBuf.shift();
+          if (this.initialSnapshot && this.stage) {
+            this.stage.syncHostStage(msg.stageId);
+            if (!rejoinStageSynced) {
+              rejoinStageSynced = true;
+              this.stage.holdForHost(msg.stageId, msg.stageHold);
+            }
+          }
+        }
         if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text, msg.questRead, msg.itemIcons);
         if (msg.t === 'caption') this._caption(msg.text);
         if (msg.t === 'reload') { this.scene.restart({ mode: 'client', net: this.net, save: msg.save, character: this.character }); return; }
@@ -855,6 +876,7 @@ export class WorldScene extends Phaser.Scene {
   // ---------- map ----------
   _showMap(map) {
     this.map = map;
+    this.sahurCameo?.destroy(); this.sahurCameo = null;
     // Rapid back-and-forth guard (Trevor): a new map generation, so anything queued on the last map knows it's stale;
     // the arrival time, for the exit grace; and no story beat is still pending from the last map.
     this._mapGen = (this._mapGen ?? 0) + 1; this._arrivedAt = this.time?.now ?? 0; this._beatPending = null;
@@ -1017,6 +1039,75 @@ export class WorldScene extends Phaser.Scene {
     this.enemySprites.clear();
   }
 
+  // Manuel's orange balloon, where the story says it is (Trevor, 2026-11-23: "let us actually see the balloon when
+  // it's in the scene"). On the dead platform it's caught on the cable under the ventilation shaft, its cut ribbon
+  // trailing, from the moment you arrive until it's let go in the ending: John Pork takes it down to chest height,
+  // then it rises up the shaft and is gone. Drawn in code, on every screen (guests mirror the ending's nodes).
+  _balloonTexture() {
+    if (this.textures.exists('balloon')) return 'balloon';
+    const g = this.make.graphics({ add: false });
+    g.fillStyle(0xf07818, 1).fillEllipse(6, 6, 12, 13);              // balloon0 / balloon1 from the palette
+    g.fillStyle(0xffa23a, 1).fillEllipse(5, 5, 8, 9);
+    g.fillStyle(0xffe6c8, 0.9).fillRect(3, 2, 2, 3);                 // the shine
+    g.fillStyle(0xd85f10, 1).fillTriangle(5, 12, 7, 12, 6, 14);      // the knot
+    g.generateTexture('balloon', 12, 15); g.destroy();
+    return 'balloon';
+  }
+
+  _tickBalloon() {
+    const f = this.save?.flags ?? {};
+    // Rejoining guests carry the release in their start snapshot. Open clients finish their own tween.
+    const here = this.map?.id === 'platform' && !f['act1.complete'] && !this._balloonGone
+      && (!f[ACT_ONE_BALLOON_RELEASED] || this.balloon);
+    if (!here) { this.balloon?.destroy(); this.balloonRibbon?.destroy(); this.balloon = this.balloonRibbon = null; return; }
+    if (!this.balloon) {
+      this.balloon = this.add.image(22 * TILE + 8, 3 * TILE + 2, this._balloonTexture()).setOrigin(0.5, 1).setDepth(3 * TILE + 40);
+      this.balloon.homeY = this.balloon.y; this.balloonRibbon = this.add.graphics().setDepth(3 * TILE + 39);
+    }
+    const b = this.balloon, t = this.time.now / 1000;
+    if (!b.moving) b.y = b.homeY + Math.sin(t * 1.6) * 1.5;           // it drifts on the cable
+    // the cut ribbon: a short wavy line under the knot, the bowline still tied in it
+    const r = this.balloonRibbon.clear().lineStyle(1, 0xffa23a, b.alpha);
+    let px = b.x, py = b.y + 1;
+    for (let i = 1; i <= 6; i++) { const nx = b.x + Math.sin(t * 2.2 + i * 0.9) * 1.6, ny = b.y + 1 + i * 2.2; r.lineBetween(px, py, nx, ny); px = nx; py = ny; }
+    r.fillStyle(0xffa23a, b.alpha).fillRect(px - 1, py, 2, 2);
+  }
+
+  _balloonCue(nodeId, line) {
+    if (this.map?.id !== 'platform') return;
+    const rises = /balloon rises/i.test(line?.text ?? '') || nodeId === 'ending_release';
+    if (rises && this.mode !== 'client' && !this.save.flags[ACT_ONE_BALLOON_RELEASED]) {
+      this._flag(ACT_ONE_BALLOON_RELEASED, true);
+    }
+    const b = this.balloon;
+    if (!b) return;
+    if (nodeId === 'ending_unhook' && !b.lowered && this.porkSprite) {   // he works it free and holds it at chest height
+      b.lowered = b.moving = true; b.setDepth(this.porkSprite.depth + 2); this.balloonRibbon.setDepth(this.porkSprite.depth + 1);   // in front of him
+      this.tweens.add({ targets: b, x: this.porkSprite.x - 6, y: this.porkSprite.y - 16, duration: 1600, ease: 'Sine.inOut', onComplete: () => { b.homeY = b.y; b.moving = false; } });
+    }
+    if (rises && !b.rising) {   // about six seconds, uninterrupted, up the shaft and gone (the script's note)
+      b.rising = b.moving = true;
+      this.tweens.add({ targets: b, x: 22 * TILE + 8, y: -40, duration: 6000, ease: 'Sine.in', onComplete: () => { this._balloonGone = true; } });
+      this.tweens.add({ targets: b, alpha: 0, delay: 4800, duration: 1200 });
+    }
+  }
+
+  // The ending's visitor at the tunnel mouth (Trevor: "we heard him but couldn't see him"). His part of the ending
+  // scene (nodes ending_sahur*) describes him standing there and speaking, but nothing drew him. Now he's drawn
+  // while that part plays, on every screen (guests mirror the node), at the tunnel end of the view so he's always
+  // in sight, and he walks back into the dark when his part is over.
+  _endingSahurCue(nodeId) {
+    const on = this.map?.id === 'platform' && /^ending_sahur/.test(nodeId ?? '');
+    if (on && !this.sahurCameo && this.anims?.exists('sahur')) {
+      const cam = this.cameras.main, x = Math.max(2 * TILE + 8, (cam.worldView?.x ?? 0) + 44), y = 8 * TILE;
+      this.sahurCameo = this.add.sprite(x, y, 'principals').setOrigin(0.5, 1).play('sahur').setDepth(y).setAlpha(0);
+      this.tweens.add({ targets: this.sahurCameo, alpha: 1, duration: 700 });
+    } else if (!on && this.sahurCameo && !this.sahurCameo.leaving) {
+      const sp = this.sahurCameo; sp.leaving = true;
+      this.tweens.add({ targets: sp, x: sp.x - 40, alpha: 0, duration: 1600, onComplete: () => { sp.destroy(); if (this.sahurCameo === sp) this.sahurCameo = null; } });
+    }
+  }
+
   _showActOneArrival(x, y) {
     if (this.anims.exists('pork') && !this.porkSprite) {
       const tx = x + 40, ty = y;
@@ -1090,6 +1181,7 @@ export class WorldScene extends Phaser.Scene {
   }
   // Select a hotbar slot (1-9 / wheel). A weapon or gun in that slot becomes the one you hold.
   selectHot(i) {
+    if (this.stage?.active) return;
     const c = this.save.party[this.character]; if (!c) return;
     i = ((i % 9) + 9) % 9;
     this._hotFlash = { i, at: this.time.now };
@@ -2530,13 +2622,15 @@ export class WorldScene extends Phaser.Scene {
 
   _onClick(ptr) {
     if (!this.ready || ptr.button !== 0) return;
+    const stage = this.stage?.active;
+    if (stage && !(stage.script?.hold && this.dlg)) { this.input2.blockAttack = true; return; }
     const { x: sx, y: sy } = toView(ptr);
     const qb = this._qbSticky;
     if (qb && !this._talkOpen() && sx >= qb.x0 && sx <= qb.x1 && sy >= qb.y0 && sy <= qb.y1) { this.input2.blockAttack = true; qb.leave(); return; }   // a hidden card (dialogue up) can't be clicked away
     if (this.dlg) {
       // Clicks never advance dialogue (E does); choices are clicked directly. In free dialogue a click
       // outside the box is still an attack.
-      if (!this.dlgFree || sy > VIEW.h - 70) this.input2.blockAttack = true;
+      if (stage || !this.dlgFree || sy > VIEW.h - 70) this.input2.blockAttack = true;
       return;
     }
     if (this.menu) {
@@ -2610,6 +2704,8 @@ export class WorldScene extends Phaser.Scene {
     this._render(snap);
     setInstrumentFocus(snap, this.localId);
     this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.skirmish?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.gags?.update(snap); this.pacifier?.update(snap); this.stands?.update(); this.moods?.update(snap); this.stage?.update(snap);   // cutscene stand-ins draw last
+    if (this.sahurCameo && !this.dlg) this._endingSahurCue(null);   // the scene closed with him still there: he goes
+    else if (this.sahurCameo && !this.sahurCameo.leaving) this.sahurCameo.x = Math.max(this.sahurCameo.x, this.cameras.main.worldView.x + 44);   // keep him in sight
     this._stageHud(!!this.stage?.active);   // cutscenes letterbox the screen: the HUD steps out instead of being sliced by the bars
   }
 
@@ -2632,7 +2728,10 @@ export class WorldScene extends Phaser.Scene {
 
   _gadgetBlocked() { return !!(this._dlgStops() || this.menu || this.stage?.active || this.comic?.active || this._transitioning); }
   _frozen(inp) {
-    if (this._dlgStops() || this.menu || this.stage?.active || this.comic?.active) return { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, gadget: false, interact: false };
+    const inStage = !!this.stage?.active;
+    if (this._dlgStops() || this.menu || inStage || this.comic?.active) {
+      return { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, gadget: false, interact: false, skill: inStage ? false : inp.skill };
+    }
     if (this._transitioning && inp.gadget) inp = { ...inp, gadget: false };
     if (this.dlg) return { ...inp, interact: false };
     return inp;
@@ -3147,6 +3246,7 @@ export class WorldScene extends Phaser.Scene {
     this._tickFishing();
     this._tickQuests();
     this._tickGlimpse();
+    this._tickBalloon();
     this._tickScan();
     if (this.fishing) { const k = this.input2.keys; if (k.w.isDown || k.a.isDown || k.s.isDown || k.d.isDown || k.up.isDown || k.down.isDown || k.left.isDown || k.right.isDown) this._endFishing(false); }
     this._tickPorkGlitch();
@@ -3305,13 +3405,19 @@ export class WorldScene extends Phaser.Scene {
       g.fillStyle(0xd8b060, 1).fillRect(fx - 24, ly - 10, 4, 20);
     }
     if (b.la != null) {
-      const cx = e.x, cy = e.y - 8, L = 300, ux = Math.cos(b.la), uy = Math.sin(b.la), ex = cx + ux * L, ey = cy + uy * L;
-      const flick = 0.85 + 0.15 * Math.sin(t / 25);
-      g.lineStyle(22, 0xff3355, 0.18 * flick).lineBetween(cx, cy, ex, ey);   // glow
-      g.lineStyle(14, 0xff4d6d, 0.55 * flick).lineBetween(cx, cy, ex, ey);   // body
-      g.lineStyle(5, 0xffe6ee, 0.95).lineBetween(cx, cy, ex, ey);            // hot core
+      const cx = e.x, cy = e.y - 8, L = 300, flick = 0.85 + 0.15 * Math.sin(t / 25);
+      for (const k of b.l2 ? [1, -1] : [1]) {   // phase three fires out the back as well
+        const ux = Math.cos(b.la) * k, uy = Math.sin(b.la) * k, ex = cx + ux * L, ey = cy + uy * L;
+        g.lineStyle(22, 0xff3355, 0.18 * flick).lineBetween(cx, cy, ex, ey);   // glow
+        g.lineStyle(14, 0xff4d6d, 0.55 * flick).lineBetween(cx, cy, ex, ey);   // body
+        g.lineStyle(5, 0xffe6ee, 0.95).lineBetween(cx, cy, ex, ey);            // hot core
+        for (let i = 0; i < 4; i++) { const d = ((t / 3 + i * 75) % L); g.fillStyle(0xffffff, 0.8).fillRect(cx + ux * d - 1, cy + uy * d - 1, 2, 2); }   // sparks running out
+      }
       g.fillStyle(0xffe6ee, 0.9).fillCircle(cx, cy, 6 + Math.sin(t / 40) * 1.5);
-      for (let i = 0; i < 4; i++) { const d = ((t / 3 + i * 75) % L); g.fillStyle(0xffffff, 0.8).fillRect(cx + ux * d - 1, cy + uy * d - 1, 2, 2); }   // sparks running out
+      // Braced: a steel shell around him while he fires, so hitting him now reads as a waste (Trevor, 2026-11-23).
+      const R = (b.r ?? 11) + 7;
+      g.lineStyle(3, 0x9aa8bf, 0.55).strokeCircle(e.x, e.y - 4, R);
+      for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + t / 900; g.fillStyle(0xc9d3e6, 0.8).fillRect(e.x + Math.cos(a) * R - 2, e.y - 4 + Math.sin(a) * R - 2, 4, 4); }
     }
     for (const r of b.wv ?? []) {
       g.lineStyle(5, 0xff4d6d, 0.25).strokeCircle(e.x, e.y - 4, r);
@@ -3600,6 +3706,12 @@ export class WorldScene extends Phaser.Scene {
     if (ev.t === 'vuln') {
       const t = this.add.text(ev.x, ev.y - 30, 'OVERHEATED: hit it!', { ...FONT, color: '#ffb347' }).setOrigin(0.5).setDepth(6100);
       this.tweens.add({ targets: t, y: t.y - 10, alpha: 0, duration: 1300, onComplete: () => t.destroy() });
+    }
+    if (ev.t === 'bossBrace' && this.time.now > (this._thunkAt ?? 0)) {   // a hit that glances off a braced boss (at most ~3 a second)
+      this._thunkAt = this.time.now + 300;
+      const t = this.add.text(ev.x + (Math.random() * 16 - 8), ev.y - 22, 'BRACED', { ...FONT, color: '#9aa8bf' }).setOrigin(0.5).setDepth(6100);
+      this.tweens.add({ targets: t, y: t.y - 8, alpha: 0, duration: 500, onComplete: () => t.destroy() });
+      sfx('swing');
     }
     if (ev.t === 'impact') { const c = this.add.circle(ev.x, ev.y, ev.r, 0xffe6ee, 0.8).setDepth(5450); this.tweens.add({ targets: c, scale: 1.6, alpha: 0, duration: 260, onComplete: () => c.destroy() }); sfx('hit'); }
     if (ev.t === 'overload') { this.cameras.main.shake(500, 0.012); this.cameras.main.flash(250, 214, 93, 177); }
