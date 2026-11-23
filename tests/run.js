@@ -4985,6 +4985,85 @@ test('equip the exact copy (John Pork, PR #93): with two vests, the modded one y
   assert.equal(InvM.wear(c, 'item.mesh_vest', 99), false, 'an invalid explicit slot leaves both copies in the bag');
 });
 
+test('Room 631 for the cold open (hub #99): closet by the window, a wall screen, the van outside, staging left clear', () => {
+  const m = MAPS_FOR_TEST.room631, obj = (id) => m.objects.find((o) => o.id === id), key = (x, y) => `${x},${y}`;
+  // Every object the room had before this change is still there, under the same id.
+  const BEFORE = ('chair_w chair_e string_lights clock_631 nightstand_michael nightstand_manuel poster_band photo_wall pennant toolwall toolbox crate cables bookshelf '
+    + 'whiteboard coffee tv couch scooters shoes plant house_rules door statue_1 statue_2 statue_3 mate fridge table stove parts_bins lab_board workbench failed_prints '
+    + 'router drill_press pork_flag printer_1 printer_2 printer_3 oscilloscope microscope degasser solder dehumidifier ottoman boxes_1 boxes_2 boxes_3 shrimp_tank '
+    + 'stand_trevor battlebot supplements trevor_mirror trevor_pc dumbbells trevor_shower michael_desk manuel_table mate_shelf mm_shower hamper balcony_plants '
+    + 'balcony_view bunk arg_flag stand_michael michael_closet manuel_closet front_lock mm_mirror').split(' ').map((n) => `obj.${n}`)
+    .concat(['door.trevor_room', 'door.mm_room', 'door.trevor_bath', 'door.mm_bath', 'door.balcony']);
+  assert.equal(BEFORE.length, 76);
+  assert.deepEqual(BEFORE.filter((id) => !obj(id)), [], 'an object id went missing from room631');
+  assert.equal(m.objects.length, BEFORE.length + 2, 'only the wall screen and the van were added');
+  // The search hooks wait for the cold open's staging PR (#145): these keep what they had.
+  assert.equal(obj('obj.toolwall').action, 'toolwall');
+  assert.equal(obj('obj.printer_3').flag, 'act1.clue.printer3Warm');
+  assert.equal(obj('obj.front_lock').flag, 'act1.clue.lockForced');
+  assert.equal(obj('obj.manuel_closet').flag, 'act1.balloon.noticedGone');
+  assert.deepEqual([obj('obj.door').x, obj('obj.door').y, obj('obj.door').to], [0, 8, 'aster_hall'], "631's front door stays where it is");
+  assert.deepEqual(m.spawns, [[5, 8], [7, 9], [9, 8]].map(([x, y]) => ({ x: x * 16 + 8, y: y * 16 + 8 })));
+
+  // 1. Manuel's closet: at his end of the bedroom, by the window his flag hangs over, and off both doorways.
+  const closet = obj('obj.manuel_closet'), flag = obj('obj.arg_flag'), bedDoor = obj('door.mm_room'), bathDoor = obj('door.mm_bath');
+  assert.ok(closet.x >= obj('obj.nightstand_manuel').x && closet.x <= 22 && closet.y >= 1 && closet.y <= 4, "the closet is in the bedroom, at Manuel's end");
+  assert.ok(Math.abs(closet.x - flag.x) <= 1 && closet.y - flag.y <= 2, 'and by the window (under the flag that covers it)');
+  assert.notDeepEqual([closet.x, closet.y], [bedDoor.x, bedDoor.y - 1], 'not in front of the bedroom doorway');
+  assert.notDeepEqual([closet.x, closet.y], [bathDoor.x - 1, bathDoor.y], 'nor in front of the bathroom door');
+  assert.ok(!m.objects.some((o) => o !== closet && o.x === closet.x && o.y === closet.y), 'on a tile of its own');
+
+  // 2 and 3. The wall screen and the van: on the map, with a drawing and a second (animated) frame in the sheets.
+  const frames = (sheet) => JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${sheet}.json`, import.meta.url), 'utf8')).frames;
+  const screen = obj('obj.room631_wallscreen'), van = obj('obj.room631_van'), vanArt = (m.scenery ?? []).find((q) => q.art === 'obj.room631_van');
+  assert.ok(screen && van && vanArt);
+  for (const f of ['obj.room631_wallscreen', 'obj.room631_wallscreen#1']) assert.deepEqual([frames('props')[f]?.frame.w, frames('props')[f]?.frame.h], [16, 24], f);
+  for (const f of ['obj.room631_van', 'obj.room631_van#1']) assert.deepEqual([frames('wide')[f]?.frame.w, frames('wide')[f]?.frame.h], [32, 16], f);
+  assert.equal(m.layout[screen.y][screen.x], '#', 'the screen hangs on a wall');
+  assert.ok('ku'.includes(m.layout[screen.y + 1][screen.x]) && screen.x < 15, 'the living-room wall');
+  assert.ok(screen.light > 0 && screen.text && !screen.action && !screen.talk, 'lit, with a look line and nothing else');
+  // The van is outside: its drawing is on the street strip, which nobody can walk to, and the spot you look from is the rail.
+  const inside = new Set([key(5, 8)]), todo = [[5, 8]];
+  while (todo.length) { const [x, y] = todo.pop(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const k = key(x + dx, y + dy); if (!inside.has(k) && (!m.solid(x + dx, y + dy) || m.doors.has(k))) { inside.add(k); todo.push([x + dx, y + dy]); } } }
+  assert.ok(inside.has(key(22, 13)) && inside.has(key(18, 3)), 'the flood fill covers the flat (balcony and bedroom)');
+  assert.ok(!vanArt.solid && !inside.has(key(vanArt.x, vanArt.y)) && !inside.has(key(vanArt.x + 1, vanArt.y)), 'the van is not in the walkable flat');
+  assert.equal(m.layout[vanArt.y].slice(vanArt.x, vanArt.x + 2), ',,', 'it is parked on the street');
+  assert.ok(vanArt.y > van.y && van.y > obj('obj.ottoman').y, 'below the balcony, past the rail');
+  assert.equal(m.layout[van.y][van.x], '=', 'you look at it over the balcony rail');
+  assert.ok(inside.has(key(van.x, van.y - 1)), 'from the balcony');
+  for (let x = 0; x < m.w; x++) assert.ok(m.solid(x, vanArt.y - 1), `the street is walled off at ${x},${vanArt.y - 1}`);
+  assert.ok(van.text && !van.action && !van.talk && !van.flag, 'a look line only');
+
+  // Nothing in the way of the cold open's staging. Marks and paths are hard-coded from PR #145's stage script:
+  // origin/bagel/cold-open-staging @ 8bc04bec, src/content/stage/cold_open.js (cast `at`, `walk` to/by, `cam` tiles).
+  const CAST = { trevor: [17, 2], michael: [18, 3], manuel: [19, 2] };                 // the bunk wake-up
+  const beside = (o) => [[0, 1], [-1, 0], [1, 0], [0, -1]].map(([dx, dy]) => [o.x + dx, o.y + dy]).find(([x, y]) => !m.solid(x, y));   // stage.js _beside
+  const atCloset = beside(closet);
+  assert.deepEqual(atCloset, [22, 3], 'Manuel stops under his closet, in line with the bedroom door');
+  const DOOR = [[22, 5], [22, 6]];                                                     // out through door.mm_room
+  const LEGS = [
+    [CAST.manuel, [19, 3], atCloset, ...DOOR, [4, 9], [4, 8], [5, 8]],                 // rolls out, the closet, the front door, arms out, his shoes
+    [CAST.trevor, atCloset, ...DOOR, [4, 7]],
+    [CAST.michael, [19, 4], ...DOOR, [12, 8], [3, 8]],
+  ];
+  const CAMS = [[14, 8], [12, 8]];
+  const marks = new Set([...LEGS.flat(), ...CAMS].map(([x, y]) => key(x, y)));
+  const path = new Set();                                                              // every tile a straight walk crosses
+  for (const leg of LEGS) for (let i = 1; i < leg.length; i++) {
+    const [ax, ay] = leg[i - 1], [bx, by] = leg[i], n = Math.max(Math.abs(bx - ax), Math.abs(by - ay)) * 8;
+    for (let t = 0; t <= n; t++) path.add(key(Math.round(ax + ((bx - ax) * t) / n), Math.round(ay + ((by - ay) * t) / n)));
+  }
+  for (const k of marks) { const [x, y] = k.split(',').map(Number); assert.ok(!m.solid(x, y) || m.doors.has(k), `staging mark ${k} is solid`); }
+  for (const k of new Set([...marks, ...path])) assert.ok(!m.blocked.has(k), `something solid stands on the staging path at ${k}`);
+  const added = [screen, van, closet, vanArt, { x: vanArt.x + 1, y: vanArt.y }];
+  for (const o of added) assert.ok(!marks.has(key(o.x, o.y)) && !path.has(key(o.x, o.y)), `${o.id ?? o.art ?? 'the van'} sits on the staging at ${o.x},${o.y}`);
+  for (const o of [screen, van, vanArt]) assert.ok(!o.solid, 'nothing new is solid');
+  assert.deepEqual([...m.blocked], [key(0, 8)], 'the only blocking object in the room is still the front door');
+  // The objects the staging points the camera and the actors at.
+  for (const id of ['obj.bunk', 'obj.manuel_closet', 'obj.front_lock', 'obj.door', 'obj.pork_flag', 'obj.statue_1', 'obj.tv']) assert.ok(obj(id), id);
+  assert.ok(Math.hypot(screen.x - obj('obj.tv').x, screen.y - obj('obj.tv').y) <= 3, "the wall screen is in frame when the staging's camera goes to the TV");
+});
+
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
