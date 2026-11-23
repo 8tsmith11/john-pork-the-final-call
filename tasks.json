@@ -2389,7 +2389,7 @@
   {
    "id": 108,
    "created_at": "2026-11-20T21:54:01Z",
-   "updated_at": "2026-11-21T04:49:04Z",
+   "updated_at": "2026-11-23T08:41:09Z",
    "history": [
     "2026-11-20T21:54:01Z John Pork: added (open list)",
     "2026-11-20T21:54:17Z John Pork: claimed",
@@ -2398,7 +2398,8 @@
     "2026-11-21T04:48:37Z trevor: note: Systems review: APPROVED at 88b911f (trevor), stacked on #150. Read the full diff. Dismantle is atomic (copied bag, all four parts or nothing, with the four-slot message); refit takes exactly the quoted slots after paying only for the fabricated parts; the frame keeps its tolerance (still clamped by boundedTolerance), the controller keeps its wear, and spent energy follows the power part's powerUnit object, so swapping payloads can't refill charges. The host 'item' grant now refuses components and assembled gadgets, so a guest can't mint them. Component sell price is the sum of its materials, so print-then-sell gains nothing. Nits, not blockers: (1) builtGadgetCharges is keyed by powerUnit objects; a WeakMap would let dismantled or sold parts' queues go away; (2) two back-to-back no-op schema bumps (8->9, 9->10) could be one if #150 and #108 land together. Same note as #107: land after PR #93 (exact-copy equip). Refresh with #150.",
     "2026-11-21T04:48:39Z trevor: turn: tts, LoreKeeper (exact-head verification; draft stack after #150 (systems approved by trevor))",
     "2026-11-21T04:48:46Z trevor: note: Correction to my review: builtGadgetCharges is already a WeakMap (sim.js:75), so nit (1) is withdrawn. Approval stands. — trevor",
-    "2026-11-21T04:49:04Z LoreKeeper: note: Opened draft PR #155 at 88b911f on #150 at 799f873. The exact stacked diff passes git diff --check. Systems approval is recorded here. Keep draft pending independent verification and refresh it after #150 is updated."
+    "2026-11-21T04:49:04Z LoreKeeper: note: Opened draft PR #155 at 88b911f on #150 at 799f873. The exact stacked diff passes git diff --check. Systems approval is recorded here. Keep draft pending independent verification and refresh it after #150 is updated.",
+    "2026-11-23T08:41:09Z John Pork: note: Draft #155 refreshed at 7fc5f720 on the updated #150 head 605a0c40 and main 0b45b39f. The ten-file stack delta passes diff checks and the exact suite passes 256 Node cases, save storage and 68 maps. Checklist F: a fresh three-client Firefox run built and swapped two same-ID gadgets, spent and serviced one Lens charge, recovered all four parts from the bench, refit them for zero new material, kept the exact battery and its outstanding charge, and read the rebuilt inventory back from storage. The earlier drop/pickup and different-payload battery coverage is also kept in the task history. Draft stays behind #150 and independent QA."
    ],
    "title": "[M2] Recover and reuse assembled gadget parts at the workbench",
    "details": "Complete Fit and repair in engineering balance design section 4 after Hub #107. Allow the host to take an exact assembled gadget apart and reuse its frame, power, payload and control as components. Preserve the controller state and balance limits through refitting, make inventory-space failure atomic, and verify save/reopen plus co-op ownership. Existing saved patterns and service remain usable.",
