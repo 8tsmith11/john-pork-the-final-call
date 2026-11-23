@@ -3166,6 +3166,23 @@ test('room 631: reading the 245 textbook on the bookshelf sets lab.book (trevor,
   assert.equal(shelf.flag, 'lab.book', 'the pages action sets this flag on the first press');
   assert.ok(/^The 245 lab textbook\./.test(shelf.pages[0]), 'and the first press shows the textbook');
 });
+test('combat FX (hub #97): palette-only colors, owner rims, the noise budget, and no shake or flash except for you', async () => {
+  const FXm = await import('../src/game/render/fx.js');
+  const pal = JSON.parse(fs.readFileSync(new URL('../tools/art/palette.json', import.meta.url), 'utf8'));
+  for (const [k, v] of Object.entries(FXm.PAL)) assert.equal(`#${v.toString(16).padStart(6, '0')}`, pal[k], `fx PAL.${k} is not palette.json's ${k}`);
+  assert.deepEqual(FXm.OWNER, { manuel: FXm.PAL.yerba1, trevor: FXm.PAL.tub1, michael: FXm.PAL.soft1 }, 'owner rims are the roommates\' signature colors');
+  assert.ok(!Object.values(FXm.OWNER).some((c) => [FXm.PAL.signal, FXm.PAL.rot0, FXm.PAL.rot1].includes(c)), 'a roommate wears an enemy-danger color');
+  assert.ok(FXm.isContinuity('enemy.captcha') && !FXm.isContinuity('enemy.rotling') && !FXm.isContinuity(undefined));
+  assert.deepEqual(FXm.budget(true), { alpha: 1, count: 1 }); assert.ok(FXm.budget(false).alpha < 1 && FXm.budget(false).count < 1);
+  const calls = [], sc = { cameras: { main: { shake: (...a) => calls.push(['shake', ...a]), flash: (...a) => calls.push(['flash', ...a]) } } };
+  FXm.shake(sc, false, 100, 0.01); FXm.flash(sc, false, 80, 1, 2, 3); assert.deepEqual(calls, [], 'shook or flashed someone else\'s screen');
+  FXm.shake(sc, true, 100, 0.01); assert.equal(calls.length, FXm.reducedMotion() ? 0 : 1);
+  const ws = fs.readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  for (const t of ["ev.t === 'riff'", "ev.t === 'ping'", "ev.t === 'hit'", "ev.t === 'kill'", "ev.t === 'tell'", "ev.t === 'parry'", "ev.t === 'shrug'"]) {
+    const line = ws.split('\n').find((l) => l.includes(`if (${t}`)) ?? '';
+    assert.ok(!/0x[0-9a-f]{6}/i.test(line), `${t}: a hard-coded color instead of fx.js`);
+  }
+});
 test('Continuity posters (hub #100, Michael): out of 631, it is plain he is an enemy of the state; his likeness is never shown', async () => {
   const { ES_ASTER } = await import('../src/i18n/es-aster.js'), { ES_PLAZA } = await import('../src/i18n/es-plaza.js');
   const frames = JSON.parse(fs.readFileSync(new URL('../assets/sprites/props.json', import.meta.url), 'utf8')).frames;

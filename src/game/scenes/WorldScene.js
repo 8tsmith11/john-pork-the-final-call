@@ -80,6 +80,7 @@ import { ABILITY_KEYS, BASE_SCORES, MAX_SCORE, raiseCost } from '../../content/a
 import { addXp, xpToNext, xpScale } from '../../content/progression.js';
 import { CLOCKS, CLOCK_TIMES, clockTime, clocksSolved, PAPER_CLOCK_NOTE, BUST_ORDER, BUST_HINT } from '../../content/optionalPuzzles.js';
 import { puzzleFor } from '../../content/puzzles.js';
+import * as FX from '../render/fx.js';
 import { use as usePuzzle } from '../../content/puzzleKit.js';
 
 const STEP = 1 / 60;
@@ -3096,7 +3097,7 @@ export class WorldScene extends Phaser.Scene {
       const cx = (this.map.w * TILE) / 2, cy = (this.map.h * TILE) / 2;
       this.shotGfx.lineStyle(3, 0xd65db1, 0.5 + 0.3 * Math.sin(this.time.now / 100)).strokeCircle(cx, cy, snap.ring);
     }
-    for (const sh of snap.shots || []) this.shotGfx.fillStyle(sh.f ? 0xffd27f : 0xd65db1).fillCircle(sh.x, sh.y, sh.f ? 2 : 2.5);
+    for (const sh of snap.shots || []) this.shotGfx.fillStyle(sh.f ? FX.PAL.warm4 : FX.PAL.signal).fillCircle(sh.x, sh.y, sh.f ? 2 : 2.5);
 
     for (const ev of snap.events || []) this._fx(ev, snap);
     this._barkTick(snap);
@@ -3540,7 +3541,7 @@ export class WorldScene extends Phaser.Scene {
       }
       this.tweens.add({ targets: g, alpha: { from: 0.4, to: 1 }, duration: dur, yoyo: false, onComplete: () => g.destroy() });
     }
-    if (ev.t === 'riff') { const r = this.add.circle(ev.x, ev.y - 6, 6, 0xffe08a, 0).setStrokeStyle(2, 0xffe08a, 0.9).setDepth(5600); this.tweens.add({ targets: r, scale: 7.5, alpha: 0, duration: 380, onComplete: () => r.destroy() }); this.cameras.main.shake(140, 0.006); sfx('kill'); }
+    if (ev.t === 'riff') { FX.ring(this, ev.x, ev.y - 6, { color: FX.PAL.warm4, owner: FX.OWNER.trevor, to: 45, width: 2, duration: 380 }); FX.shake(this, ev.id === this.localId, 140, 0.006); sfx('kill'); }   // warm sound, Trevor's rim (combat-fx.md)
     if (ev.t === 'chord') {
       const wave = this.add.graphics().setDepth(5600).lineStyle(2, 0xffe08a, 0.9);
       for (const r of [ev.r * 0.5, ev.r * 0.75, ev.r]) {
@@ -3554,8 +3555,8 @@ export class WorldScene extends Phaser.Scene {
       this.tweens.add({ targets: wave, scale: ev.r / 6, alpha: 0, duration: 480, onComplete: () => wave.destroy() });
       sfx('pickup');
     }
-    if (ev.t === 'ping') { const r = this.add.circle(ev.x, ev.y - 6, 6, 0x6ff2ff, 0).setStrokeStyle(1, 0x6ff2ff, 0.9).setDepth(5600); this.tweens.add({ targets: r, scale: (ev.r ?? 150) / 6, alpha: 0, duration: 650, onComplete: () => r.destroy() }); sfx(ev.n ? 'hit' : 'shot'); }
-    if (ev.t === 'pingJump' || ev.t === 'focusPing') { const l = this.add.line(0, 0, ev.x, ev.y - 6, ev.x2, ev.y2 - 6, 0x6ff2ff, 0.9).setOrigin(0).setLineWidth(1).setDepth(5600); this.tweens.add({ targets: l, alpha: 0, duration: 300, onComplete: () => l.destroy() }); if (ev.t === 'focusPing') sfx('shot'); }
+    if (ev.t === 'ping') { FX.ring(this, ev.x, ev.y - 6, { color: FX.PAL.screen2, owner: FX.OWNER.michael, to: ev.r ?? 150, duration: 650 }); sfx(ev.n ? 'hit' : 'shot'); }   // cold tech, Michael's rim
+    if (ev.t === 'pingJump' || ev.t === 'focusPing') { const l = this.add.line(0, 0, ev.x, ev.y - 6, ev.x2, ev.y2 - 6, FX.PAL.screen2, 0.9).setOrigin(0).setLineWidth(1).setDepth(FX.DEPTH.overlay); this.tweens.add({ targets: l, alpha: 0, duration: 300, onComplete: () => l.destroy() }); if (ev.t === 'focusPing') sfx('shot'); }
     if (ev.t === 'decoy') sfx('swing');
     if (ev.t === 'gonman') this._gonmanWindup(ev);
     if (ev.t === 'goo') { this._gonmanRelease(ev); this._gonmanHitLines(ev.hit); }
@@ -3563,40 +3564,39 @@ export class WorldScene extends Phaser.Scene {
       const t = this.add.text(ev.x, ev.y - 30, 'OVERHEATED: hit it!', { ...FONT, color: '#ffb347' }).setOrigin(0.5).setDepth(6100);
       this.tweens.add({ targets: t, y: t.y - 10, alpha: 0, duration: 1300, onComplete: () => t.destroy() });
     }
-    if (ev.t === 'impact') { const c = this.add.circle(ev.x, ev.y, ev.r, 0xffe6ee, 0.8).setDepth(5450); this.tweens.add({ targets: c, scale: 1.6, alpha: 0, duration: 260, onComplete: () => c.destroy() }); sfx('hit'); }
+    if (ev.t === 'impact') { const c = this.add.circle(ev.x, ev.y, ev.r, FX.PAL.bone, 0.8).setDepth(FX.DEPTH.ground); this.tweens.add({ targets: c, scale: 1.6, alpha: 0, duration: 260, onComplete: () => c.destroy() }); sfx('hit'); }
     if (ev.t === 'overload') { this.cameras.main.shake(500, 0.012); this.cameras.main.flash(250, 214, 93, 177); }
     if (ev.t === 'boss') { this._bossIntro(ev); this.time.delayedCall(1900, () => this._bossTalk('intro', this._lastRendered, ev.sahur ? 'sahur' : ev.kind === 'boss.switchman' ? 'switchman' : !ev.kind || ev.kind === 'boss.warden' ? 'warden' : ev.kind.slice(5))); }   // other bosses talk only if BOSS_TALK has them
     // Combat feel (docs/research/combat.md): pops for finishers, deflects, perfect dodges, slams.
     const pop = (x, y, text, color) => { const t = this.add.text(x, y, text, { heading: true, fontSize: '7px', color }).setOrigin(0.5).setDepth(6060); this.tweens.add({ targets: t, y: y - 10, alpha: 0, duration: 650, onComplete: () => t.destroy() }); };
     // No screen shake from your own attacks (Trevor): swings, finishers, dash-strikes, parries, slams and hits.
-    if (ev.t === 'parry') { pop(ev.x, ev.y - 18, 'PARRY', '#6fe3e8'); sfx('pickup'); }
+    if (ev.t === 'parry') { FX.ring(this, ev.x, ev.y - 8, { color: FX.PAL.bone, to: 22, width: 2, duration: 240 }); pop(ev.x, ev.y - 18, 'PARRY', FX.CSS.bone); sfx('pickup'); }
     if (ev.t === 'deflect') { pop(ev.x, ev.y - 6, 'DEFLECT', '#6fe3e8'); sfx('swing'); }
-    if (ev.t === 'perfect') { pop(ev.x, ev.y - 24, 'PERFECT', '#ffd27f'); this.cameras.main.flash(80, 255, 210, 127); sfx('pickup'); }
+    if (ev.t === 'perfect') { pop(ev.x, ev.y - 24, 'PERFECT', FX.CSS.warm4); FX.flash(this, ev.by === this.localId || ev.id === this.localId, 80, 224, 184, 102); sfx('pickup'); }
     if (ev.t === 'slam') { pop(ev.x, ev.y - 16, 'SLAM', '#ffb347'); }
     if (ev.t === 'crit') { const t = this.add.text(ev.x, ev.y - 24, 'CRIT', { ...FONT, fontSize: '7px', color: '#ff6b6b' }).setOrigin(0.5).setDepth(6060); this.tweens.add({ targets: t, y: t.y - 8, alpha: 0, duration: 600, onComplete: () => t.destroy() }); }
     if (ev.t === 'secondwind') {
       const g = this.add.circle(ev.x, ev.y - 8, 10, 0x7fd0c0, 0.5).setDepth(6000); this.tweens.add({ targets: g, scale: 3, alpha: 0, duration: 600, onComplete: () => g.destroy() });
       if (ev.id === this.localId) { this.cameras.main.flash(160, 120, 220, 200); this._toast('Second wind.'); }
     }
-    if (ev.t === 'tell') { const g = this.add.circle(ev.x, ev.y - 8, 14, 0xd65db1, 0.35).setDepth(6000); this.tweens.add({ targets: g, scale: 2, alpha: 0, duration: 380, onComplete: () => g.destroy() }); }
-    if (ev.t === 'hit') {
-      for (let i = 0; i < 5; i++) {
-        const sp = this.add.rectangle(ev.x, ev.y - 6, 1.5, 1.5, 0xffe08a).setDepth(6000);
-        const a = Math.random() * Math.PI * 2, d = 6 + Math.random() * 10;
-        this.tweens.add({ targets: sp, x: ev.x + Math.cos(a) * d, y: ev.y - 6 + Math.sin(a) * d, alpha: 0, duration: 220, onComplete: () => sp.destroy() });
-      }
-    }
+    if (ev.t === 'shrug') FX.sparks(this, ev.x, ev.y - 6, { n: 3, colors: [FX.PAL.steel], spread: 5, duration: 160 });   // a light hit landed and was ignored (trevor #243)
+    // Enemy danger is signal red, never a player color (combat-fx.md).
+    if (ev.t === 'tell') { const g = this.add.circle(ev.x, ev.y - 8, 14, FX.PAL.signal, 0.35).setDepth(FX.DEPTH.text); this.tweens.add({ targets: g, scale: 2, alpha: 0, duration: 380, onComplete: () => g.destroy() }); }
+    // Hits and kills (combat-fx.md): warm sparks, a kill that matches the enemy, your own at full strength.
+    const mine = ev.by === this.localId || ev.target === this.localId, B = FX.budget(mine);
+    if (ev.t === 'hit') FX.sparks(this, ev.x, ev.y - 6, { n: Math.max(2, Math.round(5 * B.count)), colors: [FX.PAL.warm4, FX.PAL.bone], spread: 14, alpha: B.alpha });
     if (ev.t === 'kill') {
-      for (let i = 0; i < 14; i++) {
-        const sq = this.add.rectangle(ev.x + (Math.random() * 12 - 6), ev.y - 4 - Math.random() * 12, 2, 2, Math.random() < 0.5 ? 0x7fb069 : 0xd65db1).setDepth(6000);
-        this.tweens.add({ targets: sq, y: sq.y - 8 - Math.random() * 10, x: sq.x + (Math.random() * 10 - 5), alpha: 0, duration: 380 + Math.random() * 300, onComplete: () => sq.destroy() });
+      const cols = FX.isContinuity(ev.kind) ? [FX.PAL.steel, FX.PAL.bone] : [FX.PAL.rot1, FX.PAL.rot0];
+      for (let i = 0, n = Math.round(14 * B.count); i < n; i++) {
+        const sq = this.add.rectangle(Math.round(ev.x + (Math.random() * 12 - 6)), Math.round(ev.y - 4 - Math.random() * 12), 2, 2, cols[i % 2], B.alpha).setDepth(FX.DEPTH.text);
+        this.tweens.add({ targets: sq, y: sq.y - 8 - Math.random() * 10, x: sq.x + (Math.random() * 10 - 5), alpha: FX.steppedFade, duration: 380 + Math.random() * 300, onComplete: () => sq.destroy() });
       }
     }
-    if (ev.t === 'hit' || ev.t === 'kill') {
-      const t = this.add.text(ev.x, ev.y - 14, ev.t === 'kill' ? '✕' : `${ev.dmg}`, { ...FONT, color: ev.t === 'kill' ? '#7fb069' : '#ffd27f' }).setOrigin(0.5).setDepth(6000);
+    if ((ev.t === 'hit' || ev.t === 'kill') && mine) {   // numbers only for hits you deal or take (the noise budget)
+      const t = this.add.text(ev.x, ev.y - 14, ev.t === 'kill' ? '✕' : `${ev.dmg}`, { ...FONT, color: ev.t === 'kill' ? FX.CSS.yerba1 : FX.CSS.warm4 }).setOrigin(0.5).setDepth(FX.DEPTH.text);
       this.tweens.add({ targets: t, y: t.y - 10, alpha: 0, duration: 450, onComplete: () => t.destroy() });
     }
-    if (ev.t === 'hurt' && ev.id === this.localId) { this.cameras.main.shake(120, 0.006); this.cameras.main.flash(80, 120, 20, 40); }
+    if (ev.t === 'hurt' && ev.id === this.localId) { FX.shake(this, true, 120, 0.006); FX.flash(this, true, 80, 120, 20, 40); }
     if (ev.t === 'swing') {
       const p = snap.players.find((q) => q.id === ev.id); if (!p) return;
       // Both the arc and the weapon follow the swinger for the whole swing (BagelMeister #401): drawn
@@ -3604,7 +3604,8 @@ export class WorldScene extends Phaser.Scene {
       const at = () => this._lastRendered?.players?.find((q) => q.id === ev.id) ?? p;
       const g = this.add.graphics().setDepth(p.y + 1).setPosition(p.x, p.y - 8);
       const r = Math.max(12, (ev.r ?? 20) - 4), half = (ev.arc ?? 1.8) / 2;   // the weapon's real reach and arc
-      g.lineStyle(2, 0xe8e8f0, 0.8).beginPath().arc(0, 0, r, ev.a - half, ev.a + half).strokePath();
+      const own = ev.id === this.localId;
+      g.lineStyle(own ? 2 : 1, FX.OWNER[p.c] ?? FX.PAL.bone, own ? 0.9 : 0.7).beginPath().arc(0, 0, r, ev.a - half, ev.a + half).strokePath();   // the swinger's color (combat-fx.md)
       this.tweens.add({ targets: g, alpha: 0, duration: 140, onUpdate: () => { const q = at(); g.setPosition(q.x, q.y - 8).setDepth(q.y + 1); }, onComplete: () => g.destroy() });
       // The weapon itself sweeps through the arc (Trevor: swinging the crowbar swings a crowbar). Icons are drawn
       // handle bottom-left to head top-right, so +45 degrees points the head outward along the swing.
