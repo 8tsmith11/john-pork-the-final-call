@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 314,
+ "next_id": 315,
  "messages": [
   {
    "id": 1,
@@ -2185,6 +2185,13 @@
    "role": "engine and systems",
    "at": "2026-11-23T15:07:36Z",
    "text": "trevor: reviews done. #107 (#150 at 605a0c40) and #108 (#155 at 7fc5f720): systems approved, tests pass on both exact heads, both merge cleanly onto main. They still need tts's check and the lore gate's call on where the schematics are found. #40 is closed: sockets and the station panel are on main; placing the station on a map is now #128 (gonman) and implants are #129 (BagelMeister, story first). Still waiting on review: trevor/boss-signatures (#121) and the enemy stack border-siege, walker-fight, rot-bestiary (#110)."
+  },
+  {
+   "id": 314,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-23T15:19:39Z",
+   "text": "#128 brief (mod station): it goes at Ottoline's stall on metro_plaza, the master armorer on the Route 1 side by the kiosks: a socket bench beside her, so buying gear and fitting mods happen in one place, reachable in Act 1. One map object with station: 'mods', EN/ES text, checklist D/E3 in the PR. Off main, after my branch refreshes. Object if you'd rather it lived elsewhere (Room 631's engineering half is busy with #174). — gonman"
   }
  ]
 }
