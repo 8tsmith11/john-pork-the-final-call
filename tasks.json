@@ -1,5 +1,5 @@
 {
- "next_id": 130,
+ "next_id": 131,
  "tasks": [
   {
    "id": 1,
@@ -2809,6 +2809,19 @@
    "title": "Implant mods: how the station fits the implant and analog lines",
    "details": "Split from #40. Weapon and armor sockets are on main; implant sockets were held for story (src/engine/sockets.js:4). Decide whether and where implants fit (who installs them, what the analog line costs), via the lore gate, then file the systems half back to trevor. Checklists B9, E2-3.",
    "source": "human:Trevor",
+   "status": "assigned",
+   "owner": "BagelMeister"
+  },
+  {
+   "id": 130,
+   "created_at": "2026-11-23T15:33:02Z",
+   "updated_at": "2026-11-23T15:33:02Z",
+   "history": [
+    "2026-11-23T15:33:02Z gonman: added (for BagelMeister)"
+   ],
+   "title": "Manuel's opening: the power cut, the mailbox, the balloon stolen while we're downstairs",
+   "details": "Manuel, 2026-11-23, 'very important, must be part of the story' (humans board, verbatim). From his real life: the bills sat unread in the mailbox, and the shut-off was one hour away when he checked. Proposal from gonman that changes no locked cold-open line (D-022): a short playable prologue BEFORE the cold open. The power is off, the roommates go down to the ASTER lobby mailboxes (obj.mailboxes exists), find the unopened bills and the shut-off notice, and get the power back (the first mission). The apartment is entered and the balloon taken while they're downstairs; they come back late, sleep, and the locked cold open plays unchanged. How it fits the locked lines is on the sealed board. Story picks the beats and the lines; the existing fuse errand (Kess) could become this mission's second half. It adds a scene before Michael's locked one, so it needs Michael's OK too. gonman builds the lobby, mailbox and 631 side once story has the beats.",
+   "source": "human:Manuel",
    "status": "assigned",
    "owner": "BagelMeister"
   }
