@@ -290,3 +290,20 @@ ffffffffffffffffffffffffffffffff
 ffffffffffffffffffffffffffffffff
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 ................................
+@frame obj.folding_table
+...........00000........0q0q00..
+....00000.0FFFFF0......0hhhhhh0.
+...0DDDDD00EEEEE0.0000.0gggggg0.
+...0qqqqq00FFFFF00qqqq00gggggg0.
+.000DDDDD00EEEEE00dddd00gggggg0.
+0qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq0
+0dddddddddddddddddddddddddddddd0
+0dddddddddddddddddddddddddddddd0
+0bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb0
+.00s000000000000000000000000s00.
+..0s0......................0s0..
+..0s000000000000000000000000s0..
+..0sccccccccccccccccccccccccs0..
+..0s000000000000000000000000s0..
+.00s000000000000000000000000s00.
+02222222222222222222222222222220

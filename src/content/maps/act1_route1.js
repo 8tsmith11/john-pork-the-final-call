@@ -5,7 +5,6 @@
 // rotted place in Act 1, so prices on chalkboards, a cash drawer, locks with keys. What they sell is in SHOPS
 // (src/content/items.js): the game's ordinary shop menu, no new mechanic. Spanish: src/i18n/es-route1.js.
 import { makeMap } from './build.js';
-import { fromGrid } from './builder.js';
 
 // ---- Hollis Hardware: aisles at the front, the counter, the workshop and the key machine behind it ----
 // Rebuilt to the room standard (hub #113; tools/level/rooms.mjs). The door is in the south wall, as before. Straight
@@ -80,41 +79,76 @@ export const hardware = makeMap({
   ],
 });
 
-// ---- Pardo Feed & Aquarium: a wall of tanks on the left, the stockroom behind the counter ----
-export const feedStore = fromGrid({
-  id: 'feed_store', name: 'Pardo Feed & Aquarium', fill: '.', world: { x: 62, y: 65 },
-  rows: [
-    '######################',
-    '#QQQEQQQQQ#FFFFkkFFFF#',
-    '#......N..#kkkkkkkkkk#',
-    '#.QQQWQQ..#FFkkkkkkGk#',
-    '#.........####=S=====#',
-    '#B...................#',
-    '#..........C.........#',
-    '#.............@......#',
-    '#..................VV#',
-    '#########XX###########',
+// ---- Pardo Feed & Aquarium: the wall of tanks, the brooder in the middle of the floor, the stockroom behind the counter ----
+// Rebuilt to the room standard (hub #113). The door is in the south wall, as before. Straight up the aisle from it is
+// the brooder box under its heat lamp (the landmark). The north-east of the shop is the aquarium: racks of tanks along
+// the wall and two short rows on a sealed floor, where Gus is. West of that, the counter, with the stockroom through a
+// door behind it. Seed bins, feed on pallets and shelving fill the front. It sits south of Hollis Hardware on the
+// world map, clear of the robotics lab.
+export const feedStore = makeMap({
+  id: 'feed_store', name: 'Pardo Feed & Aquarium', world: { x: 68, y: 65 }, standard: true,
+  layout: [
+    '########################',   // 0
+    '#kkkkkkkk#eeeeeeeeeeeee#',   // 1  the stockroom | the tank wall
+    '#kkkkkkkk#eeeeeeeeeeeee#',   // 2
+    '#kkkkkkkk#eeeeeeeeeeeee#',   // 3
+    '#kkkkkkkk#eeeeeeeeeeeee#',   // 4  two short rows of tanks
+    '####k#####eeeeeeeeeeeee#',   // 5  stockroom door; tack on the wall, the corkboard
+    '#......................#',   // 6  behind the counter
+    '#......................#',   // 7  the counter
+    '#......................#',   // 8  seed bins
+    '#......................#',   // 9
+    '#......................#',   // 10 the brooder; shelving
+    '#......................#',   // 11
+    '#......................#',   // 12
+    '#......................#',   // 13
+    '#########..#####==#==###',   // 14 the door and the front windows
   ],
-  legend: {
-    S: { prop: 'obj.table', id: 'obj.feed_counter', tile: 'k', label: 'The counter', action: 'shop', shop: 'feed' },
-    N: { npc: 'npc.gus_pardo', art: 'npc.feedkeeper', label: 'Gus Pardo', age: 'adult', role: 'vendor',
+  spawns: [[10, 13]],
+  objects: [
+    { id: 'obj.feed_out', x: 9, y: 14, w: 2, action: 'exit', to: 'metro_plaza', pair: 'obj.feed_door', art: 'obj.door', label: 'Out to Route 1', text: 'Back out to the street.', floor: true, stepOn: true },
+    { id: 'door.feed_stockroom', art: 'door.wall', x: 4, y: 5, label: 'Stockroom', door: true },
+    // The brooder (the landmark)
+    { id: 'obj.feed_brooder', art: 'obj.brooder', x: 10, y: 10, landmark: true, light: 0.8, solid: true, label: 'Brooder box',
+      text: 'Six chicks asleep in a pile under a heat lamp. Every few minutes the one on the bottom works its way to the top.' },
+    // The counter
+    { id: 'obj.feed_counter', art: 'obj.shop_counter', x: 4, y: 7, solid: true, label: 'The counter', action: 'shop', shop: 'feed' },
+    { id: 'obj.feed_tack', art: 'obj.tack_rack', x: 7, y: 5, label: 'Tack and tools',
+      text: 'Lead ropes, a halter, hoof picks, a horseshoe on a nail with the open end up. The price tags are older than the string they hang from.' },
+    { id: 'obj.feed_corkboard', art: 'obj.corkboard', x: 9, y: 5, label: 'Corkboard',
+      text: 'Index cards on cork. LOST: GREY CAT, ANSWERS TO NOTHING. CANOE FOR SALE, ONE PADDLE. And in block capitals: HANGAR, SUNDAYS. BRING A CHAIR. LEAVE YOUR PHONE AT THE DOOR.' },
+    // The aquarium
+    // A nod to Trevor's shrimp (docs/lore/roommates.md: his room has a shrimp tank). Warm, nothing at his expense.
+    { id: 'obj.feed_shrimp', art: 'obj.shrimp_tank', x: 13, y: 1, solid: true, light: 0.5, label: 'Shrimp tank',
+      text: 'A planted tank of cherry shrimp, red against green moss. An order card is taped to the glass: 631, ASTER. MOSS BALLS ×2, CHERRY SHRIMP ×6. PAID. Under it, in another pen: ASKS ABOUT WATER HARDNESS EVERY TIME. TELL HIM 8 dGH.' },
+    { id: 'obj.feed_tanks', art: 'obj.tank_rack', x: 17, y: 1, solid: true, light: 0.6, label: 'Tanks',
+      text: 'Rows of tanks on steel racks, each with a hand-lettered card giving the species and what it eats. The pumps run off a car battery under the bottom shelf. Gus swaps it every night at two.' },
+    { id: 'npc.gus_pardo', x: 15, y: 3, npc: true, art: 'npc.feedkeeper', label: 'Gus Pardo', age: 'adult', role: 'vendor',
       text: 'Gus Pardo is up to one elbow in a tank, moving a rock two inches to the left. "Better?" He is asking a catfish. He dries his arm on his flannel. "Feed\'s by the scoop. Don\'t tap the glass."',
       later: [{ if: 'act1.beat.call', text: '"Every phone on Route 1 went off at once." Gus doesn\'t carry one. "The angelfish all went to the back of the tank. They do that for thunder."' }] },
-    // A nod to Trevor's shrimp (docs/lore/roommates.md: his room has a shrimp tank). Warm, nothing at his expense.
-    E: { prop: 'obj.shrimp_tank', id: 'obj.feed_shrimp', label: 'Shrimp tank',
-      text: 'A planted tank of cherry shrimp, red against green moss. An order card is taped to the glass: 631, ASTER. MOSS BALLS ×2, CHERRY SHRIMP ×6. PAID. Under it, in another pen: ASKS ABOUT WATER HARDNESS EVERY TIME. TELL HIM 8 dGH.' },
-    W: { prop: 'obj.shrimp_tank', id: 'obj.feed_tanks', label: 'Tanks',
-      text: 'Rows of tanks on steel racks, each with a hand-lettered card giving the species and what it eats. The pumps run off a car battery under the bottom shelf. Gus swaps it every night at two.' },
-    Q: { scenery: 'obj.shrimp_tank', solid: true },
-    F: { scenery: 'obj.feed_sacks', solid: true, tile: 'k' },
-    V: { scenery: 'obj.feed_sacks', solid: true },
-    G: { prop: 'obj.feed_sacks', id: 'obj.feed_pallet', tile: 'k', label: 'Feed sacks',
+    // Seed and feed
+    { id: 'obj.feed_seed', art: 'obj.seed_bins', x: 14, y: 8, solid: true, label: 'Bulk seed',
+      text: 'Cracked corn, black oil sunflower, scratch grain, by the scoop. A sign on the last bin: IF YOU SPILL IT THE SPARROWS GET IT. THEY KNOW THIS.' },
+    { id: 'obj.feed_pallet', art: 'obj.feed_sacks', x: 2, y: 1, solid: true, label: 'Feed sacks',
       text: 'Fifty-pound sacks of layer pellets and cracked corn on a pallet, BELTSVILLE printed on each in faded green. Somebody up there is still farming.' },
-    B: { prop: 'obj.board', id: 'obj.feed_corkboard', label: 'Corkboard',
-      text: 'Index cards on cork. LOST: GREY CAT, ANSWERS TO NOTHING. CANOE FOR SALE, ONE PADDLE. And in block capitals: HANGAR, SUNDAYS. BRING A CHAIR. LEAVE YOUR PHONE AT THE DOOR.' },
-    C: { prop: 'obj.crate', id: 'obj.feed_brooder', label: 'Brooder box', light: 0.5,
-      text: 'Six chicks asleep in a pile under a heat lamp. Every few minutes the one on the bottom works its way to the top.' },
-    '@': { spawn: true },
-    X: { exit: 'metro_plaza', id: 'obj.feed_out', art: 'obj.door', label: 'Out to Route 1', stepOn: true, pair: 'obj.feed_door', text: 'Back out to the street.' },
-  },
-}).build();
+  ],
+  scenery: [
+    // the counter (the gap is at its east end), the till
+    ...[1, 2, 3, 5, 6, 7].map((x) => ({ art: 'obj.shop_counter', x, y: 7, solid: true })), { art: 'obj.cash_drawer', x: 2, y: 6 }, { art: 'obj.tack_rack', x: 6, y: 5 }, { art: 'obj.chalkboard', x: 2, y: 5 },
+    // the stockroom
+    { art: 'obj.feed_sacks', x: 1, y: 1, solid: true }, { art: 'obj.feed_sacks', x: 3, y: 1, solid: true }, { art: 'obj.feed_sacks', x: 1, y: 3, solid: true }, { art: 'obj.soil_bags', x: 6, y: 1, solid: true },
+    { art: 'obj.crate', x: 8, y: 1, solid: true }, { art: 'obj.boxes', x: 8, y: 2 }, { art: 'obj.cart', x: 6, y: 4 }, { art: 'obj.shelf_boxes', x: 8, y: 4, solid: true },
+    // the tank wall, and two short rows you can walk round
+    ...[10, 11, 12, 14, 15, 16, 19, 20, 21, 22].map((x, i) => ({ art: 'obj.tank_rack', x, y: 1, solid: true, anim: 380 + 70 * (i % 4) })),
+    ...[12, 13, 19, 20].map((x, i) => ({ art: 'obj.tank_rack', x, y: 4, solid: true, anim: 450 + 80 * (i % 3) })),
+    { art: 'obj.plant', x: 22, y: 5 }, { art: 'obj.bin', x: 10, y: 5 }, { art: 'obj.boxes', x: 18, y: 1 },
+    // seed bins, feed on pallets, shelving
+    ...[13, 15, 16].map((x) => ({ art: 'obj.seed_bins', x, y: 8, solid: true })),
+    ...[[20, 8], [21, 8], [21, 9]].map(([x, y]) => ({ art: 'obj.feed_sacks', x, y, solid: true })), { art: 'obj.soil_bags', x: 22, y: 8, solid: true },
+    ...[2, 3].map((x) => ({ art: 'obj.shelf_boxes', x, y: 10, solid: true })), ...[4, 5, 6].map((x) => ({ art: 'obj.shelf_tools', x, y: 10, solid: true })),
+    ...[14, 15].map((x) => ({ art: 'obj.shelf_tools', x, y: 11, solid: true })), ...[16, 17, 18].map((x) => ({ art: 'obj.shelf_boxes', x, y: 11, solid: true })),
+    // the front of the shop
+    { art: 'obj.wheelbarrow', x: 22, y: 13, solid: true }, { art: 'obj.plant', x: 1, y: 13 }, { art: 'obj.flowerpot', x: 2, y: 13 }, { art: 'obj.flowerpot', x: 3, y: 13 }, { art: 'obj.hose_reel', x: 20, y: 13, solid: true },
+    { art: 'obj.crate', x: 1, y: 9, solid: true }, { art: 'obj.worklamp', x: 12, y: 13, light: 0.4 },
+  ],
+});

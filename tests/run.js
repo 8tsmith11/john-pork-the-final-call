@@ -2102,13 +2102,18 @@ test('the fuse carrier sends you to the ASTER lobby, where Kess is (Phase 0: it 
 const { roomReport: ROOM_REPORT, RULES: ROOM_RULES, spriteOf: ROOM_SPRITE } = await import('../tools/level/rooms.mjs');
 test('room standard (hub #113): every map marked standard: true meets it', () => {
   const marked = Object.values(MAPS_FOR_TEST).filter((m) => m.standard);
-  for (const id of ['apt_636', 'apt_637', 'apt_638', 'diner', 'dining_hall', 'robotics_lab', 'auditorium', 'hardware']) assert.ok(MAPS_FOR_TEST[id].standard, `${id} is built to the standard`);
+  for (const id of ['apt_636', 'apt_637', 'apt_638', 'diner', 'dining_hall', 'robotics_lab', 'auditorium', 'hardware', 'aster_basement', 'aster_laundry', 'aster_5f', 'aster_roof', 'feed_store']) assert.ok(MAPS_FOR_TEST[id].standard, `${id} is built to the standard`);
   for (const m of marked) assert.deepEqual(ROOM_REPORT(m, MAPS_FOR_TEST).miss, [], `${m.id} misses the room standard`);
 });
 test('room standard (hub #113): the checks bite, and Room 631 (the reference) meets all of them but the landmark', () => {
   const miss = (m) => ROOM_REPORT(m, MAPS_FOR_TEST).miss.join(' | ');
   assert.deepEqual(ROOM_REPORT(MAPS_FOR_TEST.room631, MAPS_FOR_TEST).miss, ['no landmark (mark one object landmark: true)'], miss(MAPS_FOR_TEST.room631));
-  const laundry = miss(MAPS_FOR_TEST.aster_laundry);   // a scaffold: one floor, washers everywhere, short, no lights
+  // A scaffold (the laundry room as it was before its rebuild): one floor, washers everywhere, short, no lights.
+  const scaffold = makeMap({ id: 'scaffold_laundry', name: 'A scaffold', spawns: [[2, 5]],
+    layout: ['################', '#::::::::::::::#', '#::::::::::::::#', '#::::::::::::::#', '#::::::::::::::#', '#::::::::::::::#', '################'],
+    objects: [{ id: 'obj.scaffold_end', art: 'obj.washer', x: 11, y: 2 }, { id: 'obj.scaffold_board', art: 'obj.board', x: 13, y: 2 }],
+    scenery: [2, 3, 5, 6, 8, 9].map((x) => ({ art: 'obj.washer', x, y: 2, solid: true })) });
+  const laundry = miss(scaffold);
   for (const rule of [/^height 7/, /obj\.washer is \d+%/, /distinct sprites/, /1 floor kind/, /light sources/, /no landmark/]) assert.ok(laundry.split(' | ').some((r) => rule.test(r)), `the laundry should miss ${rule}: ${laundry}`);
   // A landmark has to be a drawing no other map uses, in view from the spawn.
   const borrowed = { ...MAPS_FOR_TEST.apt_637, objects: MAPS_FOR_TEST.apt_637.objects.map((o) => (o.landmark ? { ...o, art: 'obj.tv' } : o)) };
@@ -2184,6 +2189,79 @@ test('the auditorium (hub #113): the Autograder\'s floor stays clear, at least t
   assert.ok(Math.hypot(sp.x - boss.x, sp.y - boss.y) > wake * 2, 'you come in at the back, well outside its wake radius');
   assert.ok(m.scenery.filter((t) => /^obj\.aud_seats/.test(t.art)).every((t) => t.solid && t.y >= A.y + A.h), 'the seats that are left are behind the arena');
   assert.ok(m.objects.some((o) => o.art === 'obj.aud_screen' && o.y < A.y) && m.objects.some((o) => o.art === 'obj.lectern' && o.y < A.y), 'a stage with a screen and a lectern, in front of the arena');
+});
+// hub #113, third slice: the rest of ASTER (basement, laundry, fifth floor, roof) and Pardo's, rebuilt to the standard.
+const { worldPos: ROOM_WORLD_POS } = await import('../src/content/maps/index.js');
+test('ASTER basement, laundry, fifth floor, roof and the feed store (hub #113): ids, people, exits and enemies kept; a lit landmark; something moves', () => {
+  const KEEP = {
+    aster_basement: ['obj.basement_stairs', 'obj.basement_laundry', 'obj.basement_cage_631', 'obj.aster_basement_crate_19_2', 'obj.aster_basement_crate_22_2', 'obj.kess_bench'],
+    aster_laundry: ['obj.laundry_out', 'obj.laundry_end_machine', 'obj.laundry_board', 'npc.laundry_folder'],
+    aster_5f: ['obj.aster5_stairs', 'obj.aster5_up', 'obj.door_531', 'obj.aster_5f_door_11_3', 'obj.aster_5f_door_19_3', 'obj.aster_5f_door_27_3', 'obj.aster5_hose', 'npc.aster5_neighbor'],
+    aster_roof: ['obj.roof_hatch', 'obj.roof_cooler', 'obj.roof_view', 'npc.roof_watcher'],
+    feed_store: ['obj.feed_out', 'npc.gus_pardo', ...['shrimp', 'tanks', 'pallet', 'counter', 'brooder', 'corkboard'].map((n) => `obj.feed_${n}`)] };
+  const EXITS = { aster_basement: { 'obj.basement_stairs': ['aster_lobby', 'obj.lobby_basement'], 'obj.basement_laundry': ['aster_laundry', 'obj.laundry_out'] },
+    aster_laundry: { 'obj.laundry_out': ['aster_basement', 'obj.basement_laundry'] },
+    aster_5f: { 'obj.aster5_stairs': ['aster_lobby', 'obj.lobby_5f'], 'obj.aster5_up': ['aster_hall', 'obj.stairs_6f'] },
+    aster_roof: { 'obj.roof_hatch': ['aster_hall', 'obj.hall_roof'] }, feed_store: { 'obj.feed_out': ['metro_plaza', 'obj.feed_door'] } };
+  const LANDMARK = { aster_basement: ['obj.basement_boiler', 'obj.boiler'], aster_laundry: ['obj.laundry_end_machine', 'obj.washer_odd'], aster_5f: ['obj.aster5_hose', 'obj.hose_cabinet'],
+    aster_roof: ['obj.roof_tank', 'obj.water_tank'], feed_store: ['obj.feed_brooder', 'obj.brooder'] };
+  const ENEMIES = { aster_basement: ['enemy.rotling'], aster_laundry: [], aster_5f: ['enemy.rotling'], aster_roof: [], feed_store: [] };
+  const atlas = chb68Atlas('props');
+  for (const [id, keep] of Object.entries(KEEP)) {
+    const m = MAPS_FOR_TEST[id];
+    for (const k of keep) assert.ok(m.objects.some((o) => o.id === k), `${id}: ${k} is still there`);
+    const exits = m.objects.filter((o) => o.action === 'exit');
+    assert.deepEqual(Object.fromEntries(exits.map((o) => [o.id, [o.to, o.pair]])), EXITS[id], `${id}: the same ways out, paired as before`);
+    for (const o of exits) assert.equal(MAPS_FOR_TEST[o.to].objects.find((q) => q.id === o.pair)?.to, id, `${id}/${o.id}: the other side leads back`);
+    assert.deepEqual(m.enemies.map((e) => e.kind), ENEMIES[id], `${id}: same enemies`);
+    const mark = m.objects.find((o) => o.landmark);
+    assert.deepEqual([mark.id, ROOM_SPRITE(mark)], LANDMARK[id]); assert.ok(mark.light > 0, `${id}: the landmark is lit`);
+    assert.ok(m.h >= 15, `${id}: at least 15 tall, so it draws at 631's zoom`);
+    assert.ok([...m.objects, ...(m.scenery ?? [])].some((t) => atlas.includes(`${ROOM_SPRITE(t)}#1`)), `${id}: something in the room moves`);
+    assert.ok(![...m.objects, ...(m.scenery ?? [])].some((t) => ROOM_SPRITE(t) === 'obj.board'), `${id}: obj.board isn't standing in for anything`);
+    for (const o of m.objects.filter((q) => !q.npc && q.action !== 'exit' && !q.door)) assert.ok((o.text ?? '').length > 0 || o.action === 'shop', `${id}/${o.id} says something`);
+  }
+  // Where PR #168 left the doors: the stairs on the west side of their floors, the laundry door in facing walls, the shop door in the south wall.
+  const at = (id, oid) => MAPS_FOR_TEST[id].objects.find((o) => o.id === oid);
+  assert.deepEqual([at('aster_basement', 'obj.basement_stairs').x, at('aster_basement', 'obj.basement_stairs').y], [1, 1]);
+  assert.deepEqual(['obj.aster5_stairs', 'obj.aster5_up'].map((k) => [at('aster_5f', k).x, at('aster_5f', k).y]), [[1, 1], [3, 1]]);
+  assert.deepEqual([at('aster_roof', 'obj.roof_hatch').x, at('aster_roof', 'obj.roof_hatch').y], [1, 7]);
+  assert.equal(at('aster_basement', 'obj.basement_laundry').x, MAPS_FOR_TEST.aster_basement.w - 1, 'the laundry door is in the basement\'s east wall');
+  assert.equal(at('aster_laundry', 'obj.laundry_out').x, 0, 'and in the laundry\'s west wall');
+  assert.equal(at('feed_store', 'obj.feed_out').y, MAPS_FOR_TEST.feed_store.h - 1, 'the shop door stays in the south wall');
+  // What the quests and secrets hang on.
+  assert.equal(at('aster_basement', 'obj.basement_cage_631').grant, 'item.bike_helmet');
+  for (const k of ['obj.aster_basement_crate_19_2', 'obj.aster_basement_crate_22_2']) assert.equal(at('aster_basement', k).loot, 'parts');
+  assert.equal(at('aster_5f', 'obj.aster5_hose').grant, 'item.hardhat');
+  assert.equal(at('aster_laundry', 'obj.laundry_end_machine').loot, 'lost'); assert.equal(at('aster_roof', 'obj.roof_cooler').loot, 'lost');
+  assert.equal(at('feed_store', 'obj.feed_counter').shop, 'feed');
+  // The fuse errand still sends you to Kess in the lobby: the basement's panel doesn't hand fuses out.
+  const panel = at('aster_basement', 'obj.basement_panel');
+  assert.ok(panel && !panel.grant && !panel.loot && /ASK ME/.test(panel.text), 'the spare-fuse box by the panel is empty, with a note to ask Kess');
+  assert.equal(MAPS_FOR_TEST.aster_roof.outdoor, false, 'no scooters on the roof');
+  // The cooler is behind the tank: north of it, close enough that the tank's drawing overlaps it.
+  const tank = at('aster_roof', 'obj.roof_tank'), cooler = at('aster_roof', 'obj.roof_cooler');
+  assert.ok(cooler.y < tank.y && Math.abs(cooler.x - tank.x) <= 2 && tank.y - cooler.y <= 2);
+});
+test('Pardo\'s and Hollis Hardware sit side by side on the world map without overlapping (hub #113)', () => {
+  const rect = (id) => ({ ...ROOM_WORLD_POS(MAPS_FOR_TEST[id]), w: MAPS_FOR_TEST[id].w, h: MAPS_FOR_TEST[id].h });
+  const apart = (a, b) => a.x >= b.x + b.w || b.x >= a.x + a.w || a.y >= b.y + b.h || b.y >= a.y + a.h;
+  const feed = rect('feed_store'), hw = rect('hardware');
+  assert.ok(apart(feed, hw), 'the two shops overlap');
+  assert.ok(apart(feed, rect('robotics_lab')) && apart(feed, rect('auditorium')), 'the feed store is clear of the campus rooms');
+  assert.ok(Math.abs(feed.y - (hw.y + hw.h)) <= 2 && feed.x < hw.x + hw.w && hw.x < feed.x + feed.w, 'next to each other');
+});
+test('the auditorium floor is dressed flat, and the rover is on its pad (hub #113 follow-ups)', () => {
+  const m = MAPS_FOR_TEST.auditorium, A = AUD_ARENA, decals = chb68Atlas('decals');
+  const inArena = ([, x, y]) => x >= A.x && x < A.x + A.w && y >= A.y && y < A.y + A.h;
+  const kinds = new Set(m.decals.filter(inArena).map(([f]) => f));
+  for (const f of ['dec.bolt_holes', 'dec.chalk_row', 'dec.scuff', 'dec.papers', 'dec.cushion']) assert.ok(kinds.has(f) && decals.includes(f), `${f} on the arena floor`);
+  assert.ok(m.decals.filter(inArena).filter(([f]) => f !== 'dec.bolt_holes').length >= 20, 'more than bolt holes');
+  const rover = MAPS_FOR_TEST.robotics_lab.objects.find((o) => o.id === 'obj.mars_rover');
+  assert.ok(/on the test pad/.test(rover.text) && !/cart/.test(rover.text), rover.text);
+  assert.equal(MAPS_FOR_TEST.robotics_lab.layout[rover.y][rover.x], 'y', 'it stands on the gravel pad');
+  const es = ES_PLAZA[rover.text];
+  assert.ok(es && /pista de pruebas/.test(es) && !/carrito/.test(es), 'the Spanish says the same');
 });
 const { BOSS_PATTERNS, bossPool, pickPattern } = await import('../src/engine/bossPatterns.js');
 const { MODULES: WARDEN_MODULES } = await import('../src/content/rotVillains.js');
