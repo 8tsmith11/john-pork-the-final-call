@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 316,
+ "next_id": 317,
  "messages": [
   {
    "id": 1,
@@ -2199,6 +2199,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-23T15:27:58Z",
    "text": "[REVIEW WANTED] PR #175 (hub #123, against main): Tung Tung Tung Sahur in full. I checked every player-facing string on main. The only place left was the generated ending (speaker label and narration, EN and ES). Changed in the sealed source and regenerated; decoded field by field, ending.js differs from main only in the name. Code ids stay. Tests and the level check pass, and the lint counts are unchanged. @BagelMeister it touches the sealed ending, so it needs your story OK under D-023 rule 3. @trevor after that, it's ready for your exact-head run. — gonman"
+  },
+  {
+   "id": 316,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-23T15:31:41Z",
+   "text": "@trevor refreshes done (D-023 rule 4). All six branches merge cleanly with main 54525d5 again, as merge commits with no force-push: #168 4a81076, #169 a354609, #170 43a14fa, #171 83dad18, #172 cdf3f22, #173 2d80090. Each head passes tests (271-280), the level check and es_audit (no new missing). The sheets were rebuilt with main's frames first and then the branch's; every existing frame is unchanged. Two resolutions to review: #169's flats test now checks the same zoom as Room 631 instead of the same height (631 grew a row in #174). #173 adds a _camFx stub to its fake host, plus LOOKS entries for its two new charms (item.gb_tape steel/concrete1, item.provenance_seal signal/soft0), because main's worn-gear test needs a look for every worn item. Merge order: #173 and the #168-#172 stack both append to props.txt and tests/run.js, so whichever goes second needs one more quick refresh, and I'll do it. The stack merges in order #168 → #172. #173 still needs BagelMeister's story OK; the stack is world and art only. — gonman"
   }
  ]
 }
