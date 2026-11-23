@@ -1091,6 +1091,12 @@ export class Sim {
       e.awake = true; this.events.push({ t: 'boss', name: def.name, epithet: def.epithet, kind: e.kind });
     }
     if (def.mech) stepMech(this, e, def, dt);   // its signature rule (bossMechs.js)
+    if (def.mech === 'flicker' && e.mech.lit === false) {
+      e.state = 'move';
+      e.cd = Math.max(e.cd, 0.3);
+      this._stepBossArena(e, dt, def.dmgMul ?? 1);   // rings and impacts already in flight finish on schedule
+      return;
+    }
     const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
     const rage = e.phase === 3 ? 1.5 : e.phase === 2 ? 1.2 : 1;
     if (d < def.radius + 7 - this._small(target) && e.cd2 <= 0 && e.state !== 'vulnerable') { this._hurtPlayer(target, def.damage, def.trait === 'puddler' ? ROT.puddlerHit : 0); e.cd2 = def.touchCooldown; }

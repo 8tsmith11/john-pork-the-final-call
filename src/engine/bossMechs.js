@@ -27,7 +27,7 @@ export const MECH = {
   tide: { cycle: 14, dry: 6, rise: 2, flood: 4, line: 0.45, dps: 8, inWater: 0.4, onDry: 1.2, heal: 0.01 },
   flicker: { lit: 3.2, dark: 2.0, warn: 0.6, litMul: 0.15, darkMul: 1.5 },
   listen: { every: 5, lock: 1.2, r: 20, dmg: 18 },
-  mimic: { delay: 2, every: 6, life: 4, r: 9, dmg: 12 },
+  mimic: { delay: 2, every: 6, life: 4, warn: 0.45, r: 9, dmg: 12 },
   chorus: { n: 3, every: 18, reach: 90, heal: 0.006, mul: 0.5 },
   vents: { every: 2.6, warn: 1.0, blow: 0.6, r: 14, dmg: 14, scald: 2.0, scaldMul: 2 },
   current: { pull: 14, surge: 50, every: 7, warn: 1.0, last: 2.0, open: 2.5, openMul: 1.6, mouth: 26, dps: 12 },
@@ -90,7 +90,6 @@ export function stepMech(sim, e, def, dt) {
     const c = m.t % (M.lit + M.dark), lit = c < M.lit;
     if (lit !== m.lit) { m.lit = lit; sim.events.push({ t: 'mech', kind, what: lit ? 'lit' : 'dark', x: e.x, y: e.y }); }
     m.warn = lit ? c > M.lit - M.warn : c > M.lit + M.dark - M.warn;   // the buzz before it changes
-    if (!lit) { e.cd = Math.max(e.cd, 0.3); if (e.state === 'windup') e.state = 'move'; }   // dark: it can't attack
   }
 
   if (kind === 'listen') {
@@ -111,16 +110,38 @@ export function stepMech(sim, e, def, dt) {
   }
 
   if (kind === 'mimic') {
-    const [target] = sim._nearestPlayer(e.x, e.y);
-    m.trail ??= [];
-    if (target && (m.rec = (m.rec ?? 0) - dt) <= 0) { m.rec = 0.1; m.trail.push([target.x, target.y, m.t]); while (m.trail.length && m.t - m.trail[0][2] > M.delay + M.life) m.trail.shift(); }
-    if (!m.echo && (m.wait = (m.wait ?? 3) - dt) <= 0) { m.echo = { start: m.t, hit: new Set() }; m.wait = M.every; sim.events.push({ t: 'mech', kind, what: 'echo', x: e.x, y: e.y }); }
+    m.trails ??= new Map();
+    if ((m.rec = (m.rec ?? 0) - dt) <= 0) {
+      m.rec = 0.1;
+      for (const id of m.trails.keys()) if (!sim.players.has(id)) m.trails.delete(id);
+      for (const p of sim.players.values()) {
+        const trail = m.trails.get(p.id) ?? [];
+        trail.push([p.x, p.y, m.t]);
+        while (m.t - trail[0][2] > M.delay + M.life) trail.shift();
+        m.trails.set(p.id, trail);
+      }
+    }
+    if (!m.echo && (m.wait = (m.wait ?? 3) - dt) <= 0) {
+      const [target] = sim._nearestPlayer(e.x, e.y);
+      const trail = target && m.trails.get(target.id);
+      if (trail?.[0][2] <= m.t - M.delay) {
+        m.echo = { who: target.id, start: m.t, hit: new Set() };
+        m.wait = M.every;
+        sim.events.push({ t: 'mech', kind, what: 'echo', x: e.x, y: e.y });
+      }
+    }
     if (m.echo) {
-      const at = m.t - M.delay, pt = m.trail.find((q) => q[2] >= at);   // where the target was two seconds ago
-      if (!pt || m.t - m.echo.start > M.life) m.echo = null;
+      const age = m.t - m.echo.start;
+      const pt = m.trails.get(m.echo.who)?.find((q) => q[2] >= m.t - M.delay);
+      if (!pt || age > M.life) m.echo = null;
       else {
-        m.echo.x = pt[0]; m.echo.y = pt[1];
-        for (const p of sim.players.values()) if (alive(p) && !m.echo.hit.has(p.id) && Math.hypot(p.x - pt[0], p.y - pt[1]) < M.r - sim._small(p)) { m.echo.hit.add(p.id); sim._hurtPlayer(p, Math.round(M.dmg * (def.dmgMul ?? 1))); }
+        [m.echo.x, m.echo.y] = pt;
+        m.echo.warn = age < M.warn;
+        if (!m.echo.warn) for (const p of sim.players.values()) {
+          if (!alive(p) || m.echo.hit.has(p.id) || Math.hypot(p.x - pt[0], p.y - pt[1]) >= M.r - sim._small(p)) continue;
+          m.echo.hit.add(p.id);
+          sim._hurtPlayer(p, Math.round(M.dmg * (def.dmgMul ?? 1)));
+        }
       }
     }
   }
@@ -268,7 +289,7 @@ export function mechView(e) {
   if (k === 'tide') return { k, e: R(m.edge ?? 0), l: Math.round((m.level ?? 0) * 100) / 100, w: m.bossWet ? 1 : 0 };
   if (k === 'flicker') return { k, lit: m.lit === false ? 0 : 1, warn: m.warn ? 1 : 0 };
   if (k === 'listen') return { k, ...(m.lock ? { lx: R(m.lock.x), ly: R(m.lock.y), lt: Math.round(m.lock.t * 10) / 10 } : {}) };
-  if (k === 'mimic') return { k, ...(m.echo?.x != null ? { ex: R(m.echo.x), ey: R(m.echo.y) } : {}) };
+  if (k === 'mimic') return { k, ...(m.echo?.x != null ? { ex: R(m.echo.x), ey: R(m.echo.y), w: m.echo.warn ? 1 : 0 } : {}) };
   if (k === 'chorus') return { k, h: m.holders ?? [] };
   if (k === 'vents') return { k, p: m.phaseNow ?? '', v: (m.live ?? []).map((v) => [v.x, v.y]), s: m.scaldT > 0 ? 1 : 0 };
   if (k === 'current') return { k, s: m.surging ? 1 : 0, w: m.warn ? 1 : 0, o: m.openT > 0 ? 1 : 0 };
