@@ -5496,6 +5496,39 @@ test('the gonman is overpowered on purpose: a much smaller hitbox while thin, en
 
 const { ClientNet: DialogueClientNet, HostNet: DialogueHostNet } = await import('../src/engine/net/net.js');
 const { SharedEvents } = await import('../src/game/sharedEvent.js');
+test('the Room 631 search keeps starter gear and a guest discovery on the host', () => {
+  const save = newSave({ seed: 'apartment-search', rolls: {}, gameVersion: 'test' });
+  const pawn = { x: 0, y: 0 }, replies = [];
+  const net = new DialogueHostNet();
+  net.conns.set('guest', { send: (msg) => replies.push(msg) });
+  const world = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', localId: 'host', save, net, sim: { players: new Map([['guest', pawn]]) },
+    map: { id: 'room631', objects: [
+      { x: 6, y: 6, action: 'toolwall', talk: 'cold_open:search_toolwall' },
+      { x: 9, y: 6, talk: 'cold_open:search_window' },
+    ] },
+    time: { addEvent() {} }, events: { once() {} },
+    _syncParty() { save.flags['q.armed'] = Object.values(save.party).some(c => c.inventory.some(Boolean)); },
+    _tickQuests() {},
+  });
+  world._wireNet();
+  const use = (msg) => net.emit('msg', 'guest', msg);
+  use({ t: 'toolwall' });
+  use({ t: 'flag', key: 'q.van.seen', value: true });
+  assert.ok(Object.values(save.party).every((c) => !c.inventory.some(Boolean)));
+  assert.equal(save.flags['q.van.seen'], undefined);
+  Object.assign(pawn, { x: 104, y: 104 });
+  use({ t: 'toolwall' });
+  use({ t: 'toolwall' });
+  assert.ok(Object.values(save.party).every((c) => c.inventory[c.hotSel]?.id === 'item.pry_bar' &&
+    c.inventory.filter((slot) => slot?.id === 'item.pry_bar').length === 1));
+  assert.equal(replies.length, 1);
+  assert.equal(replies[0].t, 'toast', 'the notice leaves the spoken line intact');
+  Object.assign(pawn, { x: 152, y: 104 });
+  use({ t: 'flag', key: 'q.van.seen', value: true });
+  assert.equal(save.flags['q.van.seen'], true);
+});
+
 const dialogueScene = (mode, net, character, localId) => {
   const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
     mode, net, character, localId, map: MAPS_FOR_TEST.room631, events: { once() {} },
@@ -6045,7 +6078,8 @@ test('Room 631 for the cold open (hub #99): closet by the window, a wall screen,
   assert.equal(m.layout[van.y][van.x], '=', 'you look at it over the balcony rail');
   assert.ok(inside.has(key(van.x, van.y - 1)), 'from the balcony');
   for (let x = 0; x < m.w; x++) assert.ok(m.solid(x, vanArt.y - 1), `the street is walled off at ${x},${vanArt.y - 1}`);
-  assert.ok(van.text && !van.action && !van.talk && !van.flag, 'a look line only');
+  assert.ok(van.text && !van.action && !van.flag, 'a look line, no action or flag');
+  assert.equal(van.talk, 'cold_open:search_window', 'and it opens the balcony-window search (hub #127)');
 
   // Nothing in the way of the cold open's staging. Marks and paths are hard-coded from PR #145's stage script:
   // origin/bagel/cold-open-staging @ 8bc04bec, src/content/stage/cold_open.js (cast `at`, `walk` to/by, `cam` tiles).
@@ -6381,4 +6415,27 @@ test('story #52 (PR #96): the refinery sign agrees with itself in both quest ord
   assert.doesNotMatch(q.inspect.textAfter.text, /goes out\./, 'the after look does not claim the S goes out');
   const keeper = QUESTS.find((x) => x.id === 'side.bmore_redsign');
   assert.ok(keeper, 'the keeper\'s quest is the one that steadies it');
+});
+
+test('hub #127: the five Room 631 search spots open their locked cold-open scenes (the toolwall keeps its action)', async () => {
+  const room = MAPS_FOR_TEST.room631;
+  const hooks = { 'obj.front_lock': 'search_lock', 'obj.manuel_closet': 'search_closet', 'obj.toolwall': 'search_toolwall', 'obj.printer_3': 'search_fab3', 'obj.room631_van': 'search_window' };
+  const enc = (await import('../src/content/dialogue/act1/cold_open.js')).default;
+  const dec = enc.replace(/[a-zA-Z]/g, (c) => String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26));
+  const scene = JSON.parse(dec);
+  for (const [id, node] of Object.entries(hooks)) {
+    const o = room.objects.find((q) => q.id === id);
+    assert.ok(o, `${id} is in Room 631`);
+    assert.equal(o.talk, `cold_open:${node}`, `${id} opens cold_open:${node}`);
+    assert.ok(scene.nodes[node], `the compiled cold open has ${node}`);
+  }
+  assert.equal(room.objects.find((q) => q.id === 'obj.toolwall').action, 'toolwall', 'the toolwall still hands out the starter gear');
+  // E picks the nearest object within 34 px, the later one on a tie (WorldScene keydown-E). Each spot needs a tile where it wins.
+  const pick = (tx, ty) => { let best = null, bd = 34; for (const o of room.objects) { const d = Math.hypot((o.x - tx) * 16, (o.y - ty) * 16); if (d <= bd) { bd = d; best = o; } } return best?.id; };
+  for (const id of Object.keys(hooks)) {
+    const o = room.objects.find((q) => q.id === id);
+    const tiles = [[0, 1], [0, -1], [1, 0], [-1, 0]].map(([dx, dy]) => [o.x + dx, o.y + dy]).filter(([x, y]) => !room.solid(x, y));
+    assert.ok(tiles.some(([x, y]) => pick(x, y) === id), `${id}: some tile next to it gets it from E`);
+  }
+  assert.equal(pick(21, 11), 'door.balcony', 'and the balcony door still answers E from in front of it');
 });
