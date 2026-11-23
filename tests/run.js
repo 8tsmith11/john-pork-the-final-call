@@ -3027,10 +3027,15 @@ test('the Scheduler\'s rules (inside.js): faster beats, skipped beats, and fair 
   // held: no input, no damage; the seat-holder moves
   const h = sim.players.get('h');
   while (sim.inside.seat === 'h') sim.step(1 / 60, new Map());
-  const x0 = h.x; sim.step(1 / 60, new Map([['h', { ...emptyInput(), mx: 1 }]]));
-  assert.equal(h.x, x0, 'held out of the slice: your input waits');
-  const hp0 = h.hp; h.iframes = 0; sim.step(1 / 60, new Map()); sim._hurtPlayer(h, 10, 0);
-  assert.equal(h.hp, hp0, 'and nothing can touch you while held');
+  const x0 = h.x;
+  Object.assign(h, { dodgeT: 0.1, dodgeDx: 1, dodgeDy: 0, iframes: 0, rot: 70 });
+  sim.inside.cfg.corrupt = [[Math.floor(h.x / 16), Math.floor(h.y / 16), sim.inside.n % 2]];
+  sim.step(1 / 60, new Map([['h', { ...emptyInput(), mx: 1 }]]));
+  assert.equal(h.x, x0, 'held-out players stop even when a dodge was already in progress');
+  const hp0 = h.hp;
+  sim._hurtPlayer(h, 10, 0);
+  assert.equal(h.hp, hp0, 'nothing can touch you while held');
+  assert.equal(h.rot, 70, 'neither the corrupt tile nor existing rot harms someone who cannot move');
   assert.ok(sim.snapshot().ins.seat === sim.inside.seat, 'every screen knows whose turn it is');
   // idle with the seat: the floor under you is deallocated; held roommates never are
   const deallocs = [];
@@ -3043,6 +3048,30 @@ test('the Scheduler\'s rules (inside.js): faster beats, skipped beats, and fair 
   for (let i = 0; i < 6 * 60; i++) { if (i % 60 === 0) dir = -dir; s2.step(1 / 60, new Map([['h', { ...emptyInput(), mx: dir }]])); mine += s2.events.filter((e) => e.t === 'dealloc').length; }
   assert.equal(mine, 0, 'keep moving on your turn and nothing is taken');
   I.schedulerPhase(s2.inside, 1); assert.equal(s2.inside.seat, null, 'back to phase 1: no slicing');
+
+  const firstTick = new Sim(box);
+  firstTick.addPlayer('a','manuel'); firstTick.addPlayer('b','michael');
+  const a = firstTick.players.get('a'), b = firstTick.players.get('b');
+  I.schedulerPhase(firstTick.inside, 3);
+  const both = new Map([['a', { ...emptyInput(), mx: 1 }], ['b', { ...emptyInput(), mx: 1 }]]);
+  firstTick.step(1 / 60, both);
+  assert.equal(firstTick.inside.seat, 'a');
+  assert.ok(a.x > b.x, 'the first sliced frame already has exactly one active player');
+  a.downed = true;
+  firstTick.step(1 / 60, both);
+  assert.equal(firstTick.inside.seat, 'b', 'a downed holder passes the seat immediately');
+
+  const returns = new Sim(box);
+  returns.addPlayer('h','trevor');
+  I.schedulerPhase(returns.inside, 3);
+  const r = returns.players.get('h');
+  r.x = 100;
+  const backAndForth = [];
+  for (let i = 0; i < 180; i++) {
+    returns.step(1 / 60, new Map([['h', { ...emptyInput(), mx: i % 2 ? 1 : -1 }]]));
+    backAndForth.push(...returns.events.filter((e) => e.t === 'dealloc'));
+  }
+  assert.equal(backAndForth.length, 0, 'moving during a turn counts even when the player returns to their starting point');
 });
 
 test('the story bench (245): harder, a reference card always there, the book adds a hint per blank only when the party has it', async () => {

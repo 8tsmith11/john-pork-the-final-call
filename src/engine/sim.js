@@ -7,9 +7,9 @@ import { BOSS_PATTERNS, bossPool, pickPattern, windFor, LASER, SHOCK, RAIN, LANE
 import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 import { BOSSES } from '../content/bosses.js';
-import { newInside, stepInside, insideView, heldBySlice, wrapInsidePoint } from './inside.js';
-import { ARC_HITS, GADGETS, GADGET_SUPPORT_WINDOW, arcDamage, gadgetStats } from '../content/gadgets.js';
+import { newInside, advanceInsideClock, stepInside, insideView, heldBySlice, wrapInsidePoint } from './inside.js';
 import { newChase, stepChase, chaseView } from './chase.js';
+import { ARC_HITS, GADGETS, GADGET_SUPPORT_WINDOW, arcDamage, gadgetStats } from '../content/gadgets.js';
 
 // Enemy poise (see _hurtEnemy): seconds an ordinary enemy shrugs off light hits after flinching, and the states in which
 // it's committed to an attack and won't flinch from them at all.
@@ -208,13 +208,13 @@ export class Sim {
       && Math.hypot(q.x - p.x, q.y - p.y) <= ROT.charmRange);
   }
   infect(p, amount) {
-    if (!this.players.has(p.id) || p.downed || !(amount > 0) || !Number.isFinite(amount)) return;
+    if (!this.players.has(p.id) || p.downed || heldBySlice(this.inside, p) || !(amount > 0) || !Number.isFinite(amount)) return;
     p.rotQuiet = 0;
     this.setRot(p.id, (p.rot ?? 0) + amount * (this._rotWard(p) ? ROT.charmShield : 1));
   }
   _stepRot(dt) {
     for (const p of this.players.values()) {
-      if (p.downed) continue;
+      if (p.downed || heldBySlice(this.inside, p)) continue;
       p.rotQuiet = (p.rotQuiet ?? 0) + dt;
       // Authored sealed halls may set rotExposure in points/second; ordinary halls stay safe.
       const hall = Number.isFinite(this.map.rotExposure) ? Math.max(0, Math.min(ROT.maxHallRate, this.map.rotExposure)) : 0;
@@ -288,7 +288,7 @@ export class Sim {
    */
   blink(id) {
     const p = this.players.get(id);
-    if (!p || !p.mods?.blink || p.downed || p.riding || p.sleepT > 0 || p.waitExit || (p.blinkCd ?? 0) > 0) return false;
+    if (!p || !p.mods?.blink || p.downed || heldBySlice(this.inside, p) || p.riding || p.sleepT > 0 || p.waitExit || (p.blinkCd ?? 0) > 0) return false;
     const a = Math.hypot(p.vx, p.vy) > 1 ? Math.atan2(p.vy, p.vx) : p.aim;
     const x0 = p.x, y0 = p.y;
     let x = x0, y = y0;
@@ -357,10 +357,18 @@ export class Sim {
     const skEv = this.sk ? stepSkirmish(this.sk, dt) : null;
     this.events = this._pending ?? []; this._pending = [];
     if (skEv?.length) this.events.push(...skEv);
+    if (this.inside) advanceInsideClock(this, this.inside, dt);
     const arcHits = new Map();
     for (const p of this.players.values()) {
       // Inside, under time-slicing, only the seat-holder's controls are live this beat (src/engine/inside.js).
-      const inp = p.under > 0 && !p.downed ? this._underInput(p) : heldBySlice(this.inside, p) ? emptyInput() : inputs.get(p.id) || emptyInput();
+      if (heldBySlice(this.inside, p)) {
+        p.vx = p.vy = 0;
+        p.moving = false;
+        p.dodgeT = 0;
+        p.iframes = Math.max(0, p.iframes - dt);
+        continue;
+      }
+      const inp = p.under > 0 && !p.downed ? this._underInput(p) : inputs.get(p.id) || emptyInput();
       if (p.screenT > 0) p.screenT = Math.max(0, p.screenT - dt);
       if (p.relayT > 0) p.relayT = Math.max(0, p.relayT - dt);
       if (p.arriveHold) {   // the arrival grace ends the moment the movement input changes (or is released)
@@ -427,8 +435,10 @@ export class Sim {
         }
       }
       p.moving = Math.hypot(p.vx, p.vy) > 1;
+      const { x, y } = p;
       this._moveAxis(p, p.vx * dt, 0);
       this._moveAxis(p, 0, p.vy * dt);
+      if (this.inside?.seat === p.id) this.inside.seatTravel += Math.hypot(p.x - x, p.y - y);
 
       p.skillCd = Math.max(0, (p.skillCd ?? 0) - dt * (p.relayT > 0 ? 1.6 : 1));
       p.blinkCd = Math.max(0, (p.blinkCd ?? 0) - dt);
@@ -917,7 +927,7 @@ export class Sim {
 
   _hurtPlayer(p, dmg, infection = 0, { nonlethal = false } = {}) {
     if (p.ttl !== undefined && p.hp !== undefined && !p.id) { p.hp -= dmg; return; }   // a decoy bust soaking a hit
-    if (p.downed) return;
+    if (p.downed || heldBySlice(this.inside, p)) return;
     if (p.iframes > 0) {
       // Perfect dodge: the hit came in the first moments of a dodge. Refund the dash, grant Focus.
       if (p.dodgeT > 0 && !p.perfectDone && (this.tick - (p.dodgeStamp ?? -99)) / 60 <= FEEL.perfectWindow && !(p.ttl !== undefined && !p.id)) {
@@ -945,7 +955,7 @@ export class Sim {
     for (const dc of this.decoys) { const d = Math.hypot(dc.x - x, dc.y - y); if (d < 130 && d < bd) { bd = d; best = dc; } }
     if (best) return [best, bd];
     for (const p of this.players.values()) {
-      if (p.downed || p.under > 0) continue;   // code rot leaves its own alone
+      if (p.downed || p.under > 0 || heldBySlice(this.inside, p)) continue;   // code rot leaves its own alone
       const d = Math.hypot(p.x - x, p.y - y);
       if (d < bd) { bd = d; best = p; }
     }
@@ -1301,6 +1311,7 @@ export class Sim {
         }
       } else {
         for (const p of this.players.values()) {
+          if (heldBySlice(this.inside, p)) continue;
           if (!p.downed && p.screenT > 0 && !s.noDeflect && Math.hypot(p.x - s.x, p.y - 6 - s.y) < 13) {
             this.events.push({ t: 'gadgetBlock', x: s.x, y: s.y });
             hit = true;
@@ -1336,6 +1347,7 @@ export class Sim {
   }
   _stepUnder(dt) {
     for (const p of this.players.values()) {
+      if (heldBySlice(this.inside, p)) continue;
       if (p.downed) { p.under = 0; p.pullT = 0; continue; }
       const humansUp = this._upOthers(p).filter((q) => this._isHuman(q));
       if (!(p.under > 0)) {

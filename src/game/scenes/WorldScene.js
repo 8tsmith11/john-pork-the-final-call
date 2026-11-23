@@ -2802,12 +2802,12 @@ export class WorldScene extends Phaser.Scene {
 
   _hostEvents(events) {
     for (const ev of events) {
-      if (ev.t === 'chaseDone') { this._flag(`chase.${ev.map}.done`, true); this._toast(tr('Out of range. The drones turn back.')); this._tickQuests(true); }   // src/engine/chase.js
       if (ev.t === 'gadgetScan') this._gadgetScan(ev);
       if (ev.t === 'gadgetCast' || ev.t === 'gadgetBlock') {
         this._gadgetFx(ev);
         if (this.mode === 'host') this.net.broadcast({ t: 'gadgetFx', area: this.map.id, effect: ev });
       }
+      if (ev.t === 'chaseDone') { this._flag(`chase.${ev.map}.done`, true); this._toast(tr('Out of range. The drones turn back.')); this._tickQuests(true); }   // src/engine/chase.js
       if (ev.t === 'bumpExit' && !this.dlg) {
         const exit = this.map.objects.find((o) => o.id === ev.id);
         this._requestExit(exit, ev.by, ev);

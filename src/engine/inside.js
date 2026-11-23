@@ -20,7 +20,11 @@ export const SCHEDULER_PHASES = [null, { beat: 1.0 }, { beat: 0.75 }, { beat: 0.
 export function schedulerPhase(st, phase) {
   const ph = SCHEDULER_PHASES[Math.max(1, Math.min(SCHEDULER_PHASES.length - 1, phase))];
   st.cfg = { ...st.cfg, skipEvery: 0, slices: false, ...ph };
-  if (!st.cfg.slices) st.seat = null;
+  if (!st.cfg.slices) {
+    st.seat = null;
+    st.seatCharacter = null;
+    st.seatTravel = 0;
+  }
   return st.cfg;
 }
 
@@ -34,7 +38,8 @@ export function newInside(map) {
   if (!cfg) return null;
   const terminals = cfg.terminals.map(([x, y]) => ({ x: x * TILE + 8, y: y * TILE + 8 }));
   const checkpoint = terminals[0] ?? map.spawns[0] ?? null;
-  return { cfg, t: 0, n: 0, checkpoint, terminals, visits: new WeakMap(), seat: null, seatAt: null, temp: [] };
+  return { cfg, t: 0, n: 0, checkpoint, terminals, visits: new WeakMap(),
+    seat: null, seatCharacter: null, seatSince: 0, seatTravel: 0, temp: [] };
 }
 
 /** Is corrupted tile k (one of cfg.corrupt) live on beat n? Each flips every beat, offset by its phase. */
@@ -47,19 +52,22 @@ export function wrapInsidePoint(map, point) {
   point.y = wrap(point.y, map.h * TILE);
 }
 
-/**
- * Step the inside rules. Returns how much time enemies get this frame (0 between beats, sped up in the window, so
- * over a whole beat they get about as much time as anywhere else).
- */
-export function stepInside(sim, st, dt) {
+/** Advance the clock before applying any player controls for this frame. */
+export function advanceInsideClock(sim, st, dt) {
   const c = st.cfg, before = st.t;
   st.t += dt;
-  if (Math.floor(st.t / c.beat) > Math.floor(before / c.beat)) {
+  const nextBeat = Math.floor(st.t / c.beat) > Math.floor(before / c.beat);
+  if (nextBeat) {
     st.n++; sim.events.push({ t: 'beat', n: st.n, skip: skipped(st) });
-    st.temp = st.temp.filter((k) => k[3] > st.n);   // deallocated tiles expire
-    if (c.slices) passSeat(sim, st);
+    st.temp = st.temp.filter((k) => k[3] > st.n);
   }
-  const phase = st.t % c.beat;
+  const holder = sim.players.get(st.seat);
+  if (c.slices && (nextBeat || !holder || holder.downed)) passSeat(sim, st, nextBeat);
+}
+
+/** Apply hazards and collection, then return the time enemies get during this frame. */
+export function stepInside(sim, st, dt) {
+  const c = st.cfg, phase = st.t % c.beat;
   for (const p of sim.players.values()) {
     if (c.wrap) wrapInsidePoint(sim.map, p);
     // An arrival changes the checkpoint. Someone waiting at an older terminal leaves it alone.
@@ -80,7 +88,7 @@ export function stepInside(sim, st, dt) {
       continue;
     }
     p.gcT = 0;
-    if (heldBySlice(st, p)) p.iframes = Math.max(p.iframes ?? 0, 0.1);   // held out of the slice: not running, so nothing can touch them
+    if (heldBySlice(st, p)) continue;
     const tx = Math.floor(p.x / TILE), ty = Math.floor(p.y / TILE);
     for (const k of c.corrupt) if (k[0] === tx && k[1] === ty && corruptLive(st, k)) { sim.infect(p, c.corruptRate * dt); break; }
     if (st.temp.some((k) => k[0] === tx && k[1] === ty)) sim.infect(p, c.corruptRate * dt);
@@ -92,16 +100,20 @@ const skipped = (st) => st.cfg.skipEvery > 0 && st.n > 0 && st.n % st.cfg.skipEv
 
 // Hand the seat to the next standing roommate (in a fixed order, so everyone gets a turn); first judge the one
 // leaving it: idle through the whole slice means a deallocated tile under them.
-function passSeat(sim, st) {
-  const c = st.cfg, up = [...sim.players.values()].filter((p) => !p.downed).sort((a, b) => String(a.character).localeCompare(String(b.character)));
+function passSeat(sim, st, nextBeat) {
+  const c = st.cfg;
+  const up = [...sim.players.values()].filter((p) => !p.downed).sort((a, b) => String(a.character).localeCompare(String(b.character)));
   const cur = up.find((p) => p.id === st.seat);
-  if (cur && st.seatAt && Math.hypot(cur.x - st.seatAt.x, cur.y - st.seatAt.y) < c.idleMove) {
+  const fullSlice = st.t - st.seatSince >= c.beat - 1e-6;
+  if (nextBeat && cur && fullSlice && st.seatTravel < c.idleMove) {
     const tile = [Math.floor(cur.x / TILE), Math.floor(cur.y / TILE), 0, st.n + c.idleBeats];
     st.temp.push(tile); sim.events.push({ t: 'dealloc', id: cur.id, x: tile[0], y: tile[1] });
   }
-  if (!up.length) { st.seat = null; return; }
-  const next = up[(up.indexOf(cur) + 1) % up.length];
-  st.seat = next.id; st.seatAt = { x: next.x, y: next.y };
+  const next = up.find((p) => String(p.character).localeCompare(String(st.seatCharacter ?? '')) > 0) ?? up[0];
+  st.seat = next?.id ?? null;
+  st.seatCharacter = next?.character ?? null;
+  st.seatSince = st.t;
+  st.seatTravel = 0;
 }
 
 /** Time-slicing: is this player held this beat? */
