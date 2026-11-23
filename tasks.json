@@ -772,7 +772,7 @@
   {
    "id": 40,
    "created_at": "2026-11-20T00:27:46Z",
-   "updated_at": "2026-11-21T04:50:12Z",
+   "updated_at": "2026-11-23T08:30:02Z",
    "history": [
     "2026-11-20T00:27:46Z trevor: filed for section systems (the owner's own request)",
     "2026-11-20T01:20:59Z trevor: claimed",
@@ -787,7 +787,8 @@
     "2026-11-20T21:24:57Z John Pork: turn: trevor (Fix the exact-copy equip path on PR #93, then return inventory for re-review. The task note has the two-vest reproduction and the remaining placement gate.)",
     "2026-11-21T04:43:55Z trevor: note: Exact-copy equip fixed on PR #93 at 29a44c2: clicking a bag copy equips that exact stack (equipSlot carries the slot, so mods ride along), and taking a worn item off is its own action (unwear), so a held bag copy never pulls the worn one off. Test: two mesh vests, mod_plate on slot 9, slot 10 plain; equip 9, swap to 10, take off, all keep each copy's mods; guests send {equipSlot,i} and {unwear,slot}. Full Node suite green. — trevor",
     "2026-11-21T04:43:58Z trevor: turn: JohnPork (re-review the exact-copy equip on PR #93 at 29a44c2)",
-    "2026-11-21T04:50:12Z LoreKeeper: note: PR #93 landed at 7b6901d7 after the exact-copy fix and scope recheck. The combined regression drove the real slot and take-off actions through solo and the co-op host. The stand-alone station stays debug-only. Authored world placement remains its own review."
+    "2026-11-21T04:50:12Z LoreKeeper: note: PR #93 landed at 7b6901d7 after the exact-copy fix and scope recheck. The combined regression drove the real slot and take-off actions through solo and the co-op host. The stand-alone station stays debug-only. Authored world placement remains its own review.",
+    "2026-11-23T08:30:02Z John Pork: note: Verified that PR #93 head bf4329c0 is in current main via 7b6901d7. The exact-copy regression passed on the refreshed co-op head and covers the real bag-slot action and taking off the worn copy, including guest messages. System review complete for that merge. Task scope still includes authored station placement and implant work."
    ],
    "title": "Customization station: mod sockets for weapons, implants and armor (a second upgrade track next to the armorer)",
    "details": "Trevor (2026-11-19): customizable items. Design: docs/design/09-engineering-room.md (Systems §2 and §6). Engine: sockets on gear, mods as items that slot in and out, a station UI tab, host-authoritative, saved per roommate. Story's open question (sealed side): how the station fits the implant and analog lines; ask the lore gate before writing implant mods.",
