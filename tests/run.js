@@ -4874,6 +4874,7 @@ test('the gonman, stage two: R while morphed winds up (no moving), then globs sl
 
 const growthMod = await import('../src/content/growth.js');
 const wearMod = await import('../src/game/render/wearables.js');
+const itemsMod = await import('../src/content/items.js');
 test('growth: a little bigger every level, bigger jumps at levels 3 and 6, capped; the look changes level by level', () => {
   const s = (lv) => growthMod.growthScale(lv);
   for (let lv = 2; lv <= 12; lv++) assert.ok(s(lv) >= s(lv - 1), `level ${lv} shrinks`);
@@ -4888,6 +4889,36 @@ test('growth: a little bigger every level, bigger jumps at levels 3 and 6, cappe
   set(1, 8, B.skin[0]); set(1, 7, B.skin[0]);
   const painted = (lv) => { const out = new Uint8ClampedArray(w * h * 4); wearMod._PAINTERS.grow(src, out, w, h, 'down', B, wearMod.LOOKS[growthMod.growthLook(lv)], 'trevor'); let n = 0; for (let i = 3; i < out.length; i += 4) n += out[i] > 0; return n; };
   assert.ok(painted(2) >= 1 && painted(3) > painted(2) && painted(7) > painted(3), `${painted(2)} ${painted(3)} ${painted(7)}`);
+});
+
+test('worn gear is visible (Trevor, 2026-11-23): every wearable item has a look, and each look paints pixels on a roommate in every facing it shows', () => {
+  const { ITEMS: IT, WORN_SLOTS: WS } = itemsMod;
+  const worn = Object.entries(IT).filter(([, v]) => WS.includes(v.slot)).map(([k]) => k);
+  const missing = worn.filter((id) => !wearMod.LOOKS[id] || !wearMod._PAINTERS[wearMod.LOOKS[id].style]);
+  assert.deepEqual(missing, [], 'worn items with no visible look');
+  // Trevor's real idle frames (assets/sprites/trevor.png): A outline, B/C hair, D/E skin, F/G shirt, H trousers, I boots
+  const B = wearMod._BODY.trevor, PAL = { A: '#0d0b1a', B: B.hair[0], C: B.hair[1], D: B.skin[0], E: B.skin[1], F: B.shirt[0], G: B.shirt[1], H: B.pants[0], I: B.boots[0] };
+  const FR = {
+    down: ['................', '................', '.....AAAAAA.....', '....ABBBBBBA....', '...ABBBBBBBBA...', '...ABBBCBBBBA...', '...ABBDDDDBBA...', '...ABDADDADBA...', '...ABDDDDDDBA...', '...ACEDDDDECA...', '....AAAEEAAA....', '...AAFFFFFFAA...', '..AFFFFFFFFFFA..', '..ADAFFFFFFADA..', '..ADAFFFFFFADA..', '..ADAGFFFFGADA..', '...AAGFFFFGAA...', '....AHHHHHHA....', '....AHHHHHHA....', '....AHHAAHHA....', '....AHHAAHHA....', '....AHHAAHHA....', '....AIIAAIIA....', '.....AA..AA.....'],
+    up: ['................', '................', '.....AAAAAA.....', '....ABBBBBBA....', '...ABBBBBBBBA...', '...ABBBCBBBBA...', '...ABBBBBBBBA...', '...ABBCBBBCBA...', '...ABBBBBBBBA...', '...ACBBBBBBCA...', '....AAAEEAAA....', '...AAFFFFFFAA...', '..AFFFFFFFFFFA..', '..ADAFFFFFFADA..', '..ADAFGFFGFADA..', '..ADAGFFFFGADA..', '...AAGFFFFGAA...', '....AHHHHHHA....', '....AHHHHHHA....', '....AHHAAHHA....', '....AHHAAHHA....', '....AHHAAHHA....', '....AIIAAIIA....', '.....AA..AA.....'],
+    right: ['................', '................', '.....AAAAAA.....', '....ABBBBBBA....', '...ABBBBBBBBA...', '...ABBBCBBBBA...', '...ABBBBDDDDA...', '...ABBBDDDADA...', '...ABBBDDDDDA...', '...ACBBEDDDA....', '....AAAAEEA.....', '.....AFFFFA.....', '....AFFFFFFA....', '....AFFDDFFA....', '....AFFDDFFA....', '....AGFDDFGA....', '.....AGFFGA.....', '.....AHHHHA.....', '.....AHHHHA.....', '.....AHHHHA.....', '.....AHHHHA.....', '.....AHHHHA.....', '.....AIIIIIA....', '.....AAAAAAA....'],
+  };
+  const hexc = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const frame = (rows) => { const w = 16, h = 24, d = new Uint8ClampedArray(w * h * 4); rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '.') return; const i = (y * w + x) * 4; [d[i], d[i + 1], d[i + 2]] = hexc(PAL[ch]); d[i + 3] = 255; })); return d; };
+  const frontOnly = new Set(['charm', 'pacifier']);   // things on the chest or the mouth don't show from behind
+  for (const id of worn) {
+    const look = wearMod.LOOKS[id];
+    for (const facing of ['down', 'up', 'right']) {
+      if (facing === 'up' && frontOnly.has(look.style)) continue;
+      const out = new Uint8ClampedArray(16 * 24 * 4);
+      wearMod._PAINTERS[look.style](frame(FR[facing]), out, 16, 24, facing, B, look, 'trevor');
+      let n = 0; for (let i = 3; i < out.length; i += 4) n += out[i] > 0;
+      assert.ok(n >= 2, `${id} paints nothing (${n} px) facing ${facing}`);
+    }
+  }
+  // drawn in a sensible order: trousers under the coat, the helmet over everything on the body
+  const order = wearMod.looksFor({ level: 1, equipped: { helmet: 'item.hardhat', leggings: 'item.work_pants', chestplate: 'item.mesh_vest', parka: 'item.rain_parka', socks: 'item.wool_socks' } });
+  assert.ok(order.indexOf('item.work_pants') < order.indexOf('item.wool_socks') && order.indexOf('item.rain_parka') < order.indexOf('item.mesh_vest') && order.at(-1) === 'item.hardhat', order.join(' '));
 });
 
 test('the research is in reach (Trevor, 2026-11-23): CHECKLISTS.md is linked from CLAUDE.md, HUB.md and every brief, and the writing lint runs', async () => {
