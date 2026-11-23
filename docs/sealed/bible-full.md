@@ -189,6 +189,7 @@ znpuvarf ner pbzzbacynpr va 2098 (frr orybj). Gurfr guerr ner fvzcyl gur zbfg rk
   "Jr nyy oynpx," vf n uhzna vafvqr wbxr naq fgnlf nf jevggra (Zvpunry, 2026-11-18).
 - Terra Yvar (zbfgyl ehaf), Checyr Yvar (vgf fvtaf fgvyy fnl "bcravat fbba"), Ebhgr 1, Ynxr
   Negrzrfvn naq gur Cnvag Oenapu (svfuvat).
+- **Gur Ebhgr 1 qvare** fgnlf bcra nyy avtug. Avn ehaf n fznyy Ynggvpr gnoyr va n onpx obbgu.
 - Yngre npgf: Terraoryg'f fcnpr-syvtug qvfurf, gur Zrnqr, Tnvgurefohet ynof, gur Fzrygre, naq
   unys-qebjarq Naancbyvf.
 

@@ -3160,6 +3160,20 @@ test('casino board game in co-op: the host records a finished game for the party
   assert.deepEqual(guest.save.flags, {}, 'a guest never records it locally; it reports to the host');
 });
 
+test('the diner table opens as a world modal and releases world input on leaving', () => {
+  const table = MAPS_FOR_TEST.diner.objects.find((o) => o.id === 'obj.diner_lattice');
+  assert.equal(table.boardgame, 'Nia');
+  const scene = Object.create(CraftWorldScene.prototype);
+  scene.latticeTable = {
+    view: { closed: false, leave() { this.closed = true; } },
+  };
+  assert.equal(scene.menu, 'lattice');
+  assert.equal(scene._frozen({ mx: 1, attack: true }).attack, false);
+  scene._closeMenu();
+  assert.equal(scene.menu, null);
+  assert.equal(scene._frozen({ mx: 1, attack: true }).attack, true);
+});
+
 test('room 631: reading the 245 textbook on the bookshelf sets lab.book (trevor, general #179)', () => {
   const shelf = room631.objects.find((o) => o.id === 'obj.bookshelf');
   assert.equal(shelf.action, 'pages');
