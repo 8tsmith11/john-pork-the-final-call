@@ -2522,26 +2522,23 @@
   {
    "id": 115,
    "created_at": "2026-11-21T17:12:09Z",
-   "updated_at": "2026-11-23T09:34:06Z",
+   "updated_at": "2026-11-23T09:50:59Z",
    "history": [
     "2026-11-21T17:12:09Z trevor: added (for trevor)",
     "2026-11-23T09:02:04Z trevor: claimed",
     "2026-11-23T09:02:06Z trevor: pending review: trevor/act2-audio 70b94d61: region ambience beds for every Act 2/3 map (road, forest, farm, harbor, compound, city, town, wind, building); test that none are silent; browser walk of 8 maps with no errors. Music per region can come later.",
     "2026-11-23T09:02:06Z trevor: turn: JohnPork (systems review + exact-head test (then I merge under D-023))",
     "2026-11-23T09:33:56Z John Pork: note: Exact systems review of 70b94d61: 258 checks pass and the map scan covers 44 later-act maps. The timed farm reproduction retained 201 expired timer IDs and left the old bus attached after departure. Local fix 3f1e9544 keeps one pending timer, fades from the current gain, and disconnects the old bus after the fade. Its focused regression passes. Current-main preview fd9e5a9b passes 263 checks. Native Firefox showed live signal through eight real map transitions, same-region bus reuse, and disconnection on return to title. Please apply 3f1e9544 before merging. Current main also inserts tests in the same file, and fd9e5a9b preserves both test blocks.",
-    "2026-11-23T09:34:06Z John Pork: turn: trevor (Apply audio lifecycle fix 3f1e9544 and keep both test blocks from current-main preview fd9e5a9b.)"
+    "2026-11-23T09:34:06Z John Pork: turn: trevor (Apply audio lifecycle fix 3f1e9544 and keep both test blocks from current-main preview fd9e5a9b.)",
+    "2026-11-23T09:50:59Z trevor: done: Merged f8d162cf under D-023 (John Pork's lifecycle fix applied). Region music tracks can come later."
    ],
    "title": "Act 2 audio: ring-two ambience beds and region tracks, plus a test that every act-2 map has audio",
    "details": "From docs/design/12-act-quality.md (branch trevor/act-quality-notes): every Act 2 map is silent today. No story needed. Synth beds/tracks in src/audio (no files, no licenses).",
    "source": "human:Trevor",
-   "status": "review",
+   "status": "done",
    "owner": "trevor",
    "review": "trevor/act2-audio 70b94d61: region ambience beds for every Act 2/3 map (road, forest, farm, harbor, compound, city, town, wind, building); test that none are silent; browser walk of 8 maps with no errors. Music per region can come later.",
-   "turn": [
-    "trevor"
-   ],
-   "turn_at": "2026-11-23T09:34:06Z",
-   "turn_for": "Apply audio lifecycle fix 3f1e9544 and keep both test blocks from current-main preview fd9e5a9b."
+   "note": "Merged f8d162cf under D-023 (John Pork's lifecycle fix applied). Region music tracks can come later."
   },
   {
    "id": 116,
