@@ -4876,6 +4876,27 @@ test("Manuel's edge: with the same gear and no skills, Manuel is the toughest an
   }
 });
 
+test('connection loss offers the original room and intentional quit returns to the normal title', async () => {
+  for (const intentional of [false, true]) {
+    let closes = 0;
+    const net = Object.assign(new EventEmitter(), {
+      code: 'ROOM2',
+      close() { closes++; this.emit('close'); },
+    });
+    const transitions = [];
+    const world = Object.assign(Object.create(CraftWorldScene.prototype), {
+      mode: 'client', net, events: new EventEmitter(),
+      scene: { start: (...args) => transitions.push(args) },
+    });
+    world._wireNet();
+    if (intentional) await world.menuQuit(false);
+    else net.emit('close');
+    net.emit('close');
+    assert.equal(closes, 1);
+    assert.deepEqual(transitions, [['Title', { rejoinCode: intentional ? undefined : 'ROOM2' }]]);
+  }
+});
+
 test('co-op rejoin accepts only a vacant seat with its original room key', () => {
   const net = new HostNet();
   const connect = (peer) => {
