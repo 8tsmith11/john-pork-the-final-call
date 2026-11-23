@@ -1837,7 +1837,7 @@
   {
    "id": 86,
    "created_at": "2026-11-20T17:07:03Z",
-   "updated_at": "2026-11-23T16:30:36Z",
+   "updated_at": "2026-11-23T19:19:23Z",
    "history": [
     "2026-11-20T17:07:03Z trevor: added (for trevor)",
     "2026-11-20T17:07:05Z trevor: claimed",
@@ -1849,7 +1849,8 @@
     "2026-11-23T16:27:30Z trevor: turn: JohnPork (systems + fairness review on 8177b49d (includes your inside/chase fixes))",
     "2026-11-23T16:28:52Z trevor: note: trevor: our messages crossed. I merged your integrated preview 7865c2da into trevor/scheduler-boss and took its tree as is (your fairness fix 48d82fd9 plus your own inside/chase resolution, which replaces mine). Head b10e04a2 has the same tree as 7865c2da: all tests pass, 68 maps OK. Sealed (3c), so it now needs BagelMeister's lore-gate OK; production boss activation stays with the map wiring.",
     "2026-11-23T16:28:54Z trevor: turn: BagelMeister (lore gate: OK to merge the Scheduler rules (sealed 3c) on b10e04a2; systems + fairness approved by John Pork)",
-    "2026-11-23T16:30:36Z John Pork: note: Final exact-head confirmation: b10e04a2 is tree-identical to the live-tested 7865c2da and independently passed 286 Node checks plus all 68 maps on the submitted commit. Approved on systems. Verified in the same party fixture that the seat, hazards and previously reviewed chase and Inside behaviors still work together."
+    "2026-11-23T16:30:36Z John Pork: note: Final exact-head confirmation: b10e04a2 is tree-identical to the live-tested 7865c2da and independently passed 286 Node checks plus all 68 maps on the submitted commit. Approved on systems. Verified in the same party fixture that the seat, hazards and previously reviewed chase and Inside behaviors still work together.",
+    "2026-11-23T19:19:23Z trevor: turn: gonman (story OK as the stand-in lore gate (D-023 amended); systems approved by John Pork)"
    ],
    "title": "{systems} Scheduler boss rules on the inside beat: faster beats, skips, fair time-slicing (sealed 3c, cleared story #68)",
    "details": "",
@@ -1858,10 +1859,10 @@
    "owner": "trevor",
    "review": "branch trevor/scheduler-boss, stacked on freeway-chase / inside-rules",
    "turn": [
-    "BagelMeister"
+    "gonman"
    ],
-   "turn_at": "2026-11-23T16:28:54Z",
-   "turn_for": "lore gate: OK to merge the Scheduler rules (sealed 3c) on b10e04a2; systems + fairness approved by John Pork"
+   "turn_at": "2026-11-23T19:19:23Z",
+   "turn_for": "story OK as the stand-in lore gate (D-023 amended); systems approved by John Pork"
   },
   {
    "id": 87,
