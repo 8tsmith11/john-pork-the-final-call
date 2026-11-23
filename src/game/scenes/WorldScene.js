@@ -240,9 +240,10 @@ export class WorldScene extends Phaser.Scene {
       if (person) { person.mode = 'wait'; person.t = 4; person.spr.setFlipX(person.x > me.x); this._say(`${person.name.toUpperCase()}\n${this.crowd.lineFor(person)}`); if (person.pixel) this._flag?.('secrets.pixelated.found', true); babble(null, 'hey there friend'); }
     });
     this.input.on('pointerdown', (ptr) => this._onClick(ptr));
-    this.input.keyboard.on('keydown-H', () => { if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
-    this.input.keyboard.on('keydown-F', () => { if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
+    this.input.keyboard.on('keydown-H', () => { if (this.stage?.active) return; if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
+    this.input.keyboard.on('keydown-F', () => { if (this.stage?.active) return; if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
     this._showMap(startMap);
+    this.stage.holdForHost(this.initialSnapshot?.stageId, this.initialSnapshot?.stageHold);
     this.ready = true;
     // Act 1's witnessed beats are staged in-engine first (hub #48; src/content/stage/act1_*.js), then the scene plays.
     // A beat of delay so the roommates are on screen for the cutscene to stand in for them.
@@ -713,8 +714,13 @@ export class WorldScene extends Phaser.Scene {
     this.net.occupySeat(character, peer);
     this._lastSnap = null;
     this._worldSig = null;
-    const snapshot = { ...this.sim.snapshot(), doors: [...this.sim.map.doors.values()].filter(d => d.open).map(d => d.id) };
+    const snapshot = { ...this.sim.snapshot(), doors: [...this.sim.map.doors.values()].filter(d => d.open).map(d => d.id), ...this._stagePresence() };
     this.net.send(peer, { t: 'start', save: this.save, assignments: { [peer]: character }, snapshot });
+  }
+
+  _stagePresence() {
+    const active = this.stage?.active;
+    return { stageId: active?.id ?? null, ...(active?.script?.hold ? { stageHold: true } : {}) };
   }
 
   _wireNet() {
@@ -797,10 +803,11 @@ export class WorldScene extends Phaser.Scene {
           }
         }
       });
-      this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
+      this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot(), ...this._stagePresence() }) });
       this.time.addEvent({ delay: 500, loop: true, callback: () => this._broadcastWorld() });
       on('join', () => { this._worldSig = null; });
     } else if (this.mode === 'client') {
+      let rejoinStageSynced = false;
       on('msg', (msg) => {
         if (msg.t === 'toast') { this._toast(msg.text); return; }
         if (msg.t === 'gadgetFx') { if (msg.area === this.map.id) this._gadgetFx(msg.effect); return; }
@@ -810,7 +817,17 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'lab') { this._lab().onClientMsg(msg); return; }
         if (msg.t === 'pipe') { this._pipes().onClientMsg(msg); return; }
         if (this.shared?.onMsg(msg) || this.stage?.onClientMsg(msg) || this.retry?.onClientMsg(msg) || this.moods?.onClientMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg) || this.comic?.onClientMsg(msg)) return;
-        if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
+        if (msg.t === 'snap') {
+          this.snapBuf.push({ at: performance.now(), snap: msg.snap });
+          if (this.snapBuf.length > 20) this.snapBuf.shift();
+          if (this.initialSnapshot && this.stage) {
+            this.stage.syncHostStage(msg.stageId);
+            if (!rejoinStageSynced) {
+              rejoinStageSynced = true;
+              this.stage.holdForHost(msg.stageId, msg.stageHold);
+            }
+          }
+        }
         if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text, msg.questRead, msg.itemIcons);
         if (msg.t === 'caption') this._caption(msg.text);
         if (msg.t === 'reload') { this.scene.restart({ mode: 'client', net: this.net, save: msg.save, character: this.character }); return; }
@@ -1078,6 +1095,7 @@ export class WorldScene extends Phaser.Scene {
   }
   // Select a hotbar slot (1-9 / wheel). A weapon or gun in that slot becomes the one you hold.
   selectHot(i) {
+    if (this.stage?.active) return;
     const c = this.save.party[this.character]; if (!c) return;
     i = ((i % 9) + 9) % 9;
     this._hotFlash = { i, at: this.time.now };
@@ -2480,13 +2498,15 @@ export class WorldScene extends Phaser.Scene {
 
   _onClick(ptr) {
     if (!this.ready || ptr.button !== 0) return;
+    const stage = this.stage?.active;
+    if (stage && !(stage.script?.hold && this.dlg)) { this.input2.blockAttack = true; return; }
     const { x: sx, y: sy } = toView(ptr);
     const qb = this._qbSticky;
     if (qb && !this._talkOpen() && sx >= qb.x0 && sx <= qb.x1 && sy >= qb.y0 && sy <= qb.y1) { this.input2.blockAttack = true; qb.leave(); return; }   // a hidden card (dialogue up) can't be clicked away
     if (this.dlg) {
       // Clicks never advance dialogue (E does); choices are clicked directly. In free dialogue a click
       // outside the box is still an attack.
-      if (!this.dlgFree || sy > VIEW.h - 70) this.input2.blockAttack = true;
+      if (stage || !this.dlgFree || sy > VIEW.h - 70) this.input2.blockAttack = true;
       return;
     }
     if (this.menu) {
@@ -2582,7 +2602,10 @@ export class WorldScene extends Phaser.Scene {
 
   _gadgetBlocked() { return !!(this._dlgStops() || this.menu || this.stage?.active || this.comic?.active || this._transitioning); }
   _frozen(inp) {
-    if (this._dlgStops() || this.menu || this.stage?.active || this.comic?.active) return { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, gadget: false, interact: false };
+    const inStage = !!this.stage?.active;
+    if (this._dlgStops() || this.menu || inStage || this.comic?.active) {
+      return { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, gadget: false, interact: false, skill: inStage ? false : inp.skill };
+    }
     if (this._transitioning && inp.gadget) inp = { ...inp, gadget: false };
     if (this.dlg) return { ...inp, interact: false };
     return inp;

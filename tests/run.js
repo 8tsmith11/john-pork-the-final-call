@@ -4937,10 +4937,13 @@ test('co-op rejoin accepts only a vacant seat with its original room key', () =>
   returned.emit('data', { t: 'flag', key: 'act1.test', value: true });
   assert.equal(save.flags['act1.test'], undefined);
   assert.equal(sim.players.has('returned'), false);
+  host.stage = { active: { id: 'demo', script: { hold: true } }, onHostMsg: () => false };
   returned.emit('data', { t: 'hello', seatKey: key });
   const start = returned.messages.at(-1);
   assert.equal(start.t, 'start');
   assert.deepEqual(start.assignments, { returned: 'manuel' });
+  assert.equal(start.snapshot.stageId, 'demo');
+  assert.equal(start.snapshot.stageHold, true);
   assert.equal(start.snapshot.players.find(p => p.id === 'returned').am, 4);
   assert.equal(sim.players.get('returned'), original);
   assert.equal(original.held, 'gun', 'the returning guest immediately holds their selected gun');
@@ -4983,6 +4986,47 @@ test('equip the exact copy (John Pork, PR #93): with two vests, the modded one y
   assert.equal(c.inventory.filter((item) => item?.id === 'item.mesh_vest').length, 2);
   assert.deepEqual(sent, [{ t: 'equipSlot', i: k }, { t: 'unwear', slot: 'chestplate' }]);
   assert.equal(InvM.wear(c, 'item.mesh_vest', 99), false, 'an invalid explicit slot leaves both copies in the bag');
+});
+
+const { Stage: RejoinStage } = await import('../src/game/stage.js');
+test('a rejoining guest holds gameplay until the host ends the active cutscene', () => {
+  const ui = [], keyboard = new EventEmitter();
+  const display = (text) => {
+    const item = { text, setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; }, destroy() { this.destroyed = true; } };
+    ui.push(item); return item;
+  };
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'client', ready: true, events: new EventEmitter(), input: { keyboard }, input2: { blockAttack: false },
+    cameras: { main: { zoom: 1, fadeIn() {}, zoomTo() {} } },
+    add: { rectangle: () => display(), text: (x, y, label) => display(label) }, tweens: { add() {} },
+  });
+  const stage = scene.stage = new RejoinStage(scene);
+  stage.holdForHost('demo');
+  assert.ok(stage.active.waitingForHost);
+  assert.ok(ui.some((item) => item.text === 'Cutscene in progress'));
+  assert.equal(stage.active.ui.length, 3, 'ordinary cinematic wait uses two letterbox bars');
+  const controls = { ...emptyInput(), mx: 1, attack: true, gadget: true, skill: true };
+  assert.deepEqual(scene._frozen(controls), emptyInput());
+  keyboard.emit('keydown-X');
+  stage.syncHostStage('demo');
+  assert.ok(stage.playing, 'a guest cannot skip the host cutscene');
+  stage.onClientMsg({ t: 'stage', op: 'end', id: 'other' });
+  assert.ok(stage.playing, 'a different cutscene cannot release the hold');
+  stage.syncHostStage(null);
+  assert.equal(stage.playing, false, 'snapshots clear the hold even if the end packet was missed at startup');
+  assert.ok(ui.every((item) => item.destroyed));
+  assert.equal(scene._frozen(controls), controls);
+  stage.holdForHost('demo');
+  stage.onClientMsg({ t: 'stage', op: 'end', id: 'demo' });
+  assert.equal(stage.playing, false, 'the normal host end releases the hold immediately');
+
+  stage.holdForHost('staged_dialogue', true);
+  assert.equal(stage.active.script.hold, true);
+  assert.equal(stage.active.ui.length, 2, 'the lower dialogue area remains available');
+  scene.dlg = { choices: [{ text: 'A choice' }] }; scene.dlgFree = true;
+  scene._onClick({ button: 0, x: 1, y: 1 });
+  assert.equal(scene.input2.blockAttack, true, 'a hold-stage click cannot become a gameplay attack');
+  assert.deepEqual(scene._frozen(controls), emptyInput());
 });
 
 await Promise.all(pending);
