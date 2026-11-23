@@ -2869,6 +2869,12 @@ test('outbreak phases (task #38): before the Call, after it, contained; phase sp
   const map = MAPS_FOR_TEST.metro_plaza, base = new Sim(map, { seed: 'ph' }).enemies.size;
   const extra = { metro_plaza: { phase: 'after', list: [['enemy.rotling', 40, 20], ['enemy.rotling', 42, 20]] } };
   const sim = new Sim(map, { seed: 'ph', deferSpawn: true }); sim.phaseEnemies = extra; sim.spawnEnemies();
+  const authored = new Sim(map, { seed: 'ph', deferSpawn: true });
+  authored.phaseEnemies = Outbreak.phaseEnemies({ 'act1.beat.call': true });
+  authored.spawnEnemies();
+  const hulk = [...authored.enemies.values()].find((enemy) => enemy.kind === 'enemy.rot_hulk');
+  assert.ok(hulk?.spawnKey.startsWith('metro_plaza#after.'), 'the post-Call hulk keeps its own saved spawn key');
+  assert.ok(!authored._hitsBox(hulk.x, hulk.y, hulk.def.radius, hulk.def.radius * 0.7), 'the large hulk fits on the east sidewalk');
   assert.equal(sim.enemies.size, base + 2);
   const keys = [...sim.enemies.values()].map((e) => e.spawnKey).filter((k) => k.includes('#after.'));
   assert.deepEqual(keys.sort(), ['metro_plaza#after.0', 'metro_plaza#after.1']);
@@ -5111,6 +5117,23 @@ test('heavy rot hits without shooting (Trevor, 2026-11-23): a hulk slam, a graft
   { const { sim, h, e } = setup('enemy.rot_hulk', 20, 0); const x0 = h.x, hp0 = h.hp; const evs = run(sim, 1.2, h);
     const tell = evs.findIndex((v) => v.t === 'etell' && v.kind === 'slam'), hit = evs.findIndex((v) => v.t === 'estrike');
     assert.ok(tell >= 0 && hit > tell, 'slam: tell, then strike'); assert.ok(h.hp < hp0 && h.x > x0 + 10, 'slam hurts and throws'); assert.ok(e.openT > 0, 'it reels after'); }
+  // A guest's initial snapshot can show a warning already underway, even with no original event.
+  {
+    const { sim, h, e } = setup('enemy.rot_graft', 40, 0);
+    sim.step(1 / 60, new Map());
+    const warning = sim.snapshot().enemies.find((enemy) => enemy.id === e.id)?.bt;
+    assert.equal(warning?.kind, 'whip');
+    assert.equal(warning.r, e.def.melee.reach + 8);
+    const aimX = h.x; h.iframes = 1;
+    sim._bruteStrike(e, e.def);
+    assert.equal(h.x, aimX, 'a protected player is not dragged by the miss');
+    assert.equal(h.hp, 999, 'a protected player takes no damage');
+    e.st = 'windup'; e.stT = 0.01;
+    h.x = 30;
+    sim.step(1 / 60, new Map());
+    assert.equal(e.st, 'recover', 'a committed attack finishes when everyone leaves its alert range');
+    assert.equal(sim.snapshot().enemies.find((enemy) => enemy.id === e.id)?.bt, undefined);
+  }
   // the whip reels you in
   { const { sim, h } = setup('enemy.rot_graft', 40, 0); const d0 = 40; run(sim, 1.0, h);
     assert.ok(Math.hypot(h.x - sim.enemies.get('b').x, h.y - sim.enemies.get('b').y) < d0 - 6, 'the whip pulls you closer'); }
