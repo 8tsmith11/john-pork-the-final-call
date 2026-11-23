@@ -16,7 +16,7 @@ import { loadScene, Conversation, evalCond } from '../../engine/dialogue.js';
 import { babble, setArea, sfx, ring, speak, hush, setInstrumentFocus, audioOut } from '../../audio/audio.js';
 import { sellPrice, LOOT, DROPS, SHOPS, ITEMS, RECIPES, SKILLS, playerMods, heldWeapon, WORN_SLOTS, canWear } from '../../content/items.js';
 import { tileKey, laneDashes } from '../render/tiles.js';
-import { mapDecals, sceneryPlacement } from '../render/decor.js';
+import { mapDecals, sceneryPlacement, sceneryNextFrame } from '../render/decor.js';
 import { GameMenu, TABS, modText } from '../ui/GameMenu.js';
 import { Crowd } from '../crowd.js';
 import { BARKS, pickBark } from '../../content/barks.js';
@@ -268,6 +268,15 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- dialogue ----------
+  // Objects whose words change once something has happened: textAfter: { flag, text } (a sign that's been fixed
+  // stops being described as flickering). Applied before anything reads o.text, on both host and guests.
+  _flagTexts() {
+    for (const o of this._flagTextObjs ?? []) {
+      if (!Object.hasOwn(o, '_textBase')) o._textBase = o.text;
+      o.text = this.save.flags[o.textAfter.flag] ? o.textAfter.text : o._textBase;
+    }
+  }
+
   _flag(k, v) {
     this.save.flags[k] = v;
     if (this.mode === 'client') this.net.send({ t: 'flag', key: k, value: v });
@@ -768,6 +777,8 @@ export class WorldScene extends Phaser.Scene {
           this.remoteInputs.set(peer, { ...msg.inp, dodge: msg.inp.dodge || prev?.dodge, skill: msg.inp.skill || prev?.skill,
             gadget: msg.inp.gadget === true || prev?.gadget === true, interact: false });
         }
+        // A guest who reads the 245 book at 631's shelf (gonman, PR #116) gets the bench's book hints for the party too; it only adds hints.
+        if (msg.t === 'flag' && msg.key === 'lab.book') this.save.flags['lab.book'] = true;
         if (msg.t === 'flag' && typeof msg.key === 'string' && /^(act\d|dlg\.)/.test(msg.key) && !ACT_ONE_HOST_FLAGS.has(msg.key)) this.save.flags[msg.key] = msg.value ?? true
         if (msg.t === 'flag' && msg.key === 'act1.fuses.in') this._seatFuses();
         if (msg.t === 'item' && this.save.party[msg.who] && ITEMS[`item.${msg.item}`]) { Inv.add(this.save.party[msg.who], `item.${msg.item}`, Math.min(99, msg.n | 0 || 1)); this._syncParty(); }
@@ -905,6 +916,7 @@ export class WorldScene extends Phaser.Scene {
     // Rapid back-and-forth guard (Trevor): a new map generation, so anything queued on the last map knows it's stale;
     // the arrival time, for the exit grace; and no story beat is still pending from the last map.
     this._mapGen = (this._mapGen ?? 0) + 1; this._arrivedAt = this.time?.now ?? 0; this._beatPending = null;
+    this._flagTextObjs = (map.objects ?? []).filter((o) => o.textAfter); this._flagTexts();
     this.mapGfx?.destroy(); this.mapRT?.destroy();
     // Bake textured tiles into one render texture (cheap to draw every frame).
     const rt = this.mapRT = this.add.renderTexture(0, 0, map.w * TILE, map.h * TILE).setOrigin(0, 0).setDepth(-10);
@@ -1040,7 +1052,7 @@ export class WorldScene extends Phaser.Scene {
       const pl = sceneryPlacement(s, hasArt, s.scale ?? PK); if (!pl) continue;
       const im = this.add.image(pl.x, pl.y, pl.sheet, s.art).setOrigin(...pl.origin).setScale(pl.k).setDepth(s.floor ? 2 : pl.y - 4).setFlipX(!!s.flip);
       if (!s.floor) shadowUnder(pl.x, pl.y, pl.shadow);
-      if (hasArt(pl.sheet, `${s.art}#1`)) this.propTimers.push(this.time.addEvent({ delay: s.anim ?? 420, loop: true, callback: () => im.active && im.setFrame(im.frame.name === s.art ? `${s.art}#1` : s.art) }));
+      if (hasArt(pl.sheet, `${s.art}#1`)) this.propTimers.push(this.time.addEvent({ delay: s.anim ?? 420, loop: true, callback: () => im.active && im.setFrame(sceneryNextFrame(s, im.frame.name, this.save.flags)) }));   // stillAfter: holds once its flag is set
       this.propSprites.push(im);
     }
     this._refreshPuzzleProps();
@@ -1793,13 +1805,15 @@ export class WorldScene extends Phaser.Scene {
   // Asking, inspecting and reporting use the ordinary interaction. Hand-ins use a named action.
   _questInteract(near, who = this.character, peer = this.localId) {
     const f = this.save.flags, qs = questState(this.save), client = this.mode === 'client', remote = peer !== this.localId;
+    this._flagTexts();
     const say = (t) => (remote ? this.net?.send(peer, { t: 'say', text: t }) : this._say(t));
     const act = (fn) => { if (client) this.net.send({ t: 'questUse', id: near.id }); else fn(); return true; };
     for (const q of QUESTS) {
       const st = qs[q.id];
       const inspect = q.inspections?.find((entry) => entry.obj === near.id) ?? (q.inspect?.obj === near.id ? q.inspect : null);
       if (inspect && st.started && questVisible(q, who)) {
-        const { flag, text, fact } = inspect;
+        const { flag, fact } = inspect, after = inspect.textAfter;
+        const text = after && f[after.flag] ? after.text : inspect.text;   // what you notice can change too (seenAfter)
         const unread = fact && !knowsQuestFact(this.save, who, fact);
         if ((!st.done && !f[flag]) || unread) {
           return act(() => {
@@ -2924,6 +2938,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _handleInteract(me) {
+    this._flagTexts();
     if (this.dlg || this.menu || me?.under > 0 || me?.un) { this.hint.setText(''); return; }
     // John Pork calls back. If the party declined, he rings again deeper in the tunnels: once at the
     // switchyard, once on the approach. A third decline is what brings the Sahur (the_call script).

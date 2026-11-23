@@ -2,6 +2,7 @@
 //   giver: npc id · ask: flag set when you first talk to the giver (with `pitch` as their line)
 //   give: { item, flag, refuse }  → the NPC offers a hand-in action when the player carries `item`
 //   inspect: { obj, flag, text }  → examining `obj` while the quest is active sets flag (appends text)
+//            + textAfter: { flag, text }   appended instead once that flag is set (the thing you look at has changed)
 //   report: { needs, flag }       → talking to the giver after `needs` is set sets flag
 // Quests as data. Stages complete when their `done(flags, save)` test passes; the engine checks each
 // second, advances, toasts, and pays rewards. Side quests start when `start` passes (usually a flag
@@ -25,7 +26,7 @@ export const QUESTS = [
       { text: 'Run down two of the three leads: the phone seller under the metro station steps, the security monitor on the ASTER lobby desk (fix it to see the 3 a.m. footage), or the helium trail (print a sniffer at Fab #1).', done: (f) => balloonLeads(f) >= 2 || f['act1.cordon.passed'] || f['act1.beat.call'] },
       { text: 'The trail goes down the storm grate into the Green Line. Get past the abatement cordon in the plaza.', done: (f) => f['act1.cordon.passed'] || f['act1.beat.call'] },
       { text: 'Follow the Green Line tunnels east, toward the old platform.', done: (f) => f['act1.fuses.seen'] || f['act1.tunnel.gate'] || f['act1.boss.defeated'] },
-      { text: 'The gate panel has no fuses. Its sticker says the spares are with the ASTER super, B-01: that\'s Kess, in the ASTER lobby. Go back up and ask her.', done: (f) => f['act1.fuses.in'] || f['act1.tunnel.gate'] || f['act1.boss.defeated'] },
+      { text: 'The gate panel has no fuses. Its sticker says to ask the ASTER super for spares: that\'s Kess, in the ASTER lobby. Go back up and ask her.', done: (f) => f['act1.fuses.in'] || f['act1.tunnel.gate'] || f['act1.boss.defeated'] },
       { text: 'Open the gate to the dead platform. The breaker panel is live now; the gate itself says what else it needs.', done: (f) => f['act1.tunnel.gate'] || f['act1.boss.defeated'] },
       { text: 'Reach the dead platform. The balloon is down there, and so is the heart of the outbreak.', done: (f) => f['act1.boss.defeated'] || f['act1.complete'] },
     ],

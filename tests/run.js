@@ -903,21 +903,23 @@ test('hub #30 (Act 2): children on the polished Act 2 maps, the crowd\'s include
   assert.ok(MAPS_FOR_TEST.greenbelt.objects.some((o) => o.age === 'child'), 'the kid with the kite in Greenbelt is still there');
 });
 test('hub #30 (Act 2): quest objects, givers, exits, spawns and enemies on the polished maps are where they were', () => {
+  // Phase 0 moved five exits on purpose so paired doors face each other (the door-facing test below): r1n_to_beltway,
+  // gb_coop_out, bv_barn_out, meade_to_meade_inside and annapolis_to_ann_bridge.
   const WAS = {
     'npc.r1n_walker': [32, 8], 'obj.r1n_to_baltimore': [20, 0], 'obj.r1n_to_greenbelt': [0, 2], 'obj.r1n_to_refuge': [40, 2], 'obj.r1n_to_beltsville': [0, 6],
-    'obj.r1n_to_meade': [39, 6], 'obj.r1n_to_annapolis': [40, 9], 'obj.r1n_south': [18, 12], 'obj.r1n_to_beltway': [10, 12],
+    'obj.r1n_to_meade': [39, 6], 'obj.r1n_to_annapolis': [40, 9], 'obj.r1n_south': [18, 12], 'obj.r1n_to_beltway': [0, 10],
     'npc.gb_committee': [15, 6], 'obj.gb_dishes': [30, 4], 'obj.greenbelt_out': [32, 10], 'obj.greenbelt_to_gb_dishes': [29, 0], 'obj.greenbelt_to_gb_coop': [3, 11], 'obj.greenbelt_to_gb_center': [5, 0],
     'npc.gb_technician': [5, 4], 'obj.gb_tapes': [9, 2], 'obj.gb_cleanroom': [24, 4], 'obj.gb_dishes_out': [11, 8],
-    'npc.gb_clerk': [11, 4], 'obj.gb_coop_counter': [12, 2], 'obj.gb_coop_out': [10, 7],
+    'npc.gb_clerk': [11, 4], 'obj.gb_coop_counter': [12, 2], 'obj.gb_coop_out': [10, 0],
     'npc.bv_vet': [11, 7], 'obj.bv_ledgers': [4, 3], 'obj.bv_sealed_barn': [17, 9], 'obj.beltsville_crate_19_3': [19, 3], 'obj.beltsville_out': [31, 9], 'obj.beltsville_to_bv_barn': [12, 10], 'obj.beltsville_to_bv_lab': [6, 0],
-    'obj.bv_named_tank': [22, 3], 'obj.bv_barn_out': [11, 8],
+    'obj.bv_named_tank': [22, 3], 'obj.bv_barn_out': [11, 0],
     'npc.rf_teacher': [9, 6], 'obj.rf_tower': [18, 8], 'obj.refuge_out': [0, 8], 'obj.refuge_to_rf_settlement': [8, 0], 'obj.refuge_to_rf_fringe': [26, 0], 'obj.refuge_to_rf_marsh': [15, 9],
     'npc.rf_blacksmith': [5, 3], 'obj.rf_library': [20, 3], 'npc.rf_hardman': [13, 4], 'obj.rf_implants': [26, 5], 'obj.rf_settlement_out': [10, 8],
-    'npc.md_quartermaster': [14, 5], 'obj.md_menu': [28, 4], 'obj.meade_out': [0, 7], 'obj.meade_to_meade_inside': [10, 8], 'obj.meade_to_md_lot': [4, 8],
+    'npc.md_quartermaster': [14, 5], 'obj.md_menu': [28, 4], 'obj.meade_out': [0, 7], 'obj.meade_to_meade_inside': [10, 1], 'obj.meade_to_md_lot': [4, 8],
     'npc.bmore_steward': [15, 4], 'obj.bmore_manifests': [27, 6], 'obj.bmore_stacks_out': [0, 7],
     'npc.bmore_doctor': [15, 3], 'obj.bmore_meds': [16, 3], 'obj.bmore_clinic_out': [10, 7],
     'npc.ann_crabber': [20, 3], 'obj.ann_statehouse': [4, 4], 'obj.ann_charts': [29, 6], 'obj.annapolis_out': [0, 7], 'obj.annapolis_to_ann_harbor': [31, 7],
-    'obj.annapolis_to_ann_statehouse': [6, 8], 'obj.annapolis_to_ann_bridge': [28, 8], 'obj.annapolis_to_ann_chapel': [3, 0],
+    'obj.annapolis_to_ann_statehouse': [6, 8], 'obj.annapolis_to_ann_bridge': [31, 5], 'obj.annapolis_to_ann_chapel': [3, 0],
     'npc.ann_pilot': [12, 5], 'obj.ann_almanac': [14, 6], 'obj.ann_bell': [25, 4], 'obj.ann_harbor_out': [0, 7],
   };
   const SPAWN = { route1_north: [18, 11], greenbelt: [3, 9], beltsville: [2, 9], refuge: [3, 8], meade: [3, 7], annapolis: [3, 7], gb_dishes: [11, 7], gb_coop: [10, 6],
@@ -1108,7 +1110,7 @@ test('hub #30 (Act 3): quest objects, givers, exits, spawns and enemies on the p
     'obj.cor_meters': [27, 5], 'obj.cor_sealed_out': [14, 8],
     'obj.gt_leapseconds': [18, 3], 'npc.gt_timekeeper': [10, 5], 'obj.gt_clockroom_out': [10, 7],
     'obj.fr_dashboard_room': [28, 3], 'obj.fr_switchyard_out': [0, 7],
-    'obj.en_parchment': [11, 2], 'npc.en_functionary': [11, 5], 'obj.en_archive_out': [11, 8],
+    'obj.en_parchment': [11, 2], 'npc.en_functionary': [11, 5], 'obj.en_archive_out': [11, 0],
     'obj.md_the_wall': [14, 2], 'obj.md_intercepts': [22, 2], 'npc.md_analyst': [14, 6], 'obj.meade_inside_out': [14, 8],
   };
   const SPAWN = { beltway: [13, 9], corridor: [29, 9], gaithersburg: [25, 8], frederick: [12, 8], enclave: [18, 8], cor_sealed: [14, 7], gt_clockroom: [10, 6], fr_switchyard: [3, 7],
@@ -1422,7 +1424,7 @@ test('hub #68: lab 245\'s bench, the quest objects, doors, people and rotlings k
   assert.equal(m.layout[2][2], 'e', 'still on the lab floor');
   assert.deepEqual(at('obj.chb_bench_2'), [5, 2, 1]); assert.deepEqual(at('obj.chb_storage'), [22, 8, 1]);
   assert.deepEqual(at('npc.chb_ta'), [21, 2, 1]); assert.deepEqual(at('npc.chb_student'), [3, 8, 1]);
-  assert.deepEqual(at('obj.chb_doors'), [11, 15, 2]); assert.deepEqual(at('obj.chb_quad_door'), [12, 0, 1]);
+  assert.deepEqual(at('obj.chb_doors'), [11, 0, 2]); assert.deepEqual(at('obj.chb_quad_door'), [12, 15, 1]);   // swapped in Phase 0: the plaza is north, the quad south
   assert.deepEqual(m.enemies.map((e) => [e.kind, Math.floor(e.x / 16), Math.floor(e.y / 16)]), [['enemy.rotling', 10, 3], ['enemy.rotling', 23, 5], ['enemy.rotling', 12, 9], ['enemy.rotling', 14, 13]], 'same rotlings, same order (saves key kills by index)');
   assert.deepEqual(m.spawns.map((s) => [Math.floor(s.x / 16), Math.floor(s.y / 16)]), [[6, 13]]);
   const ta = m.objects.find((q) => q.id === 'npc.chb_ta');
@@ -1759,7 +1761,7 @@ test('hub #30 (stretch): the side-quest objects, givers, exits and spawns on the
   const WAS = { 'npc.rf_counter': [7, 5], 'obj.rf_blind': [22, 5], 'npc.md_attendant': [14, 5], 'obj.md_lot_sign': [26, 4], 'npc.ann_clerk': [10, 5], 'obj.ann_tideline': [11, 3],
     'npc.ann_fisher': [9, 3], 'obj.ann_span': [18, 3], 'npc.gb_usher': [14, 5], 'obj.gb_theater': [8, 2], 'npc.bv_lab_tech': [11, 4], 'obj.bv_batch_board': [22, 4],
     'npc.gt_metrologist': [11, 4], 'obj.gt_volt': [24, 2], 'npc.fr_grocer': [10, 5], 'obj.fr_prices': [22, 2], 'npc.en_rider': [13, 2], 'obj.en_departures': [27, 2],
-    'obj.rf_fringe_out': [13, 8], 'obj.rf_marsh_out': [14, 0], 'obj.md_lot_out': [13, 0], 'obj.ann_statehouse_out': [11, 7], 'obj.ann_chapel_out': [11, 7], 'obj.ann_bridge_out': [0, 3],
+    'obj.rf_fringe_out': [13, 8], 'obj.rf_marsh_out': [14, 0], 'obj.md_lot_out': [13, 0], 'obj.ann_statehouse_out': [11, 0], 'obj.ann_chapel_out': [11, 7], 'obj.ann_bridge_out': [0, 3],
     'obj.bv_lab_out': [12, 7], 'obj.gb_center_out': [12, 8], 'obj.gt_labs_out': [12, 7], 'obj.fr_market_out': [12, 7], 'obj.en_mall_out': [19, 6], 'obj.en_metro_out': [14, 0] };
   const SPAWN = { rf_fringe: [13, 7], rf_marsh: [14, 6], md_lot: [13, 7], ann_statehouse: [11, 6], ann_chapel: [11, 6], ann_bridge: [2, 3], bv_lab: [12, 6], gb_center: [12, 7],
     gt_labs: [12, 6], fr_market: [12, 6], en_mall: [19, 5], en_metro: [14, 3] };
@@ -2044,6 +2046,258 @@ test('every door has wall on both sides (no doors standing on an open patch)', (
     }
   }
 });
+
+// Phase 0 (docs/design/13-audit-and-rebuild.md, rooms): paired doors face each other, so you come out facing the way you
+// went in. A door faces the side you stand on to use it: inward at a map edge, else its one open side, else away from its
+// one blocked side; an explicit `inside` (the cordon field, sim.setMap) wins. Stairs, ladders, hatches, the grate and
+// elevators go up or down, so they're left out. The partner is the exit the game lands you at (sim.setMap's rule).
+test('paired doors face each other: you come out facing the way you went in (Phase 0)', () => {
+  // Pairs left for later, each listed both ways round. Both touch maps that open PR #96 (the Baltimore art pass) is
+  // changing, so they wait for it to land rather than conflict with it:
+  const LATER = new Set([
+    'baltimore/obj.baltimore_to_bmore_clinic', 'bmore_clinic/obj.bmore_clinic_out',   // the street's door is on its west edge: the clinic's belongs in its east wall
+    'corridor/obj.corridor_to_cor_town', 'cor_town/obj.town_to_corridor',             // cor_town (districts.js) has its door in the south wall: it belongs in the north
+  ]);
+  const VERTICAL = /stairs|elevator|ladder|hatch|grate|tunnel_(up|on)/i;
+  const OPP = { N: 'S', S: 'N', E: 'W', W: 'E' }, SIDE = { down: 'S', up: 'N', left: 'W', right: 'E' };
+  const facing = (m, o) => {
+    if (o.inside) return SIDE[o.inside];
+    const w = o.w ?? 1;
+    if (o.y === 0) return 'S'; if (o.y === m.h - 1) return 'N'; if (o.x === 0) return 'E'; if (o.x + w - 1 === m.w - 1) return 'W';
+    const open = [], shut = [];
+    for (const [d, dx, dy] of [['N', 0, -1], ['S', 0, 1], ['W', -1, 0], ['E', 1, 0]]) {
+      const cells = Array.from({ length: w }, (_, i) => [o.x + i + dx, o.y + dy]).filter(([x, y]) => !(y === o.y && x >= o.x && x < o.x + w));   // not the door's own tiles
+      (cells.some(([x, y]) => !m.solid(x, y)) ? open : shut).push(d);
+    }
+    if (open.length === 1) return open[0];
+    if (shut.length === 1 && open.includes(OPP[shut[0]])) return OPP[shut[0]];
+    return null;
+  };
+  const kind = (id) => (/elevator/.test(id ?? '') ? 'elevator' : /stairs/.test(id ?? '') ? 'stairs' : /door/.test(id ?? '') ? 'door' : '');
+  const bad = [], unclear = [], seenLater = [], fixedLater = [];
+  let checked = 0;
+  for (const m of Object.values(MAPS_FOR_TEST)) for (const o of m.objects.filter((q) => q.action === 'exit' && MAPS_FOR_TEST[q.to])) {
+    const B = MAPS_FOR_TEST[o.to], backs = B.objects.filter((q) => q.action === 'exit' && q.to === m.id);
+    const p = backs.find((q) => q.pair === o.id || q.id === o.id) ?? backs.find((q) => kind(q.id) && kind(q.id) === kind(o.id)) ?? backs[0];
+    if (!p || VERTICAL.test(`${o.art ?? ''} ${o.id} ${o.label} ${p.art ?? ''} ${p.id} ${p.label}`)) continue;
+    const key = `${m.id}/${o.id}`, a = facing(m, o), b = facing(B, p), ok = a && b && b === OPP[a];
+    if (LATER.has(key)) { seenLater.push(key); if (ok) fixedLater.push(key); continue; }
+    checked++;
+    if (!a || !b) unclear.push(`${key} (${a ?? '?'}) -> ${B.id}/${p.id} (${b ?? '?'})`);
+    else if (!ok) bad.push(`${key} at ${o.x},${o.y} faces ${a}, but ${B.id}/${p.id} at ${p.x},${p.y} faces ${b}`);
+  }
+  assert.deepEqual(unclear, [], 'say which side these doors are used from: open floor on one side only, or `inside`');
+  assert.deepEqual(bad, [], 'move one door of each pair to the matching wall');
+  assert.deepEqual(fixedLater, [], 'fixed: take these off the LATER list');
+  assert.deepEqual(seenLater.sort(), [...LATER].sort(), 'a LATER pair is gone: take it off the list');
+  assert.ok(checked >= 100, `only ${checked} doors checked`);
+});
+
+test('ASTER\'s stairs are one stack: B-01, lobby, 5th, 6th, roof, each flight joining neighbouring floors only (Phase 0)', () => {
+  const STACK = ['aster_basement', 'aster_lobby', 'aster_5f', 'aster_hall', 'aster_roof'];
+  const flights = new Set();
+  for (const id of STACK) for (const o of MAPS_FOR_TEST[id].objects) {
+    if (o.action !== 'exit' || !STACK.includes(o.to)) continue;
+    if (/elevator/i.test(`${o.id} ${o.art ?? ''}`)) { assert.deepEqual([id, o.to].sort(), ['aster_hall', 'aster_lobby'], `${id}/${o.id}: the elevator runs lobby to six`); continue; }
+    assert.ok(/stairs|hatch|ladder/i.test(`${o.art ?? ''} ${o.label}`), `${id}/${o.id}: between floors, a stair, the roof hatch or the elevator`);
+    assert.equal(Math.abs(STACK.indexOf(o.to) - STACK.indexOf(id)), 1, `${id}/${o.id} goes to ${o.to}, skipping a floor`);
+    const back = MAPS_FOR_TEST[o.to].objects.find((q) => q.id === o.pair);
+    assert.ok(back && back.to === id && back.pair === o.id, `${id}/${o.id}: paired both ways with the flight back from ${o.to}`);
+    flights.add(`${id}>${o.to}`);
+  }
+  for (let i = 0; i + 1 < STACK.length; i++) for (const [a, b] of [[STACK[i], STACK[i + 1]], [STACK[i + 1], STACK[i]]]) assert.ok(flights.has(`${a}>${b}`), `no stairs from ${a} to ${b}`);
+});
+
+test('the dead platform: a lit landmark in view from where you come in, and the arena stays clear for the Warden (Phase 0)', () => {
+  const m = MAPS_FOR_TEST.platform;
+  const frames = new Set(['big', 'props', 'wide'].flatMap((s) => Object.keys(JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${s}.json`, import.meta.url), 'utf8')).frames)));
+  const car = (m.scenery ?? []).filter((s) => /^obj\.train_/.test(s.art)), xs = car.map((s) => s.x).sort((a, b) => a - b);
+  assert.ok(car.length >= 5 && car.every((s) => frames.has(s.art) && s.solid && s.scale === 1 && s.w === 2), 'the car: its pieces, solid, drawn at scale 1 so they meet');
+  assert.ok(xs.every((x, i) => i === 0 || x - xs[i - 1] === 2) && car.every((s) => s.y === m.h - 2), 'the pieces meet end to end on the far rail');
+  assert.ok(xs[0] - Math.floor(m.spawns[0].x / 16) < 30, 'in view from the spawn (the first screen is 30 tiles across)');
+  assert.ok(car.some((s) => s.light > 0), 'lit');
+  for (const other of Object.values(MAPS_FOR_TEST).filter((q) => q.id !== 'platform')) {
+    for (const art of [...other.objects.map((o) => o.art), ...(other.scenery ?? []).map((s) => s.art)]) assert.ok(!/^obj\.train_/.test(art ?? ''), `${other.id}: the car is the platform's own`);
+  }
+  for (const id of ['obj.train_car', 'obj.train_open_door']) { const o = m.objects.find((q) => q.id === id); assert.ok(o && !m.solid(o.x, o.y - 1), `${id}: read from the near rail`); }
+  for (let y = 3; y <= 12; y++) for (let x = 14; x <= 40; x++) assert.ok(!m.solid(x, y) || m.layout[y][x] === '|', `something solid in the arena at ${x},${y}`);
+  for (const x of [3, m.w - 3]) for (const y of [5, 7, 9]) assert.ok(!m.solid(x, y), `the Warden's adds come out of the tunnel mouths at ${x},${y}`);
+});
+
+test('the fuse carrier sends you to the ASTER lobby, where Kess is (Phase 0: it said B-01)', () => {
+  const carrier = MAPS_FOR_TEST.tunnel_1.objects.find((o) => o.id === 'obj.fuse_carrier');
+  assert.ok(/LOBBY/.test(carrier.text) && !/B-01/.test(carrier.text), carrier.text);
+  assert.ok(MAPS_FOR_TEST.aster_lobby.objects.some((o) => o.id === 'npc.kess'), 'Kess stands in the lobby');
+  const stage = QUESTS_ES.find((q) => q.id === 'main.balloon').stages.find((s) => /fuses/.test(s.text) && /sticker/.test(s.text));
+  assert.ok(stage && !/B-01/.test(stage.text) && /lobby/.test(stage.text), 'the quest stage agrees with the sticker');
+});
+
+// The room standard (hub #113; tools/level/rooms.mjs). check.mjs warns about every map that misses it and fails a map
+// marked `standard: true`; this holds the marked ones to it in the test run too.
+const { roomReport: ROOM_REPORT, RULES: ROOM_RULES, spriteOf: ROOM_SPRITE } = await import('../tools/level/rooms.mjs');
+test('room standard (hub #113): every map marked standard: true meets it', () => {
+  const marked = Object.values(MAPS_FOR_TEST).filter((m) => m.standard);
+  for (const id of ['apt_636', 'apt_637', 'apt_638', 'diner', 'dining_hall', 'robotics_lab', 'auditorium', 'hardware', 'aster_basement', 'aster_laundry', 'aster_5f', 'aster_roof', 'feed_store']) assert.ok(MAPS_FOR_TEST[id].standard, `${id} is built to the standard`);
+  for (const m of marked) assert.deepEqual(ROOM_REPORT(m, MAPS_FOR_TEST).miss, [], `${m.id} misses the room standard`);
+});
+test('room standard (hub #113): the checks bite, and Room 631 (the reference) meets all of them but the landmark', () => {
+  const miss = (m) => ROOM_REPORT(m, MAPS_FOR_TEST).miss.join(' | ');
+  assert.deepEqual(ROOM_REPORT(MAPS_FOR_TEST.room631, MAPS_FOR_TEST).miss, ['no landmark (mark one object landmark: true)'], miss(MAPS_FOR_TEST.room631));
+  // A scaffold (the laundry room as it was before its rebuild): one floor, washers everywhere, short, no lights.
+  const scaffold = makeMap({ id: 'scaffold_laundry', name: 'A scaffold', spawns: [[2, 5]],
+    layout: ['################', '#::::::::::::::#', '#::::::::::::::#', '#::::::::::::::#', '#::::::::::::::#', '#::::::::::::::#', '################'],
+    objects: [{ id: 'obj.scaffold_end', art: 'obj.washer', x: 11, y: 2 }, { id: 'obj.scaffold_board', art: 'obj.board', x: 13, y: 2 }],
+    scenery: [2, 3, 5, 6, 8, 9].map((x) => ({ art: 'obj.washer', x, y: 2, solid: true })) });
+  const laundry = miss(scaffold);
+  for (const rule of [/^height 7/, /obj\.washer is \d+%/, /distinct sprites/, /1 floor kind/, /light sources/, /no landmark/]) assert.ok(laundry.split(' | ').some((r) => rule.test(r)), `the laundry should miss ${rule}: ${laundry}`);
+  // A landmark has to be a drawing no other map uses, in view from the spawn.
+  const borrowed = { ...MAPS_FOR_TEST.apt_637, objects: MAPS_FOR_TEST.apt_637.objects.map((o) => (o.landmark ? { ...o, art: 'obj.tv' } : o)) };
+  assert.ok(/also used by .*room631/.test(miss(borrowed)), 'a landmark drawn with 631\'s TV is caught');
+  const hidden = { ...MAPS_FOR_TEST.apt_637, objects: MAPS_FOR_TEST.apt_637.objects.map((o) => (o.landmark ? { ...o, x: 2, y: 3 } : o)) };
+  assert.ok(/behind a wall/.test(miss(hidden)), 'a landmark in the bedroom is out of sight from the front door');
+  assert.equal(ROOM_RULES.maxShare, 0.4);
+});
+test('the ASTER flats (hub #113): quest objects, people and exits kept; 631\'s scale; each new drawing used only in its own flat', () => {
+  const KEEP = { apt_637: ['obj.apt_637_out', 'npc.apt637_player', 'obj.apt637_sheet'], apt_638: ['obj.apt_638_out', 'npc.apt638_viewer', 'obj.apt638_tv', 'obj.apt638_cans'],
+    apt_636: ['obj.apt_636_out', 'obj.apt636_parcel', 'obj.apt636_lease', ...['2_2', '3_2', '4_2', '2_3', '3_3'].map((n) => `obj.apt_636_boxes_${n}`)] };
+  const OWN = { apt_637: ['obj.cello_corner', 'obj.music_stand', 'obj.metronome', 'obj.cello_case', 'obj.egg_foam'],
+    apt_638: ['obj.tv_continuity', 'obj.couch_back', 'obj.cold_brew', 'obj.screengrab_wall', 'obj.notebooks'],
+    apt_636: ['obj.hand_truck', 'obj.fridge_open', 'obj.parcel', 'obj.mattress_up', 'obj.move_list', 'obj.lease_counter'] };
+  for (const [id, keep] of Object.entries(KEEP)) {
+    const m = MAPS_FOR_TEST[id];
+    for (const k of keep) assert.ok(m.objects.some((o) => o.id === k), `${id}: ${k} is still there`);
+    const door = m.objects.find((o) => o.action === 'exit');
+    assert.equal(door.pair, `obj.door_${id.slice(4)}`, `${id}: the door pairs with the hall's`);
+    assert.equal(door.y, id === 'apt_637' ? m.h - 1 : 0, `${id}: the door stays in the ${id === 'apt_637' ? 'south' : 'north'} wall (PR #168)`);
+    // 631 grew a street row below its balcony rail (hub #99), so the flats are no longer exactly its height; what
+    // matters is the zoom, which WorldScene takes from the height: max(4, min(7, floor(1080 / (h * 16)))).
+    const zoomFor = (h) => Math.max(4, Math.min(7, Math.floor(1080 / (h * 16))));
+    assert.equal(zoomFor(m.h), zoomFor(MAPS_FOR_TEST.room631.h), `${id}: it draws at 631's zoom`);
+    assert.ok(Math.abs(m.h - MAPS_FOR_TEST.room631.h) <= 1, `${id}: within a row of 631's height`);
+    assert.ok(m.objects.some((o) => o.landmark && o.light > 0), `${id}: the landmark is lit`);
+    for (const art of OWN[id]) for (const other of Object.values(MAPS_FOR_TEST).filter((q) => q.id !== id)) {
+      assert.ok(![...other.objects, ...(other.scenery ?? [])].some((t) => ROOM_SPRITE(t) === art), `${art} is ${id}'s own, but ${other.id} uses it`);
+    }
+  }
+  assert.equal(MAPS_FOR_TEST.apt_638.objects.find((o) => o.id === 'obj.apt638_tv').landmark, true, 'the set is 638\'s landmark');
+});
+// hub #113, second slice: the dining hall, the robotics lab, the auditorium (act1_more.js) and Hollis Hardware
+// (act1_route1.js), rebuilt to the room standard.
+const { AUD_ARENA } = await import('../src/content/maps/act1_more.js');
+test('campus rooms and Hollis Hardware (hub #113): ids, people, exits and enemies kept; doors in the south wall; the landmark is lit', () => {
+  const KEEP = { dining_hall: ['obj.dining_out', 'npc.dining_cook', 'npc.dining_student', 'obj.waffle_machine', 'obj.dining_swipe'],
+    robotics_lab: ['obj.robotics_out', 'obj.mars_rover', 'obj.rover_whiteboard', 'obj.robotics_lab_parts_bins_3_6', 'obj.rover_drawer', 'npc.lab_grad'],
+    auditorium: ['obj.aud_out', 'obj.aud_projector'],
+    hardware: ['obj.hardware_out', 'npc.dot_hollis', ...['tags', 'bench', 'key_machine', 'fasteners', 'drawer', 'counter', 'chalkboard', 'adapters'].map((n) => `obj.hardware_${n}`)] };
+  const LANDMARK = { dining_hall: 'obj.waffle_machine', robotics_lab: 'obj.mars_rover', auditorium: 'obj.aud_projector', hardware: 'obj.hardware_key_machine' };
+  for (const [id, keep] of Object.entries(KEEP)) {
+    const m = MAPS_FOR_TEST[id];
+    for (const k of keep) assert.ok(m.objects.some((o) => o.id === k), `${id}: ${k} is still there`);
+    const exits = m.objects.filter((o) => o.action === 'exit');
+    assert.equal(exits.length, 1, `${id}: one way out`);
+    assert.equal(exits[0].y, m.h - 1, `${id}: the door stays in the south wall (PR #168)`);
+    const mark = m.objects.find((o) => o.landmark);
+    assert.equal(mark.id, LANDMARK[id]); assert.ok(mark.light > 0, `${id}: the landmark is lit`);
+    assert.ok(m.h >= 15, `${id}: tall enough to draw at the plaza's zoom`);
+    const atlas = chb68Atlas('props');
+    assert.ok([...m.objects, ...(m.scenery ?? [])].some((t) => atlas.includes(`${ROOM_SPRITE(t)}#1`)), `${id}: something in the room moves`);
+  }
+  assert.deepEqual(MAPS_FOR_TEST.robotics_lab.enemies.map((e) => e.kind), ['enemy.rotling']);
+  assert.deepEqual(MAPS_FOR_TEST.auditorium.enemies.map((e) => e.kind), ['enemy.rotling', 'boss.chb_autograder'], 'same enemies, same order (saves key kills by index)');
+  assert.equal(MAPS_FOR_TEST.hardware.objects.find((o) => o.id === 'obj.hardware_counter').action, 'shop');
+  assert.equal(MAPS_FOR_TEST.dining_hall.objects.find((o) => o.id === 'obj.dining_swipe').pages.length, 3);
+  assert.equal(MAPS_FOR_TEST.robotics_lab.objects.find((o) => o.id === 'obj.rover_drawer').grant, 'item.welding_goggles');
+  // No stand-ins left where the audit named them: the auditorium's seats aren't tables, the tags aren't a notice board.
+  assert.ok(!(MAPS_FOR_TEST.auditorium.scenery ?? []).some((t) => t.art === 'obj.table' && t.y > 2), 'no tables for seats');
+  for (const id of Object.keys(KEEP)) assert.ok(![...MAPS_FOR_TEST[id].objects, ...(MAPS_FOR_TEST[id].scenery ?? [])].some((t) => ROOM_SPRITE(t) === 'obj.board'), `${id}: obj.board isn't standing in for anything`);
+});
+test('the auditorium (hub #113): the Autograder\'s floor stays clear, at least the audit\'s 30x16, and it sleeps until you walk up', () => {
+  const m = MAPS_FOR_TEST.auditorium, A = AUD_ARENA;
+  assert.ok(A.w * A.h >= 30 * 16 && A.w >= 30, `the arena is ${A.w}x${A.h}`);
+  const solid = [];
+  for (let y = A.y; y < A.y + A.h; y++) for (let x = A.x; x < A.x + A.w; x++) if (m.solid(x, y)) solid.push(`${x},${y}`);
+  assert.deepEqual(solid, [], 'nothing solid on the arena floor (seats, stacks and the stage furniture stay outside it)');
+  const inArena = (e) => { const x = Math.floor(e.x / 16), y = Math.floor(e.y / 16); return x >= A.x && x < A.x + A.w && y >= A.y && y < A.y + A.h; };
+  const boss = m.enemies.find((e) => e.kind === 'boss.chb_autograder');
+  assert.ok(boss && inArena(boss), 'the Autograder starts on the arena floor');
+  const wake = POLISH30_BOSSES['boss.chb_autograder'](1).wake, sp = m.spawns[0];
+  assert.ok(Math.hypot(sp.x - boss.x, sp.y - boss.y) > wake * 2, 'you come in at the back, well outside its wake radius');
+  assert.ok(m.scenery.filter((t) => /^obj\.aud_seats/.test(t.art)).every((t) => t.solid && t.y >= A.y + A.h), 'the seats that are left are behind the arena');
+  assert.ok(m.objects.some((o) => o.art === 'obj.aud_screen' && o.y < A.y) && m.objects.some((o) => o.art === 'obj.lectern' && o.y < A.y), 'a stage with a screen and a lectern, in front of the arena');
+});
+// hub #113, third slice: the rest of ASTER (basement, laundry, fifth floor, roof) and Pardo's, rebuilt to the standard.
+const { worldPos: ROOM_WORLD_POS } = await import('../src/content/maps/index.js');
+test('ASTER basement, laundry, fifth floor, roof and the feed store (hub #113): ids, people, exits and enemies kept; a lit landmark; something moves', () => {
+  const KEEP = {
+    aster_basement: ['obj.basement_stairs', 'obj.basement_laundry', 'obj.basement_cage_631', 'obj.aster_basement_crate_19_2', 'obj.aster_basement_crate_22_2', 'obj.kess_bench'],
+    aster_laundry: ['obj.laundry_out', 'obj.laundry_end_machine', 'obj.laundry_board', 'npc.laundry_folder'],
+    aster_5f: ['obj.aster5_stairs', 'obj.aster5_up', 'obj.door_531', 'obj.aster_5f_door_11_3', 'obj.aster_5f_door_19_3', 'obj.aster_5f_door_27_3', 'obj.aster5_hose', 'npc.aster5_neighbor'],
+    aster_roof: ['obj.roof_hatch', 'obj.roof_cooler', 'obj.roof_view', 'npc.roof_watcher'],
+    feed_store: ['obj.feed_out', 'npc.gus_pardo', ...['shrimp', 'tanks', 'pallet', 'counter', 'brooder', 'corkboard'].map((n) => `obj.feed_${n}`)] };
+  const EXITS = { aster_basement: { 'obj.basement_stairs': ['aster_lobby', 'obj.lobby_basement'], 'obj.basement_laundry': ['aster_laundry', 'obj.laundry_out'] },
+    aster_laundry: { 'obj.laundry_out': ['aster_basement', 'obj.basement_laundry'] },
+    aster_5f: { 'obj.aster5_stairs': ['aster_lobby', 'obj.lobby_5f'], 'obj.aster5_up': ['aster_hall', 'obj.stairs_6f'] },
+    aster_roof: { 'obj.roof_hatch': ['aster_hall', 'obj.hall_roof'] }, feed_store: { 'obj.feed_out': ['metro_plaza', 'obj.feed_door'] } };
+  const LANDMARK = { aster_basement: ['obj.basement_boiler', 'obj.boiler'], aster_laundry: ['obj.laundry_end_machine', 'obj.washer_odd'], aster_5f: ['obj.aster5_hose', 'obj.hose_cabinet'],
+    aster_roof: ['obj.roof_tank', 'obj.water_tank'], feed_store: ['obj.feed_brooder', 'obj.brooder'] };
+  const ENEMIES = { aster_basement: ['enemy.rotling'], aster_laundry: [], aster_5f: ['enemy.rotling'], aster_roof: [], feed_store: [] };
+  const atlas = chb68Atlas('props');
+  for (const [id, keep] of Object.entries(KEEP)) {
+    const m = MAPS_FOR_TEST[id];
+    for (const k of keep) assert.ok(m.objects.some((o) => o.id === k), `${id}: ${k} is still there`);
+    const exits = m.objects.filter((o) => o.action === 'exit');
+    assert.deepEqual(Object.fromEntries(exits.map((o) => [o.id, [o.to, o.pair]])), EXITS[id], `${id}: the same ways out, paired as before`);
+    for (const o of exits) assert.equal(MAPS_FOR_TEST[o.to].objects.find((q) => q.id === o.pair)?.to, id, `${id}/${o.id}: the other side leads back`);
+    assert.deepEqual(m.enemies.map((e) => e.kind), ENEMIES[id], `${id}: same enemies`);
+    const mark = m.objects.find((o) => o.landmark);
+    assert.deepEqual([mark.id, ROOM_SPRITE(mark)], LANDMARK[id]); assert.ok(mark.light > 0, `${id}: the landmark is lit`);
+    assert.ok(m.h >= 15, `${id}: at least 15 tall, so it draws at 631's zoom`);
+    assert.ok([...m.objects, ...(m.scenery ?? [])].some((t) => atlas.includes(`${ROOM_SPRITE(t)}#1`)), `${id}: something in the room moves`);
+    assert.ok(![...m.objects, ...(m.scenery ?? [])].some((t) => ROOM_SPRITE(t) === 'obj.board'), `${id}: obj.board isn't standing in for anything`);
+    for (const o of m.objects.filter((q) => !q.npc && q.action !== 'exit' && !q.door)) assert.ok((o.text ?? '').length > 0 || o.action === 'shop', `${id}/${o.id} says something`);
+  }
+  // Where PR #168 left the doors: the stairs on the west side of their floors, the laundry door in facing walls, the shop door in the south wall.
+  const at = (id, oid) => MAPS_FOR_TEST[id].objects.find((o) => o.id === oid);
+  assert.deepEqual([at('aster_basement', 'obj.basement_stairs').x, at('aster_basement', 'obj.basement_stairs').y], [1, 1]);
+  assert.deepEqual(['obj.aster5_stairs', 'obj.aster5_up'].map((k) => [at('aster_5f', k).x, at('aster_5f', k).y]), [[1, 1], [3, 1]]);
+  assert.deepEqual([at('aster_roof', 'obj.roof_hatch').x, at('aster_roof', 'obj.roof_hatch').y], [1, 7]);
+  assert.equal(at('aster_basement', 'obj.basement_laundry').x, MAPS_FOR_TEST.aster_basement.w - 1, 'the laundry door is in the basement\'s east wall');
+  assert.equal(at('aster_laundry', 'obj.laundry_out').x, 0, 'and in the laundry\'s west wall');
+  assert.equal(at('feed_store', 'obj.feed_out').y, MAPS_FOR_TEST.feed_store.h - 1, 'the shop door stays in the south wall');
+  // What the quests and secrets hang on.
+  assert.equal(at('aster_basement', 'obj.basement_cage_631').grant, 'item.bike_helmet');
+  for (const k of ['obj.aster_basement_crate_19_2', 'obj.aster_basement_crate_22_2']) assert.equal(at('aster_basement', k).loot, 'parts');
+  assert.equal(at('aster_5f', 'obj.aster5_hose').grant, 'item.hardhat');
+  assert.equal(at('aster_laundry', 'obj.laundry_end_machine').loot, 'lost'); assert.equal(at('aster_roof', 'obj.roof_cooler').loot, 'lost');
+  assert.equal(at('feed_store', 'obj.feed_counter').shop, 'feed');
+  // The fuse errand still sends you to Kess in the lobby: the basement's panel doesn't hand fuses out.
+  const panel = at('aster_basement', 'obj.basement_panel');
+  assert.ok(panel && !panel.grant && !panel.loot && /ASK ME/.test(panel.text), 'the spare-fuse box by the panel is empty, with a note to ask Kess');
+  assert.equal(MAPS_FOR_TEST.aster_roof.outdoor, false, 'no scooters on the roof');
+  // The cooler is behind the tank: north of it, close enough that the tank's drawing overlaps it.
+  const tank = at('aster_roof', 'obj.roof_tank'), cooler = at('aster_roof', 'obj.roof_cooler');
+  assert.ok(cooler.y < tank.y && Math.abs(cooler.x - tank.x) <= 2 && tank.y - cooler.y <= 2);
+});
+test('Pardo\'s and Hollis Hardware sit side by side on the world map without overlapping (hub #113)', () => {
+  const rect = (id) => ({ ...ROOM_WORLD_POS(MAPS_FOR_TEST[id]), w: MAPS_FOR_TEST[id].w, h: MAPS_FOR_TEST[id].h });
+  const apart = (a, b) => a.x >= b.x + b.w || b.x >= a.x + a.w || a.y >= b.y + b.h || b.y >= a.y + a.h;
+  const feed = rect('feed_store'), hw = rect('hardware');
+  assert.ok(apart(feed, hw), 'the two shops overlap');
+  assert.ok(apart(feed, rect('robotics_lab')) && apart(feed, rect('auditorium')), 'the feed store is clear of the campus rooms');
+  assert.ok(Math.abs(feed.y - (hw.y + hw.h)) <= 2 && feed.x < hw.x + hw.w && hw.x < feed.x + feed.w, 'next to each other');
+});
+test('the auditorium floor is dressed flat, and the rover is on its pad (hub #113 follow-ups)', () => {
+  const m = MAPS_FOR_TEST.auditorium, A = AUD_ARENA, decals = chb68Atlas('decals');
+  const inArena = ([, x, y]) => x >= A.x && x < A.x + A.w && y >= A.y && y < A.y + A.h;
+  const kinds = new Set(m.decals.filter(inArena).map(([f]) => f));
+  for (const f of ['dec.bolt_holes', 'dec.chalk_row', 'dec.scuff', 'dec.papers', 'dec.cushion']) assert.ok(kinds.has(f) && decals.includes(f), `${f} on the arena floor`);
+  assert.ok(m.decals.filter(inArena).filter(([f]) => f !== 'dec.bolt_holes').length >= 20, 'more than bolt holes');
+  const rover = MAPS_FOR_TEST.robotics_lab.objects.find((o) => o.id === 'obj.mars_rover');
+  assert.ok(/on the test pad/.test(rover.text) && !/cart/.test(rover.text), rover.text);
+  assert.equal(MAPS_FOR_TEST.robotics_lab.layout[rover.y][rover.x], 'y', 'it stands on the gravel pad');
+  const es = ES_PLAZA[rover.text];
+  assert.ok(es && /pista de pruebas/.test(es) && !/carrito/.test(es), 'the Spanish says the same');
+});
 const { BOSS_PATTERNS, bossPool, pickPattern } = await import('../src/engine/bossPatterns.js');
 const { MODULES: WARDEN_MODULES } = await import('../src/content/rotVillains.js');
 test('boss pattern library: every module has a pattern, pools grow by phase, no move twice running', () => {
@@ -2142,7 +2396,7 @@ test('arrivals: the elevator lands you at the elevator, and holding the key you 
   sim.setMap(MAPS_FOR_TEST.aster_hall, 'aster_lobby', 'obj.lobby_elevator');
   const h = sim.players.get('host'), elev = MAPS_FOR_TEST.aster_hall.objects.find((o) => o.id === 'obj.elevator');
   assert.ok(Math.hypot(h.x - (elev.x * 16 + 8), h.y - (elev.y * 16 + 8)) < 48, 'arrived beside the elevator, not the stairs');
-  sim.setMap(MAPS_FOR_TEST.aster_hall, 'aster_lobby', 'obj.lobby_stairs');
+  sim.setMap(MAPS_FOR_TEST.aster_hall, 'aster_5f', 'obj.aster5_up');   // the stairs come up from five (one stack, Phase 0)
   const up = { ...emptyInput(), my: -1 }, bumps = () => sim.events.filter((e) => e.t === 'bumpExit').length;
   let n = 0;
   for (let t = 0; t < 90; t++) { sim.step(1 / 60, new Map([['host', up]])); n += bumps(); }
@@ -2560,6 +2814,19 @@ test('the walker reaches every stop on its route (John Pork, hub #111): it paths
   assert.ok(best.every((d) => d <= 12), `within reach of all ${stops.length} stops: ${best.map(Math.round).join(' ')}`);
 });
 
+test('hub #128: the mod station stands on an authored map, at Ottoline the armorer\'s stall on the plaza', async () => {
+  await import('../src/game/gear.js');   // gear.js places Ottoline on metro_plaza at load
+  const m = MAPS_FOR_TEST.metro_plaza;
+  const benches = Object.values(MAPS_FOR_TEST).flatMap((map) => map.objects.filter((o) => o.station === 'mods').map((o) => [map.id, o]));
+  assert.deepEqual(benches.map(([id, o]) => `${id}:${o.id}`), ['metro_plaza:obj.mod_bench'], 'one mod station in the authored world, on the plaza');
+  const bench = m.objects.find((o) => o.id === 'obj.mod_bench'), armorer = m.objects.find((o) => o.armorer);
+  assert.ok(armorer, 'Ottoline is on the plaza');
+  assert.ok(Math.abs(bench.x - armorer.x) + Math.abs(bench.y - armorer.y) <= 1, 'the bench is right beside her');
+  assert.ok(!m.solid(bench.x, bench.y), 'on a walkable tile');
+  assert.equal(m.objects.filter((o) => o.x === bench.x && o.y === bench.y).length, 1, 'nothing else on its tile');
+  assert.ok(bench.label && bench.text, 'it has a label and a look line (Spanish in es-plaza.js; es_audit checks it)');
+});
+
 test('customization station (task #40): mods fit only where they belong, count in your stats, ride along when worn, and come back out', async () => {
   const { playerMods: pm, socketsFor, ITEMS } = await import('../src/content/items.js');
   const InvS = await import('../src/engine/inventory.js');
@@ -2714,6 +2981,28 @@ test('cordon, trevor\'s half of #36: a trooper at every checkpoint faces out, wi
   sim.setMap(MAPS_FOR_TEST.metro_plaza, 'route1_north', 'obj.r1n_south');
   const ex = MAPS_FOR_TEST.metro_plaza.objects.find((o) => o.id === 'obj.plaza_r1n');
   for (const p of sim.players.values()) assert.ok(Math.floor(p.y / 16) > ex.y, `${p.id} landed at row ${Math.floor(p.y / 16)}, beyond the barrier`);
+});
+
+test('the story bench (245): harder, a reference card always there, the book adds a hint per blank only when the party has it', async () => {
+  const lab = VLab.labById('reader');
+  assert.ok(lab.blanks.length >= 5 && lab.blanks.length > VLab.labById('fsm').blanks.length, 'harder than labs 1-3');
+  assert.ok(lab.ref.length >= 3 && lab.ref.every(([en, es]) => en && es), 'a reference card, in English and Spanish');
+  for (const b of lab.blanks) assert.ok(b.hint && b.hintEs && b.book && b.bookEs, 'every blank: a hint and a book hint, both languages');
+  assert.ok(lab.title && lab.titleEs && lab.goal && lab.goalEs);
+  assert.ok(lab.code.length <= 13 && lab.run(VLab.solve('reader')).length <= 14, 'fits the editor and the testbench panel');
+  const plain = VLab.newBench('reader'), booked = VLab.newBench('reader', { book: true });
+  assert.equal(VLab.hintsFor(plain, 0).length, 1, 'without the book: the bench hint only');
+  assert.deepEqual(VLab.hintsFor(booked, 0, true), [lab.blanks[0].hintEs, `Libro: ${lab.blanks[0].bookEs}`], 'with it: the book too');
+  // the shared bench picks the book up from the story flag, also on reopening
+  const scene = { mode: 'host', save: { flags: {} }, net: { broadcast() {} }, _labPassed() {} };
+  const bench = new LBench.LabBench(scene, {});
+  bench.open('reader'); assert.equal(bench.bench.book, false);
+  scene.save.flags['lab.book'] = true; bench.open('reader'); assert.equal(bench.bench.book, true, 'found the book later: the bench knows');
+  // unlimited attempts: wrong runs never lock it
+  for (let i = 0; i < 25; i++) VLab.runTests(bench.bench);
+  assert.ok(!bench.bench.passed && VLab.cycle(bench.bench, 0), 'still open after many failed runs');
+  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/msg\.t === 'flag' && msg\.key === 'lab\.book'\) this\.save\.flags\['lab\.book'\] = true/.test(src), 'a guest who reads the book counts for the party');
 });
 
 test('combat takes thought (Trevor: "I just walk into the robots and click and everything dies"): poise, committed attacks, deliberate parries', async () => {
@@ -3270,6 +3559,47 @@ test('a guest interacting with the ASTER stairs waits for players who walk up la
   assert.ok([...sim.players.values()].every((p) => p.waitExit === null));
 });
 
+
+test('things that change once something has happened: object textAfter, scenery stillAfter, a look step\'s seenAfter', async () => {
+  const { sceneryNextFrame } = await import('../src/game/render/decor.js');
+  const S = { art: 'x.sign', stillAfter: 'fixed' };
+  assert.equal(sceneryNextFrame(S, 'x.sign', {}), 'x.sign#1'); assert.equal(sceneryNextFrame(S, 'x.sign#1', {}), 'x.sign', 'it flickers');
+  assert.equal(sceneryNextFrame(S, 'x.sign#1', { fixed: true }), 'x.sign'); assert.equal(sceneryNextFrame(S, 'x.sign', { fixed: true }), 'x.sign', 'then holds');
+  assert.equal(sceneryNextFrame({ art: 'y' }, 'y', { fixed: true }), 'y#1', 'nothing else stops');
+  // objects: the words follow the flag, both ways (a new game in the same tab starts from the original)
+  const o = { id: 'obj.t', text: 'It flickers.', textAfter: { flag: 'fixed', text: 'It burns steady.' } };
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), { save: { flags: {} }, _flagTextObjs: [o] });
+  sc._flagTexts(); assert.equal(o.text, 'It flickers.');
+  sc.save.flags.fixed = true; sc._flagTexts(); assert.equal(o.text, 'It burns steady.');
+  sc.save.flags = {}; sc._flagTexts(); assert.equal(o.text, 'It flickers.');
+  const afterOnly = { textAfter: { flag: 'fixed', text: 'Ready.' } };
+  sc._flagTextObjs.push(afterOnly);
+  sc.save.flags.fixed = true; sc._flagTexts();
+  assert.equal(afterOnly.text, 'Ready.');
+  sc.save.flags = {}; sc._flagTexts();
+  assert.equal(afterOnly.text, undefined, 'loading a different save restores an absent base description');
+  // the builder
+  const { lookInspect } = await import('../src/content/sideQuests.js');
+  assert.deepEqual(lookInspect('q.z', { obj: 'obj.t', seen: 'A' }), { obj: 'obj.t', flag: 'q.z.seen', text: 'A' });
+  assert.deepEqual(lookInspect('q.z', { obj: 'obj.t', seen: 'A', seenAfter: { flag: 'fixed', seen: 'B' } }).textAfter, { flag: 'fixed', text: 'B' });
+  // the step: same flag either way, and you read the after text once the flag is set
+  const { QUESTS, questState } = await import('../src/content/quests.js');
+  const q = QUESTS.find((x) => x.inspect && x.id.startsWith('side.') && x.act === 1);
+  const m = Object.values(MAPS_FOR_TEST).find((mm) => mm.objects.some((x) => x.id === q.inspect.obj));
+  const obj = m.objects.find((x) => x.id === q.inspect.obj), keep = q.inspect.textAfter;
+  q.inspect.textAfter = { flag: 'fixed', text: 'AFTER' };
+  try {
+    for (const fixed of [false, true]) {
+      const save = newSave({ seed: 'flag-text', rolls: {}, gameVersion: 't' }), said = [];
+      save.flags[q.ask] = true; questState(save)[q.id].started = true; if (fixed) save.flags.fixed = true;
+      const s2 = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'solo', character: 'manuel', localId: 'host', save, map: m,
+        sim: { players: new Map() }, events: { once() {} }, time: { addEvent() {} }, net: null,
+        _say: (t) => said.push(t), _questBanner() {}, _syncParty() {}, _toast() {}, _announce() {}, _sayLater: () => false });
+      assert.ok(s2._questInteract(obj, 'manuel', 'host') && save.flags[q.inspect.flag], 'the look step completes either way');
+      assert.ok(said.at(-1).endsWith(fixed ? 'AFTER' : q.inspect.text), fixed ? 'with what you notice now' : 'with what you notice before');
+    }
+  } finally { if (keep) q.inspect.textAfter = keep; else delete q.inspect.textAfter; }
+});
 test('puzzle kit in co-op: a guest\'s move runs on the host, progress stays on the host, the reward goes once to the guest who solved it', async () => {
   const { PUZZLES } = await import('../src/content/puzzles.js');
   const pz = PK.definePuzzle({ id: 'coop_t', kind: 'cycle', parts: ['obj.a', 'obj.b'], states: ['0', '1'], answer: ['1', '1'], reward: { text: 'done', textEs: 'listo', item: 'item.mat_scrap', money: 9 } });
@@ -5698,6 +6028,36 @@ test('Manuel keeps level six as the stage two requirement after the story unlock
   manuel.morph.stage = 1;
   scene._levelsReached('manuel', manuel, [6]);
   assert.equal(manuel.morph.stage, 2, 'legacy stage-one saves retain the level-six progression');
+});
+
+test('hub #113, Act 1 people: thirteen neighbours, cooks and students draw with a sprite of their own, never a rotter', () => {
+  const frames = JSON.parse(fs.readFileSync(new URL('../assets/sprites/props.json', import.meta.url), 'utf8')).frames;
+  const PEOPLE = { compute_hall_b: ['npc.chb_ta', 'npc.chb_student'], diner: ['npc.diner_cook', 'npc.diner_regular'], aster_roof: ['npc.roof_watcher'],
+    campus_quad: ['npc.quad_student'], dining_hall: ['npc.dining_cook', 'npc.dining_student'], robotics_lab: ['npc.lab_grad'], apt_637: ['npc.apt637_player'],
+    apt_638: ['npc.apt638_viewer'], aster_5f: ['npc.aster5_neighbor'], aster_laundry: ['npc.laundry_folder'] };
+  const used = new Map();
+  for (const [map, ids] of Object.entries(PEOPLE)) for (const id of ids) {
+    const o = MAPS_FOR_TEST[map].objects.find((q) => q.id === id);
+    assert.ok(o?.npc, `${map}: ${id} is placed, and is a person`);
+    const art = o.art ?? o.id;
+    assert.ok(!/^npc\.rotter_/.test(art), `${id} still borrows ${art}`);
+    assert.ok(frames[art], `${id}: no frame ${art} in assets/sprites/props.json (gen_props.py, append to props.txt, then build.py props)`);
+    assert.equal(`${frames[art].frame.w}x${frames[art].frame.h}`, '16x24', `${art} is a props frame`);
+    assert.ok(!used.has(art), `${id} and ${used.get(art)} share ${art}`);
+    used.set(art, id);
+  }
+  assert.equal(used.size, 13);
+  // The regular sits on a stool drawn into his sprite; a map stool on his tile has the same depth and draws over him.
+  const reg = MAPS_FOR_TEST.diner.objects.find((q) => q.id === 'npc.diner_regular');
+  const onHisTile = [...MAPS_FOR_TEST.diner.objects, ...(MAPS_FOR_TEST.diner.scenery ?? [])].filter((t) => t !== reg && t.x === reg.x && t.y === reg.y && (t.art ?? t.id) === 'obj.stool');
+  assert.equal(onHisTile.length, 0, 'a map stool on the regular\'s tile covers him');
+  assert.ok(frames['npc.lab_grad#1'], 'the sleeper breathes: a second frame for the slow loop');
+  // The plaza's four borrow a rotter on purpose, and the rotters are still in the sheet for everyone else.
+  for (const id of ['npc.chatgpt', 'npc.claude', 'npc.chatgtt', 'npc.chatgdt']) {
+    const o = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects).find((q) => q.id === id);
+    if (o) assert.ok(/^npc\.rotter_[123]$/.test(o.art), `${id} keeps its rotter`);
+  }
+  for (const n of [1, 2, 3]) assert.ok(frames[`npc.rotter_${n}`]);
 });
 
 await Promise.all(pending);

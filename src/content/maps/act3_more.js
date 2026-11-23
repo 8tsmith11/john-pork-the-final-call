@@ -100,10 +100,11 @@ export const frSwitchyard = fromGrid({
 }).build();
 
 // ---- The Enclave: the national archive (parchment, which nothing can rot) ----
+// The way out is in the north wall: the Enclave's path to the archive leaves by its south edge, so you walk south in.
 export const enArchive = fromGrid({
   id: 'en_archive', name: 'The national archive', fill: '.', act: 3,
   rows: [
-    '########################',
+    '###########DD###########',
     '#......................#',
     '#..==..==..P...==..==..#',
     '#......................#',
@@ -111,7 +112,7 @@ export const enArchive = fromGrid({
     '#..........N.C.........#',
     '#.....E..........E.....#',
     '#..........@...........#',
-    '###########DD###########',
+    '########################',
   ],
   legend: {
     P: { prop: 'obj.wall_display', id: 'obj.en_parchment', label: 'The original documents',   // the low glass case

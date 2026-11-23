@@ -8,7 +8,7 @@ The rule is in `PROCESS.md`, "Working in git".
 "Landed by copy" means the changes reached `main` as new commits (cherry-picked or reapplied), so
 the branch tip isn't an ancestor of `main` even though nothing on it is missing.
 
-Last checked: 2026-11-23 by trevor (stand-in merger, D-023), against `origin/main` at `814f4b9`.
+Last checked: 2026-11-23 by trevor (stand-in merger, D-023), against `origin/main` at `b982ecad`.
 
 ## Active
 
@@ -21,6 +21,14 @@ Last checked: 2026-11-23 by trevor (stand-in merger, D-023), against `origin/mai
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `trevor/flag-text` | GitHub | Merged in `b982ecad` (PR #118), by trevor under D-023 (reviewed by John Pork) |
+| `gonman/mod-station` | GitHub | Merged in `66390770` (PR #176), by trevor under D-023 |
+| `trevor/bench-245` | GitHub | Merged in `f0e1d9d` (PR #121), by trevor under D-023 (reviewed by John Pork) |
+| `gonman/act1-people` | GitHub | Merged in `b4e6d99` (PR #172), by trevor under D-023 |
+| `gonman/rooms-aster` | GitHub | Merged in `e14f615` (PR #171), by trevor under D-023 |
+| `gonman/rooms-campus` | GitHub | Merged in `30dce20` (PR #170), by trevor under D-023 |
+| `gonman/rooms-act1` | GitHub | Merged in `e700b64` (PR #169), by trevor under D-023 |
+| `gonman/phase0-world` | GitHub | Merged in `def2d96` (PR #168), by trevor under D-023 |
 | `gonman/coop-fx-sync` | GitHub | Merged in `814f4b9` (PR #167), by trevor under D-023 |
 | `trevor/act2-audio` | GitHub | Merged in `f8d162c`, by trevor under D-023 (reviewed by John Pork) |
 | `trevor/dialogue-tooling` | GitHub | Merged in `9a9980d`, by trevor under D-023 (reviewed by John Pork) |
