@@ -2096,6 +2096,51 @@ test('the fuse carrier sends you to the ASTER lobby, where Kess is (Phase 0: it 
   const stage = QUESTS_ES.find((q) => q.id === 'main.balloon').stages.find((s) => /fuses/.test(s.text) && /sticker/.test(s.text));
   assert.ok(stage && !/B-01/.test(stage.text) && /lobby/.test(stage.text), 'the quest stage agrees with the sticker');
 });
+
+// The room standard (hub #113; tools/level/rooms.mjs). check.mjs warns about every map that misses it and fails a map
+// marked `standard: true`; this holds the marked ones to it in the test run too.
+const { roomReport: ROOM_REPORT, RULES: ROOM_RULES, spriteOf: ROOM_SPRITE } = await import('../tools/level/rooms.mjs');
+test('room standard (hub #113): every map marked standard: true meets it', () => {
+  const marked = Object.values(MAPS_FOR_TEST).filter((m) => m.standard);
+  for (const id of ['apt_636', 'apt_637', 'apt_638', 'diner']) assert.ok(MAPS_FOR_TEST[id].standard, `${id} is built to the standard`);
+  for (const m of marked) assert.deepEqual(ROOM_REPORT(m, MAPS_FOR_TEST).miss, [], `${m.id} misses the room standard`);
+});
+test('room standard (hub #113): the checks bite, and Room 631 (the reference) meets all of them but the landmark', () => {
+  const miss = (m) => ROOM_REPORT(m, MAPS_FOR_TEST).miss.join(' | ');
+  assert.deepEqual(ROOM_REPORT(MAPS_FOR_TEST.room631, MAPS_FOR_TEST).miss, ['no landmark (mark one object landmark: true)'], miss(MAPS_FOR_TEST.room631));
+  const laundry = miss(MAPS_FOR_TEST.aster_laundry);   // a scaffold: one floor, washers everywhere, short, no lights
+  for (const rule of [/^height 7/, /obj\.washer is \d+%/, /distinct sprites/, /1 floor kind/, /light sources/, /no landmark/]) assert.ok(laundry.split(' | ').some((r) => rule.test(r)), `the laundry should miss ${rule}: ${laundry}`);
+  // A landmark has to be a drawing no other map uses, in view from the spawn.
+  const borrowed = { ...MAPS_FOR_TEST.apt_637, objects: MAPS_FOR_TEST.apt_637.objects.map((o) => (o.landmark ? { ...o, art: 'obj.tv' } : o)) };
+  assert.ok(/also used by .*room631/.test(miss(borrowed)), 'a landmark drawn with 631\'s TV is caught');
+  const hidden = { ...MAPS_FOR_TEST.apt_637, objects: MAPS_FOR_TEST.apt_637.objects.map((o) => (o.landmark ? { ...o, x: 2, y: 3 } : o)) };
+  assert.ok(/behind a wall/.test(miss(hidden)), 'a landmark in the bedroom is out of sight from the front door');
+  assert.equal(ROOM_RULES.maxShare, 0.4);
+});
+test('the ASTER flats (hub #113): quest objects, people and exits kept; 631\'s scale; each new drawing used only in its own flat', () => {
+  const KEEP = { apt_637: ['obj.apt_637_out', 'npc.apt637_player', 'obj.apt637_sheet'], apt_638: ['obj.apt_638_out', 'npc.apt638_viewer', 'obj.apt638_tv', 'obj.apt638_cans'],
+    apt_636: ['obj.apt_636_out', 'obj.apt636_parcel', 'obj.apt636_lease', ...['2_2', '3_2', '4_2', '2_3', '3_3'].map((n) => `obj.apt_636_boxes_${n}`)] };
+  const OWN = { apt_637: ['obj.cello_corner', 'obj.music_stand', 'obj.metronome', 'obj.cello_case', 'obj.egg_foam'],
+    apt_638: ['obj.tv_continuity', 'obj.couch_back', 'obj.cold_brew', 'obj.screengrab_wall', 'obj.notebooks'],
+    apt_636: ['obj.hand_truck', 'obj.fridge_open', 'obj.parcel', 'obj.mattress_up', 'obj.move_list', 'obj.lease_counter'] };
+  for (const [id, keep] of Object.entries(KEEP)) {
+    const m = MAPS_FOR_TEST[id];
+    for (const k of keep) assert.ok(m.objects.some((o) => o.id === k), `${id}: ${k} is still there`);
+    const door = m.objects.find((o) => o.action === 'exit');
+    assert.equal(door.pair, `obj.door_${id.slice(4)}`, `${id}: the door pairs with the hall's`);
+    assert.equal(door.y, id === 'apt_637' ? m.h - 1 : 0, `${id}: the door stays in the ${id === 'apt_637' ? 'south' : 'north'} wall (PR #168)`);
+    // 631 grew a street row below its balcony rail (hub #99), so the flats are no longer exactly its height; what
+    // matters is the zoom, which WorldScene takes from the height: max(4, min(7, floor(1080 / (h * 16)))).
+    const zoomFor = (h) => Math.max(4, Math.min(7, Math.floor(1080 / (h * 16))));
+    assert.equal(zoomFor(m.h), zoomFor(MAPS_FOR_TEST.room631.h), `${id}: it draws at 631's zoom`);
+    assert.ok(Math.abs(m.h - MAPS_FOR_TEST.room631.h) <= 1, `${id}: within a row of 631's height`);
+    assert.ok(m.objects.some((o) => o.landmark && o.light > 0), `${id}: the landmark is lit`);
+    for (const art of OWN[id]) for (const other of Object.values(MAPS_FOR_TEST).filter((q) => q.id !== id)) {
+      assert.ok(![...other.objects, ...(other.scenery ?? [])].some((t) => ROOM_SPRITE(t) === art), `${art} is ${id}'s own, but ${other.id} uses it`);
+    }
+  }
+  assert.equal(MAPS_FOR_TEST.apt_638.objects.find((o) => o.id === 'obj.apt638_tv').landmark, true, 'the set is 638\'s landmark');
+});
 const { BOSS_PATTERNS, bossPool, pickPattern } = await import('../src/engine/bossPatterns.js');
 const { MODULES: WARDEN_MODULES } = await import('../src/content/rotVillains.js');
 test('boss pattern library: every module has a pattern, pools grow by phase, no move twice running', () => {
