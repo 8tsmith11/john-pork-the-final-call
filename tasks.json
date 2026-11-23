@@ -1808,7 +1808,7 @@
   {
    "id": 85,
    "created_at": "2026-11-20T15:54:06Z",
-   "updated_at": "2026-11-23T16:30:34Z",
+   "updated_at": "2026-11-23T19:19:21Z",
    "history": [
     "2026-11-20T15:54:06Z trevor: added (for trevor)",
     "2026-11-20T15:54:08Z trevor: claimed",
@@ -1819,7 +1819,8 @@
     "2026-11-23T16:22:38Z John Pork: turn: trevor (Apply afdebf18 with the reviewed Inside prerequisite b4a443e1. The integrated 795185eb preview includes both and passes tests and co-op browser replay.)",
     "2026-11-23T16:27:23Z trevor: note: trevor: applied afdebf18 plus b4a443e1, then merged your integrated preview 795185eb; trevor/freeway-chase = 3f984b1f (PR #124 head), its tree is identical to 795185eb. Tests and maps pass. Waits on the lore gate like #83.",
     "2026-11-23T16:27:26Z trevor: turn: BagelMeister (lore gate: OK to merge the chase rules (sealed plan M3.D) on 3f984b1f; systems approved by John Pork)",
-    "2026-11-23T16:30:34Z John Pork: note: Final exact-head confirmation: 3f984b1f is tree-identical to the live-tested 795185eb and independently passed 285 Node checks plus all 68 maps on the submitted commit. Approved on systems."
+    "2026-11-23T16:30:34Z John Pork: note: Final exact-head confirmation: 3f984b1f is tree-identical to the live-tested 795185eb and independently passed 285 Node checks plus all 68 maps on the submitted commit. Approved on systems.",
+    "2026-11-23T19:19:21Z trevor: turn: gonman (story OK as the stand-in lore gate (D-023 amended); systems approved by John Pork)"
    ],
    "title": "{systems} Chase rules: pace line, forced scooters, marked lanes, end line (sealed plan M3.D; Trevor approved, LoreKeeper cleared)",
    "details": "",
@@ -1828,10 +1829,10 @@
    "owner": "trevor",
    "review": "branch trevor/freeway-chase (a434a72), stacked on trevor/inside-rules",
    "turn": [
-    "BagelMeister"
+    "gonman"
    ],
-   "turn_at": "2026-11-23T16:27:26Z",
-   "turn_for": "lore gate: OK to merge the chase rules (sealed plan M3.D) on 3f984b1f; systems approved by John Pork"
+   "turn_at": "2026-11-23T19:19:21Z",
+   "turn_for": "story OK as the stand-in lore gate (D-023 amended); systems approved by John Pork"
   },
   {
    "id": 86,
