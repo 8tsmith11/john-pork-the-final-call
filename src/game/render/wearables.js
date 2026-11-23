@@ -20,6 +20,7 @@ const P = {
   yerba0: '#3e5a34', yerba1: '#6f9448', tub0: '#2c4a8a', tub1: '#4f7fd0', soft0: '#7a2f38', soft1: '#c05a5e',
   pork2: '#f7b8c8', parka: '#b46a26', slicker0: '#e0a51c', slicker1: '#ffd93b', bone: '#e8e2d0', steel: '#7a8794',
   screen1: '#1a8a9c', screen2: '#3fd0d6', concrete1: '#3f4a46', concrete2: '#5b6862', concrete3: '#7f8c84', pork1: '#e87a9c', signal: '#d42a3c',
+  screen0: '#0f4a5c', concrete0: '#2b3331', pork0: '#a8456a', balloon0: '#f07818', balloon1: '#ffa23a', rot1: '#c8e619', warm3: '#b9853f',
 };
 
 // The colors each roommate's sheet is painted with (CHARS in tools/art/gen_roommates.py).
@@ -46,18 +47,50 @@ export const LOOKS = {
   'item.cowboy_hat':     { slot: 'goggles', style: 'hat', main: P.warm2, shade: P.warm1, band: P.warm0 },
   'item.smoky_socks':    { slot: 'socks', style: 'socks', main: P.bone, shade: P.signal },
   'item.signal_gloves':  { slot: 'gloves', style: 'gloves', main: P.screen1, shade: P.screen2 },
+  // Trevor's (task #29):
+  'item.stage_jacket':   { slot: 'chestplate', style: 'parka', hood: false, main: P.tub0, shade: P.night2, line: P.night0, patches: [P.signal, P.warm4, P.bone] },   // denim, band patches
+  'item.callus_gloves':  { slot: 'gloves', style: 'gloves', fingerless: true, main: P.night2, shade: P.night1 },
+  'item.tank_goggles':   { slot: 'goggles', style: 'goggles', main: P.night1, lens: P.screen2, glint: P.bone },
+  'item.spinner_pack':   { slot: 'backpack', style: 'pack', main: P.steel, shade: P.concrete1, detail: P.signal, kind: 'spinner' },
+  // Everyone's gear (Trevor, 2026-11-23: "make armor and equipped items actually visible on the player"):
+  'item.mesh_vest':      { slot: 'chestplate', style: 'vest', main: P.concrete3, shade: P.concrete1, line: P.night0 },   // hex lattice over the shirt
+  'item.bike_helmet':    { slot: 'helmet', style: 'helmet', main: P.signal, shade: P.soft0, line: P.night0, stripe: P.bone },   // cracked shell, SLOW DOWN
+  'item.hardhat':        { slot: 'helmet', style: 'helmet', main: P.slicker1, shade: P.slicker0, line: P.night0, brim: true },
+  'item.work_pants':     { slot: 'leggings', style: 'pants', main: P.warm3, shade: P.warm2, patch: P.warm1 },   // stiff canvas, a knee patch
+  'item.steel_toes':     { slot: 'boots', style: 'boots', main: P.concrete1, shade: P.concrete0, toe: P.steel },
+  'item.sneakers':       { slot: 'boots', style: 'boots', main: P.bone, shade: P.concrete3, sole: P.balloon1 },   // bright soles
+  'item.welding_goggles':{ slot: 'goggles', style: 'goggles', main: P.night1, lens: P.yerba0, glint: P.yerba1 },
+  'item.work_gloves':    { slot: 'gloves', style: 'gloves', main: P.warm2, shade: P.warm1 },
+  'item.wool_socks':     { slot: 'socks', style: 'socks', main: P.soft1, shade: P.bone },
+  'item.pack_coolant':   { slot: 'backpack', style: 'pack', main: P.tub0, shade: P.night2, detail: P.screen2, kind: 'coolant' },
+  'item.pack_drone':     { slot: 'backpack', style: 'pack', main: P.concrete1, shade: P.concrete0, detail: P.screen2, kind: 'drone' },
+  'item.pack_capacitor': { slot: 'backpack', style: 'pack', main: P.slicker0, shade: P.warm2, detail: P.night0, kind: 'capacitor' },
+  // Charms hang at the collar (front view); gadgets ride on the wrist, lit in their own color.
+  'item.charm_1901':     { slot: 'charm', style: 'charm', main: P.warm4, shade: P.warm2 },
+  'item.pork_pin':       { slot: 'charm', style: 'charm', main: P.pork1, shade: P.bone },
+  'item.lake_bust':      { slot: 'charm', style: 'charm', main: P.bone, shade: P.concrete3 },
+  'item.ozzie_lure':     { slot: 'charm', style: 'charm', main: P.signal, shade: P.bone },
 };
+// Gadgets: a cuff on the wrist with a lit cell, one color per gadget.
+for (const [id, lit] of Object.entries({ sniffer: P.balloon1, salvage_array: P.warm4, phase_screen: P.screen2, vector_actuator: P.signal, arc_splicer: P.tub1, phase_tether: P.pork1, overclock_relay: P.rot1, patch_mesh: P.yerba1, ground_loop: P.bone })) {
+  LOOKS[`item.${id}`] = { slot: 'gadget', style: 'wrist', main: P.concrete1, lit };
+}
 // Growth (src/content/growth.js): one look per level, painted under any gear.
 for (let lv = 2; lv <= 8; lv++) {
   LOOKS[`fx.grow${lv}`] = { slot: '_grow', style: 'grow', level: lv };
   for (let b = 0; b <= 3; b++) LOOKS[`fx.grow${lv}b${b}`] = { slot: '_grow', style: 'grow', level: lv, belly: b };   // Manuel's weight after the gonman
 }
 const LOOK_SLOTS = [...new Set(Object.values(LOOKS).map((l) => l.slot))].filter((s) => s !== '_grow');
+// Draw order, bottom to top: trousers, socks, boots, shirts, coats, the gags, vests over coats, packs, hands, wrists,
+// charms, then whatever goes on the head.
+const LAYER = { pants: 1, socks: 2, boots: 3, shirt: 4, parka: 5, butt: 6, pantsdown: 6, vest: 7, pack: 8, holster: 8, gloves: 9, wrist: 10, charm: 11, helmet: 12, goggles: 13, hat: 13, pacifier: 14 };
 
 /** The looks a roommate is wearing right now, in draw order. */
 export function looksFor(c) {
   const grow = growthLook(c?.level ?? 1, c?._belly);   // _belly: Manuel's belly right now, when it isn't his level's
-  return [...(grow ? [grow] : []), ...LOOK_SLOTS.map((sl) => c?.equipped?.[sl]).filter((id) => id && LOOKS[id])];
+  const worn = LOOK_SLOTS.map((sl) => c?.equipped?.[sl]).filter((id) => id && LOOKS[id]);
+  worn.sort((a, b) => (LAYER[LOOKS[a].style] ?? 6) - (LAYER[LOOKS[b].style] ?? 6));
+  return [...(grow ? [grow] : []), ...worn];
 }
 
 const same = (d, i, rgb) => d[i + 3] > 0 && d[i] === rgb[0] && d[i + 1] === rgb[1] && d[i + 2] === rgb[2];
@@ -90,6 +123,11 @@ function paintParka(src, out, w, h, facing, body, look) {
   for (let x = 0; x < w; x++) if (!empty(x, top)) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); }
   // the zip, down the front
   if (facing === 'down') { const zx = Math.floor((x0 + x1) / 2); for (let y = top + 1; y <= Math.min(h - 1, bot + 2); y++) if (out[(y * w + zx) * 4 + 3]) put(zx, y, shade); }
+  if (look.patches && facing !== 'right') {   // band patches: front on the chest, back between the shoulders
+    const px = Math.floor((x0 + x1) / 2);
+    look.patches.forEach((c, i) => { const x = facing === 'down' ? px + (i === 0 ? -2 : i === 1 ? 2 : -2) : px - 1 + i, y = facing === 'down' ? top + 2 + (i === 2 ? 2 : 0) : top + 2; put(x, y, hex(c)); });
+  }
+  if (look.hood === false) return true;   // a jacket, not a parka: no hood
   // hood, up (Michael: "hood of parka should be on"): it covers the hair in every facing. From the
   // front and side a darker rim frames the face; from behind it covers the whole back of the head.
   const headTop = Math.max(0, top - 12);
@@ -179,6 +217,12 @@ function paintBoots(src, out, w, h, facing, body, look) {
   const { is, put, C } = kit(src, out, w, h, body);
   let any = false;
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (is(x, y, C.boots)) { put(x, y, y % 2 ? hex(look.shade) : hex(look.main)); any = true; }
+  if (any && (look.toe || look.sole)) for (let y = 0; y < h; y++) {
+    let a = w, b = -1; for (let x = 0; x < w; x++) if (is(x, y, C.boots)) { a = Math.min(a, x); b = Math.max(b, x); }
+    if (b < 0) continue;
+    if (look.sole) for (let x = a; x <= b; x++) if (!is(x, y + 1, C.boots)) put(x, y + 1, hex(look.sole));   // the sole under each boot
+    if (look.toe) { if (facing === 'right') put(b, y, hex(look.toe)); else if (facing === 'down') for (let x = a; x <= b; x++) if (is(x, y, C.boots) && !is(x + 1, y, C.boots)) put(x, y, hex(look.toe)); }
+  }
   if (!any || !look.wing) return any;
   for (let y = h - 1; y >= 0; y--) {
     let a = w, b = -1; for (let x = 0; x < w; x++) if (is(x, y, C.boots)) { a = Math.min(a, x); b = Math.max(b, x); }
@@ -200,7 +244,12 @@ function paintGloves(src, out, w, h, facing, body, look) {
   const { is, put, C, rows } = kit(src, out, w, h, body);
   const [top] = rows(C.shirt); if (top >= h) return false;
   let any = false;
-  for (let x = 0; x < w; x++) { let last = -1; for (let y = top; y < h; y++) if (is(x, y, C.skin)) last = y; if (last >= 0) { put(x, last, hex(look.main)); if (is(x, last - 1, C.skin)) put(x, last - 1, hex(look.shade)); any = true; } }
+  for (let x = 0; x < w; x++) {
+    let last = -1; for (let y = top; y < h; y++) if (is(x, y, C.skin)) last = y;
+    if (last < 0) continue;
+    if (look.fingerless) { if (is(x, last - 1, C.skin)) { put(x, last - 1, hex(look.main)); any = true; } continue; }   // the fingertips stay bare
+    put(x, last, hex(look.main)); if (is(x, last - 1, C.skin)) put(x, last - 1, hex(look.shade)); any = true;
+  }
   return any;
 }
 
@@ -439,7 +488,117 @@ function paintGrow(src, out, w, h, facing, body, look, who) {
   return true;
 }
 
-const PAINTERS = { grow: paintGrow, pantsdown: paintPantsDown, butt: paintButt, parka: paintParka, shirt: paintShirt, hat: paintHat, boots: paintBoots, socks: paintSocks, gloves: paintGloves, pacifier: paintPacifier, holster: paintHolster };
+// The torso: shirt pixels in the columns the waist spans (no sleeves). [x0, x1, top, bot]
+function torso(src, w, h, body) {
+  const { is, C, rows } = kit(src, null, w, h, body);
+  const [top, bot] = rows(C.shirt); if (bot < 0) return null;
+  let a = w, b = -1; for (let x = 0; x < w; x++) if (is(x, bot, C.shirt)) { a = Math.min(a, x); b = Math.max(b, x); }
+  return b < 0 ? null : [a, b, top, bot];
+}
+
+// A helmet: a shell over the top of the head (the hair's first rows, and all of it from behind), a dark rim, a stripe
+// down the middle (bike helmet) or a brim out over the face (hard hat).
+function paintHelmet(src, out, w, h, facing, body, look) {
+  const { is, put, empty, C, rows } = kit(src, out, w, h, body);
+  const [ht, hb] = rows(C.hair); if (hb < 0) return false;
+  const main = hex(look.main), shade = hex(look.shade), line = hex(look.line);
+  const deep = facing === 'up' ? Math.min(hb, ht + 5) : ht + 2;
+  for (let y = ht - 1; y <= deep; y++) {
+    let a = w, b = -1; for (let x = 0; x < w; x++) if (!empty(x, y)) { a = Math.min(a, x); b = Math.max(b, x); }
+    if (b < 0) continue;
+    for (let x = a; x <= b; x++) {
+      if (is(x, y, C.skin)) continue;   // never over the face
+      const edge = x === a || x === b || y === ht - 1;
+      put(x, y, edge ? line : y === deep ? shade : main);
+    }
+    if (look.stripe && y >= ht && y < deep) put(Math.floor((a + b) / 2) + (facing === 'right' ? -1 : 0), y, hex(look.stripe));
+  }
+  if (look.brim) {   // the hard hat's brim, one row past the shell, out over the forehead
+    let a = w, b = -1; for (let x = 0; x < w; x++) if (!empty(x, deep)) { a = Math.min(a, x); b = Math.max(b, x); }
+    if (b >= 0) { const y = deep + 1; if (facing === 'right') for (let x = a + 2; x <= b + 2; x++) put(x, deep, x > b ? line : shade); else for (let x = a - 1; x <= b + 1; x++) put(x, y - 1, x === a - 1 || x === b + 1 ? line : shade); }
+  }
+  return true;
+}
+
+// Goggles: a strap round the head at eye level and two lenses over the eyes (one from the side, none from behind).
+function paintGoggles(src, out, w, h, facing, body, look) {
+  const { is, put, empty, C, rows } = kit(src, out, w, h, body);
+  const [st] = rows(C.skin); if (st >= h) return false;
+  const y = st + 1, strap = hex(look.main), lens = hex(look.lens), glint = hex(look.glint);
+  let a = w, b = -1; for (let x = 0; x < w; x++) if (!empty(x, y)) { a = Math.min(a, x); b = Math.max(b, x); }
+  if (b < 0) return false;
+  for (let x = a; x <= b; x++) put(x, y, strap);
+  if (facing === 'up') return true;   // the strap across the back of the head
+  const eyes = []; for (let x = a + 1; x < b; x++) if (!is(x, y, C.skin) && !is(x, y, C.hair) && is(x - 1, y, C.skin)) eyes.push(x);   // the eye pixels in that row
+  if (!eyes.length) eyes.push(facing === 'right' ? b - 1 : Math.floor((a + b) / 2));
+  for (const x of eyes) { put(x - 1, y, lens); put(x, y, lens); put(x - 1, y - 1, strap); put(x, y - 1, glint); }
+  return true;
+}
+
+// Work trousers: recolor the legs, with a patch on one knee.
+function paintPants(src, out, w, h, facing, body, look) {
+  const { is, put, C, rows } = kit(src, out, w, h, body);
+  const [top, bot] = rows(C.pants); if (bot < 0) return false;
+  for (let y = top; y <= bot; y++) for (let x = 0; x < w; x++) if (is(x, y, C.pants)) put(x, y, x % 4 === 0 ? hex(look.shade) : hex(look.main));
+  const knee = Math.min(bot, top + 3); let kx = -1; for (let x = 0; x < w; x++) if (is(x, knee, C.pants)) { kx = x; break; }
+  if (kx >= 0 && facing !== 'up') { put(kx, knee, hex(look.patch)); put(kx + 1, knee, hex(look.patch)); }
+  return true;
+}
+
+// The mesh vest: a hex lattice over the torso, with an outline down each side. No sleeves.
+function paintVest(src, out, w, h, facing, body, look) {
+  const T = torso(src, w, h, body); if (!T) return false;
+  const { is, put, C } = kit(src, out, w, h, body);
+  const [a, b, top, bot] = T, main = hex(look.main), shade = hex(look.shade), line = hex(look.line);
+  for (let y = top; y <= bot; y++) for (let x = a; x <= b; x++) {
+    if (!is(x, y, C.shirt)) continue;
+    put(x, y, x === a || x === b ? line : (x + y * 2) % 3 === 0 ? shade : main);
+  }
+  return true;
+}
+
+// A backpack: from behind, the pack itself over the back; from the front, the two straps; from the side, the pack
+// standing off the back. Each kind adds its own detail.
+function paintPack(src, out, w, h, facing, body, look) {
+  const T = torso(src, w, h, body); if (!T) return false;
+  const { put, empty } = kit(src, out, w, h, body);
+  const [a, b, top, bot] = T, main = hex(look.main), shade = hex(look.shade), det = hex(look.detail), line = hex(P.night0);
+  if (facing === 'down') { for (let y = top; y <= bot - 1; y++) { put(a + 1, y, shade); put(b - 1, y, shade); } return true; }
+  const box = facing === 'up' ? [a, b, top, bot] : (() => { let f = w; for (let x = 0; x < w; x++) if (!empty(x, top + 2)) { f = x; break; } return [f - 3, f, top, bot - 1]; })();
+  const [x0, x1, y0, y1] = box;
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) put(x, y, x === x0 || x === x1 || y === y0 || y === y1 ? line : y === y1 - 1 ? shade : main);
+  const cx = Math.floor((x0 + x1) / 2), cy = Math.floor((y0 + y1) / 2);
+  if (look.kind === 'coolant') for (let y = y0 + 1; y < y1; y++) { if (y % 2) put(x0 + 1, y, det); else put(x1 - 1, y, det); }
+  if (look.kind === 'capacitor') { put(cx, cy - 1, det); put(cx - 1, cy, det); put(cx, cy, det); put(cx, cy + 1, det); }   // a bolt
+  if (look.kind === 'drone') { for (let x = cx - 2; x <= cx + 2; x++) put(x, y0 - 1, shade); put(cx, y0 - 1, det); put(cx - 2, y0 - 2, line); put(cx + 2, y0 - 2, line); }   // riding on top
+  if (look.kind === 'spinner') { for (let x = x0 - 1; x <= x1 + 1; x++) put(x, y0 - 1, det); put(cx, cy, det); }   // the weapon bar, still live
+  return true;
+}
+
+// A gadget cuff on the near wrist: a dark band with a lit cell.
+function paintWrist(src, out, w, h, facing, body, look) {
+  const { is, put, C, rows } = kit(src, out, w, h, body);
+  const [top] = rows(C.shirt); if (top >= h) return false;
+  const cols = []; for (let x = 0; x < w; x++) { let last = -1; for (let y = top; y < h; y++) if (is(x, y, C.skin)) last = y; if (last > top) cols.push([x, last]); }
+  if (!cols.length) return false;
+  const [x, last] = facing === 'right' ? cols[cols.length - 1] : cols[0];
+  const side = facing === 'right' ? -1 : 1;
+  put(x, last - 1, hex(look.lit)); put(x, last - 2, hex(look.lit)); put(x, last - 3, hex(look.main));
+  put(x - side, last - 1, hex(look.main)); put(x - side, last - 2, hex(look.main));   // the cuff wraps the forearm
+  return true;
+}
+
+// A charm at the collar: a cord and a two-pixel pendant, from the front only.
+function paintCharm(src, out, w, h, facing, body, look) {
+  if (facing === 'up') return false;
+  const T = torso(src, w, h, body); if (!T) return false;
+  const { put } = kit(src, out, w, h, body);
+  const [a, b, top] = T, cx = facing === 'right' ? b - 1 : Math.floor((a + b) / 2);
+  put(cx, top, hex(look.shade)); put(cx, top + 1, hex(look.main)); put(cx, top + 2, hex(look.main));
+  return true;
+}
+
+const PAINTERS = { helmet: paintHelmet, goggles: paintGoggles, pants: paintPants, vest: paintVest, pack: paintPack, wrist: paintWrist, charm: paintCharm, grow: paintGrow, pantsdown: paintPantsDown, butt: paintButt, parka: paintParka, shirt: paintShirt, hat: paintHat, boots: paintBoots, socks: paintSocks, gloves: paintGloves, pacifier: paintPacifier, holster: paintHolster };
 
 /** Build (once) and return the overlay texture key for roommate `who` wearing item `id`. */
 export function wearTexture(scene, who, id) {

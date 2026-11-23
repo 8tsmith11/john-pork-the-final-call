@@ -2391,6 +2391,21 @@ export class WorldScene extends Phaser.Scene {
     this.tweens.add({ targets: this.toastText, alpha: 0, delay: 1400, duration: 500 });
   }
 
+  // The weapon in hand when you're not swinging it (Trevor, 2026-11-23: equipped things visible on the player): hanging
+  // from the hand at your side, head down. The swing draws its own copy (the 'swing' event), so this one steps aside.
+  _heldAtRest(s, p) {
+    const id = p.weapon, ok = id && !p.sw && !p.dn && !p.ri && !p.pl && !p.zz && s.visible && this.textures.get('icons')?.has?.(id);
+    if (!ok) { s.held?.setVisible(false); return; }
+    if (!s.held || !s.held.active) { s.held = this.add.image(0, 0, 'icons', id); s.once('destroy', () => s.held?.destroy()); }
+    if (s.held.frame.name !== id) s.held.setFrame(id);
+    const name = s.frame?.name ?? '', facing = /_up_/.test(name) ? 'up' : /_right_/.test(name) ? 'right' : 'down';
+    const dir = facing === 'right' && s.flipX ? -1 : 1, sx = Math.abs(s.scaleX), sy = s.scaleY;
+    // [x offset from the feet, y offset, rotation]: icons are drawn handle bottom-left, head top-right.
+    const [dx, dy, rot] = facing === 'down' ? [-5, -8, 2.75] : facing === 'up' ? [5, -8, 1.95] : [2, -8, 2.0];
+    s.held.setPosition(s.x + dx * dir * sx, s.y + dy * sy).setRotation(dir < 0 ? -rot : rot).setFlipX(dir < 0)
+      .setOrigin(dir < 0 ? 0.85 : 0.15, 0.85).setScale(0.7 * sx, 0.7 * sy).setDepth(s.depth + (facing === 'up' ? -0.02 : 0.02)).setAlpha(s.alpha).setVisible(true);
+  }
+
   async _save(message = '✓ saved') {
     if (this.mode === 'client') return false;
     this._toast('saving…');
@@ -3020,6 +3035,7 @@ export class WorldScene extends Phaser.Scene {
       }
       const worn = this.save?.party?.[p.c];
       syncWear(this, s, p.c, wt && p.gs !== undefined ? { ...worn, _belly: wt.belly } : worn);   // parkas and other worn models (render/wearables.js)
+      this._heldAtRest(s, p);
     }
     for (const [id, s] of this.sprites) if (!seen.has(id)) { s.destroy(); this.sprites.delete(id); }
 
