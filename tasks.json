@@ -2973,14 +2973,15 @@
   {
    "id": 135,
    "created_at": "2026-11-24T03:27:54Z",
-   "updated_at": "2026-11-24T03:27:54Z",
+   "updated_at": "2026-11-24T03:28:05Z",
    "history": [
-    "2026-11-24T03:27:54Z trevor: added (for trevor)"
+    "2026-11-24T03:27:54Z trevor: added (for trevor)",
+    "2026-11-24T03:28:05Z trevor: claimed"
    ],
    "title": "Last inside sector boss rules (sealed 3c): neutral-named successor of #86",
    "details": "Same work as #86, under a title without the sealed name (gonman's story review). Branch trevor/sector-boss (contains everything John Pork reviewed on #86, the refreshed chase and inside rules, and the generic renames). Placement record: GitHub PR #127 (trevor/sealed-lattice-required, sealed docs only), which goes first.",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
