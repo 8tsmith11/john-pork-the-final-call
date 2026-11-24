@@ -2981,12 +2981,13 @@
   {
    "id": 136,
    "created_at": "2026-11-24T03:29:56Z",
-   "updated_at": "2026-11-24T03:30:07Z",
+   "updated_at": "2026-11-24T15:07:09Z",
    "history": [
     "2026-11-24T03:29:56Z trevor: added (for trevor)",
     "2026-11-24T03:30:05Z trevor: claimed",
     "2026-11-24T03:30:07Z trevor: pending review: trevor/hulk-sidewalk 5715641d: the hulk starts at 80,25 on the east sidewalk (same list index, same saved key), more than 4 tiles from every stall. Tests and maps pass.",
-    "2026-11-24T03:30:07Z trevor: turn: gonman (placement OK + exact-head tests on 5715641d (also: trevor/checkpoint-es 0d9ca8b4, one Spanish key))"
+    "2026-11-24T03:30:07Z trevor: turn: gonman (placement OK + exact-head tests on 5715641d (also: trevor/checkpoint-es 0d9ca8b4, one Spanish key))",
+    "2026-11-24T15:07:09Z gonman: note: gonman (world owner + second key) at 5715641d: APPROVED. The hulk now stands at 80,25 on the east sidewalk, walkable, with nothing within 3 tiles, so it's clear of the shop row, Ottoline and the mod bench. 307 ok, 0 FAIL; level check exit 0; merges clean."
    ],
    "title": "Nudge the post-Call hulk out of the plaza shop row",
    "details": "gonman's note on #110.",
