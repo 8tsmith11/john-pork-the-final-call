@@ -18,12 +18,16 @@ gate (`--strict`, in checklist D) once step 2 below lands.
 
 ## Where it stands (2026-11-23)
 
-| Measure | Now |
-|---|---|
-| Outdoor links that meet on the map | 1 of 28 |
-| Outdoor exits drawn on their edge's side | 25 of 28 |
-| Interiors drawn by their door | 3 of 29 |
-| Areas drawn on top of each other | 21 |
+Step 3 (interiors at their door) is done, and Act 1's outdoors (the plaza, the lake, the airfield, Route 1 north)
+now follow their exits. Acts 2 and 3 wait for step 1.
+
+
+| Measure | Before | After step 3 and the Act 1 fix |
+|---|---|---|
+| Outdoor links that meet on the map | 1 of 28 | 3 of 28 (Act 1's all meet) |
+| Outdoor exits drawn on their edge's side | 25 of 28 | 25 of 28 |
+| Interiors placed at their building's door | 3 of 29 | 38 of 38 |
+| Outdoor areas drawn on top of each other | 21 | 1 |
 
 The positions in `WORLD_LAYOUT` (`src/content/maps/index.js`) were typed in by hand and never followed the exits.
 
@@ -45,7 +49,8 @@ just a doorway.
 2. **Layout from the exits** (systems, trevor). Once the geography is consistent, `WORLD_LAYOUT` is computed from
    the exits (starting at College Park) instead of typed by hand, so the map can't drift again. `world.mjs --strict`
    goes into checklist D and the level check.
-3. **Interiors at their door** (systems, trevor). The MAP tab draws a building's inside as an inset at its door, and
-   only once you've been in, instead of as a separate rectangle.
+3. **Interiors at their door** (systems, trevor; done). The MAP tab draws the world as its outdoor areas. A building
+   you've been in gets a frame round its door, and the room you're in is drawn as an inset beside that door, joined
+   to it by a line, with you marked at the door on the world map.
 
 Until step 1, new areas should at least follow rule 1 with their neighbours (checklist D7).

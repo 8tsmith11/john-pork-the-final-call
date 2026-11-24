@@ -16,7 +16,7 @@ const OPEN = [[3, 5, 54, 10], [18, 14, 24, 14], [12, 13, 9, 5], [26, 24, 8, 10],
 const isOpen = (x, y) => OPEN.some(([ox, oy, ow, oh]) => x >= ox && x < ox + ow && y >= oy && y < oy + oh);
 
 const field = level({ id: 'airfield', name: 'The airfield', w: W, h: H, fill: 'g', border: null, outdoor: true, propScale: 1.5,
-  world: { x: 126 - TRAIL_X, y: 17 - (H - 1) } })   // its trail meets the lake's north edge (the lake sits at 86,18; its spur at x 40)
+  world: { x: 84 + 40 - TRAIL_X, y: 17 - H } })   // flush on the lake's north edge, its trail meeting the lake's spur (the lake sits at 84,17; its spur at x 40)
   .edit((g) => {
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
       if (x === 0 || y === 0 || x === W - 1 || y === H - 1) { g[y][x] = 'T'; continue; }   // a wall of trees round the edge

@@ -32,11 +32,13 @@ for (const m of Object.values(MAPS)) for (const o of m.objects) if (o.npc && o.a
 
 // Where each map sits on the shared world map (tile units). Level design (gonman) can set
 // `world: {x, y}` on a map to override. Interiors sit beside their building's entrance.
+// Act 1's outdoors follow their exits (docs/design/13-world-map.md): the lake flush on the plaza's east edge, Route 1
+// north straight above the plaza's checkpoint, the airfield on the lake's north edge (act1_airfield.js).
 export const WORLD_LAYOUT = {
   metro_plaza: { x: 0, y: 0 }, aster_lobby: { x: -38, y: -4 }, aster_hall: { x: -46, y: -16 }, room631: { x: -34, y: -33 },
-  tunnel_1: { x: -4, y: 15 }, platform: { x: 48, y: 13 }, lake: { x: 86, y: 18 }, compute_hall_b: { x: 0, y: 52 }, diner: { x: 70, y: -12 }, aster_basement: { x: -38, y: 14 }, aster_roof: { x: -46, y: -30 },
+  tunnel_1: { x: -4, y: 15 }, platform: { x: 48, y: 13 }, lake: { x: 84, y: 17 }, compute_hall_b: { x: 0, y: 52 }, diner: { x: 70, y: -12 }, aster_basement: { x: -38, y: 14 }, aster_roof: { x: -46, y: -30 },
   campus_quad: { x: 0, y: 70 }, dining_hall: { x: -34, y: 70 }, robotics_lab: { x: 36, y: 70 }, auditorium: { x: 36, y: 88 },
-  route1_north: { x: 40, y: -40 }, greenbelt: { x: 0, y: -70 }, beltsville: { x: 40, y: -90 }, refuge: { x: 100, y: -80 },
+  route1_north: { x: 42, y: -13 }, greenbelt: { x: 0, y: -70 }, beltsville: { x: 40, y: -90 }, refuge: { x: 100, y: -80 },
   meade: { x: 150, y: -60 }, baltimore: { x: 80, y: -160 }, annapolis: { x: 180, y: 10 },
   gb_dishes: { x: 0, y: -100 }, gb_coop: { x: -30, y: -70 }, bv_barn: { x: 40, y: -110 }, rf_settlement: { x: 100, y: -100 },
   bmore_stacks: { x: 120, y: -160 }, bmore_clinic: { x: 50, y: -160 }, ann_harbor: { x: 215, y: 10 },
@@ -49,3 +51,29 @@ export const WORLD_LAYOUT = {
   beltway: { x: -60, y: -40 }, corridor: { x: -120, y: -40 }, gaithersburg: { x: -90, y: -100 }, frederick: { x: -160, y: -140 }, enclave: { x: -60, y: 20 },
 };
 export const worldPos = (m) => m.world ?? WORLD_LAYOUT[m.id] ?? { x: 0, y: 0 };
+
+// Interiors on the MAP tab sit at their door (docs/design/13-world-map.md, rule 2). doorOf(id) walks an interior's exits
+// (through other rooms of the same building) to the outdoor door that leads in, and returns that door's world tile:
+// { x, y, outdoor }, or null for a map with no way out to an outdoor area. Outdoor maps return null too.
+const doors = new Map();
+export function doorOf(id) {
+  if (doors.has(id)) return doors.get(id);
+  let found = null;
+  const start = MAPS[id];
+  if (start && !start.outdoor) {
+    const seen = new Set([id]), q = [id];
+    for (let i = 0; i < q.length && !found; i++) {
+      const m = MAPS[q[i]];
+      for (const o of m.objects) {
+        if (o.action !== 'exit' || !MAPS[o.to]) continue;
+        const to = MAPS[o.to];
+        if (to.outdoor) {
+          const back = to.objects.find((x) => x.id === o.pair) ?? to.objects.find((x) => x.action === 'exit' && x.to === m.id);
+          if (back) { const p = worldPos(to); found = { x: p.x + back.x, y: p.y + back.y, outdoor: to.id }; break; }
+        } else if (!seen.has(o.to)) { seen.add(o.to); q.push(o.to); }
+      }
+    }
+  }
+  doors.set(id, found);
+  return found;
+}

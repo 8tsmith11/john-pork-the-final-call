@@ -7,7 +7,7 @@ import { newSave } from '../../engine/save/schema.js';
 import { autosave, loadAutosave, exportFile } from '../../engine/save/storage.js';
 import { rollWorld } from '../../engine/worldRolls.js';
 import { newSeed, Rng } from '../../engine/rng.js';
-import { MAPS, worldPos } from '../../content/maps/index.js';
+import { MAPS, worldPos, doorOf } from '../../content/maps/index.js';
 import { OLD_PHONE } from '../../content/eggs_gonman.js';
 import { TILE_COLORS } from '../../content/maps/build.js';
 import { ENEMIES } from '../../content/enemies.js';
@@ -1572,6 +1572,8 @@ export class WorldScene extends Phaser.Scene {
   mapName(id) { return MAPS[id]?.name ?? id; }
   playerWorldTile() {
     const me = this.mode === 'client' ? this._lastRendered?.players.find((p) => p.id === this.localId) : this.sim.players.get(this.localId);
+    const door = !this.map.outdoor && doorOf(this.map.id);   // inside a building: you're at its door on the world map
+    if (door) return { x: door.x + 0.5, y: door.y + 0.5 };
     const wp = worldPos(this.map);
     return { x: wp.x + (me ? me.x / TILE : this.map.w / 2), y: wp.y + (me ? me.y / TILE : this.map.h / 2) };
   }
@@ -3521,8 +3523,12 @@ export class WorldScene extends Phaser.Scene {
     g.fillStyle(0x070912, 0.92).fillRect(vx, vy, vw, vh).lineStyle(1, 0x5d6487, 0.8).strokeRect(vx, vy, vw, vh);
     const ex = this.save.world.explored || {};
     const labels = [];
+    // The world is the outdoor areas, drawn where their exits meet. A building's rooms aren't separate rectangles: its
+    // door gets a frame, and the room you're in is drawn as an inset at that door (docs/design/13-world-map.md).
+    const doorsSeen = new Set();
     for (const id of Object.keys(ex)) {
       const m = MAPS[id]; if (!m) continue;
+      if (!m.outdoor) { const d = doorOf(id); if (d && ex[d.outdoor]) doorsSeen.add(`${d.x},${d.y}`); continue; }
       const wp = worldPos(m), bits = ex[id];
       const ox = vx + vw / 2 + (wp.x - view.cx) * k, oy = vy + vh / 2 + (wp.y - view.cy) * k;
       if (ox > vx + vw || oy > vy + vh || ox + m.w * k < vx || oy + m.h * k < vy) continue;
@@ -3538,9 +3544,30 @@ export class WorldScene extends Phaser.Scene {
       }
       labels.push({ text: m.name, x: ox + (m.w * k) / 2, y: oy - 2, here: id === here });
     }
-    if (snap) for (const p of snap.players) {
-      const wp = worldPos(this.map), px = vx + vw / 2 + (wp.x + p.x / TILE - view.cx) * k, py = vy + vh / 2 + (wp.y + p.y / TILE - view.cy) * k;
-      if (px >= vx && py >= vy && px < vx + vw && py < vy + vh) g.fillStyle(p.id === this.localId ? 0x7fff9a : 0x6fb6ff).fillRect(px - 2, py - 2, 4, 4);
+    const toScreen = (x, y) => [vx + vw / 2 + (x - view.cx) * k, vy + vh / 2 + (y - view.cy) * k];
+    const inView = (px, py) => px >= vx && py >= vy && px < vx + vw && py < vy + vh;
+    for (const key of doorsSeen) {   // a building you've been in: a frame round its door
+      const [dx, dy] = key.split(',').map(Number), [px, py] = toScreen(dx, dy), r = Math.max(3, k);
+      if (inView(px, py)) g.lineStyle(1, 0xffd27f, 0.9).strokeRect(px - r / 2, py - r / 2, Math.max(2, k) + r, Math.max(2, k) + r);
+    }
+    const m = this.map, door = !m.outdoor && doorOf(m.id);
+    if (door) {
+      // The room you're in, as an inset beside its building's door, joined to it by a line.
+      const bits = ex[m.id] ?? '', ki = Math.max(1, Math.min(4, Math.floor(Math.min(vw * 0.32 / m.w, vh * 0.32 / m.h))));
+      const [ax, ay] = toScreen(door.x + 0.5, door.y + 0.5), iw = m.w * ki, ih = m.h * ki;
+      const ix = Math.round(Math.min(vx + vw - iw - 4, Math.max(vx + 4, ax + 14))), iy = Math.round(Math.min(vy + vh - ih - 4, Math.max(vy + 12, ay - ih - 14)));
+      g.lineStyle(1, 0xffd27f, 0.8).lineBetween(ax, ay, ix + (ix > ax ? 0 : iw), iy + (iy > ay ? 0 : ih));
+      g.fillStyle(0x070912, 0.95).fillRect(ix - 2, iy - 2, iw + 4, ih + 4).lineStyle(1, 0xffd27f, 0.9).strokeRect(ix - 2, iy - 2, iw + 4, ih + 4);
+      for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) {
+        if (bits[y * m.w + x] !== '1') continue;
+        g.fillStyle(m.solid(x, y) && !m.doors.get(`${x},${y}`) ? 0x4a5080 : 0x262a44).fillRect(ix + x * ki, iy + y * ki, ki, ki);
+      }
+      if (snap) for (const p of snap.players) g.fillStyle(p.id === this.localId ? 0x7fff9a : 0x6fb6ff).fillRect(ix + Math.floor(p.x / TILE) * ki - 1, iy + Math.floor(p.y / TILE) * ki - 1, ki + 2, ki + 2);
+      labels.push({ text: m.name, x: ix + iw / 2, y: iy - 3, here: true });
+      if (inView(ax, ay)) g.fillStyle(0x7fff9a).fillRect(ax - 2, ay - 2, 4, 4);   // you, at the door, on the world map
+    } else if (snap) for (const p of snap.players) {
+      const wp = worldPos(m), [px, py] = toScreen(wp.x + p.x / TILE, wp.y + p.y / TILE);
+      if (inView(px, py)) g.fillStyle(p.id === this.localId ? 0x7fff9a : 0x6fb6ff).fillRect(px - 2, py - 2, 4, 4);
     }
     return labels.filter((l) => l.x > vx && l.x < vx + vw && l.y > vy + 6 && l.y < vy + vh);
   }
