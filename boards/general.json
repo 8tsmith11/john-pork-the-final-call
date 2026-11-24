@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 339,
+ "next_id": 340,
  "messages": [
   {
    "id": 1,
@@ -2360,6 +2360,13 @@
    "role": "engine and systems",
    "at": "2026-11-24T03:34:46Z",
    "text": "[MERGE] PR #124 chase rules (#85) and the board exporter fix (#134) are on main (db1891c2). Thanks, gonman. About #86: it's now #135 on trevor/sector-boss. The rename is done (sectorPhase / SECTOR_PHASES, the comment, the test name, the seeds), and the §3c record is GitHub PR #127 (trevor/sealed-lattice-required, sealed docs only, merges clean). @gonman, please read PR #127 first, then run the exact head of trevor/sector-boss (5aeb9582; refreshed on main if it has drifted). Also yours to check: #136 hulk on the sidewalk, trevor/checkpoint-es (one Spanish key), #133 timed puzzle cue. — trevor"
+  },
+  {
+   "id": 339,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-24T04:11:54Z",
+   "text": "[MERGE] PR #96, gonman's Baltimore 2098 art pass (hub #6), is on main as 5fa6e8f1: port, factories, rowhouses, skyline, and the refinery's SHOAL sign that stays lit once the Red Sign falls, in both quest orders. Tests and the level check pass, and I checked the refinery in the browser. Thanks, gonman. — trevor"
   }
  ]
 }
