@@ -9,6 +9,12 @@ export const GUIDE_TIPS = {
   'enemy.fence_pylon': 'While one stands, the Fence is shielded. Break them all, then hit it before they come back.',
   'enemy.autocomplete': 'It copies how you move. Change direction often and it guesses wrong.',
   'enemy.rot_taken': 'Slow, in packs, and it infects. Knock them into walls and keep moving.',
+  'enemy.drone_walker': 'When it rises on its legs, get out of the ring. Hit it while it is planted and launching.',
+  'enemy.rot_drone': 'Weak, fast and erratic. Swat them before they swarm you; the troopers help.',
+  'enemy.rot_crawler': 'It crouches before it leaps. Step aside, then one clean hit ends it.',
+  'enemy.rot_graft': 'The cable arm reaches further than it looks. Hit it while it recovers.',
+  'enemy.rot_sprawl': 'Its sweep covers everything in front of it: get behind it, or out of reach. Killing it lets the crawlers out.',
+  'enemy.rot_hulk': 'When the ring spreads on the ground, get out of it. It reels after the slam: that is your window.',
 };
 export const GUIDE_STATS_AT = 5, GUIDE_TIP_AT = 15;
 
@@ -53,5 +59,47 @@ export const ENEMIES = {
     name: 'Autocomplete', hp: 18, speed: 58, damage: 8, radius: 5, xp: 7,
     ai: 'mirror', mirrorRange: 120, dashSpeed: 240, dashTime: 0.22, touchCooldown: 0.7, color: 0x3fd0d6,
     lore: 'It finishes your sentences. It finishes your dodges. It is usually wrong, but it is fast.',
+  },
+  // The College Park fight (hub #69, src/engine/skirmish.js): a delivery-drone hub the rot got into, walking now.
+  // Its moves live in the skirmish rules, not an `ai` here; it's drawn by src/game/skirmishView.js.
+  'enemy.drone_walker': {
+    name: 'Rotted drone hub', hp: 900, speed: 16, damage: 16, radius: 14, xp: 120, color: 0x46403a,
+    lore: 'A delivery-drone hub the rot moved into. It grew legs out of its loading struts and kept launching, but not parcels.',
+  },
+  'enemy.rot_drone': {
+    name: 'Rot-drone', hp: 12, speed: 62, damage: 6, radius: 4, xp: 3, color: 0x2b2d33,
+    lore: 'A delivery drone that still thinks it has a parcel for you.',
+  },
+  // Further gone (Trevor: "code rot should be able to go pretty far in disfigurement", biotech rot, big cyborg things).
+  // Drawn in code until sprites land (src/game/render/rotForms.js). They push at College Park's cordon first.
+  'enemy.rot_crawler': {
+    plain: true,   // no rolled variants: the form is the variant
+    name: 'Lace crawler', hp: 18, speed: 58, damage: 6, radius: 4, xp: 5,
+    // Pounces: a crouch, a leap at you, then it lies open for a moment.
+    ai: 'lunge', orbit: 26, windup: 0.3, lungeSpeed: 230, lungeTime: 0.22, recover: 0.5, alertRange: 240, touchCooldown: 1.0, infection: 5, color: 0xb84fd6,
+    lore: 'What is left when the lace keeps a hand and lets the rest go. It runs on its fingers.',
+  },
+  'enemy.rot_graft': {
+    plain: true,   // no rolled variants: the form is the variant
+    name: 'Grafted', hp: 60, speed: 30, damage: 11, radius: 7, xp: 14,
+    // The cable arm: a line tell out to its reach, a lash that reels you in, then it stands open.
+    ai: 'brute', melee: { kind: 'whip', reach: 46, windup: 0.55, dmg: 12, push: 18, recover: 0.6, cd: 1.5 }, alertRange: 260, touchCooldown: 1.2, infection: 10, color: 0x58c27a,
+    lore: 'A biotech implant that kept growing after its host stopped. Wet cable, bark for skin, and a status light that still blinks OK.',
+  },
+  'enemy.rot_sprawl': {
+    plain: true,   // no rolled variants: the form is the variant
+    name: 'Sprawl', hp: 110, speed: 16, damage: 14, radius: 9, xp: 22,
+    // Every arm at once: a wide sweep in front of it. Kill it and it comes apart into crawlers.
+    ai: 'brute', melee: { kind: 'sweep', reach: 30, r: 34, arc: 2.6, windup: 0.65, dmg: 14, push: 20, recover: 0.8, cd: 1.8 }, splitInto: ['enemy.rot_crawler', 3],
+    alertRange: 240, touchCooldown: 1.6, infection: 12, color: 0x9b2fa8,
+    lore: 'Two or three people the rot folded into one body. It walks on whichever legs are nearest the ground.',
+  },
+  'enemy.rot_hulk': {
+    plain: true,   // no rolled variants: the form is the variant
+    name: 'Lace hulk', hp: 260, speed: 12, damage: 22, radius: 13, xp: 45,
+    // Rears up (a ring on the ground grows to show the reach), slams, throws everyone near it, then reels. Plated.
+    ai: 'brute', melee: { kind: 'slam', reach: 34, r: 44, windup: 0.9, dmg: 22, push: 26, recover: 1.1, cd: 2.4 }, armor: 0.35,
+    alertRange: 220, touchCooldown: 2.0, infection: 14, color: 0x6b6f86,
+    lore: 'A riot exoskeleton the rot climbed into and never left. The pilot is still in there, mostly. Hydraulics, and something wet.',
   },
 };

@@ -62,6 +62,9 @@ import { Fart } from '../fart.js';
 import { NpcLife } from '../npcLife.js';
 import { Cordon } from '../cordon.js';
 import { SkirmishView } from '../skirmishView.js';
+import { SiegeView } from '../siegeView.js';
+import { siegesFor } from '../../content/cordon.js';
+import { rotFormTexture } from '../render/rotForms.js';
 import { skirmishesFor } from '../../content/skirmishes.js';
 import { phaseEnemies } from '../../content/outbreak.js';
 import { dawnLabel, dawnProgress } from '../../content/dawn.js';
@@ -180,6 +183,7 @@ export class WorldScene extends Phaser.Scene {
       for (const ch of ['trevor', 'manuel', 'michael']) if (!taken.has(ch)) this.sim.addPlayer(`ai:${ch}`, ch);
       this.sim.phaseEnemies = phaseEnemies(this.save.flags);   // outbreak phase spawns (task #38)
       this.sim.skirmishes = skirmishesFor(this.save.flags);     // ambient NPC fights (hub #69)
+      this.sim.sieges = siegesFor(this.save.flags);             // held cordon lines (src/engine/siege.js)
       this.sim.jobEnemies = this._jobEnemies();                 // bounty board nests
       this.sim.spawnEnemies();   // Initial encounters use the same complete party as later map entries.
       this.brain = new CompanionBrain(this.sim);
@@ -197,7 +201,7 @@ export class WorldScene extends Phaser.Scene {
     this._wireNet();
     this._makeDialogueUi();
     // D-014: shared events, instruments, romance (src/game/sharedEvent.js, performances.js, romance.js)
-    this.shared = new SharedEvents(this); this.stage = new Stage(this); this.retry = new RetryLine(this); this.moods = new Moods(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.cordon = new Cordon(this); this.skirmish = new SkirmishView(this); this.bigButt = new BigButt(this); this.beltless = new Beltless(this); this.toothpaste = new ToothpasteTalk(this); this.gags = new RunningGags(this); this.hostPick = new HostPick(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this); this.stands = new GuitarStands(this);
+    this.shared = new SharedEvents(this); this.stage = new Stage(this); this.retry = new RetryLine(this); this.moods = new Moods(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.cordon = new Cordon(this); this.skirmish = new SkirmishView(this); this.siegeView = new SiegeView(this); this.bigButt = new BigButt(this); this.beltless = new Beltless(this); this.toothpaste = new ToothpasteTalk(this); this.gags = new RunningGags(this); this.hostPick = new HostPick(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this); this.stands = new GuitarStands(this);
     this.comic = new Comic(this);   // comic pages: flashbacks as a host-synced page-turn mode (src/game/comic.js)
     this._pageIdx = {};
     this.vignette = this._makeVignette();
@@ -249,6 +253,8 @@ export class WorldScene extends Phaser.Scene {
     this._showMap(startMap);
     this.stage.holdForHost(this.initialSnapshot?.stageId, this.initialSnapshot?.stageHold);
     this.ready = true;
+    // Back from a staked loss: seated at the table again (the host reopens it for everyone).
+    if (this.save.world.reseat) { const id = this.save.world.reseat; delete this.save.world.reseat; if (this.mode !== 'client') this.time.delayedCall(900, () => this.openBastion(id)); }
     if (this.initialSnapshot) this.shared.requestResume();
     // Act 1's witnessed beats are staged in-engine first (hub #48; src/content/stage/act1_*.js), then the scene plays.
     // A beat of delay so the roommates are on screen for the cutscene to stand in for them.
@@ -846,7 +852,7 @@ export class WorldScene extends Phaser.Scene {
     } else if (this.mode === 'client') {
       let rejoinStageSynced = false;
       on('msg', (msg) => {
-        if (msg.t === 'toast') { this._toast(msg.text); return; }
+        if (msg.t === 'toast') { this._toast(tr(msg.text)); return; }   // the host sends English; each guest reads it in their own language
         if (msg.t === 'gadgetFx') { if (msg.area === this.map.id) this._gadgetFx(msg.effect); return; }
         if (msg.t === 'camfx') { if (msg.area === this.map.id && CAM_FX.has(msg.kind)) this.cameras.main[msg.kind](...(msg.args ?? [])); return; }
         if (msg.t === 'fxPop') { if (msg.area === this.map.id) this._fxPop(msg.x, msg.y, msg.text); return; }
@@ -906,7 +912,8 @@ export class WorldScene extends Phaser.Scene {
     if (a.snap.map !== b.snap.map) return withEvents(b, b.snap);
     const lerp = (list, prevList) => {
       const prev = new Map(prevList.map((p) => [p.id, p]));
-      return list.map((p) => { const q = prev.get(p.id); return q ? { ...p, x: q.x + (p.x - q.x) * k, y: q.y + (p.y - q.y) * k } : p; });
+      // a jump of more than four tiles is a teleport (a wrap edge, a respawn): show it, don't slide across the map
+      return list.map((p) => { const q = prev.get(p.id); return q && Math.abs(p.x - q.x) < 64 && Math.abs(p.y - q.y) < 64 ? { ...p, x: q.x + (p.x - q.x) * k, y: q.y + (p.y - q.y) * k } : p; });
     };
     return withEvents(b, { ...b.snap, players: lerp(b.snap.players, a.snap.players), enemies: lerp(b.snap.enemies, a.snap.enemies) });
   }
@@ -1884,6 +1891,7 @@ export class WorldScene extends Phaser.Scene {
       if (st.done) continue;
       if (q.giver !== near.id) continue;
       const label = near.label.toUpperCase();
+      if (!st.started && q.ask && q.askIf && !q.askIf(f)) continue;   // not offered yet (e.g. the second half of a thread)
       if (!st.started && q.ask) return act(() => { this._flag(q.ask, true); say(`${label}\n${q.pitch}`); this._tickQuests(true, peer); });
       if (q.give && !f[q.give.flag] && questVisible(q, who)) {
         const c = this.save.party[who];
@@ -2532,6 +2540,7 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.sim.phaseEnemies = phaseEnemies(this.save.flags);   // the phase may have moved since the last map
       this.sim.skirmishes = skirmishesFor(this.save.flags);
+      this.sim.sieges = siegesFor(this.save.flags);
       this.sim.jobEnemies = this._jobEnemies();
       this.sim.setMap(to, from, obj.id);   // arrive at the matching exit (stairs to stairs, elevator to elevator)
       this.enteredFrom = from;
@@ -2803,7 +2812,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode === 'client' && snap.doors) for (const d of this.map.doors.values()) d.open = snap.doors.includes(d.id);
     this._render(snap);
     setInstrumentFocus(snap, this.localId);
-    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.skirmish?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.gags?.update(snap); this.pacifier?.update(snap); this.stands?.update(); this.moods?.update(snap); this.stage?.update(snap);   // cutscene stand-ins draw last
+    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.skirmish?.update(snap); this.siegeView?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.gags?.update(snap); this.pacifier?.update(snap); this.stands?.update(); this.moods?.update(snap); this.stage?.update(snap);   // cutscene stand-ins draw last
     if (this.sahurCameo && !this.dlg) this._endingSahurCue(null);   // the scene closed with him still there: he goes
     else if (this.sahurCameo && !this.sahurCameo.leaving) this.sahurCameo.x = Math.max(this.sahurCameo.x, this.cameras.main.worldView.x + 44);   // keep him in sight
     this._stageHud(!!this.stage?.active);   // cutscenes letterbox the screen: the HUD steps out instead of being sliced by the bars
@@ -2843,29 +2852,64 @@ export class WorldScene extends Phaser.Scene {
   _rotReloadSoon() {
     this._rotReload = true;
     this.time.delayedCall(2400, () => this._camFx('fadeOut', 600, 5, 6, 12));
-    this.time.delayedCall(3100, async () => {
-      const save = await loadAutosave().catch(() => null);
-      if (this.mode === 'host') {
-        const assignments = {};
-        for (const p of this.sim.players.values()) if (!isAi(p.id)) assignments[p.id] = p.character;
-        this.net.broadcast({ t: 'reload', save: save ?? this.save });
-        this.scene.restart({ mode: 'host', net: this.net, save: save ?? undefined, assignments, character: this.character });
-      } else this.scene.restart({ mode: this.mode, character: this.character, save: save ?? undefined });
+    this.time.delayedCall(3100, async () => this._reloadEveryone(await loadAutosave().catch(() => null)));
+  }
+
+  /** Restart the world from `save` (null: the scene's own fallback) on every peer: the host tells its guests. */
+  _reloadEveryone(save) {
+    if (this.mode === 'host') {
+      const assignments = {};
+      for (const p of this.sim.players.values()) if (!isAi(p.id)) assignments[p.id] = p.character;
+      this.net.broadcast({ t: 'reload', save: save ?? this.save });
+      this.scene.restart({ mode: 'host', net: this.net, save: save ?? undefined, assignments, character: this.character });
+    } else this.scene.restart({ mode: this.mode, character: this.character, save: save ?? undefined });
+  }
+
+  // Staked tables (src/content/stakes.js). Host only. Sitting down stores a named checkpoint in the save itself
+  // (save.world.checkpoints.<id>, written to disk at once), marked to seat the party again when it's loaded.
+  _tableCheckpoint(id) {
+    if (this.mode === 'client') return;
+    const w = this.save.world, keep = w.checkpoints ?? {};
+    delete w.checkpoints;
+    const snap = JSON.parse(JSON.stringify(this.save));
+    w.checkpoints = { ...keep, [id]: snap };
+    snap.world.reseat = id;
+    this._save('✓ checkpoint');
+  }
+
+  // A staked loss: the loss cutscene if there is one, then everyone back to the checkpoint, seated. No limit on
+  // tries; table.<id>.losses counts them (it survives the reload, so story can react to it).
+  _stakedLoss(id, stake) {
+    if (this.mode === 'client' || this._rotReload) return false;
+    const cp = this.save.world.checkpoints?.[id];
+    if (!cp) return false;
+    const back = JSON.parse(JSON.stringify(cp));
+    back.world.checkpoints = this.save.world.checkpoints;   // the checkpoint stays for the next try
+    back.flags[`table.${id}.losses`] = Number(this.save.flags[`table.${id}.losses`] ?? 0) + 1;
+    this._rotReload = true;   // nothing else reloads or ends the act meanwhile
+    this.time.delayedCall(1500, () => {
+      this.bastionTable?._close();
+      const go = () => { this._camFx('fadeOut', 600, 5, 6, 12); this.time.delayedCall(700, () => this._reloadEveryone(back)); };
+      if (stake?.lossStage && this.stage) this.stage.play(stake.lossStage, go); else go();
     });
+    return true;
   }
 
   _hostEvents(events) {
     for (const ev of events) {
+      if (ev.bg) continue;   // kills nobody in the party had a hand in (the squad's): no drops, XP or counts
+      if (ev.siege) continue;   // the cordon line's own kills: no drops, XP, guide or quest counts (src/engine/siege.js)
       if (ev.t === 'gadgetScan') this._gadgetScan(ev);
       if (ev.t === 'gadgetCast' || ev.t === 'gadgetBlock') {
         this._gadgetFx(ev);
         if (this.mode === 'host') this.net.broadcast({ t: 'gadgetFx', area: this.map.id, effect: ev });
       }
+      if (ev.t === 'chaseDone') { const said = 'Out of range. The drones turn back.'; this._flag(`chase.${ev.map}.done`, true); this._toast(tr(said)); if (this.mode === 'host') this.net.broadcast({ t: 'toast', text: said }); this._tickQuests(true); }   // src/engine/chase.js; guests read it too (gonman, #85)
       if (ev.t === 'bumpExit' && !this.dlg) {
         const exit = this.map.objects.find((o) => o.id === ev.id);
         this._requestExit(exit, ev.by, ev);
       }
-      if (ev.t === 'skOver' && ev.id) this._flag(`skirmish.${ev.id}.over`, true);   // the hub fell: it stays fallen (hub #69)
+      if (ev.t === 'skOver' && ev.id) { this._flag(`skirmish.${ev.id}.over`, true); if (Number.isInteger(ev.tx) && Number.isInteger(ev.ty)) this._flag(`skirmish.${ev.id}.fell`, `${ev.tx},${ev.ty}`); }   // the hub fell: it stays fallen, where it fell (hub #69)
       if (ev.t === 'door' || ev.t === 'doorClose') sfx('swing');
       if (ev.t === 'grind' && !isAi(ev.id) && !this.save.flags['secrets.grind.found']) { this._flag('secrets.grind.found', true); this._toastTo(ev.id, '★ Rail grind! (scooters fly along the tracks)'); }
       if (ev.t === 'scooter') {
@@ -3160,8 +3204,39 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- rendering ----------
+  // The inside rules on screen (src/engine/inside.js): the beat as a pulse over the floor, the live corrupted tiles,
+  // and the terminal the party will come back to. Drawn from the snapshot, so guests see the host's beat.
+  _drawInside(ins) {
+    const g = (this.insideGfx ??= this.add.graphics().setDepth(2.4)).clear();
+    if (!ins) return;
+    const v = this.cameras.main.worldView, fade = (1 - ins.ph) ** 2;
+    g.fillStyle(0x3fd0d6, 0.10 * fade).fillRect(v.x, v.y, v.width, v.height);
+    for (const [x, y] of ins.live) g.fillStyle(0xd417c8, 0.28 + 0.12 * fade).fillRect(x * TILE, y * TILE, TILE, TILE).lineStyle(1, 0xff5ef0, 0.7).strokeRect(x * TILE + 0.5, y * TILE + 0.5, TILE - 1, TILE - 1);
+    if (ins.cp) g.lineStyle(1, 0x3fd0d6, 0.5 + 0.4 * fade).strokeRect(ins.cp.x - 6, ins.cp.y - 6, 12, 12);
+  }
+
+  // The chase on screen (src/engine/chase.js): the drones riding the pace line, a lane being marked, and the end
+  // line, readable from the start; once it's over the drones peel back.
+  _drawChase(ch) {
+    const g = (this.chaseGfx ??= this.add.graphics().setDepth(5000)).clear();
+    if (!ch) return;
+    const v = this.cameras.main.worldView, t = this.time.now / 1000, H = this.map.h * TILE;
+    if (ch.sw) g.fillStyle(0xd42a3c, 0.18 + 0.12 * Math.sin(t * 12)).fillRect(ch.sw[2], ch.sw[0], ch.sw[3] - ch.sw[2], ch.sw[1] - ch.sw[0]).lineStyle(1, 0xd42a3c, 0.9).strokeRect(ch.sw[2], ch.sw[0], ch.sw[3] - ch.sw[2], ch.sw[1] - ch.sw[0]);
+    g.lineStyle(2, 0x3fd0d6, 0.8);
+    for (let y = 0; y < H; y += 12) g.lineBetween(ch.end, y, ch.end, y + 6);   // the range line: NO SIGNAL past here
+    const back = ch.done ? Math.min(160, (this._chaseDoneAt ??= t, (t - this._chaseDoneAt) * 120)) : 0;
+    if (!ch.done) this._chaseDoneAt = null;
+    if (back < 160) {
+      g.lineStyle(1, 0xd42a3c, 0.5).lineBetween(ch.pace, v.y, ch.pace, v.y + v.height);
+      for (let i = 0; i < 5; i++) { const y = v.y + 24 + i * (v.height - 48) / 4 + Math.sin(t * 3 + i) * 6, x = ch.pace - 10 - back + Math.sin(t * 5 + i * 2) * 3;
+        g.fillStyle(0x1a1d2b, 1).fillRect(x - 5, y - 2, 10, 4).fillStyle(0xd42a3c, 0.9).fillRect(x - 1, y - 1, 2, 2); }   // drones (placeholder art)
+    }
+  }
+
   _render(snap) {
     const seen = new Set();
+    this._drawInside(snap.ins);
+    this._drawChase(snap.ch);
     const partyHealth = this.partyHealthGfx.clear();
     this._reviveCleared = false; if (!snap.players.some((p) => p.dn)) this.reviveGfx?.clear();
     (this.charShadow ??= this.add.graphics().setDepth(3)).clear();
@@ -3267,17 +3342,23 @@ export class WorldScene extends Phaser.Scene {
     for (const [id, s] of this.sprites) if (!seen.has(id)) { s.destroy(); this.sprites.delete(id); }
 
     const eseen = new Set();
+    this.bruteTells?.clear();
     for (const e of snap.enemies || []) {
+      if (e.bt) this._drawBruteTell(e.bt);
+      if (e.sd) continue;   // drawn by its own view (the walking hub and its drones: src/game/skirmishView.js)
       eseen.add(e.id);
       let s = this.enemySprites.get(e.id);
       const def = e.boss ? { radius: e.boss.r, color: e.boss.c } : ENEMIES[e.k];
       if (!s) {
         const anim = e.boss ? (e.boss.sahur ? 'sahur' : e.k === 'boss.switchman' ? 'switchman' : 'warden') : e.k;
-        if (this.anims.exists(anim)) { s = this.add.sprite(e.x, e.y, e.boss ? (e.boss.sahur ? 'principals' : 'warden') : 'enemies').setOrigin(0.5, 1).play(anim); s.isArt = true; s.noTint = !!e.boss?.sahur; }
+        const form = !e.boss && rotFormTexture(this, e.k);   // the further-gone rot forms, drawn in code (render/rotForms.js)
+        if (form) { s = this.add.image(e.x, e.y, form, '0').setOrigin(0.5, 1); s.isArt = true; s.rotForm = true; }   // code-drawn first: scarier than the old sheet
+        else if (this.anims.exists(anim)) { s = this.add.sprite(e.x, e.y, e.boss ? (e.boss.sahur ? 'principals' : 'warden') : 'enemies').setOrigin(0.5, 1).play(anim); s.isArt = true; s.noTint = !!e.boss?.sahur; }
         else s = this.add.rectangle(e.x, e.y, def.radius * 2, def.radius * (e.boss ? 3 : 2) + 2, def.color).setOrigin(0.5, 1);
         this.enemySprites.set(e.id, s);
       }
       s.setPosition(e.x, e.y + 3).setDepth(e.y);
+      if (s.rotForm) s.setFrame(Math.floor(this.time.now / 240 + e.x * 0.13) % 2 ? '1' : '0');
       if (s.isArt) { if (e.h) s.setTintFill(0xffffff); else if (e.boss && !s.noTint) s.setTint(def.color); else s.clearTint(); }
       else s.setFillStyle(e.h ? 0xffffff : def.color);
       let sx = 1 + Math.sin(this.time.now / 90 + e.x) * 0.06, sy = 1;   // jittery rot wobble
@@ -3295,7 +3376,7 @@ export class WorldScene extends Phaser.Scene {
     let tgt = null, td = 70;
     for (const e of snap.enemies || []) { if (e.boss || !e.vn || !meP) continue; const d = Math.hypot(e.x - meP.x, e.y - meP.y); if (d < td) { td = d; tgt = e; } }
     this.enemyTag ??= this.add.text(0, 0, '', { ...FONT, fontSize: '6.5px', color: '#d6c0e8' }).setOrigin(0.5, 1).setDepth(6500);
-    if (tgt) this.enemyTag.setText(`${tgt.vn}${tgt.tr && tgt.tr !== 'plain' ? ` · ${TRAIT_LABEL[tgt.tr]}` : ''}`).setPosition(tgt.x, tgt.y - 16).setVisible(true); else this.enemyTag.setVisible(false);
+    if (tgt) this.enemyTag.setText(`${tgt.vn}${tgt.tr && tgt.tr !== 'plain' ? ` · ${TRAIT_LABEL[tgt.tr]}` : ''}`).setPosition(tgt.x, tgt.y - (tgt.sd ? 70 : 16)).setVisible(true); else this.enemyTag.setVisible(false);   // above the walking hub's bar
     if (!(snap.enemies || []).some((e) => e.boss && !e.boss.idle)) this.bossUi?.setVisible(false);
 
     for (const d of this.doorVis ?? []) if (d.drawn !== !!d.o.open) {
@@ -3341,7 +3422,7 @@ export class WorldScene extends Phaser.Scene {
       const cx = (this.map.w * TILE) / 2, cy = (this.map.h * TILE) / 2;
       this.shotGfx.lineStyle(3, 0xd65db1, 0.5 + 0.3 * Math.sin(this.time.now / 100)).strokeCircle(cx, cy, snap.ring);
     }
-    for (const sh of snap.shots || []) this.shotGfx.fillStyle(sh.f ? 0xffd27f : 0xd65db1).fillCircle(sh.x, sh.y, sh.f ? 2 : 2.5);
+    for (const sh of snap.shots || []) this._drawShot(sh);
 
     for (const ev of snap.events || []) this._fx(ev, snap);
     this._barkTick(snap);
@@ -3736,6 +3817,50 @@ export class WorldScene extends Phaser.Scene {
     sfx('kill');
   }
 
+  // Each kind of shot looks like what it is (Trevor, 2026-11-23: "not every projectile should be a pink ball").
+  _drawShot(sh) {
+    const g = this.shotGfx, t = this.time.now, x = sh.x, y = sh.y, k = sh.k ?? (sh.f ? 'sinter' : 'packet');
+    const line = (len, w, c, a = 1) => { const ux = Math.cos(sh.a ?? 0), uy = Math.sin(sh.a ?? 0); g.lineStyle(w, c, a).lineBetween(x - ux * len, y - uy * len, x, y); };
+    if (k === 'packet') {        // corrupted packets: a jittering square that flickers magenta and cyan, a glitch trail
+      const c = Math.floor(t / 70 + x) % 2 ? 0xd417c8 : 0x3fd0d6, j = Math.floor(t / 50 + y) % 3 - 1;
+      g.fillStyle(c, 1).fillRect(x - 2 + j, y - 2, 4, 4); g.fillStyle(0xffffff, 0.9).fillRect(x - 1 + j, y - 1, 1, 1);
+      g.fillStyle(c, 0.4).fillRect(x - 5, y - 1, 2, 2);
+    } else if (k === 'note') {   // Hold Loop: hold music, as notes
+      g.fillStyle(0xd65db1, 1).fillEllipse(x, y + 1, 4, 3); g.fillRect(x + 1, y - 4, 1, 5); g.fillRect(x + 1, y - 4, 3, 1);
+    } else if (k === 'scan') line(7, 2, 0xff4d6d, 0.9);           // the sweep: short red scan streaks
+    else if (k === 'signal') {   // broadcast rings: hollow, pale yellow, pulsing
+      g.lineStyle(1, 0xffe08a, 1).strokeCircle(x, y, 2.5 + Math.sin(t / 60 + x) * 0.6); g.fillStyle(0xffe08a, 0.35).fillCircle(x, y, 1.5);
+    } else if (k === 'splinter') { line(5, 2, 0xb98b5a); g.fillStyle(0xe0b866, 1).fillRect(x - 1, y - 1, 2, 2); }   // Tung Tung Tung Sahur's wood
+    else if (k === 'nail') line(4, 1, 0xc9d3e6);                  // nails: thin and steel
+    else if (k === 'pellet') g.fillStyle(0xffb347, 1).fillRect(x - 1, y - 1, 2, 2);
+    else if (k === 'needle') line(6, 1, 0x7dff9b);
+    else g.fillStyle(sh.f ? 0xffd27f : 0xd65db1, 1).fillCircle(x, y, sh.f ? 2 : 2.5);   // sinter pellets from the fab launcher
+  }
+
+  // Brutes' melee tells and strikes (sim _stepBrute): the reach drawn on the ground while it winds up, then the hit.
+  _bruteShape(g, ev) {
+    if (ev.kind === 'slam') g.strokeCircle(ev.x, ev.y, ev.r).fillCircle(ev.x, ev.y, ev.r);
+    else if (ev.kind === 'sweep') { g.slice(ev.x, ev.y, ev.r, ev.a - ev.arc / 2, ev.a + ev.arc / 2, false); g.fillPath(); g.strokePath(); }
+    else { const ux = Math.cos(ev.a), uy = Math.sin(ev.a), len = ev.r; g.lineBetween(ev.x, ev.y, ev.x + ux * len, ev.y + uy * len); }
+  }
+
+  _drawBruteTell(tell) {
+    const g = (this.bruteTells ??= this.add.graphics().setDepth(4));
+    g.lineStyle(tell.kind === 'whip' ? 14 : 1, 0xff4d6d, 0.4 + 0.35 * tell.progress)
+      .fillStyle(0xff4d6d, 0.08 + 0.16 * tell.progress);
+    this._bruteShape(g, tell);
+  }
+
+  _bruteFx(ev) {
+    const g = this.add.graphics().setDepth(4);
+    g.lineStyle(ev.kind === 'whip' ? 14 : 2, 0xffe6ee, 1).fillStyle(0xffe6ee, 0.35);
+    this._bruteShape(g, ev);
+    this.tweens.add({ targets: g, alpha: 0, duration: 260, onComplete: () => g.destroy() });
+    sfx('hit');
+    const me = this._lastRendered?.players?.find((p) => p.id === this.localId);
+    if (ev.kind === 'slam' && me && Math.hypot(me.x - ev.x, me.y - ev.y) < 160) this.cameras.main.shake(160, 0.006);
+  }
+
   // A scene's bark table (tools/dialogue/convert.py): rows whose trigger is "<node>, Ns in" play N seconds after the
   // node starts, over the dialogue, from that roommate if they're here ("nearest the camera" means your own).
   // Other trigger kinds are kept in the data for the systems that will play them.
@@ -3838,6 +3963,8 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _fx(ev, snap) {
+    if (ev.bg) { if (ev.t === 'kill') this.skirmish?.onKill(ev); return; }   // the squad's kills: a burst, no numbers or barks
+    if (ev.siege) { if (ev.t === 'kill') this.siegeView?.onKill(ev); return; }   // background fire at the cordon
     this.romance?.onEvent(ev, snap); this.gear?.onEvent(ev); this.eggs?.onEvent(ev); this.perf?.onEvent(ev);
     if (['hit', 'kill', 'shot', 'swing'].includes(ev.t) && (ev.by === this.localId || ev.id === this.localId)) sfx(ev.t);
     if (ev.t === 'hurt' && ev.id === this.localId) sfx('hurt');
@@ -3917,6 +4044,7 @@ export class WorldScene extends Phaser.Scene {
       const t = this.add.text(ev.x, ev.y - 30, 'OVERHEATED: hit it!', { ...FONT, color: '#ffb347' }).setOrigin(0.5).setDepth(6100);
       this.tweens.add({ targets: t, y: t.y - 10, alpha: 0, duration: 1300, onComplete: () => t.destroy() });
     }
+    if (ev.t === 'estrike') this._bruteFx(ev);
     if (ev.t === 'bossBrace' && this.time.now > (this._thunkAt ?? 0)) {   // a hit that glances off a braced boss (at most ~3 a second)
       this._thunkAt = this.time.now + 300;
       const t = this.add.text(ev.x + (Math.random() * 16 - 8), ev.y - 22, 'BRACED', { ...FONT, color: '#9aa8bf' }).setOrigin(0.5).setDepth(6100);

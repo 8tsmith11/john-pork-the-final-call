@@ -4,6 +4,7 @@
 // and sends the board to everyone a few times a second. No Phaser here: the scene passes `makeView`.
 import * as B from '../engine/bastion.js';
 import { ROOMMATE_SIDES } from './latticeTable.js';
+import { STAKES } from '../content/stakes.js';
 
 const TICK = 0.1, SEND_EVERY = 0.25, AI_EVERY = 1.0;
 
@@ -32,6 +33,9 @@ export class BastionTable {
       if (peer === this.s.localId) this._showLocal();
       this._send('state'); return;
     }
+    // A staked table (src/content/stakes.js) checkpoints before the first move, so a loss comes back to here.
+    this.stake = STAKES[id] ?? null;
+    if (this.stake) this.s._tableCheckpoint?.(id);
     const party = Object.keys(this.s.save?.party ?? {}), roommates = ROOMMATE_SIDES.filter((c) => party.includes(c));
     const n = Number(this.s.save?.flags?.[`bastion.games.${id}`] ?? 0);
     this.m = B.fortify(B.newMatch(`${this.s.save?.world?.seed ?? 'w'}:${id}:${n}`, roommates, difficulty ? { difficulty } : {}));
@@ -85,6 +89,7 @@ export class BastionTable {
     this.recorded = true;
     this.s._bastionResult?.(this.id, this.m.winner === 'party');
     this._send('state');
+    if (this.stake && this.m.winner !== 'party') this.s._stakedLoss?.(this.id, this.stake);
   }
 
   _close() {

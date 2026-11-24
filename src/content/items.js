@@ -62,6 +62,16 @@ export const MATERIALS = {
 };
 Object.assign(ITEMS, MATERIALS);
 
+// What the optional puzzles of Acts 2-3 pay (src/content/puzzles.js). Key items wait for the quests that use them.
+Object.assign(ITEMS, {
+  'item.ann_oarlocks':  { name: 'Bronze oarlocks', slot: 'key', text: 'A pair, from the island family, green at the pins. They fit any boat on the bay. You don\'t have a boat.' },
+  'item.gb_tape':       { name: 'Clean-room tape', slot: 'charm', analog: true, mods: { armor: 0.06 }, text: 'A can of telemetry tape from the Greenbelt clean room, labeled in pencil: one dish, one night. Wound before the Slop Decades and never touched by a model. Worn on its strap, it keeps the rot off.' },
+  'item.intercept_codes': { name: 'Intercept codes', slot: 'key', text: 'A flip pad from a suggestion box at the Meade, every page a column of five-letter groups in a careful hand. The analysts\' own, for reading the Meade\'s traffic. The cover says LUNCH ORDERS.' },
+  'item.baron_keycard': { name: 'Compute Baron keycard', slot: 'key', text: 'A black card with a house crest and a gold contact strip, no photo, no name. It was in a drawer a written-off hall kept locked for as long as it had power.' },
+  'item.provenance_seal': { name: 'Provenance seal', slot: 'charm', analog: true, mods: { armor: 0.1 }, text: 'An archive seal pressed into red wax on a linen ribbon, by hand. It vouches that a thing is itself, and no copy. Worn, it vouches for you.' },
+  'item.analog_axe':{ name: 'Analogist felling axe', slot: 'weapon', analog: true, swing: { range: 22, arc: 0.55, cooldown: 0.58, damage: 26, knockback: 200 }, text: 'A hickory haft and a head forged in the refuge, ground by hand. No part of it has ever been plugged in. Slow, and it means it.' },
+});
+
 // Bought, not printed.
 Object.assign(ITEMS, {
   'item.scooter':       { name: 'Scooter', slot: 'key', text: 'Used, cracked deck. [Q] to ride outdoors. Rails are faster than they look.' },

@@ -84,6 +84,12 @@ export const ES_ACT2 = {
   'Clean room window': 'Ventana de la sala limpia',
   'A window of wired glass into the clean room. The floor hasn\'t been swept in years, and there is one set of footprints in the dust.':
     'Una ventana de vidrio armado hacia la sala limpia. Hace años que no barren el piso, y en el polvo hay un solo par de huellas.',
+  'Pass-through drawers': 'Cajones pasamuros',
+  'Twelve steel pass-through drawers set in the wall under the window, for handing things into the clean room without going in. None of them is numbered. Whoever numbered things here left before the drawers came.':
+    'Doce cajones pasamuros de acero empotrados en la pared bajo la ventana, para pasar cosas a la sala limpia sin entrar. Ninguno tiene número. El que numeraba las cosas acá se fue antes de que llegaran los cajones.',
+  'Repeater lamp': 'Lámpara repetidora',
+  'A repeater lamp on the wall, tagged DISH 3 WORK LIGHT in punched tape. It comes on when the dish\'s lamp swings over the clean room skylight, and goes off again. Somebody has timed it in pencil on the paint: a minute dark, a quarter of that lit. The numbers have been corrected twice.':
+    'Una lámpara repetidora en la pared, rotulada LUZ DE TRABAJO, ANTENA 3 en cinta perforada. Se enciende cuando el foco de la antena pasa sobre la claraboya de la sala limpia, y se vuelve a apagar. Alguien la cronometró en lápiz sobre la pintura: un minuto a oscuras, la cuarta parte de eso encendida. Los números están corregidos dos veces.',
   'Back down the hill': 'De vuelta colina abajo',
   'Back outside.': 'De vuelta afuera.',
 
@@ -144,6 +150,21 @@ export const ES_ACT2 = {
   'The fire tower': 'La torre de incendios',
   'A fire tower on four timber legs, its cab up in the treetops. Nailed to the rail of the bottom flight is a slice of an old oak, its rings labeled in ink on little paper flags.':
     'Una torre de incendios sobre cuatro patas de madera, con la cabina allá arriba entre las copas. Clavada en la baranda del primer tramo hay una rodaja de un roble viejo, con los anillos rotulados en tinta en banderitas de papel.',
+  'Oak round: "the phones"': 'Rodaja de roble: "los teléfonos"',
+  'A slice of the old oak on a post, one ring flagged in ink: "the year the phones rang." A thin ring, with the wide pale years all inside it. A wooden peg sticks out under the flag.':
+    'Una rodaja del roble viejo sobre un poste, con un anillo marcado en tinta: "el año que sonaron los teléfonos." Un anillo fino, con todos los años anchos y pálidos por dentro. Debajo de la banderita asoma una clavija de madera.',
+  'Oak round: "the clocks"': 'Rodaja de roble: "los relojes"',
+  'A slice of the old oak on a post, one ring flagged in ink: "the year the clocks went back." The ring is narrow and dark. A wooden peg sticks out under the flag.':
+    'Una rodaja del roble viejo sobre un poste, con un anillo marcado en tinta: "el año que los relojes volvieron atrás." El anillo es angosto y oscuro. Debajo de la banderita asoma una clavija de madera.',
+  'Oak round with a newer flag': 'Rodaja de roble con una banderita más nueva',
+  'A fifth slice, and the only flag in ballpoint: "the year everything got better." It is pinned to the bark, where there is no ring. Under it, small, in pencil: "after the clocks, before the vote, if at all." This one has no peg.':
+    'Una quinta rodaja, y la única banderita en bolígrafo: "el año que todo mejoró." Está clavada en la corteza, donde no hay anillo. Debajo, chiquito, en lápiz: "después de los relojes, antes de la votación, si es que pasó." Esta no tiene clavija.',
+  'Oak round: "the answering"': 'Rodaja de roble: "contestar"',
+  'A slice of the old oak on a post, one ring flagged in ink: "the year we stopped answering." It is the thickest ring on the slice. A wooden peg sticks out under the flag.':
+    'Una rodaja del roble viejo sobre un poste, con un anillo marcado en tinta: "el año que dejamos de contestar." Es el anillo más grueso de la rodaja. Debajo de la banderita asoma una clavija de madera.',
+  'Oak round: "the vote"': 'Rodaja de roble: "la votación"',
+  'A slice of the old oak on a post, one ring flagged in ink: "the year they paused the voting." A wide, pale ring, as if the tree hadn\'t noticed. A wooden peg sticks out under the flag.':
+    'Una rodaja del roble viejo sobre un poste, con un anillo marcado en tinta: "el año que pausaron las votaciones." Un anillo ancho y pálido, como si el árbol no se hubiera enterado. Debajo de la banderita asoma una clavija de madera.',
   'Up the boardwalk to the settlement': 'Por la pasarela, al asentamiento',
   'Timber walls, lamps in the windows.': 'Paredes de troncos, lámparas en las ventanas.',
   'Deeper into the forest': 'Más adentro del bosque',
@@ -172,6 +193,18 @@ export const ES_ACT2 = {
   'Cafeteria menu (posted outside)': 'Menú de la cafetería (colgado afuera)',
   'The cafeteria menu, on a sandwich board at the edge of the berm road, typed fresh every morning. MONDAY: Meatloaf (Redacted). TUESDAY: Mystery Meat (Classified).':
     'El menú de la cafetería, en un cartel de caballete al borde del camino del terraplén, escrito a máquina cada mañana. LUNES: Pastel de carne (Censurado). MARTES: Carne Misteriosa (Clasificada).',
+  'Suggestion box: MEATLOAF': 'Buzón de sugerencias: PASTEL DE CARNE',
+  'A steel suggestion box bolted to a post, stenciled SUGGESTIONS: MEATLOAF. It has no slot. It has a thumbwheel, numbered 0 to 5.':
+    'Un buzón de sugerencias de acero atornillado a un poste, con SUGERENCIAS: PASTEL DE CARNE pintado con plantilla. No tiene ranura. Tiene una ruedita numerada del 0 al 5.',
+  'Suggestion box: MYSTERY MEAT': 'Buzón de sugerencias: CARNE MISTERIOSA',
+  'A steel suggestion box bolted to a post, stenciled SUGGESTIONS: MYSTERY MEAT. It has no slot. It has a thumbwheel, numbered 0 to 5.':
+    'Un buzón de sugerencias de acero atornillado a un poste, con SUGERENCIAS: CARNE MISTERIOSA pintado con plantilla. No tiene ranura. Tiene una ruedita numerada del 0 al 5.',
+  'Suggestion box: SOUP': 'Buzón de sugerencias: SOPA',
+  'A steel suggestion box bolted to a post, stenciled SUGGESTIONS: SOUP. It has no slot. It has a thumbwheel, numbered 0 to 5.':
+    'Un buzón de sugerencias de acero atornillado a un poste, con SUGERENCIAS: SOPA pintado con plantilla. No tiene ranura. Tiene una ruedita numerada del 0 al 5.',
+  'Folding table': 'Mesa plegable',
+  'A folding table at the edge of the berm road, where the analysts eat standing up. Under a mug is a napkin with a tally in ballpoint, headed "times it was funny." Redacted: four strokes. Classified: two. Need to Know: five. Eyes Only: one, crossed out.':
+    'Una mesa plegable al borde del camino del terraplén, donde los analistas comen de pie. Debajo de una taza hay una servilleta con una cuenta en bolígrafo, titulada "veces que dio risa." Censurado: cuatro rayas. Clasificada: dos. Solo Personal Autorizado: cinco. Solo para sus ojos: una, tachada.',
   'A quartermaster': 'Un intendente', 'A QUARTERMASTER': 'UN INTENDENTE',
   '"Everything at the Meade has a form." He holds out a clipboard and pulls it back before you can take it. "I\'m the form you fill out to skip the others. I cost more."':
     '"En el Meade todo tiene un formulario." Te tiende un portapapeles y lo retira antes de que puedas agarrarlo. "Yo soy el formulario que se llena para saltarse los demás. Salgo más caro."',
@@ -249,6 +282,12 @@ export const ES_ACT2 = {
   'A bell across the water': 'Una campana al otro lado del agua',
   'The last bollard at the end of the pier, worn smooth by rope. From somewhere east over the water comes a church bell. The charts put one island out that way, and no church on it.':
     'El último bolardo al final del muelle, gastado liso por los cabos. De algún lugar al este, sobre el agua, llega una campana de iglesia. Las cartas marcan una sola isla para ese lado, y ninguna iglesia en ella.',
+  'The pier bell': 'La campana del muelle',
+  'A brass fog bell on a timber post at the end of the pier, green where the spray gets it. The rope has been spliced so many times it is mostly splice.':
+    'Una campana de niebla de bronce en un poste de madera al final del muelle, verde donde le pega la espuma. A la cuerda la empalmaron tantas veces que ya es casi toda empalme.',
+  'Tide board': 'Regla de mareas',
+  'A tide board nailed to a piling, the feet painted in white. Near the top is a red line lettered HIGHEST EVER, and under that, in four different hands: "per the almanac." The weed on the board starts a hand above the red line.':
+    'Una regla de mareas clavada a un pilote, con los pies pintados en blanco. Cerca de arriba hay una línea roja con el rótulo LA MÁS ALTA QUE HUBO, y debajo, en cuatro letras distintas: "según el almanaque." Las algas de la regla empiezan un palmo por encima de la línea roja.',
   'Back up the pier': 'De vuelta por el muelle',
 
   // The townsfolk crowds.js stands on these maps. Their English still waits for that file's own polish (another

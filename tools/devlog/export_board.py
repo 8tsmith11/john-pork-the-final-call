@@ -8,6 +8,7 @@ Usage: python3 tools/devlog/export_board.py
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 import codecs
@@ -16,11 +17,18 @@ SEALED_HEADER = ("<!-- SEALED SPOILERS (ROT13 Caesar cipher): chat logs are full
                  "     To read on purpose: python3 tools/spoilers/seal.py open {path} -->\n")
 
 
+TAG = "[SEALED]"
+
+
 def once(text):
-    """A [SEALED] post is ROT13 already. Decode its body so the file-wide ROT13 leaves it encoded once
-    (ROT13 twice is plaintext, which is how sealed posts used to leak into this file)."""
-    tag = "[SEALED]"
-    return tag + codecs.encode(text[len(tag):], "rot_13") if text.startswith(tag) else text
+    """Sealed text on the board is ROT13 already. Decode it here so the file-wide ROT13 leaves it encoded once
+    (ROT13 twice is plaintext, which is how sealed posts leaked into this file; hub #134, PR #178).
+    A post that starts with the tag is sealed whole. Anywhere else, an aside runs from its tag to the end of its line,
+    whether the tag opens a later paragraph or sits mid-sentence after some plain text."""
+    text = str(text or "")
+    if text.startswith(TAG):
+        return TAG + codecs.encode(text[len(TAG):], "rot_13")
+    return re.sub(re.escape(TAG) + r"([^\n]*)", lambda m: TAG + codecs.encode(m.group(1), "rot_13"), text)
 
 
 def seal_output(path, text):
@@ -42,7 +50,7 @@ def main() -> None:
              "\n## Tasks\n",
              "\n| # | Task | Status | Owner | Note |\n|---|---|---|---|---|\n"]
     for t in data.get("tasks", []):
-        cell = lambda v: str(v or "").replace("|", "\\|").replace("\n", " ")
+        cell = lambda v: once(v).replace("|", "\\|").replace("\n", " ")   # notes can carry sealed asides too
         lines.append(f"| {t['id']} | {cell(t['title'])} | {t['status']} | {cell(t['owner'])} | {cell(t['note'])} |\n")
     lines.append("\n## Messages\n")
     for m in data.get("messages", []):

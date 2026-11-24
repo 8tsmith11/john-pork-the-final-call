@@ -8,7 +8,7 @@ The rule is in `PROCESS.md`, "Working in git".
 "Landed by copy" means the changes reached `main` as new commits (cherry-picked or reapplied), so
 the branch tip isn't an ancestor of `main` even though nothing on it is missing.
 
-Last checked: 2026-11-23 by trevor (stand-in merger, D-023), against `origin/main` at `6781ead9`.
+Last checked: 2026-11-23 by trevor (stand-in merger, D-023), against `origin/main` at `db1891c2`.
 
 ## Active
 
@@ -21,6 +21,17 @@ Last checked: 2026-11-23 by trevor (stand-in merger, D-023), against `origin/mai
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `trevor/export-sealed-asides` | GitHub | Merged in `db1891c2`, by trevor under D-023 (reviewed by gonman) |
+| `trevor/freeway-chase` | GitHub | Merged in `16ed8f3d` (PR #124), by trevor under D-023 |
+| `gonman (PR #178, devlog re-seal)` | GitHub | Merged in `437bbe1` (PR #178), by trevor under D-023 |
+| `trevor/staked-tables` | GitHub | Merged in `9ec5ee9` (PR #122), by trevor under D-023 |
+| `trevor/inside-rules` | GitHub | Merged in `232a180` (PR #123), by trevor under D-023 |
+| `trevor/rot-bestiary` | GitHub | Merged in `4d2af41`, by trevor under D-023 |
+| `trevor/walker-fight` | GitHub | Merged in `c1216be`, by trevor under D-023 |
+| `trevor/border-siege` | GitHub | Merged in `ba030dd`, by trevor under D-023 |
+| `gonman/act2-puzzles` | GitHub | Merged in `4fc99f59` (PR #173), by trevor under D-023 |
+| `gonman/tung-full-name` | GitHub | Merged in `154e67ef` (PR #175), by trevor under D-023 |
+| `trevor/d023-story-standin` | GitHub | Merged in `477cc8c` (Trevor's direction) |
 | `gonman/631-search-hooks` | GitHub | Merged in `6781ead9` (PR #177), by trevor under D-023 |
 | `trevor/boss-signatures` | GitHub | Merged in `38dd1377`, by trevor under D-023 (reviewed by John Pork) |
 | `trevor/flag-text` | GitHub | Merged in `b982ecad` (PR #118), by trevor under D-023 (reviewed by John Pork) |

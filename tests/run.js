@@ -1852,21 +1852,56 @@ test('cordon (task #36/#38): trooper lines before and after the Call have Spanis
   for (const id of ['cordon.booth_1', 'cordon.booth_2', 'cordon.light_1', 'cordon.light_2', 'cordon.sign_1', 'cordon.sign_2', 'cordon.sign_3']) assert.ok(ids.has(id), `${id} is placed`);
 });
 
-test('cordon (task #36): the Code-rot-taken beyond each checkpoint stay out of reach and in their pens', () => {
+test('cordon (task #36): the rot beyond each checkpoint stays out of reach and in its pen', () => {
   if (!cordonMod) return;
-  const m = MAPS_FOR_TEST.metro_plaza, held = cordonMod.PLAZA_CORDON.held;
-  assert.ok(held.length >= 6 && m.enemies.filter((e) => e.pen).length === held.length, 'the held rot-taken are on the map');
+  const m = MAPS_FOR_TEST.metro_plaza, siege = cordonMod.siegesFor({}).metro_plaza;
+  assert.ok(siege.pens.length === 3 && siege.pens.every((p) => p.keep >= 6), 'three pens, each held at strength');
   const sp = m.spawns[0], start = [Math.floor(sp.x / 16), Math.floor(sp.y / 16)], seen = new Set([start.join(',')]), q = [start];
   while (q.length) { const [x, y] = q.shift(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || m.solid(nx, ny)) continue; seen.add(k); q.push([nx, ny]); } }
-  for (const [, tx, ty, { pen }] of held) {
+  for (const { rect: pen } of siege.pens) {
     for (let y = pen[1]; y < pen[1] + pen[3]; y++) for (let x = pen[0]; x < pen[0] + pen[2]; x++) assert.ok(!seen.has(x + ',' + y), `pen tile ${x},${y} is reachable on foot`);
-    assert.ok(tx >= pen[0] && tx < pen[0] + pen[2] && ty >= pen[1] && ty < pen[1] + pen[3], `rot-taken at ${tx},${ty} starts inside its pen`);
   }
-  // Walk up to the north barrier and wait: they push at the line but never leave.
-  const sim = new Sim(m, { seed: 'pens' }); sim.addPlayer('a', 'trevor');
-  const p = sim.players.get('a'); p.x = 60 * 16 + 8; p.y = 6 * 16 + 8;
-  for (let i = 0; i < 600; i++) sim.step(1 / 60, new Map([['a', { mx: 0, my: 0, aim: 0 }]]));
-  for (const e of sim.enemies.values()) if (e.pen) { const [tx, ty, tw, th] = e.pen; assert.ok(e.x >= tx * 16 && e.x <= (tx + tw) * 16 && e.y >= ty * 16 && e.y <= (ty + th) * 16, `${e.kind} left its pen`); }
+  // Walk up to the north barrier and wait: they push at the line but never leave, and never reach you.
+  const sim = new Sim(m, { seed: 'pens' }); sim.sieges = cordonMod.siegesFor({}); sim.addPlayer('a', 'trevor'); sim.spawnEnemies();
+  const p = sim.players.get('a'); p.x = 60 * 16 + 8; p.y = 6 * 16 + 8; const hp0 = p.hp;
+  for (let i = 0; i < 600; i++) {
+    sim.step(1 / 60, new Map([['a', { mx: 0, my: 0, aim: 0 }]]));
+    for (const e of sim.enemies.values()) if (e.pen) { const [tx, ty, tw, th] = e.pen; assert.ok(e.x >= tx * 16 && e.x <= (tx + tw) * 16 && e.y >= ty * 16 && e.y <= (ty + th) * 16, `${e.kind} left its pen`); }
+  }
+  assert.equal(p.hp, hp0, 'nothing in a pen reaches you');
+});
+
+test('the held line (Trevor: an invasion being held off): pens stay full of mixed rot forms, the line shoots and shoves them, more keep coming, and the kills pay nothing', async () => {
+  if (!cordonMod) return;
+  const { SIEGE } = await import('../src/engine/siege.js');
+  const { ENEMIES } = await import('../src/content/enemies.js');
+  const m = MAPS_FOR_TEST.metro_plaza, spec = cordonMod.siegesFor({}).metro_plaza;
+  for (const pen of spec.pens) for (const [kind] of pen.mix) assert.ok(ENEMIES[kind], `${kind} is a real enemy`);
+  for (const d of spec.defenders) assert.ok(SIEGE[d.kind] && spec.pens.some((p) => p.id === d.pen), `defender ${d.kind} at ${d.at} has rules and a pen`);
+  for (const pen of spec.pens) for (const k of ['trooper', 'turret', 'robot']) assert.ok(spec.defenders.some((d) => d.pen === pen.id && d.kind === k), `${pen.id} has a ${k}`);
+  const sim = new Sim(m, { seed: 'line' }); sim.sieges = cordonMod.siegesFor({}); sim.addPlayer('a', 'trevor'); sim.spawnEnemies();
+  const p = sim.players.get('a'); p.x = 30 * 16; p.y = 25 * 16;   // in the plaza, far from every pen
+  const inPen = (id) => [...sim.enemies.values()].filter((e) => e.siege?.pen === id);
+  let kills = 0, paid = 0, tracers = 0, shoves = 0;
+  const kinds = new Set(), ids = new Set();
+  for (let i = 0; i < 60 * 90; i++) {
+    sim.step(1 / 60, new Map([['a', { mx: 0, my: 0, aim: 0 }]]));
+    for (const ev of sim.events) if (ev.t === 'kill' && ev.siege) { kills++; paid += ev.xp; }
+    const v = sim.snapshot().sg; tracers += v.tr.length; shoves += v.d.filter((d) => d[2] === 2 && d[4] === 2).length;
+    for (const e of sim.enemies.values()) if (e.siege) { kinds.add(e.kind); ids.add(e.id); }
+    if (i === 30) for (const pen of spec.pens) assert.equal(inPen(pen.id).length, pen.keep, `${pen.id} starts full`);
+  }
+  assert.ok(kills >= 40, `the line kills steadily (${kills} in 90 s)`);
+  assert.equal(paid, 0, 'pen kills give no XP');
+  assert.ok(ids.size > 25 + kills * 0.9, 'and more keep coming');
+  for (const pen of spec.pens) assert.ok(inPen(pen.id).length >= pen.keep - 4, `${pen.id} is still under pressure after 90 s`);
+  assert.ok(tracers > 100 && shoves > 5, 'tracers fly and the robots shove');
+  assert.ok(kinds.size >= 4, `a mix of forms (${[...kinds].join(', ')})`);
+  // The line only ever fires into pens: the party is never hit, and the companions don't go after penned rot.
+  assert.equal(p.hp, sim.maxHp(p));
+  // After the Call it pushes harder.
+  const after = cordonMod.siegesFor({ 'act1.beat.call': true }).metro_plaza;
+  assert.ok(after.pens.every((pen, i) => pen.keep > spec.pens[i].keep), 'after the Call every pen is held at more');
 });
 
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
@@ -2659,6 +2694,22 @@ test('bastion table (hub #34): every roommate seated, AI for empty seats, placem
   table.tick(0.1); assert.equal(results.length, 1);
 });
 
+test('staked tables (src/content/stakes.js): a checkpoint when the party sits down; a loss hands off to the scene, a win does not', () => {
+  const calls = [];
+  const players = new Map([['host', { id: 'host', character: 'trevor' }]]);
+  const scene = { mode: 'host', character: 'trevor', localId: 'host', sim: { players }, save: { party: { trevor: {} }, flags: {}, world: { seed: 't' } },
+    net: { broadcast() {}, send() {} }, _bastionResult() {}, _tableCheckpoint: (id) => calls.push(['cp', id]), _stakedLoss: (id, st) => calls.push(['loss', id, st.lossStage]) };
+  const table = new BTable.BastionTable(scene, { clock: 'manual' });
+  table.open('m1'); table.m.winner = 'npc'; table._finish();
+  assert.deepEqual(calls, [], 'an ordinary match: no checkpoint, nothing after a loss');
+  table._close(); table.open('house_rules');
+  assert.deepEqual(calls, [['cp', 'house_rules']], 'sitting down at a staked table checkpoints first');
+  table.m.winner = 'party'; table._finish();
+  assert.equal(calls.length, 1, 'a win is just a win');
+  table._close(); table.open('house_rules'); table.m.winner = 'npc'; table._finish();
+  assert.deepEqual(calls.at(-1), ['loss', 'house_rules', 'house_rules_loss'], 'a loss goes to the scene');
+});
+
 const VLab = await import('../src/engine/verilogLab.js');
 const LBench = await import('../src/game/labBench.js');
 test('lab bench (hub #44): every lab has exactly one passing answer; the shared bench cycles, runs, and records a pass once', () => {
@@ -2681,46 +2732,104 @@ test('lab bench (hub #44): every lab has exactly one passing answer; the shared 
   assert.equal(bench.act({ type: 'cycle', i: 0 }), false, 'a passed lab is locked');
 });
 
-test('ambient NPC fight (hub #69): before the Call an abatement squad burns out a rotted drone hub in College Park; nobody can join or get hurt, and once it falls it stays fallen', async () => {
+test('the College Park fight (hub #69; Trevor: joinable, it ends, not boxed in, it walks on legs): the squad can win alone, the party can join, and it stays fallen where it fell', async () => {
   const { skirmishesFor } = await import('../src/content/skirmishes.js');
-  assert.ok(skirmishesFor({}).metro_plaza, 'there before the Call');
+  const { SK } = await import('../src/engine/skirmish.js');
+  const m = MAPS_FOR_TEST.metro_plaza, spec = skirmishesFor({}).metro_plaza;
+  assert.ok(spec && !spec.over, 'there before the Call');
+  for (const [x, y] of spec.route) assert.ok(!m.solid(x, y), `route stop ${x},${y} is open ground`);
   const after = skirmishesFor({ 'act1.beat.call': true }).metro_plaza;
   assert.ok(after && after.over && after.husk, 'after the Call only the burned husk is left, whether or not anyone saw the fight');
-  { const hs = new Sim(MAPS_FOR_TEST.metro_plaza, { seed: 'husk', deferSpawn: true }); hs.skirmishes = { metro_plaza: after }; hs.addPlayer('h', 'trevor'); hs.spawnEnemies();
-    const hv = hs.snapshot().sk; const [hx, hy] = after.machine;
-    assert.ok(hv.husk && hv.over && hv.tr.length === 0 && hv.dr.length === 0, 'the husk: no squad, no drones');
-    assert.ok(hs._hits(hx * 16 + 8, hy * 16 + 8), 'and still solid'); }
-  const m = MAPS_FOR_TEST.metro_plaza, spec = skirmishesFor({}).metro_plaza;
-  const [ax, ay, aw, ah] = spec.area;
-  for (let y = ay; y < ay + ah; y++) for (let x = ax; x < ax + aw; x++) assert.ok(!m.solid(x, y), `the yard is open ground (${x},${y})`);
+  const hubOf = (sim) => [...sim.enemies.values()].find((e) => e.skUnit === 'hub');
+  // Left alone (the party far off), the squad wins: the hub walks its route well outside where it started, launches
+  // drones, and falls in a few minutes; its drones fall with it, and the kill pays nobody.
   const sim = new Sim(m, { seed: 'sk', deferSpawn: true }); sim.skirmishes = skirmishesFor({});
-  sim.addPlayer('h', 'trevor'); sim.spawnEnemies(); sim.enemies.clear();
-  const p = sim.players.get('h'); p.x = (ax + 3) * 16 + 8; p.y = (ay + 2) * 16 + 8;   // standing inside the tape, among the drones
-  assert.ok(p.x / 16 >= ax && p.x / 16 < ax + aw && p.y / 16 >= ay && p.y / 16 < ay + ah && !sim._hits(p.x, p.y), 'the fixture stands on an open tile inside the tape');
-  let over = null, t = 0, sawDrone = false;
-  const [bx0, by0, bx1, by1] = sim.snapshot().sk.box; let strays = 0;
-  for (; t < 240 && !over; t += 1 / 60) {
-    sim.step(1 / 60, new Map()); over = sim.events.find((e) => e.t === 'skOver');
-    const v = sim.snapshot().sk; sawDrone ||= v.dr.length > 0;
-    strays += v.sh.filter(([x, y]) => x < bx0 || x > bx1 || y < by0 || y > by1).length;
+  sim.addPlayer('h', 'trevor'); sim.spawnEnemies();
+  const p = sim.players.get('h'); p.x = 70 * 16; p.y = 44 * 16;
+  sim.step(1 / 60, new Map());
+  const hub0 = hubOf(sim); assert.ok(hub0 && sim.snapshot().enemies.find((e) => e.id === hub0.id)?.sd, 'the hub is a real enemy, drawn by its own view');
+  const home = { x: hub0.x, y: hub0.y };
+  let over = null, t = 0, sawDrone = false, far = 0, kill = null, legs = 0;
+  for (; t < 400 && !over; t += 1 / 60) {
+    sim.step(1 / 60, new Map([['h', { mx: 0, my: 0, aim: 0 }]]));
+    over = sim.events.find((e) => e.t === 'skOver'); kill ??= sim.events.find((e) => e.t === 'kill' && e.kind === 'enemy.drone_walker');
+    const v = sim.snapshot().sk; sawDrone ||= v.dr.length > 0; legs = v.m[4];
+    far = Math.max(far, Math.hypot(v.m[0] - home.x, v.m[1] - home.y));
   }
-  assert.equal(strays, 0, 'no shot leaves the tape');
-  const okafor = m.objects.find((o) => o.id === 'npc.okafor');
-  if (okafor) for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) assert.ok(!(okafor.x + dx >= ax && okafor.x + dx < ax + aw && okafor.y + dy >= ay && okafor.y + dy < ay + ah), 'Mrs. Okafor can be talked to from outside the tape');
-  const [hx, hy] = spec.machine;
-  assert.ok(sim._hits(hx * 16 + 8, hy * 16 + 8) && sim._hits(hx * 16 + 8, (hy - 1) * 16 + 8), 'the hub is solid: nobody walks through it');
-  assert.ok(over && over.id === 'cp_drone_hub', `the hub falls within four minutes (took ${t.toFixed(0)} s)`);
+  assert.ok(over && over.id === 'cp_drone_hub', `the squad brings it down on its own (took ${t.toFixed(0)} s)`);
+  assert.ok(t > 90, `but not in a moment (${t.toFixed(0)} s): there's time to join in`);
+  assert.ok(far > 200, `it walked well away from where it started (${far.toFixed(0)} px): the fight isn't boxed in`);
+  assert.ok(legs > 300, 'its legs carried it a long way');
   assert.ok(sawDrone, 'it launched drones');
-  assert.equal(p.hp, sim.maxHp(p), 'standing in the middle of it costs nothing');
+  assert.ok(kill && kill.bg && kill.xp === 0, 'a kill nobody in the party helped with pays nothing');
   assert.equal(sim.snapshot().sk.dr.length, 0, 'its drones fall with it');
-  const later = new Sim(m, { seed: 'sk', deferSpawn: true }); later.skirmishes = skirmishesFor({ 'skirmish.cp_drone_hub.over': true });
+  assert.equal(p.hp, sim.maxHp(p), 'far away, it never touched you');
+  // Joining in: your hits count (and the kill is yours to share); its drones come for you; stand close and it stomps.
+  const j = new Sim(m, { seed: 'join', deferSpawn: true }); j.skirmishes = skirmishesFor({});
+  j.addPlayer('h', 'trevor'); j.spawnEnemies(); j.step(1 / 60, new Map());
+  const hub = hubOf(j), q = j.players.get('h');
+  j._hurtEnemy(hub, 30, 0, 0, 'h');
+  assert.ok(hub.hp < hub.def.hp && hub.lastHitBy === 'h', 'a player\'s hit lands on it');
+  let told = false, stomped = false, droneHit = false, paid = null;
+  for (let i = 0; i < 60 * 40; i++) {
+    q.x = hub.x + 20; q.y = hub.y; q.iframes = 0; if (q.downed) { q.downed = false; q.hp = j.maxHp(q); }
+    const hp0 = q.hp;
+    j.step(1 / 60, new Map([['h', { mx: 0, my: 0, aim: 0 }]]));
+    told ||= j.events.some((e) => e.t === 'tell'); stomped ||= j.events.some((e) => e.t === 'skStomp');
+    if (q.hp < hp0 && !j.events.some((e) => e.t === 'skStomp')) droneHit = true;
+  }
+  assert.ok(told && stomped, 'close to it, it rises (a warning) and then stomps');
+  assert.ok(droneHit, 'its drones go for players too');
+  hub.hp = 1; hub.lastHitBy = 'h';
+  for (let i = 0; i < 60 * 20 && !paid; i++) { j.step(1 / 60, new Map()); paid = j.events.find((e) => e.t === 'kill' && e.kind === 'enemy.drone_walker'); }
+  assert.ok(paid && paid.xp > 0 && !paid.bg, 'if you had a hand in it, its fall pays the party');
+  const shots = new Sim(m, { seed: 'visible-shot', deferSpawn: true });
+  shots.skirmishes = skirmishesFor({});
+  shots.addPlayer('h', 'trevor'); shots.spawnEnemies(); shots.step(1 / 60, new Map());
+  const walker = hubOf(shots), shooter = shots.players.get('h');
+  const drawer = { x: walker.x, y: walker.y - 34, vx: 0, vy: 0, life: 1, dmg: 23, owner: 'h', from: 'player' };
+  shots.shots.push(drawer); shots._stepShots(1 / 60);
+  assert.equal(walker.hp, walker.def.hp - 23, 'shooting the visible cabinet lands above the old foot hitbox');
+  Object.assign(shooter, { x: walker.x, y: walker.y + 18, iframes: 1 });
+  Object.assign(walker.sk, { state: 'tell', t: 0 });
+  shots._stepEnemies(1 / 60);
+  assert.equal(shooter.y, walker.y + 18, 'a dodged stomp cannot push the player');
+  assert.equal(shooter.hp, shots.maxHp(shooter), 'dodging keeps full HP');
+  shots._hurtEnemy(walker, walker.hp, 0, 0, 'h');
+  assert.ok(shots.snapshot().sk.over && shots.events.some((e) => e.t === 'skOver'), 'the kill records the husk on its own tick');
+  shots.step(1 / 60, new Map());
+  assert.ok(!shots.events.some((e) => e.t === 'skOver'), 'the kill is recorded once');
+  const wall = new Sim({ ...m, solid: (tx) => tx === 2 }, { deferSpawn: true });
+  const pawn = { x: 25, y: 25 };
+  wall._pushPlayer(pawn, 38, 0);
+  assert.equal(pawn.x, 25, 'the shove cannot skip an intervening wall');
+  // Later visits: the husk where it fell, the squad standing down.
+  const flags = { 'skirmish.cp_drone_hub.over': true, 'skirmish.cp_drone_hub.fell': `${over.tx},${over.ty}` };
+  const later = new Sim(m, { seed: 'sk', deferSpawn: true }); later.skirmishes = skirmishesFor(flags);
   later.addPlayer('h', 'trevor'); later.spawnEnemies();
   for (let i = 0; i < 300; i++) later.step(1 / 60, new Map());
   const v = later.snapshot().sk;
-  assert.ok(v.over && v.m[2] === 0 && v.dr.length === 0 && v.sh.length === 0, 'a later visit: the burned husk, the squad standing down');
+  assert.ok(v.over && v.m[2] === 0 && v.dr.length === 0 && v.sh.length === 0 && !hubOf(later), 'a later visit: the husk, no fight');
+  assert.ok(Math.abs(v.m[0] - (over.tx * 16 + 8)) < 1 && Math.abs(v.m[1] - (over.ty * 16 + 8)) < 1, 'lying where it fell');
+  const hs = new Sim(m, { seed: 'husk', deferSpawn: true }); hs.skirmishes = skirmishesFor({ 'act1.beat.call': true, ...flags }); hs.addPlayer('h', 'trevor'); hs.spawnEnemies();
+  const hv = hs.snapshot().sk;
+  assert.ok(hv.husk && hv.over && hv.tr.length === 0 && hv.dr.length === 0, 'after the Call: the husk, no squad, no drones');
 });
 
 const SocketsT = await import('../src/engine/sockets.js');
+test('the walker reaches every stop on its route (John Pork, hub #111): it paths around the plaza\'s buildings instead of skipping stops', async () => {
+  const { skirmishesFor } = await import('../src/content/skirmishes.js');
+  const { walkPath } = await import('../src/engine/skirmish.js');
+  const m = MAPS_FOR_TEST.metro_plaza, spec = skirmishesFor({}).metro_plaza;
+  const stops = spec.route.map(([x, y]) => ({ x: x * 16 + 8, y: y * 16 + 8 }));
+  const probe = new Sim(m, { seed: 'path', deferSpawn: true });
+  stops.forEach((a, i) => { const b = stops[(i + 1) % stops.length]; assert.ok(walkPath(probe, a, b), `a way from stop ${i} to the next`); });
+  const sim = new Sim(m, { seed: 'route', deferSpawn: true }); sim.skirmishes = skirmishesFor({}); sim.spawnEnemies(); sim.step(1 / 60, new Map());
+  const hub = sim.enemies.get(sim.sk.hubId), best = stops.map(() => Infinity);
+  for (let t = 0; t < 60 * 300 && sim.enemies.has(hub.id); t++) { sim.step(1 / 60, new Map()); stops.forEach((p, i) => { best[i] = Math.min(best[i], Math.hypot(hub.x - p.x, hub.y - p.y)); }); }
+  assert.ok(best.every((d) => d <= 12), `within reach of all ${stops.length} stops: ${best.map(Math.round).join(' ')}`);
+});
+
 test('hub #128: the mod station stands on an authored map, at Ottoline the armorer\'s stall on the plaza', async () => {
   await import('../src/game/gear.js');   // gear.js places Ottoline on metro_plaza at load
   const m = MAPS_FOR_TEST.metro_plaza;
@@ -2888,6 +2997,124 @@ test('cordon, trevor\'s half of #36: a trooper at every checkpoint faces out, wi
   sim.setMap(MAPS_FOR_TEST.metro_plaza, 'route1_north', 'obj.r1n_south');
   const ex = MAPS_FOR_TEST.metro_plaza.objects.find((o) => o.id === 'obj.plaza_r1n');
   for (const p of sim.players.values()) assert.ok(Math.floor(p.y / 16) > ex.y, `${p.id} landed at row ${Math.floor(p.y / 16)}, beyond the barrier`);
+});
+
+test('inside rules (src/engine/inside.js): enemies act on the beat, edges wrap, the floor corrupts, the downed are collected', () => {
+  const W = 20, H = 12;
+  const box = (inside, enemies = []) => ({ id: 'inside-test', w: W, h: H, objects: [], enemies, spawns: [{ x: 48, y: 48 }], inside,
+    solid: (tx, ty) => tx < 0 || ty < 0 || tx >= W || ty >= H });
+  const run = (sim, secs, inp = new Map()) => { const ev = []; for (let i = 0; i < Math.round(secs * 60); i++) { sim.step(1 / 60, inp); ev.push(...sim.events); } return ev; };
+  // 1. the clock: an enemy only moves in the window at the start of each beat
+  const a = new Sim(box({ beat: 1, window: 0.3 }, [{ kind: 'enemy.rot_taken', x: 280, y: 96 }]), { seed: 'beat' });
+  a.addPlayer('h', 'trevor'); const p = a.players.get('h'); p.x = 48; p.y = 96;
+  const e = [...a.enemies.values()][0]; e.awake = true;
+  run(a, 1.35); const x0 = e.x; run(a, 0.5);
+  assert.equal(e.x, x0, 'between beats it holds still');
+  const ev = run(a, 0.3);
+  assert.ok(e.x !== x0, 'on the beat it moves'); assert.ok(ev.some((v) => v.t === 'beat'), 'and the beat is an event');
+  assert.ok(a.snapshot().ins && typeof a.snapshot().ins.ph === 'number', 'the beat is in the snapshot for every screen');
+  // 2. wrap: walk off the right edge, come in at the left
+  const b = new Sim(box({ wrap: true }), { seed: 'wrap' }); b.addPlayer('h', 'trevor'); const q = b.players.get('h');
+  q.x = W * 16 - 10; q.y = 96; run(b, 0.6, new Map([['h', { ...emptyInput(), mx: 1 }]]));
+  assert.ok(q.x < 40, `off the right edge and in at the left (x=${Math.round(q.x)})`);
+  const crossing = { x: W * 16 - 1, y: 80, vx: 180, vy: 0, life: 1, from: 'player', dmg: 1 };
+  b.shots.push({ ...crossing });
+  run(b, 1 / 60);
+  assert.equal(b.shots.length, 1, 'the projectile crosses before collision checks the new tile');
+  assert.equal(b.shots[0].x, 2);
+
+  const c0 = new Sim(box({}), { seed: 'nowrap' }); c0.addPlayer('h', 'trevor'); const r = c0.players.get('h');
+  r.x = W * 16 - 10; r.y = 96; run(c0, 0.6, new Map([['h', { ...emptyInput(), mx: 1 }]]));
+  assert.ok(r.x > W * 16 - 20, 'without wrap the edge is a wall');
+  c0.shots.push({ ...crossing });
+  run(c0, 1 / 60);
+  assert.equal(c0.shots.length, 0, 'without wrap the projectile hits the boundary');
+
+  // 3. corruption: the live floor raises rot; a hit doesn't
+  const d = new Sim(box({ corrupt: [[3, 6, 0], [4, 6, 1]] }), { seed: 'rot' }); d.addPlayer('h', 'trevor'); d.addPlayer('g', 'manuel');
+  const h = d.players.get('h'); h.x = 3 * 16 + 8; h.y = 6 * 16 + 8; h.rot = 0;
+  run(d, 0.5); const afterLive = h.rot; assert.ok(afterLive > 0, 'standing on a live corrupted tile');
+  run(d, 1.0); const afterDead = h.rot; run(d, 0.2);
+  assert.ok(Math.abs(h.rot - afterDead) < afterLive, 'it flips with the beat');
+  const g = d.players.get('g'); g.rot = 0; g.iframes = 0; d._hurtPlayer(g, 3, 25); assert.equal(g.rot, 0, 'being hit in here carries no rot');
+  // 4. collection: down, then back at the last terminal after a few beats, with nobody reviving
+  const f = new Sim(box({ beat: 1, gcBeats: 3, terminals: [[2, 2], [15, 8]] }), { seed: 'gc' }); f.addPlayer('h', 'trevor'); f.addPlayer('g', 'manuel');
+  const up = f.players.get('h'), down = f.players.get('g');
+  up.x = 15 * 16 + 8; up.y = 8 * 16 + 8; down.x = 200; down.y = 30;
+  run(f, 0.1); assert.deepEqual(f.inside.checkpoint, { x: 15 * 16 + 8, y: 8 * 16 + 8 }, 'the last terminal anyone reached');
+  Object.assign(down, { x: 2 * 16 + 8, y: 2 * 16 + 8 });
+  run(f, 0.1);
+  assert.equal(f.inside.checkpoint.x, down.x, 'a new arrival can return to the previous terminal');
+  assert.deepEqual(run(f, 0.1).filter((event) => event.t === 'terminal'), [], 'standing at two terminals does not retrigger either');
+  const next = { x: 15 * 16 + 8, y: 8 * 16 + 8 };
+  up.x = 150;
+  run(f, 0.1);
+  Object.assign(up, next);
+  run(f, 0.1);
+  up.mods.revive = 3;
+  Object.assign(down, { ...next, hp: 0, downed: true, reviveT: 0 });
+  run(f, 2.5);
+  assert.ok(down.downed && down.reviveT === 0, 'an enhanced nearby revive cannot interrupt collection');
+  const back = run(f, 0.8);
+  assert.ok(!down.downed && down.hp === f.maxHp(down) && down.x === 15 * 16 + 8 && back.some((v) => v.t === 'collected'), 'collected and back at the terminal, whole');
+  const plainInside = new Sim(box(true));
+  plainInside.addPlayer('h', 'trevor');
+  plainInside.addPlayer('g', 'manuel');
+  const spawn = plainInside.players.get('g');
+  Object.assign(spawn, { downed: true, hp: 0, x: 180, y: 100 });
+  run(plainInside, 4.2);
+  assert.ok(!spawn.downed && spawn.x === 48 && spawn.y === 48, 'before an authored terminal exists, collect at the map spawn');
+  // ordinary maps: none of it
+  const o = new Sim(rotArena(), { seed: 'plain' }); o.addPlayer('h', 'trevor');
+  assert.equal(o.inside, null); assert.equal(o.snapshot().ins, undefined);
+});
+
+test('chase rules (src/engine/chase.js): the pace line catches stragglers, everyone rides and can shoot, lanes are marked then swept, the end opens the way', async () => {
+  const W = 120, H = 10;
+  const strip = (chase) => ({ id: 'chase-test', w: W, h: H, objects: [], enemies: [], spawns: [{ x: 40, y: 80 }], chase, solid: (tx, ty) => tx < 0 || ty < 0 || tx >= W || ty >= H });
+  const run = (sim, secs, inp = new Map()) => { const ev = []; for (let i = 0; i < Math.round(secs * 60); i++) { sim.step(1 / 60, inp); ev.push(...sim.events); } return ev; };
+  const a = new Sim(strip({ speed: 100, start: 0, end: 1500, dmg: 6 }), { seed: 'chase' });
+  a.addPlayer('h', 'trevor'); a.addPlayer('g', 'manuel');
+  const h = a.players.get('h'), g = a.players.get('g'); h.x = 300; h.y = 80; g.x = 40; g.y = 80;
+  const ev = run(a, 1);
+  assert.ok(h.riding && g.riding && h.battery === 100, 'everyone is on a scooter, battery full');
+  assert.ok(g.x >= a.chase.pace && ev.some((e) => e.t === 'caught' && e.id === 'g') && g.hp < a.maxHp(g), 'the straggler is caught: hit and pushed up to the line');
+  assert.ok(!ev.some((e) => e.t === 'caught' && e.id === 'h') && h.hp === a.maxHp(h), 'nothing for being ahead');
+  g.hp = 0; g.downed = true; run(a, 2); assert.ok(g.x >= a.chase.pace, 'a downed rider is carried along, not left behind');
+  const obstructed = strip({ start: 28, speed: 120, end: 1500 });
+  const outside = obstructed.solid;
+  obstructed.solid = (tx, ty) => tx === 3 || outside(tx, ty);
+  const blocked = new Sim(obstructed);
+  blocked.addPlayer('h', 'trevor');
+  const lagging = blocked.players.get('h');
+  Object.assign(lagging, { x: 32, hp: 4 });
+  run(blocked, 0.15);
+  assert.ok(lagging.riding && !lagging.downed && lagging.hp === 1, 'pace damage alone cannot down or dismount a rider');
+  assert.ok(lagging.x >= blocked.chase.pace && !blocked._hits(lagging.x, lagging.y), 'carried riders never land inside scenery');
+  // Both actual weapon inputs fire from a scooter on a chase map.
+  for (const input of ['attack', 'fire']) {
+    h.held = 'gun'; h.mods.gun = 1; h.shotCd = 0;
+    assert.ok(run(a, 1 / 60, new Map([['h', { ...emptyInput(), [input]: true }]])).some((e) => e.t === 'shot'));
+  }
+  // strafes: a lane is marked first, then swept
+  const b = new Sim(strip({ speed: 60, end: 1800, lanes: [[4, 5]], strafeEvery: 1, warn: 1, strafeDmg: 8 }), { seed: 'strafe' });
+  b.addPlayer('h', 'trevor'); const q = b.players.get('h'); q.x = 200; q.y = 4 * 16 + 8;
+  const e1 = run(b, 1.2); const warn = e1.find((e) => e.t === 'strafeWarn');
+  assert.ok(warn && b.snapshot().ch.sw, 'the lane is marked, and every screen can see it');
+  assert.equal(q.hp, b.maxHp(q), 'the mark itself does nothing');
+  const [, , start, end] = b.snapshot().ch.sw;
+  b.addPlayer('g', 'manuel');
+  const clear = b.players.get('g');
+  Object.assign(clear, { x: end + 1, y: q.y });
+  q.x = start + 2;
+  const e2 = run(b, 1.0);
+  assert.ok(e2.some((e) => e.t === 'strafe') && q.hp < b.maxHp(q), 'then the sweep hits whoever stayed in the warned rectangle');
+  assert.equal(clear.hp, b.maxHp(clear), 'a rider just past the rectangle takes no strafe damage');
+  // the end: the drones turn back, once
+  const c = new Sim(strip({ speed: 400, end: 600 }), { seed: 'end' }); c.addPlayer('h', 'trevor'); c.players.get('h').x = 700;
+  assert.equal(c.snapshot().ch.end, 600, 'the end line is known from the start, so it can be drawn');
+  const e3 = run(c, 2); assert.equal(e3.filter((e) => e.t === 'chaseDone').length, 1); assert.ok(c.snapshot().ch.done);
+  const o = new Sim(rotArena(), { seed: 'plain' }); o.addPlayer('h', 'trevor'); assert.equal(o.chase, null); assert.equal(o.snapshot().ch, undefined);
 });
 
 test('the story bench (245): harder, a reference card always there, the book adds a hint per blank only when the party has it', async () => {
@@ -3065,6 +3292,12 @@ test('outbreak phases (task #38): before the Call, after it, contained; phase sp
   const map = MAPS_FOR_TEST.metro_plaza, base = new Sim(map, { seed: 'ph' }).enemies.size;
   const extra = { metro_plaza: { phase: 'after', list: [['enemy.rotling', 40, 20], ['enemy.rotling', 42, 20]] } };
   const sim = new Sim(map, { seed: 'ph', deferSpawn: true }); sim.phaseEnemies = extra; sim.spawnEnemies();
+  const authored = new Sim(map, { seed: 'ph', deferSpawn: true });
+  authored.phaseEnemies = Outbreak.phaseEnemies({ 'act1.beat.call': true });
+  authored.spawnEnemies();
+  const hulk = [...authored.enemies.values()].find((enemy) => enemy.kind === 'enemy.rot_hulk');
+  assert.ok(hulk?.spawnKey.startsWith('metro_plaza#after.'), 'the post-Call hulk keeps its own saved spawn key');
+  assert.ok(!authored._hitsBox(hulk.x, hulk.y, hulk.def.radius, hulk.def.radius * 0.7), 'the large hulk fits on the east sidewalk');
   assert.equal(sim.enemies.size, base + 2);
   const keys = [...sim.enemies.values()].map((e) => e.spawnKey).filter((k) => k.includes('#after.'));
   assert.deepEqual(keys.sort(), ['metro_plaza#after.0', 'metro_plaza#after.1']);
@@ -3133,6 +3366,34 @@ try {
   if (savedPhaserForCraft === undefined) delete globalThis.Phaser;
   else globalThis.Phaser = savedPhaserForCraft;
 }
+
+test('staked tables in the scene: the checkpoint lives in the save, a loss reloads everyone to it seated, and there is no limit on tries', async () => {
+  const save = newSave({ seed: 'stakes', rolls: {}, gameVersion: 't' });
+  save.world.area = 'room631'; save.party.trevor.money = 50;
+  const reloads = [], staged = [], writes = [];
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', save,
+    _save: (m) => { writes.push(m); return true; }, time: { delayedCall: (_ms, fn) => fn() }, cameras: { main: { fadeOut() {} } },
+    stage: { play: (id, done) => { staged.push(id); done(); } }, bastionTable: { _close() {} }, _reloadEveryone: (s) => reloads.push(s) });
+  sc._tableCheckpoint('house_rules');
+  const cp = save.world.checkpoints.house_rules;
+  assert.ok(cp && cp.world.reseat === 'house_rules' && !cp.world.checkpoints, 'the checkpoint seats them again and holds no copies of itself');
+  assert.ok(!save.world.reseat, 'the live save is not marked'); assert.equal(writes.length, 1, 'and it is written at once');
+  save.party.trevor.money = 0; save.flags['spent.it'] = true;   // what happens during the match
+  assert.equal(sc._stakedLoss('house_rules', { lossStage: 'house_rules_loss' }), true);
+  assert.deepEqual(staged, ['house_rules_loss'], 'the loss is staged first');
+  const back = reloads[0];
+  assert.ok(back && back.party.trevor.money === 50 && !back.flags['spent.it'] && back.world.reseat === 'house_rules', 'back to the moment they sat down');
+  assert.equal(back.flags['table.house_rules.losses'], 1);
+  assert.ok(back.world.checkpoints.house_rules, 'the checkpoint is still there for the next try');
+  assert.equal(sc._stakedLoss('house_rules', {}), false, 'one reload at a time');
+  // the next try, from the reloaded save: again, and again
+  const sc2 = Object.assign(Object.create(CraftWorldScene.prototype), { ...sc, save: back, _rotReload: false });
+  delete back.world.reseat; sc2._tableCheckpoint('house_rules');
+  for (let n = 2; n <= 4; n++) { sc2._rotReload = false; assert.ok(sc2._stakedLoss('house_rules', {})); const nx = reloads.at(-1); assert.equal(nx.flags['table.house_rules.losses'], n); sc2.save = nx; delete nx.world.reseat; }
+  assert.equal(sc2._stakedLoss.call({ ...sc2, mode: 'client' }, 'house_rules', {}), false, 'guests never reload on their own');
+  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/if \(this\.save\.world\.reseat\) \{[^\n]*this\.openBastion\(id\)/.test(src), 'a loaded checkpoint reopens the table');
+});
 
 test('the ending\'s visitor is drawn while his part plays, on host and guests, in view, and walks off after (Trevor: heard but not seen)', async () => {
   const made = [], tweens = [];
@@ -5336,6 +5597,54 @@ test('growth: a little bigger every level, bigger jumps at levels 3 and 6, cappe
   assert.ok(painted(2) >= 1 && painted(3) > painted(2) && painted(7) > painted(3), `${painted(2)} ${painted(3)} ${painted(7)}`);
 });
 
+test('heavy rot hits without shooting (Trevor, 2026-11-23): a hulk slam, a grafted whip and a sprawl sweep are telegraphed, land, then open', () => {
+  const setup = (kind, dx, dy) => {
+    const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'brute', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+    const h = sim.players.get('host'); h.x = 30 * 16; h.y = 12 * 16; h.hp = 999;
+    const base = ENEMIES[kind]; sim.enemies.set('b', { id: 'b', kind, def: { ...base, vname: base.name, trait: 'plain' }, x: h.x - dx, y: h.y - dy, hp: base.hp, cd: 0, hurtT: 0, kx: 0, ky: 0 });
+    return { sim, h, e: sim.enemies.get('b') };
+  };
+  const run = (sim, secs, h, hold) => { const evs = []; for (let t = 0; t < 60 * secs; t++) { if (hold) { h.x = hold[0]; h.y = hold[1]; } h.iframes = 0; sim.step(1 / 60, new Map()); evs.push(...sim.events); } return evs; };
+  // the slam: a tell first, then everyone in the ring is hit and thrown, and the hulk is open
+  { const { sim, h, e } = setup('enemy.rot_hulk', 20, 0); const x0 = h.x, hp0 = h.hp; const evs = run(sim, 1.2, h);
+    const tell = evs.findIndex((v) => v.t === 'etell' && v.kind === 'slam'), hit = evs.findIndex((v) => v.t === 'estrike');
+    assert.ok(tell >= 0 && hit > tell, 'slam: tell, then strike'); assert.ok(h.hp < hp0 && h.x > x0 + 10, 'slam hurts and throws'); assert.ok(e.openT > 0, 'it reels after'); }
+  // A guest's initial snapshot can show a warning already underway, even with no original event.
+  {
+    const { sim, h, e } = setup('enemy.rot_graft', 40, 0);
+    sim.step(1 / 60, new Map());
+    const warning = sim.snapshot().enemies.find((enemy) => enemy.id === e.id)?.bt;
+    assert.equal(warning?.kind, 'whip');
+    assert.equal(warning.r, e.def.melee.reach + 8);
+    const aimX = h.x; h.iframes = 1;
+    sim._bruteStrike(e, e.def);
+    assert.equal(h.x, aimX, 'a protected player is not dragged by the miss');
+    assert.equal(h.hp, 999, 'a protected player takes no damage');
+    e.st = 'windup'; e.stT = 0.01;
+    h.x = 30;
+    sim.step(1 / 60, new Map());
+    assert.equal(e.st, 'recover', 'a committed attack finishes when everyone leaves its alert range');
+    assert.equal(sim.snapshot().enemies.find((enemy) => enemy.id === e.id)?.bt, undefined);
+  }
+  // the whip reels you in
+  { const { sim, h } = setup('enemy.rot_graft', 40, 0); const d0 = 40; run(sim, 1.0, h);
+    assert.ok(Math.hypot(h.x - sim.enemies.get('b').x, h.y - sim.enemies.get('b').y) < d0 - 6, 'the whip pulls you closer'); }
+  // the sweep only covers the front: standing behind it is safe
+  { const { sim, h, e } = setup('enemy.rot_sprawl', 20, 0); const hp0 = h.hp; e.st = 'windup'; e.stT = 0.01; e.aim = Math.PI; run(sim, 0.2, h);   // aimed away from the player
+    assert.equal(h.hp, hp0, 'behind the sweep is safe'); }
+  // a sprawl comes apart into crawlers
+  { const { sim, e } = setup('enemy.rot_sprawl', 60, 0); sim._hurtEnemy(e, 9999, 0, 0, 'host');
+    assert.equal([...sim.enemies.values()].filter((x) => x.kind === 'enemy.rot_crawler').length, 3); }
+});
+test('shots look like what fired them: packets, notes, scan streaks, nails, not one pink ball', () => {
+  const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'shots', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+  sim.shots.push({ k: 'packet', x: 100, y: 100, vx: 50, vy: 0, life: 1, dmg: 1, from: 'enemy' }, { k: 'scan', x: 110, y: 100, vx: 0, vy: 80, life: 1, dmg: 1, from: 'enemy' });
+  const snap = sim.snapshot();
+  assert.deepEqual(snap.shots.map((s) => s.k), ['packet', 'scan']); assert.ok(snap.shots[1].a != null && snap.shots[0].a == null, 'streaks carry a heading');
+  for (const k of ['enemy.rot_crawler', 'enemy.rot_graft', 'enemy.rot_sprawl', 'enemy.rot_hulk']) assert.ok(ENEMIES[k].plain, `${k} keeps its own name`);
+  assert.equal(ENEMIES['enemy.spitter'].ai, 'kite');
+});
+
 test('dialogue tooling (hub #114): one-line alternatives, Set notes, who declined and whether it rang out, party.present, bark tables', async () => {
   const D = await import('../src/engine/dialogue.js');
   const call = await D.loadScene('the_call');
@@ -6384,6 +6693,138 @@ test('hub #113, Act 1 people: thirteen neighbours, cooks and students draw with 
     if (o) assert.ok(/^npc\.rotter_[123]$/.test(o.art), `${id} keeps its rotter`);
   }
   for (const n of [1, 2, 3]) assert.ok(frames[`npc.rotter_${n}`]);
+});
+
+// ---- Acts 2-3 puzzles from the kit (hub #116; lore gate rulings, hub #50) ------------------------------------
+// One table row per puzzle: where it is, the quest it grew out of, a wrong run and a right one. Each move is
+// [part, seconds on the clock]; the clock only matters to `timed`.
+const { PUZZLES: A23_PUZZLES, puzzleFor: a23PuzzleFor } = await import('../src/content/puzzles.js');
+const A23 = {
+  ann_bell: { map: 'ann_harbor', giver: 'npc.ann_pilot', look: 'obj.ann_bell', clues: ['obj.ann_almanac', 'obj.ann_tide_board'], item: 'item.ann_oarlocks',
+    wrong: [['obj.ann_pier_bell', 10], ['obj.ann_pier_bell', 59], ['obj.ann_pier_bell', 86]], right: [['obj.ann_pier_bell', 61]], says: 'closedText' },
+  // 500 on A, then the first 200 on A too: 700 against nothing. Moving that 200 across and loading B closes it.
+  gt_cradle: { map: 'gaithersburg', giver: 'npc.gt_physicist', look: 'obj.gt_cradle', clues: ['obj.gt_comparator', 'obj.gt_weights_log'], pays: (save) => AB23.checkBonus(save.flags),
+    wrong: [['obj.gt_weight_500'], ['obj.gt_weight_200']], says: 'stepText',
+    right: [['obj.gt_weight_200'], ['obj.gt_weight_200b'], ['obj.gt_weight_200b'], ['obj.gt_weight_100'], ['obj.gt_weight_100']] },
+  rf_rings: { map: 'refuge', giver: 'npc.rf_teacher', look: 'obj.rf_tower', clues: ['obj.rf_ring_liar', 'obj.rf_tower'], item: 'item.analog_axe',
+    wrong: [['obj.rf_ring_clocks'], ['obj.rf_ring_phones']], says: 'wrongText',
+    right: [['obj.rf_ring_clocks'], ['obj.rf_ring_vote'], ['obj.rf_ring_phones'], ['obj.rf_ring_silence']] },
+  gb_footprints: { map: 'gb_dishes', giver: 'npc.gb_technician', look: 'obj.gb_cleanroom', clues: ['obj.gb_sweep_lamp', 'obj.gb_cleanroom'], item: 'item.gb_tape',
+    wrong: [['obj.gb_passdrawers', 0], ['obj.gb_passdrawers', 59], ['obj.gb_passdrawers', 76]], right: [['obj.gb_passdrawers', 135]], says: 'closedText' },
+  // The wrong run stops one click short on the last wheel (4, 2, 4); the right one gives it that click.
+  md_menu: { map: 'meade', giver: 'npc.md_quartermaster', look: 'obj.md_menu', clues: ['obj.md_menu', 'obj.md_lunch_table'], item: 'item.intercept_codes',
+    wrong: [...Array(4).fill(['obj.md_box_meatloaf']), ...Array(2).fill(['obj.md_box_mystery']), ...Array(4).fill(['obj.md_box_soup'])], says: 'stepText',
+    right: [['obj.md_box_soup']] },
+  // The wrong run sends every row to the return (III, III, III): only the bottom row has one. Then top and middle
+  // go round to II.
+  cor_meters: { map: 'cor_sealed', giver: 'npc.cor_nightshift', giverMap: 'corridor', look: 'obj.cor_meters', clues: ['obj.cor_meters', 'obj.cor_loop_plan'], item: 'item.baron_keycard',
+    wrong: [['obj.cor_valve_low'], ['obj.cor_valve_low'], ['obj.cor_valve_top'], ['obj.cor_valve_top'], ['obj.cor_valve_mid'], ['obj.cor_valve_mid']], says: 'stepText',
+    right: [['obj.cor_valve_top'], ['obj.cor_valve_top'], ['obj.cor_valve_mid'], ['obj.cor_valve_mid']] },
+  // The wrong run stamps them A, B, C in the order they stand (lectern order is not document order).
+  en_parchment: { map: 'en_archive', giver: 'npc.en_functionary', look: 'obj.en_parchment', clues: ['obj.en_parchment', 'obj.en_stamps'], item: 'item.provenance_seal',
+    wrong: [['obj.en_quote_wait'], ['obj.en_quote_equal'], ['obj.en_quote_equal'], ...Array(3).fill(['obj.en_quote_union'])], says: 'stepText',
+    right: [['obj.en_quote_wait'], ['obj.en_quote_wait'], ...Array(3).fill(['obj.en_quote_equal']), ...Array(3).fill(['obj.en_quote_union'])] },
+};
+const AB23 = await import('../src/content/abilities.js');
+const a23Host = (save, said) => ({ mode: 'host', character: 'trevor', localId: 'host', save, time: { now: 0 }, cameras: { main: { shake() {} } },
+  net: { send() {} }, _say: (t) => said.push(t), _toast() {}, _tickQuests() {}, _syncParty() {}, _camFx() {} });
+const a23Run = (host, moves) => { for (const [id, t = 0] of moves) { host.time.now = t * 1000; const o = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects).find((x) => x.id === id); CraftWorldScene.prototype._usePuzzle.call(host, a23PuzzleFor(id), o); } };
+for (const [id, T] of Object.entries(A23)) {
+  test(`Acts 2-3 puzzle ${id}: the spec, its parts and clues on the map, the quest's first stage, a wrong run, the right one, the reward once, and a save round-trip`, () => {
+    const p = A23_PUZZLES.find((x) => x.id === id);
+    assert.ok(p, `no puzzle ${id} in src/content/puzzles.js`);
+    assert.doesNotThrow(() => PK.definePuzzle(p));
+    assert.ok(['cycle', 'order', 'timed'].includes(p.kind));
+    for (const k of ['closedText', 'solvedText', 'stepText', 'wrongText']) if (p[k]) assert.ok(p[`${k}Es`], `${id}: ${k} has no Spanish`);
+    assert.ok(p.reward.textEs && p.solvedText, `${id}: the reward line needs Spanish, and a solved puzzle its own line`);
+    // parts and clue objects are real objects on the map where the quest already lives
+    const map = MAPS_FOR_TEST[T.map], on = new Map(map.objects.map((o) => [o.id, o]));
+    for (const o of [...p.parts, ...T.clues, T.look]) assert.ok(on.has(o), `${id}: ${o} is not on ${T.map}`);
+    assert.ok(MAPS_FOR_TEST[T.giverMap ?? T.map].objects.some((o) => o.id === T.giver && o.npc), `${id}: the giver ${T.giver} is where they were`);
+    for (const o of p.parts) { assert.equal(a23PuzzleFor(o), p); assert.ok(on.get(o).text && on.get(o).label, `${o}: a part needs a label and its own text`); }
+    for (const o of T.clues) assert.ok(!p.parts.includes(o), `${id}: ${o} is a clue, not a part`);
+    // the scaffold quest is stage 1, in place: same quest id, giver, ask flag and first object; then the puzzle; then the giver
+    const q = SideQ.SIDE_QUESTS.find((x) => x.id === `side.${id}`);
+    assert.equal(q.giver, T.giver); assert.equal(q.ask, `q.${id}.asked`); assert.equal(q.inspect.obj, T.look); assert.equal(q.inspect.flag, `q.${id}.seen`);
+    assert.equal(q.puzzle, id); assert.equal(q.stages.length, 3); assert.equal(q.report.needs, p.solvedFlag); assert.equal(q.report.flag, `q.${id}.told`);
+    assert.ok(q.stages[0].done({ [`q.${id}.seen`]: true }) && !q.stages[1].done({ [`q.${id}.seen`]: true }) && q.stages[1].done({ [p.solvedFlag]: true }));
+    assert.ok(SideQ.ES_SIDE_QUESTS[q.stages[1].text], `${id}: the puzzle stage has no Spanish`);
+    if (T.item) assert.ok(ITEMS[T.item] && p.reward.item === T.item, `${id}: pays ${T.item}`); else assert.ok(!p.reward.item && T.pays, `${id}: say what it pays instead of an item`);
+    // a wrong run says the wrong line and leaves it open
+    const save = newSave({ seed: `a23-${id}`, rolls: {}, gameVersion: 't' }), said = [], host = a23Host(save, said);
+    const have = () => (T.item ? Inv.count(save.party.trevor, T.item) : T.pays(save));
+    a23Run(host, T.wrong);
+    assert.ok(!save.flags[p.solvedFlag], `${id}: a wrong run must not solve it`); assert.equal(have(), 0);
+    assert.ok(said.length === T.wrong.length && !said.some((t) => t.includes(p.reward.text)));
+    assert.ok(said.at(-1).includes(p[T.says].split('{')[0]) && p[T.says] !== p.reward.text, `${id}: a wrong move says its ${T.says}`);
+    if (p.kind === 'order') assert.equal(save.flags[`pz.${id}.seq`], '', 'a wrong part resets the order');
+    // the right run solves it and pays once
+    a23Run(host, T.right);
+    assert.equal(save.flags[p.solvedFlag], true, `${id}: the right run solves it`);
+    assert.equal(have(), 1); assert.ok(said.at(-1).endsWith(p.reward.text));
+    a23Run(host, [...T.right, ...T.wrong]);
+    assert.equal(have(), 1, `${id}: no second reward`); assert.ok(said.at(-1).endsWith(p.solvedText));
+    // solved survives a save round-trip, and the quest's puzzle stage reads it
+    const back = migrate(JSON.parse(JSON.stringify(save)));
+    assert.ok(PK.isSolved(p, back.flags) && q.stages[1].done(back.flags)); assert.equal(T.item ? Inv.count(back.party.trevor, T.item) : T.pays(back), 1);
+    // co-op: a guest's press only asks the host
+    const asked = [];
+    CraftWorldScene.prototype._usePuzzle.call({ mode: 'client', net: { send: (m) => asked.push(m) } }, p, on.get(p.parts[0]));
+    assert.deepEqual(asked, [{ t: 'puzzle', id: p.parts[0] }]);
+  });
+}
+test('Acts 2-3 puzzles: a timed one opens only inside its window, and the bell never hands out a boat', () => {
+  for (const p of A23_PUZZLES.filter((x) => x.kind === 'timed')) {
+    const open = Array.from({ length: 400 }, (_, t) => PK.use(p, p.parts[0], {}, { t }).solved);
+    assert.ok(!open[0], `${p.id}: shut when the clock starts`);
+    assert.ok(open.some(Boolean) && open.filter(Boolean).length < 200, `${p.id}: open less than half the time`);
+    assert.ok(open.findIndex(Boolean) < 120, `${p.id}: nobody waits more than two minutes for the first window`);
+  }
+  const bell = A23_PUZZLES.find((p) => p.id === 'ann_bell');
+  assert.equal(ITEMS[bell.reward.item].slot, 'key'); assert.ok(!/boat|skiff/i.test(ITEMS[bell.reward.item].name));
+  const almanac = SideQ.SIDE_QUESTS.find((q) => q.id === 'side.ann_almanac');
+  assert.match(almanac.inspect.text, /ask the bell/); assert.ok(!almanac.puzzle, 'the almanac stays the main quest\'s object: its side quest is only the clue');
+});
+test('Acts 2-3 puzzles: the cradle closes only with every weight on the beam, either way round, and its +1 reaches the roll', () => {
+  const p = A23_PUZZLES.find((x) => x.id === 'gt_cradle');
+  assert.ok(!p.check(['0', '0', '0', '0']), 'an empty beam is level, and is not a closure');
+  assert.ok(!p.check(['A', 'B', 'B', '0']) && !p.check(['A', 'A', 'B', 'B']) && p.check(['A', 'B', 'B', 'B']) && p.check(['B', 'A', 'A', 'A']));
+  const roll = (flags) => AB23.check({ abilities: { cha: 10 } }, 'michael', 'cha', 12, { rand: () => 0.5, bonus: AB23.checkBonus(flags) });   // d20 = 11, +0
+  assert.ok(!roll({}).success && roll({}).total === 11); assert.ok(roll({ 'pz.gt_cradle.solved': true }).success && roll({ 'pz.gt_cradle.solved': true }).total === 12);
+  assert.equal(AB23.check({ abilities: { cha: 10 } }, 'michael', 'cha', 2, { rand: () => 0, bonus: 1 }).success, false, 'a natural 1 still fails');
+});
+test('Acts 2-3 puzzles: the parchment waits for q.en_archive.told, and the functionary pitches the addresses first', async () => {
+  const { questState } = await import('../src/content/quests.js');
+  const q = SideQ.SIDE_QUESTS.find((x) => x.id === 'side.en_parchment'), arch = SideQ.SIDE_QUESTS.find((x) => x.id === 'side.en_archive');
+  assert.ok(!q.start({ 'q.en_parchment.asked': true }), 'asked alone does not start it');
+  assert.ok(!q.start({ 'q.en_archive.told': true }), 'nor does the other quest alone');
+  assert.ok(q.start({ 'q.en_parchment.asked': true, 'q.en_archive.told': true }));
+  assert.ok(!q.askIf({}) && q.askIf({ 'q.en_archive.told': true }));
+  assert.ok(!arch.askIf && arch.start({ 'q.en_archive.asked': true }), 'the addresses start as before');
+  for (const other of SideQ.SIDE_QUESTS) if (other !== q) assert.ok(!other.askIf, `${other.id}: only the parchment waits on another quest`);
+  // through the scene: she offers the addresses, never the parchment, until the addresses are told
+  const save = newSave({ seed: 'a23-thread', rolls: {}, gameVersion: 't' }), said = [];
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', localId: 'host', character: 'trevor', save, _say: (t) => said.push(t), _toast() {}, _tickQuests() {},
+    _flag(k, v) { save.flags[k] = v; } });
+  const her = MAPS_FOR_TEST.en_archive.objects.find((o) => o.id === 'npc.en_functionary');
+  assert.ok(sc._questInteract(her)); assert.ok(said.at(-1).includes(arch.pitch));
+  assert.ok(save.flags['q.en_archive.asked'] && !save.flags['q.en_parchment.asked']);
+  questState(save)['side.en_archive'].started = true;
+  assert.equal(sc._questInteract(her), false, 'with the addresses open and nothing to report, she has no second errand yet');
+  assert.ok(!save.flags['q.en_parchment.asked']);
+  Object.assign(save.flags, { 'q.en_archive.seen': true, 'q.en_archive.told': true }); Object.assign(questState(save)['side.en_archive'], { stage: 2, done: true });
+  assert.ok(sc._questInteract(her)); assert.ok(said.at(-1).includes(q.pitch)); assert.ok(save.flags['q.en_parchment.asked']);
+});
+
+test('the end-of-chase line reaches guests too (gonman, #85): the host broadcasts it in English, each guest reads it in their own language', async () => {
+  const sent = [], toasts = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', map: { id: 'chase', objects: [] }, save: { flags: {}, party: {}, world: {} }, sim: { wiped: false, players: new Map() }, time: { now: 0 }, net: { broadcast: (m) => sent.push(m) },
+    _flag(k, v) { this.save.flags[k] = v; }, _toast: (t) => toasts.push(t), _tickQuests() {} });
+  host._hostEvents([{ t: 'chaseDone', map: 'chase' }]);
+  assert.ok(sent.some((m) => m.t === 'toast' && m.text === 'Out of range. The drones turn back.'), 'the host broadcasts the line');
+  assert.ok(host.save.flags['chase.chase.done'] && toasts.length === 1);
+  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/msg\.t === 'toast'\) \{ this\._toast\(tr\(msg\.text\)\)/.test(src), 'guests translate what the host sends');
 });
 
 await Promise.all(pending);

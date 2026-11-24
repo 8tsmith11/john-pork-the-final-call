@@ -9,6 +9,12 @@
 //   boss:  { boss, bossName }                      put down a region boss (flag boss.<id>.down)
 //   bring: { item, what, whatEs, refuse, refuseEs } hand the giver an item
 //   talk:  { npc, who, whoEs }                     go and talk to someone else (flag met.<npc>)
+//
+// A look quest that sets up a kit puzzle (src/content/puzzles.js; lore gate, hub #50: "the scaffold quest becomes
+// stage 1 of its planned puzzle, in place") also takes
+//   puzzle: { id, text, textEs }                   a middle stage, done when pz.<id>.solved; the giver hears about
+//                                                  it only after that
+//   after: 'q.<other>.told'                        the giver doesn't offer it until that flag is set
 
 const ES = {};
 const built = [];
@@ -28,7 +34,13 @@ function side({ id, act, giver, giverName, giverEs, title, titleEs, why, whyEs, 
     const L = kind.look;
     q.inspect = lookInspect(k, L);
     q.report = { needs: `${k}.seen`, flag: `${k}.told` };
-    st.push([`Look at ${L.where}.`, `Revisa ${L.whereEs}.`, (f) => f[`${k}.seen`]], [`Tell ${giverName} what you saw.`, `Cuéntale ${aEs(giverEs)} lo que viste.`, (f) => f[`${k}.told`]]);
+    st.push([`Look at ${L.where}.`, `Revisa ${L.whereEs}.`, (f) => f[`${k}.seen`]]);
+    if (kind.puzzle) {
+      const P = kind.puzzle, solved = `pz.${P.id}.solved`;
+      q.puzzle = P.id; q.report.needs = solved;
+      st.push([P.text, P.textEs, (f) => f[solved]]);
+    }
+    st.push([`Tell ${giverName} what you saw.`, `Cuéntale ${aEs(giverEs)} lo que viste.`, (f) => f[`${k}.told`]]);
     ES[L.seen] = L.seenEs;
     if (L.seenAfter) ES[L.seenAfter.seen] = L.seenAfter.seenEs;
   } else if (kind.boss) {
@@ -45,6 +57,7 @@ function side({ id, act, giver, giverName, giverEs, title, titleEs, why, whyEs, 
     q.target = { npc: T.npc };
     st.push([`Talk to ${T.who}.`, `Habla con ${T.whoEs}.`, (f) => f[`met.${T.npc}`]]);
   } else throw new Error(`side quest ${id}: needs look, boss, bring or talk`);
+  if (kind.after) { const need = kind.after; q.askIf = (f) => !!f[need]; q.start = (f) => !!(f[`${k}.asked`] && f[need]); }
   q.stages = st.map(([text, , done]) => ({ text, done }));
   q.reward = { money, xp, line };
   Object.assign(ES, { [title]: titleEs, [why]: whyEs, [pitch]: pitchEs, [line]: lineEs });
@@ -147,6 +160,7 @@ side({ id: 'gb_footprints', act: 2, ...g('npc.gb_technician', TECH), title: 'One
   why: 'Someone walked into the sealed clean room. Only in.', whyEs: 'Alguien entró en la sala limpia sellada. Solo entró.',
   pitch: '"Nobody goes in the clean room. Go look at the floor and tell me I\'m wrong."', pitchEs: '"Nadie entra en la sala limpia. Ve a mirar el piso y dime que me equivoco."',
   look: { obj: 'obj.gb_cleanroom', where: 'the clean room window', whereEs: 'la ventana de la sala limpia', seen: 'The footprints go in. They don\'t come out.', seenEs: 'Las huellas entran. No salen.' },
+  puzzle: { id: 'gb_footprints', text: 'Find where the footprints end. They only show in the right light.', textEs: 'Descubre dónde terminan las huellas. Solo se ven con la luz justa.' },
   line: '"I knew it." He doesn\'t look happy to be right.', lineEs: '"Lo sabía." No parece contento de tener razón.' });
 
 side({ id: 'gb_prices', act: 2, ...g('npc.gb_clerk', CLERK), title: 'Due for a vote', titleEs: 'Toca votar',
@@ -195,6 +209,7 @@ side({ id: 'rf_rings', act: 2, ...g('npc.rf_teacher', TEACHER), title: 'Tree rin
   why: 'The fire tower rail has a hundred years labeled in tree rings.', whyEs: 'La baranda de la torre tiene cien años marcados en anillos de árbol.',
   pitch: '"Go read the rings on the fire tower. Then tell me which year you\'d have wanted to live in."', pitchEs: '"Ve a leer los anillos de la torre de incendios. Después dime en qué año te hubiera gustado vivir."',
   look: { obj: 'obj.rf_tower', where: 'the fire tower', whereEs: 'la torre de incendios', seen: 'A thin ring: "the year the phones rang." A thick one after: "the year we stopped answering."', seenEs: 'Un anillo fino: "el año que sonaron los teléfonos." Uno grueso después: "el año que dejamos de contestar."' },
+  puzzle: { id: 'rf_rings', text: 'Set the pegs at the tower\'s foot in the order the years happened.', textEs: 'Pon las clavijas al pie de la torre en el orden en que pasaron los años.' },
   line: '"Good answer. There\'s no right one."', lineEs: '"Buena respuesta. No hay una correcta."' });
 
 side({ id: 'rf_forge', act: 2, ...g('npc.rf_blacksmith', SMITH), title: 'Something that lasts', titleEs: 'Algo que dure',
@@ -219,6 +234,7 @@ side({ id: 'md_menu', act: 2, ...g('npc.md_quartermaster', QM), title: 'Mystery 
   why: 'The quartermaster wants to know what today\'s cafeteria joke is.', whyEs: 'El intendente quiere saber cuál es el chiste del menú de hoy.',
   pitch: '"I\'m not allowed to read the menu. Clearance. Read it and tell me what\'s for lunch."', pitchEs: '"No tengo permiso para leer el menú. Autorización. Léelo y dime qué hay de almuerzo."',
   look: { obj: 'obj.md_menu', where: 'the cafeteria menu', whereEs: 'el menú de la cafetería', seen: 'Today: "Soup of the Day (Need to Know)."', seenEs: 'Hoy: "Sopa del Día (Solo Personal Autorizado)."' },
+  puzzle: { id: 'md_menu', text: 'Take the joke seriously. The suggestion boxes by the menu want numbers.', textEs: 'Tómate el chiste en serio. Los buzones de sugerencias junto al menú quieren números.' },
   line: '"Soup." He writes it down, then burns the paper.', lineEs: '"Sopa." Lo anota y después quema el papel.' });
 
 side({ id: 'md_fence', act: 2, ...g('npc.md_quartermaster', QM), title: 'Unattended', titleEs: 'Sin vigilancia', money: 40, xp: 80,
@@ -275,6 +291,7 @@ side({ id: 'ann_bell', act: 2, ...g('npc.ann_pilot', PILOT), title: 'A bell with
   why: 'A church bell rings from an island that has no church.', whyEs: 'Una campana suena desde una isla que no tiene iglesia.',
   pitch: '"Listen at the end of the pier. Count the rings. Tell me the number. I\'ll tell you what it means."', pitchEs: '"Escucha al final del muelle. Cuenta las campanadas. Dime el número. Yo te digo qué significa."',
   look: { obj: 'obj.ann_bell', where: 'the end of the pier', whereEs: 'el final del muelle', seen: 'Seven rings. Then, after a long while, one more.', seenEs: 'Siete campanadas. Después, mucho rato después, una más.' },
+  puzzle: { id: 'ann_bell', text: 'Answer it. Ring the pier bell when the almanac is wrong.', textEs: 'Contéstale. Toca la campana del muelle cuando el almanaque se equivoque.' },
   line: '"Seven and one. The family\'s still out there. Good."', lineEs: '"Siete y una. La familia sigue allá. Bien."' });
 
 side({ id: 'ann_tide', act: 2, ...g('npc.ann_pilot', PILOT), title: 'The tide that lies', titleEs: 'La marea que miente', money: 40, xp: 80,
@@ -310,7 +327,9 @@ side({ id: 'cor_meters', act: 3, ...g('npc.cor_nightshift', NIGHT), title: 'Stil
   why: 'A sealed hall is still drawing water, and nobody runs it.', whyEs: 'Una nave sellada todavía consume agua, y nadie la maneja.',
   pitch: '"The sealed hall\'s water meter. Is it moving? Don\'t tell me it\'s moving."', pitchEs: '"El medidor de agua de la nave sellada. ¿Se mueve? No me digas que se mueve."',
   look: { obj: 'obj.cor_meters', where: 'the water meters in the sealed hall', whereEs: 'los medidores de agua en la nave sellada', seen: 'Spinning. Faster than the live halls.', seenEs: 'Girando. Más rápido que las naves activas.' },
-  line: '"It\'s moving." She writes it down anyway.', lineEs: '"Se mueve." Lo anota igual.' });
+  puzzle: { id: 'cor_meters', text: 'Shut the hall down. Send its water back to the river.', textEs: 'Apaga la nave. Manda su agua de vuelta al río.' },
+  // She hears about it after the hall is shut down, so her line is in the past tense now.
+  line: '"It was moving." She writes it down anyway.', lineEs: '"Se movía." Lo anota igual.' });
 
 side({ id: 'cor_hall', act: 3, ...g('npc.cor_nightshift', NIGHT), title: 'Written off', titleEs: 'Dado de baja', money: 50, xp: 100,
   why: 'Whatever runs in the sealed hall has started running the halls around it.', whyEs: 'Lo que corre en la nave sellada empezó a manejar las naves de alrededor.',
@@ -328,6 +347,7 @@ side({ id: 'gt_cradle', act: 3, ...g('npc.gt_physicist', PHYS), title: 'The empt
   why: 'One of the reference weights is missing.', whyEs: 'Falta una de las pesas de referencia.',
   pitch: '"The weights room. One cradle\'s empty. Look at the label. I can\'t, anymore."', pitchEs: '"La sala de pesas. Una cuna está vacía. Mira la etiqueta. Yo ya no puedo."',
   look: { obj: 'obj.gt_cradle', where: 'the reference weights', whereEs: 'las pesas de referencia', seen: 'The label: "1 kg." Someone has added: "approximately."', seenEs: 'La etiqueta: "1 kg." Alguien agregó: "aproximadamente."' },
+  puzzle: { id: 'gt_cradle', text: 'Close the set on the comparator, without the kilogram.', textEs: 'Cierra el juego de pesas en el comparador, sin el kilogramo.' },
   line: '"Approximately." She laughs, and then doesn\'t.', lineEs: '"Aproximadamente." Se ríe, y después no.' });
 
 side({ id: 'gt_master', act: 3, ...g('npc.gt_physicist', PHYS), title: 'Running since 1901', titleEs: 'En marcha desde 1901', money: 50, xp: 100,
@@ -388,6 +408,9 @@ side({ id: 'en_parchment', act: 3, ...g('npc.en_functionary', FUNC), title: 'Not
   why: 'The functionary checks the originals every morning, and wants someone else to check today.', whyEs: 'La funcionaria revisa los originales cada mañana, y hoy quiere que otro los revise.',
   pitch: '"Look at the originals. Tell me they\'re the same as yesterday. Word for word."', pitchEs: '"Mira los originales. Dime que son iguales que ayer. Palabra por palabra."',
   look: { obj: 'obj.en_parchment', where: 'the original documents', whereEs: 'los documentos originales', seen: 'Parchment, faded ink, the same words as every history book. Nothing can rot them. You check twice anyway.', seenEs: 'Pergamino, tinta gastada, las mismas palabras que en todos los libros de historia. Nada puede pudrirlos. Igual revisas dos veces.' },
+  // One thread with The addresses (en_archive, below): she doesn't ask for this until she has heard about that.
+  after: 'q.en_archive.told',
+  puzzle: { id: 'en_parchment', text: 'Give each underlined quote the stamp of its original.', textEs: 'Ponle a cada cita subrayada el sello de su original.' },
   line: '"The same. Thank you. It\'s the only thing here that is."', lineEs: '"Iguales. Gracias. Es lo único acá que lo es."' });
 
 side({ id: 'en_archive', act: 3, ...g('npc.en_functionary', FUNC), title: 'The addresses', titleEs: 'Los discursos', money: 25, xp: 50,

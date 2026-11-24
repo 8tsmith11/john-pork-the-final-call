@@ -168,6 +168,18 @@ export const refuge = fromGrid({
   
   .exit('rf_fringe', 26, 0, { id: 'obj.refuge_to_rf_fringe', selfDrawn: true, stepOn: true, pair: 'obj.rf_fringe_out', label: 'Deeper into the forest', text: "A day's walk in, they say. It's less." })   // stretch.js
   .exit('rf_marsh', 15, 9, { id: 'obj.refuge_to_rf_marsh', selfDrawn: true, stepOn: true, pair: 'obj.rf_marsh_out', label: 'Down to the marsh boardwalk', text: 'Boardwalks over black water.' })   // stretch.js
+  // The tree-rings puzzle (src/content/puzzles.js, rf_rings): four slices of the tower's oak on posts at its foot,
+  // each with one flagged ring and a peg, set out in no order. The fifth has a newer flag and no peg: it is a clue.
+  .prop('obj.oak_round', 15, 7, { id: 'obj.rf_ring_phones', label: 'Oak round: "the phones"',
+    text: 'A slice of the old oak on a post, one ring flagged in ink: "the year the phones rang." A thin ring, with the wide pale years all inside it. A wooden peg sticks out under the flag.' })
+  .prop('obj.oak_round', 16, 7, { id: 'obj.rf_ring_clocks', label: 'Oak round: "the clocks"',
+    text: 'A slice of the old oak on a post, one ring flagged in ink: "the year the clocks went back." The ring is narrow and dark. A wooden peg sticks out under the flag.' })
+  .prop('obj.oak_round', 17, 7, { id: 'obj.rf_ring_liar', label: 'Oak round with a newer flag',
+    text: 'A fifth slice, and the only flag in ballpoint: "the year everything got better." It is pinned to the bark, where there is no ring. Under it, small, in pencil: "after the clocks, before the vote, if at all." This one has no peg.' })
+  .prop('obj.oak_round', 19, 7, { id: 'obj.rf_ring_silence', label: 'Oak round: "the answering"',
+    text: 'A slice of the old oak on a post, one ring flagged in ink: "the year we stopped answering." It is the thickest ring on the slice. A wooden peg sticks out under the flag.' })
+  .prop('obj.oak_round', 20, 7, { id: 'obj.rf_ring_vote', label: 'Oak round: "the vote"',
+    text: 'A slice of the old oak on a post, one ring flagged in ink: "the year they paused the voting." A wide, pale ring, as if the tree hadn\'t noticed. A wooden peg sticks out under the flag.' })
   .build();
 
 // ---- 9. The Meade (perimeter in Act 2) ----
@@ -199,6 +211,16 @@ export const meade = fromGrid({
     X: { ...back('meade', 'Back west to Route 1'), tile: ',' },
   },
 }).enemy('boss.md_fence', 27, 3)
+  // The menu puzzle (src/content/puzzles.js, md_menu): three suggestion boxes with a thumbwheel each, by the menu
+  // and its guardian, and the table where the analysts eat.
+  .prop('obj.newsbox', 23, 4, { id: 'obj.md_box_meatloaf', label: 'Suggestion box: MEATLOAF',
+    text: 'A steel suggestion box bolted to a post, stenciled SUGGESTIONS: MEATLOAF. It has no slot. It has a thumbwheel, numbered 0 to 5.' })
+  .prop('obj.newsbox', 24, 4, { id: 'obj.md_box_mystery', label: 'Suggestion box: MYSTERY MEAT',
+    text: 'A steel suggestion box bolted to a post, stenciled SUGGESTIONS: MYSTERY MEAT. It has no slot. It has a thumbwheel, numbered 0 to 5.' })
+  .prop('obj.newsbox', 25, 4, { id: 'obj.md_box_soup', label: 'Suggestion box: SOUP',
+    text: 'A steel suggestion box bolted to a post, stenciled SUGGESTIONS: SOUP. It has no slot. It has a thumbwheel, numbered 0 to 5.' })
+  .prop('obj.cafe_table', 21, 5, { id: 'obj.md_lunch_table', label: 'Folding table',
+    text: 'A folding table at the edge of the berm road, where the analysts eat standing up. Under a mug is a napkin with a tally in ballpoint, headed "times it was funny." Redacted: four strokes. Classified: two. Need to Know: five. Eyes Only: one, crossed out.' })
   // The gate is in the perimeter fence: you walk north through it and come in by the south wall of the Meade inside,
   // whose layout stays as it is (act3_more.js). Outside the Fence's wake radius, so arriving doesn't start the fight.
   .exit('meade_inside', 10, 1, { id: 'obj.meade_to_meade_inside', selfDrawn: true, stepOn: true, requiresFlag: 'act2.complete', lockedText: 'The gate does not acknowledge you. Not yet.', pair: 'obj.meade_inside_out', label: 'The Meade gate', text: 'Black glass behind the berm. The gate is open.' })   // act3_more.js
