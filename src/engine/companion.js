@@ -35,6 +35,8 @@ export class CompanionBrain {
     // 1. Out of rot pools.
     const pool = sim.hazards.find((h) => dist(h, p) < h.r + 4);
     if (pool) { const a = Math.atan2(p.y - pool.y, p.x - pool.x); inp.mx = Math.cos(a); inp.my = Math.sin(a); return inp; }
+    // 1b. Out of a boss's flood (bossMechs 'tide'): climb to dry ground while the water's up.
+    for (const e of sim.enemies.values()) if (e.mech?.level > 0 && e.mech.edge != null && p.y > e.mech.edge - 6) { inp.mx = 0; inp.my = -1; return inp; }
 
     // 2. Dodge a shot that's about to hit (hostile shots have no owner player id).
     for (const s of sim.shots) {
@@ -54,7 +56,7 @@ export class CompanionBrain {
 
     // 4. Fight: enemies near the party (or chasing this companion).
     const anchor = leader ?? p;
-    const foe = [...sim.enemies.values()].filter((e) => !e.dead && (e.hp ?? 1) > 0 && (dist(e, anchor) < 120 || dist(e, p) < 70))
+    const foe = [...sim.enemies.values()].filter((e) => !e.dead && !e.pen && (e.hp ?? 1) > 0 && (dist(e, anchor) < 120 || dist(e, p) < 70))
       .sort((a, b) => dist(a, p) - dist(b, p))[0];
     if (foe) {
       const d = dist(foe, p), aim = Math.atan2(foe.y - p.y, foe.x - p.x);
@@ -63,7 +65,7 @@ export class CompanionBrain {
       if (lowHp && d < 40) { inp.mx = -Math.cos(aim); inp.my = -Math.sin(aim); return inp; } // back off, let the human tank
       if (d > 18) this._steer(p, m, foe.x, foe.y, inp);
       else { inp.attack = true; inp.mx = Math.cos(aim) * 0.2; inp.my = Math.sin(aim) * 0.2; }
-      const crowd = [...sim.enemies.values()].filter((e) => !e.dead && dist(e, p) < 80).length;
+      const crowd = [...sim.enemies.values()].filter((e) => !e.dead && !e.pen && dist(e, p) < 80).length;
       if ((m.skillT -= 1 / 60) <= 0 && (crowd >= 2 || foe.boss) && (p.skillCd ?? 0) <= 0) { inp.skill = true; m.skillT = 6 + Math.random() * 6; }
       return inp;
     }
