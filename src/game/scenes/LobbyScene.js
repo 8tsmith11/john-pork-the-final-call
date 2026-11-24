@@ -7,6 +7,7 @@ import { HostNet, ClientNet, makeRoomCode, playerName } from '../../engine/net/n
 import { ROOMMATES } from './BootScene.js';
 import { newSave } from '../../engine/save/schema.js';
 import { loadAutosave } from '../../engine/save/storage.js';
+import { applyActStart } from '../actStart.js';
 import { rollWorld } from '../../engine/worldRolls.js';
 import { newSeed } from '../../engine/rng.js';
 import { GAME_VERSION } from '../../version.js';
@@ -70,7 +71,8 @@ export class LobbyScene extends Phaser.Scene {
   async _host() {
     this.save = (await loadAutosave().catch(() => null)) ?? (() => {
       const seed = newSeed();
-      return newSave({ seed, rolls: rollWorld(seed), gameVersion: GAME_VERSION });
+      const save = newSave({ seed, rolls: rollWorld(seed), gameVersion: GAME_VERSION });
+      return applyActStart(save, new URLSearchParams(location.search).get('start')) ?? save;   // ?start=act2 (src/game/actStart.js)
     })();
     this.net = new HostNet();
     this.status.setText('Opening a room...');

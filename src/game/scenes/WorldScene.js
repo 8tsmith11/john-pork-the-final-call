@@ -5,6 +5,7 @@ import { VIEW, setupCameras, toView } from '../../view.js';
 import { InputReader } from '../../engine/input.js';
 import { newSave } from '../../engine/save/schema.js';
 import { autosave, loadAutosave, exportFile } from '../../engine/save/storage.js';
+import { applyActStart } from '../actStart.js';
 import { rollWorld } from '../../engine/worldRolls.js';
 import { newSeed, Rng } from '../../engine/rng.js';
 import { MAPS, worldPos } from '../../content/maps/index.js';
@@ -152,7 +153,7 @@ export class WorldScene extends Phaser.Scene {
       return;
     }
     setupCameras(this, { world: true });
-    this.save = this.passedSave ?? (await loadAutosave().catch(() => null)) ?? this._newGame();
+    this.save = this.passedSave ?? (await loadAutosave().catch(() => null)) ?? this._newGame(this.mode !== 'client' ? new URLSearchParams(location.search).get('start') : null);
     const startMap = MAPS[this.save.world.area] ?? MAPS.room631;
     this.save.world.killed ??= [];
     const authoritative = this.mode !== 'client';
@@ -729,9 +730,10 @@ export class WorldScene extends Phaser.Scene {
     if (BARKS.enter[map.id]) this.time.delayedCall(1400, () => { const snap = this._lastRendered; const ps = (snap?.players ?? []).filter((p) => !p.dn); const p = ps[Math.floor(Math.random() * ps.length)]; if (p && here()) this._bark(p.id, pickBark(BARKS.enter[map.id], p.c)); });
   }
 
-  _newGame() {
+  _newGame(start = null) {
     const seed = newSeed();
-    return newSave({ seed, rolls: rollWorld(seed), gameVersion: GAME_VERSION });
+    const save = newSave({ seed, rolls: rollWorld(seed), gameVersion: GAME_VERSION });
+    return (start && applyActStart(save, start)) || save;   // ?start=act2: a test start in its own save slot (src/game/actStart.js)
   }
 
   // ---------- networking ----------

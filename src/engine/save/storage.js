@@ -1,7 +1,12 @@
 // Save storage: IndexedDB autosave (localStorage fallback) + export/import of a .jpfc.json file.
 import { migrate } from './schema.js';
 
-const DB = 'jpfc', STORE = 'saves', KEY = 'autosave';
+// A test start (?start=act2) or ?slot=name keeps its own autosave, so trying it never touches the real game's save.
+const SLOT = (() => {
+  try { const q = new URLSearchParams(globalThis.location?.search ?? ''); return (q.get('slot') ?? q.get('start') ?? '').replace(/[^a-z0-9_-]/gi, '').slice(0, 24); }
+  catch { return ''; }
+})();
+const DB = 'jpfc', STORE = 'saves', KEY = SLOT ? `autosave:${SLOT}` : 'autosave';
 const FALLBACK_KEY = `${DB}:${KEY}`;
 let pendingWrite = Promise.resolve();
 let lastTimestamp = 0;

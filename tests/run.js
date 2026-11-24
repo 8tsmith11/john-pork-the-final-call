@@ -6827,6 +6827,24 @@ test('the end-of-chase line reaches guests too (gonman, #85): the host broadcast
   assert.ok(/msg\.t === 'toast'\) \{ this\._toast\(tr\(msg\.text\)\)/.test(src), 'guests translate what the host sends');
 });
 
+test('?start=act2: a brand-new game as if Act 1 just ended, for playtesting Act 2 (Trevor)', async () => {
+  const { applyActStart } = await import('../src/game/actStart.js');
+  const { newSave } = await import('../src/engine/save/schema.js');
+  const { QUESTS } = await import('../src/content/quests.js');
+  const save = applyActStart(newSave({ seed: 'a2', rolls: {}, gameVersion: 't' }), 'act2');
+  assert.ok(save.flags['act1.complete'] && save.world.act === 2 && MAPS_FOR_TEST[save.world.area], 'Act 1 is done and the party stands in Act 2');
+  assert.ok(save.flags['act1.coldopen.done'], 'the cold open does not replay over Act 2');
+  const main = QUESTS.find((q) => q.id === 'q.main' || /balloon/i.test(q.title ?? '')) ?? QUESTS[0];
+  if (main?.stages) assert.ok(main.stages.every((st) => st.done(save.flags)), 'every Act 1 main-quest stage reads as done');
+  for (const c of Object.values(save.party)) {
+    assert.equal(c.level, 6); assert.ok(c.skillPoints >= 5 && c.abilityPoints >= 5, 'real level-ups, points included');
+    assert.equal(c.inventory[0].id, 'item.rebar'); assert.equal(c.equipped.chestplate, 'item.mesh_vest');
+  }
+  assert.equal(applyActStart(newSave({ seed: 'x', rolls: {}, gameVersion: 't' }), 'nope'), null, 'an unknown start changes nothing');
+  const src = (await import('node:fs')).readFileSync(new URL('../src/engine/save/storage.js', import.meta.url), 'utf8');
+  assert.ok(/KEY = SLOT \? `autosave:\$\{SLOT\}` : 'autosave'/.test(src), 'a test start keeps its own save slot, never the real one');
+});
+
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
