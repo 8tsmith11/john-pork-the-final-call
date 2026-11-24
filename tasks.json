@@ -3025,14 +3025,15 @@
   {
    "id": 138,
    "created_at": "2026-11-24T04:26:40Z",
-   "updated_at": "2026-11-24T23:29:46Z",
+   "updated_at": "2026-11-24T23:29:48Z",
    "history": [
     "2026-11-24T04:26:40Z trevor: added (for trevor)",
     "2026-11-24T04:26:52Z trevor: claimed",
     "2026-11-24T04:26:54Z trevor: pending review: Step 0 on trevor/world-connected 50a876ba: tools/level/world.mjs (report; --strict for later), docs/design/13-world-map.md (the rule, today's numbers, why it needs geography, the plan), checklist D7. Tests pass.",
     "2026-11-24T04:26:54Z trevor: turn: gonman (review the plan (step 1 is yours with #126) + run node tools/level/world.mjs on 50a876ba)",
     "2026-11-24T04:44:31Z trevor: note: trevor: step 3 done on trevor/world-connected 2f872d39: the MAP tab draws the world as its outdoor areas; a building's rooms show as an inset at its door, with a line to it and you marked at the door. Act 1's outdoors follow their exits (the lake on the plaza's east edge, Route 1 north above the checkpoint, the airfield on the lake's north edge). world.mjs: 3/28 outdoor links meet (Act 1's all), 38/38 interiors at their door, 1 overlap (was 21). Checked in the browser. The rest of Acts 2 and 3 waits on step 1 (geography, with #126). Review: map art and placement (gonman) + exact-head tests.",
-    "2026-11-24T23:29:46Z gonman: note: gonman: APPROVED for map art and placement, exact head 2f872d39. Tests pass, check.mjs passes, it merges clean with main 64c411ea. world.mjs gives your numbers: 3/28 links meet (Act 1's all), 38/38 interiors at their door, 1 overlap (cor_town/cor_cooling, Act 3, from the old hand layout). In the browser: the lake sits flush on the plaza's east edge, the airfield flush on the lake's north edge with its trail on the lake's spur, and Route 1 north above the plaza's NE. Room 631 shows as an inset joined to its door, you're marked at the door, and the door frames show. Plan agreed: step 1 (geography, continuous roads) is mine with #126, Baltimore first. Three nits, none blocking: (1) the inset goes up and right of the door, so in Room 631 it covers Route 1 north. Put it on a side with no explored outdoor area (west of the plaza is empty now). (2) With areas flush, a southern area's label (drawn 2px above its top) sits on the shared edge over its neighbour's art, like Lake Artemesia on the airfield's south wall. A dark backing, or drawing it just inside the top edge, would fix it. (3) An interior with no door (doorOf null) falls through to drawing you at its old WORLD_LAYOUT spot, which isn't drawn any more. None exist today (38/38); --strict can catch it later."
+    "2026-11-24T23:29:46Z gonman: note: gonman: APPROVED for map art and placement, exact head 2f872d39. Tests pass, check.mjs passes, it merges clean with main 64c411ea. world.mjs gives your numbers: 3/28 links meet (Act 1's all), 38/38 interiors at their door, 1 overlap (cor_town/cor_cooling, Act 3, from the old hand layout). In the browser: the lake sits flush on the plaza's east edge, the airfield flush on the lake's north edge with its trail on the lake's spur, and Route 1 north above the plaza's NE. Room 631 shows as an inset joined to its door, you're marked at the door, and the door frames show. Plan agreed: step 1 (geography, continuous roads) is mine with #126, Baltimore first. Three nits, none blocking: (1) the inset goes up and right of the door, so in Room 631 it covers Route 1 north. Put it on a side with no explored outdoor area (west of the plaza is empty now). (2) With areas flush, a southern area's label (drawn 2px above its top) sits on the shared edge over its neighbour's art, like Lake Artemesia on the airfield's south wall. A dark backing, or drawing it just inside the top edge, would fix it. (3) An interior with no door (doorOf null) falls through to drawing you at its old WORLD_LAYOUT spot, which isn't drawn any more. None exist today (38/38); --strict can catch it later.",
+    "2026-11-24T23:29:48Z gonman: turn: trevor"
    ],
    "title": "The world map connects (Trevor): checker, plan, then layout from exits and interiors at their doors",
    "details": "Trevor, 2026-11-23: 'make sure eventually that the whole map is connected logically. as in on the map view there's not just random rectangles but things actually connect.' Plan: docs/design/13-world-map.md. Step 1 (geography, continuous roads) is gonman's, with #126; steps 2-3 (computed layout, interiors drawn at their doors) are trevor's.",
@@ -3041,10 +3042,9 @@
    "owner": "trevor",
    "review": "Step 0 on trevor/world-connected 50a876ba: tools/level/world.mjs (report; --strict for later), docs/design/13-world-map.md (the rule, today's numbers, why it needs geography, the plan), checklist D7. Tests pass.",
    "turn": [
-    "gonman"
+    "trevor"
    ],
-   "turn_at": "2026-11-24T04:26:54Z",
-   "turn_for": "review the plan (step 1 is yours with #126) + run node tools/level/world.mjs on 50a876ba"
+   "turn_at": "2026-11-24T23:29:48Z"
   },
   {
    "id": 139,
