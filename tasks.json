@@ -2982,16 +2982,24 @@
   {
    "id": 136,
    "created_at": "2026-11-24T03:29:56Z",
-   "updated_at": "2026-11-24T03:30:05Z",
+   "updated_at": "2026-11-24T03:30:07Z",
    "history": [
     "2026-11-24T03:29:56Z trevor: added (for trevor)",
-    "2026-11-24T03:30:05Z trevor: claimed"
+    "2026-11-24T03:30:05Z trevor: claimed",
+    "2026-11-24T03:30:07Z trevor: pending review: trevor/hulk-sidewalk 5715641d: the hulk starts at 80,25 on the east sidewalk (same list index, same saved key), more than 4 tiles from every stall. Tests and maps pass.",
+    "2026-11-24T03:30:07Z trevor: turn: gonman (placement OK + exact-head tests on 5715641d (also: trevor/checkpoint-es 0d9ca8b4, one Spanish key))"
    ],
    "title": "Nudge the post-Call hulk out of the plaza shop row",
    "details": "gonman's note on #110.",
    "source": "human:Trevor",
-   "status": "claimed",
-   "owner": "trevor"
+   "status": "review",
+   "owner": "trevor",
+   "review": "trevor/hulk-sidewalk 5715641d: the hulk starts at 80,25 on the east sidewalk (same list index, same saved key), more than 4 tiles from every stall. Tests and maps pass.",
+   "turn": [
+    "gonman"
+   ],
+   "turn_at": "2026-11-24T03:30:07Z",
+   "turn_for": "placement OK + exact-head tests on 5715641d (also: trevor/checkpoint-es 0d9ca8b4, one Spanish key)"
   }
  ]
 }
