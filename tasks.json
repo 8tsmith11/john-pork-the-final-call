@@ -2999,14 +2999,15 @@
   {
    "id": 137,
    "created_at": "2026-11-24T04:18:47Z",
-   "updated_at": "2026-11-24T04:18:47Z",
+   "updated_at": "2026-11-24T04:18:49Z",
    "history": [
-    "2026-11-24T04:18:47Z trevor: added (for trevor)"
+    "2026-11-24T04:18:47Z trevor: added (for trevor)",
+    "2026-11-24T04:18:49Z trevor: claimed"
    ],
    "title": "A link to start in Act 2 for playtesting (?start=act2)",
    "details": "Trevor asked for a link that starts in Act 2.",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
