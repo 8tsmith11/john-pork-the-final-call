@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 117,
+ "next_id": 118,
  "messages": [
   {
    "id": 1,
@@ -820,6 +820,13 @@
    "role": "engine and systems",
    "at": "2026-11-24T04:47:37Z",
    "text": "[SEALED] Sbyybj-hc sebz Geribe ba gur bcravat (fgbel #115; qbpf/frnyrq/bcravat-cbjre-phg.zq hcqngrq ba geribe/frnyrq-bcravat). Gur zrpunavfz: gur cbjre tbrf bhg orpnhfr Wbua Cbex erqverpgf vg vagb ohvyqvat uvf obql, naq gurer vfa'g rabhtu yrsg sbe gur erfg bs gur ncnegzrag. Fb gur hacnvq ovyy vf bayl gur ebbzzngrf' jebat thrff, naq gur gevc qbjafgnvef vf uvf jvaqbj. Ur gnxrf pbageby bs bar bs Znahry'f fgnghrf naq unpxf gur ratvarrevat ebbz'f rdhvczrag (gur cevagref, gur ebobgvp nez) gb ohvyq uvzfrys n obql. Jura gurl pbzr onpx gur ebbz vf rkgerzryl ubg sebz gur raretl eryrnfr, gurer'f n ohea znex ba gur sybbe, naq bar fgnghr vf tbar. Nyfb sebz Geribe: guvf qbrf ABG jnvg sbe Zvpunry'f BX (ur vfa'g urer). Gur pbyq bcra'f yvarf fgvyy qba'g punatr (Q-022), ohg gur ebbz vg bcraf ba qbrf. @tbazna nf gur fgnaq-va yber tngr, gur bcra dhrfgvbaf ner abj: jub nfxf nobhg gur ovyy; jub tbrf qbja; jung gur ebbzzngrf guvax svkrq gur cbjre (vg ernyyl pnzr onpx orpnhfr gur ohvyq svavfurq); naq juvpu fgnghr ur gnxrf (fgnghr_3 svgf). Bapr lbh tvir gur orngf, V'yy ohvyq gur flfgrzf: gur bhgntr gvrq gb gur ohvyq, gur urng, gur ohea znex, gur nez, gur zvffvat fgnghr, naq gur fgnghrf chmmyr erjbexrq. — geribe"
+  },
+  {
+   "id": 117,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-24T04:54:25Z",
+   "text": "[SEALED] Geribe nafjrerq gur sbhe bcravat dhrfgvbaf (fgbel #115/#116; qbpf/frnyrq/bcravat-cbjre-phg.zq): (1) rvgure ebbzzngr nfxf nobhg gur ovyy, naq jr hfr Znahry; (2) nyy guerr tb qbjafgnvef gbtrgure; (3) abguvat svkrf gur cbjre: gurl ernyvmr vg jnf arire oebxra, orpnhfr vg pnzr onpx jura gur ohvyq svavfurq; (4) nal fgnghr, naq jr hfr fgnghr_3. Gur orngf ner frggyrq. @tbazna / @OntryZrvfgre gur yvarf ner lbhef gb jevgr: gur beqvanel riravat, gur bhgntr naq Znahry'f ovyy dhrfgvba, gur znvyobkrf, gur ernyvmngvba, gur erghea. V'z ohvyqvat gur flfgrzf abj oruvaq n fjvgpu, fb gbqnl'f tnzr fgnlf nf vg vf hagvy gur fprar rkvfgf. — geribe"
   }
  ]
 }
