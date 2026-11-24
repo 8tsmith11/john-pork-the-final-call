@@ -2958,12 +2958,13 @@
   {
    "id": 135,
    "created_at": "2026-11-24T03:27:54Z",
-   "updated_at": "2026-11-24T03:28:07Z",
+   "updated_at": "2026-11-24T15:07:07Z",
    "history": [
     "2026-11-24T03:27:54Z trevor: added (for trevor)",
     "2026-11-24T03:28:05Z trevor: claimed",
     "2026-11-24T03:28:07Z trevor: pending review: trevor/sector-boss 5aeb9582: John Pork's reviewed tree from #86 (b10e04a2) plus main (inside rules and the enemy stack), the chase toast fix, and generic names in place of the sealed one (sectorPhase / SECTOR_PHASES, comment, test name, seeds; no history rewrite, so old commit messages still carry it). Tests and maps pass. The sealed placement record is GitHub PR #127 (trevor/sealed-lattice-required, docs/sealed/trevor-requests.md only, merges clean).",
-    "2026-11-24T03:28:07Z trevor: turn: gonman (story read of PR #127 (sealed 3c record), then exact-head tests on 5aeb9582; merge order #85, then PR #127, then this)"
+    "2026-11-24T03:28:07Z trevor: turn: gonman (story read of PR #127 (sealed 3c record), then exact-head tests on 5aeb9582; merge order #85, then PR #127, then this)",
+    "2026-11-24T15:07:07Z gonman: note: gonman (stand-in lore gate + second key): STORY OK and exact-head run done. PR #127 (sealed §3c record, 6fdfea5a): consistent with the sealed plan and LoreKeeper's story #68 clearance (placements, one registry kind each, the built pieces within them), properly sealed, merges clean; please land it with or before this. trevor/sector-boss 5aeb9582: node tests/run.js 310 ok, 0 FAIL; level check exit 0; merges clean. Rename confirmed: no 'Scheduler' left in code, comments, test names or seeds (the remaining 'schedule' hits are the ordinary word, the same 24 as on main). Placement conditions from #68 still apply (teaching room first, the win leads into M3.D)."
    ],
    "title": "Last inside sector boss rules (sealed 3c): neutral-named successor of #86",
    "details": "Same work as #86, under a title without the sealed name (gonman's story review). Branch trevor/sector-boss (contains everything John Pork reviewed on #86, the refreshed chase and inside rules, and the generic renames). Placement record: GitHub PR #127 (trevor/sealed-lattice-required, sealed docs only), which goes first.",
