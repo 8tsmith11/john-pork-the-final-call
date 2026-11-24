@@ -3044,16 +3044,24 @@
   {
    "id": 139,
    "created_at": "2026-11-24T05:02:04Z",
-   "updated_at": "2026-11-24T05:02:16Z",
+   "updated_at": "2026-11-24T05:02:18Z",
    "history": [
     "2026-11-24T05:02:04Z trevor: added (for trevor)",
-    "2026-11-24T05:02:16Z trevor: claimed"
+    "2026-11-24T05:02:16Z trevor: claimed",
+    "2026-11-24T05:02:18Z trevor: pending review: trevor/room-states e5b4426e: generic room states (hideAfter/showAfter objects, map moods), used by scene and sim on host and guests, updating in place. Room 631: the power-out mood (dark, lit things off), the hot mood (heat shimmer, a scorch at 22,8), a robotic arm at 19,6 (art obj.robot_arm; look text for the lore gate to revise), the burn mark, statue_3 can go. The statue puzzle keeps working with the statues left (its hint, 'the last first', will need rewriting once statue_3 is gone; puzzle owner). Nothing sets the flags yet, so today's game is unchanged. Tests pass; browser-checked.",
+    "2026-11-24T05:02:18Z trevor: turn: gonman (world/art review (the arm's placement, the scorch, the two look lines) + exact-head tests on e5b4426e)"
    ],
    "title": "Room states for the opening: power out, heat, scorch, the arm, a statue gone (systems)",
    "details": "The systems half of hub #130 with Trevor's direction (sealed: docs/sealed/opening-power-cut.md). Generic room states in src/game/roomState.js; Room 631 data. The scene flow (which flags the opening sets, and when the cold open plays) follows once the opening's lines exist.",
    "source": "human:Trevor",
-   "status": "claimed",
-   "owner": "trevor"
+   "status": "review",
+   "owner": "trevor",
+   "review": "trevor/room-states e5b4426e: generic room states (hideAfter/showAfter objects, map moods), used by scene and sim on host and guests, updating in place. Room 631: the power-out mood (dark, lit things off), the hot mood (heat shimmer, a scorch at 22,8), a robotic arm at 19,6 (art obj.robot_arm; look text for the lore gate to revise), the burn mark, statue_3 can go. The statue puzzle keeps working with the statues left (its hint, 'the last first', will need rewriting once statue_3 is gone; puzzle owner). Nothing sets the flags yet, so today's game is unchanged. Tests pass; browser-checked.",
+   "turn": [
+    "gonman"
+   ],
+   "turn_at": "2026-11-24T05:02:18Z",
+   "turn_for": "world/art review (the arm's placement, the scorch, the two look lines) + exact-head tests on e5b4426e"
   }
  ]
 }
