@@ -3,6 +3,7 @@
 // (barriers, a booth, floodlights, warning signs) and troopers on the posts. Walking up to the edge gets
 // a trooper's line, not a dialogue box. Drawn in code (src/game/cordon.js) until real sprites land.
 // Pockets-and-zones canon is unchanged: this is the cordon around this pocket, tonight.
+import { outbreakPhase } from './outbreak.js';
 
 const T = (x, y, face, n) => ({ id: `cordon.trooper_${n}`, cordon: 'trooper', selfDrawn: true, x, y, face, label: 'Continuity trooper',
   text: 'Visor down, rifle across the chest, a red stripe on the shoulder. The helmet turns to follow you and nothing else moves.' });
@@ -23,12 +24,6 @@ export const PLAZA_CORDON = {
     [55, 4, 11, 1], [55, 1, 1, 2], [66, 1, 1, 2],      // north: across Route 1, and the pen's side walls
     [55, 47, 12, 1], [55, 48, 1, 3], [66, 48, 1, 3],   // south
     [4, 30, 1, 6], [1, 30, 3, 1], [1, 35, 3, 1],       // west: across the cross street
-  ],
-  // The Code-rot-taken held beyond each checkpoint (map enemies: [kind, tx, ty, options]); the pen keeps them in.
-  held: [
-    ['enemy.rot_taken', 58, 2, { pen: [56, 1, 10, 3] }], ['enemy.rot_taken', 61, 1, { pen: [56, 1, 10, 3] }], ['enemy.rot_taken', 63, 3, { pen: [56, 1, 10, 3] }],
-    ['enemy.rot_taken', 59, 49, { pen: [56, 48, 10, 3] }], ['enemy.rot_taken', 62, 50, { pen: [56, 48, 10, 3] }],
-    ['enemy.rot_taken', 2, 32, { pen: [1, 31, 3, 4] }], ['enemy.rot_taken', 3, 34, { pen: [1, 31, 3, 4] }],
   ],
   objects: [
     // North checkpoint (Route 1)
@@ -75,3 +70,37 @@ export const CORDON_LINES = [
   { en: 'That\'s far enough.', es: 'Hasta ahí.' },
   { en: 'Scanning. You\'re on the list. Go home.', es: 'Escaneando. Está en la lista. Vuelva a casa.' },
 ];
+
+// The line holding (Trevor: "more enemies, the guards shoot them, auto turrets and robots that hold them back, they
+// should keep coming, like an invasion being held off"). Rules: src/engine/siege.js. The pens are the walled road
+// strips beyond each barrier (task #36); they're kept topped up from off the map, a mix of rot forms, the big ones rare.
+const MIX = [['enemy.rot_taken', 6], ['enemy.rot_crawler', 4], ['enemy.rot_graft', 3], ['enemy.rot_sprawl', 2, 2], ['enemy.rot_hulk', 1, 1]];
+export const PLAZA_SIEGE = {
+  id: 'plaza_line',
+  pens: [
+    { id: 'north', rect: [56, 1, 10, 3], front: 'down', keep: 10, mix: MIX },
+    { id: 'south', rect: [56, 48, 10, 3], front: 'up', keep: 9, mix: MIX },
+    { id: 'west', rect: [1, 31, 3, 4], front: 'right', keep: 6, mix: [['enemy.rot_taken', 6], ['enemy.rot_crawler', 5], ['enemy.rot_graft', 2], ['enemy.rot_sprawl', 1, 1]] },
+  ],
+  // Troopers marked drawn are the cordon's own out-facing posts (drawn by src/game/cordon.js); the rest are drawn by
+  // src/game/siegeView.js. Robots stand in the pen mouth, right against the barrier.
+  defenders: [
+    { kind: 'trooper', at: [63, 5], pen: 'north', drawn: true }, { kind: 'trooper', at: [60, 6], pen: 'north' },
+    { kind: 'turret', at: [56, 5], pen: 'north' }, { kind: 'turret', at: [65, 5], pen: 'north' },
+    { kind: 'robot', at: [59, 3], pen: 'north' }, { kind: 'robot', at: [63, 3], pen: 'north' },
+    { kind: 'trooper', at: [63, 46], pen: 'south', drawn: true }, { kind: 'trooper', at: [60, 45], pen: 'south' },
+    { kind: 'turret', at: [56, 46], pen: 'south' }, { kind: 'turret', at: [65, 46], pen: 'south' },
+    { kind: 'robot', at: [59, 48], pen: 'south' }, { kind: 'robot', at: [63, 48], pen: 'south' },
+    { kind: 'trooper', at: [5, 35], pen: 'west', drawn: true }, { kind: 'trooper', at: [6, 32], pen: 'west' },
+    { kind: 'turret', at: [5, 33], pen: 'west' }, { kind: 'robot', at: [3, 33], pen: 'west' },
+  ],
+};
+
+/** For the sim: { mapId: spec }. After the Call the push is heavier (task #38: the cordon closes harder). */
+export function siegesFor(flags = {}) {
+  const after = outbreakPhase(flags) === 'after';
+  const pens = PLAZA_SIEGE.pens.map((p) => after
+    ? { ...p, keep: Math.round(p.keep * 1.4), mix: p.mix.map(([k, w, max]) => [k, w, max == null ? max : max + 1]) }
+    : p);
+  return { metro_plaza: { ...PLAZA_SIEGE, pens } };
+}

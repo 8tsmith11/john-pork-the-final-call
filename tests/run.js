@@ -1852,21 +1852,56 @@ test('cordon (task #36/#38): trooper lines before and after the Call have Spanis
   for (const id of ['cordon.booth_1', 'cordon.booth_2', 'cordon.light_1', 'cordon.light_2', 'cordon.sign_1', 'cordon.sign_2', 'cordon.sign_3']) assert.ok(ids.has(id), `${id} is placed`);
 });
 
-test('cordon (task #36): the Code-rot-taken beyond each checkpoint stay out of reach and in their pens', () => {
+test('cordon (task #36): the rot beyond each checkpoint stays out of reach and in its pen', () => {
   if (!cordonMod) return;
-  const m = MAPS_FOR_TEST.metro_plaza, held = cordonMod.PLAZA_CORDON.held;
-  assert.ok(held.length >= 6 && m.enemies.filter((e) => e.pen).length === held.length, 'the held rot-taken are on the map');
+  const m = MAPS_FOR_TEST.metro_plaza, siege = cordonMod.siegesFor({}).metro_plaza;
+  assert.ok(siege.pens.length === 3 && siege.pens.every((p) => p.keep >= 6), 'three pens, each held at strength');
   const sp = m.spawns[0], start = [Math.floor(sp.x / 16), Math.floor(sp.y / 16)], seen = new Set([start.join(',')]), q = [start];
   while (q.length) { const [x, y] = q.shift(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || m.solid(nx, ny)) continue; seen.add(k); q.push([nx, ny]); } }
-  for (const [, tx, ty, { pen }] of held) {
+  for (const { rect: pen } of siege.pens) {
     for (let y = pen[1]; y < pen[1] + pen[3]; y++) for (let x = pen[0]; x < pen[0] + pen[2]; x++) assert.ok(!seen.has(x + ',' + y), `pen tile ${x},${y} is reachable on foot`);
-    assert.ok(tx >= pen[0] && tx < pen[0] + pen[2] && ty >= pen[1] && ty < pen[1] + pen[3], `rot-taken at ${tx},${ty} starts inside its pen`);
   }
-  // Walk up to the north barrier and wait: they push at the line but never leave.
-  const sim = new Sim(m, { seed: 'pens' }); sim.addPlayer('a', 'trevor');
-  const p = sim.players.get('a'); p.x = 60 * 16 + 8; p.y = 6 * 16 + 8;
-  for (let i = 0; i < 600; i++) sim.step(1 / 60, new Map([['a', { mx: 0, my: 0, aim: 0 }]]));
-  for (const e of sim.enemies.values()) if (e.pen) { const [tx, ty, tw, th] = e.pen; assert.ok(e.x >= tx * 16 && e.x <= (tx + tw) * 16 && e.y >= ty * 16 && e.y <= (ty + th) * 16, `${e.kind} left its pen`); }
+  // Walk up to the north barrier and wait: they push at the line but never leave, and never reach you.
+  const sim = new Sim(m, { seed: 'pens' }); sim.sieges = cordonMod.siegesFor({}); sim.addPlayer('a', 'trevor'); sim.spawnEnemies();
+  const p = sim.players.get('a'); p.x = 60 * 16 + 8; p.y = 6 * 16 + 8; const hp0 = p.hp;
+  for (let i = 0; i < 600; i++) {
+    sim.step(1 / 60, new Map([['a', { mx: 0, my: 0, aim: 0 }]]));
+    for (const e of sim.enemies.values()) if (e.pen) { const [tx, ty, tw, th] = e.pen; assert.ok(e.x >= tx * 16 && e.x <= (tx + tw) * 16 && e.y >= ty * 16 && e.y <= (ty + th) * 16, `${e.kind} left its pen`); }
+  }
+  assert.equal(p.hp, hp0, 'nothing in a pen reaches you');
+});
+
+test('the held line (Trevor: an invasion being held off): pens stay full of mixed rot forms, the line shoots and shoves them, more keep coming, and the kills pay nothing', async () => {
+  if (!cordonMod) return;
+  const { SIEGE } = await import('../src/engine/siege.js');
+  const { ENEMIES } = await import('../src/content/enemies.js');
+  const m = MAPS_FOR_TEST.metro_plaza, spec = cordonMod.siegesFor({}).metro_plaza;
+  for (const pen of spec.pens) for (const [kind] of pen.mix) assert.ok(ENEMIES[kind], `${kind} is a real enemy`);
+  for (const d of spec.defenders) assert.ok(SIEGE[d.kind] && spec.pens.some((p) => p.id === d.pen), `defender ${d.kind} at ${d.at} has rules and a pen`);
+  for (const pen of spec.pens) for (const k of ['trooper', 'turret', 'robot']) assert.ok(spec.defenders.some((d) => d.pen === pen.id && d.kind === k), `${pen.id} has a ${k}`);
+  const sim = new Sim(m, { seed: 'line' }); sim.sieges = cordonMod.siegesFor({}); sim.addPlayer('a', 'trevor'); sim.spawnEnemies();
+  const p = sim.players.get('a'); p.x = 30 * 16; p.y = 25 * 16;   // in the plaza, far from every pen
+  const inPen = (id) => [...sim.enemies.values()].filter((e) => e.siege?.pen === id);
+  let kills = 0, paid = 0, tracers = 0, shoves = 0;
+  const kinds = new Set(), ids = new Set();
+  for (let i = 0; i < 60 * 90; i++) {
+    sim.step(1 / 60, new Map([['a', { mx: 0, my: 0, aim: 0 }]]));
+    for (const ev of sim.events) if (ev.t === 'kill' && ev.siege) { kills++; paid += ev.xp; }
+    const v = sim.snapshot().sg; tracers += v.tr.length; shoves += v.d.filter((d) => d[2] === 2 && d[4] === 2).length;
+    for (const e of sim.enemies.values()) if (e.siege) { kinds.add(e.kind); ids.add(e.id); }
+    if (i === 30) for (const pen of spec.pens) assert.equal(inPen(pen.id).length, pen.keep, `${pen.id} starts full`);
+  }
+  assert.ok(kills >= 40, `the line kills steadily (${kills} in 90 s)`);
+  assert.equal(paid, 0, 'pen kills give no XP');
+  assert.ok(ids.size > 25 + kills * 0.9, 'and more keep coming');
+  for (const pen of spec.pens) assert.ok(inPen(pen.id).length >= pen.keep - 4, `${pen.id} is still under pressure after 90 s`);
+  assert.ok(tracers > 100 && shoves > 5, 'tracers fly and the robots shove');
+  assert.ok(kinds.size >= 4, `a mix of forms (${[...kinds].join(', ')})`);
+  // The line only ever fires into pens: the party is never hit, and the companions don't go after penned rot.
+  assert.equal(p.hp, sim.maxHp(p));
+  // After the Call it pushes harder.
+  const after = cordonMod.siegesFor({ 'act1.beat.call': true }).metro_plaza;
+  assert.ok(after.pens.every((pen, i) => pen.keep > spec.pens[i].keep), 'after the Call every pen is held at more');
 });
 
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));

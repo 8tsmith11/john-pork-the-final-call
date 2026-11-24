@@ -62,6 +62,9 @@ import { Fart } from '../fart.js';
 import { NpcLife } from '../npcLife.js';
 import { Cordon } from '../cordon.js';
 import { SkirmishView } from '../skirmishView.js';
+import { SiegeView } from '../siegeView.js';
+import { siegesFor } from '../../content/cordon.js';
+import { rotFormTexture } from '../render/rotForms.js';
 import { skirmishesFor } from '../../content/skirmishes.js';
 import { phaseEnemies } from '../../content/outbreak.js';
 import { dawnLabel, dawnProgress } from '../../content/dawn.js';
@@ -180,6 +183,7 @@ export class WorldScene extends Phaser.Scene {
       for (const ch of ['trevor', 'manuel', 'michael']) if (!taken.has(ch)) this.sim.addPlayer(`ai:${ch}`, ch);
       this.sim.phaseEnemies = phaseEnemies(this.save.flags);   // outbreak phase spawns (task #38)
       this.sim.skirmishes = skirmishesFor(this.save.flags);     // ambient NPC fights (hub #69)
+      this.sim.sieges = siegesFor(this.save.flags);             // held cordon lines (src/engine/siege.js)
       this.sim.jobEnemies = this._jobEnemies();                 // bounty board nests
       this.sim.spawnEnemies();   // Initial encounters use the same complete party as later map entries.
       this.brain = new CompanionBrain(this.sim);
@@ -197,7 +201,7 @@ export class WorldScene extends Phaser.Scene {
     this._wireNet();
     this._makeDialogueUi();
     // D-014: shared events, instruments, romance (src/game/sharedEvent.js, performances.js, romance.js)
-    this.shared = new SharedEvents(this); this.stage = new Stage(this); this.retry = new RetryLine(this); this.moods = new Moods(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.cordon = new Cordon(this); this.skirmish = new SkirmishView(this); this.bigButt = new BigButt(this); this.beltless = new Beltless(this); this.toothpaste = new ToothpasteTalk(this); this.gags = new RunningGags(this); this.hostPick = new HostPick(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this); this.stands = new GuitarStands(this);
+    this.shared = new SharedEvents(this); this.stage = new Stage(this); this.retry = new RetryLine(this); this.moods = new Moods(this); this.perf = new Performances(this); this.romance = new Romance(this); this.gear = new Gear(this); this.cameos = new Cameos(this); this.eggs = new Eggs(this); this.crush = new Crush(this); this.fart = new Fart(this); this.npcLife = new NpcLife(this); this.cordon = new Cordon(this); this.skirmish = new SkirmishView(this); this.siegeView = new SiegeView(this); this.bigButt = new BigButt(this); this.beltless = new Beltless(this); this.toothpaste = new ToothpasteTalk(this); this.gags = new RunningGags(this); this.hostPick = new HostPick(this); this.approach = new Approach(this); this.pacifier = new Pacifier(this); this.stands = new GuitarStands(this);
     this.comic = new Comic(this);   // comic pages: flashbacks as a host-synced page-turn mode (src/game/comic.js)
     this._pageIdx = {};
     this.vignette = this._makeVignette();
@@ -2522,6 +2526,7 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.sim.phaseEnemies = phaseEnemies(this.save.flags);   // the phase may have moved since the last map
       this.sim.skirmishes = skirmishesFor(this.save.flags);
+      this.sim.sieges = siegesFor(this.save.flags);
       this.sim.jobEnemies = this._jobEnemies();
       this.sim.setMap(to, from, obj.id);   // arrive at the matching exit (stairs to stairs, elevator to elevator)
       this.enteredFrom = from;
@@ -2793,7 +2798,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.mode === 'client' && snap.doors) for (const d of this.map.doors.values()) d.open = snap.doors.includes(d.id);
     this._render(snap);
     setInstrumentFocus(snap, this.localId);
-    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.skirmish?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.gags?.update(snap); this.pacifier?.update(snap); this.stands?.update(); this.moods?.update(snap); this.stage?.update(snap);   // cutscene stand-ins draw last
+    this.perf?.update(snap, deltaMs / 1000); this.romance?.update(snap, deltaMs / 1000); this.gear?.update(snap); this.eggs?.update(); this.crush?.update(snap); this.fart?.update(snap); this.npcLife?.update(snap); this.cordon?.update(snap); this.skirmish?.update(snap); this.siegeView?.update(snap); this.bigButt?.update(snap); this.beltless?.update(snap); this.toothpaste?.update(snap); this.gags?.update(snap); this.pacifier?.update(snap); this.stands?.update(); this.moods?.update(snap); this.stage?.update(snap);   // cutscene stand-ins draw last
     if (this.sahurCameo && !this.dlg) this._endingSahurCue(null);   // the scene closed with him still there: he goes
     else if (this.sahurCameo && !this.sahurCameo.leaving) this.sahurCameo.x = Math.max(this.sahurCameo.x, this.cameras.main.worldView.x + 44);   // keep him in sight
     this._stageHud(!!this.stage?.active);   // cutscenes letterbox the screen: the HUD steps out instead of being sliced by the bars
@@ -2846,6 +2851,7 @@ export class WorldScene extends Phaser.Scene {
 
   _hostEvents(events) {
     for (const ev of events) {
+      if (ev.siege) continue;   // the cordon line's own kills: no drops, XP, guide or quest counts (src/engine/siege.js)
       if (ev.t === 'gadgetScan') this._gadgetScan(ev);
       if (ev.t === 'gadgetCast' || ev.t === 'gadgetBlock') {
         this._gadgetFx(ev);
@@ -3263,11 +3269,14 @@ export class WorldScene extends Phaser.Scene {
       const def = e.boss ? { radius: e.boss.r, color: e.boss.c } : ENEMIES[e.k];
       if (!s) {
         const anim = e.boss ? (e.boss.sahur ? 'sahur' : e.k === 'boss.switchman' ? 'switchman' : 'warden') : e.k;
+        const form = !e.boss && rotFormTexture(this, e.k);   // the further-gone rot forms, drawn in code (render/rotForms.js)
         if (this.anims.exists(anim)) { s = this.add.sprite(e.x, e.y, e.boss ? (e.boss.sahur ? 'principals' : 'warden') : 'enemies').setOrigin(0.5, 1).play(anim); s.isArt = true; s.noTint = !!e.boss?.sahur; }
+        else if (form) { s = this.add.image(e.x, e.y, form, '0').setOrigin(0.5, 1); s.isArt = true; s.rotForm = true; }
         else s = this.add.rectangle(e.x, e.y, def.radius * 2, def.radius * (e.boss ? 3 : 2) + 2, def.color).setOrigin(0.5, 1);
         this.enemySprites.set(e.id, s);
       }
       s.setPosition(e.x, e.y + 3).setDepth(e.y);
+      if (s.rotForm) s.setFrame(Math.floor(this.time.now / 240 + e.x * 0.13) % 2 ? '1' : '0');
       if (s.isArt) { if (e.h) s.setTintFill(0xffffff); else if (e.boss && !s.noTint) s.setTint(def.color); else s.clearTint(); }
       else s.setFillStyle(e.h ? 0xffffff : def.color);
       let sx = 1 + Math.sin(this.time.now / 90 + e.x) * 0.06, sy = 1;   // jittery rot wobble
@@ -3828,6 +3837,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _fx(ev, snap) {
+    if (ev.siege) { if (ev.t === 'kill') this.siegeView?.onKill(ev); return; }   // background fire at the cordon
     this.romance?.onEvent(ev, snap); this.gear?.onEvent(ev); this.eggs?.onEvent(ev); this.perf?.onEvent(ev);
     if (['hit', 'kill', 'shot', 'swing'].includes(ev.t) && (ev.by === this.localId || ev.id === this.localId)) sfx(ev.t);
     if (ev.t === 'hurt' && ev.id === this.localId) sfx('hurt');
