@@ -78,10 +78,13 @@ phg vf gur qvfgenpgvba, naq jung unccraf va 631 juvyr gurl'er tbar vf Wbua Cbex 
 - Gur bhgntr vgfrys qevira ol gur ohvyq: gur cbjre qebcf jura gur ohvyq fgnegf naq pbzrf onpx jura vg svavfurf, fb gur
   ebbzzngrf' reenaq bayl nccrnef gb svk vg (gur ovyy jnf arire gur pnhfr).
 
-## Bcra dhrfgvbaf sbe gur yber tngr
+## Geribe'f nafjref (2026-11-23)
 
-1. Juvpu ebbzzngr nfxf nobhg gur ovyy, Znahry be Zvpunry? (Geribe nyybjrq rvgure.)
-2. Qbrf gur cnegl nyy tb qbja, be qbrf fbzrbar fgnl? (Geribe: "gurl yrnir".)
-3. Jung qb gur ebbzzngrf guvax svkrq gur cbjre (cnlvat gur ovyy, gur fhcre, gur oernxre), tvira gung gur erny ernfba
-   vg pbzrf onpx vf gung gur ohvyq svavfurq?
-4. Juvpu fgnghr qbrf ur gnxr bire? (fgnghr_3, "gur arjrfg bar", svgf orfg.)
+1. **Jub nfxf nobhg gur ovyy?** Rvgure. Jr hfr Znahry (vg'f uvf erny-yvsr fgbel, #130).
+2. **Jub tbrf qbja?** Nyy guerr ebbzzngrf tb qbjafgnvef gbtrgure.
+3. **Jung svkrq gur cbjre?** Abguvat: gurl ernyvmr gur cbjre jnf arire oebxra. (Vg pbzrf onpx jura gur ohvyq svavfurf;
+   gur ovyy jnf cnvq, be arire gur ceboyrz. Gung ernyvmngvba vf gur svefg ubbx.)
+4. **Juvpu fgnghr?** Nal. Jr hfr fgnghr_3, "gur arjrfg bar".
+
+Gur orngf ner frggyrq. Gur yvarf ner fgvyy gur fgbel bjaref' gb jevgr (gur beqvanel riravat, gur bhgntr naq gur
+ovyy dhrfgvba, gur znvyobkrf, gur ernyvmngvba, gur erghea); gur flfgrzf ner geribe'f.
