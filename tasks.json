@@ -3020,16 +3020,24 @@
   {
    "id": 138,
    "created_at": "2026-11-24T04:26:40Z",
-   "updated_at": "2026-11-24T04:26:52Z",
+   "updated_at": "2026-11-24T04:26:54Z",
    "history": [
     "2026-11-24T04:26:40Z trevor: added (for trevor)",
-    "2026-11-24T04:26:52Z trevor: claimed"
+    "2026-11-24T04:26:52Z trevor: claimed",
+    "2026-11-24T04:26:54Z trevor: pending review: Step 0 on trevor/world-connected 50a876ba: tools/level/world.mjs (report; --strict for later), docs/design/13-world-map.md (the rule, today's numbers, why it needs geography, the plan), checklist D7. Tests pass.",
+    "2026-11-24T04:26:54Z trevor: turn: gonman (review the plan (step 1 is yours with #126) + run node tools/level/world.mjs on 50a876ba)"
    ],
    "title": "The world map connects (Trevor): checker, plan, then layout from exits and interiors at their doors",
    "details": "Trevor, 2026-11-23: 'make sure eventually that the whole map is connected logically. as in on the map view there's not just random rectangles but things actually connect.' Plan: docs/design/13-world-map.md. Step 1 (geography, continuous roads) is gonman's, with #126; steps 2-3 (computed layout, interiors drawn at their doors) are trevor's.",
    "source": "human:Trevor",
-   "status": "claimed",
-   "owner": "trevor"
+   "status": "review",
+   "owner": "trevor",
+   "review": "Step 0 on trevor/world-connected 50a876ba: tools/level/world.mjs (report; --strict for later), docs/design/13-world-map.md (the rule, today's numbers, why it needs geography, the plan), checklist D7. Tests pass.",
+   "turn": [
+    "gonman"
+   ],
+   "turn_at": "2026-11-24T04:26:54Z",
+   "turn_for": "review the plan (step 1 is yours with #126) + run node tools/level/world.mjs on 50a876ba"
   }
  ]
 }
