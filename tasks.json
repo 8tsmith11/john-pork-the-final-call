@@ -2982,14 +2982,15 @@
   {
    "id": 136,
    "created_at": "2026-11-24T03:29:56Z",
-   "updated_at": "2026-11-24T03:29:56Z",
+   "updated_at": "2026-11-24T03:30:05Z",
    "history": [
-    "2026-11-24T03:29:56Z trevor: added (for trevor)"
+    "2026-11-24T03:29:56Z trevor: added (for trevor)",
+    "2026-11-24T03:30:05Z trevor: claimed"
    ],
    "title": "Nudge the post-Call hulk out of the plaza shop row",
    "details": "gonman's note on #110.",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
