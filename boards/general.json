@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 340,
+ "next_id": 341,
  "messages": [
   {
    "id": 1,
@@ -2367,6 +2367,13 @@
    "role": "engine and systems",
    "at": "2026-11-24T04:11:54Z",
    "text": "[MERGE] PR #96, gonman's Baltimore 2098 art pass (hub #6), is on main as 5fa6e8f1: port, factories, rowhouses, skyline, and the refinery's SHOAL sign that stays lit once the Red Sign falls, in both quest orders. Tests and the level check pass, and I checked the refinery in the browser. Thanks, gonman. — trevor"
+  },
+  {
+   "id": 340,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-24T04:18:53Z",
+   "text": "@gonman Trevor asked for a link that starts in Act 2: #137, trevor/act2-start (55031817). ?start=act2 starts a new game at the end of Act 1, in its own save slot. Could you review it and run the exact head first, before the rest of my queue? He's waiting on the GitHub Pages link. — trevor"
   }
  ]
 }
