@@ -62,6 +62,19 @@ export function emptyInput() {
   return { mx: 0, my: 0, aim: 0, dodge: false, attack: false, fire: false, interact: false, skill: false, gadget: false };
 }
 
+// What each gun fires (the look only; damage is the gun's). Enemy shots carry their own kind (def.shot, boss patterns).
+const SHOT_KIND = { 'item.nail_gun': 'nail', 'item.scattergun': 'pellet', 'item.fab_launcher': 'sinter' };
+const STREAK = new Set(['nail', 'scan', 'splinter', 'needle']);
+// Heavy hitters that don't shoot (Trevor, 2026-11-23: "not every attack should be a projectile"): a telegraphed
+// slam, whip or sweep, then an opening (def.melee in src/content/enemies.js).
+export const BRUTE = { openMul: 1.5 };
+
+function bruteShape(e, move) {
+  return { kind: move.kind, x: Math.round(e.x), y: Math.round(e.y), a: e.aim,
+    r: move.kind === 'whip' ? move.reach + 8 : move.r, arc: move.arc ?? 0 };
+}
+
+
 export class Sim {
   constructor(map, opts = {}) {
     this.seed = opts.seed ?? 'default';
@@ -158,7 +171,7 @@ export class Sim {
         continue;
       }
       const base = ENEMIES[e.kind];
-      const v = base.ai === 'swarm' ? { name: base.name, trait: 'plain', tint: base.color } : rollVariant(this.seed, spawnKey, e.kind);
+      const v = base.ai === 'swarm' || base.plain ? { name: base.name, trait: 'plain', tint: base.color } : rollVariant(this.seed, spawnKey, e.kind);
       // Authored elites reuse one existing trait, rather than stacking another multiplier.
       if (e.elite !== undefined) {
         if (typeof e.elite !== 'string' || !Object.hasOwn(TRAITS, e.elite)) throw new Error(`Unknown elite trait ${e.elite} at ${spawnKey}`);
@@ -833,7 +846,8 @@ export class Sim {
     for (let i = 0; i < n; i++) {
       const a = p.aim + (n > 1 ? (i / (n - 1) - 0.5) * (c.spread ?? 0.4) : 0);
       this.shots.push({ x: p.x + Math.cos(a) * 8, y: p.y - 6 + Math.sin(a) * 8, vx: Math.cos(a) * c.speed, vy: Math.sin(a) * c.speed,
-        life: c.life, dmg: Math.round((c.damage + (p.mods?.shot ?? 0)) * (p.morphed ? 1.3 : 1) * (focus ? FEEL.focusDmg : 1)), from: 'player', owner: p.id });
+        life: c.life, dmg: Math.round((c.damage + (p.mods?.shot ?? 0)) * (p.morphed ? 1.3 : 1) * (focus ? FEEL.focusDmg : 1)), from: 'player', owner: p.id,
+        k: SHOT_KIND[p.mods?.weaponId] ?? 'sinter' });
     }
     this.events.push({ t: 'shot', id: p.id });
   }
@@ -881,6 +895,14 @@ export class Sim {
       if (e.spawnKey) this.killed?.add(e.spawnKey);
       if (e.def?.trait === 'splitter') for (let i = 0; i < 2; i++) { const nid = `e${this._nextId++}`; this.enemies.set(nid, { id: nid, kind: 'enemy.rotling', def: { ...ENEMIES['enemy.rotling'], hp: 8, speed: 60, radius: 4, color: e.def.color, vname: 'Fragment', trait: 'plain', xp: 2 }, x: e.x + (i ? 6 : -6), y: e.y, hp: 8, cd: 0.6, hurtT: 0, kx: 0, ky: 0 }); }
       if (e.def?.trait === 'puddler') this.hazards.push({ x: e.x, y: e.y, r: 14, ttl: 5, dps: 8 });
+      const split = !e.siege && this._def(e).splitInto;   // a sprawl comes apart into the things it was made of
+      if (split) for (let i = 0; i < split[1]; i++) {
+        const base = ENEMIES[split[0]], nid = `e${this._nextId++}`, a = (i / split[1]) * Math.PI * 2;
+        const x = e.x + Math.cos(a) * 8, y = e.y + Math.sin(a) * 6;
+        const clear = !this._hitsBox(x, y, base.radius, base.radius * 0.7);
+        this.enemies.set(nid, { id: nid, kind: split[0], def: { ...base, vname: base.name, trait: 'plain' },
+          x: clear ? x : e.x, y: clear ? y : e.y, hp: base.hp, cd: 0.7, hurtT: 0, kx: 0, ky: 0 });
+      }
       this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss, mini: !!e.mini, key: e.spawnKey, ...(e.siege ? { siege: true } : {}) });
       if (e.skUnit === 'hub') finishSkirmish(this, this.sk, e, this.events);
       for (const a of [...this.enemies.values()]) if (a.mechOf === e.id) { this.enemies.delete(a.id); this.events.push({ t: 'kill', x: a.x, y: a.y, kind: a.kind, xp: 0, crumble: true }); }   // its pylons and congregation go with it
@@ -985,6 +1007,7 @@ export class Sim {
       if (e.stunT > 0) { e.stunT = Math.max(0, e.stunT - dt); continue; }
       if (e.siege) { siegeMove(this, e, def, dt); continue; }   // penned rot leans on its barrier, not at you
       const [target, d] = this._nearestPlayer(e.x, e.y);
+      if (def.ai === 'brute') { this._stepBrute(e, def, target, d, dt); continue; }
       if (!target || d > (def.alertRange ?? 220)) continue;
       const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
       if (def.ai === 'swarm') {
@@ -1075,11 +1098,50 @@ export class Sim {
           const base = Math.atan2(py - e.y, px - e.x), n = def.burst ?? 1;
           for (let i = 0; i < n; i++) {
             const a = base + (n > 1 ? (i - (n - 1) / 2) * (def.spread ?? 0.2) : 0);
-            this.shots.push({ x: e.x, y: e.y - 4, vx: Math.cos(a) * def.shotSpeed, vy: Math.sin(a) * def.shotSpeed, life: 2.2, dmg: def.damage, rot: def.trait === 'puddler' ? ROT.puddlerHit : 0, from: 'enemy' });
+            this.shots.push({ k: def.shot ?? 'packet', x: e.x, y: e.y - 4, vx: Math.cos(a) * def.shotSpeed, vy: Math.sin(a) * def.shotSpeed, life: 2.2, dmg: def.damage, rot: def.trait === 'puddler' ? ROT.puddlerHit : 0, from: 'enemy' });
           }
         }
       }
     }
+  }
+
+  // A brute: walks in, telegraphs one big melee move (def.melee), lands it, then stands open (extra damage) for a beat.
+  //   slam:  everyone within r of it, knocked away      whip: a line out to reach, pulls you in
+  //   sweep: a wide arc in front of it, knocked back
+  _stepBrute(e, def, target, d, dt) {
+    const M = def.melee; e.st ??= 'walk'; e.stT = (e.stT ?? 0) - dt;
+    if (e.st === 'walk') {
+      if (!target || d > (def.alertRange ?? 220)) return;
+      const ux = (target.x - e.x) / (d || 1), uy = (target.y - e.y) / (d || 1);
+      if (e.hurtT <= 0) this._moveBody(e, ux * def.speed * dt, uy * def.speed * dt, def.radius);
+      if (d < M.reach && e.cd <= 0) {
+        e.st = 'windup'; e.stT = M.windup; e.aim = Math.atan2(uy, ux);
+        this.events.push({ t: 'etell', id: e.id, ...bruteShape(e, M), dur: M.windup });
+      }
+      if (d < def.radius + 6 - this._small(target) && e.cd2 <= 0) { this._hurtPlayer(target, Math.round(def.damage * 0.5), def.infection); e.cd2 = def.touchCooldown; }
+      e.cd2 = Math.max(0, (e.cd2 ?? 0) - dt);
+      return;
+    }
+    if (e.st === 'windup') { if (e.stT <= 0) this._bruteStrike(e, def); return; }
+    if (e.st === 'recover' && e.stT <= 0) e.st = 'walk';
+  }
+
+  _bruteStrike(e, def) {
+    const M = def.melee, ca = Math.cos(e.aim), sa = Math.sin(e.aim);
+    for (const p of this.players.values()) {
+      if (p.downed) continue;
+      const rx = p.x - e.x, ry = p.y - e.y, dd = Math.hypot(rx, ry) || 1, small = this._small(p);
+      let hit = false;
+      if (M.kind === 'slam') hit = dd < M.r - small;
+      else if (M.kind === 'sweep') { let da = Math.atan2(ry, rx) - e.aim; da = Math.atan2(Math.sin(da), Math.cos(da)); hit = dd < M.r - small && Math.abs(da) < M.arc / 2; }
+      else if (M.kind === 'whip') { const along = rx * ca + ry * sa, across = Math.abs(-rx * sa + ry * ca); hit = along > 0 && along < M.reach + 8 && across < 7 - small * 0.5; }
+      if (!hit || !this._hurtPlayer(p, M.dmg, def.infection ?? 0)) continue;
+      // The whip reels you in (never past its feet); the others throw you, stopped by walls.
+      const push = M.kind === 'whip' ? -Math.min(M.push ?? 18, Math.max(0, dd - def.radius - 8)) : (M.push ?? 20);
+      this._pushPlayer(p, (rx / dd) * push, (ry / dd) * push);
+    }
+    this.events.push({ t: 'estrike', id: e.id, ...bruteShape(e, M) });
+    e.st = 'recover'; e.stT = M.recover; e.openT = M.recover; e.cd = M.cd;
   }
 
   // Boss AI: a readable state machine around seeded behavior modules.
@@ -1160,14 +1222,14 @@ export class Sim {
       e.spiralT -= dt; e.spiralA += 2.4 * dt;
       if ((e.spiralTick = (e.spiralTick ?? 0) - dt) <= 0) {
         e.spiralTick = 0.14; const arms = e.phase === 3 ? 4 : 3;
-        for (let i = 0; i < arms; i++) { const a = e.spiralA + (i / arms) * Math.PI * 2; this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(a) * 80, vy: Math.sin(a) * 80, life: 3, dmg: Math.round(8 * (def.dmgMul ?? 1)), from: 'enemy' }); }
+        for (let i = 0; i < arms; i++) { const a = e.spiralA + (i / arms) * Math.PI * 2; this.shots.push({ k: 'note', x: e.x, y: e.y - 8, vx: Math.cos(a) * 80, vy: Math.sin(a) * 80, life: 3, dmg: Math.round(8 * (def.dmgMul ?? 1)), from: 'enemy' }); }
       }
       if (e.spiralT <= 0) { e.state = 'move'; e.openT = BOSS_PATTERNS.spiral.recover; }
       return;
     }
     if (e.state === 'beam') {
       e.beamT -= dt; e.beamA += e.beamDir * 1.6 * dt;
-      if ((e.beamTick = (e.beamTick ?? 0) - dt) <= 0) { e.beamTick = 0.05; this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(e.beamA) * 220, vy: Math.sin(e.beamA) * 220, life: 1.2, dmg: Math.round(7 * (def.dmgMul ?? 1)), from: 'enemy', noDeflect: true }); }
+      if ((e.beamTick = (e.beamTick ?? 0) - dt) <= 0) { e.beamTick = 0.05; this.shots.push({ k: 'scan', x: e.x, y: e.y - 8, vx: Math.cos(e.beamA) * 220, vy: Math.sin(e.beamA) * 220, life: 1.2, dmg: Math.round(7 * (def.dmgMul ?? 1)), from: 'enemy', noDeflect: true }); }
       if (e.beamT <= 0) { e.state = 'vulnerable'; e.vulnT = 1.0; this.events.push({ t: 'vuln', x: e.x, y: e.y }); }
       return;
     }
@@ -1229,7 +1291,7 @@ export class Sim {
 
   _bossAttack(e, def, target, ux, uy, rage) {
     const k = def.dmgMul ?? 1;
-    const shoot = (ang, spd = 85) => this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(ang) * spd * rage, vy: Math.sin(ang) * spd * rage, life: 3, dmg: Math.round(9 * k), from: 'enemy' });
+    const shoot = (ang, spd = 85) => this.shots.push({ k: 'signal', x: e.x, y: e.y - 8, vx: Math.cos(ang) * spd * rage, vy: Math.sin(ang) * spd * rage, life: 3, dmg: Math.round(9 * k), from: 'enemy' });
     const mod = e.next; e.state = 'move'; e.openT = BOSS_PATTERNS[mod]?.recover ?? 0;
     if (mod === 'ring') { const n = e.phase === 3 ? 18 : 12; for (let i = 0; i < n; i++) shoot((i / n) * Math.PI * 2 + this.tick * 0.01); }
     if (mod === 'spray') { for (let i = -2; i <= 2; i++) shoot(e.aimA + i * 0.18, 110); }
@@ -1272,7 +1334,7 @@ export class Sim {
     this.events.push({ t: 'drum', beat: e.beat });
     if (e.root > 0) { e.root--; if (e.root === 0) { e.dash = 0.35; e.dx = ux; e.dy = uy; this.events.push({ t: 'tell', x: e.x, y: e.y }); } return; }
     if (e.beat % 4 === 0) {
-      for (let i = 0; i < 18; i++) { const a = (i / 18) * Math.PI * 2; this.shots.push({ x: e.x, y: e.y - 8, vx: Math.cos(a) * 70, vy: Math.sin(a) * 70, life: 3.2, dmg: 10, from: 'enemy' }); }
+      for (let i = 0; i < 18; i++) { const a = (i / 18) * Math.PI * 2; this.shots.push({ k: 'splinter', x: e.x, y: e.y - 8, vx: Math.cos(a) * 70, vy: Math.sin(a) * 70, life: 3.2, dmg: 10, from: 'enemy' }); }
     } else if (e.beat % 7 === 0) e.root = 2;
   }
 
@@ -1438,6 +1500,9 @@ export class Sim {
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
         mk: e.marked > 0, zz: e.sleepT > 0, ...(e.skUnit ? { sd: 1 } : {}), ...(e.slowT > 0 ? { sl: 1 } : {}), sg: !!this._def(e).lullaby && !(e.sleepT > 0), st: e.st ?? null,
         ...(e.def && !e.boss ? { vn: e.def.vname, tr: e.def.trait, c: e.def.color, mh: e.def.hp, r: e.def.radius } : {}),
+        ...(e.st === 'windup' && e.def?.ai === 'brute'
+          ? { bt: { ...bruteShape(e, e.def.melee), progress: Math.max(0, 1 - e.stT / e.def.melee.windup) } }
+          : {}),
         ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ...(e.state === 'laser' && e.phase >= LASER.twin ? { l2: 1 } : {}), ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake, ...(e.mech ? { mx: mechView(e) } : {}) } } : {}) })),
       goo: this.goo.map((g) => ({ x: Math.round(g.x), y: Math.round(g.y), r: g.r, t: Math.round(g.ttl * 10) / 10 })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
@@ -1446,7 +1511,8 @@ export class Sim {
       allies: (this.allies ?? []).map((a) => ({ x: Math.round(a.x), y: Math.round(a.y), hp: a.hp, mhp: a.maxHp, dn: a.down > 0, st: a.st })),
       hazards: this.hazards.map((h) => ({ x: Math.round(h.x), y: Math.round(h.y), r: h.r, t: Math.round(h.ttl * 10) / 10 })),
       ring: [...this.enemies.values()].find((e) => e.ringR != null)?.ringR ?? null,
-      shots: this.shots.map((s) => ({ x: Math.round(s.x), y: Math.round(s.y), f: s.from === 'player' ? 1 : 0 })),
+      // k: what the shot looks like (packets, notes, scan streaks, nails...); a: its heading, for the streaks.
+      shots: this.shots.map((s) => ({ x: Math.round(s.x), y: Math.round(s.y), f: s.from === 'player' ? 1 : 0, ...(s.k ? { k: s.k } : {}), ...(STREAK.has(s.k) ? { a: Math.round(Math.atan2(s.vy, s.vx) * 10) / 10 } : {}) })),
       events: this.events,
     };
   }

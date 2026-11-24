@@ -1,13 +1,51 @@
-// Code-drawn sprites for the further-gone rot forms (src/content/enemies.js: crawler, grafted, sprawl, hulk) until
-// sheet art lands. Two frames each, so they move. Palette: rot magenta and violet, biotech green, riot-gear grey.
+// Code-drawn sprites for the code rot (src/content/enemies.js: the rot-taken, rotling and spitter redrawn scarier,
+// and the further-gone forms: crawler, grafted, sprawl, hulk) until sheet art lands. Two frames each, so they move. Palette: rot magenta and violet, biotech green, riot-gear grey.
 // rotFormTexture(scene, kind) returns a texture key (frames '0' and '1'), or null for kinds drawn elsewhere.
 
 const ROT = 0xd417c8, ROT_D = 0x8a1585, VIOLET = 0x9b2fa8, SKIN = 0xc9a48f, SKIN_D = 0x8f6d5c, PALE = 0xd8cfc4;
 const BONE = 0xe8e0d0, GREEN = 0x58c27a, GREEN_D = 0x2f7a4a, BARK = 0x5c4a32, STEEL = 0x6b6f86, STEEL_D = 0x3d4052, STEEL_L = 0x9aa0b8;
 const BLACK = 0x15171f, HAZARD = 0xf2c94c, GLOW = 0xff4df0, OK = 0x7dff9b;
 
+const SHIRT = 0x4a5266, SHIRT_D = 0x343a4c, PANTS = 0x262a35, HAIR = 0x2a2420, GREY = 0xb3a99f, GREY_D = 0x7d746c, RED_EYE = 0xff3b3b, CYAN = 0x3fd0d6;
+
 // Each form: [width, height, paint(px, frame)]. px(x, y, w, h, color). Feet sit on the bottom row.
 const FORMS = {
+  // The code-rot-taken (Trevor, 2026-11-23: "they look like kids atm"): an adult, taller than the roommates, hunched,
+  // head hanging forward and to one side, jaw slack, arms too long. The lace shows through the skin in rot magenta.
+  'enemy.rot_taken': [16, 28, (px, f) => {
+    const s = f ? 1 : 0;
+    px(5, 20, 3, 7, PANTS); px(9, 20, 3, 6 + s, PANTS); px(5, 27, 3, 1, GREY_D); px(9, 26 + s, 3, 1, GREY_D);   // one leg drags
+    px(4, 11, 9, 9, SHIRT); px(4, 11, 9, 1, SHIRT_D); px(5, 19, 2, 1, SHIRT); px(9, 19, 3, 1, SHIRT_D);       // hunched torso, a ragged hem
+    px(5, 14, 2, 3, GREY); px(5, 15, 1, 2, ROT); px(10, 12, 2, 4, GREY); px(11, 12, 1, 4, ROT);              // skin through the tears, lace under it
+    px(8, 9, 3, 3, GREY); px(10, 10, 1, 1, GLOW);                                                            // the neck forward, the port lit
+    px(7, 2, 6, 7, GREY); px(7, 2, 6, 1, HAIR); px(12, 3, 1, 3, HAIR); px(7, 8, 6, 1, GREY_D);               // the head, hanging low and tilted
+    px(8, 4, 1, 2, BLACK); px(11, 4, 1, 2, BLACK); px(11, 4, 1, 1, GLOW); px(9, 3, 1, 3, ROT);               // sunken eyes, one lit; a vein
+    px(8, 6, 3, 4, BLACK); px(8, 6, 1, 1, BONE); px(10, 6, 1, 1, BONE); px(9, 10, 1, 1, ROT_D);              // the jaw hanging open, drool
+    px(2, 11, 2, 10, GREY); px(1, 21, 1, 3, GREY_D); px(3, 21, 1, 3, GREY_D);                                // an arm down past the knee, long fingers
+    if (s) { px(13, 10, 3, 2, GREY); px(15, 8, 1, 3, GREY_D); } else { px(13, 11, 2, 7, GREY); px(14, 18, 1, 3, GREY_D); }   // the other one reaching
+  }],
+  // The rotling: rotted firmware in whatever body it found in the trash. A bag of parts on wire legs, one red lens,
+  // a broken drone rotor still turning on its back, and a human hand hanging out of it.
+  'enemy.rotling': [16, 14, (px, f) => {
+    const s = f ? 1 : 0;
+    px(3, 4, 10, 6, 0x2a2d38); px(4, 5, 8, 4, 0x3a3e4c); px(5, 3, 6, 1, 0x2a2d38);
+    px(6, 5, 3, 3, 0x7a0f1f); px(7, 6, 1, 1, RED_EYE); px(6, 5, 1, 1, BONE);                                 // the lens
+    px(8, 1, 1, 3, STEEL); if (s) px(4, 1, 9, 1, STEEL_L); else px(6, 0, 5, 1, STEEL_L);                     // the rotor, turning
+    px(11, 8, 3, 2, SKIN); px(13, 10, 1, 2, SKIN_D); px(12, 10, 1, 1, SKIN_D);                                // the hand
+    px(2, 10, 1, 3 + s, STEEL_D); px(4, 10, 1, 4 - s, STEEL_D); px(9, 10, 1, 3 + s, STEEL_D); px(11, 10, 1, 4 - s, STEEL_D);   // wire legs
+    px(1, 12 + s, 1, 1, STEEL_D); px(5, 6, 1, 1, ROT); px(10, 9, 1, 1, ROT_D);
+  }],
+  // The glitch spitter: a person whose jaw split down the middle; corrupted packets glow in the throat.
+  'enemy.spitter': [16, 26, (px, f) => {
+    const s = f ? 1 : 0;
+    px(5, 19, 2, 7, PANTS); px(9, 19, 2, 6 + s, PANTS);
+    px(4, 9, 8, 11, 0x3b2a4a); px(4, 9, 8, 1, 0x2a1d36); px(3, 18, 10, 2, 0x3b2a4a);                        // a long coat
+    px(5, 12, 6, 2, GREY); px(4, 12, 1, 4, GREY); px(11, 12, 1, 4, GREY);                                    // arms wrapped round the middle
+    px(5, 1, 6, 6, GREY); px(5, 1, 6, 1, HAIR); px(6, 3, 1, 1, BLACK); px(9, 3, 1, 1, GLOW);
+    px(7, 4, 2, 6, BLACK); px(6, 6, 1, 3, GREY); px(9, 6, 1, 3, GREY);                                       // the face split, the halves hanging
+    px(7, 6 + s, 1, 1, CYAN); px(8, 8 - s, 1, 1, ROT); px(7, 9, 1, 1, GLOW);                                 // packets in the throat
+    px(6, 7, 1, 1, BONE); px(9, 7, 1, 1, BONE);
+  }],
   'enemy.rot_crawler': [12, 10, (px, f) => {
     // A hand gone feral: a palm with a lace node for a heart, running on its fingers.
     const lift = f ? 1 : 0;

@@ -3158,6 +3158,12 @@ test('outbreak phases (task #38): before the Call, after it, contained; phase sp
   const map = MAPS_FOR_TEST.metro_plaza, base = new Sim(map, { seed: 'ph' }).enemies.size;
   const extra = { metro_plaza: { phase: 'after', list: [['enemy.rotling', 40, 20], ['enemy.rotling', 42, 20]] } };
   const sim = new Sim(map, { seed: 'ph', deferSpawn: true }); sim.phaseEnemies = extra; sim.spawnEnemies();
+  const authored = new Sim(map, { seed: 'ph', deferSpawn: true });
+  authored.phaseEnemies = Outbreak.phaseEnemies({ 'act1.beat.call': true });
+  authored.spawnEnemies();
+  const hulk = [...authored.enemies.values()].find((enemy) => enemy.kind === 'enemy.rot_hulk');
+  assert.ok(hulk?.spawnKey.startsWith('metro_plaza#after.'), 'the post-Call hulk keeps its own saved spawn key');
+  assert.ok(!authored._hitsBox(hulk.x, hulk.y, hulk.def.radius, hulk.def.radius * 0.7), 'the large hulk fits on the east sidewalk');
   assert.equal(sim.enemies.size, base + 2);
   const keys = [...sim.enemies.values()].map((e) => e.spawnKey).filter((k) => k.includes('#after.'));
   assert.deepEqual(keys.sort(), ['metro_plaza#after.0', 'metro_plaza#after.1']);
@@ -5427,6 +5433,54 @@ test('growth: a little bigger every level, bigger jumps at levels 3 and 6, cappe
   set(1, 8, B.skin[0]); set(1, 7, B.skin[0]);
   const painted = (lv) => { const out = new Uint8ClampedArray(w * h * 4); wearMod._PAINTERS.grow(src, out, w, h, 'down', B, wearMod.LOOKS[growthMod.growthLook(lv)], 'trevor'); let n = 0; for (let i = 3; i < out.length; i += 4) n += out[i] > 0; return n; };
   assert.ok(painted(2) >= 1 && painted(3) > painted(2) && painted(7) > painted(3), `${painted(2)} ${painted(3)} ${painted(7)}`);
+});
+
+test('heavy rot hits without shooting (Trevor, 2026-11-23): a hulk slam, a grafted whip and a sprawl sweep are telegraphed, land, then open', () => {
+  const setup = (kind, dx, dy) => {
+    const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'brute', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+    const h = sim.players.get('host'); h.x = 30 * 16; h.y = 12 * 16; h.hp = 999;
+    const base = ENEMIES[kind]; sim.enemies.set('b', { id: 'b', kind, def: { ...base, vname: base.name, trait: 'plain' }, x: h.x - dx, y: h.y - dy, hp: base.hp, cd: 0, hurtT: 0, kx: 0, ky: 0 });
+    return { sim, h, e: sim.enemies.get('b') };
+  };
+  const run = (sim, secs, h, hold) => { const evs = []; for (let t = 0; t < 60 * secs; t++) { if (hold) { h.x = hold[0]; h.y = hold[1]; } h.iframes = 0; sim.step(1 / 60, new Map()); evs.push(...sim.events); } return evs; };
+  // the slam: a tell first, then everyone in the ring is hit and thrown, and the hulk is open
+  { const { sim, h, e } = setup('enemy.rot_hulk', 20, 0); const x0 = h.x, hp0 = h.hp; const evs = run(sim, 1.2, h);
+    const tell = evs.findIndex((v) => v.t === 'etell' && v.kind === 'slam'), hit = evs.findIndex((v) => v.t === 'estrike');
+    assert.ok(tell >= 0 && hit > tell, 'slam: tell, then strike'); assert.ok(h.hp < hp0 && h.x > x0 + 10, 'slam hurts and throws'); assert.ok(e.openT > 0, 'it reels after'); }
+  // A guest's initial snapshot can show a warning already underway, even with no original event.
+  {
+    const { sim, h, e } = setup('enemy.rot_graft', 40, 0);
+    sim.step(1 / 60, new Map());
+    const warning = sim.snapshot().enemies.find((enemy) => enemy.id === e.id)?.bt;
+    assert.equal(warning?.kind, 'whip');
+    assert.equal(warning.r, e.def.melee.reach + 8);
+    const aimX = h.x; h.iframes = 1;
+    sim._bruteStrike(e, e.def);
+    assert.equal(h.x, aimX, 'a protected player is not dragged by the miss');
+    assert.equal(h.hp, 999, 'a protected player takes no damage');
+    e.st = 'windup'; e.stT = 0.01;
+    h.x = 30;
+    sim.step(1 / 60, new Map());
+    assert.equal(e.st, 'recover', 'a committed attack finishes when everyone leaves its alert range');
+    assert.equal(sim.snapshot().enemies.find((enemy) => enemy.id === e.id)?.bt, undefined);
+  }
+  // the whip reels you in
+  { const { sim, h } = setup('enemy.rot_graft', 40, 0); const d0 = 40; run(sim, 1.0, h);
+    assert.ok(Math.hypot(h.x - sim.enemies.get('b').x, h.y - sim.enemies.get('b').y) < d0 - 6, 'the whip pulls you closer'); }
+  // the sweep only covers the front: standing behind it is safe
+  { const { sim, h, e } = setup('enemy.rot_sprawl', 20, 0); const hp0 = h.hp; e.st = 'windup'; e.stT = 0.01; e.aim = Math.PI; run(sim, 0.2, h);   // aimed away from the player
+    assert.equal(h.hp, hp0, 'behind the sweep is safe'); }
+  // a sprawl comes apart into crawlers
+  { const { sim, e } = setup('enemy.rot_sprawl', 60, 0); sim._hurtEnemy(e, 9999, 0, 0, 'host');
+    assert.equal([...sim.enemies.values()].filter((x) => x.kind === 'enemy.rot_crawler').length, 3); }
+});
+test('shots look like what fired them: packets, notes, scan streaks, nails, not one pink ball', () => {
+  const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'shots', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+  sim.shots.push({ k: 'packet', x: 100, y: 100, vx: 50, vy: 0, life: 1, dmg: 1, from: 'enemy' }, { k: 'scan', x: 110, y: 100, vx: 0, vy: 80, life: 1, dmg: 1, from: 'enemy' });
+  const snap = sim.snapshot();
+  assert.deepEqual(snap.shots.map((s) => s.k), ['packet', 'scan']); assert.ok(snap.shots[1].a != null && snap.shots[0].a == null, 'streaks carry a heading');
+  for (const k of ['enemy.rot_crawler', 'enemy.rot_graft', 'enemy.rot_sprawl', 'enemy.rot_hulk']) assert.ok(ENEMIES[k].plain, `${k} keeps its own name`);
+  assert.equal(ENEMIES['enemy.spitter'].ai, 'kite');
 });
 
 test('dialogue tooling (hub #114): one-line alternatives, Set notes, who declined and whether it rang out, party.present, bark tables', async () => {

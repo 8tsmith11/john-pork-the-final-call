@@ -11,10 +11,10 @@ export const GUIDE_TIPS = {
   'enemy.rot_taken': 'Slow, in packs, and it infects. Knock them into walls and keep moving.',
   'enemy.drone_walker': 'When it rises on its legs, get out of the ring. Hit it while it is planted and launching.',
   'enemy.rot_drone': 'Weak, fast and erratic. Swat them before they swarm you; the troopers help.',
-  'enemy.rot_crawler': 'Fast and fragile. One clean hit ends it; let it come to you.',
+  'enemy.rot_crawler': 'It crouches before it leaps. Step aside, then one clean hit ends it.',
   'enemy.rot_graft': 'The cable arm reaches further than it looks. Hit it while it recovers.',
-  'enemy.rot_sprawl': 'Slow, heavy and hard to stop. Every head can bite. Keep it at the end of your reach.',
-  'enemy.rot_hulk': 'Plated, slow and it hits like a car. Knock it into a wall, then work on it while it reels.',
+  'enemy.rot_sprawl': 'Its sweep covers everything in front of it: get behind it, or out of reach. Killing it lets the crawlers out.',
+  'enemy.rot_hulk': 'When the ring spreads on the ground, get out of it. It reels after the slam: that is your window.',
 };
 export const GUIDE_STATS_AT = 5, GUIDE_TIP_AT = 15;
 
@@ -73,23 +73,33 @@ export const ENEMIES = {
   // Further gone (Trevor: "code rot should be able to go pretty far in disfigurement", biotech rot, big cyborg things).
   // Drawn in code until sprites land (src/game/render/rotForms.js). They push at College Park's cordon first.
   'enemy.rot_crawler': {
+    plain: true,   // no rolled variants: the form is the variant
     name: 'Lace crawler', hp: 18, speed: 58, damage: 6, radius: 4, xp: 5,
-    ai: 'swarm', alertRange: 240, touchCooldown: 0.9, infection: 5, color: 0xb84fd6,
+    // Pounces: a crouch, a leap at you, then it lies open for a moment.
+    ai: 'lunge', orbit: 26, windup: 0.3, lungeSpeed: 230, lungeTime: 0.22, recover: 0.5, alertRange: 240, touchCooldown: 1.0, infection: 5, color: 0xb84fd6,
     lore: 'What is left when the lace keeps a hand and lets the rest go. It runs on its fingers.',
   },
   'enemy.rot_graft': {
+    plain: true,   // no rolled variants: the form is the variant
     name: 'Grafted', hp: 60, speed: 30, damage: 11, radius: 7, xp: 14,
-    ai: 'swarm', alertRange: 260, touchCooldown: 1.2, infection: 10, color: 0x58c27a,
+    // The cable arm: a line tell out to its reach, a lash that reels you in, then it stands open.
+    ai: 'brute', melee: { kind: 'whip', reach: 46, windup: 0.55, dmg: 12, push: 18, recover: 0.6, cd: 1.5 }, alertRange: 260, touchCooldown: 1.2, infection: 10, color: 0x58c27a,
     lore: 'A biotech implant that kept growing after its host stopped. Wet cable, bark for skin, and a status light that still blinks OK.',
   },
   'enemy.rot_sprawl': {
+    plain: true,   // no rolled variants: the form is the variant
     name: 'Sprawl', hp: 110, speed: 16, damage: 14, radius: 9, xp: 22,
-    ai: 'swarm', alertRange: 240, touchCooldown: 1.6, infection: 12, color: 0x9b2fa8,
+    // Every arm at once: a wide sweep in front of it. Kill it and it comes apart into crawlers.
+    ai: 'brute', melee: { kind: 'sweep', reach: 30, r: 34, arc: 2.6, windup: 0.65, dmg: 14, push: 20, recover: 0.8, cd: 1.8 }, splitInto: ['enemy.rot_crawler', 3],
+    alertRange: 240, touchCooldown: 1.6, infection: 12, color: 0x9b2fa8,
     lore: 'Two or three people the rot folded into one body. It walks on whichever legs are nearest the ground.',
   },
   'enemy.rot_hulk': {
+    plain: true,   // no rolled variants: the form is the variant
     name: 'Lace hulk', hp: 260, speed: 12, damage: 22, radius: 13, xp: 45,
-    ai: 'swarm', alertRange: 220, touchCooldown: 2.0, infection: 14, color: 0x6b6f86,
+    // Rears up (a ring on the ground grows to show the reach), slams, throws everyone near it, then reels. Plated.
+    ai: 'brute', melee: { kind: 'slam', reach: 34, r: 44, windup: 0.9, dmg: 22, push: 26, recover: 1.1, cd: 2.4 }, armor: 0.35,
+    alertRange: 220, touchCooldown: 2.0, infection: 14, color: 0x6b6f86,
     lore: 'A riot exoskeleton the rot climbed into and never left. The pilot is still in there, mostly. Hydraulics, and something wet.',
   },
 };
