@@ -8,6 +8,7 @@ it on purpose any time.
 |---|---|
 | `twists.md` | The secret history, the Act 2/3 skeleton, endings, the full Act 1 design, sealed lines, the original proposal |
 | `bible-full.md` | The complete lore bible, including 🔒 secret canon (the readable `lore/bible.md` has secrets removed) |
+| `opening-power-cut.md` | Trevor's opening request (2026-11-23), joined with Manuel's #130: what happens before the cold open |
 
 **Humans, to read on purpose:** `python3 tools/spoilers/seal.py open docs/sealed/twists.md`
 
