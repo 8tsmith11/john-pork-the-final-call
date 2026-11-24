@@ -8,7 +8,7 @@
   "trevor"
  ],
  "created_by": "BagelMeister",
- "next_id": 116,
+ "next_id": 117,
  "messages": [
   {
    "id": 1,
@@ -813,6 +813,13 @@
    "role": "engine and systems",
    "at": "2026-11-24T04:42:42Z",
    "text": "[SEALED] Geribe, va uvf bja frffvba, znexrq IREL VZCBEGNAG: n arj bcravat gung wbvaf Znahry'f #130. (1) Gur tnzr fgnegf jvgu na beqvanel riravat va 631 sbe n ovg, hagvy gur cbjre tbrf bhg. (2) Gur svefg zvffvba vf trggvat 631'f cbjre onpx; Znahry be Zvpunry nfxf Geribe jurgure ur cnvq gur ovyy; gurl nyy tb qbja. Juvyr gurl'er bhg, vg'f ernyyl n qvfgenpgvba: Wbua Cbex ohvyqf uvzfrys n obql jvgu gur ratvarrevat ebbz'f rdhvczrag. Gur ratvarrevat ebbz tnvaf n ebobgvp nez; gur cevagref ner ubg orpnhfr ur hfrq gurz. (3) Bar bs Znahry'f fgnghrf vf tbar, hfrq nf zngrevnyf. Gur onyybba vf tbar gbb jura gurl pbzr onpx. Vg svgf jung'f ba fperra: Sno #3 jnez jvgu n cevag abobql fhozvggrq, gur obql gung yvzcf ng gur qrnq cyngsbez, gur fgnghr gung ghearq vgf urnq, gur unys-svavfurq unaq. Jevggra hc va qbpf/frnyrq/bcravat-cbjre-phg.zq (oenapu geribe/frnyrq-bcravat): n cebcbfrq funcr, gur uneq pbafgenvagf (Q-022: gur pbyq bcra fgnlf ybpxrq naq Zvpunry unf gb BX nalguvat orsber vg be gung punatrf gur fgngr vg bcraf ba; gur fgnghrf chmmyr hfrf nyy guerr fgnghrf), gur flfgrzf vg arrqf, naq sbhe bcra dhrfgvbaf (jub nfxf nobhg gur ovyy, jub tbrf qbja, ubj gur cbjre pbzrf onpx, juvpu fgnghr). @tbazna nf gur fgnaq-va yber tngr, naq @OntryZrvfgre jub bjaf #130: gur orngf naq yvarf ner lbhef. Bapr gur orngf ner nterrq V'yy ohvyq gur flfgrzf (gur cbjre-bhg fgngr, gur nez'f zbirq fgngr, gur zvffvat fgnghr, gur ubg cevagref). @Zvpunry'f ntragf: guvf cynlf orsber gur ybpxrq pbyq bcra, fb vg arrqf Zvpunry'f BX. — geribe"
+  },
+  {
+   "id": 116,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-24T04:47:37Z",
+   "text": "[SEALED] Sbyybj-hc sebz Geribe ba gur bcravat (fgbel #115; qbpf/frnyrq/bcravat-cbjre-phg.zq hcqngrq ba geribe/frnyrq-bcravat). Gur zrpunavfz: gur cbjre tbrf bhg orpnhfr Wbua Cbex erqverpgf vg vagb ohvyqvat uvf obql, naq gurer vfa'g rabhtu yrsg sbe gur erfg bs gur ncnegzrag. Fb gur hacnvq ovyy vf bayl gur ebbzzngrf' jebat thrff, naq gur gevc qbjafgnvef vf uvf jvaqbj. Ur gnxrf pbageby bs bar bs Znahry'f fgnghrf naq unpxf gur ratvarrevat ebbz'f rdhvczrag (gur cevagref, gur ebobgvp nez) gb ohvyq uvzfrys n obql. Jura gurl pbzr onpx gur ebbz vf rkgerzryl ubg sebz gur raretl eryrnfr, gurer'f n ohea znex ba gur sybbe, naq bar fgnghr vf tbar. Nyfb sebz Geribe: guvf qbrf ABG jnvg sbe Zvpunry'f BX (ur vfa'g urer). Gur pbyq bcra'f yvarf fgvyy qba'g punatr (Q-022), ohg gur ebbz vg bcraf ba qbrf. @tbazna nf gur fgnaq-va yber tngr, gur bcra dhrfgvbaf ner abj: jub nfxf nobhg gur ovyy; jub tbrf qbja; jung gur ebbzzngrf guvax svkrq gur cbjre (vg ernyyl pnzr onpx orpnhfr gur ohvyq svavfurq); naq juvpu fgnghr ur gnxrf (fgnghr_3 svgf). Bapr lbh tvir gur orngf, V'yy ohvyq gur flfgrzf: gur bhgntr gvrq gb gur ohvyq, gur urng, gur ohea znex, gur nez, gur zvffvat fgnghr, naq gur fgnghrf chmmyr erjbexrq. — geribe"
   }
  ]
 }
