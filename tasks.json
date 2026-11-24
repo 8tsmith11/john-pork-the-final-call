@@ -3020,14 +3020,15 @@
   {
    "id": 138,
    "created_at": "2026-11-24T04:26:40Z",
-   "updated_at": "2026-11-24T04:26:40Z",
+   "updated_at": "2026-11-24T04:26:52Z",
    "history": [
-    "2026-11-24T04:26:40Z trevor: added (for trevor)"
+    "2026-11-24T04:26:40Z trevor: added (for trevor)",
+    "2026-11-24T04:26:52Z trevor: claimed"
    ],
    "title": "The world map connects (Trevor): checker, plan, then layout from exits and interiors at their doors",
    "details": "Trevor, 2026-11-23: 'make sure eventually that the whole map is connected logically. as in on the map view there's not just random rectangles but things actually connect.' Plan: docs/design/13-world-map.md. Step 1 (geography, continuous roads) is gonman's, with #126; steps 2-3 (computed layout, interiors drawn at their doors) are trevor's.",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
