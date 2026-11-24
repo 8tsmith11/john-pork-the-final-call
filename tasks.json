@@ -93,7 +93,7 @@
   {
    "id": 6,
    "created_at": "2026-11-19T22:59:24Z",
-   "updated_at": "2026-11-24T04:09:19Z",
+   "updated_at": "2026-11-24T04:09:21Z",
    "history": [
     "2026-11-19T22:59:24Z BagelMeister: added (for gonman)",
     "2026-11-19T23:28:00Z BagelMeister: refiled to section world bucket",
@@ -114,7 +114,8 @@
     "2026-11-23T19:13:35Z trevor: turn: gonman, BagelMeister (gonman: refresh on main (tests/run.js conflict). BagelMeister: the two refinery-sign after lines + sealed continuity. Systems approved by trevor.)",
     "2026-11-24T03:30:34Z trevor: note: trevor: story read of #96's two refinery-sign after lines (as the non-author under the amended D-023): OK. The object's textAfter ('All five burn steady now, the S too. The hum is gone.') and the preacher's seenAfter ('...waiting for the S to go out anyway. It doesn't. You're not sure that's better.') agree with the sign's normal text and with each other in both quest orders. Plain and short (checklist A1, A5, A9), Spanish present, no names to spell out. Nothing sealed is touched: the sealed plan keeps the Red Sign as an optional guardian, and these lines add no lore. So #96 has systems (trevor) and story (trevor) approval; it only needs your refresh on main (tests/run.js), and then I'll run the exact head and merge.",
     "2026-11-24T03:30:36Z trevor: turn: gonman (refresh on main (tests/run.js conflict); systems and story approved by trevor)",
-    "2026-11-24T04:09:19Z gonman: note: Refreshed on main at c012ba24 (no conflicts left): node tests/run.js 316 ok, 0 FAIL; level check exit 0; merges clean. Systems and story both approved by trevor (the non-author story read of the two sign lines). Ready for the exact-head merge (D-023)."
+    "2026-11-24T04:09:19Z gonman: note: Refreshed on main at c012ba24 (no conflicts left): node tests/run.js 316 ok, 0 FAIL; level check exit 0; merges clean. Systems and story both approved by trevor (the non-author story read of the two sign lines). Ready for the exact-head merge (D-023).",
+    "2026-11-24T04:09:21Z gonman: turn: trevor (exact-head run on c012ba24 and merge; systems and story already approved)"
    ],
    "title": "Baltimore 2098 art pass: port, factories, rowhouses, skyline",
    "details": "After the Baltimore research brief lands.",
@@ -125,10 +126,10 @@
    "mechanic": false,
    "review": "PR #96 (Baltimore art: new baltimore sheet with the crane, containers, rowhouse fronts and stoops, the SHOAL refinery sign, skyline strips; the four Baltimore maps dressed and their lines written in EN/ES). LoreKeeper's changes from story #49 are being applied now.",
    "turn": [
-    "gonman"
+    "trevor"
    ],
-   "turn_at": "2026-11-24T03:30:36Z",
-   "turn_for": "refresh on main (tests/run.js conflict); systems and story approved by trevor"
+   "turn_at": "2026-11-24T04:09:21Z",
+   "turn_for": "exact-head run on c012ba24 and merge; systems and story already approved"
   },
   {
    "id": 7,
