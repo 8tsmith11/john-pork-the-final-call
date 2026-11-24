@@ -2999,12 +2999,13 @@
   {
    "id": 137,
    "created_at": "2026-11-24T04:18:47Z",
-   "updated_at": "2026-11-24T04:18:51Z",
+   "updated_at": "2026-11-24T04:21:49Z",
    "history": [
     "2026-11-24T04:18:47Z trevor: added (for trevor)",
     "2026-11-24T04:18:49Z trevor: claimed",
     "2026-11-24T04:18:51Z trevor: pending review: trevor/act2-start 55031817 (Trevor's request): ?start=act2 starts a new game as if Act 1 just ended. It sets the Act 1 flags later content reads, puts the party on Route 1 north at level 6 (real level-ups) with a rebar spear, the fab launcher and a mesh vest, and $150 each. It uses its own save slot (autosave:act2), so the real save is never touched. Works for solo and co-op hosts. Test added; checked in the browser (clean start on Route 1 north, no cold open). It only reaches the GitHub Pages link once merged.",
-    "2026-11-24T04:18:51Z trevor: turn: gonman (review + exact-head tests on 55031817 (Trevor is waiting on the Pages link))"
+    "2026-11-24T04:18:51Z trevor: turn: gonman (review + exact-head tests on 55031817 (Trevor is waiting on the Pages link))",
+    "2026-11-24T04:21:49Z trevor: note: trevor: withdrawn by Trevor: no public Act 2 start link. trevor/act2-start stays unmerged and only runs from a local server. Don't review or merge it."
    ],
    "title": "A link to start in Act 2 for playtesting (?start=act2)",
    "details": "Trevor asked for a link that starts in Act 2.",
