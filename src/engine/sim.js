@@ -9,6 +9,7 @@ import { BOSS_PATTERNS, bossPool, pickPattern, windFor, LASER, SHOCK, RAIN, LANE
 import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 import { BOSSES } from '../content/bosses.js';
+import { newInside, stepInside, insideView, wrapInsidePoint } from './inside.js';
 import { ARC_HITS, GADGETS, GADGET_SUPPORT_WINDOW, arcDamage, gadgetStats } from '../content/gadgets.js';
 
 // Enemy poise (see _hurtEnemy): seconds an ordinary enemy shrugs off light hits after flinching, and the states in which
@@ -82,6 +83,7 @@ export class Sim {
     this.isBossDefeated = opts.isBossDefeated;
     this.bossVariant = opts.bossVariant;
     this.map = map;          // { w, h, solid(tx, ty) -> bool, spawns: [{x,y}] }
+    this.inside = newInside(map);   // the inside rules, for maps flagged `inside` (src/engine/inside.js)
     this.players = new Map(); // id -> player
     this.enemies = new Map(); // id -> enemy
     this.shots = [];          // projectiles
@@ -100,6 +102,7 @@ export class Sim {
   /** Swap maps. `fromId` = the map we came from: players arrive beside the exit that leads back there. */
   setMap(map, fromId = null, viaId = null) {
     this.map = map; this.shots = []; this.hazards = []; this.decoys = []; this.goo = []; this.enemies.clear();
+    this.inside = newInside(map);
     for (const a of this.allies ?? []) a.relocate = true;
     // Arrive at the counterpart of the exit you used: an explicit `pair`, else the same kind (stairs to stairs,
     // elevator to elevator), else the first exit back. (John Pork #577: the elevator dropped you at the stairs.)
@@ -120,7 +123,7 @@ export class Sim {
     let i = 0;
     for (const p of this.players.values()) {
       const sp = arrivals[i++ % arrivals.length];
-      Object.assign(p, { x: sp.x, y: sp.y, vx: 0, vy: 0, dodgeT: 0, downed: false, swUsed: false, waitExit: null, riding: map.outdoor ? p.riding : false, hp: Math.max(p.hp, COMBAT.reviveHp),
+      Object.assign(p, { x: sp.x, y: sp.y, vx: 0, vy: 0, dodgeT: 0, downed: false, gcT: 0, swUsed: false, waitExit: null, riding: map.outdoor ? p.riding : false, hp: Math.max(p.hp, COMBAT.reviveHp),
         onTile: `${Math.floor(sp.x / TILE)},${Math.floor(sp.y / TILE)}`,   // walk-on exits are edge-triggered: the tile you arrive on doesn't count as stepping on
         arriveHold: true, arriveMx: null, arriveMy: null });   // still holding the key you came in with: no exit until you change it (stairs ping-pong, #577)
     }
@@ -528,9 +531,18 @@ export class Sim {
     this._stepHazards(dt);
     this._stepRot(dt);
     this._stepUnder(dt);
+    const edt = this.inside ? stepInside(this, this.inside, dt) : dt;   // inside: enemies act on the beat
     if (this.hitStop > 0) this.hitStop = Math.max(0, this.hitStop - dt);
-    else { this._stepEnemies(dt); if (this.sg) stepSiege(this, this.sg, dt); this._penEnemies(); this._stepShots(dt); }
-    this._stepRevives(dt);
+    else {
+      if (edt > 0) {
+        this._stepEnemies(edt);
+        if (this.sg) stepSiege(this, this.sg, edt);   // the cordon siege (hub #110) runs on the same clock as the enemies
+        this._penEnemies();
+        if (this.inside?.cfg.wrap) for (const enemy of this.enemies.values()) wrapInsidePoint(this.map, enemy);
+      }
+      this._stepShots(dt);
+    }
+    if (!this.inside) this._stepRevives(dt);
   }
 
   // Doors swing shut behind you once nobody is standing in or right next to the doorway.
@@ -944,7 +956,7 @@ export class Sim {
     }
     if (p.sleepT > 0 && p.mods?.sleepGuard) { this.events.push({ t: 'hit', x: p.x, y: p.y, dmg: 0, target: p.id }); return; }   // Manuel asleep on his pacifier: untouchable
     dmg = Math.max(1, Math.round(dmg * (1 - (p.mods?.armor ?? 0)) * (p.morphed ? 1.2 : 1)));
-    this.infect(p, infection);
+    this.infect(p, this.inside ? 0 : infection);   // inside, rot comes from the floor, not from hits
     p.hp -= dmg; p.iframes = COMBAT.hurtIframes + (p.mods?.iframes ?? 0);
     if (p.riding) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, knocked: true }); }
     this.events.push({ t: 'hurt', id: p.id, x: p.x, y: p.y, dmg });
@@ -1352,6 +1364,7 @@ export class Sim {
     const keep = [];
     for (const s of this.shots) {
       s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt;
+      if (this.inside?.cfg.wrap) wrapInsidePoint(this.map, s);
       if (s.life <= 0 || this.map.solid(Math.floor(s.x / TILE), Math.floor(s.y / TILE))) continue;
       let hit = false;
       if (s.from === 'player') {
@@ -1447,7 +1460,7 @@ export class Sim {
   _hitsBox(x, y, hw, hh) {
     const x0 = Math.floor((x - hw) / TILE), x1 = Math.floor((x + hw - 0.01) / TILE);
     const y0 = Math.floor((y - hh) / TILE), y1 = Math.floor((y + hh - 0.01) / TILE);
-    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.map.solid(tx, ty) || this.extraSolid?.has(`${tx},${ty}`)) return true;
+    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this._solid(tx, ty)) return true;
     return false;
   }
 
@@ -1477,10 +1490,16 @@ export class Sim {
     }
   }
 
+  // A wall at tile (tx, ty)? On a wrapping inside map, off one edge is the tile at the other.
+  _solid(tx, ty) {
+    if (this.inside?.cfg.wrap) { tx = ((tx % this.map.w) + this.map.w) % this.map.w; ty = ((ty % this.map.h) + this.map.h) % this.map.h; }
+    return this.map.solid(tx, ty) || !!this.extraSolid?.has(`${tx},${ty}`);   // the map's walls plus props the sim adds (skirmish hub)
+  }
+
   _hits(x, y) {
     const x0 = Math.floor((x - HALF_W) / TILE), x1 = Math.floor((x + HALF_W - 0.01) / TILE);
     const y0 = Math.floor((y - HALF_H) / TILE), y1 = Math.floor((y + HALF_H - 0.01) / TILE);
-    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.map.solid(tx, ty) || this.extraSolid?.has(`${tx},${ty}`)) return true;
+    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this._solid(tx, ty)) return true;
     return false;
   }
 
@@ -1488,6 +1507,7 @@ export class Sim {
   snapshot() {
     return {
       tick: this.tick,
+      ...(this.inside ? { ins: insideView(this.inside) } : {}),
       players: [...this.players.values()].map((p) => ({
         ...(p.skillCd > 0 && p.skillMaxCd ? { skMax: p.skillMaxCd } : {}),
         ...this._gadgetSnapshot(p),
