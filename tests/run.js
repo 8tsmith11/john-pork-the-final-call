@@ -3250,6 +3250,8 @@ test('outbreak phases (task #38): before the Call, after it, contained; phase sp
   const hulk = [...authored.enemies.values()].find((enemy) => enemy.kind === 'enemy.rot_hulk');
   assert.ok(hulk?.spawnKey.startsWith('metro_plaza#after.'), 'the post-Call hulk keeps its own saved spawn key');
   assert.ok(!authored._hitsBox(hulk.x, hulk.y, hulk.def.radius, hulk.def.radius * 0.7), 'the large hulk fits on the east sidewalk');
+  const shops = map.objects.filter((o) => o.armorer || o.station === 'mods' || /^obj\.shop_/.test(o.id) || o.id === 'npc.ray');
+  assert.ok(shops.length && shops.every((o) => Math.hypot(o.x * 16 + 8 - hulk.x, o.y * 16 + 8 - hulk.y) > 64), 'and it starts clear of the shop row, so the stalls stay usable mid-outbreak (gonman, #110)');
   assert.equal(sim.enemies.size, base + 2);
   const keys = [...sim.enemies.values()].map((e) => e.spawnKey).filter((k) => k.includes('#after.'));
   assert.deepEqual(keys.sort(), ['metro_plaza#after.0', 'metro_plaza#after.1']);

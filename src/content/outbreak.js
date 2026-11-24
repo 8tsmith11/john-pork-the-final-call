@@ -24,7 +24,7 @@ export const PHASE_SPAWNS = {
       // Further-gone forms after the Call (Trevor, 2026-11-23): a grafted in the lot, crawlers on Route 1, a sprawl
       // on the cross street, and a lace hulk walking the east sidewalk.
       ['enemy.rot_graft', 44, 42], ['enemy.rot_crawler', 59, 30], ['enemy.rot_crawler', 62, 36],
-      ['enemy.rot_sprawl', 26, 30], ['enemy.rot_hulk', 73, 19],
+      ['enemy.rot_sprawl', 26, 30], ['enemy.rot_hulk', 80, 25],   // the hulk on the east sidewalk, clear of the shop row (gonman, #110)
       // Append only: metro_plaza#after.N killed keys must keep their meaning.
     ],
   },
