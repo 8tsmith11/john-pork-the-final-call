@@ -852,7 +852,7 @@ export class WorldScene extends Phaser.Scene {
     } else if (this.mode === 'client') {
       let rejoinStageSynced = false;
       on('msg', (msg) => {
-        if (msg.t === 'toast') { this._toast(msg.text); return; }
+        if (msg.t === 'toast') { this._toast(tr(msg.text)); return; }   // the host sends English; each guest reads it in their own language
         if (msg.t === 'gadgetFx') { if (msg.area === this.map.id) this._gadgetFx(msg.effect); return; }
         if (msg.t === 'camfx') { if (msg.area === this.map.id && CAM_FX.has(msg.kind)) this.cameras.main[msg.kind](...(msg.args ?? [])); return; }
         if (msg.t === 'fxPop') { if (msg.area === this.map.id) this._fxPop(msg.x, msg.y, msg.text); return; }
@@ -2893,6 +2893,7 @@ export class WorldScene extends Phaser.Scene {
         this._gadgetFx(ev);
         if (this.mode === 'host') this.net.broadcast({ t: 'gadgetFx', area: this.map.id, effect: ev });
       }
+      if (ev.t === 'chaseDone') { const said = 'Out of range. The drones turn back.'; this._flag(`chase.${ev.map}.done`, true); this._toast(tr(said)); if (this.mode === 'host') this.net.broadcast({ t: 'toast', text: said }); this._tickQuests(true); }   // src/engine/chase.js; guests read it too (gonman, #85)
       if (ev.t === 'bumpExit' && !this.dlg) {
         const exit = this.map.objects.find((o) => o.id === ev.id);
         this._requestExit(exit, ev.by, ev);
@@ -3203,9 +3204,28 @@ export class WorldScene extends Phaser.Scene {
     if (ins.cp) g.lineStyle(1, 0x3fd0d6, 0.5 + 0.4 * fade).strokeRect(ins.cp.x - 6, ins.cp.y - 6, 12, 12);
   }
 
+  // The chase on screen (src/engine/chase.js): the drones riding the pace line, a lane being marked, and the end
+  // line, readable from the start; once it's over the drones peel back.
+  _drawChase(ch) {
+    const g = (this.chaseGfx ??= this.add.graphics().setDepth(5000)).clear();
+    if (!ch) return;
+    const v = this.cameras.main.worldView, t = this.time.now / 1000, H = this.map.h * TILE;
+    if (ch.sw) g.fillStyle(0xd42a3c, 0.18 + 0.12 * Math.sin(t * 12)).fillRect(ch.sw[2], ch.sw[0], ch.sw[3] - ch.sw[2], ch.sw[1] - ch.sw[0]).lineStyle(1, 0xd42a3c, 0.9).strokeRect(ch.sw[2], ch.sw[0], ch.sw[3] - ch.sw[2], ch.sw[1] - ch.sw[0]);
+    g.lineStyle(2, 0x3fd0d6, 0.8);
+    for (let y = 0; y < H; y += 12) g.lineBetween(ch.end, y, ch.end, y + 6);   // the range line: NO SIGNAL past here
+    const back = ch.done ? Math.min(160, (this._chaseDoneAt ??= t, (t - this._chaseDoneAt) * 120)) : 0;
+    if (!ch.done) this._chaseDoneAt = null;
+    if (back < 160) {
+      g.lineStyle(1, 0xd42a3c, 0.5).lineBetween(ch.pace, v.y, ch.pace, v.y + v.height);
+      for (let i = 0; i < 5; i++) { const y = v.y + 24 + i * (v.height - 48) / 4 + Math.sin(t * 3 + i) * 6, x = ch.pace - 10 - back + Math.sin(t * 5 + i * 2) * 3;
+        g.fillStyle(0x1a1d2b, 1).fillRect(x - 5, y - 2, 10, 4).fillStyle(0xd42a3c, 0.9).fillRect(x - 1, y - 1, 2, 2); }   // drones (placeholder art)
+    }
+  }
+
   _render(snap) {
     const seen = new Set();
     this._drawInside(snap.ins);
+    this._drawChase(snap.ch);
     const partyHealth = this.partyHealthGfx.clear();
     this._reviveCleared = false; if (!snap.players.some((p) => p.dn)) this.reviveGfx?.clear();
     (this.charShadow ??= this.add.graphics().setDepth(3)).clear();

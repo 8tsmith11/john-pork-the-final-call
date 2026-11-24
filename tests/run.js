@@ -3069,6 +3069,54 @@ test('inside rules (src/engine/inside.js): enemies act on the beat, edges wrap, 
   assert.equal(o.inside, null); assert.equal(o.snapshot().ins, undefined);
 });
 
+test('chase rules (src/engine/chase.js): the pace line catches stragglers, everyone rides and can shoot, lanes are marked then swept, the end opens the way', async () => {
+  const W = 120, H = 10;
+  const strip = (chase) => ({ id: 'chase-test', w: W, h: H, objects: [], enemies: [], spawns: [{ x: 40, y: 80 }], chase, solid: (tx, ty) => tx < 0 || ty < 0 || tx >= W || ty >= H });
+  const run = (sim, secs, inp = new Map()) => { const ev = []; for (let i = 0; i < Math.round(secs * 60); i++) { sim.step(1 / 60, inp); ev.push(...sim.events); } return ev; };
+  const a = new Sim(strip({ speed: 100, start: 0, end: 1500, dmg: 6 }), { seed: 'chase' });
+  a.addPlayer('h', 'trevor'); a.addPlayer('g', 'manuel');
+  const h = a.players.get('h'), g = a.players.get('g'); h.x = 300; h.y = 80; g.x = 40; g.y = 80;
+  const ev = run(a, 1);
+  assert.ok(h.riding && g.riding && h.battery === 100, 'everyone is on a scooter, battery full');
+  assert.ok(g.x >= a.chase.pace && ev.some((e) => e.t === 'caught' && e.id === 'g') && g.hp < a.maxHp(g), 'the straggler is caught: hit and pushed up to the line');
+  assert.ok(!ev.some((e) => e.t === 'caught' && e.id === 'h') && h.hp === a.maxHp(h), 'nothing for being ahead');
+  g.hp = 0; g.downed = true; run(a, 2); assert.ok(g.x >= a.chase.pace, 'a downed rider is carried along, not left behind');
+  const obstructed = strip({ start: 28, speed: 120, end: 1500 });
+  const outside = obstructed.solid;
+  obstructed.solid = (tx, ty) => tx === 3 || outside(tx, ty);
+  const blocked = new Sim(obstructed);
+  blocked.addPlayer('h', 'trevor');
+  const lagging = blocked.players.get('h');
+  Object.assign(lagging, { x: 32, hp: 4 });
+  run(blocked, 0.15);
+  assert.ok(lagging.riding && !lagging.downed && lagging.hp === 1, 'pace damage alone cannot down or dismount a rider');
+  assert.ok(lagging.x >= blocked.chase.pace && !blocked._hits(lagging.x, lagging.y), 'carried riders never land inside scenery');
+  // Both actual weapon inputs fire from a scooter on a chase map.
+  for (const input of ['attack', 'fire']) {
+    h.held = 'gun'; h.mods.gun = 1; h.shotCd = 0;
+    assert.ok(run(a, 1 / 60, new Map([['h', { ...emptyInput(), [input]: true }]])).some((e) => e.t === 'shot'));
+  }
+  // strafes: a lane is marked first, then swept
+  const b = new Sim(strip({ speed: 60, end: 1800, lanes: [[4, 5]], strafeEvery: 1, warn: 1, strafeDmg: 8 }), { seed: 'strafe' });
+  b.addPlayer('h', 'trevor'); const q = b.players.get('h'); q.x = 200; q.y = 4 * 16 + 8;
+  const e1 = run(b, 1.2); const warn = e1.find((e) => e.t === 'strafeWarn');
+  assert.ok(warn && b.snapshot().ch.sw, 'the lane is marked, and every screen can see it');
+  assert.equal(q.hp, b.maxHp(q), 'the mark itself does nothing');
+  const [, , start, end] = b.snapshot().ch.sw;
+  b.addPlayer('g', 'manuel');
+  const clear = b.players.get('g');
+  Object.assign(clear, { x: end + 1, y: q.y });
+  q.x = start + 2;
+  const e2 = run(b, 1.0);
+  assert.ok(e2.some((e) => e.t === 'strafe') && q.hp < b.maxHp(q), 'then the sweep hits whoever stayed in the warned rectangle');
+  assert.equal(clear.hp, b.maxHp(clear), 'a rider just past the rectangle takes no strafe damage');
+  // the end: the drones turn back, once
+  const c = new Sim(strip({ speed: 400, end: 600 }), { seed: 'end' }); c.addPlayer('h', 'trevor'); c.players.get('h').x = 700;
+  assert.equal(c.snapshot().ch.end, 600, 'the end line is known from the start, so it can be drawn');
+  const e3 = run(c, 2); assert.equal(e3.filter((e) => e.t === 'chaseDone').length, 1); assert.ok(c.snapshot().ch.done);
+  const o = new Sim(rotArena(), { seed: 'plain' }); o.addPlayer('h', 'trevor'); assert.equal(o.chase, null); assert.equal(o.snapshot().ch, undefined);
+});
+
 test('the story bench (245): harder, a reference card always there, the book adds a hint per blank only when the party has it', async () => {
   const lab = VLab.labById('reader');
   assert.ok(lab.blanks.length >= 5 && lab.blanks.length > VLab.labById('fsm').blanks.length, 'harder than labs 1-3');
@@ -6571,6 +6619,17 @@ test('Acts 2-3 puzzles: the parchment waits for q.en_archive.told, and the funct
   assert.ok(!save.flags['q.en_parchment.asked']);
   Object.assign(save.flags, { 'q.en_archive.seen': true, 'q.en_archive.told': true }); Object.assign(questState(save)['side.en_archive'], { stage: 2, done: true });
   assert.ok(sc._questInteract(her)); assert.ok(said.at(-1).includes(q.pitch)); assert.ok(save.flags['q.en_parchment.asked']);
+});
+
+test('the end-of-chase line reaches guests too (gonman, #85): the host broadcasts it in English, each guest reads it in their own language', async () => {
+  const sent = [], toasts = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', map: { id: 'chase', objects: [] }, save: { flags: {}, party: {}, world: {} }, sim: { wiped: false, players: new Map() }, time: { now: 0 }, net: { broadcast: (m) => sent.push(m) },
+    _flag(k, v) { this.save.flags[k] = v; }, _toast: (t) => toasts.push(t), _tickQuests() {} });
+  host._hostEvents([{ t: 'chaseDone', map: 'chase' }]);
+  assert.ok(sent.some((m) => m.t === 'toast' && m.text === 'Out of range. The drones turn back.'), 'the host broadcasts the line');
+  assert.ok(host.save.flags['chase.chase.done'] && toasts.length === 1);
+  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/msg\.t === 'toast'\) \{ this\._toast\(tr\(msg\.text\)\)/.test(src), 'guests translate what the host sends');
 });
 
 await Promise.all(pending);
