@@ -12,6 +12,7 @@ import { ES_ACT3 } from './i18n/es-act3.js';
 import { ES_PLAZA } from './i18n/es-plaza.js';
 import { ES_ASTER } from './i18n/es-aster.js';
 import { ES_HUD } from './i18n/es-hud.js';
+import { ES_BALTIMORE } from './i18n/es-baltimore.js';
 import { ES_ROUTE1 } from './i18n/es-route1.js';
 import { ITEMS } from './content/items.js';
 const KEY = 'jpfc.lang';
@@ -157,7 +158,7 @@ for (const [id, def] of Object.entries(ITEMS)) {
   if (def.text) ES_ITEM_STRINGS[def.text] = es[1];
 }
 // No prototype: words like "constructor" or "toString" must not count as translations.
-const ES_ALL = Object.assign(Object.create(null), ES, ES_QUESTS, ES_ITEM_STRINGS, ES_631, ES_TUNNELS_LAKE, ES_PLAZA, ES_ASTER, ES_HUD, ES_ROUTE1);
+const ES_ALL = Object.assign(Object.create(null), ES, ES_QUESTS, ES_ITEM_STRINGS, ES_631, ES_TUNNELS_LAKE, ES_PLAZA, ES_ASTER, ES_HUD, ES_ROUTE1, ES_BALTIMORE);
 function trOne(s) {
   if (ES_ALL[s] !== undefined) return ES_ALL[s];
   for (const [rx, rep] of ES_RX) if (rx.test(s)) return s.replace(rx, rep);

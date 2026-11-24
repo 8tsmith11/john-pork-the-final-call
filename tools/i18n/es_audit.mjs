@@ -10,6 +10,7 @@ import { ES_ACT2 } from '../../src/i18n/es-act2.js';
 import { ES_ACT3 } from '../../src/i18n/es-act3.js';
 import { ES_QUESTS } from '../../src/i18n/es-quests.js';
 import { ES_TUNNELS_LAKE } from '../../src/i18n/es-tunnels-lake.js';
+import { ES_BALTIMORE } from '../../src/i18n/es-baltimore.js';
 import { ES_ROUTE1 } from '../../src/i18n/es-route1.js';
 import { BARKS } from '../../src/content/barks.js';
 import { GUIDE_PEOPLE } from '../../src/content/guide.js';
@@ -92,7 +93,7 @@ const mapSources = {
   airfield: 'act1_airfield.js',
   hangar: 'act1_airfield.js',
 };
-const exact = Object.assign(Object.create(null), ES_631, ES_ASTER, ES_HUD, ES_PLAZA, ES_QUESTS, ES_TUNNELS_LAKE, ES_ROUTE1);
+const exact = Object.assign(Object.create(null), ES_631, ES_ASTER, ES_HUD, ES_PLAZA, ES_QUESTS, ES_TUNNELS_LAKE, ES_ROUTE1, ES_BALTIMORE);
 const results = new Map();
 
 function check(file, location, text, inlineSpanish) {

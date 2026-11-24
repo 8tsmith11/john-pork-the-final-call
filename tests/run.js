@@ -5971,6 +5971,201 @@ test("Manuel's edge: with the same gear and no skills, Manuel is the toughest an
   }
 });
 
+// ---- Baltimore art pass (hub #6): the 'baltimore' sheet and the four district maps that use it ----
+const BMORE_MAPS = ['bmore_rows', 'bmore_refinery', 'bmore_hall', 'bmore_authority'];
+const bmoreAtlas = JSON.parse(fs.readFileSync(new URL('../assets/sprites/baltimore.json', import.meta.url), 'utf8'));
+test('baltimore sheet (hub #6): the set is all there, packed without overlaps, and every piece the maps use exists', () => {
+  const fr = bmoreAtlas.frames;
+  const want = ['bm.crane', 'bm.crane_bogie', 'bm.box_rust', 'bm.box_teal', 'bm.box_mustard', 'bm.box_grey', 'bm.box_ca', 'bm.box20_rust',
+    'bm.boxes_rust_teal', 'bm.boxes_ca', 'bm.bollard', 'bm.bollard_rope', 'bm.flatcar', 'bm.flatcar_box', 'bm.rail_h', 'bm.rail_stop',
+    'bm.row_brick', 'bm.row_form', 'bm.row_brick_screen', 'bm.row_brick_board', 'bm.row_upper', 'bm.row_door', 'bm.row_door_scrubbed',
+    'bm.wall_ref', 'bm.wall_ref_valve', 'bm.smokestack', 'bm.silo', 'bm.quay_e', 'bm.quay_s', 'bm.pier', 'bm.pier_end',
+    'bm.sky_cranes', 'bm.sky_downtown', 'bm.sky_stacks', 'bm.mural', 'bm.sign_switch', 'bm.book_stand', 'bm.ledger_ca',
+    ...[...'SHOAL'].flatMap((ch) => [`bm.sign_${ch}`, `bm.sign_${ch}_off`]), 'bm.sign_S#1'];
+  assert.deepEqual(want.filter((n) => !fr[n]), [], 'missing from the baltimore sheet');
+  const { w: crW, h: crH } = fr['bm.crane'].frame; assert.ok(crW >= 64 && crH >= 64, 'the crane is a big multi-tile piece');
+  for (const n of ['bm.sky_cranes', 'bm.sky_downtown', 'bm.sky_stacks']) assert.ok(fr[n].frame.w >= 6 * fr[n].frame.h, `${n} is low and wide`);
+  const rects = Object.entries(fr).map(([n, f]) => [n, f.frame]);
+  for (const [n, r] of rects) assert.ok(r.x + r.w <= bmoreAtlas.meta.size.w && r.y + r.h <= bmoreAtlas.meta.size.h, `${n} is off the sheet`);
+  for (let i = 0; i < rects.length; i++) for (let j = i + 1; j < rects.length; j++) {
+    const [a, A] = rects[i], [b, B] = rects[j];
+    assert.ok(A.x + A.w <= B.x || B.x + B.w <= A.x || A.y + A.h <= B.y || B.y + B.h <= A.y, `${a} overlaps ${b}`);
+  }
+  const missing = [];
+  for (const id of BMORE_MAPS) {
+    const m = MAPS_FOR_TEST[id];
+    for (const s of m.scenery ?? []) if (s.art.startsWith('bm.') && !fr[s.art]) missing.push(`${id}: scenery ${s.art}`);
+    for (const o of m.objects) if ((o.art ?? '').startsWith('bm.') && !fr[o.art]) missing.push(`${id}: ${o.id} ${o.art}`);
+    assert.ok((m.scenery ?? []).some((s) => s.art.startsWith('bm.')), `${id} uses the new art`);
+  }
+  assert.deepEqual(missing, []);
+  // build.js blocks w x h tiles of a solid piece (default 1 x 1), but sceneryPlacement draws a Baltimore piece across
+  // as many tiles as its frame is wide: a solid piece wider than a tile has to give its w, or you walk through it.
+  const loose = [];
+  for (const id of BMORE_MAPS) for (const s of MAPS_FOR_TEST[id].scenery ?? []) {
+    if (s.solid && fr[s.art] && (s.w ?? 1) !== Math.ceil(fr[s.art].frame.w / 16)) loose.push(`${id}: ${s.art} at ${s.x},${s.y}`);
+  }
+  assert.deepEqual(loose, [], 'solid Baltimore pieces block as many tiles as they are drawn wide');
+});
+
+test('baltimore sheet: no balloon orange anywhere, and signal red only on Continuity\'s own pieces (named _ca)', () => {
+  const src = fs.readFileSync(new URL('../assets/src/baltimore.txt', import.meta.url), 'utf8').split(/\r?\n/).map((l) => l.trimEnd());   // CRLF checkouts too (LoreKeeper runs on Windows)
+  const letter = {};
+  for (const pair of src.find((l) => l.startsWith('@map')).split(' ').slice(1)) { const [k, v] = pair.split('='); letter[v] = k; }
+  const bad = [];
+  let frame = null;
+  for (const line of src) {
+    if (line.startsWith('@frame')) { frame = line.split(' ')[1]; continue; }
+    if (!frame || line.startsWith('@') || line.startsWith('#')) continue;
+    if (line.includes(letter.balloon0) || line.includes(letter.balloon1)) bad.push(`${frame}: balloon orange`);
+    if (line.includes(letter.signal) && !frame.includes('_ca')) bad.push(`${frame}: signal red`);
+  }
+  assert.deepEqual([...new Set(bad)], []);
+  const built = Object.keys(bmoreAtlas.frames).sort(), authored = src.filter((l) => l.startsWith('@frame')).map((l) => l.split(' ')[1]).sort();
+  assert.deepEqual(built, authored, 'assets/sprites/baltimore.* is stale: run python3 tools/art/build.py baltimore');
+});
+
+test('Baltimore district maps keep every quest object, door, NPC and enemy reachable, with no [scaffold] text left', () => {
+  const where = { 'obj.bmore_rows_board_3_3': ['bmore_rows', 3, 3], 'obj.bmore_rows_board_17_3': ['bmore_rows', 17, 3], 'obj.bmore_mural': ['bmore_rows', 27, 3],
+    'obj.refinery_switch': ['bmore_refinery', 28, 2], 'obj.bmore_sign': ['bmore_refinery', 20, 1], 'obj.callers_book': ['bmore_hall', 13, 1], 'obj.authority_ledger': ['bmore_authority', 21, 3],
+    'obj.rows_to_refinery': ['bmore_rows', 10, 0], 'obj.rows_to_hall': ['bmore_rows', 20, 0], 'obj.rows_to_baltimore': ['bmore_rows', 0, 7], 'obj.rows_to_authority': ['bmore_rows', 30, 7],
+    'obj.refinery_out': ['bmore_refinery', 25, 8], 'obj.hall_out': ['bmore_hall', 12, 8], 'obj.authority_out': ['bmore_authority', 0, 6] };
+  for (const [oid, [mid, x, y]] of Object.entries(where)) {
+    const o = MAPS_FOR_TEST[mid].objects.find((q) => q.id === oid);
+    assert.ok(o && o.x === x && o.y === y, `${oid} should still be at ${mid} ${x},${y}`);
+  }
+  assert.ok(MAPS_FOR_TEST.bmore_refinery.enemies.some((e) => e.kind === 'boss.bmore_sign' && e.x === 4 * 16 + 8 && e.y === 2 * 16 + 8), 'the sign boss stays put');
+  const bad = [];
+  for (const id of BMORE_MAPS) {
+    const m = MAPS_FOR_TEST[id], seen = bmoreReach(m);
+    const near = (x, y) => [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(`${x + dx},${y + dy}`));
+    for (const o of m.objects) if (!near(o.x, o.y)) bad.push(`${id}: ${o.id} unreachable`);
+    // ...and can be picked: from some reachable tile the game's rule (WorldScene: nearest within 34 px) chooses it
+    for (const o of m.objects) if (![...seen].some((k) => bmorePick(m, ...k.split(',').map(Number)) === o)) bad.push(`${id}: ${o.id} is never the one you interact with`);
+    for (const e of m.enemies) if (!seen.has(`${Math.floor(e.x / 16)},${Math.floor(e.y / 16)}`)) bad.push(`${id}: ${e.kind} unreachable`);
+    for (const o of m.objects) for (const t of [o.label, o.text]) if (typeof t === 'string' && t.includes('[scaffold]')) bad.push(`${id}: ${o.id} still says [scaffold]`);
+  }
+  assert.deepEqual(bad, []);
+  // The scribe stands by the book, but standing right in front of the book reads the book, not the scribe.
+  const hall = MAPS_FOR_TEST.bmore_hall, scribe = hall.objects.find((o) => o.id === 'npc.bmore_scribe');
+  assert.ok(scribe && Math.hypot(scribe.x - 13, scribe.y - 1) <= 3, 'the scribe stands by the book');
+  assert.equal(bmorePick(hall, 13, 2)?.id, 'obj.callers_book', 'the tile in front of the book picks the book');
+});
+// WorldScene's interaction pick for a player at the centre of tile (tx, ty): the nearest object within 34 px, a later
+// object winning a tie (crowds are added after a map's own objects).
+function bmorePick(m, tx, ty) {
+  let best = null, nd = 34;
+  for (const o of m.objects) { const d = Math.hypot((o.x - tx) * 16, (o.y - ty) * 16); if (d <= nd) { nd = d; best = o; } }
+  return best;
+}
+// Every tile you can walk to from a map's spawns ("x,y"); walls stop you, doors don't.
+function bmoreReach(m) {
+  const seen = new Set(), q = [];
+  for (const s of m.spawns) { const k = `${Math.floor(s.x / 16)},${Math.floor(s.y / 16)}`; seen.add(k); q.push(k.split(',').map(Number)); }
+  while (q.length) {
+    const [x, y] = q.shift();
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy, k = `${nx},${ny}`;
+      if (seen.has(k) || nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || (m.solid(nx, ny) && !m.doors?.has(k))) continue;
+      seen.add(k); q.push([nx, ny]);
+    }
+  }
+  return seen;
+}
+
+// The refinery sign's two quests on the maps as they are now (LoreKeeper's review of #96): the preacher's "The S
+// flickers" (look at the sign, then tell him) and the sign keeper's "Keep it lit" (the boss). Walked through the
+// scene's own quest code, so the sign you see in the refinery is the one the look step wants, and the switch and the
+// marker on the harbor street don't pretend to be it.
+const BmoreQ = await import('../src/content/quests.js');
+test('Baltimore sign quests: every step\'s object exists and can be reached and picked; the look step is the visible SHOAL sign', () => {
+  const side = (id) => SideQ.SIDE_QUESTS.find((q) => q.id === id);
+  const sign = side('side.bmore_sign'), keep = side('side.bmore_redsign');
+  const one = (oid) => {
+    const at = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects.filter((o) => o.id === oid).map((o) => ({ m, o })));
+    assert.equal(at.length, 1, `${oid} is on exactly one map`);
+    return at[0];
+  };
+  const usable = ({ m, o }) => {
+    const seen = bmoreReach(m);
+    assert.ok([...seen].some((k) => bmorePick(m, ...k.split(',').map(Number)) === o), `${m.id}: ${o.id} can be reached and is the one you interact with`);
+  };
+  // The quests keep their ids, flags, steps and rewards, so saves keep their place.
+  assert.deepEqual([sign.giver, sign.ask, sign.inspect.obj, sign.inspect.flag, sign.report.needs, sign.report.flag, sign.reward.money, sign.reward.xp],
+    ['npc.bmore_preacher', 'q.bmore_sign.asked', 'obj.bmore_sign', 'q.bmore_sign.seen', 'q.bmore_sign.seen', 'q.bmore_sign.told', 20, 40]);
+  assert.deepEqual(sign.stages.map((st) => st.text), ['Look at the refinery sign.', 'Tell the preacher what you saw.']);
+  assert.deepEqual([keep.giver, keep.target.boss, keep.reward.money, keep.reward.xp], ['npc.bmore_signkeeper', 'boss.bmore_sign', 40, 80]);
+
+  // The look step's object is on the refinery wall, on the S (the letter that flickers), named as the step names it.
+  const preacher = one('npc.bmore_preacher'), look = one('obj.bmore_sign'), keeper = one('npc.bmore_signkeeper'), sw = one('obj.refinery_switch');
+  const refinery = MAPS_FOR_TEST.bmore_refinery;
+  assert.equal(look.m, refinery, 'you look at the sign in the refinery, where you can see it');
+  const S = refinery.scenery.find((s) => s.art === 'bm.sign_S');
+  assert.ok(S && look.o.y === S.y && look.o.x >= S.x && look.o.x < S.x + (S.w ?? 2), 'the look object sits on the drawn S');
+  assert.ok(bmoreAtlas.frames['bm.sign_S#1'], 'and that S is the one that flickers');
+  assert.match(sign.stages[0].text.toLowerCase(), new RegExp(look.o.label.toLowerCase()), 'the object is called what the step calls it');
+  for (const at of [preacher, look, keeper, sw]) usable(at);
+  assert.equal(keeper.m, refinery);
+  const seen = bmoreReach(refinery), boss = refinery.enemies.find((e) => e.kind === keep.target.boss);
+  assert.ok(boss && seen.has(`${Math.floor(boss.x / 16)},${Math.floor(boss.y / 16)}`), 'the sign boss can be reached');
+  // The harbor street's marker is the same sign from far off: it names it and points at the refinery, and isn't a step.
+  const far = preacher.m.objects.find((o) => /^The refinery sign\b/.test(o.label) && o.id !== look.o.id);
+  assert.ok(far && /SHOAL/.test(far.text) && /refinery/.test(far.text), 'the harbor street marker reads as the same sign and says where it is');
+  // Nothing uses the switch as a step, so there is no step it fails to advance.
+  assert.ok(!BmoreQ.QUESTS.some((q) => [q.giver, q.inspect?.obj, q.target?.npc, q.give && q.giver].includes(sw.o.id)), 'the switch is not a quest step');
+
+  // Walk it: ask the preacher, try the marker and the switch, look at the sign, tell the preacher.
+  const run = (save) => {
+    const said = [];
+    const at = (m) => Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'solo', character: 'manuel', localId: 'host', save, map: m,
+      sim: { players: new Map() }, events: { once() {} }, time: { addEvent() {} }, net: null,
+      _say: (t) => said.push(t), _questBanner() {}, _syncParty() {}, _toast() {}, _announce() {}, _sayLater: () => false });
+    return { said, harbor: at(preacher.m), refinery: at(refinery) };
+  };
+  const save = newSave({ seed: 'bmore-sign', rolls: {}, gameVersion: 't' }), f = save.flags, st = () => BmoreQ.questState(save)[sign.id];
+  const { said, harbor, refinery: inside } = run(save);
+  assert.ok(harbor._questInteract(preacher.o, 'manuel', 'host') && f['q.bmore_sign.asked'] && st().started, 'the preacher gives the quest');
+  assert.equal(harbor._questInteract(far, 'manuel', 'host'), false, 'the far-off marker only describes the sign');
+  assert.equal(inside._questInteract(sw.o, 'manuel', 'host'), false, 'the switch only describes itself');
+  assert.ok(!f['q.bmore_sign.seen'] && st().stage === 0);
+  assert.ok(inside._questInteract(look.o, 'manuel', 'host') && f['q.bmore_sign.seen'], 'looking at the sign is the step');
+  assert.ok(said.at(-1).startsWith(look.o.text) && said.at(-1).endsWith(sign.inspect.text), 'you read the sign, then what you notice');
+  assert.equal(st().stage, 1, 'next: tell the preacher');
+  assert.ok(harbor._questInteract(preacher.o, 'manuel', 'host') && f['q.bmore_sign.told'] && st().done, 'telling him finishes it');
+  assert.equal(said.at(-1), sign.reward.line);
+  // A save that already looked (at the old harbor marker) is still on "tell the preacher", and finishes there.
+  const old = newSave({ seed: 'bmore-sign-old', rolls: {}, gameVersion: 't' });
+  Object.assign(old.flags, { 'q.bmore_sign.asked': true, 'q.bmore_sign.seen': true });
+  const o2 = run(old);
+  o2.harbor._tickQuests(true);
+  assert.deepEqual([BmoreQ.questState(old)[sign.id].stage, BmoreQ.questState(old)[sign.id].done], [1, false]);
+  assert.ok(o2.harbor._questInteract(preacher.o, 'manuel', 'host') && BmoreQ.questState(old)[sign.id].done);
+  // The sign keeper's quest: ask at the refinery, put the boss down, done.
+  assert.ok(inside._questInteract(keeper.o, 'manuel', 'host') && BmoreQ.questState(save)[keep.id].started);
+  f['boss.bmore_sign.down'] = true; inside._tickQuests(true);
+  assert.ok(BmoreQ.questState(save)[keep.id].done && said.at(-1) === keep.reward.line);
+});
+
+const { ES_BALTIMORE } = await import('../src/i18n/es-baltimore.js');
+test('i18n: every label and line in the four Baltimore district maps has Spanish (src/i18n/es-baltimore.js)', () => {
+  const missing = [];
+  for (const id of BMORE_MAPS) for (const o of MAPS_FOR_TEST[id].objects) for (const t of [o.label, o.text]) if (t && !(t in ES_BALTIMORE) && !(t in ES_HUD)) missing.push(`${id}: ${t.slice(0, 50)}`);
+  assert.deepEqual(missing, []);
+  const was = i18nMod.getLang(); i18nMod.setLang('es');
+  try { assert.equal(i18nMod.tr('Port ledger'), 'Registro del puerto'); } finally { i18nMod.setLang(was); }
+});
+
+test('sceneryPlacement: Baltimore pieces stand at their drawn size, centred on their footprint; only solid ones cast a shadow', () => {
+  const has = (sheet, art) => sheet === 'baltimore' && art.startsWith('bm.');
+  const size = (sheet, art) => bmoreAtlas.frames[art].frame;
+  const sky = decorMod.sceneryPlacement({ art: 'bm.sky_cranes', x: 21, y: 0, w: 9, floor: true }, has, 1.5, size);
+  assert.deepEqual([sky.sheet, sky.x, sky.y, sky.k, sky.shadow], ['baltimore', 21 * 16 + 72, 16, 1, 0], 'skyline: nine tiles from x, no propScale, no shadow');
+  const box = decorMod.sceneryPlacement({ art: 'bm.box_rust', x: 25, y: 6, solid: true }, has, 1, size);
+  assert.equal(box.x, 25 * 16 + 24, 'a forty-footer defaults to three tiles'); assert.ok(box.shadow > 0, 'solid pieces cast a contact shadow');
+  assert.equal(decorMod.sceneryPlacement({ art: 'bm.row_brick', x: 2, y: 3 }, has, 1, size).shadow, 0, 'house fronts do not');
+  assert.equal(decorMod.sceneryPlacement({ art: 'obj.bench', x: 1, y: 1 }, (s, a) => s === 'props' && a === 'obj.bench', 1.5).sheet, 'props', 'other sheets unchanged');
+});
+
 test('connection loss offers the original room and intentional quit returns to the normal title', async () => {
   for (const intentional of [false, true]) {
     let closes = 0;
@@ -6635,6 +6830,33 @@ test('the end-of-chase line reaches guests too (gonman, #85): the host broadcast
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
+
+test('story #52 (PR #96): the refinery sign agrees with itself in both quest orders once THE RED SIGN falls', async () => {
+  const FLAG = 'boss.bmore_sign.down';
+  const { sceneryNextFrame } = await import('../src/game/render/decor.js');
+  const { QUESTS } = await import('../src/content/quests.js');
+  const { ES_BALTIMORE } = await import('../src/i18n/es-baltimore.js');
+  const m = MAPS_FOR_TEST.bmore_refinery;
+  const sign = m.objects.find((o) => o.id === 'obj.bmore_sign');
+  // Order A, before the repair: you see the flicker (the clue), the close-up says so, the S loops.
+  assert.match(sign.text, /S cuts out/);
+  const S = (m.scenery ?? []).find((o) => o.art === 'bm.sign_S');
+  assert.ok(S && S.anim, 'the S is the animated piece');
+  assert.equal(sceneryNextFrame(S, 'bm.sign_S', {}), 'bm.sign_S#1', 'before: it flickers');
+  // After the keeper's boss falls: the S holds, the close-up says steady, matching the keeper's payoff line.
+  assert.equal(S.stillAfter, FLAG);
+  assert.equal(sceneryNextFrame(S, 'bm.sign_S', { [FLAG]: true }), 'bm.sign_S', 'after: it holds steady');
+  assert.equal(sign.textAfter?.flag, FLAG);
+  assert.match(sign.textAfter.text, /steady/); assert.doesNotMatch(sign.textAfter.text, /cuts out/);
+  assert.ok(ES_BALTIMORE[sign.textAfter.text], 'the steady close-up has Spanish');
+  // Order B, repair first: the preacher's look step still completes on the same flags, with an after observation.
+  const q = QUESTS.find((x) => x.id === 'side.bmore_sign');
+  assert.equal(q.inspect.obj, 'obj.bmore_sign'); assert.equal(q.inspect.flag, 'q.bmore_sign.seen', 'same flag, so saves keep their place');
+  assert.equal(q.inspect.textAfter?.flag, FLAG);
+  assert.doesNotMatch(q.inspect.textAfter.text, /goes out\./, 'the after look does not claim the S goes out');
+  const keeper = QUESTS.find((x) => x.id === 'side.bmore_redsign');
+  assert.ok(keeper, 'the keeper\'s quest is the one that steadies it');
+});
 
 test('hub #127: the five Room 631 search spots open their locked cold-open scenes (the toolwall keeps its action)', async () => {
   const room = MAPS_FOR_TEST.room631;

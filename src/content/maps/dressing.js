@@ -8,7 +8,8 @@
 //   cables: [[x1, y1, x2, y2, sag]]                        overhead cable runs (drawn above everyone)
 //   drones: n                                              patrol drones crossing with searchlights (outdoor only)
 // `amber` is a warm yellow, kept off balloon orange (art direction: orange is the balloon's).
-const C = { cyan: 0x3fd0d6, magenta: 0xd417c8, pink: 0xe87a9c, lime: 0xc8e619, amber: 0xe0b866, red: 0xd42a3c, blue: 0x4f7fd0 };
+const C = { cyan: 0x3fd0d6, magenta: 0xd417c8, pink: 0xe87a9c, lime: 0xc8e619, amber: 0xe0b866, red: 0xd42a3c, blue: 0x4f7fd0, softred: 0xc05a5e };
+// `softred` is the refinery sign's (Baltimore): `red` is Continuity's signal colour and stays theirs.
 
 export const DRESSING = {
   metro_plaza: {
@@ -71,6 +72,13 @@ export const DRESSING = {
     holo: [{ x: 24, y: 9, w: 5, h: 2, color: C.lime, lines: ['NEXT TRAIN', '-- MIN', 'NEXT TRAIN', 'NEXT TRAIN'] }],
     glow: [{ x: 33, y: 10, color: C.magenta, r: 1.2 }, { x: 54, y: 12, color: C.lime, r: 0.9 }, { x: 24, y: 23, color: C.magenta, r: 0.9 }],
     cables: [[1, 11, 32, 11, 0.6], [33, 11, 64, 11, 0.6]],
+  },
+  // Baltimore (districts.js, hub #6): the refinery's letters throw red across the floor; lamps on the rowhouse street.
+  bmore_refinery: {
+    glow: [{ x: 20, y: 2, color: C.softred, r: 1.3 }, { x: 24, y: 2, color: C.softred, r: 1.5 }, { x: 28, y: 2, color: C.softred, r: 1.1 }],
+  },
+  bmore_rows: {
+    glow: [{ x: 8, y: 5, color: C.amber, r: 0.9 }, { x: 18, y: 5, color: C.amber, r: 0.9 }, { x: 28, y: 5, color: C.amber, r: 0.9 }],
   },
   platform: {
     neon: [{ x: 4, y: 1, text: 'COLLEGE PARK', color: C.lime, flicker: 0.2 }, { x: 30, y: 1, text: 'NO SERVICE', color: C.red, flicker: 0.15, size: 6 }],
