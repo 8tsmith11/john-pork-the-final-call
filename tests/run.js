@@ -6621,6 +6621,17 @@ test('Acts 2-3 puzzles: the parchment waits for q.en_archive.told, and the funct
   assert.ok(sc._questInteract(her)); assert.ok(said.at(-1).includes(q.pitch)); assert.ok(save.flags['q.en_parchment.asked']);
 });
 
+test('the end-of-chase line reaches guests too (gonman, #85): the host broadcasts it in English, each guest reads it in their own language', async () => {
+  const sent = [], toasts = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', map: { id: 'chase', objects: [] }, save: { flags: {}, party: {}, world: {} }, sim: { wiped: false, players: new Map() }, time: { now: 0 }, net: { broadcast: (m) => sent.push(m) },
+    _flag(k, v) { this.save.flags[k] = v; }, _toast: (t) => toasts.push(t), _tickQuests() {} });
+  host._hostEvents([{ t: 'chaseDone', map: 'chase' }]);
+  assert.ok(sent.some((m) => m.t === 'toast' && m.text === 'Out of range. The drones turn back.'), 'the host broadcasts the line');
+  assert.ok(host.save.flags['chase.chase.done'] && toasts.length === 1);
+  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/msg\.t === 'toast'\) \{ this\._toast\(tr\(msg\.text\)\)/.test(src), 'guests translate what the host sends');
+});
+
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');

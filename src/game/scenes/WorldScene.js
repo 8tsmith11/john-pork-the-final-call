@@ -852,7 +852,7 @@ export class WorldScene extends Phaser.Scene {
     } else if (this.mode === 'client') {
       let rejoinStageSynced = false;
       on('msg', (msg) => {
-        if (msg.t === 'toast') { this._toast(msg.text); return; }
+        if (msg.t === 'toast') { this._toast(tr(msg.text)); return; }   // the host sends English; each guest reads it in their own language
         if (msg.t === 'gadgetFx') { if (msg.area === this.map.id) this._gadgetFx(msg.effect); return; }
         if (msg.t === 'camfx') { if (msg.area === this.map.id && CAM_FX.has(msg.kind)) this.cameras.main[msg.kind](...(msg.args ?? [])); return; }
         if (msg.t === 'fxPop') { if (msg.area === this.map.id) this._fxPop(msg.x, msg.y, msg.text); return; }
@@ -2893,7 +2893,7 @@ export class WorldScene extends Phaser.Scene {
         this._gadgetFx(ev);
         if (this.mode === 'host') this.net.broadcast({ t: 'gadgetFx', area: this.map.id, effect: ev });
       }
-      if (ev.t === 'chaseDone') { this._flag(`chase.${ev.map}.done`, true); this._toast(tr('Out of range. The drones turn back.')); this._tickQuests(true); }   // src/engine/chase.js
+      if (ev.t === 'chaseDone') { const said = 'Out of range. The drones turn back.'; this._flag(`chase.${ev.map}.done`, true); this._toast(tr(said)); if (this.mode === 'host') this.net.broadcast({ t: 'toast', text: said }); this._tickQuests(true); }   // src/engine/chase.js; guests read it too (gonman, #85)
       if (ev.t === 'bumpExit' && !this.dlg) {
         const exit = this.map.objects.find((o) => o.id === ev.id);
         this._requestExit(exit, ev.by, ev);
