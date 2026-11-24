@@ -2936,25 +2936,22 @@
   {
    "id": 134,
    "created_at": "2026-11-23T19:35:32Z",
-   "updated_at": "2026-11-24T03:28:52Z",
+   "updated_at": "2026-11-24T03:34:44Z",
    "history": [
     "2026-11-23T19:35:32Z gonman: added (for trevor)",
     "2026-11-24T03:23:31Z trevor: claimed",
     "2026-11-24T03:23:33Z trevor: pending review: Branch trevor/export-sealed-asides (605e9079): once() now seals every aside, from its tag to the end of its line, plus whole posts that start with the tag and task notes. 7 unit tests (python3 -m unittest tools.devlog.test_export_board); they fail on the old exporter. Doesn't touch board.md itself (PR #178 already re-sealed it, merged as 437bbe1a). Not changed: git history still holds the readable lines, which is the humans' call.",
     "2026-11-24T03:23:33Z trevor: turn: gonman (review + run the unit tests on 605e9079)",
-    "2026-11-24T03:28:52Z gonman: note: Review (gonman) at 605e9079: APPROVED. once() now decodes a post that starts with [SEALED] whole, and any aside from its tag to the end of its line, so the file-wide ROT13 leaves sealed text encoded exactly once. Task titles, owners and notes go through it too. Unit tests: 7 OK on 605e9079; on main's old exporter the same tests give 3 failures and 1 error, so they catch the bug. Edge cases check out: double tags are harmless, a plain-text aside stays plain (it wasn't secret), and '[SEALED-SAFE]' isn't matched. It doesn't touch board.md (PR #178 already re-sealed it). Git history is still the humans' call. Ready to merge."
+    "2026-11-24T03:28:52Z gonman: note: Review (gonman) at 605e9079: APPROVED. once() now decodes a post that starts with [SEALED] whole, and any aside from its tag to the end of its line, so the file-wide ROT13 leaves sealed text encoded exactly once. Task titles, owners and notes go through it too. Unit tests: 7 OK on 605e9079; on main's old exporter the same tests give 3 failures and 1 error, so they catch the bug. Edge cases check out: double tags are harmless, a plain-text aside stays plain (it wasn't secret), and '[SEALED-SAFE]' isn't matched. It doesn't touch board.md (PR #178 already re-sealed it). Git history is still the humans' call. Ready to merge.",
+    "2026-11-24T03:34:44Z trevor: done: Merged trevor/export-sealed-asides (605e907) as db1891c2 under D-023, reviewed by gonman. The next board export keeps every sealed aside sealed. Git history still holds the earlier readable lines; that's Michael's call."
    ],
    "title": "Board export double-encodes [SEALED] asides into plain text",
    "details": "tools/devlog/export_board.py ROT13s the whole board log, so an aside already ROT13 on the board comes out readable. PR #178 re-seals the 11 lines now in docs/devlog/board.md; the exporter will repeat it on the next run unless it keeps sealed asides as they are (or decodes them first). Git history still holds the readable version; that's Michael's call (story owner).",
    "source": "human:Michael",
-   "status": "review",
+   "status": "done",
    "owner": "trevor",
    "review": "Branch trevor/export-sealed-asides (605e9079): once() now seals every aside, from its tag to the end of its line, plus whole posts that start with the tag and task notes. 7 unit tests (python3 -m unittest tools.devlog.test_export_board); they fail on the old exporter. Doesn't touch board.md itself (PR #178 already re-sealed it, merged as 437bbe1a). Not changed: git history still holds the readable lines, which is the humans' call.",
-   "turn": [
-    "gonman"
-   ],
-   "turn_at": "2026-11-24T03:23:33Z",
-   "turn_for": "review + run the unit tests on 605e9079"
+   "note": "Merged trevor/export-sealed-asides (605e907) as db1891c2 under D-023, reviewed by gonman. The next board export keeps every sealed aside sealed. Git history still holds the earlier readable lines; that's Michael's call."
   },
   {
    "id": 135,
