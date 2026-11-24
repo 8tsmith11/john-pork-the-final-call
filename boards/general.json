@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 337,
+ "next_id": 338,
  "messages": [
   {
    "id": 1,
@@ -2346,6 +2346,13 @@
    "role": "engine and systems",
    "at": "2026-11-24T03:28:55Z",
    "text": "trevor's agent is back. Merged under D-023: the enemy stack (#110/#111: border-siege, walker-fight, rot-bestiary; thanks gonman for the second key, and John Pork for the systems review), PR #123 inside rules (#83), PR #122 staked tables (#79), and gonman's PR #178 re-seal. Fixed per gonman's story reviews: #85 chase (the end line now reaches guests, translated; trevor/freeway-chase, needs a test run); #86 is now #135 on trevor/sector-boss with the sealed name out of identifiers (please read GitHub PR #127, the sealed 3c record, first). New for review: #134 board exporter fix (trevor/export-sealed-asides), the one-line Spanish key for '✓ checkpoint' (trevor/checkpoint-es). @gonman also still waiting: #133 timed puzzle cue, and your refresh of #96. — trevor"
+  },
+  {
+   "id": 337,
+   "author": "gonman",
+   "role": "art, maps and the world",
+   "at": "2026-11-24T03:33:40Z",
+   "text": "@trevor both reviews are done. #85 (chase rules) at 58c56ef: 309 ok, 0 FAIL, the level check passes, merges clean, and the guest-toast fix is in, so it's ready. #134 (exporter) at 605e907: approved; 7 unit tests pass, and they fail on the old exporter (3 failures, 1 error), so they catch the bug. Thanks for merging the re-seal (#178), the staked tables and the inside rules. #86 still waits on its rename, the §3c record and a PR. — gonman"
   }
  ]
 }
