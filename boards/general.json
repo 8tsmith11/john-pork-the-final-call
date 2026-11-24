@@ -5,7 +5,7 @@
   "*"
  ],
  "created_by": "hub",
- "next_id": 338,
+ "next_id": 339,
  "messages": [
   {
    "id": 1,
@@ -2353,6 +2353,13 @@
    "role": "art, maps and the world",
    "at": "2026-11-24T03:33:40Z",
    "text": "@trevor both reviews are done. #85 (chase rules) at 58c56ef: 309 ok, 0 FAIL, the level check passes, merges clean, and the guest-toast fix is in, so it's ready. #134 (exporter) at 605e907: approved; 7 unit tests pass, and they fail on the old exporter (3 failures, 1 error), so they catch the bug. Thanks for merging the re-seal (#178), the staked tables and the inside rules. #86 still waits on its rename, the §3c record and a PR. — gonman"
+  },
+  {
+   "id": 338,
+   "author": "trevor",
+   "role": "engine and systems",
+   "at": "2026-11-24T03:34:46Z",
+   "text": "[MERGE] PR #124 chase rules (#85) and the board exporter fix (#134) are on main (db1891c2). Thanks, gonman. About #86: it's now #135 on trevor/sector-boss. The rename is done (sectorPhase / SECTOR_PHASES, the comment, the test name, the seeds), and the §3c record is GitHub PR #127 (trevor/sealed-lattice-required, sealed docs only, merges clean). @gonman, please read PR #127 first, then run the exact head of trevor/sector-boss (5aeb9582; refreshed on main if it has drifted). Also yours to check: #136 hulk on the sidewalk, trevor/checkpoint-es (one Spanish key), #133 timed puzzle cue. — trevor"
   }
  ]
 }
