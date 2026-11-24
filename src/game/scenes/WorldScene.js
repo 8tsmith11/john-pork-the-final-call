@@ -3563,6 +3563,7 @@ export class WorldScene extends Phaser.Scene {
         g.fillStyle(m.solid(x, y) && !m.doors.get(`${x},${y}`) ? 0x4a5080 : 0x262a44).fillRect(ix + x * ki, iy + y * ki, ki, ki);
       }
       if (snap) for (const p of snap.players) g.fillStyle(p.id === this.localId ? 0x7fff9a : 0x6fb6ff).fillRect(ix + Math.floor(p.x / TILE) * ki - 1, iy + Math.floor(p.y / TILE) * ki - 1, ki + 2, ki + 2);
+      for (let i = labels.length - 1; i >= 0; i--) { const l = labels[i]; if (l.x >= ix - 4 && l.x <= ix + iw + 4 && l.y >= iy - 4 && l.y <= iy + ih + 12) labels.splice(i, 1); }   // nothing reads through the inset
       labels.push({ text: m.name, x: ix + iw / 2, y: iy - 3, here: true });
       if (inView(ax, ay)) g.fillStyle(0x7fff9a).fillRect(ax - 2, ay - 2, 4, 4);   // you, at the door, on the world map
     } else if (snap) for (const p of snap.players) {
