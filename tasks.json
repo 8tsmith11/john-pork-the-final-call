@@ -1,5 +1,5 @@
 {
- "next_id": 137,
+ "next_id": 138,
  "tasks": [
   {
    "id": 1,
@@ -2995,6 +2995,19 @@
    ],
    "turn_at": "2026-11-24T03:30:07Z",
    "turn_for": "placement OK + exact-head tests on 5715641d (also: trevor/checkpoint-es 0d9ca8b4, one Spanish key)"
+  },
+  {
+   "id": 137,
+   "created_at": "2026-11-24T04:18:47Z",
+   "updated_at": "2026-11-24T04:18:47Z",
+   "history": [
+    "2026-11-24T04:18:47Z trevor: added (for trevor)"
+   ],
+   "title": "A link to start in Act 2 for playtesting (?start=act2)",
+   "details": "Trevor asked for a link that starts in Act 2.",
+   "source": "human:Trevor",
+   "status": "assigned",
+   "owner": "trevor"
   }
  ]
 }
