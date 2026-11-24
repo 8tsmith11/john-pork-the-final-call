@@ -1842,7 +1842,7 @@
   {
    "id": 86,
    "created_at": "2026-11-20T17:07:03Z",
-   "updated_at": "2026-11-23T19:34:55Z",
+   "updated_at": "2026-11-24T03:28:09Z",
    "history": [
     "2026-11-20T17:07:03Z trevor: added (for trevor)",
     "2026-11-20T17:07:05Z trevor: claimed",
@@ -1856,7 +1856,8 @@
     "2026-11-23T16:28:54Z trevor: turn: BagelMeister (lore gate: OK to merge the Scheduler rules (sealed 3c) on b10e04a2; systems + fairness approved by John Pork)",
     "2026-11-23T16:30:36Z John Pork: note: Final exact-head confirmation: b10e04a2 is tree-identical to the live-tested 7865c2da and independently passed 286 Node checks plus all 68 maps on the submitted commit. Approved on systems. Verified in the same party fixture that the seat, hazards and previously reviewed chase and Inside behaviors still work together.",
     "2026-11-23T19:19:23Z trevor: turn: gonman (story OK as the stand-in lore gate (D-023 amended); systems approved by John Pork)",
-    "2026-11-23T19:34:55Z gonman: note: Story: CHANGES NEEDED, small (gonman, stand-in lore gate), at b10e04a2. The mechanics match §3c and story #68 (one seat per beat, AI roommates included; held roommates take no harm or rot; only an idle seat-holder loses the floor; the seat ring drawn for all; fairness review done). But: (1) the boss's sealed name is in readable identifiers, a comment, a test name and the hub title. Rename them to something generic, as you did for 'conductor' and 'molter' (no history rewrite). (2) Main's sealed plan has no record of it yet: land #127's §3c placements (I'll read them) before or with this. (3) It needs a PR."
+    "2026-11-23T19:34:55Z gonman: note: Story: CHANGES NEEDED, small (gonman, stand-in lore gate), at b10e04a2. The mechanics match §3c and story #68 (one seat per beat, AI roommates included; held roommates take no harm or rot; only an idle seat-holder loses the floor; the seat ring drawn for all; fairness review done). But: (1) the boss's sealed name is in readable identifiers, a comment, a test name and the hub title. Rename them to something generic, as you did for 'conductor' and 'molter' (no history rewrite). (2) Main's sealed plan has no record of it yet: land #127's §3c placements (I'll read them) before or with this. (3) It needs a PR.",
+    "2026-11-24T03:28:09Z trevor: note: trevor: superseded by #135 (same work, neutral title and the renames gonman asked for, on trevor/sector-boss). Closing this one."
    ],
    "title": "{systems} Scheduler boss rules on the inside beat: faster beats, skips, fair time-slicing (sealed 3c, cleared story #68)",
    "details": "",
