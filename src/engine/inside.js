@@ -11,14 +11,14 @@ const TILE = 16;
 export const INSIDE = { beat: 1.0, window: 0.3, wrap: false, corruptRate: 18, gcBeats: 4, termR: 24, corrupt: [], terminals: [],
   skipEvery: 0, slices: false, idleMove: 8, idleBeats: 2 };
 
-// The Scheduler (a boss for the last inside sector; placement sealed) drives these through schedulerPhase():
+// The last inside sector's boss (placement sealed) drives these through sectorPhase():
 //   skipEvery: every Nth beat is skipped: no window, the rhythm stutters.
 //   slices: time-slicing. One roommate holds the seat per beat, in turn (AI roommates too); everyone else is held.
 //   Held roommates are never punished. A seat-holder who barely moves through their slice gets their floor
 //   deallocated: a corrupted tile under them for idleBeats beats.
-export const SCHEDULER_PHASES = [null, { beat: 1.0 }, { beat: 0.75 }, { beat: 0.75, skipEvery: 3, slices: true }];
-export function schedulerPhase(st, phase) {
-  const ph = SCHEDULER_PHASES[Math.max(1, Math.min(SCHEDULER_PHASES.length - 1, phase))];
+export const SECTOR_PHASES = [null, { beat: 1.0 }, { beat: 0.75 }, { beat: 0.75, skipEvery: 3, slices: true }];
+export function sectorPhase(st, phase) {
+  const ph = SECTOR_PHASES[Math.max(1, Math.min(SECTOR_PHASES.length - 1, phase))];
   st.cfg = { ...st.cfg, skipEvery: 0, slices: false, ...ph };
   if (!st.cfg.slices) {
     st.seat = null;

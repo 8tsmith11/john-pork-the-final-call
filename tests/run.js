@@ -3117,18 +3117,18 @@ test('chase rules (src/engine/chase.js): the pace line catches stragglers, every
   const o = new Sim(rotArena(), { seed: 'plain' }); o.addPlayer('h', 'trevor'); assert.equal(o.chase, null); assert.equal(o.snapshot().ch, undefined);
 });
 
-test('the Scheduler\'s rules (inside.js): faster beats, skipped beats, and fair time-slicing for solo, AI and co-op', async () => {
+test('the last sector boss\'s rules (inside.js): faster beats, skipped beats, and fair time-slicing for solo, AI and co-op', async () => {
   const I = await import('../src/engine/inside.js');
-  const box = { id: 'sched-test', w: 20, h: 12, objects: [], enemies: [], spawns: [{ x: 48, y: 48 }], inside: { beat: 1, terminals: [[2, 2]] }, solid: (tx, ty) => tx < 0 || ty < 0 || tx >= 20 || ty >= 12 };
+  const box = { id: 'slice-test', w: 20, h: 12, objects: [], enemies: [], spawns: [{ x: 48, y: 48 }], inside: { beat: 1, terminals: [[2, 2]] }, solid: (tx, ty) => tx < 0 || ty < 0 || tx >= 20 || ty >= 12 };
   const run = (sim, secs, inp = new Map()) => { const ev = []; for (let i = 0; i < Math.round(secs * 60); i++) { sim.step(1 / 60, inp); ev.push(...sim.events); } return ev; };
-  const sim = new Sim(box, { seed: 'sched' });
+  const sim = new Sim(box, { seed: 'slice' });
   sim.addPlayer('h', 'trevor'); sim.addPlayer('ai:manuel', 'manuel'); sim.addPlayer('ai:michael', 'michael');
   for (const [i, p] of [...sim.players.values()].entries()) { p.x = 60 + i * 60; p.y = 100; }
   // phase 2: a faster beat
-  I.schedulerPhase(sim.inside, 2); const b2 = run(sim, 3).filter((e) => e.t === 'beat').length;
+  I.sectorPhase(sim.inside, 2); const b2 = run(sim, 3).filter((e) => e.t === 'beat').length;
   assert.ok(b2 >= 3, `faster beats (${b2} in 3 s)`);
   // phase 3: every third beat is skipped, and the seat goes round everyone, AI roommates included
-  I.schedulerPhase(sim.inside, 3);
+  I.sectorPhase(sim.inside, 3);
   const seats = [], ev = [];
   for (let i = 0; i < 6 * 60; i++) { sim.step(1 / 60, new Map([['h', { ...emptyInput(), mx: 1 }]])); ev.push(...sim.events); if (sim.events.some((e) => e.t === 'beat')) seats.push(sim.inside.seat); }
   assert.ok(ev.some((e) => e.t === 'beat' && e.skip), 'some beats are skipped');
@@ -3152,16 +3152,16 @@ test('the Scheduler\'s rules (inside.js): faster beats, skipped beats, and fair 
   assert.ok(deallocs.length > 0, 'an idle seat-holder loses the tile under them');
   assert.ok(sim.snapshot().ins.live.length > 0, 'and it shows as corrupted');
   // moving through your slice keeps the floor
-  const s2 = new Sim(box, { seed: 'sched2' }); s2.addPlayer('h', 'trevor'); const q = s2.players.get('h'); q.x = 60; q.y = 100;
-  I.schedulerPhase(s2.inside, 3); let mine = 0, dir = 1;
+  const s2 = new Sim(box, { seed: 'slice2' }); s2.addPlayer('h', 'trevor'); const q = s2.players.get('h'); q.x = 60; q.y = 100;
+  I.sectorPhase(s2.inside, 3); let mine = 0, dir = 1;
   for (let i = 0; i < 6 * 60; i++) { if (i % 60 === 0) dir = -dir; s2.step(1 / 60, new Map([['h', { ...emptyInput(), mx: dir }]])); mine += s2.events.filter((e) => e.t === 'dealloc').length; }
   assert.equal(mine, 0, 'keep moving on your turn and nothing is taken');
-  I.schedulerPhase(s2.inside, 1); assert.equal(s2.inside.seat, null, 'back to phase 1: no slicing');
+  I.sectorPhase(s2.inside, 1); assert.equal(s2.inside.seat, null, 'back to phase 1: no slicing');
 
   const firstTick = new Sim(box);
   firstTick.addPlayer('a','manuel'); firstTick.addPlayer('b','michael');
   const a = firstTick.players.get('a'), b = firstTick.players.get('b');
-  I.schedulerPhase(firstTick.inside, 3);
+  I.sectorPhase(firstTick.inside, 3);
   const both = new Map([['a', { ...emptyInput(), mx: 1 }], ['b', { ...emptyInput(), mx: 1 }]]);
   firstTick.step(1 / 60, both);
   assert.equal(firstTick.inside.seat, 'a');
@@ -3172,7 +3172,7 @@ test('the Scheduler\'s rules (inside.js): faster beats, skipped beats, and fair 
 
   const returns = new Sim(box);
   returns.addPlayer('h','trevor');
-  I.schedulerPhase(returns.inside, 3);
+  I.sectorPhase(returns.inside, 3);
   const r = returns.players.get('h');
   r.x = 100;
   const backAndForth = [];
