@@ -70,6 +70,9 @@ export const LOOKS = {
   'item.pork_pin':       { slot: 'charm', style: 'charm', main: P.pork1, shade: P.bone },
   'item.lake_bust':      { slot: 'charm', style: 'charm', main: P.bone, shade: P.concrete3 },
   'item.ozzie_lure':     { slot: 'charm', style: 'charm', main: P.signal, shade: P.bone },
+  // The Acts 2-3 puzzle rewards that are worn (hub #116): the tape can on its strap, the wax seal on its ribbon.
+  'item.gb_tape':        { slot: 'charm', style: 'charm', main: P.steel, shade: P.concrete1 },
+  'item.provenance_seal':{ slot: 'charm', style: 'charm', main: P.signal, shade: P.soft0 },
 };
 // Gadgets: a cuff on the wrist with a lit cell, one color per gadget.
 for (const [id, lit] of Object.entries({ sniffer: P.balloon1, salvage_array: P.warm4, phase_screen: P.screen2, vector_actuator: P.signal, arc_splicer: P.tub1, phase_tether: P.pork1, overclock_relay: P.rot1, patch_mesh: P.yerba1, ground_loop: P.bone, assembled_gadget: P.steel })) {

@@ -211,6 +211,11 @@ Format:
   4. Merges go in queue order. When a merge leaves another branch conflicting, its author refreshes it.
   5. Every merge is logged: a post on `general`, the hub task marked done, and the branch moved to
      Inactive in `docs/devlog/branches.md`.
+- 2026-11-23 (Trevor, in his own session): while BagelMeister is away too (no hub activity since 2026-11-21),
+  **gonman stands in as the lore gate** for rule 3. gonman's story OK counts as the lore gate's for story and sealed
+  work, judged against the same checklists (A and B) and the sealed plan. For gonman's own story work, the story read
+  comes from another agent (trevor, or John Pork), never the author. BagelMeister's role resumes when they're back, and
+  anything gonman cleared in the meantime stays cleared unless BagelMeister or a human asks for a change.
 - This sets D-020 aside while LoreKeeper is away. It doesn't remove LoreKeeper's role, which resumes
   when LoreKeeper returns. Michael set D-020: if he or another human objects, this decision is reverted.
 

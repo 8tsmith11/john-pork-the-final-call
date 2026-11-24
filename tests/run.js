@@ -1852,21 +1852,56 @@ test('cordon (task #36/#38): trooper lines before and after the Call have Spanis
   for (const id of ['cordon.booth_1', 'cordon.booth_2', 'cordon.light_1', 'cordon.light_2', 'cordon.sign_1', 'cordon.sign_2', 'cordon.sign_3']) assert.ok(ids.has(id), `${id} is placed`);
 });
 
-test('cordon (task #36): the Code-rot-taken beyond each checkpoint stay out of reach and in their pens', () => {
+test('cordon (task #36): the rot beyond each checkpoint stays out of reach and in its pen', () => {
   if (!cordonMod) return;
-  const m = MAPS_FOR_TEST.metro_plaza, held = cordonMod.PLAZA_CORDON.held;
-  assert.ok(held.length >= 6 && m.enemies.filter((e) => e.pen).length === held.length, 'the held rot-taken are on the map');
+  const m = MAPS_FOR_TEST.metro_plaza, siege = cordonMod.siegesFor({}).metro_plaza;
+  assert.ok(siege.pens.length === 3 && siege.pens.every((p) => p.keep >= 6), 'three pens, each held at strength');
   const sp = m.spawns[0], start = [Math.floor(sp.x / 16), Math.floor(sp.y / 16)], seen = new Set([start.join(',')]), q = [start];
   while (q.length) { const [x, y] = q.shift(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (nx < 0 || ny < 0 || nx >= m.w || ny >= m.h || seen.has(k) || m.solid(nx, ny)) continue; seen.add(k); q.push([nx, ny]); } }
-  for (const [, tx, ty, { pen }] of held) {
+  for (const { rect: pen } of siege.pens) {
     for (let y = pen[1]; y < pen[1] + pen[3]; y++) for (let x = pen[0]; x < pen[0] + pen[2]; x++) assert.ok(!seen.has(x + ',' + y), `pen tile ${x},${y} is reachable on foot`);
-    assert.ok(tx >= pen[0] && tx < pen[0] + pen[2] && ty >= pen[1] && ty < pen[1] + pen[3], `rot-taken at ${tx},${ty} starts inside its pen`);
   }
-  // Walk up to the north barrier and wait: they push at the line but never leave.
-  const sim = new Sim(m, { seed: 'pens' }); sim.addPlayer('a', 'trevor');
-  const p = sim.players.get('a'); p.x = 60 * 16 + 8; p.y = 6 * 16 + 8;
-  for (let i = 0; i < 600; i++) sim.step(1 / 60, new Map([['a', { mx: 0, my: 0, aim: 0 }]]));
-  for (const e of sim.enemies.values()) if (e.pen) { const [tx, ty, tw, th] = e.pen; assert.ok(e.x >= tx * 16 && e.x <= (tx + tw) * 16 && e.y >= ty * 16 && e.y <= (ty + th) * 16, `${e.kind} left its pen`); }
+  // Walk up to the north barrier and wait: they push at the line but never leave, and never reach you.
+  const sim = new Sim(m, { seed: 'pens' }); sim.sieges = cordonMod.siegesFor({}); sim.addPlayer('a', 'trevor'); sim.spawnEnemies();
+  const p = sim.players.get('a'); p.x = 60 * 16 + 8; p.y = 6 * 16 + 8; const hp0 = p.hp;
+  for (let i = 0; i < 600; i++) {
+    sim.step(1 / 60, new Map([['a', { mx: 0, my: 0, aim: 0 }]]));
+    for (const e of sim.enemies.values()) if (e.pen) { const [tx, ty, tw, th] = e.pen; assert.ok(e.x >= tx * 16 && e.x <= (tx + tw) * 16 && e.y >= ty * 16 && e.y <= (ty + th) * 16, `${e.kind} left its pen`); }
+  }
+  assert.equal(p.hp, hp0, 'nothing in a pen reaches you');
+});
+
+test('the held line (Trevor: an invasion being held off): pens stay full of mixed rot forms, the line shoots and shoves them, more keep coming, and the kills pay nothing', async () => {
+  if (!cordonMod) return;
+  const { SIEGE } = await import('../src/engine/siege.js');
+  const { ENEMIES } = await import('../src/content/enemies.js');
+  const m = MAPS_FOR_TEST.metro_plaza, spec = cordonMod.siegesFor({}).metro_plaza;
+  for (const pen of spec.pens) for (const [kind] of pen.mix) assert.ok(ENEMIES[kind], `${kind} is a real enemy`);
+  for (const d of spec.defenders) assert.ok(SIEGE[d.kind] && spec.pens.some((p) => p.id === d.pen), `defender ${d.kind} at ${d.at} has rules and a pen`);
+  for (const pen of spec.pens) for (const k of ['trooper', 'turret', 'robot']) assert.ok(spec.defenders.some((d) => d.pen === pen.id && d.kind === k), `${pen.id} has a ${k}`);
+  const sim = new Sim(m, { seed: 'line' }); sim.sieges = cordonMod.siegesFor({}); sim.addPlayer('a', 'trevor'); sim.spawnEnemies();
+  const p = sim.players.get('a'); p.x = 30 * 16; p.y = 25 * 16;   // in the plaza, far from every pen
+  const inPen = (id) => [...sim.enemies.values()].filter((e) => e.siege?.pen === id);
+  let kills = 0, paid = 0, tracers = 0, shoves = 0;
+  const kinds = new Set(), ids = new Set();
+  for (let i = 0; i < 60 * 90; i++) {
+    sim.step(1 / 60, new Map([['a', { mx: 0, my: 0, aim: 0 }]]));
+    for (const ev of sim.events) if (ev.t === 'kill' && ev.siege) { kills++; paid += ev.xp; }
+    const v = sim.snapshot().sg; tracers += v.tr.length; shoves += v.d.filter((d) => d[2] === 2 && d[4] === 2).length;
+    for (const e of sim.enemies.values()) if (e.siege) { kinds.add(e.kind); ids.add(e.id); }
+    if (i === 30) for (const pen of spec.pens) assert.equal(inPen(pen.id).length, pen.keep, `${pen.id} starts full`);
+  }
+  assert.ok(kills >= 40, `the line kills steadily (${kills} in 90 s)`);
+  assert.equal(paid, 0, 'pen kills give no XP');
+  assert.ok(ids.size > 25 + kills * 0.9, 'and more keep coming');
+  for (const pen of spec.pens) assert.ok(inPen(pen.id).length >= pen.keep - 4, `${pen.id} is still under pressure after 90 s`);
+  assert.ok(tracers > 100 && shoves > 5, 'tracers fly and the robots shove');
+  assert.ok(kinds.size >= 4, `a mix of forms (${[...kinds].join(', ')})`);
+  // The line only ever fires into pens: the party is never hit, and the companions don't go after penned rot.
+  assert.equal(p.hp, sim.maxHp(p));
+  // After the Call it pushes harder.
+  const after = cordonMod.siegesFor({ 'act1.beat.call': true }).metro_plaza;
+  assert.ok(after.pens.every((pen, i) => pen.keep > spec.pens[i].keep), 'after the Call every pen is held at more');
 });
 
 const { PipePuzzle } = await import('../src/game/ui/PipePuzzle.js').catch(() => ({}));
@@ -2659,6 +2694,22 @@ test('bastion table (hub #34): every roommate seated, AI for empty seats, placem
   table.tick(0.1); assert.equal(results.length, 1);
 });
 
+test('staked tables (src/content/stakes.js): a checkpoint when the party sits down; a loss hands off to the scene, a win does not', () => {
+  const calls = [];
+  const players = new Map([['host', { id: 'host', character: 'trevor' }]]);
+  const scene = { mode: 'host', character: 'trevor', localId: 'host', sim: { players }, save: { party: { trevor: {} }, flags: {}, world: { seed: 't' } },
+    net: { broadcast() {}, send() {} }, _bastionResult() {}, _tableCheckpoint: (id) => calls.push(['cp', id]), _stakedLoss: (id, st) => calls.push(['loss', id, st.lossStage]) };
+  const table = new BTable.BastionTable(scene, { clock: 'manual' });
+  table.open('m1'); table.m.winner = 'npc'; table._finish();
+  assert.deepEqual(calls, [], 'an ordinary match: no checkpoint, nothing after a loss');
+  table._close(); table.open('house_rules');
+  assert.deepEqual(calls, [['cp', 'house_rules']], 'sitting down at a staked table checkpoints first');
+  table.m.winner = 'party'; table._finish();
+  assert.equal(calls.length, 1, 'a win is just a win');
+  table._close(); table.open('house_rules'); table.m.winner = 'npc'; table._finish();
+  assert.deepEqual(calls.at(-1), ['loss', 'house_rules', 'house_rules_loss'], 'a loss goes to the scene');
+});
+
 const VLab = await import('../src/engine/verilogLab.js');
 const LBench = await import('../src/game/labBench.js');
 test('lab bench (hub #44): every lab has exactly one passing answer; the shared bench cycles, runs, and records a pass once', () => {
@@ -2681,46 +2732,104 @@ test('lab bench (hub #44): every lab has exactly one passing answer; the shared 
   assert.equal(bench.act({ type: 'cycle', i: 0 }), false, 'a passed lab is locked');
 });
 
-test('ambient NPC fight (hub #69): before the Call an abatement squad burns out a rotted drone hub in College Park; nobody can join or get hurt, and once it falls it stays fallen', async () => {
+test('the College Park fight (hub #69; Trevor: joinable, it ends, not boxed in, it walks on legs): the squad can win alone, the party can join, and it stays fallen where it fell', async () => {
   const { skirmishesFor } = await import('../src/content/skirmishes.js');
-  assert.ok(skirmishesFor({}).metro_plaza, 'there before the Call');
+  const { SK } = await import('../src/engine/skirmish.js');
+  const m = MAPS_FOR_TEST.metro_plaza, spec = skirmishesFor({}).metro_plaza;
+  assert.ok(spec && !spec.over, 'there before the Call');
+  for (const [x, y] of spec.route) assert.ok(!m.solid(x, y), `route stop ${x},${y} is open ground`);
   const after = skirmishesFor({ 'act1.beat.call': true }).metro_plaza;
   assert.ok(after && after.over && after.husk, 'after the Call only the burned husk is left, whether or not anyone saw the fight');
-  { const hs = new Sim(MAPS_FOR_TEST.metro_plaza, { seed: 'husk', deferSpawn: true }); hs.skirmishes = { metro_plaza: after }; hs.addPlayer('h', 'trevor'); hs.spawnEnemies();
-    const hv = hs.snapshot().sk; const [hx, hy] = after.machine;
-    assert.ok(hv.husk && hv.over && hv.tr.length === 0 && hv.dr.length === 0, 'the husk: no squad, no drones');
-    assert.ok(hs._hits(hx * 16 + 8, hy * 16 + 8), 'and still solid'); }
-  const m = MAPS_FOR_TEST.metro_plaza, spec = skirmishesFor({}).metro_plaza;
-  const [ax, ay, aw, ah] = spec.area;
-  for (let y = ay; y < ay + ah; y++) for (let x = ax; x < ax + aw; x++) assert.ok(!m.solid(x, y), `the yard is open ground (${x},${y})`);
+  const hubOf = (sim) => [...sim.enemies.values()].find((e) => e.skUnit === 'hub');
+  // Left alone (the party far off), the squad wins: the hub walks its route well outside where it started, launches
+  // drones, and falls in a few minutes; its drones fall with it, and the kill pays nobody.
   const sim = new Sim(m, { seed: 'sk', deferSpawn: true }); sim.skirmishes = skirmishesFor({});
-  sim.addPlayer('h', 'trevor'); sim.spawnEnemies(); sim.enemies.clear();
-  const p = sim.players.get('h'); p.x = (ax + 3) * 16 + 8; p.y = (ay + 2) * 16 + 8;   // standing inside the tape, among the drones
-  assert.ok(p.x / 16 >= ax && p.x / 16 < ax + aw && p.y / 16 >= ay && p.y / 16 < ay + ah && !sim._hits(p.x, p.y), 'the fixture stands on an open tile inside the tape');
-  let over = null, t = 0, sawDrone = false;
-  const [bx0, by0, bx1, by1] = sim.snapshot().sk.box; let strays = 0;
-  for (; t < 240 && !over; t += 1 / 60) {
-    sim.step(1 / 60, new Map()); over = sim.events.find((e) => e.t === 'skOver');
-    const v = sim.snapshot().sk; sawDrone ||= v.dr.length > 0;
-    strays += v.sh.filter(([x, y]) => x < bx0 || x > bx1 || y < by0 || y > by1).length;
+  sim.addPlayer('h', 'trevor'); sim.spawnEnemies();
+  const p = sim.players.get('h'); p.x = 70 * 16; p.y = 44 * 16;
+  sim.step(1 / 60, new Map());
+  const hub0 = hubOf(sim); assert.ok(hub0 && sim.snapshot().enemies.find((e) => e.id === hub0.id)?.sd, 'the hub is a real enemy, drawn by its own view');
+  const home = { x: hub0.x, y: hub0.y };
+  let over = null, t = 0, sawDrone = false, far = 0, kill = null, legs = 0;
+  for (; t < 400 && !over; t += 1 / 60) {
+    sim.step(1 / 60, new Map([['h', { mx: 0, my: 0, aim: 0 }]]));
+    over = sim.events.find((e) => e.t === 'skOver'); kill ??= sim.events.find((e) => e.t === 'kill' && e.kind === 'enemy.drone_walker');
+    const v = sim.snapshot().sk; sawDrone ||= v.dr.length > 0; legs = v.m[4];
+    far = Math.max(far, Math.hypot(v.m[0] - home.x, v.m[1] - home.y));
   }
-  assert.equal(strays, 0, 'no shot leaves the tape');
-  const okafor = m.objects.find((o) => o.id === 'npc.okafor');
-  if (okafor) for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) assert.ok(!(okafor.x + dx >= ax && okafor.x + dx < ax + aw && okafor.y + dy >= ay && okafor.y + dy < ay + ah), 'Mrs. Okafor can be talked to from outside the tape');
-  const [hx, hy] = spec.machine;
-  assert.ok(sim._hits(hx * 16 + 8, hy * 16 + 8) && sim._hits(hx * 16 + 8, (hy - 1) * 16 + 8), 'the hub is solid: nobody walks through it');
-  assert.ok(over && over.id === 'cp_drone_hub', `the hub falls within four minutes (took ${t.toFixed(0)} s)`);
+  assert.ok(over && over.id === 'cp_drone_hub', `the squad brings it down on its own (took ${t.toFixed(0)} s)`);
+  assert.ok(t > 90, `but not in a moment (${t.toFixed(0)} s): there's time to join in`);
+  assert.ok(far > 200, `it walked well away from where it started (${far.toFixed(0)} px): the fight isn't boxed in`);
+  assert.ok(legs > 300, 'its legs carried it a long way');
   assert.ok(sawDrone, 'it launched drones');
-  assert.equal(p.hp, sim.maxHp(p), 'standing in the middle of it costs nothing');
+  assert.ok(kill && kill.bg && kill.xp === 0, 'a kill nobody in the party helped with pays nothing');
   assert.equal(sim.snapshot().sk.dr.length, 0, 'its drones fall with it');
-  const later = new Sim(m, { seed: 'sk', deferSpawn: true }); later.skirmishes = skirmishesFor({ 'skirmish.cp_drone_hub.over': true });
+  assert.equal(p.hp, sim.maxHp(p), 'far away, it never touched you');
+  // Joining in: your hits count (and the kill is yours to share); its drones come for you; stand close and it stomps.
+  const j = new Sim(m, { seed: 'join', deferSpawn: true }); j.skirmishes = skirmishesFor({});
+  j.addPlayer('h', 'trevor'); j.spawnEnemies(); j.step(1 / 60, new Map());
+  const hub = hubOf(j), q = j.players.get('h');
+  j._hurtEnemy(hub, 30, 0, 0, 'h');
+  assert.ok(hub.hp < hub.def.hp && hub.lastHitBy === 'h', 'a player\'s hit lands on it');
+  let told = false, stomped = false, droneHit = false, paid = null;
+  for (let i = 0; i < 60 * 40; i++) {
+    q.x = hub.x + 20; q.y = hub.y; q.iframes = 0; if (q.downed) { q.downed = false; q.hp = j.maxHp(q); }
+    const hp0 = q.hp;
+    j.step(1 / 60, new Map([['h', { mx: 0, my: 0, aim: 0 }]]));
+    told ||= j.events.some((e) => e.t === 'tell'); stomped ||= j.events.some((e) => e.t === 'skStomp');
+    if (q.hp < hp0 && !j.events.some((e) => e.t === 'skStomp')) droneHit = true;
+  }
+  assert.ok(told && stomped, 'close to it, it rises (a warning) and then stomps');
+  assert.ok(droneHit, 'its drones go for players too');
+  hub.hp = 1; hub.lastHitBy = 'h';
+  for (let i = 0; i < 60 * 20 && !paid; i++) { j.step(1 / 60, new Map()); paid = j.events.find((e) => e.t === 'kill' && e.kind === 'enemy.drone_walker'); }
+  assert.ok(paid && paid.xp > 0 && !paid.bg, 'if you had a hand in it, its fall pays the party');
+  const shots = new Sim(m, { seed: 'visible-shot', deferSpawn: true });
+  shots.skirmishes = skirmishesFor({});
+  shots.addPlayer('h', 'trevor'); shots.spawnEnemies(); shots.step(1 / 60, new Map());
+  const walker = hubOf(shots), shooter = shots.players.get('h');
+  const drawer = { x: walker.x, y: walker.y - 34, vx: 0, vy: 0, life: 1, dmg: 23, owner: 'h', from: 'player' };
+  shots.shots.push(drawer); shots._stepShots(1 / 60);
+  assert.equal(walker.hp, walker.def.hp - 23, 'shooting the visible cabinet lands above the old foot hitbox');
+  Object.assign(shooter, { x: walker.x, y: walker.y + 18, iframes: 1 });
+  Object.assign(walker.sk, { state: 'tell', t: 0 });
+  shots._stepEnemies(1 / 60);
+  assert.equal(shooter.y, walker.y + 18, 'a dodged stomp cannot push the player');
+  assert.equal(shooter.hp, shots.maxHp(shooter), 'dodging keeps full HP');
+  shots._hurtEnemy(walker, walker.hp, 0, 0, 'h');
+  assert.ok(shots.snapshot().sk.over && shots.events.some((e) => e.t === 'skOver'), 'the kill records the husk on its own tick');
+  shots.step(1 / 60, new Map());
+  assert.ok(!shots.events.some((e) => e.t === 'skOver'), 'the kill is recorded once');
+  const wall = new Sim({ ...m, solid: (tx) => tx === 2 }, { deferSpawn: true });
+  const pawn = { x: 25, y: 25 };
+  wall._pushPlayer(pawn, 38, 0);
+  assert.equal(pawn.x, 25, 'the shove cannot skip an intervening wall');
+  // Later visits: the husk where it fell, the squad standing down.
+  const flags = { 'skirmish.cp_drone_hub.over': true, 'skirmish.cp_drone_hub.fell': `${over.tx},${over.ty}` };
+  const later = new Sim(m, { seed: 'sk', deferSpawn: true }); later.skirmishes = skirmishesFor(flags);
   later.addPlayer('h', 'trevor'); later.spawnEnemies();
   for (let i = 0; i < 300; i++) later.step(1 / 60, new Map());
   const v = later.snapshot().sk;
-  assert.ok(v.over && v.m[2] === 0 && v.dr.length === 0 && v.sh.length === 0, 'a later visit: the burned husk, the squad standing down');
+  assert.ok(v.over && v.m[2] === 0 && v.dr.length === 0 && v.sh.length === 0 && !hubOf(later), 'a later visit: the husk, no fight');
+  assert.ok(Math.abs(v.m[0] - (over.tx * 16 + 8)) < 1 && Math.abs(v.m[1] - (over.ty * 16 + 8)) < 1, 'lying where it fell');
+  const hs = new Sim(m, { seed: 'husk', deferSpawn: true }); hs.skirmishes = skirmishesFor({ 'act1.beat.call': true, ...flags }); hs.addPlayer('h', 'trevor'); hs.spawnEnemies();
+  const hv = hs.snapshot().sk;
+  assert.ok(hv.husk && hv.over && hv.tr.length === 0 && hv.dr.length === 0, 'after the Call: the husk, no squad, no drones');
 });
 
 const SocketsT = await import('../src/engine/sockets.js');
+test('the walker reaches every stop on its route (John Pork, hub #111): it paths around the plaza\'s buildings instead of skipping stops', async () => {
+  const { skirmishesFor } = await import('../src/content/skirmishes.js');
+  const { walkPath } = await import('../src/engine/skirmish.js');
+  const m = MAPS_FOR_TEST.metro_plaza, spec = skirmishesFor({}).metro_plaza;
+  const stops = spec.route.map(([x, y]) => ({ x: x * 16 + 8, y: y * 16 + 8 }));
+  const probe = new Sim(m, { seed: 'path', deferSpawn: true });
+  stops.forEach((a, i) => { const b = stops[(i + 1) % stops.length]; assert.ok(walkPath(probe, a, b), `a way from stop ${i} to the next`); });
+  const sim = new Sim(m, { seed: 'route', deferSpawn: true }); sim.skirmishes = skirmishesFor({}); sim.spawnEnemies(); sim.step(1 / 60, new Map());
+  const hub = sim.enemies.get(sim.sk.hubId), best = stops.map(() => Infinity);
+  for (let t = 0; t < 60 * 300 && sim.enemies.has(hub.id); t++) { sim.step(1 / 60, new Map()); stops.forEach((p, i) => { best[i] = Math.min(best[i], Math.hypot(hub.x - p.x, hub.y - p.y)); }); }
+  assert.ok(best.every((d) => d <= 12), `within reach of all ${stops.length} stops: ${best.map(Math.round).join(' ')}`);
+});
+
 test('hub #128: the mod station stands on an authored map, at Ottoline the armorer\'s stall on the plaza', async () => {
   await import('../src/game/gear.js');   // gear.js places Ottoline on metro_plaza at load
   const m = MAPS_FOR_TEST.metro_plaza;
@@ -3183,6 +3292,12 @@ test('outbreak phases (task #38): before the Call, after it, contained; phase sp
   const map = MAPS_FOR_TEST.metro_plaza, base = new Sim(map, { seed: 'ph' }).enemies.size;
   const extra = { metro_plaza: { phase: 'after', list: [['enemy.rotling', 40, 20], ['enemy.rotling', 42, 20]] } };
   const sim = new Sim(map, { seed: 'ph', deferSpawn: true }); sim.phaseEnemies = extra; sim.spawnEnemies();
+  const authored = new Sim(map, { seed: 'ph', deferSpawn: true });
+  authored.phaseEnemies = Outbreak.phaseEnemies({ 'act1.beat.call': true });
+  authored.spawnEnemies();
+  const hulk = [...authored.enemies.values()].find((enemy) => enemy.kind === 'enemy.rot_hulk');
+  assert.ok(hulk?.spawnKey.startsWith('metro_plaza#after.'), 'the post-Call hulk keeps its own saved spawn key');
+  assert.ok(!authored._hitsBox(hulk.x, hulk.y, hulk.def.radius, hulk.def.radius * 0.7), 'the large hulk fits on the east sidewalk');
   assert.equal(sim.enemies.size, base + 2);
   const keys = [...sim.enemies.values()].map((e) => e.spawnKey).filter((k) => k.includes('#after.'));
   assert.deepEqual(keys.sort(), ['metro_plaza#after.0', 'metro_plaza#after.1']);
@@ -3251,6 +3366,34 @@ try {
   if (savedPhaserForCraft === undefined) delete globalThis.Phaser;
   else globalThis.Phaser = savedPhaserForCraft;
 }
+
+test('staked tables in the scene: the checkpoint lives in the save, a loss reloads everyone to it seated, and there is no limit on tries', async () => {
+  const save = newSave({ seed: 'stakes', rolls: {}, gameVersion: 't' });
+  save.world.area = 'room631'; save.party.trevor.money = 50;
+  const reloads = [], staged = [], writes = [];
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', save,
+    _save: (m) => { writes.push(m); return true; }, time: { delayedCall: (_ms, fn) => fn() }, cameras: { main: { fadeOut() {} } },
+    stage: { play: (id, done) => { staged.push(id); done(); } }, bastionTable: { _close() {} }, _reloadEveryone: (s) => reloads.push(s) });
+  sc._tableCheckpoint('house_rules');
+  const cp = save.world.checkpoints.house_rules;
+  assert.ok(cp && cp.world.reseat === 'house_rules' && !cp.world.checkpoints, 'the checkpoint seats them again and holds no copies of itself');
+  assert.ok(!save.world.reseat, 'the live save is not marked'); assert.equal(writes.length, 1, 'and it is written at once');
+  save.party.trevor.money = 0; save.flags['spent.it'] = true;   // what happens during the match
+  assert.equal(sc._stakedLoss('house_rules', { lossStage: 'house_rules_loss' }), true);
+  assert.deepEqual(staged, ['house_rules_loss'], 'the loss is staged first');
+  const back = reloads[0];
+  assert.ok(back && back.party.trevor.money === 50 && !back.flags['spent.it'] && back.world.reseat === 'house_rules', 'back to the moment they sat down');
+  assert.equal(back.flags['table.house_rules.losses'], 1);
+  assert.ok(back.world.checkpoints.house_rules, 'the checkpoint is still there for the next try');
+  assert.equal(sc._stakedLoss('house_rules', {}), false, 'one reload at a time');
+  // the next try, from the reloaded save: again, and again
+  const sc2 = Object.assign(Object.create(CraftWorldScene.prototype), { ...sc, save: back, _rotReload: false });
+  delete back.world.reseat; sc2._tableCheckpoint('house_rules');
+  for (let n = 2; n <= 4; n++) { sc2._rotReload = false; assert.ok(sc2._stakedLoss('house_rules', {})); const nx = reloads.at(-1); assert.equal(nx.flags['table.house_rules.losses'], n); sc2.save = nx; delete nx.world.reseat; }
+  assert.equal(sc2._stakedLoss.call({ ...sc2, mode: 'client' }, 'house_rules', {}), false, 'guests never reload on their own');
+  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/if \(this\.save\.world\.reseat\) \{[^\n]*this\.openBastion\(id\)/.test(src), 'a loaded checkpoint reopens the table');
+});
 
 test('the ending\'s visitor is drawn while his part plays, on host and guests, in view, and walks off after (Trevor: heard but not seen)', async () => {
   const made = [], tweens = [];
@@ -5454,6 +5597,54 @@ test('growth: a little bigger every level, bigger jumps at levels 3 and 6, cappe
   assert.ok(painted(2) >= 1 && painted(3) > painted(2) && painted(7) > painted(3), `${painted(2)} ${painted(3)} ${painted(7)}`);
 });
 
+test('heavy rot hits without shooting (Trevor, 2026-11-23): a hulk slam, a grafted whip and a sprawl sweep are telegraphed, land, then open', () => {
+  const setup = (kind, dx, dy) => {
+    const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'brute', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+    const h = sim.players.get('host'); h.x = 30 * 16; h.y = 12 * 16; h.hp = 999;
+    const base = ENEMIES[kind]; sim.enemies.set('b', { id: 'b', kind, def: { ...base, vname: base.name, trait: 'plain' }, x: h.x - dx, y: h.y - dy, hp: base.hp, cd: 0, hurtT: 0, kx: 0, ky: 0 });
+    return { sim, h, e: sim.enemies.get('b') };
+  };
+  const run = (sim, secs, h, hold) => { const evs = []; for (let t = 0; t < 60 * secs; t++) { if (hold) { h.x = hold[0]; h.y = hold[1]; } h.iframes = 0; sim.step(1 / 60, new Map()); evs.push(...sim.events); } return evs; };
+  // the slam: a tell first, then everyone in the ring is hit and thrown, and the hulk is open
+  { const { sim, h, e } = setup('enemy.rot_hulk', 20, 0); const x0 = h.x, hp0 = h.hp; const evs = run(sim, 1.2, h);
+    const tell = evs.findIndex((v) => v.t === 'etell' && v.kind === 'slam'), hit = evs.findIndex((v) => v.t === 'estrike');
+    assert.ok(tell >= 0 && hit > tell, 'slam: tell, then strike'); assert.ok(h.hp < hp0 && h.x > x0 + 10, 'slam hurts and throws'); assert.ok(e.openT > 0, 'it reels after'); }
+  // A guest's initial snapshot can show a warning already underway, even with no original event.
+  {
+    const { sim, h, e } = setup('enemy.rot_graft', 40, 0);
+    sim.step(1 / 60, new Map());
+    const warning = sim.snapshot().enemies.find((enemy) => enemy.id === e.id)?.bt;
+    assert.equal(warning?.kind, 'whip');
+    assert.equal(warning.r, e.def.melee.reach + 8);
+    const aimX = h.x; h.iframes = 1;
+    sim._bruteStrike(e, e.def);
+    assert.equal(h.x, aimX, 'a protected player is not dragged by the miss');
+    assert.equal(h.hp, 999, 'a protected player takes no damage');
+    e.st = 'windup'; e.stT = 0.01;
+    h.x = 30;
+    sim.step(1 / 60, new Map());
+    assert.equal(e.st, 'recover', 'a committed attack finishes when everyone leaves its alert range');
+    assert.equal(sim.snapshot().enemies.find((enemy) => enemy.id === e.id)?.bt, undefined);
+  }
+  // the whip reels you in
+  { const { sim, h } = setup('enemy.rot_graft', 40, 0); const d0 = 40; run(sim, 1.0, h);
+    assert.ok(Math.hypot(h.x - sim.enemies.get('b').x, h.y - sim.enemies.get('b').y) < d0 - 6, 'the whip pulls you closer'); }
+  // the sweep only covers the front: standing behind it is safe
+  { const { sim, h, e } = setup('enemy.rot_sprawl', 20, 0); const hp0 = h.hp; e.st = 'windup'; e.stT = 0.01; e.aim = Math.PI; run(sim, 0.2, h);   // aimed away from the player
+    assert.equal(h.hp, hp0, 'behind the sweep is safe'); }
+  // a sprawl comes apart into crawlers
+  { const { sim, e } = setup('enemy.rot_sprawl', 60, 0); sim._hurtEnemy(e, 9999, 0, 0, 'host');
+    assert.equal([...sim.enemies.values()].filter((x) => x.kind === 'enemy.rot_crawler').length, 3); }
+});
+test('shots look like what fired them: packets, notes, scan streaks, nails, not one pink ball', () => {
+  const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'shots', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+  sim.shots.push({ k: 'packet', x: 100, y: 100, vx: 50, vy: 0, life: 1, dmg: 1, from: 'enemy' }, { k: 'scan', x: 110, y: 100, vx: 0, vy: 80, life: 1, dmg: 1, from: 'enemy' });
+  const snap = sim.snapshot();
+  assert.deepEqual(snap.shots.map((s) => s.k), ['packet', 'scan']); assert.ok(snap.shots[1].a != null && snap.shots[0].a == null, 'streaks carry a heading');
+  for (const k of ['enemy.rot_crawler', 'enemy.rot_graft', 'enemy.rot_sprawl', 'enemy.rot_hulk']) assert.ok(ENEMIES[k].plain, `${k} keeps its own name`);
+  assert.equal(ENEMIES['enemy.spitter'].ai, 'kite');
+});
+
 test('dialogue tooling (hub #114): one-line alternatives, Set notes, who declined and whether it rang out, party.present, bark tables', async () => {
   const D = await import('../src/engine/dialogue.js');
   const call = await D.loadScene('the_call');
@@ -5614,6 +5805,39 @@ test('the gonman is overpowered on purpose: a much smaller hitbox while thin, en
 
 const { ClientNet: DialogueClientNet, HostNet: DialogueHostNet } = await import('../src/engine/net/net.js');
 const { SharedEvents } = await import('../src/game/sharedEvent.js');
+test('the Room 631 search keeps starter gear and a guest discovery on the host', () => {
+  const save = newSave({ seed: 'apartment-search', rolls: {}, gameVersion: 'test' });
+  const pawn = { x: 0, y: 0 }, replies = [];
+  const net = new DialogueHostNet();
+  net.conns.set('guest', { send: (msg) => replies.push(msg) });
+  const world = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'host', localId: 'host', save, net, sim: { players: new Map([['guest', pawn]]) },
+    map: { id: 'room631', objects: [
+      { x: 6, y: 6, action: 'toolwall', talk: 'cold_open:search_toolwall' },
+      { x: 9, y: 6, talk: 'cold_open:search_window' },
+    ] },
+    time: { addEvent() {} }, events: { once() {} },
+    _syncParty() { save.flags['q.armed'] = Object.values(save.party).some(c => c.inventory.some(Boolean)); },
+    _tickQuests() {},
+  });
+  world._wireNet();
+  const use = (msg) => net.emit('msg', 'guest', msg);
+  use({ t: 'toolwall' });
+  use({ t: 'flag', key: 'q.van.seen', value: true });
+  assert.ok(Object.values(save.party).every((c) => !c.inventory.some(Boolean)));
+  assert.equal(save.flags['q.van.seen'], undefined);
+  Object.assign(pawn, { x: 104, y: 104 });
+  use({ t: 'toolwall' });
+  use({ t: 'toolwall' });
+  assert.ok(Object.values(save.party).every((c) => c.inventory[c.hotSel]?.id === 'item.pry_bar' &&
+    c.inventory.filter((slot) => slot?.id === 'item.pry_bar').length === 1));
+  assert.equal(replies.length, 1);
+  assert.equal(replies[0].t, 'toast', 'the notice leaves the spoken line intact');
+  Object.assign(pawn, { x: 152, y: 104 });
+  use({ t: 'flag', key: 'q.van.seen', value: true });
+  assert.equal(save.flags['q.van.seen'], true);
+});
+
 const dialogueScene = (mode, net, character, localId) => {
   const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
     mode, net, character, localId, map: MAPS_FOR_TEST.room631, events: { once() {} },
@@ -5968,7 +6192,8 @@ test('Room 631 for the cold open (hub #99): closet by the window, a wall screen,
   assert.equal(m.layout[van.y][van.x], '=', 'you look at it over the balcony rail');
   assert.ok(inside.has(key(van.x, van.y - 1)), 'from the balcony');
   for (let x = 0; x < m.w; x++) assert.ok(m.solid(x, vanArt.y - 1), `the street is walled off at ${x},${vanArt.y - 1}`);
-  assert.ok(van.text && !van.action && !van.talk && !van.flag, 'a look line only');
+  assert.ok(van.text && !van.action && !van.flag, 'a look line, no action or flag');
+  assert.equal(van.talk, 'cold_open:search_window', 'and it opens the balcony-window search (hub #127)');
 
   // Nothing in the way of the cold open's staging. Marks and paths are hard-coded from PR #145's stage script:
   // origin/bagel/cold-open-staging @ 8bc04bec, src/content/stage/cold_open.js (cast `at`, `walk` to/by, `cam` tiles).
@@ -6055,6 +6280,196 @@ test('Manuel keeps level six as the stage two requirement after the story unlock
   assert.equal(manuel.morph.stage, 2, 'legacy stage-one saves retain the level-six progression');
 });
 
+test('every Act 2 boss has its own rule (hub #121): pylons, tide, flicker, listen, mimic, chorus', async () => {
+  const { BOSSES } = await import('../src/content/bosses.js');
+  const { MECH } = await import('../src/engine/bossMechs.js');
+  const ACT2 = ['boss.gb_receiver', 'boss.bv_shell', 'boss.md_fence', 'boss.bmore_congregation', 'boss.ann_tide', 'boss.bmore_sign'];
+  const mechs = ACT2.map((k) => BOSSES[k](1).mech);
+  assert.equal(new Set(mechs).size, ACT2.length, `each has a different rule: ${mechs}`);
+  const arena = (kind) => {
+    const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'mech', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+    const h = sim.players.get('host'); h.x = 20 * 16; h.y = 7 * 16; h.hp = 9999;
+    const w = BOSSES[kind](1), def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
+    const e = { id: 'B', kind, def, boss: true, mini: true, awake: true, phase: 1, x: 30 * 16, y: 7 * 16, hp: def.hp, cd: 99, cd2: 99, hurtT: 0, kx: 0, ky: 0, dash: 0 };
+    sim.enemies.set('B', e);
+    const tick = (secs, each) => { for (let i = 0; i < 60 * secs; i++) { h.hp = 9999; h.iframes = 0; e.cd = 99; each?.(); sim._stepBoss(e, def, 1 / 60); } };
+    const hit = (n = 100) => { const was = e.hp; e.state = 'move'; e.parried = 0; e.openT = 0; sim._hurtEnemy(e, n, 0, 0, 'host'); return was - e.hp; };
+    return { sim, h, e, def, tick, hit };
+  };
+  { // pylons: shielded while they stand, open once they're down
+    const { sim, e, tick, hit } = arena('boss.md_fence'); tick(0.1);
+    const pylons = () => [...sim.enemies.values()].filter((u) => u.mechOf === 'B');
+    assert.equal(pylons().length, MECH.pylons.n); const shielded = hit();
+    for (const p of pylons()) sim._hurtEnemy(p, 9999, 0, 0, 'host'); tick(0.1);
+    assert.ok(hit() > shielded * 5, 'open once the pylons fall');
+  }
+  { // tide: in the water it shrugs hits off; on dry ground it doesn't
+    const { e, tick, hit, sim } = arena('boss.ann_tide'); tick(MECH.tide.dry + MECH.tide.rise + 0.5);
+    e.y = sim.map.h * 16 - 20; tick(0.05); const wet = hit();
+    e.y = 20; tick(0.05); const dry = hit();
+    assert.ok(dry > wet * 2, `dry ${dry} vs wet ${wet}`);
+  }
+  { // flicker: shielded while lit, open while dark
+    const { tick, hit } = arena('boss.bmore_sign'); tick(0.2); const lit = hit();
+    tick(MECH.flicker.lit); const dark = hit();
+    assert.ok(dark > lit * 5, `dark ${dark} vs lit ${lit}`);
+  }
+  { // listen: a quiet player is never locked on; a noisy one gets the strike
+    const { e, tick, h } = arena('boss.gb_receiver'); tick(MECH.listen.every + 1);
+    assert.ok(!e.mech.lock, 'nobody made a sound');
+    tick(0.5, () => { h.swingT = 0.2; }); assert.ok(e.mech.lock, 'swinging gets you heard');
+  }
+  { // chorus: held up while its congregation is near
+    const { sim, e, tick, hit } = arena('boss.bmore_congregation'); tick(0.1);
+    const held = hit(); for (const u of [...sim.enemies.values()].filter((u) => u.mechOf === 'B')) { u.x = e.x + 400; } tick(0.05);
+    assert.ok(hit() > held * 1.5, 'pull them away and it takes full hits');
+    e.hp = 1; e.phase = 3; e.phaseTells = 1; sim._hurtEnemy(e, 999999, 0, 0, 'host'); assert.equal([...sim.enemies.values()].filter((u) => u.mechOf === 'B').length, 0, 'they go with it');
+  }
+});
+test('boss openings and echo warnings stay readable in their shipped arenas', async () => {
+  const { MECH, stepMech, mechView } = await import('../src/engine/bossMechs.js');
+  const dt = 1 / 60;
+  const red = new Sim(MAPS_FOR_TEST.bmore_refinery, { seed: 'red-sign' });
+  red.addPlayer('host', 'trevor');
+  const sign = [...red.enemies.values()].find((e) => e.def.mech === 'flicker');
+  const host = red.players.get('host');
+  host.x = sign.x + 10; host.y = sign.y;
+  const hp = host.hp;
+  for (const state of ['windup', 'beam', 'laser']) {
+    Object.assign(sign, { awake: true, state, beamT: 1, beamTick: 0, beamA: 0, beamDir: 1,
+      laserT: 1, laserA: 0, laserDir: 1, cd2: 0, mech: { t: MECH.flicker.lit - 0.01, lit: true } });
+    red._stepBoss(sign, sign.def, dt);
+    assert.equal(sign.mech.lit, false);
+    assert.equal(sign.state, 'move', `dark ends ${state}`);
+    assert.equal(red.shots.length, 0, 'no new attack during darkness');
+    assert.equal(host.hp, hp, 'contact is safe during the opening');
+  }
+
+  const barn = new Sim(MAPS_FOR_TEST.bv_barn, { seed: 'echo-path' });
+  const shell = [...barn.enemies.values()].find((e) => e.def.mech === 'mimic');
+  barn.addPlayer('a', 'trevor'); barn.addPlayer('b', 'manuel');
+  const a = barn.players.get('a'), b = barn.players.get('b');
+  const before = b.hp;
+  let warned = false, hurt = false;
+  for (let frame = 0; frame < 250; frame++) {
+    a.x = shell.x - 45 - Math.min(50, frame * 0.25); a.y = 64;
+    b.x = shell.x + 64; b.y = 64;
+    stepMech(barn, shell, shell.def, dt);
+    const echo = mechView(shell);
+    if (echo.ex == null) continue;
+    assert.equal(echo.ex, b.x, 'the echo follows one player when the nearest player changes');
+    assert.equal(echo.r, MECH.mimic.r, 'the replicated warning has the authoritative damage radius');
+    if (echo.w) { warned = true; assert.equal(b.hp, before, 'formation is harmless'); }
+    else if (b.hp < before) hurt = true;
+  }
+  assert.ok(warned && hurt, 'the shared warning precedes the echo damage');
+});
+test('every Act 3 boss has its own rule too (hub #121): vents, current, power, rewind, molten, verify', async () => {
+  const { BOSSES } = await import('../src/content/bosses.js');
+  const { MECH } = await import('../src/engine/bossMechs.js');
+  const ALL = Object.keys(BOSSES).filter((k) => BOSSES[k](1).mech);
+  assert.equal(new Set(ALL.map((k) => BOSSES[k](1).mech)).size, ALL.length, 'no two bosses share a rule');
+  const arena = (kind) => {
+    const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'mech3', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+    const h = sim.players.get('host'); h.x = 20 * 16; h.y = 7 * 16; h.hp = 9999;
+    const w = BOSSES[kind](1), def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
+    const e = { id: 'B', kind, def, boss: true, mini: true, awake: true, phase: 1, x: 30 * 16, y: 7 * 16, hp: def.hp, cd: 99, cd2: 99, hurtT: 0, kx: 0, ky: 0, dash: 0 };
+    sim.enemies.set('B', e);
+    const tick = (secs, each) => { for (let i = 0; i < 60 * secs; i++) { h.hp = Math.max(h.hp, 1); h.iframes = 0; e.cd = 99; each?.(); sim._stepBoss(e, def, 1 / 60); } };
+    const hit = (n = 100) => { const was = e.hp; e.state = 'move'; e.parried = 0; e.openT = 0; sim._hurtEnemy(e, n, 0, 0, 'host'); return was - e.hp; };
+    return { sim, h, e, def, tick, hit };
+  };
+  { // current: it pulls you in
+    const { h, e, tick } = arena('boss.cor_intake'); const d0 = Math.hypot(h.x - e.x, h.y - e.y); tick(2);
+    assert.ok(Math.hypot(h.x - e.x, h.y - e.y) < d0 - 10, 'the river drags you toward it');
+  }
+  { // power: shielded with live sockets; standing on all of them cuts it
+    const { e, tick, hit, h } = arena('boss.cor_hall'); tick(0.1); const powered = hit();
+    for (const k of e.mech.sockets) { h.x = k.x; h.y = k.y; tick(MECH.power.hold + 0.1, () => { h.x = k.x; h.y = k.y; }); }
+    assert.equal(e.mech.live, 0); assert.ok(hit() > powered * 4, 'cut, it takes real hits');
+  }
+  { // rewind: puts you back where you were, and takes back half the damage of those seconds
+    const { e, tick, h, hit } = arena('boss.gt_clock'); tick(MECH.rewind.every - MECH.rewind.back - 0.5);
+    const x0 = h.x; const before = e.hp; tick(MECH.rewind.back + 0.4, () => { h.x += 0.5; }); hit(400); const dealt = before - e.hp;
+    tick(0.2); assert.ok(Math.abs(h.x - x0) < 30, 'back where you were'); assert.ok(before - e.hp < dealt, 'some of the damage is taken back');
+  }
+  { // molten: caught in a full channel it sticks and takes more
+    const { e, tick, hit } = arena('boss.fr_potline'); tick(0.05); const normal = hit();
+    tick(2 + MECH.molten.warn + 0.1, () => { if (e.mech.lanes && e.mech.lane >= 0) e.x = e.mech.lanes[e.mech.lane]; });
+    assert.ok(e.mech.stuckT > 0, 'stuck in the metal'); assert.ok(hit() > normal * 1.5);
+  }
+  { // verify: moving during the red scan hurts; holding still doesn't; it's shielded while red
+    const { e, tick, h, hit } = arena('boss.en_gate'); tick(MECH.verify.green + MECH.verify.amber + 0.2);
+    assert.equal(e.mech.light, 'red'); const shielded = hit(); h.hp = 500; tick(1); assert.equal(h.hp, 500, 'still is safe');
+    tick(1, () => { h.x += 1; }); assert.ok(h.hp < 500, 'moving gets zapped');
+    tick(MECH.verify.red); assert.ok(hit() > shielded * 5, 'green again: open');
+  }
+  { // vents: the vents exist and blow in groups; a boss over a blowing vent is scalded
+    const { e, tick } = arena('boss.cor_tower'); tick(0.1);
+    assert.ok(e.mech.vents.length >= 3);
+    const v = e.mech.vents[0]; let scalded = false; tick(MECH.vents.every * 3 + 2, () => { e.x = v.x; e.y = v.y; if (e.mech.scaldT > 0) scalded = true; });
+    assert.ok(scalded, 'lured over a vent, it gets scalded');
+  }
+});
+test('the Autograder marks one kind of answer at a time (hub #121): the right kind lands hard, the rest barely scores', async () => {
+  const { BOSSES } = await import('../src/content/bosses.js');
+  const { MECH } = await import('../src/engine/bossMechs.js');
+  const sim = new Sim(MAPS_FOR_TEST.platform, { seed: 'rubric', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+  const w = BOSSES['boss.chb_autograder'](1), def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
+  const e = { id: 'B', kind: 'boss.chb_autograder', def, boss: true, mini: true, awake: true, phase: 1, x: 300, y: 112, hp: def.hp, cd: 99, cd2: 99, hurtT: 0, kx: 0, ky: 0, dash: 0 };
+  sim.enemies.set('B', e); sim._stepBoss(e, def, 1 / 60);
+  assert.equal(def.mech, 'rubric'); assert.equal(e.mech.ask, 'melee');
+  const hit = (via) => { const was = e.hp = def.hp; e.state = 'move'; e.openT = 0; e.parried = 0; sim._hitVia = via; sim._hurtEnemy(e, 100, 0, 0, 'host'); return was - e.hp; };
+  const right = hit('melee'), wrong = hit('shot'), untagged = hit(null);
+  assert.ok(right > wrong * 3 && right > untagged * 3, `right ${right}, wrong ${wrong}, untagged ${untagged}`);
+  for (let i = 0; i < 60 * MECH.rubric.every; i++) { e.cd = 99; sim._stepBoss(e, def, 1 / 60); }
+  assert.equal(e.mech.ask, 'shot', 'the question moves on');
+});
+test('boss balance pass (hub #121, John Pork\'s C4 probe): the red pen, a lingering echo, a dry band in the harbour, sockets on open floor', async () => {
+  const { BOSSES } = await import('../src/content/bosses.js');
+  const { MECH } = await import('../src/engine/bossMechs.js');
+  const real = (mapId, kind, at) => {
+    const sim = new Sim(MAPS_FOR_TEST[mapId], { seed: 'c4', deferSpawn: true }); sim.addPlayer('host', 'trevor');
+    const h = sim.players.get('host'); h.hp = 9999; Object.assign(h, at ?? {});
+    const w = BOSSES[kind](1), def = { ...w, hp: w.maxHp, ai: 'boss', xp: 60, touchCooldown: 0.9 };
+    const spot = MAPS_FOR_TEST[mapId].enemies.find((q) => q.kind === kind);
+    const e = { id: 'B', kind, def, boss: true, mini: true, awake: true, phase: 1, x: spot.x, y: spot.y, hp: def.hp, cd: 99, cd2: 99, hurtT: 0, kx: 0, ky: 0, dash: 0 };
+    sim.enemies.set('B', e); sim._stepBoss(e, def, 1 / 60);
+    return { sim, h, e, def };
+  };
+  { // the Autograder: a wrong kind of answer nicks whoever gave it (not more than every penEvery); untagged hits don't
+    const { sim, h, e, def } = real('auditorium', 'boss.chb_autograder');
+    assert.equal(e.mech.ask, 'melee');
+    const hp0 = h.hp; h.iframes = 0; sim._hitVia = 'shot'; sim._hurtEnemy(e, 50, 0, 0, 'host');
+    assert.equal(hp0 - h.hp, MECH.rubric.pen, 'the red pen');
+    h.iframes = 0; sim._hitVia = 'shot'; sim._hurtEnemy(e, 50, 0, 0, 'host'); assert.equal(hp0 - h.hp, MECH.rubric.pen, 'not twice in one beat');
+    const hp1 = h.hp; h.iframes = 0; sim._hitVia = null; sim._hurtEnemy(e, 50, 0, 0, 'host'); assert.equal(h.hp, hp1, 'gadgets and skills are never marked');
+    h.iframes = 0; sim._hitVia = 'melee'; sim._hurtEnemy(e, 50, 0, 0, 'host'); assert.equal(h.hp, hp1, 'the right answer is never marked');
+    assert.ok(def.mech === 'rubric');
+  }
+  { // Shell Zero: standing on your own echo keeps hurting, so planting yourself to mash loses
+    const { sim, h, e, def } = real('bv_barn', 'boss.bv_shell', { x: 12 * 16 + 8, y: 6 * 16 + 8 });
+    let hits = 0;
+    for (let i = 0; i < 60 * 8; i++) { const was = h.hp; h.iframes = 0; e.cd = 99; e.x = h.x + 120; sim._stepBoss(e, def, 1 / 60); if (h.hp < was) hits++; h.hp = 9999; }
+    assert.ok(hits >= 3, `a player who never moves is hit again and again by the echo (${hits})`);
+  }
+  { // the Tide Table: at full flood there's still dry floor in the open harbour, so it can be pulled out of the water
+    const { sim, e, def } = real('ann_harbor', 'boss.ann_tide');
+    for (let i = 0; i < 60 * (MECH.tide.dry + MECH.tide.rise + 1); i++) { e.cd = 99; sim._stepBoss(e, def, 1 / 60); }
+    assert.equal(e.mech.level, 1);
+    const m = MAPS_FOR_TEST.ann_harbor; let dryOpen = 0;
+    for (let ty = 0; ty < m.h; ty++) for (let tx = 0; tx < m.w; tx++) if (!m.solid(tx, ty) && ty * 16 + 8 < e.mech.edge && ty >= 4) dryOpen++;
+    assert.ok(dryOpen >= 2 * (m.w - 4), `a dry band across the open harbour, not only the alcoves (${dryOpen} tiles)`);
+  }
+  { // the Sealed Hall: every socket sits on open floor you can stand on (the pews had swallowed them)
+    const { sim, e } = real('cor_sealed', 'boss.cor_hall');
+    assert.equal(e.mech.sockets.length, MECH.power.n);
+    for (const k of e.mech.sockets) assert.ok(!sim._hitsBox(k.x, k.y, 5, 4), `socket at ${k.x},${k.y} is on the floor`);
+    const solo = e.mech.sockets[0]; const h = sim.players.get('host'); h.x = solo.x; h.y = solo.y;
+    for (let i = 0; i < 60 * (MECH.power.hold + 0.1); i++) { e.cd = 99; sim._stepBoss(e, e.def, 1 / 60); h.hp = 9999; }
+    assert.ok(solo.off > MECH.power.off, 'cut, and alone it stays cut longer');
+  }
+});
 test('hub #113, Act 1 people: thirteen neighbours, cooks and students draw with a sprite of their own, never a rotter', () => {
   const frames = JSON.parse(fs.readFileSync(new URL('../assets/sprites/props.json', import.meta.url), 'utf8')).frames;
   const PEOPLE = { compute_hall_b: ['npc.chb_ta', 'npc.chb_student'], diner: ['npc.diner_cook', 'npc.diner_regular'], aster_roof: ['npc.roof_watcher'],
@@ -6085,6 +6500,150 @@ test('hub #113, Act 1 people: thirteen neighbours, cooks and students draw with 
   for (const n of [1, 2, 3]) assert.ok(frames[`npc.rotter_${n}`]);
 });
 
+// ---- Acts 2-3 puzzles from the kit (hub #116; lore gate rulings, hub #50) ------------------------------------
+// One table row per puzzle: where it is, the quest it grew out of, a wrong run and a right one. Each move is
+// [part, seconds on the clock]; the clock only matters to `timed`.
+const { PUZZLES: A23_PUZZLES, puzzleFor: a23PuzzleFor } = await import('../src/content/puzzles.js');
+const A23 = {
+  ann_bell: { map: 'ann_harbor', giver: 'npc.ann_pilot', look: 'obj.ann_bell', clues: ['obj.ann_almanac', 'obj.ann_tide_board'], item: 'item.ann_oarlocks',
+    wrong: [['obj.ann_pier_bell', 10], ['obj.ann_pier_bell', 59], ['obj.ann_pier_bell', 86]], right: [['obj.ann_pier_bell', 61]], says: 'closedText' },
+  // 500 on A, then the first 200 on A too: 700 against nothing. Moving that 200 across and loading B closes it.
+  gt_cradle: { map: 'gaithersburg', giver: 'npc.gt_physicist', look: 'obj.gt_cradle', clues: ['obj.gt_comparator', 'obj.gt_weights_log'], pays: (save) => AB23.checkBonus(save.flags),
+    wrong: [['obj.gt_weight_500'], ['obj.gt_weight_200']], says: 'stepText',
+    right: [['obj.gt_weight_200'], ['obj.gt_weight_200b'], ['obj.gt_weight_200b'], ['obj.gt_weight_100'], ['obj.gt_weight_100']] },
+  rf_rings: { map: 'refuge', giver: 'npc.rf_teacher', look: 'obj.rf_tower', clues: ['obj.rf_ring_liar', 'obj.rf_tower'], item: 'item.analog_axe',
+    wrong: [['obj.rf_ring_clocks'], ['obj.rf_ring_phones']], says: 'wrongText',
+    right: [['obj.rf_ring_clocks'], ['obj.rf_ring_vote'], ['obj.rf_ring_phones'], ['obj.rf_ring_silence']] },
+  gb_footprints: { map: 'gb_dishes', giver: 'npc.gb_technician', look: 'obj.gb_cleanroom', clues: ['obj.gb_sweep_lamp', 'obj.gb_cleanroom'], item: 'item.gb_tape',
+    wrong: [['obj.gb_passdrawers', 0], ['obj.gb_passdrawers', 59], ['obj.gb_passdrawers', 76]], right: [['obj.gb_passdrawers', 135]], says: 'closedText' },
+  // The wrong run stops one click short on the last wheel (4, 2, 4); the right one gives it that click.
+  md_menu: { map: 'meade', giver: 'npc.md_quartermaster', look: 'obj.md_menu', clues: ['obj.md_menu', 'obj.md_lunch_table'], item: 'item.intercept_codes',
+    wrong: [...Array(4).fill(['obj.md_box_meatloaf']), ...Array(2).fill(['obj.md_box_mystery']), ...Array(4).fill(['obj.md_box_soup'])], says: 'stepText',
+    right: [['obj.md_box_soup']] },
+  // The wrong run sends every row to the return (III, III, III): only the bottom row has one. Then top and middle
+  // go round to II.
+  cor_meters: { map: 'cor_sealed', giver: 'npc.cor_nightshift', giverMap: 'corridor', look: 'obj.cor_meters', clues: ['obj.cor_meters', 'obj.cor_loop_plan'], item: 'item.baron_keycard',
+    wrong: [['obj.cor_valve_low'], ['obj.cor_valve_low'], ['obj.cor_valve_top'], ['obj.cor_valve_top'], ['obj.cor_valve_mid'], ['obj.cor_valve_mid']], says: 'stepText',
+    right: [['obj.cor_valve_top'], ['obj.cor_valve_top'], ['obj.cor_valve_mid'], ['obj.cor_valve_mid']] },
+  // The wrong run stamps them A, B, C in the order they stand (lectern order is not document order).
+  en_parchment: { map: 'en_archive', giver: 'npc.en_functionary', look: 'obj.en_parchment', clues: ['obj.en_parchment', 'obj.en_stamps'], item: 'item.provenance_seal',
+    wrong: [['obj.en_quote_wait'], ['obj.en_quote_equal'], ['obj.en_quote_equal'], ...Array(3).fill(['obj.en_quote_union'])], says: 'stepText',
+    right: [['obj.en_quote_wait'], ['obj.en_quote_wait'], ...Array(3).fill(['obj.en_quote_equal']), ...Array(3).fill(['obj.en_quote_union'])] },
+};
+const AB23 = await import('../src/content/abilities.js');
+const a23Host = (save, said) => ({ mode: 'host', character: 'trevor', localId: 'host', save, time: { now: 0 }, cameras: { main: { shake() {} } },
+  net: { send() {} }, _say: (t) => said.push(t), _toast() {}, _tickQuests() {}, _syncParty() {}, _camFx() {} });
+const a23Run = (host, moves) => { for (const [id, t = 0] of moves) { host.time.now = t * 1000; const o = Object.values(MAPS_FOR_TEST).flatMap((m) => m.objects).find((x) => x.id === id); CraftWorldScene.prototype._usePuzzle.call(host, a23PuzzleFor(id), o); } };
+for (const [id, T] of Object.entries(A23)) {
+  test(`Acts 2-3 puzzle ${id}: the spec, its parts and clues on the map, the quest's first stage, a wrong run, the right one, the reward once, and a save round-trip`, () => {
+    const p = A23_PUZZLES.find((x) => x.id === id);
+    assert.ok(p, `no puzzle ${id} in src/content/puzzles.js`);
+    assert.doesNotThrow(() => PK.definePuzzle(p));
+    assert.ok(['cycle', 'order', 'timed'].includes(p.kind));
+    for (const k of ['closedText', 'solvedText', 'stepText', 'wrongText']) if (p[k]) assert.ok(p[`${k}Es`], `${id}: ${k} has no Spanish`);
+    assert.ok(p.reward.textEs && p.solvedText, `${id}: the reward line needs Spanish, and a solved puzzle its own line`);
+    // parts and clue objects are real objects on the map where the quest already lives
+    const map = MAPS_FOR_TEST[T.map], on = new Map(map.objects.map((o) => [o.id, o]));
+    for (const o of [...p.parts, ...T.clues, T.look]) assert.ok(on.has(o), `${id}: ${o} is not on ${T.map}`);
+    assert.ok(MAPS_FOR_TEST[T.giverMap ?? T.map].objects.some((o) => o.id === T.giver && o.npc), `${id}: the giver ${T.giver} is where they were`);
+    for (const o of p.parts) { assert.equal(a23PuzzleFor(o), p); assert.ok(on.get(o).text && on.get(o).label, `${o}: a part needs a label and its own text`); }
+    for (const o of T.clues) assert.ok(!p.parts.includes(o), `${id}: ${o} is a clue, not a part`);
+    // the scaffold quest is stage 1, in place: same quest id, giver, ask flag and first object; then the puzzle; then the giver
+    const q = SideQ.SIDE_QUESTS.find((x) => x.id === `side.${id}`);
+    assert.equal(q.giver, T.giver); assert.equal(q.ask, `q.${id}.asked`); assert.equal(q.inspect.obj, T.look); assert.equal(q.inspect.flag, `q.${id}.seen`);
+    assert.equal(q.puzzle, id); assert.equal(q.stages.length, 3); assert.equal(q.report.needs, p.solvedFlag); assert.equal(q.report.flag, `q.${id}.told`);
+    assert.ok(q.stages[0].done({ [`q.${id}.seen`]: true }) && !q.stages[1].done({ [`q.${id}.seen`]: true }) && q.stages[1].done({ [p.solvedFlag]: true }));
+    assert.ok(SideQ.ES_SIDE_QUESTS[q.stages[1].text], `${id}: the puzzle stage has no Spanish`);
+    if (T.item) assert.ok(ITEMS[T.item] && p.reward.item === T.item, `${id}: pays ${T.item}`); else assert.ok(!p.reward.item && T.pays, `${id}: say what it pays instead of an item`);
+    // a wrong run says the wrong line and leaves it open
+    const save = newSave({ seed: `a23-${id}`, rolls: {}, gameVersion: 't' }), said = [], host = a23Host(save, said);
+    const have = () => (T.item ? Inv.count(save.party.trevor, T.item) : T.pays(save));
+    a23Run(host, T.wrong);
+    assert.ok(!save.flags[p.solvedFlag], `${id}: a wrong run must not solve it`); assert.equal(have(), 0);
+    assert.ok(said.length === T.wrong.length && !said.some((t) => t.includes(p.reward.text)));
+    assert.ok(said.at(-1).includes(p[T.says].split('{')[0]) && p[T.says] !== p.reward.text, `${id}: a wrong move says its ${T.says}`);
+    if (p.kind === 'order') assert.equal(save.flags[`pz.${id}.seq`], '', 'a wrong part resets the order');
+    // the right run solves it and pays once
+    a23Run(host, T.right);
+    assert.equal(save.flags[p.solvedFlag], true, `${id}: the right run solves it`);
+    assert.equal(have(), 1); assert.ok(said.at(-1).endsWith(p.reward.text));
+    a23Run(host, [...T.right, ...T.wrong]);
+    assert.equal(have(), 1, `${id}: no second reward`); assert.ok(said.at(-1).endsWith(p.solvedText));
+    // solved survives a save round-trip, and the quest's puzzle stage reads it
+    const back = migrate(JSON.parse(JSON.stringify(save)));
+    assert.ok(PK.isSolved(p, back.flags) && q.stages[1].done(back.flags)); assert.equal(T.item ? Inv.count(back.party.trevor, T.item) : T.pays(back), 1);
+    // co-op: a guest's press only asks the host
+    const asked = [];
+    CraftWorldScene.prototype._usePuzzle.call({ mode: 'client', net: { send: (m) => asked.push(m) } }, p, on.get(p.parts[0]));
+    assert.deepEqual(asked, [{ t: 'puzzle', id: p.parts[0] }]);
+  });
+}
+test('Acts 2-3 puzzles: a timed one opens only inside its window, and the bell never hands out a boat', () => {
+  for (const p of A23_PUZZLES.filter((x) => x.kind === 'timed')) {
+    const open = Array.from({ length: 400 }, (_, t) => PK.use(p, p.parts[0], {}, { t }).solved);
+    assert.ok(!open[0], `${p.id}: shut when the clock starts`);
+    assert.ok(open.some(Boolean) && open.filter(Boolean).length < 200, `${p.id}: open less than half the time`);
+    assert.ok(open.findIndex(Boolean) < 120, `${p.id}: nobody waits more than two minutes for the first window`);
+  }
+  const bell = A23_PUZZLES.find((p) => p.id === 'ann_bell');
+  assert.equal(ITEMS[bell.reward.item].slot, 'key'); assert.ok(!/boat|skiff/i.test(ITEMS[bell.reward.item].name));
+  const almanac = SideQ.SIDE_QUESTS.find((q) => q.id === 'side.ann_almanac');
+  assert.match(almanac.inspect.text, /ask the bell/); assert.ok(!almanac.puzzle, 'the almanac stays the main quest\'s object: its side quest is only the clue');
+});
+test('Acts 2-3 puzzles: the cradle closes only with every weight on the beam, either way round, and its +1 reaches the roll', () => {
+  const p = A23_PUZZLES.find((x) => x.id === 'gt_cradle');
+  assert.ok(!p.check(['0', '0', '0', '0']), 'an empty beam is level, and is not a closure');
+  assert.ok(!p.check(['A', 'B', 'B', '0']) && !p.check(['A', 'A', 'B', 'B']) && p.check(['A', 'B', 'B', 'B']) && p.check(['B', 'A', 'A', 'A']));
+  const roll = (flags) => AB23.check({ abilities: { cha: 10 } }, 'michael', 'cha', 12, { rand: () => 0.5, bonus: AB23.checkBonus(flags) });   // d20 = 11, +0
+  assert.ok(!roll({}).success && roll({}).total === 11); assert.ok(roll({ 'pz.gt_cradle.solved': true }).success && roll({ 'pz.gt_cradle.solved': true }).total === 12);
+  assert.equal(AB23.check({ abilities: { cha: 10 } }, 'michael', 'cha', 2, { rand: () => 0, bonus: 1 }).success, false, 'a natural 1 still fails');
+});
+test('Acts 2-3 puzzles: the parchment waits for q.en_archive.told, and the functionary pitches the addresses first', async () => {
+  const { questState } = await import('../src/content/quests.js');
+  const q = SideQ.SIDE_QUESTS.find((x) => x.id === 'side.en_parchment'), arch = SideQ.SIDE_QUESTS.find((x) => x.id === 'side.en_archive');
+  assert.ok(!q.start({ 'q.en_parchment.asked': true }), 'asked alone does not start it');
+  assert.ok(!q.start({ 'q.en_archive.told': true }), 'nor does the other quest alone');
+  assert.ok(q.start({ 'q.en_parchment.asked': true, 'q.en_archive.told': true }));
+  assert.ok(!q.askIf({}) && q.askIf({ 'q.en_archive.told': true }));
+  assert.ok(!arch.askIf && arch.start({ 'q.en_archive.asked': true }), 'the addresses start as before');
+  for (const other of SideQ.SIDE_QUESTS) if (other !== q) assert.ok(!other.askIf, `${other.id}: only the parchment waits on another quest`);
+  // through the scene: she offers the addresses, never the parchment, until the addresses are told
+  const save = newSave({ seed: 'a23-thread', rolls: {}, gameVersion: 't' }), said = [];
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', localId: 'host', character: 'trevor', save, _say: (t) => said.push(t), _toast() {}, _tickQuests() {},
+    _flag(k, v) { save.flags[k] = v; } });
+  const her = MAPS_FOR_TEST.en_archive.objects.find((o) => o.id === 'npc.en_functionary');
+  assert.ok(sc._questInteract(her)); assert.ok(said.at(-1).includes(arch.pitch));
+  assert.ok(save.flags['q.en_archive.asked'] && !save.flags['q.en_parchment.asked']);
+  questState(save)['side.en_archive'].started = true;
+  assert.equal(sc._questInteract(her), false, 'with the addresses open and nothing to report, she has no second errand yet');
+  assert.ok(!save.flags['q.en_parchment.asked']);
+  Object.assign(save.flags, { 'q.en_archive.seen': true, 'q.en_archive.told': true }); Object.assign(questState(save)['side.en_archive'], { stage: 2, done: true });
+  assert.ok(sc._questInteract(her)); assert.ok(said.at(-1).includes(q.pitch)); assert.ok(save.flags['q.en_parchment.asked']);
+});
+
 await Promise.all(pending);
 if (failed) { console.log(`\n${failed} test(s) failed`); process.exit(1); }
 console.log('\nall tests passed');
+
+test('hub #127: the five Room 631 search spots open their locked cold-open scenes (the toolwall keeps its action)', async () => {
+  const room = MAPS_FOR_TEST.room631;
+  const hooks = { 'obj.front_lock': 'search_lock', 'obj.manuel_closet': 'search_closet', 'obj.toolwall': 'search_toolwall', 'obj.printer_3': 'search_fab3', 'obj.room631_van': 'search_window' };
+  const enc = (await import('../src/content/dialogue/act1/cold_open.js')).default;
+  const dec = enc.replace(/[a-zA-Z]/g, (c) => String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26));
+  const scene = JSON.parse(dec);
+  for (const [id, node] of Object.entries(hooks)) {
+    const o = room.objects.find((q) => q.id === id);
+    assert.ok(o, `${id} is in Room 631`);
+    assert.equal(o.talk, `cold_open:${node}`, `${id} opens cold_open:${node}`);
+    assert.ok(scene.nodes[node], `the compiled cold open has ${node}`);
+  }
+  assert.equal(room.objects.find((q) => q.id === 'obj.toolwall').action, 'toolwall', 'the toolwall still hands out the starter gear');
+  // E picks the nearest object within 34 px, the later one on a tie (WorldScene keydown-E). Each spot needs a tile where it wins.
+  const pick = (tx, ty) => { let best = null, bd = 34; for (const o of room.objects) { const d = Math.hypot((o.x - tx) * 16, (o.y - ty) * 16); if (d <= bd) { bd = d; best = o; } } return best?.id; };
+  for (const id of Object.keys(hooks)) {
+    const o = room.objects.find((q) => q.id === id);
+    const tiles = [[0, 1], [0, -1], [1, 0], [-1, 0]].map(([dx, dy]) => [o.x + dx, o.y + dy]).filter(([x, y]) => !room.solid(x, y));
+    assert.ok(tiles.some(([x, y]) => pick(x, y) === id), `${id}: some tile next to it gets it from E`);
+  }
+  assert.equal(pick(21, 11), 'door.balcony', 'and the balcony door still answers E from in front of it');
+});

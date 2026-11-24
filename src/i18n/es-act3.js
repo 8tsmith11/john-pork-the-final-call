@@ -49,6 +49,23 @@ export const ES_ACT3 = {
   'Reference weights': 'Pesas de referencia',
   'The weights room: brass reference weights under glass bells, one to a cradle, from a kilogram down to a gram. One cradle in the front row is empty. Its label is still there.':
     'La sala de pesas: pesas de referencia de bronce bajo campanas de vidrio, una por cuna, desde un kilo hasta un gramo. Una cuna de la primera fila está vacía. Su etiqueta sigue ahí.',
+  'Reference weight, 500 g': 'Pesa de referencia, 500 g',
+  'The half-kilogram, brass, under a glass bell, with forceps on a hook beside it. It is the biggest weight left in the room.':
+    'El medio kilo, de bronce, bajo una campana de vidrio, con unas pinzas colgadas de un gancho al lado. Es la pesa más grande que queda en la sala.',
+  'Reference weight, 200 g': 'Pesa de referencia, 200 g',
+  'A 200 g weight under a glass bell, the brass gone the color of tea.': 'Una pesa de 200 g bajo una campana de vidrio, con el bronce ya del color del té.',
+  'Reference weight, 200 g, dotted': 'Pesa de referencia, 200 g, con punto',
+  'The other 200 g weight. A dot is punched in its top so nobody mixes the two up. Somebody has also written "2" on the bell in grease pencil, in case.':
+    'La otra pesa de 200 g. Tiene un punto marcado arriba para que nadie las confunda. Alguien además escribió "2" en la campana con lápiz graso, por las dudas.',
+  'Reference weight, 100 g': 'Pesa de referencia, 100 g',
+  'A 100 g weight under a glass bell. It looks too small to matter. In this room everything matters, to five decimal places.':
+    'Una pesa de 100 g bajo una campana de vidrio. Parece demasiado chica para importar. En esta sala todo importa, hasta el quinto decimal.',
+  'The comparator': 'El comparador',
+  'A two-pan balance in a glass case, the pans stamped A and B. Beside it is a tally board with a peg for each weight: 0 for its cradle, A or B for a pan. A typed card is taped to the case: WEEKLY CLOSURE. EVERY WEIGHT ON THE BEAM. BEAM LEVEL. INITIAL BELOW. Nobody has initialed below in a while.':
+    'Una balanza de dos platillos en una caja de vidrio, con los platillos marcados A y B. Al lado hay un tablero con una clavija por cada pesa: 0 si está en su cuna, A o B si está en un platillo. Pegada a la caja, una tarjeta escrita a máquina: CIERRE SEMANAL. TODAS LAS PESAS EN LA BALANZA. BALANZA NIVELADA. INICIALES ABAJO. Hace rato que nadie pone iniciales abajo.',
+  'Weights logbook': 'Libro de registro de las pesas',
+  'The sign-out log for the weights room. The kilogram\'s line reads OUT, "for comparison," then two initials pressed hard into the page, and no return date. Every week after it somebody has still written CLOSES. Once, smaller: "the big one sits alone now."':
+    'El registro de salidas de la sala de pesas. La línea del kilogramo dice SALIÓ, "para comparación," después dos iniciales apretadas fuerte contra la hoja, y ninguna fecha de devolución. Cada semana después de esa, alguien igual escribió CIERRA. Una vez, más chico: "ahora la grande va sola."',
   'A physicist': 'Una física', 'A PHYSICIST': 'UNA FÍSICA',
   '"What time do you have?" She turns your wrist over and reads your watch herself, then her own, then the one on her other wrist. She writes all three down in a notebook that is nothing but columns.':
     '"¿Qué hora tienes?" Te gira la muñeca y lee tu reloj ella misma, después el suyo, después el de su otra muñeca. Anota las tres en una libreta que no es más que columnas.',
@@ -109,6 +126,18 @@ export const ES_ACT3 = {
   'Water meters': 'Medidores de agua',
   'A bank of water meters on the end wall, where the cooling loop comes in from the river main: brass dials under glass, one for each row of racks, the glass fogged from inside. Under each, a valve wheel, chained open.':
     'Una batería de medidores de agua en la pared del fondo, donde el circuito de enfriamiento entra desde la cañería del río: diales de bronce bajo vidrio, uno por cada fila de racks, con el vidrio empañado por dentro. Debajo de cada uno, un volante de válvula, encadenado abierto.',
+  'Valve wheel, top row': 'Volante de válvula, fila de arriba',
+  'The valve wheel for the top row of racks, where the river main comes through the wall. Its chain has been cut and hung back up to look whole. Three stops are cast into the collar: I, II, III.':
+    'El volante de la válvula de la fila de racks de arriba, donde la cañería maestra del río atraviesa la pared. Le cortaron la cadena y la volvieron a colgar para que parezca entera. El collar tiene tres topes fundidos: I, II, III.',
+  'Valve wheel, middle row': 'Volante de válvula, fila del medio',
+  'The valve wheel for the middle row of racks. The paint on the spokes is worn through where hands go, and nowhere else. Three stops are cast into the collar: I, II, III.':
+    'El volante de la válvula de la fila de racks del medio. La pintura de los rayos está gastada donde van las manos, y en ningún otro lado. El collar tiene tres topes fundidos: I, II, III.',
+  'Valve wheel, bottom row': 'Volante de válvula, fila de abajo',
+  'The valve wheel for the bottom row of racks. A second pipe leaves it through the floor, as wide as the one coming in. Three stops are cast into the collar: I, II, III.':
+    'El volante de la válvula de la fila de racks de abajo. De él sale un segundo caño por el piso, tan ancho como el que entra. El collar tiene tres topes fundidos: I, II, III.',
+  'Cooling-loop plan': 'Plano del circuito de enfriamiento',
+  'A cooling-loop plan stenciled on the wall, most of it flaked off. What is left: the river main coming in at the top row, a return leaving from the bottom, and a key in the corner. I, TO RACKS. II, ON TO THE NEXT ROW. III, RETURN. Beside the top valve somebody has drawn the water as a small fish, heading down.':
+    'Un plano del circuito de enfriamiento pintado con plantilla en la pared, casi todo descascarado. Lo que queda: la cañería maestra del río entrando por la fila de arriba, un retorno saliendo por la de abajo, y una leyenda en la esquina. I, A LOS RACKS. II, A LA FILA SIGUIENTE. III, RETORNO. Junto a la válvula de arriba alguien dibujó el agua como un pececito, yendo hacia abajo.',
   'Chiller by the dock door': 'Enfriador junto a la puerta del muelle',
   'A white chiller by the dock door, stenciled HOT AISLE: WEAR A LOOP. Inside, the coolant-loop packs the crews wore between the racks, still cold: the hall was written off with the power on, and the chiller never noticed. One pack is left. You take it.':
     'Un enfriador blanco junto a la puerta del muelle, con PASILLO CALIENTE: USA REFRIGERACIÓN pintado con plantilla. Adentro, las mochilas de refrigeración que usaban las cuadrillas entre los racks, todavía frías: dieron de baja la nave con la corriente prendida, y el enfriador nunca se enteró. Queda una. Te la llevas.',
@@ -151,6 +180,18 @@ export const ES_ACT3 = {
   'A functionary': 'Una funcionaria', 'A FUNCTIONARY': 'UNA FUNCIONARIA',
   '"Attested visitors only." She doesn\'t look at your papers. She is squaring a stack of call slips that was square already. "You\'re attested, I\'m sure. Please don\'t tell me otherwise. There\'s a form for it, and it\'s very long."':
     '"Solo visitantes verificados." No mira tus papeles. Está emparejando una pila de boletas de pedido que ya estaba pareja. "Usted está verificado, seguro. Por favor no me diga lo contrario. Hay un formulario para eso, y es muy largo."',
+  'Lectern: an address on patience': 'Atril: un discurso sobre la paciencia',
+  'A printed address on a lectern, one line underlined in archive pencil: "...the right of the people peaceably to wait." Beside the line is an empty box for a provenance stamp, and set into the lectern, a dial: A, B, C.':
+    'Un discurso impreso sobre un atril, con una línea subrayada con lápiz de archivo: "...el derecho del pueblo a esperar pacíficamente." Junto a la línea hay un recuadro vacío para un sello de procedencia, y empotrado en el atril, un dial: A, B, C.',
+  'Lectern: an address on equality': 'Atril: un discurso sobre la igualdad',
+  'A printed address on a lectern, one line underlined in archive pencil: "...that all are created equal, pending attestation." Beside the line is an empty box for a provenance stamp, and set into the lectern, a dial: A, B, C.':
+    'Un discurso impreso sobre un atril, con una línea subrayada con lápiz de archivo: "...que todos son creados iguales, sujeto a verificación." Junto a la línea hay un recuadro vacío para un sello de procedencia, y empotrado en el atril, un dial: A, B, C.',
+  'Lectern: an address on union': 'Atril: un discurso sobre la unión',
+  'A printed address on a lectern, one line underlined in archive pencil: "We the People, in order to form a more perfect Continuity..." Beside the line is an empty box for a provenance stamp, and set into the lectern, a dial: A, B, C.':
+    'Un discurso impreso sobre un atril, con una línea subrayada con lápiz de archivo: "Nosotros, el Pueblo, a fin de formar una Continuity más perfecta..." Junto a la línea hay un recuadro vacío para un sello de procedencia, y empotrado en el atril, un dial: A, B, C.',
+  'Provenance stamps': 'Sellos de procedencia',
+  'Three archive stamps in a felt tray beside the case, each on a chain to the document it vouches for. Stamp A hangs by the one with all the names at the bottom. Stamp B, by the long one that opens with the people. Stamp C, by the short list of what can\'t be taken away. A card in the tray: A QUOTATION BEARS THE STAMP OF ITS ORIGINAL.':
+    'Tres sellos de archivo en una bandeja de fieltro junto a la vitrina, cada uno encadenado al documento que avala. El sello A cuelga junto al que tiene todos los nombres abajo. El sello B, junto al largo que empieza con el pueblo. El sello C, junto a la lista corta de lo que no se puede quitar. Una tarjeta en la bandeja: TODA CITA LLEVA EL SELLO DE SU ORIGINAL.',
   'Call slips': 'Boletas de pedido',
   'A tray of call slips on the reading-room desk, the requests visitors filled in today, in pencil. DOCUMENT: the originals. PURPOSE: checking. Most of them say checking.':
     'Una bandeja de boletas de pedido sobre el escritorio de la sala de lectura, las solicitudes que los visitantes llenaron hoy, en lápiz. DOCUMENTO: los originales. MOTIVO: verificar. Casi todas dicen verificar.',

@@ -50,6 +50,12 @@ export const gbDishes = fromGrid({
 })
   // Region guardian (optional): by the clean room it guards, far enough from the door to sleep until you go there.
   .enemy('boss.gb_receiver', 24, 2)
+  // The footprints puzzle (src/content/puzzles.js, gb_footprints): the pass-through drawers under the window, and
+  // the repeater lamp that shows when the dish's work light is over the clean room.
+  .prop('obj.parts_bins', 24, 5, { id: 'obj.gb_passdrawers', label: 'Pass-through drawers',
+    text: 'Twelve steel pass-through drawers set in the wall under the window, for handing things into the clean room without going in. None of them is numbered. Whoever numbered things here left before the drawers came.' })
+  .prop('obj.siglamp_amber', 22, 1, { id: 'obj.gb_sweep_lamp', label: 'Repeater lamp',
+    text: 'A repeater lamp on the wall, tagged DISH 3 WORK LIGHT in punched tape. It comes on when the dish\'s lamp swings over the clean room skylight, and goes off again. Somebody has timed it in pencil on the paint: a minute dark, a quarter of that lit. The numbers have been corrected twice.' })
   .build();
 
 // ---- Greenbelt: the co-op (a century of minute books; a shop run by committee) ----
@@ -229,4 +235,10 @@ export const annHarbor = fromGrid({
 })
   // Region guardian (optional): at the end of the pier, by the bell it guards.
   .enemy('boss.ann_tide', 26, 5)
+  // The bell puzzle (src/content/puzzles.js, ann_bell): the pier's own bell beside the bollard where you listen, and
+  // the tide board that says what the almanac swears.
+  .prop('obj.pier_bell', 24, 4, { id: 'obj.ann_pier_bell', label: 'The pier bell',
+    text: 'A brass fog bell on a timber post at the end of the pier, green where the spray gets it. The rope has been spliced so many times it is mostly splice.' })
+  .prop('obj.room_sign', 21, 4, { id: 'obj.ann_tide_board', label: 'Tide board',
+    text: 'A tide board nailed to a piling, the feet painted in white. Near the top is a red line lettered HIGHEST EVER, and under that, in four different hands: "per the almanac." The weed on the board starts a hand above the red line.' })
   .build();
