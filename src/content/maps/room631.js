@@ -37,6 +37,12 @@ for (const [x0, y0, w, h] of [[4, 8, 5, 3], [10, 8, 4, 3]]) {
 export const room631 = makeMap({
   id: 'room631',
   propScale: 1.25, wear: 'lived',   // furniture in proportion with the rooms (Manuel)
+  // The opening's room states (src/game/roomState.js; the beats are sealed): the power goes out, and when it comes
+  // back the engineering room is hot and scorched. Nothing here plays until the opening scene sets these flags.
+  moods: [
+    { flag: 'act1.power.out', unless: 'act1.power.back', dark: 0.86, lightsOff: true },
+    { flag: 'act1.room.hot', unless: 'act1.room.cooled', heat: true, burn: [22, 8] },
+  ],
   name: 'Room 631, ASTER',
   layout: LAYOUT,
   spawns: [[5, 8], [7, 9], [9, 8]],
@@ -83,7 +89,7 @@ export const room631 = makeMap({
     { id: 'obj.door', x: 0, y: 8, label: 'Front door (hallway)', action: 'exit', to: 'aster_hall', text: 'The sixth-floor hallway. It smells like someone else\'s dinner.' },
     { id: 'obj.statue_1', scale: 1, x: 2, y: 6, label: 'Statue', text: 'One of Manuel\'s John Pork statues, guarding the door. The eyes are very well done.' },
     { id: 'obj.statue_2', scale: 1, x: 2, y: 10, label: 'Statue', text: 'Another statue by the entrance. Its head is turned slightly toward the engineering room. Was it always?' },
-    { id: 'obj.statue_3', scale: 1, x: 5, y: 11, label: 'Statue', text: 'The newest statue. Manuel says he finished it last week. He doesn\'t remember sanding it.' },
+    { id: 'obj.statue_3', hideAfter: 'act1.statue.gone', scale: 1, x: 5, y: 11, label: 'Statue', text: 'The newest statue. Manuel says he finished it last week. He doesn\'t remember sanding it.' },
     { id: 'obj.mate', x: 6, y: 6, label: 'Mate station (heal, refill, caffeine)', action: 'mate', text: 'Manuel\'s mate gear on the counter. Still warm. Someone was up at 3 a.m.' },
     { id: 'obj.fridge', x: 10, y: 6, label: 'Fridge', text: 'A jar labeled DO NOT. Someone has written "I hate 245 lab" in the condensation.' },
     { id: 'obj.table', x: 6, y: 9, label: 'Dining table', text: 'A pacifier nobody will explain.' },
@@ -96,6 +102,11 @@ export const room631 = makeMap({
     { id: 'obj.router', x: 28, y: 6, label: 'Router', text: 'Its lights blink in a pattern that\'s almost regular. Every few minutes it reboots for no reason and comes back with a slightly different name.' },
     { id: 'obj.drill_press', x: 28, y: 10, label: 'Drill press', text: 'Bolted to the floor, which the lease definitely does not allow.' },
     { id: 'obj.pork_flag', x: 26, y: 5, label: 'John Pork flag', text: 'The flag on the engineering-room wall. Contraband since 2071. Someone ironed it once, which is the most domestic thing anyone in 631 has ever done.' },
+    // The robotic arm beside the fabs, and the scorch the opening leaves on the floor (look text: lore gate to revise).
+    { id: 'obj.robot_arm', art: 'obj.robot_arm', x: 19, y: 6, label: 'Robotic arm', text: 'A six-axis arm clamped to the bench beside the fabs. Trevor swears he calibrated it.',
+      textAfter: { flag: 'act1.room.hot', text: 'The arm is folded at an angle nobody here set. Its joints are still warm.' } },
+    { id: 'obj.burn_mark', showAfter: 'act1.room.hot', floor: true, selfDrawn: true, x: 22, y: 8, label: 'Burn mark',
+      text: 'A black ring scorched into the floor, wider than a person. The tiles in the middle have blistered.' },
     { id: 'obj.printer_1', x: 16, y: 6, label: 'Fab #1 (print a helium sniffer)', talk: 'lead_a_helium', doneFlag: 'act1.leadA.done', doneText: 'Fab #1, still warm. The sniffer is printed and the reading has not changed: light, and down. Under the plaza.' },
     { id: 'obj.printer_2', x: 17, y: 6, label: 'Fab #2 (print gear)', action: 'fab', text: '' },
     { id: 'obj.printer_3', talk: 'cold_open:search_fab3', x: 18, y: 6, label: 'Fab #3', flag: 'act1.clue.printer3Warm',

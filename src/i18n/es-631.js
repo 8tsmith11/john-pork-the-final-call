@@ -154,4 +154,10 @@ export const ES_631 = {
   'The wall screen. Nobody remembers turning it on. The remote has been missing since spring.': 'La pantalla de pared. Nadie se acuerda de haberla prendido. El control está perdido desde la primavera.',
   'Van, down on the street': 'Camioneta, abajo en la calle',
   'A dark van at the kerb, six floors down. No markings. Something on its roof keeps turning.': 'Una camioneta oscura junto al cordón, seis pisos más abajo. Sin ninguna marca. Algo en el techo no para de girar.',
+  // The opening's room states (room631.js)
+  'Robotic arm': 'Brazo robótico',
+  'A six-axis arm clamped to the bench beside the fabs. Trevor swears he calibrated it.': 'Un brazo de seis ejes sujeto al banco junto a las impresoras. Trevor jura que lo calibró.',
+  'The arm is folded at an angle nobody here set. Its joints are still warm.': 'El brazo está doblado en un ángulo que nadie de acá le puso. Las articulaciones siguen tibias.',
+  'Burn mark': 'Quemadura',
+  'A black ring scorched into the floor, wider than a person. The tiles in the middle have blistered.': 'Un anillo negro quemado en el piso, más ancho que una persona. Las baldosas del medio se ampollaron.',
 };

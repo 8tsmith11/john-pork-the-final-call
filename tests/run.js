@@ -6351,7 +6351,7 @@ test('Room 631 for the cold open (hub #99): closet by the window, a wall screen,
     .concat(['door.trevor_room', 'door.mm_room', 'door.trevor_bath', 'door.mm_bath', 'door.balcony']);
   assert.equal(BEFORE.length, 76);
   assert.deepEqual(BEFORE.filter((id) => !obj(id)), [], 'an object id went missing from room631');
-  assert.equal(m.objects.length, BEFORE.length + 2, 'only the wall screen and the van were added');
+  assert.equal(m.objects.length, BEFORE.length + 4, 'only the wall screen and the van were added, plus the opening\'s robotic arm and burn mark (roomState.js)');
   // The search hooks wait for the cold open's staging PR (#145): these keep what they had.
   assert.equal(obj('obj.toolwall').action, 'toolwall');
   assert.equal(obj('obj.printer_3').flag, 'act1.clue.printer3Warm');
@@ -6825,6 +6825,30 @@ test('the end-of-chase line reaches guests too (gonman, #85): the host broadcast
   assert.ok(host.save.flags['chase.chase.done'] && toasts.length === 1);
   const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
   assert.ok(/msg\.t === 'toast'\) \{ this\._toast\(tr\(msg\.text\)\)/.test(src), 'guests translate what the host sends');
+});
+
+test('room states (roomState.js): Room 631 goes dark when the power is out, and after it comes back it is hot, scorched, and a statue short', async () => {
+  const { mapView, roomMood } = await import('../src/game/roomState.js');
+  const raw = MAPS_FOR_TEST.room631, ids = (m) => m.objects.map((o) => o.id);
+  const before = mapView(raw, {});
+  assert.ok(!ids(before).includes('obj.burn_mark') && ids(before).includes('obj.statue_3'), 'before the opening: no scorch, every statue');
+  assert.equal(mapView(MAPS_FOR_TEST.metro_plaza, {}), MAPS_FOR_TEST.metro_plaza, 'a map with no room states is passed through untouched');
+  assert.ok(ids(raw).includes('obj.statue_3') && ids(raw).includes('obj.robot_arm'));
+  const out = roomMood(raw, { 'act1.power.out': true });
+  assert.ok(out.dark >= 0.8 && out.lightsOff && !out.heat, 'power out: dark, the screens and fabs off');
+  assert.equal(roomMood(raw, { 'act1.power.out': true, 'act1.power.back': true }).dark, null, 'and back to normal once it returns');
+  const after = { 'act1.power.out': true, 'act1.power.back': true, 'act1.room.hot': true, 'act1.statue.gone': true };
+  const v = mapView(raw, after), hot = roomMood(raw, after);
+  assert.ok(hot.heat && hot.burn, 'hot, with a scorch on the floor');
+  assert.ok(!ids(v).includes('obj.statue_3') && ids(v).includes('obj.burn_mark'), 'a statue gone, the burn mark there to look at');
+  assert.equal(v.id, 'room631'); assert.equal(v.solid(0, 0), raw.solid(0, 0), 'the view is the same room otherwise');
+  assert.ok(ids(raw).includes('obj.statue_3'), 'the map itself is never changed');
+  assert.ok(!raw.solid(19, 6) || raw.objects.find((o) => o.id === 'obj.robot_arm'), 'the arm stands beside the fabs');
+  // the statue puzzle still works with the statues that are left
+  const said = [];
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), { map: v, save: { flags: {} }, _say: (t) => said.push(t), _flag(k, val) { this.save.flags[k] = val; }, _refreshPuzzleProps() {}, _grant() {}, _camFx() {} });
+  sc._turnBust(v.objects.find((o) => o.id === 'obj.statue_1')); sc._turnBust(v.objects.find((o) => o.id === 'obj.statue_2'));
+  assert.ok(sc.save.flags['puz.busts.solved'], 'two statues, in order, still solve it (no softlock)');
 });
 
 await Promise.all(pending);

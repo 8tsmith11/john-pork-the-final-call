@@ -8,6 +8,7 @@ import { autosave, loadAutosave, exportFile } from '../../engine/save/storage.js
 import { rollWorld } from '../../engine/worldRolls.js';
 import { newSeed, Rng } from '../../engine/rng.js';
 import { MAPS, worldPos } from '../../content/maps/index.js';
+import { mapView, roomMood } from '../roomState.js';
 import { OLD_PHONE } from '../../content/eggs_gonman.js';
 import { TILE_COLORS } from '../../content/maps/build.js';
 import { ENEMIES } from '../../content/enemies.js';
@@ -153,7 +154,7 @@ export class WorldScene extends Phaser.Scene {
     }
     setupCameras(this, { world: true });
     this.save = this.passedSave ?? (await loadAutosave().catch(() => null)) ?? this._newGame();
-    const startMap = MAPS[this.save.world.area] ?? MAPS.room631;
+    const startMap = mapView(MAPS[this.save.world.area] ?? MAPS.room631, this.save.flags);   // as the story has left it (roomState.js)
     this.save.world.killed ??= [];
     const authoritative = this.mode !== 'client';
     if (authoritative && this._pinSpot()) autosave(this.save).catch(() => {});   // write the migrated pin now, not at the next autosave
@@ -2239,21 +2240,51 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // Hard optional: turn Manuel's busts to face the flag, in the right order.
+  // Room states (src/game/roomState.js): when a flag changes what's in the room or how it feels, update it in place, on
+  // host and guests alike (both read the same synced flags). Then the heat and the scorch, drawn every frame.
+  _roomStateTick() {
+    const raw = MAPS[this.map?.id]; if (!raw?.moods && !raw?.objects?.some((o) => o.hideAfter || o.showAfter)) return;
+    const view = mapView(raw, this.save.flags), mood = roomMood(raw, this.save.flags);
+    const key = `${view.objects.length}|${mood.dark}|${mood.lightsOff}|${mood.heat}|${mood.burn}`;
+    if (this._roomKey === undefined) this._roomKey = key;
+    if (key !== this._roomKey) {
+      const changedObjects = view.objects.length !== this.map.objects.length;
+      this._roomKey = key;
+      if (changedObjects) { this._showMap(view); if (this.sim) this.sim.map = view; }
+      else this._setupLighting(this.map);
+    }
+    const g = (this.moodGfx ??= this.add.graphics().setDepth(3)).clear();
+    if (mood.burn) {   // a scorch on the floor: a dark ring, a blistered middle, a few embers
+      const [bx, by] = mood.burn, x = bx * TILE + 8, y = by * TILE + 8;
+      g.fillStyle(0x0b0705, 0.75).fillEllipse(x, y, 34, 20).fillStyle(0x24140c, 0.8).fillEllipse(x, y, 22, 12).fillStyle(0x3a1d0e, 0.7).fillEllipse(x + 2, y - 1, 10, 5);
+      for (let i = 0; i < 4; i++) { const a = i * 1.7 + this.time.now / 900; g.fillStyle(0xff7a2a, 0.35 + 0.3 * Math.sin(this.time.now / 200 + i)).fillRect(Math.round(x + Math.cos(a) * 9), Math.round(y + Math.sin(a) * 5), 1, 1); }
+    }
+    const h = (this.heatGfx ??= this.add.graphics().setScrollFactor(0).setDepth(7990)).clear();
+    if (mood.heat) {   // the room is hot: a warm wash and rising shimmer lines
+      h.fillStyle(0xff7a2a, 0.13).fillRect(0, 0, VIEW.w, VIEW.h);
+      for (let i = 0; i < 9; i++) {
+        const x = (i * 53 + this.time.now / 30) % VIEW.w, y = VIEW.h - ((this.time.now / 12 + i * 61) % (VIEW.h + 40));
+        h.lineStyle(1, 0xffc38a, 0.2).lineBetween(x, y, x + 3 * Math.sin(this.time.now / 300 + i), y - 18);
+      }
+    }
+  }
+
   _turnBust(o) {
     if (this.save.flags['puz.busts.solved']) return this._say(o.text + '\n\nAll three are looking at the flag. You don\'t want to turn them back.');
     const seq = (this.save.flags['puz.busts.seq'] ?? '').split(',').filter(Boolean);
-    const expected = BUST_ORDER[seq.length];
+    const order = BUST_ORDER.filter((id) => this.map.objects.some((x) => x.id === id));   // only the statues still here
+    const expected = order[seq.length];
     if (o.id !== expected) { this._flag('puz.busts.seq', ''); this._bustsFacing = {}; this._refreshPuzzleProps(); sfx('hit'); return this._say('You turn it toward the flag. Then the others turn back to the door on their own. Or you misremembered which way they faced.'); }
     seq.push(o.id); this._flag('puz.busts.seq', seq.join(',')); this._refreshPuzzleProps();
     (this._bustsFacing ??= {})[o.id] = true;
     sfx('swing');
-    if (seq.length === BUST_ORDER.length) {
+    if (seq.length === order.length) {
       this._flag('puz.busts.solved', true);
       this._grant('item.pork_pin');
       this._camFx('flash', 300, 242, 166, 184);
       return this._say('The third bust turns to face the flag. For a second the whole room feels like it\'s being looked at, from three directions, kindly. Something small and porcelain is lying on the floor that wasn\'t there before. (Porcelain John Pork pin)');
     }
-    this._say(`You turn it to face the flag. (${seq.length} of 3)`);
+    this._say(`You turn it to face the flag. (${seq.length} of ${order.length})`);
   }
 
   // Puzzle state shows in the art: busts turned toward the flag, the hallway clock face swung open.
@@ -2439,11 +2470,14 @@ export class WorldScene extends Phaser.Scene {
     const DARK = { room631: 0.35, aster_hall: 0.45, metro_plaza: 0.4, tunnel_1: 0.7, platform: 0.62 };
     // The dawn clock (P-004): outdoors the night thins toward first light as the story moves.
     this.darkness = (DARK[map.id] ?? 0.4) * (map.outdoor && (this.save.world.act ?? 1) === 1 ? 1 - 0.45 * dawnProgress(this.save.flags) : 1);
+    const mood = roomMood(map, this.save.flags);   // the room's story state (roomState.js): the power out, say
+    if (mood.dark != null) this.darkness = Math.max(this.darkness, mood.dark);
     this.lights?.destroy();
     const W = VIEW.w, H = VIEW.h;
     this.lights = this.add.renderTexture(0, 0, W, H).setOrigin(0, 0).setScrollFactor(0).setDepth(8000);
     // Light sources: anything with `light: <radius scale>` (lamps, neon, screens), plus NPCs, exits and a few named props.
     this.lightSpots = map.objects.filter((o) => o.light || o.npc || o.action === 'exit' || ['obj.printer_3', 'obj.mate', 'obj.pork_flag', 'obj.shrimp_tank', 'obj.billboard', 'obj.oscilloscope', 'obj.lobby_monitor'].includes(o.id)).concat((map.scenery ?? []).filter((s) => s.light));
+    if (mood.lightsOff) this.lightSpots = this.lightSpots.filter((o) => o.npc || o.action === 'exit');   // no power: screens, lamps and fabs go dark
     this.rotEdge = map.id === 'tunnel_1' || map.id === 'platform';
   }
 
@@ -2527,7 +2561,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _tryExit(obj) {
-    const to = MAPS[obj.to];
+    const to = mapView(MAPS[obj.to], this.save.flags);
     if (to.id === 'platform') {
       const sahur = Number(this.save.flags['act1.call.declines'] || 0) >= 3;
       this.sim.bossVariant = sahur ? 'sahur' : 'warden';
@@ -2807,7 +2841,7 @@ export class WorldScene extends Phaser.Scene {
       this._tickActOneEnding();
       snap = this._lastSnap = { ...this.sim.snapshot(), events, doors: [...this.map.doors.values()].filter((d) => d.open).map((d) => d.id) };
     }
-    if (snap.map !== this.map.id && MAPS[snap.map]) { this._showMap(MAPS[snap.map]); this._onEnterMap(MAPS[snap.map]); if (this.mode === 'client') this.cameras.main.fadeIn(220, 5, 6, 12); }
+    if (snap.map !== this.map.id && MAPS[snap.map]) { const v = mapView(MAPS[snap.map], this.save.flags); this._showMap(v); this._onEnterMap(v); if (this.mode === 'client') this.cameras.main.fadeIn(220, 5, 6, 12); }
     this._lastRendered = snap;
     if (this.mode === 'client' && snap.doors) for (const d of this.map.doors.values()) d.open = snap.doors.includes(d.id);
     this._render(snap);
@@ -3234,6 +3268,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _render(snap) {
+    this._roomStateTick();
     const seen = new Set();
     this._drawInside(snap.ins);
     this._drawChase(snap.ch);
