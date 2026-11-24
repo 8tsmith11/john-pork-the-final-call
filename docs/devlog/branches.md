@@ -8,7 +8,7 @@ The rule is in `PROCESS.md`, "Working in git".
 "Landed by copy" means the changes reached `main` as new commits (cherry-picked or reapplied), so
 the branch tip isn't an ancestor of `main` even though nothing on it is missing.
 
-Last checked: 2026-11-23 by trevor (stand-in merger, D-023), against `origin/main` at `4fc99f59`.
+Last checked: 2026-11-23 by trevor (stand-in merger, D-023), against `origin/main` at `437bbe1`.
 
 ## Active
 
@@ -21,6 +21,12 @@ Last checked: 2026-11-23 by trevor (stand-in merger, D-023), against `origin/mai
 
 | Branch | Where | Landed on `main` as |
 |---|---|---|
+| `gonman (PR #178, devlog re-seal)` | GitHub | Merged in `437bbe1` (PR #178), by trevor under D-023 |
+| `trevor/staked-tables` | GitHub | Merged in `9ec5ee9` (PR #122), by trevor under D-023 |
+| `trevor/inside-rules` | GitHub | Merged in `232a180` (PR #123), by trevor under D-023 |
+| `trevor/rot-bestiary` | GitHub | Merged in `4d2af41`, by trevor under D-023 |
+| `trevor/walker-fight` | GitHub | Merged in `c1216be`, by trevor under D-023 |
+| `trevor/border-siege` | GitHub | Merged in `ba030dd`, by trevor under D-023 |
 | `gonman/act2-puzzles` | GitHub | Merged in `4fc99f59` (PR #173), by trevor under D-023 |
 | `gonman/tung-full-name` | GitHub | Merged in `154e67ef` (PR #175), by trevor under D-023 |
 | `trevor/d023-story-standin` | GitHub | Merged in `477cc8c` (Trevor's direction) |
