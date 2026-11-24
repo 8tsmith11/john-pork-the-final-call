@@ -105,6 +105,7 @@ export class Cordon {
     const nearEdge = tx < BAND || ty < BAND || tx >= map.w - BAND || ty >= map.h - BAND || atBarrier;
     const open = (map.cordonOpenings ?? []).some(([ox, oy, ow, oh]) => Math.abs(tx - (ox + ow / 2)) <= BAND + 1 && Math.abs(ty - (oy + oh / 2)) <= BAND + 1);
     if (!nearEdge || open) return;
+    if (s.time.now < (s._edgeLineUntil ?? 0)) return;   // another voice is mid-line (the squad in the yard)
     const lines = this.phase === 'after' ? CORDON_LINES_AFTER : CORDON_LINES;
     const near = this.troopers.reduce((a, b) => (Math.hypot(b.x - me.x, b.y - me.y) < Math.hypot(a.x - me.x, a.y - me.y) ? b : a));
     const out = atBarrier && near?.out && Math.hypot(near.x - me.x, near.y - me.y) < 4 * TILE;   // the trooper facing out talks to the line
@@ -117,10 +118,11 @@ export class Cordon {
     const who = Math.hypot(t.x - me.x, t.y - me.y) < 140 ? (getLang() === 'es' ? 'SOLDADO' : 'TROOPER') : (getLang() === 'es' ? 'ALTAVOZ' : 'LOUDSPEAKER');
     // A screen-fixed caption above the hotbar: at the map edge the camera stops, so anything over a head
     // would sit under the HUD.
-    this.caption ??= s.add.text(VIEW.w / 2, VIEW.h - 84, '', { fontFamily: 'monospace', fontSize: '8px', color: '#ff6b6b', backgroundColor: '#0b0d16dd', padding: { x: 4, y: 2 }, align: 'center' })
+    this.caption = s._edgeCaption ??= s.add.text(VIEW.w / 2, VIEW.h - 84, '', { fontFamily: 'monospace', fontSize: '8px', color: '#ff6b6b', backgroundColor: '#0b0d16dd', padding: { x: 4, y: 2 }, align: 'center' })
       .setOrigin(0.5, 1).setScrollFactor(0).setDepth(9350);
     s.tweens.killTweensOf(this.caption);
     this.caption.setText(`${who}: ${text}`).setAlpha(1).setVisible(true);
     s.tweens.add({ targets: this.caption, alpha: 0, delay: 2600, duration: 500 });
+    s._edgeLineUntil = s.time.now + 3100;
   }
 }

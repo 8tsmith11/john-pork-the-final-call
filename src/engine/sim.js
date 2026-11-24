@@ -2,7 +2,7 @@
 // The host steps the Sim with every player's latest input; clients render snapshots.
 
 export const TILE = 16;
-import { newSkirmish, stepSkirmish, skirmishView } from './skirmish.js';
+import { newSkirmish, stepSkirmish, stepSkUnit, skirmishView, skirmishShotHits, finishSkirmish } from './skirmish.js';
 import { newSiege, stepSiege, siegeView, siegeMove } from './siege.js';
 import { stepMech, mechDamage, mechView } from './bossMechs.js';
 import { BOSS_PATTERNS, bossPool, pickPattern, windFor, LASER, SHOCK, RAIN, LANE } from './bossPatterns.js';
@@ -353,7 +353,7 @@ export class Sim {
   step(dt, inputs) {
     this.tick++;
     this.playTime += dt;
-    const skEv = this.sk ? stepSkirmish(this.sk, dt) : null;
+    const skEv = this.sk ? stepSkirmish(this, this.sk, dt) : null;
     this.events = this._pending ?? []; this._pending = [];
     if (skEv?.length) this.events.push(...skEv);
     const arcHits = new Map();
@@ -882,6 +882,7 @@ export class Sim {
       if (e.def?.trait === 'splitter') for (let i = 0; i < 2; i++) { const nid = `e${this._nextId++}`; this.enemies.set(nid, { id: nid, kind: 'enemy.rotling', def: { ...ENEMIES['enemy.rotling'], hp: 8, speed: 60, radius: 4, color: e.def.color, vname: 'Fragment', trait: 'plain', xp: 2 }, x: e.x + (i ? 6 : -6), y: e.y, hp: 8, cd: 0.6, hurtT: 0, kx: 0, ky: 0 }); }
       if (e.def?.trait === 'puddler') this.hazards.push({ x: e.x, y: e.y, r: 14, ttl: 5, dps: 8 });
       this.events.push({ t: 'kill', x: e.x, y: e.y, kind: e.kind, by, xp: this._def(e).xp, boss: !!e.boss, mini: !!e.mini, key: e.spawnKey, ...(e.siege ? { siege: true } : {}) });
+      if (e.skUnit === 'hub') finishSkirmish(this, this.sk, e, this.events);
       for (const a of [...this.enemies.values()]) if (a.mechOf === e.id) { this.enemies.delete(a.id); this.events.push({ t: 'kill', x: a.x, y: a.y, kind: a.kind, xp: 0, crumble: true }); }   // its pylons and congregation go with it
       if (e.boss && !e.mini) for (const a of [...this.enemies.values()]) if (a.summoned) { this.enemies.delete(a.id); this.events.push({ t: 'kill', x: a.x, y: a.y, kind: a.kind, xp: 0, crumble: true }); }   // its adds crumble with it
       if (e.marked > 0 && e.markedBy) this._pingKill(e);   // a Ping mark (Riff's rattle has no owner)
@@ -925,8 +926,9 @@ export class Sim {
     p.hp -= dmg; p.iframes = COMBAT.hurtIframes + (p.mods?.iframes ?? 0);
     if (p.riding) { p.riding = false; this.events.push({ t: 'scooter', id: p.id, on: false, knocked: true }); }
     this.events.push({ t: 'hurt', id: p.id, x: p.x, y: p.y, dmg });
-    if (p.hp <= 0 && p.mods?.secondWind && !p.swUsed) { p.swUsed = true; p.hp = Math.round(this.maxHp(p) * 0.3); p.iframes = 1.5; this.events.push({ t: 'secondwind', id: p.id, x: p.x, y: p.y }); return; }
+    if (p.hp <= 0 && p.mods?.secondWind && !p.swUsed) { p.swUsed = true; p.hp = Math.round(this.maxHp(p) * 0.3); p.iframes = 1.5; this.events.push({ t: 'secondwind', id: p.id, x: p.x, y: p.y }); return true; }
     if (p.hp <= 0) { p.hp = 0; p.downed = true; p.reviveT = 0; this.events.push({ t: 'down', id: p.id }); }
+    return true;
   }
 
   _nearestPlayer(x, y) {
@@ -963,6 +965,7 @@ export class Sim {
       const def = this._def(e);
       e.cd = Math.max(0, e.cd - dt); e.hurtT = Math.max(0, e.hurtT - dt); if (e.poiseT > 0) e.poiseT = Math.max(0, e.poiseT - dt);
       if (e.sahur) { this._stepSahur(e, def, dt); continue; }
+      if (e.skUnit) { stepSkUnit(this, this.sk, e, def, dt); continue; }   // the walking hub and its drones (src/engine/skirmish.js)
       if (e.boss) { this._stepBoss(e, def, dt); continue; }
       if (e.sleepT > 0) { e.sleepT = Math.max(0, e.sleepT - dt); continue; }
       // knockback decays
@@ -1291,7 +1294,7 @@ export class Sim {
       let hit = false;
       if (s.from === 'player') {
         for (const e of this.enemies.values()) {
-          if (Math.hypot(e.x - s.x, e.y - 4 - s.y) < this._def(e).radius + 3) {
+          if (e.skUnit ? skirmishShotHits(e, s) : Math.hypot(e.x - s.x, e.y - 4 - s.y) < this._def(e).radius + 3) {
             this._hitVia = 'shot'; this._hurtEnemy(e, s.dmg, s.vx * 0.4, s.vy * 0.4, s.owner); hit = true; break;
           }
         }
@@ -1362,6 +1365,15 @@ export class Sim {
 
   get wiped() { return this.players.size > 0 && [...this.players.values()].every((p) => p.downed); }
 
+  _pushPlayer(player, dx, dy) {
+    const steps = Math.ceil(Math.max(Math.abs(dx), Math.abs(dy)) / 8);
+    for (let i = 0; i < steps; i++) {
+      const x = player.x + dx / steps, y = player.y + dy / steps;
+      if (!this._hits(x, player.y)) player.x = x;
+      if (!this._hits(player.x, y)) player.y = y;
+    }
+  }
+
   _moveBody(b, dx, dy, r) {
     const fits = (x, y) => !this._hitsBox(x, y, r, r * 0.7);
     let ok = true;
@@ -1424,12 +1436,12 @@ export class Sim {
       })),
       map: this.map.id,
       enemies: [...this.enemies.values()].map((e) => ({ id: e.id, k: e.kind, x: Math.round(e.x), y: Math.round(e.y), hp: e.hp, h: e.hurtT > 0,
-        mk: e.marked > 0, zz: e.sleepT > 0, ...(e.slowT > 0 ? { sl: 1 } : {}), sg: !!this._def(e).lullaby && !(e.sleepT > 0), st: e.st ?? null,
+        mk: e.marked > 0, zz: e.sleepT > 0, ...(e.skUnit ? { sd: 1 } : {}), ...(e.slowT > 0 ? { sl: 1 } : {}), sg: !!this._def(e).lullaby && !(e.sleepT > 0), st: e.st ?? null,
         ...(e.def && !e.boss ? { vn: e.def.vname, tr: e.def.trait, c: e.def.color, mh: e.def.hp, r: e.def.radius } : {}),
         ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ...(e.state === 'laser' && e.phase >= LASER.twin ? { l2: 1 } : {}), ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake, ...(e.mech ? { mx: mechView(e) } : {}) } } : {}) })),
       goo: this.goo.map((g) => ({ x: Math.round(g.x), y: Math.round(g.y), r: g.r, t: Math.round(g.ttl * 10) / 10 })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
-      sk: skirmishView(this.sk),
+      sk: skirmishView(this.sk, this),
       ...(this.sg ? { sg: siegeView(this.sg) } : {}),
       allies: (this.allies ?? []).map((a) => ({ x: Math.round(a.x), y: Math.round(a.y), hp: a.hp, mhp: a.maxHp, dn: a.down > 0, st: a.st })),
       hazards: this.hazards.map((h) => ({ x: Math.round(h.x), y: Math.round(h.y), r: h.r, t: Math.round(h.ttl * 10) / 10 })),

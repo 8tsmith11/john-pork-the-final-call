@@ -9,6 +9,8 @@ export const GUIDE_TIPS = {
   'enemy.fence_pylon': 'While one stands, the Fence is shielded. Break them all, then hit it before they come back.',
   'enemy.autocomplete': 'It copies how you move. Change direction often and it guesses wrong.',
   'enemy.rot_taken': 'Slow, in packs, and it infects. Knock them into walls and keep moving.',
+  'enemy.drone_walker': 'When it rises on its legs, get out of the ring. Hit it while it is planted and launching.',
+  'enemy.rot_drone': 'Weak, fast and erratic. Swat them before they swarm you; the troopers help.',
   'enemy.rot_crawler': 'Fast and fragile. One clean hit ends it; let it come to you.',
   'enemy.rot_graft': 'The cable arm reaches further than it looks. Hit it while it recovers.',
   'enemy.rot_sprawl': 'Slow, heavy and hard to stop. Every head can bite. Keep it at the end of your reach.',
@@ -57,6 +59,16 @@ export const ENEMIES = {
     name: 'Autocomplete', hp: 18, speed: 58, damage: 8, radius: 5, xp: 7,
     ai: 'mirror', mirrorRange: 120, dashSpeed: 240, dashTime: 0.22, touchCooldown: 0.7, color: 0x3fd0d6,
     lore: 'It finishes your sentences. It finishes your dodges. It is usually wrong, but it is fast.',
+  },
+  // The College Park fight (hub #69, src/engine/skirmish.js): a delivery-drone hub the rot got into, walking now.
+  // Its moves live in the skirmish rules, not an `ai` here; it's drawn by src/game/skirmishView.js.
+  'enemy.drone_walker': {
+    name: 'Rotted drone hub', hp: 900, speed: 16, damage: 16, radius: 14, xp: 120, color: 0x46403a,
+    lore: 'A delivery-drone hub the rot moved into. It grew legs out of its loading struts and kept launching, but not parcels.',
+  },
+  'enemy.rot_drone': {
+    name: 'Rot-drone', hp: 12, speed: 62, damage: 6, radius: 4, xp: 3, color: 0x2b2d33,
+    lore: 'A delivery drone that still thinks it has a parcel for you.',
   },
   // Further gone (Trevor: "code rot should be able to go pretty far in disfigurement", biotech rot, big cyborg things).
   // Drawn in code until sprites land (src/game/render/rotForms.js). They push at College Park's cordon first.
