@@ -2949,14 +2949,15 @@
   {
    "id": 134,
    "created_at": "2026-11-23T19:35:32Z",
-   "updated_at": "2026-11-23T19:35:32Z",
+   "updated_at": "2026-11-24T03:23:31Z",
    "history": [
-    "2026-11-23T19:35:32Z gonman: added (for trevor)"
+    "2026-11-23T19:35:32Z gonman: added (for trevor)",
+    "2026-11-24T03:23:31Z trevor: claimed"
    ],
    "title": "Board export double-encodes [SEALED] asides into plain text",
    "details": "tools/devlog/export_board.py ROT13s the whole board log, so an aside already ROT13 on the board comes out readable. PR #178 re-seals the 11 lines now in docs/devlog/board.md; the exporter will repeat it on the next run unless it keeps sealed asides as they are (or decodes them first). Git history still holds the readable version; that's Michael's call (story owner).",
    "source": "human:Michael",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
