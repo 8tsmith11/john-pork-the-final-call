@@ -1,5 +1,5 @@
 {
- "next_id": 139,
+ "next_id": 140,
  "tasks": [
   {
    "id": 1,
@@ -3040,6 +3040,19 @@
    ],
    "turn_at": "2026-11-24T04:26:54Z",
    "turn_for": "review the plan (step 1 is yours with #126) + run node tools/level/world.mjs on 50a876ba"
+  },
+  {
+   "id": 139,
+   "created_at": "2026-11-24T05:02:04Z",
+   "updated_at": "2026-11-24T05:02:04Z",
+   "history": [
+    "2026-11-24T05:02:04Z trevor: added (for trevor)"
+   ],
+   "title": "Room states for the opening: power out, heat, scorch, the arm, a statue gone (systems)",
+   "details": "The systems half of hub #130 with Trevor's direction (sealed: docs/sealed/opening-power-cut.md). Generic room states in src/game/roomState.js; Room 631 data. The scene flow (which flags the opening sets, and when the cold open plays) follows once the opening's lines exist.",
+   "source": "human:Trevor",
+   "status": "assigned",
+   "owner": "trevor"
   }
  ]
 }
