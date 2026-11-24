@@ -2694,6 +2694,22 @@ test('bastion table (hub #34): every roommate seated, AI for empty seats, placem
   table.tick(0.1); assert.equal(results.length, 1);
 });
 
+test('staked tables (src/content/stakes.js): a checkpoint when the party sits down; a loss hands off to the scene, a win does not', () => {
+  const calls = [];
+  const players = new Map([['host', { id: 'host', character: 'trevor' }]]);
+  const scene = { mode: 'host', character: 'trevor', localId: 'host', sim: { players }, save: { party: { trevor: {} }, flags: {}, world: { seed: 't' } },
+    net: { broadcast() {}, send() {} }, _bastionResult() {}, _tableCheckpoint: (id) => calls.push(['cp', id]), _stakedLoss: (id, st) => calls.push(['loss', id, st.lossStage]) };
+  const table = new BTable.BastionTable(scene, { clock: 'manual' });
+  table.open('m1'); table.m.winner = 'npc'; table._finish();
+  assert.deepEqual(calls, [], 'an ordinary match: no checkpoint, nothing after a loss');
+  table._close(); table.open('house_rules');
+  assert.deepEqual(calls, [['cp', 'house_rules']], 'sitting down at a staked table checkpoints first');
+  table.m.winner = 'party'; table._finish();
+  assert.equal(calls.length, 1, 'a win is just a win');
+  table._close(); table.open('house_rules'); table.m.winner = 'npc'; table._finish();
+  assert.deepEqual(calls.at(-1), ['loss', 'house_rules', 'house_rules_loss'], 'a loss goes to the scene');
+});
+
 const VLab = await import('../src/engine/verilogLab.js');
 const LBench = await import('../src/game/labBench.js');
 test('lab bench (hub #44): every lab has exactly one passing answer; the shared bench cycles, runs, and records a pass once', () => {
@@ -3302,6 +3318,34 @@ try {
   if (savedPhaserForCraft === undefined) delete globalThis.Phaser;
   else globalThis.Phaser = savedPhaserForCraft;
 }
+
+test('staked tables in the scene: the checkpoint lives in the save, a loss reloads everyone to it seated, and there is no limit on tries', async () => {
+  const save = newSave({ seed: 'stakes', rolls: {}, gameVersion: 't' });
+  save.world.area = 'room631'; save.party.trevor.money = 50;
+  const reloads = [], staged = [], writes = [];
+  const sc = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'host', save,
+    _save: (m) => { writes.push(m); return true; }, time: { delayedCall: (_ms, fn) => fn() }, cameras: { main: { fadeOut() {} } },
+    stage: { play: (id, done) => { staged.push(id); done(); } }, bastionTable: { _close() {} }, _reloadEveryone: (s) => reloads.push(s) });
+  sc._tableCheckpoint('house_rules');
+  const cp = save.world.checkpoints.house_rules;
+  assert.ok(cp && cp.world.reseat === 'house_rules' && !cp.world.checkpoints, 'the checkpoint seats them again and holds no copies of itself');
+  assert.ok(!save.world.reseat, 'the live save is not marked'); assert.equal(writes.length, 1, 'and it is written at once');
+  save.party.trevor.money = 0; save.flags['spent.it'] = true;   // what happens during the match
+  assert.equal(sc._stakedLoss('house_rules', { lossStage: 'house_rules_loss' }), true);
+  assert.deepEqual(staged, ['house_rules_loss'], 'the loss is staged first');
+  const back = reloads[0];
+  assert.ok(back && back.party.trevor.money === 50 && !back.flags['spent.it'] && back.world.reseat === 'house_rules', 'back to the moment they sat down');
+  assert.equal(back.flags['table.house_rules.losses'], 1);
+  assert.ok(back.world.checkpoints.house_rules, 'the checkpoint is still there for the next try');
+  assert.equal(sc._stakedLoss('house_rules', {}), false, 'one reload at a time');
+  // the next try, from the reloaded save: again, and again
+  const sc2 = Object.assign(Object.create(CraftWorldScene.prototype), { ...sc, save: back, _rotReload: false });
+  delete back.world.reseat; sc2._tableCheckpoint('house_rules');
+  for (let n = 2; n <= 4; n++) { sc2._rotReload = false; assert.ok(sc2._stakedLoss('house_rules', {})); const nx = reloads.at(-1); assert.equal(nx.flags['table.house_rules.losses'], n); sc2.save = nx; delete nx.world.reseat; }
+  assert.equal(sc2._stakedLoss.call({ ...sc2, mode: 'client' }, 'house_rules', {}), false, 'guests never reload on their own');
+  const src = (await import('node:fs')).readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/if \(this\.save\.world\.reseat\) \{[^\n]*this\.openBastion\(id\)/.test(src), 'a loaded checkpoint reopens the table');
+});
 
 test('the ending\'s visitor is drawn while his part plays, on host and guests, in view, and walks off after (Trevor: heard but not seen)', async () => {
   const made = [], tweens = [];
