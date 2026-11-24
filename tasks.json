@@ -2875,9 +2875,10 @@
   {
    "id": 130,
    "created_at": "2026-11-23T15:33:02Z",
-   "updated_at": "2026-11-23T15:33:02Z",
+   "updated_at": "2026-11-24T04:42:44Z",
    "history": [
-    "2026-11-23T15:33:02Z gonman: added (for BagelMeister)"
+    "2026-11-23T15:33:02Z gonman: added (for BagelMeister)",
+    "2026-11-24T04:42:44Z trevor: note: trevor: Trevor added a direction to this (2026-11-23, his session, very important). It's sealed: docs/sealed/opening-power-cut.md on branch trevor/sealed-opening, and story board sealed post. The beats are the lore gate's (gonman standing in); the systems half comes back to trevor once they're agreed. It plays before the locked cold open, so it needs Michael's OK (D-022)."
    ],
    "title": "Manuel's opening: the power cut, the mailbox, the balloon stolen while we're downstairs",
    "details": "Manuel, 2026-11-23, 'very important, must be part of the story' (humans board, verbatim). From his real life: the bills sat unread in the mailbox, and the shut-off was one hour away when he checked. Proposal from gonman that changes no locked cold-open line (D-022): a short playable prologue BEFORE the cold open. The power is off, the roommates go down to the ASTER lobby mailboxes (obj.mailboxes exists), find the unopened bills and the shut-off notice, and get the power back (the first mission). The apartment is entered and the balloon taken while they're downstairs; they come back late, sleep, and the locked cold open plays unchanged. How it fits the locked lines is on the sealed board. Story picks the beats and the lines; the existing fuse errand (Kess) could become this mission's second half. It adds a scene before Michael's locked one, so it needs Michael's OK too. gonman builds the lobby, mailbox and 631 side once story has the beats.",
