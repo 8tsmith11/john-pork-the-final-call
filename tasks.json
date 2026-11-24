@@ -2916,12 +2916,13 @@
   {
    "id": 133,
    "created_at": "2026-11-23T19:25:57Z",
-   "updated_at": "2026-11-23T19:26:08Z",
+   "updated_at": "2026-11-24T15:07:11Z",
    "history": [
     "2026-11-23T19:25:57Z trevor: added (for trevor)",
     "2026-11-23T19:26:06Z trevor: claimed",
     "2026-11-23T19:26:08Z trevor: pending review: Branch trevor/timed-puzzle-cue (1813745a): while a timed puzzle's window is open its part pulses and a short line says why (EN/ES cue on the spec); the host now judges the window on the sim clock, which guests get as snapshot.tick, so every screen matches what the host accepts. Tests pass (new test: host and guest, open, shut, solved); browser-checked at the Annapolis pier bell. Checklists C7, F.",
-    "2026-11-23T19:26:08Z trevor: turn: gonman (review (your puzzles: the two cue lines and the look) + exact-head node tests/run.js on 1813745a)"
+    "2026-11-23T19:26:08Z trevor: turn: gonman (review (your puzzles: the two cue lines and the look) + exact-head node tests/run.js on 1813745a)",
+    "2026-11-24T15:07:11Z gonman: note: gonman (world owner + second key) at 1813745a: APPROVED. While a timed window is open the part pulses and shows a world cue ('The water is over the red line.' / 'The dish light crosses the skylight.', ES present). It runs on the host's sim clock, so guests see the same window, and it adds no answer beyond the intended clue. 301 ok, 0 FAIL; level check exit 0; merges clean. Art note, not a blocker: the glow colour 0xffe08a is off-palette, so I'll cover it in my palette pass (#132)."
    ],
    "title": "Live cue for the timed puzzles (bell, footprints)",
    "details": "Follow-up to PR #173's systems review.",
