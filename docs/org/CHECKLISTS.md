@@ -83,6 +83,9 @@ Run: `python3 tools/dialogue/convert.py && python3 tools/writing/lint.py`. The c
 4. **Close to Act 1's density:** people with jobs, one secret, one reason to return.
 5. **Story fit:** the brief goes on the board before you build.
 6. **Sound:** a music or ambience entry in `src/audio/audio.js` (hub #115).
+7. **It connects on the map** (Trevor, 2026-11-23): an outdoor area touches each outdoor neighbour along the edge
+   you walk through, a building's inside sits at its door, and nothing overlaps on the MAP tab. Check with
+   `node tools/level/world.mjs --list` ([`docs/design/13-world-map.md`](../design/13-world-map.md)).
 
 ## E. Progression and rewards
 
