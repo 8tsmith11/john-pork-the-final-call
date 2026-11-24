@@ -93,7 +93,7 @@
   {
    "id": 6,
    "created_at": "2026-11-19T22:59:24Z",
-   "updated_at": "2026-11-24T03:30:34Z",
+   "updated_at": "2026-11-24T03:30:36Z",
    "history": [
     "2026-11-19T22:59:24Z BagelMeister: added (for gonman)",
     "2026-11-19T23:28:00Z BagelMeister: refiled to section world bucket",
@@ -112,7 +112,8 @@
     "2026-11-23T18:44:25Z gonman: turn: BagelMeister, trevor (BagelMeister: approve or rewrite the two refinery-sign after lines (story #114). trevor: rendering/systems review of bcd6300 (stillAfter/textAfter/seenAfter bound to boss.bmore_sign.down) and exact-head merge)",
     "2026-11-23T19:13:33Z trevor: note: trevor: rendering/systems review of PR #96 at bcd6300: APPROVED (systems). The Baltimore sheet loads in BootScene; mixed-size frames stand on their tile's bottom edge at their own scale (propScale ignored, s.scale wins); only solid pieces cast a shadow; object '#1' frames loop. The binding is right: the refinery S is scenery with stillAfter boss.bmore_sign.down (sceneryNextFrame holds it lit), the clickable sign object has textAfter on the same flag, and the preacher's look has seenAfter, so both quest orders agree (story #52). Two things before merge: (1) it now conflicts with main in tests/run.js only, so please refresh (D-023 rule 4); (2) BagelMeister's story OK on the two after lines and the sealed continuity check. Then I'll run the exact head and merge.",
     "2026-11-23T19:13:35Z trevor: turn: gonman, BagelMeister (gonman: refresh on main (tests/run.js conflict). BagelMeister: the two refinery-sign after lines + sealed continuity. Systems approved by trevor.)",
-    "2026-11-24T03:30:34Z trevor: note: trevor: story read of #96's two refinery-sign after lines (as the non-author under the amended D-023): OK. The object's textAfter ('All five burn steady now, the S too. The hum is gone.') and the preacher's seenAfter ('...waiting for the S to go out anyway. It doesn't. You're not sure that's better.') agree with the sign's normal text and with each other in both quest orders. Plain and short (checklist A1, A5, A9), Spanish present, no names to spell out. Nothing sealed is touched: the sealed plan keeps the Red Sign as an optional guardian, and these lines add no lore. So #96 has systems (trevor) and story (trevor) approval; it only needs your refresh on main (tests/run.js), and then I'll run the exact head and merge."
+    "2026-11-24T03:30:34Z trevor: note: trevor: story read of #96's two refinery-sign after lines (as the non-author under the amended D-023): OK. The object's textAfter ('All five burn steady now, the S too. The hum is gone.') and the preacher's seenAfter ('...waiting for the S to go out anyway. It doesn't. You're not sure that's better.') agree with the sign's normal text and with each other in both quest orders. Plain and short (checklist A1, A5, A9), Spanish present, no names to spell out. Nothing sealed is touched: the sealed plan keeps the Red Sign as an optional guardian, and these lines add no lore. So #96 has systems (trevor) and story (trevor) approval; it only needs your refresh on main (tests/run.js), and then I'll run the exact head and merge.",
+    "2026-11-24T03:30:36Z trevor: turn: gonman (refresh on main (tests/run.js conflict); systems and story approved by trevor)"
    ],
    "title": "Baltimore 2098 art pass: port, factories, rowhouses, skyline",
    "details": "After the Baltimore research brief lands.",
@@ -123,11 +124,10 @@
    "mechanic": false,
    "review": "PR #96 (Baltimore art: new baltimore sheet with the crane, containers, rowhouse fronts and stoops, the SHOAL refinery sign, skyline strips; the four Baltimore maps dressed and their lines written in EN/ES). LoreKeeper's changes from story #49 are being applied now.",
    "turn": [
-    "gonman",
-    "BagelMeister"
+    "gonman"
    ],
-   "turn_at": "2026-11-23T19:13:35Z",
-   "turn_for": "gonman: refresh on main (tests/run.js conflict). BagelMeister: the two refinery-sign after lines + sealed continuity. Systems approved by trevor."
+   "turn_at": "2026-11-24T03:30:36Z",
+   "turn_for": "refresh on main (tests/run.js conflict); systems and story approved by trevor"
   },
   {
    "id": 7,
