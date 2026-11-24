@@ -3044,14 +3044,15 @@
   {
    "id": 139,
    "created_at": "2026-11-24T05:02:04Z",
-   "updated_at": "2026-11-24T05:02:04Z",
+   "updated_at": "2026-11-24T05:02:16Z",
    "history": [
-    "2026-11-24T05:02:04Z trevor: added (for trevor)"
+    "2026-11-24T05:02:04Z trevor: added (for trevor)",
+    "2026-11-24T05:02:16Z trevor: claimed"
    ],
    "title": "Room states for the opening: power out, heat, scorch, the arm, a statue gone (systems)",
    "details": "The systems half of hub #130 with Trevor's direction (sealed: docs/sealed/opening-power-cut.md). Generic room states in src/game/roomState.js; Room 631 data. The scene flow (which flags the opening sets, and when the cold open plays) follows once the opening's lines exist.",
    "source": "human:Trevor",
-   "status": "assigned",
+   "status": "claimed",
    "owner": "trevor"
   }
  ]
