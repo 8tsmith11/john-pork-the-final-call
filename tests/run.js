@@ -4029,6 +4029,18 @@ test('Continuity posters (hub #100, Michael): out of 631, it is plain he is an e
   assert.ok(posters('aster_hall').some((o) => Math.hypot(o.x - door.x, o.y - door.y) <= 4), 'nothing right outside 631');
 });
 const { Approach } = await import('../src/game/approach.js');
+test('approach: a child gets talk only, whatever the map says (gonman, general #175); every kid on every map', () => {
+  const save = newSave({ seed: 'kids', rolls: {}, gameVersion: 'test' });
+  const scene = { save, sim: new Sim(rotArena()), map: { objects: [] }, character: 'trevor', localId: 'host', input: { keyboard: { on() {} } }, time: { now: 1 }, _questHandIns: () => [], net: null };
+  const ap = new Approach(scene);
+  const ids = (o) => ap.options(o).map((a) => a.id);
+  const adult = { id: 'npc.t_adult', npc: true, label: 'A vendor' };
+  assert.ok(ids(adult).some((id) => id !== 'talk'), 'an adult still has the full menu');
+  const kid = { id: 'npc.t_kid', npc: true, label: 'A kid', age: 'child', approaches: ['talk', 'intimidate', 'pickpocket', 'charm'] };
+  assert.deepEqual(ids(kid), ['talk'], 'a child: talk only, even when the object lists more');
+  assert.equal(ap.intercept(kid), false, 'so the menu never opens; E just talks');
+  for (const m of Object.values(MAPS_FOR_TEST)) for (const o of m.objects ?? []) if (o.npc && o.age === 'child') assert.deepEqual(ids(o).filter((id) => id !== 'talk' && !id.startsWith('give:')), [], `${m.id}: ${o.id}`);
+});
 test('a caught pickpocket changes that roommate\'s NPC actions across saves until they apologize', () => {
   const save = newSave({ seed: 'npc-memory', rolls: {}, gameVersion: 'test' });
   const sim = new Sim(rotArena()), notices = [];
