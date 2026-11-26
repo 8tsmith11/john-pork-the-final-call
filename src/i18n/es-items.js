@@ -1,6 +1,8 @@
 // Spanish for items (task #28, trevor's share): names and descriptions, keyed by item id so a typo in
 // the English doesn't break the link. tests/run.js fails if an item lacks either. Manuel's own things
 // may use his voseo; everything else is neutral Latin American Spanish.
+import { ALL_PARTS, componentItemId } from '../content/parts.js';
+
 export const ES_ITEMS = {
   mod_edge: ['Filo afilado', 'Una tira de acero limado que se sujeta a una hoja o una barra. +2 cuerpo a cuerpo.'],
   mod_grip: ['Empuñadura con cinta', 'Cinta de hockey, bien apretada. La mano deja de resbalar en el peor momento. +5% crítico.'],
@@ -96,3 +98,7 @@ export const ES_ITEMS = {
   bot_weapon: ['Barra giratoria', 'Una barra de acero balanceada sobre un eje. Gel de coderot en el rodamiento, que es genial o un problema.'],
   bot_brain: ['Placa de control', 'Un receptor, un giroscopio y un chip que le responde al teléfono de Trevor. Casi siempre.'],
 };
+
+for (const [id, part] of Object.entries(ALL_PARTS)) {
+  ES_ITEMS[componentItemId(id).slice('item.'.length)] = [`Pieza recuperada · ${part.nameEs}`, 'Pieza recuperada de un dispositivo. Móntala en el banco de trabajo.'];
+}

@@ -45,7 +45,7 @@ import { ModStation } from '../ui/ModStation.js';
 import * as Sockets from '../../engine/sockets.js';
 import { fabCost, rollGear, rolledName } from '../../content/gearRolls.js';
 import { BUILT_GADGET, GADGETS } from '../../content/gadgets.js';
-import { equippedBuildStats, printBuild, serviceController } from '../../engine/gadgetBuilds.js';
+import { dismantleGadget, equippedBuildStats, powerUnit, printBuild, serviceController } from '../../engine/gadgetBuilds.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
 import { FUSE_TEXT, LAMP_COLORS, GATE_FLAG, breakerState, lampState, breakersSet, lampsSet, gateOpen, puzzleClue, toggleText, STEP_TEXT } from '../../content/tunnelPuzzles.js';
 import { SharedEvents } from '../sharedEvent.js';
@@ -758,7 +758,13 @@ export class WorldScene extends Phaser.Scene {
         }
         if (msg.t === 'flag' && typeof msg.key === 'string' && /^(act\d|dlg\.)/.test(msg.key) && !ACT_ONE_HOST_FLAGS.has(msg.key)) this.save.flags[msg.key] = msg.value ?? true
         if (msg.t === 'flag' && msg.key === 'act1.fuses.in') this._seatFuses();
-        if (msg.t === 'item' && this.save.party[msg.who] && ITEMS[`item.${msg.item}`]) { Inv.add(this.save.party[msg.who], `item.${msg.item}`, Math.min(99, msg.n | 0 || 1)); this._syncParty(); }
+        if (msg.t === 'item' && this.save.party[msg.who]) {
+          const id = `item.${msg.item}`, def = ITEMS[id];
+          if (def && def.slot !== 'component' && id !== BUILT_GADGET) {
+            Inv.add(this.save.party[msg.who], id, Math.min(99, msg.n | 0 || 1));
+            this._syncParty();
+          }
+        }
         if (msg.t === 'standing' && msg.faction in this.save.standing) this.save.standing[msg.faction] += Number(msg.n) || 0;
         if (msg.t === 'exit') this._requestExit(this.sim.map.objects.find((o) => o.id === msg.obj), peer);
         if (msg.t === 'answer') this._answer();
@@ -1098,6 +1104,7 @@ export class WorldScene extends Phaser.Scene {
     const roll = c.rolled?.gadget;
     if (p.gadgetRoll !== roll) p.gadgetAim = null;
     p.gadgetBuild = !ai && gadget === BUILT_GADGET ? equippedBuildStats(roll?.build) : null;
+    if (p.gadgetBuild) powerUnit(roll);
     p.gadget = (p.gadgetBuild || Object.hasOwn(GADGETS, gadget)) && canWear(ITEMS[gadget], p.character) ? gadget : null;
     p.gadgetRoll = p.gadget && roll && typeof roll === 'object' ? roll : null;
     p.activeAbility = ai ? null : selectedAbility(p.character, c);
@@ -1290,6 +1297,13 @@ export class WorldScene extends Phaser.Scene {
         reply('Controller serviced.');
       }
       return;
+    }
+    if (op === 'dismantle') {
+      const result = dismantleGadget(this.save.party[p.character]);
+      if (result.error === 'space') return reply('Four empty slots are needed to recover the parts.');
+      if (result.error) return;
+      this._syncParty();
+      return reply('Gadget dismantled. Parts returned to your inventory.');
     }
     if (op !== 'assemble') return;
     const result = printBuild(this.save, p.character, parts);

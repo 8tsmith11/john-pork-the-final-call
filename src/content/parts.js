@@ -26,3 +26,4 @@ export const CONTROLS = {
 };
 export const HANDLING = { quick: { aim: 0.1, slow: 0 }, normal: { aim: 0.2, slow: 0.1 }, heavy: { aim: 0.35, slow: 0.3 } };
 export const ALL_PARTS = { ...FRAMES, ...POWER, ...PAYLOADS, ...CONTROLS };
+export const componentItemId = (part) => `item.component_${part.slice('part.'.length)}`;

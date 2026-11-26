@@ -641,7 +641,7 @@ export class Sim {
       const until = Math.max(next, locked?.until ?? 0);
       return { gadget: p.gadget, gadgetCharges: locked ? 0 : remaining, gadgetCapacity: p.gadgetBuild.charges,
         gadgetAiming: !!p.gadgetAim, gadgetCd: until ? Math.ceil((until - this.playTime) * 10) / 10 : 0,
-        gadgetMaxCd: Math.max(p.gadgetBuild.cooldown, locked?.total ?? 0) };
+        gadgetMaxCd: Math.max(p.gadgetBuild.cooldown, locked?.total ?? 0, until - this.playTime) };
     }
     const recharge = this._gadgetRecharge(p);
     if (!recharge) return { gadget: p.gadget };
@@ -649,23 +649,28 @@ export class Sim {
   }
 
   _builtCharge(p) {
-    const { charges, cooldown } = p.gadgetBuild;
-    let state = this.builtGadgetCharges.get(p.gadgetRoll);
-    if (!state) {
-      state = { remaining: charges, next: 0 };
-      this.builtGadgetCharges.set(p.gadgetRoll, state);
+    const power = p.gadgetRoll.powerUnit ?? p.gadgetRoll;
+    let queue = this.builtGadgetCharges.get(power);
+    if (!queue) {
+      queue = [];
+      this.builtGadgetCharges.set(power, queue);
     }
-    if (state.next && this.playTime >= state.next) {
-      const recovered = Math.min(charges - state.remaining, 1 + Math.floor((this.playTime - state.next) / cooldown));
-      state.remaining += recovered;
-      state.next = state.remaining < charges ? state.next + recovered * cooldown : 0;
+    // Keep spent energy and its original recharge time when this power part moves to another payload.
+    while (queue[0]?.at <= this.playTime) queue.shift();
+    const { capacity, energyCost } = p.gadgetBuild;
+    const available = capacity - queue.reduce((total, tick) => total + tick.energy, 0);
+    const remaining = Math.max(0, Math.floor(available / energyCost));
+    let restored = available, next = queue[0]?.at ?? 0;
+    if (!remaining) for (const tick of queue) {
+      restored += tick.energy;
+      if (restored >= energyCost) { next = tick.at; break; }
     }
-    return state;
+    return { queue, remaining, next };
   }
 
   _builtSwitchLock(p) {
     const last = p.gadgetTimers?.[p.gadgetBuild.kind];
-    return last?.until > this.playTime && last.roll !== p.gadgetRoll ? last : null;
+    return last?.until > this.playTime && last.powerUnit !== (p.gadgetRoll.powerUnit ?? p.gadgetRoll) ? last : null;
   }
 
   _stepGadget(p, inp, arcHits) {
@@ -687,12 +692,12 @@ export class Sim {
     if (queued.roll !== p.gadgetRoll) { p.gadgetAim = null; return; }
     if (this.playTime < queued.until) return;
     p.gadgetAim = null;
-    const charge = this._builtCharge(p);
-    if (charge.remaining <= 0) return;
-    charge.remaining--;
-    if (!charge.next) charge.next = this.playTime + p.gadgetBuild.cooldown;
+    const { queue, remaining } = this._builtCharge(p);
+    if (!remaining) return;
+    const { energyCost, cooldown, kind } = p.gadgetBuild;
+    queue.push({ at: (queue.at(-1)?.at ?? this.playTime) + cooldown, energy: energyCost });
     const roll = p.gadgetRoll, uses = Math.max(0, Number.isSafeInteger(roll.uses) ? roll.uses : 0);
-    (p.gadgetTimers ??= Object.create(null))[p.gadgetBuild.kind] = { roll, until: charge.next, total: p.gadgetBuild.cooldown };
+    (p.gadgetTimers ??= Object.create(null))[kind] = { powerUnit: roll.powerUnit ?? roll, until: queue[0].at, total: cooldown };
     roll.uses = uses + 1;
     this.events.push({ t: 'gadgetUse', id: p.id });
     if (glitches(roll.build, uses)) {
@@ -738,7 +743,7 @@ export class Sim {
     const recharge = { until: this.playTime + cooldown, total: cooldown };
     const timers = p.gadgetTimers ??= Object.create(null);
     timers[p.gadget] = recharge;
-    timers[def.kind] = { ...recharge, roll: p.gadgetRoll };
+    timers[def.kind] = recharge;
     // Recharge follows the exact build's roll when it is unworn, dropped or picked up.
     if (p.gadgetRoll) this.gadgetRecharges.set(p.gadgetRoll, recharge);
     const r = def.range;
