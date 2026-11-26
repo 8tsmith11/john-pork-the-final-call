@@ -3,7 +3,7 @@
 > Trevor's note: *"you and gonman may have underestimated the scope of this game."* We did. This file
 > resets expectations and sets the order of work. Both agents work from it.
 
-## Where we actually are (2026-11-18)
+## Baseline (2026-11-18)
 
 A **playable Act 1 skeleton**: every system exists in a first version (co-op, saves, combat, dialogue,
 bosses, crafting, skills, morph stage 1, doors, map, menu, music), and the cold open through the
@@ -28,7 +28,7 @@ Both boss variants and both phone-call outcomes have been **played to the ending
   shops (scooters, pawn, corner store), 8 weapons with distinct swings, per-roommate skill trees
   with capstones, fishing with per-area catches, seeded loot containers, difficulty tuned for a
   party of three (`tools/balance.mjs`).
-- **Length (estimate, not yet timed):** ~1h10 straight through, ~2h20 doing everything.
+- **Original length estimates:** ~1h10 straight through, ~2h20 doing everything. See the later playtest results below.
 
 ### What we need from the humans
 1. **Play it** (any one of you, solo is fine: the other two roommates are AI). Tell us what's
@@ -42,31 +42,39 @@ Fable's character pass (make 4–5 people recur and land), the ending trimmed to
 route, sprite art for the scooter's up/down views and a few placeholder NPCs (Ozzie, the abatement
 tech, the pawn clerk), a lake ambience bed, and a timed full playthrough.
 
-## Current status (2026-11-19)
+## Current status (2026-11-25)
 
 The later acts are explorable as scaffold. The scope counter on main reports:
 
 | Act | Areas | Named NPCs | Bosses | Side quests |
 | --- | ---: | ---: | ---: | ---: |
-| 1 | 20 | 35 | 3 | 20 |
+| 1 | 24 | 43 | 3 | 20 |
 | 2 | 26 | 54 | 6 | 36 |
 | 3 | 18 | 40 | 6 | 28 |
 
-These are content counts from `node tools/scope.mjs`. Playthrough length and polish still need
-browser playtests. Keep the milestone sequence below and use [the scope plan](design/10-scope.md)
-to track the larger targets.
+Counts come from `node tools/scope.mjs` on main at `64c411ea`. They measure content volume.
+The later acts still need their main quests and story playthroughs.
 
-### Landed work and next checks (2026-11-20)
+### Landed work and next checks
 
-- **Story:** the Act 1 staging refresh landed in batch 2 (#106). Verify host and guest playback and
-  skipping, and finish the comic briefs. Check how players learn and act on each lead.
-- **World:** the Act 1 scaffold polish, both halves of the cordon work, and the stretch-area polish
-  are on main (#100, #106, #112). Later-act world alignment is on main (#73). The world team is
-  working on Act 2 and Act 3 polish in hub task #30 (PR #131). Districts and crowds follow after
-  PR #96 lands. The later acts still need scaffold and continuity work before a story playthrough.
-- **Systems:** the inventory changes landed in batch 1 (#100). The hub board and anonymous suggestions
-  landed in batch 2 (#106). Shared dialogue and the customization station remain in review. Keep a
-  three-player Act 1 run on the playtest plan, including reconnection, saves, and dialogue choices.
+- **Story:** the locked cold open and its staging are on main (#137, #145), along with the Room 631
+  layout and search interactions (#174, #177). The Call's dialogue tooling fixes also landed
+  (hub #114). The post-opening script review (hub #112) is still open. Review the main quest's
+  pacing and guidance with the story owners using the existing [quest checklist](org/CHECKLISTS.md#b-a-quest-or-a-story-beat).
+- **World:** the Act 1 room and character-art stack (#168–#172), Baltimore art (#96), later-act
+  puzzle conversions (#173) and ambience (hub #115) are on main. The remaining Act 1 room work
+  stays in hub #113. Larger areas and continuous roads are with the world owner on hub #126.
+- **Systems:** stage rejoin and active party-dialogue recovery landed (#117, #148). The boss
+  signature rules (hub #121) and progression pacing (hub #122) also landed. Keep a three-player
+  Act 1 run on the playtest plan, including reconnects, saves and dialogue choices.
+
+### Act 1 playtest (2026-11-21)
+
+The team reported about 20–30 minutes on the main path (PR #166 and hub general #298). The
+required route used only a small part of Act 1. For M1, use the next playthrough to check where
+players learn what to do, which places the main quest takes them through, and whether fights
+give players time to learn their mechanics. The recorded scope targets are in
+[the scope plan](design/10-scope.md).
 
 ## What the brief really asks for
 
