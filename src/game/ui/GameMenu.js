@@ -19,6 +19,12 @@ import { QUESTS, questState, questVisible, questLeads } from '../../content/ques
 import { Scroller } from './scroll.js';
 import { FAB_TUNES, fabCost, rolledName } from '../../content/gearRolls.js';
 import { GADGETS, gadgetStats } from '../../content/gadgets.js';
+import { PARTS_BY_ROLE, equippedBuildStats, previewBuild, wornController } from '../../engine/gadgetBuilds.js';
+
+function builtEffectText({ kind, effect, range }) {
+  return { arc: `${tr('Damage')} ${effect}`, burst: `${tr('Knockback')} ${effect}`,
+    slow: `${tr('Slow field')} ${effect} s`, scan: `${tr('Scan range')} ${range} px` }[kind];
+}
 
 // One line of weapon stats for tooltips: melee hit, rate, dps, reach, arc, knockback; guns dmg×pellets, rate, clip, reload.
 export function weaponStats(def, lvl = 0, roll = null) {
@@ -141,6 +147,7 @@ export class GameMenu {
     g.fillStyle(0x000000, 0.45).fillRect(0, 0, VIEW.w, VIEW.h);                 // dim the world
     g.fillStyle(C.panel, 0.97).fillRoundedRect(b.x, b.y, b.w, b.h, 3).lineStyle(1, C.edge, 0.9).strokeRoundedRect(b.x, b.y, b.w, b.h, 3);
     if (this.tab === 'fab') return this._fab(g);
+    if (this.tab === 'workbench') return this._workbench(g);
     if (this.tab?.startsWith('shop:')) return this._shop(g, this.tab.slice(5));
     if (this.tab === 'armorer') return this._armorer(g);
     if (this.tab?.startsWith('approach:')) return this.scene.approach?.draw(this, g);
@@ -186,8 +193,8 @@ export class GameMenu {
       else this._t(x + S / 2, y + S / 2, SLOT_ABBR[slot], F(5, '#4a5175')).setOrigin(0.5);
       const z = s.add.zone(x, y, S, S).setOrigin(0).setInteractive({ useHandCursor: true });
       z.on('pointerdown', () => {
-        if (this.held != null) { const it = inv[this.held]; if (it && ITEMS[it.id]?.slot === slot) s.menuUse(it.id, this.held); this.held = null; return this.refresh(); }
-        if (id) s.menuUse(id);   // click a worn item to take it off
+        if (this.held != null) { const it = inv[this.held]; if (it && ITEMS[it.id]?.slot === slot) s.menuWearSlot(this.held); this.held = null; return this.refresh(); }   // that exact stack
+        if (id) s.menuUnwear(slot);   // click a worn item to take it off
       });
       z.on('pointerover', () => { this.hover = id ? { id, roll: c.rolled?.[slot] } : { label: `${SLOT_NAMES[slot]} slot` }; this._drawTip(); });
       this.root.add(z);
@@ -295,9 +302,11 @@ export class GameMenu {
     const lvl = this.scene.save.party[this.scene.character]?.upgrades?.[h.id] ?? 0;
     const stats = modText(scaleMods(def.mods, lvl));
     this.tip.push(this._t(x, y, `${rolledName(tr(def.name), h.roll, getLang())}${lvl ? ` +${lvl}` : ''}${h.qty > 1 ? ' ×' + h.qty : ''}`, F(9, def.unique ? '#ffd27f' : h.roll ? '#c9a2ff' : C.hi)));
-    this.tip.push(this._t(x, y + 11, `${kind}${def.heal ? `  · heals ${def.heal}` : ''}${stats ? '  · ' + stats : ''}${h.roll ? `  · rolled: ${modText(h.roll.mods)}` : ''}`, F(6, C.ok)));
+    this.tip.push(this._t(x, y + 11, `${kind}${def.heal ? `  · heals ${def.heal}` : ''}${stats ? '  · ' + stats : ''}${h.roll?.affixes?.length ? `  · rolled: ${modText(h.roll.mods)}` : ''}`, F(6, C.ok)));
     // Weapon stats (Trevor): what a hit or a shot actually does.
-    const ws = weaponStats(def, lvl, h.roll);
+    const gadget = h.roll?.build ? equippedBuildStats(h.roll.build) : null;
+    const ws = gadget ? `${builtEffectText(gadget)}  ·  ${tr('Charges')} ${gadget.charges}  ·  ${tr('Recharge')} ${gadget.cooldown} s`
+      : weaponStats(def, lvl, h.roll);
     let ty = y + 20;
     if (ws) { const t = this._t(x, ty, ws, { ...F(7, '#6fe3e8'), wordWrap: { width: this.tipW } }); this.tip.push(t); ty += t.height + 2; }
     this.tip.push(this._t(x, ty, def.text ?? '', { ...F(7, C.sub), wordWrap: { width: this.tipW } }));
@@ -663,6 +672,71 @@ export class GameMenu {
       const unit = ({ screen: ' s', tether: ' s', relay: ' s', vector: ' px', patch: ` ${tr('HP')}` })[gadget.kind] ?? '';
       this._t(x, y, `${tr('Recharge')} ${change(base.cooldown, tuned.cooldown)} s  ·  ${tr('Effect')} ${change(base.power, tuned.power)}${unit}`, F(6, C.text));
     } else if (profile) this._t(x, y, modText(profile), F(6, C.text));
+  }
+
+  _workbench(g) {
+    const s = this.scene, b = this.box, c = s.save.party[s.character];
+    const lang = getLang();
+    const roles = Object.entries(PARTS_BY_ROLE);
+    const selection = this.workbenchParts ??= Object.fromEntries(roles.map(([role, parts]) => {
+      const saved = c.gadgetPattern?.[role];
+      return [role, Object.hasOwn(parts, saved) ? saved : Object.keys(parts)[0]];
+    }));
+    const review = previewBuild(selection, s.save.flags, lang);
+    const canPrint = review.ok && canPay(c, review.cost);
+    const control = wornController(c), canService = !!control?.worn;
+    const submit = () => { if (canPrint) s.menuWorkbench('assemble', selection); };
+    const service = () => { if (canService) s.menuWorkbench('service'); };
+    const list = this.scroller.list('workbench', {
+      n: roles.length + (canService ? 2 : 1), per: roles.length + 2,
+      onPick: (row) => {
+        if (row === roles.length) return submit();
+        if (row === roles.length + 1) return service();
+        const [role, parts] = roles[row];
+        const options = Object.keys(parts);
+        selection[role] = options[(options.indexOf(selection[role]) + 1) % options.length];
+        this.refresh();
+      },
+    });
+    const labels = { frame: 'Frame', power: 'Power', payload: 'Payload', control: 'Control board' };
+    this._t(b.x + 12, b.y + 8, 'Workbench', F(11, C.hi));
+    this._t(b.x + b.w - 12, b.y + 9, '[ESC] close', F(8, C.sub)).setOrigin(1, 0);
+    roles.forEach(([role, parts], row) => {
+      const y = b.y + 32 + row * 23;
+      this._t(b.x + 12, y + 3, labels[role], F(8, row === list.sel ? C.hi : C.sub));
+      const options = Object.entries(parts), width = Math.floor((b.w - 103) / options.length);
+      options.forEach(([id, part], col) => {
+        const x = b.x + 91 + col * width;
+        const picked = id === selection[role], locked = part.schematic && !s.save.flags[part.schematic];
+        g.fillStyle(picked ? 0x313754 : 0x171b2d).fillRoundedRect(x, y, width - 4, 20, 2);
+        const name = lang === 'es' ? part.nameEs : part.name;
+        this._t(x + 3, y + 2, name, { ...F(7, locked ? C.bad : picked ? C.hi : C.text), wordWrap: { width: width - 10 } }, () => {
+          list.sel = row;
+          selection[role] = id;
+          this.refresh();
+        });
+      });
+    });
+    const y = b.y + 126;
+    if (review.stats) {
+      const { cooldown, charges, aim, slow, load, glitch, never } = review.stats;
+      this._t(b.x + 12, y, `${tr('Recharge')} ${cooldown} s  ·  ${tr('Charges')} ${charges}  ·  ${builtEffectText(review.stats)}  ·  ${tr('Load')} ${Math.round(load * 100)}%`, F(8, C.text));
+      this._t(b.x + 12, y + 14, `${tr('Aim time')} ${aim} s  ·  ${tr('Movement penalty')} ${Math.round(slow * 100)}%  ·  ${tr('Glitch risk')} ${Math.round(glitch * 100)}%`, F(8, C.sub));
+      this._t(b.x + 12, y + 28, never ? 'Hand-crank power needs no battery.' : glitch ? 'Controller wear increases with use.' : 'This board does not wear out.', F(7, C.sub));
+    } else {
+      this._t(b.x + 12, y, review.reasons.join('  ·  '), { ...F(8, C.bad), wordWrap: { width: b.w - 24 } });
+    }
+    Object.entries(review.cost).forEach(([id, need], i) => {
+      const have = count(c, id), x = b.x + 12 + i * 53;
+      this._icon(x + 7, b.y + 176, id).setScale(0.65);
+      this._t(x + 16, b.y + 171, `${have}/${need}`, F(8, have >= need ? C.ok : C.bad));
+    });
+    if (review.ok) {
+      const label = canPrint ? '› ASSEMBLE' : 'need materials';
+      this._t(b.x + 12, b.y + 197, label, F(9, canPrint ? list.sel === roles.length ? C.hi : C.ok : C.bad), canPrint ? submit : null);
+    }
+    if (canService) this._t(b.x + b.w - 12, b.y + 197, `${tr('› SERVICE')} · ${Number((control.chance * 100).toFixed(1))}%`,
+      F(9, list.sel === roles.length + 1 ? C.hi : C.ok), service).setOrigin(1, 0);
   }
 
   // ---- shops: buy with money ----

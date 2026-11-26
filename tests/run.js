@@ -2417,6 +2417,45 @@ test('ambient NPC fight (hub #69): before the Call an abatement squad burns out 
   assert.ok(v.over && v.m[2] === 0 && v.dr.length === 0 && v.sh.length === 0, 'a later visit: the burned husk, the squad standing down');
 });
 
+const SocketsT = await import('../src/engine/sockets.js');
+test('customization station (task #40): mods fit only where they belong, count in your stats, ride along when worn, and come back out', async () => {
+  const { playerMods: pm, socketsFor, ITEMS } = await import('../src/content/items.js');
+  const InvS = await import('../src/engine/inventory.js');
+  const c = newSave({ seed: 'mods', rolls: {}, gameVersion: 't' }).party.trevor;
+  c.inventory = Array.from({ length: InvS.SLOTS }, () => null);
+  c.inventory[0] = { id: 'item.rebar', qty: 1 }; c.inventory[1] = { id: 'item.mesh_vest', qty: 1 };
+  InvS.add(c, 'item.mod_edge', 3); InvS.add(c, 'item.mod_plate'); InvS.add(c, 'item.mod_barrel');
+  c.hotSel = 0; c.equipped.weapon = 'item.rebar';
+  assert.equal(socketsFor(ITEMS['item.rebar']), 2);
+  assert.equal(SocketsT.insert(c, { bag: 0 }, 'item.mod_barrel'), false, 'a gun barrel does not fit a spear');
+  const base = pm(c, 'trevor').melee;
+  assert.ok(SocketsT.insert(c, { bag: 0 }, 'item.mod_edge')); assert.ok(SocketsT.insert(c, { bag: 0 }, 'item.mod_edge'));
+  assert.equal(SocketsT.insert(c, { bag: 0 }, 'item.mod_edge'), false, 'two sockets, no third');
+  assert.equal(pm(c, 'trevor').melee, base + 4, 'two honed edges: +4 melee while held');
+  assert.equal(InvS.count(c, 'item.mod_edge'), 1);
+  // armor: the plate goes in, the vest is worn, the plate rides along and counts, then comes back with it
+  assert.ok(SocketsT.insert(c, { bag: 1 }, 'item.mod_plate'));
+  assert.ok(InvS.wear(c, 'item.mesh_vest'));
+  assert.deepEqual(c.socketed.chestplate, ['item.mod_plate']);
+  const worn = pm(c, 'trevor').armor;
+  assert.ok(InvS.unwear(c, 'chestplate'));
+  assert.deepEqual(c.inventory.find((x) => x?.id === 'item.mesh_vest').socketed, ['item.mod_plate']);
+  assert.ok(worn > pm(c, 'trevor').armor, 'the plate counted while worn');
+  // out again
+  assert.ok(SocketsT.extract(c, { bag: 0 }, 0)); assert.equal(InvS.count(c, 'item.mod_edge'), 2);
+  assert.deepEqual(SocketsT.socketInfo(c, { bag: 0 }).mods, ['item.mod_edge']);
+});
+
+test('the mod station is modal: while open it is the scene menu, ESC closes only it, and the menu keys stay shut (BagelMeister, PR #93)', async () => {
+  const fs = await import('node:fs');
+  const src = fs.readFileSync(new URL('../src/game/scenes/WorldScene.js', import.meta.url), 'utf8');
+  assert.ok(/get menu\(\) \{[^\n]*this\.modStation && !this\.modStation\.closed \? 'mods'/.test(src), 'an open station counts as the menu, so _frozen stops movement, attacks and E');
+  assert.ok(/keydown-ESC', \(\) => \{ if \(this\.dlg[^)]*\) return; if \(this\.modStation\) \{ this\.modStation\.close\(\); return; \}/.test(src), 'ESC closes the station and nothing else');
+  for (const k of ['I', 'K', 'J', 'TAB']) assert.ok(new RegExp(`keydown-${k}'[^\\n]*!this\\.modStation`).test(src), `${k} does nothing while the station is open`);
+  const st = fs.readFileSync(new URL('../src/game/ui/ModStation.js', import.meta.url), 'utf8');
+  assert.ok(!/keyboard\.on\(/.test(st), 'the station has no key listener of its own (the scene routes ESC)');
+});
+
 test('Ping rework (hub #66): the pulse jolts, a marked kill hands the pinger cooldown back, and the mark jumps on', async () => {
   const { PING } = await import('../src/engine/sim.js');
   const sim = new Sim(MAPS_FOR_TEST.metro_plaza, { seed: 'ping', deferSpawn: true });
@@ -2535,6 +2574,90 @@ test('cordon, trevor\'s half of #36: a trooper at every checkpoint faces out, wi
   for (const p of sim.players.values()) assert.ok(Math.floor(p.y / 16) > ex.y, `${p.id} landed at row ${Math.floor(p.y / 16)}, beyond the barrier`);
 });
 
+test('assembly (src/engine/assembly.js): derived stats match the design doc, legality reads in plain words, tolerances are seeded and bounded, auto-written boards wear', async () => {
+  const A = await import('../src/engine/assembly.js');
+  const P = await import('../src/content/parts.js');
+  const { ITEMS } = await import('../src/content/items.js');
+  const b1 = { frame: 'part.bracket', power: 'part.cell', payload: 'part.arc', control: 'part.autoboard' };
+  const s1 = A.buildStats(b1);
+  assert.deepEqual([s1.cooldown, s1.charges, s1.effect], [10, 1, 18], 'bracket + cell + arc coil: 10 s, one charge, 18 (doc section 5)');
+  const s2 = A.buildStats({ ...b1, frame: 'part.conduit', power: 'part.pack' });
+  assert.deepEqual([s2.cooldown, s2.charges], [8, 2], 'conduit + scooter pack + arc coil: 8 s, two charges');
+  assert.ok(s2.aim < A.buildStats({ ...b1, frame: 'part.bracket', power: 'part.pack' }).aim + 0.2, 'a light load handles normally');
+  assert.ok(A.buildStats({ ...b1, power: 'part.pack' }).aim > s1.aim, 'over 75% of the frame\'s capacity handles worse');
+  // legality, in words
+  assert.ok(A.legality(b1).ok);
+  assert.ok(A.legality({ ...b1, payload: 'part.gel' }).reasons.some((r) => /doesn't fit/.test(r)), 'a medium payload doesn\'t fit a bracket');
+  assert.ok(!A.legality({ frame: 'part.bracket' }).ok && A.legality({ frame: 'part.bracket' }).reasons.length === 3, 'missing parts are named');
+  assert.ok(A.legality({ ...b1, frame: 'part.conduit' }, () => false).reasons.some((r) => /no schematic/.test(r)), 'schematics gate parts');
+  for (const f of Object.keys(P.FRAMES)) for (const pw of Object.keys(P.POWER)) for (const pl of Object.keys(P.PAYLOADS)) {
+    const b = { frame: f, power: pw, payload: pl, control: 'part.autoboard' }, L = A.legality(b);
+    const fr = P.FRAMES[f], heavy = P.POWER[pw].weight + P.PAYLOADS[pl].weight > fr.capacity, fits = fr.mounts.includes(P.PAYLOADS[pl].mount);
+    assert.equal(L.ok, !heavy && fits, `${f}+${pw}+${pl}: legal exactly when it fits and isn't too heavy`);
+  }
+  // tolerance: same seed same roll, bounded, cooldown floor holds
+  const t1 = A.rollTolerance('w', b1, 0), t2 = A.rollTolerance('w', b1, 0), t3 = A.rollTolerance('w', b1, 1);
+  assert.deepEqual(t1, t2, 'reproducible across screens'); assert.notDeepEqual(t1, t3, 'each print differs');
+  for (let i = 0; i < 200; i++) { const t = A.rollTolerance('sweep', b1, i); assert.ok(Math.abs(t.cooldown) <= A.TOL.cooldown && Math.abs(t.effect) <= A.TOL.effect); }
+  assert.ok(A.buildStats({ ...b1, tol: { cooldown: -0.9, effect: 0 } }).cooldown >= 10 * A.COOLDOWN_FLOOR, 'never below the cooldown floor');
+  // control wear: auto-written rots and caps; hand-checked never glitches
+  assert.ok(A.glitchChance(b1, 0) < A.glitchChance(b1, 20) && A.glitchChance(b1, 1e6) === P.CONTROLS['part.autoboard'].maxGlitch, 'an auto-written board wears, up to a cap');
+  assert.equal(A.glitchChance({ ...b1, control: 'part.handboard' }, 1e6), 0, 'a hand-checked board never rots');
+  assert.equal(A.glitches({ ...b1, control: 'part.handboard' }, 99, 0), false);
+  // data hygiene: Spanish names, real materials
+  for (const [id, part] of Object.entries(P.ALL_PARTS)) assert.ok(part.name && part.nameEs, `${id}: names in EN and ES`);
+  for (const [k] of Object.entries(A.materials({ frame: 'part.deck', power: 'part.pack', payload: 'part.gel', control: 'part.handboard' }))) assert.ok(ITEMS[k], `${k} is a real material`);
+});
+
+test('combat takes thought (Trevor: "I just walk into the robots and click and everything dies"): poise, committed attacks, deliberate parries', async () => {
+  const { ITEMS } = await import('../src/content/items.js');
+  const arena = () => ({ id: 'thought', w: 60, h: 60, objects: [], enemies: [], spawns: [{ x: 400, y: 400 }], solid: () => false });
+  const rotling = (sim, id, x, y) => sim.enemies.set(id, { id, kind: 'enemy.rotling', def: { ...ENEMIES['enemy.rotling'] }, x, y, hp: ENEMIES['enemy.rotling'].hp, cd: 0, hurtT: 0, kx: 0, ky: 0 });
+  const sim = new Sim(arena(), { seed: 'poise' }); sim.addPlayer('h', 'trevor');
+  rotling(sim, 'a', 420, 400); const e = sim.enemies.get('a');
+  sim._hurtEnemy(e, 5, 100, 0, 'h'); assert.ok(e.kx !== 0 && e.hurtT > 0, 'the first hit staggers');
+  const kx1 = e.kx; sim._hurtEnemy(e, 5, -100, 0, 'h'); assert.equal(e.kx, kx1, 'the next light hit is shrugged off: no new push, the old one keeps going');
+  sim._hurtEnemy(e, 5, 100, 0, 'h', { heavy: true }); assert.ok(e.kx !== 0, 'a finisher breaks through');
+  e.poiseT = 0; e.st = 'windup'; e.kx = 0; sim._hurtEnemy(e, 5, 100, 0, 'h'); assert.equal(e.kx, 0, 'an enemy winding up doesn\'t flinch from a light hit');
+  // mashing the attack into a pack now costs you; the old way cost about a tenth of your health
+  let taken = 0;
+  for (let s = 0; s < 6; s++) {
+    const m = new Sim(arena(), { seed: 'mash' + s }); m.addPlayer('h', 'trevor'); const p = m.players.get('h'); p.x = 400; p.y = 400;
+    p.held = 'melee'; p.mods = { ...(p.mods ?? {}), swing: ITEMS['item.pry_bar'].swing };
+    for (let i = 0; i < 3; i++) rotling(m, 'r' + i, 430 + i * 6, 395 + i * 6);
+    const hp0 = p.hp;
+    for (let t = 0; t < 60 * 20 && m.enemies.size && !p.downed; t++) {
+      let best = null, bd = 1e9; for (const q of m.enemies.values()) { const d = Math.hypot(q.x - p.x, q.y - p.y); if (d < bd) { bd = d; best = q; } }
+      m.step(1 / 60, new Map([['h', { ...emptyInput(), aim: best ? Math.atan2(best.y - p.y, best.x - p.x) : 0, attack: true }]]));
+    }
+    taken += hp0 - Math.max(0, p.hp);
+  }
+  assert.ok(taken / 6 >= 25, `button-mashing three rotlings costs real health now (avg ${Math.round(taken / 6)})`);
+  // a swing after a rest still parries a lunge; a swing in the middle of a flurry doesn't
+  const q = new Sim(arena(), { seed: 'parry' }); q.addPlayer('h', 'trevor'); const p = q.players.get('h'); p.x = 400; p.y = 400; p.aim = 0;
+  p.held = 'melee'; p.mods = { ...(p.mods ?? {}), swing: ITEMS['item.pry_bar'].swing };
+  rotling(q, 'l', 414, 400); const l = q.enemies.get('l'); l.st = 'lunge'; l.hitOnce = false;
+  p.swingFreeAt = q.tick / 60 - 0.2; q._melee(p); assert.ok(!(l.parried > 0), 'mid-flurry: no parry');
+  l.st = 'lunge'; l.hitOnce = false; l.poiseT = 0; p.swingFreeAt = q.tick / 60 - 1; p.meleeCd = 0; q._melee(p); assert.ok(l.parried > 0, 'a deliberate swing parries');
+  // John Pork's cases (PR #146): holding attack with a slow weapon in a real step loop never parries, with any weapon;
+  // a pause beyond recovery does
+  for (const wid of ['item.pry_bar', 'item.pipe_wrench']) {
+    if (!ITEMS[wid]?.swing) continue;
+    const z = new Sim(arena(), { seed: 'hold-' + wid }); z.addPlayer('h', 'trevor'); const zp = z.players.get('h'); zp.x = 400; zp.y = 400;
+    zp.held = 'melee'; zp.mods = { ...(zp.mods ?? {}), swing: ITEMS[wid].swing };
+    let parries = 0;
+    for (let i = 0; i < 60 * 4; i++) {
+      const lr = [...z.enemies.values()][0] ?? (rotling(z, 'L' + i, 414, 400), z.enemies.get('L' + i)); lr.st = 'lunge'; lr.hitOnce = false; lr.x = 414; lr.y = 400; lr.hp = 999;
+      z.step(1 / 60, new Map([['h', { ...emptyInput(), aim: 0, attack: true }]])); parries += z.events.filter((e) => e.t === 'parry').length;
+    }
+    assert.ok(parries <= 1, `${wid}: holding attack parries at most the first swing (${parries})`);
+  }
+  // a heavy hit's knockback survives a teammate's light hit during poise
+  const kb = new Sim(arena(), { seed: 'kb' }); kb.addPlayer('a', 'trevor'); kb.addPlayer('b', 'manuel'); rotling(kb, 'r', 420, 400); const kr = kb.enemies.get('r');
+  kb._hurtEnemy(kr, 4, 120, 0, 'a', { heavy: true }); const vx = kr.kx;
+  kb._hurtEnemy(kr, 4, -80, 0, 'b'); assert.equal(kr.kx, vx, 'a shrugged hit adds nothing and takes nothing away');
+});
+
 const Jobs = await import('../src/content/jobs.js');
 test('bounty board jobs: reproducible per world, all three types come up, nests sit on walkable tiles and spawn with job keys', () => {
   assert.deepEqual(Jobs.makeJob('w', 7), Jobs.makeJob('w', 7));
@@ -2624,7 +2747,7 @@ test('gadget tuning stays within recharge, effect and actual output caps across 
 
 const Dawn = await import('../src/content/dawn.js');
 test('dawn clock (P-004): moves only with story beats, in order, and never passes first light', () => {
-  assert.equal(Dawn.dawnLabel({}), '2:58 am');   // the microwave in the cold open
+  assert.equal(Dawn.dawnLabel({}), '3:40 am');   // the cold open (D-022)
   let last = Dawn.DAWN_START; const flags = {};
   for (const [flag, at] of Dawn.DAWN_BEATS) { assert.ok(at > last && at < Dawn.FIRST_LIGHT, `${flag} out of order`); last = at; flags[flag] = true; assert.equal(Dawn.dawnMinutes(flags), at); }
   assert.ok(Dawn.dawnProgress(flags) < 1 && Dawn.dawnProgress({}) === 0);
@@ -2697,6 +2820,124 @@ test('AI companions follow the human, fight, and never trigger exits', () => {
 });
 
 const Inv = await import('../src/engine/inventory.js');
+test('modular printing validates parts and schematics, commits material costs atomically and saves the exact build', async () => {
+  const { BUILT_GADGET } = await import('../src/content/gadgets.js');
+  const { printBuild, previewBuild, serviceController, wornController } = await import('../src/engine/gadgetBuilds.js');
+  const save = newSave({ seed: 'workbench', rolls: {}, gameVersion: 'test' });
+  const c = save.party.trevor;
+  const selection = { frame: 'part.bracket', power: 'part.cell', payload: 'part.arc', control: 'part.autoboard' };
+  const preview = previewBuild(selection);
+  assert.ok(preview.ok);
+  assert.equal(previewBuild({ ...selection, frame: 'part.deck' }).ok, false);
+  assert.equal(previewBuild({ ...selection, power: 'constructor' }).ok, false);
+  assert.equal(printBuild(save, 'trevor', selection).error, 'materials');
+  c.inventory.fill(null);
+  for (const [id, count] of Object.entries(preview.cost)) assert.equal(Inv.add(c, id, count + 1), 0);
+  c.inventory = c.inventory.map((stack) => stack ?? { id: 'item.pry_bar', qty: 1 });
+  const full = structuredClone(save);
+  assert.equal(printBuild(save, 'trevor', selection).error, 'space');
+  assert.deepEqual(save, full);
+
+  c.inventory[0] = null;
+  const identical = structuredClone(save);
+  const first = printBuild(save, 'trevor', { ...selection, tol: { cooldown: -1, effect: 1 }, uses: 99 });
+  assert.deepEqual(first, printBuild(identical, 'trevor', selection));
+  assert.equal(first.roll.uses, 0);
+  assert.ok(Math.abs(first.roll.build.tol.cooldown) <= 0.06);
+  const slot = c.inventory.findIndex((stack) => stack?.roll === first.roll);
+  assert.ok(Inv.wear(c, BUILT_GADGET, slot));
+  const restored = migrate(JSON.parse(JSON.stringify(save)));
+  assert.equal(restored.party.trevor.equipped.gadget, BUILT_GADGET);
+  assert.deepEqual(restored.party.trevor.rolled.gadget, first.roll);
+  assert.equal(restored.world.gearMade[BUILT_GADGET], 1);
+  assert.deepEqual(restored.party.trevor.gadgetPattern, selection);
+  const restoredCharacter = restored.party.trevor;
+  const fitted = restoredCharacter.rolled.gadget;
+  fitted.uses = 40;
+  assert.ok(wornController(restoredCharacter).chance > 0.03);
+  assert.ok(serviceController(restoredCharacter));
+  assert.equal(restoredCharacter.rolled.gadget, fitted, 'service must keep the exact rechargeable instance');
+  assert.equal(fitted.uses, 0);
+  assert.equal(wornController(restoredCharacter).chance, 0.03);
+});
+
+test('modular casts spend their own charges after aiming, keep the recharge through swaps, and honor payload limits', async () => {
+  const { BUILT_GADGET, GADGETS, gadgetEffectValue } = await import('../src/content/gadgets.js');
+  const { equippedBuildStats } = await import('../src/engine/gadgetBuilds.js');
+  const arena = { id: 'gadget-bench', w: 60, h: 60, solid: () => false, objects: [], enemies: [], spawns: [{ x: 400, y: 400 }] };
+  const s = new Sim(arena, { seed: 'gadget-bench' });
+  s.addPlayer('host', 'trevor');
+  const p = s.players.get('host');
+  const equip = (options = {}) => {
+    const build = { frame: 'part.conduit', power: 'part.pack', payload: 'part.arc', control: 'part.handboard', ...options };
+    const roll = { build, uses: 0 };
+    Object.assign(p, { gadget: BUILT_GADGET, gadgetRoll: roll, gadgetBuild: equippedBuildStats(build) });
+    return roll;
+  };
+  const enemy = { id: 'target', kind: 'enemy.rotling', x: p.x + 20, y: p.y, hp: 200, kx: 0, ky: 0, cd: 0, hurtT: 0, sleepT: 2 };
+  s.enemies.set(enemy.id, enemy);
+  const step = (input = {}) => s.step(1 / 60, new Map([['host', { ...emptyInput(), aim: 0, ...input }]]));
+  const waitAim = () => { for (let i = 0; i < 45 && p.gadgetAim; i++) step(); };
+  const view = () => s.snapshot().players[0];
+  const arc = equip();
+  step({ gadget: true });
+  assert.ok(view().gadgetAiming);
+  assert.equal(view().gadgetCharges, 2);
+  waitAim();
+  assert.equal(view().gadgetCharges, 1);
+  assert.ok(enemy.hp < 200 && arc.uses === 1);
+  step({ gadget: true }); waitAim();
+  assert.equal(view().gadgetCharges, 0);
+  assert.equal(arc.uses, 2);
+  const other = equip({ power: 'part.fusebank' });
+  step({ gadget: true });
+  assert.equal(view().gadgetCharges, 0, 'a second copy of the same payload cannot bypass the existing charge timer');
+  assert.ok(!p.gadgetAim && other.uses === 0);
+  Object.assign(p, { gadget: 'item.arc_splicer', gadgetRoll: null, gadgetBuild: null });
+  step({ gadget: true });
+  assert.ok(!s.events.some((event) => event.t === 'gadgetCast'), 'the stock Arc also respects recharge after an assembled Arc');
+  p.gadget = BUILT_GADGET;
+  p.gadgetRoll = arc; p.gadgetBuild = equippedBuildStats(arc.build);
+  assert.equal(view().gadgetCharges, 0, 'charges follow the original item');
+  s.setMap(arena);
+  assert.equal(view().gadgetCharges, 0, 'travel preserves recharge');
+  s.playTime += p.gadgetBuild.cooldown;
+  assert.equal(view().gadgetCharges, 1, 'one charge replenishes per interval');
+  s.playTime += p.gadgetBuild.cooldown;
+  assert.equal(view().gadgetCharges, 2);
+
+  const burst = equip({ payload: 'part.burst' });
+  Object.assign(enemy, { x: p.x + 20, y: p.y, poiseT: 0.5, kx: 0 });
+  s.enemies.set(enemy.id, enemy);
+  s._fireBuiltGadget(p, new Map());
+  assert.equal(enemy.kx, 0, 'the burst respects active poise');
+  enemy.poiseT = 0;
+  s._fireBuiltGadget(p, new Map());
+  assert.equal(enemy.kx, equippedBuildStats(burst.build).effect);
+
+  const gel = equip({ payload: 'part.gel', power: 'part.fusebank' });
+  s._fireBuiltGadget(p, new Map());
+  assert.equal(s.gadgetFields.length, 1);
+  const fieldStats = equippedBuildStats(gel.build);
+  assert.ok(fieldStats.effect / fieldStats.cooldown <= 0.25);
+  s.playTime += fieldStats.effect + 0.1;
+  step();
+  assert.equal(s.gadgetFields.length, 0, 'the slow field expires');
+
+  const lens = equip({ payload: 'part.lens', control: 'part.autoboard' });
+  step({ gadget: true });
+  step({ gadgetBlocked: true });
+  assert.ok(!p.gadgetAim && lens.uses === 0, 'a blocked aim cancels without spending the charge');
+  step({ gadget: true });
+  const random = Math.random;
+  try { Math.random = () => 0; waitAim(); } finally { Math.random = random; }
+  assert.ok(s.events.some((event) => event.t === 'gadgetGlitch'));
+  assert.ok(!s.events.some((event) => event.t === 'gadgetScan') && lens.uses === 1);
+  s._fireBuiltGadget(p, new Map());
+  assert.ok(s.events.some((event) => event.t === 'gadgetScan' && event.range === 160));
+  const tuned = equippedBuildStats({ ...arc.build, power: 'part.fusebank', tol: { effect: 10, cooldown: -10 } });
+  assert.ok(gadgetEffectValue(GADGETS['item.arc_splicer'], tuned.effect) / tuned.cooldown <= 5.4);
+});
 // Exercise the real scene method without starting Phaser's browser renderer.
 const savedPhaserForCraft = globalThis.Phaser;
 let CraftWorldScene;
@@ -2767,6 +3008,29 @@ test('co-op puzzles: a guest pressing a lever, a clock or a bust runs on the hos
     assert.equal(sc._puzzleAct('g2', 'obj.switch_a'), false, 'out of reach: refused');
     assert.ok(!Object.prototype.hasOwnProperty.call(sc, '_say') && !Object.prototype.hasOwnProperty.call(sc, '_grant'), 'the host\'s own say and grant are back afterwards');
   } finally { CraftWorldScene.prototype._toast = realToast; }
+});
+
+test('a staged dialogue cue stays busy until done and cannot resume queued actions on a new line', async () => {
+  const { Stage } = await import('../src/game/stage.js');
+  const stage = Object.assign(Object.create(Stage.prototype), {
+    tok: 1,
+    active: { tok: 1, script: { hold: true, cues: { first: ['wait', 'too late'], second: ['next'] } } },
+  });
+  const actions = [];
+  let finish;
+  stage._step = (step) => {
+    actions.push(step);
+    if (step === 'wait') return new Promise(resolve => { finish = resolve; });
+    return null;
+  };
+  assert.ok(stage.cue('first'));
+  assert.ok(stage.cueBusy);
+  assert.ok(!stage.cue('first'), 'the same dialogue state cannot restart a cue');
+  assert.ok(stage.cue('second'));
+  finish();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(stage.cueBusy, false);
+  assert.deepEqual(actions, ['wait', 'next']);
 });
 
 test('cutscenes: the HUD steps out from under the letterbox bars and comes back as it was (Trevor: weird cutoff on the UI)', () => {
@@ -3339,7 +3603,7 @@ test('Fab tuning charges its material once and equipping a specific build preser
   assert.equal(JSON.stringify(f.c.inventory), before, 'host enforces the same recipe lock as the Fab menu');
 });
 
-test('a guest V press reaches the host once and recharge follows the model and exact build across swaps and travel', () => {
+test('a guest V press reaches the host once and recharge follows the model and exact build across swaps and travel', async () => {
   const save = newSave({ seed: 'gadget-coop', rolls: {}, gameVersion: 't' });
   const map = MAPS_FOR_TEST.room631, sim = new Sim(map);
   sim.addPlayer('host', 'trevor'); sim.addPlayer('guest', 'michael');
@@ -3388,9 +3652,31 @@ test('a guest V press reaches the host once and recharge follows the model and e
   input(true); host.update(0, 50);
   assert.equal(local.at(-1).kind, 'vector'); assert.equal(count(), 3);
   assert.equal(pawn.gadget, 'item.vector_actuator');
-  host.comic = { active: true };
+  const { BUILT_GADGET } = await import('../src/content/gadgets.js');
+  const build = { frame: 'part.bracket', power: 'part.cell', control: 'part.autoboard' };
+  const arc = { build: { ...build, payload: 'part.arc' }, uses: 3 };
+  const lens = { build: { ...build, payload: 'part.lens' }, uses: 0 };
+  guest.inventory[9] = { id: BUILT_GADGET, qty: 1, roll: arc };
+  guest.inventory[10] = { id: BUILT_GADGET, qty: 1, roll: lens };
+  const client = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'client', character: 'michael', save, time: { now: 0 },
+    net: { send: (msg) => handlers.msg('guest', msg) },
+  });
+  client.menuUseSlot(9);
+  assert.equal(pawn.gadgetRoll, arc, 'the clicked Arc copy is equipped, including its worn board');
+  client.menuUseSlot(10);
+  assert.equal(pawn.gadgetRoll, lens, 'the second copy equips without toggling the whole gadget slot off');
+  assert.equal(pawn.gadgetBuild.kind, 'scan');
+  assert.ok(guest.inventory.some((stack) => stack?.roll === arc), 'the used Arc remains in the bag');
+
+  input(true); host.update(0, 17);
+  assert.ok(pawn.gadgetAim, 'the guest begins aiming before the comic');
+  host.comic = { active: true, onHostMsg: () => false };
+  input(true); host.update(0, 100);
   assert.equal(host._gadgetBlocked(), true);
-  assert.equal(host._frozen({ ...emptyInput(), gadget: true }).gadget, false);
+  assert.equal(host._frozen({ ...emptyInput(), gadget: true }).gadgetBlocked, true);
+  assert.equal(pawn.gadgetAim, null, 'the host cancels a queued guest aim through the comic');
+  assert.equal(lens.uses, 0, 'the cancelled aim does not spend the charge');
 });
 
 test('simultaneous and staggered gadget support apply only the strongest nearby effect per recipient', () => {
@@ -3652,7 +3938,16 @@ test('dialogue graphs: no dangling jumps, and the big scenes are not secretly de
       for (const c of n.choices) assert.ok(c.go === 'END' || d.nodes[c.go], `${name}:${id} choice -> missing ${c.go}`);
       if (n.go) assert.ok(n.go === 'END' || d.nodes[n.go], `${name}:${id} -> missing ${n.go}`);
     }
-    const terms = ids.filter((id) => { const n = d.nodes[id]; return !n.go && !(n.gos || []).length && !n.choices.length; });
+    // Count dead ends on the conversation itself: nodes reachable from its start. Standalone self-scoped barks
+    // in the same file (the cold open's room searches) are entered on their own and are meant to end.
+    const seen = new Set(), todo = [d.start ?? ids[0]];
+    while (todo.length) {
+      const id = todo.pop(), n = d.nodes[id];
+      if (!n || seen.has(id)) continue;
+      seen.add(id);
+      for (const g of [n.go, ...(n.gos || []).map((x) => x.go), ...n.choices.map((c) => c.go)]) if (g && g !== 'END') todo.push(g);
+    }
+    const terms = ids.filter((id) => { const n = d.nodes[id]; return seen.has(id) && !n.go && !(n.gos || []).length && !n.choices.length; });
     if (CONNECTED[name] != null) assert.ok(terms.length <= CONNECTED[name], `${name}: ${terms.length} dead-end nodes (max ${CONNECTED[name]}): ${terms.slice(0, 6).join(', ')}`);
   }
 });
@@ -4742,6 +5037,18 @@ test('the gonman is overpowered on purpose: a much smaller hitbox while thin, en
 
 const { ClientNet: DialogueClientNet, HostNet: DialogueHostNet } = await import('../src/engine/net/net.js');
 const { SharedEvents } = await import('../src/game/sharedEvent.js');
+const dialogueScene = (mode, net, character, localId) => {
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode, net, character, localId, map: MAPS_FOR_TEST.room631, events: { once() {} },
+    input: { keyboard: { on() {} } }, time: { addEvent() {} },
+    add: { text: () => ({ setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; }, setVisible() { return this; }, setText() { return this; } }) },
+    _drawDialogue() { if (this.dlg?.done) { this.dlg = null; this.dlgDone?.(); } },
+    _toast() {},
+  });
+  scene.shared = new SharedEvents(scene);
+  return scene;
+};
+
 test('a disconnected dialogue driver releases only their scene on the host and observer', () => {
   const hostNet = new DialogueHostNet(), observerNet = new DialogueClientNet();
   const connect = (peer, send = () => {}) => hostNet.conns.set(peer, { send });
@@ -4752,17 +5059,7 @@ test('a disconnected dialogue driver releases only their scene on the host and o
   const posted = [];
   connect('observer', (msg) => { posted.push(msg); observerNet.emit('msg', msg); });
   connect('driver');
-  const makeScene = (mode, net, character) => {
-    const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
-      mode, net, character, map: MAPS_FOR_TEST.room631, events: { once() {} },
-      input: { keyboard: { on() {} } }, time: { addEvent() {} },
-      add: { text: () => ({ setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; }, setVisible() { return this; }, setText() { return this; } }) },
-      _drawDialogue() { if (this.dlg?.done) { this.dlg = null; this.dlgDone?.(); } },
-    });
-    scene.shared = new SharedEvents(scene);
-    return scene;
-  };
-  const host = makeScene('host', hostNet, 'trevor'), observer = makeScene('client', observerNet, 'michael');
+  const host = dialogueScene('host', hostNet, 'trevor', 'host'), observer = dialogueScene('client', observerNet, 'michael', 'observer');
   host.save = newSave({ seed: 'dialogue-disconnect', rolls: {}, gameVersion: 'test' });
   observer.save = structuredClone(host.save);
   host.sim = new Sim(host.map);
@@ -4807,11 +5104,90 @@ test('a disconnected dialogue driver releases only their scene on the host and o
   assert.equal(host.dlg, null, 'the abandoned choice does not reopen');
 });
 
+test('a returning guest joins the current story turn once and abandoned or deferred events cannot reopen', async () => {
+  const hostNet = new DialogueHostNet(), guestNet = new DialogueClientNet();
+  const host = dialogueScene('host', hostNet, 'trevor', 'host'), guest = dialogueScene('client', guestNet, 'manuel', 'returned');
+  const messages = [], other = [];
+  hostNet.conns.set('other', { send: (msg) => other.push(msg) });
+  guestNet.send = (msg) => hostNet.emit('msg', 'returned', msg);
+  host.sim = new Sim(host.map);
+  for (const [id, who] of [['host', 'trevor'], ['other', 'michael'], ['ai:manuel', 'manuel']]) host.sim.addPlayer(id, who);
+  host.remoteInputs = new Map();
+  host.save = newSave({ seed: 'returning-story', rolls: {}, gameVersion: 't' });
+  host._wireNet(); guest._wireNet();
+  host._startLocal = async () => { host.dlg = { choices: [{ text: 'Stay together' }], node: { decider: 'manuel' }, nodeId: 'choice' }; };
+  const chosen = [];
+  host._commitDialogueChoice = (i, who) => { chosen.push([i, who]); host.dlg = null; };
+  await host.shared.start('fixture');
+  const { id, turn } = host.shared.active;
+  assert.equal(host.shared.active.state.decider, 'trevor', 'the host covers the missing roommate');
+  messages.length = 0; other.length = 0;
+  assert.ok(host.sim.transferPlayer('ai:manuel', 'returned'));
+  hostNet.conns.set('returned', { send: (msg) => { messages.push(msg); guestNet.emit('msg', msg); } });
+  guest.shared.requestResume();
+  assert.equal(guest.shared.watching.id, id);
+  assert.equal(guest.dlg.decider, 'manuel');
+  assert.ok(guest.dlg.turn > turn, 'the directed turn follows the newly occupied seat');
+  assert.equal(other.filter((msg) => msg.t === 'evResume' || msg.t === 'evStart').length, 0);
+  const mirror = guest.dlg;
+  guest.shared.requestResume();
+  assert.equal(guest.dlg, mirror, 'a second response cannot restart an open mirror');
+  guest.dlg.choose(0);
+  assert.deepEqual(chosen, [[0, 'manuel']]);
+
+  host.shared.active = null;
+  guest.shared.onMsg({ t: 'evEnd', id });
+  const state = { who: 'Michael', text: 'A current line.', choices: [] };
+  hostNet.emit('msg', 'other', { t: 'evStart', id: 'other:live', main: 'michael', scope: 'all' });
+  hostNet.emit('msg', 'other', { t: 'evState', id: 'other:live', state });
+  guest.shared.onMsg({ t: 'evEnd', id: 'other:live' });   // simulate a fresh World before it requests the current state
+  guest.stage = { active: { script: { hold: true } }, onClientMsg: () => false };
+  guest.shared.requestResume();
+  assert.equal(guest.dlg.line.text, state.text, 'an authored hold runs alongside restored dialogue');
+  guest.shared.onMsg({ t: 'evEnd', id: 'other:live' });
+  guest.stage.active = { script: { hold: false } };
+  guest.shared.requestResume();
+  assert.equal(guest.shared.pendingResume.id, 'other:live');
+  host.shared.endGuestDialogue('other');
+  guest.stage.active = false;
+  guest.shared._pump();
+  assert.equal(guest.dlg, null);
+  assert.equal(guest.shared.pendingResume, null);
+  messages.length = 0;
+  guest.shared.requestResume();
+  assert.deepEqual(messages, [], 'the host has no abandoned dialogue to restore');
+  hostNet.emit('msg', 'other', { t: 'evStart', id: 'other:nearby', main: 'michael', scope: 'nearby', map: 'far' });
+  messages.length = 0;
+  guest.shared.requestResume();
+  assert.deepEqual(messages, [], 'optional nearby dialogue is not forced on rejoin');
+});
+
 test("Manuel's edge: with the same gear and no skills, Manuel is the toughest and hits hardest of the three", () => {
   const bare = () => ({ skills: {}, inventory: [{ id: 'item.pry_bar', qty: 1 }], abilities: {} });
   const m = Object.fromEntries(['manuel', 'trevor', 'michael'].map((w) => [w, pmods(bare(), w)]));
   for (const other of ['trevor', 'michael']) {
     assert.ok(m.manuel.maxHp > m[other].maxHp && m.manuel.armor > m[other].armor && m.manuel.melee > m[other].melee && m.manuel.speed > m[other].speed, other);
+  }
+});
+
+test('connection loss offers the original room and intentional quit returns to the normal title', async () => {
+  for (const intentional of [false, true]) {
+    let closes = 0;
+    const net = Object.assign(new EventEmitter(), {
+      code: 'ROOM2',
+      close() { closes++; this.emit('close'); },
+    });
+    const transitions = [];
+    const world = Object.assign(Object.create(CraftWorldScene.prototype), {
+      mode: 'client', net, events: new EventEmitter(),
+      scene: { start: (...args) => transitions.push(args) },
+    });
+    world._wireNet();
+    if (intentional) await world.menuQuit(false);
+    else net.emit('close');
+    net.emit('close');
+    assert.equal(closes, 1);
+    assert.deepEqual(transitions, [['Title', { rejoinCode: intentional ? undefined : 'ROOM2' }]]);
   }
 });
 
@@ -4877,15 +5253,174 @@ test('co-op rejoin accepts only a vacant seat with its original room key', () =>
   returned.emit('data', { t: 'flag', key: 'act1.test', value: true });
   assert.equal(save.flags['act1.test'], undefined);
   assert.equal(sim.players.has('returned'), false);
+  host.stage = { active: { id: 'demo', script: { hold: true } }, onHostMsg: () => false };
   returned.emit('data', { t: 'hello', seatKey: key });
   const start = returned.messages.at(-1);
   assert.equal(start.t, 'start');
   assert.deepEqual(start.assignments, { returned: 'manuel' });
+  assert.equal(start.snapshot.stageId, 'demo');
+  assert.equal(start.snapshot.stageHold, true);
   assert.equal(start.snapshot.players.find(p => p.id === 'returned').am, 4);
   assert.equal(sim.players.get('returned'), original);
   assert.equal(original.held, 'gun', 'the returning guest immediately holds their selected gun');
   assert.equal(original.mods.gun, 1);
   assert.equal(sim.players.size, 3);
+});
+
+test('equip the exact copy (John Pork, PR #93): with two vests, the modded one you click goes on, mods and all; swapping and taking off keep each copy\'s mods', async () => {
+  const InvM = await import('../src/engine/inventory.js');
+  const save = newSave({ seed: 'two-vests', rolls: {}, gameVersion: 't' }), c = save.party.trevor;
+  c.inventory = Array(c.inventory.length).fill(null); c.equipped = {}; c.rolled = {}; c.socketed = {};
+  c.inventory[9] = { id: 'item.mesh_vest', qty: 1, socketed: ['item.mod_plate'] }; c.inventory[10] = { id: 'item.mesh_vest', qty: 1 };
+  const sent = [], toasts = [];
+  const host = Object.assign(Object.create(CraftWorldScene.prototype), { mode: 'solo', character: 'trevor', save, time: { now: 0, addEvent() {} }, _syncParty() {}, _toast: (t) => toasts.push(t), _announce() {} });
+  host.menuUseSlot(9);
+  assert.equal(c.equipped.chestplate, 'item.mesh_vest'); assert.deepEqual(c.socketed.chestplate, ['item.mod_plate'], 'the clicked, modded vest is the one worn');
+  assert.ok(!c.inventory[9] && c.inventory[10] && !c.inventory[10].socketed, 'and the plain one is still in slot 10');
+  host.menuUseSlot(10);
+  assert.ok(!c.socketed.chestplate, 'swapped for the plain copy: no mods worn');
+  assert.ok(c.inventory.some((s) => s?.id === 'item.mesh_vest' && s.socketed?.[0] === 'item.mod_plate'), 'and the modded copy is back in the bag with its mod');
+  host.menuUnwear('chestplate');
+  assert.ok(!c.equipped.chestplate && c.inventory.filter((s) => s?.id === 'item.mesh_vest').length === 2, 'taking it off keeps both copies');
+  const handlers = new Map();
+  Object.assign(host, {
+    mode: 'host',
+    sim: { players: new Map([['guest', { character: 'trevor' }]]) },
+    net: { on: (type, handler) => handlers.set(type, handler) },
+    events: { once() {} },
+  });
+  host._wireNet();
+  const guest = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'client', character: 'trevor', save, time: { now: 0 },
+    net: { send: (msg) => { sent.push(msg); handlers.get('msg')('guest', msg); } },
+  });
+  const k = c.inventory.findIndex((item) => item?.socketed);
+  guest.menuUseSlot(k);
+  assert.deepEqual(c.socketed.chestplate, ['item.mod_plate']);
+  guest.menuUnwear('chestplate');
+  assert.equal(c.equipped.chestplate, null);
+  assert.equal(c.inventory.filter((item) => item?.id === 'item.mesh_vest').length, 2);
+  assert.deepEqual(sent, [{ t: 'equipSlot', i: k }, { t: 'unwear', slot: 'chestplate' }]);
+  assert.equal(InvM.wear(c, 'item.mesh_vest', 99), false, 'an invalid explicit slot leaves both copies in the bag');
+});
+
+const { Stage: RejoinStage } = await import('../src/game/stage.js');
+test('a rejoining guest holds gameplay until the host ends the active cutscene', () => {
+  const ui = [], keyboard = new EventEmitter();
+  const display = (text) => {
+    const item = { text, setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; }, destroy() { this.destroyed = true; } };
+    ui.push(item); return item;
+  };
+  const scene = Object.assign(Object.create(CraftWorldScene.prototype), {
+    mode: 'client', ready: true, events: new EventEmitter(), input: { keyboard }, input2: { blockAttack: false },
+    cameras: { main: { zoom: 1, fadeIn() {}, zoomTo() {} } },
+    add: { rectangle: () => display(), text: (x, y, label) => display(label) }, tweens: { add() {} },
+  });
+  const stage = scene.stage = new RejoinStage(scene);
+  stage.holdForHost('demo');
+  assert.ok(stage.active.waitingForHost);
+  assert.ok(ui.some((item) => item.text === 'Cutscene in progress'));
+  assert.equal(stage.active.ui.length, 3, 'ordinary cinematic wait uses two letterbox bars');
+  const controls = { ...emptyInput(), mx: 1, attack: true, gadget: true, skill: true };
+  assert.deepEqual(scene._frozen(controls), { ...emptyInput(), gadgetBlocked: true });
+  keyboard.emit('keydown-X');
+  stage.syncHostStage('demo');
+  assert.ok(stage.playing, 'a guest cannot skip the host cutscene');
+  stage.onClientMsg({ t: 'stage', op: 'end', id: 'other' });
+  assert.ok(stage.playing, 'a different cutscene cannot release the hold');
+  stage.syncHostStage(null);
+  assert.equal(stage.playing, false, 'snapshots clear the hold even if the end packet was missed at startup');
+  assert.ok(ui.every((item) => item.destroyed));
+  assert.equal(scene._frozen(controls), controls);
+  stage.holdForHost('demo');
+  stage.onClientMsg({ t: 'stage', op: 'end', id: 'demo' });
+  assert.equal(stage.playing, false, 'the normal host end releases the hold immediately');
+
+  stage.holdForHost('staged_dialogue', true);
+  assert.equal(stage.active.script.hold, true);
+  assert.equal(stage.active.ui.length, 2, 'the lower dialogue area remains available');
+  scene.dlg = { choices: [{ text: 'A choice' }] }; scene.dlgFree = true;
+  scene._onClick({ button: 0, x: 1, y: 1 });
+  assert.equal(scene.input2.blockAttack, true, 'a hold-stage click cannot become a gameplay attack');
+  assert.deepEqual(scene._frozen(controls), { ...emptyInput(), gadgetBlocked: true });
+});
+test('Room 631 for the cold open (hub #99): closet by the window, a wall screen, the van outside, staging left clear', () => {
+  const m = MAPS_FOR_TEST.room631, obj = (id) => m.objects.find((o) => o.id === id), key = (x, y) => `${x},${y}`;
+  // Every object the room had before this change is still there, under the same id.
+  const BEFORE = ('chair_w chair_e string_lights clock_631 nightstand_michael nightstand_manuel poster_band photo_wall pennant toolwall toolbox crate cables bookshelf '
+    + 'whiteboard coffee tv couch scooters shoes plant house_rules door statue_1 statue_2 statue_3 mate fridge table stove parts_bins lab_board workbench failed_prints '
+    + 'router drill_press pork_flag printer_1 printer_2 printer_3 oscilloscope microscope degasser solder dehumidifier ottoman boxes_1 boxes_2 boxes_3 shrimp_tank '
+    + 'stand_trevor battlebot supplements trevor_mirror trevor_pc dumbbells trevor_shower michael_desk manuel_table mate_shelf mm_shower hamper balcony_plants '
+    + 'balcony_view bunk arg_flag stand_michael michael_closet manuel_closet front_lock mm_mirror').split(' ').map((n) => `obj.${n}`)
+    .concat(['door.trevor_room', 'door.mm_room', 'door.trevor_bath', 'door.mm_bath', 'door.balcony']);
+  assert.equal(BEFORE.length, 76);
+  assert.deepEqual(BEFORE.filter((id) => !obj(id)), [], 'an object id went missing from room631');
+  assert.equal(m.objects.length, BEFORE.length + 2, 'only the wall screen and the van were added');
+  // The search hooks wait for the cold open's staging PR (#145): these keep what they had.
+  assert.equal(obj('obj.toolwall').action, 'toolwall');
+  assert.equal(obj('obj.printer_3').flag, 'act1.clue.printer3Warm');
+  assert.equal(obj('obj.front_lock').flag, 'act1.clue.lockForced');
+  assert.equal(obj('obj.manuel_closet').flag, 'act1.balloon.noticedGone');
+  assert.deepEqual([obj('obj.door').x, obj('obj.door').y, obj('obj.door').to], [0, 8, 'aster_hall'], "631's front door stays where it is");
+  assert.deepEqual(m.spawns, [[5, 8], [7, 9], [9, 8]].map(([x, y]) => ({ x: x * 16 + 8, y: y * 16 + 8 })));
+
+  // 1. Manuel's closet: at his end of the bedroom, by the window his flag hangs over, and off both doorways.
+  const closet = obj('obj.manuel_closet'), flag = obj('obj.arg_flag'), bedDoor = obj('door.mm_room'), bathDoor = obj('door.mm_bath');
+  assert.ok(closet.x >= obj('obj.nightstand_manuel').x && closet.x <= 22 && closet.y >= 1 && closet.y <= 4, "the closet is in the bedroom, at Manuel's end");
+  assert.ok(Math.abs(closet.x - flag.x) <= 1 && closet.y - flag.y <= 2, 'and by the window (under the flag that covers it)');
+  assert.notDeepEqual([closet.x, closet.y], [bedDoor.x, bedDoor.y - 1], 'not in front of the bedroom doorway');
+  assert.notDeepEqual([closet.x, closet.y], [bathDoor.x - 1, bathDoor.y], 'nor in front of the bathroom door');
+  assert.ok(!m.objects.some((o) => o !== closet && o.x === closet.x && o.y === closet.y), 'on a tile of its own');
+
+  // 2 and 3. The wall screen and the van: on the map, with a drawing and a second (animated) frame in the sheets.
+  const frames = (sheet) => JSON.parse(fs.readFileSync(new URL(`../assets/sprites/${sheet}.json`, import.meta.url), 'utf8')).frames;
+  const screen = obj('obj.room631_wallscreen'), van = obj('obj.room631_van'), vanArt = (m.scenery ?? []).find((q) => q.art === 'obj.room631_van');
+  assert.ok(screen && van && vanArt);
+  for (const f of ['obj.room631_wallscreen', 'obj.room631_wallscreen#1']) assert.deepEqual([frames('props')[f]?.frame.w, frames('props')[f]?.frame.h], [16, 24], f);
+  for (const f of ['obj.room631_van', 'obj.room631_van#1']) assert.deepEqual([frames('wide')[f]?.frame.w, frames('wide')[f]?.frame.h], [32, 16], f);
+  assert.equal(m.layout[screen.y][screen.x], '#', 'the screen hangs on a wall');
+  assert.ok('ku'.includes(m.layout[screen.y + 1][screen.x]) && screen.x < 15, 'the living-room wall');
+  assert.ok(screen.light > 0 && screen.text && !screen.action && !screen.talk, 'lit, with a look line and nothing else');
+  // The van is outside: its drawing is on the street strip, which nobody can walk to, and the spot you look from is the rail.
+  const inside = new Set([key(5, 8)]), todo = [[5, 8]];
+  while (todo.length) { const [x, y] = todo.pop(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const k = key(x + dx, y + dy); if (!inside.has(k) && (!m.solid(x + dx, y + dy) || m.doors.has(k))) { inside.add(k); todo.push([x + dx, y + dy]); } } }
+  assert.ok(inside.has(key(22, 13)) && inside.has(key(18, 3)), 'the flood fill covers the flat (balcony and bedroom)');
+  assert.ok(!vanArt.solid && !inside.has(key(vanArt.x, vanArt.y)) && !inside.has(key(vanArt.x + 1, vanArt.y)), 'the van is not in the walkable flat');
+  assert.equal(m.layout[vanArt.y].slice(vanArt.x, vanArt.x + 2), ',,', 'it is parked on the street');
+  assert.ok(vanArt.y > van.y && van.y > obj('obj.ottoman').y, 'below the balcony, past the rail');
+  assert.equal(m.layout[van.y][van.x], '=', 'you look at it over the balcony rail');
+  assert.ok(inside.has(key(van.x, van.y - 1)), 'from the balcony');
+  for (let x = 0; x < m.w; x++) assert.ok(m.solid(x, vanArt.y - 1), `the street is walled off at ${x},${vanArt.y - 1}`);
+  assert.ok(van.text && !van.action && !van.talk && !van.flag, 'a look line only');
+
+  // Nothing in the way of the cold open's staging. Marks and paths are hard-coded from PR #145's stage script:
+  // origin/bagel/cold-open-staging @ 8bc04bec, src/content/stage/cold_open.js (cast `at`, `walk` to/by, `cam` tiles).
+  const CAST = { trevor: [17, 2], michael: [18, 3], manuel: [19, 2] };                 // the bunk wake-up
+  const beside = (o) => [[0, 1], [-1, 0], [1, 0], [0, -1]].map(([dx, dy]) => [o.x + dx, o.y + dy]).find(([x, y]) => !m.solid(x, y));   // stage.js _beside
+  const atCloset = beside(closet);
+  assert.deepEqual(atCloset, [22, 3], 'Manuel stops under his closet, in line with the bedroom door');
+  const DOOR = [[22, 5], [22, 6]];                                                     // out through door.mm_room
+  const LEGS = [
+    [CAST.manuel, [19, 3], atCloset, ...DOOR, [4, 9], [4, 8], [5, 8]],                 // rolls out, the closet, the front door, arms out, his shoes
+    [CAST.trevor, atCloset, ...DOOR, [4, 7]],
+    [CAST.michael, [19, 4], ...DOOR, [12, 8], [3, 8]],
+  ];
+  const CAMS = [[14, 8], [12, 8]];
+  const marks = new Set([...LEGS.flat(), ...CAMS].map(([x, y]) => key(x, y)));
+  const path = new Set();                                                              // every tile a straight walk crosses
+  for (const leg of LEGS) for (let i = 1; i < leg.length; i++) {
+    const [ax, ay] = leg[i - 1], [bx, by] = leg[i], n = Math.max(Math.abs(bx - ax), Math.abs(by - ay)) * 8;
+    for (let t = 0; t <= n; t++) path.add(key(Math.round(ax + ((bx - ax) * t) / n), Math.round(ay + ((by - ay) * t) / n)));
+  }
+  for (const k of marks) { const [x, y] = k.split(',').map(Number); assert.ok(!m.solid(x, y) || m.doors.has(k), `staging mark ${k} is solid`); }
+  for (const k of new Set([...marks, ...path])) assert.ok(!m.blocked.has(k), `something solid stands on the staging path at ${k}`);
+  const added = [screen, van, closet, vanArt, { x: vanArt.x + 1, y: vanArt.y }];
+  for (const o of added) assert.ok(!marks.has(key(o.x, o.y)) && !path.has(key(o.x, o.y)), `${o.id ?? o.art ?? 'the van'} sits on the staging at ${o.x},${o.y}`);
+  for (const o of [screen, van, vanArt]) assert.ok(!o.solid, 'nothing new is solid');
+  assert.deepEqual([...m.blocked], [key(0, 8)], 'the only blocking object in the room is still the front door');
+  // The objects the staging points the camera and the actors at.
+  for (const id of ['obj.bunk', 'obj.manuel_closet', 'obj.front_lock', 'obj.door', 'obj.pork_flag', 'obj.statue_1', 'obj.tv']) assert.ok(obj(id), id);
+  assert.ok(Math.hypot(screen.x - obj('obj.tv').x, screen.y - obj('obj.tv').y) <= 3, "the wall screen is in frame when the staging's camera goes to the TV");
 });
 
 await Promise.all(pending);

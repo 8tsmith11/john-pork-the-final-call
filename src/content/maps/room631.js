@@ -4,6 +4,8 @@
 //   Middle: one big room. West half = kitchen/dining (the apartment entrance and the statues),
 //   east half = the engineering room (fabs, bench gear, the flag on the wall), with the balcony
 //   opening off it to the south.
+//   Bottom: the balcony rail and, past it, a strip of the street six floors down. Nobody walks there:
+//   it is only looked at (hub #99).
 import { makeMap } from './build.js';
 
 const LAYOUT = [
@@ -21,7 +23,8 @@ const LAYOUT = [
   '#kkkkkkkkkkkkkkeeeeeeeeeeeeee#',   // 11
   '################=====.=====###',   // 12 windows + the balcony door, off the engineering room
   '###############bbbbbbbbbbbbbb#',   // 13 balcony
-  '##############################',   // 14
+  '###############==============#',   // 14 the balcony rail
+  ',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,',   // 15 the street below (outside: walled off by the rail, never walked on)
 ];
 // Row 3: doorways between each bedroom and its bathroom; the two suites are separate.
 LAYOUT[3] = '#' + '.'.repeat(7) + 'w'.repeat(6) + '##' + '.'.repeat(7) + 'w'.repeat(6) + '#';
@@ -67,6 +70,9 @@ export const room631 = makeMap({
     // Kitchen / dining (west half)
     { id: 'obj.whiteboard', x: 12, y: 5, label: 'Whiteboard (what we\'re doing)', action: 'quests' },
     { id: 'obj.coffee', x: 7, y: 6, label: 'Coffee machine', text: 'It makes one cup at a time and judges you for each one. A label in Trevor\'s handwriting: DESCALE ME.' },
+    // The wall screen (hub #99): hung on the living-room wall, left on all night. Two frames (props sheet), lit.
+    { id: 'obj.room631_wallscreen', x: 11, y: 5, label: 'Wall screen', light: 0.6,
+      text: 'The wall screen. Nobody remembers turning it on. The remote has been missing since spring.' },
     { id: 'obj.tv', x: 12, y: 7, label: 'TV (news)', action: 'tv' },
     { id: 'obj.couch', x: 12, y: 10, label: 'Couch', text: 'The couch came with the apartment. Nobody has ever found the bottom of the cushions. Michael found a 2081 coin in there once and kept it.' },
     { id: 'obj.scooters', x: 1, y: 7, label: 'Scooter dock', text: 'Three scooters on the charging rail: blue, green, red, all on bare rims. A sticky note on the red one, in Trevor\'s handwriting: AIRLESS ONLY. The batteries still charge.' },
@@ -84,7 +90,7 @@ export const room631 = makeMap({
     // Engineering room (east half)
     { id: 'obj.parts_bins', loot: 'parts', x: 20, y: 6, label: 'Parts bins', text: 'Forty little drawers labeled in three handwritings. One drawer just says "DO NOT" and has been taped shut.' },
     { id: 'obj.lab_board', x: 21, y: 5, label: '245 lab whiteboard', text: 'A half-erased circuit and, in Manuel\'s handwriting: I HATE 245 LAB. Below it, in Trevor\'s: same. Below that, in Michael\'s: she says hi.' },
-    { id: 'obj.workbench', x: 21, y: 9, label: 'Workbench', text: 'A cold slice of pizza holding down a schematic. It has been on duty since Tuesday.' },
+    { id: 'obj.workbench', x: 21, y: 9, label: 'Workbench', action: 'workbench', text: 'A cold slice of pizza holding down a schematic. It has been on duty since Tuesday.' },
     { id: 'obj.failed_prints', loot: 'prints', x: 19, y: 11, label: 'Failed prints bin', text: 'Eleven tiny John Pork heads at different stages of being wrong.' },
     { id: 'obj.router', x: 28, y: 6, label: 'Router', text: 'Its lights blink in a pattern that\'s almost regular. Every few minutes it reboots for no reason and comes back with a slightly different name.' },
     { id: 'obj.drill_press', x: 28, y: 10, label: 'Drill press', text: 'Bolted to the floor, which the lease definitely does not allow.' },
@@ -128,6 +134,10 @@ export const room631 = makeMap({
     { id: 'obj.mm_shower', x: 28, y: 2, label: 'Shower', text: 'Two shampoo bottles, one of them clearly Michael\'s, one of them clearly also Michael\'s.' },
     { id: 'obj.hamper', x: 25, y: 4, label: 'Laundry hamper', text: 'Overflowing. A sock has achieved independence and is living on the tile.' },
     { id: 'obj.balcony_plants', x: 16, y: 13, label: 'Balcony planters', text: 'Basil, mint, and something Manuel calls "the herb" that is definitely just a weed.' },
+    // The van (hub #99): the drawing is scenery on the street strip (below); this is the spot on the rail you look
+    // down from, so it has no drawing of its own.
+    { id: 'obj.room631_van', x: 24, y: 14, selfDrawn: true, label: 'Van, down on the street',
+      text: 'A dark van at the kerb, six floors down. No markings. Something on its roof keeps turning.' },
     { id: 'obj.balcony_view', x: 27, y: 13, label: 'View of the metro', text: 'From up here you can see the College Park station, the dead Purple Line platform, and Route 1 running north into the dark. Sometimes, late, lights move out there that aren\'t trains.' },
     // Michael & Manuel's room + bathroom
     // The triple bunk: all three sleep here (bible §3). Placeholder art until gonman draws obj.bunk
@@ -139,10 +149,15 @@ export const room631 = makeMap({
       text: 'Michael\'s guitar stand, at the foot of the bunk. There is a capo clipped to it and a setlist taped to the leg with one song on it.' },
     { id: 'obj.michael_closet', art: 'obj.manuel_closet', loot: 'michael_closet', x: 16, y: 4, label: 'Michael\'s closet',
       text: 'Michael\'s closet. Hoodies, a few shirts, and a hook by the door that only ever holds one thing.' },
-    { id: 'obj.manuel_closet', x: 22, y: 4, label: 'Manuel\'s closet', flag: 'act1.balloon.noticedGone',
+    // Manuel's end of the room, under his flag and the window it covers (Michael, hub #99). It used to stand at
+    // 22,4, in front of the bedroom doorway (door.mm_room at 22,5): that tile and 22,3 stay clear for the way out.
+    { id: 'obj.manuel_closet', x: 22, y: 2, label: 'Manuel\'s closet', flag: 'act1.balloon.noticedGone',
       text: 'Manuel\'s closet. The orange balloon his abuela sent him is gone. A length of ribbon is still knotted on the rail, cut clean. His white hat with the blue brim is on the shelf. Taped inside the door, a card in her handwriting: "Tenelo al sol. Miralo cada mañana. Te va a decir el tiempo." (Keep it in the sun. Check on it every morning. It will tell you the weather.)' },
     { id: 'obj.front_lock', x: 1, y: 8, label: 'Front-door lock', flag: 'act1.clue.lockForced',
       text: 'The deadbolt plate is bent and the strike is splintered. Someone forced it from the hallway side, quietly, and pulled the door shut behind them.' },
     { id: 'obj.mm_mirror', x: 26, y: 1, label: 'Bathroom mirror', text: 'Two toothbrushes and a third one nobody claims.' },
   ],
+  // Outside, past the balcony rail: a dark van parked on the street (wide sheet, 32x16; the mast's dish turns).
+  // Scenery, so it is never interactive and never solid. Drawn at 1:1 so it stays inside the street row.
+  scenery: [{ art: 'obj.room631_van', x: 23, y: 15, scale: 1, anim: 600, light: 0.4 }],
 });

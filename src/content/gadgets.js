@@ -1,4 +1,6 @@
 // The equipped gadget is a separate action on V. Range is in pixels and timers are in seconds.
+export const BUILT_GADGET = 'item.assembled_gadget';
+
 export const GADGETS = {
   'item.sniffer': { name: 'Helium sniffer', kind: 'sniffer', cooldown: 0,
     text: 'Sample the air for the helium trail. Fab #1 calibrates it.' },

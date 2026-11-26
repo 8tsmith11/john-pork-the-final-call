@@ -41,8 +41,11 @@ import { BastionTable } from '../bastionTable.js';
 import { BastionScreen } from '../ui/BastionScreen.js';
 import { LabBench } from '../labBench.js';
 import { LabScreen } from '../ui/LabScreen.js';
+import { ModStation } from '../ui/ModStation.js';
+import * as Sockets from '../../engine/sockets.js';
 import { fabCost, rollGear, rolledName } from '../../content/gearRolls.js';
-import { GADGETS } from '../../content/gadgets.js';
+import { BUILT_GADGET, GADGETS } from '../../content/gadgets.js';
+import { equippedBuildStats, printBuild, serviceController } from '../../engine/gadgetBuilds.js';
 import { solution as yardSolution, clueFor, YARD_MAP_TEXT, LEVERS } from '../../content/switchyard.js';
 import { FUSE_TEXT, LAMP_COLORS, GATE_FLAG, breakerState, lampState, breakersSet, lampsSet, gateOpen, puzzleClue, toggleText, STEP_TEXT } from '../../content/tunnelPuzzles.js';
 import { SharedEvents } from '../sharedEvent.js';
@@ -139,6 +142,11 @@ export class WorldScene extends Phaser.Scene {
   }
 
   async create() {
+    // The data channel can close while Phaser has the Lobby-to-World transition queued.
+    if (this.mode === 'client' && !this.net.conn?.open) {
+      this._leaveToTitle(this.net.code);
+      return;
+    }
     setupCameras(this, { world: true });
     this.save = this.passedSave ?? (await loadAutosave().catch(() => null)) ?? this._newGame();
     const startMap = MAPS[this.save.world.area] ?? MAPS.room631;
@@ -203,6 +211,7 @@ export class WorldScene extends Phaser.Scene {
     if (new URLSearchParams(location.search).has('lattice')) this.time.delayedCall(800, () => this.openBoardGame());   // debug: open the board game
     if (new URLSearchParams(location.search).has('bastion')) this.time.delayedCall(800, () => this.openBastion('debug'));   // debug: hub #34
     { const l = new URLSearchParams(location.search).get('lab'); if (l) this.time.delayedCall(800, () => this.openLab(l)); }   // debug: ?lab=mux|counter|fsm
+    if (new URLSearchParams(location.search).has('mods')) this.time.delayedCall(800, () => this.openModStation());   // debug: task #40
     { const c = new URLSearchParams(location.search).get('cinematic'); if (c) this.time.delayedCall(600, () => this.playCinematic(c)); }   // debug: ?cinematic=demo
     { const c = new URLSearchParams(location.search).get('stage'); if (c) this.time.delayedCall(900, () => this.stage.play(c)); }   // debug: ?stage=demo (in-world cutscene)
     for (const c of Object.values(this.save.party ?? {})) c.money ??= W.START_MONEY;   // own wallets (schema 7)
@@ -232,14 +241,21 @@ export class WorldScene extends Phaser.Scene {
       if (person) { person.mode = 'wait'; person.t = 4; person.spr.setFlipX(person.x > me.x); this._say(`${person.name.toUpperCase()}\n${this.crowd.lineFor(person)}`); if (person.pixel) this._flag?.('secrets.pixelated.found', true); babble(null, 'hey there friend'); }
     });
     this.input.on('pointerdown', (ptr) => this._onClick(ptr));
-    this.input.keyboard.on('keydown-H', () => { if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
-    this.input.keyboard.on('keydown-F', () => { if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
+    this.input.keyboard.on('keydown-H', () => { if (this.stage?.active) return; if (this.mode === 'client') this.net.send({ t: 'use' }); else this._use(this.character, this.localId); });
+    this.input.keyboard.on('keydown-F', () => { if (this.stage?.active) return; if (this.mode === 'client') this.net.send({ t: 'answer' }); else this._answer(); });
     this._showMap(startMap);
+    this.stage.holdForHost(this.initialSnapshot?.stageId, this.initialSnapshot?.stageHold);
     this.ready = true;
+    if (this.initialSnapshot) this.shared.requestResume();
     // Act 1's witnessed beats are staged in-engine first (hub #48; src/content/stage/act1_*.js), then the scene plays.
     // A beat of delay so the roommates are on screen for the cutscene to stand in for them.
+    // The cold open (D-022): the staging plays line by line while the dialogue is on screen (stage 'cold_open'
+    // is a hold script with a cue per line). Host and solo run it; guests watch the host's shared scene.
     if (!this.initialSnapshot) {
-      if (!this.save.flags['act1.coldopen.done']) this.time.delayedCall(300, () => this.stage.after('act1_open', () => this.startDialogue('cold_open', null, () => { this._flag('act1.coldopen.done', true); this._controlsHint(); })));
+      if (!this.save.flags['act1.coldopen.done'] && this.mode !== 'client') this.time.delayedCall(300, async () => {
+        await this.stage.play('cold_open');
+        this.startDialogue('cold_open', null, () => { this.stage.release('cold_open'); this._flag('act1.coldopen.done', true); this._controlsHint(); });
+      });
       else this.time.delayedCall(1200, () => this._controlsHint());
     }
   }
@@ -332,7 +348,7 @@ export class WorldScene extends Phaser.Scene {
         if (!this.dlg.choices.length && this._pages && this._page < this._pages.length - 1) {   // long line: next page first
           this._page++; this._typeFull = this._pages[this._page]; this._typeShown = 0; this._lineAt = this.time.now; this._drawDialogue(); return;
         }
-        if (!this.dlg.choices.length && this.time.now - (this._lineAt ?? 0) > 220) this.dlg.advance();
+        if (!this.dlg.choices.length && !this.stage?.cueBusy && this.time.now - (this._lineAt ?? 0) > 220) this.dlg.advance();
         this._drawDialogue();
       }
       const n = parseInt(ev.key, 10);
@@ -525,6 +541,7 @@ export class WorldScene extends Phaser.Scene {
       this.dlgText.setColor(line && !line.who ? '#9aa3c7' : '#e8e8f0');
       if (line && line !== this._lastLine) {
         this._lastLine = line; this._lineAt = this.time.now;
+        this.stage?.cue?.(line.cue);   // its staging plays while it's on screen (D-022)
         if (line.choice) this._logChoice(line.who, line);
         else if (this._transcript && line.text && !line.sms) this._transcript.lines.push([line.who ?? '', line.text.replace(/\*([^*]+)\*/g, '$1')]);
         // The guide's Sahur entry: seen once he speaks on screen, whichever route (cameo or boss).
@@ -705,8 +722,13 @@ export class WorldScene extends Phaser.Scene {
     this.net.occupySeat(character, peer);
     this._lastSnap = null;
     this._worldSig = null;
-    const snapshot = { ...this.sim.snapshot(), doors: [...this.sim.map.doors.values()].filter(d => d.open).map(d => d.id) };
+    const snapshot = { ...this.sim.snapshot(), doors: [...this.sim.map.doors.values()].filter(d => d.open).map(d => d.id), ...this._stagePresence() };
     this.net.send(peer, { t: 'start', save: this.save, assignments: { [peer]: character }, snapshot });
+  }
+
+  _stagePresence() {
+    const active = this.stage?.active;
+    return { stageId: active?.id ?? null, ...(active?.script?.hold ? { stageHold: true } : {}) };
   }
 
   _wireNet() {
@@ -725,6 +747,7 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'lattice') { this._table().onHostMsg(peer, msg); return; }   // the casino board game (host runs it)
         if (msg.t === 'bastion') { this._bastion().onHostMsg(peer, msg); return; }   // hub #34 (host runs it)
         if (msg.t === 'lab') { this._lab().onHostMsg(peer, msg); return; }   // hub #44 (host keeps the bench)
+        if (msg.t === 'mod') { this._modAct(this._charOf(peer), msg.op, msg.ref, msg.arg); return; }   // task #40
         if (this.shared?.onHostMsg(peer, msg) || this.stage?.onHostMsg(peer, msg) || this.perf?.onHostMsg(peer, msg) || this.stands?.onHostMsg(peer, msg) || this.romance?.onHostMsg(peer, msg) || this.gear?.onHostMsg(peer, msg) || this.eggs?.onHostMsg(peer, msg) || this.approach?.onHostMsg(peer, msg) || this.comic?.onHostMsg(peer, msg)) return;
         if (msg.t === 'questRead') this._finishQuestReading(peer, msg.read);
         if (msg.t === 'npcTalk') this._guestNpcTalk(peer, msg);
@@ -741,10 +764,13 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'answer') this._answer();
         if (msg.t === 'door') this._toggleDoor(msg.id);
         if (msg.t === 'craft') this._craft(this._charOf(peer), msg.idx, msg.tune);
+        if (msg.t === 'workbench') this._useWorkbench(peer, msg.op, msg.parts);
         if (msg.t === 'skill') this._learn(this._charOf(peer), msg.id);
         if (msg.t === 'equipR') this._equipR(this._charOf(peer), msg.id);
         if (msg.t === 'ability') this._raiseAbility(this._charOf(peer), msg.key);
         if (msg.t === 'equip') this._equip(this._charOf(peer), msg.id, msg.slot);
+        if (msg.t === 'equipSlot' && Number.isInteger(msg.i)) this._equipSlot(this._charOf(peer), msg.i);
+        if (msg.t === 'unwear' && typeof msg.slot === 'string') this._unwear(this._charOf(peer), msg.slot);
         if (msg.t === 'mate') this._mateBreak();
         if (msg.t === 'hotSel') this._setHot(this._charOf(peer), msg.i);
         if (msg.t === 'rest') this._restAtSave(peer, msg.obj);
@@ -786,10 +812,11 @@ export class WorldScene extends Phaser.Scene {
           }
         }
       });
-      this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot() }) });
+      this.time.addEvent({ delay: 50, loop: true, callback: () => this.net.broadcast({ t: 'snap', snap: this._lastSnap ?? this.sim.snapshot(), ...this._stagePresence() }) });
       this.time.addEvent({ delay: 500, loop: true, callback: () => this._broadcastWorld() });
       on('join', () => { this._worldSig = null; });
     } else if (this.mode === 'client') {
+      let rejoinStageSynced = false;
       on('msg', (msg) => {
         if (msg.t === 'toast') { this._toast(msg.text); return; }
         if (msg.t === 'gadgetFx') { if (msg.area === this.map.id) this._gadgetFx(msg.effect); return; }
@@ -799,7 +826,17 @@ export class WorldScene extends Phaser.Scene {
         if (msg.t === 'lab') { this._lab().onClientMsg(msg); return; }
         if (msg.t === 'pipe') { this._pipes().onClientMsg(msg); return; }
         if (this.shared?.onMsg(msg) || this.stage?.onClientMsg(msg) || this.retry?.onClientMsg(msg) || this.moods?.onClientMsg(msg) || this.romance?.onClientMsg(msg) || this.cameos?.onClientMsg(msg) || this.crush?.onClientMsg(msg) || this.fart?.onClientMsg(msg) || this.bigButt?.onClientMsg(msg) || this.beltless?.onClientMsg(msg) || this.toothpaste?.onClientMsg(msg) || this.gags?.onClientMsg(msg) || this.comic?.onClientMsg(msg)) return;
-        if (msg.t === 'snap') { this.snapBuf.push({ at: performance.now(), snap: msg.snap }); if (this.snapBuf.length > 20) this.snapBuf.shift(); }
+        if (msg.t === 'snap') {
+          this.snapBuf.push({ at: performance.now(), snap: msg.snap });
+          if (this.snapBuf.length > 20) this.snapBuf.shift();
+          if (this.initialSnapshot && this.stage) {
+            this.stage.syncHostStage(msg.stageId);
+            if (!rejoinStageSynced) {
+              rejoinStageSynced = true;
+              this.stage.holdForHost(msg.stageId, msg.stageHold);
+            }
+          }
+        }
         if (msg.t === 'say') this._say(getLang() === 'es' && msg.textEs ? msg.textEs : msg.text, msg.questRead, msg.itemIcons);
         if (msg.t === 'caption') this._caption(msg.text);
         if (msg.t === 'reload') { this.scene.restart({ mode: 'client', net: this.net, save: msg.save, character: this.character }); return; }
@@ -811,7 +848,7 @@ export class WorldScene extends Phaser.Scene {
           this._showActOneCard();
         }
       });
-      on('close', () => this._say(`Connection lost. To resume, leave to title and rejoin room ${this.net.code} from this tab.`));
+      on('close', () => this._leaveToTitle(this.net.code));
     }
   }
 
@@ -1058,8 +1095,10 @@ export class WorldScene extends Phaser.Scene {
     const ai = isAi(p.id), weapon = heldWeapon(c, p.character, ai);
     p.held = weapon ? (ITEMS[weapon.id].slot === 'ranged' ? 'gun' : 'melee') : null;
     const gadget = c.equipped?.gadget;
-    p.gadget = Object.hasOwn(GADGETS, gadget) && canWear(ITEMS[gadget], p.character) ? gadget : null;
     const roll = c.rolled?.gadget;
+    if (p.gadgetRoll !== roll) p.gadgetAim = null;
+    p.gadgetBuild = !ai && gadget === BUILT_GADGET ? equippedBuildStats(roll?.build) : null;
+    p.gadget = (p.gadgetBuild || Object.hasOwn(GADGETS, gadget)) && canWear(ITEMS[gadget], p.character) ? gadget : null;
     p.gadgetRoll = p.gadget && roll && typeof roll === 'object' ? roll : null;
     p.activeAbility = ai ? null : selectedAbility(p.character, c);
     this.sim.setMods(p.id, playerMods(c, p.character, weapon));
@@ -1067,6 +1106,7 @@ export class WorldScene extends Phaser.Scene {
   }
   // Select a hotbar slot (1-9 / wheel). A weapon or gun in that slot becomes the one you hold.
   selectHot(i) {
+    if (this.stage?.active) return;
     const c = this.save.party[this.character]; if (!c) return;
     i = ((i % 9) + 9) % 9;
     this._hotFlash = { i, at: this.time.now };
@@ -1159,6 +1199,18 @@ export class WorldScene extends Phaser.Scene {
   openLab(id = 'mux') { this._lab().open(id); }
   _lab() { return (this.labBench ??= new LabBench(this, { makeView: (o) => new LabScreen(this, o) })); }
   _labPassed(id) { if (this.mode === 'client') return; this.save.flags[`lab.passed.${id}`] = true; this._tickQuests(true); }
+  // The customization station (task #40): any map object with `station: 'mods'` opens it. Moves are host-applied.
+  // Modal while open (scene.menu === 'mods'): no movement, attacks, E or menu keys; ESC closes it (BagelMeister, PR #93).
+  openModStation() { if (!this.modStation && !this.gameMenu?.tab && !this.dlg) this.modStation = new ModStation(this); }
+  menuMod(op, ref, arg) { if (this.mode === 'client') this.net.send({ t: 'mod', op, ref, arg }); else this._modAct(this.character, op, ref, arg); }
+  _modAct(who, op, ref, arg) {
+    const c = this.save.party[who]; if (!c || !ref || typeof ref !== 'object') return false;
+    const r = ref.bag != null ? { bag: ref.bag | 0 } : typeof ref.worn === 'string' ? { worn: ref.worn } : null; if (!r) return false;
+    const ok = op === 'insert' ? Sockets.insert(c, r, String(arg)) : op === 'extract' ? Sockets.extract(c, r, arg | 0) : false;
+    if (ok) { this._partyDirty = true; this._syncParty(); sfx('swing'); }
+    else if (op === 'extract') this._toast(T_FULL());
+    return ok;
+  }
   _bastion() { return (this.bastionTable ??= new BastionTable(this, { makeView: (o) => new BastionScreen(this, o) })); }
   /** Host: record a finished match (story flags: bastion.played / .games.<id> / .won.<id> / .lost.<id>). */
   _bastionResult(id, won) {
@@ -1218,6 +1270,36 @@ export class WorldScene extends Phaser.Scene {
     this._syncParty();
   }
 
+  menuWorkbench(op, parts) {
+    if (this.mode === 'client') this.net.send({ t: 'workbench', op, parts });
+    else this._useWorkbench(this.localId, op, parts);
+  }
+
+  _useWorkbench(peer, op, parts) {
+    const p = this.sim.players.get(peer);
+    const bench = this.map.objects.find((obj) => obj.action === 'workbench');
+    if (!p || p.downed || p.under > 0 || !bench || this._transitioning || this.stage?.active ||
+        Math.hypot(bench.x * TILE + 8 - p.x, bench.y * TILE + 8 - p.y) > 40) return;
+    const reply = (text) => {
+      if (peer === this.localId) this._toast(text);
+      else this.net.send(peer, { t: 'toast', text });
+    };
+    if (op === 'service') {
+      if (serviceController(this.save.party[p.character])) {
+        this._syncParty();
+        reply('Controller serviced.');
+      }
+      return;
+    }
+    if (op !== 'assemble') return;
+    const result = printBuild(this.save, p.character, parts);
+    if (result.error === 'materials') return reply('Not enough materials for that.');
+    if (result.error === 'space') return reply('Your bag is full.');
+    if (result.error) return reply('Check the parts and schematics at the workbench.');
+    this._syncParty();
+    reply('Gadget assembled. Equip it from your inventory.');
+  }
+
   _learn(who, id) {
     const c = this.save.party[who], s = skillNode(who, id);
     const rank = c?.skills?.[id] ?? 0;
@@ -1263,15 +1345,16 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- in-game menu (src/game/ui/GameMenu.js) ----------
-  get menu() { return this.gameMenu?.tab ?? (this.puzzle && !this.puzzle.closed ? 'puzzle' : this.boardGame && !this.boardGame.closed ? 'lattice' : null); }
+  get menu() { return this.gameMenu?.tab ?? (this.puzzle && !this.puzzle.closed ? 'puzzle' : this.boardGame && !this.boardGame.closed ? 'lattice' : this.modStation && !this.modStation.closed ? 'mods' : null); }
   _makeMenu() {
     this.gameMenu = new GameMenu(this);
     const kb = this.input.keyboard;
-    kb.on('keydown-ESC', () => { if (this.dlg || this.stage?.active) return; if (this.gameMenu?.held != null) { this.gameMenu.held = null; this.gameMenu.refresh(); return; } if (this.puzzle && !this.puzzle.closed) { this.puzzle.destroy(); this.puzzle = null; return; } this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
-    kb.on('keydown-I', () => { if (!this.dlg && !this.stage?.active) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
-    kb.on('keydown-K', () => { if (!this.dlg && !this.stage?.active) this.menu === 'skills' ? this._closeMenu() : this.gameMenu.show('skills'); });
-    kb.on('keydown-J', () => { if (!this.dlg && !this.stage?.active) this.menu === 'quests' ? this._closeMenu() : this.gameMenu.show('quests'); });
-    kb.on('keydown-TAB', (ev) => { ev.preventDefault?.(); if (!this.dlg && !this.stage?.active) this.menu === 'map' ? this._closeMenu() : this.gameMenu.show('map'); });
+    kb.on('keydown-ESC', () => { if (this.dlg || this.stage?.active) return; if (this.modStation) { this.modStation.close(); return; }   // the station is modal: ESC closes only it (BagelMeister, PR #93)
+      if (this.gameMenu?.held != null) { this.gameMenu.held = null; this.gameMenu.refresh(); return; } if (this.puzzle && !this.puzzle.closed) { this.puzzle.destroy(); this.puzzle = null; return; } this.menu ? this._closeMenu() : this.gameMenu.show('inventory'); });
+    kb.on('keydown-I', () => { if (!this.dlg && !this.stage?.active && !this.modStation) this.menu === 'inventory' ? this._closeMenu() : this.gameMenu.show('inventory'); });
+    kb.on('keydown-K', () => { if (!this.dlg && !this.stage?.active && !this.modStation) this.menu === 'skills' ? this._closeMenu() : this.gameMenu.show('skills'); });
+    kb.on('keydown-J', () => { if (!this.dlg && !this.stage?.active && !this.modStation) this.menu === 'quests' ? this._closeMenu() : this.gameMenu.show('quests'); });
+    kb.on('keydown-TAB', (ev) => { ev.preventDefault?.(); if (!this.dlg && !this.stage?.active && !this.modStation) this.menu === 'map' ? this._closeMenu() : this.gameMenu.show('map'); });
     kb.addCapture('TAB');
     for (const [key, dir] of [['A', -1], ['LEFT', -1], ['D', 1], ['RIGHT', 1]]) kb.on(`keydown-${key}`, () => { if (TABS.includes(this.menu)) this.gameMenu.cycle(dir); });
   }
@@ -1290,6 +1373,26 @@ export class WorldScene extends Phaser.Scene {
     if (def.slot === 'consumable') { if (this.mode === 'client') this.net.send({ t: 'use', id }); else { this._useWhat = id; this._use(this.character, this.localId); } return; }
     if (this.mode === 'client') this.net.send({ t: 'equip', id, slot }); else this._equip(this.character, id, slot);
   }
+  // Wear the bag stack that was clicked, not just the first one with that id (John Pork, PR #93: with two vests, the
+  // modded one in slot 9 must be the one that goes on). Guests send the slot; the host checks it.
+  menuWearSlot(i) {
+    if (!this.save.party[this.character]?.inventory[i]) return;
+    if (this.mode === 'client') this.net.send({ t: 'equipSlot', i }); else this._equipSlot(this.character, i);
+  }
+  // Taking off what's worn in a slot: its own action, so clicking a bag copy never takes the worn one off.
+  menuUnwear(slot) {
+    if (this.mode === 'client') this.net.send({ t: 'unwear', slot }); else this._unwear(this.character, slot);
+  }
+  _equipSlot(who, i) {
+    const id = this.save.party[who]?.inventory?.[i]?.id;
+    if (id) this._equip(who, id, i);
+  }
+  _unwear(who, slot) {
+    const c = this.save.party[who];
+    if (!c?.equipped?.[slot] || !WORN_SLOTS.includes(slot)) return;
+    if (!Inv.unwear(c, slot)) return this._toast('Your bag is full. Make room to take it off.');
+    this._syncParty();
+  }
   // Slot actions (inventory grid + hotbar). Host-authoritative like everything else.
   menuUseSlot(i) {
     const c = this.save.party[this.character], it = c?.inventory[i]; if (!it) return;
@@ -1304,7 +1407,7 @@ export class WorldScene extends Phaser.Scene {
       if (i < Inv.HOTBAR) this.selectHot(i);
       return;
     }
-    if (WORN_SLOTS.includes(def.slot)) return this.menuUse(it.id, i);
+    if (WORN_SLOTS.includes(def.slot)) return this.menuWearSlot(i);   // this exact stack, mods and all
     if (def.slot === 'instrument' || def.slot === 'gift') return this.menuUse(it.id);
     if (def.slot === 'junk' || def.slot === 'key') this._say(`${def.name}\n${def.text}`);
   }
@@ -1354,8 +1457,13 @@ export class WorldScene extends Phaser.Scene {
   menuExport() { exportFile(this.save); }
   async menuQuit(save) {
     if (save && this.mode !== 'client' && !await this._save()) return;
+    this._leaveToTitle();
+  }
+  _leaveToTitle(rejoinCode) {
+    if (this._leaving) return;
+    this._leaving = true;
     this.net?.close?.();
-    this.scene.start('Title');
+    this.scene.start('Title', { rejoinCode });
   }
   mapName(id) { return MAPS[id]?.name ?? id; }
   playerWorldTile() {
@@ -2431,18 +2539,20 @@ export class WorldScene extends Phaser.Scene {
 
   _onClick(ptr) {
     if (!this.ready || ptr.button !== 0) return;
+    const stage = this.stage?.active;
+    if (stage && !(stage.script?.hold && this.dlg)) { this.input2.blockAttack = true; return; }
     const { x: sx, y: sy } = toView(ptr);
     const qb = this._qbSticky;
     if (qb && !this._talkOpen() && sx >= qb.x0 && sx <= qb.x1 && sy >= qb.y0 && sy <= qb.y1) { this.input2.blockAttack = true; qb.leave(); return; }   // a hidden card (dialogue up) can't be clicked away
     if (this.dlg) {
       // Clicks never advance dialogue (E does); choices are clicked directly. In free dialogue a click
       // outside the box is still an attack.
-      if (!this.dlgFree || sy > VIEW.h - 70) this.input2.blockAttack = true;
+      if (stage || !this.dlgFree || sy > VIEW.h - 70) this.input2.blockAttack = true;
       return;
     }
     if (this.menu) {
       this.input2.blockAttack = true;
-      if (this.menu !== 'puzzle' && this.menu !== 'lattice' && !this.gameMenu.contains(sx, sy)) this._closeMenu();
+      if (this.menu !== 'puzzle' && this.menu !== 'lattice' && this.menu !== 'mods' && !this.gameMenu.contains(sx, sy)) this._closeMenu();
       return;
     }
     if (!this.sayOpen && !this.dlg && !this.menu && this._useHeld()) { this.input2.blockAttack = true; return; }
@@ -2491,7 +2601,7 @@ export class WorldScene extends Phaser.Scene {
         this._gadgetPending = false;
         if (this.brain && !(this._dlgStops() && this.mode === 'solo')) for (const [id, ai] of this.brain.inputs()) inputs.set(id, ai);
         for (const [peer, rinp] of this.remoteInputs) {
-          inputs.set(peer, this.stage?.active && rinp.gadget ? { ...rinp, gadget: false } : rinp);
+          inputs.set(peer, this.stage?.active || this.comic?.active || this._transitioning ? { ...rinp, gadget: false, gadgetBlocked: true } : rinp);
           if (rinp.dodge || rinp.skill || rinp.gadget) this.remoteInputs.set(peer, { ...rinp, dodge: false, skill: false, gadget: false });
         }
         this.sim.step(STEP, inputs);   // dialogue never pauses combat (Trevor); levels keep enemies away from scenes instead
@@ -2533,8 +2643,11 @@ export class WorldScene extends Phaser.Scene {
 
   _gadgetBlocked() { return !!(this._dlgStops() || this.menu || this.stage?.active || this.comic?.active || this._transitioning); }
   _frozen(inp) {
-    if (this._dlgStops() || this.menu || this.stage?.active || this.comic?.active) return { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, gadget: false, interact: false };
-    if (this._transitioning && inp.gadget) inp = { ...inp, gadget: false };
+    const inStage = !!this.stage?.active;
+    if (this._dlgStops() || this.menu || inStage || this.comic?.active) {
+      return { ...inp, mx: 0, my: 0, attack: false, fire: false, dodge: false, gadget: false, gadgetBlocked: true, interact: false, skill: inStage ? false : inp.skill };
+    }
+    if (this._transitioning) inp = { ...inp, gadget: false, gadgetBlocked: true };
     if (this.dlg) return { ...inp, interact: false };
     return inp;
   }
@@ -2557,7 +2670,13 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _hostEvents(events) {
+    if (events.some((event) => event.t === 'gadgetUse') && this.mode === 'host') this.net.broadcast({ t: 'party', party: this.save.party });
     for (const ev of events) {
+      if (ev.t === 'gadgetGlitch') {
+        const text = 'Controller glitched. Charge spent.';
+        if (ev.id === this.localId) this._toast(text);
+        else this.net?.send(ev.id, { t: 'toast', text });
+      }
       if (ev.t === 'gadgetScan') this._gadgetScan(ev);
       if (ev.t === 'gadgetCast' || ev.t === 'gadgetBlock') {
         this._gadgetFx(ev);
@@ -2629,7 +2748,7 @@ export class WorldScene extends Phaser.Scene {
       for (const obj of this.map.objects) {
         if (!LOOT[obj.loot] || flags[`loot.${area}.${obj.id}`] || (obj.goneFlag && flags[obj.goneFlag])) continue;
         const distance = Math.hypot(obj.x * TILE + 8 - player.x, obj.y * TILE + 8 - player.y);
-        if (distance >= closest) continue;
+        if (distance >= closest || (ev.range != null && distance > ev.range)) continue;
         closest = distance;
         label = obj.label;
       }
@@ -2646,7 +2765,7 @@ export class WorldScene extends Phaser.Scene {
 
   _gadgetFx(ev) {
     const color = { screen: 0x83cffa, vector: 0xa4ddf3, arc: 0xffcc74, tether: 0xc7a4ee,
-      relay: 0x8de6f4, patch: 0x91d29b, ground: 0xb6d584 }[ev.kind] ?? 0x83cffa;
+      relay: 0x8de6f4, patch: 0x91d29b, ground: 0xb6d584, burst: 0xa4ddf3, slow: 0xaf94ee }[ev.kind] ?? 0x83cffa;
     const wave = this.add.graphics().setDepth(5600).lineStyle(2, color, 0.85);
     if (ev.t === 'gadgetBlock') wave.strokeCircle(ev.x, ev.y, 5);
     else if (ev.points?.length) {
@@ -2746,6 +2865,7 @@ export class WorldScene extends Phaser.Scene {
     if (near.talk && near.doneFlag && this.save.flags[near.doneFlag]) { this._say(near.doneText ?? near.text ?? ''); return; }
     if (near.talk) { const [scene, node] = near.talk.split(':'); this.startDialogue(scene, node || null, near.after ? () => this._flag(near.after, true) : null); return; }
     if (near.action === 'fab') { this._openFab(); return; }
+    if (near.action === 'workbench') { this.gameMenu.show('workbench'); return; }
     if (this._questInteract(near)) return;
     if (near.npc && this._sayLater(near)) return;
     if (near.zip) { this._zip(near); return; }
@@ -2788,6 +2908,7 @@ export class WorldScene extends Phaser.Scene {
     if (near.boardgame) { this.openBoardGame(near.boardgame, near.id); return; }
     if (near.bastion) { this.openBastion(near.bastion); return; }
     if (near.lab) { this.openLab(near.lab); return; }
+    if (near.station === 'mods') { this.openModStation(); return; }
     if (near.action === 'toolwall' && this.mode !== 'client') {
       // One pry bar for every roommate who has no weapon yet; it goes in their hand.
       const got = [];
@@ -3030,6 +3151,10 @@ export class WorldScene extends Phaser.Scene {
       this.shotGfx.fillStyle(0xd65db1, pulse * Math.min(1, h.t)).fillCircle(h.x, h.y, h.r);
       this.shotGfx.lineStyle(1, 0x7fb069, 0.6 * Math.min(1, h.t)).strokeCircle(h.x, h.y, h.r);
       for (let i = 0; i < 3; i++) this.shotGfx.fillStyle(0x7fb069, 0.5).fillRect(h.x + Math.sin(this.time.now / 90 + i * 2) * h.r * 0.6, h.y + Math.cos(this.time.now / 110 + i) * h.r * 0.5, 2, 2);
+    }
+    for (const field of snap.gadgetFields ?? []) {
+      this.shotGfx.fillStyle(0xaf94ee, 0.12).fillCircle(field.x, field.y, field.r);
+      this.shotGfx.lineStyle(1, 0xaf94ee, 0.45).strokeCircle(field.x, field.y, field.r);
     }
     // The gonman's puddles: off-white, a little glossy, fading out; and drips on whatever got hit.
     for (const g of snap.goo || []) {
@@ -3664,18 +3789,25 @@ export class WorldScene extends Phaser.Scene {
   }
 
   _drawGadgetHud(me) {
-    const gadget = GADGETS[me?.gadget];
+    const built = me?.gadget === BUILT_GADGET;
+    const gadget = built ? ITEMS[BUILT_GADGET] : GADGETS[me?.gadget];
     if (!gadget || !this.hot || this._gadgetBlocked() || this.sayOpen) {
       this.hudGadget?.setVisible(false);
       return;
     }
     const hot = this.hot, x = hot.x0 + 9 * (hot.S + 2) + 4, y = hot.y0;
-    const cd = gadget.cooldown ? me.gadgetCd ?? 0 : 0, max = me.gadgetMaxCd ?? gadget.cooldown;
+    const cd = me.gadgetCd ?? 0, max = me.gadgetMaxCd ?? gadget.cooldown;
     this.hudGadget ??= this.add.text(x, y, '', { ...FONT, fontSize: '7px', stroke: '#0b0d16', strokeThickness: 3 })
       .setScrollFactor(0).setDepth(9003);
-    this.hudGadget.setText(`[V] ${tr(gadget.name)}\n${cd > 0 ? `${cd.toFixed(1)} s` : tr('Gadget ready')}`)
-      .setColor(cd > 0 ? '#9aa3c7' : '#83cffa').setVisible(true);
-    if (gadget.cooldown) this.hud.fillStyle(0x1c1f33).fillRect(x, y + 18, 52, 2)
+    const roll = this.save.party[this.character]?.rolled?.gadget;
+    const name = built ? rolledName(tr(gadget.name), roll, getLang()) : tr(gadget.name);
+    let status = cd > 0 ? `${cd.toFixed(1)} s` : tr('Gadget ready');
+    if (built) status = me.gadgetAiming ? tr('Aiming…') : `${me.gadgetCharges}/${me.gadgetCapacity}${cd > 0 ? ` · ${status}` : ''}`;
+    this.hudGadget.setText(`[V] ${name}\n${status}`)
+      .setColor(built ? me.gadgetCharges > 0 ? '#83cffa' : '#9aa3c7' : cd > 0 ? '#9aa3c7' : '#83cffa').setVisible(true);
+    if (max > 0) this.hud.fillStyle(0x1c1f33).fillRect(x, y + 18, 52, 2)
       .fillStyle(0x83cffa).fillRect(x, y + 18, 52 * Math.max(0, 1 - cd / max), 2);
   }
 }
+
+const T_FULL = () => (getLang() === 'es' ? 'La mochila está llena.' : 'Your bag is full.');

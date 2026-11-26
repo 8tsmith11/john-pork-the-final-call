@@ -8,7 +8,13 @@ import { ENEMIES } from '../content/enemies.js';
 import { switchmanDef, generateWarden, rollVariant, TRAITS } from '../content/rotVillains.js';
 import { BOSSES } from '../content/bosses.js';
 import { ARC_HITS, GADGETS, GADGET_SUPPORT_WINDOW, arcDamage, gadgetStats } from '../content/gadgets.js';
+import { glitches } from './assembly.js';
 
+// Enemy poise (see _hurtEnemy): seconds an ordinary enemy shrugs off light hits after flinching, and the states in which
+// it's committed to an attack and won't flinch from them at all.
+export const POISE = 0.9;
+export const PARRY_REST = 0.6;   // seconds without swinging before a swing can parry
+const COMMITTED = new Set(['windup', 'lunge', 'dash', 'charge']);
 export const MOVE = { speed: 72, dodgeSpeed: 230, dodgeTime: 0.22, dodgeCooldown: 0.35, iframes: 0.22,
   stamina: 100, dashCost: 34, staminaRegen: 18, regenDelay: 0.9 };  // ~3 dashes, then a slow refill
 // Regular-enemy tuning for a party of three (see spawnEnemies). Measured with a headless bot run:
@@ -72,6 +78,8 @@ export class Sim {
     this.tick = 0;
     this.playTime = 0;
     this.gadgetRecharges = new WeakMap();
+    this.builtGadgetCharges = new WeakMap();
+    this.gadgetFields = [];
     this._nextId = 1;
     if (!opts.deferSpawn) this.spawnEnemies();
   }
@@ -79,7 +87,8 @@ export class Sim {
   /** Swap to another map, keeping players (placed at the map's spawns). */
   /** Swap maps. `fromId` = the map we came from: players arrive beside the exit that leads back there. */
   setMap(map, fromId = null, viaId = null) {
-    this.map = map; this.shots = []; this.hazards = []; this.decoys = []; this.goo = []; this.enemies.clear();
+    this.map = map; this.shots = []; this.hazards = []; this.decoys = []; this.goo = []; this.gadgetFields = []; this.enemies.clear();
+    for (const p of this.players.values()) p.gadgetAim = null;
     for (const a of this.allies ?? []) a.relocate = true;
     // Arrive at the counterpart of the exit you used: an explicit `pair`, else the same kind (stairs to stairs,
     // elevator to elevator), else the first exit back. (John Pork #577: the elevator dropped you at the stairs.)
@@ -322,6 +331,7 @@ export class Sim {
     this.players.set(to, player);
     player.id = to;
     player.waitExit = null;
+    player.gadgetAim = null;
     // Projectiles and companions still belong to the same roommate.
     for (const shot of this.shots) if (shot.owner === from) shot.owner = to;
     for (const ally of this.allies ?? []) if (ally.owner === from) ally.owner = to;
@@ -357,6 +367,7 @@ export class Sim {
         else if ((inp.mx ?? 0) !== p.arriveMx || (inp.my ?? 0) !== p.arriveMy) p.arriveHold = false;
       }
       p.meleeCd = Math.max(0, p.meleeCd - dt); p.shotCd = Math.max(0, p.shotCd - dt); p.swingT = Math.max(0, p.swingT - dt);
+      if (inp.gadgetBlocked || p.downed || p.sleepT > 0 || p.waitExit) p.gadgetAim = null;
       if (p.downed) { p.vx = p.vy = 0; p.moving = false; continue; }
       if (p.sleepT > 0) { if (p.mods?.sleepGuard) { p.hp = Math.min(this.maxHp(p), p.hp + 15 * dt); p.sta = Math.min(MOVE.stamina + (p.mods.sta ?? 0), (p.sta ?? 0) + 40 * dt); }
         p.sleepT = Math.max(0, p.sleepT - dt); p.vx = p.vy = 0; p.moving = false; if (p.sleepT <= 0) this.events.push({ t: 'wake', id: p.id }); continue; }
@@ -412,7 +423,8 @@ export class Sim {
         } else {
           const rotSpeed = p.rot >= 100 ? 0.65 : p.rot >= 60 ? 0.8 : p.rot >= 25 ? 0.9 : 1;
           const spd = MOVE.speed * (p.morphed ? 1.15 : 1) * (1 + (p.mods?.speed ?? 0)) * (p.playing ? 0.5 : 1) * (p.gonT > 0 ? 0 : 1) * (p.wiredT > 0 ? 1.15 : 1) * (p.mateT > 0 ? 1 + MATE.speed : p.crashT > 0 ? 1 + MATE.crashSpeed : 1) * rotSpeed;
-          p.vx = mx * spd; p.vy = my * spd;
+          const handling = p.gadgetAim && p.gadgetBuild ? 1 - p.gadgetBuild.slow : 1;
+          p.vx = mx * spd * handling; p.vy = my * spd * handling;
         }
       }
       p.moving = Math.hypot(p.vx, p.vy) > 1;
@@ -429,7 +441,7 @@ export class Sim {
       if (p.gonSlim && p.skillCd <= 0 && !(p.gonT > 0)) p.gonSlim = false;
       const busy = p.gonT > 0;                                       // the gonman is occupied
       if (inp.skill && !p.riding && !p.playing && !busy && p.skillCd <= 0) this._ability(p);
-      if (inp.gadget && !p.riding && !p.playing && !(p.gonT > 0)) this._useGadget(p, arcHits);
+      if (inp.gadget || p.gadgetAim) this._stepGadget(p, inp, arcHits);
       // Terraria-style: the attack button uses what's in hand. A melee weapon swings, a gun fires, anything
       // else is used by the scene (consumables etc.). No weapon in hand, no punch.
       const held = p.held ?? 'melee';
@@ -615,15 +627,103 @@ export class Sim {
 
   _gadgetRecharge(p) {
     const model = p.gadgetTimers?.[p.gadget], item = this.gadgetRecharges.get(p.gadgetRoll);
-    const latest = (item?.until ?? 0) > (model?.until ?? 0) ? item : model;
+    const family = p.gadgetTimers?.[GADGETS[p.gadget]?.kind];
+    let latest = (item?.until ?? 0) > (model?.until ?? 0) ? item : model;
+    if ((family?.until ?? 0) > (latest?.until ?? 0)) latest = family;
     return latest?.until > this.playTime ? latest : null;
   }
 
   _gadgetSnapshot(p) {
     if (!p.gadget) return {};
+    if (p.gadgetBuild) {
+      const { remaining, next } = this._builtCharge(p);
+      const locked = this._builtSwitchLock(p);
+      const until = Math.max(next, locked?.until ?? 0);
+      return { gadget: p.gadget, gadgetCharges: locked ? 0 : remaining, gadgetCapacity: p.gadgetBuild.charges,
+        gadgetAiming: !!p.gadgetAim, gadgetCd: until ? Math.ceil((until - this.playTime) * 10) / 10 : 0,
+        gadgetMaxCd: Math.max(p.gadgetBuild.cooldown, locked?.total ?? 0) };
+    }
     const recharge = this._gadgetRecharge(p);
     if (!recharge) return { gadget: p.gadget };
     return { gadget: p.gadget, gadgetCd: Math.ceil((recharge.until - this.playTime) * 10) / 10, gadgetMaxCd: recharge.total };
+  }
+
+  _builtCharge(p) {
+    const { charges, cooldown } = p.gadgetBuild;
+    let state = this.builtGadgetCharges.get(p.gadgetRoll);
+    if (!state) {
+      state = { remaining: charges, next: 0 };
+      this.builtGadgetCharges.set(p.gadgetRoll, state);
+    }
+    if (state.next && this.playTime >= state.next) {
+      const recovered = Math.min(charges - state.remaining, 1 + Math.floor((this.playTime - state.next) / cooldown));
+      state.remaining += recovered;
+      state.next = state.remaining < charges ? state.next + recovered * cooldown : 0;
+    }
+    return state;
+  }
+
+  _builtSwitchLock(p) {
+    const last = p.gadgetTimers?.[p.gadgetBuild.kind];
+    return last?.until > this.playTime && last.roll !== p.gadgetRoll ? last : null;
+  }
+
+  _stepGadget(p, inp, arcHits) {
+    const queued = p.gadgetAim;
+    if (inp.gadgetBlocked || p.riding || p.playing || p.gonT > 0 || (p.gadgetBuild && (p.under > 0 || p.dodgeT > 0))) {
+      p.gadgetAim = null;
+      return;
+    }
+    if (!p.gadgetBuild) {
+      if (inp.gadget) this._useGadget(p, arcHits);
+      return;
+    }
+    if (!queued) {
+      if (!this._builtSwitchLock(p) && this._builtCharge(p).remaining > 0) {
+        p.gadgetAim = { until: this.playTime + p.gadgetBuild.aim, roll: p.gadgetRoll };
+      }
+      return;
+    }
+    if (queued.roll !== p.gadgetRoll) { p.gadgetAim = null; return; }
+    if (this.playTime < queued.until) return;
+    p.gadgetAim = null;
+    const charge = this._builtCharge(p);
+    if (charge.remaining <= 0) return;
+    charge.remaining--;
+    if (!charge.next) charge.next = this.playTime + p.gadgetBuild.cooldown;
+    const roll = p.gadgetRoll, uses = Math.max(0, Number.isSafeInteger(roll.uses) ? roll.uses : 0);
+    (p.gadgetTimers ??= Object.create(null))[p.gadgetBuild.kind] = { roll, until: charge.next, total: p.gadgetBuild.cooldown };
+    roll.uses = uses + 1;
+    this.events.push({ t: 'gadgetUse', id: p.id });
+    if (glitches(roll.build, uses)) {
+      this.events.push({ t: 'gadgetGlitch', id: p.id });
+      return;
+    }
+    this._fireBuiltGadget(p, arcHits);
+  }
+
+  _fireBuiltGadget(p, arcHits) {
+    const { kind, effect: power, range: r } = p.gadgetBuild;
+    if (kind === 'scan') {
+      this.events.push({ t: 'gadgetScan', id: p.id, kind, range: r });
+      return;
+    }
+    const ev = { t: 'gadgetCast', kind, id: p.id, x: p.x, y: p.y, r, power };
+    if (kind === 'arc') ev.points = this._gadgetArc(p, r, power, arcHits);
+    if (kind === 'burst') {
+      const ux = Math.cos(p.aim), uy = Math.sin(p.aim);
+      ev.points = [];
+      for (const e of this.enemies.values()) {
+        const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy);
+        if (d > r || dx * ux + dy * uy < d * 0.7 || e.boss || e.sahur || e.poiseT > 0 ||
+            COMMITTED_ATTACK.has(e.st) || !this._abilityPathClear(p, e) || Math.hypot(e.kx ?? 0, e.ky ?? 0) >= power) continue;
+        e.kx = ux * power;
+        e.ky = uy * power;
+        ev.points.push([e.x, e.y]);
+      }
+    }
+    if (kind === 'slow') this.gadgetFields.push({ x: p.x, y: p.y, r, until: this.playTime + power });
+    this.events.push(ev);
   }
 
   _useGadget(p, arcHits) {
@@ -636,7 +736,9 @@ export class Sim {
     if (this._gadgetRecharge(p)) return;
     const { cooldown, power } = gadgetStats(def, p.mods);
     const recharge = { until: this.playTime + cooldown, total: cooldown };
-    (p.gadgetTimers ??= Object.create(null))[p.gadget] = recharge;
+    const timers = p.gadgetTimers ??= Object.create(null);
+    timers[p.gadget] = recharge;
+    timers[def.kind] = { ...recharge, roll: p.gadgetRoll };
     // Recharge follows the exact build's roll when it is unworn, dropped or picked up.
     if (p.gadgetRoll) this.gadgetRecharges.set(p.gadgetRoll, recharge);
     const r = def.range;
@@ -757,6 +859,12 @@ export class Sim {
     const interval = Math.max(0.12, base.cooldown + (p.mods?.meleeCd ?? 0));
     // Combo: swings inside the window chain 1-2-3; the third is a heavy finisher.
     const now = this.tick * (1 / 60);
+    // A parry needs a deliberate swing (Trevor: mash-clicking made everything easy, since every swing parried a lunge):
+    // one that comes after PARRY_REST seconds without swinging. Swinging non-stop never parries; timing does.
+    // Measured from the end of the last swing's recovery (John Pork, PR #146: a slow weapon's cooldown alone used to
+    // count as the rest, so holding attack with it still parried). Clicking again doesn't reset it either: mashing,
+    // held or clicked, never parries; a swing after a real pause does.
+    p.freshSwing = now - (p.swingFreeAt ?? -9) >= PARRY_REST;
     p.combo = now - (p.lastSwingAt ?? -9) <= interval + FEEL.comboWindow ? ((p.combo ?? 0) % 3) + 1 : 1;
     p.lastSwingAt = now;
     const fin = p.combo === 3;
@@ -767,6 +875,7 @@ export class Sim {
     if (dash) m = { ...m, damage: m.damage * FEEL.dashDmg, range: m.range + FEEL.dashRange, arc: m.arc * 0.7 };
     const focus = p.focusT > 0; if (focus) p.focusT = 0;
     p.meleeCd = interval * (fin ? 1.25 : 1); p.swingT = 0.2;   // long enough for both attack frames (12 fps)
+    p.swingFreeAt = now + p.meleeCd;   // when this swing's recovery ends (finishers recover longer; main's gear-adjusted interval)
     this.events.push({ t: 'swing', id: p.id, a: p.aim, r: m.range, arc: m.arc, combo: p.combo, weapon: p.mods?.weaponId });
     // Deflect: enemy shots inside the swing go back the way they came, as the player's.
     for (const s of this.shots) {
@@ -787,7 +896,7 @@ export class Sim {
       if (Math.abs(da) > m.arc / 2 && d > def.radius + 4) continue;
       // Clash parry (docs/research/combat.md): hitting an enemy while it's committed to its lunge or charge
       // cancels the attack, stuns it and grants Focus. Bosses and the Sahur can't be parried.
-      if (!e.boss && !e.sahur && ((e.st === 'lunge' && !e.hitOnce) || (e.st === 'dash' && !e.hitOnce))) {
+      if (!e.boss && !e.sahur && p.freshSwing && ((e.st === 'lunge' && !e.hitOnce) || (e.st === 'dash' && !e.hitOnce))) {
         e.hitOnce = true; e.st = def.ai === 'charge' ? 'dizzy' : 'recover'; e.stT = Math.max(e.stT ?? 0, FEEL.parryStun); e.stunT = FEEL.parryStun; e.parried = FEEL.parryStun;
         p.focusT = FEEL.focusTime; this.hitStop = FEEL.parryStop;
         this.events.push({ t: 'parry', x: e.x, y: e.y, by: p.id });
@@ -795,7 +904,7 @@ export class Sim {
       const crit = Math.random() < (p.mods?.crit ?? 0);
       if (crit) this.events.push({ t: 'crit', x: e.x, y: e.y });
       if (fin) this.hitStop = FEEL.hitStop;
-      this._hurtEnemy(e, Math.round((m.damage + (p.mods?.melee ?? 0)) * (p.morphed ? 1.3 : 1) * (crit ? 2 : 1) * (focus ? FEEL.focusDmg : 1)), dx / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), dy / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), p.id);
+      this._hurtEnemy(e, Math.round((m.damage + (p.mods?.melee ?? 0)) * (p.morphed ? 1.3 : 1) * (crit ? 2 : 1) * (focus ? FEEL.focusDmg : 1)), dx / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), dy / (d || 1) * m.knockback * (1 + (p.mods?.knock ?? 0)), p.id, { heavy: fin });
     }
   }
 
@@ -821,7 +930,7 @@ export class Sim {
     this.events.push({ t: 'shot', id: p.id });
   }
 
-  _hurtEnemy(e, dmg, kx, ky, by) {
+  _hurtEnemy(e, dmg, kx, ky, by, { heavy = false } = {}) {
     if (e.sahur) { dmg = 1; this.events.push({ t: 'thunk', x: e.x, y: e.y }); }
     else if (e.boss && e.state === 'vulnerable') dmg *= 2;
     if (this._def(e).armor && e.st !== 'dizzy') dmg = Math.max(1, Math.round(dmg * (1 - this._def(e).armor)));
@@ -834,7 +943,14 @@ export class Sim {
       const a = Math.random() * Math.PI * 2, nx = e.x + Math.cos(a) * 40, ny = e.y + Math.sin(a) * 40;
       if (!this._hitsBox(nx, ny, 6, 4)) { this.events.push({ t: 'blink', x: e.x, y: e.y }); e.x = nx; e.y = ny; }
     }
-    e.hp -= dmg; e.hurtT = 0.12;
+    // Poise (Trevor: "I just walk into the robots and click with my crowbar and everything dies"): an ordinary enemy
+    // flinches and is knocked back by the first hit, then shrugs off light hits for POISE seconds, and one committed to
+    // an attack (winding up, lunging, charging) shrugs them off entirely. A combo finisher (heavy) still breaks
+    // through, and so do parries and slams, which set their own stun. Bosses keep their own rules.
+    const shrug = !e.boss && !heavy && (e.poiseT > 0 || COMMITTED.has(e.st));
+    e.hp -= dmg;
+    if (shrug) this.events.push({ t: 'shrug', x: e.x, y: e.y });   // no new impulse, and whatever it's already flying with stays
+    else { e.hurtT = 0.12; if (!e.boss) e.poiseT = POISE; }
     // Stop damage at the end of the earliest phase that hasn't shown an attack tell.
     if (e.boss && e.def?.phaseGate) {
       const untoldPhase = e.phase + (e.phaseTells > 0 ? 1 : 0);
@@ -847,7 +963,7 @@ export class Sim {
     }
     if (e.boss) { kx *= 0.15; ky *= 0.15; const f = e.hp / e.def.hp; const ph = f < 0.33 ? 3 : f < 0.66 ? 2 : 1;
       if (ph !== e.phase) { e.phase = ph; e.phaseTells = 0; this.events.push({ t: 'phase', phase: ph }); } }
-    e.kx = kx; e.ky = ky; if (by) e.lastHitBy = by;
+    if (!shrug) { e.kx = kx; e.ky = ky; } if (by) e.lastHitBy = by;
     this.events.push({ t: 'hit', x: e.x, y: e.y, dmg, target: e.id, by });
     if (e.hp <= 0) {
       this.enemies.delete(e.id);
@@ -927,13 +1043,18 @@ export class Sim {
   _stepEnemies(dt0) {
     for (const g of this.goo) g.ttl -= dt0;
     this.goo = this.goo.filter((g) => g.ttl > 0);
+    this.gadgetFields = this.gadgetFields.filter((field) => field.until > this.playTime);
     for (const e of this.enemies.values()) {
       if (e.slowT > 0) e.slowT = Math.max(0, e.slowT - dt0);
       if (!e.sahur && this.goo.some((g) => Math.hypot(e.x - g.x, e.y - g.y) < g.r)) e.slowT = Math.max(e.slowT ?? 0, 0.6);   // walked through a puddle
       // Stuck in the gonman's stuff: the enemy's whole clock runs slow (moving, cooling down, winding up): almost frozen.
-      const dt = e.slowT > 0 && !e.sahur ? dt0 * (e.boss ? GONMAN.bossSlow : GONMAN.slow) : dt0;
+      const fieldSlow = !e.sahur && this.gadgetFields.some((field) =>
+        Math.hypot(e.x - field.x, e.y - field.y) < field.r && this._abilityPathClear(field, e));
+      const slow = e.slowT > 0 && !e.sahur ? e.boss ? GONMAN.bossSlow : GONMAN.slow
+        : fieldSlow ? e.boss ? 0.8 : 0.45 : 1;
+      const dt = dt0 * slow;
       const def = this._def(e);
-      e.cd = Math.max(0, e.cd - dt); e.hurtT = Math.max(0, e.hurtT - dt);
+      e.cd = Math.max(0, e.cd - dt); e.hurtT = Math.max(0, e.hurtT - dt); if (e.poiseT > 0) e.poiseT = Math.max(0, e.poiseT - dt);
       if (e.sahur) { this._stepSahur(e, def, dt); continue; }
       if (e.boss) { this._stepBoss(e, def, dt); continue; }
       if (e.sleepT > 0) { e.sleepT = Math.max(0, e.sleepT - dt); continue; }
@@ -1387,6 +1508,7 @@ export class Sim {
         ...(e.def && !e.boss ? { vn: e.def.vname, tr: e.def.trait, c: e.def.color, mh: e.def.hp, r: e.def.radius } : {}),
         ...(e.boss ? { boss: { name: e.def.name, ep: e.def.epithet, max: e.def.hp, c: e.def.color, r: e.def.radius, ph: e.phase, st: e.state ?? 'move', sahur: !!e.sahur, la: e.state === 'laser' ? Math.round(e.laserA * 100) / 100 : null, ln: e.state === 'lane' ? [e.laneY, Math.round((e.laneT / e.laneDur) * this.map.w * TILE)] : null, wv: e.waves?.map((w) => Math.round(w.r)), mk: e.marks?.map((m) => [Math.round(m.x), Math.round(m.y), Math.round(m.t * 10) / 10]), ring: !!e.sahur && e.fightT > 10, idle: !!e.mini && !e.awake } } : {}) })),
       goo: this.goo.map((g) => ({ x: Math.round(g.x), y: Math.round(g.y), r: g.r, t: Math.round(g.ttl * 10) / 10 })),
+      gadgetFields: this.gadgetFields.map(({ x, y, r }) => ({ x: Math.round(x), y: Math.round(y), r })),
       decoys: this.decoys.map((d) => ({ x: Math.round(d.x), y: Math.round(d.y), ...(d.hp < (d.mhp ?? d.hp) * 0.4 ? { cr: 1 } : {}) })),   // cr: cracked
       sk: skirmishView(this.sk),
       allies: (this.allies ?? []).map((a) => ({ x: Math.round(a.x), y: Math.round(a.y), hp: a.hp, mhp: a.maxHp, dn: a.down > 0, st: a.st })),
