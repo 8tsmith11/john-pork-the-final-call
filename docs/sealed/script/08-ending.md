@@ -21,7 +21,7 @@ ba checbfr fb gung yvar naq gur ynfg fubg ner jung gur cynlre erzrzoref.
 
 - `npg1.pnyy.nafjrerq` (QRFVTA §4: gur cnegl nafjrerq n Wbua Cbex pnyy ng fbzr cbvag)
 - `npg1.pnyy.qrpyvarPbhag` (0 gb 3)
-- `npg1.obff.fnuhe` (gur Fnuhe jnf gur obff; vzcyvrf guerr qrpyvarf naq n zvq-svtug nafjre)
+- `npg1.obff.fnuhe` (Ghat Ghat Ghat Fnuhe jnf gur obff; vzcyvrf guerr qrpyvarf naq n zvq-svtug nafjre)
 - `npg1.obff.nongrzrag` (fgergpu: gur nongrzrag havg jnf gur obff)
 - `npg1.unyineq.fryyreQrfpevorq` (Unyineq fnvq "bar bs lbh, sebz 631. Be jrnevat lbhe snpr.")
 - `npg1.yrnqN.inaFrra` (gur cnegl fnj gur nongrzrag ina'f znfg ybttvat uryvhz)
@@ -37,7 +37,7 @@ ba checbfr fb gung yvar naq gur ynfg fubg ner jung gur cynlre erzrzoref.
 - `npg1.raqvat.nfxrqPnyy`
 - `npg1.raqvat.nfxrqBggbzna`
 - `npg1.raqvat.fnvqAbguvat`
-- `npg1.raqvat.fnuheTerrgvat` (gur Fnuhe naq Wbua Cbex rkpunatr cynlrq)
+- `npg1.raqvat.fnuheTerrgvat` (Ghat Ghat Ghat Fnuhe naq Wbua Cbex rkpunatr cynlrq)
 - `npg1.raqvat.fybtnaFnvq` (Zvpunry fnvq gur fybtna; frr abgrf)
 - `npg1.raqvat.frrqGntFubja`
 - `cubar.pbagnpgf.cbex` (gur pbagnpg vf abj pnyynoyr)
@@ -55,7 +55,7 @@ Fpbcr: nyy
 
 #### vs synt npg1.obff.fnuhe
 
-*Ab jerpxntr. Gur Fnuhe vf abg urer. Guerr cubarf yvr snpr-hc ba gur gvyrf jurer gur cnegl qebccrq
+*Ab jerpxntr. Ghat Ghat Ghat Fnuhe vf abg urer. Guerr cubarf yvr snpr-hc ba gur gvyrf jurer gur cnegl qebccrq
 gurz, fperraf fgvyy yvg sebz gur pnyy gung fgbccrq vg. Sebz gur ghaary: abguvat. Ab qehz.*
 
 **ZVPUNRY:** Vg fgbccrq.
@@ -383,7 +383,7 @@ oernx ebbz.*
 
 > rf: Ybf qbf fr zvena. Ab unl nzranmn ra rfb. Fba qbf dhr nagrf pbzcnegína yn fnyn qr qrfpnafb.
 
-**FNUHE:** Tbbq zbeavat, Wbua.
+**GHAT GHAT GHAT FNUHE:** Tbbq zbeavat, Wbua.
 
 > rf: Ohrabf qínf, Wbua.
 
@@ -391,12 +391,12 @@ oernx ebbz.*
 
 > rf: ¿Fvthrf qr gheab?
 
-*Gur Fnuhe pbafvqref gur dhrfgvba sbe rknpgyl nf ybat nf vg qrfreirf. Gura vg gheaf vgf urnq, n srj
+*Ghat Ghat Ghat Fnuhe pbafvqref gur dhrfgvba sbe rknpgyl nf ybat nf vg qrfreirf. Gura vg gheaf vgf urnq, n srj
 qrterrf, gbjneq gur ebbzzngrf.*
 
-> rf: Ry Fnuhe pbafvqren yn certhagn rknpgnzragr ry gvrzcb dhr zrerpr. Qrfchéf tven yn pnormn, habf tenqbf, unpvn ybf pbzcnñrebf qr phnegb.
+> rf: Ghat Ghat Ghat Fnuhe pbafvqren yn certhagn rknpgnzragr ry gvrzcb dhr zrerpr. Qrfchéf tven yn pnormn, habf tenqbf, unpvn ybf pbzcnñrebf qr phnegb.
 
-**FNUHE:** Lbh nafjrerq. Gung vf bar.
+**GHAT GHAT GHAT FNUHE:** Lbh nafjrerq. Gung vf bar.
 
 > rf: Pbagrfgnfgr. Rfn rf han.
 
@@ -427,7 +427,7 @@ vg jnyxf vagb gur qnex, naq gur gvpxvat tbrf jvgu vg.*
 
 ### abqr: raqvat_fnuhe_jngpu
 
-*Gnfx 16 (Geribe): gur Fnuhe vf va Npg 1 ba rirel ebhgr. Guvf vf gur ebhgr jurer gur Jneqra jnf gur
+*Gnfx 16 (Geribe): Ghat Ghat Ghat Fnuhe vf va Npg 1 ba rirel ebhgr. Guvf vf gur ebhgr jurer gur Jneqra jnf gur
 obff. Ur jnf arire sbhtug; ur pnzr qbja gb frr jub unq orra xabpxvat. Jung ur fnlf pbhagf gur
 qrpyvarf.*
 
@@ -440,7 +440,7 @@ fgnss. Oenff gvpxf fbzrjurer vafvqr vg. Abobql urneq vg neevir.*
 
 > rf: Nuí unl han svthen nygn qr znqren gnyynqn, pba ha ongr ra nygb ra nzonf znabf pbzb ry onfgóa qr ha frerab. Nytb qr oebapr unpr gvpgnp ra fh vagrevbe. Anqvr yb bló yyrtne.
 
-**FNUHE:** Tbbq zbeavat, Wbua.
+**GHAT GHAT GHAT FNUHE:** Tbbq zbeavat, Wbua.
 
 > rf: Ohrabf qínf, Wbua.
 
@@ -454,7 +454,7 @@ fgnss. Oenff gvpxf fbzrjurer vafvqr vg. Abobql urneq vg neevir.*
 
 #### vs npg1.pnyy.qrpyvarf>=2
 
-**FNUHE:** Gjb xabpxf. V jnf ba gur ynfg fgnve.
+**GHAT GHAT GHAT FNUHE:** Gjb xabpxf. V jnf ba gur ynfg fgnve.
 
 > rf: Qbf tbycrf. Rfgnon ra ry úygvzb rfpnyóa.
 
@@ -464,7 +464,7 @@ fgnss. Oenff gvpxf fbzrjurer vafvqr vg. Abobql urneq vg neevir.*
 
 #### vs npg1.pnyy.qrpyvarf==1
 
-**FNUHE:** Bar xabpx. V pnzr nf sne nf gur fjvgpulneq.
+**GHAT GHAT GHAT FNUHE:** Bar xabpx. V pnzr nf sne nf gur fjvgpulneq.
 
 > rf: Ha tbycr. Yyrthé unfgn ry cngvb qr znavboenf.
 
@@ -474,7 +474,7 @@ fgnss. Oenff gvpxf fbzrjurer vafvqr vg. Abobql urneq vg neevir.*
 
 #### ryfr
 
-**FNUHE:** Ab xabpxf gbavtug. V jnyxrq qbja naljnl.
+**GHAT GHAT GHAT FNUHE:** Ab xabpxf gbavtug. V jnyxrq qbja naljnl.
 
 > rf: Avatúa tbycr rfgn abpur. Vthny onwé pnzvanaqb.
 
@@ -485,10 +485,10 @@ xabjf vf fuhg.*
 
 #### raq
 
-*Oruvaq Wbua Cbex, gur cyngsbez pybpx, fghpx nyy avtug, zbirf bar zvahgr. Gur Fnuhe jnyxf vagb gur qnex
+*Oruvaq Wbua Cbex, gur cyngsbez pybpx, fghpx nyy avtug, zbirf bar zvahgr. Ghat Ghat Ghat Fnuhe jnyxf vagb gur qnex
 naq gur gvpxvat tbrf jvgu vg.*
 
-> rf: Qrgeáf qr Wbua Cbex, ry erybw qry naqéa, genonqb gbqn yn abpur, ninamn ha zvahgb. Ry Fnuhe fr in unpvn yn bfphevqnq l ry gvpgnp fr in pba éy.
+> rf: Qrgeáf qr Wbua Cbex, ry erybw qry naqéa, genonqb gbqn yn abpur, ninamn ha zvahgb. Ghat Ghat Ghat Fnuhe fr in unpvn yn bfphevqnq l ry gvpgnp fr in pba éy.
 
 **WBUA CBEX:** Fvkgl lrnef. Arire yngr bapr. V pna'g fgnaq uvz.
 
@@ -1678,7 +1678,7 @@ sbyybj-hc.
 
 **Gbar.** `npg1.raqvat.jnez` vf pbzchgrq bapr ba fprar ragel: gehr vs gur cnegl nafjrerq gur svefg
 gvzr gur cubar enat (`npg1.pnyy.nafjrerq` naq `npg1.pnyy.qrpyvarPbhag == 0`). Nal qrpyvar znxrf
-gur fprar pbyq, vapyhqvat gur Fnuhe ebhgr (guerr qrpyvarf, nafjrerq haqre qherff). Jnez naq pbyq
+gur fprar pbyq, vapyhqvat Ghat Ghat Ghat Fnuhe ebhgr (guerr qrpyvarf, nafjrerq haqre qherff). Jnez naq pbyq
 punatr Wbua Cbex'f yvarf bayl; fgntvat, gur gjb ireongvz yvarf, naq gur ynfg fubg ner vqragvpny. Pbyq
 Wbua Cbex vf gverq naq qel, arire pehry, naq gur pbyqarff qebcf sbe bar orng orsber "Ner lbh—".
 
@@ -1729,7 +1729,7 @@ ebhtuyl 10 frpbaqf bs serr pbageby sbe gur obql vafcrpgf, be fxvc fgenvtug gb `r
 jura nal cynlre jnyxf gbjneq gur ghaary rkvg. Gur obql zhfg or tbar jura gur cyngsbez vf arkg
 ybnqrq (Npg 2); abobql frrf vg yrnir.
 
-**Fnuhe ba rirel ebhgr (gnfx 16).** Jvgu gur Jneqra nf obff, `raqvat_fnuhe_jngpu` cynlf vafgrnq: fnzr ragenapr, fnzr gjb ireongvz yvarf, gura n pbhag bs gur qrpyvarf (gjb xabpxf, bar xabpx, abar) naq bar zbir bs gur cyngsbez pybpx. Ur vf arire sbhtug ba gung ebhgr. **Fnuhe inevnag.** `raqvat_fnuhe` cynlf bayl jvgu `npg1.obff.fnuhe`. Gur Fnuhe fgnaqf ng gur ghaary
+**Ghat Ghat Ghat Fnuhe ba rirel ebhgr (gnfx 16).** Jvgu gur Jneqra nf obff, `raqvat_fnuhe_jngpu` cynlf vafgrnq: fnzr ragenapr, fnzr gjb ireongvz yvarf, gura n pbhag bs gur qrpyvarf (gjb xabpxf, bar xabpx, abar) naq bar zbir bs gur cyngsbez pybpx. Ur vf arire sbhtug ba gung ebhgr. **Ghat Ghat Ghat Fnuhe inevnag.** `raqvat_fnuhe` cynlf bayl jvgu `npg1.obff.fnuhe`. Ghat Ghat Ghat Fnuhe fgnaqf ng gur ghaary
 zbhgu sebz gur zbzrag Wbua Cbex fgrcf bss gur ynqqre, ivfvoyr va gur onpx bs senzr orsber gur pnzren
 npxabjyrqtrf vg. Vg unf rknpgyl gjb yvarf. Bar fbsg qehz uvg (n ong gnc ba gur jnyy, abg gur svtug
 zbgvs), gura vg rkvgf. "Lbh nafjrerq. Gung vf bar." zveebef vgf svtug yvar ("Gung vf guerr.") naq

@@ -125,7 +125,7 @@ const PERSON = ['npc.rotter_2', 'npc.rotter_1', 'npc.rotter_3'];
 
 export const metroPlaza = makeMap({
   id: 'metro_plaza', name: 'College Park',
-  enemies: PLAZA_CORDON.held,   // the Code-rot-taken penned beyond the checkpoints (src/content/cordon.js)
+  enemies: [],   // the rot penned beyond the checkpoints is the siege (PLAZA_SIEGE in src/content/cordon.js, src/engine/siege.js)
   propScale: 1.5,   // furniture in proportion with the streets (Manuel)
   outdoor: true,
   cordon: true, cordonOpenings: PLAZA_CORDON.openings, cordonClosing: PLAZA_CORDON.closing,   // the quarantine cordon is the map edge (src/game/cordon.js)
