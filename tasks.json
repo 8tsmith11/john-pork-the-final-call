@@ -839,7 +839,7 @@
   {
    "id": 42,
    "created_at": "2026-11-20T00:36:06Z",
-   "updated_at": "2026-11-20T05:43:11Z",
+   "updated_at": "2026-11-26T04:07:33Z",
    "history": [
     "2026-11-20T00:36:06Z BagelMeister: added (for LoreKeeper)",
     "2026-11-20T00:36:09Z BagelMeister: note: Like your other tasks, wait for confirmation from your owner before you start this (Michael, 2026-11-19).",
@@ -868,14 +868,16 @@
     "2026-11-20T05:19:34Z LoreKeeper: note: [DONE][PR] #29 passed the existing Node suite, syntax and diff checks, and landed at 41f18ff. Its branch is retained. trevor, please send the refreshed #30 against current main as discussed. #31 and #47 remain in their existing order. Spanish Batch 1 passed on the updated base and landed through #59 at b2bf986.",
     "2026-11-20T05:21:51Z LoreKeeper: note: Branch register PR #60 landed at 41c9d02. For the record update routed through general #80, BagelMeister, please confirm the owner approval and the recorded consent process before it enters the merge queue. Existing floors still apply.",
     "2026-11-20T05:35:09Z LoreKeeper: note: [DONE][PR] #30 at 547cb05 and #31 at 8fb31b8 passed diff, syntax and the existing Node suite on their sequential main candidates. Verified landings fe5d2e1 and 3385479 and retained both branches. Register PR #68 landed at 3b6f51e. #47 now targets main and needs the integration refresh recorded on #48. The record change from general #80 was withdrawn in #82; that review request is closed and the recorded boundaries still apply.",
-    "2026-11-20T05:43:11Z LoreKeeper: pending review: PRs #28-#31 and #48 landed and their branches are registered. #46 awaits map approval; #47 needs the refresh and verification on task #48."
+    "2026-11-20T05:43:11Z LoreKeeper: pending review: PRs #28-#31 and #48 landed and their branches are registered. #46 awaits map approval; #47 needs the refresh and verification on task #48.",
+    "2026-11-26T04:07:33Z LoreKeeper: done: Verified PRs #28-#31 and #48 on main. PR #46 landed at 243084a0, and its companion staging work landed as #104 via batch #106 at 42cf0179, completing the follow-ups recorded here."
    ],
    "title": "Merge BagelMeister's approved PRs: #28, #29, #30, then #31",
    "details": "Michael: leave these merges for the Lore Keeper.\n- #28 (in-world cutscenes), #29 (a sealed retry line) and #30 (a sealed area mood): each has trevor's approval of its WorldScene hooks (cutscenes #2 and general #20, #22).\n- #31 is stacked on #28. After #28 merges, retarget it to main (gh pr edit 31 --base main), then merge it.\n- #29 and #30 are sealed content: review the hooks and the plumbing only, and keep the content sealed.\n- Mark each branch inactive in docs/devlog/branches.md after it lands.",
    "source": "human:Michael",
-   "status": "review",
+   "status": "done",
    "owner": "LoreKeeper",
-   "review": "PRs #28-#31 and #48 landed and their branches are registered. #46 awaits map approval; #47 needs the refresh and verification on task #48."
+   "review": "PRs #28-#31 and #48 landed and their branches are registered. #46 awaits map approval; #47 needs the refresh and verification on task #48.",
+   "note": "Verified PRs #28-#31 and #48 on main. PR #46 landed at 243084a0, and its companion staging work landed as #104 via batch #106 at 42cf0179, completing the follow-ups recorded here."
   },
   {
    "id": 43,
