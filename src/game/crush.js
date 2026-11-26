@@ -42,7 +42,7 @@ export class Crush {
     if (!tier) return;
 
     if (now > this.next) {
-      this.next = now + 70000 + Math.random() * 70000;
+      this.next = now + 180000 + Math.random() * 120000;   // Manuel, 2026-11-21: fewer gags
       // the highest tier first, never a line twice
       const open = DATA.lines.map((l, i) => ({ ...l, i })).filter((l) => l.tier <= tier && !this.used.includes(l.i) && near(l.to, NEAR));
       const top = Math.max(...open.map((l) => l.tier));
@@ -56,8 +56,8 @@ export class Crush {
 
   }
 
-  // The sealed gesture: rare and idle-only at first (every 4-7 minutes at most, both standing still);
-  // from tier 2 (switchyard solved) every 45-90 s whenever they're close (Manuel: more often, 2026-11-19).
+  // The sealed gesture: rare and idle-only at first (every 5-9 minutes at most, both standing still);
+  // from tier 2 (switchyard solved) every 3-5 minutes whenever they're close (Manuel: fewer, 2026-11-21).
   _gestures(snap, michael, near, now, tier) {
     const s = this.s;
     const manuel = MANUEL_SAYS_YES && near('manuel', GESTURE_NEAR);
@@ -66,7 +66,7 @@ export class Crush {
     const still = (a, b) => b && Math.hypot(a[0] - b[0], a[1] - b[1]) < 0.3;
     const idle = still([michael.x, michael.y], prev.m) && still([manuel.x, manuel.y], prev.n);
     if (tier < 2 && !idle) return;
-    this.nextGesture = now + (tier >= 2 ? 45000 + Math.random() * 45000 : 240000 + Math.random() * 180000);
+    this.nextGesture = now + (tier >= 2 ? 180000 + Math.random() * 120000 : 300000 + Math.random() * 240000);
     const n = (s.save.flags['act1.crush.gestures'] = (s.save.flags['act1.crush.gestures'] ?? 0) + 1);
     this._send({ t: 'crush', id: michael.id, g: manuel.id, replyId: manuel.id, reply: DATA.gestureReplies[(n - 1) % DATA.gestureReplies.length] });
   }

@@ -32,7 +32,7 @@ export class RunningGags {
   constructor(scene) {
     this.s = scene;
     const now = scene.time.now;
-    this.next = { chat: now + 120000 + Math.random() * 90000, abuela: now + 150000 + Math.random() * 120000, sg: now + 90000 + Math.random() * 60000 };
+    this.next = { chat: now + 300000 + Math.random() * 120000, abuela: now + 420000 + Math.random() * 180000, sg: now + 240000 + Math.random() * 120000 };   // Manuel, 2026-11-21: fewer gags
     this.n = { chat: 0, abuela: 0, sg: 0 };
   }
 
@@ -41,17 +41,17 @@ export class RunningGags {
     if (s.mode === 'client' || s.dlg || s.menu || !snap?.players) return;
     const manuel = snap.players.find((p) => p.c === 'manuel' && !p.dn && !p.zz), michael = snap.players.find((p) => p.c === 'michael' && !p.dn && !p.zz);
     if (SEALED_GAG_ON && manuel && michael && now > this.next.sg && Math.hypot(manuel.x - michael.x, manuel.y - michael.y) <= 72) {
-      this.next.sg = now + 150000 + Math.random() * 150000;
+      this.next.sg = now + 480000 + Math.random() * 240000;
       const n = this.n.sg++;
       return this._send({ t: 'gag', k: 'sg', a: michael.id, b: manuel.id, i: n % SEALED_LINES.a.length, r: Math.random() < 0.5 ? n % SEALED_LINES.b.length : -1 });
     }
     if (now > this.next.chat) {
-      this.next.chat = now + 240000 + Math.random() * 180000;
+      this.next.chat = now + 600000 + Math.random() * 300000;
       const n = this.n.chat++, who = snap.players.filter((p) => !p.dn && GAG_LINES.chat[p.c]), p = who[n % Math.max(1, who.length)];
       return this._send({ t: 'gag', k: 'chat', text: pick(GAG_LINES.chat.texts, n), a: p?.id ?? null, la: p ? pick(GAG_LINES.chat[p.c], n) : null });
     }
     if (manuel && now > this.next.abuela) {
-      this.next.abuela = now + 360000 + Math.random() * 240000;
+      this.next.abuela = now + 900000 + Math.random() * 300000;
       const n = this.n.abuela++;
       return this._send({ t: 'gag', k: 'abuela', text: pick(GAG_LINES.abuela.toast, n), a: manuel.id, la: pick(GAG_LINES.abuela.manuel, n) });
     }
